@@ -1,0 +1,58 @@
+.inputarea {
+  width: 1px;
+  height: 12px;
+  min-width: 0;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  left: 0;
+  right: 0;
+  letter-spacing: 0;
+  font-size: 12px;
+  position: absolute;
+  outline: none;
+  resize: none;
+  border: none;
+  overflow: hidden;
+  color: transparent;
+  user-select: none;
+  background-color: transparent;
+}
+
+.cursor {
+  width: 2px;
+  height: 20px;
+  left: 0;
+  right: 0;
+  position: absolute;
+  outline: none;
+  background-color: #000000;
+}
+
+.cursor--animation {
+  animation-duration: 1s;
+  animation-iteration-count: infinite;
+  animation-name: cursorAnimation;
+}
+
+@keyframes cursorAnimation {
+  from {
+    opacity: 1
+  }
+
+  13% {
+    opacity: 0
+  }
+
+  50% {
+    opacity: 0
+  }
+
+  63% {
+    opacity: 1
+  }
+
+  to {
+    opacity: 1
+  }
+}

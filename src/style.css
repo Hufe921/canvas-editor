@@ -1,0 +1,143 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: #F2F4F7;
+}
+
+.menu {
+  width: 100%;
+  height: 60px;
+  top: 0;
+  z-index: 9;
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #F2F4F7;
+  box-shadow: 0 2px 4px 0 transparent;
+}
+
+.menu-divider {
+  width: 1px;
+  height: 16px;
+  margin: 0 6px;
+  display: inline-block;
+  background-color: #cfd2d8;
+}
+
+.menu-item {
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.menu-item>div {
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 6px;
+}
+
+.menu-item>div:hover {
+  background: rgba(25, 55, 88, .04);
+}
+
+.menu-item i {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+}
+
+.menu-item>div span {
+  width: 16px;
+  height: 3px;
+  display: inline-block;
+  border: 1px solid #e2e6ed;
+}
+
+.menu-item__undo i {
+  background-image: url('./assets/images/undo.svg');
+}
+
+.menu-item__redo i {
+  background-image: url('./assets/images/redo.svg');
+}
+
+.menu-item__painter i {
+  background-image: url('./assets/images/painter.svg');
+}
+
+.menu-item__format i {
+  background-image: url('./assets/images/format.svg');
+}
+
+.menu-item__size-add i {
+  background-image: url('./assets/images/size-add.svg');
+}
+
+.menu-item__size-minus i {
+  background-image: url('./assets/images/size-minus.svg');
+}
+
+.menu-item__bold i {
+  background-image: url('./assets/images/bold.svg');
+}
+
+.menu-item__italic i {
+  background-image: url('./assets/images/italic.svg');
+}
+
+.menu-item__underline i {
+  background-image: url('./assets/images/underline.svg');
+}
+
+.menu-item__deleteline i {
+  background-image: url('./assets/images/deleteline.svg');
+}
+
+.menu-item__color,
+.menu-item__highlight {
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-item__color i {
+  background-image: url('./assets/images/color.svg');
+}
+
+.menu-item__color span {
+  background-color: #000000;
+}
+
+.menu-item__highlight i {
+  background-image: url('./assets/images/highlight.svg');
+}
+
+.menu-item__highlight span {
+  background-color: #ffff00;
+}
+
+.menu-item__search i {
+  background-image: url('./assets/images/search.svg');
+}
+
+.menu-item__print i {
+  background-image: url('./assets/images/print.svg');
+}
+
+.editor {
+  width: 794px;
+  height: 1123px;
+  margin: 80px auto;
+  position: relative;
+  background-color: #ffffff;
+  box-shadow: rgb(158 161 165 / 40%) 0px 2px 12px 0px;
+}

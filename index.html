@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>canvas-editor</title>
+</head>
+
+<body>
+  <div id="app">
+    <div class="menu">
+      <div class="menu-item">
+        <div class="menu-item__undo">
+          <i></i>
+        </div>
+        <div class="menu-item__redo">
+          <i></i>
+        </div>
+        <div class="menu-item__painter">
+          <i></i>
+        </div>
+        <div class="menu-item__format">
+          <i></i>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-item">
+        <div class="menu-item__size-add">
+          <i></i>
+        </div>
+        <div class="menu-item__size-minus">
+          <i></i>
+        </div>
+        <div class="menu-item__bold">
+          <i></i>
+        </div>
+        <div class="menu-item__italic">
+          <i></i>
+        </div>
+        <div class="menu-item__underline">
+          <i></i>
+        </div>
+        <div class="menu-item__deleteline">
+          <i></i>
+        </div>
+        <div class="menu-item__color">
+          <i></i>
+          <span></span>
+        </div>
+        <div class="menu-item__highlight">
+          <i></i>
+          <span></span>
+        </div>
+      </div>
+      <div class="menu-divider"></div>
+      <div class="menu-item">
+        <div class="menu-item__search">
+          <i></i>
+        </div>
+        <div class="menu-item__print">
+          <i></i>
+        </div>
+      </div>
+    </div>
+    <div class="editor">
+      <canvas style="width: 794px;height: 1123px;"></canvas>
+    </div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>
