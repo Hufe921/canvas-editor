@@ -7,16 +7,16 @@ export class Command {
 
   constructor(draw: Draw) {
     const historyManager = draw.getHistoryManager()
-    this.undo = historyManager.undo
-    this.redo = historyManager.redo
+    this.undo = historyManager.undo.bind(historyManager)
+    this.redo = historyManager.redo.bind(historyManager)
   }
 
   public executeUndo() {
-    return this.undo
+    return this.undo()
   }
 
   public executeRedo() {
-    return this.redo
+    return this.redo()
   }
 
 }
