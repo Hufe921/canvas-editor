@@ -1,4 +1,4 @@
 export interface IRange {
   startIndex: number;
-  endIndex: number
+  endIndex: number;
 }

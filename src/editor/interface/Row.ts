@@ -1,4 +1,4 @@
-import { IElement } from "./Element";
+import { IElement } from "./Element"
 
 export type IRowElement = IElement & {
   metrics: TextMetrics

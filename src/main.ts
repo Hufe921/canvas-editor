@@ -42,5 +42,5 @@ window.onload = function () {
   const instance = new Editor(canvas, data, {
     margins: [120, 120, 200, 120]
   })
-  console.log('编辑器实例: ', instance);
+  console.log('编辑器实例: ', instance)
 }

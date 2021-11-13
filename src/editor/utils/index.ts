@@ -18,15 +18,15 @@ export function writeText(text: string) {
 
 export function deepClone(obj: any) {
   if (!obj || typeof obj !== 'object') {
-    return obj;
+    return obj
   }
-  let newObj: any = {};
+  let newObj: any = {}
   if (Array.isArray(obj)) {
-    newObj = obj.map(item => deepClone(item));
+    newObj = obj.map(item => deepClone(item))
   } else {
     Object.keys(obj).forEach((key) => {
-      return newObj[key] = deepClone(obj[key]);
+      return newObj[key] = deepClone(obj[key])
     })
   }
-  return newObj;
+  return newObj
 }
