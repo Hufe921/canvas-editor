@@ -111,7 +111,7 @@ export class Draw {
       if (curRow.width + width > rightTopPoint[0] - leftTopPoint[0] || (i !== 0 && element.value === ZERO)) {
         rowList.push({
           width,
-          height: 0,
+          height: this.options.defaultSize,
           elementList: [lineText],
           ascent: fontBoundingBoxAscent
         })
