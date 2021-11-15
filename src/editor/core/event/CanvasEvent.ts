@@ -1,7 +1,7 @@
 import { ZERO } from "../../dataset/constant/Common"
 import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
-import { writeText } from "../../utils"
+import { writeText } from "../../utils/clipboard"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { HistoryManager } from "../history/HistoryManager"

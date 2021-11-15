@@ -45,7 +45,7 @@ window.onload = function () {
   })
   console.log('编辑器实例: ', instance)
 
-  // 事件注册
+  // 撤销、重做、格式刷、清除格式
   document.querySelector<HTMLDivElement>('.menu-item__undo')!.onclick = function () {
     console.log('undo')
     instance.command.executeUndo()
@@ -53,6 +53,15 @@ window.onload = function () {
   document.querySelector<HTMLDivElement>('.menu-item__redo')!.onclick = function () {
     console.log('redo')
     instance.command.executeRedo()
+  }
+
+  // 字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+
+
+  // 搜索、打印
+  document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {
+    console.log('print')
+    instance.command.executePrint()
   }
 
 }
