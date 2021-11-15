@@ -10,6 +10,7 @@ import { GlobalEvent } from "../event/GlobalEvent"
 import { HistoryManager } from "../history/HistoryManager"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
+import { Background } from "./Background"
 import { Margin } from "./Margin"
 
 export class Draw {
@@ -23,6 +24,7 @@ export class Draw {
   private cursor: Cursor
   private range: RangeManager
   private margin: Margin
+  private background: Background
   private historyManager: HistoryManager
 
   private rowCount: number
@@ -37,6 +39,7 @@ export class Draw {
     this.position = new Position(this)
     this.range = new RangeManager(ctx, options)
     this.margin = new Margin(ctx, options)
+    this.background = new Background(ctx)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)
@@ -71,6 +74,10 @@ export class Draw {
     return this.rowCount
   }
 
+  public getDataURL(): string {
+    return this.canvas.toDataURL()
+  }
+
   public render(payload?: IDrawOption) {
     let { curIndex, isSubmitHistory = true, isSetCursor = true } = payload || {}
     // 清除光标
@@ -81,6 +88,8 @@ export class Draw {
     // 基础信息
     const { defaultSize, defaultFont } = this.options
     const canvasRect = this.canvas.getBoundingClientRect()
+    // 绘制背景
+    this.background.render(canvasRect)
     // 绘制页边距
     const { width } = canvasRect
     const { margins } = this.options

@@ -1,3 +1,5 @@
+import { EDITOR_COMPONENT } from "../../dataset/constant/Editor"
+import { findParent } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { CanvasEvent } from "./CanvasEvent"
@@ -32,8 +34,15 @@ export class GlobalEvent {
     if (!this.cursor) return
     const cursorDom = this.cursor.getCursorDom()
     const agentDom = this.cursor.getAgentDom()
-    const innerDoms = [this.canvas, cursorDom, agentDom, this.canvas.parentNode, document.body]
+    const innerDoms = [this.canvas, cursorDom, agentDom, document.body]
     if (innerDoms.includes(evt.target as any)) return
+    // 编辑器外部dom
+    const outerEditorDom = findParent(
+      evt.target as Element,
+      (node: Node & Element) => !!node && node.nodeType === 1 && !!node.getAttribute(EDITOR_COMPONENT),
+      true
+    )
+    if (outerEditorDom) return
     this.cursor.recoveryCursor()
   }
 

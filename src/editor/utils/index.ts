@@ -30,3 +30,22 @@ export function deepClone(obj: any) {
   }
   return newObj
 }
+
+export function isBody(node: Element): boolean {
+  return node && node.nodeType === 1 && node.tagName.toLowerCase() === 'body'
+}
+
+export function findParent(node: Element, filterFn: Function, includeSelf: boolean) {
+  if (node && !isBody(node)) {
+    node = includeSelf ? node : node.parentNode as Element
+    while (node) {
+      if (!filterFn || filterFn(node) || isBody(node)) {
+        return filterFn && !filterFn(node) && isBody(node)
+          ? null
+          : node
+      }
+      node = node.parentNode as Element
+    }
+  }
+  return null
+}
