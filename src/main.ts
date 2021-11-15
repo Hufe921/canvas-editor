@@ -60,7 +60,10 @@ window.onload = function () {
   }
 
   // 字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
-
+  document.querySelector<HTMLDivElement>('.menu-item__bold')!.onclick = function () {
+    console.log('bold')
+    instance.command.executeBold()
+  }
 
   // 搜索、打印
   document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {

@@ -27,7 +27,7 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (startIndex === endIndex) return
     const elementList = this.draw.getElementList()
-    elementList.slice(startIndex, endIndex)
+    elementList.slice(startIndex + 1, endIndex + 1)
       .forEach(el => {
         el.font = ''
         el.color = ''
@@ -35,6 +35,17 @@ export class CommandAdapt {
         el.italic = false
         el.underline = false
         el.strikeout = false
+      })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public bold() {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (startIndex === endIndex) return
+    const elementList = this.draw.getElementList()
+    elementList.slice(startIndex + 1, endIndex + 1)
+      .forEach(el => {
+        el.bold = true
       })
     this.draw.render({ isSetCursor: false })
   }
