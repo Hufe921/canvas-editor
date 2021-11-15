@@ -4,6 +4,7 @@ import { IEditorOption } from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
+import { CommandAdapt } from './core/command/CommandAdapt'
 
 export default class Editor {
 
@@ -41,7 +42,7 @@ export default class Editor {
     const draw = new Draw(canvas, ctx, editorOptions, elementList)
     draw.render()
     // 对外命令
-    this.command = new Command(draw)
+    this.command = new Command(new CommandAdapt(draw))
   }
 
 }

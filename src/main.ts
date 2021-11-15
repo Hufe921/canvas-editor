@@ -54,6 +54,10 @@ window.onload = function () {
     console.log('redo')
     instance.command.executeRedo()
   }
+  document.querySelector<HTMLDivElement>('.menu-item__format')!.onclick = function () {
+    console.log('format')
+    instance.command.executeFormat()
+  }
 
   // 字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
 
