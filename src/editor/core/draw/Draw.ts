@@ -12,6 +12,7 @@ import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
 import { Background } from "./Background"
 import { Margin } from "./Margin"
+import { Search } from "./Search"
 
 export class Draw {
 
@@ -25,10 +26,12 @@ export class Draw {
   private range: RangeManager
   private margin: Margin
   private background: Background
+  private search: Search
   private historyManager: HistoryManager
 
   private rowCount: number
   private painterStyle: IElementStyle | null
+  private searchMatchList: number[][] | null
 
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, options: Required<IEditorOption>, elementList: IElement[]) {
     this.canvas = canvas
@@ -41,6 +44,7 @@ export class Draw {
     this.range = new RangeManager(ctx, elementList, options)
     this.margin = new Margin(ctx, options)
     this.background = new Background(ctx)
+    this.search = new Search(ctx, options, this)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)
@@ -50,6 +54,7 @@ export class Draw {
 
     this.rowCount = 0
     this.painterStyle = null
+    this.searchMatchList = null
   }
 
   public getHistoryManager(): HistoryManager {
@@ -89,6 +94,14 @@ export class Draw {
     if (this.getPainterStyle()) {
       this.canvas.style.cursor = 'copy'
     }
+  }
+
+  public getSearchMathch(): number[][] | null {
+    return this.searchMatchList
+  }
+
+  public setSearchMatch(payload: number[][] | null) {
+    this.searchMatchList = payload
   }
 
   public render(payload?: IDrawOption) {
@@ -188,6 +201,10 @@ export class Draw {
       }
       x = leftTopPoint[0]
       y += curRow.height
+    }
+    // 搜索匹配绘制
+    if (this.searchMatchList) {
+      this.search.render()
     }
     // 光标重绘
     if (curIndex === undefined) {

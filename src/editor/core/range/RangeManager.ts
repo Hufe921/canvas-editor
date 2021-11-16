@@ -9,7 +9,7 @@ export class RangeManager {
   private options: Required<IEditorOption>
   private range: IRange
 
-  constructor(ctx: CanvasRenderingContext2D, elementList: IElement[], options: Required<IEditorOption>,) {
+  constructor(ctx: CanvasRenderingContext2D, elementList: IElement[], options: Required<IEditorOption>) {
     this.ctx = ctx
     this.elementList = elementList
     this.options = options

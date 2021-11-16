@@ -64,6 +64,27 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
+  public search(payload: string | null) {
+    if (payload) {
+      const elementList = this.draw.getElementList()
+      const text = elementList.map(e => !e.type || e.type === 'TEXT' ? e.value : null)
+        .filter(Boolean)
+        .join('')
+      const matchStartIndexList = []
+      let index = text.indexOf(payload)
+      while (index !== -1) {
+        matchStartIndexList.push(index)
+        index = text.indexOf(payload, index + 1)
+      }
+      const searchMatch: number[][] = matchStartIndexList
+        .map(i => Array(payload.length).fill(i).map((_, j) => i + j))
+      this.draw.setSearchMatch(searchMatch.length ? searchMatch : null)
+    } else {
+      this.draw.setSearchMatch(null)
+    }
+    this.draw.render({ isSetCursor: false, isSubmitHistory: false })
+  }
+
   public print() {
     return printImageBase64(this.draw.getDataURL())
   }

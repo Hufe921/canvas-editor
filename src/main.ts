@@ -70,6 +70,25 @@ window.onload = function () {
   }
 
   // 搜索、打印
+  const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
+  const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
+  document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
+    console.log('search')
+    collspanDom!.style.display = 'block'
+  }
+  document.querySelector<HTMLDivElement>('.menu-item__search__collapse span')!.onclick = function () {
+    collspanDom!.style.display = 'none'
+    searchInputDom!.value = ''
+    instance.command.executeSearch(null)
+  }
+  searchInputDom!.oninput = function () {
+    instance.command.executeSearch(searchInputDom?.value || null)
+  }
+  searchInputDom!.onkeydown = function (evt) {
+    if (evt.key === 'Enter') {
+      instance.command.executeSearch(searchInputDom?.value || null)
+    }
+  }
   document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {
     console.log('print')
     instance.command.executePrint()

@@ -7,15 +7,17 @@ export class Command {
   private static painter: Function
   private static format: Function
   private static bold: Function
+  private static search: Function
   private static print: Function
 
   constructor(adapt: CommandAdapt) {
     Command.undo = adapt.undo.bind(adapt)
     Command.redo = adapt.redo.bind(adapt)
     Command.painter = adapt.painter.bind(adapt)
-    Command.print = adapt.print.bind(adapt)
     Command.format = adapt.format.bind(adapt)
     Command.bold = adapt.bold.bind(adapt)
+    Command.search = adapt.search.bind(adapt)
+    Command.print = adapt.print.bind(adapt)
   }
 
   // 撤销、重做、格式刷、清除格式
@@ -41,6 +43,10 @@ export class Command {
   }
 
   // 搜索、打印
+  public executeSearch(payload: string | null) {
+    return Command.search(payload)
+  }
+
   public executePrint() {
     return Command.print()
   }
