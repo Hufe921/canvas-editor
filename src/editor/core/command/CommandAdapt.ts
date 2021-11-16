@@ -33,7 +33,7 @@ export class CommandAdapt {
       const painterStyleKeys = ['bold', 'color', 'font', 'size', 'italic', 'underline', 'strikeout']
       painterStyleKeys.forEach(p => {
         const key = p as keyof typeof ElementStyleKey
-        if (painterStyle[key] === undefined && s[key] !== undefined) {
+        if (painterStyle[key] === undefined) {
           painterStyle[key] = s[key] as any
         }
       })
