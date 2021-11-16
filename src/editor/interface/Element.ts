@@ -1,6 +1,4 @@
-export interface IElement {
-  type?: 'TEXT' | 'IMAGE';
-  value: string;
+export interface IElementStyle {
   font?: string;
   size?: number;
   width?: number;
@@ -11,6 +9,13 @@ export interface IElement {
   underline?: boolean;
   strikeout?: boolean;
 }
+
+export interface IElementBasic {
+  type?: 'TEXT' | 'IMAGE';
+  value: string;
+}
+
+export type IElement = IElementBasic & IElementStyle
 
 export interface IElementPosition {
   index: number;

@@ -54,6 +54,10 @@ window.onload = function () {
     console.log('redo')
     instance.command.executeRedo()
   }
+  document.querySelector<HTMLDivElement>('.menu-item__painter')!.onclick = function () {
+    console.log('painter')
+    instance.command.executePainter()
+  }
   document.querySelector<HTMLDivElement>('.menu-item__format')!.onclick = function () {
     console.log('format')
     instance.command.executeFormat()

@@ -1,14 +1,17 @@
 import { IEditorOption } from "../../interface/Editor"
+import { IElement } from "../../interface/Element"
 import { IRange } from "../../interface/Range"
 
 export class RangeManager {
 
   private ctx: CanvasRenderingContext2D
+  private elementList: IElement[]
   private options: Required<IEditorOption>
   private range: IRange
 
-  constructor(ctx: CanvasRenderingContext2D, options: Required<IEditorOption>,) {
+  constructor(ctx: CanvasRenderingContext2D, elementList: IElement[], options: Required<IEditorOption>,) {
     this.ctx = ctx
+    this.elementList = elementList
     this.options = options
     this.range = {
       startIndex: 0,
@@ -18,6 +21,12 @@ export class RangeManager {
 
   public getRange(): IRange {
     return this.range
+  }
+
+  public getSelection(): IElement[] | null {
+    const { startIndex, endIndex } = this.range
+    if (startIndex === endIndex) return null
+    return this.elementList.slice(startIndex + 1, endIndex + 1)
   }
 
   public setRange(startIndex: number, endIndex: number) {

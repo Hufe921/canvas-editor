@@ -1,7 +1,7 @@
 import { ZERO } from "../../dataset/constant/Common"
 import { IDrawOption } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
-import { IElement, IElementPosition } from "../../interface/Element"
+import { IElement, IElementPosition, IElementStyle } from "../../interface/Element"
 import { IRow } from "../../interface/Row"
 import { deepClone } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
@@ -28,6 +28,7 @@ export class Draw {
   private historyManager: HistoryManager
 
   private rowCount: number
+  private painterStyle: IElementStyle | null
 
   constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, options: Required<IEditorOption>, elementList: IElement[]) {
     this.canvas = canvas
@@ -37,7 +38,7 @@ export class Draw {
 
     this.historyManager = new HistoryManager()
     this.position = new Position(this)
-    this.range = new RangeManager(ctx, options)
+    this.range = new RangeManager(ctx, elementList, options)
     this.margin = new Margin(ctx, options)
     this.background = new Background(ctx)
 
@@ -48,6 +49,7 @@ export class Draw {
     globalEvent.register()
 
     this.rowCount = 0
+    this.painterStyle = null
   }
 
   public getHistoryManager(): HistoryManager {
@@ -76,6 +78,17 @@ export class Draw {
 
   public getDataURL(): string {
     return this.canvas.toDataURL()
+  }
+
+  public getPainterStyle(): IElementStyle | null {
+    return this.painterStyle && Object.keys(this.painterStyle).length ? this.painterStyle : null
+  }
+
+  public setPainterStyle(payload: IElementStyle | null) {
+    this.painterStyle = payload
+    if (this.getPainterStyle()) {
+      this.canvas.style.cursor = 'copy'
+    }
   }
 
   public render(payload?: IDrawOption) {

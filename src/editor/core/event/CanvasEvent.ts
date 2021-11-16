@@ -1,4 +1,5 @@
 import { ZERO } from "../../dataset/constant/Common"
+import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
 import { writeText } from "../../utils/clipboard"
@@ -45,6 +46,23 @@ export class CanvasEvent {
 
   public setIsAllowDrag(payload: boolean) {
     this.isAllowDrag = payload
+    if (payload === false) {
+      this.canvas.style.cursor = 'text'
+      // 应用格式刷样式
+      const painterStyle = this.draw.getPainterStyle()
+      if (!painterStyle) return
+      const selection = this.range.getSelection()
+      if (!selection) return
+      const painterStyleKeys = Object.keys(painterStyle)
+      selection.forEach(s => {
+        painterStyleKeys.forEach(pKey => {
+          const key = pKey as keyof typeof ElementStyleKey
+          s[key] = painterStyle[key] as any
+        })
+      })
+      this.draw.setPainterStyle(null)
+      this.draw.render({ isSetCursor: false })
+    }
   }
 
   public mousemove(evt: MouseEvent) {
@@ -75,7 +93,7 @@ export class CanvasEvent {
     // 是否还在canvas内部
     const { x, y, width, height } = this.canvas.getBoundingClientRect()
     if (evt.x >= x && evt.x <= x + width && evt.y >= y && evt.y <= y + height) return
-    this.isAllowDrag = false
+    this.setIsAllowDrag(false)
   }
 
   public keydown(evt: KeyboardEvent) {
