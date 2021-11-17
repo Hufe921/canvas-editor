@@ -41,7 +41,7 @@ export class Draw {
 
     this.historyManager = new HistoryManager()
     this.position = new Position(this)
-    this.range = new RangeManager(ctx, elementList, options)
+    this.range = new RangeManager(ctx, options, this)
     this.margin = new Margin(ctx, options)
     this.background = new Background(ctx)
     this.search = new Search(ctx, options, this)
@@ -55,6 +55,10 @@ export class Draw {
     this.rowCount = 0
     this.painterStyle = null
     this.searchMatchList = null
+  }
+
+  public getOptions(): Required<IEditorOption> {
+    return this.options
   }
 
   public getHistoryManager(): HistoryManager {

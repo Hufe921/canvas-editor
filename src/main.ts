@@ -64,6 +64,14 @@ window.onload = function () {
   }
 
   // 字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+  document.querySelector<HTMLDivElement>('.menu-item__size-add')!.onclick = function () {
+    console.log('size-add')
+    instance.command.executeSizeAdd()
+  }
+  document.querySelector<HTMLDivElement>('.menu-item__size-minus')!.onclick = function () {
+    console.log('size-minus')
+    instance.command.executeSizeMinus()
+  }
   document.querySelector<HTMLDivElement>('.menu-item__bold')!.onclick = function () {
     console.log('bold')
     instance.command.executeBold()

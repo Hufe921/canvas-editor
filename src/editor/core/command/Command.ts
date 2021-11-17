@@ -6,6 +6,8 @@ export class Command {
   private static redo: Function
   private static painter: Function
   private static format: Function
+  private static sizeAdd: Function
+  private static sizeMinus: Function
   private static bold: Function
   private static search: Function
   private static print: Function
@@ -15,6 +17,8 @@ export class Command {
     Command.redo = adapt.redo.bind(adapt)
     Command.painter = adapt.painter.bind(adapt)
     Command.format = adapt.format.bind(adapt)
+    Command.sizeAdd = adapt.sizeAdd.bind(adapt)
+    Command.sizeMinus = adapt.sizeMinus.bind(adapt)
     Command.bold = adapt.bold.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
@@ -38,6 +42,14 @@ export class Command {
   }
 
   // 字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+  public executeSizeAdd() {
+    return Command.sizeAdd()
+  }
+
+  public executeSizeMinus() {
+    return Command.sizeMinus()
+  }
+
   public executeBold() {
     return Command.bold()
   }

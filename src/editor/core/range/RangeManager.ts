@@ -1,18 +1,19 @@
 import { IEditorOption } from "../../interface/Editor"
 import { IElement } from "../../interface/Element"
 import { IRange } from "../../interface/Range"
+import { Draw } from "../draw/Draw"
 
 export class RangeManager {
 
   private ctx: CanvasRenderingContext2D
-  private elementList: IElement[]
   private options: Required<IEditorOption>
   private range: IRange
+  private draw: Draw
 
-  constructor(ctx: CanvasRenderingContext2D, elementList: IElement[], options: Required<IEditorOption>) {
+  constructor(ctx: CanvasRenderingContext2D, options: Required<IEditorOption>, draw: Draw) {
     this.ctx = ctx
-    this.elementList = elementList
     this.options = options
+    this.draw = draw
     this.range = {
       startIndex: 0,
       endIndex: 0
@@ -26,7 +27,8 @@ export class RangeManager {
   public getSelection(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null
-    return this.elementList.slice(startIndex + 1, endIndex + 1)
+    const elementList = this.draw.getElementList()
+    return elementList.slice(startIndex + 1, endIndex + 1)
   }
 
   public setRange(startIndex: number, endIndex: number) {

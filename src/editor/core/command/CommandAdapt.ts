@@ -1,4 +1,5 @@
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
+import { IEditorOption } from "../../interface/Editor"
 import { IElementStyle } from "../../interface/Element"
 import { printImageBase64 } from "../../utils/print"
 import { Draw } from "../draw/Draw"
@@ -10,11 +11,13 @@ export class CommandAdapt {
   private draw: Draw
   private range: RangeManager
   private historyManager: HistoryManager
+  private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
     this.draw = draw
     this.range = draw.getRange()
     this.historyManager = draw.getHistoryManager()
+    this.options = draw.getOptions()
   }
 
   public undo() {
@@ -55,11 +58,44 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
+  public sizeAdd() {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
+    const { defaultSize } = this.options
+    if (!~lessThanMaxSizeIndex) return
+    selection.forEach(el => {
+      if (!el.size) {
+        el.size = defaultSize
+      }
+      if (el.size + 2 > 72) return
+      el.size += 2
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public sizeMinus() {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const greaterThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size - 2 >= 8)
+    if (!~greaterThanMaxSizeIndex) return
+    const { defaultSize } = this.options
+    selection.forEach(el => {
+      if (!el.size) {
+        el.size = defaultSize
+      }
+      if (el.size - 2 < 8) return
+      el.size -= 2
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
   public bold() {
     const selection = this.range.getSelection()
     if (!selection) return
+    const noBoldIndex = selection.findIndex(s => !s.bold)
     selection.forEach(el => {
-      el.bold = true
+      el.bold = !!~noBoldIndex
     })
     this.draw.render({ isSetCursor: false })
   }
