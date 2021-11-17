@@ -47,18 +47,17 @@ export class Cursor {
     const cursorPosition = this.draw.getPosition().getCursorPosition()
     if (!cursorPosition) return
     // 设置光标代理
-    const { lineHeight, metrics, coordinate: { rightTop } } = cursorPosition
+    const { metrics, coordinate: { leftTop, rightTop }, ascent } = cursorPosition
     const height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     agentCursorDom.focus()
     agentCursorDom.setSelectionRange(0, 0)
-    const lineBottom = rightTop[1] + lineHeight
     const curosrleft = `${rightTop[0]}px`
     agentCursorDom.style.left = curosrleft
-    agentCursorDom.style.top = `${lineBottom - 12}px`
+    agentCursorDom.style.top = `${leftTop[1] + ascent - 12}px`
     // 模拟光标显示
     this.cursorDom.style.left = curosrleft
-    this.cursorDom.style.top = `${lineBottom - height}px`
+    this.cursorDom.style.top = `${leftTop[1] + ascent - metrics.fontBoundingBoxAscent}px`
     this.cursorDom.style.display = 'block'
     this.cursorDom.style.height = `${height}px`
     setTimeout(() => {

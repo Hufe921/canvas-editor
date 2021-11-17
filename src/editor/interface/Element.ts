@@ -21,6 +21,7 @@ export interface IElementPosition {
   index: number;
   value: string,
   rowNo: number;
+  ascent: number;
   lineHeight: number;
   metrics: TextMetrics;
   isLastLetter: boolean,

@@ -183,6 +183,7 @@ export class Draw {
           value: element.value,
           rowNo: i,
           metrics,
+          ascent: curRow.ascent,
           lineHeight: curRow.height,
           isLastLetter: j === curRow.elementList.length - 1,
           coordinate: {
