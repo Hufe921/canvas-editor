@@ -33,7 +33,7 @@ export class CommandAdapt {
     if (!selection) return
     const painterStyle: IElementStyle = {}
     selection.forEach(s => {
-      const painterStyleKeys = ['bold', 'color', 'font', 'size', 'italic', 'underline', 'strikeout']
+      const painterStyleKeys = ['bold', 'color', 'highlight', 'font', 'size', 'italic', 'underline', 'strikeout']
       painterStyleKeys.forEach(p => {
         const key = p as keyof typeof ElementStyleKey
         if (painterStyle[key] === undefined) {
@@ -126,6 +126,24 @@ export class CommandAdapt {
     const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
     selection.forEach(el => {
       el.strikeout = !!~noStrikeoutIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public color(payload: string) {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    selection.forEach(el => {
+      el.color = payload
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public highlight(payload: string) {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    selection.forEach(el => {
+      el.highlight = payload
     })
     this.draw.render({ isSetCursor: false })
   }

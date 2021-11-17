@@ -21,6 +21,7 @@ export default class Editor {
       rangeColor: '#AECBFA',
       searchMatchAlpha: 0.6,
       searchMatchColor: '#FFFF00',
+      highlightAlpha: 0.6,
       marginIndicatorSize: 35,
       marginIndicatorColor: '#BABABA',
       margins: [100, 120, 100, 120],

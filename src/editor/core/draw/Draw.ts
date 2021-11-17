@@ -11,6 +11,7 @@ import { HistoryManager } from "../history/HistoryManager"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
 import { Background } from "./Background"
+import { Highlight } from "./Highlight"
 import { Margin } from "./Margin"
 import { Search } from "./Search"
 import { Strikeout } from "./Strikeout"
@@ -31,6 +32,7 @@ export class Draw {
   private search: Search
   private underline: Underline
   private strikeout: Strikeout
+  private highlight: Highlight
   private historyManager: HistoryManager
 
   private rowCount: number
@@ -51,6 +53,7 @@ export class Draw {
     this.search = new Search(ctx, options, this)
     this.underline = new Underline(ctx, options)
     this.strikeout = new Strikeout(ctx, options)
+    this.highlight = new Highlight(ctx, options)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)
@@ -217,6 +220,10 @@ export class Draw {
         // 删除线绘制
         if (element.strikeout) {
           this.strikeout.render(x, y + curRow.height / 2, metrics.width)
+        }
+        // 文本高亮
+        if (element.highlight) {
+          this.highlight.render(element.highlight, x, y, metrics.width, curRow.height)
         }
         index++
         x += metrics.width

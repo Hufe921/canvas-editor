@@ -110,6 +110,15 @@ body {
   flex-direction: column;
 }
 
+.menu-item__color #color,
+.menu-item__highlight #highlight {
+  width: 1px;
+  height: 1px;
+  visibility: hidden;
+  outline: none;
+  appearance: none;
+}
+
 .menu-item__color i {
   background-image: url('./assets/images/color.svg');
 }

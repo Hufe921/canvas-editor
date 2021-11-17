@@ -88,6 +88,22 @@ window.onload = function () {
     console.log('strikeout')
     instance.command.executeStrikeout()
   }
+  const colorDom = document.querySelector<HTMLInputElement>('#color')
+  colorDom!.onchange = function () {
+    instance.command.executeColor(colorDom!.value)
+  }
+  document.querySelector<HTMLDivElement>('.menu-item__color')!.onclick = function () {
+    console.log('color')
+    colorDom?.click()
+  }
+  const highlightDom = document.querySelector<HTMLInputElement>('#highlight')
+  highlightDom!.onchange = function () {
+    instance.command.executeHighlight(highlightDom!.value)
+  }
+  document.querySelector<HTMLDivElement>('.menu-item__highlight')!.onclick = function () {
+    console.log('highlight')
+    highlightDom?.click()
+  }
 
   // 搜索、打印
   const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')

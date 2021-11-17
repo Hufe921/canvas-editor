@@ -5,6 +5,7 @@ export interface IElementStyle {
   height?: number;
   bold?: boolean;
   color?: string;
+  highlight?: string;
   italic?: boolean;
   underline?: boolean;
   strikeout?: boolean;

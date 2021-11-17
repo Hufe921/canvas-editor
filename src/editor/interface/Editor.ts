@@ -8,6 +8,7 @@ export interface IEditorOption {
   rangeAlpha?: number;
   searchMatchColor?: string;
   searchMatchAlpha?: number;
+  highlightAlpha?: number;
   marginIndicatorSize?: number;
   marginIndicatorColor?: string,
   margins?: [top: number, right: number, bootom: number, left: number]

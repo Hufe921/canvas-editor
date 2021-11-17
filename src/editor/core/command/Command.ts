@@ -12,6 +12,8 @@ export class Command {
   private static italic: Function
   private static underline: Function
   private static strikeout: Function
+  private static color: Function
+  private static highlight: Function
   private static search: Function
   private static print: Function
 
@@ -26,6 +28,8 @@ export class Command {
     Command.italic = adapt.italic.bind(adapt)
     Command.underline = adapt.underline.bind(adapt)
     Command.strikeout = adapt.strikeout.bind(adapt)
+    Command.color = adapt.color.bind(adapt)
+    Command.highlight = adapt.highlight.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
   }
@@ -70,6 +74,14 @@ export class Command {
 
   public executeStrikeout() {
     return Command.strikeout()
+  }
+
+  public executeColor(payload: string) {
+    return Command.color(payload)
+  }
+
+  public executeHighlight(payload: string) {
+    return Command.highlight(payload)
   }
 
   // 搜索、打印
