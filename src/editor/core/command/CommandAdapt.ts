@@ -100,6 +100,16 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
+  public italic() {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noItalicIndex = selection.findIndex(s => !s.italic)
+    selection.forEach(el => {
+      el.italic = !!~noItalicIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
   public search(payload: string | null) {
     if (payload) {
       const elementList = this.draw.getElementList()

@@ -108,6 +108,11 @@ export class Draw {
     this.searchMatchList = payload
   }
 
+  private getFont(el: IElement): string {
+    const { defaultSize, defaultFont } = this.options
+    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${el.size || defaultSize}px ${el.font || defaultFont}`
+  }
+
   public render(payload?: IDrawOption) {
     let { curIndex, isSubmitHistory = true, isSetCursor = true } = payload || {}
     // 清除光标
@@ -116,7 +121,6 @@ export class Draw {
     this.position.setPositionList([])
     const positionList = this.position.getPositionList()
     // 基础信息
-    const { defaultSize, defaultFont } = this.options
     const canvasRect = this.canvas.getBoundingClientRect()
     // 绘制背景
     this.background.render(canvasRect)
@@ -140,7 +144,7 @@ export class Draw {
       this.ctx.save()
       const curRow: IRow = rowList[rowList.length - 1]
       const element = this.elementList[i]
-      this.ctx.font = `${element.bold ? 'bold ' : ''}${element.size || defaultSize}px ${element.font || defaultFont}`
+      this.ctx.font = this.getFont(element)
       const metrics = this.ctx.measureText(element.value)
       const width = metrics.width
       const fontBoundingBoxAscent = metrics.fontBoundingBoxAscent
@@ -174,7 +178,7 @@ export class Draw {
         this.ctx.save()
         const element = curRow.elementList[j]
         const metrics = element.metrics
-        this.ctx.font = `${element.bold ? 'bold ' : ''}${element.size || defaultSize}px ${element.font || defaultFont}`
+        this.ctx.font = this.getFont(element)
         if (element.color) {
           this.ctx.fillStyle = element.color
         }

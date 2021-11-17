@@ -76,6 +76,10 @@ window.onload = function () {
     console.log('bold')
     instance.command.executeBold()
   }
+  document.querySelector<HTMLDivElement>('.menu-item__italic')!.onclick = function () {
+    console.log('italic')
+    instance.command.executeItalic()
+  }
 
   // 搜索、打印
   const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')

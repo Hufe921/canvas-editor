@@ -9,6 +9,7 @@ export class Command {
   private static sizeAdd: Function
   private static sizeMinus: Function
   private static bold: Function
+  private static italic: Function
   private static search: Function
   private static print: Function
 
@@ -20,6 +21,7 @@ export class Command {
     Command.sizeAdd = adapt.sizeAdd.bind(adapt)
     Command.sizeMinus = adapt.sizeMinus.bind(adapt)
     Command.bold = adapt.bold.bind(adapt)
+    Command.italic = adapt.italic.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
   }
@@ -52,6 +54,10 @@ export class Command {
 
   public executeBold() {
     return Command.bold()
+  }
+
+  public executeItalic() {
+    return Command.italic()
   }
 
   // 搜索、打印
