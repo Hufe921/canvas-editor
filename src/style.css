@@ -100,8 +100,8 @@ body {
   background-image: url('./assets/images/underline.svg');
 }
 
-.menu-item__deleteline i {
-  background-image: url('./assets/images/deleteline.svg');
+.menu-item__strikeout i {
+  background-image: url('./assets/images/strikeout.svg');
 }
 
 .menu-item__color,

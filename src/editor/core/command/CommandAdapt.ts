@@ -110,6 +110,26 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
+  public underline() {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noUnderlineIndex = selection.findIndex(s => !s.underline)
+    selection.forEach(el => {
+      el.underline = !!~noUnderlineIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public strikeout() {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
+    selection.forEach(el => {
+      el.strikeout = !!~noStrikeoutIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
   public search(payload: string | null) {
     if (payload) {
       const elementList = this.draw.getElementList()

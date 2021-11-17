@@ -80,6 +80,14 @@ window.onload = function () {
     console.log('italic')
     instance.command.executeItalic()
   }
+  document.querySelector<HTMLDivElement>('.menu-item__underline')!.onclick = function () {
+    console.log('underline')
+    instance.command.executeUnderline()
+  }
+  document.querySelector<HTMLDivElement>('.menu-item__strikeout')!.onclick = function () {
+    console.log('strikeout')
+    instance.command.executeStrikeout()
+  }
 
   // 搜索、打印
   const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')

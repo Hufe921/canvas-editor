@@ -10,6 +10,8 @@ export class Command {
   private static sizeMinus: Function
   private static bold: Function
   private static italic: Function
+  private static underline: Function
+  private static strikeout: Function
   private static search: Function
   private static print: Function
 
@@ -22,6 +24,8 @@ export class Command {
     Command.sizeMinus = adapt.sizeMinus.bind(adapt)
     Command.bold = adapt.bold.bind(adapt)
     Command.italic = adapt.italic.bind(adapt)
+    Command.underline = adapt.underline.bind(adapt)
+    Command.strikeout = adapt.strikeout.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
   }
@@ -58,6 +62,14 @@ export class Command {
 
   public executeItalic() {
     return Command.italic()
+  }
+
+  public executeUnderline() {
+    return Command.underline()
+  }
+
+  public executeStrikeout() {
+    return Command.strikeout()
   }
 
   // 搜索、打印

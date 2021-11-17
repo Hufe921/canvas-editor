@@ -13,6 +13,8 @@ import { RangeManager } from "../range/RangeManager"
 import { Background } from "./Background"
 import { Margin } from "./Margin"
 import { Search } from "./Search"
+import { Strikeout } from "./Strikeout"
+import { Underline } from "./Underline"
 
 export class Draw {
 
@@ -27,6 +29,8 @@ export class Draw {
   private margin: Margin
   private background: Background
   private search: Search
+  private underline: Underline
+  private strikeout: Strikeout
   private historyManager: HistoryManager
 
   private rowCount: number
@@ -45,6 +49,8 @@ export class Draw {
     this.margin = new Margin(ctx, options)
     this.background = new Background(ctx)
     this.search = new Search(ctx, options, this)
+    this.underline = new Underline(ctx, options)
+    this.strikeout = new Strikeout(ctx, options)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)
@@ -203,6 +209,14 @@ export class Draw {
         const { startIndex, endIndex } = this.range.getRange()
         if (startIndex < index && index <= endIndex) {
           this.range.drawRange(x, y, metrics.width, curRow.height)
+        }
+        // 下划线绘制
+        if (element.underline) {
+          this.underline.render(x, y + curRow.height, metrics.width)
+        }
+        // 删除线绘制
+        if (element.strikeout) {
+          this.strikeout.render(x, y + curRow.height / 2, metrics.width)
         }
         index++
         x += metrics.width

@@ -15,6 +15,8 @@ export default class Editor {
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
       defaultSize: 16,
+      underlineColor: '#000000',
+      strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,
       rangeColor: '#AECBFA',
       searchMatchAlpha: 0.6,
