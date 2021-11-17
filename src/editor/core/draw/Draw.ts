@@ -207,12 +207,6 @@ export class Draw {
           }
         }
         positionList.push(positionItem)
-        this.ctx.fillText(element.value, x, y + curRow.ascent)
-        // 选区绘制
-        const { startIndex, endIndex } = this.range.getRange()
-        if (startIndex < index && index <= endIndex) {
-          this.range.drawRange(x, y, metrics.width, curRow.height)
-        }
         // 下划线绘制
         if (element.underline) {
           this.underline.render(x, y + curRow.height, metrics.width)
@@ -224,6 +218,13 @@ export class Draw {
         // 文本高亮
         if (element.highlight) {
           this.highlight.render(element.highlight, x, y, metrics.width, curRow.height)
+        }
+        // 文本
+        this.ctx.fillText(element.value, x, y + curRow.ascent)
+        // 选区绘制
+        const { startIndex, endIndex } = this.range.getRange()
+        if (startIndex < index && index <= endIndex) {
+          this.range.drawRange(x, y, metrics.width, curRow.height)
         }
         index++
         x += metrics.width
