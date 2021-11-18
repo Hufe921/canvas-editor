@@ -18,6 +18,12 @@ window.onload = function () {
     const i = text.indexOf(b)
     return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
   }).flat()
+  // 模拟高亮字
+  const highlightText = ['血细胞比容']
+  const highlightIndex: number[] = highlightText.map(b => {
+    const i = text.indexOf(b)
+    return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
+  }).flat()
   // 组合数据
   const data = text.split('').map((value, index) => {
     if (boldIndex.includes(index)) {
@@ -32,6 +38,12 @@ window.onload = function () {
         value,
         color: 'red',
         size: 16
+      }
+    }
+    if (highlightIndex.includes(index)) {
+      return {
+        value,
+        highlight: '#F2F27F'
       }
     }
     return {

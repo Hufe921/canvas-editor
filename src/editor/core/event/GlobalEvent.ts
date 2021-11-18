@@ -27,28 +27,34 @@ export class GlobalEvent {
       this.setRangeStyle()
     })
     document.addEventListener('click', (evt) => {
-      this.recoverCursor(evt)
-      this.setRangeStyle()
+      this.recoverEffect(evt)
     })
     document.addEventListener('mouseup', () => {
       this.setDragState()
     })
   }
 
-  recoverCursor(evt: MouseEvent) {
+  recoverEffect(evt: MouseEvent) {
     if (!this.cursor) return
     const cursorDom = this.cursor.getCursorDom()
     const agentDom = this.cursor.getAgentDom()
     const innerDoms = [this.canvas, cursorDom, agentDom, document.body]
-    if (innerDoms.includes(evt.target as any)) return
+    if (innerDoms.includes(evt.target as any)) {
+      this.setRangeStyle()
+      return
+    }
     // 编辑器外部dom
     const outerEditorDom = findParent(
       evt.target as Element,
       (node: Node & Element) => !!node && node.nodeType === 1 && !!node.getAttribute(EDITOR_COMPONENT),
       true
     )
-    if (outerEditorDom) return
+    if (outerEditorDom) {
+      this.setRangeStyle()
+      return
+    }
     this.cursor.recoveryCursor()
+    this.range.recoveryRangeStyle()
   }
 
   setDragState() {

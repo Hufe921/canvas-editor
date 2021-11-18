@@ -75,6 +75,24 @@ export class RangeManager {
     })
   }
 
+  public recoveryRangeStyle() {
+    if (!this.listener.rangeStyleChange) return
+    const painter = !!this.draw.getPainterStyle()
+    const undo = this.historyManager.isCanUndo()
+    const redo = this.historyManager.isCanRedo()
+    this.listener.rangeStyleChange({
+      undo,
+      redo,
+      painter,
+      bold: false,
+      italic: false,
+      underline: false,
+      strikeout: false,
+      color: null,
+      highlight: null
+    })
+  }
+
   public render(x: number, y: number, width: number, height: number) {
     this.ctx.save()
     this.ctx.globalAlpha = this.options.rangeAlpha
