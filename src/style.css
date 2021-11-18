@@ -49,6 +49,10 @@ body {
   background: rgba(25, 55, 88, .04);
 }
 
+.menu-item>div.active {
+  background: rgba(25, 55, 88, .08);
+}
+
 .menu-item i {
   width: 16px;
   height: 16px;
@@ -62,6 +66,13 @@ body {
   height: 3px;
   display: inline-block;
   border: 1px solid #e2e6ed;
+}
+
+.menu-item__undo.no-allow,
+.menu-item__redo.no-allow {
+  color: #c0c4cc;
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
 .menu-item__undo i {

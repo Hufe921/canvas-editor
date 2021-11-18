@@ -59,13 +59,13 @@ export class RangeManager {
     const color = curElement.color || null
     const highlight = curElement.highlight || null
     // 菜单
-    const format = !!this.draw.getPainterStyle()
+    const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
     this.listener.rangeStyleChange({
       undo,
       redo,
-      format,
+      painter,
       bold,
       italic,
       underline,

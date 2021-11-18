@@ -46,15 +46,18 @@ window.onload = function () {
   console.log('编辑器实例: ', instance)
 
   // 撤销、重做、格式刷、清除格式
-  document.querySelector<HTMLDivElement>('.menu-item__undo')!.onclick = function () {
+  const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
+  undoDom.onclick = function () {
     console.log('undo')
     instance.command.executeUndo()
   }
-  document.querySelector<HTMLDivElement>('.menu-item__redo')!.onclick = function () {
+  const redoDom = document.querySelector<HTMLDivElement>('.menu-item__redo')!
+  redoDom.onclick = function () {
     console.log('redo')
     instance.command.executeRedo()
   }
-  document.querySelector<HTMLDivElement>('.menu-item__painter')!.onclick = function () {
+  const painterDom = document.querySelector<HTMLDivElement>('.menu-item__painter')!
+  painterDom.onclick = function () {
     console.log('painter')
     instance.command.executePainter()
   }
@@ -72,37 +75,45 @@ window.onload = function () {
     console.log('size-minus')
     instance.command.executeSizeMinus()
   }
-  document.querySelector<HTMLDivElement>('.menu-item__bold')!.onclick = function () {
+  const boldDom = document.querySelector<HTMLDivElement>('.menu-item__bold')!
+  boldDom.onclick = function () {
     console.log('bold')
     instance.command.executeBold()
   }
-  document.querySelector<HTMLDivElement>('.menu-item__italic')!.onclick = function () {
+  const italicDom = document.querySelector<HTMLDivElement>('.menu-item__italic')!
+  italicDom.onclick = function () {
     console.log('italic')
     instance.command.executeItalic()
   }
-  document.querySelector<HTMLDivElement>('.menu-item__underline')!.onclick = function () {
+  const underlineDom = document.querySelector<HTMLDivElement>('.menu-item__underline')!
+  underlineDom.onclick = function () {
     console.log('underline')
     instance.command.executeUnderline()
   }
-  document.querySelector<HTMLDivElement>('.menu-item__strikeout')!.onclick = function () {
+  const strikeoutDom = document.querySelector<HTMLDivElement>('.menu-item__strikeout')!
+  strikeoutDom.onclick = function () {
     console.log('strikeout')
     instance.command.executeStrikeout()
   }
-  const colorDom = document.querySelector<HTMLInputElement>('#color')
-  colorDom!.onchange = function () {
-    instance.command.executeColor(colorDom!.value)
+  const colorControlDom = document.querySelector<HTMLInputElement>('#color')!
+  colorControlDom.onchange = function () {
+    instance.command.executeColor(colorControlDom!.value)
   }
-  document.querySelector<HTMLDivElement>('.menu-item__color')!.onclick = function () {
+  const colorDom = document.querySelector<HTMLDivElement>('.menu-item__color')!
+  const colorSpanDom = colorDom.querySelector('span')!
+  colorDom.onclick = function () {
     console.log('color')
-    colorDom?.click()
+    colorControlDom.click()
   }
-  const highlightDom = document.querySelector<HTMLInputElement>('#highlight')
-  highlightDom!.onchange = function () {
-    instance.command.executeHighlight(highlightDom!.value)
+  const highlightControlDom = document.querySelector<HTMLInputElement>('#highlight')!
+  highlightControlDom.onchange = function () {
+    instance.command.executeHighlight(highlightControlDom.value)
   }
-  document.querySelector<HTMLDivElement>('.menu-item__highlight')!.onclick = function () {
+  const highlightDom = document.querySelector<HTMLDivElement>('.menu-item__highlight')!
+  const highlightSpanDom = highlightDom.querySelector('span')!
+  highlightDom.onclick = function () {
     console.log('highlight')
-    highlightDom?.click()
+    highlightControlDom?.click()
   }
 
   // 搜索、打印
@@ -132,7 +143,33 @@ window.onload = function () {
 
   // 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
-    console.log('payload: ', payload);
+    // 富文本
+    payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')
+    payload.italic ? italicDom.classList.add('active') : italicDom.classList.remove('active')
+    payload.underline ? underlineDom.classList.add('active') : underlineDom.classList.remove('active')
+    payload.strikeout ? strikeoutDom.classList.add('active') : strikeoutDom.classList.remove('active')
+    if (payload.color) {
+      colorDom.classList.add('active')
+      colorControlDom.value = payload.color
+      colorSpanDom.style.backgroundColor = payload.color
+    } else {
+      colorDom.classList.remove('active')
+      colorControlDom.value = '#000000'
+      colorSpanDom.style.backgroundColor = '#000000'
+    }
+    if (payload.highlight) {
+      highlightDom.classList.add('active')
+      highlightControlDom.value = payload.highlight
+      highlightSpanDom.style.backgroundColor = payload.highlight
+    } else {
+      highlightDom.classList.remove('active')
+      highlightControlDom.value = '#ffff00'
+      highlightSpanDom.style.backgroundColor = '#ffff00'
+    }
+    // 功能
+    payload.undo ? undoDom.classList.remove('no-allow') : undoDom.classList.add('no-allow')
+    payload.redo ? redoDom.classList.remove('no-allow') : redoDom.classList.add('no-allow')
+    payload.painter ? painterDom.classList.add('active') : painterDom.classList.remove('active')
   }
 
 }

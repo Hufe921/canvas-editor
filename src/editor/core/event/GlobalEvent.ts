@@ -23,12 +23,13 @@ export class GlobalEvent {
 
   register() {
     this.cursor = this.draw.getCursor()
-
+    document.addEventListener('keyup', () => {
+      this.setRangeStyle()
+    })
     document.addEventListener('click', (evt) => {
       this.recoverCursor(evt)
       this.setRangeStyle()
     })
-
     document.addEventListener('mouseup', () => {
       this.setDragState()
     })

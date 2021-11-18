@@ -1,7 +1,7 @@
 export interface IRangeStype {
   undo: boolean;
   redo: boolean;
-  format: boolean;
+  painter: boolean;
   bold: boolean;
   italic: boolean;
   underline: boolean;
