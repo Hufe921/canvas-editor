@@ -36,7 +36,7 @@ export class Cursor {
   public setCursorPosition(evt: MouseEvent) {
     const positionIndex = this.position.getPositionByXY(evt.offsetX, evt.offsetY)
     if (~positionIndex) {
-      this.range.setRange(0, 0)
+      this.range.setRange(positionIndex, positionIndex)
       setTimeout(() => {
         this.draw.render({ curIndex: positionIndex, isSubmitHistory: false })
       })

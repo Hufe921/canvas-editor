@@ -115,8 +115,9 @@ export class CanvasEvent {
       } else {
         elementList.splice(index, 1)
       }
-      this.range.setRange(0, 0)
-      this.draw.render({ curIndex: isCollspace ? index - 1 : startIndex })
+      const curIndex = isCollspace ? index - 1 : startIndex
+      this.range.setRange(curIndex, curIndex)
+      this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {
       const enterText: IElement = {
         value: ZERO
@@ -126,17 +127,20 @@ export class CanvasEvent {
       } else {
         elementList.splice(startIndex + 1, endIndex - startIndex, enterText)
       }
-      this.range.setRange(0, 0)
-      this.draw.render({ curIndex: index + 1 })
+      const curIndex = index + 1
+      this.range.setRange(curIndex, curIndex)
+      this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Left) {
       if (index > 0) {
-        this.range.setRange(0, 0)
-        this.draw.render({ curIndex: index - 1, isSubmitHistory: false })
+        const curIndex = index - 1
+        this.range.setRange(curIndex, curIndex)
+        this.draw.render({ curIndex, isSubmitHistory: false })
       }
     } else if (evt.key === KeyMap.Right) {
       if (index < position.length - 1) {
-        this.range.setRange(0, 0)
-        this.draw.render({ curIndex: index + 1, isSubmitHistory: false })
+        const curIndex = index + 1
+        this.range.setRange(curIndex, curIndex)
+        this.draw.render({ curIndex, isSubmitHistory: false })
       }
     } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
       const { rowNo, index, coordinate: { leftTop, rightTop } } = cursorPosition
@@ -171,8 +175,9 @@ export class CanvasEvent {
             maxIndex = position.index
           }
         }
-        this.range.setRange(0, 0)
-        this.draw.render({ curIndex: maxIndex, isSubmitHistory: false })
+        const curIndex = maxIndex
+        this.range.setRange(curIndex, curIndex)
+        this.draw.render({ curIndex, isSubmitHistory: false })
       }
     } else if (evt.ctrlKey && evt.key === KeyMap.Z) {
       this.historyManager.undo()
@@ -188,8 +193,9 @@ export class CanvasEvent {
       if (!isCollspace) {
         writeText(position.slice(startIndex + 1, endIndex + 1).map(p => p.value).join(''))
         elementList.splice(startIndex + 1, endIndex - startIndex)
-        this.range.setRange(0, 0)
-        this.draw.render({ curIndex: startIndex })
+        const curIndex = startIndex
+        this.range.setRange(curIndex, curIndex)
+        this.draw.render({ curIndex })
       }
     } else if (evt.ctrlKey && evt.key === KeyMap.A) {
       this.range.setRange(0, position.length - 1)
@@ -215,8 +221,9 @@ export class CanvasEvent {
     } else {
       elementList.splice(startIndex + 1, endIndex - startIndex, ...inputData)
     }
-    this.range.setRange(0, 0)
-    this.draw.render({ curIndex: (isCollspace ? index : startIndex) + inputData.length })
+    const curIndex = (isCollspace ? index : startIndex) + inputData.length
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
   }
 
   public paste(evt: ClipboardEvent) {

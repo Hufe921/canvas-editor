@@ -2,6 +2,8 @@ import { IEditorOption } from "../../interface/Editor"
 import { IElement } from "../../interface/Element"
 import { IRange } from "../../interface/Range"
 import { Draw } from "../draw/Draw"
+import { HistoryManager } from "../history/HistoryManager"
+import { Listener } from "../listener/Listener"
 
 export class RangeManager {
 
@@ -9,11 +11,15 @@ export class RangeManager {
   private options: Required<IEditorOption>
   private range: IRange
   private draw: Draw
+  private listener: Listener
+  private historyManager: HistoryManager
 
   constructor(ctx: CanvasRenderingContext2D, options: Required<IEditorOption>, draw: Draw) {
     this.ctx = ctx
     this.options = options
     this.draw = draw
+    this.listener = draw.getListener()
+    this.historyManager = draw.getHistoryManager()
     this.range = {
       startIndex: 0,
       endIndex: 0
@@ -36,15 +42,45 @@ export class RangeManager {
     this.range.endIndex = endIndex
   }
 
-  public drawRange(x: number, y: number, width: number, height: number) {
-    const { startIndex, endIndex } = this.range
-    if (startIndex !== endIndex) {
-      this.ctx.save()
-      this.ctx.globalAlpha = this.options.rangeAlpha
-      this.ctx.fillStyle = this.options.rangeColor
-      this.ctx.fillRect(x, y, width, height)
-      this.ctx.restore()
+  public setRangeStyle() {
+    if (!this.listener.rangeStyleChange) return
+    let curElementList = this.getSelection()
+    if (!curElementList) {
+      const elementList = this.draw.getElementList()
+      const { endIndex } = this.range
+      curElementList = [elementList[endIndex]]
     }
+    const curElement = curElementList[curElementList.length - 1]
+    // 富文本
+    let bold = !~curElementList.findIndex(el => !el.bold)
+    let italic = !~curElementList.findIndex(el => !el.italic)
+    let underline = !~curElementList.findIndex(el => !el.underline)
+    let strikeout = !~curElementList.findIndex(el => !el.strikeout)
+    const color = curElement.color || null
+    const highlight = curElement.highlight || null
+    // 菜单
+    const format = !!this.draw.getPainterStyle()
+    const undo = this.historyManager.isCanUndo()
+    const redo = this.historyManager.isCanRedo()
+    this.listener.rangeStyleChange({
+      undo,
+      redo,
+      format,
+      bold,
+      italic,
+      underline,
+      strikeout,
+      color,
+      highlight
+    })
+  }
+
+  public render(x: number, y: number, width: number, height: number) {
+    this.ctx.save()
+    this.ctx.globalAlpha = this.options.rangeAlpha
+    this.ctx.fillStyle = this.options.rangeColor
+    this.ctx.fillRect(x, y, width, height)
+    this.ctx.restore()
   }
 
 }

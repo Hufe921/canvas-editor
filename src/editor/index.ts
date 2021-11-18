@@ -5,10 +5,12 @@ import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
+import { Listener } from './core/listener/Listener'
 
 export default class Editor {
 
   public command: Command
+  public listener: Listener
 
   constructor(canvas: HTMLCanvasElement, elementList: IElement[], options: IEditorOption = {}) {
     const editorOptions: Required<IEditorOption> = {
@@ -43,10 +45,12 @@ export default class Editor {
         text.value = ZERO
       }
     })
+    // 监听
+    this.listener = new Listener()
     // 启动
-    const draw = new Draw(canvas, ctx, editorOptions, elementList)
+    const draw = new Draw(canvas, ctx, editorOptions, elementList, this.listener)
     draw.render()
-    // 对外命令
+    // 命令
     this.command = new Command(new CommandAdapt(draw))
   }
 

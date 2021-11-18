@@ -2,6 +2,7 @@ import { EDITOR_COMPONENT } from "../../dataset/constant/Editor"
 import { findParent } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
+import { RangeManager } from "../range/RangeManager"
 import { CanvasEvent } from "./CanvasEvent"
 
 export class GlobalEvent {
@@ -10,12 +11,14 @@ export class GlobalEvent {
   private draw: Draw
   private cursor: Cursor | null
   private canvasEvent: CanvasEvent
+  private range: RangeManager
 
   constructor(canvas: HTMLCanvasElement, draw: Draw, canvasEvent: CanvasEvent) {
     this.canvas = canvas
     this.draw = draw
     this.canvasEvent = canvasEvent
     this.cursor = null
+    this.range = draw.getRange()
   }
 
   register() {
@@ -23,10 +26,11 @@ export class GlobalEvent {
 
     document.addEventListener('click', (evt) => {
       this.recoverCursor(evt)
+      this.setRangeStyle()
     })
 
     document.addEventListener('mouseup', () => {
-      this.updateDragState()
+      this.setDragState()
     })
   }
 
@@ -46,8 +50,12 @@ export class GlobalEvent {
     this.cursor.recoveryCursor()
   }
 
-  updateDragState() {
+  setDragState() {
     this.canvasEvent.setIsAllowDrag(false)
+  }
+
+  setRangeStyle() {
+    this.range.setRangeStyle()
   }
 
 }

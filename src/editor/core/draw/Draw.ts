@@ -8,6 +8,7 @@ import { Cursor } from "../cursor/Cursor"
 import { CanvasEvent } from "../event/CanvasEvent"
 import { GlobalEvent } from "../event/GlobalEvent"
 import { HistoryManager } from "../history/HistoryManager"
+import { Listener } from "../listener/Listener"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
 import { Background } from "./Background"
@@ -24,6 +25,7 @@ export class Draw {
   private options: Required<IEditorOption>
   private position: Position
   private elementList: IElement[]
+  private listener: Listener
 
   private cursor: Cursor
   private range: RangeManager
@@ -39,11 +41,18 @@ export class Draw {
   private painterStyle: IElementStyle | null
   private searchMatchList: number[][] | null
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, options: Required<IEditorOption>, elementList: IElement[]) {
+  constructor(
+    canvas: HTMLCanvasElement,
+    ctx: CanvasRenderingContext2D,
+    options: Required<IEditorOption>,
+    elementList: IElement[],
+    listener: Listener
+  ) {
     this.canvas = canvas
     this.ctx = ctx
     this.options = options
     this.elementList = elementList
+    this.listener = listener
 
     this.historyManager = new HistoryManager()
     this.position = new Position(this)
@@ -64,6 +73,8 @@ export class Draw {
     this.rowCount = 0
     this.painterStyle = null
     this.searchMatchList = null
+
+    this.setDefaultRange()
   }
 
   public getOptions(): Required<IEditorOption> {
@@ -84,6 +95,10 @@ export class Draw {
 
   public getElementList(): IElement[] {
     return this.elementList
+  }
+
+  public getListener(): Listener {
+    return this.listener
   }
 
   public getCursor(): Cursor {
@@ -115,6 +130,15 @@ export class Draw {
 
   public setSearchMatch(payload: number[][] | null) {
     this.searchMatchList = payload
+  }
+
+  private setDefaultRange() {
+    if (!this.elementList.length) return
+    setTimeout(() => {
+      const curIndex = this.elementList.length - 1
+      this.range.setRange(curIndex, curIndex)
+      this.range.setRangeStyle()
+    })
   }
 
   private getFont(el: IElement): string {
@@ -223,8 +247,8 @@ export class Draw {
         this.ctx.fillText(element.value, x, y + curRow.ascent)
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()
-        if (startIndex < index && index <= endIndex) {
-          this.range.drawRange(x, y, metrics.width, curRow.height)
+        if (startIndex !== endIndex && startIndex < index && index <= endIndex) {
+          this.range.render(x, y, metrics.width, curRow.height)
         }
         index++
         x += metrics.width

@@ -130,4 +130,9 @@ window.onload = function () {
     instance.command.executePrint()
   }
 
+  // 内部事件监听
+  instance.listener.rangeStyleChange = function (payload) {
+    console.log('payload: ', payload);
+  }
+
 }
