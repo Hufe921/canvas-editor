@@ -78,7 +78,18 @@ window.onload = function () {
     instance.command.executeFormat()
   }
 
-  // 字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+  // 字体、字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+  const fontDom = document.querySelector<HTMLDivElement>('.menu-item__font')!
+  const fontSelectDom = fontDom.querySelector<HTMLDivElement>('.select')!
+  const fontOptionDom = fontDom.querySelector<HTMLDivElement>('.options')!
+  fontDom.onclick = function () {
+    console.log('font')
+    fontOptionDom.classList.toggle('visible')
+  }
+  fontOptionDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    instance.command.executeFont(li.dataset.family!)
+  }
   document.querySelector<HTMLDivElement>('.menu-item__size-add')!.onclick = function () {
     console.log('size-add')
     instance.command.executeSizeAdd()
@@ -156,6 +167,10 @@ window.onload = function () {
   // 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
     // 富文本
+    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)!
+    fontSelectDom.innerText = curFontDom.innerText
+    fontOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
+    curFontDom.classList.add('active')
     payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')
     payload.italic ? italicDom.classList.add('active') : italicDom.classList.remove('active')
     payload.underline ? underlineDom.classList.add('active') : underlineDom.classList.remove('active')

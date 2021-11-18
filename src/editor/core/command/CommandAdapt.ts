@@ -58,6 +58,15 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
+  public font(payload: string) {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    selection.forEach(el => {
+      el.font = payload
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
   public sizeAdd() {
     const selection = this.range.getSelection()
     if (!selection) return

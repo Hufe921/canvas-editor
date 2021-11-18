@@ -52,6 +52,7 @@ export class RangeManager {
     }
     const curElement = curElementList[curElementList.length - 1]
     // 富文本
+    const font = curElement.font || this.options.defaultFont
     let bold = !~curElementList.findIndex(el => !el.bold)
     let italic = !~curElementList.findIndex(el => !el.italic)
     let underline = !~curElementList.findIndex(el => !el.underline)
@@ -66,6 +67,7 @@ export class RangeManager {
       undo,
       redo,
       painter,
+      font,
       bold,
       italic,
       underline,
@@ -77,6 +79,7 @@ export class RangeManager {
 
   public recoveryRangeStyle() {
     if (!this.listener.rangeStyleChange) return
+    const font = this.options.defaultFont
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
@@ -84,6 +87,7 @@ export class RangeManager {
       undo,
       redo,
       painter,
+      font,
       bold: false,
       italic: false,
       underline: false,
