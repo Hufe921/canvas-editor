@@ -172,7 +172,7 @@ export class Draw {
         height: 0,
         ascent: 0,
         elementList: [],
-        rowFlex: this.elementList[0].rowFlex
+        rowFlex: this.elementList?.[1].rowFlex
       })
     }
     for (let i = 0; i < this.elementList.length; i++) {

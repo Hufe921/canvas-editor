@@ -6,6 +6,7 @@ import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
+import { RowFlex } from './dataset/enum/Row'
 
 export default class Editor {
 
@@ -54,4 +55,10 @@ export default class Editor {
     this.command = new Command(new CommandAdapt(draw))
   }
 
+}
+
+// 对外属性
+export {
+  Editor,
+  RowFlex
 }
