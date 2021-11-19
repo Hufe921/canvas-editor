@@ -1,3 +1,4 @@
+import { RowFlex } from "../../dataset/enum/Row"
 import { CommandAdapt } from "./CommandAdapt"
 
 export class Command {
@@ -15,6 +16,9 @@ export class Command {
   private static strikeout: Function
   private static color: Function
   private static highlight: Function
+  private static left: Function
+  private static center: Function
+  private static right: Function
   private static search: Function
   private static print: Function
 
@@ -32,6 +36,9 @@ export class Command {
     Command.strikeout = adapt.strikeout.bind(adapt)
     Command.color = adapt.color.bind(adapt)
     Command.highlight = adapt.highlight.bind(adapt)
+    Command.left = adapt.rowFlex.bind(adapt)
+    Command.center = adapt.rowFlex.bind(adapt)
+    Command.right = adapt.rowFlex.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
   }
@@ -88,6 +95,18 @@ export class Command {
 
   public executeHighlight(payload: string) {
     return Command.highlight(payload)
+  }
+
+  public executeLeft() {
+    return Command.left(RowFlex.LEFT)
+  }
+
+  public executeCenter() {
+    return Command.center(RowFlex.CENTER)
+  }
+
+  public executeRight() {
+    return Command.right(RowFlex.RIGHT)
   }
 
   // 搜索、打印

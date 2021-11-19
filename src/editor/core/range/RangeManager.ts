@@ -59,6 +59,7 @@ export class RangeManager {
     let strikeout = !~curElementList.findIndex(el => !el.strikeout)
     const color = curElement.color || null
     const highlight = curElement.highlight || null
+    const rowFlex = curElement.rowFlex || null
     // 菜单
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
@@ -73,7 +74,8 @@ export class RangeManager {
       underline,
       strikeout,
       color,
-      highlight
+      highlight,
+      rowFlex
     })
   }
 
@@ -93,7 +95,8 @@ export class RangeManager {
       underline: false,
       strikeout: false,
       color: null,
-      highlight: null
+      highlight: null,
+      rowFlex: null
     })
   }
 

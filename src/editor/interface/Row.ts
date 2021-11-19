@@ -1,3 +1,4 @@
+import { RowFlex } from "../dataset/enum/Row"
 import { IElement } from "./Element"
 
 export type IRowElement = IElement & {
@@ -8,5 +9,6 @@ export interface IRow {
   width: number;
   height: number;
   ascent: number;
+  rowFlex?: RowFlex
   elementList: IRowElement[];
 }

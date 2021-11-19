@@ -1,21 +1,25 @@
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
+import { RowFlex } from "../../dataset/enum/Row"
 import { IEditorOption } from "../../interface/Editor"
 import { IElementStyle } from "../../interface/Element"
 import { printImageBase64 } from "../../utils/print"
 import { Draw } from "../draw/Draw"
 import { HistoryManager } from "../history/HistoryManager"
+import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
 
 export class CommandAdapt {
 
   private draw: Draw
   private range: RangeManager
+  private position: Position
   private historyManager: HistoryManager
   private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
     this.draw = draw
     this.range = draw.getRange()
+    this.position = draw.getPosition()
     this.historyManager = draw.getHistoryManager()
     this.options = draw.getOptions()
   }
@@ -155,6 +159,28 @@ export class CommandAdapt {
       el.highlight = payload
     })
     this.draw.render({ isSetCursor: false })
+  }
+
+  public rowFlex(payload: RowFlex) {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (startIndex === 0 && endIndex === 0) return
+    const positionList = this.position.getPositionList()
+    // 开始/结束行号
+    const startRowNo = positionList[startIndex].rowNo
+    const endRowNo = positionList[endIndex].rowNo
+    const elementList = this.draw.getElementList()
+    // 当前选区所在行
+    for (let p = 0; p < positionList.length; p++) {
+      const postion = positionList[p]
+      if (postion.rowNo > endRowNo) break
+      if (postion.rowNo >= startRowNo && postion.rowNo <= endRowNo) {
+        elementList[p].rowFlex = payload
+      }
+    }
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
   }
 
   public search(payload: string | null) {

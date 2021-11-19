@@ -1,3 +1,5 @@
+import { RowFlex } from "../dataset/enum/Row"
+
 export interface IElementStyle {
   font?: string;
   size?: number;
@@ -9,6 +11,7 @@ export interface IElementStyle {
   italic?: boolean;
   underline?: boolean;
   strikeout?: boolean;
+  rowFlex?: RowFlex;
 }
 
 export interface IElementBasic {

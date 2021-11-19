@@ -55,6 +55,7 @@ export class GlobalEvent {
     }
     this.cursor.recoveryCursor()
     this.range.recoveryRangeStyle()
+    this.range.setRange(0, 0)
   }
 
   setDragState() {

@@ -1,3 +1,5 @@
+import { RowFlex } from "../dataset/enum/Row"
+
 export interface IRangeStype {
   undo: boolean;
   redo: boolean;
@@ -9,6 +11,7 @@ export interface IRangeStype {
   strikeout: boolean;
   color: string | null;
   highlight: string | null;
+  rowFlex: RowFlex | null;
 }
 
 export type IRangeStyleChange = (payload: IRangeStype) => void;

@@ -1,4 +1,5 @@
 import { ZERO } from "../../dataset/constant/Common"
+import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawOption } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
 import { IElement, IElementPosition, IElementStyle } from "../../interface/Element"
@@ -170,7 +171,8 @@ export class Draw {
         width: 0,
         height: 0,
         ascent: 0,
-        elementList: []
+        elementList: [],
+        rowFlex: this.elementList[0].rowFlex
       })
     }
     for (let i = 0; i < this.elementList.length; i++) {
@@ -189,7 +191,8 @@ export class Draw {
           width,
           height: this.options.defaultSize,
           elementList: [lineText],
-          ascent: fontBoundingBoxAscent
+          ascent: fontBoundingBoxAscent,
+          rowFlex: lineText.rowFlex
         })
       } else {
         curRow.width += width
@@ -207,6 +210,15 @@ export class Draw {
     let index = 0
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i];
+      // 计算行偏移量（行居左、居中、居右）
+      if (curRow.rowFlex && curRow.rowFlex !== RowFlex.LEFT) {
+        const canvasInnerWidth = this.canvas.width - margins[1] - margins[3]
+        if (curRow.rowFlex === RowFlex.CENTER) {
+          x += (canvasInnerWidth - curRow.width) / 2
+        } else {
+          x += canvasInnerWidth - curRow.width
+        }
+      }
       for (let j = 0; j < curRow.elementList.length; j++) {
         this.ctx.save()
         const element = curRow.elementList[j]

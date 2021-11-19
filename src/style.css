@@ -211,6 +211,18 @@ ul {
   background-color: #ffff00;
 }
 
+.menu-item__left i {
+  background-image: url('./assets/images/left.svg');
+}
+
+.menu-item__center i {
+  background-image: url('./assets/images/center.svg');
+}
+
+.menu-item__right i {
+  background-image: url('./assets/images/right.svg');
+}
+
 .menu-item__search {
   position: relative;
 }

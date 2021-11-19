@@ -138,7 +138,22 @@ window.onload = function () {
     console.log('highlight')
     highlightControlDom?.click()
   }
-
+  // 行布局
+  const leftDom = document.querySelector<HTMLDivElement>('.menu-item__left')!
+  leftDom.onclick = function () {
+    console.log('left')
+    instance.command.executeLeft()
+  }
+  const centerDom = document.querySelector<HTMLDivElement>('.menu-item__center')!
+  centerDom.onclick = function () {
+    console.log('center')
+    instance.command.executeCenter()
+  }
+  const rightDom = document.querySelector<HTMLDivElement>('.menu-item__right')!
+  rightDom.onclick = function () {
+    console.log('right')
+    instance.command.executeRight()
+  }
   // 搜索、打印
   const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
@@ -192,6 +207,17 @@ window.onload = function () {
       highlightDom.classList.remove('active')
       highlightControlDom.value = '#ffff00'
       highlightSpanDom.style.backgroundColor = '#ffff00'
+    }
+    // 行布局
+    leftDom.classList.remove('active')
+    centerDom.classList.remove('active')
+    rightDom.classList.remove('active')
+    if (payload.rowFlex && payload.rowFlex === 'right') {
+      rightDom.classList.add('active')
+    } else if (payload.rowFlex && payload.rowFlex === 'center') {
+      centerDom.classList.add('active')
+    } else {
+      leftDom.classList.add('active')
     }
     // 功能
     payload.undo ? undoDom.classList.remove('no-allow') : undoDom.classList.add('no-allow')
