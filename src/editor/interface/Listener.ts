@@ -12,6 +12,7 @@ export interface IRangeStype {
   color: string | null;
   highlight: string | null;
   rowFlex: RowFlex | null;
+  rowMargin: number
 }
 
 export type IRangeStyleChange = (payload: IRangeStype) => void;

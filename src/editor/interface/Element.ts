@@ -12,6 +12,7 @@ export interface IElementStyle {
   underline?: boolean;
   strikeout?: boolean;
   rowFlex?: RowFlex;
+  rowMargin?: number;
 }
 
 export interface IElementBasic {

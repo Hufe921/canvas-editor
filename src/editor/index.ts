@@ -18,6 +18,8 @@ export default class Editor {
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
       defaultSize: 16,
+      defaultRowMargin: 1,
+      defaultBasicRowMarginHeight: 5,
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,

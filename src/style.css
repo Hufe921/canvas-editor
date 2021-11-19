@@ -112,6 +112,7 @@ ul {
 .menu-item .options li {
   padding: 5px;
   margin: 5px 0;
+  user-select: none;
   transition: all .3s;
 }
 
@@ -221,6 +222,14 @@ ul {
 
 .menu-item__right i {
   background-image: url('./assets/images/right.svg');
+}
+
+.menu-item__row-margin {
+  position: relative;
+}
+
+.menu-item__row-margin i {
+  background-image: url('./assets/images/row-margin.svg');
 }
 
 .menu-item__search {

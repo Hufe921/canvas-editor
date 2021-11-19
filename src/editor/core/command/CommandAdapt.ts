@@ -183,6 +183,28 @@ export class CommandAdapt {
     this.draw.render({ curIndex, isSetCursor })
   }
 
+  public rowMargin(payload: number) {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (startIndex === 0 && endIndex === 0) return
+    const positionList = this.position.getPositionList()
+    // 开始/结束行号
+    const startRowNo = positionList[startIndex].rowNo
+    const endRowNo = positionList[endIndex].rowNo
+    const elementList = this.draw.getElementList()
+    // 当前选区所在行
+    for (let p = 0; p < positionList.length; p++) {
+      const postion = positionList[p]
+      if (postion.rowNo > endRowNo) break
+      if (postion.rowNo >= startRowNo && postion.rowNo <= endRowNo) {
+        elementList[p].rowMargin = payload
+      }
+    }
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
   public search(payload: string | null) {
     if (payload) {
       const elementList = this.draw.getElementList()

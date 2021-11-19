@@ -160,7 +160,7 @@ export class Draw {
     this.background.render(canvasRect)
     // 绘制页边距
     const { width } = canvasRect
-    const { margins } = this.options
+    const { margins, defaultRowMargin, defaultBasicRowMarginHeight } = this.options
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     const rightTopPoint: [number, number] = [width - margins[1], margins[0]]
     this.margin.render(canvasRect)
@@ -182,8 +182,9 @@ export class Draw {
       this.ctx.font = this.getFont(element)
       const metrics = this.ctx.measureText(element.value)
       const width = metrics.width
-      const fontBoundingBoxAscent = metrics.fontBoundingBoxAscent
-      const fontBoundingBoxDescent = metrics.fontBoundingBoxDescent
+      const rowMargin = defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
+      const fontBoundingBoxAscent = metrics.fontBoundingBoxAscent + rowMargin
+      const fontBoundingBoxDescent = metrics.fontBoundingBoxDescent + rowMargin
       const height = fontBoundingBoxAscent + fontBoundingBoxDescent
       const lineText = { ...element, metrics }
       if (curRow.width + width > rightTopPoint[0] - leftTopPoint[0] || (i !== 0 && element.value === ZERO)) {

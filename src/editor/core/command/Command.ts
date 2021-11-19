@@ -19,6 +19,7 @@ export class Command {
   private static left: Function
   private static center: Function
   private static right: Function
+  private static rowMargin: Function
   private static search: Function
   private static print: Function
 
@@ -39,6 +40,7 @@ export class Command {
     Command.left = adapt.rowFlex.bind(adapt)
     Command.center = adapt.rowFlex.bind(adapt)
     Command.right = adapt.rowFlex.bind(adapt)
+    Command.rowMargin = adapt.rowMargin.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
   }
@@ -107,6 +109,10 @@ export class Command {
 
   public executeRight() {
     return Command.right(RowFlex.RIGHT)
+  }
+
+  public executeRowMargin(payload: number) {
+    return Command.rowMargin(payload)
   }
 
   // 搜索、打印

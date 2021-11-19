@@ -60,6 +60,7 @@ export class RangeManager {
     const color = curElement.color || null
     const highlight = curElement.highlight || null
     const rowFlex = curElement.rowFlex || null
+    const rowMargin = curElement.rowMargin || this.options.defaultRowMargin
     // 菜单
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
@@ -75,13 +76,15 @@ export class RangeManager {
       strikeout,
       color,
       highlight,
-      rowFlex
+      rowFlex,
+      rowMargin
     })
   }
 
   public recoveryRangeStyle() {
     if (!this.listener.rangeStyleChange) return
     const font = this.options.defaultFont
+    const rowMargin = this.options.defaultRowMargin
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
@@ -96,7 +99,8 @@ export class RangeManager {
       strikeout: false,
       color: null,
       highlight: null,
-      rowFlex: null
+      rowFlex: null,
+      rowMargin
     })
   }
 
