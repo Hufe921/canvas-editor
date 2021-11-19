@@ -50,8 +50,10 @@ export class Cursor {
     const { metrics, coordinate: { leftTop, rightTop }, ascent } = cursorPosition
     const height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
-    agentCursorDom.focus()
-    agentCursorDom.setSelectionRange(0, 0)
+    setTimeout(() => {
+      agentCursorDom.focus()
+      agentCursorDom.setSelectionRange(0, 0)
+    })
     const curosrleft = `${rightTop[0]}px`
     agentCursorDom.style.left = curosrleft
     agentCursorDom.style.top = `${leftTop[1] + ascent - 12}px`
