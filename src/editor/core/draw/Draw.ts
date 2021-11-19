@@ -285,8 +285,8 @@ export class Draw {
     // canvas高度自适应计算
     const lastPosition = positionList[positionList.length - 1]
     const { coordinate: { leftBottom, leftTop } } = lastPosition
-    if (leftBottom[1] > this.canvas.height) {
-      const height = Math.ceil(leftBottom[1] + (leftBottom[1] - leftTop[1]))
+    if (leftBottom[1] > this.canvas.height - margins[2]) {
+      const height = Math.ceil(leftBottom[1] + (leftBottom[1] - leftTop[1]) + margins[2])
       this.canvas.height = height
       this.canvas.style.height = `${height}px`
       this.render({ curIndex, isSubmitHistory: false })
