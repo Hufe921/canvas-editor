@@ -1,11 +1,11 @@
 import './style.css'
-import Editor, { IElement, RowFlex } from './editor'
+import Editor, { ElementType, IElement, RowFlex } from './editor'
 
 window.onload = function () {
 
   const canvas = document.querySelector<HTMLCanvasElement>('canvas')
   if (!canvas) return
-  const text = `人民医院门诊病历\n主诉：\n发热三天，咳嗽五天。\n现病史：\n发病前14天内有病历报告社区的旅行时或居住史；发病前14天内与新型冠状病毒感染的患者或无症状感染者有接触史；发病前14天内解除过来自病历报告社区的发热或有呼吸道症状的患者；聚集性发病，2周内在小范围如家庭、办公室、学校班级等场所，出现2例及以上发热或呼吸道症状的病例。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。\n体格检查：\nT：36.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10^9/L（偏高）参考值：0.1～0.6；\n门诊诊断：\n1.高血压\n处置治疗：\n1.超声引导下甲状腺细针穿刺术；\n2.乙型肝炎表面抗体测定；\n3.膜式病变细胞采集术、后颈皮下肤层；\n4.氯化钠注射液 250ml/袋、1袋；\n5.七叶皂苷钠片（欧开）、30mg/片*24/盒、1片、口服；`
+  const text = `人民医院门诊病历\n主诉：\n发热三天，咳嗽五天。\n现病史：\n发病前14天内有病历报告社区的旅行时或居住史；发病前14天内与新型冠状病毒感染的患者或无症状感染者有接触史；发病前14天内解除过来自病历报告社区的发热或有呼吸道症状的患者；聚集性发病，2周内在小范围如家庭、办公室、学校班级等场所，出现2例及以上发热或呼吸道症状的病例。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。\n体格检查：\nT：36.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10^9/L（偏高）参考值：0.1～0.6；\n门诊诊断：\n1.高血压\n处置治疗：\n1.超声引导下甲状腺细针穿刺术；\n2.乙型肝炎表面抗体测定；\n3.膜式病变细胞采集术、后颈皮下肤层；\n电子签名：【】`
   // 模拟行居中
   const centerText = ['人民医院门诊病历']
   const centerIndex: number[] = centerText.map(c => {
@@ -13,7 +13,7 @@ window.onload = function () {
     return ~i ? Array(c.length).fill(i).map((_, j) => i + j) : []
   }).flat()
   // 模拟加粗字
-  const boldText = ['主诉：', '现病史：', '既往史：', '体格检查：', '辅助检查：', '门诊诊断：', '处置治疗：']
+  const boldText = ['主诉：', '现病史：', '既往史：', '体格检查：', '辅助检查：', '门诊诊断：', '处置治疗：', '电子签名：']
   const boldIndex: number[] = boldText.map(b => {
     const i = text.indexOf(b)
     return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
@@ -63,6 +63,13 @@ window.onload = function () {
       value,
       size: 16
     }
+  })
+  data.splice(390, 0, {
+    value: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFkAAAAgCAYAAAB5JtSmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAQ0SURBVGhD7dhrUSNBFAVgvKACEVjAAhJQgAIUYAABGEAABvgfAdn6UnWou01PppOZhIXNj1P9vo9zH5PK1Waz2V5wWlxIPgMuJJ8Bi0h+fn7eXl9fb29ubrYPDw/dO/8DHh8fu/vB4kym4Orqaofb29vund8OSSbhemewSrugBMnG3vlvw9vb265yn56edmtz/t/f33+5C8MkixQSZSsl9UzLOHUmcwTYAN/Rpl5eXnY+pnIB0Xd3d7s5m3rvDsrkCGszNiQ7r/tr4v39fSc/uipOqRcqufTHBiO78GGdzG5xcLtIFmVde7L9NsvXRo9s84+Pj+79pUAwn5GcD1wIz5r+fYGeJdnjGiF9hwL7iWAcfX19/evtKVHJXrtN8Rf4A3TVczqhrut5i1mSZQgnIriSWtdzP2N+EvIhi3/GWqHWtWXuy2IYbheiKarJZIZknkxyrryc2Utrgal+9S8iScUXIx/3kcxfe/jotcuDezLFlIbARDrzHpytXdKnQr4xyc74Vu9YV5Ih2Q/tT7mDSEYw5ZU4wu3nJx64k/1z9umlUG0hah/JSbC6Jzi5exDJWoTHERoBxu8uf/pT1j3HDkUIJitjbRfRA/iwVzlgy1RCfSF5ili9xj7BUWKs9wJZ3MpditYu+lsc+/PRx53cVF9Pdg/syE9Hb6cS75PkmhUEUFofmTvLGEXKimHueJP9Y3swWQwGLUiA9xEbHKuvgs4pPe1+1myTAKlw81buJ8kigjAXKauXPLQPhEYgJSEYsgdTUR0BmTVgc6C359wcvKGnBrGO8dO5VlD1ZZ519nrBHvrwKVMCas9hgL0YUI2wV98fC4FqCWizzXyqF44A0ZKLHkilgvPs1zbiTuZIdZ414KvqGCKZYx4zple+MSrrJVncAyL02/TOqncJwVMglx5zI4QDZ5WPvBGEcNP+7TlEcqJIAQFGsIdQjmZt7MlYA5yiI3pOQTCQXUm2TuVmXgmewxDJQDgl6deJJoU5y7p9uwZagmu1mCvbNoOOBfkhOf6lRZjzPb8qRjBMMiUhM9GNMZQq5/oRXBP7Mlj/i12A7EMIaJGqDcl8I79+/N1xTvdINQ2TDAQSvI9Md479vdqCHKSFQKAfEmgBqCTDkjaSgOZXQkg2jy1ti0xApnBQJo/0obQRipeQXbN3CmxKGQch5xgki4Efghl/kFqzPD//2DnXIodIRpaoETaXxcmwGNO7N4I2Oyuc6b+xK/tL9IH3kY/E+r1JdST4yM+7VUiuJbuPZHBeHZcNvXtziMMV9mRuvUOX8Vg9IFjRx9dUYM3s2oJyNx9ahFfSWwyRHKHG3nmL2q/mojyFVAWnEdi2Hg7OBXwUCCKr1QEtoe0+/9jI3xqIiuF2QRD0zqcwpfQnge9TVSI4tWrNe79shj98F0xDC0N4bTUVF5LPgAvJJ8dm+wcP2iJuZNdC5QAAAABJRU5ErkJggg==`,
+    width: 89,
+    height: 32,
+    id: 'signature',
+    type: ElementType.IMAGE
   })
   // 初始化编辑器
   const instance = new Editor(canvas, data, {
