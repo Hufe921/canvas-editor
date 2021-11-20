@@ -1,3 +1,4 @@
+import { CURSOR_AGENT_HEIGHT } from "../../dataset/constant/Cursor"
 import { Draw } from "../draw/Draw"
 import { CanvasEvent } from "../event/CanvasEvent"
 import { Position } from "../position/Position"
@@ -48,18 +49,19 @@ export class Cursor {
     if (!cursorPosition) return
     // 设置光标代理
     const { metrics, coordinate: { leftTop, rightTop }, ascent } = cursorPosition
-    const height = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent
+    const height = metrics.boundingBoxAscent + metrics.boundingBoxDescent
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     setTimeout(() => {
       agentCursorDom.focus()
       agentCursorDom.setSelectionRange(0, 0)
     })
-    const curosrleft = `${rightTop[0]}px`
-    agentCursorDom.style.left = curosrleft
-    agentCursorDom.style.top = `${leftTop[1] + ascent - 12}px`
+    const cursorTop = leftTop[1] + ascent - metrics.boundingBoxAscent
+    const curosrleft = rightTop[0]
+    agentCursorDom.style.left = `${curosrleft}px`
+    agentCursorDom.style.top = `${cursorTop + height - CURSOR_AGENT_HEIGHT}px`
     // 模拟光标显示
-    this.cursorDom.style.left = curosrleft
-    this.cursorDom.style.top = `${leftTop[1] + ascent - metrics.fontBoundingBoxAscent}px`
+    this.cursorDom.style.left = `${curosrleft}px`
+    this.cursorDom.style.top = `${cursorTop}px`
     this.cursorDom.style.display = 'block'
     this.cursorDom.style.height = `${height}px`
     setTimeout(() => {

@@ -1,6 +1,6 @@
-import { IEditorOption } from "../../interface/Editor"
-import { Position } from "../position/Position"
-import { Draw } from "./Draw"
+import { IEditorOption } from "../../../interface/Editor"
+import { Position } from "../../position/Position"
+import { Draw } from "../Draw"
 
 export class Search {
 

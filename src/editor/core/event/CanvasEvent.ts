@@ -2,7 +2,7 @@ import { ZERO } from "../../dataset/constant/Common"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
-import { writeText } from "../../utils/clipboard"
+import { writeTextByElementList } from "../../utils/clipboard"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { HistoryManager } from "../history/HistoryManager"
@@ -187,11 +187,11 @@ export class CanvasEvent {
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.C) {
       if (!isCollspace) {
-        writeText(elementList.slice(startIndex + 1, endIndex + 1).map(p => p.value).join(''))
+        writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
       }
     } else if (evt.ctrlKey && evt.key === KeyMap.X) {
       if (!isCollspace) {
-        writeText(position.slice(startIndex + 1, endIndex + 1).map(p => p.value).join(''))
+        writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
         elementList.splice(startIndex + 1, endIndex - startIndex)
         const curIndex = startIndex
         this.range.setRange(curIndex, curIndex)

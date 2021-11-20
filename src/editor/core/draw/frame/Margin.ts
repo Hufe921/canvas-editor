@@ -1,4 +1,4 @@
-import { IEditorOption } from "../../interface/Editor"
+import { IEditorOption } from "../../../interface/Editor"
 
 export class Margin {
 

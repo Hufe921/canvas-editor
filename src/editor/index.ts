@@ -7,6 +7,8 @@ import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
+import { getUUID } from './utils'
+import { ElementType } from './dataset/enum/Element'
 
 export default class Editor {
 
@@ -43,10 +45,11 @@ export default class Editor {
         value: ZERO
       })
     }
-    elementList.forEach(text => {
-      if (text.value === '\n') {
-        text.value = ZERO
+    elementList.forEach(el => {
+      if (el.value === '\n') {
+        el.value = ZERO
       }
+      el.id = getUUID()
     })
     // 监听
     this.listener = new Listener()
@@ -59,8 +62,14 @@ export default class Editor {
 
 }
 
-// 对外属性
+// 对外对象
 export {
   Editor,
-  RowFlex
+  RowFlex,
+  ElementType
+}
+
+// 对外类型
+export type {
+  IElement
 }
