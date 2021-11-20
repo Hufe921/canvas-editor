@@ -1,8 +1,8 @@
 import { RowFlex } from "../dataset/enum/Row"
-import { IElement } from "./Element"
+import { IElement, IElementMetrics } from "./Element"
 
 export type IRowElement = IElement & {
-  metrics: TextMetrics
+  metrics: IElementMetrics
 }
 
 export interface IRow {

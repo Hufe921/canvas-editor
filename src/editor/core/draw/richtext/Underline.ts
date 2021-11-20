@@ -1,6 +1,6 @@
-import { IEditorOption } from "../../interface/Editor"
+import { IEditorOption } from "../../../interface/Editor"
 
-export class Strikeout {
+export class Underline {
 
   private ctx: CanvasRenderingContext2D
   private options: Required<IEditorOption>
@@ -11,9 +11,9 @@ export class Strikeout {
   }
 
   render(x: number, y: number, width: number) {
-    const { strikeoutColor } = this.options
+    const { underlineColor } = this.options
     this.ctx.save()
-    this.ctx.strokeStyle = strikeoutColor
+    this.ctx.strokeStyle = underlineColor
     this.ctx.beginPath()
     this.ctx.moveTo(x, y)
     this.ctx.lineTo(x + width, y)

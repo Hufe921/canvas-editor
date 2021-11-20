@@ -1,4 +1,11 @@
+import { ElementType } from "../dataset/enum/Element"
 import { RowFlex } from "../dataset/enum/Row"
+
+export interface IElementMetrics {
+  width: number;
+  boundingBoxAscent: number;
+  boundingBoxDescent: number;
+}
 
 export interface IElementStyle {
   font?: string;
@@ -16,7 +23,8 @@ export interface IElementStyle {
 }
 
 export interface IElementBasic {
-  type?: 'TEXT' | 'IMAGE';
+  id?: string;
+  type?: ElementType;
   value: string;
 }
 
@@ -28,7 +36,7 @@ export interface IElementPosition {
   rowNo: number;
   ascent: number;
   lineHeight: number;
-  metrics: TextMetrics;
+  metrics: IElementMetrics;
   isLastLetter: boolean,
   coordinate: {
     leftTop: number[];

@@ -1,5 +1,5 @@
 import './style.css'
-import Editor, { RowFlex } from './editor'
+import Editor, { IElement, RowFlex } from './editor'
 
 window.onload = function () {
 
@@ -31,7 +31,7 @@ window.onload = function () {
     return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
   }).flat()
   // 组合数据
-  const data = text.split('').map((value, index) => {
+  const data: IElement[] = text.split('').map((value, index) => {
     if (centerIndex.includes(index)) {
       return {
         value,
@@ -177,7 +177,30 @@ window.onload = function () {
     const li = evt.target as HTMLLIElement
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
   }
-  // 搜索、打印
+  // 图片上传、搜索、打印
+  const imageDom = document.querySelector<HTMLDivElement>('.menu-item__image')!
+  const imageFileDom = document.querySelector<HTMLInputElement>('#image')!
+  imageDom.onclick = function () {
+    imageFileDom.click()
+  }
+  imageFileDom.onchange = function () {
+    const file = imageFileDom.files?.[0]!
+    const fileReader = new FileReader()
+    fileReader.readAsDataURL(file)
+    fileReader.onload = function () {
+      // 计算宽高
+      const image = new Image()
+      const value = fileReader.result as string
+      image.src = value
+      image.onload = function () {
+        instance.command.executeImage({
+          value,
+          width: image.width,
+          height: image.height,
+        })
+      }
+    }
+  }
   const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
   document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {

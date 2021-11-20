@@ -1,7 +1,11 @@
+import { ZERO } from "../../dataset/constant/Common"
+import { ElementType } from "../../dataset/enum/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { RowFlex } from "../../dataset/enum/Row"
+import { IDrawImagePayload } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
-import { IElementStyle } from "../../interface/Element"
+import { IElement, IElementStyle } from "../../interface/Element"
+import { getUUID } from "../../utils"
 import { printImageBase64 } from "../../utils/print"
 import { Draw } from "../draw/Draw"
 import { HistoryManager } from "../history/HistoryManager"
@@ -205,10 +209,32 @@ export class CommandAdapt {
     this.draw.render({ curIndex, isSetCursor })
   }
 
+  public image(payload: IDrawImagePayload) {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (startIndex === 0 && endIndex === 0) return
+    const elementList = this.draw.getElementList()
+    const { value, width, height } = payload
+    const element: IElement = {
+      value,
+      width,
+      height,
+      id: getUUID(),
+      type: ElementType.IMAGE
+    }
+    const curIndex = startIndex + 1
+    if (startIndex === endIndex) {
+      elementList.splice(curIndex, 0, element)
+    } else {
+      elementList.splice(curIndex, endIndex - startIndex, element)
+      this.range.setRange(curIndex, curIndex)
+    }
+    this.draw.render({ curIndex })
+  }
+
   public search(payload: string | null) {
     if (payload) {
       const elementList = this.draw.getElementList()
-      const text = elementList.map(e => !e.type || e.type === 'TEXT' ? e.value : null)
+      const text = elementList.map(e => !e.type || e.type === ElementType.TEXT ? e.value : ZERO)
         .filter(Boolean)
         .join('')
       const matchStartIndexList = []

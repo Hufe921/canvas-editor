@@ -2,8 +2,8 @@ import { ZERO } from "../../dataset/constant/Common"
 import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawOption } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
-import { IElement, IElementPosition, IElementStyle } from "../../interface/Element"
-import { IRow } from "../../interface/Row"
+import { IElement, IElementMetrics, IElementPosition, IElementStyle } from "../../interface/Element"
+import { IRow, IRowElement } from "../../interface/Row"
 import { deepClone } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
 import { CanvasEvent } from "../event/CanvasEvent"
@@ -12,12 +12,14 @@ import { HistoryManager } from "../history/HistoryManager"
 import { Listener } from "../listener/Listener"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
-import { Background } from "./Background"
-import { Highlight } from "./Highlight"
-import { Margin } from "./Margin"
-import { Search } from "./Search"
-import { Strikeout } from "./Strikeout"
-import { Underline } from "./Underline"
+import { Background } from "./frame/Background"
+import { Highlight } from "./richtext/Highlight"
+import { Margin } from "./frame/Margin"
+import { Search } from "./interactive/Search"
+import { Strikeout } from "./richtext/Strikeout"
+import { Underline } from "./richtext/Underline"
+import { ElementType } from "../../dataset/enum/Element"
+import { ImageParticle } from "./particle/ImageParticle"
 
 export class Draw {
 
@@ -37,6 +39,7 @@ export class Draw {
   private strikeout: Strikeout
   private highlight: Highlight
   private historyManager: HistoryManager
+  private imageParticle: ImageParticle
 
   private rowCount: number
   private painterStyle: IElementStyle | null
@@ -64,6 +67,7 @@ export class Draw {
     this.underline = new Underline(ctx, options)
     this.strikeout = new Strikeout(ctx, options)
     this.highlight = new Highlight(ctx, options)
+    this.imageParticle = new ImageParticle(ctx)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)
@@ -179,29 +183,47 @@ export class Draw {
       this.ctx.save()
       const curRow: IRow = rowList[rowList.length - 1]
       const element = this.elementList[i]
-      this.ctx.font = this.getFont(element)
-      const metrics = this.ctx.measureText(element.value)
-      const width = metrics.width
       const rowMargin = defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
-      const fontBoundingBoxAscent = metrics.fontBoundingBoxAscent + rowMargin
-      const fontBoundingBoxDescent = metrics.fontBoundingBoxDescent + rowMargin
-      const height = fontBoundingBoxAscent + fontBoundingBoxDescent
-      const lineText = { ...element, metrics }
-      if (curRow.width + width > rightTopPoint[0] - leftTopPoint[0] || (i !== 0 && element.value === ZERO)) {
+      let metrics: IElementMetrics = {
+        width: 0,
+        boundingBoxAscent: 0,
+        boundingBoxDescent: 0
+      }
+      if (element.type === ElementType.IMAGE) {
+        metrics.width = element.width!
+        metrics.boundingBoxAscent = 0
+        metrics.boundingBoxDescent = element.height!
+      } else {
+        this.ctx.font = this.getFont(element)
+        const fontMetrics = this.ctx.measureText(element.value)
+        metrics.width = fontMetrics.width
+        metrics.boundingBoxAscent = fontMetrics.fontBoundingBoxAscent
+        metrics.boundingBoxDescent = fontMetrics.fontBoundingBoxDescent
+      }
+      const ascent = metrics.boundingBoxAscent + rowMargin
+      const descent = metrics.boundingBoxDescent + rowMargin
+      const height = ascent + descent
+      const rowElement: IRowElement = { ...element, metrics }
+      // 超过限定宽度
+      if (curRow.width + metrics.width > rightTopPoint[0] - leftTopPoint[0] || (i !== 0 && element.value === ZERO)) {
         rowList.push({
-          width,
+          width: metrics.width,
           height: this.options.defaultSize,
-          elementList: [lineText],
-          ascent: fontBoundingBoxAscent,
-          rowFlex: lineText.rowFlex
+          elementList: [rowElement],
+          ascent,
+          rowFlex: rowElement.rowFlex
         })
       } else {
-        curRow.width += width
+        curRow.width += metrics.width
         if (curRow.height < height) {
           curRow.height = height
-          curRow.ascent = fontBoundingBoxAscent
+          if (element.type === ElementType.IMAGE) {
+            curRow.ascent = element.height!
+          } else {
+            curRow.ascent = ascent
+          }
         }
-        curRow.elementList.push(lineText)
+        curRow.elementList.push(rowElement)
       }
       this.ctx.restore()
     }
@@ -224,16 +246,21 @@ export class Draw {
         this.ctx.save()
         const element = curRow.elementList[j]
         const metrics = element.metrics
-        this.ctx.font = this.getFont(element)
-        if (element.color) {
-          this.ctx.fillStyle = element.color
+        if (!element.type || element.type === ElementType.TEXT) {
+          this.ctx.font = this.getFont(element)
+          if (element.color) {
+            this.ctx.fillStyle = element.color
+          }
         }
+        const offsetY = element.type === ElementType.IMAGE
+          ? curRow.ascent - element.height!
+          : curRow.ascent
         const positionItem: IElementPosition = {
           index,
           value: element.value,
           rowNo: i,
           metrics,
-          ascent: curRow.ascent,
+          ascent: offsetY,
           lineHeight: curRow.height,
           isLastLetter: j === curRow.elementList.length - 1,
           coordinate: {
@@ -252,12 +279,16 @@ export class Draw {
         if (element.strikeout) {
           this.strikeout.render(x, y + curRow.height / 2, metrics.width)
         }
-        // 文本高亮
+        // 元素高亮
         if (element.highlight) {
           this.highlight.render(element.highlight, x, y, metrics.width, curRow.height)
         }
-        // 文本
-        this.ctx.fillText(element.value, x, y + curRow.ascent)
+        // 元素绘制
+        if (element.type === ElementType.IMAGE) {
+          this.imageParticle.render(element, x, y + offsetY)
+        } else {
+          this.ctx.fillText(element.value, x, y + offsetY)
+        }
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()
         if (startIndex !== endIndex && startIndex < index && index <= endIndex) {

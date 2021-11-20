@@ -1,4 +1,5 @@
 import { RowFlex } from "../../dataset/enum/Row"
+import { IDrawImagePayload } from "../../interface/Draw"
 import { CommandAdapt } from "./CommandAdapt"
 
 export class Command {
@@ -20,6 +21,7 @@ export class Command {
   private static center: Function
   private static right: Function
   private static rowMargin: Function
+  private static image: Function
   private static search: Function
   private static print: Function
 
@@ -41,6 +43,7 @@ export class Command {
     Command.center = adapt.rowFlex.bind(adapt)
     Command.right = adapt.rowFlex.bind(adapt)
     Command.rowMargin = adapt.rowMargin.bind(adapt)
+    Command.image = adapt.image.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
   }
@@ -115,7 +118,11 @@ export class Command {
     return Command.rowMargin(payload)
   }
 
-  // 搜索、打印
+  // 图片上传、搜索、打印
+  public executeImage(payload: IDrawImagePayload) {
+    return Command.image(payload)
+  }
+
   public executeSearch(payload: string | null) {
     return Command.search(payload)
   }

@@ -232,6 +232,14 @@ ul {
   background-image: url('./assets/images/row-margin.svg');
 }
 
+.menu-item__image i {
+  background-image: url('./assets/images/image.svg');
+}
+
+.menu-item__image input {
+  display: none;
+}
+
 .menu-item__search {
   position: relative;
 }
