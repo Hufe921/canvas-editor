@@ -15,14 +15,16 @@ export class ImageParticle {
   }
 
   render(element: IElement, x: number, y: number) {
+    const width = element.width!
+    const height = element.height!
     if (this.imageCache.has(element.id!)) {
       const img = this.imageCache.get(element.id!)!
-      this.ctx.drawImage(img, x, y, element.width!, element.height!)
+      this.ctx.drawImage(img, x, y, width, height)
     } else {
       const img = new Image()
       img.src = element.value
       img.onload = () => {
-        this.ctx.drawImage(img, x, y, img.width, img.height)
+        this.ctx.drawImage(img, x, y, width, height)
         this.imageCache.set(element.id!, img)
       }
     }

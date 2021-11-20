@@ -226,8 +226,8 @@ export class CommandAdapt {
       elementList.splice(curIndex, 0, element)
     } else {
       elementList.splice(curIndex, endIndex - startIndex, element)
-      this.range.setRange(curIndex, curIndex)
     }
+    this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }
 

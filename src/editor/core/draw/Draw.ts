@@ -189,7 +189,15 @@ export class Draw {
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
+      const innerWidth = rightTopPoint[0] - leftTopPoint[0]
       if (element.type === ElementType.IMAGE) {
+        // 图片超出尺寸后自适应
+        if (curRow.width + element.width! > innerWidth) {
+          // 计算剩余大小
+          const surplusWidth = innerWidth - curRow.width
+          element.width = surplusWidth
+          element.height = element.height! * surplusWidth / element.width
+        }
         metrics.width = element.width!
         metrics.boundingBoxAscent = 0
         metrics.boundingBoxDescent = element.height!
@@ -205,7 +213,7 @@ export class Draw {
       const height = ascent + descent
       const rowElement: IRowElement = { ...element, metrics }
       // 超过限定宽度
-      if (curRow.width + metrics.width > rightTopPoint[0] - leftTopPoint[0] || (i !== 0 && element.value === ZERO)) {
+      if (curRow.width + metrics.width > innerWidth || (i !== 0 && element.value === ZERO)) {
         rowList.push({
           width: metrics.width,
           height: this.options.defaultSize,
