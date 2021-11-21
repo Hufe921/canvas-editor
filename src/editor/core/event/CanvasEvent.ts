@@ -5,6 +5,7 @@ import { IElement } from "../../interface/Element"
 import { writeTextByElementList } from "../../utils/clipboard"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
+import { ImageParticle } from "../draw/particle/ImageParticle"
 import { HistoryManager } from "../history/HistoryManager"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
@@ -21,6 +22,7 @@ export class CanvasEvent {
   private range: RangeManager
   private cursor: Cursor | null
   private historyManager: HistoryManager
+  private imageParticle: ImageParticle
 
   constructor(canvas: HTMLCanvasElement, draw: Draw) {
     this.isAllowDrag = false
@@ -33,12 +35,12 @@ export class CanvasEvent {
     this.position = this.draw.getPosition()
     this.range = this.draw.getRange()
     this.historyManager = this.draw.getHistoryManager()
+    this.imageParticle = this.draw.getImageParticle()
   }
 
   public register() {
     // 延迟加载
     this.cursor = this.draw.getCursor()
-    this.canvas.addEventListener('mousedown', this.cursor.setCursorPosition.bind(this))
     this.canvas.addEventListener('mousedown', this.mousedown.bind(this))
     this.canvas.addEventListener('mouseleave', this.mouseleave.bind(this))
     this.canvas.addEventListener('mousemove', this.mousemove.bind(this))
@@ -68,7 +70,7 @@ export class CanvasEvent {
   public mousemove(evt: MouseEvent) {
     if (!this.isAllowDrag) return
     // 结束位置
-    const endIndex = this.draw.getPosition().getPositionByXY(evt.offsetX, evt.offsetY)
+    const { index: endIndex } = this.draw.getPosition().getPositionByXY(evt.offsetX, evt.offsetY)
     let end = ~endIndex ? endIndex : 0
     // 开始位置
     let start = this.mouseDownStartIndex
@@ -86,7 +88,22 @@ export class CanvasEvent {
 
   public mousedown(evt: MouseEvent) {
     this.isAllowDrag = true
-    this.mouseDownStartIndex = this.draw.getPosition().getPositionByXY(evt.offsetX, evt.offsetY) || 0
+    const { index, isDirectHit, isImage } = this.draw.getPosition().getPositionByXY(evt.offsetX, evt.offsetY)
+    // 记录选区开始位置
+    this.mouseDownStartIndex = index
+    // 绘制
+    const isDirectHitImage = isDirectHit && isImage
+    if (~index) {
+      this.range.setRange(index, index)
+      this.draw.render({ curIndex: index, isSubmitHistory: false, isSetCursor: !isDirectHitImage })
+    }
+    // 图片尺寸拖拽组件
+    this.imageParticle.clearResizer()
+    if (isDirectHitImage) {
+      const elementList = this.draw.getElementList()
+      const positionList = this.position.getPositionList()
+      this.imageParticle.drawResizer(elementList[index], positionList[index])
+    }
   }
 
   public mouseleave(evt: MouseEvent) {

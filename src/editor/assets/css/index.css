@@ -56,3 +56,18 @@
     opacity: 1
   }
 }
+
+.resizer-selection {
+  position: absolute;
+  border: 1px solid;
+}
+
+.resizer-selection>div {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 1px 4px 0 rgb(0 0 0 / 30%);
+  border-radius: 5px;
+  border: 2px solid #ffffff;
+  box-sizing: border-box;
+}

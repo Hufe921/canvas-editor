@@ -1,24 +1,18 @@
 import { CURSOR_AGENT_HEIGHT } from "../../dataset/constant/Cursor"
 import { Draw } from "../draw/Draw"
 import { CanvasEvent } from "../event/CanvasEvent"
-import { Position } from "../position/Position"
-import { RangeManager } from "../range/RangeManager"
 import { CursorAgent } from "./CursorAgent"
 
 export class Cursor {
 
   private canvas: HTMLCanvasElement
   private draw: Draw
-  private range: RangeManager
-  private position: Position
   private cursorDom: HTMLDivElement
   private cursorAgent: CursorAgent
 
   constructor(canvas: HTMLCanvasElement, draw: Draw, canvasEvent: CanvasEvent) {
     this.canvas = canvas
     this.draw = draw
-    this.range = this.draw.getRange()
-    this.position = this.draw.getPosition()
 
     this.cursorDom = document.createElement('div')
     this.cursorDom.classList.add('cursor')
@@ -32,16 +26,6 @@ export class Cursor {
 
   public getAgentDom(): HTMLTextAreaElement {
     return this.cursorAgent.getAgentCursorDom()
-  }
-
-  public setCursorPosition(evt: MouseEvent) {
-    const positionIndex = this.position.getPositionByXY(evt.offsetX, evt.offsetY)
-    if (~positionIndex) {
-      this.range.setRange(positionIndex, positionIndex)
-      setTimeout(() => {
-        this.draw.render({ curIndex: positionIndex, isSubmitHistory: false })
-      })
-    }
   }
 
   public drawCursor() {

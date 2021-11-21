@@ -67,7 +67,7 @@ export class Draw {
     this.underline = new Underline(ctx, options)
     this.strikeout = new Strikeout(ctx, options)
     this.highlight = new Highlight(ctx, options)
-    this.imageParticle = new ImageParticle(ctx)
+    this.imageParticle = new ImageParticle(canvas, ctx, options)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)
@@ -108,6 +108,10 @@ export class Draw {
 
   public getCursor(): Cursor {
     return this.cursor
+  }
+
+  public getImageParticle(): ImageParticle {
+    return this.imageParticle
   }
 
   public getRowCount(): number {
@@ -153,7 +157,7 @@ export class Draw {
 
   public render(payload?: IDrawOption) {
     let { curIndex, isSubmitHistory = true, isSetCursor = true } = payload || {}
-    // 清除光标
+    // 清除光标等副作用
     this.cursor.recoveryCursor()
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
     this.position.setPositionList([])

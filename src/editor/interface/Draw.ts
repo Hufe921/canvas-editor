@@ -9,3 +9,8 @@ export interface IDrawImagePayload {
   height: number;
   value: string;
 }
+
+export interface IImageParticleCreateResult {
+  resizerSelection: HTMLDivElement;
+  resizerHandleList: HTMLDivElement[];
+}

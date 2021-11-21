@@ -2,6 +2,7 @@ import { EDITOR_COMPONENT } from "../../dataset/constant/Editor"
 import { findParent } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
+import { ImageParticle } from "../draw/particle/ImageParticle"
 import { RangeManager } from "../range/RangeManager"
 import { CanvasEvent } from "./CanvasEvent"
 
@@ -12,6 +13,7 @@ export class GlobalEvent {
   private cursor: Cursor | null
   private canvasEvent: CanvasEvent
   private range: RangeManager
+  private imageParticle: ImageParticle
 
   constructor(canvas: HTMLCanvasElement, draw: Draw, canvasEvent: CanvasEvent) {
     this.canvas = canvas
@@ -19,6 +21,7 @@ export class GlobalEvent {
     this.canvasEvent = canvasEvent
     this.cursor = null
     this.range = draw.getRange()
+    this.imageParticle = draw.getImageParticle()
   }
 
   register() {
@@ -56,6 +59,7 @@ export class GlobalEvent {
     this.cursor.recoveryCursor()
     this.range.recoveryRangeStyle()
     this.range.setRange(0, 0)
+    this.imageParticle.clearResizer()
   }
 
   setDragState() {

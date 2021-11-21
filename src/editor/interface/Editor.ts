@@ -11,6 +11,8 @@ export interface IEditorOption {
   searchMatchColor?: string;
   searchMatchAlpha?: number;
   highlightAlpha?: number;
+  resizerColor?: string;
+  resizerSize?: number;
   marginIndicatorSize?: number;
   marginIndicatorColor?: string,
   margins?: [top: number, right: number, bootom: number, left: number]
