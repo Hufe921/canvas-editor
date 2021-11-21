@@ -67,7 +67,7 @@ export class Draw {
     this.underline = new Underline(ctx, options)
     this.strikeout = new Strikeout(ctx, options)
     this.highlight = new Highlight(ctx, options)
-    this.imageParticle = new ImageParticle(canvas, ctx, options)
+    this.imageParticle = new ImageParticle(canvas, ctx, options, this)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)

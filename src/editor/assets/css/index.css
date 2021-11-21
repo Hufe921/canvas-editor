@@ -71,3 +71,40 @@
   border: 2px solid #ffffff;
   box-sizing: border-box;
 }
+
+.resizer-selection .handle-0 {
+  cursor: nw-resize;
+}
+
+.resizer-selection .handle-1 {
+  cursor: n-resize;
+}
+
+.resizer-selection .handle-2 {
+  cursor: ne-resize;
+}
+
+.resizer-selection .handle-3 {
+  cursor: e-resize;
+}
+
+.resizer-selection .handle-4 {
+  cursor: se-resize;
+}
+
+.resizer-selection .handle-5 {
+  cursor: s-resize;
+}
+
+.resizer-selection .handle-6 {
+  cursor: sw-resize;
+}
+
+.resizer-selection .handle-7 {
+  cursor: w-resize;
+}
+
+.resizer-image {
+  position: absolute;
+  opacity: 0.5;
+}
