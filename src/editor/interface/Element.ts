@@ -3,6 +3,7 @@ import { RowFlex } from "../dataset/enum/Row"
 
 export interface IElementMetrics {
   width: number;
+  height: number;
   boundingBoxAscent: number;
   boundingBoxDescent: number;
 }

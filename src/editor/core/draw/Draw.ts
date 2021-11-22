@@ -190,11 +190,13 @@ export class Draw {
       const rowMargin = defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
       let metrics: IElementMetrics = {
         width: 0,
+        height: 0,
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
       const innerWidth = rightTopPoint[0] - leftTopPoint[0]
       if (element.type === ElementType.IMAGE) {
+        metrics.height = element.height!
         // 图片超出尺寸后自适应
         if (curRow.width + element.width! > innerWidth) {
           // 计算剩余大小
@@ -206,11 +208,12 @@ export class Draw {
         metrics.boundingBoxAscent = 0
         metrics.boundingBoxDescent = element.height!
       } else {
+        metrics.height = element.size || this.options.defaultSize
         this.ctx.font = this.getFont(element)
         const fontMetrics = this.ctx.measureText(element.value)
         metrics.width = fontMetrics.width
-        metrics.boundingBoxAscent = fontMetrics.fontBoundingBoxAscent
-        metrics.boundingBoxDescent = fontMetrics.fontBoundingBoxDescent
+        metrics.boundingBoxAscent = fontMetrics.actualBoundingBoxAscent
+        metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent
       }
       const ascent = metrics.boundingBoxAscent + rowMargin
       const descent = metrics.boundingBoxDescent + rowMargin
@@ -244,7 +247,7 @@ export class Draw {
     let y = leftTopPoint[1]
     let index = 0
     for (let i = 0; i < rowList.length; i++) {
-      const curRow = rowList[i];
+      const curRow = rowList[i]
       // 计算行偏移量（行居左、居中、居右）
       if (curRow.rowFlex && curRow.rowFlex !== RowFlex.LEFT) {
         const canvasInnerWidth = this.canvas.width - margins[1] - margins[3]

@@ -21,7 +21,7 @@ export default class Editor {
       defaultFont: 'Yahei',
       defaultSize: 16,
       defaultRowMargin: 1,
-      defaultBasicRowMarginHeight: 5,
+      defaultBasicRowMarginHeight: 8,
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,

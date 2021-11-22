@@ -33,21 +33,25 @@ export class Cursor {
     if (!cursorPosition) return
     // 设置光标代理
     const { metrics, coordinate: { leftTop, rightTop }, ascent } = cursorPosition
-    const height = metrics.boundingBoxAscent + metrics.boundingBoxDescent
+    // 增加1/4字体大小
+    const offsetHeight = metrics.height / 4
+    const cursorHeight = metrics.height + offsetHeight * 2
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     setTimeout(() => {
       agentCursorDom.focus()
       agentCursorDom.setSelectionRange(0, 0)
     })
-    const cursorTop = leftTop[1] + ascent - metrics.boundingBoxAscent
+    // fillText位置 + 文字基线到底部距离  - 模拟光标偏移量
+    const descent = metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
+    const cursorTop = (leftTop[1] + ascent) + descent - (cursorHeight - offsetHeight)
     const curosrleft = rightTop[0]
     agentCursorDom.style.left = `${curosrleft}px`
-    agentCursorDom.style.top = `${cursorTop + height - CURSOR_AGENT_HEIGHT}px`
+    agentCursorDom.style.top = `${cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT}px`
     // 模拟光标显示
     this.cursorDom.style.left = `${curosrleft}px`
     this.cursorDom.style.top = `${cursorTop}px`
     this.cursorDom.style.display = 'block'
-    this.cursorDom.style.height = `${height}px`
+    this.cursorDom.style.height = `${cursorHeight}px`
     setTimeout(() => {
       this.cursorDom.classList.add('cursor--animation')
     }, 200)
