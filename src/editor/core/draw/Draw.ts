@@ -59,7 +59,7 @@ export class Draw {
     this.listener = listener
 
     this.historyManager = new HistoryManager()
-    this.position = new Position(this)
+    this.position = new Position(options, this)
     this.range = new RangeManager(ctx, options, this)
     this.margin = new Margin(ctx, options)
     this.background = new Background(ctx)

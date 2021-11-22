@@ -1,5 +1,6 @@
 import { ElementType } from "../.."
 import { ZERO } from "../../dataset/constant/Common"
+import { IEditorOption } from "../../interface/Editor"
 import { IElement, IElementPosition } from "../../interface/Element"
 import { ICurrentPosition } from "../../interface/Position"
 import { Draw } from "../draw/Draw"
@@ -11,12 +12,14 @@ export class Position {
   private elementList: IElement[]
 
   private draw: Draw
+  private options: Required<IEditorOption>
 
-  constructor(draw: Draw) {
+  constructor(options: Required<IEditorOption>, draw: Draw) {
     this.positionList = []
     this.elementList = []
     this.cursorPosition = null
 
+    this.options = options
     this.draw = draw
   }
 
@@ -66,7 +69,14 @@ export class Position {
     for (let j = 0; j < firstLetterList.length; j++) {
       const { index, coordinate: { leftTop, leftBottom } } = firstLetterList[j]
       if (y > leftTop[1] && y <= leftBottom[1]) {
-        curPostionIndex = index
+        const isHead = x < this.options.margins[3]
+        // 是否在头部
+        if (isHead) {
+          const headIndex = this.positionList.findIndex(p => p.rowNo === firstLetterList[j].rowNo)
+          curPostionIndex = ~headIndex ? headIndex : index
+        } else {
+          curPostionIndex = index
+        }
         isLastArea = true
         break
       }
