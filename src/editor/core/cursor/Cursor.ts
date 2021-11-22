@@ -41,7 +41,7 @@ export class Cursor {
       agentCursorDom.focus()
       agentCursorDom.setSelectionRange(0, 0)
     })
-    // fillText位置 + 文字基线到底部距离  - 模拟光标偏移量
+    // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
     const descent = metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop = (leftTop[1] + ascent) + descent - (cursorHeight - offsetHeight)
     const curosrleft = rightTop[0]

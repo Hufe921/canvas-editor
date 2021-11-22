@@ -245,7 +245,7 @@ export class CanvasEvent {
 
   public paste(evt: ClipboardEvent) {
     const text = evt.clipboardData?.getData('text')
-    this.input(text || '')
+    this.input(text?.replaceAll(`\n`, ZERO) || '')
     evt.preventDefault()
   }
 

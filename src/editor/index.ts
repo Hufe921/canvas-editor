@@ -42,7 +42,7 @@ export default class Editor {
     canvas.height = parseInt(canvas.style.height) * dpr
     canvas.style.cursor = 'text'
     ctx.scale(dpr, dpr)
-    if (elementList[0].value !== ZERO) {
+    if (elementList[0]?.value !== ZERO) {
       elementList.unshift({
         value: ZERO
       })

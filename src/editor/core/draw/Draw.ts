@@ -163,6 +163,7 @@ export class Draw {
     this.position.setPositionList([])
     const positionList = this.position.getPositionList()
     // 基础信息
+    const { defaultSize } = this.options
     const canvasRect = this.canvas.getBoundingClientRect()
     // 绘制背景
     this.background.render(canvasRect)
@@ -180,7 +181,7 @@ export class Draw {
         height: 0,
         ascent: 0,
         elementList: [],
-        rowFlex: this.elementList?.[1].rowFlex
+        rowFlex: this.elementList?.[1]?.rowFlex
       })
     }
     for (let i = 0; i < this.elementList.length; i++) {
@@ -212,7 +213,7 @@ export class Draw {
         this.ctx.font = this.getFont(element)
         const fontMetrics = this.ctx.measureText(element.value)
         metrics.width = fontMetrics.width
-        metrics.boundingBoxAscent = fontMetrics.actualBoundingBoxAscent
+        metrics.boundingBoxAscent = i === 0 ? defaultSize : fontMetrics.actualBoundingBoxAscent
         metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent
       }
       const ascent = metrics.boundingBoxAscent + rowMargin
@@ -342,7 +343,9 @@ export class Draw {
     if (isSubmitHistory) {
       const self = this
       const oldElementList = deepClone(this.elementList)
+      const { startIndex, endIndex } = this.range.getRange()
       this.historyManager.execute(function () {
+        self.range.setRange(startIndex, endIndex)
         self.elementList = deepClone(oldElementList)
         self.render({ curIndex, isSubmitHistory: false })
       })
