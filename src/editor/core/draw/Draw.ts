@@ -223,7 +223,7 @@ export class Draw {
       if (curRow.width + metrics.width > innerWidth || (i !== 0 && element.value === ZERO)) {
         rowList.push({
           width: metrics.width,
-          height: this.options.defaultSize,
+          height,
           elementList: [rowElement],
           ascent,
           rowFlex: rowElement.rowFlex
