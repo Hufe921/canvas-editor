@@ -2,6 +2,7 @@ export interface IDrawOption {
   curIndex?: number;
   isSetCursor?: boolean;
   isSubmitHistory?: boolean;
+  isComputeRowList?: boolean;
 }
 
 export interface IDrawImagePayload {

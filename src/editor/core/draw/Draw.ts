@@ -20,6 +20,7 @@ import { Strikeout } from "./richtext/Strikeout"
 import { Underline } from "./richtext/Underline"
 import { ElementType } from "../../dataset/enum/Element"
 import { ImageParticle } from "./particle/ImageParticle"
+import { TextParticle } from "./particle/TextParticle"
 
 export class Draw {
 
@@ -40,8 +41,9 @@ export class Draw {
   private highlight: Highlight
   private historyManager: HistoryManager
   private imageParticle: ImageParticle
+  private textParticle: TextParticle
 
-  private rowCount: number
+  private rowList: IRow[]
   private painterStyle: IElementStyle | null
   private searchMatchList: number[][] | null
 
@@ -68,6 +70,7 @@ export class Draw {
     this.strikeout = new Strikeout(ctx, options)
     this.highlight = new Highlight(ctx, options)
     this.imageParticle = new ImageParticle(canvas, ctx, options, this)
+    this.textParticle = new TextParticle(ctx)
 
     const canvasEvent = new CanvasEvent(canvas, this)
     this.cursor = new Cursor(canvas, this, canvasEvent)
@@ -75,7 +78,7 @@ export class Draw {
     const globalEvent = new GlobalEvent(canvas, this, canvasEvent)
     globalEvent.register()
 
-    this.rowCount = 0
+    this.rowList = []
     this.painterStyle = null
     this.searchMatchList = null
 
@@ -115,7 +118,7 @@ export class Draw {
   }
 
   public getRowCount(): number {
-    return this.rowCount
+    return this.rowList.length
   }
 
   public getDataURL(): string {
@@ -155,25 +158,13 @@ export class Draw {
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${el.size || defaultSize}px ${el.font || defaultFont}`
   }
 
-  public render(payload?: IDrawOption) {
-    let { curIndex, isSubmitHistory = true, isSetCursor = true } = payload || {}
-    // 清除光标等副作用
-    this.cursor.recoveryCursor()
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.position.setPositionList([])
-    const positionList = this.position.getPositionList()
-    // 基础信息
+  private computeRowList() {
     const { defaultSize } = this.options
     const canvasRect = this.canvas.getBoundingClientRect()
-    // 绘制背景
-    this.background.render(canvasRect)
-    // 绘制页边距
     const { width } = canvasRect
     const { margins, defaultRowMargin, defaultBasicRowMarginHeight } = this.options
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     const rightTopPoint: [number, number] = [width - margins[1], margins[0]]
-    this.margin.render(canvasRect)
-    // 计算行信息
     const rowList: IRow[] = []
     if (this.elementList.length) {
       rowList.push({
@@ -213,13 +204,17 @@ export class Draw {
         this.ctx.font = this.getFont(element)
         const fontMetrics = this.ctx.measureText(element.value)
         metrics.width = fontMetrics.width
-        metrics.boundingBoxAscent = i === 0 ? defaultSize : fontMetrics.actualBoundingBoxAscent
+        metrics.boundingBoxAscent = element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent
         metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent
       }
       const ascent = metrics.boundingBoxAscent + rowMargin
       const descent = metrics.boundingBoxDescent + rowMargin
       const height = ascent + descent
-      const rowElement: IRowElement = { ...element, metrics }
+      const rowElement: IRowElement = {
+        ...element,
+        metrics,
+        style: this.ctx.font
+      }
       // 超过限定宽度
       if (curRow.width + metrics.width > innerWidth || (i !== 0 && element.value === ZERO)) {
         rowList.push({
@@ -243,12 +238,39 @@ export class Draw {
       }
       this.ctx.restore()
     }
+    this.rowList = rowList
+  }
+
+  public render(payload?: IDrawOption) {
+    let {
+      curIndex,
+      isSubmitHistory = true,
+      isSetCursor = true,
+      isComputeRowList = true
+    } = payload || {}
+    // 清除光标等副作用
+    this.cursor.recoveryCursor()
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
+    this.position.setPositionList([])
+    const positionList = this.position.getPositionList()
+    // 基础信息
+    const canvasRect = this.canvas.getBoundingClientRect()
+    // 绘制背景
+    this.background.render(canvasRect)
+    // 绘制页边距
+    const { margins } = this.options
+    const leftTopPoint: [number, number] = [margins[3], margins[0]]
+    this.margin.render(canvasRect)
+    // 计算行信息
+    if (isComputeRowList) {
+      this.computeRowList()
+    }
     // 渲染元素
     let x = leftTopPoint[0]
     let y = leftTopPoint[1]
     let index = 0
-    for (let i = 0; i < rowList.length; i++) {
-      const curRow = rowList[i]
+    for (let i = 0; i < this.rowList.length; i++) {
+      const curRow = this.rowList[i]
       // 计算行偏移量（行居左、居中、居右）
       if (curRow.rowFlex && curRow.rowFlex !== RowFlex.LEFT) {
         const canvasInnerWidth = this.canvas.width - margins[1] - margins[3]
@@ -259,15 +281,8 @@ export class Draw {
         }
       }
       for (let j = 0; j < curRow.elementList.length; j++) {
-        this.ctx.save()
         const element = curRow.elementList[j]
         const metrics = element.metrics
-        if (!element.type || element.type === ElementType.TEXT) {
-          this.ctx.font = this.getFont(element)
-          if (element.color) {
-            this.ctx.fillStyle = element.color
-          }
-        }
         const offsetY = element.type === ElementType.IMAGE
           ? curRow.ascent - element.height!
           : curRow.ascent
@@ -301,9 +316,10 @@ export class Draw {
         }
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
+          this.textParticle.complete()
           this.imageParticle.render(element, x, y + offsetY)
         } else {
-          this.ctx.fillText(element.value, x, y + offsetY)
+          this.textParticle.record(element, x, y + offsetY)
         }
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()
@@ -312,11 +328,12 @@ export class Draw {
         }
         index++
         x += metrics.width
-        this.ctx.restore()
       }
+      this.textParticle.complete()
       x = leftTopPoint[0]
       y += curRow.height
     }
+
     // 搜索匹配绘制
     if (this.searchMatchList) {
       this.search.render()
@@ -336,9 +353,12 @@ export class Draw {
       const height = Math.ceil(leftBottom[1] + (leftBottom[1] - leftTop[1]) + margins[2])
       this.canvas.height = height
       this.canvas.style.height = `${height}px`
-      this.render({ curIndex, isSubmitHistory: false })
+      this.render({
+        curIndex,
+        isSubmitHistory: false,
+        isComputeRowList: false
+      })
     }
-    this.rowCount = rowList.length
     // 历史记录用于undo、redo
     if (isSubmitHistory) {
       const self = this

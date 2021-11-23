@@ -47,12 +47,15 @@ export default class Editor {
         value: ZERO
       })
     }
-    elementList.forEach(el => {
+    for (let i = 0; i < elementList.length; i++) {
+      const el = elementList[i]
       if (el.value === '\n') {
         el.value = ZERO
       }
-      el.id = getUUID()
-    })
+      if (el.type === ElementType.IMAGE) {
+        el.id = getUUID()
+      }
+    }
     // 监听
     this.listener = new Listener()
     // 启动

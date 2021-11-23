@@ -82,7 +82,8 @@ export class CanvasEvent {
     // 绘制
     this.draw.render({
       isSubmitHistory: false,
-      isSetCursor: false
+      isSetCursor: false,
+      isComputeRowList: false
     })
   }
 
@@ -95,7 +96,12 @@ export class CanvasEvent {
     const isDirectHitImage = isDirectHit && isImage
     if (~index) {
       this.range.setRange(index, index)
-      this.draw.render({ curIndex: index, isSubmitHistory: false, isSetCursor: !isDirectHitImage })
+      this.draw.render({
+        curIndex: index,
+        isSubmitHistory: false,
+        isSetCursor: !isDirectHitImage,
+        isComputeRowList: false
+      })
     }
     // 图片尺寸拖拽组件
     this.imageParticle.clearResizer()
@@ -151,13 +157,21 @@ export class CanvasEvent {
       if (index > 0) {
         const curIndex = index - 1
         this.range.setRange(curIndex, curIndex)
-        this.draw.render({ curIndex, isSubmitHistory: false })
+        this.draw.render({
+          curIndex,
+          isSubmitHistory: false,
+          isComputeRowList: false
+        })
       }
     } else if (evt.key === KeyMap.Right) {
       if (index < position.length - 1) {
         const curIndex = index + 1
         this.range.setRange(curIndex, curIndex)
-        this.draw.render({ curIndex, isSubmitHistory: false })
+        this.draw.render({
+          curIndex,
+          isSubmitHistory: false,
+          isComputeRowList: false
+        })
       }
     } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
       const { rowNo, index, coordinate: { leftTop, rightTop } } = cursorPosition
@@ -194,7 +208,11 @@ export class CanvasEvent {
         }
         const curIndex = maxIndex
         this.range.setRange(curIndex, curIndex)
-        this.draw.render({ curIndex, isSubmitHistory: false })
+        this.draw.render({
+          curIndex,
+          isSubmitHistory: false,
+          isComputeRowList: false
+        })
       }
     } else if (evt.ctrlKey && evt.key === KeyMap.Z) {
       this.historyManager.undo()
@@ -216,7 +234,11 @@ export class CanvasEvent {
       }
     } else if (evt.ctrlKey && evt.key === KeyMap.A) {
       this.range.setRange(0, position.length - 1)
-      this.draw.render({ isSubmitHistory: false, isSetCursor: false })
+      this.draw.render({
+        isSubmitHistory: false,
+        isSetCursor: false,
+        isComputeRowList: false
+      })
     }
   }
 
@@ -233,10 +255,16 @@ export class CanvasEvent {
     const inputData: IElement[] = data.split('').map(value => ({
       value
     }))
+    let start = 0
     if (isCollspace) {
-      elementList.splice(index + 1, 0, ...inputData)
+      start = index + 1
     } else {
-      elementList.splice(startIndex + 1, endIndex - startIndex, ...inputData)
+      start = startIndex + 1
+      elementList.splice(startIndex + 1, endIndex - startIndex)
+    }
+    // 禁止直接使用解构存在性能问题
+    for (let i = 0; i < inputData.length; i++) {
+      elementList.splice(start + i, 0, inputData[i])
     }
     const curIndex = (isCollspace ? index : startIndex) + inputData.length
     this.range.setRange(curIndex, curIndex)
