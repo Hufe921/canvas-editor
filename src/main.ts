@@ -205,6 +205,7 @@ window.onload = function () {
           width: image.width,
           height: image.height,
         })
+        imageFileDom.value = ''
       }
     }
   }

@@ -165,6 +165,7 @@ export class Draw {
     const { margins, defaultRowMargin, defaultBasicRowMarginHeight } = this.options
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     const rightTopPoint: [number, number] = [width - margins[1], margins[0]]
+    const innerWidth = rightTopPoint[0] - leftTopPoint[0]
     const rowList: IRow[] = []
     if (this.elementList.length) {
       rowList.push({
@@ -186,7 +187,6 @@ export class Draw {
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
-      const innerWidth = rightTopPoint[0] - leftTopPoint[0]
       if (element.type === ElementType.IMAGE) {
         metrics.height = element.height!
         // 图片超出尺寸后自适应
