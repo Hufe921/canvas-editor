@@ -175,8 +175,8 @@ export class Draw {
         rowFlex: this.elementList?.[1]?.rowFlex
       })
     }
+    this.ctx.save()
     for (let i = 0; i < this.elementList.length; i++) {
-      this.ctx.save()
       const curRow: IRow = rowList[rowList.length - 1]
       const element = this.elementList[i]
       const rowMargin = defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
@@ -236,8 +236,8 @@ export class Draw {
         }
         curRow.elementList.push(rowElement)
       }
-      this.ctx.restore()
     }
+    this.ctx.restore()
     this.rowList = rowList
   }
 
@@ -248,6 +248,18 @@ export class Draw {
       isSetCursor = true,
       isComputeRowList = true
     } = payload || {}
+    // 计算行信息
+    const { margins } = this.options
+    if (isComputeRowList) {
+      this._computeRowList()
+      // 计算高度是否超出
+      const rowHeight = this.rowList.reduce((pre, cur) => cur.height + pre, 0)
+      if (rowHeight > this.canvas.height - margins[0] - margins[2]) {
+        const height = Math.ceil(rowHeight + margins[0] + margins[2])
+        this.canvas.height = height
+        this.canvas.style.height = `${height}px`
+      }
+    }
     // 清除光标等副作用
     this.cursor.recoveryCursor()
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
@@ -258,13 +270,8 @@ export class Draw {
     // 绘制背景
     this.background.render(canvasRect)
     // 绘制页边距
-    const { margins } = this.options
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     this.margin.render(canvasRect)
-    // 计算行信息
-    if (isComputeRowList) {
-      this._computeRowList()
-    }
     // 渲染元素
     let x = leftTopPoint[0]
     let y = leftTopPoint[1]
@@ -333,7 +340,6 @@ export class Draw {
       x = leftTopPoint[0]
       y += curRow.height
     }
-
     // 搜索匹配绘制
     if (this.searchMatchList) {
       this.search.render()
@@ -345,19 +351,6 @@ export class Draw {
     if (isSetCursor) {
       this.position.setCursorPosition(positionList[curIndex!] || null)
       this.cursor.drawCursor()
-    }
-    // canvas高度自适应计算
-    const lastPosition = positionList[positionList.length - 1]
-    const { coordinate: { leftBottom, leftTop } } = lastPosition
-    if (leftBottom[1] > this.canvas.height - margins[2]) {
-      const height = Math.ceil(leftBottom[1] + (leftBottom[1] - leftTop[1]) + margins[2])
-      this.canvas.height = height
-      this.canvas.style.height = `${height}px`
-      this.render({
-        curIndex,
-        isSubmitHistory: false,
-        isComputeRowList: false
-      })
     }
     // 历史记录用于undo、redo
     if (isSubmitHistory) {
