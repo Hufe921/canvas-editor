@@ -16,7 +16,7 @@ export class Search {
     this.position = draw.getPosition()
   }
 
-  render() {
+  public render() {
     const searchMatch = this.draw.getSearchMathch()
     if (!searchMatch || !searchMatch.length) return
     const searchMatchList = searchMatch.flat()

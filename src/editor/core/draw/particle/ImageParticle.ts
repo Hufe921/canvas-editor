@@ -30,7 +30,7 @@ export class ImageParticle {
     this.curElement = null
     this.curPosition = null
     this.imageCache = new Map()
-    const { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage } = this.createResizerDom()
+    const { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage } = this._createResizerDom()
     this.resizerSelection = resizerSelection
     this.resizerHandleList = resizerHandleList
     this.resizerImageContainer = resizerImageContainer
@@ -42,7 +42,7 @@ export class ImageParticle {
     this.curHandleIndex = 0 // 默认右下角
   }
 
-  private createResizerDom(): IImageParticleCreateResult {
+  private _createResizerDom(): IImageParticleCreateResult {
     // 拖拽边框
     const resizerSelection = document.createElement('div')
     resizerSelection.classList.add('resizer-selection')
@@ -54,7 +54,7 @@ export class ImageParticle {
       handleDom.style.background = this.options.resizerColor
       handleDom.classList.add(`handle-${i}`)
       handleDom.setAttribute('data-index', String(i))
-      handleDom.onmousedown = this.handleMousedown.bind(this)
+      handleDom.onmousedown = this._handleMousedown.bind(this)
       resizerSelection.append(handleDom)
       resizerHandleList.push(handleDom)
     }
@@ -69,7 +69,7 @@ export class ImageParticle {
     return { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage }
   }
 
-  private handleMousedown(evt: MouseEvent) {
+  private _handleMousedown(evt: MouseEvent) {
     if (!this.curPosition || !this.curElement) return
     this.mousedownX = evt.x
     this.mousedownY = evt.y
@@ -88,7 +88,7 @@ export class ImageParticle {
     this.resizerImage.style.width = `${this.curElement.width}px`
     this.resizerImage.style.height = `${this.curElement.height}px`
     // 追加全局事件
-    const mousemoveFn = this.mousemove.bind(this)
+    const mousemoveFn = this._mousemove.bind(this)
     document.addEventListener('mousemove', mousemoveFn)
     document.addEventListener('mouseup', () => {
       // 改变尺寸
@@ -109,7 +109,7 @@ export class ImageParticle {
     evt.preventDefault()
   }
 
-  private mousemove(evt: MouseEvent) {
+  private _mousemove(evt: MouseEvent) {
     if (!this.curElement) return
     let dx = 0
     let dy = 0

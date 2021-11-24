@@ -6,7 +6,7 @@ export class Background {
     this.ctx = ctx
   }
 
-  render(canvasRect: DOMRect) {
+  public render(canvasRect: DOMRect) {
     const { width, height } = canvasRect
     this.ctx.save()
     this.ctx.fillStyle = '#ffffff'

@@ -18,14 +18,14 @@ export class TextParticle {
   }
 
   public complete() {
-    this.render()
+    this._render()
     this.text = ''
   }
 
   public record(element: IRowElement, x: number, y: number) {
     // 主动完成的重设起始点
     if (!this.text) {
-      this.setCurXY(x, y)
+      this._setCurXY(x, y)
     }
     // 样式发生改变
     if (
@@ -33,19 +33,19 @@ export class TextParticle {
       (element.color !== this.curColor)
     ) {
       this.complete()
-      this.setCurXY(x, y)
+      this._setCurXY(x, y)
     }
     this.text += element.value
     this.curStyle = element.style
     this.curColor = element.color
   }
 
-  private setCurXY(x: number, y: number) {
+  private _setCurXY(x: number, y: number) {
     this.curX = x
     this.curY = y
   }
 
-  private render() {
+  private _render() {
     if (!this.text || !~this.curX || !~this.curX) return
     this.ctx.save()
     this.ctx.font = this.curStyle

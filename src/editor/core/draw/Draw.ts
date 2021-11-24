@@ -82,7 +82,7 @@ export class Draw {
     this.painterStyle = null
     this.searchMatchList = null
 
-    this.setDefaultRange()
+    this._setDefaultRange()
   }
 
   public getOptions(): Required<IEditorOption> {
@@ -144,7 +144,7 @@ export class Draw {
     this.searchMatchList = payload
   }
 
-  private setDefaultRange() {
+  private _setDefaultRange() {
     if (!this.elementList.length) return
     setTimeout(() => {
       const curIndex = this.elementList.length - 1
@@ -153,12 +153,12 @@ export class Draw {
     })
   }
 
-  private getFont(el: IElement): string {
+  private _getFont(el: IElement): string {
     const { defaultSize, defaultFont } = this.options
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${el.size || defaultSize}px ${el.font || defaultFont}`
   }
 
-  private computeRowList() {
+  private _computeRowList() {
     const { defaultSize } = this.options
     const canvasRect = this.canvas.getBoundingClientRect()
     const { width } = canvasRect
@@ -201,7 +201,7 @@ export class Draw {
         metrics.boundingBoxDescent = element.height!
       } else {
         metrics.height = element.size || this.options.defaultSize
-        this.ctx.font = this.getFont(element)
+        this.ctx.font = this._getFont(element)
         const fontMetrics = this.ctx.measureText(element.value)
         metrics.width = fontMetrics.width
         metrics.boundingBoxAscent = element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent
@@ -263,7 +263,7 @@ export class Draw {
     this.margin.render(canvasRect)
     // 计算行信息
     if (isComputeRowList) {
-      this.computeRowList()
+      this._computeRowList()
     }
     // 渲染元素
     let x = leftTopPoint[0]

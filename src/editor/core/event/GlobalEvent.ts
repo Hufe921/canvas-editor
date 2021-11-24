@@ -24,7 +24,7 @@ export class GlobalEvent {
     this.imageParticle = draw.getImageParticle()
   }
 
-  register() {
+  public register() {
     this.cursor = this.draw.getCursor()
     document.addEventListener('keyup', () => {
       this.setRangeStyle()
@@ -37,7 +37,7 @@ export class GlobalEvent {
     })
   }
 
-  recoverEffect(evt: MouseEvent) {
+  public recoverEffect(evt: MouseEvent) {
     if (!this.cursor) return
     const cursorDom = this.cursor.getCursorDom()
     const agentDom = this.cursor.getAgentDom()
@@ -62,11 +62,11 @@ export class GlobalEvent {
     this.imageParticle.clearResizer()
   }
 
-  setDragState() {
+  public setDragState() {
     this.canvasEvent.setIsAllowDrag(false)
   }
 
-  setRangeStyle() {
+  public setRangeStyle() {
     this.range.setRangeStyle()
   }
 

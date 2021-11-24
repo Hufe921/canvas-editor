@@ -18,35 +18,35 @@ export class CursorAgent {
     this.canvas.parentNode?.append(agentCursorDom)
     this.agentCursorDom = agentCursorDom
     // 事件
-    agentCursorDom.onkeydown = (evt: KeyboardEvent) => this.keyDown(evt)
-    agentCursorDom.oninput = debounce(this.input.bind(this), 0)
-    agentCursorDom.onpaste = (evt: ClipboardEvent) => this.paste(evt)
-    agentCursorDom.addEventListener('compositionstart', this.compositionstart.bind(this))
-    agentCursorDom.addEventListener('compositionend', this.compositionend.bind(this))
+    agentCursorDom.onkeydown = (evt: KeyboardEvent) => this._keyDown(evt)
+    agentCursorDom.oninput = debounce(this._input.bind(this), 0)
+    agentCursorDom.onpaste = (evt: ClipboardEvent) => this._paste(evt)
+    agentCursorDom.addEventListener('compositionstart', this._compositionstart.bind(this))
+    agentCursorDom.addEventListener('compositionend', this._compositionend.bind(this))
   }
 
   public getAgentCursorDom(): HTMLTextAreaElement {
     return this.agentCursorDom
   }
 
-  keyDown(evt: KeyboardEvent) {
+  private _keyDown(evt: KeyboardEvent) {
     this.canvasEvent.keydown(evt)
   }
 
-  input(evt: InputEvent) {
+  private _input(evt: InputEvent) {
     if (!evt.data) return
     this.canvasEvent.input(evt.data)
   }
 
-  paste(evt: ClipboardEvent) {
+  private _paste(evt: ClipboardEvent) {
     this.canvasEvent.paste(evt)
   }
 
-  compositionstart() {
+  private _compositionstart() {
     this.canvasEvent.compositionstart()
   }
 
-  compositionend() {
+  private _compositionend() {
     this.canvasEvent.compositionend()
   }
 

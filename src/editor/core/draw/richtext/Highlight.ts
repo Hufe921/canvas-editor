@@ -10,7 +10,7 @@ export class Highlight {
     this.options = options
   }
 
-  render(color: string, x: number, y: number, width: number, height: number) {
+  public render(color: string, x: number, y: number, width: number, height: number) {
     const { highlightAlpha } = this.options
     this.ctx.save()
     this.ctx.globalAlpha = highlightAlpha

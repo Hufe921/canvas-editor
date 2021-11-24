@@ -10,7 +10,7 @@ export class Margin {
     this.options = options
   }
 
-  render(canvasRect: DOMRect) {
+  public render(canvasRect: DOMRect) {
     const { width, height } = canvasRect
     const { marginIndicatorColor, marginIndicatorSize, margins } = this.options
     this.ctx.save()

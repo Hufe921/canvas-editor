@@ -10,7 +10,7 @@ export class Strikeout {
     this.options = options
   }
 
-  render(x: number, y: number, width: number) {
+  public render(x: number, y: number, width: number) {
     const { strikeoutColor } = this.options
     this.ctx.save()
     this.ctx.strokeStyle = strikeoutColor
