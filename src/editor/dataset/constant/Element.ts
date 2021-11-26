@@ -1,0 +1,1 @@
+export const EDITOR_ELEMENT_STYLE = ['bold', 'color', 'highlight', 'font', 'size', 'italic', 'underline', 'strikeout']

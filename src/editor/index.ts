@@ -15,13 +15,16 @@ export default class Editor {
   public command: Command
   public listener: Listener
 
-  constructor(canvas: HTMLCanvasElement, elementList: IElement[], options: IEditorOption = {}) {
+  constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
     const editorOptions: Required<IEditorOption> = {
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
       defaultSize: 16,
       defaultRowMargin: 1,
       defaultBasicRowMarginHeight: 8,
+      width: 794,
+      height: 1123,
+      pageGap: 20,
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,
@@ -36,12 +39,6 @@ export default class Editor {
       margins: [100, 120, 100, 120],
       ...options
     }
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    const dpr = window.devicePixelRatio
-    canvas.width = parseInt(canvas.style.width) * dpr
-    canvas.height = parseInt(canvas.style.height) * dpr
-    canvas.style.cursor = 'text'
-    ctx.scale(dpr, dpr)
     if (elementList[0]?.value !== ZERO) {
       elementList.unshift({
         value: ZERO
@@ -59,8 +56,7 @@ export default class Editor {
     // 监听
     this.listener = new Listener()
     // 启动
-    const draw = new Draw(canvas, ctx, editorOptions, elementList, this.listener)
-    draw.render()
+    const draw = new Draw(container, editorOptions, elementList, this.listener)
     // 命令
     this.command = new Command(new CommandAdapt(draw))
   }

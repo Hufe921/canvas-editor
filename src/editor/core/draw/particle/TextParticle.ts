@@ -1,4 +1,5 @@
 import { IRowElement } from "../../../interface/Row"
+import { Draw } from "../Draw"
 
 export class TextParticle {
 
@@ -9,8 +10,8 @@ export class TextParticle {
   private curStyle: string
   private curColor?: string
 
-  constructor(ctx: CanvasRenderingContext2D) {
-    this.ctx = ctx
+  constructor(draw: Draw) {
+    this.ctx = draw.getCtx()
     this.curX = -1
     this.curY = -1
     this.text = ''
@@ -22,7 +23,8 @@ export class TextParticle {
     this.text = ''
   }
 
-  public record(element: IRowElement, x: number, y: number) {
+  public record(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
+    this.ctx = ctx
     // 主动完成的重设起始点
     if (!this.text) {
       this._setCurXY(x, y)

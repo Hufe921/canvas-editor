@@ -1,4 +1,5 @@
 import { ZERO } from "../../dataset/constant/Common"
+import { EDITOR_ELEMENT_STYLE } from "../../dataset/constant/Element"
 import { ElementType } from "../../dataset/enum/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { RowFlex } from "../../dataset/enum/Row"
@@ -41,7 +42,7 @@ export class CommandAdapt {
     if (!selection) return
     const painterStyle: IElementStyle = {}
     selection.forEach(s => {
-      const painterStyleKeys = ['bold', 'color', 'highlight', 'font', 'size', 'italic', 'underline', 'strikeout']
+      const painterStyleKeys = EDITOR_ELEMENT_STYLE
       painterStyleKeys.forEach(p => {
         const key = p as keyof typeof ElementStyleKey
         if (painterStyle[key] === undefined) {
@@ -168,6 +169,7 @@ export class CommandAdapt {
   public rowFlex(payload: RowFlex) {
     const { startIndex, endIndex } = this.range.getRange()
     if (startIndex === 0 && endIndex === 0) return
+    const pageNo = this.draw.getPageNo()
     const positionList = this.position.getPositionList()
     // 开始/结束行号
     const startRowNo = positionList[startIndex].rowNo
@@ -176,6 +178,7 @@ export class CommandAdapt {
     // 当前选区所在行
     for (let p = 0; p < positionList.length; p++) {
       const postion = positionList[p]
+      if (postion.pageNo !== pageNo) continue
       if (postion.rowNo > endRowNo) break
       if (postion.rowNo >= startRowNo && postion.rowNo <= endRowNo) {
         elementList[p].rowFlex = payload
@@ -190,6 +193,7 @@ export class CommandAdapt {
   public rowMargin(payload: number) {
     const { startIndex, endIndex } = this.range.getRange()
     if (startIndex === 0 && endIndex === 0) return
+    const pageNo = this.draw.getPageNo()
     const positionList = this.position.getPositionList()
     // 开始/结束行号
     const startRowNo = positionList[startIndex].rowNo
@@ -198,6 +202,7 @@ export class CommandAdapt {
     // 当前选区所在行
     for (let p = 0; p < positionList.length; p++) {
       const postion = positionList[p]
+      if (postion.pageNo !== pageNo) continue
       if (postion.rowNo > endRowNo) break
       if (postion.rowNo >= startRowNo && postion.rowNo <= endRowNo) {
         elementList[p].rowMargin = payload
@@ -253,7 +258,8 @@ export class CommandAdapt {
   }
 
   public print() {
-    return printImageBase64(this.draw.getDataURL())
+    const { width, height } = this.options
+    return printImageBase64(this.draw.getDataURL(), width, height)
   }
 
 }

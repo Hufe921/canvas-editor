@@ -15,4 +15,4 @@ export interface IRangeStype {
   rowMargin: number
 }
 
-export type IRangeStyleChange = (payload: IRangeStype) => void;
+export type IRangeStyleChange = (payload: IRangeStype) => void

@@ -17,19 +17,21 @@ export class CanvasEvent {
   private mouseDownStartIndex: number
 
   private draw: Draw
-  private canvas: HTMLCanvasElement
+  private pageContainer: HTMLDivElement
+  private pageList: HTMLCanvasElement[]
   private position: Position
   private range: RangeManager
   private cursor: Cursor | null
   private historyManager: HistoryManager
   private imageParticle: ImageParticle
 
-  constructor(canvas: HTMLCanvasElement, draw: Draw) {
+  constructor(draw: Draw) {
     this.isAllowDrag = false
     this.isCompositing = false
     this.mouseDownStartIndex = 0
 
-    this.canvas = canvas
+    this.pageContainer = draw.getPageContainer()
+    this.pageList = draw.getPageList()
     this.draw = draw
     this.cursor = null
     this.position = this.draw.getPosition()
@@ -41,15 +43,17 @@ export class CanvasEvent {
   public register() {
     // 延迟加载
     this.cursor = this.draw.getCursor()
-    this.canvas.addEventListener('mousedown', this.mousedown.bind(this))
-    this.canvas.addEventListener('mouseleave', this.mouseleave.bind(this))
-    this.canvas.addEventListener('mousemove', this.mousemove.bind(this))
+    this.pageContainer.addEventListener('mousedown', this.mousedown.bind(this))
+    this.pageContainer.addEventListener('mouseleave', this.mouseleave.bind(this))
+    this.pageContainer.addEventListener('mousemove', this.mousemove.bind(this))
   }
 
   public setIsAllowDrag(payload: boolean) {
     this.isAllowDrag = payload
     if (payload === false) {
-      this.canvas.style.cursor = 'text'
+      this.pageList.forEach(p => {
+        p.style.cursor = 'text'
+      })
       // 应用格式刷样式
       const painterStyle = this.draw.getPainterStyle()
       if (!painterStyle) return
@@ -69,15 +73,21 @@ export class CanvasEvent {
 
   public mousemove(evt: MouseEvent) {
     if (!this.isAllowDrag) return
+    const target = evt.target as HTMLDivElement
+    const pageIndex = target.dataset.index
+    // 设置pageNo
+    if (pageIndex) {
+      this.draw.setPageNo(Number(pageIndex))
+    }
     // 结束位置
-    const { index: endIndex } = this.draw.getPosition().getPositionByXY(evt.offsetX, evt.offsetY)
+    const { index: endIndex } = this.position.getPositionByXY(evt.offsetX, evt.offsetY)
     let end = ~endIndex ? endIndex : 0
     // 开始位置
     let start = this.mouseDownStartIndex
     if (start > end) {
       [start, end] = [end, start]
     }
-    this.draw.getRange().setRange(start, end)
+    this.range.setRange(start, end)
     if (start === end) return
     // 绘制
     this.draw.render({
@@ -88,8 +98,14 @@ export class CanvasEvent {
   }
 
   public mousedown(evt: MouseEvent) {
+    const target = evt.target as HTMLDivElement
+    const pageIndex = target.dataset.index
+    // 设置pageNo
+    if (pageIndex) {
+      this.draw.setPageNo(Number(pageIndex))
+    }
     this.isAllowDrag = true
-    const { index, isDirectHit, isImage } = this.draw.getPosition().getPositionByXY(evt.offsetX, evt.offsetY)
+    const { index, isDirectHit, isImage } = this.position.getPositionByXY(evt.offsetX, evt.offsetY)
     // 记录选区开始位置
     this.mouseDownStartIndex = index
     // 绘制
@@ -114,7 +130,7 @@ export class CanvasEvent {
 
   public mouseleave(evt: MouseEvent) {
     // 是否还在canvas内部
-    const { x, y, width, height } = this.canvas.getBoundingClientRect()
+    const { x, y, width, height } = this.pageContainer.getBoundingClientRect()
     if (evt.x >= x && evt.x <= x + width && evt.y >= y && evt.y <= y + height) return
     this.setIsAllowDrag(false)
   }
@@ -139,6 +155,15 @@ export class CanvasEvent {
         elementList.splice(index, 1)
       }
       const curIndex = isCollspace ? index - 1 : startIndex
+      this.range.setRange(curIndex, curIndex)
+      this.draw.render({ curIndex })
+    } else if (evt.key === KeyMap.Delete) {
+      if (!isCollspace) {
+        elementList.splice(startIndex + 1, endIndex - startIndex)
+      } else {
+        elementList.splice(index + 1, 1)
+      }
+      const curIndex = isCollspace ? index : startIndex
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {

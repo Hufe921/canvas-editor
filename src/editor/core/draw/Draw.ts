@@ -24,8 +24,11 @@ import { TextParticle } from "./particle/TextParticle"
 
 export class Draw {
 
-  private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
+  private container: HTMLDivElement
+  private pageContainer: HTMLDivElement
+  private pageList: HTMLCanvasElement[]
+  private ctxList: CanvasRenderingContext2D[]
+  private pageNo: number
   private options: Required<IEditorOption>
   private position: Position
   private elementList: IElement[]
@@ -48,41 +51,73 @@ export class Draw {
   private searchMatchList: number[][] | null
 
   constructor(
-    canvas: HTMLCanvasElement,
-    ctx: CanvasRenderingContext2D,
+    container: HTMLDivElement,
     options: Required<IEditorOption>,
     elementList: IElement[],
     listener: Listener
   ) {
-    this.canvas = canvas
-    this.ctx = ctx
+    this.container = container
+    this.pageList = []
+    this.ctxList = []
+    this.pageNo = 0
     this.options = options
     this.elementList = elementList
     this.listener = listener
 
-    this.historyManager = new HistoryManager()
-    this.position = new Position(options, this)
-    this.range = new RangeManager(ctx, options, this)
-    this.margin = new Margin(ctx, options)
-    this.background = new Background(ctx)
-    this.search = new Search(ctx, options, this)
-    this.underline = new Underline(ctx, options)
-    this.strikeout = new Strikeout(ctx, options)
-    this.highlight = new Highlight(ctx, options)
-    this.imageParticle = new ImageParticle(canvas, ctx, options, this)
-    this.textParticle = new TextParticle(ctx)
+    this.pageContainer = this._createPageContainer()
+    this._createPage(0)
 
-    const canvasEvent = new CanvasEvent(canvas, this)
-    this.cursor = new Cursor(canvas, this, canvasEvent)
+    this.historyManager = new HistoryManager()
+    this.position = new Position(this)
+    this.range = new RangeManager(this)
+    this.margin = new Margin(this)
+    this.background = new Background()
+    this.search = new Search(this)
+    this.underline = new Underline(this)
+    this.strikeout = new Strikeout(this)
+    this.highlight = new Highlight(this)
+    this.imageParticle = new ImageParticle(this)
+    this.textParticle = new TextParticle(this)
+
+    const canvasEvent = new CanvasEvent(this)
+    this.cursor = new Cursor(this, canvasEvent)
     canvasEvent.register()
-    const globalEvent = new GlobalEvent(canvas, this, canvasEvent)
+    const globalEvent = new GlobalEvent(this, canvasEvent)
     globalEvent.register()
 
     this.rowList = []
     this.painterStyle = null
     this.searchMatchList = null
 
-    this._setDefaultRange()
+    this.render({ isSetCursor: false })
+  }
+
+  public getContainer(): HTMLDivElement {
+    return this.container
+  }
+
+  public getPageContainer(): HTMLDivElement {
+    return this.pageContainer
+  }
+
+  public getPageNo(): number {
+    return this.pageNo
+  }
+
+  public setPageNo(payload: number) {
+    this.pageNo = payload
+  }
+
+  public getPage(): HTMLCanvasElement {
+    return this.pageList[this.pageNo]
+  }
+
+  public getPageList(): HTMLCanvasElement[] {
+    return this.pageList
+  }
+
+  public getCtx(): CanvasRenderingContext2D {
+    return this.ctxList[this.pageNo]
   }
 
   public getOptions(): Required<IEditorOption> {
@@ -121,8 +156,8 @@ export class Draw {
     return this.rowList.length
   }
 
-  public getDataURL(): string {
-    return this.canvas.toDataURL()
+  public getDataURL(): string[] {
+    return this.pageList.map(c => c.toDataURL())
   }
 
   public getPainterStyle(): IElementStyle | null {
@@ -132,11 +167,11 @@ export class Draw {
   public setPainterStyle(payload: IElementStyle | null) {
     this.painterStyle = payload
     if (this.getPainterStyle()) {
-      this.canvas.style.cursor = 'copy'
+      this.pageList.forEach(c => c.style.cursor = 'copy')
     }
   }
 
-  public getSearchMathch(): number[][] | null {
+  public getSearchMatch(): number[][] | null {
     return this.searchMatchList
   }
 
@@ -144,7 +179,7 @@ export class Draw {
     this.searchMatchList = payload
   }
 
-  private _setDefaultRange() {
+  public setDefaultRange() {
     if (!this.elementList.length) return
     setTimeout(() => {
       const curIndex = this.elementList.length - 1
@@ -153,15 +188,43 @@ export class Draw {
     })
   }
 
+  private _createPageContainer(): HTMLDivElement {
+    // 容器宽度需跟随纸张宽度
+    this.container.style.width = `${this.options.width}px`
+    const pageContainer = document.createElement('div')
+    pageContainer.classList.add('page-container')
+    this.container.append(pageContainer)
+    return pageContainer
+  }
+
+  private _createPage(pageNo: number) {
+    const canvas = document.createElement('canvas')
+    canvas.style.width = `${this.options.width}px`
+    canvas.style.height = `${this.options.height}px`
+    canvas.style.marginBottom = `${this.options.pageGap}px`
+    canvas.setAttribute('data-index', String(pageNo))
+    this.pageContainer.append(canvas)
+    // 调整分辨率
+    const dpr = window.devicePixelRatio
+    canvas.width = parseInt(canvas.style.width) * dpr
+    canvas.height = parseInt(canvas.style.height) * dpr
+    canvas.style.cursor = 'text'
+    const ctx = canvas.getContext('2d')!
+    ctx.scale(dpr, dpr)
+    // 缓存上下文
+    this.pageList.push(canvas)
+    this.ctxList.push(ctx)
+  }
+
   private _getFont(el: IElement): string {
     const { defaultSize, defaultFont } = this.options
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${el.size || defaultSize}px ${el.font || defaultFont}`
   }
 
   private _computeRowList() {
-    const { defaultSize } = this.options
-    const canvasRect = this.canvas.getBoundingClientRect()
-    const { width } = canvasRect
+    const { defaultSize, width } = this.options
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const { margins, defaultRowMargin, defaultBasicRowMarginHeight } = this.options
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     const rightTopPoint: [number, number] = [width - margins[1], margins[0]]
@@ -176,7 +239,6 @@ export class Draw {
         rowFlex: this.elementList?.[1]?.rowFlex
       })
     }
-    this.ctx.save()
     for (let i = 0; i < this.elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = this.elementList[i]
@@ -201,8 +263,8 @@ export class Draw {
         metrics.boundingBoxDescent = element.height!
       } else {
         metrics.height = element.size || this.options.defaultSize
-        this.ctx.font = this._getFont(element)
-        const fontMetrics = this.ctx.measureText(element.value)
+        ctx.font = this._getFont(element)
+        const fontMetrics = ctx.measureText(element.value)
         metrics.width = fontMetrics.width
         metrics.boundingBoxAscent = element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent
         metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent
@@ -213,7 +275,7 @@ export class Draw {
       const rowElement: IRowElement = {
         ...element,
         metrics,
-        style: this.ctx.font
+        style: ctx.font
       }
       // 超过限定宽度
       if (curRow.width + metrics.width > innerWidth || (i !== 0 && element.value === ZERO)) {
@@ -237,50 +299,30 @@ export class Draw {
         curRow.elementList.push(rowElement)
       }
     }
-    this.ctx.restore()
     this.rowList = rowList
   }
 
-  public render(payload?: IDrawOption) {
-    let {
-      curIndex,
-      isSubmitHistory = true,
-      isSetCursor = true,
-      isComputeRowList = true
-    } = payload || {}
-    // 计算行信息
+  private _drawElement(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
     const { margins } = this.options
-    if (isComputeRowList) {
-      this._computeRowList()
-      // 计算高度是否超出
-      const rowHeight = this.rowList.reduce((pre, cur) => cur.height + pre, 0)
-      if (rowHeight > this.canvas.height - margins[0] - margins[2]) {
-        const height = Math.ceil(rowHeight + margins[0] + margins[2])
-        this.canvas.height = height
-        this.canvas.style.height = `${height}px`
-      }
-    }
-    // 清除光标等副作用
-    this.cursor.recoveryCursor()
-    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height)
-    this.position.setPositionList([])
-    const positionList = this.position.getPositionList()
+    const canvas = this.pageList[pageNo]
+    const ctx = this.ctxList[pageNo]
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
     // 基础信息
-    const canvasRect = this.canvas.getBoundingClientRect()
+    const canvasRect = canvas.getBoundingClientRect()
     // 绘制背景
-    this.background.render(canvasRect)
+    this.background.render(ctx, canvasRect)
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
-    this.margin.render(canvasRect)
+    this.margin.render(ctx, canvasRect)
     // 渲染元素
     let x = leftTopPoint[0]
     let y = leftTopPoint[1]
-    let index = 0
-    for (let i = 0; i < this.rowList.length; i++) {
-      const curRow = this.rowList[i]
+    let index = positionList.length
+    for (let i = 0; i < rowList.length; i++) {
+      const curRow = rowList[i]
       // 计算行偏移量（行居左、居中、居右）
       if (curRow.rowFlex && curRow.rowFlex !== RowFlex.LEFT) {
-        const canvasInnerWidth = this.canvas.width - margins[1] - margins[3]
+        const canvasInnerWidth = canvas.width - margins[1] - margins[3]
         if (curRow.rowFlex === RowFlex.CENTER) {
           x += (canvasInnerWidth - curRow.width) / 2
         } else {
@@ -294,6 +336,7 @@ export class Draw {
           ? curRow.ascent - element.height!
           : curRow.ascent
         const positionItem: IElementPosition = {
+          pageNo,
           index,
           value: element.value,
           rowNo: i,
@@ -311,27 +354,27 @@ export class Draw {
         positionList.push(positionItem)
         // 下划线绘制
         if (element.underline) {
-          this.underline.render(x, y + curRow.height, metrics.width)
+          this.underline.render(ctx, x, y + curRow.height, metrics.width)
         }
         // 删除线绘制
         if (element.strikeout) {
-          this.strikeout.render(x, y + curRow.height / 2, metrics.width)
+          this.strikeout.render(ctx, x, y + curRow.height / 2, metrics.width)
         }
         // 元素高亮
         if (element.highlight) {
-          this.highlight.render(element.highlight, x, y, metrics.width, curRow.height)
+          this.highlight.render(ctx, element.highlight, x, y, metrics.width, curRow.height)
         }
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
           this.textParticle.complete()
-          this.imageParticle.render(element, x, y + offsetY)
+          this.imageParticle.render(ctx, element, x, y + offsetY)
         } else {
-          this.textParticle.record(element, x, y + offsetY)
+          this.textParticle.record(ctx, element, x, y + offsetY)
         }
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()
         if (startIndex !== endIndex && startIndex < index && index <= endIndex) {
-          this.range.render(x, y, metrics.width, curRow.height)
+          this.range.render(ctx, x, y, metrics.width, curRow.height)
         }
         index++
         x += metrics.width
@@ -342,13 +385,66 @@ export class Draw {
     }
     // 搜索匹配绘制
     if (this.searchMatchList) {
-      this.search.render()
+      this.search.render(ctx, pageNo)
     }
+  }
+
+  public render(payload?: IDrawOption) {
+    let {
+      curIndex,
+      isSubmitHistory = true,
+      isSetCursor = true,
+      isComputeRowList = true
+    } = payload || {}
+    // 计算行信息
+    if (isComputeRowList) {
+      this._computeRowList()
+    }
+    // 清除光标等副作用
+    this.cursor.recoveryCursor()
+    this.position.setPositionList([])
+    const positionList = this.position.getPositionList()
+    // 按页渲染
+    const { margins } = this.options
+    const marginHeight = margins[0] + margins[2]
+    let pageHeight = marginHeight
+    let pageNo = 0
+    let pageRowList: IRow[][] = [[]]
+    for (let i = 0; i < this.rowList.length; i++) {
+      const row = this.rowList[i]
+      if (row.height + pageHeight > this.options.height) {
+        pageHeight = marginHeight + row.height
+        pageRowList.push([row])
+        pageNo++
+      } else {
+        pageHeight += row.height
+        pageRowList[pageNo].push(row)
+      }
+    }
+    // 绘制元素
+    for (let i = 0; i < pageRowList.length; i++) {
+      if (!this.pageList[i]) {
+        this._createPage(i)
+      }
+      const rowList = pageRowList[i]
+      this._drawElement(positionList, rowList, i)
+    }
+    // 移除多余页
+    setTimeout(() => {
+      const curPageCount = pageRowList.length
+      const prePageCount = this.pageList.length
+      if (prePageCount > curPageCount) {
+        const deleteCount = prePageCount - curPageCount
+        this.ctxList.splice(curPageCount, deleteCount)
+        this.pageList.splice(curPageCount, deleteCount)
+          .forEach(page => page.remove())
+      }
+    })
     // 光标重绘
-    if (curIndex === undefined) {
-      curIndex = positionList.length - 1
-    }
     if (isSetCursor) {
+      if (curIndex === undefined) {
+        curIndex = positionList.length - 1
+      }
       this.position.setCursorPosition(positionList[curIndex!] || null)
       this.cursor.drawCursor()
     }
@@ -357,7 +453,9 @@ export class Draw {
       const self = this
       const oldElementList = deepClone(this.elementList)
       const { startIndex, endIndex } = this.range.getRange()
+      const pageNo = this.pageNo
       this.historyManager.execute(function () {
+        self.setPageNo(pageNo)
         self.range.setRange(startIndex, endIndex)
         self.elementList = deepClone(oldElementList)
         self.render({ curIndex, isSubmitHistory: false })

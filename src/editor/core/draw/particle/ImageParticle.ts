@@ -5,8 +5,8 @@ import { Draw } from "../Draw"
 
 export class ImageParticle {
 
+  private container: HTMLDivElement
   private canvas: HTMLCanvasElement
-  private ctx: CanvasRenderingContext2D
   private draw: Draw
   private options: Required<IEditorOption>
   private curElement: IElement | null
@@ -22,11 +22,11 @@ export class ImageParticle {
   private mousedownY: number
   private curHandleIndex: number
 
-  constructor(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, options: Required<IEditorOption>, draw: Draw) {
-    this.canvas = canvas
-    this.ctx = ctx
+  constructor(draw: Draw) {
+    this.container = draw.getContainer()
+    this.canvas = draw.getPage()
     this.draw = draw
-    this.options = options
+    this.options = draw.getOptions()
     this.curElement = null
     this.curPosition = null
     this.imageCache = new Map()
@@ -58,19 +58,21 @@ export class ImageParticle {
       resizerSelection.append(handleDom)
       resizerHandleList.push(handleDom)
     }
-    this.canvas.parentNode!.append(resizerSelection)
+    this.container.append(resizerSelection)
     // 拖拽镜像
     const resizerImageContainer = document.createElement('div')
     resizerImageContainer.classList.add('resizer-image')
     resizerImageContainer.style.display = 'none'
     const resizerImage = document.createElement('img')
     resizerImageContainer.append(resizerImage)
-    this.canvas.parentNode!.append(resizerImageContainer)
+    this.container.append(resizerImageContainer)
     return { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage }
   }
 
   private _handleMousedown(evt: MouseEvent) {
+    this.canvas = this.draw.getPage()
     if (!this.curPosition || !this.curElement) return
+    const { height, pageGap } = this.options
     this.mousedownX = evt.x
     this.mousedownY = evt.y
     const target = evt.target as HTMLDivElement
@@ -83,8 +85,9 @@ export class ImageParticle {
     this.resizerImage.src = this.curElement?.value!
     this.resizerImageContainer.style.display = 'block'
     const { coordinate: { leftTop: [left, top] } } = this.curPosition
+    const prePageHeight = this.draw.getPageNo() * (height + pageGap)
     this.resizerImageContainer.style.left = `${left}px`
-    this.resizerImageContainer.style.top = `${top}px`
+    this.resizerImageContainer.style.top = `${top + prePageHeight}px`
     this.resizerImage.style.width = `${this.curElement.width}px`
     this.resizerImage.style.height = `${this.curElement.height}px`
     // 追加全局事件
@@ -159,9 +162,10 @@ export class ImageParticle {
     const width = element.width!
     const height = element.height!
     const handleSize = this.options.resizerSize
+    const preY = this.draw.getPageNo() * (this.options.height + this.options.pageGap)
     // 边框
     this.resizerSelection.style.left = `${left}px`
-    this.resizerSelection.style.top = `${top}px`
+    this.resizerSelection.style.top = `${top + preY}px`
     this.resizerSelection.style.width = `${element.width}px`
     this.resizerSelection.style.height = `${element.height}px`
     // handle
@@ -190,17 +194,17 @@ export class ImageParticle {
     this.resizerSelection.style.display = 'none'
   }
 
-  public render(element: IElement, x: number, y: number) {
+  public render(ctx: CanvasRenderingContext2D, element: IElement, x: number, y: number) {
     const width = element.width!
     const height = element.height!
     if (this.imageCache.has(element.id!)) {
       const img = this.imageCache.get(element.id!)!
-      this.ctx.drawImage(img, x, y, width, height)
+      ctx.drawImage(img, x, y, width, height)
     } else {
       const img = new Image()
       img.src = element.value
       img.onload = () => {
-        this.ctx.drawImage(img, x, y, width, height)
+        ctx.drawImage(img, x, y, width, height)
         this.imageCache.set(element.id!, img)
       }
     }

@@ -1,4 +1,5 @@
 export enum KeyMap {
+  Delete = 'Delete',
   Backspace = 'Backspace',
   Enter = "Enter",
   Left = "ArrowLeft",

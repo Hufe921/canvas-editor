@@ -1,21 +1,22 @@
 import { debounce } from "../../utils"
+import { Draw } from "../draw/Draw"
 import { CanvasEvent } from "../event/CanvasEvent"
 
 export class CursorAgent {
 
-  private canvas: HTMLCanvasElement
+  private container: HTMLDivElement
   private agentCursorDom: HTMLTextAreaElement
   private canvasEvent: CanvasEvent
 
-  constructor(canvas: HTMLCanvasElement, canvasEvent: CanvasEvent) {
-    this.canvas = canvas
+  constructor(draw: Draw, canvasEvent: CanvasEvent) {
+    this.container = draw.getContainer()
     this.canvasEvent = canvasEvent
     // 代理光标绘制
     const agentCursorDom = document.createElement('textarea')
     agentCursorDom.autocomplete = 'off'
     agentCursorDom.classList.add('inputarea')
     agentCursorDom.innerText = ''
-    this.canvas.parentNode?.append(agentCursorDom)
+    this.container.append(agentCursorDom)
     this.agentCursorDom = agentCursorDom
     // 事件
     agentCursorDom.onkeydown = (evt: KeyboardEvent) => this._keyDown(evt)

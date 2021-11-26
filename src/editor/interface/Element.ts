@@ -32,6 +32,7 @@ export interface IElementBasic {
 export type IElement = IElementBasic & IElementStyle
 
 export interface IElementPosition {
+  pageNo: number;
   index: number;
   value: string,
   rowNo: number;

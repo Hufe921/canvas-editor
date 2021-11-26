@@ -4,6 +4,9 @@ export interface IEditorOption {
   defaultSize?: number;
   defaultBasicRowMarginHeight?: number;
   defaultRowMargin?: number;
+  width?: number;
+  height?: number;
+  pageGap?: number;
   underlineColor?: string;
   strikeoutColor?: string;
   rangeColor?: string;
