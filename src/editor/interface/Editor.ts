@@ -7,6 +7,7 @@ export interface IEditorOption {
   width?: number;
   height?: number;
   pageGap?: number;
+  pageNumberBottom?: number;
   underlineColor?: string;
   strikeoutColor?: string;
   rangeColor?: string;

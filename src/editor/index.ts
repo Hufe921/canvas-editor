@@ -25,6 +25,7 @@ export default class Editor {
       width: 794,
       height: 1123,
       pageGap: 20,
+      pageNumberBottom: 60,
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,

@@ -21,6 +21,7 @@ import { Underline } from "./richtext/Underline"
 import { ElementType } from "../../dataset/enum/Element"
 import { ImageParticle } from "./particle/ImageParticle"
 import { TextParticle } from "./particle/TextParticle"
+import { PageNumber } from "./frame/PageNumber"
 
 export class Draw {
 
@@ -45,6 +46,7 @@ export class Draw {
   private historyManager: HistoryManager
   private imageParticle: ImageParticle
   private textParticle: TextParticle
+  private pageNumber: PageNumber
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -71,13 +73,14 @@ export class Draw {
     this.position = new Position(this)
     this.range = new RangeManager(this)
     this.margin = new Margin(this)
-    this.background = new Background()
+    this.background = new Background(this)
     this.search = new Search(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
     this.imageParticle = new ImageParticle(this)
     this.textParticle = new TextParticle(this)
+    this.pageNumber = new PageNumber(this)
 
     const canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, canvasEvent)
@@ -307,13 +310,11 @@ export class Draw {
     const canvas = this.pageList[pageNo]
     const ctx = this.ctxList[pageNo]
     ctx.clearRect(0, 0, canvas.width, canvas.height)
-    // 基础信息
-    const canvasRect = canvas.getBoundingClientRect()
     // 绘制背景
-    this.background.render(ctx, canvasRect)
+    this.background.render(ctx)
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
-    this.margin.render(ctx, canvasRect)
+    this.margin.render(ctx)
     // 渲染元素
     let x = leftTopPoint[0]
     let y = leftTopPoint[1]
@@ -383,6 +384,8 @@ export class Draw {
       x = leftTopPoint[0]
       y += curRow.height
     }
+    // 绘制页码
+    this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制
     if (this.searchMatchList) {
       this.search.render(ctx, pageNo)

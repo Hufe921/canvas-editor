@@ -9,8 +9,8 @@ export class Margin {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, canvasRect: DOMRect) {
-    const { width, height } = canvasRect
+  public render(ctx: CanvasRenderingContext2D) {
+    const { width, height } = this.options
     const { marginIndicatorColor, marginIndicatorSize, margins } = this.options
     ctx.save()
     ctx.strokeStyle = marginIndicatorColor
