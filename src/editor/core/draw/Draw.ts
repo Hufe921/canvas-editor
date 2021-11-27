@@ -48,6 +48,7 @@ export class Draw {
   private textParticle: TextParticle
   private pageNumber: PageNumber
 
+  private innerWidth: number
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
   private searchMatchList: number[][] | null
@@ -88,6 +89,8 @@ export class Draw {
     const globalEvent = new GlobalEvent(this, canvasEvent)
     globalEvent.register()
 
+    const { width, margins } = options
+    this.innerWidth = width - margins[1] - margins[3]
     this.rowList = []
     this.painterStyle = null
     this.searchMatchList = null
@@ -225,13 +228,10 @@ export class Draw {
   }
 
   private _computeRowList() {
-    const { defaultSize, width } = this.options
+    const { defaultSize, defaultRowMargin, defaultBasicRowMarginHeight } = this.options
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    const { margins, defaultRowMargin, defaultBasicRowMarginHeight } = this.options
-    const leftTopPoint: [number, number] = [margins[3], margins[0]]
-    const rightTopPoint: [number, number] = [width - margins[1], margins[0]]
-    const innerWidth = rightTopPoint[0] - leftTopPoint[0]
+    const innerWidth = this.innerWidth
     const rowList: IRow[] = []
     if (this.elementList.length) {
       rowList.push({
@@ -267,7 +267,7 @@ export class Draw {
       } else {
         metrics.height = element.size || this.options.defaultSize
         ctx.font = this._getFont(element)
-        const fontMetrics = ctx.measureText(element.value)
+        const fontMetrics = this.textParticle.measureText(ctx, element)
         metrics.width = fontMetrics.width
         metrics.boundingBoxAscent = element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent
         metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent
@@ -306,10 +306,9 @@ export class Draw {
   }
 
   private _drawElement(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
-    const { margins } = this.options
-    const canvas = this.pageList[pageNo]
+    const { margins, width, height } = this.options
     const ctx = this.ctxList[pageNo]
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.clearRect(0, 0, width, height)
     // 绘制背景
     this.background.render(ctx)
     // 绘制页边距
@@ -323,7 +322,7 @@ export class Draw {
       const curRow = rowList[i]
       // 计算行偏移量（行居左、居中、居右）
       if (curRow.rowFlex && curRow.rowFlex !== RowFlex.LEFT) {
-        const canvasInnerWidth = canvas.width - margins[1] - margins[3]
+        const canvasInnerWidth = width - margins[1] - margins[3]
         if (curRow.rowFlex === RowFlex.CENTER) {
           x += (canvasInnerWidth - curRow.width) / 2
         } else {
@@ -375,11 +374,11 @@ export class Draw {
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()
         if (startIndex !== endIndex && startIndex < index && index <= endIndex) {
-          let width = metrics.width
-          if (width === 0 && curRow.elementList.length === 1) {
-            width = this.options.rangeMinWidth
+          let rangeWidth = metrics.width
+          if (rangeWidth === 0 && curRow.elementList.length === 1) {
+            rangeWidth = this.options.rangeMinWidth
           }
-          this.range.render(ctx, x, y, width, curRow.height)
+          this.range.render(ctx, x, y, rangeWidth, curRow.height)
         }
         index++
         x += metrics.width

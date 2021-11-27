@@ -1,3 +1,4 @@
+import { IElement } from "../../.."
 import { IRowElement } from "../../../interface/Row"
 import { Draw } from "../Draw"
 
@@ -9,6 +10,7 @@ export class TextParticle {
   private text: string
   private curStyle: string
   private curColor?: string
+  public cacheMeasureText: Map<string, TextMetrics>
 
   constructor(draw: Draw) {
     this.ctx = draw.getCtx()
@@ -16,6 +18,18 @@ export class TextParticle {
     this.curY = -1
     this.text = ''
     this.curStyle = ''
+    this.cacheMeasureText = new Map()
+  }
+
+  public measureText(ctx: CanvasRenderingContext2D, element: IElement): TextMetrics {
+    const id = `${element.value}${ctx.font}`
+    const cacheTextMetrics = this.cacheMeasureText.get(id)
+    if (cacheTextMetrics) {
+      return cacheTextMetrics
+    }
+    const textMetrics = ctx.measureText(element.value)
+    this.cacheMeasureText.set(id, textMetrics)
+    return textMetrics
   }
 
   public complete() {
