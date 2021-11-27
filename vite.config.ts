@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
 
-module.exports = defineConfig({
+export default defineConfig({
   base: '/canvas-editor/'
 })
