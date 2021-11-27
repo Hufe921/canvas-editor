@@ -12,6 +12,7 @@ export interface IEditorOption {
   strikeoutColor?: string;
   rangeColor?: string;
   rangeAlpha?: number;
+  rangeMinWidth?: number;
   searchMatchColor?: string;
   searchMatchAlpha?: number;
   highlightAlpha?: number;

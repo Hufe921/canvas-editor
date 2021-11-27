@@ -30,6 +30,7 @@ export default class Editor {
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,
       rangeColor: '#AECBFA',
+      rangeMinWidth: 5,
       searchMatchAlpha: 0.6,
       searchMatchColor: '#FFFF00',
       highlightAlpha: 0.6,

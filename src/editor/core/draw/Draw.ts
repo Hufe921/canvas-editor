@@ -375,7 +375,11 @@ export class Draw {
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()
         if (startIndex !== endIndex && startIndex < index && index <= endIndex) {
-          this.range.render(ctx, x, y, metrics.width, curRow.height)
+          let width = metrics.width
+          if (width === 0 && curRow.elementList.length === 1) {
+            width = this.options.rangeMinWidth
+          }
+          this.range.render(ctx, x, y, width, curRow.height)
         }
         index++
         x += metrics.width
