@@ -1,4 +1,5 @@
 export enum EditorComponent {
   MENU = 'menu',
-  MAIN = 'main'
+  MAIN = 'main',
+  FOOTER = 'footer'
 }

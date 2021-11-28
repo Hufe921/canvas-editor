@@ -16,3 +16,9 @@ export interface IRangeStype {
 }
 
 export type IRangeStyleChange = (payload: IRangeStype) => void
+
+export type IVisiblePageNoListChange = (payload: number[]) => void
+
+export type IIntersectionPageNoChange = (payload: number) => void
+
+export type IPageSizeChange = (payload: number) => void

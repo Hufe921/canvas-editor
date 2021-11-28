@@ -22,6 +22,7 @@ import { ElementType } from "../../dataset/enum/Element"
 import { ImageParticle } from "./particle/ImageParticle"
 import { TextParticle } from "./particle/TextParticle"
 import { PageNumber } from "./frame/PageNumber"
+import { GlobalObserver } from "../observer/GlobalObserver"
 
 export class Draw {
 
@@ -52,6 +53,8 @@ export class Draw {
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
   private searchMatchList: number[][] | null
+  private visiblePageNoList: number[]
+  private intersectionPageNo: number
 
   constructor(
     container: HTMLDivElement,
@@ -82,6 +85,7 @@ export class Draw {
     this.imageParticle = new ImageParticle(this)
     this.textParticle = new TextParticle(this)
     this.pageNumber = new PageNumber(this)
+    new GlobalObserver(this)
 
     const canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, canvasEvent)
@@ -94,6 +98,8 @@ export class Draw {
     this.rowList = []
     this.painterStyle = null
     this.searchMatchList = null
+    this.visiblePageNoList = []
+    this.intersectionPageNo = 0
 
     this.render({ isSetCursor: false })
   }
@@ -104,6 +110,28 @@ export class Draw {
 
   public getPageContainer(): HTMLDivElement {
     return this.pageContainer
+  }
+
+  public getVisiblePageNoList(): number[] {
+    return this.visiblePageNoList
+  }
+
+  public setVisiblePageNoList(payload: number[]) {
+    this.visiblePageNoList = payload
+    if (this.listener.visiblePageNoListChange) {
+      this.listener.visiblePageNoListChange(this.visiblePageNoList)
+    }
+  }
+
+  public getIntersectionPageNo(): number {
+    return this.intersectionPageNo
+  }
+
+  public setIntersectionPageNo(payload: number) {
+    this.intersectionPageNo = payload
+    if (this.listener.intersectionPageNoChange) {
+      this.listener.intersectionPageNoChange(this.intersectionPageNo)
+    }
   }
 
   public getPageNo(): number {
@@ -467,6 +495,13 @@ export class Draw {
         self.render({ curIndex, isSubmitHistory: false })
       })
     }
+
+    // 页面改变
+    setTimeout(() => {
+      if (this.listener.pageSizeChange) {
+        this.listener.pageSizeChange(pageRowList.length)
+      }
+    })
   }
 
 }

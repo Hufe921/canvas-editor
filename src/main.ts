@@ -282,4 +282,17 @@ window.onload = function () {
     payload.painter ? painterDom.classList.add('active') : painterDom.classList.remove('active')
   }
 
+  instance.listener.visiblePageNoListChange = function (payload) {
+    const text = payload.map(i => i + 1).join('、')
+    document.querySelector<HTMLSpanElement>('.page-no-list')!.innerText = text
+  }
+
+  instance.listener.pageSizeChange = function (payload) {
+    document.querySelector<HTMLSpanElement>('.page-size')!.innerText = `${payload}`
+  }
+
+  instance.listener.intersectionPageNoChange = function (payload) {
+    document.querySelector<HTMLSpanElement>('.page-no')!.innerText = `${payload + 1}`
+  }
+
 }
