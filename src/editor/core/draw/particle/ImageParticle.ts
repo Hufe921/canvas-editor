@@ -72,7 +72,9 @@ export class ImageParticle {
   private _handleMousedown(evt: MouseEvent) {
     this.canvas = this.draw.getPage()
     if (!this.curPosition || !this.curElement) return
-    const { height, pageGap } = this.options
+    const { scale } = this.options
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
     this.mousedownX = evt.x
     this.mousedownY = evt.y
     const target = evt.target as HTMLDivElement
@@ -88,8 +90,8 @@ export class ImageParticle {
     const prePageHeight = this.draw.getPageNo() * (height + pageGap)
     this.resizerImageContainer.style.left = `${left}px`
     this.resizerImageContainer.style.top = `${top + prePageHeight}px`
-    this.resizerImage.style.width = `${this.curElement.width}px`
-    this.resizerImage.style.height = `${this.curElement.height}px`
+    this.resizerImage.style.width = `${this.curElement.width! * scale}px`
+    this.resizerImage.style.height = `${this.curElement.height! * scale}px`
     // 追加全局事件
     const mousemoveFn = this._mousemove.bind(this)
     document.addEventListener('mousemove', mousemoveFn)
@@ -114,6 +116,7 @@ export class ImageParticle {
 
   private _mousemove(evt: MouseEvent) {
     if (!this.curElement) return
+    const { scale } = this.options
     let dx = 0
     let dy = 0
     switch (this.curHandleIndex) {
@@ -148,8 +151,8 @@ export class ImageParticle {
     }
     this.width = this.curElement.width! + dx
     this.height = this.curElement.height! + dy
-    this.resizerImage.style.width = `${this.width}px`
-    this.resizerImage.style.height = `${this.height}px`
+    this.resizerImage.style.width = `${this.width * scale}px`
+    this.resizerImage.style.height = `${this.height * scale}px`
     evt.preventDefault()
   }
 
@@ -158,36 +161,39 @@ export class ImageParticle {
   }
 
   public drawResizer(element: IElement, position: IElementPosition) {
+    const { scale } = this.options
     const { coordinate: { leftTop: [left, top] } } = position
-    const width = element.width!
-    const height = element.height!
+    const elementWidth = element.width! * scale
+    const elementHeight = element.height! * scale
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
     const handleSize = this.options.resizerSize
-    const preY = this.draw.getPageNo() * (this.options.height + this.options.pageGap)
+    const preY = this.draw.getPageNo() * (height + pageGap)
     // 边框
     this.resizerSelection.style.left = `${left}px`
     this.resizerSelection.style.top = `${top + preY}px`
-    this.resizerSelection.style.width = `${element.width}px`
-    this.resizerSelection.style.height = `${element.height}px`
+    this.resizerSelection.style.width = `${elementWidth}px`
+    this.resizerSelection.style.height = `${elementHeight}px`
     // handle
     for (let i = 0; i < 8; i++) {
       const left = i === 0 || i === 6 || i === 7
         ? -handleSize
         : i === 1 || i === 5
-          ? width / 2
-          : width - handleSize
+          ? elementWidth / 2
+          : elementWidth - handleSize
       const top = i === 0 || i === 1 || i === 2
         ? -handleSize
         : i === 3 || i === 7
-          ? height / 2 - handleSize
-          : height - handleSize
+          ? elementHeight / 2 - handleSize
+          : elementHeight - handleSize
       this.resizerHandleList[i].style.left = `${left}px`
       this.resizerHandleList[i].style.top = `${top}px`
     }
     this.resizerSelection.style.display = 'block'
     this.curElement = element
     this.curPosition = position
-    this.width = this.curElement.width!
-    this.height = this.curElement.height!
+    this.width = this.curElement.width! * scale
+    this.height = this.curElement.height! * scale
   }
 
   public clearResizer() {
@@ -195,8 +201,9 @@ export class ImageParticle {
   }
 
   public render(ctx: CanvasRenderingContext2D, element: IElement, x: number, y: number) {
-    const width = element.width!
-    const height = element.height!
+    const { scale } = this.options
+    const width = element.width! * scale
+    const height = element.height! * scale
     if (this.imageCache.has(element.id!)) {
       const img = this.imageCache.get(element.id!)!
       ctx.drawImage(img, x, y, width, height)

@@ -7,6 +7,7 @@ import { CursorAgent } from "./CursorAgent"
 
 export class Cursor {
 
+  private draw: Draw
   private container: HTMLDivElement
   private options: Required<IEditorOption>
   private position: Position
@@ -14,6 +15,7 @@ export class Cursor {
   private cursorAgent: CursorAgent
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
+    this.draw = draw
     this.container = draw.getContainer()
     this.position = draw.getPosition()
     this.options = draw.getOptions()
@@ -36,8 +38,10 @@ export class Cursor {
     const cursorPosition = this.position.getCursorPosition()
     if (!cursorPosition) return
     // 设置光标代理
+    const { scale } = this.options
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
     const { metrics, coordinate: { leftTop, rightTop }, ascent, pageNo } = cursorPosition
-    const { height, pageGap } = this.options
     const preY = pageNo * (height + pageGap)
     // 增加1/4字体大小
     const offsetHeight = metrics.height / 4
@@ -52,7 +56,7 @@ export class Cursor {
     const cursorTop = (leftTop[1] + ascent) + descent - (cursorHeight - offsetHeight) + preY
     const curosrleft = rightTop[0]
     agentCursorDom.style.left = `${curosrleft}px`
-    agentCursorDom.style.top = `${cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT}px`
+    agentCursorDom.style.top = `${cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT * scale}px`
     // 模拟光标显示
     this.cursorDom.style.left = `${curosrleft}px`
     this.cursorDom.style.top = `${cursorTop}px`

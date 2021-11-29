@@ -24,6 +24,8 @@ export class Command {
   private static image: Function
   private static search: Function
   private static print: Function
+  private static pageScaleMinus: Function
+  private static pageScaleAdd: Function
 
   constructor(adapt: CommandAdapt) {
     Command.undo = adapt.undo.bind(adapt)
@@ -46,6 +48,8 @@ export class Command {
     Command.image = adapt.image.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
+    Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
+    Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
   }
 
   // 撤销、重做、格式刷、清除格式
@@ -129,6 +133,15 @@ export class Command {
 
   public executePrint() {
     return Command.print()
+  }
+
+  // 页面缩放
+  public executePageScaleMinus() {
+    return Command.pageScaleMinus()
+  }
+
+  public executePageScaleAdd() {
+    return Command.pageScaleAdd()
   }
 
 }

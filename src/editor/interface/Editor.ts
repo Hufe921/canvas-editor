@@ -6,8 +6,11 @@ export interface IEditorOption {
   defaultRowMargin?: number;
   width?: number;
   height?: number;
+  scale?: number;
   pageGap?: number;
   pageNumberBottom?: number;
+  pageNumberSize?: number;
+  pageNumberFont?: string;
   underlineColor?: string;
   strikeoutColor?: string;
   rangeColor?: string;

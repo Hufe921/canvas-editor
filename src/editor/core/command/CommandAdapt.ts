@@ -262,4 +262,20 @@ export class CommandAdapt {
     return printImageBase64(this.draw.getDataURL(), width, height)
   }
 
+  public pageScaleMinus() {
+    const { scale } = this.options
+    const nextScale = scale * 10 - 1
+    if (nextScale >= 5) {
+      this.draw.setPageScale(nextScale / 10)
+    }
+  }
+
+  public pageScaleAdd() {
+    const { scale } = this.options
+    const nextScale = scale * 10 + 1
+    if (nextScale <= 30) {
+      this.draw.setPageScale(nextScale / 10)
+    }
+  }
+
 }

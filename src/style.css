@@ -395,11 +395,14 @@ ul {
   cursor: pointer;
 }
 
-.footer>div:last-child .page-minus {
-  background-image: url('./assets/images/page-minus.svg');
-
+.footer .page-scale-minus i {
+  background-image: url('./assets/images/page-scale-minus.svg');
 }
 
-.footer>div:last-child .page-add {
-  background-image: url('./assets/images/page-add.svg');
+.footer .page-scale-add i {
+  background-image: url('./assets/images/page-scale-add.svg');
+}
+
+.footer .page-scale-percentage {
+  user-select: none;
 }

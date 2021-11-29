@@ -49,7 +49,6 @@ export class Draw {
   private textParticle: TextParticle
   private pageNumber: PageNumber
 
-  private innerWidth: number
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
   private searchMatchList: number[][] | null
@@ -93,8 +92,6 @@ export class Draw {
     const globalEvent = new GlobalEvent(this, canvasEvent)
     globalEvent.register()
 
-    const { width, margins } = options
-    this.innerWidth = width - margins[1] - margins[3]
     this.rowList = []
     this.painterStyle = null
     this.searchMatchList = null
@@ -102,6 +99,40 @@ export class Draw {
     this.intersectionPageNo = 0
 
     this.render({ isSetCursor: false })
+  }
+
+  public getWidth(): number {
+    return Math.floor(this.options.width * this.options.scale)
+  }
+
+  public getHeight(): number {
+    return Math.floor(this.options.height * this.options.scale)
+  }
+
+  public getInnerWidth(): number {
+    const width = this.getWidth()
+    const margins = this.getMargins()
+    return width - margins[1] - margins[3]
+  }
+
+  public getMargins(): number[] {
+    return this.options.margins.map(m => m * this.options.scale)
+  }
+
+  public getPageGap(): number {
+    return this.options.pageGap * this.options.scale
+  }
+
+  public getPageNumberBottom(): number {
+    return this.options.pageNumberBottom * this.options.scale
+  }
+
+  public getMarginIndicatorSize(): number {
+    return this.options.marginIndicatorSize * this.options.scale
+  }
+
+  public getDefaultBasicRowMarginHeight(): number {
+    return this.options.defaultBasicRowMarginHeight * this.options.scale
   }
 
   public getContainer(): HTMLDivElement {
@@ -222,9 +253,27 @@ export class Draw {
     })
   }
 
+  public setPageScale(payload: number) {
+    this.options.scale = payload
+    const width = this.getWidth()
+    const height = this.getHeight()
+    this.container.style.width = `${width}px`
+    this.pageList.forEach(p => {
+      p.width = width
+      p.height = height
+      p.style.width = `${width}px`
+      p.style.height = `${height}px`
+      p.style.marginBottom = `${this.getPageGap()}px`
+    })
+    this.render({ isSubmitHistory: false, isSetCursor: false })
+    if (this.listener.pageScaleChange) {
+      this.listener.pageScaleChange(payload)
+    }
+  }
+
   private _createPageContainer(): HTMLDivElement {
     // 容器宽度需跟随纸张宽度
-    this.container.style.width = `${this.options.width}px`
+    this.container.style.width = `${this.getWidth()}px`
     const pageContainer = document.createElement('div')
     pageContainer.classList.add('page-container')
     this.container.append(pageContainer)
@@ -232,16 +281,18 @@ export class Draw {
   }
 
   private _createPage(pageNo: number) {
+    const width = this.getWidth()
+    const height = this.getHeight()
     const canvas = document.createElement('canvas')
-    canvas.style.width = `${this.options.width}px`
-    canvas.style.height = `${this.options.height}px`
-    canvas.style.marginBottom = `${this.options.pageGap}px`
+    canvas.style.width = `${width}px`
+    canvas.style.height = `${height}px`
+    canvas.style.marginBottom = `${this.getPageGap()}px`
     canvas.setAttribute('data-index', String(pageNo))
     this.pageContainer.append(canvas)
     // 调整分辨率
     const dpr = window.devicePixelRatio
-    canvas.width = parseInt(canvas.style.width) * dpr
-    canvas.height = parseInt(canvas.style.height) * dpr
+    canvas.width = width * dpr
+    canvas.height = height * dpr
     canvas.style.cursor = 'text'
     const ctx = canvas.getContext('2d')!
     ctx.scale(dpr, dpr)
@@ -250,16 +301,17 @@ export class Draw {
     this.ctxList.push(ctx)
   }
 
-  private _getFont(el: IElement): string {
+  private _getFont(el: IElement, scale: number = 1): string {
     const { defaultSize, defaultFont } = this.options
-    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${el.size || defaultSize}px ${el.font || defaultFont}`
+    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${(el.size || defaultSize) * scale}px ${el.font || defaultFont}`
   }
 
   private _computeRowList() {
-    const { defaultSize, defaultRowMargin, defaultBasicRowMarginHeight } = this.options
+    const { defaultSize, defaultRowMargin, scale } = this.options
+    const innerWidth = this.getInnerWidth()
+    const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    const innerWidth = this.innerWidth
     const rowList: IRow[] = []
     if (this.elementList.length) {
       rowList.push({
@@ -281,24 +333,30 @@ export class Draw {
         boundingBoxDescent: 0
       }
       if (element.type === ElementType.IMAGE) {
-        metrics.height = element.height!
+        const elementWidth = element.width! * scale
+        const elementHeight = element.height! * scale
         // 图片超出尺寸后自适应
-        if (curRow.width + element.width! > innerWidth) {
+        if (curRow.width + elementWidth > innerWidth) {
           // 计算剩余大小
           const surplusWidth = innerWidth - curRow.width
           element.width = surplusWidth
-          element.height = element.height! * surplusWidth / element.width
+          element.height = elementHeight * surplusWidth / elementWidth
+          metrics.width = element.width
+          metrics.height = element.height
+          metrics.boundingBoxDescent = element.height
+        } else {
+          metrics.width = elementWidth
+          metrics.height = elementHeight
+          metrics.boundingBoxDescent = elementHeight
         }
-        metrics.width = element.width!
         metrics.boundingBoxAscent = 0
-        metrics.boundingBoxDescent = element.height!
       } else {
-        metrics.height = element.size || this.options.defaultSize
+        metrics.height = (element.size || this.options.defaultSize) * scale
         ctx.font = this._getFont(element)
         const fontMetrics = this.textParticle.measureText(ctx, element)
-        metrics.width = fontMetrics.width
-        metrics.boundingBoxAscent = element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent
-        metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent
+        metrics.width = fontMetrics.width * scale
+        metrics.boundingBoxAscent = (element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent) * scale
+        metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent * scale
       }
       const ascent = metrics.boundingBoxAscent + rowMargin
       const descent = metrics.boundingBoxDescent + rowMargin
@@ -306,7 +364,7 @@ export class Draw {
       const rowElement: IRowElement = {
         ...element,
         metrics,
-        style: ctx.font
+        style: this._getFont(element, scale)
       }
       // 超过限定宽度
       if (curRow.width + metrics.width > innerWidth || (i !== 0 && element.value === ZERO)) {
@@ -322,7 +380,7 @@ export class Draw {
         if (curRow.height < height) {
           curRow.height = height
           if (element.type === ElementType.IMAGE) {
-            curRow.ascent = element.height!
+            curRow.ascent = metrics.height
           } else {
             curRow.ascent = ascent
           }
@@ -334,7 +392,9 @@ export class Draw {
   }
 
   private _drawElement(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
-    const { margins, width, height } = this.options
+    const width = this.getWidth()
+    const height = this.getHeight()
+    const margins = this.getMargins()
     const ctx = this.ctxList[pageNo]
     ctx.clearRect(0, 0, width, height)
     // 绘制背景
@@ -361,7 +421,7 @@ export class Draw {
         const element = curRow.elementList[j]
         const metrics = element.metrics
         const offsetY = element.type === ElementType.IMAGE
-          ? curRow.ascent - element.height!
+          ? curRow.ascent - metrics.height
           : curRow.ascent
         const positionItem: IElementPosition = {
           pageNo,
@@ -430,6 +490,7 @@ export class Draw {
       isSetCursor = true,
       isComputeRowList = true
     } = payload || {}
+    const height = this.getHeight()
     // 计算行信息
     if (isComputeRowList) {
       this._computeRowList()
@@ -439,14 +500,14 @@ export class Draw {
     this.position.setPositionList([])
     const positionList = this.position.getPositionList()
     // 按页渲染
-    const { margins } = this.options
+    const margins = this.getMargins()
     const marginHeight = margins[0] + margins[2]
     let pageHeight = marginHeight
     let pageNo = 0
     let pageRowList: IRow[][] = [[]]
     for (let i = 0; i < this.rowList.length; i++) {
       const row = this.rowList[i]
-      if (row.height + pageHeight > this.options.height) {
+      if (row.height + pageHeight > height) {
         pageHeight = marginHeight + row.height
         pageRowList.push([row])
         pageNo++

@@ -231,6 +231,14 @@ window.onload = function () {
     console.log('print')
     instance.command.executePrint()
   }
+  document.querySelector<HTMLDivElement>('.page-scale-minus')!.onclick = function () {
+    console.log('page-scale-minus')
+    instance.command.executePageScaleMinus()
+  }
+  document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick = function () {
+    console.log('page-scale-add')
+    instance.command.executePageScaleAdd()
+  }
 
   // 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
@@ -293,6 +301,10 @@ window.onload = function () {
 
   instance.listener.intersectionPageNoChange = function (payload) {
     document.querySelector<HTMLSpanElement>('.page-no')!.innerText = `${payload + 1}`
+  }
+
+  instance.listener.pageScaleChange = function (payload) {
+    document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 100)}%`
   }
 
 }
