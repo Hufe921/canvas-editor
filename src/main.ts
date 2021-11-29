@@ -304,7 +304,8 @@ window.onload = function () {
   }
 
   instance.listener.pageScaleChange = function (payload) {
-    document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 100)}%`
+    console.log('payload: ', payload);
+    document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 10 * 10)}%`
   }
 
 }

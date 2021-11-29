@@ -258,8 +258,14 @@ export class CommandAdapt {
   }
 
   public print() {
-    const { width, height } = this.options
-    return printImageBase64(this.draw.getDataURL(), width, height)
+    const { width, height, scale } = this.options
+    if (scale !== 1) {
+      this.draw.setPageScale(1)
+    }
+    printImageBase64(this.draw.getDataURL(), width, height)
+    if (scale !== 1) {
+      this.draw.setPageScale(scale)
+    }
   }
 
   public pageScaleMinus() {
