@@ -404,5 +404,6 @@ ul {
 }
 
 .footer .page-scale-percentage {
+  cursor: pointer;
   user-select: none;
 }

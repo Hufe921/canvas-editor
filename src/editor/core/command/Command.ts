@@ -24,6 +24,7 @@ export class Command {
   private static image: Function
   private static search: Function
   private static print: Function
+  private static pageScaleRecovery: Function
   private static pageScaleMinus: Function
   private static pageScaleAdd: Function
 
@@ -48,6 +49,7 @@ export class Command {
     Command.image = adapt.image.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
+    Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
   }
@@ -136,6 +138,10 @@ export class Command {
   }
 
   // 页面缩放
+  public executePageScaleRecovery() {
+    return Command.pageScaleRecovery()
+  }
+
   public executePageScaleMinus() {
     return Command.pageScaleMinus()
   }

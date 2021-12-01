@@ -231,6 +231,10 @@ window.onload = function () {
     console.log('print')
     instance.command.executePrint()
   }
+  document.querySelector<HTMLDivElement>('.page-scale-percentage')!.onclick = function () {
+    console.log('page-scale-recovery')
+    instance.command.executePageScaleRecovery()
+  }
   document.querySelector<HTMLDivElement>('.page-scale-minus')!.onclick = function () {
     console.log('page-scale-minus')
     instance.command.executePageScaleMinus()

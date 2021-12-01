@@ -268,6 +268,13 @@ export class CommandAdapt {
     }
   }
 
+  public pageScaleRecovery() {
+    const { scale } = this.options
+    if (scale !== 1) {
+      this.draw.setPageScale(1)
+    }
+  }
+
   public pageScaleMinus() {
     const { scale } = this.options
     const nextScale = scale * 10 - 1
