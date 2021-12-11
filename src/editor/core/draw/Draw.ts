@@ -1,6 +1,6 @@
 import { ZERO } from "../../dataset/constant/Common"
 import { RowFlex } from "../../dataset/enum/Row"
-import { IDrawOption } from "../../interface/Draw"
+import { IDrawOption, IDrawRowPayload, IDrawRowResult } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
 import { IElement, IElementMetrics, IElementPosition, IElementStyle } from "../../interface/Element"
 import { IRow, IRowElement } from "../../interface/Row"
@@ -23,6 +23,7 @@ import { ImageParticle } from "./particle/ImageParticle"
 import { TextParticle } from "./particle/TextParticle"
 import { PageNumber } from "./frame/PageNumber"
 import { GlobalObserver } from "../observer/GlobalObserver"
+import { TableParticle } from "./particle/table/TableParticle"
 
 export class Draw {
 
@@ -47,6 +48,7 @@ export class Draw {
   private historyManager: HistoryManager
   private imageParticle: ImageParticle
   private textParticle: TextParticle
+  private tableParticle: TableParticle
   private pageNumber: PageNumber
 
   private rowList: IRow[]
@@ -83,6 +85,7 @@ export class Draw {
     this.highlight = new Highlight(this)
     this.imageParticle = new ImageParticle(this)
     this.textParticle = new TextParticle(this)
+    this.tableParticle = new TableParticle(this)
     this.pageNumber = new PageNumber(this)
     new GlobalObserver(this)
 
@@ -133,6 +136,10 @@ export class Draw {
 
   public getDefaultBasicRowMarginHeight(): number {
     return this.options.defaultBasicRowMarginHeight * this.options.scale
+  }
+
+  public getTdPadding(): number {
+    return this.options.tdPadding * this.options.scale
   }
 
   public getContainer(): HTMLDivElement {
@@ -202,6 +209,15 @@ export class Draw {
   }
 
   public getElementList(): IElement[] {
+    const positionContext = this.position.getPositionContext()
+    if (positionContext.isTable) {
+      const { index, trIndex, tdIndex } = positionContext
+      return this.elementList[index!].trList![trIndex!].tdList[tdIndex!].value
+    }
+    return this.elementList
+  }
+
+  public getOriginalElementList() {
     return this.elementList
   }
 
@@ -306,25 +322,25 @@ export class Draw {
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${(el.size || defaultSize) * scale}px ${el.font || defaultFont}`
   }
 
-  private _computeRowList() {
-    const { defaultSize, defaultRowMargin, scale } = this.options
-    const innerWidth = this.getInnerWidth()
+  private _computeRowList(innerWidth: number, elementList: IElement[]) {
+    const { defaultSize, defaultRowMargin, scale, tdPadding } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
+    const tdGap = tdPadding * 2
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const rowList: IRow[] = []
-    if (this.elementList.length) {
+    if (elementList.length) {
       rowList.push({
         width: 0,
         height: 0,
         ascent: 0,
         elementList: [],
-        rowFlex: this.elementList?.[1]?.rowFlex
+        rowFlex: elementList?.[1]?.rowFlex
       })
     }
-    for (let i = 0; i < this.elementList.length; i++) {
+    for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
-      const element = this.elementList[i]
+      const element = elementList[i]
       const rowMargin = defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
       let metrics: IElementMetrics = {
         width: 0,
@@ -350,6 +366,40 @@ export class Draw {
           metrics.boundingBoxDescent = elementHeight
         }
         metrics.boundingBoxAscent = 0
+      } else if (element.type === ElementType.TABLE) {
+        // 计算表格行列
+        this.tableParticle.computeRowColInfo(element)
+        // 计算表格内元素信息
+        const trList = element.trList!
+        for (let t = 0; t < trList.length; t++) {
+          const tr = trList[t]
+          let maxTrHeight = 0
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            const rowList = this._computeRowList((td.width! - tdGap) * scale, td.value)
+            const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
+            td.rowList = rowList
+            // 移除缩放导致的行高变化-渲染时会进行缩放调整
+            const curTrHeight = (rowHeight + tdGap) / scale
+            if (maxTrHeight < curTrHeight) {
+              maxTrHeight = curTrHeight
+            }
+          }
+          tr.height = maxTrHeight
+        }
+        // 需要重新计算表格内值
+        this.tableParticle.computeRowColInfo(element)
+        // 计算出表格高度
+        const tableHeight = trList.reduce((pre, cur) => pre + cur.height, 0)
+        const tableWidth = element.colgroup!.reduce((pre, cur) => pre + cur.width, 0)
+        element.width = tableWidth
+        element.height = tableHeight
+        const elementWidth = tableWidth * scale
+        const elementHeight = tableHeight * scale
+        metrics.width = elementWidth
+        metrics.height = elementHeight
+        metrics.boundingBoxDescent = elementHeight
+        metrics.boundingBoxAscent = 0
       } else {
         metrics.height = (element.size || this.options.defaultSize) * scale
         ctx.font = this._getFont(element)
@@ -367,7 +417,12 @@ export class Draw {
         style: this._getFont(element, scale)
       }
       // 超过限定宽度
-      if (curRow.width + metrics.width > innerWidth || (i !== 0 && element.value === ZERO)) {
+      const preElement = elementList[i - 1]
+      if (
+        (preElement && preElement.type === ElementType.TABLE)
+        || curRow.width + metrics.width > innerWidth
+        || (i !== 0 && element.value === ZERO)
+      ) {
         rowList.push({
           width: metrics.width,
           height,
@@ -388,35 +443,29 @@ export class Draw {
         curRow.elementList.push(rowElement)
       }
     }
-    this.rowList = rowList
+    return rowList
   }
 
-  private _drawElement(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
-    const width = this.getWidth()
-    const height = this.getHeight()
-    const margins = this.getMargins()
-    const ctx = this.ctxList[pageNo]
-    ctx.clearRect(0, 0, width, height)
-    // 绘制背景
-    this.background.render(ctx)
-    // 绘制页边距
-    const leftTopPoint: [number, number] = [margins[3], margins[0]]
-    this.margin.render(ctx)
-    // 渲染元素
-    let x = leftTopPoint[0]
-    let y = leftTopPoint[1]
-    let index = positionList.length
+  private _drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload): IDrawRowResult {
+    const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
+    const { scale, tdPadding } = this.options
+    const tdGap = tdPadding * 2
+    let x = startX
+    let y = startY
+    let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       // 计算行偏移量（行居左、居中、居右）
       if (curRow.rowFlex && curRow.rowFlex !== RowFlex.LEFT) {
-        const canvasInnerWidth = width - margins[1] - margins[3]
         if (curRow.rowFlex === RowFlex.CENTER) {
-          x += (canvasInnerWidth - curRow.width) / 2
+          x += (innerWidth - curRow.width) / 2
         } else {
-          x += canvasInnerWidth - curRow.width
+          x += innerWidth - curRow.width
         }
       }
+      // 当前td所在位置
+      let tablePreX = x
+      let tablePreY = y
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
@@ -456,25 +505,89 @@ export class Draw {
         if (element.type === ElementType.IMAGE) {
           this.textParticle.complete()
           this.imageParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.TABLE) {
+          this.tableParticle.render(ctx, element, x, y)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()
         if (startIndex !== endIndex && startIndex < index && index <= endIndex) {
-          let rangeWidth = metrics.width
-          if (rangeWidth === 0 && curRow.elementList.length === 1) {
-            rangeWidth = this.options.rangeMinWidth
+          const positionContext = this.position.getPositionContext()
+          // 表格需限定上下文
+          if (
+            (!positionContext.isTable && !element.tdId)
+            || positionContext.tdId === element.tdId
+          ) {
+            let rangeWidth = metrics.width
+            if (rangeWidth === 0 && curRow.elementList.length === 1) {
+              rangeWidth = this.options.rangeMinWidth
+            }
+            this.range.render(ctx, x, y, rangeWidth, curRow.height)
           }
-          this.range.render(ctx, x, y, rangeWidth, curRow.height)
         }
         index++
         x += metrics.width
+        // 绘制表格内元素
+        if (element.type === ElementType.TABLE) {
+          for (let t = 0; t < element.trList!.length; t++) {
+            const tr = element.trList![t]
+            for (let d = 0; d < tr.tdList!.length; d++) {
+              const td = tr.tdList[d]
+              td.positionList = []
+              const drawRowResult = this._drawRow(ctx, {
+                positionList: td.positionList,
+                rowList: td.rowList!,
+                pageNo,
+                startIndex: 0,
+                startX: (td.x! + tdPadding) * scale + tablePreX,
+                startY: td.y! * scale + tablePreY,
+                innerWidth: (td.width! - tdGap) * scale
+              })
+              x = drawRowResult.x
+              y = drawRowResult.y
+            }
+          }
+          // 恢复初始x、y
+          x = tablePreX
+          y = tablePreY
+        }
       }
       this.textParticle.complete()
-      x = leftTopPoint[0]
+      x = startX
       y += curRow.height
     }
+    return { x, y, index }
+  }
+
+  private _drawPage(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
+    const width = this.getWidth()
+    const height = this.getHeight()
+    const margins = this.getMargins()
+    const innerWidth = this.getInnerWidth()
+    const ctx = this.ctxList[pageNo]
+    ctx.clearRect(0, 0, width, height)
+    // 绘制背景
+    this.background.render(ctx)
+    // 绘制页边距
+    const leftTopPoint: [number, number] = [margins[3], margins[0]]
+    this.margin.render(ctx)
+    // 渲染元素
+    let x = leftTopPoint[0]
+    let y = leftTopPoint[1]
+    let index = positionList.length
+    const drawRowResult = this._drawRow(ctx, {
+      positionList,
+      rowList,
+      pageNo,
+      startIndex: index,
+      startX: x,
+      startY: y,
+      innerWidth
+    })
+    x = drawRowResult.x
+    y = drawRowResult.y
+    index = drawRowResult.index
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制
@@ -491,14 +604,15 @@ export class Draw {
       isComputeRowList = true
     } = payload || {}
     const height = this.getHeight()
+    const innerWidth = this.getInnerWidth()
     // 计算行信息
     if (isComputeRowList) {
-      this._computeRowList()
+      this.rowList = this._computeRowList(innerWidth, this.elementList)
     }
     // 清除光标等副作用
     this.cursor.recoveryCursor()
     this.position.setPositionList([])
-    const positionList = this.position.getPositionList()
+    const positionList = this.position.getOriginalPositionList()
     // 按页渲染
     const margins = this.getMargins()
     const marginHeight = margins[0] + margins[2]
@@ -522,7 +636,7 @@ export class Draw {
         this._createPage(i)
       }
       const rowList = pageRowList[i]
-      this._drawElement(positionList, rowList, i)
+      this._drawPage(positionList, rowList, i)
     }
     // 移除多余页
     setTimeout(() => {
@@ -540,7 +654,14 @@ export class Draw {
       if (curIndex === undefined) {
         curIndex = positionList.length - 1
       }
-      this.position.setCursorPosition(positionList[curIndex!] || null)
+      const positionContext = this.position.getPositionContext()
+      if (positionContext.isTable) {
+        const { index, trIndex, tdIndex } = positionContext
+        const tablePosition = this.elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList?.[curIndex!]
+        this.position.setCursorPosition(tablePosition || null)
+      } else {
+        this.position.setCursorPosition(positionList[curIndex!] || null)
+      }
       this.cursor.drawCursor()
     }
     // 历史记录用于undo、redo
@@ -549,8 +670,10 @@ export class Draw {
       const oldElementList = deepClone(this.elementList)
       const { startIndex, endIndex } = this.range.getRange()
       const pageNo = this.pageNo
+      const oldPositionContext = deepClone(this.position.getPositionContext())
       this.historyManager.execute(function () {
         self.setPageNo(pageNo)
+        self.position.setPositionContext(oldPositionContext)
         self.range.setRange(startIndex, endIndex)
         self.elementList = deepClone(oldElementList)
         self.render({ curIndex, isSubmitHistory: false })

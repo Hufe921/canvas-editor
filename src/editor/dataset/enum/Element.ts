@@ -1,4 +1,5 @@
 export enum ElementType {
   TEXT = 'text',
-  IMAGE = 'image'
+  IMAGE = 'image',
+  TABLE = 'table'
 }

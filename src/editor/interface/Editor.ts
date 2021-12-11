@@ -23,5 +23,7 @@ export interface IEditorOption {
   resizerSize?: number;
   marginIndicatorSize?: number;
   marginIndicatorColor?: string,
-  margins?: [top: number, right: number, bootom: number, left: number]
+  margins?: [top: number, right: number, bootom: number, left: number],
+  tdPadding?: number;
+  defaultTdHeight?: number;
 }

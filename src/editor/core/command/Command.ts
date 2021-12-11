@@ -21,6 +21,7 @@ export class Command {
   private static center: Function
   private static right: Function
   private static rowMargin: Function
+  private static insertTable: Function
   private static image: Function
   private static search: Function
   private static print: Function
@@ -46,6 +47,7 @@ export class Command {
     Command.center = adapt.rowFlex.bind(adapt)
     Command.right = adapt.rowFlex.bind(adapt)
     Command.rowMargin = adapt.rowMargin.bind(adapt)
+    Command.insertTable = adapt.insertTable.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
@@ -124,7 +126,11 @@ export class Command {
     return Command.rowMargin(payload)
   }
 
-  // 图片上传、搜索、打印
+  // 表格、图片上传、搜索、打印
+  public executeInsertTable(row: number, col: number) {
+    return Command.insertTable(row, col)
+  }
+
   public executeImage(payload: IDrawImagePayload) {
     return Command.image(payload)
   }

@@ -1,5 +1,4 @@
 import './assets/css/index.css'
-import { ZERO } from './dataset/constant/Common'
 import { IEditorOption } from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
@@ -7,8 +6,8 @@ import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
-import { getUUID } from './utils'
 import { ElementType } from './dataset/enum/Element'
+import { formatElementList } from './utils/element'
 
 export default class Editor {
 
@@ -42,22 +41,11 @@ export default class Editor {
       marginIndicatorSize: 35,
       marginIndicatorColor: '#BABABA',
       margins: [100, 120, 100, 120],
+      tdPadding: 5,
+      defaultTdHeight: 40,
       ...options
     }
-    if (elementList[0]?.value !== ZERO) {
-      elementList.unshift({
-        value: ZERO
-      })
-    }
-    for (let i = 0; i < elementList.length; i++) {
-      const el = elementList[i]
-      if (el.value === '\n') {
-        el.value = ZERO
-      }
-      if (el.type === ElementType.IMAGE) {
-        el.id = getUUID()
-      }
-    }
+    formatElementList(elementList)
     // 监听
     this.listener = new Listener()
     // 启动

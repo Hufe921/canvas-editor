@@ -3,7 +3,7 @@ import Editor, { ElementType, IElement, RowFlex } from './editor'
 
 window.onload = function () {
 
-  const text = `人民医院门诊病历\n主诉：\n发热三天，咳嗽五天。\n现病史：\n患者于三天前无明显诱因，感冒后发现面部水肿，无皮疹，尿量减少，出现乏力，在外治疗无好转，现来我院就诊。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。没有报告其他既往疾病。\n流行病史：\n否认14天内接触过新冠肺炎确诊患者、疑似患者、无症状感染者及其密切接触者；否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属{有无选择代码}有以上情况。\n体格检查：\nT：36.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10^9/L（偏高）参考值：0.1～0.6；\n门诊诊断：\n1.高血压\n2.糖尿病\n3.病毒性感冒\n4.过敏性鼻炎\n5.过敏性鼻息肉\n处置治疗：\n1.超声引导下甲状腺细针穿刺术；\n2.乙型肝炎表面抗体测定；\n3.膜式病变细胞采集术、后颈皮下肤层；\n电子签名：【】`
+  const text = `人民医院门诊病历\n主诉：\n发热三天，咳嗽五天。\n现病史：\n患者于三天前无明显诱因，感冒后发现面部水肿，无皮疹，尿量减少，出现乏力，在外治疗无好转，现来我院就诊。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。没有报告其他既往疾病。\n流行病史：\n否认14天内接触过新冠肺炎确诊患者、疑似患者、无症状感染者及其密切接触者；否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属{有无选择代码}有以上情况。\n体格检查：\nT：36.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10^9/L（偏高）参考值：0.1～0.6；\n门诊诊断：\n1.高血压\n2.糖尿病\n3.病毒性感冒\n4.过敏性鼻炎\n5.过敏性鼻息肉\n处置治疗：\n1.超声引导下甲状腺细针穿刺术；\n2.乙型肝炎表面抗体测定；\n3.膜式病变细胞采集术、后颈皮下肤层；\n电子签名：【】\n其他记录：`
   // 模拟行居中
   const centerText = ['人民医院门诊病历']
   const centerIndex: number[] = centerText.map(c => {
@@ -11,7 +11,7 @@ window.onload = function () {
     return ~i ? Array(c.length).fill(i).map((_, j) => i + j) : []
   }).flat()
   // 模拟加粗字
-  const boldText = ['主诉：', '现病史：', '既往史：', '流行病史：', '体格检查：', '辅助检查：', '门诊诊断：', '处置治疗：', '电子签名：']
+  const boldText = ['主诉：', '现病史：', '既往史：', '流行病史：', '体格检查：', '辅助检查：', '门诊诊断：', '处置治疗：', '电子签名：', '其他记录：']
   const boldIndex: number[] = boldText.map(b => {
     const i = text.indexOf(b)
     return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
@@ -69,12 +69,116 @@ window.onload = function () {
     id: 'signature',
     type: ElementType.IMAGE
   })
+  data.push({
+    type: ElementType.TABLE,
+    value: `\n`,
+    colgroup: [{
+      width: 180
+    }, {
+      width: 80
+    }, {
+      width: 130
+    }, {
+      width: 130
+    }],
+    trList: [{
+      height: 40,
+      tdList: [{
+        colspan: 1,
+        rowspan: 2,
+        value: [
+          { value: `1`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }, {
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `2`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }, {
+        colspan: 2,
+        rowspan: 1,
+        value: [
+          { value: `3`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }]
+    }, {
+      height: 40,
+      tdList: [{
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `4`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }, {
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `5`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }, {
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `6`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }]
+    }, {
+      height: 40,
+      tdList: [{
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `7`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }, {
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `8`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }, {
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `9`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }, {
+        colspan: 1,
+        rowspan: 1,
+        value: [
+          { value: `1`, size: 16 },
+          { value: `0`, size: 16 },
+          { value: '.', size: 16 }
+        ]
+      }]
+    }]
+  })
+  data.push(...[{
+    value: 'E',
+    size: 16
+  }, {
+    value: 'O',
+    size: 16
+  }, {
+    value: 'F',
+    size: 16
+  }])
   // 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
   const instance = new Editor(container, data, {
     margins: [100, 120, 100, 120]
   })
-  console.log('编辑器实例: ', instance)
+  console.log('实例: ', instance)
 
   // 撤销、重做、格式刷、清除格式
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
@@ -183,7 +287,81 @@ window.onload = function () {
     const li = evt.target as HTMLLIElement
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
   }
-  // 图片上传、搜索、打印
+  // 表格插入、图片上传、搜索、打印
+  const tableDom = document.querySelector<HTMLDivElement>('.menu-item__table')!
+  const tablePanelContainer = document.querySelector<HTMLDivElement>('.menu-item__table__collapse')!
+  const tableClose = document.querySelector<HTMLDivElement>('.table-close')!
+  const tableTitle = document.querySelector<HTMLDivElement>('.table-select')!
+  const tablePanel = document.querySelector<HTMLDivElement>('.table-panel')!
+  // 绘制行列
+  const tableCellList: HTMLDivElement[][] = []
+  for (let i = 0; i < 10; i++) {
+    const tr = document.createElement('tr')
+    tr.classList.add('table-row')
+    const trCellList: HTMLDivElement[] = []
+    for (let j = 0; j < 10; j++) {
+      const td = document.createElement('td')
+      td.classList.add('table-cel')
+      tr.append(td)
+      trCellList.push(td)
+    }
+    tablePanel.append(tr)
+    tableCellList.push(trCellList)
+  }
+  let colIndex = 0
+  let rowIndex = 0
+  // 移除所有格选择
+  function removeAllTableCellSelect() {
+    tableCellList.forEach(tr => {
+      tr.forEach(td => td.classList.remove('active'))
+    })
+  }
+  // 设置标题内容
+  function setTableTitle(payload: string) {
+    tableTitle.innerText = payload
+  }
+  // 恢复初始状态
+  function recoveryTable() {
+    // 还原选择样式、标题、选择行列
+    removeAllTableCellSelect()
+    setTableTitle('插入')
+    colIndex = 0
+    rowIndex = 0
+    // 隐藏panel
+    tablePanelContainer.style.display = 'none'
+  }
+  tableDom.onclick = function () {
+    console.log('table')
+    tablePanelContainer!.style.display = 'block'
+  }
+  tablePanel.onmousemove = function (evt) {
+    const celSize = 16
+    const rowMarginTop = 10
+    const celMarginRight = 6
+    const { offsetX, offsetY } = evt
+    // 移除所有选择
+    removeAllTableCellSelect()
+    colIndex = Math.ceil(offsetX / (celSize + celMarginRight)) || 1
+    rowIndex = Math.ceil(offsetY / (celSize + rowMarginTop)) || 1
+    // 改变选择样式
+    tableCellList.forEach((tr, trIndex) => {
+      tr.forEach((td, tdIndex) => {
+        if (tdIndex < colIndex && trIndex < rowIndex) {
+          td.classList.add('active')
+        }
+      })
+    })
+    // 改变表格标题
+    setTableTitle(`${rowIndex}×${colIndex}`)
+  }
+  tableClose.onclick = function () {
+    recoveryTable()
+  }
+  tablePanel.onclick = function () {
+    // 应用选择
+    instance.command.executeInsertTable(rowIndex, colIndex)
+    recoveryTable()
+  }
   const imageDom = document.querySelector<HTMLDivElement>('.menu-item__image')!
   const imageFileDom = document.querySelector<HTMLInputElement>('#image')!
   imageDom.onclick = function () {
@@ -308,7 +486,6 @@ window.onload = function () {
   }
 
   instance.listener.pageScaleChange = function (payload) {
-    console.log('payload: ', payload);
     document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 10 * 10)}%`
   }
 

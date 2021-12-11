@@ -18,7 +18,7 @@ export class Search {
     const searchMatch = this.draw.getSearchMatch()
     if (!searchMatch || !searchMatch.length) return
     const searchMatchList = searchMatch.flat()
-    const positionList = this.position.getPositionList()
+    const positionList = this.position.getOriginalPositionList()
     ctx.save()
     ctx.globalAlpha = this.options.searchMatchAlpha
     ctx.fillStyle = this.options.searchMatchColor

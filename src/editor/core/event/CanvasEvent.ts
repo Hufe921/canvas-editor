@@ -80,7 +80,12 @@ export class CanvasEvent {
       this.draw.setPageNo(Number(pageIndex))
     }
     // 结束位置
-    const { index: endIndex } = this.position.getPositionByXY(evt.offsetX, evt.offsetY)
+    const positionResult = this.position.getPositionByXY({
+      x: evt.offsetX,
+      y: evt.offsetY
+    })
+    const { index, isTable, tdValueIndex } = positionResult
+    let endIndex = isTable ? tdValueIndex! : index
     let end = ~endIndex ? endIndex : 0
     // 开始位置
     let start = this.mouseDownStartIndex
@@ -105,15 +110,46 @@ export class CanvasEvent {
       this.draw.setPageNo(Number(pageIndex))
     }
     this.isAllowDrag = true
-    const { index, isDirectHit, isImage } = this.position.getPositionByXY(evt.offsetX, evt.offsetY)
+    const positionResult = this.position.getPositionByXY({
+      x: evt.offsetX,
+      y: evt.offsetY
+    })
+    const {
+      index,
+      isDirectHit,
+      isImage,
+      isTable,
+      trIndex,
+      tdIndex,
+      tdValueIndex,
+      tdId,
+      trId,
+      tableId
+    } = positionResult
+    // 设置位置上下文
+    this.position.setPositionContext({
+      isTable: isTable || false,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
+    })
     // 记录选区开始位置
-    this.mouseDownStartIndex = index
+    this.mouseDownStartIndex = isTable ? tdValueIndex! : index
     // 绘制
     const isDirectHitImage = isDirectHit && isImage
     if (~index) {
-      this.range.setRange(index, index)
+      let curIndex = index
+      if (isTable) {
+        this.range.setRange(tdValueIndex!, tdValueIndex!)
+        curIndex = tdValueIndex!
+      } else {
+        this.range.setRange(index, index)
+      }
       this.draw.render({
-        curIndex: index,
+        curIndex,
         isSubmitHistory: false,
         isSetCursor: !isDirectHitImage,
         isComputeRowList: false
@@ -124,7 +160,8 @@ export class CanvasEvent {
     if (isDirectHitImage) {
       const elementList = this.draw.getElementList()
       const positionList = this.position.getPositionList()
-      this.imageParticle.drawResizer(elementList[index], positionList[index])
+      const curIndex = isTable ? tdValueIndex! : index
+      this.imageParticle.drawResizer(elementList[curIndex], positionList[curIndex])
     }
   }
 
@@ -167,8 +204,16 @@ export class CanvasEvent {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {
+      // 表格需要上下文信息
+      const positionContext = this.position.getPositionContext()
+      let restArg = {}
+      if (positionContext.isTable) {
+        const { tdId, trId, tableId } = positionContext
+        restArg = { tdId, trId, tableId }
+      }
       const enterText: IElement = {
-        value: ZERO
+        value: ZERO,
+        ...restArg
       }
       if (isCollspace) {
         elementList.splice(index + 1, 0, enterText)
@@ -277,8 +322,16 @@ export class CanvasEvent {
     const { index } = cursorPosition
     const { startIndex, endIndex } = this.range.getRange()
     const isCollspace = startIndex === endIndex
+    // 表格需要上下文信息
+    const positionContext = this.position.getPositionContext()
+    let restArg = {}
+    if (positionContext.isTable) {
+      const { tdId, trId, tableId } = positionContext
+      restArg = { tdId, trId, tableId }
+    }
     const inputData: IElement[] = data.split('').map(value => ({
-      value
+      value,
+      ...restArg
     }))
     let start = 0
     if (isCollspace) {
