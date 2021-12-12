@@ -1,4 +1,6 @@
+import { EditorContext } from "../../../dataset/enum/Editor"
 import { IEditorOption } from "../../../interface/Editor"
+import { IElementPosition } from "../../../interface/Element"
 import { Position } from "../../position/Position"
 import { Draw } from "../Draw"
 
@@ -15,24 +17,32 @@ export class Search {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
-    const searchMatch = this.draw.getSearchMatch()
-    if (!searchMatch || !searchMatch.length) return
-    const searchMatchList = searchMatch.flat()
+    const searchMatchList = this.draw.getSearchMatch()
+    if (!searchMatchList || !searchMatchList.length) return
+    const { searchMatchAlpha, searchMatchColor } = this.options
     const positionList = this.position.getOriginalPositionList()
+    const elementList = this.draw.getOriginalElementList()
     ctx.save()
-    ctx.globalAlpha = this.options.searchMatchAlpha
-    ctx.fillStyle = this.options.searchMatchColor
-    searchMatchList.forEach(s => {
-      const position = positionList[s]
-      if (!position) return
+    ctx.globalAlpha = searchMatchAlpha
+    ctx.fillStyle = searchMatchColor
+    for (let s = 0; s < searchMatchList.length; s++) {
+      const searchMatch = searchMatchList[s]
+      let position: IElementPosition | null = null
+      if (searchMatch.type === EditorContext.TABLE) {
+        const { tableIndex, trIndex, tdIndex, index } = searchMatch
+        position = elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]!?.positionList![index]
+      } else {
+        position = positionList[searchMatch.index]
+      }
+      if (!position) continue
       const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
-      if (pageNo !== pageIndex) return
+      if (pageNo !== pageIndex) continue
       const x = leftTop[0]
       const y = leftTop[1]
       const width = rightTop[0] - leftTop[0]
       const height = leftBottom[1] - leftTop[1]
       ctx.fillRect(x, y, width, height)
-    })
+    }
     ctx.restore()
   }
 

@@ -1,11 +1,13 @@
 import { ZERO } from "../../dataset/constant/Common"
 import { EDITOR_ELEMENT_STYLE } from "../../dataset/constant/Element"
+import { EditorContext } from "../../dataset/enum/Editor"
 import { ElementType } from "../../dataset/enum/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawImagePayload } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
 import { IElement, IElementStyle } from "../../interface/Element"
+import { ISearchResult, ISearchResultRestArgs } from "../../interface/Search"
 import { IColgroup } from "../../interface/table/Colgroup"
 import { ITd } from "../../interface/table/Td"
 import { ITr } from "../../interface/table/Tr"
@@ -291,19 +293,76 @@ export class CommandAdapt {
 
   public search(payload: string | null) {
     if (payload) {
-      const elementList = this.draw.getElementList()
-      const text = elementList.map(e => !e.type || e.type === ElementType.TEXT ? e.value : ZERO)
-        .filter(Boolean)
-        .join('')
-      const matchStartIndexList = []
-      let index = text.indexOf(payload)
-      while (index !== -1) {
-        matchStartIndexList.push(index)
-        index = text.indexOf(payload, index + 1)
+      let searchMatchList: ISearchResult[] = []
+      // elementList按table分隔
+      const elementListGroup: { type: EditorContext, elementList: IElement[], index: number }[] = []
+      const originalElementList = this.draw.getOriginalElementList()
+      let lastTextElementList: IElement[] = []
+      for (let e = 0; e < originalElementList.length; e++) {
+        const element = originalElementList[e]
+        if (element.type === ElementType.TABLE) {
+          if (lastTextElementList.length) {
+            elementListGroup.push({
+              index: e,
+              type: EditorContext.PAGE,
+              elementList: lastTextElementList
+            })
+            lastTextElementList = []
+          }
+          elementListGroup.push({
+            index: e,
+            type: EditorContext.TABLE,
+            elementList: [element]
+          })
+        } else {
+          lastTextElementList.push(element)
+        }
       }
-      const searchMatch: number[][] = matchStartIndexList
-        .map(i => Array(payload.length).fill(i).map((_, j) => i + j))
-      this.draw.setSearchMatch(searchMatch.length ? searchMatch : null)
+      // 搜索文本
+      function searchClosure(payload: string | null, type: EditorContext, elementList: IElement[], restArgs?: ISearchResultRestArgs) {
+        if (!payload) return
+        const text = elementList.map(e => !e.type || e.type === ElementType.TEXT ? e.value : ZERO)
+          .filter(Boolean)
+          .join('')
+        const matchStartIndexList = []
+        let index = text.indexOf(payload)
+        while (index !== -1) {
+          matchStartIndexList.push(index)
+          index = text.indexOf(payload, index + 1)
+        }
+        for (let m = 0; m < matchStartIndexList.length; m++) {
+          const startIndex = matchStartIndexList[m]
+          for (let i = 0; i < payload.length; i++) {
+            const index = startIndex + i
+            searchMatchList.push({
+              type,
+              index,
+              ...restArgs
+            })
+          }
+        }
+      }
+      for (let e = 0; e < elementListGroup.length; e++) {
+        const group = elementListGroup[e]
+        if (group.type === EditorContext.TABLE) {
+          const tableElement = group.elementList[0]
+          for (let t = 0; t < tableElement.trList!.length; t++) {
+            const tr = tableElement.trList![t]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              const restArgs: ISearchResultRestArgs = {
+                tableIndex: group.index,
+                trIndex: t,
+                tdIndex: d
+              }
+              searchClosure(payload, group.type, td.value, restArgs)
+            }
+          }
+        } else {
+          searchClosure(payload, group.type, group.elementList)
+        }
+      }
+      this.draw.setSearchMatch(searchMatchList)
     } else {
       this.draw.setSearchMatch(null)
     }

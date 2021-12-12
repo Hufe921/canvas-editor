@@ -3,3 +3,8 @@ export enum EditorComponent {
   MAIN = 'main',
   FOOTER = 'footer'
 }
+
+export enum EditorContext {
+  PAGE = 'page',
+  TABLE = 'table'
+}

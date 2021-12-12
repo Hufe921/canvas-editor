@@ -24,6 +24,7 @@ import { TextParticle } from "./particle/TextParticle"
 import { PageNumber } from "./frame/PageNumber"
 import { GlobalObserver } from "../observer/GlobalObserver"
 import { TableParticle } from "./particle/table/TableParticle"
+import { ISearchResult } from "../../interface/Search"
 
 export class Draw {
 
@@ -53,7 +54,7 @@ export class Draw {
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
-  private searchMatchList: number[][] | null
+  private searchMatchList: ISearchResult[] | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
 
@@ -252,11 +253,11 @@ export class Draw {
     }
   }
 
-  public getSearchMatch(): number[][] | null {
+  public getSearchMatch(): ISearchResult[] | null {
     return this.searchMatchList
   }
 
-  public setSearchMatch(payload: number[][] | null) {
+  public setSearchMatch(payload: ISearchResult[] | null) {
     this.searchMatchList = payload
   }
 
