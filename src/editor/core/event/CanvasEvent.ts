@@ -6,6 +6,7 @@ import { writeTextByElementList } from "../../utils/clipboard"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { ImageParticle } from "../draw/particle/ImageParticle"
+import { TableTool } from "../draw/particle/table/TableTool"
 import { HistoryManager } from "../history/HistoryManager"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
@@ -24,6 +25,7 @@ export class CanvasEvent {
   private cursor: Cursor | null
   private historyManager: HistoryManager
   private imageParticle: ImageParticle
+  private tableTool: TableTool
 
   constructor(draw: Draw) {
     this.isAllowDrag = false
@@ -38,6 +40,7 @@ export class CanvasEvent {
     this.range = this.draw.getRange()
     this.historyManager = this.draw.getHistoryManager()
     this.imageParticle = this.draw.getImageParticle()
+    this.tableTool = this.draw.getTableTool()
   }
 
   public register() {
@@ -162,6 +165,13 @@ export class CanvasEvent {
       const positionList = this.position.getPositionList()
       const curIndex = isTable ? tdValueIndex! : index
       this.imageParticle.drawResizer(elementList[curIndex], positionList[curIndex])
+    }
+    // 表格工具组件
+    this.tableTool.dispose()
+    if (isTable) {
+      const elementList = this.draw.getOriginalElementList()
+      const positionList = this.position.getOriginalPositionList()
+      this.tableTool.render(elementList[index], positionList[index])
     }
   }
 

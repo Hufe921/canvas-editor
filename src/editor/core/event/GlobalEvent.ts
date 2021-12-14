@@ -4,6 +4,7 @@ import { findParent } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { ImageParticle } from "../draw/particle/ImageParticle"
+import { TableTool } from "../draw/particle/table/TableTool"
 import { RangeManager } from "../range/RangeManager"
 import { CanvasEvent } from "./CanvasEvent"
 
@@ -16,6 +17,7 @@ export class GlobalEvent {
   private canvasEvent: CanvasEvent
   private range: RangeManager
   private imageParticle: ImageParticle
+  private tableTool: TableTool
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -25,6 +27,7 @@ export class GlobalEvent {
     this.cursor = null
     this.range = draw.getRange()
     this.imageParticle = draw.getImageParticle()
+    this.tableTool = draw.getTableTool()
   }
 
   public register() {
@@ -66,6 +69,7 @@ export class GlobalEvent {
     this.range.recoveryRangeStyle()
     this.range.setRange(0, 0)
     this.imageParticle.clearResizer()
+    this.tableTool.dispose()
   }
 
   public setDragState() {

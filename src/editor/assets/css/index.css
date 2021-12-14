@@ -108,3 +108,83 @@
   position: absolute;
   opacity: 0.5;
 }
+
+.table-tool__row {
+  position: absolute;
+  width: 12px;
+  border-radius: 6.5px;
+  overflow: hidden;
+  background-color: #E2E6ED;
+}
+
+.table-tool__row .table-tool__row__item {
+  width: 100%;
+  position: relative;
+}
+
+.table-tool__row .table-tool__row__item::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 2px;
+  width: 8px;
+  height: 1px;
+  background-color: #C0C6CF;
+}
+
+.table-tool__row .table-tool__row__item:last-child:after {
+  display: none;
+}
+
+.table-tool__col {
+  position: absolute;
+  height: 12px;
+  border-radius: 6.5px;
+  overflow: hidden;
+  background-color: #E2E6ED;
+  display: flex;
+}
+
+.table-tool__col .table-tool__col__item {
+  height: 100%;
+  position: relative;
+}
+
+.table-tool__col .table-tool__col__item::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: -1px;
+  width: 1px;
+  height: 8px;
+  z-index: 1;
+  background-color: #C0C6CF;
+}
+
+.table-tool__col .table-tool__col__item:first-child:after {
+  display: none;
+}
+
+.table-tool__row .table-tool__row__item.active,
+.table-tool__col .table-tool__col__item.active {
+  background-color: #C4D7FA;
+}
+
+.table-tool__col .table-tool__anchor {
+  right: -5px;
+  width: 10px;
+  height: 12px;
+  z-index: 9;
+  position: absolute;
+  cursor: col-resize;
+}
+
+.table-tool__row .table-tool__anchor {
+  bottom: -5px;
+  left: 0;
+  width: 12px;
+  height: 10px;
+  z-index: 9;
+  position: absolute;
+  cursor: row-resize;
+}

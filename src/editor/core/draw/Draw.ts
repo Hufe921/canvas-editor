@@ -25,6 +25,7 @@ import { PageNumber } from "./frame/PageNumber"
 import { GlobalObserver } from "../observer/GlobalObserver"
 import { TableParticle } from "./particle/table/TableParticle"
 import { ISearchResult } from "../../interface/Search"
+import { TableTool } from "./particle/table/TableTool"
 
 export class Draw {
 
@@ -50,6 +51,7 @@ export class Draw {
   private imageParticle: ImageParticle
   private textParticle: TextParticle
   private tableParticle: TableParticle
+  private tableTool: TableTool
   private pageNumber: PageNumber
 
   private rowList: IRow[]
@@ -87,6 +89,7 @@ export class Draw {
     this.imageParticle = new ImageParticle(this)
     this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
+    this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
     new GlobalObserver(this)
 
@@ -232,6 +235,10 @@ export class Draw {
 
   public getImageParticle(): ImageParticle {
     return this.imageParticle
+  }
+
+  public getTableTool(): TableTool {
+    return this.tableTool
   }
 
   public getRowCount(): number {
