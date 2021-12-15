@@ -188,3 +188,9 @@
   position: absolute;
   cursor: row-resize;
 }
+
+.table-anchor__line {
+  z-index: 9;
+  position: absolute;
+  border: 1px dotted #000000;
+}

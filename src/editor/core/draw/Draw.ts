@@ -393,7 +393,9 @@ export class Draw {
               maxTrHeight = curTrHeight
             }
           }
-          tr.height = maxTrHeight
+          if (maxTrHeight > tr.height) {
+            tr.height = maxTrHeight
+          }
         }
         // 需要重新计算表格内值
         this.tableParticle.computeRowColInfo(element)
