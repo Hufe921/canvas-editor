@@ -4,12 +4,12 @@
 
 ## snapshot
 
-![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.5.0.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.5.1.png)
 
 ## next features
 
 1. merge table cell
-2. change table cell size
+2. change table cell size ✅
 3. table paging
 4. contextmenu
 
