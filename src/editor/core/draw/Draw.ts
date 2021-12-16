@@ -26,6 +26,8 @@ import { GlobalObserver } from "../observer/GlobalObserver"
 import { TableParticle } from "./particle/table/TableParticle"
 import { ISearchResult } from "../../interface/Search"
 import { TableTool } from "./particle/table/TableTool"
+import { ContextMenu } from "../contextmenu/ContextMenu"
+import { globalMenus } from "../contextmenu/menus/GlobalMenus"
 
 export class Draw {
 
@@ -53,6 +55,7 @@ export class Draw {
   private tableParticle: TableParticle
   private tableTool: TableTool
   private pageNumber: PageNumber
+  private contextMenu: ContextMenu
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -91,6 +94,8 @@ export class Draw {
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
+    this.contextMenu = new ContextMenu(this)
+    this.contextMenu.registerContextMenus(globalMenus)
     new GlobalObserver(this)
 
     const canvasEvent = new CanvasEvent(this)

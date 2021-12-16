@@ -1,5 +1,6 @@
 import { ZERO } from "../../dataset/constant/Common"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
+import { MouseEventButton } from "../../dataset/enum/Event"
 import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
 import { writeTextByElementList } from "../../utils/clipboard"
@@ -106,6 +107,7 @@ export class CanvasEvent {
   }
 
   public mousedown(evt: MouseEvent) {
+    if (evt.button === MouseEventButton.RIGHT) return
     const target = evt.target as HTMLDivElement
     const pageIndex = target.dataset.index
     // 设置pageNo
