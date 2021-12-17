@@ -1,6 +1,7 @@
 import { EDITOR_COMPONENT } from "../../dataset/constant/Editor"
 import { IEditorOption } from "../../interface/Editor"
 import { findParent } from "../../utils"
+import { ContextMenu } from "../contextmenu/ContextMenu"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { ImageParticle } from "../draw/particle/ImageParticle"
@@ -18,6 +19,7 @@ export class GlobalEvent {
   private range: RangeManager
   private imageParticle: ImageParticle
   private tableTool: TableTool
+  private contextMenu: ContextMenu
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -28,6 +30,7 @@ export class GlobalEvent {
     this.range = draw.getRange()
     this.imageParticle = draw.getImageParticle()
     this.tableTool = draw.getTableTool()
+    this.contextMenu = draw.getContextMenu()
   }
 
   public register() {
@@ -70,6 +73,7 @@ export class GlobalEvent {
     this.range.setRange(0, 0)
     this.imageParticle.clearResizer()
     this.tableTool.dispose()
+    this.contextMenu.dispose()
   }
 
   public setDragState() {

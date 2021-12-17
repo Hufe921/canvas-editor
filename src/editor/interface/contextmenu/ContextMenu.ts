@@ -5,9 +5,10 @@ export interface IContextMenuContext {
 }
 
 export interface IRegisterContextMenu {
-  isSeparateLine?: boolean;
+  isDivider?: boolean;
   icon?: string;
   name?: string;
+  shortCut?: string;
   when?: (payload: IContextMenuContext) => boolean;
   callback?: Function;
   childMenus?: IRegisterContextMenu[]

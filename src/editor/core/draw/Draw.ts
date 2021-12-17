@@ -95,7 +95,7 @@ export class Draw {
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
     this.contextMenu = new ContextMenu(this)
-    this.contextMenu.registerContextMenus(globalMenus)
+    this.contextMenu.registerContextMenuList(globalMenus)
     new GlobalObserver(this)
 
     const canvasEvent = new CanvasEvent(this)
@@ -244,6 +244,10 @@ export class Draw {
 
   public getTableTool(): TableTool {
     return this.tableTool
+  }
+
+  public getContextMenu(): ContextMenu {
+    return this.contextMenu
   }
 
   public getRowCount(): number {

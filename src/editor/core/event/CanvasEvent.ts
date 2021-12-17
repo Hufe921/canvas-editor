@@ -4,6 +4,7 @@ import { MouseEventButton } from "../../dataset/enum/Event"
 import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
 import { writeTextByElementList } from "../../utils/clipboard"
+import { ContextMenu } from "../contextmenu/ContextMenu"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { ImageParticle } from "../draw/particle/ImageParticle"
@@ -27,6 +28,7 @@ export class CanvasEvent {
   private historyManager: HistoryManager
   private imageParticle: ImageParticle
   private tableTool: TableTool
+  private contextMenu: ContextMenu
 
   constructor(draw: Draw) {
     this.isAllowDrag = false
@@ -42,6 +44,7 @@ export class CanvasEvent {
     this.historyManager = this.draw.getHistoryManager()
     this.imageParticle = this.draw.getImageParticle()
     this.tableTool = this.draw.getTableTool()
+    this.contextMenu = this.draw.getContextMenu()
   }
 
   public register() {
@@ -175,6 +178,8 @@ export class CanvasEvent {
       const positionList = this.position.getOriginalPositionList()
       this.tableTool.render(elementList[index], positionList[index])
     }
+    // 菜单
+    this.contextMenu.dispose()
   }
 
   public mouseleave(evt: MouseEvent) {
