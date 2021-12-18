@@ -11,7 +11,7 @@
 1. merge table cell
 2. change table cell size ✅
 3. table paging
-4. contextmenu
+4. contextmenu ✅
 
 ## install
 
