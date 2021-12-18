@@ -39,6 +39,7 @@ export class Draw {
   private elementList: IElement[]
   private listener: Listener
 
+  private canvasEvent: CanvasEvent
   private cursor: Cursor
   private range: RangeManager
   private margin: Margin
@@ -93,10 +94,10 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     new GlobalObserver(this)
 
-    const canvasEvent = new CanvasEvent(this)
-    this.cursor = new Cursor(this, canvasEvent)
-    canvasEvent.register()
-    const globalEvent = new GlobalEvent(this, canvasEvent)
+    this.canvasEvent = new CanvasEvent(this)
+    this.cursor = new Cursor(this, this.canvasEvent)
+    this.canvasEvent.register()
+    const globalEvent = new GlobalEvent(this, this.canvasEvent)
     globalEvent.register()
 
     this.rowList = []
@@ -223,6 +224,10 @@ export class Draw {
 
   public getOriginalElementList() {
     return this.elementList
+  }
+
+  public getCanvasEvent(): CanvasEvent {
+    return this.canvasEvent
   }
 
   public getListener(): Listener {

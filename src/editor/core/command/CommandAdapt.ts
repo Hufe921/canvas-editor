@@ -15,6 +15,7 @@ import { getUUID } from "../../utils"
 import { formatElementList } from "../../utils/element"
 import { printImageBase64 } from "../../utils/print"
 import { Draw } from "../draw/Draw"
+import { CanvasEvent } from "../event/CanvasEvent"
 import { HistoryManager } from "../history/HistoryManager"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
@@ -25,6 +26,7 @@ export class CommandAdapt {
   private range: RangeManager
   private position: Position
   private historyManager: HistoryManager
+  private canvasEvent: CanvasEvent
   private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
@@ -32,15 +34,35 @@ export class CommandAdapt {
     this.range = draw.getRange()
     this.position = draw.getPosition()
     this.historyManager = draw.getHistoryManager()
+    this.canvasEvent = draw.getCanvasEvent()
     this.options = draw.getOptions()
   }
 
+  public cut() {
+    this.canvasEvent.cut()
+  }
+
+  public copy() {
+    this.canvasEvent.copy()
+  }
+
+  public async paste() {
+    const text = await navigator.clipboard.readText()
+    if (text) {
+      this.canvasEvent.input(text)
+    }
+  }
+
+  public selectAll() {
+    this.canvasEvent.selectAll()
+  }
+
   public undo() {
-    return this.historyManager.undo()
+    this.historyManager.undo()
   }
 
   public redo() {
-    return this.historyManager.redo()
+    this.historyManager.redo()
   }
 
   public painter() {
