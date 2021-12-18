@@ -4,7 +4,6 @@ import { MouseEventButton } from "../../dataset/enum/Event"
 import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
 import { writeTextByElementList } from "../../utils/clipboard"
-import { ContextMenu } from "../contextmenu/ContextMenu"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { ImageParticle } from "../draw/particle/ImageParticle"
@@ -28,7 +27,6 @@ export class CanvasEvent {
   private historyManager: HistoryManager
   private imageParticle: ImageParticle
   private tableTool: TableTool
-  private contextMenu: ContextMenu
 
   constructor(draw: Draw) {
     this.isAllowDrag = false
@@ -44,7 +42,6 @@ export class CanvasEvent {
     this.historyManager = this.draw.getHistoryManager()
     this.imageParticle = this.draw.getImageParticle()
     this.tableTool = this.draw.getTableTool()
-    this.contextMenu = this.draw.getContextMenu()
   }
 
   public register() {
@@ -178,8 +175,6 @@ export class CanvasEvent {
       const positionList = this.position.getOriginalPositionList()
       this.tableTool.render(elementList[index], positionList[index])
     }
-    // 菜单
-    this.contextMenu.dispose()
   }
 
   public mouseleave(evt: MouseEvent) {
@@ -308,24 +303,11 @@ export class CanvasEvent {
       this.historyManager.redo()
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.C) {
-      if (!isCollspace) {
-        writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
-      }
+      this.copy()
     } else if (evt.ctrlKey && evt.key === KeyMap.X) {
-      if (!isCollspace) {
-        writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
-        elementList.splice(startIndex + 1, endIndex - startIndex)
-        const curIndex = startIndex
-        this.range.setRange(curIndex, curIndex)
-        this.draw.render({ curIndex })
-      }
+      this.cut()
     } else if (evt.ctrlKey && evt.key === KeyMap.A) {
-      this.range.setRange(0, position.length - 1)
-      this.draw.render({
-        isSubmitHistory: false,
-        isSetCursor: false,
-        isComputeRowList: false
-      })
+      this.selectAll()
     }
   }
 
@@ -333,6 +315,7 @@ export class CanvasEvent {
     if (!this.cursor) return
     const cursorPosition = this.position.getCursorPosition()
     if (!data || !cursorPosition || this.isCompositing) return
+    const text = data.replaceAll(`\n`, ZERO)
     const elementList = this.draw.getElementList()
     const agentDom = this.cursor.getAgentDom()
     agentDom.value = ''
@@ -346,7 +329,7 @@ export class CanvasEvent {
       const { tdId, trId, tableId } = positionContext
       restArg = { tdId, trId, tableId }
     }
-    const inputData: IElement[] = data.split('').map(value => ({
+    const inputData: IElement[] = text.split('').map(value => ({
       value,
       ...restArg
     }))
@@ -366,10 +349,34 @@ export class CanvasEvent {
     this.draw.render({ curIndex })
   }
 
-  public paste(evt: ClipboardEvent) {
-    const text = evt.clipboardData?.getData('text')
-    this.input(text?.replaceAll(`\n`, ZERO) || '')
-    evt.preventDefault()
+  public cut() {
+    const { startIndex, endIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    if (startIndex !== endIndex) {
+      writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
+      elementList.splice(startIndex + 1, endIndex - startIndex)
+      const curIndex = startIndex
+      this.range.setRange(curIndex, curIndex)
+      this.draw.render({ curIndex })
+    }
+  }
+
+  public copy() {
+    const { startIndex, endIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    if (startIndex !== endIndex) {
+      writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
+    }
+  }
+
+  public selectAll() {
+    const position = this.position.getPositionList()
+    this.range.setRange(0, position.length - 1)
+    this.draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false,
+      isComputeRowList: false
+    })
   }
 
   public compositionstart() {

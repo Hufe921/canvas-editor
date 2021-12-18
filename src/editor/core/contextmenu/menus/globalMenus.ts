@@ -1,4 +1,5 @@
 import { IRegisterContextMenu } from "../../../interface/contextmenu/ContextMenu"
+import { Command } from "../../command/Command"
 
 export const globalMenus: IRegisterContextMenu[] = [
   {
@@ -7,9 +8,8 @@ export const globalMenus: IRegisterContextMenu[] = [
     when: (payload) => {
       return payload.editorHasSelection
     },
-    callback: () => {
-      console.log(this)
-      console.log('cut')
+    callback: (command: Command) => {
+      command.executeCut()
     }
   },
   {
@@ -18,8 +18,8 @@ export const globalMenus: IRegisterContextMenu[] = [
     when: (payload) => {
       return payload.editorHasSelection
     },
-    callback: () => {
-      console.log('copy')
+    callback: (command: Command) => {
+      command.executeCopy()
     }
   },
   {
@@ -28,8 +28,8 @@ export const globalMenus: IRegisterContextMenu[] = [
     when: (payload) => {
       return payload.editorTextFocus
     },
-    callback: () => {
-      console.log('paste')
+    callback: (command: Command) => {
+      command.executePaste()
     }
   },
   {
@@ -38,8 +38,8 @@ export const globalMenus: IRegisterContextMenu[] = [
     when: (payload) => {
       return payload.editorTextFocus
     },
-    callback: () => {
-      console.log('all')
+    callback: (command: Command) => {
+      command.executeSelectAll()
     }
   },
   {
@@ -49,8 +49,8 @@ export const globalMenus: IRegisterContextMenu[] = [
     icon: 'print',
     name: '打印',
     when: () => true,
-    callback: () => {
-      console.log('search')
+    callback: (command: Command) => {
+      command.executePrint()
     }
   }
 ]

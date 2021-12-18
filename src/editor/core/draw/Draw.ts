@@ -26,8 +26,6 @@ import { GlobalObserver } from "../observer/GlobalObserver"
 import { TableParticle } from "./particle/table/TableParticle"
 import { ISearchResult } from "../../interface/Search"
 import { TableTool } from "./particle/table/TableTool"
-import { ContextMenu } from "../contextmenu/ContextMenu"
-import { globalMenus } from "../contextmenu/menus/GlobalMenus"
 
 export class Draw {
 
@@ -41,6 +39,7 @@ export class Draw {
   private elementList: IElement[]
   private listener: Listener
 
+  private canvasEvent: CanvasEvent
   private cursor: Cursor
   private range: RangeManager
   private margin: Margin
@@ -55,7 +54,6 @@ export class Draw {
   private tableParticle: TableParticle
   private tableTool: TableTool
   private pageNumber: PageNumber
-  private contextMenu: ContextMenu
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -94,14 +92,12 @@ export class Draw {
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
-    this.contextMenu = new ContextMenu(this)
-    this.contextMenu.registerContextMenuList(globalMenus)
     new GlobalObserver(this)
 
-    const canvasEvent = new CanvasEvent(this)
-    this.cursor = new Cursor(this, canvasEvent)
-    canvasEvent.register()
-    const globalEvent = new GlobalEvent(this, canvasEvent)
+    this.canvasEvent = new CanvasEvent(this)
+    this.cursor = new Cursor(this, this.canvasEvent)
+    this.canvasEvent.register()
+    const globalEvent = new GlobalEvent(this, this.canvasEvent)
     globalEvent.register()
 
     this.rowList = []
@@ -230,6 +226,10 @@ export class Draw {
     return this.elementList
   }
 
+  public getCanvasEvent(): CanvasEvent {
+    return this.canvasEvent
+  }
+
   public getListener(): Listener {
     return this.listener
   }
@@ -244,10 +244,6 @@ export class Draw {
 
   public getTableTool(): TableTool {
     return this.tableTool
-  }
-
-  public getContextMenu(): ContextMenu {
-    return this.contextMenu
   }
 
   public getRowCount(): number {

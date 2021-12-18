@@ -1,6 +1,8 @@
 import { EDITOR_COMPONENT } from "../../dataset/constant/Editor"
 import { EditorComponent } from "../../dataset/enum/Editor"
 import { IContextMenuContext, IRegisterContextMenu } from "../../interface/contextmenu/ContextMenu"
+import { findParent } from "../../utils"
+import { Command } from "../command/Command"
 import { Draw } from "../draw/Draw"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
@@ -14,6 +16,7 @@ interface IRenderPayload {
 
 export class ContextMenu {
 
+  private command: Command
   private range: RangeManager
   private position: Position
   private container: HTMLDivElement
@@ -21,7 +24,8 @@ export class ContextMenu {
   private contextMenuContainerList: HTMLDivElement[]
   private contextMenuRelationShip: Map<HTMLDivElement, HTMLDivElement>
 
-  constructor(draw: Draw) {
+  constructor(draw: Draw, command: Command) {
+    this.command = command
     this.range = draw.getRange()
     this.position = draw.getPosition()
     this.container = draw.getContainer()
@@ -30,6 +34,8 @@ export class ContextMenu {
     this.contextMenuRelationShip = new Map()
     // 接管菜单权限
     document.addEventListener('contextmenu', this._proxyContextMenuEvent.bind(this))
+    // 副作用处理
+    document.addEventListener('mousedown', this._handleEffect.bind(this))
   }
 
   private _proxyContextMenuEvent(evt: MouseEvent) {
@@ -57,6 +63,21 @@ export class ContextMenu {
       })
     }
     evt.preventDefault()
+  }
+
+  private _handleEffect(evt: MouseEvent) {
+    if (this.contextMenuContainerList.length) {
+      // 点击非右键菜单内
+      const contextMenuDom = findParent(
+        evt.target as Element,
+        (node: Node & Element) => !!node && node.nodeType === 1
+          && node.getAttribute(EDITOR_COMPONENT) === EditorComponent.CONTEXTMENU,
+        true
+      )
+      if (!contextMenuDom) {
+        this.dispose()
+      }
+    }
   }
 
   private _getContext(): IContextMenuContext {
@@ -135,7 +156,7 @@ export class ContextMenu {
           }
           menuItem.onclick = () => {
             if (menu.callback) {
-              menu.callback()
+              menu.callback(this.command)
             }
             this.dispose()
           }

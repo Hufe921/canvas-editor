@@ -40,7 +40,11 @@ export class CursorAgent {
   }
 
   private _paste(evt: ClipboardEvent) {
-    this.canvasEvent.paste(evt)
+    const text = evt.clipboardData?.getData('text')
+    if (text) {
+      this.canvasEvent.input(text)
+    }
+    evt.preventDefault()
   }
 
   private _compositionstart() {
