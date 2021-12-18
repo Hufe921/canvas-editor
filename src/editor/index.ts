@@ -8,11 +8,16 @@ import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
+import { Register } from './core/register/Register'
+import { globalMenus } from './core/contextmenu/menus/GlobalMenus'
+import { ContextMenu } from './core/contextmenu/ContextMenu'
+import { IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
 
 export default class Editor {
 
   public command: Command
   public listener: Listener
+  public register: Register
 
   constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
     const editorOptions: Required<IEditorOption> = {
@@ -52,6 +57,13 @@ export default class Editor {
     const draw = new Draw(container, editorOptions, elementList, this.listener)
     // 命令
     this.command = new Command(new CommandAdapt(draw))
+    // 菜单
+    const contextMenu = new ContextMenu(draw, this.command)
+    // 注册
+    this.register = new Register({
+      contextMenu
+    })
+    this.register.contextMenuList(globalMenus)
   }
 
 }
@@ -65,5 +77,6 @@ export {
 
 // 对外类型
 export type {
-  IElement
+  IElement,
+  IRegisterContextMenu
 }

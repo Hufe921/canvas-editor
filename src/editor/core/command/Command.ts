@@ -4,6 +4,10 @@ import { CommandAdapt } from "./CommandAdapt"
 
 export class Command {
 
+  private static cut: Function
+  private static copy: Function
+  private static paste: Function
+  private static selectAll: Function
   private static undo: Function
   private static redo: Function
   private static painter: Function
@@ -30,6 +34,10 @@ export class Command {
   private static pageScaleAdd: Function
 
   constructor(adapt: CommandAdapt) {
+    Command.cut = adapt.cut.bind(adapt)
+    Command.copy = adapt.copy.bind(adapt)
+    Command.paste = adapt.paste.bind(adapt)
+    Command.selectAll = adapt.selectAll.bind(adapt)
     Command.undo = adapt.undo.bind(adapt)
     Command.redo = adapt.redo.bind(adapt)
     Command.painter = adapt.painter.bind(adapt)
@@ -54,6 +62,23 @@ export class Command {
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
+  }
+
+  // 全局命令
+  public executeCut() {
+    return Command.cut()
+  }
+
+  public executeCopy() {
+    return Command.copy()
+  }
+
+  public executePaste() {
+    return Command.paste()
+  }
+
+  public executeSelectAll() {
+    return Command.selectAll()
   }
 
   // 撤销、重做、格式刷、清除格式
