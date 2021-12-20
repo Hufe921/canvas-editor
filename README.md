@@ -8,8 +8,8 @@
 
 ## next features
 
-1. merge table cell
-2. change table cell size ✅
+1. table tool ✅
+2. table cell size ✅
 3. table paging
 4. contextmenu ✅
 
