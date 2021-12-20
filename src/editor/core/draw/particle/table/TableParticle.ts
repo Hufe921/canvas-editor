@@ -69,7 +69,7 @@ export class TableParticle {
         let colIndex = 0
         const preTd = tr.tdList[d - 1]
         if (preTd) {
-          colIndex = preTd.colIndex! + (offsetXIndex || 1)
+          colIndex = preTd.colIndex! + offsetXIndex + 1
           if (preTd.colspan > 1) {
             colIndex += preTd.colspan - 1
           }

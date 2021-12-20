@@ -26,6 +26,13 @@ export class Command {
   private static right: Function
   private static rowMargin: Function
   private static insertTable: Function
+  private static insertTableTopRow: Function
+  private static insertTableBottomRow: Function
+  private static insertTableLeftCol: Function
+  private static insertTableRightCol: Function
+  private static deleteTableRow: Function
+  private static deleteTableCol: Function
+  private static deleteTable: Function
   private static image: Function
   private static search: Function
   private static print: Function
@@ -56,6 +63,13 @@ export class Command {
     Command.right = adapt.rowFlex.bind(adapt)
     Command.rowMargin = adapt.rowMargin.bind(adapt)
     Command.insertTable = adapt.insertTable.bind(adapt)
+    Command.insertTableTopRow = adapt.insertTableTopRow.bind(adapt)
+    Command.insertTableBottomRow = adapt.insertTableBottomRow.bind(adapt)
+    Command.insertTableLeftCol = adapt.insertTableLeftCol.bind(adapt)
+    Command.insertTableRightCol = adapt.insertTableRightCol.bind(adapt)
+    Command.deleteTableRow = adapt.deleteTableRow.bind(adapt)
+    Command.deleteTableCol = adapt.deleteTableCol.bind(adapt)
+    Command.deleteTable = adapt.deleteTable.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
@@ -154,6 +168,34 @@ export class Command {
   // 表格、图片上传、搜索、打印
   public executeInsertTable(row: number, col: number) {
     return Command.insertTable(row, col)
+  }
+
+  public executeInsertTableTopRow() {
+    return Command.insertTableTopRow()
+  }
+
+  public executeInsertTableBottomRow() {
+    return Command.insertTableBottomRow()
+  }
+
+  public executeInsertTableLeftCol() {
+    return Command.insertTableLeftCol()
+  }
+
+  public executeInsertTableRightCol() {
+    return Command.insertTableRightCol()
+  }
+
+  public executDeleteTableRow() {
+    return Command.deleteTableRow()
+  }
+
+  public executDeleteTableCol() {
+    return Command.deleteTableCol()
+  }
+
+  public executDeleteTable() {
+    return Command.deleteTable()
   }
 
   public executeImage(payload: IDrawImagePayload) {

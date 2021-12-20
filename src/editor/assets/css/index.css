@@ -223,7 +223,7 @@
 }
 
 .contextmenu-content .contextmenu-item {
-  width: 180px;
+  min-width: 140px;
   padding: 0 32px 0 16px;
   height: 30px;
   display: flex;
@@ -248,6 +248,7 @@
   flex: 1;
   text-align: right;
   line-height: 30px;
+  margin-left: 20px;
 }
 
 .contextmenu-content .contextmenu-item i {
@@ -269,4 +270,40 @@
 
 .contextmenu-print {
   background-image: url(../../assets/images/print.svg);
+}
+
+.contextmenu-insert-row-col {
+  background-image: url(../../assets/images/insert-row-col.svg);
+}
+
+.contextmenu-insert-top-row {
+  background-image: url(../../assets/images/insert-top-row.svg);
+}
+
+.contextmenu-insert-bottom-row {
+  background-image: url(../../assets/images/insert-bottom-row.svg);
+}
+
+.contextmenu-insert-left-col {
+  background-image: url(../../assets/images/insert-left-col.svg);
+}
+
+.contextmenu-insert-right-col {
+  background-image: url(../../assets/images/insert-right-col.svg);
+}
+
+.contextmenu-delete-row-col {
+  background-image: url(../../assets/images/delete-row-col.svg);
+}
+
+.contextmenu-delete-row {
+  background-image: url(../../assets/images/delete-row.svg);
+}
+
+.contextmenu-delete-col {
+  background-image: url(../../assets/images/delete-col.svg);
+}
+
+.contextmenu-delete-table {
+  background-image: url(../../assets/images/delete-table.svg);
 }

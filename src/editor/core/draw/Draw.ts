@@ -123,6 +123,11 @@ export class Draw {
     return width - margins[1] - margins[3]
   }
 
+  public getOriginalInnerWidth(): number {
+    const { width, margins } = this.options
+    return width - margins[1] - margins[3]
+  }
+
   public getMargins(): number[] {
     return this.options.margins.map(m => m * this.options.scale)
   }

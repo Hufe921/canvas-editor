@@ -15,6 +15,7 @@ import { getUUID } from "../../utils"
 import { formatElementList } from "../../utils/element"
 import { printImageBase64 } from "../../utils/print"
 import { Draw } from "../draw/Draw"
+import { TableTool } from "../draw/particle/table/TableTool"
 import { CanvasEvent } from "../event/CanvasEvent"
 import { HistoryManager } from "../history/HistoryManager"
 import { Position } from "../position/Position"
@@ -22,11 +23,14 @@ import { RangeManager } from "../range/RangeManager"
 
 export class CommandAdapt {
 
+  private readonly defaultWidth: number = 40
+
   private draw: Draw
   private range: RangeManager
   private position: Position
   private historyManager: HistoryManager
   private canvasEvent: CanvasEvent
+  private tableTool: TableTool
   private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
@@ -35,6 +39,7 @@ export class CommandAdapt {
     this.position = draw.getPosition()
     this.historyManager = draw.getHistoryManager()
     this.canvasEvent = draw.getCanvasEvent()
+    this.tableTool = draw.getTableTool()
     this.options = draw.getOptions()
   }
 
@@ -289,6 +294,364 @@ export class CommandAdapt {
     }
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex, isSetCursor: false })
+  }
+
+  public insertTableTopRow() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tableId } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]
+    // 之前跨行的增加跨行数
+    if (curTr.tdList.length < element.colgroup!.length) {
+      const curTrNo = curTr.tdList[0].rowIndex!
+      for (let t = 0; t < trIndex!; t++) {
+        const tr = curTrList[t]
+        for (let d = 0; d < tr.tdList.length; d++) {
+          const td = tr.tdList[d]
+          if (td.rowspan > 1 && td.rowIndex! + td.rowspan >= curTrNo + 1) {
+            td.rowspan += 1
+          }
+        }
+      }
+    }
+    // 增加当前行
+    const newTrId = getUUID()
+    const newTr: ITr = {
+      height: curTr.height,
+      id: newTrId,
+      tdList: []
+    }
+    for (let t = 0; t < curTr.tdList.length; t++) {
+      const curTd = curTr.tdList[t]
+      const newTdId = getUUID()
+      newTr.tdList.push({
+        id: newTdId,
+        rowspan: 1,
+        colspan: curTd.colspan,
+        value: [{
+          value: ZERO,
+          size: 16,
+          tableId,
+          trId: newTrId,
+          tdId: newTdId
+        }]
+      })
+    }
+    curTrList.splice(trIndex!, 0, newTr)
+    // 重新设置上下文
+    this.position.setPositionContext({
+      isTable: true,
+      index,
+      trIndex,
+      tdIndex: 0,
+      tdId: newTr.tdList[0].id,
+      trId: newTr.id,
+      tableId
+    })
+    this.range.setRange(0, 0)
+    // 重新渲染
+    this.draw.render({ curIndex: 0 })
+    const position = this.position.getOriginalPositionList()
+    this.tableTool.render(element, position[index!])
+  }
+
+  public insertTableBottomRow() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tableId } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]
+    const anchorTr = curTrList.length - 1 === trIndex
+      ? curTr
+      : curTrList[trIndex! + 1]
+    // 之前/当前行跨行的增加跨行数
+    if (anchorTr.tdList.length < element.colgroup!.length) {
+      const curTrNo = anchorTr.tdList[0].rowIndex!
+      for (let t = 0; t < trIndex! + 1; t++) {
+        const tr = curTrList[t]
+        for (let d = 0; d < tr.tdList.length; d++) {
+          const td = tr.tdList[d]
+          if (td.rowspan > 1 && td.rowIndex! + td.rowspan >= curTrNo + 1) {
+            td.rowspan += 1
+          }
+        }
+      }
+    }
+    // 增加当前行
+    const newTrId = getUUID()
+    const newTr: ITr = {
+      height: anchorTr.height,
+      id: newTrId,
+      tdList: []
+    }
+    for (let t = 0; t < anchorTr.tdList.length; t++) {
+      const curTd = anchorTr.tdList[t]
+      const newTdId = getUUID()
+      newTr.tdList.push({
+        id: newTdId,
+        rowspan: 1,
+        colspan: curTd.colspan,
+        value: [{
+          value: ZERO,
+          size: 16,
+          tableId,
+          trId: newTrId,
+          tdId: newTdId
+        }]
+      })
+    }
+    curTrList.splice(trIndex! + 1, 0, newTr)
+    // 重新设置上下文
+    this.position.setPositionContext({
+      isTable: true,
+      index,
+      trIndex: trIndex! + 1,
+      tdIndex: 0,
+      tdId: newTr.tdList[0].id,
+      trId: newTr.id,
+      tableId
+    })
+    this.range.setRange(0, 0)
+    // 重新渲染
+    this.draw.render({ curIndex: 0 })
+    const position = this.position.getOriginalPositionList()
+    this.tableTool.render(element, position[index!])
+  }
+
+  public insertTableLeftCol() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, tdIndex, tableId } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTdIndex = tdIndex!
+    // 增加列
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      const tdId = getUUID()
+      tr.tdList.splice(curTdIndex, 0, {
+        id: tdId,
+        rowspan: 1,
+        colspan: 1,
+        value: [{
+          value: ZERO,
+          size: 16,
+          tableId,
+          trId: tr.id,
+          tdId
+        }]
+      })
+    }
+    // 重新计算宽度
+    const colgroup = element.colgroup!
+    colgroup.splice(curTdIndex, 0, {
+      width: this.defaultWidth
+    })
+    const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
+    const width = this.draw.getOriginalInnerWidth()
+    if (colgroupWidth > width) {
+      const adjustWidth = (colgroupWidth - width) / colgroup.length
+      for (let g = 0; g < colgroup.length; g++) {
+        const group = colgroup[g]
+        group.width -= adjustWidth
+      }
+    }
+    // 重新设置上下文
+    this.position.setPositionContext({
+      isTable: true,
+      index,
+      trIndex: 0,
+      tdIndex: curTdIndex,
+      tdId: curTrList[0].tdList[curTdIndex].id,
+      trId: curTrList[0].id,
+      tableId
+    })
+    this.range.setRange(0, 0)
+    // 重新渲染
+    this.draw.render({ curIndex: 0 })
+    const position = this.position.getOriginalPositionList()
+    this.tableTool.render(element, position[index!])
+  }
+
+  public insertTableRightCol() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, tdIndex, tableId } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTdIndex = tdIndex! + 1
+    // 增加列
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      const tdId = getUUID()
+      tr.tdList.splice(curTdIndex, 0, {
+        id: tdId,
+        rowspan: 1,
+        colspan: 1,
+        value: [{
+          value: ZERO,
+          size: 16,
+          tableId,
+          trId: tr.id,
+          tdId
+        }]
+      })
+    }
+    // 重新计算宽度
+    const colgroup = element.colgroup!
+    colgroup.splice(curTdIndex, 0, {
+      width: this.defaultWidth
+    })
+    const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
+    const width = this.draw.getOriginalInnerWidth()
+    if (colgroupWidth > width) {
+      const adjustWidth = (colgroupWidth - width) / colgroup.length
+      for (let g = 0; g < colgroup.length; g++) {
+        const group = colgroup[g]
+        group.width -= adjustWidth
+      }
+    }
+    // 重新设置上下文
+    this.position.setPositionContext({
+      isTable: true,
+      index,
+      trIndex: 0,
+      tdIndex: curTdIndex,
+      tdId: curTrList[0].tdList[curTdIndex].id,
+      trId: curTrList[0].id,
+      tableId
+    })
+    this.range.setRange(0, 0)
+    // 重新渲染
+    this.draw.render({ curIndex: 0 })
+    const position = this.position.getOriginalPositionList()
+    this.tableTool.render(element, position[index!])
+  }
+
+  public deleteTableRow() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]
+    // 如果是最后一行，直接删除整个表格
+    if (curTrList.length <= 1) {
+      this.deleteTable()
+      return
+    }
+    // 补跨行
+    for (let d = 0; d < curTr.tdList.length; d++) {
+      const td = curTr.tdList[d]
+      if (td.rowspan > 1) {
+        let start = trIndex! + 1
+        while (start < trIndex! + td.rowspan) {
+          const tdId = getUUID()
+          const tr = curTrList[start]
+          tr.tdList.splice(d, 0, {
+            id: tdId,
+            rowspan: 1,
+            colspan: 1,
+            value: [{
+              value: ZERO,
+              size: 16,
+              tableId: element.id,
+              trId: tr.id,
+              tdId
+            }]
+          })
+          start += 1
+        }
+      }
+    }
+    // 删除当前行
+    curTrList.splice(trIndex!, 1)
+    // 重新设置上下文
+    this.position.setPositionContext({
+      isTable: false
+    })
+    this.range.setRange(0, 0)
+    // 重新渲染
+    this.draw.render({ isSetCursor: false })
+    this.tableTool.dispose()
+  }
+
+  public deleteTableCol() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, tdIndex, trIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTd = curTrList[trIndex!].tdList[tdIndex!]
+    const curColIndex = curTd.colIndex!
+    // 如果是最后一列，直接删除整个表格
+    const moreTdTr = curTrList.find(tr => tr.tdList.length > 1)
+    if (!moreTdTr) {
+      this.deleteTable()
+      return
+    }
+    // 跨列处理
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        if (td.colspan > 1) {
+          const tdColIndex = td.colIndex!
+          // 交叉减去一列
+          if (tdColIndex <= curColIndex && tdColIndex + td.colspan - 1 >= curColIndex) {
+            td.colspan -= 1
+          }
+        }
+      }
+    }
+    // 删除当前列
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      let start = -1
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        if (td.colIndex === curColIndex) {
+          start = d
+        }
+      }
+      if (~start) {
+        tr.tdList.splice(start, 1)
+      }
+    }
+    element.colgroup?.splice(curColIndex, 1)
+    // 重新设置上下文
+    this.position.setPositionContext({
+      isTable: false
+    })
+    this.range.setRange(0, 0)
+    // 重新渲染
+    this.draw.render({ isSetCursor: false })
+    this.tableTool.dispose()
+  }
+
+  public deleteTable() {
+    const positionContext = this.position.getPositionContext()
+    if (positionContext.isTable) {
+      const originalElementList = this.draw.getOriginalElementList()
+      originalElementList.splice(positionContext.index!, 1)
+      const curIndex = positionContext.index! - 1
+      this.position.setPositionContext({
+        isTable: false,
+        index: curIndex
+      })
+      this.range.setRange(curIndex, curIndex)
+      this.draw.render({ curIndex })
+      this.tableTool.dispose()
+    }
   }
 
   public image(payload: IDrawImagePayload) {

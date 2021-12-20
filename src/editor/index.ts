@@ -11,6 +11,7 @@ import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
 import { globalMenus } from './core/contextmenu/menus/GlobalMenus'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
+import { tableMenus } from './core/contextmenu/menus/tableMenus'
 import { IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
 
 export default class Editor {
@@ -64,6 +65,7 @@ export default class Editor {
       contextMenu
     })
     this.register.contextMenuList(globalMenus)
+    this.register.contextMenuList(tableMenus)
   }
 
 }
