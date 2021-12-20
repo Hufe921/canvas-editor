@@ -329,8 +329,17 @@ export class CanvasEvent {
       const { tdId, trId, tableId } = positionContext
       restArg = { tdId, trId, tableId }
     }
+    const element = elementList[endIndex]
     const inputData: IElement[] = text.split('').map(value => ({
       value,
+      font: element.font,
+      size: element.size,
+      bold: element.bold,
+      color: element.color,
+      highlight: element.highlight,
+      italic: element.italic,
+      underline: element.underline,
+      strikeout: element.strikeout,
       ...restArg
     }))
     let start = 0
