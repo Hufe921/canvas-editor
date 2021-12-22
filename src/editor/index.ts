@@ -13,6 +13,8 @@ import { globalMenus } from './core/contextmenu/menus/GlobalMenus'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { tableMenus } from './core/contextmenu/menus/tableMenus'
 import { IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
+import { EditorComponent } from './dataset/enum/Editor'
+import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 
 export default class Editor {
 
@@ -49,6 +51,7 @@ export default class Editor {
       margins: [100, 120, 100, 120],
       tdPadding: 5,
       defaultTdHeight: 40,
+      defaultHyperlinkColor: '#0000FF',
       ...options
     }
     formatElementList(elementList)
@@ -74,7 +77,9 @@ export default class Editor {
 export {
   Editor,
   RowFlex,
-  ElementType
+  ElementType,
+  EditorComponent,
+  EDITOR_COMPONENT
 }
 
 // 对外类型

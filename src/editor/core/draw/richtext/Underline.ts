@@ -9,10 +9,10 @@ export class Underline {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, x: number, y: number, width: number) {
+  public render(ctx: CanvasRenderingContext2D, color: string, x: number, y: number, width: number) {
     const { underlineColor } = this.options
     ctx.save()
-    ctx.strokeStyle = underlineColor
+    ctx.strokeStyle = color || underlineColor
     ctx.beginPath()
     ctx.moveTo(x, y)
     ctx.lineTo(x + width, y)

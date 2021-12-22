@@ -8,7 +8,8 @@ export function formatElementList(elementList: IElement[]) {
       value: ZERO
     })
   }
-  for (let i = 0; i < elementList.length; i++) {
+  let i = 0
+  while (i < elementList.length) {
     const el = elementList[i]
     if (el.type === ElementType.TABLE) {
       const tableId = getUUID()
@@ -32,6 +33,23 @@ export function formatElementList(elementList: IElement[]) {
           }
         }
       }
+    } else if (el.type === ElementType.HYPERLINK) {
+      const valueList = el.valueList || []
+      // 移除父节点
+      elementList.splice(i, 1)
+      // 追加字节点
+      if (valueList.length) {
+        const hyperlinkId = getUUID()
+        for (let v = 0; v < valueList.length; v++) {
+          const value = valueList[v]
+          value.type = el.type
+          value.url = el.url
+          value.hyperlinkId = hyperlinkId
+          elementList.splice(i, 0, value)
+          i++
+        }
+      }
+      i--
     }
     if (el.value === '\n') {
       el.value = ZERO
@@ -39,5 +57,6 @@ export function formatElementList(elementList: IElement[]) {
     if (el.type === ElementType.IMAGE) {
       el.id = getUUID()
     }
+    i++
   }
 }

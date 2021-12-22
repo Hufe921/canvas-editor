@@ -1,0 +1,119 @@
+.dialog-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .5;
+  background: #000000;
+  z-index: 99;
+}
+
+.dialog-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+  z-index: 999;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dialog {
+  position: absolute;
+  padding: 0 30px 30px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px 0 rgb(56 56 56 / 20%);
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+}
+
+.dialog-title {
+  position: relative;
+  border-bottom: 1px solid #e2e6ed;
+  margin-bottom: 30px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.dialog-title i {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  display: inline-block;
+  background: url(../../assets/images/close.svg);
+}
+
+.dialog-option__item {
+  margin-bottom: 18px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+}
+
+.dialog-option__item span {
+  margin-right: 12px;
+  font-size: 14px;
+  color: #3d4757;
+}
+
+.dialog-option__item input {
+  width: 276px;
+  height: 30px;
+  border-radius: 2px;
+  border: 1px solid #d3d3d3;
+  min-height: 30px;
+  line-height: 17px;
+  padding: 5px;
+  box-sizing: border-box;
+  outline: none;
+  appearance: none;
+  user-select: none;
+}
+
+.dialog-option__item input:focus {
+  border-color: #4991f2;
+}
+
+.dialog-menu {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.dialog-menu button {
+  position: relative;
+  display: inline-block;
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  background: #ffffff;
+  line-height: 22px;
+  padding: 0 16px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dialog-menu button:hover {
+  background: rgba(25, 55, 88, .04);
+}
+
+.dialog-menu__cancel {
+  margin-right: 16px;
+}
+
+.dialog-menu button[type='primary'] {
+  color: #ffffff;
+  background: #4991f2;
+  border-color: #4991f2;
+}
+
+.dialog-menu button[type='primary']:hover {
+  background: #5b9cf3;
+  border-color: #5b9cf3;
+}

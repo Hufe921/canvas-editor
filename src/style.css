@@ -357,6 +357,10 @@ ul {
   margin-right: 0;
 }
 
+.menu-item__hyperlink i {
+  background-image: url('./assets/images/hyperlink.svg');
+}
+
 .menu-item__search {
   position: relative;
 }

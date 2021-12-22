@@ -654,6 +654,30 @@ export class CommandAdapt {
     }
   }
 
+  public hyperlink(payload: IElement) {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (startIndex === 0 && endIndex === 0) return
+    const elementList = this.draw.getElementList()
+    const { valueList, url } = payload
+    const hyperlinkId = getUUID()
+    const newElementList = valueList?.map<IElement>(v => ({
+      url,
+      hyperlinkId,
+      value: v.value,
+      type: ElementType.HYPERLINK
+    }))
+    if (!newElementList) return
+    const start = startIndex + 1
+    if (startIndex === endIndex) {
+      elementList.splice(start, 0, ...newElementList)
+    } else {
+      elementList.splice(start, endIndex - startIndex, ...newElementList)
+    }
+    const curIndex = start + newElementList.length - 1
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
+  }
+
   public image(payload: IDrawImagePayload) {
     const { startIndex, endIndex } = this.range.getRange()
     if (startIndex === 0 && endIndex === 0) return
@@ -706,7 +730,8 @@ export class CommandAdapt {
       // 搜索文本
       function searchClosure(payload: string | null, type: EditorContext, elementList: IElement[], restArgs?: ISearchResultRestArgs) {
         if (!payload) return
-        const text = elementList.map(e => !e.type || e.type === ElementType.TEXT ? e.value : ZERO)
+        const { TEXT, HYPERLINK } = ElementType
+        const text = elementList.map(e => !e.type || e.type === TEXT || e.type === HYPERLINK ? e.value : ZERO)
           .filter(Boolean)
           .join('')
         const matchStartIndexList = []

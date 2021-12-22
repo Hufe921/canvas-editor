@@ -26,4 +26,5 @@ export interface IEditorOption {
   margins?: [top: number, right: number, bootom: number, left: number],
   tdPadding?: number;
   defaultTdHeight?: number;
+  defaultHyperlinkColor?: string;
 }

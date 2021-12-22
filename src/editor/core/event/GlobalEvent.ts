@@ -3,6 +3,7 @@ import { IEditorOption } from "../../interface/Editor"
 import { findParent } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
+import { HyperlinkParticle } from "../draw/particle/HyperlinkParticle"
 import { ImageParticle } from "../draw/particle/ImageParticle"
 import { TableTool } from "../draw/particle/table/TableTool"
 import { RangeManager } from "../range/RangeManager"
@@ -18,6 +19,7 @@ export class GlobalEvent {
   private range: RangeManager
   private imageParticle: ImageParticle
   private tableTool: TableTool
+  private hyperlinkParticle: HyperlinkParticle
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -28,6 +30,7 @@ export class GlobalEvent {
     this.range = draw.getRange()
     this.imageParticle = draw.getImageParticle()
     this.tableTool = draw.getTableTool()
+    this.hyperlinkParticle = draw.getHyperlinkParticle()
   }
 
   public register() {
@@ -70,6 +73,7 @@ export class GlobalEvent {
     this.range.setRange(0, 0)
     this.imageParticle.clearResizer()
     this.tableTool.dispose()
+    this.hyperlinkParticle.clearHyperlinkPopup()
   }
 
   public setDragState() {

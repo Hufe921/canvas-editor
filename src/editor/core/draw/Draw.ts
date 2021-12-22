@@ -26,6 +26,7 @@ import { GlobalObserver } from "../observer/GlobalObserver"
 import { TableParticle } from "./particle/table/TableParticle"
 import { ISearchResult } from "../../interface/Search"
 import { TableTool } from "./particle/table/TableTool"
+import { HyperlinkParticle } from "./particle/HyperlinkParticle"
 
 export class Draw {
 
@@ -54,6 +55,7 @@ export class Draw {
   private tableParticle: TableParticle
   private tableTool: TableTool
   private pageNumber: PageNumber
+  private hyperlinkParticle: HyperlinkParticle
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -92,6 +94,7 @@ export class Draw {
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
+    this.hyperlinkParticle = new HyperlinkParticle(this)
     new GlobalObserver(this)
 
     this.canvasEvent = new CanvasEvent(this)
@@ -249,6 +252,10 @@ export class Draw {
 
   public getTableTool(): TableTool {
     return this.tableTool
+  }
+
+  public getHyperlinkParticle(): HyperlinkParticle {
+    return this.hyperlinkParticle
   }
 
   public getRowCount(): number {
@@ -431,11 +438,10 @@ export class Draw {
       const ascent = metrics.boundingBoxAscent + rowMargin
       const descent = metrics.boundingBoxDescent + rowMargin
       const height = ascent + descent
-      const rowElement: IRowElement = {
-        ...element,
+      const rowElement: IRowElement = Object.assign(element, {
         metrics,
         style: this._getFont(element, scale)
-      }
+      })
       // 超过限定宽度
       const preElement = elementList[i - 1]
       if (
@@ -509,9 +515,21 @@ export class Draw {
           }
         }
         positionList.push(positionItem)
+        // 元素绘制
+        if (element.type === ElementType.IMAGE) {
+          this.textParticle.complete()
+          this.imageParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.TABLE) {
+          this.tableParticle.render(ctx, element, x, y)
+        } else if (element.type === ElementType.HYPERLINK) {
+          this.textParticle.complete()
+          this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else {
+          this.textParticle.record(ctx, element, x, y + offsetY)
+        }
         // 下划线绘制
         if (element.underline) {
-          this.underline.render(ctx, x, y + curRow.height, metrics.width)
+          this.underline.render(ctx, element.color!, x, y + curRow.height, metrics.width)
         }
         // 删除线绘制
         if (element.strikeout) {
@@ -520,15 +538,6 @@ export class Draw {
         // 元素高亮
         if (element.highlight) {
           this.highlight.render(ctx, element.highlight, x, y, metrics.width, curRow.height)
-        }
-        // 元素绘制
-        if (element.type === ElementType.IMAGE) {
-          this.textParticle.complete()
-          this.imageParticle.render(ctx, element, x, y + offsetY)
-        } else if (element.type === ElementType.TABLE) {
-          this.tableParticle.render(ctx, element, x, y)
-        } else {
-          this.textParticle.record(ctx, element, x, y + offsetY)
         }
         // 选区绘制
         const { startIndex, endIndex } = this.range.getRange()

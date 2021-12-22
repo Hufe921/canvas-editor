@@ -1,3 +1,4 @@
+import { IElement } from "../.."
 import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawImagePayload } from "../../interface/Draw"
 import { CommandAdapt } from "./CommandAdapt"
@@ -34,6 +35,7 @@ export class Command {
   private static deleteTableCol: Function
   private static deleteTable: Function
   private static image: Function
+  private static hyperlink: Function
   private static search: Function
   private static print: Function
   private static pageScaleRecovery: Function
@@ -71,6 +73,7 @@ export class Command {
     Command.deleteTableCol = adapt.deleteTableCol.bind(adapt)
     Command.deleteTable = adapt.deleteTable.bind(adapt)
     Command.image = adapt.image.bind(adapt)
+    Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
@@ -165,7 +168,7 @@ export class Command {
     return Command.rowMargin(payload)
   }
 
-  // 表格、图片上传、搜索、打印
+  // 表格、图片上传、超链接、搜索、打印
   public executeInsertTable(row: number, col: number) {
     return Command.insertTable(row, col)
   }
@@ -196,6 +199,10 @@ export class Command {
 
   public executDeleteTable() {
     return Command.deleteTable()
+  }
+
+  public executeHyperlink(payload: IElement) {
+    return Command.hyperlink(payload)
   }
 
   public executeImage(payload: IDrawImagePayload) {

@@ -1,5 +1,6 @@
 export enum ElementType {
   TEXT = 'text',
   IMAGE = 'image',
-  TABLE = 'table'
+  TABLE = 'table',
+  HYPERLINK = 'hyperlink'
 }

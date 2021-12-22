@@ -35,9 +35,15 @@ export interface ITableElement {
   tableId?: string;
 }
 
+export interface IHyperlinkElement {
+  valueList?: IElement[];
+  url?: string;
+  hyperlinkId?: string;
+}
+
 export type ITable = ITableAttr & ITableElement
 
-export type IElement = IElementBasic & IElementStyle & ITable
+export type IElement = IElementBasic & IElementStyle & ITable & IHyperlinkElement
 
 export interface IElementMetrics {
   width: number;
