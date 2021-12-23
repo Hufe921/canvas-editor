@@ -9,6 +9,7 @@ export interface ISearchResultRestArgs {
   tableIndex?: number;
   trIndex?: number;
   tdIndex?: number;
+  startIndex?: number;
 }
 
 export type ISearchResult = ISearchResultBasic & ISearchResultRestArgs

@@ -1,5 +1,6 @@
 import { ElementType } from "../.."
 import { ZERO } from "../../dataset/constant/Common"
+import { EDITOR_ELEMENT_COPY_ATTR } from "../../dataset/constant/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { MouseEventButton } from "../../dataset/enum/Event"
 import { KeyMap } from "../../dataset/enum/Keymap"
@@ -100,8 +101,8 @@ export class CanvasEvent {
     if (start > end) {
       [start, end] = [end, start]
     }
-    this.range.setRange(start, end)
     if (start === end) return
+    this.range.setRange(start, end)
     // 绘制
     this.draw.render({
       isSubmitHistory: false,
@@ -347,23 +348,16 @@ export class CanvasEvent {
         ...restArg
       }
       if (
-        !element.type
-        || element.type === TEXT
+        element.type === TEXT
+        || (!element.type && element.value !== ZERO)
         || (element.type === HYPERLINK && elementList[endIndex + 1]?.type === HYPERLINK)
       ) {
-        if (element.type) {
-          newElement.type = element.type
-        }
-        newElement.font = element.font
-        newElement.size = element.size
-        newElement.bold = element.bold
-        newElement.color = element.color
-        newElement.highlight = element.highlight
-        newElement.italic = element.italic
-        newElement.underline = element.underline
-        newElement.strikeout = element.strikeout
-        newElement.url = element.url
-        newElement.hyperlinkId = element.hyperlinkId
+        EDITOR_ELEMENT_COPY_ATTR.forEach(attr => {
+          const value = element[attr] as never
+          if (value !== undefined) {
+            newElement[attr] = value
+          }
+        })
       }
       return newElement
     })

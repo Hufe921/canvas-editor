@@ -201,7 +201,7 @@ export class CommandAdapt {
 
   public rowFlex(payload: RowFlex) {
     const { startIndex, endIndex } = this.range.getRange()
-    if (startIndex === 0 && endIndex === 0) return
+    if (!~startIndex && !~endIndex) return
     const pageNo = this.draw.getPageNo()
     const positionList = this.position.getPositionList()
     // 开始/结束行号
@@ -225,7 +225,7 @@ export class CommandAdapt {
 
   public rowMargin(payload: number) {
     const { startIndex, endIndex } = this.range.getRange()
-    if (startIndex === 0 && endIndex === 0) return
+    if (!~startIndex && !~endIndex) return
     const pageNo = this.draw.getPageNo()
     const positionList = this.position.getPositionList()
     // 开始/结束行号
@@ -249,7 +249,7 @@ export class CommandAdapt {
 
   public insertTable(row: number, col: number) {
     const { startIndex, endIndex } = this.range.getRange()
-    if (startIndex === 0 && endIndex === 0) return
+    if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
     const { width, margins } = this.options
     const innerWidth = width - margins[1] - margins[3]
@@ -580,7 +580,9 @@ export class CommandAdapt {
     })
     this.range.setRange(0, 0)
     // 重新渲染
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      curIndex: positionContext.index
+    })
     this.tableTool.dispose()
   }
 
@@ -634,7 +636,9 @@ export class CommandAdapt {
     })
     this.range.setRange(0, 0)
     // 重新渲染
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      curIndex: positionContext.index
+    })
     this.tableTool.dispose()
   }
 
@@ -656,7 +660,7 @@ export class CommandAdapt {
 
   public hyperlink(payload: IElement) {
     const { startIndex, endIndex } = this.range.getRange()
-    if (startIndex === 0 && endIndex === 0) return
+    if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
     const { valueList, url } = payload
     const hyperlinkId = getUUID()
@@ -680,7 +684,7 @@ export class CommandAdapt {
 
   public image(payload: IDrawImagePayload) {
     const { startIndex, endIndex } = this.range.getRange()
-    if (startIndex === 0 && endIndex === 0) return
+    if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
     const { value, width, height } = payload
     const element: IElement = {
@@ -703,29 +707,40 @@ export class CommandAdapt {
   public search(payload: string | null) {
     if (payload) {
       let searchMatchList: ISearchResult[] = []
-      // elementList按table分隔
+      // 分组
       const elementListGroup: { type: EditorContext, elementList: IElement[], index: number }[] = []
       const originalElementList = this.draw.getOriginalElementList()
-      let lastTextElementList: IElement[] = []
-      for (let e = 0; e < originalElementList.length; e++) {
+      const originalElementListLength = originalElementList.length
+      // 查找表格所在位置
+      const tabeleIndexList = []
+      for (let e = 0; e < originalElementListLength; e++) {
         const element = originalElementList[e]
         if (element.type === ElementType.TABLE) {
-          if (lastTextElementList.length) {
-            elementListGroup.push({
-              index: e,
-              type: EditorContext.PAGE,
-              elementList: lastTextElementList
-            })
-            lastTextElementList = []
-          }
-          elementListGroup.push({
-            index: e,
-            type: EditorContext.TABLE,
-            elementList: [element]
-          })
-        } else {
-          lastTextElementList.push(element)
+          tabeleIndexList.push(e)
         }
+      }
+      let i = 0
+      let elementIndex = 0
+      while (elementIndex < originalElementListLength - 1) {
+        const endIndex = tabeleIndexList.length ? tabeleIndexList[i] : originalElementListLength
+        const pageElement = originalElementList.slice(elementIndex, endIndex)
+        if (pageElement.length) {
+          elementListGroup.push({
+            index: elementIndex,
+            type: EditorContext.PAGE,
+            elementList: pageElement
+          })
+        }
+        const tableElement = originalElementList[endIndex]
+        if (tableElement) {
+          elementListGroup.push({
+            index: endIndex,
+            type: EditorContext.TABLE,
+            elementList: [tableElement]
+          })
+        }
+        elementIndex += endIndex + 1
+        i++
       }
       // 搜索文本
       function searchClosure(payload: string | null, type: EditorContext, elementList: IElement[], restArgs?: ISearchResultRestArgs) {
@@ -743,7 +758,7 @@ export class CommandAdapt {
         for (let m = 0; m < matchStartIndexList.length; m++) {
           const startIndex = matchStartIndexList[m]
           for (let i = 0; i < payload.length; i++) {
-            const index = startIndex + i
+            const index = startIndex + i + (restArgs?.startIndex || 0)
             searchMatchList.push({
               type,
               index,
@@ -769,7 +784,9 @@ export class CommandAdapt {
             }
           }
         } else {
-          searchClosure(payload, group.type, group.elementList)
+          searchClosure(payload, group.type, group.elementList, {
+            startIndex: group.index
+          })
         }
       }
       this.draw.setSearchMatch(searchMatchList)

@@ -70,7 +70,7 @@ export class GlobalEvent {
     }
     this.cursor.recoveryCursor()
     this.range.recoveryRangeStyle()
-    this.range.setRange(0, 0)
+    this.range.setRange(-1, -1)
     this.imageParticle.clearResizer()
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()

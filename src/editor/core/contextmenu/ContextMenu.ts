@@ -83,7 +83,7 @@ export class ContextMenu {
   private _getContext(): IContextMenuContext {
     const { startIndex, endIndex } = this.range.getRange()
     // 是否存在焦点
-    const editorTextFocus = startIndex !== 0 || endIndex !== 0
+    const editorTextFocus = !!(~startIndex || ~endIndex)
     // 是否存在选区
     const editorHasSelection = editorTextFocus && startIndex !== endIndex
     // 是否在表格内

@@ -19,8 +19,8 @@ export class RangeManager {
     this.listener = draw.getListener()
     this.historyManager = draw.getHistoryManager()
     this.range = {
-      startIndex: 0,
-      endIndex: 0
+      startIndex: -1,
+      endIndex: -1
     }
   }
 
@@ -46,7 +46,8 @@ export class RangeManager {
     if (!curElementList) {
       const elementList = this.draw.getElementList()
       const { endIndex } = this.range
-      curElementList = [elementList[endIndex]]
+      const index = ~endIndex ? endIndex : 0
+      curElementList = [elementList[index]]
     }
     const curElement = curElementList[curElementList.length - 1]
     // 富文本

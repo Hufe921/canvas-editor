@@ -48,7 +48,7 @@ window.onload = function () {
     if (colorIndex.includes(index)) {
       return {
         value,
-        color: 'red',
+        color: '#FF0000',
         size: 16
       }
     }
