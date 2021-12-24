@@ -68,3 +68,10 @@ export interface IElementPosition {
     rightBottom: number[];
   }
 }
+
+export interface IElementFillRect {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}

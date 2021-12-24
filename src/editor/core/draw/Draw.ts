@@ -2,7 +2,7 @@ import { ZERO } from "../../dataset/constant/Common"
 import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawOption, IDrawRowPayload, IDrawRowResult } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
-import { IElement, IElementMetrics, IElementPosition, IElementStyle } from "../../interface/Element"
+import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from "../../interface/Element"
 import { IRow, IRowElement } from "../../interface/Row"
 import { deepClone } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
@@ -492,6 +492,13 @@ export class Draw {
       // 当前td所在位置
       let tablePreX = x
       let tablePreY = y
+      // 选区绘制记录
+      const rangeRecord: IElementFillRect = {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      }
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
@@ -539,7 +546,7 @@ export class Draw {
         if (element.highlight) {
           this.highlight.render(ctx, element.highlight, x, y, metrics.width, curRow.height)
         }
-        // 选区绘制
+        // 选区记录
         const { startIndex, endIndex } = this.range.getRange()
         if (startIndex !== endIndex && startIndex < index && index <= endIndex) {
           const positionContext = this.position.getPositionContext()
@@ -549,10 +556,17 @@ export class Draw {
             || positionContext.tdId === element.tdId
           ) {
             let rangeWidth = metrics.width
+            // 最小选区宽度
             if (rangeWidth === 0 && curRow.elementList.length === 1) {
               rangeWidth = this.options.rangeMinWidth
             }
-            this.range.render(ctx, x, y, rangeWidth, curRow.height)
+            // 记录第一次位置、行高
+            if (!rangeRecord.width) {
+              rangeRecord.x = x
+              rangeRecord.y = y
+              rangeRecord.height = curRow.height
+            }
+            rangeRecord.width += rangeWidth
           }
         }
         index++
@@ -583,6 +597,11 @@ export class Draw {
         }
       }
       this.textParticle.complete()
+      // 绘制选区
+      if (rangeRecord.width && rangeRecord.height) {
+        const { x, y, width, height } = rangeRecord
+        this.range.render(ctx, x, y, width, height)
+      }
       x = startX
       y += curRow.height
     }
