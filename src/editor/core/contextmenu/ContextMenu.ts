@@ -81,7 +81,7 @@ export class ContextMenu {
   }
 
   private _getContext(): IContextMenuContext {
-    const { startIndex, endIndex } = this.range.getRange()
+    const { isCrossRowCol: crossRowCol, startIndex, endIndex } = this.range.getRange()
     // 是否存在焦点
     const editorTextFocus = !!(~startIndex || ~endIndex)
     // 是否存在选区
@@ -89,7 +89,14 @@ export class ContextMenu {
     // 是否在表格内
     const positionContext = this.position.getPositionContext()
     const isInTable = positionContext.isTable
-    return { editorHasSelection, editorTextFocus, isInTable }
+    // 是否存在跨行/列
+    const isCrossRowCol = isInTable && !!crossRowCol
+    return {
+      editorHasSelection,
+      editorTextFocus,
+      isInTable,
+      isCrossRowCol
+    }
   }
 
   private _createContextMenuContainer(): HTMLDivElement {

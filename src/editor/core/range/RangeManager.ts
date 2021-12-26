@@ -35,9 +35,23 @@ export class RangeManager {
     return elementList.slice(startIndex + 1, endIndex + 1)
   }
 
-  public setRange(startIndex: number, endIndex: number) {
+  public setRange(
+    startIndex: number,
+    endIndex: number,
+    tableId?: string,
+    startTdIndex?: number,
+    endTdIndex?: number,
+    startTrIndex?: number,
+    endTrIndex?: number
+  ) {
     this.range.startIndex = startIndex
     this.range.endIndex = endIndex
+    this.range.tableId = tableId
+    this.range.startTdIndex = startTdIndex
+    this.range.endTdIndex = endTdIndex
+    this.range.startTrIndex = startTrIndex
+    this.range.endTrIndex = endTrIndex
+    this.range.isCrossRowCol = !!(startTdIndex || endTdIndex || startTrIndex || endTrIndex)
   }
 
   public setRangeStyle() {
@@ -50,6 +64,7 @@ export class RangeManager {
       curElementList = [elementList[index]]
     }
     const curElement = curElementList[curElementList.length - 1]
+    if (!curElement) return
     // 富文本
     const font = curElement.font || this.options.defaultFont
     let bold = !~curElementList.findIndex(el => !el.bold)

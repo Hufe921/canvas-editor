@@ -1,12 +1,15 @@
-import { IElement } from "../../../.."
+import { ElementType, IElement } from "../../../.."
 import { IEditorOption } from "../../../../interface/Editor"
+import { RangeManager } from "../../../range/RangeManager"
 import { Draw } from "../../Draw"
 
 export class TableParticle {
 
+  private range: RangeManager
   private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
+    this.range = draw.getRange()
     this.options = draw.getOptions()
   }
 
@@ -18,16 +21,6 @@ export class TableParticle {
     ctx.lineTo(startX, startY + height)
     ctx.closePath()
     ctx.stroke()
-  }
-
-  // @ts-ignore
-  private _drawRange(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
-    const { rangeAlpha, rangeColor } = this.options
-    ctx.save()
-    ctx.globalAlpha = rangeAlpha
-    ctx.fillStyle = rangeColor
-    ctx.fillRect(x, y, width, height)
-    ctx.restore()
   }
 
   public computeRowColInfo(element: IElement) {
@@ -60,7 +53,7 @@ export class TableParticle {
               if (pTdX > x) break
               if (pTd.x === x && pTdY + pTdHeight > y) {
                 x += pTdWidth
-                offsetXIndex += 1
+                offsetXIndex += pTd.colspan
               }
             }
           }
@@ -120,6 +113,47 @@ export class TableParticle {
         }
       }
     }
+  }
+
+  public drawRange(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+    const { scale, rangeAlpha, rangeColor } = this.options
+    const { type, trList } = element
+    if (!trList || type !== ElementType.TABLE) return
+    const { isCrossRowCol, startTdIndex, endTdIndex, startTrIndex, endTrIndex } = this.range.getRange()
+    // 存在跨行/列
+    if (!isCrossRowCol) return
+    let startTd = trList[startTrIndex!].tdList[startTdIndex!]
+    let endTd = trList[endTrIndex!].tdList[endTdIndex!]
+    // 交换起始位置
+    if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      [startTd, endTd] = [endTd, startTd]
+    }
+    const startColIndex = startTd.colIndex!
+    const endColIndex = endTd.colIndex! + (endTd.colspan - 1)
+    const startRowIndex = startTd.rowIndex!
+    const endRowIndex = endTd.rowIndex! + (endTd.rowspan - 1)
+    ctx.save()
+    for (let t = 0; t < trList.length; t++) {
+      const tr = trList[t]
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        const tdColIndex = td.colIndex!
+        const tdRowIndex = td.rowIndex!
+        if (
+          tdColIndex >= startColIndex && tdColIndex <= endColIndex
+          && tdRowIndex >= startRowIndex && tdRowIndex <= endRowIndex
+        ) {
+          const x = td.x! * scale
+          const y = td.y! * scale
+          const width = td.width! * scale
+          const height = td.height! * scale
+          ctx.globalAlpha = rangeAlpha
+          ctx.fillStyle = rangeColor
+          ctx.fillRect(x + startX, y + startY, width, height)
+        }
+      }
+    }
+    ctx.restore()
   }
 
   public render(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {

@@ -5,6 +5,7 @@ import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { MouseEventButton } from "../../dataset/enum/Event"
 import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
+import { ICurrentPosition } from "../../interface/Position"
 import { writeTextByElementList } from "../../utils/clipboard"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
@@ -19,7 +20,7 @@ export class CanvasEvent {
 
   private isAllowDrag: boolean
   private isCompositing: boolean
-  private mouseDownStartIndex: number
+  private mouseDownStartPosition: ICurrentPosition | null
 
   private draw: Draw
   private pageContainer: HTMLDivElement
@@ -35,7 +36,7 @@ export class CanvasEvent {
   constructor(draw: Draw) {
     this.isAllowDrag = false
     this.isCompositing = false
-    this.mouseDownStartIndex = 0
+    this.mouseDownStartPosition = null
 
     this.pageContainer = draw.getPageContainer()
     this.pageList = draw.getPageList()
@@ -81,7 +82,7 @@ export class CanvasEvent {
   }
 
   public mousemove(evt: MouseEvent) {
-    if (!this.isAllowDrag) return
+    if (!this.isAllowDrag || !this.mouseDownStartPosition) return
     const target = evt.target as HTMLDivElement
     const pageIndex = target.dataset.index
     // 设置pageNo
@@ -93,16 +94,42 @@ export class CanvasEvent {
       x: evt.offsetX,
       y: evt.offsetY
     })
-    const { index, isTable, tdValueIndex } = positionResult
+    const {
+      index,
+      isTable,
+      tdValueIndex,
+      tdIndex,
+      trIndex,
+      tableId
+    } = positionResult
+    const {
+      index: startIndex,
+      isTable: startIsTable,
+      tdIndex: startTdIndex,
+      trIndex: startTrIndex
+    } = this.mouseDownStartPosition
     let endIndex = isTable ? tdValueIndex! : index
-    let end = ~endIndex ? endIndex : 0
-    // 开始位置
-    let start = this.mouseDownStartIndex
-    if (start > end) {
-      [start, end] = [end, start]
+    // 判断是否是表格跨行/列
+    if (isTable && startIsTable && (tdIndex !== startTdIndex || trIndex !== startTrIndex)) {
+      this.range.setRange(
+        endIndex,
+        endIndex,
+        tableId,
+        startTdIndex,
+        tdIndex,
+        startTrIndex,
+        trIndex
+      )
+    } else {
+      let end = ~endIndex ? endIndex : 0
+      // 开始位置
+      let start = startIndex
+      if (start > end) {
+        [start, end] = [end, start]
+      }
+      if (start === end) return
+      this.range.setRange(start, end)
     }
-    if (start === end) return
-    this.range.setRange(start, end)
     // 绘制
     this.draw.render({
       isSubmitHistory: false,
@@ -147,7 +174,10 @@ export class CanvasEvent {
       tableId
     })
     // 记录选区开始位置
-    this.mouseDownStartIndex = isTable ? tdValueIndex! : index
+    this.mouseDownStartPosition = {
+      ...positionResult,
+      index: isTable ? tdValueIndex! : index
+    }
     // 绘制
     const isDirectHitImage = isDirectHit && isImage
     if (~index) {

@@ -644,18 +644,185 @@ export class CommandAdapt {
 
   public deleteTable() {
     const positionContext = this.position.getPositionContext()
-    if (positionContext.isTable) {
-      const originalElementList = this.draw.getOriginalElementList()
-      originalElementList.splice(positionContext.index!, 1)
-      const curIndex = positionContext.index! - 1
-      this.position.setPositionContext({
-        isTable: false,
-        index: curIndex
-      })
-      this.range.setRange(curIndex, curIndex)
-      this.draw.render({ curIndex })
-      this.tableTool.dispose()
+    if (!positionContext.isTable) return
+    const originalElementList = this.draw.getOriginalElementList()
+    originalElementList.splice(positionContext.index!, 1)
+    const curIndex = positionContext.index! - 1
+    this.position.setPositionContext({
+      isTable: false,
+      index: curIndex
+    })
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
+    this.tableTool.dispose()
+  }
+
+  public mergeTableCell() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { isCrossRowCol, startTdIndex, endTdIndex, startTrIndex, endTrIndex } = this.range.getRange()
+    if (!isCrossRowCol) return
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    let startTd = curTrList[startTrIndex!].tdList[startTdIndex!]
+    let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
+    // 交换起始位置
+    if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      [startTd, endTd] = [endTd, startTd]
     }
+    const startColIndex = startTd.colIndex!
+    const endColIndex = endTd.colIndex! + (endTd.colspan - 1)
+    const startRowIndex = startTd.rowIndex!
+    const endRowIndex = endTd.rowIndex! + (endTd.rowspan - 1)
+    // 选区行列
+    let rowCol: ITd[][] = []
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      const tdList: ITd[] = []
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        const tdColIndex = td.colIndex!
+        const tdRowIndex = td.rowIndex!
+        if (
+          tdColIndex >= startColIndex && tdColIndex <= endColIndex
+          && tdRowIndex >= startRowIndex && tdRowIndex <= endRowIndex
+        ) {
+          tdList.push(td)
+        }
+      }
+      if (tdList.length) {
+        rowCol.push(tdList)
+      }
+    }
+    if (!rowCol.length) return
+    // 是否是矩形
+    const lastRow = rowCol[rowCol.length - 1]
+    const leftTop = rowCol[0][0]
+    const rightBottom = lastRow[lastRow.length - 1]
+    const startX = leftTop.x!
+    const startY = leftTop.y!
+    const endX = rightBottom.x! + rightBottom.width!
+    const endY = rightBottom.y! + rightBottom.height!
+    for (let t = 0; t < rowCol.length; t++) {
+      const tr = rowCol[t]
+      for (let d = 0; d < tr.length; d++) {
+        const td = tr[d]
+        const tdStartX = td.x!
+        const tdStartY = td.y!
+        const tdEndX = tdStartX + td.width!
+        const tdEndY = tdStartY + td.height!
+        // 存在不符合项
+        if (startX > tdStartX || startY > tdStartY || endX < tdEndX || endY < tdEndY) {
+          return
+        }
+      }
+    }
+    // 合并单元格
+    let mergeTdIdList: string[] = []
+    const anchorTd = rowCol[0][0]
+    for (let t = 0; t < rowCol.length; t++) {
+      const tr = rowCol[t]
+      for (let d = 0; d < tr.length; d++) {
+        const td = tr[d]
+        const isAnchorTd = t === 0 && d === 0
+        // 待删除单元id
+        if (!isAnchorTd) {
+          mergeTdIdList.push(td.id!)
+        }
+        // 列合并
+        if (t === 0 && d !== 0) {
+          anchorTd.colspan += td.colspan
+        }
+        // 行合并
+        if (t !== 0) {
+          if (anchorTd.colIndex === td.colIndex) {
+            anchorTd.rowspan += td.rowspan
+          }
+        }
+      }
+    }
+    // 移除多余单元格
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      let d = 0
+      while (d < tr.tdList.length) {
+        const td = tr.tdList[d]
+        if (mergeTdIdList.includes(td.id!)) {
+          tr.tdList.splice(d, 1)
+          d--
+        }
+        d++
+      }
+    }
+    // 重新渲染
+    const { startIndex, endIndex } = this.range.getRange()
+    this.range.setRange(startIndex, endIndex)
+    this.draw.render({
+      curIndex: endIndex
+    })
+    const position = this.position.getOriginalPositionList()
+    this.tableTool.render(element, position[index!])
+  }
+
+  public cancelMergeTableCell() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, tdIndex, trIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]!
+    const curTd = curTr.tdList[tdIndex!]
+    if (curTd.rowspan === 1 && curTd.colspan === 1) return
+    // 设置跨列
+    if (curTd.colspan > 1) {
+      for (let c = 1; c < curTd.colspan; c++) {
+        const tdId = getUUID()
+        curTr.tdList.splice(tdIndex! + c, 0, {
+          id: tdId,
+          rowspan: 1,
+          colspan: 1,
+          value: [{
+            value: ZERO,
+            size: 16,
+            tableId: element.id,
+            trId: curTr.id,
+            tdId
+          }]
+        })
+      }
+      curTd.colspan = 1
+    }
+    // 设置跨行
+    if (curTd.rowspan > 1) {
+      for (let c = 1; c < curTd.rowspan; c++) {
+        const tr = curTrList[trIndex! + c]
+        const tdId = getUUID()
+        tr.tdList.splice(curTd.colIndex!, 0, {
+          id: tdId,
+          rowspan: 1,
+          colspan: 1,
+          value: [{
+            value: ZERO,
+            size: 16,
+            tableId: element.id,
+            trId: tr.id,
+            tdId
+          }]
+        })
+      }
+      curTd.rowspan = 1
+    }
+    // 重新渲染
+    const { startIndex, endIndex } = this.range.getRange()
+    this.range.setRange(startIndex, endIndex)
+    this.draw.render({
+      curIndex: endIndex
+    })
+    const position = this.position.getOriginalPositionList()
+    this.tableTool.render(element, position[index!])
   }
 
   public hyperlink(payload: IElement) {

@@ -19,21 +19,24 @@ export const tableMenus: IRegisterContextMenu[] = [
         callback: (command: Command) => {
           command.executeInsertTableTopRow()
         }
-      }, {
+      },
+      {
         name: '下方插入1行',
         icon: 'insert-bottom-row',
         when: () => true,
         callback: (command: Command) => {
           command.executeInsertTableBottomRow()
         }
-      }, {
+      },
+      {
         name: '左侧插入1列',
         icon: 'insert-left-col',
         when: () => true,
         callback: (command: Command) => {
           command.executeInsertTableLeftCol()
         }
-      }, {
+      },
+      {
         name: '右侧插入1列',
         icon: 'insert-right-col',
         when: () => true,
@@ -65,7 +68,8 @@ export const tableMenus: IRegisterContextMenu[] = [
         callback: (command: Command) => {
           command.executDeleteTableCol()
         }
-      }, {
+      },
+      {
         name: '删除整个表格',
         icon: 'delete-table',
         when: () => true,
@@ -74,5 +78,25 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       }
     ]
+  },
+  {
+    name: '合并单元格',
+    icon: 'merge-cell',
+    when: (payload) => {
+      return payload.isCrossRowCol
+    },
+    callback: (command: Command) => {
+      command.executMergeTableCell()
+    }
+  },
+  {
+    name: '取消合并',
+    icon: 'merge-cancel-cell',
+    when: (payload) => {
+      return payload.isInTable
+    },
+    callback: (command: Command) => {
+      command.executCancelMergeTableCell()
+    }
   }
 ]

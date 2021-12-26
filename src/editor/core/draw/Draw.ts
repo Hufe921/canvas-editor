@@ -475,6 +475,7 @@ export class Draw {
   private _drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload): IDrawRowResult {
     const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
     const { scale, tdPadding } = this.options
+    const { isCrossRowCol, tableId } = this.range.getRange()
     const tdGap = tdPadding * 2
     let x = startX
     let y = startY
@@ -499,6 +500,7 @@ export class Draw {
         width: 0,
         height: 0
       }
+      let tableRangeElement: IElement | null = null
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
@@ -527,6 +529,11 @@ export class Draw {
           this.textParticle.complete()
           this.imageParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TABLE) {
+          if (isCrossRowCol) {
+            rangeRecord.x = x
+            rangeRecord.y = y
+            tableRangeElement = element
+          }
           this.tableParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
@@ -601,6 +608,9 @@ export class Draw {
       if (rangeRecord.width && rangeRecord.height) {
         const { x, y, width, height } = rangeRecord
         this.range.render(ctx, x, y, width, height)
+      }
+      if (isCrossRowCol && tableRangeElement && tableRangeElement.id === tableId) {
+        this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
       }
       x = startX
       y += curRow.height

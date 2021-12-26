@@ -308,6 +308,14 @@
   background-image: url(../../assets/images/delete-table.svg);
 }
 
+.contextmenu-merge-cell {
+  background-image: url(../../assets/images/merge-cell.svg);
+}
+
+.contextmenu-merge-cancel-cell {
+  background-image: url(../../assets/images/merge-cancel-cell.svg);
+}
+
 .hyperlink-popup {
   min-width: 100px;
   font-size: 12px;

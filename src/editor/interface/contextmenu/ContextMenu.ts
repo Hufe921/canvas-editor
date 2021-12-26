@@ -2,6 +2,7 @@ export interface IContextMenuContext {
   editorHasSelection: boolean;
   editorTextFocus: boolean;
   isInTable: boolean;
+  isCrossRowCol: boolean;
 }
 
 export interface IRegisterContextMenu {

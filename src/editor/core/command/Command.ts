@@ -34,6 +34,8 @@ export class Command {
   private static deleteTableRow: Function
   private static deleteTableCol: Function
   private static deleteTable: Function
+  private static mergeTableCell: Function
+  private static cancelMergeTableCell: Function
   private static image: Function
   private static hyperlink: Function
   private static search: Function
@@ -72,6 +74,8 @@ export class Command {
     Command.deleteTableRow = adapt.deleteTableRow.bind(adapt)
     Command.deleteTableCol = adapt.deleteTableCol.bind(adapt)
     Command.deleteTable = adapt.deleteTable.bind(adapt)
+    Command.mergeTableCell = adapt.mergeTableCell.bind(adapt)
+    Command.cancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.search = adapt.search.bind(adapt)
@@ -199,6 +203,14 @@ export class Command {
 
   public executDeleteTable() {
     return Command.deleteTable()
+  }
+
+  public executMergeTableCell() {
+    return Command.mergeTableCell()
+  }
+
+  public executCancelMergeTableCell() {
+    return Command.cancelMergeTableCell()
   }
 
   public executeHyperlink(payload: IElement) {
