@@ -15,11 +15,9 @@ export class TableParticle {
 
   private _drawBorder(ctx: CanvasRenderingContext2D, startX: number, startY: number, width: number, height: number) {
     ctx.beginPath()
-    ctx.moveTo(startX, startY)
+    ctx.moveTo(startX, startY + height)
+    ctx.lineTo(startX, startY)
     ctx.lineTo(startX + width, startY)
-    ctx.lineTo(startX + width, startY + height)
-    ctx.lineTo(startX, startY + height)
-    ctx.closePath()
     ctx.stroke()
   }
 
@@ -170,33 +168,15 @@ export class TableParticle {
       const tr = trList[t]
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
-        const { isLastRowTd, isLastColTd, isLastTd } = td
         const width = td.width! * scale
         const height = td.height! * scale
         const x = td.x! * scale + startX + width
         const y = td.y! * scale + startY
         // 绘制线条
         ctx.beginPath()
-        if (isLastRowTd && !isLastTd) {
-          // 是否跨行到底
-          if (y + height < startY + tableHeight) {
-            ctx.moveTo(x, y + height)
-            ctx.lineTo(x - width, y + height)
-          }
-        } else if (isLastColTd && !isLastTd) {
-          ctx.moveTo(x, y)
-          ctx.lineTo(x, y + height)
-        } else if (!isLastRowTd && !isLastColTd && !isLastTd) {
-          ctx.moveTo(x, y)
-          ctx.lineTo(x, y + height)
-          ctx.lineTo(x - width, y + height)
-        } else if (isLastTd) {
-          // 是否跨列到最右
-          if (x + width === startX + tableWidth) {
-            ctx.moveTo(x, y)
-            ctx.lineTo(x, y + height)
-          }
-        }
+        ctx.moveTo(x, y)
+        ctx.lineTo(x, y + height)
+        ctx.lineTo(x - width, y + height)
         ctx.stroke()
       }
     }
