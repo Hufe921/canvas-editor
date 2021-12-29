@@ -3,6 +3,7 @@ import {
   IPageScaleChange,
   IPageSizeChange,
   IRangeStyleChange,
+  ISaved,
   IVisiblePageNoListChange
 } from "../../interface/Listener"
 
@@ -13,6 +14,7 @@ export class Listener {
   public intersectionPageNoChange: IIntersectionPageNoChange | null
   public pageSizeChange: IPageSizeChange | null
   public pageScaleChange: IPageScaleChange | null
+  public saved: ISaved | null
 
   constructor() {
     this.rangeStyleChange = null
@@ -20,6 +22,7 @@ export class Listener {
     this.intersectionPageNoChange = null
     this.pageSizeChange = null
     this.pageScaleChange = null
+    this.saved = null
   }
 
 }

@@ -7,12 +7,14 @@ import { KeyMap } from "../../dataset/enum/Keymap"
 import { IElement } from "../../interface/Element"
 import { ICurrentPosition } from "../../interface/Position"
 import { writeTextByElementList } from "../../utils/clipboard"
+import { zipElementList } from "../../utils/element"
 import { Cursor } from "../cursor/Cursor"
 import { Draw } from "../draw/Draw"
 import { HyperlinkParticle } from "../draw/particle/HyperlinkParticle"
 import { ImageParticle } from "../draw/particle/ImageParticle"
 import { TableTool } from "../draw/particle/table/TableTool"
 import { HistoryManager } from "../history/HistoryManager"
+import { Listener } from "../listener/Listener"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
 
@@ -32,6 +34,7 @@ export class CanvasEvent {
   private imageParticle: ImageParticle
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
+  private listener: Listener
 
   constructor(draw: Draw) {
     this.isAllowDrag = false
@@ -48,6 +51,7 @@ export class CanvasEvent {
     this.imageParticle = this.draw.getImageParticle()
     this.tableTool = this.draw.getTableTool()
     this.hyperlinkParticle = this.draw.getHyperlinkParticle()
+    this.listener = this.draw.getListener()
   }
 
   public register() {
@@ -349,6 +353,12 @@ export class CanvasEvent {
       this.cut()
     } else if (evt.ctrlKey && evt.key === KeyMap.A) {
       this.selectAll()
+    } else if (evt.ctrlKey && evt.key === KeyMap.S) {
+      const saved = this.listener.saved
+      if (saved) {
+        saved(this.save())
+      }
+      evt.preventDefault()
     }
   }
 
@@ -443,6 +453,12 @@ export class CanvasEvent {
 
   public compositionend() {
     this.isCompositing = false
+  }
+
+  public save(): IElement[] {
+    const elementList = this.draw.getOriginalElementList()
+    const data = zipElementList(elementList)
+    return data
   }
 
 }

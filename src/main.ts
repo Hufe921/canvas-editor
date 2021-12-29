@@ -194,7 +194,7 @@ window.onload = function () {
   }])
   // 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
-  const instance = new Editor(container, data, {
+  const instance = new Editor(container, <IElement[]>data, {
     margins: [100, 120, 100, 120]
   })
   console.log('实例: ', instance)
@@ -539,6 +539,10 @@ window.onload = function () {
 
   instance.listener.pageScaleChange = function (payload) {
     document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 10 * 10)}%`
+  }
+
+  instance.listener.saved = function (payload) {
+    console.log('elementList: ', payload)
   }
 
 }

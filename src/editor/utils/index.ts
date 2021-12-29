@@ -11,7 +11,7 @@ export function debounce(func: Function, delay: number) {
   }
 }
 
-export function deepClone(obj: any) {
+export function deepClone<T>(obj: T): T {
   if (!obj || typeof obj !== 'object') {
     return obj
   }
@@ -20,6 +20,7 @@ export function deepClone(obj: any) {
     newObj = obj.map(item => deepClone(item))
   } else {
     Object.keys(obj).forEach((key) => {
+      // @ts-ignore
       return newObj[key] = deepClone(obj[key])
     })
   }

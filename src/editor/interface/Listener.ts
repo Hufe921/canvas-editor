@@ -1,3 +1,4 @@
+import { IElement } from ".."
 import { RowFlex } from "../dataset/enum/Row"
 
 export interface IRangeStype {
@@ -24,3 +25,5 @@ export type IIntersectionPageNoChange = (payload: number) => void
 export type IPageSizeChange = (payload: number) => void
 
 export type IPageScaleChange = (payload: number) => void
+
+export type ISaved = (payload: IElement[]) => void
