@@ -709,15 +709,19 @@ export class Draw {
     })
     // 光标重绘
     if (isSetCursor) {
-      if (curIndex === undefined) {
-        curIndex = positionList.length - 1
-      }
       const positionContext = this.position.getPositionContext()
       if (positionContext.isTable) {
         const { index, trIndex, tdIndex } = positionContext
-        const tablePosition = this.elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList?.[curIndex!]
+        const tablePositionList = this.elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
+        if (curIndex === undefined && tablePositionList) {
+          curIndex = tablePositionList.length - 1
+        }
+        const tablePosition = tablePositionList?.[curIndex!]
         this.position.setCursorPosition(tablePosition || null)
       } else {
+        if (curIndex === undefined) {
+          curIndex = positionList.length - 1
+        }
         this.position.setCursorPosition(positionList[curIndex!] || null)
       }
       this.cursor.drawCursor()

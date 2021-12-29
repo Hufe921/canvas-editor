@@ -1,5 +1,5 @@
 import { ZERO } from "../../dataset/constant/Common"
-import { EDITOR_ELEMENT_STYLE } from "../../dataset/constant/Element"
+import { EDITOR_ELEMENT_STYLE_ATTR } from "../../dataset/constant/Element"
 import { EditorContext } from "../../dataset/enum/Editor"
 import { ElementType } from "../../dataset/enum/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
@@ -75,7 +75,7 @@ export class CommandAdapt {
     if (!selection) return
     const painterStyle: IElementStyle = {}
     selection.forEach(s => {
-      const painterStyleKeys = EDITOR_ELEMENT_STYLE
+      const painterStyleKeys = EDITOR_ELEMENT_STYLE_ATTR
       painterStyleKeys.forEach(p => {
         const key = p as keyof typeof ElementStyleKey
         if (painterStyle[key] === undefined) {
@@ -757,11 +757,9 @@ export class CommandAdapt {
       }
     }
     // 重新渲染
-    const { startIndex, endIndex } = this.range.getRange()
-    this.range.setRange(startIndex, endIndex)
-    this.draw.render({
-      curIndex: endIndex
-    })
+    const curIndex = startTd.value.length - 1
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render()
     const position = this.position.getOriginalPositionList()
     this.tableTool.render(element, position[index!])
   }
@@ -776,6 +774,7 @@ export class CommandAdapt {
     const curTr = curTrList[trIndex!]!
     const curTd = curTr.tdList[tdIndex!]
     if (curTd.rowspan === 1 && curTd.colspan === 1) return
+    const colspan = curTd.colspan
     // 设置跨列
     if (curTd.colspan > 1) {
       for (let c = 1; c < curTd.colspan; c++) {
@@ -797,30 +796,30 @@ export class CommandAdapt {
     }
     // 设置跨行
     if (curTd.rowspan > 1) {
-      for (let c = 1; c < curTd.rowspan; c++) {
-        const tr = curTrList[trIndex! + c]
-        const tdId = getUUID()
-        tr.tdList.splice(curTd.colIndex!, 0, {
-          id: tdId,
-          rowspan: 1,
-          colspan: 1,
-          value: [{
-            value: ZERO,
-            size: 16,
-            tableId: element.id,
-            trId: tr.id,
-            tdId
-          }]
-        })
+      for (let r = 1; r < curTd.rowspan; r++) {
+        const tr = curTrList[trIndex! + r]
+        for (let c = 0; c < colspan; c++) {
+          const tdId = getUUID()
+          tr.tdList.splice(curTd.colIndex!, 0, {
+            id: tdId,
+            rowspan: 1,
+            colspan: 1,
+            value: [{
+              value: ZERO,
+              size: 16,
+              tableId: element.id,
+              trId: tr.id,
+              tdId
+            }]
+          })
+        }
       }
       curTd.rowspan = 1
     }
     // 重新渲染
-    const { startIndex, endIndex } = this.range.getRange()
-    this.range.setRange(startIndex, endIndex)
-    this.draw.render({
-      curIndex: endIndex
-    })
+    const curIndex = curTd.value.length - 1
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render()
     const position = this.position.getOriginalPositionList()
     this.tableTool.render(element, position[index!])
   }

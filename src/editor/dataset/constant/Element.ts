@@ -21,6 +21,7 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'highlight',
   'underline',
   'strikeout',
+  'rowFlex',
   'url',
   'hyperlinkId'
 ]
