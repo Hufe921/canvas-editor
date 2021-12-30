@@ -1,5 +1,5 @@
-import { IElement } from ".."
 import { RowFlex } from "../dataset/enum/Row"
+import { IEditorResult } from "./Editor"
 
 export interface IRangeStype {
   undo: boolean;
@@ -13,7 +13,7 @@ export interface IRangeStype {
   color: string | null;
   highlight: string | null;
   rowFlex: RowFlex | null;
-  rowMargin: number
+  rowMargin: number;
 }
 
 export type IRangeStyleChange = (payload: IRangeStype) => void
@@ -26,4 +26,4 @@ export type IPageSizeChange = (payload: number) => void
 
 export type IPageScaleChange = (payload: number) => void
 
-export type ISaved = (payload: IElement[]) => void
+export type ISaved = (payload: IEditorResult) => void

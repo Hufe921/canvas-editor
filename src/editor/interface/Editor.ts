@@ -1,3 +1,5 @@
+import { IElement } from ".."
+
 export interface IEditorOption {
   defaultType?: string;
   defaultFont?: string;
@@ -27,4 +29,12 @@ export interface IEditorOption {
   tdPadding?: number;
   defaultTdHeight?: number;
   defaultHyperlinkColor?: string;
+}
+
+export interface IEditorResult {
+  version: string;
+  width: number;
+  height: number;
+  margins: [top: number, right: number, bootom: number, left: number];
+  data: IElement[];
 }

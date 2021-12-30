@@ -1,9 +1,11 @@
+import { version } from "../../../../package.json"
 import { ElementType } from "../.."
 import { ZERO } from "../../dataset/constant/Common"
 import { EDITOR_ELEMENT_COPY_ATTR } from "../../dataset/constant/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { MouseEventButton } from "../../dataset/enum/Event"
 import { KeyMap } from "../../dataset/enum/Keymap"
+import { IEditorResult } from "../../interface/Editor"
 import { IElement } from "../../interface/Element"
 import { ICurrentPosition } from "../../interface/Position"
 import { writeTextByElementList } from "../../utils/clipboard"
@@ -455,10 +457,19 @@ export class CanvasEvent {
     this.isCompositing = false
   }
 
-  public save(): IElement[] {
+  public save(): IEditorResult {
+    // 配置
+    const { width, height, margins } = this.draw.getOptions()
+    // 数据
     const elementList = this.draw.getOriginalElementList()
     const data = zipElementList(elementList)
-    return data
+    return {
+      version,
+      width,
+      height,
+      margins,
+      data
+    }
   }
 
 }
