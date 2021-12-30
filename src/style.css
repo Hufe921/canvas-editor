@@ -496,3 +496,75 @@ ul {
   cursor: pointer;
   user-select: none;
 }
+
+.article-btn {
+  width: 50px;
+  height: 50px;
+  right: 10px;
+  bottom: 50px;
+  cursor: pointer;
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  box-shadow: 0 2px 12px 0 rgb(56 56 56 / 20%);
+  background: #ffffff;
+}
+
+.article-btn i {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  background: url(./assets/images/article.svg) no-repeat;
+}
+
+.article-container {
+  display: none;
+  right: 10px;
+  bottom: 110px;
+  position: fixed;
+  padding: 10px;
+  box-shadow: 0 2px 12px 0 rgb(56 56 56 / 20%);
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  min-width: 350px;
+  background: #ffffff;
+}
+
+.article-container .article-add {
+  height: 26px;
+  color: #a9acb1;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e6ed;
+}
+
+.article-container.visible {
+  display: block;
+}
+
+.article-container .article-list {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.article-container .article-list>div {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  height: 30px;
+  padding: 0 16px;
+  line-height: 16px;
+  cursor: pointer;
+  color: #666;
+  text-decoration: none;
+}
+
+.article-container .article-list>div:hover {
+  background: rgba(25, 55, 88, .04);
+}

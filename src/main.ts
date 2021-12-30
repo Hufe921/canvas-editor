@@ -1,200 +1,48 @@
 import './style.css'
-import Editor, { ElementType, IElement, RowFlex } from './editor'
+import Editor, { ElementType, IElement } from './editor'
 import { Dialog } from './components/dialog/Dialog'
+import request from './utils/request'
+import { IEditorResult } from './editor/interface/Editor'
+import { queryParams } from './utils'
 
 window.onload = function () {
+  init()
+}
 
-  const text = `人民医院门诊病历\n主诉：\n发热三天，咳嗽五天。\n现病史：\n患者于三天前无明显诱因，感冒后发现面部水肿，无皮疹，尿量减少，出现乏力，在外治疗无好转，现来我院就诊。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。没有报告其他既往疾病。\n流行病史：\n否认14天内接触过确诊患者、疑似患者、无症状感染者及其密切接触者；否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属{有无选择代码}有以上情况。\n体格检查：\nT：36.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10^9/L（偏高）参考值：0.1～0.6；\n门诊诊断：\n1.高血压\n2.糖尿病\n3.病毒性感冒\n4.过敏性鼻炎\n5.过敏性鼻息肉\n处置治疗：\n1.超声引导下甲状腺细针穿刺术；\n2.乙型肝炎表面抗体测定；\n3.膜式病变细胞采集术、后颈皮下肤层；\n电子签名：【】\n其他记录：`
-  // 模拟行居中
-  const centerText = ['人民医院门诊病历']
-  const centerIndex: number[] = centerText.map(c => {
-    const i = text.indexOf(c)
-    return ~i ? Array(c.length).fill(i).map((_, j) => i + j) : []
-  }).flat()
-  // 模拟加粗字
-  const boldText = ['主诉：', '现病史：', '既往史：', '流行病史：', '体格检查：', '辅助检查：', '门诊诊断：', '处置治疗：', '电子签名：', '其他记录：']
-  const boldIndex: number[] = boldText.map(b => {
-    const i = text.indexOf(b)
-    return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
-  }).flat()
-  // 模拟颜色字
-  const colorText = ['传染性疾病']
-  const colorIndex: number[] = colorText.map(b => {
-    const i = text.indexOf(b)
-    return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
-  }).flat()
-  // 模拟高亮字
-  const highlightText = ['血细胞比容']
-  const highlightIndex: number[] = highlightText.map(b => {
-    const i = text.indexOf(b)
-    return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
-  }).flat()
-  // 组合数据
-  const data: IElement[] = text.split('').map((value, index) => {
-    if (centerIndex.includes(index)) {
-      return {
-        value,
-        size: 32,
-        rowFlex: RowFlex.CENTER
-      }
-    }
-    if (boldIndex.includes(index)) {
-      return {
-        value,
-        size: 18,
-        bold: true
-      }
-    }
-    if (colorIndex.includes(index)) {
-      return {
-        value,
-        color: '#FF0000',
-        size: 16
-      }
-    }
-    if (highlightIndex.includes(index)) {
-      return {
-        value,
-        highlight: '#F2F27F'
-      }
-    }
-    return {
-      value,
-      size: 16
-    }
-  })
-  data.splice(137, 0, {
-    type: ElementType.HYPERLINK,
-    value: '',
-    valueList: [{
-      value: '新',
-      size: 16
-    }, {
-      value: '冠',
-      size: 16
-    }, {
-      value: '肺',
-      size: 16
-    }, {
-      value: '炎',
-      size: 16
-    }],
-    url: 'https://hufe.club/canvas-editor'
-  })
-  data.splice(592, 0, {
-    value: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFkAAAAgCAYAAAB5JtSmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAQ0SURBVGhD7dhrUSNBFAVgvKACEVjAAhJQgAIUYAABGEAABvgfAdn6UnWou01PppOZhIXNj1P9vo9zH5PK1Waz2V5wWlxIPgMuJJ8Bi0h+fn7eXl9fb29ubrYPDw/dO/8DHh8fu/vB4kym4Orqaofb29vund8OSSbhemewSrugBMnG3vlvw9vb265yn56edmtz/t/f33+5C8MkixQSZSsl9UzLOHUmcwTYAN/Rpl5eXnY+pnIB0Xd3d7s5m3rvDsrkCGszNiQ7r/tr4v39fSc/uipOqRcqufTHBiO78GGdzG5xcLtIFmVde7L9NsvXRo9s84+Pj+79pUAwn5GcD1wIz5r+fYGeJdnjGiF9hwL7iWAcfX19/evtKVHJXrtN8Rf4A3TVczqhrut5i1mSZQgnIriSWtdzP2N+EvIhi3/GWqHWtWXuy2IYbheiKarJZIZknkxyrryc2Utrgal+9S8iScUXIx/3kcxfe/jotcuDezLFlIbARDrzHpytXdKnQr4xyc74Vu9YV5Ih2Q/tT7mDSEYw5ZU4wu3nJx64k/1z9umlUG0hah/JSbC6Jzi5exDJWoTHERoBxu8uf/pT1j3HDkUIJitjbRfRA/iwVzlgy1RCfSF5ili9xj7BUWKs9wJZ3MpditYu+lsc+/PRx53cVF9Pdg/syE9Hb6cS75PkmhUEUFofmTvLGEXKimHueJP9Y3swWQwGLUiA9xEbHKuvgs4pPe1+1myTAKlw81buJ8kigjAXKauXPLQPhEYgJSEYsgdTUR0BmTVgc6C359wcvKGnBrGO8dO5VlD1ZZ519nrBHvrwKVMCas9hgL0YUI2wV98fC4FqCWizzXyqF44A0ZKLHkilgvPs1zbiTuZIdZ414KvqGCKZYx4zple+MSrrJVncAyL02/TOqncJwVMglx5zI4QDZ5WPvBGEcNP+7TlEcqJIAQFGsIdQjmZt7MlYA5yiI3pOQTCQXUm2TuVmXgmewxDJQDgl6deJJoU5y7p9uwZagmu1mCvbNoOOBfkhOf6lRZjzPb8qRjBMMiUhM9GNMZQq5/oRXBP7Mlj/i12A7EMIaJGqDcl8I79+/N1xTvdINQ2TDAQSvI9Md479vdqCHKSFQKAfEmgBqCTDkjaSgOZXQkg2jy1ti0xApnBQJo/0obQRipeQXbN3CmxKGQch5xgki4Efghl/kFqzPD//2DnXIodIRpaoETaXxcmwGNO7N4I2Oyuc6b+xK/tL9IH3kY/E+r1JdST4yM+7VUiuJbuPZHBeHZcNvXtziMMV9mRuvUOX8Vg9IFjRx9dUYM3s2oJyNx9ahFfSWwyRHKHG3nmL2q/mojyFVAWnEdi2Hg7OBXwUCCKr1QEtoe0+/9jI3xqIiuF2QRD0zqcwpfQnge9TVSI4tWrNe79shj98F0xDC0N4bTUVF5LPgAvJJ8dm+wcP2iJuZNdC5QAAAABJRU5ErkJggg==`,
-    width: 89,
-    height: 32,
-    id: 'signature',
-    type: ElementType.IMAGE
-  })
-  data.push({
-    type: ElementType.TABLE,
-    value: `\n`,
-    colgroup: [{
-      width: 180
-    }, {
-      width: 80
-    }, {
-      width: 130
-    }, {
-      width: 130
-    }],
-    trList: [{
-      height: 40,
-      tdList: [{
-        colspan: 1,
-        rowspan: 2,
-        value: [
-          { value: `1`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }, {
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `2`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }, {
-        colspan: 2,
-        rowspan: 1,
-        value: [
-          { value: `3`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }]
-    }, {
-      height: 40,
-      tdList: [{
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `4`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }, {
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `5`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }, {
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `6`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }]
-    }, {
-      height: 40,
-      tdList: [{
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `7`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }, {
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `8`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }, {
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `9`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }, {
-        colspan: 1,
-        rowspan: 1,
-        value: [
-          { value: `1`, size: 16 },
-          { value: `0`, size: 16 },
-          { value: '.', size: 16 }
-        ]
-      }]
-    }]
-  })
-  data.push(...[{
-    value: 'E',
-    size: 16
-  }, {
-    value: 'O',
-    size: 16
-  }, {
-    value: 'F',
-    size: 16
-  }])
+let id: number
+let name: string
+async function init() {
+  // 菜单
+  const articleList = await getArticleList()
+  appendArticle(articleList)
+  const articleAddDom = document.querySelector<HTMLDivElement>('.article-add')!
+  articleAddDom.onclick = () => {
+    createArticle()
+  }
+  const articleBtnDom = document.querySelector<HTMLDivElement>('.article-btn')!
+  articleBtnDom.onclick = () => {
+    document.querySelector<HTMLDivElement>('.article-container')!
+      .classList.toggle('visible')
+  }
+  // 文章
+  const idParam = queryParams('id')
+  id = idParam ? Number(idParam) : articleList[0].id
+  const article = await getArticleDetail(id)
+  name = article.name
+  let data: IElement[] = []
+  try {
+    const content = <IEditorResult>JSON.parse(article.content)
+    data = Array.isArray(content.data) ? content.data : []
+  } catch (error) {
+    alert('数据格式错误')
+  }
+  initEditorInstance(data)
+}
+
+function initEditorInstance(data: IElement[]) {
   // 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
-  const instance = new Editor(container, <IElement[]>data, {
+  const instance = new Editor(container, data, {
     margins: [100, 120, 100, 120]
   })
   console.log('实例: ', instance)
@@ -543,6 +391,61 @@ window.onload = function () {
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
+    updateArticle(payload)
   }
+}
 
+interface IArticleList {
+  id: number;
+  name: string;
+}
+async function getArticleList(): Promise<IArticleList[]> {
+  const { data } = await request('/api/article/v1/list/by_example')
+  return <IArticleList[]>data
+}
+
+function appendArticle(articleList: IArticleList[]) {
+  const articleListDom = document.querySelector<HTMLDivElement>('.article-list')!
+  articleListDom.childNodes.forEach(child => child.remove())
+  articleList.forEach(article => {
+    const articleDom = document.createElement('div')
+    articleDom.append(document.createTextNode(article.name))
+    articleDom.onclick = () => {
+      const { origin, pathname } = window.location
+      window.location.href = `${origin}${pathname}?id=${article.id}`
+    }
+    articleListDom.append(articleDom)
+  })
+}
+
+interface IArticleDetail {
+  id: number;
+  name: string;
+  content: string;
+}
+async function getArticleDetail(id: number): Promise<IArticleDetail> {
+  const result = await request('/api/article/v1/get/by_id', {
+    id
+  })
+  return <IArticleDetail>result.data
+}
+
+async function createArticle() {
+  const name = window.prompt('请输入名称')
+  if (!name) return
+  const result = await request('/api/article/v1/add', {
+    name,
+    content: JSON.stringify([])
+  })
+  const { origin, pathname } = window.location
+  window.location.href = `${origin}${pathname}?id=${result.data}`
+}
+
+async function updateArticle(content: IEditorResult) {
+  await request('/api/article/v1/update', {
+    id,
+    name,
+    content: JSON.stringify(content)
+  })
+  alert('更新成功')
 }

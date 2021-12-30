@@ -2,7 +2,7 @@ import { defineConfig, UserConfig } from 'vite'
 import * as path from 'path'
 
 export default defineConfig(({ mode }) => {
-  const name = 'canvas-editor'
+  const name = 'canvas-editor-demo'
   const defaultOptions: UserConfig = {
     base: `/${name}/`
   }
