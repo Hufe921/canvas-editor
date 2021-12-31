@@ -1,5 +1,5 @@
 import './assets/css/index.css'
-import { IEditorOption } from './interface/Editor'
+import { IEditorOption, IEditorResult } from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
@@ -12,7 +12,7 @@ import { Register } from './core/register/Register'
 import { globalMenus } from './core/contextmenu/menus/GlobalMenus'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { tableMenus } from './core/contextmenu/menus/tableMenus'
-import { IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
+import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
 import { EditorComponent } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 
@@ -85,5 +85,8 @@ export {
 // 对外类型
 export type {
   IElement,
+  IEditorOption,
+  IEditorResult,
+  IContextMenuContext,
   IRegisterContextMenu
 }
