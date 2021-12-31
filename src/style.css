@@ -541,6 +541,11 @@ ul {
   align-items: center;
   justify-content: center;
   border: 1px solid #e2e6ed;
+  transition: all .5s;
+}
+
+.article-container .article-add:hover {
+  background-color: #F2F4F7;
 }
 
 .article-container.visible {
@@ -554,17 +559,25 @@ ul {
 }
 
 .article-container .article-list>div {
+  height: 30px;
+  white-space: nowrap;
   display: flex;
   align-items: center;
-  white-space: nowrap;
-  height: 30px;
+  justify-content: space-between;
   padding: 0 16px;
   line-height: 16px;
   cursor: pointer;
   color: #666;
   text-decoration: none;
+  transition: all .2s;
 }
 
 .article-container .article-list>div:hover {
   background: rgba(25, 55, 88, .04);
+}
+
+.article-container .article-list>div span {
+  font-size: 10px;
+  color: #c0c4cc;
+  margin-left: 10px;
 }

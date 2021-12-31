@@ -1,8 +1,7 @@
 import './style.css'
-import Editor, { ElementType, IElement } from './editor'
+import Editor, { ElementType, IEditorResult, IElement } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
-import { IEditorResult } from './editor/interface/Editor'
 import { queryParams } from './utils'
 
 window.onload = function () {
@@ -398,6 +397,7 @@ function initEditorInstance(data: IElement[]) {
 interface IArticleList {
   id: number;
   name: string;
+  updateAt: string;
 }
 async function getArticleList(): Promise<IArticleList[]> {
   const { data } = await request('/api/article/v1/list/by_example')
@@ -410,6 +410,9 @@ function appendArticle(articleList: IArticleList[]) {
   articleList.forEach(article => {
     const articleDom = document.createElement('div')
     articleDom.append(document.createTextNode(article.name))
+    const articleDate = document.createElement('span')
+    articleDate.append(document.createTextNode(article.updateAt))
+    articleDom.append(articleDate)
     articleDom.onclick = () => {
       const { origin, pathname } = window.location
       window.location.href = `${origin}${pathname}?id=${article.id}`
