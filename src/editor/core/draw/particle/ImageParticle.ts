@@ -12,6 +12,7 @@ export class ImageParticle {
   private curElement: IElement | null
   private curPosition: IElementPosition | null
   private imageCache: Map<string, HTMLImageElement>
+  // 拖拽改变尺寸
   private resizerSelection: HTMLDivElement
   private resizerHandleList: HTMLDivElement[]
   private resizerImageContainer: HTMLDivElement
@@ -21,6 +22,9 @@ export class ImageParticle {
   private mousedownX: number
   private mousedownY: number
   private curHandleIndex: number
+  // 预览选区
+  private previewerContainer: HTMLDivElement | null
+  private previewerImage: HTMLImageElement | null
 
   constructor(draw: Draw) {
     this.container = draw.getContainer()
@@ -30,6 +34,7 @@ export class ImageParticle {
     this.curElement = null
     this.curPosition = null
     this.imageCache = new Map()
+    // 图片尺寸缩放
     const { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage } = this._createResizerDom()
     this.resizerSelection = resizerSelection
     this.resizerHandleList = resizerHandleList
@@ -40,6 +45,10 @@ export class ImageParticle {
     this.mousedownX = 0
     this.mousedownY = 0
     this.curHandleIndex = 0 // 默认右下角
+    // 图片预览
+    resizerSelection.ondblclick = this._dblclick.bind(this)
+    this.previewerContainer = null
+    this.previewerImage = null
   }
 
   private _createResizerDom(): IImageParticleCreateResult {
@@ -54,7 +63,7 @@ export class ImageParticle {
       handleDom.style.background = this.options.resizerColor
       handleDom.classList.add(`handle-${i}`)
       handleDom.setAttribute('data-index', String(i))
-      handleDom.onmousedown = this._handleMousedown.bind(this)
+      handleDom.onmousedown = this._mousedown.bind(this)
       resizerSelection.append(handleDom)
       resizerHandleList.push(handleDom)
     }
@@ -69,7 +78,7 @@ export class ImageParticle {
     return { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage }
   }
 
-  private _handleMousedown(evt: MouseEvent) {
+  private _mousedown(evt: MouseEvent) {
     this.canvas = this.draw.getPage()
     if (!this.curPosition || !this.curElement) return
     const { scale } = this.options
@@ -154,6 +163,119 @@ export class ImageParticle {
     this.resizerImage.style.width = `${this.width * scale}px`
     this.resizerImage.style.height = `${this.height * scale}px`
     evt.preventDefault()
+  }
+
+  private _dblclick() {
+    this._drawPreviewer()
+    document.body.style.overflow = 'hidden'
+  }
+
+  private _drawPreviewer() {
+    const previewerContainer = document.createElement('div')
+    previewerContainer.classList.add('image-previewer')
+    // 关闭按钮
+    const closeBtn = document.createElement('i')
+    closeBtn.classList.add('image-close')
+    closeBtn.onclick = () => {
+      this._clearPreviewer()
+    }
+    previewerContainer.append(closeBtn)
+    // 图片
+    const imgContainer = document.createElement('div')
+    imgContainer.classList.add('image-container')
+    const img = document.createElement('img')
+    img.src = this.curElement?.value || ''
+    img.draggable = false
+    imgContainer.append(img)
+    this.previewerImage = img
+    previewerContainer.append(imgContainer)
+    // 操作栏
+    let scaleSize = 1
+    let rotateSize = 0
+    let translateX = 0
+    let translateY = 0
+    const menuContainer = document.createElement('div')
+    menuContainer.classList.add('image-menu')
+    const zoomIn = document.createElement('i')
+    zoomIn.classList.add('zoom-in')
+    zoomIn.onclick = () => {
+      scaleSize += 0.1
+      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+    }
+    menuContainer.append(zoomIn)
+    const zoomOut = document.createElement('i')
+    zoomOut.onclick = () => {
+      if (scaleSize - 0.1 <= 0.1) return
+      scaleSize -= 0.1
+      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+    }
+    zoomOut.classList.add('zoom-out')
+    menuContainer.append(zoomOut)
+    const rotate = document.createElement('i')
+    rotate.classList.add('rotate')
+    rotate.onclick = () => {
+      rotateSize += 1
+      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+    }
+    menuContainer.append(rotate)
+    const originalSize = document.createElement('i')
+    originalSize.classList.add('original-size')
+    originalSize.onclick = () => {
+      scaleSize = 1
+      rotateSize = 0
+      translateX = 0
+      translateY = 0
+      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+    }
+    menuContainer.append(originalSize)
+    previewerContainer.append(menuContainer)
+    this.previewerContainer = previewerContainer
+    document.body.append(previewerContainer)
+    // 拖拽调整位置
+    let startX = 0
+    let startY = 0
+    let isAllowDrag = false
+    img.onmousedown = (evt) => {
+      isAllowDrag = true
+      startX = evt.x
+      startY = evt.y
+      previewerContainer.style.cursor = 'move'
+    }
+    previewerContainer.onmousemove = (evt: MouseEvent) => {
+      if (!isAllowDrag) return
+      translateX += (evt.x - startX)
+      translateY += (evt.y - startY)
+      startX = evt.x
+      startY = evt.y
+      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+    }
+    previewerContainer.onmouseup = () => {
+      isAllowDrag = false
+      previewerContainer.style.cursor = 'auto'
+    }
+    previewerContainer.onwheel = (evt) => {
+      evt.preventDefault()
+      if (evt.deltaY < 0) {
+        // 放大
+        scaleSize += 0.1
+      } else {
+        // 缩小
+        if (scaleSize - 0.1 <= 0.1) return
+        scaleSize -= 0.1
+      }
+      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+    }
+  }
+
+  public _setPreviewerTransform(scale: number, rotate: number, x: number, y: number) {
+    if (!this.previewerImage) return
+    this.previewerImage.style.transform = `scale(${scale}) rotate(${rotate * 90}deg) translate(${x}px,${y}px)`
+  }
+
+  private _clearPreviewer() {
+    this.previewerContainer?.remove()
+    this.previewerContainer = null
+    document.body.style.overflow = 'auto'
   }
 
   public getImageCache(): Map<string, HTMLImageElement> {
