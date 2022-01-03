@@ -190,24 +190,24 @@ export class ImageParticle {
     this.previewerImage = img
     previewerContainer.append(imgContainer)
     // 操作栏
+    let x = 0
+    let y = 0
     let scaleSize = 1
     let rotateSize = 0
-    let translateX = 0
-    let translateY = 0
     const menuContainer = document.createElement('div')
     menuContainer.classList.add('image-menu')
     const zoomIn = document.createElement('i')
     zoomIn.classList.add('zoom-in')
     zoomIn.onclick = () => {
       scaleSize += 0.1
-      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+      this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     menuContainer.append(zoomIn)
     const zoomOut = document.createElement('i')
     zoomOut.onclick = () => {
       if (scaleSize - 0.1 <= 0.1) return
       scaleSize -= 0.1
-      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+      this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     zoomOut.classList.add('zoom-out')
     menuContainer.append(zoomOut)
@@ -215,17 +215,17 @@ export class ImageParticle {
     rotate.classList.add('rotate')
     rotate.onclick = () => {
       rotateSize += 1
-      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+      this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     menuContainer.append(rotate)
     const originalSize = document.createElement('i')
     originalSize.classList.add('original-size')
     originalSize.onclick = () => {
+      x = 0
+      y = 0
       scaleSize = 1
       rotateSize = 0
-      translateX = 0
-      translateY = 0
-      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+      this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     menuContainer.append(originalSize)
     previewerContainer.append(menuContainer)
@@ -243,11 +243,11 @@ export class ImageParticle {
     }
     previewerContainer.onmousemove = (evt: MouseEvent) => {
       if (!isAllowDrag) return
-      translateX += (evt.x - startX)
-      translateY += (evt.y - startY)
+      x += (evt.x - startX)
+      y += (evt.y - startY)
       startX = evt.x
       startY = evt.y
-      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+      this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     previewerContainer.onmouseup = () => {
       isAllowDrag = false
@@ -263,13 +263,15 @@ export class ImageParticle {
         if (scaleSize - 0.1 <= 0.1) return
         scaleSize -= 0.1
       }
-      this._setPreviewerTransform(scaleSize, rotateSize, translateX, translateY)
+      this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
   }
 
   public _setPreviewerTransform(scale: number, rotate: number, x: number, y: number) {
     if (!this.previewerImage) return
-    this.previewerImage.style.transform = `scale(${scale}) rotate(${rotate * 90}deg) translate(${x}px,${y}px)`
+    this.previewerImage.style.left = `${x}px`
+    this.previewerImage.style.top = `${y}px`
+    this.previewerImage.style.transform = `scale(${scale}) rotate(${rotate * 90}deg)`
   }
 
   private _clearPreviewer() {
