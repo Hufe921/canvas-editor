@@ -153,8 +153,13 @@
   background-color: #e2e6ed;
 }
 
-.image-previewer img {
+.image-previewer .image-container {
+  position: relative;
+}
+
+.image-previewer .image-container img {
   cursor: move;
+  position: relative;
 }
 
 .image-previewer .image-menu {
@@ -170,7 +175,7 @@
 .image-previewer .image-menu i {
   width: 32px;
   height: 32px;
-  margin-right: 15px;
+  margin: 0 8px;
   cursor: pointer;
   display: inline-block;
   background-repeat: no-repeat;
