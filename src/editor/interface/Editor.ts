@@ -1,4 +1,5 @@
 import { IElement } from ".."
+import { IHeader } from "./Header"
 
 export interface IEditorOption {
   defaultType?: string;
@@ -29,6 +30,8 @@ export interface IEditorOption {
   tdPadding?: number;
   defaultTdHeight?: number;
   defaultHyperlinkColor?: string;
+  headerTop?: number;
+  header?: IHeader;
 }
 
 export interface IEditorResult {

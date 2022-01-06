@@ -4,13 +4,12 @@
 
 ## snapshot
 
-![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.6.1.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.7.0.png)
 
 ## next features
 
 1. fix bugs
-2. table features
-3. controls
+2. controls
 
 ## install
 
