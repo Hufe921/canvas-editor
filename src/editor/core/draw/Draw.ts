@@ -27,6 +27,7 @@ import { TableParticle } from "./particle/table/TableParticle"
 import { ISearchResult } from "../../interface/Search"
 import { TableTool } from "./particle/table/TableTool"
 import { HyperlinkParticle } from "./particle/HyperlinkParticle"
+import { Header } from "./frame/Header"
 
 export class Draw {
 
@@ -55,6 +56,7 @@ export class Draw {
   private tableParticle: TableParticle
   private tableTool: TableTool
   private pageNumber: PageNumber
+  private header: Header
   private hyperlinkParticle: HyperlinkParticle
 
   private rowList: IRow[]
@@ -94,6 +96,7 @@ export class Draw {
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
+    this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     new GlobalObserver(this)
 
@@ -141,6 +144,10 @@ export class Draw {
 
   public getPageNumberBottom(): number {
     return this.options.pageNumberBottom * this.options.scale
+  }
+
+  public getHeaderTop(): number {
+    return this.options.headerTop * this.options.scale
   }
 
   public getMarginIndicatorSize(): number {
@@ -646,6 +653,8 @@ export class Draw {
     x = drawRowResult.x
     y = drawRowResult.y
     index = drawRowResult.index
+    // 绘制页眉
+    this.header.render(ctx)
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制

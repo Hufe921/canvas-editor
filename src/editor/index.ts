@@ -15,6 +15,7 @@ import { tableMenus } from './core/contextmenu/menus/tableMenus'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
 import { EditorComponent } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
+import { IHeader } from './interface/Header'
 
 export default class Editor {
 
@@ -23,6 +24,13 @@ export default class Editor {
   public register: Register
 
   constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
+    const headerOptions: Required<IHeader> = {
+      data: '',
+      color: '#AAAAAA',
+      size: 14,
+      font: 'Yahei',
+      ...options.header
+    }
     const editorOptions: Required<IEditorOption> = {
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
@@ -52,7 +60,9 @@ export default class Editor {
       tdPadding: 5,
       defaultTdHeight: 40,
       defaultHyperlinkColor: '#0000FF',
-      ...options
+      headerTop: 50,
+      ...options,
+      header: headerOptions
     }
     formatElementList(elementList)
     // 监听

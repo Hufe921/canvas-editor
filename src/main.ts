@@ -195,7 +195,10 @@ window.onload = function () {
   // 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
   const instance = new Editor(container, <IElement[]>data, {
-    margins: [100, 120, 100, 120]
+    margins: [100, 120, 100, 120],
+    header: {
+      data: '人民医院门诊'
+    }
   })
   console.log('实例: ', instance)
 
