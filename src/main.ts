@@ -44,7 +44,7 @@ function initEditorInstance(data: IElement[]) {
   const instance = new Editor(container, <IElement[]>data, {
     margins: [100, 120, 100, 120],
     header: {
-      data: '人民医院门诊'
+      data: name
     }
   })
   console.log('实例: ', instance)
