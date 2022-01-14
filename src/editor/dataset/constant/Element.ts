@@ -1,3 +1,4 @@
+import { ElementType } from "../enum/Element"
 import { IElement } from "../../interface/Element"
 
 export const EDITOR_ELEMENT_STYLE_ATTR = [
@@ -43,4 +44,11 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'url',
   'colgroup',
   'valueList'
+]
+
+export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
+  ElementType.TEXT,
+  ElementType.HYPERLINK,
+  ElementType.SUBSCRIPT,
+  ElementType.SUPERSCRIPT
 ]
