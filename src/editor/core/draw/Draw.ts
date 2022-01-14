@@ -28,6 +28,8 @@ import { ISearchResult } from "../../interface/Search"
 import { TableTool } from "./particle/table/TableTool"
 import { HyperlinkParticle } from "./particle/HyperlinkParticle"
 import { Header } from "./frame/Header"
+import { SuperscriptParticle } from "./particle/Superscript"
+import { SubscriptParticle } from "./particle/Subscript"
 
 export class Draw {
 
@@ -58,6 +60,8 @@ export class Draw {
   private pageNumber: PageNumber
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
+  private superscriptParticle: SuperscriptParticle
+  private subscriptParticle: SubscriptParticle
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -98,6 +102,9 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.superscriptParticle = new SuperscriptParticle()
+    this.subscriptParticle = new SubscriptParticle()
+
     new GlobalObserver(this)
 
     this.canvasEvent = new CanvasEvent(this)
@@ -351,7 +358,9 @@ export class Draw {
 
   private _getFont(el: IElement, scale: number = 1): string {
     const { defaultSize, defaultFont } = this.options
-    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${(el.size || defaultSize) * scale}px ${el.font || defaultFont}`
+    const font = el.font || defaultFont
+    const size = el.actualSize || el.size || defaultSize
+    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${size * scale}px ${font}`
   }
 
   private _computeRowList(innerWidth: number, elementList: IElement[]) {
@@ -435,12 +444,22 @@ export class Draw {
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = 0
       } else {
-        metrics.height = (element.size || this.options.defaultSize) * scale
+        // 设置上下标真实字体尺寸
+        const size = element.size || this.options.defaultSize
+        if (element.type === ElementType.SUPERSCRIPT || element.type === ElementType.SUBSCRIPT) {
+          element.actualSize = Math.ceil(size * 0.6)
+        }
+        metrics.height = (element.actualSize || size) * scale
         ctx.font = this._getFont(element)
         const fontMetrics = this.textParticle.measureText(ctx, element)
         metrics.width = fontMetrics.width * scale
         metrics.boundingBoxAscent = (element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent) * scale
         metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent * scale
+        if (element.type === ElementType.SUPERSCRIPT) {
+          metrics.boundingBoxAscent += metrics.height / 2
+        } else if (element.type === ElementType.SUBSCRIPT) {
+          metrics.boundingBoxDescent += metrics.height / 2
+        }
       }
       const ascent = metrics.boundingBoxAscent + rowMargin
       const descent = metrics.boundingBoxDescent + rowMargin
@@ -545,6 +564,12 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.SUPERSCRIPT) {
+          this.textParticle.complete()
+          this.superscriptParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.SUBSCRIPT) {
+          this.textParticle.complete()
+          this.subscriptParticle.render(ctx, element, x, y + offsetY)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }

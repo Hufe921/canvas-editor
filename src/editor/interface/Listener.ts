@@ -1,7 +1,9 @@
+import { ElementType } from ".."
 import { RowFlex } from "../dataset/enum/Row"
 import { IEditorResult } from "./Editor"
 
 export interface IRangeStype {
+  type: ElementType | null;
   undo: boolean;
   redo: boolean;
   painter: boolean;

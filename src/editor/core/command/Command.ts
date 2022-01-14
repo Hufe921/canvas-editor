@@ -20,6 +20,8 @@ export class Command {
   private static italic: Function
   private static underline: Function
   private static strikeout: Function
+  private static superscript: Function
+  private static subscript: Function
   private static color: Function
   private static highlight: Function
   private static left: Function
@@ -60,6 +62,8 @@ export class Command {
     Command.italic = adapt.italic.bind(adapt)
     Command.underline = adapt.underline.bind(adapt)
     Command.strikeout = adapt.strikeout.bind(adapt)
+    Command.superscript = adapt.superscript.bind(adapt)
+    Command.subscript = adapt.subscript.bind(adapt)
     Command.color = adapt.color.bind(adapt)
     Command.highlight = adapt.highlight.bind(adapt)
     Command.left = adapt.rowFlex.bind(adapt)
@@ -146,6 +150,14 @@ export class Command {
 
   public executeStrikeout() {
     return Command.strikeout()
+  }
+
+  public executeSuperscript() {
+    return Command.superscript()
+  }
+
+  public executeSubscript() {
+    return Command.subscript()
   }
 
   public executeColor(payload: string) {

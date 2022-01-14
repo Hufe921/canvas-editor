@@ -1,3 +1,4 @@
+import { ElementType } from "../.."
 import { IEditorOption } from "../../interface/Editor"
 import { IElement } from "../../interface/Element"
 import { IRange } from "../../interface/Range"
@@ -65,6 +66,8 @@ export class RangeManager {
     }
     const curElement = curElementList[curElementList.length - 1]
     if (!curElement) return
+    // 类型
+    const type = curElement.type || ElementType.TEXT
     // 富文本
     const font = curElement.font || this.options.defaultFont
     let bold = !~curElementList.findIndex(el => !el.bold)
@@ -80,6 +83,7 @@ export class RangeManager {
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
     this.listener.rangeStyleChange({
+      type,
       undo,
       redo,
       painter,
@@ -103,6 +107,7 @@ export class RangeManager {
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
     this.listener.rangeStyleChange({
+      type: null,
       undo,
       redo,
       painter,

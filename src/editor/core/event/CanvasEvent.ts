@@ -368,7 +368,7 @@ export class CanvasEvent {
     if (!this.cursor) return
     const cursorPosition = this.position.getCursorPosition()
     if (!data || !cursorPosition || this.isCompositing) return
-    const { TEXT, HYPERLINK } = ElementType
+    const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT } = ElementType
     const text = data.replaceAll(`\n`, ZERO)
     const elementList = this.draw.getElementList()
     const agentDom = this.cursor.getAgentDom()
@@ -389,10 +389,13 @@ export class CanvasEvent {
         value,
         ...restArg
       }
+      const nextElement = elementList[endIndex + 1]
       if (
         element.type === TEXT
         || (!element.type && element.value !== ZERO)
-        || (element.type === HYPERLINK && elementList[endIndex + 1]?.type === HYPERLINK)
+        || (element.type === HYPERLINK && nextElement?.type === HYPERLINK)
+        || (element.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT)
+        || (element.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
       ) {
         EDITOR_ELEMENT_COPY_ATTR.forEach(attr => {
           const value = element[attr] as never
