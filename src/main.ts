@@ -83,12 +83,10 @@ window.onload = function () {
   })
   data.splice(383, 0, {
     value: '轻',
-    size: 10,
     type: ElementType.SUBSCRIPT
   })
   data.splice(392, 0, {
     value: '急',
-    size: 10,
     type: ElementType.SUPERSCRIPT
   })
   data.splice(594, 0, {
@@ -272,6 +270,16 @@ window.onload = function () {
   strikeoutDom.onclick = function () {
     console.log('strikeout')
     instance.command.executeStrikeout()
+  }
+  const superscriptDom = document.querySelector<HTMLDivElement>('.menu-item__superscript')!
+  superscriptDom.onclick = function () {
+    console.log('superscript')
+    instance.command.executeSuperscript()
+  }
+  const subscriptDom = document.querySelector<HTMLDivElement>('.menu-item__subscript')!
+  subscriptDom.onclick = function () {
+    console.log('subscript')
+    instance.command.executeSubscript()
   }
   const colorControlDom = document.querySelector<HTMLInputElement>('#color')!
   colorControlDom.onchange = function () {
@@ -489,6 +497,9 @@ window.onload = function () {
 
   // 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
+    // 控件类型
+    payload.type === ElementType.SUBSCRIPT ? subscriptDom.classList.add('active') : subscriptDom.classList.remove('active')
+    payload.type === ElementType.SUPERSCRIPT ? superscriptDom.classList.add('active') : superscriptDom.classList.remove('active')
     // 富文本
     const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)!
     fontSelectDom.innerText = curFontDom.innerText

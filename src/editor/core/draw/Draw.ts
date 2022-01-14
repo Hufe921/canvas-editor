@@ -358,7 +358,9 @@ export class Draw {
 
   private _getFont(el: IElement, scale: number = 1): string {
     const { defaultSize, defaultFont } = this.options
-    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${(el.size || defaultSize) * scale}px ${el.font || defaultFont}`
+    const font = el.font || defaultFont
+    const size = el.actualSize || el.size || defaultSize
+    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${size * scale}px ${font}`
   }
 
   private _computeRowList(innerWidth: number, elementList: IElement[]) {
@@ -442,7 +444,12 @@ export class Draw {
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = 0
       } else {
-        metrics.height = (element.size || this.options.defaultSize) * scale
+        // 设置上下标真实字体尺寸
+        const size = element.size || this.options.defaultSize
+        if (element.type === ElementType.SUPERSCRIPT || element.type === ElementType.SUBSCRIPT) {
+          element.actualSize = Math.ceil(size * 0.6)
+        }
+        metrics.height = (element.actualSize || size) * scale
         ctx.font = this._getFont(element)
         const fontMetrics = this.textParticle.measureText(ctx, element)
         metrics.width = fontMetrics.width * scale

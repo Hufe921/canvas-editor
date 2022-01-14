@@ -213,6 +213,14 @@ ul {
   background-image: url('./assets/images/strikeout.svg');
 }
 
+.menu-item__superscript i {
+  background-image: url('./assets/images/superscript.svg');
+}
+
+.menu-item__subscript i {
+  background-image: url('./assets/images/subscript.svg');
+}
+
 .menu-item__color,
 .menu-item__highlight {
   display: flex;

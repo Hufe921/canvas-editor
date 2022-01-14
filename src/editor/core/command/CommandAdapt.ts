@@ -1,5 +1,5 @@
 import { ZERO } from "../../dataset/constant/Common"
-import { EDITOR_ELEMENT_STYLE_ATTR } from "../../dataset/constant/Element"
+import { EDITOR_ELEMENT_STYLE_ATTR, TEXTLIKE_ELEMENT_TYPE } from "../../dataset/constant/Element"
 import { EditorContext } from "../../dataset/enum/Editor"
 import { ElementType } from "../../dataset/enum/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
@@ -177,6 +177,48 @@ export class CommandAdapt {
     const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
     selection.forEach(el => {
       el.strikeout = !!~noStrikeoutIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public superscript() {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
+    selection.forEach(el => {
+      // 取消上标
+      if (~superscriptIndex) {
+        if (el.type === ElementType.SUPERSCRIPT) {
+          el.type = ElementType.TEXT
+          delete el.actualSize
+        }
+      } else {
+        // 设置上标
+        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUBSCRIPT) {
+          el.type = ElementType.SUPERSCRIPT
+        }
+      }
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public subscript() {
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
+    selection.forEach(el => {
+      // 取消下标
+      if (~subscriptIndex) {
+        if (el.type === ElementType.SUBSCRIPT) {
+          el.type = ElementType.TEXT
+          delete el.actualSize
+        }
+      } else {
+        // 设置下标
+        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUPERSCRIPT) {
+          el.type = ElementType.SUBSCRIPT
+        }
+      }
     })
     this.draw.render({ isSetCursor: false })
   }
@@ -911,8 +953,7 @@ export class CommandAdapt {
       // 搜索文本
       function searchClosure(payload: string | null, type: EditorContext, elementList: IElement[], restArgs?: ISearchResultRestArgs) {
         if (!payload) return
-        const { TEXT, HYPERLINK } = ElementType
-        const text = elementList.map(e => !e.type || e.type === TEXT || e.type === HYPERLINK ? e.value : ZERO)
+        const text = elementList.map(e => !e.type || TEXTLIKE_ELEMENT_TYPE.includes(e.type) ? e.value : ZERO)
           .filter(Boolean)
           .join('')
         const matchStartIndexList = []

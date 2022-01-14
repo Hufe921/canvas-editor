@@ -43,7 +43,11 @@ export interface IHyperlinkElement {
 
 export type ITable = ITableAttr & ITableElement
 
-export type IElement = IElementBasic & IElementStyle & ITable & IHyperlinkElement
+export interface ISuperscriptSubscript {
+  actualSize?: number;
+}
+
+export type IElement = IElementBasic & IElementStyle & ITable & IHyperlinkElement & ISuperscriptSubscript
 
 export interface IElementMetrics {
   width: number;

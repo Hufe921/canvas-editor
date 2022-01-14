@@ -1,5 +1,6 @@
-import { ElementType, IElement } from ".."
+import { IElement } from ".."
 import { ZERO } from "../dataset/constant/Common"
+import { TEXTLIKE_ELEMENT_TYPE } from "../dataset/constant/Element"
 
 export function writeText(text: string) {
   if (!text) return
@@ -7,9 +8,8 @@ export function writeText(text: string) {
 }
 
 export function writeTextByElementList(elementList: IElement[]) {
-  const { TEXT, HYPERLINK } = ElementType
   const text = elementList
-    .map(p => !p.type || p.type === TEXT || p.type === HYPERLINK ? p.value : '')
+    .map(p => !p.type || TEXTLIKE_ELEMENT_TYPE.includes(p.type) ? p.value : '')
     .join('')
   writeText(text)
 }
