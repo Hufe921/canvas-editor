@@ -11,7 +11,7 @@ interface IRenderPayload {
   contextMenuList: IRegisterContextMenu[];
   left: number;
   top: number;
-  parentMenuConatiner?: HTMLDivElement;
+  parentMenuContainer?: HTMLDivElement;
 }
 
 export class ContextMenu {
@@ -108,15 +108,15 @@ export class ContextMenu {
   }
 
   private _render(payload: IRenderPayload): HTMLDivElement {
-    const { contextMenuList, left, top, parentMenuConatiner } = payload
+    const { contextMenuList, left, top, parentMenuContainer } = payload
     const contextMenuContainer = this._createContextMenuContainer()
     const contextMenuContent = document.createElement('div')
     contextMenuContent.classList.add('contextmenu-content')
     // 直接子菜单
     let childMenuContainer: HTMLDivElement | null = null
     // 父菜单添加子菜单映射关系
-    if (parentMenuConatiner) {
-      this.contextMenuRelationShip.set(parentMenuConatiner, contextMenuContainer)
+    if (parentMenuContainer) {
+      this.contextMenuRelationShip.set(parentMenuContainer, contextMenuContainer)
     }
     for (let c = 0; c < contextMenuList.length; c++) {
       const menu = contextMenuList[c]
@@ -144,7 +144,7 @@ export class ContextMenu {
               contextMenuList: menu.childMenus!,
               left,
               top,
-              parentMenuConatiner: contextMenuContainer
+              parentMenuContainer: contextMenuContainer
             })
           }
           menuItem.onmouseleave = (evt) => {

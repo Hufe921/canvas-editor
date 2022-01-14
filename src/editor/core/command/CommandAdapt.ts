@@ -252,10 +252,10 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     // 当前选区所在行
     for (let p = 0; p < positionList.length; p++) {
-      const postion = positionList[p]
-      if (postion.pageNo !== pageNo) continue
-      if (postion.rowNo > endRowNo) break
-      if (postion.rowNo >= startRowNo && postion.rowNo <= endRowNo) {
+      const position = positionList[p]
+      if (position.pageNo !== pageNo) continue
+      if (position.rowNo > endRowNo) break
+      if (position.rowNo >= startRowNo && position.rowNo <= endRowNo) {
         elementList[p].rowFlex = payload
       }
     }
@@ -276,10 +276,10 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     // 当前选区所在行
     for (let p = 0; p < positionList.length; p++) {
-      const postion = positionList[p]
-      if (postion.pageNo !== pageNo) continue
-      if (postion.rowNo > endRowNo) break
-      if (postion.rowNo >= startRowNo && postion.rowNo <= endRowNo) {
+      const position = positionList[p]
+      if (position.pageNo !== pageNo) continue
+      if (position.rowNo > endRowNo) break
+      if (position.rowNo >= startRowNo && position.rowNo <= endRowNo) {
         elementList[p].rowMargin = payload
       }
     }
@@ -920,17 +920,17 @@ export class CommandAdapt {
       const originalElementList = this.draw.getOriginalElementList()
       const originalElementListLength = originalElementList.length
       // 查找表格所在位置
-      const tabeleIndexList = []
+      const tableIndexList = []
       for (let e = 0; e < originalElementListLength; e++) {
         const element = originalElementList[e]
         if (element.type === ElementType.TABLE) {
-          tabeleIndexList.push(e)
+          tableIndexList.push(e)
         }
       }
       let i = 0
       let elementIndex = 0
       while (elementIndex < originalElementListLength - 1) {
-        const endIndex = tabeleIndexList.length ? tabeleIndexList[i] : originalElementListLength
+        const endIndex = tableIndexList.length ? tableIndexList[i] : originalElementListLength
         const pageElement = originalElementList.slice(elementIndex, endIndex)
         if (pageElement.length) {
           elementListGroup.push({

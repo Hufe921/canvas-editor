@@ -58,7 +58,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         icon: 'delete-row',
         when: () => true,
         callback: (command: Command) => {
-          command.executDeleteTableRow()
+          command.executeDeleteTableRow()
         }
       },
       {
@@ -66,7 +66,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         icon: 'delete-col',
         when: () => true,
         callback: (command: Command) => {
-          command.executDeleteTableCol()
+          command.executeDeleteTableCol()
         }
       },
       {
@@ -74,7 +74,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         icon: 'delete-table',
         when: () => true,
         callback: (command: Command) => {
-          command.executDeleteTable()
+          command.executeDeleteTable()
         }
       }
     ]
@@ -86,7 +86,7 @@ export const tableMenus: IRegisterContextMenu[] = [
       return payload.isCrossRowCol
     },
     callback: (command: Command) => {
-      command.executMergeTableCell()
+      command.executeMergeTableCell()
     }
   },
   {
@@ -96,7 +96,7 @@ export const tableMenus: IRegisterContextMenu[] = [
       return payload.isInTable
     },
     callback: (command: Command) => {
-      command.executCancelMergeTableCell()
+      command.executeCancelMergeTableCell()
     }
   }
 ]

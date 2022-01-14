@@ -26,7 +26,7 @@ export interface IEditorOption {
   resizerSize?: number;
   marginIndicatorSize?: number;
   marginIndicatorColor?: string,
-  margins?: [top: number, right: number, bootom: number, left: number],
+  margins?: [top: number, right: number, bottom: number, left: number],
   tdPadding?: number;
   defaultTdHeight?: number;
   defaultHyperlinkColor?: string;
@@ -38,6 +38,6 @@ export interface IEditorResult {
   version: string;
   width: number;
   height: number;
-  margins: [top: number, right: number, bootom: number, left: number];
+  margins: [top: number, right: number, bottom: number, left: number];
   data: IElement[];
 }
