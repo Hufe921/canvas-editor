@@ -890,6 +890,22 @@ export class CommandAdapt {
     this.draw.render({ curIndex })
   }
 
+  public separator() {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const elementList = this.draw.getElementList()
+    // 光标后是否存在分割线
+    if (elementList[endIndex]?.type === ElementType.SEPARATOR) return
+    const element: IElement = {
+      value: '\n',
+      type: ElementType.SEPARATOR
+    }
+    const curIndex = startIndex + 1
+    elementList.splice(curIndex, 0, element)
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
+  }
+
   public image(payload: IDrawImagePayload) {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return

@@ -30,6 +30,7 @@ import { HyperlinkParticle } from "./particle/HyperlinkParticle"
 import { Header } from "./frame/Header"
 import { SuperscriptParticle } from "./particle/Superscript"
 import { SubscriptParticle } from "./particle/Subscript"
+import { SeparatorParticle } from "./particle/Separator"
 
 export class Draw {
 
@@ -60,6 +61,7 @@ export class Draw {
   private pageNumber: PageNumber
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
+  private separatorParticle: SeparatorParticle
   private superscriptParticle: SuperscriptParticle
   private subscriptParticle: SubscriptParticle
 
@@ -102,6 +104,7 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.separatorParticle = new SeparatorParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
 
@@ -443,6 +446,11 @@ export class Draw {
         metrics.height = elementHeight
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = 0
+      } else if (element.type === ElementType.SEPARATOR) {
+        metrics.width = innerWidth
+        metrics.height = this.options.defaultSize
+        metrics.boundingBoxAscent = -rowMargin
+        metrics.boundingBoxDescent = -rowMargin
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || this.options.defaultSize
@@ -570,6 +578,8 @@ export class Draw {
         } else if (element.type === ElementType.SUBSCRIPT) {
           this.textParticle.complete()
           this.subscriptParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.SEPARATOR) {
+          this.separatorParticle.render(ctx, element, x, y)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }

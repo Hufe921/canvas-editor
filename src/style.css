@@ -369,6 +369,10 @@ ul {
   background-image: url('./assets/images/hyperlink.svg');
 }
 
+.menu-item__separator i {
+  background-image: url('./assets/images/separator.svg');
+}
+
 .menu-item__search {
   position: relative;
 }
