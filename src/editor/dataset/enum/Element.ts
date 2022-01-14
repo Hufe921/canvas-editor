@@ -2,5 +2,7 @@ export enum ElementType {
   TEXT = 'text',
   IMAGE = 'image',
   TABLE = 'table',
-  HYPERLINK = 'hyperlink'
+  HYPERLINK = 'hyperlink',
+  SUPERSCRIPT = 'superscript',
+  SUBSCRIPT = 'subscript'
 }

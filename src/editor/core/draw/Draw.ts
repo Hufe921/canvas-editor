@@ -28,6 +28,8 @@ import { ISearchResult } from "../../interface/Search"
 import { TableTool } from "./particle/table/TableTool"
 import { HyperlinkParticle } from "./particle/HyperlinkParticle"
 import { Header } from "./frame/Header"
+import { SuperscriptParticle } from "./particle/Superscript"
+import { SubscriptParticle } from "./particle/Subscript"
 
 export class Draw {
 
@@ -58,6 +60,8 @@ export class Draw {
   private pageNumber: PageNumber
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
+  private superscriptParticle: SuperscriptParticle
+  private subscriptParticle: SubscriptParticle
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -98,6 +102,9 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.superscriptParticle = new SuperscriptParticle()
+    this.subscriptParticle = new SubscriptParticle()
+
     new GlobalObserver(this)
 
     this.canvasEvent = new CanvasEvent(this)
@@ -441,6 +448,11 @@ export class Draw {
         metrics.width = fontMetrics.width * scale
         metrics.boundingBoxAscent = (element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent) * scale
         metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent * scale
+        if (element.type === ElementType.SUPERSCRIPT) {
+          metrics.boundingBoxAscent += metrics.height / 2
+        } else if (element.type === ElementType.SUBSCRIPT) {
+          metrics.boundingBoxDescent += metrics.height / 2
+        }
       }
       const ascent = metrics.boundingBoxAscent + rowMargin
       const descent = metrics.boundingBoxDescent + rowMargin
@@ -545,6 +557,12 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.SUPERSCRIPT) {
+          this.textParticle.complete()
+          this.superscriptParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.SUBSCRIPT) {
+          this.textParticle.complete()
+          this.subscriptParticle.render(ctx, element, x, y + offsetY)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
