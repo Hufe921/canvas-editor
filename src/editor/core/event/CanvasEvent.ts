@@ -238,28 +238,28 @@ export class CanvasEvent {
     const position = this.position.getPositionList()
     const { index } = cursorPosition
     const { startIndex, endIndex } = this.range.getRange()
-    const isCollspace = startIndex === endIndex
+    const isCollapsed = startIndex === endIndex
     if (evt.key === KeyMap.Backspace) {
       // 判断是否允许删除
       if (elementList[index].value === ZERO && index === 0) {
         evt.preventDefault()
         return
       }
-      if (!isCollspace) {
+      if (!isCollapsed) {
         elementList.splice(startIndex + 1, endIndex - startIndex)
       } else {
         elementList.splice(index, 1)
       }
-      const curIndex = isCollspace ? index - 1 : startIndex
+      const curIndex = isCollapsed ? index - 1 : startIndex
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Delete) {
-      if (!isCollspace) {
+      if (!isCollapsed) {
         elementList.splice(startIndex + 1, endIndex - startIndex)
       } else {
         elementList.splice(index + 1, 1)
       }
-      const curIndex = isCollspace ? index : startIndex
+      const curIndex = isCollapsed ? index : startIndex
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {
@@ -274,7 +274,7 @@ export class CanvasEvent {
         value: ZERO,
         ...restArg
       }
-      if (isCollspace) {
+      if (isCollapsed) {
         elementList.splice(index + 1, 0, enterText)
       } else {
         elementList.splice(startIndex + 1, endIndex - startIndex, enterText)
@@ -375,7 +375,7 @@ export class CanvasEvent {
     agentDom.value = ''
     const { index } = cursorPosition
     const { startIndex, endIndex } = this.range.getRange()
-    const isCollspace = startIndex === endIndex
+    const isCollapsed = startIndex === endIndex
     // 表格需要上下文信息
     const positionContext = this.position.getPositionContext()
     let restArg = {}
@@ -407,7 +407,7 @@ export class CanvasEvent {
       return newElement
     })
     let start = 0
-    if (isCollspace) {
+    if (isCollapsed) {
       start = index + 1
     } else {
       start = startIndex + 1
@@ -417,7 +417,7 @@ export class CanvasEvent {
     for (let i = 0; i < inputData.length; i++) {
       elementList.splice(start + i, 0, inputData[i])
     }
-    const curIndex = (isCollspace ? index : startIndex) + inputData.length
+    const curIndex = (isCollapsed ? index : startIndex) + inputData.length
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }

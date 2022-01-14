@@ -205,23 +205,23 @@ export class Command {
     return Command.insertTableRightCol()
   }
 
-  public executDeleteTableRow() {
+  public executeDeleteTableRow() {
     return Command.deleteTableRow()
   }
 
-  public executDeleteTableCol() {
+  public executeDeleteTableCol() {
     return Command.deleteTableCol()
   }
 
-  public executDeleteTable() {
+  public executeDeleteTable() {
     return Command.deleteTable()
   }
 
-  public executMergeTableCell() {
+  public executeMergeTableCell() {
     return Command.mergeTableCell()
   }
 
-  public executCancelMergeTableCell() {
+  public executeCancelMergeTableCell() {
     return Command.cancelMergeTableCell()
   }
 

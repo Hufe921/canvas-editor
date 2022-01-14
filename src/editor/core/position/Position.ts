@@ -74,7 +74,7 @@ export class Position {
       if (curPageNo !== pageNo) continue
       // 命中元素
       if (leftTop[0] <= x && rightTop[0] >= x && leftTop[1] <= y && leftBottom[1] >= y) {
-        let curPostionIndex = j
+        let curPositionIndex = j
         const element = elementList[j]
         // 表格被命中
         if (element.type === ElementType.TABLE) {
@@ -110,21 +110,21 @@ export class Position {
         }
         // 图片区域均为命中
         if (element.type === ElementType.IMAGE) {
-          return { index: curPostionIndex, isDirectHit: true, isImage: true }
+          return { index: curPositionIndex, isDirectHit: true, isImage: true }
         }
         // 判断是否在文字中间前后
         if (elementList[index].value !== ZERO) {
           const valueWidth = rightTop[0] - leftTop[0]
           if (x < leftTop[0] + valueWidth / 2) {
-            curPostionIndex = j - 1
+            curPositionIndex = j - 1
           }
         }
-        return { index: curPostionIndex }
+        return { index: curPositionIndex }
       }
     }
     // 非命中区域
     let isLastArea = false
-    let curPostionIndex = -1
+    let curPositionIndex = -1
     // 判断是否在表格内
     if (isTable) {
       const { td, tablePosition } = payload
@@ -135,7 +135,7 @@ export class Position {
         const tdWidth = td.width!
         const tdHeight = td.height!
         if (!(tdX < x && x < tdX + tdWidth && tdY < y && y < tdY + tdHeight)) {
-          return { index: curPostionIndex }
+          return { index: curPositionIndex }
         }
       }
     }
@@ -149,9 +149,9 @@ export class Position {
         // 是否在头部
         if (isHead) {
           const headIndex = positionList.findIndex(p => p.rowNo === firstLetterList[j].rowNo)
-          curPostionIndex = ~headIndex ? headIndex : index
+          curPositionIndex = ~headIndex ? headIndex : index
         } else {
-          curPostionIndex = index
+          curPositionIndex = index
         }
         isLastArea = true
         break
@@ -161,7 +161,7 @@ export class Position {
       // 当前页最后一行
       return { index: firstLetterList[firstLetterList.length - 1]?.index || positionList.length - 1 }
     }
-    return { index: curPostionIndex }
+    return { index: curPositionIndex }
   }
 
 }

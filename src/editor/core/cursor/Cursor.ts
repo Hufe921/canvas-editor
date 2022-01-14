@@ -54,11 +54,11 @@ export class Cursor {
     // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
     const descent = metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop = (leftTop[1] + ascent) + descent - (cursorHeight - offsetHeight) + preY
-    const curosrleft = rightTop[0]
-    agentCursorDom.style.left = `${curosrleft}px`
+    const cursorLeft = rightTop[0]
+    agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT * scale}px`
     // 模拟光标显示
-    this.cursorDom.style.left = `${curosrleft}px`
+    this.cursorDom.style.left = `${cursorLeft}px`
     this.cursorDom.style.top = `${cursorTop}px`
     this.cursorDom.style.display = 'block'
     this.cursorDom.style.height = `${cursorHeight}px`

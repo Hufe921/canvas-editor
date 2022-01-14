@@ -2,7 +2,7 @@ import { ElementType } from ".."
 import { RowFlex } from "../dataset/enum/Row"
 import { IEditorResult } from "./Editor"
 
-export interface IRangeStype {
+export interface IRangeStyle {
   type: ElementType | null;
   undo: boolean;
   redo: boolean;
@@ -18,7 +18,7 @@ export interface IRangeStype {
   rowMargin: number;
 }
 
-export type IRangeStyleChange = (payload: IRangeStype) => void
+export type IRangeStyleChange = (payload: IRangeStyle) => void
 
 export type IVisiblePageNoListChange = (payload: number[]) => void
 
