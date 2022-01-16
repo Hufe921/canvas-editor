@@ -16,6 +16,7 @@ export interface IRangeStyle {
   highlight: string | null;
   rowFlex: RowFlex | null;
   rowMargin: number;
+  dashArray: number[];
 }
 
 export type IRangeStyleChange = (payload: IRangeStyle) => void

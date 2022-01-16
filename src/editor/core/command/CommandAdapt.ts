@@ -890,6 +890,36 @@ export class CommandAdapt {
     this.draw.render({ curIndex })
   }
 
+  public separator(payload: number[]) {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const elementList = this.draw.getElementList()
+    let curIndex = -1
+    // 光标存在分割线，则判断为修改线段逻辑
+    const endElement = elementList[endIndex + 1]
+    if (endElement && endElement.type === ElementType.SEPARATOR) {
+      if (endElement.dashArray && endElement.dashArray.join() === payload.join()) return
+      curIndex = endIndex
+      endElement.dashArray = payload
+    } else {
+      const newElement: IElement = {
+        value: '\n',
+        type: ElementType.SEPARATOR,
+        dashArray: payload
+      }
+      // 从行头增加分割线
+      if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
+        elementList.splice(startIndex, 1, newElement)
+        curIndex = startIndex - 1
+      } else {
+        elementList.splice(startIndex + 1, 0, newElement)
+        curIndex = startIndex
+      }
+    }
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
+  }
+
   public image(payload: IDrawImagePayload) {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return

@@ -4,5 +4,6 @@ export enum ElementType {
   TABLE = 'table',
   HYPERLINK = 'hyperlink',
   SUPERSCRIPT = 'superscript',
-  SUBSCRIPT = 'subscript'
+  SUBSCRIPT = 'subscript',
+  SEPARATOR = 'separator'
 }

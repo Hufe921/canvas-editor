@@ -40,6 +40,7 @@ export class Command {
   private static cancelMergeTableCell: Function
   private static image: Function
   private static hyperlink: Function
+  private static separator: Function
   private static search: Function
   private static print: Function
   private static pageScaleRecovery: Function
@@ -82,6 +83,7 @@ export class Command {
     Command.cancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
+    Command.separator = adapt.separator.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
@@ -231,6 +233,10 @@ export class Command {
 
   public executeImage(payload: IDrawImagePayload) {
     return Command.image(payload)
+  }
+
+  public executeSeparator(payload: number[]) {
+    return Command.separator(payload)
   }
 
   public executeSearch(payload: string | null) {

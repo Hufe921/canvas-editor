@@ -298,6 +298,24 @@ function initEditorInstance(data: IElement[]) {
       }
     })
   }
+  const separatorDom = document.querySelector<HTMLDivElement>('.menu-item__separator')!
+  const separatorOptionDom = separatorDom.querySelector<HTMLDivElement>('.options')!
+  separatorDom.onclick = function () {
+    console.log('separator')
+    separatorOptionDom.classList.toggle('visible')
+  }
+  separatorOptionDom.onmousedown = function (evt) {
+    let payload: number[] = []
+    const li = evt.target as HTMLLIElement
+    const separatorDash = li.dataset.separator?.split(',').map(Number)
+    if (separatorDash) {
+      const isSingleLine = separatorDash.every(d => d === 0)
+      if (!isSingleLine) {
+        payload = separatorDash
+      }
+    }
+    instance.command.executeSeparator(payload)
+  }
   const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
   document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
@@ -339,11 +357,22 @@ function initEditorInstance(data: IElement[]) {
     // 控件类型
     payload.type === ElementType.SUBSCRIPT ? subscriptDom.classList.add('active') : subscriptDom.classList.remove('active')
     payload.type === ElementType.SUPERSCRIPT ? superscriptDom.classList.add('active') : superscriptDom.classList.remove('active')
+    payload.type === ElementType.SEPARATOR ? separatorDom.classList.add('active') : separatorDom.classList.remove('active')
+    separatorOptionDom.querySelectorAll('li').forEach(li => li.classList.remove('active'))
+    if (payload.type === ElementType.SEPARATOR) {
+      const separator = payload.dashArray.join(',') || '0,0'
+      const curSeparatorDom = separatorOptionDom.querySelector<HTMLLIElement>(`[data-separator='${separator}']`)!
+      if (curSeparatorDom) {
+        curSeparatorDom.classList.add('active')
+      }
+    }
     // 富文本
-    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)!
-    fontSelectDom.innerText = curFontDom.innerText
     fontOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
-    curFontDom.classList.add('active')
+    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)
+    if (curFontDom) {
+      fontSelectDom.innerText = curFontDom.innerText
+      curFontDom.classList.add('active')
+    }
     payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')
     payload.italic ? italicDom.classList.add('active') : italicDom.classList.remove('active')
     payload.underline ? underlineDom.classList.add('active') : underlineDom.classList.remove('active')
