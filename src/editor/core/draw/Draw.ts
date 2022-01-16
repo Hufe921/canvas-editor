@@ -104,7 +104,7 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
-    this.separatorParticle = new SeparatorParticle(this)
+    this.separatorParticle = new SeparatorParticle()
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
 
@@ -447,6 +447,7 @@ export class Draw {
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.SEPARATOR) {
+        element.width = innerWidth
         metrics.width = innerWidth
         metrics.height = this.options.defaultSize
         metrics.boundingBoxAscent = -rowMargin

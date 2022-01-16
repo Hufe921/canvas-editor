@@ -47,7 +47,16 @@ export interface ISuperscriptSubscript {
   actualSize?: number;
 }
 
-export type IElement = IElementBasic & IElementStyle & ITable & IHyperlinkElement & ISuperscriptSubscript
+export interface ISeparator {
+  dashArray?: number[];
+}
+
+export type IElement = IElementBasic
+  & IElementStyle
+  & ITable
+  & IHyperlinkElement
+  & ISuperscriptSubscript
+  & ISeparator
 
 export interface IElementMetrics {
   width: number;

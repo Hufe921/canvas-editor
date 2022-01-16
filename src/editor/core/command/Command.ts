@@ -235,8 +235,8 @@ export class Command {
     return Command.image(payload)
   }
 
-  public executeSeparator() {
-    return Command.separator()
+  public executeSeparator(payload: number[]) {
+    return Command.separator(payload)
   }
 
   public executeSearch(payload: string | null) {
