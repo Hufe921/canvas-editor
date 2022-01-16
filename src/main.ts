@@ -63,7 +63,11 @@ window.onload = function () {
       size: 16
     }
   })
-  data.splice(137, 0, {
+  data.splice(8, 0, {
+    value: '\n',
+    type: ElementType.SEPARATOR
+  })
+  data.splice(138, 0, {
     type: ElementType.HYPERLINK,
     value: '',
     valueList: [{
@@ -81,16 +85,16 @@ window.onload = function () {
     }],
     url: 'https://hufe.club/canvas-editor'
   })
-  data.splice(378, 0, {
-    value: '危',
+  data.splice(379, 0, {
+    value: '∆',
     color: '#FF0000',
     type: ElementType.SUBSCRIPT
   })
-  data.splice(466, 0, {
+  data.splice(467, 0, {
     value: '9',
     type: ElementType.SUPERSCRIPT
   })
-  data.splice(592, 0, {
+  data.splice(593, 0, {
     value: `data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFkAAAAgCAYAAAB5JtSmAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAQ0SURBVGhD7dhrUSNBFAVgvKACEVjAAhJQgAIUYAABGEAABvgfAdn6UnWou01PppOZhIXNj1P9vo9zH5PK1Waz2V5wWlxIPgMuJJ8Bi0h+fn7eXl9fb29ubrYPDw/dO/8DHh8fu/vB4kym4Orqaofb29vund8OSSbhemewSrugBMnG3vlvw9vb265yn56edmtz/t/f33+5C8MkixQSZSsl9UzLOHUmcwTYAN/Rpl5eXnY+pnIB0Xd3d7s5m3rvDsrkCGszNiQ7r/tr4v39fSc/uipOqRcqufTHBiO78GGdzG5xcLtIFmVde7L9NsvXRo9s84+Pj+79pUAwn5GcD1wIz5r+fYGeJdnjGiF9hwL7iWAcfX19/evtKVHJXrtN8Rf4A3TVczqhrut5i1mSZQgnIriSWtdzP2N+EvIhi3/GWqHWtWXuy2IYbheiKarJZIZknkxyrryc2Utrgal+9S8iScUXIx/3kcxfe/jotcuDezLFlIbARDrzHpytXdKnQr4xyc74Vu9YV5Ih2Q/tT7mDSEYw5ZU4wu3nJx64k/1z9umlUG0hah/JSbC6Jzi5exDJWoTHERoBxu8uf/pT1j3HDkUIJitjbRfRA/iwVzlgy1RCfSF5ili9xj7BUWKs9wJZ3MpditYu+lsc+/PRx53cVF9Pdg/syE9Hb6cS75PkmhUEUFofmTvLGEXKimHueJP9Y3swWQwGLUiA9xEbHKuvgs4pPe1+1myTAKlw81buJ8kigjAXKauXPLQPhEYgJSEYsgdTUR0BmTVgc6C359wcvKGnBrGO8dO5VlD1ZZ519nrBHvrwKVMCas9hgL0YUI2wV98fC4FqCWizzXyqF44A0ZKLHkilgvPs1zbiTuZIdZ414KvqGCKZYx4zple+MSrrJVncAyL02/TOqncJwVMglx5zI4QDZ5WPvBGEcNP+7TlEcqJIAQFGsIdQjmZt7MlYA5yiI3pOQTCQXUm2TuVmXgmewxDJQDgl6deJJoU5y7p9uwZagmu1mCvbNoOOBfkhOf6lRZjzPb8qRjBMMiUhM9GNMZQq5/oRXBP7Mlj/i12A7EMIaJGqDcl8I79+/N1xTvdINQ2TDAQSvI9Md479vdqCHKSFQKAfEmgBqCTDkjaSgOZXQkg2jy1ti0xApnBQJo/0obQRipeQXbN3CmxKGQch5xgki4Efghl/kFqzPD//2DnXIodIRpaoETaXxcmwGNO7N4I2Oyuc6b+xK/tL9IH3kY/E+r1JdST4yM+7VUiuJbuPZHBeHZcNvXtziMMV9mRuvUOX8Vg9IFjRx9dUYM3s2oJyNx9ahFfSWwyRHKHG3nmL2q/mojyFVAWnEdi2Hg7OBXwUCCKr1QEtoe0+/9jI3xqIiuF2QRD0zqcwpfQnge9TVSI4tWrNe79shj98F0xDC0N4bTUVF5LPgAvJJ8dm+wcP2iJuZNdC5QAAAABJRU5ErkJggg==`,
     width: 89,
     height: 32,
@@ -460,6 +464,24 @@ window.onload = function () {
       }
     })
   }
+  const separatorDom = document.querySelector<HTMLDivElement>('.menu-item__separator')!
+  const separatorOptionDom = separatorDom.querySelector<HTMLDivElement>('.options')!
+  separatorDom.onclick = function () {
+    console.log('separator')
+    separatorOptionDom.classList.toggle('visible')
+  }
+  separatorOptionDom.onmousedown = function (evt) {
+    let payload: number[] = []
+    const li = evt.target as HTMLLIElement
+    const separatorDash = li.dataset.separator?.split(',').map(Number)
+    if (separatorDash) {
+      const isSingleLine = separatorDash.every(d => d === 0)
+      if (!isSingleLine) {
+        payload = separatorDash
+      }
+    }
+    instance.command.executeSeparator(payload)
+  }
   const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
   document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
@@ -501,11 +523,22 @@ window.onload = function () {
     // 控件类型
     payload.type === ElementType.SUBSCRIPT ? subscriptDom.classList.add('active') : subscriptDom.classList.remove('active')
     payload.type === ElementType.SUPERSCRIPT ? superscriptDom.classList.add('active') : superscriptDom.classList.remove('active')
+    payload.type === ElementType.SEPARATOR ? separatorDom.classList.add('active') : separatorDom.classList.remove('active')
+    separatorOptionDom.querySelectorAll('li').forEach(li => li.classList.remove('active'))
+    if (payload.type === ElementType.SEPARATOR) {
+      const separator = payload.dashArray.join(',') || '0,0'
+      const curSeparatorDom = separatorOptionDom.querySelector<HTMLLIElement>(`[data-separator='${separator}']`)!
+      if (curSeparatorDom) {
+        curSeparatorDom.classList.add('active')
+      }
+    }
     // 富文本
-    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)!
-    fontSelectDom.innerText = curFontDom.innerText
     fontOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
-    curFontDom.classList.add('active')
+    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)
+    if (curFontDom) {
+      fontSelectDom.innerText = curFontDom.innerText
+      curFontDom.classList.add('active')
+    }
     payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')
     payload.italic ? italicDom.classList.add('active') : italicDom.classList.remove('active')
     payload.underline ? underlineDom.classList.add('active') : underlineDom.classList.remove('active')

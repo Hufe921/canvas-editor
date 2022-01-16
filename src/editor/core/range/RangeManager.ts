@@ -78,6 +78,7 @@ export class RangeManager {
     const highlight = curElement.highlight || null
     const rowFlex = curElement.rowFlex || null
     const rowMargin = curElement.rowMargin || this.options.defaultRowMargin
+    const dashArray = curElement.dashArray || []
     // 菜单
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
@@ -95,7 +96,8 @@ export class RangeManager {
       color,
       highlight,
       rowFlex,
-      rowMargin
+      rowMargin,
+      dashArray
     })
   }
 
@@ -119,7 +121,8 @@ export class RangeManager {
       color: null,
       highlight: null,
       rowFlex: null,
-      rowMargin
+      rowMargin,
+      dashArray: []
     })
   }
 
