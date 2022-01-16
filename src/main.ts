@@ -482,14 +482,14 @@ window.onload = function () {
     }
     instance.command.executeSeparator(payload)
   }
-  const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
+  const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
   document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
     console.log('search')
-    collspanDom!.style.display = 'block'
+    searchCollapseDom!.style.display = 'block'
   }
   document.querySelector<HTMLDivElement>('.menu-item__search__collapse span')!.onclick = function () {
-    collspanDom!.style.display = 'none'
+    searchCollapseDom!.style.display = 'none'
     searchInputDom!.value = ''
     instance.command.executeSearch(null)
   }
