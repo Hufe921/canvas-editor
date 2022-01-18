@@ -211,6 +211,9 @@ window.onload = function () {
     margins: [100, 120, 100, 120],
     header: {
       data: '人民医院门诊'
+    },
+    watermark: {
+      data: '严禁复制'
     }
   })
   console.log('实例: ', instance)

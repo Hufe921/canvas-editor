@@ -16,6 +16,7 @@ import { IContextMenuContext, IRegisterContextMenu } from './interface/contextme
 import { EditorComponent } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
+import { IWatermark } from './interface/Watermark'
 
 export default class Editor {
 
@@ -30,6 +31,14 @@ export default class Editor {
       size: 14,
       font: 'Yahei',
       ...options.header
+    }
+    const waterMarkOptions: Required<IWatermark> = {
+      data: '',
+      color: '#AEB5C0',
+      opacity: 0.3,
+      size: 200,
+      font: 'Yahei',
+      ...options.watermark
     }
     const editorOptions: Required<IEditorOption> = {
       defaultType: 'TEXT',
@@ -62,7 +71,8 @@ export default class Editor {
       defaultHyperlinkColor: '#0000FF',
       headerTop: 50,
       ...options,
-      header: headerOptions
+      header: headerOptions,
+      watermark: waterMarkOptions
     }
     formatElementList(elementList)
     // 监听

@@ -1,5 +1,6 @@
 import { IElement } from ".."
 import { IHeader } from "./Header"
+import { IWatermark } from "./Watermark"
 
 export interface IEditorOption {
   defaultType?: string;
@@ -32,6 +33,7 @@ export interface IEditorOption {
   defaultHyperlinkColor?: string;
   headerTop?: number;
   header?: IHeader;
+  watermark?: IWatermark;
 }
 
 export interface IEditorResult {
