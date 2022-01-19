@@ -1,6 +1,7 @@
 import { IElement } from "../.."
 import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawImagePayload } from "../../interface/Draw"
+import { IWatermark } from "../../interface/Watermark"
 import { CommandAdapt } from "./CommandAdapt"
 
 export class Command {
@@ -41,6 +42,8 @@ export class Command {
   private static image: Function
   private static hyperlink: Function
   private static separator: Function
+  private static addWatermark: Function
+  private static deleteWatermark: Function
   private static search: Function
   private static print: Function
   private static pageScaleRecovery: Function
@@ -84,6 +87,8 @@ export class Command {
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.separator = adapt.separator.bind(adapt)
+    Command.addWatermark = adapt.addWatermark.bind(adapt)
+    Command.deleteWatermark = adapt.deleteWatermark.bind(adapt)
     Command.search = adapt.search.bind(adapt)
     Command.print = adapt.print.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
@@ -237,6 +242,14 @@ export class Command {
 
   public executeSeparator(payload: number[]) {
     return Command.separator(payload)
+  }
+
+  public executeAddWatermark(payload: IWatermark) {
+    return Command.addWatermark(payload)
+  }
+
+  public executeDeleteWatermark() {
+    return Command.deleteWatermark()
   }
 
   public executeSearch(payload: string | null) {

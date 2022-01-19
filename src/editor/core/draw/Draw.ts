@@ -31,6 +31,7 @@ import { Header } from "./frame/Header"
 import { SuperscriptParticle } from "./particle/Superscript"
 import { SubscriptParticle } from "./particle/Subscript"
 import { SeparatorParticle } from "./particle/Separator"
+import { Watermark } from "./frame/Watermark"
 
 export class Draw {
 
@@ -59,6 +60,7 @@ export class Draw {
   private tableParticle: TableParticle
   private tableTool: TableTool
   private pageNumber: PageNumber
+  private waterMark: Watermark
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
   private separatorParticle: SeparatorParticle
@@ -102,6 +104,7 @@ export class Draw {
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
+    this.waterMark = new Watermark(this)
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.separatorParticle = new SeparatorParticle()
@@ -696,6 +699,10 @@ export class Draw {
     // 搜索匹配绘制
     if (this.searchMatchList) {
       this.search.render(ctx, pageNo)
+    }
+    // 绘制水印
+    if (this.options.watermark.data) {
+      this.waterMark.render(ctx)
     }
   }
 

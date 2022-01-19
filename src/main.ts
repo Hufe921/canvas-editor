@@ -29,23 +29,27 @@ async function init() {
   const article = await getArticleDetail(id)
   name = article.name
   let data: IElement[] = []
+  let options: Partial<Omit<IEditorResult, 'data'>> = {}
   try {
     const content = <IEditorResult>JSON.parse(article.content)
-    data = Array.isArray(content.data) ? content.data : []
+    const { data: contentData, ...rest } = content
+    data = Array.isArray(contentData) ? contentData : []
+    options = rest
   } catch (error) {
     alert('数据格式错误')
   }
-  initEditorInstance(data)
+  initEditorInstance(data, options)
 }
 
-function initEditorInstance(data: IElement[]) {
+function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResult, 'data'>>) {
   // 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
   const instance = new Editor(container, <IElement[]>data, {
     margins: [100, 120, 100, 120],
     header: {
       data: name
-    }
+    },
+    watermark: options.watermark
   })
   console.log('实例: ', instance)
 
@@ -316,14 +320,61 @@ function initEditorInstance(data: IElement[]) {
     }
     instance.command.executeSeparator(payload)
   }
-  const collspanDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
+  const watermarkDom = document.querySelector<HTMLDivElement>('.menu-item__watermark')!
+  const watermarkOptionDom = watermarkDom.querySelector<HTMLDivElement>('.options')!
+  watermarkDom.onclick = function () {
+    console.log('watermark')
+    watermarkOptionDom.classList.toggle('visible')
+  }
+  watermarkOptionDom.onmousedown = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const menu = li.dataset.menu!
+    watermarkOptionDom.classList.toggle('visible')
+    if (menu === 'add') {
+      new Dialog({
+        title: '水印',
+        data: [{
+          type: 'text',
+          label: '内容',
+          name: 'data',
+          placeholder: '请输入内容'
+        }, {
+          type: 'color',
+          label: '颜色',
+          name: 'color',
+          value: '#AEB5C0'
+        }, {
+          type: 'number',
+          label: '字体大小',
+          name: 'size',
+          value: '120'
+        }],
+        onConfirm: (payload) => {
+          const nullableIndex = payload.findIndex(p => !p.value)
+          if (~nullableIndex) return
+          const watermark = payload.reduce((pre, cur) => {
+            pre[cur.name] = cur.value
+            return pre
+          }, <any>{})
+          instance.command.executeAddWatermark({
+            data: watermark.data,
+            color: watermark.color,
+            size: Number(watermark.size)
+          })
+        }
+      })
+    } else {
+      instance.command.executeDeleteWatermark()
+    }
+  }
+  const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
   document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
     console.log('search')
-    collspanDom!.style.display = 'block'
+    searchCollapseDom!.style.display = 'block'
   }
   document.querySelector<HTMLDivElement>('.menu-item__search__collapse span')!.onclick = function () {
-    collspanDom!.style.display = 'none'
+    searchCollapseDom!.style.display = 'none'
     searchInputDom!.value = ''
     instance.command.executeSearch(null)
   }

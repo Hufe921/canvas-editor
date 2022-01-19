@@ -16,6 +16,9 @@ import { IContextMenuContext, IRegisterContextMenu } from './interface/contextme
 import { EditorComponent } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
+import { IWatermark } from './interface/Watermark'
+import { defaultHeaderOption } from './dataset/constant/Header'
+import { defaultWatermarkOption } from './dataset/constant/Watermark'
 
 export default class Editor {
 
@@ -25,11 +28,12 @@ export default class Editor {
 
   constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
     const headerOptions: Required<IHeader> = {
-      data: '',
-      color: '#AAAAAA',
-      size: 14,
-      font: 'Yahei',
+      ...defaultHeaderOption,
       ...options.header
+    }
+    const waterMarkOptions: Required<IWatermark> = {
+      ...defaultWatermarkOption,
+      ...options.watermark
     }
     const editorOptions: Required<IEditorOption> = {
       defaultType: 'TEXT',
@@ -62,7 +66,8 @@ export default class Editor {
       defaultHyperlinkColor: '#0000FF',
       headerTop: 50,
       ...options,
-      header: headerOptions
+      header: headerOptions,
+      watermark: waterMarkOptions
     }
     formatElementList(elementList)
     // 监听
@@ -98,5 +103,6 @@ export type {
   IEditorOption,
   IEditorResult,
   IContextMenuContext,
-  IRegisterContextMenu
+  IRegisterContextMenu,
+  IWatermark
 }
