@@ -103,5 +103,6 @@ export type {
   IEditorOption,
   IEditorResult,
   IContextMenuContext,
-  IRegisterContextMenu
+  IRegisterContextMenu,
+  IWatermark
 }

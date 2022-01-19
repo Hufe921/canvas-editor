@@ -1,5 +1,5 @@
 {
-  "version": "0.7.3",
+  "version": "0.7.4",
   "scripts": {
     "dev": "vite",
     "lib": "tsc && vite build --mode lib",
