@@ -17,6 +17,8 @@ import { EditorComponent } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
+import { defaultHeaderOption } from './dataset/constant/Header'
+import { defaultWatermarkOption } from './dataset/constant/Watermark'
 
 export default class Editor {
 
@@ -26,18 +28,11 @@ export default class Editor {
 
   constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
     const headerOptions: Required<IHeader> = {
-      data: '',
-      color: '#AAAAAA',
-      size: 14,
-      font: 'Yahei',
+      ...defaultHeaderOption,
       ...options.header
     }
     const waterMarkOptions: Required<IWatermark> = {
-      data: '',
-      color: '#AEB5C0',
-      opacity: 0.3,
-      size: 200,
-      font: 'Yahei',
+      ...defaultWatermarkOption,
       ...options.watermark
     }
     const editorOptions: Required<IEditorOption> = {

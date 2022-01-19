@@ -462,7 +462,7 @@ export class CanvasEvent {
 
   public save(): IEditorResult {
     // 配置
-    const { width, height, margins } = this.draw.getOptions()
+    const { width, height, margins, watermark } = this.draw.getOptions()
     // 数据
     const elementList = this.draw.getOriginalElementList()
     const data = zipElementList(elementList)
@@ -471,6 +471,7 @@ export class CanvasEvent {
       width,
       height,
       margins,
+      watermark: watermark.data ? watermark : undefined,
       data
     }
   }
