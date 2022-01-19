@@ -211,6 +211,10 @@ window.onload = function () {
     margins: [100, 120, 100, 120],
     header: {
       data: '人民医院门诊'
+    },
+    watermark: {
+      data: 'CANVAS-EDITOR',
+      size: 120
     }
   })
   console.log('实例: ', instance)
@@ -481,6 +485,53 @@ window.onload = function () {
       }
     }
     instance.command.executeSeparator(payload)
+  }
+  const watermarkDom = document.querySelector<HTMLDivElement>('.menu-item__watermark')!
+  const watermarkOptionDom = watermarkDom.querySelector<HTMLDivElement>('.options')!
+  watermarkDom.onclick = function () {
+    console.log('watermark')
+    watermarkOptionDom.classList.toggle('visible')
+  }
+  watermarkOptionDom.onmousedown = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const menu = li.dataset.menu!
+    watermarkOptionDom.classList.toggle('visible')
+    if (menu === 'add') {
+      new Dialog({
+        title: '水印',
+        data: [{
+          type: 'text',
+          label: '内容',
+          name: 'data',
+          placeholder: '请输入内容'
+        }, {
+          type: 'color',
+          label: '颜色',
+          name: 'color',
+          value: '#AEB5C0'
+        }, {
+          type: 'number',
+          label: '字体大小',
+          name: 'size',
+          value: '120'
+        }],
+        onConfirm: (payload) => {
+          const nullableIndex = payload.findIndex(p => !p.value)
+          if (~nullableIndex) return
+          const watermark = payload.reduce((pre, cur) => {
+            pre[cur.name] = cur.value
+            return pre
+          }, <any>{})
+          instance.command.executeAddWatermark({
+            data: watermark.data,
+            color: watermark.color,
+            size: Number(watermark.size)
+          })
+        }
+      })
+    } else {
+      instance.command.executeDeleteWatermark()
+    }
   }
   const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')

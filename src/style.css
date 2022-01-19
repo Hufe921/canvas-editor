@@ -413,6 +413,14 @@ ul {
   background-image: url('./assets/images/line-dash-dot-dot.svg');
 }
 
+.menu-item__watermark>i {
+  background-image: url('./assets/images/watermark.svg');
+}
+
+.menu-item__watermark {
+  position: relative;
+}
+
 .menu-item__search {
   position: relative;
 }

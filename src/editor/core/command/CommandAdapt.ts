@@ -1,5 +1,6 @@
 import { ZERO } from "../../dataset/constant/Common"
 import { EDITOR_ELEMENT_STYLE_ATTR, TEXTLIKE_ELEMENT_TYPE } from "../../dataset/constant/Element"
+import { defaultWatermarkOption } from "../../dataset/constant/Watermark"
 import { EditorContext } from "../../dataset/enum/Editor"
 import { ElementType } from "../../dataset/enum/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
@@ -11,6 +12,7 @@ import { ISearchResult, ISearchResultRestArgs } from "../../interface/Search"
 import { IColgroup } from "../../interface/table/Colgroup"
 import { ITd } from "../../interface/table/Td"
 import { ITr } from "../../interface/table/Tr"
+import { IWatermark } from "../../interface/Watermark"
 import { getUUID } from "../../utils"
 import { formatElementList } from "../../utils/element"
 import { printImageBase64 } from "../../utils/print"
@@ -918,6 +920,31 @@ export class CommandAdapt {
     }
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
+  }
+
+  public addWatermark(payload: IWatermark) {
+    const options = this.draw.getOptions()
+    const { color, size, opacity, font } = defaultWatermarkOption
+    options.watermark.data = payload.data
+    options.watermark.color = payload.color || color
+    options.watermark.size = payload.size || size
+    options.watermark.opacity = payload.opacity || opacity
+    options.watermark.font = payload.font || font
+    this.draw.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
+  public deleteWatermark() {
+    const options = this.draw.getOptions()
+    if (options.watermark && options.watermark.data) {
+      options.watermark = { ...defaultWatermarkOption }
+      this.draw.render({
+        isSetCursor: false,
+        isSubmitHistory: false
+      })
+    }
   }
 
   public image(payload: IDrawImagePayload) {
