@@ -4,7 +4,7 @@ import { IDrawOption, IDrawRowPayload, IDrawRowResult } from "../../interface/Dr
 import { IEditorOption } from "../../interface/Editor"
 import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from "../../interface/Element"
 import { IRow, IRowElement } from "../../interface/Row"
-import { deepClone } from "../../utils"
+import { deepClone, getUUID } from "../../utils"
 import { Cursor } from "../cursor/Cursor"
 import { CanvasEvent } from "../event/CanvasEvent"
 import { GlobalEvent } from "../event/GlobalEvent"
@@ -449,6 +449,62 @@ export class Draw {
         metrics.height = elementHeight
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = 0
+        // 表格分页处理(拆分表格)
+        const margins = this.getMargins()
+        const height = this.getHeight()
+        const marginHeight = margins[0] + margins[2]
+        let curPagePreHeight = marginHeight
+        for (let r = 0; r < rowList.length; r++) {
+          const row = rowList[r]
+          if (row.height + curPagePreHeight > height) {
+            curPagePreHeight = marginHeight + row.height
+          } else {
+            curPagePreHeight += row.height
+          }
+        }
+        // 表格高度超过页面高度
+        const rowMarginHeight = rowMargin * 2
+        if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
+          const trList = element.trList!
+          // 计算需要移除的行数
+          let deleteStart = 0
+          let deleteCount = 0
+          let preTrHeight = 0
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            if (tr.tdList.length < 2) break
+            if (curPagePreHeight + rowMarginHeight + preTrHeight + tr.height > height) {
+              // 暂时不考虑跨列
+              if (element.colgroup?.length !== tr.tdList.length) {
+                deleteCount = 0
+              }
+              break
+            } else {
+              deleteStart = r + 1
+              deleteCount = trList.length - deleteStart
+              preTrHeight += tr.height
+            }
+          }
+          if (deleteCount) {
+            const cloneTrList = trList.splice(deleteStart, deleteCount)
+            const cloneTrHeight = cloneTrList.reduce((pre, cur) => pre + cur.height, 0)
+            element.height -= cloneTrHeight
+            metrics.height -= cloneTrHeight
+            metrics.boundingBoxDescent -= cloneTrHeight
+            // 追加拆分表格
+            const cloneElement = deepClone(element)
+            cloneElement.trList = cloneTrList
+            cloneElement.id = getUUID()
+            elementList.splice(i + 1, 0, cloneElement)
+            // 换页的是当前行则改变上下文
+            const positionContext = this.position.getPositionContext()
+            if (positionContext.isTable && positionContext.trIndex === deleteStart) {
+              positionContext.index! += 1
+              positionContext.trIndex = 0
+              this.position.setPositionContext(positionContext)
+            }
+          }
+        }
       } else if (element.type === ElementType.SEPARATOR) {
         element.width = innerWidth
         metrics.width = innerWidth
