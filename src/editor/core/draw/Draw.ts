@@ -470,19 +470,20 @@ export class Draw {
           let deleteStart = 0
           let deleteCount = 0
           let preTrHeight = 0
-          for (let r = 0; r < trList.length; r++) {
-            const tr = trList[r]
-            if (tr.tdList.length < 2) break
-            if (curPagePreHeight + rowMarginHeight + preTrHeight + tr.height > height) {
-              // 暂时不考虑跨列
-              if (element.colgroup?.length !== tr.tdList.length) {
-                deleteCount = 0
+          if (trList.length > 1) {
+            for (let r = 0; r < trList.length; r++) {
+              const tr = trList[r]
+              if (curPagePreHeight + rowMarginHeight + preTrHeight + tr.height > height) {
+                // 是否跨列
+                if (element.colgroup?.length !== tr.tdList.length) {
+                  deleteCount = 0
+                }
+                break
+              } else {
+                deleteStart = r + 1
+                deleteCount = trList.length - deleteStart
+                preTrHeight += tr.height
               }
-              break
-            } else {
-              deleteStart = r + 1
-              deleteCount = trList.length - deleteStart
-              preTrHeight += tr.height
             }
           }
           if (deleteCount) {
