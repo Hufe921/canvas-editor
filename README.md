@@ -21,4 +21,8 @@
 
 ## build
 
+#### app
 `yarn run build`
+
+#### lib
+`yarn run lib`
