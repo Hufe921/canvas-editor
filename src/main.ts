@@ -4,6 +4,10 @@ import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
 
+window.onbeforeunload = function () {
+  return false
+}
+
 window.onload = function () {
   init()
 }
