@@ -30,3 +30,5 @@ export type IPageSizeChange = (payload: number) => void
 export type IPageScaleChange = (payload: number) => void
 
 export type ISaved = (payload: IEditorResult) => void
+
+export type IContentChange = () => void
