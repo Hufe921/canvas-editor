@@ -1106,8 +1106,15 @@ export class CommandAdapt {
     if (!isCollapsed) {
       elementList.splice(start, endIndex - startIndex)
     }
+    const positionContext = this.position.getPositionContext()
     for (let i = 0; i < payload.length; i++) {
-      elementList.splice(start + i, 0, payload[i])
+      const element = payload[i]
+      if (positionContext.isTable) {
+        element.tdId = positionContext.tdId
+        element.trId = positionContext.trId
+        element.tableId = positionContext.tableId
+      }
+      elementList.splice(start + i, 0, element)
     }
     const curIndex = startIndex + payload.length
     this.range.setRange(curIndex, curIndex)
