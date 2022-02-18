@@ -540,6 +540,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
+    contentChangeCount = 1
     updateArticle(payload)
   }
 
