@@ -421,6 +421,10 @@ ul {
   position: relative;
 }
 
+.menu-item__codeblock i {
+  background-image: url('./assets/images/codeblock.svg');
+}
+
 .menu-item__search {
   position: relative;
 }

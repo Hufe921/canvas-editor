@@ -52,7 +52,6 @@
 
 .dialog-option__item {
   margin-bottom: 18px;
-  height: 30px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -64,21 +63,23 @@
   color: #3d4757;
 }
 
-.dialog-option__item input {
+.dialog-option__item input,
+.dialog-option__item textarea {
   width: 276px;
   height: 30px;
   border-radius: 2px;
   border: 1px solid #d3d3d3;
   min-height: 30px;
-  line-height: 17px;
   padding: 5px;
   box-sizing: border-box;
   outline: none;
   appearance: none;
   user-select: none;
+  font-family: inherit;
 }
 
-.dialog-option__item input:focus {
+.dialog-option__item input:focus,
+.dialog-option__item textarea:focus {
   border-color: #4991f2;
 }
 
