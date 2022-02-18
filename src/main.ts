@@ -6,8 +6,9 @@ import request from './utils/request'
 import { queryParams } from './utils'
 import { formatPrismToken } from './utils/prism'
 
+let contentChangeCount = 0
 window.onbeforeunload = function () {
-  return false
+  return contentChangeCount > 1 ? false : null
 }
 
 window.onload = function () {
@@ -541,6 +542,11 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     console.log('elementList: ', payload)
     updateArticle(payload)
   }
+
+  instance.listener.contentChange = function () {
+    contentChangeCount++
+  }
+
 }
 
 interface IArticleList {
