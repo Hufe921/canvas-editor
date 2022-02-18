@@ -3,10 +3,12 @@ import './dialog.css'
 
 export interface IDialogData {
   type: string;
-  label: string;
+  label?: string;
   name: string;
   value?: string;
   placeholder?: string;
+  width?: number;
+  height?: number;
 }
 
 export interface IDialogConfirm {
@@ -27,7 +29,7 @@ export class Dialog {
   private options: IDialogOptions
   private mask: HTMLDivElement | null
   private container: HTMLDivElement | null
-  private inputList: HTMLInputElement[]
+  private inputList: (HTMLInputElement | HTMLTextAreaElement)[]
 
   constructor(options: IDialogOptions) {
     this.options = options
@@ -77,12 +79,25 @@ export class Dialog {
       const optionItemContainer = document.createElement('div')
       optionItemContainer.classList.add('dialog-option__item')
       // 选项名称
-      const optionName = document.createElement('span')
-      optionName.append(document.createTextNode(option.label))
-      optionItemContainer.append(optionName)
+      if (option.label) {
+        const optionName = document.createElement('span')
+        optionName.append(document.createTextNode(option.label))
+        optionItemContainer.append(optionName)
+      }
       // 选项输入框
-      const optionInput = document.createElement('input')
-      optionInput.type = option.type
+      let optionInput: HTMLInputElement | HTMLTextAreaElement
+      if (option.type === 'textarea') {
+        optionInput = document.createElement('textarea')
+      } else {
+        optionInput = document.createElement('input')
+        optionInput.type = option.type
+      }
+      if (option.width) {
+        optionInput.style.width = `${option.width}px`
+      }
+      if (option.height) {
+        optionInput.style.height = `${option.height}px`
+      }
       optionInput.name = option.name
       optionInput.value = option.value || ''
       optionInput.placeholder = option.placeholder || ''

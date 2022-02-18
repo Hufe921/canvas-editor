@@ -3,8 +3,8 @@ import { ElementType, IElement } from ".."
 import { ZERO } from "../dataset/constant/Common"
 import { EDITOR_ELEMENT_ZIP_ATTR } from "../dataset/constant/Element"
 
-export function formatElementList(elementList: IElement[]) {
-  if (elementList[0]?.value !== ZERO) {
+export function formatElementList(elementList: IElement[], isHandleFirstElement = true) {
+  if (isHandleFirstElement && elementList[0]?.value !== ZERO) {
     elementList.unshift({
       value: ZERO
     })
