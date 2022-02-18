@@ -851,10 +851,15 @@ export class Draw {
       })
     }
 
-    // 页面改变
+    // 信息变动回调
     setTimeout(() => {
+      // 页面尺寸改变
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(pageRowList.length)
+      }
+      // 文档内容改变
+      if (this.listener.contentChange && isSubmitHistory) {
+        this.listener.contentChange()
       }
     })
   }
