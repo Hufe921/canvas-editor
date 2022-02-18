@@ -1,6 +1,8 @@
 import './style.css'
+import prism from "prismjs"
 import Editor, { ElementType, IElement, RowFlex } from './editor'
 import { Dialog } from './components/dialog/Dialog'
+import { formatPrismToken } from './utils/prism'
 
 window.onload = function () {
 
@@ -533,6 +535,53 @@ window.onload = function () {
       instance.command.executeDeleteWatermark()
     }
   }
+
+  const codeblockDom = document.querySelector<HTMLDivElement>('.menu-item__codeblock')!
+  codeblockDom.onclick = function () {
+    console.log('codeblock')
+    new Dialog({
+      title: '代码块',
+      data: [{
+        type: 'textarea',
+        name: 'codeblock',
+        placeholder: '请输入代码',
+        width: 500,
+        height: 300
+      }],
+      onConfirm: (payload) => {
+        const codeblock = payload.find(p => p.name === 'codeblock')?.value
+        if (!codeblock) return
+        const tokenList = prism.tokenize(codeblock, prism.languages.javascript)
+        const formatTokenList = formatPrismToken(tokenList)
+        const elementList: IElement[] = []
+        for (let i = 0; i < formatTokenList.length; i++) {
+          const formatToken = formatTokenList[i]
+          const tokenStringList = formatToken.content.split('')
+          for (let j = 0; j < tokenStringList.length; j++) {
+            const value = tokenStringList[j]
+            const element: IElement = {
+              value
+            }
+            if (formatToken.color) {
+              element.color = formatToken.color
+            }
+            if (formatToken.bold) {
+              element.bold = true
+            }
+            if (formatToken.italic) {
+              element.italic = true
+            }
+            elementList.push(element)
+          }
+        }
+        elementList.unshift({
+          value: '\n'
+        })
+        instance.command.executeInsertElementList(elementList)
+      }
+    })
+  }
+
   const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
   document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {

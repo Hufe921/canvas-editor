@@ -1094,4 +1094,24 @@ export class CommandAdapt {
     }
   }
 
+  public insertElementList(payload: IElement[]) {
+    if (!payload.length) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    // 格式化element
+    formatElementList(payload, false)
+    const elementList = this.draw.getElementList()
+    const isCollapsed = startIndex === endIndex
+    let start = startIndex + 1
+    if (!isCollapsed) {
+      elementList.splice(start, endIndex - startIndex)
+    }
+    for (let i = 0; i < payload.length; i++) {
+      elementList.splice(start + i, 0, payload[i])
+    }
+    const curIndex = startIndex + payload.length
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
+  }
+
 }

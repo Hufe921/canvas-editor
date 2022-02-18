@@ -49,6 +49,7 @@ export class Command {
   private static pageScaleRecovery: Function
   private static pageScaleMinus: Function
   private static pageScaleAdd: Function
+  private static insertElementList: Function
 
   constructor(adapt: CommandAdapt) {
     Command.cut = adapt.cut.bind(adapt)
@@ -94,6 +95,7 @@ export class Command {
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
+    Command.insertElementList = adapt.insertElementList.bind(adapt)
   }
 
   // 全局命令
@@ -271,6 +273,11 @@ export class Command {
 
   public executePageScaleAdd() {
     return Command.pageScaleAdd()
+  }
+
+  // 通用
+  public executeInsertElementList(payload: IElement[]) {
+    return Command.insertElementList(payload)
   }
 
 }
