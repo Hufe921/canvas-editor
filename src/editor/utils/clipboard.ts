@@ -14,13 +14,16 @@ export function writeTextByElementList(elementList: IElement[]) {
     for (let e = 0; e < payload.length; e++) {
       const element = payload[e]
       if (element.type === ElementType.TABLE) {
+        if (e !== 0) {
+          text += WRAP
+        }
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             // 排除td首个元素
-            pickTextFromElement(td.value.slice(1, td.value.length - 1))
+            pickTextFromElement(td.value.slice(1, td.value.length))
             if (d !== tr.tdList.length - 1) {
               // td之间加水平制表符
               text += HORIZON_TAB
