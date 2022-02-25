@@ -31,6 +31,7 @@ import { Header } from "./frame/Header"
 import { SuperscriptParticle } from "./particle/Superscript"
 import { SubscriptParticle } from "./particle/Subscript"
 import { SeparatorParticle } from "./particle/Separator"
+import { PageBreakParticle } from "./particle/PageBreak"
 import { Watermark } from "./frame/Watermark"
 
 export class Draw {
@@ -64,6 +65,7 @@ export class Draw {
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
   private separatorParticle: SeparatorParticle
+  private pageBreakParticle: PageBreakParticle
   private superscriptParticle: SuperscriptParticle
   private subscriptParticle: SubscriptParticle
 
@@ -108,6 +110,7 @@ export class Draw {
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.separatorParticle = new SeparatorParticle()
+    this.pageBreakParticle = new PageBreakParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
 
@@ -512,6 +515,10 @@ export class Draw {
         metrics.height = this.options.defaultSize
         metrics.boundingBoxAscent = -rowMargin
         metrics.boundingBoxDescent = -rowMargin
+      } else if (element.type === ElementType.PAGE_BREAK) {
+        element.width = innerWidth
+        metrics.width = innerWidth
+        metrics.height = this.options.defaultSize
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || this.options.defaultSize
@@ -549,7 +556,8 @@ export class Draw {
           height,
           elementList: [rowElement],
           ascent,
-          rowFlex: rowElement.rowFlex
+          rowFlex: rowElement.rowFlex,
+          isPageBreak: element.type === ElementType.PAGE_BREAK
         })
       } else {
         curRow.width += metrics.width
@@ -641,6 +649,8 @@ export class Draw {
           this.subscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
+        } else if (element.type === ElementType.PAGE_BREAK) {
+          this.pageBreakParticle.render(ctx, element, x, y)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
@@ -788,7 +798,7 @@ export class Draw {
     let pageRowList: IRow[][] = [[]]
     for (let i = 0; i < this.rowList.length; i++) {
       const row = this.rowList[i]
-      if (row.height + pageHeight > height) {
+      if (row.height + pageHeight > height || this.rowList[i - 1]?.isPageBreak) {
         pageHeight = marginHeight + row.height
         pageRowList.push([row])
         pageNo++

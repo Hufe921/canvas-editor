@@ -327,6 +327,11 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     }
     instance.command.executeSeparator(payload)
   }
+  const pageBreakDom = document.querySelector<HTMLDivElement>('.menu-item__page-break')!
+  pageBreakDom.onclick = function () {
+    console.log('pageBreak')
+    instance.command.executePageBreak()
+  }
   const watermarkDom = document.querySelector<HTMLDivElement>('.menu-item__watermark')!
   const watermarkOptionDom = watermarkDom.querySelector<HTMLDivElement>('.options')!
   watermarkDom.onclick = function () {

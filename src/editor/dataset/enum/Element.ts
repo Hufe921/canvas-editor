@@ -5,5 +5,6 @@ export enum ElementType {
   HYPERLINK = 'hyperlink',
   SUPERSCRIPT = 'superscript',
   SUBSCRIPT = 'subscript',
-  SEPARATOR = 'separator'
+  SEPARATOR = 'separator',
+  PAGE_BREAK = 'pageBreak'
 }
