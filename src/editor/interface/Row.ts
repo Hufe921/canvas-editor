@@ -10,6 +10,7 @@ export interface IRow {
   width: number;
   height: number;
   ascent: number;
-  rowFlex?: RowFlex
+  rowFlex?: RowFlex;
+  isPageBreak?: boolean;
   elementList: IRowElement[];
 }

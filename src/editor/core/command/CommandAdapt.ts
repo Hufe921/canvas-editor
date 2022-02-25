@@ -1,4 +1,4 @@
-import { ZERO } from "../../dataset/constant/Common"
+import { WRAP, ZERO } from "../../dataset/constant/Common"
 import { EDITOR_ELEMENT_STYLE_ATTR, TEXTLIKE_ELEMENT_TYPE } from "../../dataset/constant/Element"
 import { defaultWatermarkOption } from "../../dataset/constant/Watermark"
 import { EditorContext } from "../../dataset/enum/Editor"
@@ -905,7 +905,7 @@ export class CommandAdapt {
       endElement.dashArray = payload
     } else {
       const newElement: IElement = {
-        value: '\n',
+        value: WRAP,
         type: ElementType.SEPARATOR,
         dashArray: payload
       }
@@ -920,6 +920,13 @@ export class CommandAdapt {
     }
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
+  }
+
+  public pageBreak() {
+    this.insertElementList([{
+      type: ElementType.PAGE_BREAK,
+      value: WRAP
+    }])
   }
 
   public addWatermark(payload: IWatermark) {

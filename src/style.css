@@ -425,6 +425,10 @@ ul {
   background-image: url('./assets/images/codeblock.svg');
 }
 
+.menu-item__page-break i {
+  background-image: url('./assets/images/page-break.svg');
+}
+
 .menu-item__search {
   position: relative;
 }

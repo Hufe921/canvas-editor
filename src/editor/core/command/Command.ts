@@ -42,6 +42,7 @@ export class Command {
   private static image: Function
   private static hyperlink: Function
   private static separator: Function
+  private static pageBreak: Function
   private static addWatermark: Function
   private static deleteWatermark: Function
   private static search: Function
@@ -88,6 +89,7 @@ export class Command {
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.separator = adapt.separator.bind(adapt)
+    Command.pageBreak = adapt.pageBreak.bind(adapt)
     Command.addWatermark = adapt.addWatermark.bind(adapt)
     Command.deleteWatermark = adapt.deleteWatermark.bind(adapt)
     Command.search = adapt.search.bind(adapt)
@@ -244,6 +246,10 @@ export class Command {
 
   public executeSeparator(payload: number[]) {
     return Command.separator(payload)
+  }
+
+  public executePageBreak() {
+    return Command.pageBreak()
   }
 
   public executeAddWatermark(payload: IWatermark) {
