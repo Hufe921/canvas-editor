@@ -11,7 +11,7 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
   }
   let i = 0
   while (i < elementList.length) {
-    const el = elementList[i]
+    let el = elementList[i]
     if (el.type === ElementType.TABLE) {
       const tableId = getUUID()
       el.id = tableId
@@ -40,6 +40,14 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
       elementList.splice(i, 1)
       // 追加字节点
       if (valueList.length) {
+        // 元素展开
+        if (valueList[0].value.length > 1) {
+          const deleteValue = valueList.splice(0, 1)[0]
+          const deleteTextList = deleteValue.value.split('')
+          for (let d = 0; d < deleteTextList.length; d++) {
+            valueList.splice(d, 0, { ...deleteValue, value: deleteTextList[d] })
+          }
+        }
         const hyperlinkId = getUUID()
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
@@ -51,6 +59,13 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
         }
       }
       i--
+    } else if ((!el.type || el.type === ElementType.TEXT) && el.value.length > 1) {
+      elementList.splice(i, 1)
+      const valueList = el.value.split('')
+      for (let v = 0; v < valueList.length; v++) {
+        elementList.splice(i + v, 0, { ...el, value: valueList[v] })
+      }
+      el = elementList[i]
     }
     if (el.value === '\n') {
       el.value = ZERO
@@ -60,6 +75,33 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
     }
     i++
   }
+}
+
+export function isSameElementExceptValue(source: IElement, target: IElement): boolean {
+  const sourceKeys = Object.keys(source)
+  const targetKeys = Object.keys(target)
+  if (sourceKeys.length !== targetKeys.length) return false
+  for (let s = 0; s < sourceKeys.length; s++) {
+    const key = sourceKeys[s] as never
+    if (key === 'value') continue
+    if (source[key] !== target[key]) {
+      return false
+    }
+  }
+  return true
+}
+
+export function pickElementAttr(payload: IElement): IElement {
+  const element: IElement = {
+    value: payload.value === ZERO ? `\n` : payload.value,
+  }
+  EDITOR_ELEMENT_ZIP_ATTR.forEach(attr => {
+    const value = payload[attr] as never
+    if (value !== undefined) {
+      element[attr] = value
+    }
+  })
+  return element
 }
 
 export function zipElementList(payload: IElement[]): IElement[] {
@@ -73,7 +115,7 @@ export function zipElementList(payload: IElement[]): IElement[] {
       e++
       continue
     }
-    // 表格处理
+    // 表格、超链接递归处理
     if (element.type === ElementType.TABLE) {
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
@@ -112,18 +154,25 @@ export function zipElementList(payload: IElement[]): IElement[] {
       hyperlinkElement.valueList = zipElementList(valueList)
       element = hyperlinkElement
     }
-    // 压缩保留字段
-    const newElement: IElement = {
-      value: element.value === ZERO ? `\n` : element.value,
-    }
-    EDITOR_ELEMENT_ZIP_ATTR.forEach(attr => {
-      const value = element[attr] as never
-      if (value !== undefined) {
-        newElement[attr] = value
+    // 组合元素
+    const pickElement = pickElementAttr(element)
+    if (!element.type || element.type === ElementType.TEXT) {
+      while (e < elementList.length) {
+        const nextElement = elementList[e + 1]
+        e++
+        if (
+          nextElement
+          && isSameElementExceptValue(pickElement, pickElementAttr(nextElement))
+        ) {
+          pickElement.value += nextElement.value
+        } else {
+          break
+        }
       }
-    })
-    zipElementListData.push(newElement)
-    e++
+    } else {
+      e++
+    }
+    zipElementListData.push(pickElement)
   }
   return zipElementListData
 }
