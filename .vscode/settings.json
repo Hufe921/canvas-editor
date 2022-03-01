@@ -1,0 +1,21 @@
+{
+  "cSpell.words": [
+    "atrule",
+    "colspan",
+    "compositionend",
+    "compositionstart",
+    "contextmenu",
+    "deletable",
+    "inputarea",
+    "prismjs",
+    "resizer",
+    "richtext",
+    "rowmargin",
+    "rowspan",
+    "TEXTLIKE",
+    "trlist",
+    "vite",
+    "Yahei"
+  ],
+  "typescript.tsdk": "node_modules/typescript/lib"
+}
