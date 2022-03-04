@@ -1,6 +1,6 @@
 import './style.css'
 import prism from "prismjs"
-import Editor, { ElementType, IElement, RowFlex } from './editor'
+import Editor, { EditorMode, ElementType, IElement, RowFlex } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 
@@ -621,6 +621,36 @@ window.onload = function () {
   document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick = function () {
     console.log('page-scale-add')
     instance.command.executePageScaleAdd()
+  }
+
+  let modeIndex = 0
+  const modeList = [{
+    mode: EditorMode.EDIT,
+    name: '编辑模式'
+  }, {
+    mode: EditorMode.CLEAN,
+    name: '清洁模式'
+  }, {
+    mode: EditorMode.READONLY,
+    name: '只读模式'
+  }]
+  const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
+  modeElement.onclick = function () {
+    // 模式选择循环
+    modeIndex === 2 ? modeIndex = 0 : modeIndex++
+    // 设置模式
+    const { name, mode } = modeList[modeIndex]
+    modeElement.innerText = name
+    instance.command.executeMode(mode)
+    // 设置菜单栏权限视觉反馈
+    const isReadonly = mode === EditorMode.READONLY
+    const enableMenuList = ['search', 'print']
+    document.querySelectorAll<HTMLDivElement>('.menu-item>div').forEach(dom => {
+      const menu = dom.dataset.menu
+      isReadonly && (!menu || !enableMenuList.includes(menu))
+        ? dom.classList.add('disable')
+        : dom.classList.remove('disable')
+    })
   }
 
   // 内部事件监听

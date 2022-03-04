@@ -1,4 +1,5 @@
 import { IElement } from "../.."
+import { EditorMode } from "../../dataset/enum/Editor"
 import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawImagePayload } from "../../interface/Draw"
 import { IWatermark } from "../../interface/Watermark"
@@ -103,8 +104,8 @@ export class Command {
   }
 
   // 全局命令
-  public executeMode() {
-    return Command.mode()
+  public executeMode(payload: EditorMode) {
+    return Command.mode(payload)
   }
 
   public executeCut() {
