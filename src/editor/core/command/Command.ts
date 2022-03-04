@@ -6,6 +6,7 @@ import { CommandAdapt } from "./CommandAdapt"
 
 export class Command {
 
+  private static mode: Function
   private static cut: Function
   private static copy: Function
   private static paste: Function
@@ -53,6 +54,7 @@ export class Command {
   private static insertElementList: Function
 
   constructor(adapt: CommandAdapt) {
+    Command.mode = adapt.mode.bind(adapt)
     Command.cut = adapt.cut.bind(adapt)
     Command.copy = adapt.copy.bind(adapt)
     Command.paste = adapt.paste.bind(adapt)
@@ -101,6 +103,10 @@ export class Command {
   }
 
   // 全局命令
+  public executeMode() {
+    return Command.mode()
+  }
+
   public executeCut() {
     return Command.cut()
   }

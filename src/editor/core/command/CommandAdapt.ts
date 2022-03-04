@@ -1,7 +1,7 @@
 import { WRAP, ZERO } from "../../dataset/constant/Common"
 import { EDITOR_ELEMENT_STYLE_ATTR, TEXTLIKE_ELEMENT_TYPE } from "../../dataset/constant/Element"
 import { defaultWatermarkOption } from "../../dataset/constant/Watermark"
-import { EditorContext } from "../../dataset/enum/Editor"
+import { EditorContext, EditorMode } from "../../dataset/enum/Editor"
 import { ElementType } from "../../dataset/enum/Element"
 import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
 import { RowFlex } from "../../dataset/enum/Row"
@@ -45,7 +45,19 @@ export class CommandAdapt {
     this.options = draw.getOptions()
   }
 
+  public mode(payload: EditorMode) {
+    const mode = this.draw.getMode()
+    if (mode === payload) return
+    this.draw.setMode(payload)
+    this.draw.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
   public cut() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     this.canvasEvent.cut()
   }
 
@@ -54,6 +66,8 @@ export class CommandAdapt {
   }
 
   public async paste() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const text = await navigator.clipboard.readText()
     if (text) {
       this.canvasEvent.input(text)
@@ -65,14 +79,20 @@ export class CommandAdapt {
   }
 
   public undo() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     this.historyManager.undo()
   }
 
   public redo() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     this.historyManager.redo()
   }
 
   public painter() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const painterStyle: IElementStyle = {}
@@ -89,6 +109,8 @@ export class CommandAdapt {
   }
 
   public format() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     selection.forEach(el => {
@@ -103,6 +125,8 @@ export class CommandAdapt {
   }
 
   public font(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     selection.forEach(el => {
@@ -112,6 +136,8 @@ export class CommandAdapt {
   }
 
   public sizeAdd() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
@@ -128,6 +154,8 @@ export class CommandAdapt {
   }
 
   public sizeMinus() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const greaterThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size - 2 >= 8)
@@ -144,6 +172,8 @@ export class CommandAdapt {
   }
 
   public bold() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const noBoldIndex = selection.findIndex(s => !s.bold)
@@ -154,6 +184,8 @@ export class CommandAdapt {
   }
 
   public italic() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const noItalicIndex = selection.findIndex(s => !s.italic)
@@ -164,6 +196,8 @@ export class CommandAdapt {
   }
 
   public underline() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const noUnderlineIndex = selection.findIndex(s => !s.underline)
@@ -174,6 +208,8 @@ export class CommandAdapt {
   }
 
   public strikeout() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
@@ -184,6 +220,8 @@ export class CommandAdapt {
   }
 
   public superscript() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
@@ -205,6 +243,8 @@ export class CommandAdapt {
   }
 
   public subscript() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
@@ -226,6 +266,8 @@ export class CommandAdapt {
   }
 
   public color(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     selection.forEach(el => {
@@ -235,6 +277,8 @@ export class CommandAdapt {
   }
 
   public highlight(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     selection.forEach(el => {
@@ -244,6 +288,8 @@ export class CommandAdapt {
   }
 
   public rowFlex(payload: RowFlex) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const pageNo = this.draw.getPageNo()
@@ -268,6 +314,8 @@ export class CommandAdapt {
   }
 
   public rowMargin(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const pageNo = this.draw.getPageNo()
@@ -292,6 +340,8 @@ export class CommandAdapt {
   }
 
   public insertTable(row: number, col: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -341,6 +391,8 @@ export class CommandAdapt {
   }
 
   public insertTableTopRow() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { index, trIndex, tableId } = positionContext
@@ -403,6 +455,8 @@ export class CommandAdapt {
   }
 
   public insertTableBottomRow() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { index, trIndex, tableId } = positionContext
@@ -468,6 +522,8 @@ export class CommandAdapt {
   }
 
   public insertTableLeftCol() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { index, tdIndex, tableId } = positionContext
@@ -524,6 +580,8 @@ export class CommandAdapt {
   }
 
   public insertTableRightCol() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { index, tdIndex, tableId } = positionContext
@@ -580,6 +638,8 @@ export class CommandAdapt {
   }
 
   public deleteTableRow() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { index, trIndex } = positionContext
@@ -631,6 +691,8 @@ export class CommandAdapt {
   }
 
   public deleteTableCol() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { index, tdIndex, trIndex } = positionContext
@@ -687,6 +749,8 @@ export class CommandAdapt {
   }
 
   public deleteTable() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const originalElementList = this.draw.getOriginalElementList()
@@ -702,6 +766,8 @@ export class CommandAdapt {
   }
 
   public mergeTableCell() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { isCrossRowCol, startTdIndex, endTdIndex, startTrIndex, endTrIndex } = this.range.getRange()
@@ -809,6 +875,8 @@ export class CommandAdapt {
   }
 
   public cancelMergeTableCell() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const { index, tdIndex, trIndex } = positionContext
@@ -869,6 +937,8 @@ export class CommandAdapt {
   }
 
   public hyperlink(payload: IElement) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -893,6 +963,8 @@ export class CommandAdapt {
   }
 
   public separator(payload: number[]) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -930,6 +1002,8 @@ export class CommandAdapt {
   }
 
   public addWatermark(payload: IWatermark) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const options = this.draw.getOptions()
     const { color, size, opacity, font } = defaultWatermarkOption
     options.watermark.data = payload.data
@@ -944,6 +1018,8 @@ export class CommandAdapt {
   }
 
   public deleteWatermark() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const options = this.draw.getOptions()
     if (options.watermark && options.watermark.data) {
       options.watermark = { ...defaultWatermarkOption }
@@ -955,6 +1031,8 @@ export class CommandAdapt {
   }
 
   public image(payload: IDrawImagePayload) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -1102,6 +1180,8 @@ export class CommandAdapt {
   }
 
   public insertElementList(payload: IElement[]) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     if (!payload.length) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return

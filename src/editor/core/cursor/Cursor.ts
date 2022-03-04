@@ -35,6 +35,7 @@ export class Cursor {
   }
 
   public drawCursor() {
+    const isReadonly = this.draw.isReadonly()
     const cursorPosition = this.position.getCursorPosition()
     if (!cursorPosition) return
     // 设置光标代理
@@ -60,7 +61,7 @@ export class Cursor {
     // 模拟光标显示
     this.cursorDom.style.left = `${cursorLeft}px`
     this.cursorDom.style.top = `${cursorTop}px`
-    this.cursorDom.style.display = 'block'
+    this.cursorDom.style.display = isReadonly ? 'none' : 'block'
     this.cursorDom.style.height = `${cursorHeight}px`
     setTimeout(() => {
       this.cursorDom.classList.add('cursor--animation')

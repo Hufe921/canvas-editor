@@ -9,7 +9,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     name: '插入行列',
     icon: 'insert-row-col',
     when: (payload) => {
-      return payload.isInTable
+      return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
       {
@@ -50,7 +50,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     name: '删除行列',
     icon: 'delete-row-col',
     when: (payload) => {
-      return payload.isInTable
+      return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
       {
@@ -83,7 +83,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     name: '合并单元格',
     icon: 'merge-cell',
     when: (payload) => {
-      return payload.isCrossRowCol
+      return !payload.isReadonly && payload.isCrossRowCol
     },
     callback: (command: Command) => {
       command.executeMergeTableCell()
@@ -93,7 +93,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     name: '取消合并',
     icon: 'merge-cancel-cell',
     when: (payload) => {
-      return payload.isInTable
+      return !payload.isReadonly && payload.isInTable
     },
     callback: (command: Command) => {
       command.executeCancelMergeTableCell()
