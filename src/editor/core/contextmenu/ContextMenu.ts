@@ -16,6 +16,7 @@ interface IRenderPayload {
 
 export class ContextMenu {
 
+  private draw: Draw
   private command: Command
   private range: RangeManager
   private position: Position
@@ -25,6 +26,7 @@ export class ContextMenu {
   private contextMenuRelationShip: Map<HTMLDivElement, HTMLDivElement>
 
   constructor(draw: Draw, command: Command) {
+    this.draw = draw
     this.command = command
     this.range = draw.getRange()
     this.position = draw.getPosition()
@@ -81,6 +83,8 @@ export class ContextMenu {
   }
 
   private _getContext(): IContextMenuContext {
+    // 是否是只读模式
+    const isReadonly = this.draw.isReadonly()
     const { isCrossRowCol: crossRowCol, startIndex, endIndex } = this.range.getRange()
     // 是否存在焦点
     const editorTextFocus = !!(~startIndex || ~endIndex)
@@ -92,6 +96,7 @@ export class ContextMenu {
     // 是否存在跨行/列
     const isCrossRowCol = isInTable && !!crossRowCol
     return {
+      isReadonly,
       editorHasSelection,
       editorTextFocus,
       isInTable,

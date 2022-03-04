@@ -33,6 +33,7 @@ import { SubscriptParticle } from "./particle/Subscript"
 import { SeparatorParticle } from "./particle/Separator"
 import { PageBreakParticle } from "./particle/PageBreak"
 import { Watermark } from "./frame/Watermark"
+import { EditorMode } from "../../dataset/enum/Editor"
 
 export class Draw {
 
@@ -41,6 +42,7 @@ export class Draw {
   private pageList: HTMLCanvasElement[]
   private ctxList: CanvasRenderingContext2D[]
   private pageNo: number
+  private mode: EditorMode
   private options: Required<IEditorOption>
   private position: Position
   private elementList: IElement[]
@@ -85,6 +87,7 @@ export class Draw {
     this.pageList = []
     this.ctxList = []
     this.pageNo = 0
+    this.mode = options.defaultMode
     this.options = options
     this.elementList = elementList
     this.listener = listener
@@ -129,6 +132,18 @@ export class Draw {
     this.intersectionPageNo = 0
 
     this.render({ isSetCursor: false })
+  }
+
+  public getMode(): EditorMode {
+    return this.mode
+  }
+
+  public setMode(payload: EditorMode) {
+    this.mode = payload
+  }
+
+  public isReadonly() {
+    return this.mode === EditorMode.READONLY
   }
 
   public getWidth(): number {
@@ -650,7 +665,9 @@ export class Draw {
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
-          this.pageBreakParticle.render(ctx, element, x, y)
+          if (this.mode !== EditorMode.CLEAN) {
+            this.pageBreakParticle.render(ctx, element, x, y)
+          }
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }

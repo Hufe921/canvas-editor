@@ -1,4 +1,5 @@
 export interface IContextMenuContext {
+  isReadonly: boolean;
   editorHasSelection: boolean;
   editorTextFocus: boolean;
   isInTable: boolean;

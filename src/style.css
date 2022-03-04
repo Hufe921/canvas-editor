@@ -167,7 +167,8 @@ ul {
 }
 
 .menu-item__undo.no-allow,
-.menu-item__redo.no-allow {
+.menu-item__redo.no-allow,
+.menu-item>div.disable {
   color: #c0c4cc;
   cursor: not-allowed;
   opacity: 0.4;
@@ -561,6 +562,11 @@ ul {
 }
 
 .footer .page-scale-percentage {
+  cursor: pointer;
+  user-select: none;
+}
+
+.footer .editor-mode {
   cursor: pointer;
   user-select: none;
 }
