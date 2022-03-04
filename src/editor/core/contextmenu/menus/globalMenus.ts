@@ -6,7 +6,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     name: '剪切',
     shortCut: 'Ctrl + X',
     when: (payload) => {
-      return payload.editorHasSelection
+      return !payload.isReadonly && payload.editorHasSelection
     },
     callback: (command: Command) => {
       command.executeCut()
@@ -26,7 +26,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     name: '粘贴',
     shortCut: 'Ctrl + V',
     when: (payload) => {
-      return payload.editorTextFocus
+      return !payload.isReadonly && payload.editorTextFocus
     },
     callback: (command: Command) => {
       command.executePaste()

@@ -1,8 +1,10 @@
 import { IElement } from ".."
+import { EditorMode } from "../dataset/enum/Editor"
 import { IHeader } from "./Header"
 import { IWatermark } from "./Watermark"
 
 export interface IEditorOption {
+  defaultMode?: EditorMode;
   defaultType?: string;
   defaultFont?: string;
   defaultSize?: number;

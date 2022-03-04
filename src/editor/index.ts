@@ -13,7 +13,7 @@ import { globalMenus } from './core/contextmenu/menus/GlobalMenus'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { tableMenus } from './core/contextmenu/menus/tableMenus'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
-import { EditorComponent } from './dataset/enum/Editor'
+import { EditorComponent, EditorMode } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
@@ -36,6 +36,7 @@ export default class Editor {
       ...options.watermark
     }
     const editorOptions: Required<IEditorOption> = {
+      defaultMode: EditorMode.EDIT,
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
       defaultSize: 16,
@@ -92,6 +93,7 @@ export default class Editor {
 export {
   Editor,
   RowFlex,
+  EditorMode,
   ElementType,
   EditorComponent,
   EDITOR_COMPONENT

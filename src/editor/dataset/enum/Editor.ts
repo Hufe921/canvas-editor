@@ -10,3 +10,9 @@ export enum EditorContext {
   PAGE = 'page',
   TABLE = 'table'
 }
+
+export enum EditorMode {
+  EDIT = 'edit',
+  CLEAN = 'clean',
+  READONLY = 'readonly'
+}

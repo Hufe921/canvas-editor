@@ -146,6 +146,7 @@ export class CanvasEvent {
 
   public mousedown(evt: MouseEvent) {
     if (evt.button === MouseEventButton.RIGHT) return
+    const isReadonly = this.draw.isReadonly()
     const target = evt.target as HTMLDivElement
     const pageIndex = target.dataset.index
     // 设置pageNo
@@ -207,12 +208,12 @@ export class CanvasEvent {
     const curElement = elementList[curIndex]
     // 图片尺寸拖拽组件
     this.imageParticle.clearResizer()
-    if (isDirectHitImage) {
+    if (isDirectHitImage && !isReadonly) {
       this.imageParticle.drawResizer(curElement, positionList[curIndex])
     }
     // 表格工具组件
     this.tableTool.dispose()
-    if (isTable) {
+    if (isTable && !isReadonly) {
       const originalElementList = this.draw.getOriginalElementList()
       const originalPositionList = this.position.getOriginalPositionList()
       this.tableTool.render(originalElementList[index], originalPositionList[index])
@@ -232,6 +233,7 @@ export class CanvasEvent {
   }
 
   public keydown(evt: KeyboardEvent) {
+    const isReadonly = this.draw.isReadonly()
     const cursorPosition = this.position.getCursorPosition()
     if (!cursorPosition) return
     const elementList = this.draw.getElementList()
@@ -240,6 +242,7 @@ export class CanvasEvent {
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
     if (evt.key === KeyMap.Backspace) {
+      if (isReadonly) return
       // 判断是否允许删除
       if (elementList[index].value === ZERO && index === 0) {
         evt.preventDefault()
@@ -254,6 +257,7 @@ export class CanvasEvent {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Delete) {
+      if (isReadonly) return
       if (!isCollapsed) {
         elementList.splice(startIndex + 1, endIndex - startIndex)
       } else {
@@ -263,6 +267,7 @@ export class CanvasEvent {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {
+      if (isReadonly) return
       // 表格需要上下文信息
       const positionContext = this.position.getPositionContext()
       let restArg = {}
@@ -283,6 +288,7 @@ export class CanvasEvent {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Left) {
+      if (isReadonly) return
       if (index > 0) {
         const curIndex = index - 1
         this.range.setRange(curIndex, curIndex)
@@ -293,6 +299,7 @@ export class CanvasEvent {
         })
       }
     } else if (evt.key === KeyMap.Right) {
+      if (isReadonly) return
       if (index < position.length - 1) {
         const curIndex = index + 1
         this.range.setRange(curIndex, curIndex)
@@ -303,6 +310,7 @@ export class CanvasEvent {
         })
       }
     } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
+      if (isReadonly) return
       const { rowNo, index, coordinate: { leftTop, rightTop } } = cursorPosition
       if ((evt.key === KeyMap.Up && rowNo !== 0) || (evt.key === KeyMap.Down && rowNo !== this.draw.getRowCount())) {
         // 下一个光标点所在行位置集合
@@ -344,18 +352,22 @@ export class CanvasEvent {
         })
       }
     } else if (evt.ctrlKey && evt.key === KeyMap.Z) {
+      if (isReadonly) return
       this.historyManager.undo()
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.Y) {
+      if (isReadonly) return
       this.historyManager.redo()
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.C) {
       this.copy()
     } else if (evt.ctrlKey && evt.key === KeyMap.X) {
+      if (isReadonly) return
       this.cut()
     } else if (evt.ctrlKey && evt.key === KeyMap.A) {
       this.selectAll()
     } else if (evt.ctrlKey && evt.key === KeyMap.S) {
+      if (isReadonly) return
       const saved = this.listener.saved
       if (saved) {
         saved(this.save())
@@ -365,6 +377,8 @@ export class CanvasEvent {
   }
 
   public input(data: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     if (!this.cursor) return
     const cursorPosition = this.position.getCursorPosition()
     if (!data || !cursorPosition || this.isCompositing) return
@@ -423,6 +437,8 @@ export class CanvasEvent {
   }
 
   public cut() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     if (startIndex !== endIndex) {

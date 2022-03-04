@@ -1,4 +1,5 @@
 import { IElement } from "../.."
+import { EditorMode } from "../../dataset/enum/Editor"
 import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawImagePayload } from "../../interface/Draw"
 import { IWatermark } from "../../interface/Watermark"
@@ -6,6 +7,7 @@ import { CommandAdapt } from "./CommandAdapt"
 
 export class Command {
 
+  private static mode: Function
   private static cut: Function
   private static copy: Function
   private static paste: Function
@@ -53,6 +55,7 @@ export class Command {
   private static insertElementList: Function
 
   constructor(adapt: CommandAdapt) {
+    Command.mode = adapt.mode.bind(adapt)
     Command.cut = adapt.cut.bind(adapt)
     Command.copy = adapt.copy.bind(adapt)
     Command.paste = adapt.paste.bind(adapt)
@@ -101,6 +104,10 @@ export class Command {
   }
 
   // 全局命令
+  public executeMode(payload: EditorMode) {
+    return Command.mode(payload)
+  }
+
   public executeCut() {
     return Command.cut()
   }
