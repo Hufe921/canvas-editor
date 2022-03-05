@@ -474,7 +474,7 @@ export class Draw {
         let curPagePreHeight = marginHeight
         for (let r = 0; r < rowList.length; r++) {
           const row = rowList[r]
-          if (row.height + curPagePreHeight > height) {
+          if (row.height + curPagePreHeight > height || rowList[r - 1]?.isPageBreak) {
             curPagePreHeight = marginHeight + row.height
           } else {
             curPagePreHeight += row.height
