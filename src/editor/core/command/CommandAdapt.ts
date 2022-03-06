@@ -1089,7 +1089,7 @@ export class CommandAdapt {
             elementList: [tableElement]
           })
         }
-        elementIndex += endIndex + 1
+        elementIndex = endIndex + 1
         i++
       }
       // 搜索文本
