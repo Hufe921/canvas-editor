@@ -148,8 +148,8 @@ export class Position {
         const isHead = x < this.options.margins[3]
         // 是否在头部
         if (isHead) {
-          const headIndex = positionList.findIndex(p => p.rowNo === firstLetterList[j].rowNo)
-          curPositionIndex = ~headIndex ? headIndex : index
+          const headIndex = positionList.findIndex(p => p.pageNo === curPageNo && p.rowNo === firstLetterList[j].rowNo)
+          curPositionIndex = ~headIndex ? headIndex - 1 : index
         } else {
           curPositionIndex = index
         }

@@ -13,6 +13,7 @@
 3. usage mode ✔
 4. unit test
 5. controls
+6. docs
 
 ## install
 

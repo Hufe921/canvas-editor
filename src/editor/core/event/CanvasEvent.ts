@@ -19,6 +19,7 @@ import { HistoryManager } from "../history/HistoryManager"
 import { Listener } from "../listener/Listener"
 import { Position } from "../position/Position"
 import { RangeManager } from "../range/RangeManager"
+import { LETTER_REG, NUMBER_LIKE_REG } from "../../dataset/constant/Regular"
 
 export class CanvasEvent {
 
@@ -62,6 +63,7 @@ export class CanvasEvent {
     this.pageContainer.addEventListener('mousedown', this.mousedown.bind(this))
     this.pageContainer.addEventListener('mouseleave', this.mouseleave.bind(this))
     this.pageContainer.addEventListener('mousemove', this.mousemove.bind(this))
+    this.pageContainer.addEventListener('dblclick', this.dblclick.bind(this))
   }
 
   public setIsAllowDrag(payload: boolean) {
@@ -374,6 +376,49 @@ export class CanvasEvent {
       }
       evt.preventDefault()
     }
+  }
+
+  public dblclick() {
+    const cursorPosition = this.position.getCursorPosition()
+    if (!cursorPosition) return
+    const { value, index } = cursorPosition
+    const elementList = this.draw.getElementList()
+    // 判断是否是数字或英文
+    let upCount = 0
+    let downCount = 0
+    const isNumber = NUMBER_LIKE_REG.test(value)
+    if (isNumber || LETTER_REG.test(value)) {
+      // 向上查询
+      let upStartIndex = index - 1
+      while (upStartIndex > 0) {
+        const value = elementList[upStartIndex].value
+        if ((isNumber && NUMBER_LIKE_REG.test(value)) || (!isNumber && LETTER_REG.test(value))) {
+          upCount++
+          upStartIndex--
+        } else {
+          break
+        }
+      }
+      // 向下查询
+      let downStartIndex = index + 1
+      while (downStartIndex < elementList.length) {
+        const value = elementList[downStartIndex].value
+        if ((isNumber && NUMBER_LIKE_REG.test(value)) || (!isNumber && LETTER_REG.test(value))) {
+          downCount++
+          downStartIndex++
+        } else {
+          break
+        }
+      }
+    }
+    // 设置选中区域
+    this.range.setRange(index - upCount - 1, index + downCount)
+    // 刷新文档
+    this.draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false,
+      isComputeRowList: false
+    })
   }
 
   public input(data: string) {

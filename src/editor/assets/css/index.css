@@ -27,6 +27,7 @@
   position: absolute;
   outline: none;
   background-color: #000000;
+  pointer-events: none;
 }
 
 .cursor--animation {

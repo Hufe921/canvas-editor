@@ -39,5 +39,5 @@ export function writeTextByElementList(elementList: IElement[]) {
   }
   pickTextFromElement(elementList)
   if (!text) return
-  writeText(text)
+  writeText(text.replace(new RegExp(`^${ZERO}`), ''))
 }
