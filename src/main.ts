@@ -49,7 +49,7 @@ async function init() {
 }
 
 function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResult, 'data'>>) {
-  // 初始化编辑器
+  // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
   const instance = new Editor(container, <IElement[]>data, {
     margins: [100, 120, 100, 120],
@@ -60,28 +60,31 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   })
   console.log('实例: ', instance)
 
-  // 撤销、重做、格式刷、清除格式
+  // 2. | 撤销 | 重做 | 格式刷 | 清除格式 |
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
   undoDom.onclick = function () {
     console.log('undo')
     instance.command.executeUndo()
   }
+
   const redoDom = document.querySelector<HTMLDivElement>('.menu-item__redo')!
   redoDom.onclick = function () {
     console.log('redo')
     instance.command.executeRedo()
   }
+
   const painterDom = document.querySelector<HTMLDivElement>('.menu-item__painter')!
   painterDom.onclick = function () {
     console.log('painter')
     instance.command.executePainter()
   }
+
   document.querySelector<HTMLDivElement>('.menu-item__format')!.onclick = function () {
     console.log('format')
     instance.command.executeFormat()
   }
 
-  // 字体、字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+  // 3. | 字体 | 字体变大 | 字体变小 | 加粗 | 斜体 | 下划线 | 删除线 | 上标 | 下标 | 字体颜色 | 背景色 |
   const fontDom = document.querySelector<HTMLDivElement>('.menu-item__font')!
   const fontSelectDom = fontDom.querySelector<HTMLDivElement>('.select')!
   const fontOptionDom = fontDom.querySelector<HTMLDivElement>('.options')!
@@ -93,44 +96,53 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     const li = evt.target as HTMLLIElement
     instance.command.executeFont(li.dataset.family!)
   }
+
   document.querySelector<HTMLDivElement>('.menu-item__size-add')!.onclick = function () {
     console.log('size-add')
     instance.command.executeSizeAdd()
   }
+
   document.querySelector<HTMLDivElement>('.menu-item__size-minus')!.onclick = function () {
     console.log('size-minus')
     instance.command.executeSizeMinus()
   }
+
   const boldDom = document.querySelector<HTMLDivElement>('.menu-item__bold')!
   boldDom.onclick = function () {
     console.log('bold')
     instance.command.executeBold()
   }
+
   const italicDom = document.querySelector<HTMLDivElement>('.menu-item__italic')!
   italicDom.onclick = function () {
     console.log('italic')
     instance.command.executeItalic()
   }
+
   const underlineDom = document.querySelector<HTMLDivElement>('.menu-item__underline')!
   underlineDom.onclick = function () {
     console.log('underline')
     instance.command.executeUnderline()
   }
+
   const strikeoutDom = document.querySelector<HTMLDivElement>('.menu-item__strikeout')!
   strikeoutDom.onclick = function () {
     console.log('strikeout')
     instance.command.executeStrikeout()
   }
+
   const superscriptDom = document.querySelector<HTMLDivElement>('.menu-item__superscript')!
   superscriptDom.onclick = function () {
     console.log('superscript')
     instance.command.executeSuperscript()
   }
+
   const subscriptDom = document.querySelector<HTMLDivElement>('.menu-item__subscript')!
   subscriptDom.onclick = function () {
     console.log('subscript')
     instance.command.executeSubscript()
   }
+
   const colorControlDom = document.querySelector<HTMLInputElement>('#color')!
   colorControlDom.onchange = function () {
     instance.command.executeColor(colorControlDom!.value)
@@ -141,6 +153,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     console.log('color')
     colorControlDom.click()
   }
+
   const highlightControlDom = document.querySelector<HTMLInputElement>('#highlight')!
   highlightControlDom.onchange = function () {
     instance.command.executeHighlight(highlightControlDom.value)
@@ -151,22 +164,25 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     console.log('highlight')
     highlightControlDom?.click()
   }
-  // 行布局
+
   const leftDom = document.querySelector<HTMLDivElement>('.menu-item__left')!
   leftDom.onclick = function () {
     console.log('left')
     instance.command.executeLeft()
   }
+
   const centerDom = document.querySelector<HTMLDivElement>('.menu-item__center')!
   centerDom.onclick = function () {
     console.log('center')
     instance.command.executeCenter()
   }
+
   const rightDom = document.querySelector<HTMLDivElement>('.menu-item__right')!
   rightDom.onclick = function () {
     console.log('right')
     instance.command.executeRight()
   }
+
   const rowMarginDom = document.querySelector<HTMLDivElement>('.menu-item__row-margin')!
   const rowOptionDom = rowMarginDom.querySelector<HTMLDivElement>('.options')!
   rowMarginDom.onclick = function () {
@@ -177,7 +193,8 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     const li = evt.target as HTMLLIElement
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
   }
-  // 表格插入、图片上传、搜索、打印
+
+  // 4. | 表格 | 图片 | 超链接 | 分割线 | 水印 | 代码块 | 分隔符 |
   const tableDom = document.querySelector<HTMLDivElement>('.menu-item__table')!
   const tablePanelContainer = document.querySelector<HTMLDivElement>('.menu-item__table__collapse')!
   const tableClose = document.querySelector<HTMLDivElement>('.table-close')!
@@ -252,6 +269,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     instance.command.executeInsertTable(rowIndex, colIndex)
     recoveryTable()
   }
+
   const imageDom = document.querySelector<HTMLDivElement>('.menu-item__image')!
   const imageFileDom = document.querySelector<HTMLInputElement>('#image')!
   imageDom.onclick = function () {
@@ -276,6 +294,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
       }
     }
   }
+
   const hyperlinkDom = document.querySelector<HTMLDivElement>('.menu-item__hyperlink')!
   hyperlinkDom.onclick = function () {
     console.log('hyperlink')
@@ -309,6 +328,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
       }
     })
   }
+
   const separatorDom = document.querySelector<HTMLDivElement>('.menu-item__separator')!
   const separatorOptionDom = separatorDom.querySelector<HTMLDivElement>('.options')!
   separatorDom.onclick = function () {
@@ -327,11 +347,13 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     }
     instance.command.executeSeparator(payload)
   }
+
   const pageBreakDom = document.querySelector<HTMLDivElement>('.menu-item__page-break')!
   pageBreakDom.onclick = function () {
     console.log('pageBreak')
     instance.command.executePageBreak()
   }
+
   const watermarkDom = document.querySelector<HTMLDivElement>('.menu-item__watermark')!
   const watermarkOptionDom = watermarkDom.querySelector<HTMLDivElement>('.options')!
   watermarkDom.onclick = function () {
@@ -426,6 +448,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     })
   }
 
+  // 5. | 搜索 | 打印 |
   const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
   document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
@@ -445,23 +468,29 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
       instance.command.executeSearch(searchInputDom?.value || null)
     }
   }
+
   document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {
     console.log('print')
     instance.command.executePrint()
   }
+
+  // 6. 纸张缩放
   document.querySelector<HTMLDivElement>('.page-scale-percentage')!.onclick = function () {
     console.log('page-scale-recovery')
     instance.command.executePageScaleRecovery()
   }
+
   document.querySelector<HTMLDivElement>('.page-scale-minus')!.onclick = function () {
     console.log('page-scale-minus')
     instance.command.executePageScaleMinus()
   }
+
   document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick = function () {
     console.log('page-scale-add')
     instance.command.executePageScaleAdd()
   }
 
+  // 7. 编辑器使用模式
   let modeIndex = 0
   const modeList = [{
     mode: EditorMode.EDIT,
@@ -492,7 +521,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     })
   }
 
-  // 内部事件监听
+  // 8. 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
     // 控件类型
     payload.type === ElementType.SUBSCRIPT ? subscriptDom.classList.add('active') : subscriptDom.classList.remove('active')
@@ -506,6 +535,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
         curSeparatorDom.classList.add('active')
       }
     }
+
     // 富文本
     fontOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
     const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)
@@ -535,6 +565,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
       highlightControlDom.value = '#ffff00'
       highlightSpanDom.style.backgroundColor = '#ffff00'
     }
+
     // 行布局
     leftDom.classList.remove('active')
     centerDom.classList.remove('active')
@@ -546,10 +577,12 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     } else {
       leftDom.classList.add('active')
     }
+
     // 行间距
     rowOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
     const curRowMarginDom = rowOptionDom.querySelector<HTMLLIElement>(`[data-rowmargin='${payload.rowMargin}']`)!
     curRowMarginDom.classList.add('active')
+
     // 功能
     payload.undo ? undoDom.classList.remove('no-allow') : undoDom.classList.add('no-allow')
     payload.redo ? redoDom.classList.remove('no-allow') : redoDom.classList.add('no-allow')
