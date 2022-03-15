@@ -246,7 +246,7 @@ export class CanvasEvent {
     if (evt.key === KeyMap.Backspace) {
       if (isReadonly) return
       // 判断是否允许删除
-      if (elementList[index].value === ZERO && index === 0) {
+      if (isCollapsed && elementList[index].value === ZERO && index === 0) {
         evt.preventDefault()
         return
       }

@@ -12,6 +12,8 @@ export class Command {
   private static copy: Function
   private static paste: Function
   private static selectAll: Function
+  private static backspace: Function
+  private static setRange: Function
   private static undo: Function
   private static redo: Function
   private static painter: Function
@@ -60,6 +62,8 @@ export class Command {
     Command.copy = adapt.copy.bind(adapt)
     Command.paste = adapt.paste.bind(adapt)
     Command.selectAll = adapt.selectAll.bind(adapt)
+    Command.backspace = adapt.backspace.bind(adapt)
+    Command.setRange = adapt.setRange.bind(adapt)
     Command.undo = adapt.undo.bind(adapt)
     Command.redo = adapt.redo.bind(adapt)
     Command.painter = adapt.painter.bind(adapt)
@@ -122,6 +126,14 @@ export class Command {
 
   public executeSelectAll() {
     return Command.selectAll()
+  }
+
+  public executeBackspace() {
+    return Command.backspace()
+  }
+
+  public executeSetRange(startIndex: number, endIndex: number) {
+    return Command.setRange(startIndex, endIndex)
   }
 
   // 撤销、重做、格式刷、清除格式

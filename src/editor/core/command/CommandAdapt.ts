@@ -78,6 +78,38 @@ export class CommandAdapt {
     this.canvasEvent.selectAll()
   }
 
+  public backspace() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const elementList = this.draw.getElementList()
+    const { startIndex, endIndex } = this.range.getRange()
+    const isCollapsed = startIndex === endIndex
+    // 首字符禁止删除
+    if (isCollapsed && elementList[startIndex].value === ZERO && startIndex === 0) {
+      return
+    }
+    if (!isCollapsed) {
+      elementList.splice(startIndex + 1, endIndex - startIndex)
+    } else {
+      elementList.splice(startIndex, 1)
+    }
+    const curIndex = isCollapsed ? startIndex - 1 : startIndex
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
+  }
+
+  public setRange(startIndex: number, endIndex: number) {
+    if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) return
+    this.range.setRange(startIndex, endIndex)
+    const isCollapsed = startIndex === endIndex
+    this.draw.render({
+      curIndex: isCollapsed ? startIndex : undefined,
+      isComputeRowList: false,
+      isSubmitHistory: false,
+      isSetCursor: isCollapsed
+    })
+  }
+
   public undo() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
