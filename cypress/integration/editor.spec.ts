@@ -6,8 +6,6 @@ describe('基础功能', () => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
-
-    cy.get('@canvas').type(`{ctrl}a{backspace}`)
   })
 
   const text = 'canvas-editor'
@@ -17,14 +15,20 @@ describe('基础功能', () => {
       editor.listener.saved = function (payload) {
         expect(payload.data[0].value).to.eq(text)
       }
+
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      cy.get('@canvas').type(text)
+
+      cy.get('@canvas').type(`{ctrl}s`)
     })
 
-    cy.get('@canvas').type(text)
-
-    cy.get('@canvas').type(`{ctrl}s`)
   })
 
   it('模式切换', () => {
+    cy.get('@canvas').click()
 
     cy.get('.cursor').should('have.css', 'display', 'block')
 
