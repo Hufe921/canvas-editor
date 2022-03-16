@@ -39,6 +39,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'strikeout',
   'rowFlex',
   'rowMargin',
+  'dashArray',
   'trList',
   'width',
   'height',
