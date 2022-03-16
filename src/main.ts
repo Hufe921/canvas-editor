@@ -59,6 +59,8 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     watermark: options.watermark
   })
   console.log('实例: ', instance)
+  // cypress使用
+  Reflect.set(window, 'editor', instance)
 
   // 2. | 撤销 | 重做 | 格式刷 | 清除格式 |
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
