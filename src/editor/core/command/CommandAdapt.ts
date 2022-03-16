@@ -140,6 +140,10 @@ export class CommandAdapt {
     this.draw.setPainterStyle(painterStyle)
   }
 
+  public applyPainterStyle() {
+    this.canvasEvent.applyPainterStyle()
+  }
+
   public format() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return

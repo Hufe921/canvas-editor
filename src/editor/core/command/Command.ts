@@ -17,6 +17,7 @@ export class Command {
   private static undo: Function
   private static redo: Function
   private static painter: Function
+  private static applyPainterStyle: Function
   private static format: Function
   private static font: Function
   private static sizeAdd: Function
@@ -67,6 +68,7 @@ export class Command {
     Command.undo = adapt.undo.bind(adapt)
     Command.redo = adapt.redo.bind(adapt)
     Command.painter = adapt.painter.bind(adapt)
+    Command.applyPainterStyle = adapt.applyPainterStyle.bind(adapt)
     Command.format = adapt.format.bind(adapt)
     Command.font = adapt.font.bind(adapt)
     Command.sizeAdd = adapt.sizeAdd.bind(adapt)
@@ -147,6 +149,10 @@ export class Command {
 
   public executePainter() {
     return Command.painter()
+  }
+
+  public executeApplyPainterStyle() {
+    return Command.applyPainterStyle()
   }
 
   public executeFormat() {
