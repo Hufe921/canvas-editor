@@ -9,11 +9,10 @@
 ## next features
 
 1. fix bugs
-2. compress output data size ✔
-3. usage mode ✔
-4. unit test
-5. controls
-6. docs
+2. unit test
+3. dev config
+4. controls
+5. docs
 
 ## install
 
