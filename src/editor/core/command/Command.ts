@@ -51,6 +51,7 @@ export class Command {
   private static addWatermark: Function
   private static deleteWatermark: Function
   private static search: Function
+  private static replace: Function
   private static print: Function
   private static pageScaleRecovery: Function
   private static pageScaleMinus: Function
@@ -102,6 +103,7 @@ export class Command {
     Command.addWatermark = adapt.addWatermark.bind(adapt)
     Command.deleteWatermark = adapt.deleteWatermark.bind(adapt)
     Command.search = adapt.search.bind(adapt)
+    Command.replace = adapt.replace.bind(adapt)
     Command.print = adapt.print.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
@@ -287,6 +289,10 @@ export class Command {
 
   public executeSearch(payload: string | null) {
     return Command.search(payload)
+  }
+
+  public executeReplace(payload: string) {
+    return Command.replace(payload)
   }
 
   public executePrint() {

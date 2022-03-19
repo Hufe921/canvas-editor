@@ -439,30 +439,34 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse {
-  width: 215px;
-  height: 36px;
+  width: 235px;
+  height: 72px;
   box-sizing: border-box;
   position: absolute;
   display: none;
   z-index: 99;
   top: 25px;
   left: 0;
+  background: #ffffff;
   box-shadow: 0px 5px 5px #e3dfdf;
 }
 
-.menu-item .menu-item__search__collapse__search {
-  width: 205px;
+.menu-item .menu-item__search__collapse:hover {
+  background: #ffffff;
+}
+
+.menu-item .menu-item__search__collapse>div {
+  width: 225px;
   height: 36px;
   padding: 0 5px;
   line-height: 36px;
-  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-radius: 4px;
 }
 
-.menu-item .menu-item__search__collapse__search input {
+.menu-item .menu-item__search__collapse>div input {
   height: 27px;
   appearance: none;
   background-color: #fff;
@@ -477,12 +481,30 @@ ul {
   padding: 0 5px;
 }
 
-.menu-item .menu-item__search__collapse__search span {
+.menu-item .menu-item__search__collapse>div span {
   height: 100%;
   color: #dcdfe6;
   font-size: 25px;
   display: inline-block;
   border: 0;
+  padding: 0 10px;
+}
+
+.menu-item .menu-item__search__collapse__replace button {
+  display: inline-block;
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  background: #fff;
+  line-height: 22px;
+  padding: 0 6px;
+  white-space: nowrap;
+  margin-left: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.menu-item .menu-item__search__collapse__replace button:hover {
+  background: rgba(25, 55, 88, .04);
 }
 
 .menu-item__print i {
