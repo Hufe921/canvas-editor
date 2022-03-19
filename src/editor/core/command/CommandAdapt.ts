@@ -1,5 +1,5 @@
 import { WRAP, ZERO } from "../../dataset/constant/Common"
-import { EDITOR_ELEMENT_STYLE_ATTR, TEXTLIKE_ELEMENT_TYPE } from "../../dataset/constant/Element"
+import { EDITOR_ELEMENT_STYLE_ATTR } from "../../dataset/constant/Element"
 import { defaultWatermarkOption } from "../../dataset/constant/Watermark"
 import { EditorContext, EditorMode } from "../../dataset/enum/Editor"
 import { ElementType } from "../../dataset/enum/Element"
@@ -8,7 +8,6 @@ import { RowFlex } from "../../dataset/enum/Row"
 import { IDrawImagePayload } from "../../interface/Draw"
 import { IEditorOption } from "../../interface/Editor"
 import { IElement, IElementStyle } from "../../interface/Element"
-import { ISearchResult, ISearchResultRestArgs } from "../../interface/Search"
 import { IColgroup } from "../../interface/table/Colgroup"
 import { ITd } from "../../interface/table/Td"
 import { ITr } from "../../interface/table/Tr"
@@ -1091,94 +1090,104 @@ export class CommandAdapt {
   }
 
   public search(payload: string | null) {
-    if (payload) {
-      let searchMatchList: ISearchResult[] = []
-      // 分组
-      const elementListGroup: { type: EditorContext, elementList: IElement[], index: number }[] = []
-      const originalElementList = this.draw.getOriginalElementList()
-      const originalElementListLength = originalElementList.length
-      // 查找表格所在位置
-      const tableIndexList = []
-      for (let e = 0; e < originalElementListLength; e++) {
-        const element = originalElementList[e]
-        if (element.type === ElementType.TABLE) {
-          tableIndexList.push(e)
+    this.draw.setSearchKeyword(payload)
+    this.draw.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
+  public replace(payload: string) {
+    if (!payload || new RegExp(`${ZERO}`, 'g').test(payload)) return
+    const matchList = this.draw.getSearch().getSearchMatchList()
+    if (!matchList.length) return
+    // 匹配index变化的差值
+    let pageDiffCount = 0
+    let tableDiffCount = 0
+    // 匹配搜索词的组标识
+    let curGroupId = ''
+    // 表格上下文
+    let curTdId = ''
+    // 搜索值 > 替换值：增加元素；搜索值 < 替换值：减少元素
+    const elementList = this.draw.getOriginalElementList()
+    for (let m = 0; m < matchList.length; m++) {
+      const match = matchList[m]
+      if (match.type === EditorContext.TABLE) {
+        const { tableIndex, trIndex, tdIndex, index, tdId } = match
+        if (curTdId && tdId !== curTdId) {
+          tableDiffCount = 0
         }
-      }
-      let i = 0
-      let elementIndex = 0
-      while (elementIndex < originalElementListLength - 1) {
-        const endIndex = tableIndexList.length ? tableIndexList[i] : originalElementListLength
-        const pageElement = originalElementList.slice(elementIndex, endIndex)
-        if (pageElement.length) {
-          elementListGroup.push({
-            index: elementIndex,
-            type: EditorContext.PAGE,
-            elementList: pageElement
-          })
+        curTdId = tdId!
+        const curTableIndex = tableIndex! + pageDiffCount
+        const tableElementList = elementList[curTableIndex].trList![trIndex!].tdList[tdIndex!].value
+        // 表格内元素
+        const curIndex = index + tableDiffCount
+        const tableElement = tableElementList[curIndex]
+        if (curGroupId === match.groupId) {
+          tableElementList.splice(curIndex, 1)
+          tableDiffCount--
+          continue
         }
-        const tableElement = originalElementList[endIndex]
-        if (tableElement) {
-          elementListGroup.push({
-            index: endIndex,
-            type: EditorContext.TABLE,
-            elementList: [tableElement]
-          })
-        }
-        elementIndex = endIndex + 1
-        i++
-      }
-      // 搜索文本
-      function searchClosure(payload: string | null, type: EditorContext, elementList: IElement[], restArgs?: ISearchResultRestArgs) {
-        if (!payload) return
-        const text = elementList.map(e => !e.type || TEXTLIKE_ELEMENT_TYPE.includes(e.type) ? e.value : ZERO)
-          .filter(Boolean)
-          .join('')
-        const matchStartIndexList = []
-        let index = text.indexOf(payload)
-        while (index !== -1) {
-          matchStartIndexList.push(index)
-          index = text.indexOf(payload, index + 1)
-        }
-        for (let m = 0; m < matchStartIndexList.length; m++) {
-          const startIndex = matchStartIndexList[m]
-          for (let i = 0; i < payload.length; i++) {
-            const index = startIndex + i + (restArgs?.startIndex || 0)
-            searchMatchList.push({
-              type,
-              index,
-              ...restArgs
+        for (let p = 0; p < payload.length; p++) {
+          const value = payload[p]
+          if (p === 0) {
+            tableElement.value = value
+          } else {
+            tableElementList.splice(curIndex + p, 0, {
+              ...tableElement,
+              value
             })
+            tableDiffCount++
+          }
+        }
+      } else {
+        const curIndex = match.index + pageDiffCount
+        const element = elementList[curIndex]
+        if (curGroupId === match.groupId) {
+          elementList.splice(curIndex, 1)
+          pageDiffCount--
+          continue
+        }
+        for (let p = 0; p < payload.length; p++) {
+          const value = payload[p]
+          if (p === 0) {
+            element.value = value
+          } else {
+            elementList.splice(curIndex + p, 0, {
+              ...element,
+              value
+            })
+            pageDiffCount++
           }
         }
       }
-      for (let e = 0; e < elementListGroup.length; e++) {
-        const group = elementListGroup[e]
-        if (group.type === EditorContext.TABLE) {
-          const tableElement = group.elementList[0]
-          for (let t = 0; t < tableElement.trList!.length; t++) {
-            const tr = tableElement.trList![t]
-            for (let d = 0; d < tr.tdList.length; d++) {
-              const td = tr.tdList[d]
-              const restArgs: ISearchResultRestArgs = {
-                tableIndex: group.index,
-                trIndex: t,
-                tdIndex: d
-              }
-              searchClosure(payload, group.type, td.value, restArgs)
-            }
-          }
-        } else {
-          searchClosure(payload, group.type, group.elementList, {
-            startIndex: group.index
-          })
-        }
-      }
-      this.draw.setSearchMatch(searchMatchList)
-    } else {
-      this.draw.setSearchMatch(null)
+      curGroupId = match.groupId
     }
-    this.draw.render({ isSetCursor: false, isSubmitHistory: false })
+    // 定位-首个被匹配关键词后
+    const firstMatch = matchList[0]
+    const firstIndex = firstMatch.index + (payload.length - 1)
+    if (firstMatch.type === EditorContext.TABLE) {
+      const { tableIndex, trIndex, tdIndex, index } = firstMatch
+      const element = elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!].value[index]
+      this.position.setPositionContext({
+        isTable: true,
+        index: tableIndex,
+        trIndex,
+        tdIndex,
+        tdId: element.tdId,
+        trId: element.trId,
+        tableId: element.tableId
+      })
+    } else {
+      this.position.setPositionContext({
+        isTable: false
+      })
+    }
+    this.range.setRange(firstIndex, firstIndex)
+    // 重新渲染
+    this.draw.render({
+      curIndex: firstIndex
+    })
   }
 
   public print() {

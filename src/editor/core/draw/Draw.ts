@@ -24,7 +24,6 @@ import { TextParticle } from "./particle/TextParticle"
 import { PageNumber } from "./frame/PageNumber"
 import { GlobalObserver } from "../observer/GlobalObserver"
 import { TableParticle } from "./particle/table/TableParticle"
-import { ISearchResult } from "../../interface/Search"
 import { TableTool } from "./particle/table/TableTool"
 import { HyperlinkParticle } from "./particle/HyperlinkParticle"
 import { Header } from "./frame/Header"
@@ -73,7 +72,7 @@ export class Draw {
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
-  private searchMatchList: ISearchResult[] | null
+  private searchKeyword: string | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
 
@@ -127,7 +126,7 @@ export class Draw {
 
     this.rowList = []
     this.painterStyle = null
-    this.searchMatchList = null
+    this.searchKeyword = null
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
 
@@ -247,6 +246,10 @@ export class Draw {
     return this.options
   }
 
+  public getSearch(): Search {
+    return this.search
+  }
+
   public getHistoryManager(): HistoryManager {
     return this.historyManager
   }
@@ -315,12 +318,12 @@ export class Draw {
     }
   }
 
-  public getSearchMatch(): ISearchResult[] | null {
-    return this.searchMatchList
+  public getSearchKeyword(): string | null {
+    return this.searchKeyword
   }
 
-  public setSearchMatch(payload: ISearchResult[] | null) {
-    this.searchMatchList = payload
+  public setSearchKeyword(payload: string | null) {
+    this.searchKeyword = payload
   }
 
   public setDefaultRange() {
@@ -781,7 +784,7 @@ export class Draw {
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制
-    if (this.searchMatchList) {
+    if (this.searchKeyword) {
       this.search.render(ctx, pageNo)
     }
     // 绘制水印
@@ -802,6 +805,9 @@ export class Draw {
     // 计算行信息
     if (isComputeRowList) {
       this.rowList = this._computeRowList(innerWidth, this.elementList)
+      if (this.searchKeyword) {
+        this.search.compute(this.searchKeyword)
+      }
     }
     // 清除光标等副作用
     this.cursor.recoveryCursor()

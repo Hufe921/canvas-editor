@@ -402,24 +402,43 @@ window.onload = function () {
     })
   }
 
-  // 5. | 搜索 | 打印 |
-  const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')
-  const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')
-  document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
+  // 5. | 搜索&替换 | 打印 |
+  const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')!
+  const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
+  const replaceInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__replace input')!
+  const searchDom = document.querySelector<HTMLDivElement>('.menu-item__search')!
+  searchDom.onclick = function () {
     console.log('search')
-    searchCollapseDom!.style.display = 'block'
+    searchCollapseDom.style.display = 'block'
+    const bodyRect = document.body.getBoundingClientRect()
+    const searchRect = searchDom.getBoundingClientRect()
+    const searchCollapseRect = searchCollapseDom.getBoundingClientRect()
+    if (searchRect.left + searchCollapseRect.width > bodyRect.width) {
+      searchCollapseDom.style.right = '0px'
+      searchCollapseDom.style.left = 'unset'
+    } else {
+      searchCollapseDom.style.right = 'unset'
+    }
   }
-  document.querySelector<HTMLDivElement>('.menu-item__search__collapse span')!.onclick = function () {
-    searchCollapseDom!.style.display = 'none'
-    searchInputDom!.value = ''
+  searchCollapseDom.querySelector<HTMLSpanElement>('span')!.onclick = function () {
+    searchCollapseDom.style.display = 'none'
+    searchInputDom.value = ''
+    replaceInputDom.value = ''
     instance.command.executeSearch(null)
   }
-  searchInputDom!.oninput = function () {
-    instance.command.executeSearch(searchInputDom?.value || null)
+  searchInputDom.oninput = function () {
+    instance.command.executeSearch(searchInputDom.value || null)
   }
-  searchInputDom!.onkeydown = function (evt) {
+  searchInputDom.onkeydown = function (evt) {
     if (evt.key === 'Enter') {
-      instance.command.executeSearch(searchInputDom?.value || null)
+      instance.command.executeSearch(searchInputDom.value || null)
+    }
+  }
+  searchCollapseDom.querySelector<HTMLButtonElement>('button')!.onclick = function () {
+    const searchValue = searchInputDom.value
+    const replaceValue = replaceInputDom.value
+    if (searchValue && replaceValue && searchValue !== replaceValue) {
+      instance.command.executeReplace(replaceValue)
     }
   }
 
