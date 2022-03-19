@@ -9,8 +9,8 @@
 ## next features
 
 1. fix bugs
-2. unit test
-3. dev config
+2. dev config
+3. table paging
 4. controls
 5. docs
 
