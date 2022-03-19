@@ -1104,7 +1104,7 @@ export class CommandAdapt {
     // 匹配index变化的差值
     let pageDiffCount = 0
     let tableDiffCount = 0
-    // 匹配element的组标识
+    // 匹配搜索词的组标识
     let curGroupId = ''
     // 表格上下文
     let curTdId = ''
@@ -1140,7 +1140,6 @@ export class CommandAdapt {
             tableDiffCount++
           }
         }
-        curGroupId = match.groupId
       } else {
         const curIndex = match.index + pageDiffCount
         const element = elementList[curIndex]
@@ -1161,11 +1160,33 @@ export class CommandAdapt {
             pageDiffCount++
           }
         }
-        curGroupId = match.groupId
       }
+      curGroupId = match.groupId
     }
+    // 定位-首个被匹配关键词后
+    const firstMatch = matchList[0]
+    const firstIndex = firstMatch.index + (payload.length - 1)
+    if (firstMatch.type === EditorContext.TABLE) {
+      const { tableIndex, trIndex, tdIndex, index } = firstMatch
+      const element = elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!].value[index]
+      this.position.setPositionContext({
+        isTable: true,
+        index: tableIndex,
+        trIndex,
+        tdIndex,
+        tdId: element.tdId,
+        trId: element.trId,
+        tableId: element.tableId
+      })
+    } else {
+      this.position.setPositionContext({
+        isTable: false
+      })
+    }
+    this.range.setRange(firstIndex, firstIndex)
+    // 重新渲染
     this.draw.render({
-      isSetCursor: false
+      curIndex: firstIndex
     })
   }
 
