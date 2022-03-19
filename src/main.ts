@@ -406,9 +406,19 @@ window.onload = function () {
   const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')!
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
   const replaceInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__replace input')!
-  document.querySelector<HTMLDivElement>('.menu-item__search')!.onclick = function () {
+  const searchDom = document.querySelector<HTMLDivElement>('.menu-item__search')!
+  searchDom.onclick = function () {
     console.log('search')
     searchCollapseDom.style.display = 'block'
+    const bodyRect = document.body.getBoundingClientRect()
+    const searchRect = searchDom.getBoundingClientRect()
+    const searchCollapseRect = searchCollapseDom.getBoundingClientRect()
+    if (searchRect.left + searchCollapseRect.width > bodyRect.width) {
+      searchCollapseDom.style.right = '0px'
+      searchCollapseDom.style.left = 'unset'
+    } else {
+      searchCollapseDom.style.right = 'unset'
+    }
   }
   searchCollapseDom.querySelector<HTMLSpanElement>('span')!.onclick = function () {
     searchCollapseDom.style.display = 'none'
