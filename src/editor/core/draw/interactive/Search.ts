@@ -1,13 +1,13 @@
-import { ZERO } from "../../../dataset/constant/Common"
-import { TEXTLIKE_ELEMENT_TYPE } from "../../../dataset/constant/Element"
-import { EditorContext } from "../../../dataset/enum/Editor"
-import { ElementType } from "../../../dataset/enum/Element"
-import { IEditorOption } from "../../../interface/Editor"
-import { IElement, IElementPosition } from "../../../interface/Element"
-import { ISearchResult, ISearchResultRestArgs } from "../../../interface/Search"
-import { getUUID } from "../../../utils"
-import { Position } from "../../position/Position"
-import { Draw } from "../Draw"
+import { ZERO } from '../../../dataset/constant/Common'
+import { TEXTLIKE_ELEMENT_TYPE } from '../../../dataset/constant/Element'
+import { EditorContext } from '../../../dataset/enum/Editor'
+import { ElementType } from '../../../dataset/enum/Element'
+import { IEditorOption } from '../../../interface/Editor'
+import { IElement, IElementPosition } from '../../../interface/Element'
+import { ISearchResult, ISearchResultRestArgs } from '../../../interface/Search'
+import { getUUID } from '../../../utils'
+import { Position } from '../../position/Position'
+import { Draw } from '../Draw'
 
 export class Search {
 
@@ -28,7 +28,7 @@ export class Search {
   }
 
   public compute(payload: string) {
-    let searchMatchList: ISearchResult[] = []
+    const searchMatchList: ISearchResult[] = []
     // 分组
     const elementListGroup: { type: EditorContext, elementList: IElement[], index: number }[] = []
     const originalElementList = this.draw.getOriginalElementList()
@@ -129,7 +129,7 @@ export class Search {
       let position: IElementPosition | null = null
       if (searchMatch.type === EditorContext.TABLE) {
         const { tableIndex, trIndex, tdIndex, index } = searchMatch
-        position = elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]!?.positionList![index]
+        position = elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]?.positionList![index]
       } else {
         position = positionList[searchMatch.index]
       }

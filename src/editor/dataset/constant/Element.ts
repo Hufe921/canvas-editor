@@ -1,5 +1,5 @@
-import { ElementType } from "../enum/Element"
-import { IElement } from "../../interface/Element"
+import { ElementType } from '../enum/Element'
+import { IElement } from '../../interface/Element'
 
 export const EDITOR_ELEMENT_STYLE_ATTR = [
   'bold',

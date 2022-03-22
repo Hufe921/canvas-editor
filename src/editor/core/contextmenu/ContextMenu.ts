@@ -1,11 +1,11 @@
-import { EDITOR_COMPONENT } from "../../dataset/constant/Editor"
-import { EditorComponent } from "../../dataset/enum/Editor"
-import { IContextMenuContext, IRegisterContextMenu } from "../../interface/contextmenu/ContextMenu"
-import { findParent } from "../../utils"
-import { Command } from "../command/Command"
-import { Draw } from "../draw/Draw"
-import { Position } from "../position/Position"
-import { RangeManager } from "../range/RangeManager"
+import { EDITOR_COMPONENT } from '../../dataset/constant/Editor'
+import { EditorComponent } from '../../dataset/enum/Editor'
+import { IContextMenuContext, IRegisterContextMenu } from '../../interface/contextmenu/ContextMenu'
+import { findParent } from '../../utils'
+import { Command } from '../command/Command'
+import { Draw } from '../draw/Draw'
+import { Position } from '../position/Position'
+import { RangeManager } from '../range/RangeManager'
 
 interface IRenderPayload {
   contextMenuList: IRegisterContextMenu[];
@@ -42,7 +42,7 @@ export class ContextMenu {
 
   private _proxyContextMenuEvent(evt: MouseEvent) {
     const context = this._getContext()
-    let renderList: IRegisterContextMenu[] = []
+    const renderList: IRegisterContextMenu[] = []
     let isRegisterContextMenu = false
     for (let c = 0; c < this.contextMenuList.length; c++) {
       const menu = this.contextMenuList[c]

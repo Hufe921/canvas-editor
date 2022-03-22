@@ -1,6 +1,6 @@
-import { IEditorOption } from "../../.."
-import { DeepRequired } from "../../../interface/Common"
-import { Draw } from "../Draw"
+import { IEditorOption } from '../../..'
+import { DeepRequired } from '../../../interface/Common'
+import { Draw } from '../Draw'
 
 export class Watermark {
 

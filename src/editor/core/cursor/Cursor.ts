@@ -1,9 +1,9 @@
-import { CURSOR_AGENT_HEIGHT } from "../../dataset/constant/Cursor"
-import { IEditorOption } from "../../interface/Editor"
-import { Draw } from "../draw/Draw"
-import { CanvasEvent } from "../event/CanvasEvent"
-import { Position } from "../position/Position"
-import { CursorAgent } from "./CursorAgent"
+import { CURSOR_AGENT_HEIGHT } from '../../dataset/constant/Cursor'
+import { IEditorOption } from '../../interface/Editor'
+import { Draw } from '../draw/Draw'
+import { CanvasEvent } from '../event/CanvasEvent'
+import { Position } from '../position/Position'
+import { CursorAgent } from './CursorAgent'
 
 export class Cursor {
 

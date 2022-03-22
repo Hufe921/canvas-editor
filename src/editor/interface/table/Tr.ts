@@ -1,4 +1,4 @@
-import { ITd } from "./Td"
+import { ITd } from './Td'
 
 export interface ITr {
   id?: string;

@@ -1,6 +1,6 @@
 import { data, options } from './mock'
 import './style.css'
-import prism from "prismjs"
+import prism from 'prismjs'
 import Editor, { EditorMode, ElementType, IElement } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
@@ -230,7 +230,7 @@ window.onload = function () {
     imageFileDom.click()
   }
   imageFileDom.onchange = function () {
-    const file = imageFileDom.files?.[0]!
+    const file = imageFileDom.files![0]!
     const fileReader = new FileReader()
     fileReader.readAsDataURL(file)
     fileReader.onload = function () {

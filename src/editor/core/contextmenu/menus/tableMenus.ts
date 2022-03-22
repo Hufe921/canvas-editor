@@ -1,5 +1,5 @@
-import { IRegisterContextMenu } from "../../../interface/contextmenu/ContextMenu"
-import { Command } from "../../command/Command"
+import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
+import { Command } from '../../command/Command'
 
 export const tableMenus: IRegisterContextMenu[] = [
   {

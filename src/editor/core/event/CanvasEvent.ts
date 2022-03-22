@@ -1,25 +1,25 @@
-import { version } from "../../../../package.json"
-import { ElementType } from "../.."
-import { ZERO } from "../../dataset/constant/Common"
-import { EDITOR_ELEMENT_COPY_ATTR } from "../../dataset/constant/Element"
-import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
-import { MouseEventButton } from "../../dataset/enum/Event"
-import { KeyMap } from "../../dataset/enum/Keymap"
-import { IEditorResult } from "../../interface/Editor"
-import { IElement } from "../../interface/Element"
-import { ICurrentPosition } from "../../interface/Position"
-import { writeTextByElementList } from "../../utils/clipboard"
-import { zipElementList } from "../../utils/element"
-import { Cursor } from "../cursor/Cursor"
-import { Draw } from "../draw/Draw"
-import { HyperlinkParticle } from "../draw/particle/HyperlinkParticle"
-import { ImageParticle } from "../draw/particle/ImageParticle"
-import { TableTool } from "../draw/particle/table/TableTool"
-import { HistoryManager } from "../history/HistoryManager"
-import { Listener } from "../listener/Listener"
-import { Position } from "../position/Position"
-import { RangeManager } from "../range/RangeManager"
-import { LETTER_REG, NUMBER_LIKE_REG } from "../../dataset/constant/Regular"
+import { version } from '../../../../package.json'
+import { ElementType } from '../..'
+import { ZERO } from '../../dataset/constant/Common'
+import { EDITOR_ELEMENT_COPY_ATTR } from '../../dataset/constant/Element'
+import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
+import { MouseEventButton } from '../../dataset/enum/Event'
+import { KeyMap } from '../../dataset/enum/Keymap'
+import { IEditorResult } from '../../interface/Editor'
+import { IElement } from '../../interface/Element'
+import { ICurrentPosition } from '../../interface/Position'
+import { writeTextByElementList } from '../../utils/clipboard'
+import { zipElementList } from '../../utils/element'
+import { Cursor } from '../cursor/Cursor'
+import { Draw } from '../draw/Draw'
+import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
+import { ImageParticle } from '../draw/particle/ImageParticle'
+import { TableTool } from '../draw/particle/table/TableTool'
+import { HistoryManager } from '../history/HistoryManager'
+import { Listener } from '../listener/Listener'
+import { Position } from '../position/Position'
+import { RangeManager } from '../range/RangeManager'
+import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 
 export class CanvasEvent {
 
@@ -119,7 +119,7 @@ export class CanvasEvent {
       tdIndex: startTdIndex,
       trIndex: startTrIndex
     } = this.mouseDownStartPosition
-    let endIndex = isTable ? tdValueIndex! : index
+    const endIndex = isTable ? tdValueIndex! : index
     // 判断是否是表格跨行/列
     if (isTable && startIsTable && (tdIndex !== startTdIndex || trIndex !== startTrIndex)) {
       this.range.setRange(

@@ -1,13 +1,13 @@
-import { EDITOR_COMPONENT } from "../../dataset/constant/Editor"
-import { IEditorOption } from "../../interface/Editor"
-import { findParent } from "../../utils"
-import { Cursor } from "../cursor/Cursor"
-import { Draw } from "../draw/Draw"
-import { HyperlinkParticle } from "../draw/particle/HyperlinkParticle"
-import { ImageParticle } from "../draw/particle/ImageParticle"
-import { TableTool } from "../draw/particle/table/TableTool"
-import { RangeManager } from "../range/RangeManager"
-import { CanvasEvent } from "./CanvasEvent"
+import { EDITOR_COMPONENT } from '../../dataset/constant/Editor'
+import { IEditorOption } from '../../interface/Editor'
+import { findParent } from '../../utils'
+import { Cursor } from '../cursor/Cursor'
+import { Draw } from '../draw/Draw'
+import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
+import { ImageParticle } from '../draw/particle/ImageParticle'
+import { TableTool } from '../draw/particle/table/TableTool'
+import { RangeManager } from '../range/RangeManager'
+import { CanvasEvent } from './CanvasEvent'
 
 export class GlobalEvent {
 

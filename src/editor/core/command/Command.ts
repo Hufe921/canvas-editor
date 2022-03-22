@@ -1,9 +1,10 @@
-import { IElement } from "../.."
-import { EditorMode } from "../../dataset/enum/Editor"
-import { RowFlex } from "../../dataset/enum/Row"
-import { IDrawImagePayload } from "../../interface/Draw"
-import { IWatermark } from "../../interface/Watermark"
-import { CommandAdapt } from "./CommandAdapt"
+import { IElement } from '../..'
+import { EditorMode } from '../../dataset/enum/Editor'
+import { RowFlex } from '../../dataset/enum/Row'
+import { IDrawImagePayload } from '../../interface/Draw'
+import { IWatermark } from '../../interface/Watermark'
+import { CommandAdapt } from './CommandAdapt'
+
 
 export class Command {
 

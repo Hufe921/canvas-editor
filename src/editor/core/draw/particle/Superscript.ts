@@ -1,4 +1,4 @@
-import { IRowElement } from "../../../interface/Row"
+import { IRowElement } from '../../../interface/Row'
 
 export class SuperscriptParticle {
 

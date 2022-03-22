@@ -1,6 +1,6 @@
-import { IElement } from "../../.."
-import { IRowElement } from "../../../interface/Row"
-import { Draw } from "../Draw"
+import { IElement } from '../../..'
+import { IRowElement } from '../../../interface/Row'
+import { Draw } from '../Draw'
 
 export class TextParticle {
 

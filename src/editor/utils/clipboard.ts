@@ -1,7 +1,7 @@
-import { IElement } from ".."
-import { HORIZON_TAB, WRAP, ZERO } from "../dataset/constant/Common"
-import { TEXTLIKE_ELEMENT_TYPE } from "../dataset/constant/Element"
-import { ElementType } from "../dataset/enum/Element"
+import { IElement } from '..'
+import { HORIZON_TAB, WRAP, ZERO } from '../dataset/constant/Common'
+import { TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { ElementType } from '../dataset/enum/Element'
 
 export function writeText(text: string) {
   if (!text) return
@@ -9,7 +9,7 @@ export function writeText(text: string) {
 }
 
 export function writeTextByElementList(elementList: IElement[]) {
-  let text: string = ``
+  let text = ``
   function pickTextFromElement(payload: IElement[]) {
     for (let e = 0; e < payload.length; e++) {
       const element = payload[e]

@@ -1,5 +1,5 @@
-import { IElement, IElementPosition } from "../Element"
-import { IRow } from "../Row"
+import { IElement, IElementPosition } from '../Element'
+import { IRow } from '../Row'
 
 export interface ITd {
   id?: string;

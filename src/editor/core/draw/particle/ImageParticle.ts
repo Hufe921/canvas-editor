@@ -1,7 +1,7 @@
-import { IImageParticleCreateResult } from "../../../interface/Draw"
-import { IEditorOption } from "../../../interface/Editor"
-import { IElement, IElementPosition } from "../../../interface/Element"
-import { Draw } from "../Draw"
+import { IImageParticleCreateResult } from '../../../interface/Draw'
+import { IEditorOption } from '../../../interface/Editor'
+import { IElement, IElementPosition } from '../../../interface/Element'
+import { Draw } from '../Draw'
 
 export class ImageParticle {
 
@@ -93,7 +93,7 @@ export class ImageParticle {
     document.body.style.cursor = cursor
     this.canvas.style.cursor = cursor
     // 拖拽图片镜像
-    this.resizerImage.src = this.curElement?.value!
+    this.resizerImage.src = this.curElement?.value || ''
     this.resizerImageContainer.style.display = 'block'
     const { coordinate: { leftTop: [left, top] } } = this.curPosition
     const prePageHeight = this.draw.getPageNo() * (height + pageGap)

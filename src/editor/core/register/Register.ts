@@ -1,5 +1,5 @@
-import { IRegisterContextMenu } from "../../interface/contextmenu/ContextMenu"
-import { ContextMenu } from "../contextmenu/ContextMenu"
+import { IRegisterContextMenu } from '../../interface/contextmenu/ContextMenu'
+import { ContextMenu } from '../contextmenu/ContextMenu'
 
 interface IRegisterPayload {
   contextMenu: ContextMenu

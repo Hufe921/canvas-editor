@@ -1,6 +1,6 @@
-import { debounce } from "../../utils"
-import { Draw } from "../draw/Draw"
-import { CanvasEvent } from "../event/CanvasEvent"
+import { debounce } from '../../utils'
+import { Draw } from '../draw/Draw'
+import { CanvasEvent } from '../event/CanvasEvent'
 
 export class CursorAgent {
 

@@ -1,5 +1,5 @@
-import { IEditorOption } from "../../../interface/Editor"
-import { Draw } from "../Draw"
+import { IEditorOption } from '../../../interface/Editor'
+import { Draw } from '../Draw'
 
 export class Margin {
 

@@ -1,6 +1,6 @@
-import { IEditorOption } from "../../interface/Editor"
-import { debounce } from "../../utils"
-import { Draw } from "../draw/Draw"
+import { IEditorOption } from '../../interface/Editor'
+import { debounce } from '../../utils'
+import { Draw } from '../draw/Draw'
 
 export class GlobalObserver {
 
@@ -30,9 +30,9 @@ export class GlobalObserver {
     const bottom = top + window.innerHeight
     const pageList = this.draw.getPageList()
     // 计算显示页
-    let visiblePageNoList: number[] = []
-    let intersectionPageNo: number = 0
-    let intersectionMaxHeight: number = 0
+    const visiblePageNoList: number[] = []
+    let intersectionPageNo = 0
+    let intersectionMaxHeight = 0
     for (let i = 0; i < pageList.length; i++) {
       const curTop = i * this.pageHeight
       const curBottom = (i + 1) * this.pageHeight

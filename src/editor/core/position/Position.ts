@@ -1,9 +1,9 @@
-import { ElementType } from "../.."
-import { ZERO } from "../../dataset/constant/Common"
-import { IEditorOption } from "../../interface/Editor"
-import { IElementPosition } from "../../interface/Element"
-import { ICurrentPosition, IGetPositionByXYPayload, IPositionContext } from "../../interface/Position"
-import { Draw } from "../draw/Draw"
+import { ElementType } from '../..'
+import { ZERO } from '../../dataset/constant/Common'
+import { IEditorOption } from '../../interface/Editor'
+import { IElementPosition } from '../../interface/Element'
+import { ICurrentPosition, IGetPositionByXYPayload, IPositionContext } from '../../interface/Position'
+import { Draw } from '../draw/Draw'
 
 export class Position {
 
