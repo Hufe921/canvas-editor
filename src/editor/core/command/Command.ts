@@ -54,6 +54,7 @@ export class Command {
   private static search: Function
   private static replace: Function
   private static print: Function
+  private static getImage: Function
   private static pageScaleRecovery: Function
   private static pageScaleMinus: Function
   private static pageScaleAdd: Function
@@ -106,6 +107,7 @@ export class Command {
     Command.search = adapt.search.bind(adapt)
     Command.replace = adapt.replace.bind(adapt)
     Command.print = adapt.print.bind(adapt)
+    Command.getImage = adapt.getImage.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
@@ -298,6 +300,10 @@ export class Command {
 
   public executePrint() {
     return Command.print()
+  }
+
+  public getImage(): string[] {
+    return Command.getImage()
   }
 
   // 页面缩放

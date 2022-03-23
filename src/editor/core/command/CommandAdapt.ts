@@ -1202,6 +1202,10 @@ export class CommandAdapt {
     }
   }
 
+  public getImage(): string[] {
+    return this.draw.getDataURL()
+  }
+
   public pageScaleRecovery() {
     const { scale } = this.options
     if (scale !== 1) {
