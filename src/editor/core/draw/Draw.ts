@@ -22,7 +22,8 @@ import { ElementType } from '../../dataset/enum/Element'
 import { ImageParticle } from './particle/ImageParticle'
 import { TextParticle } from './particle/TextParticle'
 import { PageNumber } from './frame/PageNumber'
-import { GlobalObserver } from '../observer/GlobalObserver'
+import { ScrollObserver } from '../observer/ScrollObserver'
+import { SelectionObserver } from '../observer/SelectionObserver'
 import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
@@ -116,7 +117,8 @@ export class Draw {
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
 
-    new GlobalObserver(this)
+    new ScrollObserver(this)
+    new SelectionObserver()
 
     this.canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, this.canvasEvent)
