@@ -1,6 +1,6 @@
-import { IElement } from ".."
-import { IElementPosition } from "./Element"
-import { ITd } from "./table/Td"
+import { IElement } from '..'
+import { IElementPosition } from './Element'
+import { ITd } from './table/Td'
 
 export interface ICurrentPosition {
   index: number;

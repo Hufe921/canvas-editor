@@ -6,7 +6,7 @@ import {
   IRangeStyleChange,
   ISaved,
   IVisiblePageNoListChange
-} from "../../interface/Listener"
+} from '../../interface/Listener'
 
 export class Listener {
 

@@ -1,6 +1,6 @@
-import { ElementType } from ".."
-import { RowFlex } from "../dataset/enum/Row"
-import { IEditorResult } from "./Editor"
+import { ElementType } from '..'
+import { RowFlex } from '../dataset/enum/Row'
+import { IEditorResult } from './Editor'
 
 export interface IRangeStyle {
   type: ElementType | null;

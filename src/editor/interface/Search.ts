@@ -1,4 +1,4 @@
-import { EditorContext } from "../dataset/enum/Editor"
+import { EditorContext } from '../dataset/enum/Editor'
 
 export interface ISearchResultBasic {
   type: EditorContext;

@@ -1,6 +1,6 @@
-import { IEditorOption } from "../../../interface/Editor"
-import { IRowElement } from "../../../interface/Row"
-import { Draw } from "../Draw"
+import { IEditorOption } from '../../../interface/Editor'
+import { IRowElement } from '../../../interface/Row'
+import { Draw } from '../Draw'
 
 export class PageBreakParticle {
 

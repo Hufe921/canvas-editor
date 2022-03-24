@@ -34,7 +34,7 @@ describe('菜单-搜索', () => {
           value: searchText
         },
         {
-          value: "\n",
+          value: '\n',
           type,
           trList: [
             {

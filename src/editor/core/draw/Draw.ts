@@ -1,38 +1,39 @@
-import { ZERO } from "../../dataset/constant/Common"
-import { RowFlex } from "../../dataset/enum/Row"
-import { IDrawOption, IDrawRowPayload, IDrawRowResult } from "../../interface/Draw"
-import { IEditorOption } from "../../interface/Editor"
-import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from "../../interface/Element"
-import { IRow, IRowElement } from "../../interface/Row"
-import { deepClone, getUUID } from "../../utils"
-import { Cursor } from "../cursor/Cursor"
-import { CanvasEvent } from "../event/CanvasEvent"
-import { GlobalEvent } from "../event/GlobalEvent"
-import { HistoryManager } from "../history/HistoryManager"
-import { Listener } from "../listener/Listener"
-import { Position } from "../position/Position"
-import { RangeManager } from "../range/RangeManager"
-import { Background } from "./frame/Background"
-import { Highlight } from "./richtext/Highlight"
-import { Margin } from "./frame/Margin"
-import { Search } from "./interactive/Search"
-import { Strikeout } from "./richtext/Strikeout"
-import { Underline } from "./richtext/Underline"
-import { ElementType } from "../../dataset/enum/Element"
-import { ImageParticle } from "./particle/ImageParticle"
-import { TextParticle } from "./particle/TextParticle"
-import { PageNumber } from "./frame/PageNumber"
-import { GlobalObserver } from "../observer/GlobalObserver"
-import { TableParticle } from "./particle/table/TableParticle"
-import { TableTool } from "./particle/table/TableTool"
-import { HyperlinkParticle } from "./particle/HyperlinkParticle"
-import { Header } from "./frame/Header"
-import { SuperscriptParticle } from "./particle/Superscript"
-import { SubscriptParticle } from "./particle/Subscript"
-import { SeparatorParticle } from "./particle/Separator"
-import { PageBreakParticle } from "./particle/PageBreak"
-import { Watermark } from "./frame/Watermark"
-import { EditorMode } from "../../dataset/enum/Editor"
+import { ZERO } from '../../dataset/constant/Common'
+import { RowFlex } from '../../dataset/enum/Row'
+import { IDrawOption, IDrawRowPayload, IDrawRowResult } from '../../interface/Draw'
+import { IEditorOption } from '../../interface/Editor'
+import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from '../../interface/Element'
+import { IRow, IRowElement } from '../../interface/Row'
+import { deepClone, getUUID } from '../../utils'
+import { Cursor } from '../cursor/Cursor'
+import { CanvasEvent } from '../event/CanvasEvent'
+import { GlobalEvent } from '../event/GlobalEvent'
+import { HistoryManager } from '../history/HistoryManager'
+import { Listener } from '../listener/Listener'
+import { Position } from '../position/Position'
+import { RangeManager } from '../range/RangeManager'
+import { Background } from './frame/Background'
+import { Highlight } from './richtext/Highlight'
+import { Margin } from './frame/Margin'
+import { Search } from './interactive/Search'
+import { Strikeout } from './richtext/Strikeout'
+import { Underline } from './richtext/Underline'
+import { ElementType } from '../../dataset/enum/Element'
+import { ImageParticle } from './particle/ImageParticle'
+import { TextParticle } from './particle/TextParticle'
+import { PageNumber } from './frame/PageNumber'
+import { ScrollObserver } from '../observer/ScrollObserver'
+import { SelectionObserver } from '../observer/SelectionObserver'
+import { TableParticle } from './particle/table/TableParticle'
+import { TableTool } from './particle/table/TableTool'
+import { HyperlinkParticle } from './particle/HyperlinkParticle'
+import { Header } from './frame/Header'
+import { SuperscriptParticle } from './particle/Superscript'
+import { SubscriptParticle } from './particle/Subscript'
+import { SeparatorParticle } from './particle/Separator'
+import { PageBreakParticle } from './particle/PageBreak'
+import { Watermark } from './frame/Watermark'
+import { EditorMode } from '../../dataset/enum/Editor'
 
 export class Draw {
 
@@ -116,7 +117,8 @@ export class Draw {
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
 
-    new GlobalObserver(this)
+    new ScrollObserver(this)
+    new SelectionObserver()
 
     this.canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, this.canvasEvent)
@@ -383,7 +385,7 @@ export class Draw {
     this.ctxList.push(ctx)
   }
 
-  private _getFont(el: IElement, scale: number = 1): string {
+  private _getFont(el: IElement, scale = 1): string {
     const { defaultSize, defaultFont } = this.options
     const font = el.font || defaultFont
     const size = el.actualSize || el.size || defaultSize
@@ -410,7 +412,7 @@ export class Draw {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
       const rowMargin = defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
-      let metrics: IElementMetrics = {
+      const metrics: IElementMetrics = {
         width: 0,
         height: 0,
         boundingBoxAscent: 0,
@@ -612,8 +614,8 @@ export class Draw {
         }
       }
       // 当前td所在位置
-      let tablePreX = x
-      let tablePreY = y
+      const tablePreX = x
+      const tablePreY = y
       // 选区绘制记录
       const rangeRecord: IElementFillRect = {
         x: 0,
@@ -794,12 +796,12 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
-    let {
-      curIndex,
+    const {
       isSubmitHistory = true,
       isSetCursor = true,
       isComputeRowList = true
     } = payload || {}
+    let { curIndex } = payload || {}
     const height = this.getHeight()
     const innerWidth = this.getInnerWidth()
     // 计算行信息
@@ -818,7 +820,7 @@ export class Draw {
     const marginHeight = margins[0] + margins[2]
     let pageHeight = marginHeight
     let pageNo = 0
-    let pageRowList: IRow[][] = [[]]
+    const pageRowList: IRow[][] = [[]]
     for (let i = 0; i < this.rowList.length; i++) {
       const row = this.rowList[i]
       if (row.height + pageHeight > height || this.rowList[i - 1]?.isPageBreak) {

@@ -1,10 +1,10 @@
-import { ElementType } from "../.."
-import { IEditorOption } from "../../interface/Editor"
-import { IElement } from "../../interface/Element"
-import { IRange } from "../../interface/Range"
-import { Draw } from "../draw/Draw"
-import { HistoryManager } from "../history/HistoryManager"
-import { Listener } from "../listener/Listener"
+import { ElementType } from '../..'
+import { IEditorOption } from '../../interface/Editor'
+import { IElement } from '../../interface/Element'
+import { IRange } from '../../interface/Range'
+import { Draw } from '../draw/Draw'
+import { HistoryManager } from '../history/HistoryManager'
+import { Listener } from '../listener/Listener'
 
 export class RangeManager {
 
@@ -70,10 +70,10 @@ export class RangeManager {
     const type = curElement.type || ElementType.TEXT
     // 富文本
     const font = curElement.font || this.options.defaultFont
-    let bold = !~curElementList.findIndex(el => !el.bold)
-    let italic = !~curElementList.findIndex(el => !el.italic)
-    let underline = !~curElementList.findIndex(el => !el.underline)
-    let strikeout = !~curElementList.findIndex(el => !el.strikeout)
+    const bold = !~curElementList.findIndex(el => !el.bold)
+    const italic = !~curElementList.findIndex(el => !el.italic)
+    const underline = !~curElementList.findIndex(el => !el.underline)
+    const strikeout = !~curElementList.findIndex(el => !el.strikeout)
     const color = curElement.color || null
     const highlight = curElement.highlight || null
     const rowFlex = curElement.rowFlex || null

@@ -1,8 +1,8 @@
-import { IElement } from "../../.."
-import { IEditorOption } from "../../../interface/Editor"
-import { IElementPosition } from "../../../interface/Element"
-import { IRowElement } from "../../../interface/Row"
-import { Draw } from "../Draw"
+import { IElement } from '../../..'
+import { IEditorOption } from '../../../interface/Editor'
+import { IElementPosition } from '../../../interface/Element'
+import { IRowElement } from '../../../interface/Row'
+import { Draw } from '../Draw'
 
 export class HyperlinkParticle {
 

@@ -1,4 +1,4 @@
-import { IRowElement } from "../../../interface/Row"
+import { IRowElement } from '../../../interface/Row'
 export class SeparatorParticle {
 
   public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {

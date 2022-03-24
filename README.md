@@ -9,9 +9,9 @@
 ## next features
 
 1. fix bugs
-2. dev config
-3. table paging
-4. controls
+2. github workflows
+3. controls
+4. table paging
 5. docs
 
 ## install

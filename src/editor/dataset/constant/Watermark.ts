@@ -1,4 +1,4 @@
-import { IWatermark } from "../../interface/Watermark"
+import { IWatermark } from '../../interface/Watermark'
 
 export const defaultWatermarkOption: Readonly<Required<IWatermark>> = {
   data: '',

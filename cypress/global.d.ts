@@ -2,6 +2,7 @@
 
 declare namespace Editor {
   import('../src/editor/index')
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   import Editor from '../src/editor/index'
 }
 

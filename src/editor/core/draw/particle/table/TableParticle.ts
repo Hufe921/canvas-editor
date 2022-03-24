@@ -1,7 +1,7 @@
-import { ElementType, IElement } from "../../../.."
-import { IEditorOption } from "../../../../interface/Editor"
-import { RangeManager } from "../../../range/RangeManager"
-import { Draw } from "../../Draw"
+import { ElementType, IElement } from '../../../..'
+import { IEditorOption } from '../../../../interface/Editor'
+import { RangeManager } from '../../../range/RangeManager'
+import { Draw } from '../../Draw'
 
 export class TableParticle {
 

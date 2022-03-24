@@ -1,9 +1,9 @@
-import { IElement } from "../../../.."
-import { TableOrder } from "../../../../dataset/enum/table/TableTool"
-import { IEditorOption } from "../../../../interface/Editor"
-import { IElementPosition } from "../../../../interface/Element"
-import { Position } from "../../../position/Position"
-import { Draw } from "../../Draw"
+import { IElement } from '../../../..'
+import { TableOrder } from '../../../../dataset/enum/table/TableTool'
+import { IEditorOption } from '../../../../interface/Editor'
+import { IElementPosition } from '../../../../interface/Element'
+import { Position } from '../../../position/Position'
+import { Draw } from '../../Draw'
 
 interface IAnchorMouseDown {
   evt: MouseEvent;
@@ -188,7 +188,7 @@ export class TableTool {
           const innerWidth = this.draw.getInnerWidth()
           const curColWidth = colgroup[index].width
           // 最小移动距离计算
-          let moveColWidth = curColWidth + dx
+          const moveColWidth = curColWidth + dx
           if (moveColWidth < this.minTdWidth) {
             dx = this.minTdWidth - curColWidth
           }

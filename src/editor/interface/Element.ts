@@ -1,7 +1,7 @@
-import { ElementType } from "../dataset/enum/Element"
-import { RowFlex } from "../dataset/enum/Row"
-import { IColgroup } from "./table/Colgroup"
-import { ITr } from "./table/Tr"
+import { ElementType } from '../dataset/enum/Element'
+import { RowFlex } from '../dataset/enum/Row'
+import { IColgroup } from './table/Colgroup'
+import { ITr } from './table/Tr'
 
 export interface IElementBasic {
   id?: string;

@@ -1,5 +1,5 @@
-import { IElementPosition } from "./Element"
-import { IRow } from "./Row"
+import { IElementPosition } from './Element'
+import { IRow } from './Row'
 
 export interface IDrawOption {
   curIndex?: number;

@@ -1,6 +1,6 @@
-import { DeepRequired } from "../../../interface/Common"
-import { IEditorOption } from "../../../interface/Editor"
-import { Draw } from "../Draw"
+import { DeepRequired } from '../../../interface/Common'
+import { IEditorOption } from '../../../interface/Editor'
+import { Draw } from '../Draw'
 
 export class Header {
 

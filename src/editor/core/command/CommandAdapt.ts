@@ -1,26 +1,27 @@
-import { WRAP, ZERO } from "../../dataset/constant/Common"
-import { EDITOR_ELEMENT_STYLE_ATTR } from "../../dataset/constant/Element"
-import { defaultWatermarkOption } from "../../dataset/constant/Watermark"
-import { EditorContext, EditorMode } from "../../dataset/enum/Editor"
-import { ElementType } from "../../dataset/enum/Element"
-import { ElementStyleKey } from "../../dataset/enum/ElementStyle"
-import { RowFlex } from "../../dataset/enum/Row"
-import { IDrawImagePayload } from "../../interface/Draw"
-import { IEditorOption } from "../../interface/Editor"
-import { IElement, IElementStyle } from "../../interface/Element"
-import { IColgroup } from "../../interface/table/Colgroup"
-import { ITd } from "../../interface/table/Td"
-import { ITr } from "../../interface/table/Tr"
-import { IWatermark } from "../../interface/Watermark"
-import { getUUID } from "../../utils"
-import { formatElementList } from "../../utils/element"
-import { printImageBase64 } from "../../utils/print"
-import { Draw } from "../draw/Draw"
-import { TableTool } from "../draw/particle/table/TableTool"
-import { CanvasEvent } from "../event/CanvasEvent"
-import { HistoryManager } from "../history/HistoryManager"
-import { Position } from "../position/Position"
-import { RangeManager } from "../range/RangeManager"
+import { WRAP, ZERO } from '../../dataset/constant/Common'
+import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
+import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
+import { EditorContext, EditorMode } from '../../dataset/enum/Editor'
+import { ElementType } from '../../dataset/enum/Element'
+import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
+import { RowFlex } from '../../dataset/enum/Row'
+import { IDrawImagePayload } from '../../interface/Draw'
+import { IEditorOption } from '../../interface/Editor'
+import { IElement, IElementStyle } from '../../interface/Element'
+import { IColgroup } from '../../interface/table/Colgroup'
+import { ITd } from '../../interface/table/Td'
+import { ITr } from '../../interface/table/Tr'
+import { IWatermark } from '../../interface/Watermark'
+import { getUUID } from '../../utils'
+import { formatElementList } from '../../utils/element'
+import { printImageBase64 } from '../../utils/print'
+import { Draw } from '../draw/Draw'
+import { TableTool } from '../draw/particle/table/TableTool'
+import { CanvasEvent } from '../event/CanvasEvent'
+import { HistoryManager } from '../history/HistoryManager'
+import { Position } from '../position/Position'
+import { RangeManager } from '../range/RangeManager'
+
 
 export class CommandAdapt {
 
@@ -822,7 +823,7 @@ export class CommandAdapt {
     const startRowIndex = startTd.rowIndex!
     const endRowIndex = endTd.rowIndex! + (endTd.rowspan - 1)
     // 选区行列
-    let rowCol: ITd[][] = []
+    const rowCol: ITd[][] = []
     for (let t = 0; t < curTrList.length; t++) {
       const tr = curTrList[t]
       const tdList: ITd[] = []
@@ -865,7 +866,7 @@ export class CommandAdapt {
       }
     }
     // 合并单元格
-    let mergeTdIdList: string[] = []
+    const mergeTdIdList: string[] = []
     const anchorTd = rowCol[0][0]
     for (let t = 0; t < rowCol.length; t++) {
       const tr = rowCol[t]
@@ -1201,6 +1202,10 @@ export class CommandAdapt {
     }
   }
 
+  public getImage(): string[] {
+    return this.draw.getDataURL()
+  }
+
   public pageScaleRecovery() {
     const { scale } = this.options
     if (scale !== 1) {
@@ -1234,7 +1239,7 @@ export class CommandAdapt {
     formatElementList(payload, false)
     const elementList = this.draw.getElementList()
     const isCollapsed = startIndex === endIndex
-    let start = startIndex + 1
+    const start = startIndex + 1
     if (!isCollapsed) {
       elementList.splice(start, endIndex - startIndex)
     }

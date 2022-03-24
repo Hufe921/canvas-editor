@@ -278,7 +278,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     imageFileDom.click()
   }
   imageFileDom.onchange = function () {
-    const file = imageFileDom.files?.[0]!
+    const file = imageFileDom.files![0]!
     const fileReader = new FileReader()
     fileReader.readAsDataURL(file)
     fileReader.onload = function () {
