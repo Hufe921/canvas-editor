@@ -1,0 +1,30 @@
+name: cypress
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/*'
+      - 'cypress/**'
+      - 'src/**'
+      - 'index.html'
+      - 'package.json'
+      - 'vite.config.ts'
+
+jobs:
+  cypress:
+    runs-on: ubuntu-latest
+    container: cypress/browsers:node16.14.0-slim-chrome99-ff97
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i yarn serve -g
+    - run: yarn
+    - run: yarn run build
+    - run: mv dist canvas-editor
+    - run: serve . -l 3000 &
+    - run: yarn run cypress:run
