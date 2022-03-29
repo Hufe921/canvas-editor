@@ -1,5 +1,6 @@
 import { ElementType } from '../dataset/enum/Element'
 import { RowFlex } from '../dataset/enum/Row'
+import { IControl } from './Control'
 import { IColgroup } from './table/Colgroup'
 import { ITr } from './table/Tr'
 
@@ -57,6 +58,7 @@ export type IElement = IElementBasic
   & IHyperlinkElement
   & ISuperscriptSubscript
   & ISeparator
+  & { control?: IControl }
 
 export interface IElementMetrics {
   width: number;
