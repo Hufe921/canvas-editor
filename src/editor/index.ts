@@ -19,6 +19,9 @@ import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
 import { defaultHeaderOption } from './dataset/constant/Header'
 import { defaultWatermarkOption } from './dataset/constant/Watermark'
+import { ControlType } from './dataset/enum/Control'
+import { defaultControlOption } from './dataset/constant/Control'
+import { IControlOption } from './interface/Control'
 
 export default class Editor {
 
@@ -34,6 +37,10 @@ export default class Editor {
     const waterMarkOptions: Required<IWatermark> = {
       ...defaultWatermarkOption,
       ...options.watermark
+    }
+    const controlOptions: Required<IControlOption> = {
+      ...defaultControlOption,
+      ...options.control
     }
     const editorOptions: Required<IEditorOption> = {
       defaultMode: EditorMode.EDIT,
@@ -68,7 +75,8 @@ export default class Editor {
       headerTop: 50,
       ...options,
       header: headerOptions,
-      watermark: waterMarkOptions
+      watermark: waterMarkOptions,
+      control: controlOptions
     }
     formatElementList(elementList)
     // 监听
@@ -95,6 +103,7 @@ export {
   RowFlex,
   EditorMode,
   ElementType,
+  ControlType,
   EditorComponent,
   EDITOR_COMPONENT
 }

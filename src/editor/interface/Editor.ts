@@ -1,5 +1,6 @@
 import { IElement } from '..'
 import { EditorMode } from '../dataset/enum/Editor'
+import { IControlOption } from './Control'
 import { IHeader } from './Header'
 import { IWatermark } from './Watermark'
 
@@ -36,6 +37,7 @@ export interface IEditorOption {
   headerTop?: number;
   header?: IHeader;
   watermark?: IWatermark;
+  control?: IControlOption;
 }
 
 export interface IEditorResult {

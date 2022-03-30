@@ -1,4 +1,5 @@
 import { ControlType } from '../dataset/enum/Control'
+import { IElement } from './Element'
 
 export interface IValueSet {
   value: string;
@@ -7,9 +8,15 @@ export interface IValueSet {
 
 export interface IControl {
   type: ControlType;
-  value: string;
-  conceptId: string;
+  value: IElement[] | null;
+  placeholder: string;
+  conceptId?: string;
   prefix?: string;
   postfix?: string;
-  valueSets?: IValueSet[]
+  valueSets?: IValueSet[];
+}
+
+export interface IControlOption {
+  placeholderColor?: string;
+  bracketColor?: string;
 }
