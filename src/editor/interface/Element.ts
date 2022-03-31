@@ -1,3 +1,4 @@
+import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { RowFlex } from '../dataset/enum/Row'
 import { IControl } from './Control'
@@ -52,13 +53,19 @@ export interface ISeparator {
   dashArray?: number[];
 }
 
+export interface IControlElement {
+  control?: IControl;
+  controlId?: string;
+  controlComponent?: ControlComponent;
+}
+
 export type IElement = IElementBasic
   & IElementStyle
   & ITable
   & IHyperlinkElement
   & ISuperscriptSubscript
   & ISeparator
-  & { control?: IControl }
+  & IControlElement
 
 export interface IElementMetrics {
   width: number;

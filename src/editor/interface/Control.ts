@@ -6,15 +6,20 @@ export interface IValueSet {
   code: string;
 }
 
-export interface IControl {
+export interface IControlSelect {
+  valueSets: IValueSet[];
+}
+
+export interface IControlBasic {
   type: ControlType;
   value: IElement[] | null;
   placeholder: string;
   conceptId?: string;
   prefix?: string;
   postfix?: string;
-  valueSets?: IValueSet[];
 }
+
+export type IControl = IControlBasic & Partial<IControlSelect>
 
 export interface IControlOption {
   placeholderColor?: string;

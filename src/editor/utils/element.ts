@@ -2,6 +2,7 @@ import { deepClone, getUUID } from '.'
 import { ElementType, IElement } from '..'
 import { ZERO } from '../dataset/constant/Common'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
+import { ControlComponent } from '../dataset/enum/Control'
 
 export function formatElementList(elementList: IElement[], isHandleFirstElement = true) {
   if (isHandleFirstElement && elementList[0]?.value !== ZERO) {
@@ -55,6 +56,74 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
           value.url = el.url
           value.hyperlinkId = hyperlinkId
           elementList.splice(i, 0, value)
+          i++
+        }
+      }
+      i--
+    } else if (el.type === ElementType.CONTROL) {
+      const { prefix, postfix, value, placeholder } = el.control!
+      const controlId = getUUID()
+      // 移除父节点
+      elementList.splice(i, 1)
+      // 前缀
+      if (prefix) {
+        const prefixStrList = prefix.split('')
+        for (let p = 0; p < prefixStrList.length; p++) {
+          const value = prefixStrList[p]
+          elementList.splice(i, 0, {
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.SUFFIX
+          })
+          i++
+        }
+      }
+      // 值
+      if (value && value.length) {
+        for (let v = 0; v < value.length; v++) {
+          const element = value[v]
+          const valueStrList = element.value.split('')
+          for (let e = 0; e < valueStrList.length; e++) {
+            const value = valueStrList[e]
+            elementList.splice(i, 0, {
+              controlId,
+              value,
+              type: el.type,
+              control: el.control,
+              controlComponent: ControlComponent.VALUE
+            })
+            i++
+          }
+        }
+      } else {
+        // placeholder
+        const placeholderStrList = placeholder.split('')
+        for (let p = 0; p < placeholderStrList.length; p++) {
+          const value = placeholderStrList[p]
+          elementList.splice(i, 0, {
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.PLACEHOLDER
+          })
+          i++
+        }
+      }
+      // 后缀
+      if (postfix) {
+        const postfixStrList = postfix.split('')
+        for (let p = 0; p < postfixStrList.length; p++) {
+          const value = postfixStrList[p]
+          elementList.splice(i, 0, {
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.POSTFIX
+          })
           i++
         }
       }
