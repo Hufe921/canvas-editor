@@ -222,6 +222,31 @@ export function zipElementList(payload: IElement[]): IElement[] {
       }
       hyperlinkElement.valueList = zipElementList(valueList)
       element = hyperlinkElement
+    } else if (element.type === ElementType.CONTROL) {
+      // 控件处理
+      const controlId = element.controlId
+      const control = element.control!
+      const controlElement: IElement = {
+        type: ElementType.CONTROL,
+        value: '',
+        control
+      }
+      const valueList: IElement[] = []
+      while (e < elementList.length) {
+        const controlE = elementList[e]
+        if (controlId !== controlE.controlId) {
+          e--
+          break
+        }
+        if (controlE.controlComponent === ControlComponent.VALUE) {
+          delete controlE.type
+          delete controlE.control
+          valueList.push(controlE)
+        }
+        e++
+      }
+      controlElement.control!.value = zipElementList(valueList)
+      element = controlElement
     }
     // 组合元素
     const pickElement = pickElementAttr(element)
