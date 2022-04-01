@@ -1236,7 +1236,10 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     // 格式化element
-    formatElementList(payload, false)
+    formatElementList(payload, {
+      isHandleFirstElement: false,
+      editorOptions: this.options
+    })
     const elementList = this.draw.getElementList()
     const isCollapsed = startIndex === endIndex
     const start = startIndex + 1

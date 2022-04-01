@@ -1,10 +1,19 @@
 import { deepClone, getUUID } from '.'
-import { ElementType, IElement } from '..'
+import { ElementType, IEditorOption, IElement } from '..'
 import { ZERO } from '../dataset/constant/Common'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
 import { ControlComponent } from '../dataset/enum/Control'
 
-export function formatElementList(elementList: IElement[], isHandleFirstElement = true) {
+interface IFormatElementListOption {
+  isHandleFirstElement?: boolean;
+  editorOptions?: Required<IEditorOption>;
+}
+
+export function formatElementList(elementList: IElement[], options: IFormatElementListOption = {}) {
+  const { isHandleFirstElement, editorOptions } = <IFormatElementListOption>{
+    isHandleFirstElement: true,
+    ...options
+  }
   if (isHandleFirstElement && elementList[0]?.value !== ZERO) {
     elementList.unshift({
       value: ZERO
@@ -25,7 +34,7 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
             const td = tr.tdList[d]
             const tdId = getUUID()
             td.id = tdId
-            formatElementList(td.value)
+            formatElementList(td.value, options)
             for (let v = 0; v < td.value.length; v++) {
               const value = td.value[v]
               value.tdId = tdId
@@ -65,6 +74,11 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
+      // 前后缀个性化设置
+      const thePreSuffixArgs: Pick<IElement, 'color'> = {}
+      if (editorOptions && editorOptions.control) {
+        thePreSuffixArgs.color = editorOptions.control.bracketColor
+      }
       // 前缀
       if (prefix) {
         const prefixStrList = prefix.split('')
@@ -75,7 +89,8 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
             value,
             type: el.type,
             control: el.control,
-            controlComponent: ControlComponent.SUFFIX
+            controlComponent: ControlComponent.SUFFIX,
+            ...thePreSuffixArgs
           })
           i++
         }
@@ -99,6 +114,10 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
         }
       } else {
         // placeholder
+        const thePlaceholderArgs: Pick<IElement, 'color'> = {}
+        if (editorOptions && editorOptions.control) {
+          thePlaceholderArgs.color = editorOptions.control.placeholderColor
+        }
         const placeholderStrList = placeholder.split('')
         for (let p = 0; p < placeholderStrList.length; p++) {
           const value = placeholderStrList[p]
@@ -107,7 +126,8 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
             value,
             type: el.type,
             control: el.control,
-            controlComponent: ControlComponent.PLACEHOLDER
+            controlComponent: ControlComponent.PLACEHOLDER,
+            ...thePlaceholderArgs
           })
           i++
         }
@@ -122,7 +142,8 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
             value,
             type: el.type,
             control: el.control,
-            controlComponent: ControlComponent.POSTFIX
+            controlComponent: ControlComponent.POSTFIX,
+            ...thePreSuffixArgs
           })
           i++
         }

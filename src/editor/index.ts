@@ -78,7 +78,9 @@ export default class Editor {
       watermark: waterMarkOptions,
       control: controlOptions
     }
-    formatElementList(elementList)
+    formatElementList(elementList, {
+      editorOptions
+    })
     // 监听
     this.listener = new Listener()
     // 启动
