@@ -75,7 +75,7 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
             value,
             type: el.type,
             control: el.control,
-            controlComponent: ControlComponent.SUFFIX
+            controlComponent: ControlComponent.PREFIX
           })
           i++
         }

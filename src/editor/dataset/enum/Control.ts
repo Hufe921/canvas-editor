@@ -4,7 +4,7 @@ export enum ControlType {
 }
 
 export enum ControlComponent {
-  SUFFIX = 'suffix',
+  PREFIX = 'prefix',
   POSTFIX = 'postfix',
   PLACEHOLDER = 'placeholder',
   VALUE = 'value'
