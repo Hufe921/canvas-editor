@@ -24,4 +24,6 @@ export type IControl = IControlBasic & Partial<IControlSelect>
 export interface IControlOption {
   placeholderColor?: string;
   bracketColor?: string;
+  prefix?: string;
+  postfix?: string;
 }

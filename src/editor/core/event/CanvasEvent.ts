@@ -20,6 +20,7 @@ import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
+import { Control } from '../draw/control/Control'
 
 export class CanvasEvent {
 
@@ -38,6 +39,7 @@ export class CanvasEvent {
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
   private listener: Listener
+  private control: Control
 
   constructor(draw: Draw) {
     this.isAllowDrag = false
@@ -55,6 +57,7 @@ export class CanvasEvent {
     this.tableTool = this.draw.getTableTool()
     this.hyperlinkParticle = this.draw.getHyperlinkParticle()
     this.listener = this.draw.getListener()
+    this.control = this.draw.getControl()
   }
 
   public register() {
@@ -163,9 +166,14 @@ export class CanvasEvent {
       x: evt.offsetX,
       y: evt.offsetY
     })
+    // 如果是控件-光标需移动到合适位置
+    if (positionResult.isControl) {
+      this.control.moveCursorIndex(positionResult)
+    }
     const {
       index,
       isDirectHit,
+      isControl,
       isImage,
       isTable,
       trIndex,
@@ -178,6 +186,7 @@ export class CanvasEvent {
     // 设置位置上下文
     this.position.setPositionContext({
       isTable: isTable || false,
+      isControl: isControl || false,
       index,
       trIndex,
       tdIndex,

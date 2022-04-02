@@ -75,9 +75,9 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
       // 移除父节点
       elementList.splice(i, 1)
       // 前后缀个性化设置
-      const thePreSuffixArgs: Pick<IElement, 'color'> = {}
+      const thePrePostfixArgs: Pick<IElement, 'color'> = {}
       if (editorOptions && editorOptions.control) {
-        thePreSuffixArgs.color = editorOptions.control.bracketColor
+        thePrePostfixArgs.color = editorOptions.control.bracketColor
       }
       // 前缀
       if (prefix) {
@@ -89,8 +89,8 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
             value,
             type: el.type,
             control: el.control,
-            controlComponent: ControlComponent.SUFFIX,
-            ...thePreSuffixArgs
+            controlComponent: ControlComponent.PREFIX,
+            ...thePrePostfixArgs
           })
           i++
         }
@@ -143,7 +143,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
             type: el.type,
             control: el.control,
             controlComponent: ControlComponent.POSTFIX,
-            ...thePreSuffixArgs
+            ...thePrePostfixArgs
           })
           i++
         }
