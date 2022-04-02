@@ -19,7 +19,7 @@ export function deepClone<T>(obj: T): T {
   if (Array.isArray(obj)) {
     newObj = obj.map(item => deepClone(item))
   } else {
-    Object.keys(obj).forEach((key) => {
+    Object.keys(obj as any).forEach((key) => {
       // @ts-ignore
       return newObj[key] = deepClone(obj[key])
     })

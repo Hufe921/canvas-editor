@@ -28,7 +28,7 @@ export interface IGetPositionByXYPayload {
 
 export interface IPositionContext {
   isTable: boolean;
-  isControl: boolean;
+  isControl?: boolean;
   index?: number;
   trIndex?: number;
   tdIndex?: number;
