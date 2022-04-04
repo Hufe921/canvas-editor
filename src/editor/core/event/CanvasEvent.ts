@@ -166,9 +166,27 @@ export class CanvasEvent {
       x: evt.offsetX,
       y: evt.offsetY
     })
-    // 如果是控件-光标需移动到合适位置
+    // 激活控件
     if (positionResult.isControl) {
-      this.control.moveCursorIndex(positionResult)
+      const {
+        index,
+        isTable,
+        trIndex,
+        tdIndex,
+        tdValueIndex
+      } = positionResult
+      const { newIndex } = this.control.initControl({
+        index,
+        isTable,
+        trIndex,
+        tdIndex,
+        tdValueIndex
+      })
+      if (isTable) {
+        positionResult.tdValueIndex = newIndex
+      } else {
+        positionResult.index = newIndex
+      }
     }
     const {
       index,
@@ -439,6 +457,10 @@ export class CanvasEvent {
     if (!this.cursor) return
     const cursorPosition = this.position.getCursorPosition()
     if (!data || !cursorPosition || this.isCompositing) return
+    if (this.control.isPartRangeInControlOutside()) {
+      // 忽略选区部分在控件的输入
+      return
+    }
     const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT } = ElementType
     const text = data.replaceAll(`\n`, ZERO)
     const elementList = this.draw.getElementList()
@@ -477,18 +499,24 @@ export class CanvasEvent {
       }
       return newElement
     })
-    let start = 0
-    if (isCollapsed) {
-      start = index + 1
+    // 控件-移除placeholder
+    let curIndex: number
+    if (positionContext.isControl) {
+      curIndex = this.control.setValue(inputData)
     } else {
-      start = startIndex + 1
-      elementList.splice(startIndex + 1, endIndex - startIndex)
+      let start = 0
+      if (isCollapsed) {
+        start = index + 1
+      } else {
+        start = startIndex + 1
+        elementList.splice(startIndex + 1, endIndex - startIndex)
+      }
+      // 禁止直接使用解构存在性能问题
+      for (let i = 0; i < inputData.length; i++) {
+        elementList.splice(start + i, 0, inputData[i])
+      }
+      curIndex = (isCollapsed ? index : startIndex) + inputData.length
     }
-    // 禁止直接使用解构存在性能问题
-    for (let i = 0; i < inputData.length; i++) {
-      elementList.splice(start + i, 0, inputData[i])
-    }
-    const curIndex = (isCollapsed ? index : startIndex) + inputData.length
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }

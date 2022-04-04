@@ -27,3 +27,19 @@ export interface IControlOption {
   prefix?: string;
   postfix?: string;
 }
+
+export interface IControlInitOption {
+  index: number;
+  isTable?: boolean;
+  trIndex?: number;
+  tdIndex?: number;
+  tdValueIndex?: number;
+}
+
+export interface IControlInitResult {
+  newIndex: number;
+}
+
+export interface IControlInstance {
+  setValue(data: IElement[]): number;
+}

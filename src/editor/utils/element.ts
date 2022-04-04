@@ -1,6 +1,7 @@
 import { deepClone, getUUID } from '.'
 import { ElementType, IEditorOption, IElement } from '..'
 import { ZERO } from '../dataset/constant/Common'
+import { defaultControlOption } from '../dataset/constant/Control'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
 import { ControlComponent } from '../dataset/enum/Control'
 
@@ -80,20 +81,18 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         thePrePostfixArgs.color = editorOptions.control.bracketColor
       }
       // 前缀
-      if (prefix) {
-        const prefixStrList = prefix.split('')
-        for (let p = 0; p < prefixStrList.length; p++) {
-          const value = prefixStrList[p]
-          elementList.splice(i, 0, {
-            controlId,
-            value,
-            type: el.type,
-            control: el.control,
-            controlComponent: ControlComponent.PREFIX,
-            ...thePrePostfixArgs
-          })
-          i++
-        }
+      const prefixStrList = (prefix || defaultControlOption.prefix).split('')
+      for (let p = 0; p < prefixStrList.length; p++) {
+        const value = prefixStrList[p]
+        elementList.splice(i, 0, {
+          controlId,
+          value,
+          type: el.type,
+          control: el.control,
+          controlComponent: ControlComponent.PREFIX,
+          ...thePrePostfixArgs
+        })
+        i++
       }
       // 值
       if (value && value.length) {
@@ -133,20 +132,18 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         }
       }
       // 后缀
-      if (postfix) {
-        const postfixStrList = postfix.split('')
-        for (let p = 0; p < postfixStrList.length; p++) {
-          const value = postfixStrList[p]
-          elementList.splice(i, 0, {
-            controlId,
-            value,
-            type: el.type,
-            control: el.control,
-            controlComponent: ControlComponent.POSTFIX,
-            ...thePrePostfixArgs
-          })
-          i++
-        }
+      const postfixStrList = (postfix || defaultControlOption.postfix).split('')
+      for (let p = 0; p < postfixStrList.length; p++) {
+        const value = postfixStrList[p]
+        elementList.splice(i, 0, {
+          controlId,
+          value,
+          type: el.type,
+          control: el.control,
+          controlComponent: ControlComponent.POSTFIX,
+          ...thePrePostfixArgs
+        })
+        i++
       }
       i--
     } else if ((!el.type || el.type === ElementType.TEXT) && el.value.length > 1) {
