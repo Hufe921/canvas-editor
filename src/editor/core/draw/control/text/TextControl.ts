@@ -1,5 +1,7 @@
 import { ControlComponent } from '../../../../dataset/enum/Control'
-import { IControlInstance } from '../../../../interface/Control'
+import { ElementType } from '../../../../dataset/enum/Element'
+import { KeyMap } from '../../../../dataset/enum/Keymap'
+import { IControlInstance, IControlOption } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
 import { IRange } from '../../../../interface/Range'
 import { Control } from '../Control'
@@ -7,9 +9,11 @@ import { Control } from '../Control'
 export class TextControl implements IControlInstance {
 
   private control: Control
+  private options: IControlOption
 
   constructor(control: Control) {
     this.control = control
+    this.options = control.getOptions().control
   }
 
   public shrinkBoundary(elementList: IElement[], range: IRange) {
@@ -97,6 +101,94 @@ export class TextControl implements IControlInstance {
     }
   }
 
+  public removeControl(elementList: IElement[], range: IRange): number {
+    const { startIndex } = range
+    const startElement = elementList[startIndex]
+    let leftIndex = -1
+    let rightIndex = -1
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (preElement.controlId !== startElement.controlId) {
+        leftIndex = preIndex
+        break
+      }
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (nextElement.controlId !== startElement.controlId) {
+        rightIndex = nextIndex - 1
+        break
+      }
+      nextIndex++
+    }
+    if (!~leftIndex || !~rightIndex) return -1
+    // 删除元素
+    elementList.splice(leftIndex + 1, rightIndex - leftIndex)
+    // 清除实例
+    this.control.destroyControl()
+    return leftIndex
+  }
+
+  public addPlaceholder(elementList: IElement[], startIndex: number) {
+    const startElement = elementList[startIndex]
+    const control = startElement.control!
+    const placeholderStrList = control.placeholder.split('')
+    for (let p = 0; p < placeholderStrList.length; p++) {
+      const value = placeholderStrList[p]
+      elementList.splice(startIndex + p + 1, 0, {
+        value,
+        controlId: startElement.controlId,
+        type: ElementType.CONTROL,
+        control: startElement.control,
+        controlComponent: ControlComponent.PLACEHOLDER,
+        color: this.options.placeholderColor
+      })
+    }
+  }
+
+  public getValue(): IElement[] {
+    const elementList = this.control.getElementList()
+    const { startIndex } = this.control.getRange()
+    const startElement = elementList[startIndex]
+    const data: IElement[] = []
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (
+        preElement.controlId !== startElement.controlId ||
+        preElement.controlComponent === ControlComponent.PREFIX
+      ) {
+        break
+      }
+      if (preElement.controlComponent === ControlComponent.VALUE) {
+        data.unshift(preElement)
+      }
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (
+        nextElement.controlId !== startElement.controlId ||
+        nextElement.controlComponent === ControlComponent.POSTFIX
+      ) {
+        break
+      }
+      if (nextElement.controlComponent === ControlComponent.VALUE) {
+        data.push(nextElement)
+      }
+      nextIndex++
+    }
+    return data
+  }
+
   public setValue(data: IElement[]): number {
     const elementList = this.control.getElementList()
     const range = this.control.getRange()
@@ -121,6 +213,69 @@ export class TextControl implements IControlInstance {
       })
     }
     return start + data.length - 1
+  }
+
+  public keydown(evt: KeyboardEvent): number {
+    const elementList = this.control.getElementList()
+    const range = this.control.getRange()
+    // 收缩边界到Value内
+    this.shrinkBoundary(elementList, range)
+    const { startIndex, endIndex } = range
+    const startElement = elementList[startIndex]
+    const endElement = elementList[endIndex]
+    // backspace
+    if (evt.key === KeyMap.Backspace) {
+      // 移除选区元素
+      if (startIndex !== endIndex) {
+        elementList.splice(startIndex + 1, endIndex - startIndex)
+        const value = this.getValue()
+        if (!value.length) {
+          this.addPlaceholder(elementList, startIndex)
+        }
+        return startIndex
+      } else {
+        if (startElement.controlComponent === ControlComponent.PREFIX) {
+          // 前缀
+          return this.removeControl(elementList, range)
+        } else if (endElement.controlComponent === ControlComponent.POSTFIX) {
+          // 后缀
+          return this.removeControl(elementList, range)
+        } else {
+          // 文本
+          elementList.splice(startIndex, 1)
+          const value = this.getValue()
+          if (!value.length) {
+            this.addPlaceholder(elementList, startIndex - 1)
+          }
+          return startIndex - 1
+        }
+      }
+    } else if (evt.key === KeyMap.Delete) {
+      // 移除选区元素
+      if (startIndex !== endIndex) {
+        elementList.splice(startIndex + 1, endIndex - startIndex)
+        const value = this.getValue()
+        if (!value.length) {
+          this.addPlaceholder(elementList, startIndex)
+        }
+        return startIndex
+      } else {
+        const endNextElement = elementList[endIndex + 1]
+        if (endNextElement.controlComponent === ControlComponent.POSTFIX) {
+          // 后缀
+          return this.removeControl(elementList, range)
+        } else {
+          // 文本
+          elementList.splice(startIndex + 1, 1)
+          const value = this.getValue()
+          if (!value.length) {
+            this.addPlaceholder(elementList, startIndex)
+          }
+          return startIndex
+        }
+      }
+    }
+    return -1
   }
 
 }

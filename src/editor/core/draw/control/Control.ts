@@ -1,6 +1,7 @@
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IControlInitOption, IControlInitResult, IControlInstance } from '../../../interface/Control'
+import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -14,12 +15,18 @@ export class Control {
 
   private draw: Draw
   private range: RangeManager
+  private options: Required<IEditorOption>
   private activeControl: IControlInstance | null
 
   constructor(draw: Draw) {
     this.draw = draw
     this.range = draw.getRange()
+    this.options = draw.getOptions()
     this.activeControl = null
+  }
+
+  public getOptions(): Required<IEditorOption> {
+    return this.options
   }
 
   public getElementList(): IElement[] {
@@ -144,6 +151,13 @@ export class Control {
       throw new Error('active control is null')
     }
     return this.activeControl.setValue(data)
+  }
+
+  public keydown(evt: KeyboardEvent): number {
+    if (!this.activeControl) {
+      throw new Error('active control is null')
+    }
+    return this.activeControl.keydown(evt)
   }
 
 }

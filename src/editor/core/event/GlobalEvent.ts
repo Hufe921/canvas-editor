@@ -2,6 +2,7 @@ import { EDITOR_COMPONENT } from '../../dataset/constant/Editor'
 import { IEditorOption } from '../../interface/Editor'
 import { findParent } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
+import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
 import { ImageParticle } from '../draw/particle/ImageParticle'
@@ -20,6 +21,7 @@ export class GlobalEvent {
   private imageParticle: ImageParticle
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
+  private control: Control
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -31,6 +33,7 @@ export class GlobalEvent {
     this.imageParticle = draw.getImageParticle()
     this.tableTool = draw.getTableTool()
     this.hyperlinkParticle = draw.getHyperlinkParticle()
+    this.control = draw.getControl()
   }
 
   public register() {
@@ -74,6 +77,7 @@ export class GlobalEvent {
     this.imageParticle.clearResizer()
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
+    this.control.destroyControl()
   }
 
   public setDragState() {

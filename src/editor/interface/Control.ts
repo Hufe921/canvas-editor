@@ -41,5 +41,9 @@ export interface IControlInitResult {
 }
 
 export interface IControlInstance {
+  getValue(): IElement[];
+
   setValue(data: IElement[]): number;
+
+  keydown(evt: KeyboardEvent): number;
 }

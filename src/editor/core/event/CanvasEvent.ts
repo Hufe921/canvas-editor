@@ -187,6 +187,8 @@ export class CanvasEvent {
       } else {
         positionResult.index = newIndex
       }
+    } else {
+      this.control.destroyControl()
     }
     const {
       index,
@@ -273,29 +275,42 @@ export class CanvasEvent {
     const { index } = cursorPosition
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
+    // 当前激活控件
+    const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
+    const activeControl = this.control.getActiveControl()
     if (evt.key === KeyMap.Backspace) {
-      if (isReadonly) return
-      // 判断是否允许删除
-      if (isCollapsed && elementList[index].value === ZERO && index === 0) {
-        evt.preventDefault()
-        return
-      }
-      if (!isCollapsed) {
-        elementList.splice(startIndex + 1, endIndex - startIndex)
+      if (isReadonly || isPartRangeInControlOutside) return
+      let curIndex: number
+      if (activeControl) {
+        curIndex = this.control.keydown(evt)
       } else {
-        elementList.splice(index, 1)
+        // 判断是否允许删除
+        if (isCollapsed && elementList[index].value === ZERO && index === 0) {
+          evt.preventDefault()
+          return
+        }
+        if (!isCollapsed) {
+          elementList.splice(startIndex + 1, endIndex - startIndex)
+        } else {
+          elementList.splice(index, 1)
+        }
+        curIndex = isCollapsed ? index - 1 : startIndex
       }
-      const curIndex = isCollapsed ? index - 1 : startIndex
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Delete) {
-      if (isReadonly) return
-      if (!isCollapsed) {
-        elementList.splice(startIndex + 1, endIndex - startIndex)
+      if (isReadonly || isPartRangeInControlOutside) return
+      let curIndex: number
+      if (activeControl) {
+        curIndex = this.control.keydown(evt)
       } else {
-        elementList.splice(index + 1, 1)
+        if (!isCollapsed) {
+          elementList.splice(startIndex + 1, endIndex - startIndex)
+        } else {
+          elementList.splice(index + 1, 1)
+        }
+        curIndex = isCollapsed ? index : startIndex
       }
-      const curIndex = isCollapsed ? index : startIndex
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {
