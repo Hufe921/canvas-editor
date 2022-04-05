@@ -53,6 +53,17 @@ export class RangeManager {
     this.range.startTrIndex = startTrIndex
     this.range.endTrIndex = endTrIndex
     this.range.isCrossRowCol = !!(startTdIndex || endTdIndex || startTrIndex || endTrIndex)
+    // 激活控件
+    const control = this.draw.getControl()
+    if (~startIndex && ~endIndex && startIndex === startIndex) {
+      const elementList = this.draw.getElementList()
+      const element = elementList[startIndex]
+      if (element.type === ElementType.CONTROL) {
+        control.initControl()
+        return
+      }
+    }
+    control.destroyControl()
   }
 
   public setRangeStyle() {

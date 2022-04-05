@@ -41,6 +41,8 @@ export interface IControlInitResult {
 }
 
 export interface IControlInstance {
+  getElement(): IElement;
+
   getValue(): IElement[];
 
   setValue(data: IElement[]): number;

@@ -175,7 +175,7 @@ export class CanvasEvent {
         tdIndex,
         tdValueIndex
       } = positionResult
-      const { newIndex } = this.control.initControl({
+      const { newIndex } = this.control.moveCursor({
         index,
         isTable,
         trIndex,
@@ -187,8 +187,6 @@ export class CanvasEvent {
       } else {
         positionResult.index = newIndex
       }
-    } else {
-      this.control.destroyControl()
     }
     const {
       index,
@@ -303,6 +301,8 @@ export class CanvasEvent {
       let curIndex: number
       if (activeControl) {
         curIndex = this.control.keydown(evt)
+      } else if (elementList[endIndex + 1]?.type === ElementType.CONTROL) {
+        curIndex = this.control.removeControl(endIndex + 1)
       } else {
         if (!isCollapsed) {
           elementList.splice(startIndex + 1, endIndex - startIndex)
@@ -476,6 +476,7 @@ export class CanvasEvent {
       // 忽略选区部分在控件的输入
       return
     }
+    const activeControl = this.control.getActiveControl()
     const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT } = ElementType
     const text = data.replaceAll(`\n`, ZERO)
     const elementList = this.draw.getElementList()
@@ -516,7 +517,7 @@ export class CanvasEvent {
     })
     // 控件-移除placeholder
     let curIndex: number
-    if (positionContext.isControl) {
+    if (activeControl) {
       curIndex = this.control.setValue(inputData)
     } else {
       let start = 0
