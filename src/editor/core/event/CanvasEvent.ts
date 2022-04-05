@@ -314,7 +314,7 @@ export class CanvasEvent {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {
-      if (isReadonly) return
+      if (isReadonly || isPartRangeInControlOutside) return
       // 表格需要上下文信息
       const positionContext = this.position.getPositionContext()
       let restArg = {}
@@ -326,12 +326,17 @@ export class CanvasEvent {
         value: ZERO,
         ...restArg
       }
-      if (isCollapsed) {
-        elementList.splice(index + 1, 0, enterText)
+      let curIndex: number
+      if (activeControl) {
+        curIndex = this.control.setValue([enterText])
       } else {
-        elementList.splice(startIndex + 1, endIndex - startIndex, enterText)
+        if (isCollapsed) {
+          elementList.splice(index + 1, 0, enterText)
+        } else {
+          elementList.splice(startIndex + 1, endIndex - startIndex, enterText)
+        }
+        curIndex = index + 1
       }
-      const curIndex = index + 1
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Left) {
@@ -540,12 +545,20 @@ export class CanvasEvent {
   public cut() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
+    if (isPartRangeInControlOutside) return
+    const activeControl = this.control.getActiveControl()
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     if (startIndex !== endIndex) {
       writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
-      elementList.splice(startIndex + 1, endIndex - startIndex)
-      const curIndex = startIndex
+      let curIndex: number
+      if (activeControl) {
+        curIndex = this.control.cut()
+      } else {
+        elementList.splice(startIndex + 1, endIndex - startIndex)
+        curIndex = startIndex
+      }
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     }

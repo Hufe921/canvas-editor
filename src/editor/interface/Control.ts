@@ -48,4 +48,6 @@ export interface IControlInstance {
   setValue(data: IElement[]): number;
 
   keydown(evt: KeyboardEvent): number;
+
+  cut(): number;
 }

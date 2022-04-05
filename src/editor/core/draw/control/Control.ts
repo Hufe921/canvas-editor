@@ -313,4 +313,11 @@ export class Control {
     return this.activeControl.keydown(evt)
   }
 
+  public cut(): number {
+    if (!this.activeControl) {
+      throw new Error('active control is null')
+    }
+    return this.activeControl.cut()
+  }
+
 }

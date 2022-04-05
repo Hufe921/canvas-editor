@@ -149,4 +149,19 @@ export class TextControl implements IControlInstance {
     return -1
   }
 
+  public cut(): number {
+    this.control.shrinkBoundary()
+    const { startIndex, endIndex } = this.control.getRange()
+    if (startIndex === endIndex) {
+      return startIndex
+    }
+    const elementList = this.control.getElementList()
+    elementList.splice(startIndex + 1, endIndex - startIndex)
+    const value = this.getValue()
+    if (!value.length) {
+      this.control.addPlaceholder(startIndex)
+    }
+    return startIndex
+  }
+
 }

@@ -53,5 +53,6 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.TEXT,
   ElementType.HYPERLINK,
   ElementType.SUBSCRIPT,
-  ElementType.SUPERSCRIPT
+  ElementType.SUPERSCRIPT,
+  ElementType.CONTROL
 ]
