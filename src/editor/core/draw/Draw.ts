@@ -887,8 +887,8 @@ export class Draw {
       this.historyManager.execute(function () {
         self.setPageNo(pageNo)
         self.position.setPositionContext(oldPositionContext)
-        self.range.setRange(startIndex, endIndex)
         self.elementList = deepClone(oldElementList)
+        self.range.setRange(startIndex, endIndex)
         self.render({ curIndex, isSubmitHistory: false })
       })
     }
