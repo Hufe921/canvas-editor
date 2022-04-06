@@ -3,7 +3,8 @@ export enum EditorComponent {
   MENU = 'menu',
   MAIN = 'main',
   FOOTER = 'footer',
-  CONTEXTMENU = 'contextmenu'
+  CONTEXTMENU = 'contextmenu',
+  POPUP = 'popup'
 }
 
 export enum EditorContext {

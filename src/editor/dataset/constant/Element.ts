@@ -45,12 +45,14 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'height',
   'url',
   'colgroup',
-  'valueList'
+  'valueList',
+  'control'
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.TEXT,
   ElementType.HYPERLINK,
   ElementType.SUBSCRIPT,
-  ElementType.SUPERSCRIPT
+  ElementType.SUPERSCRIPT,
+  ElementType.CONTROL
 ]

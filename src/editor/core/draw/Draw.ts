@@ -34,6 +34,7 @@ import { SeparatorParticle } from './particle/Separator'
 import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
 import { EditorMode } from '../../dataset/enum/Editor'
+import { Control } from './control/Control'
 
 export class Draw {
 
@@ -70,6 +71,7 @@ export class Draw {
   private pageBreakParticle: PageBreakParticle
   private superscriptParticle: SuperscriptParticle
   private subscriptParticle: SubscriptParticle
+  private control: Control
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -116,6 +118,7 @@ export class Draw {
     this.pageBreakParticle = new PageBreakParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
+    this.control = new Control(this)
 
     new ScrollObserver(this)
     new SelectionObserver()
@@ -299,6 +302,10 @@ export class Draw {
 
   public getHyperlinkParticle(): HyperlinkParticle {
     return this.hyperlinkParticle
+  }
+
+  public getControl(): Control {
+    return this.control
   }
 
   public getRowCount(): number {
@@ -880,8 +887,8 @@ export class Draw {
       this.historyManager.execute(function () {
         self.setPageNo(pageNo)
         self.position.setPositionContext(oldPositionContext)
-        self.range.setRange(startIndex, endIndex)
         self.elementList = deepClone(oldElementList)
+        self.range.setRange(startIndex, endIndex)
         self.render({ curIndex, isSubmitHistory: false })
       })
     }

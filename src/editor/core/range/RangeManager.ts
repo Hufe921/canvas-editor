@@ -1,4 +1,5 @@
 import { ElementType } from '../..'
+import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { IRange } from '../../interface/Range'
@@ -53,6 +54,17 @@ export class RangeManager {
     this.range.startTrIndex = startTrIndex
     this.range.endTrIndex = endTrIndex
     this.range.isCrossRowCol = !!(startTdIndex || endTdIndex || startTrIndex || endTrIndex)
+    // 激活控件
+    const control = this.draw.getControl()
+    if (~startIndex && ~endIndex && startIndex === startIndex) {
+      const elementList = this.draw.getElementList()
+      const element = elementList[startIndex]
+      if (element.type === ElementType.CONTROL) {
+        control.initControl()
+        return
+      }
+    }
+    control.destroyControl()
   }
 
   public setRangeStyle() {
@@ -124,6 +136,90 @@ export class RangeManager {
       rowMargin,
       dashArray: []
     })
+  }
+
+  public shrinkBoundary() {
+    const elementList = this.draw.getElementList()
+    const range = this.getRange()
+    const { startIndex, endIndex } = range
+    const startElement = elementList[startIndex]
+    const endElement = elementList[endIndex]
+    if (startIndex === endIndex) {
+      if (startElement.controlComponent === ControlComponent.PLACEHOLDER) {
+        // 找到第一个placeholder字符
+        let index = startIndex - 1
+        while (index > 0) {
+          const preElement = elementList[index]
+          if (
+            preElement.controlId !== startElement.controlId ||
+            preElement.controlComponent === ControlComponent.PREFIX
+          ) {
+            range.startIndex = index
+            range.endIndex = index
+            break
+          }
+          index--
+        }
+      }
+    } else {
+      // 首、尾为占位符时，收缩到最后一个前缀字符后
+      if (
+        startElement.controlComponent === ControlComponent.PLACEHOLDER ||
+        endElement.controlComponent === ControlComponent.PLACEHOLDER
+      ) {
+        let index = endIndex - 1
+        while (index > 0) {
+          const preElement = elementList[index]
+          if (
+            preElement.controlId !== endElement.controlId
+            || preElement.controlComponent === ControlComponent.PREFIX
+          ) {
+            range.startIndex = index
+            range.endIndex = index
+            return
+          }
+          index--
+        }
+      }
+      // 向右查找到第一个Value
+      if (startElement.controlComponent === ControlComponent.PREFIX) {
+        let index = startIndex + 1
+        while (index < elementList.length) {
+          const nextElement = elementList[index]
+          if (
+            nextElement.controlId !== startElement.controlId
+            || nextElement.controlComponent === ControlComponent.VALUE
+          ) {
+            range.startIndex = index - 1
+            break
+          } else if (nextElement.controlComponent === ControlComponent.PLACEHOLDER) {
+            range.startIndex = index - 1
+            range.endIndex = index - 1
+            return
+          }
+          index++
+        }
+      }
+      // 向左查找到第一个Value
+      if (endElement.controlComponent !== ControlComponent.VALUE) {
+        let index = startIndex - 1
+        while (index > 0) {
+          const preElement = elementList[index]
+          if (
+            preElement.controlId !== startElement.controlId
+            || preElement.controlComponent === ControlComponent.VALUE
+          ) {
+            range.startIndex = index
+            break
+          } else if (preElement.controlComponent === ControlComponent.PLACEHOLDER) {
+            range.startIndex = index
+            range.endIndex = index
+            return
+          }
+          index--
+        }
+      }
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {

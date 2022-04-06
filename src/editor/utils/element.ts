@@ -1,9 +1,20 @@
 import { deepClone, getUUID } from '.'
-import { ElementType, IElement } from '..'
+import { ElementType, IEditorOption, IElement } from '..'
 import { ZERO } from '../dataset/constant/Common'
+import { defaultControlOption } from '../dataset/constant/Control'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
+import { ControlComponent, ControlType } from '../dataset/enum/Control'
 
-export function formatElementList(elementList: IElement[], isHandleFirstElement = true) {
+interface IFormatElementListOption {
+  isHandleFirstElement?: boolean;
+  editorOptions?: Required<IEditorOption>;
+}
+
+export function formatElementList(elementList: IElement[], options: IFormatElementListOption = {}) {
+  const { isHandleFirstElement, editorOptions } = <IFormatElementListOption>{
+    isHandleFirstElement: true,
+    ...options
+  }
   if (isHandleFirstElement && elementList[0]?.value !== ZERO) {
     elementList.unshift({
       value: ZERO
@@ -24,7 +35,7 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
             const td = tr.tdList[d]
             const tdId = getUUID()
             td.id = tdId
-            formatElementList(td.value)
+            formatElementList(td.value, options)
             for (let v = 0; v < td.value.length; v++) {
               const value = td.value[v]
               value.tdId = tdId
@@ -57,6 +68,96 @@ export function formatElementList(elementList: IElement[], isHandleFirstElement 
           elementList.splice(i, 0, value)
           i++
         }
+      }
+      i--
+    } else if (el.type === ElementType.CONTROL) {
+      const { prefix, postfix, value, placeholder, code, type, valueSets } = el.control!
+      const controlId = getUUID()
+      // 移除父节点
+      elementList.splice(i, 1)
+      // 前后缀个性化设置
+      const thePrePostfixArgs: Pick<IElement, 'color'> = {}
+      if (editorOptions && editorOptions.control) {
+        thePrePostfixArgs.color = editorOptions.control.bracketColor
+      }
+      // 前缀
+      const prefixStrList = (prefix || defaultControlOption.prefix).split('')
+      for (let p = 0; p < prefixStrList.length; p++) {
+        const value = prefixStrList[p]
+        elementList.splice(i, 0, {
+          controlId,
+          value,
+          type: el.type,
+          control: el.control,
+          controlComponent: ControlComponent.PREFIX,
+          ...thePrePostfixArgs
+        })
+        i++
+      }
+      // 值
+      if (
+        (value && value.length) ||
+        (type === ControlType.SELECT && code && (!value || !value.length))
+      ) {
+        let valueList: IElement[] = value || []
+        if (!value || !value.length) {
+          if (Array.isArray(valueSets) && valueSets.length) {
+            const valueSet = valueSets.find(v => v.code === code)
+            if (valueSet) {
+              valueList = [{
+                value: valueSet.value
+              }]
+            }
+          }
+        }
+        for (let v = 0; v < valueList.length; v++) {
+          const element = valueList[v]
+          const valueStrList = element.value.split('')
+          for (let e = 0; e < valueStrList.length; e++) {
+            const value = valueStrList[e]
+            elementList.splice(i, 0, {
+              controlId,
+              value,
+              type: el.type,
+              control: el.control,
+              controlComponent: ControlComponent.VALUE
+            })
+            i++
+          }
+        }
+      } else {
+        // placeholder
+        const thePlaceholderArgs: Pick<IElement, 'color'> = {}
+        if (editorOptions && editorOptions.control) {
+          thePlaceholderArgs.color = editorOptions.control.placeholderColor
+        }
+        const placeholderStrList = placeholder.split('')
+        for (let p = 0; p < placeholderStrList.length; p++) {
+          const value = placeholderStrList[p]
+          elementList.splice(i, 0, {
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.PLACEHOLDER,
+            ...thePlaceholderArgs
+          })
+          i++
+        }
+      }
+      // 后缀
+      const postfixStrList = (postfix || defaultControlOption.postfix).split('')
+      for (let p = 0; p < postfixStrList.length; p++) {
+        const value = postfixStrList[p]
+        elementList.splice(i, 0, {
+          controlId,
+          value,
+          type: el.type,
+          control: el.control,
+          controlComponent: ControlComponent.POSTFIX,
+          ...thePrePostfixArgs
+        })
+        i++
       }
       i--
     } else if ((!el.type || el.type === ElementType.TEXT) && el.value.length > 1) {
@@ -153,6 +254,31 @@ export function zipElementList(payload: IElement[]): IElement[] {
       }
       hyperlinkElement.valueList = zipElementList(valueList)
       element = hyperlinkElement
+    } else if (element.type === ElementType.CONTROL) {
+      // 控件处理
+      const controlId = element.controlId
+      const control = element.control!
+      const controlElement: IElement = {
+        type: ElementType.CONTROL,
+        value: '',
+        control
+      }
+      const valueList: IElement[] = []
+      while (e < elementList.length) {
+        const controlE = elementList[e]
+        if (controlId !== controlE.controlId) {
+          e--
+          break
+        }
+        if (controlE.controlComponent === ControlComponent.VALUE) {
+          delete controlE.type
+          delete controlE.control
+          valueList.push(controlE)
+        }
+        e++
+      }
+      controlElement.control!.value = zipElementList(valueList)
+      element = controlElement
     }
     // 组合元素
     const pickElement = pickElementAttr(element)
