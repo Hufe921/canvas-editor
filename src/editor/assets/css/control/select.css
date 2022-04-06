@@ -1,0 +1,44 @@
+.select-control-popup {
+  max-width: 160px;
+  min-width: 69px;
+  max-height: 225px;
+  position: absolute;
+  z-index: 1;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+  box-sizing: border-box;
+  margin: 5px 0;
+  overflow-y: auto;
+}
+
+.select-control-popup ul {
+  list-style: none;
+  padding: 3px 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.select-control-popup ul li {
+  font-size: 13px;
+  padding: 0 20px;
+  position: relative;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #666;
+  height: 36px;
+  line-height: 36px;
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.select-control-popup ul li:hover {
+  background-color: #EEF2FD;
+}
+
+.select-control-popup ul li.active {
+  color: var(--COLOR-HOVER, #5175f4);
+  font-weight: 700;
+}

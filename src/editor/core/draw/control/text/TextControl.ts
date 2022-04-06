@@ -146,7 +146,7 @@ export class TextControl implements IControlInstance {
         }
       }
     }
-    return -1
+    return endIndex
   }
 
   public cut(): number {

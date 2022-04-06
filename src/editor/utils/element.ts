@@ -3,7 +3,7 @@ import { ElementType, IEditorOption, IElement } from '..'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
-import { ControlComponent } from '../dataset/enum/Control'
+import { ControlComponent, ControlType } from '../dataset/enum/Control'
 
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean;
@@ -71,7 +71,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
       }
       i--
     } else if (el.type === ElementType.CONTROL) {
-      const { prefix, postfix, value, placeholder } = el.control!
+      const { prefix, postfix, value, placeholder, code, type, valueSets } = el.control!
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
@@ -95,9 +95,23 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         i++
       }
       // 值
-      if (value && value.length) {
-        for (let v = 0; v < value.length; v++) {
-          const element = value[v]
+      if (
+        (value && value.length) ||
+        (type === ControlType.SELECT && code && (!value || !value.length))
+      ) {
+        let valueList: IElement[] = value || []
+        if (!value || !value.length) {
+          if (Array.isArray(valueSets) && valueSets.length) {
+            const valueSet = valueSets.find(v => v.code === code)
+            if (valueSet) {
+              valueList = [{
+                value: valueSet.value
+              }]
+            }
+          }
+        }
+        for (let v = 0; v < valueList.length; v++) {
+          const element = valueList[v]
           const valueStrList = element.value.split('')
           for (let e = 0; e < valueStrList.length; e++) {
             const value = valueStrList[e]

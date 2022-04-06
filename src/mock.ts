@@ -91,6 +91,7 @@ elementList.splice(112, 0, {
   control: {
     type: ControlType.SELECT,
     value: null,
+    code: null,
     placeholder: '有无',
     prefix: '{',
     postfix: '}',
@@ -100,6 +101,9 @@ elementList.splice(112, 0, {
     }, {
       value: '无',
       code: '98176'
+    }, {
+      value: '不详',
+      code: '98177'
     }]
   }
 })

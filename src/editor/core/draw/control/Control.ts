@@ -1,9 +1,10 @@
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IControlInitOption, IControlInstance, IControlOption } from '../../../interface/Control'
-import { IElement } from '../../../interface/Element'
+import { IElement, IElementPosition } from '../../../interface/Element'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
+import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 
 interface IMoveCursorResult {
@@ -40,12 +41,32 @@ export class Control {
     return false
   }
 
+  public getContainer(): HTMLDivElement {
+    return this.draw.getContainer()
+  }
+
   public getElementList(): IElement[] {
     return this.draw.getElementList()
   }
 
+  public getPosition(): IElementPosition | null {
+    const positionList = this.draw.getPosition().getPositionList()
+    const { endIndex } = this.range.getRange()
+    return positionList[endIndex] || null
+  }
+
+  public getPreY(): number {
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
+    return this.draw.getPageNo() * (height + pageGap)
+  }
+
   public getRange() {
     return this.range.getRange()
+  }
+
+  public shrinkBoundary() {
+    this.range.shrinkBoundary()
   }
 
   public getActiveControl(): IControlInstance | null {
@@ -58,21 +79,40 @@ export class Control {
     const element = elementList[range.startIndex]
     // 判断控件是否已经激活
     if (this.activeControl) {
+      // 列举控件唤醒下拉弹窗
+      if (this.activeControl instanceof SelectControl) {
+        this.activeControl.awake()
+      }
       const controlElement = this.activeControl.getElement()
       if (element.controlId === controlElement.controlId) return
     }
     // 销毁旧激活控件
     this.destroyControl()
     // 激活控件
-    if (element.control!.type === ControlType.TEXT) {
+    const control = element.control!
+    if (control.type === ControlType.TEXT) {
       this.activeControl = new TextControl(element, this)
+    } else if (control.type === ControlType.SELECT) {
+      const selectControl = new SelectControl(element, this)
+      this.activeControl = selectControl
+      selectControl.awake()
     }
   }
 
   public destroyControl() {
     if (this.activeControl) {
+      if (this.activeControl instanceof SelectControl) {
+        this.activeControl.destroy()
+      }
       this.activeControl = null
     }
+  }
+
+  public repaintControl(curIndex: number) {
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({
+      curIndex
+    })
   }
 
   public moveCursor(position: IControlInitOption): IMoveCursorResult {
@@ -169,95 +209,10 @@ export class Control {
       }
       nextIndex++
     }
-    if (!~leftIndex || !~rightIndex) return -1
+    if (!~leftIndex || !~rightIndex) return startIndex
     // 删除元素
     elementList.splice(leftIndex + 1, rightIndex - leftIndex)
     return leftIndex
-  }
-
-  public shrinkBoundary() {
-    const elementList = this.getElementList()
-    const range = this.getRange()
-    const { startIndex, endIndex } = range
-    const startElement = elementList[startIndex]
-    const endElement = elementList[endIndex]
-    if (startIndex === endIndex) {
-      if (startElement.controlComponent === ControlComponent.PLACEHOLDER) {
-        // 找到第一个placeholder字符
-        let index = startIndex - 1
-        while (index > 0) {
-          const preElement = elementList[index]
-          if (
-            preElement.controlId !== startElement.controlId ||
-            preElement.controlComponent === ControlComponent.PREFIX
-          ) {
-            console.log(index)
-            range.startIndex = index
-            range.endIndex = index
-            break
-          }
-          index--
-        }
-      }
-    } else {
-      // 首、尾为占位符时，收缩到最后一个前缀字符后
-      if (
-        startElement.controlComponent === ControlComponent.PLACEHOLDER ||
-        endElement.controlComponent === ControlComponent.PLACEHOLDER
-      ) {
-        let index = endIndex - 1
-        while (index > 0) {
-          const preElement = elementList[index]
-          if (
-            preElement.controlId !== endElement.controlId
-            || preElement.controlComponent === ControlComponent.PREFIX
-          ) {
-            range.startIndex = index
-            range.endIndex = index
-            return
-          }
-          index--
-        }
-      }
-      // 向右查找到第一个Value
-      if (startElement.controlComponent === ControlComponent.PREFIX) {
-        let index = startIndex + 1
-        while (index < elementList.length) {
-          const nextElement = elementList[index]
-          if (
-            nextElement.controlId !== startElement.controlId
-            || nextElement.controlComponent === ControlComponent.VALUE
-          ) {
-            range.startIndex = index - 1
-            break
-          } else if (nextElement.controlComponent === ControlComponent.PLACEHOLDER) {
-            range.startIndex = index - 1
-            range.endIndex = index - 1
-            return
-          }
-          index++
-        }
-      }
-      // 向左查找到第一个Value
-      if (endElement.controlComponent !== ControlComponent.VALUE) {
-        let index = startIndex - 1
-        while (index > 0) {
-          const preElement = elementList[index]
-          if (
-            preElement.controlId !== startElement.controlId
-            || preElement.controlComponent === ControlComponent.VALUE
-          ) {
-            range.startIndex = index
-            break
-          } else if (preElement.controlComponent === ControlComponent.PLACEHOLDER) {
-            range.startIndex = index
-            range.endIndex = index
-            return
-          }
-          index--
-        }
-      }
-    }
   }
 
   public removePlaceholder(startIndex: number) {

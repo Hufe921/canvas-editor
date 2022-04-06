@@ -7,6 +7,7 @@ export interface IValueSet {
 }
 
 export interface IControlSelect {
+  code: string | null;
   valueSets: IValueSet[];
 }
 
