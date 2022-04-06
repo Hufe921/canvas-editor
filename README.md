@@ -4,15 +4,14 @@
 
 ## snapshot
 
-![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.8.0.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.8.5.png)
 
 ## next features
 
 1. fix bugs
-2. github workflows
-3. controls
-4. table paging
-5. docs
+2. controls
+3. table paging
+4. docs
 
 ## install
 
