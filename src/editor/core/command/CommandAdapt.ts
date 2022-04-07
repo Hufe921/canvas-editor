@@ -15,6 +15,7 @@ import { IWatermark } from '../../interface/Watermark'
 import { getUUID } from '../../utils'
 import { formatElementList } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
+import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -34,6 +35,7 @@ export class CommandAdapt {
   private canvasEvent: CanvasEvent
   private tableTool: TableTool
   private options: Required<IEditorOption>
+  private control: Control
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -43,6 +45,7 @@ export class CommandAdapt {
     this.canvasEvent = draw.getCanvasEvent()
     this.tableTool = draw.getTableTool()
     this.options = draw.getOptions()
+    this.control = draw.getControl()
   }
 
   public mode(payload: EditorMode) {
@@ -1230,9 +1233,13 @@ export class CommandAdapt {
   }
 
   public insertElementList(payload: IElement[]) {
+    if (!payload.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    if (!payload.length) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
+    const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
+    if (isPartRangeInControlOutside) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     // 格式化element

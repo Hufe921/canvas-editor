@@ -1,7 +1,7 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { EditorMode, ElementType, IElement } from './editor'
+import Editor, { ControlType, EditorMode, ElementType, IElement } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 
@@ -400,6 +400,95 @@ window.onload = function () {
         instance.command.executeInsertElementList(elementList)
       }
     })
+  }
+
+  const controlDom = document.querySelector<HTMLDivElement>('.menu-item__control')!
+  const controlOptionDom = controlDom.querySelector<HTMLDivElement>('.options')!
+  controlDom.onclick = function () {
+    console.log('control')
+    controlOptionDom.classList.toggle('visible')
+  }
+  controlOptionDom.onmousedown = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const type = <ControlType>li.dataset.control
+    switch (type) {
+      case ControlType.TEXT:
+        new Dialog({
+          title: '文本型控件',
+          data: [{
+            type: 'text',
+            label: '占位符',
+            name: 'placeholder',
+            placeholder: '请输入占位符'
+          }, {
+            type: 'text',
+            label: '默认值',
+            name: 'value',
+            placeholder: '请输入默认值'
+          }],
+          onConfirm: (payload) => {
+            const placeholder = payload.find(p => p.name === 'placeholder')?.value
+            if (!placeholder) return
+            const value = payload.find(p => p.name === 'value')?.value || ''
+            instance.command.executeInsertElementList([{
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                value: value
+                  ? [{
+                    value
+                  }]
+                  : null,
+                placeholder
+              }
+            }])
+          }
+        })
+        break
+      case ControlType.SELECT:
+        new Dialog({
+          title: '列举型控件',
+          data: [{
+            type: 'text',
+            label: '占位符',
+            name: 'placeholder',
+            placeholder: '请输入占位符'
+          }, {
+            type: 'text',
+            label: '默认值',
+            name: 'code',
+            placeholder: '请输入默认值'
+          }, {
+            type: 'textarea',
+            label: '值集',
+            name: 'valueSets',
+            height: 100,
+            placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+          }],
+          onConfirm: (payload) => {
+            const placeholder = payload.find(p => p.name === 'placeholder')?.value
+            if (!placeholder) return
+            const valueSets = payload.find(p => p.name === 'valueSets')?.value
+            if (!valueSets) return
+            const code = payload.find(p => p.name === 'code')?.value
+            instance.command.executeInsertElementList([{
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
+                placeholder,
+                valueSets: JSON.parse(valueSets)
+              }
+            }])
+          }
+        })
+        break
+      default:
+        break
+    }
   }
 
   // 5. | 搜索&替换 | 打印 |
