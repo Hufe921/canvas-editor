@@ -6,5 +6,6 @@ export enum ElementType {
   SUPERSCRIPT = 'superscript',
   SUBSCRIPT = 'subscript',
   SEPARATOR = 'separator',
-  PAGE_BREAK = 'pageBreak'
+  PAGE_BREAK = 'pageBreak',
+  CONTROL = 'control'
 }

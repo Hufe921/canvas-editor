@@ -9,7 +9,7 @@ import { RowFlex } from './dataset/enum/Row'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
-import { globalMenus } from './core/contextmenu/menus/GlobalMenus'
+import { globalMenus } from './core/contextmenu/menus/globalMenus'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { tableMenus } from './core/contextmenu/menus/tableMenus'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
@@ -19,6 +19,9 @@ import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
 import { defaultHeaderOption } from './dataset/constant/Header'
 import { defaultWatermarkOption } from './dataset/constant/Watermark'
+import { ControlType } from './dataset/enum/Control'
+import { defaultControlOption } from './dataset/constant/Control'
+import { IControlOption } from './interface/Control'
 
 export default class Editor {
 
@@ -34,6 +37,10 @@ export default class Editor {
     const waterMarkOptions: Required<IWatermark> = {
       ...defaultWatermarkOption,
       ...options.watermark
+    }
+    const controlOptions: Required<IControlOption> = {
+      ...defaultControlOption,
+      ...options.control
     }
     const editorOptions: Required<IEditorOption> = {
       defaultMode: EditorMode.EDIT,
@@ -68,9 +75,12 @@ export default class Editor {
       headerTop: 50,
       ...options,
       header: headerOptions,
-      watermark: waterMarkOptions
+      watermark: waterMarkOptions,
+      control: controlOptions
     }
-    formatElementList(elementList)
+    formatElementList(elementList, {
+      editorOptions
+    })
     // 监听
     this.listener = new Listener()
     // 启动
@@ -95,6 +105,7 @@ export {
   RowFlex,
   EditorMode,
   ElementType,
+  ControlType,
   EditorComponent,
   EDITOR_COMPONENT
 }

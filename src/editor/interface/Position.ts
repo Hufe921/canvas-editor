@@ -4,6 +4,7 @@ import { ITd } from './table/Td'
 
 export interface ICurrentPosition {
   index: number;
+  isControl?: boolean;
   isImage?: boolean;
   isTable?: boolean;
   isDirectHit?: boolean;
@@ -27,6 +28,7 @@ export interface IGetPositionByXYPayload {
 
 export interface IPositionContext {
   isTable: boolean;
+  isControl?: boolean;
   index?: number;
   trIndex?: number;
   tdIndex?: number;

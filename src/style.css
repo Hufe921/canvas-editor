@@ -430,6 +430,18 @@ ul {
   background-image: url('./assets/images/page-break.svg');
 }
 
+.menu-item__control {
+  position: relative;
+}
+
+.menu-item__control i {
+  background-image: url('./assets/images/control.svg');
+}
+
+.menu-item .menu-item__control .options {
+  width: 55px;
+}
+
 .menu-item__search {
   position: relative;
 }

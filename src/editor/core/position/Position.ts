@@ -18,7 +18,8 @@ export class Position {
     this.positionList = []
     this.cursorPosition = null
     this.positionContext = {
-      isTable: false
+      isTable: false,
+      isControl: false
     }
 
     this.draw = draw
@@ -92,14 +93,16 @@ export class Position {
                 positionList: td.positionList
               })
               if (~tablePosition.index) {
+                const { index: tdValueIndex } = tablePosition
                 return {
                   index,
+                  isControl: td.value[tdValueIndex].type === ElementType.CONTROL,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
                   isTable: true,
                   tdIndex: d,
                   trIndex: t,
-                  tdValueIndex: tablePosition.index,
+                  tdValueIndex,
                   tdId: td.id,
                   trId: tr.id,
                   tableId: element.id
@@ -110,7 +113,11 @@ export class Position {
         }
         // 图片区域均为命中
         if (element.type === ElementType.IMAGE) {
-          return { index: curPositionIndex, isDirectHit: true, isImage: true }
+          return {
+            index: curPositionIndex,
+            isDirectHit: true,
+            isImage: true
+          }
         }
         // 判断是否在文字中间前后
         if (elementList[index].value !== ZERO) {
@@ -119,7 +126,10 @@ export class Position {
             curPositionIndex = j - 1
           }
         }
-        return { index: curPositionIndex }
+        return {
+          index: curPositionIndex,
+          isControl: element.type === ElementType.CONTROL,
+        }
       }
     }
     // 非命中区域
@@ -135,7 +145,9 @@ export class Position {
         const tdWidth = td.width!
         const tdHeight = td.height!
         if (!(tdX < x && x < tdX + tdWidth && tdY < y && y < tdY + tdHeight)) {
-          return { index: curPositionIndex }
+          return {
+            index: curPositionIndex
+          }
         }
       }
     }
@@ -161,7 +173,10 @@ export class Position {
       // 当前页最后一行
       return { index: firstLetterList[firstLetterList.length - 1]?.index || positionList.length - 1 }
     }
-    return { index: curPositionIndex }
+    return {
+      index: curPositionIndex,
+      isControl: elementList[curPositionIndex].type === ElementType.CONTROL
+    }
   }
 
 }

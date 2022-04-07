@@ -20,6 +20,7 @@ import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
+import { Control } from '../draw/control/Control'
 
 export class CanvasEvent {
 
@@ -38,6 +39,7 @@ export class CanvasEvent {
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
   private listener: Listener
+  private control: Control
 
   constructor(draw: Draw) {
     this.isAllowDrag = false
@@ -55,6 +57,7 @@ export class CanvasEvent {
     this.tableTool = this.draw.getTableTool()
     this.hyperlinkParticle = this.draw.getHyperlinkParticle()
     this.listener = this.draw.getListener()
+    this.control = this.draw.getControl()
   }
 
   public register() {
@@ -163,9 +166,32 @@ export class CanvasEvent {
       x: evt.offsetX,
       y: evt.offsetY
     })
+    // 激活控件
+    if (positionResult.isControl) {
+      const {
+        index,
+        isTable,
+        trIndex,
+        tdIndex,
+        tdValueIndex
+      } = positionResult
+      const { newIndex } = this.control.moveCursor({
+        index,
+        isTable,
+        trIndex,
+        tdIndex,
+        tdValueIndex
+      })
+      if (isTable) {
+        positionResult.tdValueIndex = newIndex
+      } else {
+        positionResult.index = newIndex
+      }
+    }
     const {
       index,
       isDirectHit,
+      isControl,
       isImage,
       isTable,
       trIndex,
@@ -178,6 +204,7 @@ export class CanvasEvent {
     // 设置位置上下文
     this.position.setPositionContext({
       isTable: isTable || false,
+      isControl: isControl || false,
       index,
       trIndex,
       tdIndex,
@@ -246,33 +273,47 @@ export class CanvasEvent {
     const { index } = cursorPosition
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
+    const element = elementList[index]
+    // 当前激活控件
+    const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
+    const activeControl = this.control.getActiveControl()
     if (evt.key === KeyMap.Backspace) {
-      if (isReadonly) return
-      // 判断是否允许删除
-      if (isCollapsed && elementList[index].value === ZERO && index === 0) {
-        evt.preventDefault()
-        return
-      }
-      if (!isCollapsed) {
-        elementList.splice(startIndex + 1, endIndex - startIndex)
+      if (isReadonly || isPartRangeInControlOutside) return
+      let curIndex: number
+      if (activeControl) {
+        curIndex = this.control.keydown(evt)
       } else {
-        elementList.splice(index, 1)
+        // 判断是否允许删除
+        if (isCollapsed && elementList[index].value === ZERO && index === 0) {
+          evt.preventDefault()
+          return
+        }
+        if (!isCollapsed) {
+          elementList.splice(startIndex + 1, endIndex - startIndex)
+        } else {
+          elementList.splice(index, 1)
+        }
+        curIndex = isCollapsed ? index - 1 : startIndex
       }
-      const curIndex = isCollapsed ? index - 1 : startIndex
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Delete) {
-      if (isReadonly) return
-      if (!isCollapsed) {
-        elementList.splice(startIndex + 1, endIndex - startIndex)
+      if (isReadonly || isPartRangeInControlOutside) return
+      let curIndex: number
+      if (activeControl && elementList[endIndex + 1]?.controlId === element.controlId) {
+        curIndex = this.control.keydown(evt)
       } else {
-        elementList.splice(index + 1, 1)
+        if (!isCollapsed) {
+          elementList.splice(startIndex + 1, endIndex - startIndex)
+        } else {
+          elementList.splice(index + 1, 1)
+        }
+        curIndex = isCollapsed ? index : startIndex
       }
-      const curIndex = isCollapsed ? index : startIndex
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Enter) {
-      if (isReadonly) return
+      if (isReadonly || isPartRangeInControlOutside) return
       // 表格需要上下文信息
       const positionContext = this.position.getPositionContext()
       let restArg = {}
@@ -284,12 +325,17 @@ export class CanvasEvent {
         value: ZERO,
         ...restArg
       }
-      if (isCollapsed) {
-        elementList.splice(index + 1, 0, enterText)
+      let curIndex: number
+      if (activeControl) {
+        curIndex = this.control.setValue([enterText])
       } else {
-        elementList.splice(startIndex + 1, endIndex - startIndex, enterText)
+        if (isCollapsed) {
+          elementList.splice(index + 1, 0, enterText)
+        } else {
+          elementList.splice(startIndex + 1, endIndex - startIndex, enterText)
+        }
+        curIndex = index + 1
       }
-      const curIndex = index + 1
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     } else if (evt.key === KeyMap.Left) {
@@ -430,6 +476,11 @@ export class CanvasEvent {
     if (!this.cursor) return
     const cursorPosition = this.position.getCursorPosition()
     if (!data || !cursorPosition || this.isCompositing) return
+    if (this.control.isPartRangeInControlOutside()) {
+      // 忽略选区部分在控件的输入
+      return
+    }
+    const activeControl = this.control.getActiveControl()
     const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT } = ElementType
     const text = data.replaceAll(`\n`, ZERO)
     const elementList = this.draw.getElementList()
@@ -468,18 +519,24 @@ export class CanvasEvent {
       }
       return newElement
     })
-    let start = 0
-    if (isCollapsed) {
-      start = index + 1
+    // 控件-移除placeholder
+    let curIndex: number
+    if (activeControl && elementList[endIndex + 1]?.controlId === element.controlId) {
+      curIndex = this.control.setValue(inputData)
     } else {
-      start = startIndex + 1
-      elementList.splice(startIndex + 1, endIndex - startIndex)
+      let start = 0
+      if (isCollapsed) {
+        start = index + 1
+      } else {
+        start = startIndex + 1
+        elementList.splice(startIndex + 1, endIndex - startIndex)
+      }
+      // 禁止直接使用解构存在性能问题
+      for (let i = 0; i < inputData.length; i++) {
+        elementList.splice(start + i, 0, inputData[i])
+      }
+      curIndex = (isCollapsed ? index : startIndex) + inputData.length
     }
-    // 禁止直接使用解构存在性能问题
-    for (let i = 0; i < inputData.length; i++) {
-      elementList.splice(start + i, 0, inputData[i])
-    }
-    const curIndex = (isCollapsed ? index : startIndex) + inputData.length
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }
@@ -487,12 +544,20 @@ export class CanvasEvent {
   public cut() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
+    if (isPartRangeInControlOutside) return
+    const activeControl = this.control.getActiveControl()
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     if (startIndex !== endIndex) {
       writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
-      elementList.splice(startIndex + 1, endIndex - startIndex)
-      const curIndex = startIndex
+      let curIndex: number
+      if (activeControl) {
+        curIndex = this.control.cut()
+      } else {
+        elementList.splice(startIndex + 1, endIndex - startIndex)
+        curIndex = startIndex
+      }
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
     }
