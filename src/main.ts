@@ -409,6 +409,7 @@ window.onload = function () {
     controlOptionDom.classList.toggle('visible')
   }
   controlOptionDom.onmousedown = function (evt) {
+    controlOptionDom.classList.toggle('visible')
     const li = evt.target as HTMLLIElement
     const type = <ControlType>li.dataset.control
     switch (type) {
