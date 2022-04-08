@@ -1,6 +1,7 @@
 import { WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
+import { ControlComponent } from '../../dataset/enum/Control'
 import { EditorContext, EditorMode } from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
@@ -1113,6 +1114,7 @@ export class CommandAdapt {
     // 表格上下文
     let curTdId = ''
     // 搜索值 > 替换值：增加元素；搜索值 < 替换值：减少元素
+    let firstMatchIndex = -1
     const elementList = this.draw.getOriginalElementList()
     for (let m = 0; m < matchList.length; m++) {
       const match = matchList[m]
@@ -1147,6 +1149,15 @@ export class CommandAdapt {
       } else {
         const curIndex = match.index + pageDiffCount
         const element = elementList[curIndex]
+        if (
+          element.type === ElementType.CONTROL
+          && element.controlComponent !== ControlComponent.VALUE
+        ) {
+          continue
+        }
+        if (!~firstMatchIndex) {
+          firstMatchIndex = m
+        }
         if (curGroupId === match.groupId) {
           elementList.splice(curIndex, 1)
           pageDiffCount--
@@ -1167,8 +1178,9 @@ export class CommandAdapt {
       }
       curGroupId = match.groupId
     }
+    if (!~firstMatchIndex) return
     // 定位-首个被匹配关键词后
-    const firstMatch = matchList[0]
+    const firstMatch = matchList[firstMatchIndex]
     const firstIndex = firstMatch.index + (payload.length - 1)
     if (firstMatch.type === EditorContext.TABLE) {
       const { tableIndex, trIndex, tdIndex, index } = firstMatch
