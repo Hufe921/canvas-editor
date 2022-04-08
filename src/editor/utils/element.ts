@@ -116,6 +116,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
           for (let e = 0; e < valueStrList.length; e++) {
             const value = valueStrList[e]
             elementList.splice(i, 0, {
+              ...element,
               controlId,
               value,
               type: el.type,
