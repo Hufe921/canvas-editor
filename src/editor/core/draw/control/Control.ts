@@ -79,6 +79,8 @@ export class Control {
   }
 
   public initControl() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const elementList = this.getElementList()
     const range = this.getRange()
     const element = elementList[range.startIndex]

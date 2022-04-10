@@ -167,7 +167,7 @@ export class CanvasEvent {
       y: evt.offsetY
     })
     // 激活控件
-    if (positionResult.isControl) {
+    if (positionResult.isControl && !isReadonly) {
       const {
         index,
         isTable,
