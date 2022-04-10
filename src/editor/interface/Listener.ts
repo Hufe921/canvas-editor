@@ -1,5 +1,6 @@
 import { ElementType } from '..'
 import { RowFlex } from '../dataset/enum/Row'
+import { IControl } from './Control'
 import { IEditorResult } from './Editor'
 
 export interface IRangeStyle {
@@ -32,3 +33,5 @@ export type IPageScaleChange = (payload: number) => void
 export type ISaved = (payload: IEditorResult) => void
 
 export type IContentChange = () => void
+
+export type IControlChange = (payload: IControl | null) => void

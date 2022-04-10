@@ -1,5 +1,6 @@
 import {
   IContentChange,
+  IControlChange,
   IIntersectionPageNoChange,
   IPageScaleChange,
   IPageSizeChange,
@@ -17,6 +18,7 @@ export class Listener {
   public pageScaleChange: IPageScaleChange | null
   public saved: ISaved | null
   public contentChange: IContentChange | null
+  public controlChange: IControlChange | null
 
   constructor() {
     this.rangeStyleChange = null
@@ -26,6 +28,7 @@ export class Listener {
     this.pageScaleChange = null
     this.saved = null
     this.contentChange = null
+    this.controlChange = null
   }
 
 }
