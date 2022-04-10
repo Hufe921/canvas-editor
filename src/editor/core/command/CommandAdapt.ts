@@ -1,6 +1,7 @@
 import { WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
+import { ControlComponent } from '../../dataset/enum/Control'
 import { EditorContext, EditorMode } from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
@@ -261,6 +262,8 @@ export class CommandAdapt {
   public superscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const selection = this.range.getSelection()
     if (!selection) return
     const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
@@ -284,6 +287,8 @@ export class CommandAdapt {
   public subscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const selection = this.range.getSelection()
     if (!selection) return
     const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
@@ -381,6 +386,8 @@ export class CommandAdapt {
   public insertTable(row: number, col: number) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -978,6 +985,8 @@ export class CommandAdapt {
   public hyperlink(payload: IElement) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -1004,6 +1013,8 @@ export class CommandAdapt {
   public separator(payload: number[]) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -1034,6 +1045,10 @@ export class CommandAdapt {
   }
 
   public pageBreak() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     this.insertElementList([{
       type: ElementType.PAGE_BREAK,
       value: WRAP
@@ -1072,6 +1087,8 @@ export class CommandAdapt {
   public image(payload: IDrawImagePayload) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -1102,6 +1119,8 @@ export class CommandAdapt {
   }
 
   public replace(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     if (!payload || new RegExp(`${ZERO}`, 'g').test(payload)) return
     const matchList = this.draw.getSearch().getSearchMatchList()
     if (!matchList.length) return
@@ -1113,6 +1132,7 @@ export class CommandAdapt {
     // 表格上下文
     let curTdId = ''
     // 搜索值 > 替换值：增加元素；搜索值 < 替换值：减少元素
+    let firstMatchIndex = -1
     const elementList = this.draw.getOriginalElementList()
     for (let m = 0; m < matchList.length; m++) {
       const match = matchList[m]
@@ -1147,6 +1167,15 @@ export class CommandAdapt {
       } else {
         const curIndex = match.index + pageDiffCount
         const element = elementList[curIndex]
+        if (
+          element.type === ElementType.CONTROL
+          && element.controlComponent !== ControlComponent.VALUE
+        ) {
+          continue
+        }
+        if (!~firstMatchIndex) {
+          firstMatchIndex = m
+        }
         if (curGroupId === match.groupId) {
           elementList.splice(curIndex, 1)
           pageDiffCount--
@@ -1167,8 +1196,9 @@ export class CommandAdapt {
       }
       curGroupId = match.groupId
     }
+    if (!~firstMatchIndex) return
     // 定位-首个被匹配关键词后
-    const firstMatch = matchList[0]
+    const firstMatch = matchList[firstMatchIndex]
     const firstIndex = firstMatch.index + (payload.length - 1)
     if (firstMatch.type === EditorContext.TABLE) {
       const { tableIndex, trIndex, tdIndex, index } = firstMatch

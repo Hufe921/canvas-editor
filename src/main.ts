@@ -457,6 +457,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     controlOptionDom.classList.toggle('visible')
   }
   controlOptionDom.onmousedown = function (evt) {
+    controlOptionDom.classList.toggle('visible')
     const li = evt.target as HTMLLIElement
     const type = <ControlType>li.dataset.control
     switch (type) {
@@ -714,6 +715,25 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
 
   instance.listener.pageScaleChange = function (payload) {
     document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 10 * 10)}%`
+  }
+
+  instance.listener.controlChange = function (payload) {
+    const disableMenusInControlContext = [
+      'superscript',
+      'subscript',
+      'table',
+      'image',
+      'hyperlink',
+      'separator',
+      'codeblock',
+      'page-break',
+      'control'
+    ]
+    // 菜单操作权限
+    disableMenusInControlContext.forEach(menu => {
+      const menuDom = document.querySelector<HTMLDivElement>(`.menu-item__${menu}`)!
+      payload ? menuDom.classList.add('disable') : menuDom.classList.remove('disable')
+    })
   }
 
   instance.listener.saved = function (payload) {
