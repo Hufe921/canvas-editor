@@ -669,6 +669,25 @@ window.onload = function () {
     document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 10 * 10)}%`
   }
 
+  instance.listener.controlChange = function (payload) {
+    const disableMenusInControlContext = [
+      'superscript',
+      'subscript',
+      'table',
+      'image',
+      'hyperlink',
+      'separator',
+      'codeblock',
+      'page-break',
+      'control'
+    ]
+    // 菜单操作权限
+    disableMenusInControlContext.forEach(menu => {
+      const menuDom = document.querySelector<HTMLDivElement>(`.menu-item__${menu}`)!
+      payload ? menuDom.classList.add('disable') : menuDom.classList.remove('disable')
+    })
+  }
+
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
   }

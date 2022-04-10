@@ -172,6 +172,7 @@ ul {
   color: #c0c4cc;
   cursor: not-allowed;
   opacity: 0.4;
+  pointer-events: none;
 }
 
 .menu-item__undo i {

@@ -262,6 +262,8 @@ export class CommandAdapt {
   public superscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const selection = this.range.getSelection()
     if (!selection) return
     const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
@@ -285,6 +287,8 @@ export class CommandAdapt {
   public subscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const selection = this.range.getSelection()
     if (!selection) return
     const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
@@ -382,6 +386,8 @@ export class CommandAdapt {
   public insertTable(row: number, col: number) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -979,6 +985,8 @@ export class CommandAdapt {
   public hyperlink(payload: IElement) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -1005,6 +1013,8 @@ export class CommandAdapt {
   public separator(payload: number[]) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -1035,6 +1045,10 @@ export class CommandAdapt {
   }
 
   public pageBreak() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     this.insertElementList([{
       type: ElementType.PAGE_BREAK,
       value: WRAP
@@ -1073,6 +1087,8 @@ export class CommandAdapt {
   public image(payload: IDrawImagePayload) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -1103,6 +1119,8 @@ export class CommandAdapt {
   }
 
   public replace(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     if (!payload || new RegExp(`${ZERO}`, 'g').test(payload)) return
     const matchList = this.draw.getSearch().getSearchMatchList()
     if (!matchList.length) return
