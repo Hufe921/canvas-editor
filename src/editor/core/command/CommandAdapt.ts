@@ -7,7 +7,7 @@ import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload } from '../../interface/Draw'
-import { IEditorOption } from '../../interface/Editor'
+import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
@@ -1237,6 +1237,10 @@ export class CommandAdapt {
 
   public getImage(): string[] {
     return this.draw.getDataURL()
+  }
+
+  public getValue(): IEditorResult {
+    return this.draw.getValue()
   }
 
   public pageScaleRecovery() {

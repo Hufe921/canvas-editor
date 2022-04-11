@@ -1,15 +1,12 @@
-import { version } from '../../../../package.json'
 import { ElementType } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_COPY_ATTR } from '../../dataset/constant/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { MouseEventButton } from '../../dataset/enum/Event'
 import { KeyMap } from '../../dataset/enum/Keymap'
-import { IEditorResult } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { ICurrentPosition } from '../../interface/Position'
 import { writeTextByElementList } from '../../utils/clipboard'
-import { zipElementList } from '../../utils/element'
 import { Cursor } from '../cursor/Cursor'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
@@ -419,9 +416,8 @@ export class CanvasEvent {
       this.selectAll()
     } else if (evt.ctrlKey && evt.key === KeyMap.S) {
       if (isReadonly) return
-      const saved = this.listener.saved
-      if (saved) {
-        saved(this.save())
+      if (this.listener.saved) {
+        this.listener.saved(this.draw.getValue())
       }
       evt.preventDefault()
     }
@@ -587,22 +583,6 @@ export class CanvasEvent {
 
   public compositionend() {
     this.isCompositing = false
-  }
-
-  public save(): IEditorResult {
-    // 配置
-    const { width, height, margins, watermark } = this.draw.getOptions()
-    // 数据
-    const elementList = this.draw.getOriginalElementList()
-    const data = zipElementList(elementList)
-    return {
-      version,
-      width,
-      height,
-      margins,
-      watermark: watermark.data ? watermark : undefined,
-      data
-    }
   }
 
 }
