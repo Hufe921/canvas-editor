@@ -160,7 +160,7 @@ export class Control {
       }
     } else if (element.controlComponent === ControlComponent.POSTFIX) {
       // POSTFIX-移动到最后一个后缀字符后
-      let startIndex = index + 1
+      let startIndex = newIndex + 1
       while (startIndex < elementList.length) {
         const nextElement = elementList[startIndex]
         if (nextElement.controlId !== element.controlId) {
@@ -173,7 +173,7 @@ export class Control {
       }
     } else if (element.controlComponent === ControlComponent.PREFIX) {
       // PREFIX-移动到最后一个前缀字符后
-      let startIndex = index + 1
+      let startIndex = newIndex + 1
       while (startIndex < elementList.length) {
         const nextElement = elementList[startIndex]
         if (
@@ -189,7 +189,7 @@ export class Control {
       }
     } else if (element.controlComponent === ControlComponent.PLACEHOLDER) {
       // PLACEHOLDER-移动到第一个前缀后
-      let startIndex = index - 1
+      let startIndex = newIndex - 1
       while (startIndex > 0) {
         const preElement = elementList[startIndex]
         if (
@@ -234,6 +234,10 @@ export class Control {
         break
       }
       nextIndex++
+    }
+    // 控件在最后
+    if (nextIndex === elementList.length) {
+      rightIndex = nextIndex - 1
     }
     if (!~leftIndex || !~rightIndex) return startIndex
     // 删除元素

@@ -270,7 +270,6 @@ export class CanvasEvent {
     const { index } = cursorPosition
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
-    const element = elementList[index]
     // 当前激活控件
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
     const activeControl = this.control.getActiveControl()
@@ -297,8 +296,10 @@ export class CanvasEvent {
     } else if (evt.key === KeyMap.Delete) {
       if (isReadonly || isPartRangeInControlOutside) return
       let curIndex: number
-      if (activeControl && elementList[endIndex + 1]?.controlId === element.controlId) {
+      if (activeControl) {
         curIndex = this.control.keydown(evt)
+      } else if (elementList[endIndex + 1]?.type === ElementType.CONTROL) {
+        curIndex = this.control.removeControl(endIndex + 1)
       } else {
         if (!isCollapsed) {
           elementList.splice(startIndex + 1, endIndex - startIndex)

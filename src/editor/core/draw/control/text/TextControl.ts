@@ -129,7 +129,8 @@ export class TextControl implements IControlInstance {
         return startIndex
       } else {
         const endNextElement = elementList[endIndex + 1]
-        if (startElement.controlComponent === ControlComponent.PREFIX ||
+        if ((startElement.controlComponent === ControlComponent.PREFIX &&
+          endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
           endNextElement.controlComponent === ControlComponent.POSTFIX ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
