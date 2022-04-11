@@ -104,7 +104,8 @@ export class SelectControl implements IControlInstance {
         return this.clearSelect()
       } else {
         const endNextElement = elementList[endIndex + 1]
-        if (startElement.controlComponent === ControlComponent.PREFIX ||
+        if ((startElement.controlComponent === ControlComponent.PREFIX &&
+          endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
           endNextElement.controlComponent === ControlComponent.POSTFIX ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {

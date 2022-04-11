@@ -1,7 +1,8 @@
+import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawOption, IDrawRowPayload, IDrawRowResult } from '../../interface/Draw'
-import { IEditorOption } from '../../interface/Editor'
+import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID } from '../../utils'
@@ -35,6 +36,7 @@ import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
 import { EditorMode } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
+import { zipElementList } from '../../utils/element'
 
 export class Draw {
 
@@ -359,6 +361,21 @@ export class Draw {
     this.render({ isSubmitHistory: false, isSetCursor: false })
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
+    }
+  }
+
+  public getValue(): IEditorResult {
+    // 配置
+    const { width, height, margins, watermark } = this.options
+    // 数据
+    const data = zipElementList(this.elementList)
+    return {
+      version,
+      width,
+      height,
+      margins,
+      watermark: watermark.data ? watermark : undefined,
+      data
     }
   }
 
