@@ -7,5 +7,6 @@ export enum ElementType {
   SUBSCRIPT = 'subscript',
   SEPARATOR = 'separator',
   PAGE_BREAK = 'pageBreak',
-  CONTROL = 'control'
+  CONTROL = 'control',
+  CHECKBOX = 'checkbox'
 }
