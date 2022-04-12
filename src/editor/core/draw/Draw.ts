@@ -714,25 +714,36 @@ export class Draw {
         }
         // 选区记录
         const { startIndex, endIndex } = this.range.getRange()
-        if (startIndex !== endIndex && startIndex < index && index <= endIndex) {
-          const positionContext = this.position.getPositionContext()
-          // 表格需限定上下文
-          if (
-            (!positionContext.isTable && !element.tdId)
-            || positionContext.tdId === element.tdId
-          ) {
-            let rangeWidth = metrics.width
-            // 最小选区宽度
-            if (rangeWidth === 0 && curRow.elementList.length === 1) {
-              rangeWidth = this.options.rangeMinWidth
-            }
-            // 记录第一次位置、行高
-            if (!rangeRecord.width) {
-              rangeRecord.x = x
+        if (startIndex !== endIndex && startIndex <= index && index <= endIndex) {
+          // 从行尾开始-绘制最小宽度
+          if (startIndex === index) {
+            const nextElement = this.elementList[startIndex + 1]
+            if (nextElement && nextElement.value === ZERO) {
+              rangeRecord.x = x + metrics.width
               rangeRecord.y = y
               rangeRecord.height = curRow.height
+              rangeRecord.width += this.options.rangeMinWidth
             }
-            rangeRecord.width += rangeWidth
+          } else {
+            const positionContext = this.position.getPositionContext()
+            // 表格需限定上下文
+            if (
+              (!positionContext.isTable && !element.tdId)
+              || positionContext.tdId === element.tdId
+            ) {
+              let rangeWidth = metrics.width
+              // 最小选区宽度
+              if (rangeWidth === 0 && curRow.elementList.length === 1) {
+                rangeWidth = this.options.rangeMinWidth
+              }
+              // 记录第一次位置、行高
+              if (!rangeRecord.width) {
+                rangeRecord.x = x
+                rangeRecord.y = y
+                rangeRecord.height = curRow.height
+              }
+              rangeRecord.width += rangeWidth
+            }
           }
         }
         index++
