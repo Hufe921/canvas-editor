@@ -15,10 +15,14 @@ export class TableParticle {
 
   private _drawBorder(ctx: CanvasRenderingContext2D, startX: number, startY: number, width: number, height: number) {
     ctx.beginPath()
-    ctx.moveTo(startX, startY + height)
-    ctx.lineTo(startX, startY)
-    ctx.lineTo(startX + width, startY)
+    const x = Math.round(startX)
+    const y = Math.round(startY)
+    ctx.translate(0.5, 0.5)
+    ctx.moveTo(x, y + height)
+    ctx.lineTo(x, y)
+    ctx.lineTo(x + width, y)
     ctx.stroke()
+    ctx.translate(-0.5, -0.5)
   }
 
   public computeRowColInfo(element: IElement) {
@@ -170,14 +174,16 @@ export class TableParticle {
         const td = tr.tdList[d]
         const width = td.width! * scale
         const height = td.height! * scale
-        const x = td.x! * scale + startX + width
-        const y = td.y! * scale + startY
+        const x = Math.round(td.x! * scale + startX + width)
+        const y = Math.round(td.y! * scale + startY)
+        ctx.translate(0.5, 0.5)
         // 绘制线条
         ctx.beginPath()
         ctx.moveTo(x, y)
         ctx.lineTo(x, y + height)
         ctx.lineTo(x - width, y + height)
         ctx.stroke()
+        ctx.translate(-0.5, -0.5)
       }
     }
     ctx.restore()
