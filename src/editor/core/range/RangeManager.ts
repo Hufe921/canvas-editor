@@ -59,7 +59,7 @@ export class RangeManager {
     if (~startIndex && ~endIndex && startIndex === startIndex) {
       const elementList = this.draw.getElementList()
       const element = elementList[startIndex]
-      if (element.type === ElementType.CONTROL) {
+      if (element?.type === ElementType.CONTROL) {
         control.initControl()
         return
       }
