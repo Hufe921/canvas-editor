@@ -4,6 +4,7 @@ import { ITd } from './table/Td'
 
 export interface ICurrentPosition {
   index: number;
+  isCheckbox?: boolean;
   isControl?: boolean;
   isImage?: boolean;
   isTable?: boolean;

@@ -188,6 +188,7 @@ export class CanvasEvent {
     const {
       index,
       isDirectHit,
+      isCheckbox,
       isControl,
       isImage,
       isTable,
@@ -214,27 +215,34 @@ export class CanvasEvent {
       ...positionResult,
       index: isTable ? tdValueIndex! : index
     }
-    // 绘制
-    const isDirectHitImage = isDirectHit && isImage
-    if (~index) {
-      let curIndex = index
-      if (isTable) {
-        this.range.setRange(tdValueIndex!, tdValueIndex!)
-        curIndex = tdValueIndex!
-      } else {
-        this.range.setRange(index, index)
-      }
-      this.draw.render({
-        curIndex,
-        isSubmitHistory: false,
-        isSetCursor: !isDirectHitImage,
-        isComputeRowList: false
-      })
-    }
     const elementList = this.draw.getElementList()
     const positionList = this.position.getPositionList()
     const curIndex = isTable ? tdValueIndex! : index
     const curElement = elementList[curIndex]
+    // 绘制
+    const isDirectHitImage = !!(isDirectHit && isImage)
+    const isDirectHitCheckbox = !!(isDirectHit && isCheckbox)
+    if (~index) {
+      this.range.setRange(index, index)
+      // 复选框
+      const isSetCheckbox = isDirectHitCheckbox && !isReadonly
+      if (isSetCheckbox) {
+        const { checkbox } = curElement
+        if (checkbox) {
+          checkbox.value = !checkbox.value
+        } else {
+          curElement.checkbox = {
+            value: true
+          }
+        }
+      }
+      this.draw.render({
+        curIndex,
+        isSubmitHistory: isSetCheckbox,
+        isSetCursor: !isDirectHitImage && !isDirectHitCheckbox,
+        isComputeRowList: false
+      })
+    }
     // 图片尺寸拖拽组件
     this.imageParticle.clearResizer()
     if (isDirectHitImage && !isReadonly) {

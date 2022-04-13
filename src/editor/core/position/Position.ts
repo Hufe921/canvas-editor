@@ -119,6 +119,13 @@ export class Position {
             isImage: true
           }
         }
+        if (element.type === ElementType.CHECKBOX) {
+          return {
+            index: curPositionIndex,
+            isDirectHit: true,
+            isCheckbox: true
+          }
+        }
         // 判断是否在文字中间前后
         if (elementList[index].value !== ZERO) {
           const valueWidth = rightTop[0] - leftTop[0]

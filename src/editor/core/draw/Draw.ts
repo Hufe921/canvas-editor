@@ -569,10 +569,10 @@ export class Draw {
         metrics.height = this.options.defaultSize
       } else if (element.type === ElementType.CHECKBOX) {
         const { width, height, gap } = this.options.checkbox
-        const elementWidth = width + gap * 2
+        const elementWidth = (width + gap * 2) * scale
         element.width = elementWidth
         metrics.width = elementWidth
-        metrics.height = height
+        metrics.height = height * scale
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || this.options.defaultSize
