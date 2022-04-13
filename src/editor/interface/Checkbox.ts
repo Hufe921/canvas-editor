@@ -7,4 +7,5 @@ export interface ICheckboxOption {
   width?: number;
   height?: number;
   gap?: number;
+  lineWidth?: number;
 }
