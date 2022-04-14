@@ -94,9 +94,11 @@ export class Position {
               })
               if (~tablePosition.index) {
                 const { index: tdValueIndex } = tablePosition
+                const tdValueElement = td.value[tdValueIndex]
                 return {
                   index,
-                  isControl: td.value[tdValueIndex].type === ElementType.CONTROL,
+                  isCheckbox: tdValueElement.type === ElementType.CHECKBOX,
+                  isControl: tdValueElement.type === ElementType.CONTROL,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
                   isTable: true,

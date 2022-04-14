@@ -492,6 +492,15 @@ window.onload = function () {
     }
   }
 
+  const checkboxDom = document.querySelector<HTMLDivElement>('.menu-item__checkbox')!
+  checkboxDom.onclick = function () {
+    console.log('checkbox')
+    instance.command.executeInsertElementList([{
+      type: ElementType.CHECKBOX,
+      value: ''
+    }])
+  }
+
   // 5. | 搜索&替换 | 打印 |
   const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')!
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
@@ -679,7 +688,8 @@ window.onload = function () {
       'separator',
       'codeblock',
       'page-break',
-      'control'
+      'control',
+      'checkbox'
     ]
     // 菜单操作权限
     disableMenusInControlContext.forEach(menu => {
