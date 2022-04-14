@@ -439,6 +439,10 @@ ul {
   background-image: url('./assets/images/control.svg');
 }
 
+.menu-item__checkbox i {
+  background-image: url('./assets/images/checkbox.svg');
+}
+
 .menu-item .menu-item__control .options {
   width: 55px;
 }

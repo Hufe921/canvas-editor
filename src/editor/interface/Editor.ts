@@ -1,5 +1,6 @@
 import { IElement } from '..'
 import { EditorMode } from '../dataset/enum/Editor'
+import { ICheckboxOption } from './Checkbox'
 import { IControlOption } from './Control'
 import { IHeader } from './Header'
 import { IWatermark } from './Watermark'
@@ -38,6 +39,7 @@ export interface IEditorOption {
   header?: IHeader;
   watermark?: IWatermark;
   control?: IControlOption;
+  checkbox?: ICheckboxOption;
 }
 
 export interface IEditorResult {

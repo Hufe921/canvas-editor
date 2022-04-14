@@ -94,9 +94,11 @@ export class Position {
               })
               if (~tablePosition.index) {
                 const { index: tdValueIndex } = tablePosition
+                const tdValueElement = td.value[tdValueIndex]
                 return {
                   index,
-                  isControl: td.value[tdValueIndex].type === ElementType.CONTROL,
+                  isCheckbox: tdValueElement.type === ElementType.CHECKBOX,
+                  isControl: tdValueElement.type === ElementType.CONTROL,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
                   isTable: true,
@@ -117,6 +119,13 @@ export class Position {
             index: curPositionIndex,
             isDirectHit: true,
             isImage: true
+          }
+        }
+        if (element.type === ElementType.CHECKBOX) {
+          return {
+            index: curPositionIndex,
+            isDirectHit: true,
+            isCheckbox: true
           }
         }
         // 判断是否在文字中间前后
