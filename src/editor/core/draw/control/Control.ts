@@ -2,6 +2,7 @@ import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IControl, IControlInitOption, IControlInstance, IControlOption } from '../../../interface/Control'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { IRange } from '../../../interface/Range'
 import { deepClone } from '../../../utils'
 import { pickElementAttr, zipElementList } from '../../../utils/element'
 import { Listener } from '../../listener/Listener'
@@ -67,7 +68,7 @@ export class Control {
     return this.draw.getPageNo() * (height + pageGap)
   }
 
-  public getRange() {
+  public getRange(): IRange {
     return this.range.getRange()
   }
 

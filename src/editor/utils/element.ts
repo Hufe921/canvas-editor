@@ -114,6 +114,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
                 control: el.control,
                 controlComponent: ControlComponent.CHECKBOX,
                 checkbox: {
+                  code: valueSet.code,
                   value: codeList.includes(valueSet.code)
                 }
               })

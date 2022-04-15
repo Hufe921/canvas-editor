@@ -18,6 +18,7 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 import { Control } from '../draw/control/Control'
+import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
 
 export class CanvasEvent {
 
@@ -235,6 +236,10 @@ export class CanvasEvent {
           curElement.checkbox = {
             value: true
           }
+        }
+        const activeControl = this.control.getActiveControl()
+        if (activeControl instanceof CheckboxControl) {
+          activeControl.setSelect()
         }
       }
       this.draw.render({

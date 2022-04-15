@@ -65,6 +65,51 @@ export class CheckboxControl implements IControlInstance {
     return endIndex
   }
 
+  public setSelect() {
+    const { control } = this.element
+    const elementList = this.control.getElementList()
+    const { startIndex } = this.control.getRange()
+    const startElement = elementList[startIndex]
+    const data: string[] = []
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (
+        preElement.controlId !== startElement.controlId ||
+        preElement.controlComponent === ControlComponent.PREFIX
+      ) {
+        break
+      }
+      if (preElement.controlComponent === ControlComponent.CHECKBOX) {
+        const checkbox = preElement.checkbox
+        if (checkbox && checkbox.value && checkbox.code) {
+          data.unshift(checkbox.code)
+        }
+      }
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (
+        nextElement.controlId !== startElement.controlId ||
+        nextElement.controlComponent === ControlComponent.POSTFIX
+      ) {
+        break
+      }
+      if (nextElement.controlComponent === ControlComponent.CHECKBOX) {
+        const checkbox = nextElement.checkbox
+        if (checkbox && checkbox.value && checkbox.code) {
+          data.push(checkbox.code)
+        }
+      }
+      nextIndex++
+    }
+    control!.code = data.join(',')
+  }
+
   public keydown(evt: KeyboardEvent): number {
     const range = this.control.getRange()
     // 收缩边界到Value内
