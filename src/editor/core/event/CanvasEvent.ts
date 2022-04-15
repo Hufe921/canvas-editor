@@ -202,6 +202,7 @@ export class CanvasEvent {
     // 设置位置上下文
     this.position.setPositionContext({
       isTable: isTable || false,
+      isCheckbox: isCheckbox || false,
       isControl: isControl || false,
       index,
       trIndex,

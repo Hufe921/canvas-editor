@@ -39,6 +39,7 @@ import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired } from '../../interface/Common'
+import { ControlComponent } from '../../dataset/enum/Control'
 
 export class Draw {
 
@@ -567,7 +568,10 @@ export class Draw {
         element.width = innerWidth
         metrics.width = innerWidth
         metrics.height = this.options.defaultSize
-      } else if (element.type === ElementType.CHECKBOX) {
+      } else if (
+        element.type === ElementType.CHECKBOX ||
+        element.controlComponent === ControlComponent.CHECKBOX
+      ) {
         const { width, height, gap } = this.options.checkbox
         const elementWidth = (width + gap * 2) * scale
         element.width = elementWidth
@@ -707,7 +711,10 @@ export class Draw {
           if (this.mode !== EditorMode.CLEAN) {
             this.pageBreakParticle.render(ctx, element, x, y)
           }
-        } else if (element.type === ElementType.CHECKBOX) {
+        } else if (
+          element.type === ElementType.CHECKBOX ||
+          element.controlComponent === ControlComponent.CHECKBOX
+        ) {
           this.textParticle.complete()
           this.checkboxParticle.render(ctx, element, x, y + offsetY)
         } else {

@@ -7,6 +7,7 @@ import { pickElementAttr, zipElementList } from '../../../utils/element'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
+import { CheckboxControl } from './checkbox/CheckboxControl'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 
@@ -103,6 +104,8 @@ export class Control {
       const selectControl = new SelectControl(element, this)
       this.activeControl = selectControl
       selectControl.awake()
+    } else if (control.type === ControlType.CHECKBOX) {
+      this.activeControl = new CheckboxControl(element, this)
     }
     // 激活控件回调
     setTimeout(() => {
