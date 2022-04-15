@@ -1,4 +1,5 @@
 import { ControlType } from '../dataset/enum/Control'
+import { ICheckbox } from './Checkbox'
 import { IElement } from './Element'
 
 export interface IValueSet {
@@ -11,16 +12,27 @@ export interface IControlSelect {
   valueSets: IValueSet[];
 }
 
+export interface IControlCheckbox {
+  code: string | null;
+  min?: number;
+  max?: number;
+  valueSets: IValueSet[];
+  checkbox?: ICheckbox;
+}
+
 export interface IControlBasic {
   type: ControlType;
   value: IElement[] | null;
-  placeholder: string;
+  placeholder?: string;
   conceptId?: string;
   prefix?: string;
   postfix?: string;
 }
 
-export type IControl = IControlBasic & Partial<IControlSelect>
+export type IControl = IControlBasic
+  & Partial<IControlSelect>
+  & Partial<IControlCheckbox>
+
 
 export interface IControlOption {
   placeholderColor?: string;

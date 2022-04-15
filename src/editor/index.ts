@@ -22,6 +22,9 @@ import { defaultWatermarkOption } from './dataset/constant/Watermark'
 import { ControlType } from './dataset/enum/Control'
 import { defaultControlOption } from './dataset/constant/Control'
 import { IControlOption } from './interface/Control'
+import { ICheckboxOption } from './interface/Checkbox'
+import { defaultCheckboxOption } from './dataset/constant/Checkbox'
+import { DeepRequired } from './interface/Common'
 
 export default class Editor {
 
@@ -42,7 +45,12 @@ export default class Editor {
       ...defaultControlOption,
       ...options.control
     }
-    const editorOptions: Required<IEditorOption> = {
+    const checkboxOptions: Required<ICheckboxOption> = {
+      ...defaultCheckboxOption,
+      ...options.checkbox
+    }
+
+    const editorOptions: DeepRequired<IEditorOption> = {
       defaultMode: EditorMode.EDIT,
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
@@ -76,7 +84,8 @@ export default class Editor {
       ...options,
       header: headerOptions,
       watermark: waterMarkOptions,
-      control: controlOptions
+      control: controlOptions,
+      checkbox: checkboxOptions
     }
     formatElementList(elementList, {
       editorOptions

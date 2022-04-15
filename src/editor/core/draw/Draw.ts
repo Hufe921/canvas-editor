@@ -37,6 +37,9 @@ import { Watermark } from './frame/Watermark'
 import { EditorMode } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
+import { CheckboxParticle } from './particle/CheckboxParticle'
+import { DeepRequired } from '../../interface/Common'
+import { ControlComponent } from '../../dataset/enum/Control'
 
 export class Draw {
 
@@ -46,7 +49,7 @@ export class Draw {
   private ctxList: CanvasRenderingContext2D[]
   private pageNo: number
   private mode: EditorMode
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
   private position: Position
   private elementList: IElement[]
   private listener: Listener
@@ -73,6 +76,7 @@ export class Draw {
   private pageBreakParticle: PageBreakParticle
   private superscriptParticle: SuperscriptParticle
   private subscriptParticle: SubscriptParticle
+  private checkboxParticle: CheckboxParticle
   private control: Control
 
   private rowList: IRow[]
@@ -83,7 +87,7 @@ export class Draw {
 
   constructor(
     container: HTMLDivElement,
-    options: Required<IEditorOption>,
+    options: DeepRequired<IEditorOption>,
     elementList: IElement[],
     listener: Listener
   ) {
@@ -120,6 +124,7 @@ export class Draw {
     this.pageBreakParticle = new PageBreakParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
+    this.checkboxParticle = new CheckboxParticle(this)
     this.control = new Control(this)
 
     new ScrollObserver(this)
@@ -249,7 +254,7 @@ export class Draw {
     return this.ctxList[this.pageNo]
   }
 
-  public getOptions(): Required<IEditorOption> {
+  public getOptions(): DeepRequired<IEditorOption> {
     return this.options
   }
 
@@ -563,6 +568,15 @@ export class Draw {
         element.width = innerWidth
         metrics.width = innerWidth
         metrics.height = this.options.defaultSize
+      } else if (
+        element.type === ElementType.CHECKBOX ||
+        element.controlComponent === ControlComponent.CHECKBOX
+      ) {
+        const { width, height, gap } = this.options.checkbox
+        const elementWidth = (width + gap * 2) * scale
+        element.width = elementWidth
+        metrics.width = elementWidth
+        metrics.height = height * scale
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || this.options.defaultSize
@@ -697,6 +711,12 @@ export class Draw {
           if (this.mode !== EditorMode.CLEAN) {
             this.pageBreakParticle.render(ctx, element, x, y)
           }
+        } else if (
+          element.type === ElementType.CHECKBOX ||
+          element.controlComponent === ControlComponent.CHECKBOX
+        ) {
+          this.textParticle.complete()
+          this.checkboxParticle.render(ctx, element, x, y + offsetY)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }

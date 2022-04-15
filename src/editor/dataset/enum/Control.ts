@@ -1,11 +1,13 @@
 export enum ControlType {
   TEXT = 'text',
-  SELECT = 'select'
+  SELECT = 'select',
+  CHECKBOX = 'checkbox'
 }
 
 export enum ControlComponent {
   PREFIX = 'prefix',
   POSTFIX = 'postfix',
   PLACEHOLDER = 'placeholder',
-  VALUE = 'value'
+  VALUE = 'value',
+  CHECKBOX = 'checkbox'
 }
