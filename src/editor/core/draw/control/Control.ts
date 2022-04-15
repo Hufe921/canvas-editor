@@ -2,11 +2,13 @@ import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IControl, IControlInitOption, IControlInstance, IControlOption } from '../../../interface/Control'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { IRange } from '../../../interface/Range'
 import { deepClone } from '../../../utils'
 import { pickElementAttr, zipElementList } from '../../../utils/element'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
+import { CheckboxControl } from './checkbox/CheckboxControl'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 
@@ -66,7 +68,7 @@ export class Control {
     return this.draw.getPageNo() * (height + pageGap)
   }
 
-  public getRange() {
+  public getRange(): IRange {
     return this.range.getRange()
   }
 
@@ -103,6 +105,8 @@ export class Control {
       const selectControl = new SelectControl(element, this)
       this.activeControl = selectControl
       selectControl.awake()
+    } else if (control.type === ControlType.CHECKBOX) {
+      this.activeControl = new CheckboxControl(element, this)
     }
     // 激活控件回调
     setTimeout(() => {
@@ -270,6 +274,7 @@ export class Control {
     const elementList = this.getElementList()
     const startElement = elementList[startIndex]
     const control = startElement.control!
+    if (!control.placeholder) return
     const placeholderStrList = control.placeholder.split('')
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]

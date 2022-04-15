@@ -1,5 +1,6 @@
 import { ElementType } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
+import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElementPosition } from '../../interface/Element'
 import { ICurrentPosition, IGetPositionByXYPayload, IPositionContext } from '../../interface/Position'
@@ -97,7 +98,8 @@ export class Position {
                 const tdValueElement = td.value[tdValueIndex]
                 return {
                   index,
-                  isCheckbox: tdValueElement.type === ElementType.CHECKBOX,
+                  isCheckbox: tdValueElement.type === ElementType.CHECKBOX ||
+                    tdValueElement.controlComponent === ControlComponent.CHECKBOX,
                   isControl: tdValueElement.type === ElementType.CONTROL,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
@@ -121,7 +123,10 @@ export class Position {
             isImage: true
           }
         }
-        if (element.type === ElementType.CHECKBOX) {
+        if (
+          element.type === ElementType.CHECKBOX ||
+          element.controlComponent === ControlComponent.CHECKBOX
+        ) {
           return {
             index: curPositionIndex,
             isDirectHit: true,

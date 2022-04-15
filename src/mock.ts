@@ -250,18 +250,20 @@ elementList.push({
 elementList.push(...<IElement[]>[{
   value: '是否同意以上内容：'
 }, {
-  type: ElementType.CHECKBOX,
-  checkbox: {
-    value: true
+  type: ElementType.CONTROL,
+  control: {
+    type: ControlType.CHECKBOX,
+    code: '98175',
+    value: '',
+    valueSets: [{
+      value: '同意',
+      code: '98175'
+    }, {
+      value: '否定',
+      code: '98176'
+    }]
   },
   value: ''
-}, {
-  value: '同意'
-}, {
-  type: ElementType.CHECKBOX,
-  value: ''
-}, {
-  value: '否定'
 }, {
   value: '\n'
 }])

@@ -415,7 +415,7 @@ window.onload = function () {
     switch (type) {
       case ControlType.TEXT:
         new Dialog({
-          title: '文本型控件',
+          title: '文本控件',
           data: [{
             type: 'text',
             label: '占位符',
@@ -449,7 +449,7 @@ window.onload = function () {
         break
       case ControlType.SELECT:
         new Dialog({
-          title: '列举型控件',
+          title: '列举控件',
           data: [{
             type: 'text',
             label: '占位符',
@@ -481,6 +481,38 @@ window.onload = function () {
                 code,
                 value: null,
                 placeholder,
+                valueSets: JSON.parse(valueSets)
+              }
+            }])
+          }
+        })
+        break
+      case ControlType.CHECKBOX:
+        new Dialog({
+          title: '复选框控件',
+          data: [{
+            type: 'text',
+            label: '默认值',
+            name: 'code',
+            placeholder: '请输入默认值，多个值以英文逗号分割'
+          }, {
+            type: 'textarea',
+            label: '值集',
+            name: 'valueSets',
+            height: 100,
+            placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+          }],
+          onConfirm: (payload) => {
+            const valueSets = payload.find(p => p.name === 'valueSets')?.value
+            if (!valueSets) return
+            const code = payload.find(p => p.name === 'code')?.value
+            instance.command.executeInsertElementList([{
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
                 valueSets: JSON.parse(valueSets)
               }
             }])

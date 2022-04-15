@@ -1,6 +1,7 @@
 export interface ICheckbox {
-  disabled?: boolean;
   value: boolean | null;
+  code?: string;
+  disabled?: boolean;
 }
 
 export interface ICheckboxOption {

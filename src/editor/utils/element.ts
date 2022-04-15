@@ -97,36 +97,72 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
       // 值
       if (
         (value && value.length) ||
+        type === ControlType.CHECKBOX ||
         (type === ControlType.SELECT && code && (!value || !value.length))
       ) {
         let valueList: IElement[] = value || []
-        if (!value || !value.length) {
+        if (type === ControlType.CHECKBOX) {
+          const codeList = code ? code.split(',') : []
           if (Array.isArray(valueSets) && valueSets.length) {
-            const valueSet = valueSets.find(v => v.code === code)
-            if (valueSet) {
-              valueList = [{
-                value: valueSet.value
-              }]
+            for (let v = 0; v < valueSets.length; v++) {
+              const valueSet = valueSets[v]
+              // checkbox组件
+              elementList.splice(i, 0, {
+                controlId,
+                value: '',
+                type: el.type,
+                control: el.control,
+                controlComponent: ControlComponent.CHECKBOX,
+                checkbox: {
+                  code: valueSet.code,
+                  value: codeList.includes(valueSet.code)
+                }
+              })
+              i++
+              // 文本
+              const valueStrList = valueSet.value.split('')
+              for (let e = 0; e < valueStrList.length; e++) {
+                const value = valueStrList[e]
+                elementList.splice(i, 0, {
+                  controlId,
+                  value,
+                  type: el.type,
+                  control: el.control,
+                  controlComponent: ControlComponent.VALUE
+                })
+                i++
+              }
+            }
+          }
+        } else {
+          if (!value || !value.length) {
+            if (Array.isArray(valueSets) && valueSets.length) {
+              const valueSet = valueSets.find(v => v.code === code)
+              if (valueSet) {
+                valueList = [{
+                  value: valueSet.value
+                }]
+              }
+            }
+          }
+          for (let v = 0; v < valueList.length; v++) {
+            const element = valueList[v]
+            const valueStrList = element.value.split('')
+            for (let e = 0; e < valueStrList.length; e++) {
+              const value = valueStrList[e]
+              elementList.splice(i, 0, {
+                ...element,
+                controlId,
+                value,
+                type: el.type,
+                control: el.control,
+                controlComponent: ControlComponent.VALUE
+              })
+              i++
             }
           }
         }
-        for (let v = 0; v < valueList.length; v++) {
-          const element = valueList[v]
-          const valueStrList = element.value.split('')
-          for (let e = 0; e < valueStrList.length; e++) {
-            const value = valueStrList[e]
-            elementList.splice(i, 0, {
-              ...element,
-              controlId,
-              value,
-              type: el.type,
-              control: el.control,
-              controlComponent: ControlComponent.VALUE
-            })
-            i++
-          }
-        }
-      } else {
+      } else if (placeholder) {
         // placeholder
         const thePlaceholderArgs: Pick<IElement, 'color'> = {}
         if (editorOptions && editorOptions.control) {
