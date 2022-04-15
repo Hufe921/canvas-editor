@@ -23,7 +23,7 @@ export interface IControlCheckbox {
 export interface IControlBasic {
   type: ControlType;
   value: IElement[] | null;
-  placeholder: string;
+  placeholder?: string;
   conceptId?: string;
   prefix?: string;
   postfix?: string;

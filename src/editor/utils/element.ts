@@ -162,7 +162,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
             }
           }
         }
-      } else {
+      } else if (placeholder) {
         // placeholder
         const thePlaceholderArgs: Pick<IElement, 'color'> = {}
         if (editorOptions && editorOptions.control) {

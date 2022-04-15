@@ -274,6 +274,7 @@ export class Control {
     const elementList = this.getElementList()
     const startElement = elementList[startIndex]
     const control = startElement.control!
+    if (!control.placeholder) return
     const placeholderStrList = control.placeholder.split('')
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]
