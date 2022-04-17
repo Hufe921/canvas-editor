@@ -587,6 +587,9 @@ export class Draw {
         ctx.font = this._getFont(element)
         const fontMetrics = this.textParticle.measureText(ctx, element)
         metrics.width = fontMetrics.width * scale
+        if (element.letterSpacing) {
+          metrics.width += element.letterSpacing * scale
+        }
         metrics.boundingBoxAscent = (element.value === ZERO ? defaultSize : fontMetrics.actualBoundingBoxAscent) * scale
         metrics.boundingBoxDescent = fontMetrics.actualBoundingBoxDescent * scale
         if (element.type === ElementType.SUPERSCRIPT) {

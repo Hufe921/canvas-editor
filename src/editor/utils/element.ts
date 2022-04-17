@@ -1,5 +1,6 @@
 import { deepClone, getUUID } from '.'
 import { ElementType, IEditorOption, IElement } from '..'
+import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
@@ -123,10 +124,12 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
               const valueStrList = valueSet.value.split('')
               for (let e = 0; e < valueStrList.length; e++) {
                 const value = valueStrList[e]
+                const isLastLetter = e === valueStrList.length - 1
                 elementList.splice(i, 0, {
                   controlId,
                   value,
                   type: el.type,
+                  letterSpacing: isLastLetter ? defaultCheckboxOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
                 })
