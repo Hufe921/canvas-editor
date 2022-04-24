@@ -6,7 +6,7 @@ import { EditorContext, EditorMode } from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
-import { IDrawImagePayload } from '../../interface/Draw'
+import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IColgroup } from '../../interface/table/Colgroup'
@@ -126,7 +126,7 @@ export class CommandAdapt {
     this.historyManager.redo()
   }
 
-  public painter() {
+  public painter(options: IPainterOptions) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const selection = this.range.getSelection()
@@ -141,7 +141,7 @@ export class CommandAdapt {
         }
       })
     })
-    this.draw.setPainterStyle(painterStyle)
+    this.draw.setPainterStyle(painterStyle, options)
   }
 
   public applyPainterStyle() {

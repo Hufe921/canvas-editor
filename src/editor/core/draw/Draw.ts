@@ -1,7 +1,7 @@
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
-import { IDrawOption, IDrawRowPayload, IDrawRowResult } from '../../interface/Draw'
+import { IDrawOption, IDrawRowPayload, IDrawRowResult, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
@@ -81,6 +81,7 @@ export class Draw {
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
+  private painterOptions: IPainterOptions | null
   private searchKeyword: string | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
@@ -138,6 +139,7 @@ export class Draw {
 
     this.rowList = []
     this.painterStyle = null
+    this.painterOptions = null
     this.searchKeyword = null
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
@@ -327,8 +329,13 @@ export class Draw {
     return this.painterStyle && Object.keys(this.painterStyle).length ? this.painterStyle : null
   }
 
-  public setPainterStyle(payload: IElementStyle | null) {
+  public getPainterOptions(): IPainterOptions | null {
+    return this.painterOptions
+  }
+
+  public setPainterStyle(payload: IElementStyle | null, options?: IPainterOptions) {
     this.painterStyle = payload
+    this.painterOptions = options || null
     if (this.getPainterStyle()) {
       this.pageList.forEach(c => c.style.cursor = 'copy')
     }

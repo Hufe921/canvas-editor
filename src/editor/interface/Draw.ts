@@ -36,3 +36,7 @@ export interface IDrawRowResult {
   y: number;
   index: number;
 }
+
+export interface IPainterOptions {
+  isDblclick: boolean;
+}

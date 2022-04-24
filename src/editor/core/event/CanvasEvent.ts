@@ -74,10 +74,14 @@ export class CanvasEvent {
     }
   }
 
-  public applyPainterStyle() {
+  public clearPainterStyle() {
     this.pageList.forEach(p => {
       p.style.cursor = 'text'
     })
+    this.draw.setPainterStyle(null)
+  }
+
+  public applyPainterStyle() {
     const painterStyle = this.draw.getPainterStyle()
     if (!painterStyle) return
     const selection = this.range.getSelection()
@@ -89,8 +93,12 @@ export class CanvasEvent {
         s[key] = painterStyle[key] as any
       })
     })
-    this.draw.setPainterStyle(null)
     this.draw.render({ isSetCursor: false })
+    // 清除格式刷
+    const painterOptions = this.draw.getPainterOptions()
+    if (!painterOptions || !painterOptions.isDblclick) {
+      this.clearPainterStyle()
+    }
   }
 
   public mousemove(evt: MouseEvent) {
@@ -435,6 +443,8 @@ export class CanvasEvent {
         this.listener.saved(this.draw.getValue())
       }
       evt.preventDefault()
+    } else if (evt.key === KeyMap.ESC) {
+      this.clearPainterStyle()
     }
   }
 

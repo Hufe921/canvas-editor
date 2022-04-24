@@ -1,7 +1,7 @@
 import { IElement } from '../..'
 import { EditorMode } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
-import { IDrawImagePayload } from '../../interface/Draw'
+import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorResult } from '../../interface/Editor'
 import { IWatermark } from '../../interface/Watermark'
 import { CommandAdapt } from './CommandAdapt'
@@ -155,8 +155,8 @@ export class Command {
     return Command.redo()
   }
 
-  public executePainter() {
-    return Command.painter()
+  public executePainter(options: IPainterOptions) {
+    return Command.painter(options)
   }
 
   public executeApplyPainterStyle() {
