@@ -78,7 +78,15 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   const painterDom = document.querySelector<HTMLDivElement>('.menu-item__painter')!
   painterDom.onclick = function () {
     console.log('painter')
-    instance.command.executePainter()
+    instance.command.executePainter({
+      isDblclick: false
+    })
+  }
+  painterDom.ondblclick = function () {
+    console.log('painter')
+    instance.command.executePainter({
+      isDblclick: true
+    })
   }
 
   document.querySelector<HTMLDivElement>('.menu-item__format')!.onclick = function () {

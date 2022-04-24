@@ -25,6 +25,7 @@ export interface IElementStyle {
   strikeout?: boolean;
   rowFlex?: RowFlex;
   rowMargin?: number;
+  letterSpacing?: number;
 }
 
 export interface ITableAttr {
