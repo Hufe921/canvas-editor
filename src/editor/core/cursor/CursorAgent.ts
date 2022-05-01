@@ -1,14 +1,17 @@
 import { debounce } from '../../utils'
+import { getElementListByHTML } from '../../utils/clipboard'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 
 export class CursorAgent {
 
+  private draw: Draw
   private container: HTMLDivElement
   private agentCursorDom: HTMLTextAreaElement
   private canvasEvent: CanvasEvent
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
+    this.draw = draw
     this.container = draw.getContainer()
     this.canvasEvent = canvasEvent
     // 代理光标绘制
@@ -40,9 +43,34 @@ export class CursorAgent {
   }
 
   private _paste(evt: ClipboardEvent) {
-    const text = evt.clipboardData?.getData('text')
-    if (text) {
-      this.canvasEvent.input(text)
+    const clipboardData = evt.clipboardData
+    if (!clipboardData) return
+    // 从粘贴板提取数据
+    let isHTML = false
+    for (let i = 0; i < clipboardData.items.length; i++) {
+      const item = clipboardData.items[i]
+      if (item.type === 'text/html') {
+        isHTML = true
+        break
+      }
+    }
+    for (let i = 0; i < clipboardData.items.length; i++) {
+      const item = clipboardData.items[i]
+      if (item.kind !== 'string') continue
+      if (item.type === 'text/plain' && !isHTML) {
+        item.getAsString(plainText => {
+          const elementList = plainText.split('').map(value => ({
+            value
+          }))
+          this.draw.insertElementList(elementList)
+        })
+      }
+      if (item.type === 'text/html' && isHTML) {
+        item.getAsString(htmlText => {
+          const elementList = getElementListByHTML(htmlText)
+          this.draw.insertElementList(elementList)
+        })
+      }
     }
     evt.preventDefault()
   }

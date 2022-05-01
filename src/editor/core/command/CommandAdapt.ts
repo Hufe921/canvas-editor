@@ -1270,36 +1270,7 @@ export class CommandAdapt {
     if (!payload.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
-    const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
-    if (isPartRangeInControlOutside) return
-    const { startIndex, endIndex } = this.range.getRange()
-    if (!~startIndex && !~endIndex) return
-    // 格式化element
-    formatElementList(payload, {
-      isHandleFirstElement: false,
-      editorOptions: this.options
-    })
-    const elementList = this.draw.getElementList()
-    const isCollapsed = startIndex === endIndex
-    const start = startIndex + 1
-    if (!isCollapsed) {
-      elementList.splice(start, endIndex - startIndex)
-    }
-    const positionContext = this.position.getPositionContext()
-    for (let i = 0; i < payload.length; i++) {
-      const element = payload[i]
-      if (positionContext.isTable) {
-        element.tdId = positionContext.tdId
-        element.trId = positionContext.trId
-        element.tableId = positionContext.tableId
-      }
-      elementList.splice(start + i, 0, element)
-    }
-    const curIndex = startIndex + payload.length
-    this.range.setRange(curIndex, curIndex)
-    this.draw.render({ curIndex })
+    this.draw.insertElementList(payload)
   }
 
 }
