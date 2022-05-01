@@ -1,5 +1,5 @@
 import { debounce } from '../../utils'
-import { getElementListByClipboardHTML } from '../../utils/clipboard'
+import { getElementListByHTML } from '../../utils/clipboard'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 
@@ -67,7 +67,7 @@ export class CursorAgent {
       }
       if (item.type === 'text/html' && isHTML) {
         item.getAsString(htmlText => {
-          const elementList = getElementListByClipboardHTML(htmlText)
+          const elementList = getElementListByHTML(htmlText)
           this.draw.insertElementList(elementList)
         })
       }
