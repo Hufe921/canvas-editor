@@ -6,7 +6,7 @@ import { MouseEventButton } from '../../dataset/enum/Event'
 import { KeyMap } from '../../dataset/enum/Keymap'
 import { IElement } from '../../interface/Element'
 import { ICurrentPosition } from '../../interface/Position'
-import { writeTextByElementList } from '../../utils/clipboard'
+import { writeElementList } from '../../utils/clipboard'
 import { Cursor } from '../cursor/Cursor'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
@@ -571,7 +571,7 @@ export class CanvasEvent {
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     if (startIndex !== endIndex) {
-      writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
+      writeElementList(elementList.slice(startIndex + 1, endIndex + 1))
       let curIndex: number
       if (activeControl) {
         curIndex = this.control.cut()
@@ -588,7 +588,7 @@ export class CanvasEvent {
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     if (startIndex !== endIndex) {
-      writeTextByElementList(elementList.slice(startIndex + 1, endIndex + 1))
+      writeElementList(elementList.slice(startIndex + 1, endIndex + 1))
     }
   }
 
