@@ -41,3 +41,53 @@ export function writeTextByElementList(elementList: IElement[]) {
   if (!text) return
   writeText(text.replace(new RegExp(`^${ZERO}`), ''))
 }
+
+export function getElementListByClipboardHTML(htmlText: string): IElement[] {
+  const elementList: IElement[] = []
+  function findTextNode(dom: Element | Node) {
+    if (dom.nodeType === 3) {
+      const style = window.getComputedStyle(dom.parentNode as Element)
+      const value = dom.textContent
+      if (value) {
+        elementList.push({
+          value,
+          color: style.color,
+          bold: Number(style.fontWeight) > 500,
+          italic: style.fontStyle.includes('italic'),
+          size: Math.floor(Number(style.fontSize.replace('px', '')))
+        })
+      }
+    } else if (dom.nodeType === 1) {
+      const childNodes = dom.childNodes
+      for (let n = 0; n < childNodes.length; n++) {
+        const node = childNodes[n]
+        findTextNode(node)
+        // block
+        if (node.nodeType === 1 && n !== childNodes.length - 1) {
+          const display = window.getComputedStyle(node as Element).display
+          if (display === 'block') {
+            elementList.push({
+              value: `\n`
+            })
+          }
+        }
+      }
+    }
+  }
+  // 追加dom
+  const clipboardDom = document.createElement('div')
+  clipboardDom.innerHTML = htmlText
+  document.body.appendChild(clipboardDom)
+  const deleteNodes: ChildNode[] = []
+  clipboardDom.childNodes.forEach(child => {
+    if (child.nodeType !== 1) {
+      deleteNodes.push(child)
+    }
+  })
+  deleteNodes.forEach(node => node.remove())
+  // 搜索文本节点
+  findTextNode(clipboardDom)
+  // 移除dom
+  clipboardDom.remove()
+  return elementList
+}

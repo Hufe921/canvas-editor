@@ -40,6 +40,7 @@ import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired } from '../../interface/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
+import { formatElementList } from '../../utils/element'
 
 export class Draw {
 
@@ -283,6 +284,41 @@ export class Draw {
       return this.elementList[index!].trList![trIndex!].tdList[tdIndex!].value
     }
     return this.elementList
+  }
+
+  public insertElementList(payload: IElement[]) {
+    if (!payload.length) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
+    const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
+    if (isPartRangeInControlOutside) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    formatElementList(payload, {
+      isHandleFirstElement: false,
+      editorOptions: this.options
+    })
+    const elementList = this.getElementList()
+    const isCollapsed = startIndex === endIndex
+    const start = startIndex + 1
+    if (!isCollapsed) {
+      elementList.splice(start, endIndex - startIndex)
+    }
+    const positionContext = this.position.getPositionContext()
+    for (let i = 0; i < payload.length; i++) {
+      const element = payload[i]
+      if (positionContext.isTable) {
+        element.tdId = positionContext.tdId
+        element.trId = positionContext.trId
+        element.tableId = positionContext.tableId
+      }
+      elementList.splice(start + i, 0, element)
+    }
+    const curIndex = startIndex + payload.length
+    this.range.setRange(curIndex, curIndex)
+    this.render({
+      curIndex
+    })
   }
 
   public getOriginalElementList() {
