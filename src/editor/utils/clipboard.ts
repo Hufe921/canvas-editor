@@ -102,6 +102,19 @@ export function getElementListByHTML(htmlText: string): IElement[] {
           elementList.push({
             value: '\n'
           })
+        } else if (node.nodeName === 'A') {
+          const aElement = node as HTMLLinkElement
+          const value = aElement.innerText
+          if (value) {
+            elementList.push({
+              type: ElementType.HYPERLINK,
+              value: '',
+              valueList: [{
+                value
+              }],
+              url: aElement.href
+            })
+          }
         } else {
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
