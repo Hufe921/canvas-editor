@@ -17,7 +17,9 @@ window.onload = function () {
 
 let id: number
 let name: string
+let user: string | null
 async function init() {
+  user = queryParams('user')
   // 菜单
   const articleList = await getArticleList()
   appendArticle(articleList)
@@ -804,7 +806,9 @@ interface IArticleList {
   updateAt: string;
 }
 async function getArticleList(): Promise<IArticleList[]> {
-  const { data } = await request('/api/article/v1/list/by_example')
+  const { data } = await request('/api/article/v1/list/by_example', {
+    user
+  })
   return <IArticleList[]>data
 }
 
@@ -819,7 +823,7 @@ function appendArticle(articleList: IArticleList[]) {
     articleDom.append(articleDate)
     articleDom.onclick = () => {
       const { origin, pathname } = window.location
-      window.location.href = `${origin}${pathname}?id=${article.id}`
+      window.location.href = `${origin}${pathname}?id=${article.id}${user ? `&user=${user}` : ''}`
     }
     articleListDom.append(articleDom)
   })
@@ -832,7 +836,8 @@ interface IArticleDetail {
 }
 async function getArticleDetail(id: number): Promise<IArticleDetail> {
   const result = await request('/api/article/v1/get/by_id', {
-    id
+    id,
+    user
   })
   return <IArticleDetail>result.data
 }
@@ -842,6 +847,7 @@ async function createArticle() {
   if (!name) return
   const result = await request('/api/article/v1/add', {
     name,
+    user,
     content: JSON.stringify([])
   })
   const { origin, pathname } = window.location
@@ -852,6 +858,7 @@ async function updateArticle(content: IEditorResult) {
   await request('/api/article/v1/update', {
     id,
     name,
+    user,
     content: JSON.stringify(content)
   })
   alert('更新成功')
