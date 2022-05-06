@@ -414,7 +414,7 @@ export class Draw {
 
   public getValue(): IEditorResult {
     // 配置
-    const { width, height, margins, watermark } = this.options
+    const { width, height, margins, watermark, header } = this.options
     // 数据
     const data = zipElementList(this.elementList)
     return {
@@ -422,6 +422,7 @@ export class Draw {
       width,
       height,
       margins,
+      header,
       watermark: watermark.data ? watermark : undefined,
       data
     }

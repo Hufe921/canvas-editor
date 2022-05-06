@@ -47,6 +47,7 @@ export interface IEditorResult {
   width: number;
   height: number;
   margins: [top: number, right: number, bottom: number, left: number];
+  header?: IHeader;
   watermark?: IWatermark;
   data: IElement[];
 }

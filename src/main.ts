@@ -4,6 +4,7 @@ import prism from 'prismjs'
 import Editor, { ControlType, EditorMode, ElementType, IElement } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
+import { buildPdf } from './pdf/index'
 
 window.onload = function () {
 
@@ -584,6 +585,11 @@ window.onload = function () {
   document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {
     console.log('print')
     instance.command.executePrint()
+  }
+
+  document.querySelector<HTMLDivElement>('.menu-item__export-pdf')!.onclick = function () {
+    console.log('export-pdf')
+    buildPdf(instance.command.getValue())
   }
 
   // 6. 纸张缩放

@@ -528,6 +528,10 @@ ul {
   background-image: url('./assets/images/print.svg');
 }
 
+.menu-item__export-pdf i {
+  background-image: url('./assets/images/export-pdf.svg');
+}
+
 .editor {
   margin: 80px auto;
   position: relative;

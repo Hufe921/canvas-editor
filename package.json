@@ -22,6 +22,7 @@
     "vite": "^2.4.2"
   },
   "dependencies": {
+    "jspdf": "^2.5.1",
     "prismjs": "^1.27.0"
   }
 }
