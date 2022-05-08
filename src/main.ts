@@ -4,7 +4,7 @@ import prism from 'prismjs'
 import Editor, { ControlType, EditorMode, ElementType, IElement } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
-import { buildPdf } from './pdf/index'
+import { Pdf } from './pdf/index'
 
 window.onload = function () {
 
@@ -589,7 +589,13 @@ window.onload = function () {
 
   document.querySelector<HTMLDivElement>('.menu-item__export-pdf')!.onclick = function () {
     console.log('export-pdf')
-    buildPdf(instance.command.getValue())
+    const { data, options, version } = instance.command.getValue()
+    const pdfInstance = new Pdf(data, {
+      version,
+      editorOptions: options
+    })
+    const uri = pdfInstance.render()
+    window.open(uri, '_blank')
   }
 
   // 6. 纸张缩放

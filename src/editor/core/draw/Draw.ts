@@ -413,18 +413,12 @@ export class Draw {
   }
 
   public getValue(): IEditorResult {
-    // 配置
-    const { width, height, margins, watermark, header } = this.options
     // 数据
     const data = zipElementList(this.elementList)
     return {
       version,
-      width,
-      height,
-      margins,
-      header,
-      watermark: watermark.data ? watermark : undefined,
-      data
+      data,
+      options: this.options
     }
   }
 

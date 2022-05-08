@@ -1,6 +1,6 @@
 import './assets/css/index.css'
 import { IEditorOption, IEditorResult } from './interface/Editor'
-import { IElement } from './interface/Element'
+import { IElement, IElementMetrics, IElementPosition } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
@@ -19,12 +19,14 @@ import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
 import { defaultHeaderOption } from './dataset/constant/Header'
 import { defaultWatermarkOption } from './dataset/constant/Watermark'
-import { ControlType } from './dataset/enum/Control'
+import { ControlComponent, ControlType } from './dataset/enum/Control'
 import { defaultControlOption } from './dataset/constant/Control'
 import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
 import { defaultCheckboxOption } from './dataset/constant/Checkbox'
 import { DeepRequired } from './interface/Common'
+import { IRow, IRowElement } from './interface/Row'
+import { IDrawRowPayload, IDrawRowResult } from './interface/Draw'
 
 export default class Editor {
 
@@ -116,7 +118,8 @@ export {
   ElementType,
   ControlType,
   EditorComponent,
-  EDITOR_COMPONENT
+  EDITOR_COMPONENT,
+  ControlComponent
 }
 
 // 对外类型
@@ -126,5 +129,13 @@ export type {
   IEditorResult,
   IContextMenuContext,
   IRegisterContextMenu,
-  IWatermark
+  IWatermark,
+  IHeader,
+  DeepRequired,
+  IRow,
+  IElementMetrics,
+  IRowElement,
+  IDrawRowPayload,
+  IDrawRowResult,
+  IElementPosition
 }

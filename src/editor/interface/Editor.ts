@@ -1,6 +1,7 @@
 import { IElement } from '..'
 import { EditorMode } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
+import { DeepRequired } from './Common'
 import { IControlOption } from './Control'
 import { IHeader } from './Header'
 import { IWatermark } from './Watermark'
@@ -44,10 +45,6 @@ export interface IEditorOption {
 
 export interface IEditorResult {
   version: string;
-  width: number;
-  height: number;
-  margins: [top: number, right: number, bottom: number, left: number];
-  header?: IHeader;
-  watermark?: IWatermark;
   data: IElement[];
+  options: DeepRequired<IEditorOption>;
 }
