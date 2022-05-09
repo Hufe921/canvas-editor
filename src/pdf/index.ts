@@ -116,6 +116,7 @@ export class Pdf {
 
   private _addFont() {
     this.doc.addFont('/src/assets/font/msyh.ttf', 'Yahei', 'normal')
+    this.doc.addFont('/src/assets/font/msyh-bold.ttf', 'Yahei', 'bold')
     this.doc.setFont('Yahei')
   }
 
@@ -461,6 +462,10 @@ export class Pdf {
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     ctx.clearRect(0, 0, width, height)
+    // 绘制水印
+    if (this.editorOptions.watermark.data) {
+      this.waterMark.render(ctx)
+    }
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     // 渲染元素
@@ -483,10 +488,6 @@ export class Pdf {
     this.header.render(ctx)
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
-    // 绘制水印
-    if (this.editorOptions.watermark.data) {
-      this.waterMark.render(ctx)
-    }
   }
 
   public render(): URL {
