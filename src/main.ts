@@ -851,7 +851,7 @@ async function createArticle() {
     content: JSON.stringify([])
   })
   const { origin, pathname } = window.location
-  window.location.href = `${origin}${pathname}?id=${result.data}`
+  window.location.href = `${origin}${pathname}?id=${result.data}${user ? `&user=${user}` : ''}`
 }
 
 async function updateArticle(content: IEditorResult) {
