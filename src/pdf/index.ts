@@ -18,7 +18,6 @@ import { CheckboxParticle } from './particle/CheckboxParticle'
 import { Underline } from './richtext/Underline'
 import { Strikeout } from './richtext/Strikeout'
 import { Highlight } from './richtext/Highlight'
-import { Background } from './frame/Background'
 
 export class Pdf {
 
@@ -33,7 +32,6 @@ export class Pdf {
   private rowList: IRow[]
   private positionList: IElementPosition[]
 
-  private background: Background
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -73,7 +71,6 @@ export class Pdf {
 
     this._init()
 
-    this.background = new Background(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -464,8 +461,6 @@ export class Pdf {
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     ctx.clearRect(0, 0, width, height)
-    // 绘制背景
-    this.background.render(ctx)
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     // 渲染元素
