@@ -189,7 +189,7 @@ export class Position {
     }
     return {
       index: curPositionIndex,
-      isControl: elementList[curPositionIndex].type === ElementType.CONTROL
+      isControl: elementList[curPositionIndex]?.type === ElementType.CONTROL
     }
   }
 
