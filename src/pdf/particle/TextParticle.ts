@@ -63,12 +63,13 @@ export class TextParticle {
 
   private _render() {
     if (!this.text || !~this.curX || !~this.curX || !this.ctx) return
+    const text = this.text.replace(/\n/g, '')
     this.ctx.save()
     this.ctx.font = this.curStyle
     if (this.curColor) {
       this.ctx.fillStyle = this.curColor
     }
-    this.ctx.fillText(this.text, this.curX, this.curY)
+    this.ctx.fillText(text, this.curX, this.curY)
     this.ctx.restore()
   }
 
