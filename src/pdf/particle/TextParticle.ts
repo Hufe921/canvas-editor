@@ -21,12 +21,13 @@ export class TextParticle {
   }
 
   public measureText(ctx: CanvasRenderingContext2D, element: IElement): TextMetrics {
+    const value = element.value === `\n` ? '' : element.value
     const id = `${element.value}${ctx.font}`
     const cacheTextMetrics = this.cacheMeasureText.get(id)
     if (cacheTextMetrics) {
       return cacheTextMetrics
     }
-    const textMetrics = ctx.measureText(element.value)
+    const textMetrics = ctx.measureText(value)
     this.cacheMeasureText.set(id, textMetrics)
     return textMetrics
   }

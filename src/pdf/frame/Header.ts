@@ -4,21 +4,22 @@ import { DeepRequired, IEditorOption } from '../../editor'
 
 export class Header {
 
+  private pdf: Pdf
   private options: DeepRequired<IEditorOption>
 
   constructor(pdf: Pdf) {
+    this.pdf = pdf
     this.options = <DeepRequired<IEditorOption>>pdf.getOptions()
   }
 
   public render(ctx: Context2d) {
-    const { header: { data, size, color, font }, scale, width, headerTop } = this.options
+    const { header: { data, size, color, font }, width, headerTop } = this.options
     if (!data) return
     ctx.save()
     ctx.fillStyle = color
-    ctx.font = `${size! * scale}px ${font}`
+    const style = ctx.font = `${size}px ${font}`
     // 文字长度
-    // const textWidth = ctx.measureText(`${data}`).width
-    const textWidth = size
+    const textWidth = this.pdf.measureText(style, data).width
     // 偏移量
     const left = (width - textWidth) / 2
     ctx.fillText(`${data}`, left < 0 ? 0 : left, headerTop)

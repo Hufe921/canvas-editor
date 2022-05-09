@@ -4,6 +4,7 @@ import { IEditorOption, IRowElement } from '../../editor'
 
 export class PageBreakParticle {
 
+  private pdf: Pdf
   static readonly font: string = 'Yahei'
   static readonly fontSize: number = 12
   static readonly displayName: string = '分页符'
@@ -12,6 +13,7 @@ export class PageBreakParticle {
   private options: Required<IEditorOption>
 
   constructor(pdf: Pdf) {
+    this.pdf = pdf
     this.options = pdf.getOptions()
   }
 
@@ -21,10 +23,9 @@ export class PageBreakParticle {
     const elementWidth = element.width!
     const offsetY = defaultBasicRowMarginHeight * defaultRowMargin
     ctx.save()
-    ctx.font = `${fontSize}px ${font}`
-    // const textMeasure = ctx.measureText(displayName)
-    // const halfX = (elementWidth - textMeasure.width) / 2
-    const halfX = (elementWidth - fontSize) / 2
+    const style = ctx.font = `${fontSize}px ${font}`
+    const textMeasure = this.pdf.measureText(style, displayName)
+    const halfX = (elementWidth - textMeasure.width) / 2
 
     // 线段
     // ctx.setLineDash(lineDash)
@@ -32,13 +33,11 @@ export class PageBreakParticle {
     ctx.beginPath()
     ctx.moveTo(x, y)
     ctx.lineTo(x + halfX, y)
-    // ctx.moveTo(x + halfX + textMeasure.width, y)
-    ctx.moveTo(x + halfX + fontSize, y)
+    ctx.moveTo(x + halfX + textMeasure.width, y)
     ctx.lineTo(x + elementWidth, y)
     ctx.stroke()
     // 文字
-    // ctx.fillText(displayName, x + halfX, y + textMeasure.actualBoundingBoxAscent - fontSize / 2)
-    ctx.fillText(displayName, x + halfX, y + (fontSize / 3) - fontSize / 2)
+    ctx.fillText(displayName, x + halfX, y + textMeasure.actualBoundingBoxAscent - fontSize / 2)
     ctx.restore()
   }
 

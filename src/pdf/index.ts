@@ -22,6 +22,8 @@ import { Background } from './frame/Background'
 
 export class Pdf {
 
+  private fakeCanvas: HTMLCanvasElement
+  private fakeCtx: CanvasRenderingContext2D
   private elementList: IElement[]
   private editorOptions: DeepRequired<IEditorOption>
 
@@ -49,6 +51,8 @@ export class Pdf {
   private checkboxParticle: CheckboxParticle
 
   constructor(elementList: IElement[], options: IPdfOption) {
+    this.fakeCanvas = document.createElement('canvas')
+    this.fakeCtx = this.fakeCanvas.getContext('2d')!
     this.elementList = elementList
     this.editorOptions = options.editorOptions
     this.pageList = []
@@ -85,6 +89,18 @@ export class Pdf {
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
     this.checkboxParticle = new CheckboxParticle(this)
+  }
+
+  public getFakeCtx() {
+    return this.fakeCtx
+  }
+
+  public measureText(font: string, text: string): TextMetrics {
+    this.fakeCtx.save()
+    this.fakeCtx.font = font
+    const textMetrics = this.fakeCtx.measureText(text)
+    this.fakeCtx.restore()
+    return textMetrics
   }
 
   public getOptions(): DeepRequired<IEditorOption> {
@@ -299,7 +315,7 @@ export class Pdf {
       if (
         (preElement && preElement.type === ElementType.TABLE)
         || curRow.width + metrics.width > innerWidth
-        || (i !== 0 && element.value === '\n')
+        || element.value === '\n'
       ) {
         rowList.push({
           width: metrics.width,
@@ -503,7 +519,7 @@ export class Pdf {
     }
     // 绘制元素
     for (let i = 0; i < pageRowList.length; i++) {
-      if (!this.pageList[i]) {
+      if (i !== 0) {
         this._createPage()
       }
       const rowList = pageRowList[i]
