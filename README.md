@@ -4,7 +4,8 @@
 
 ## snapshot
 
-![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.8.8.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/feature/pdf/src/assets/snapshots/pdf_v0.8.8_1.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/feature/pdf/src/assets/snapshots/pdf_v0.8.8_2.png)
 
 ## tip
 
