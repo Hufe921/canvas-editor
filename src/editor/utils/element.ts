@@ -330,7 +330,8 @@ export function zipElementList(payload: IElement[]): IElement[] {
           nextElement
           && isSameElementExceptValue(pickElement, pickElementAttr(nextElement))
         ) {
-          pickElement.value += nextElement.value
+          const nextValue = nextElement.value === ZERO ? '\n' : nextElement.value
+          pickElement.value += nextValue
         } else {
           break
         }
