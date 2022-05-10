@@ -63,6 +63,9 @@ export class Pdf {
       hotfixes: ['px_scaling'],
       compress: true
     })
+    if (options.documentProperties) {
+      this.doc.setDocumentProperties(options.documentProperties)
+    }
     this.ctx = this.doc.context2d
 
     this._init()

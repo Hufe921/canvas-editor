@@ -591,8 +591,11 @@ window.onload = function () {
     console.log('export-pdf')
     const { data, options, version } = instance.command.getValue()
     const pdfInstance = new Pdf(data, {
-      version,
-      editorOptions: options
+      editorVersion: version,
+      editorOptions: options,
+      documentProperties: {
+        author: 'canvas-editor'
+      }
     })
     const uri = pdfInstance.render()
     window.open(uri, '_blank')
