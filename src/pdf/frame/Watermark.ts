@@ -1,4 +1,4 @@
-import jsPDF, { Context2d, GState } from 'jspdf'
+import { Context2d, GState } from 'jspdf'
 import { Pdf } from '..'
 import { DeepRequired, IEditorOption } from '../../editor'
 
@@ -12,10 +12,11 @@ export class Watermark {
     this.options = <DeepRequired<IEditorOption>>pdf.getOptions()
   }
 
-  public render(doc: jsPDF, ctx: Context2d) {
+  public render(ctx: Context2d) {
     const { watermark: { data, opacity, font, size, color }, width, height } = this.options
     const x = width / 2
     const y = height / 2
+    const doc = this.pdf.getDoc()
     ctx.save()
     const style = ctx.font = `${size}px ${font}`
     doc.setGState(new GState({ opacity }))

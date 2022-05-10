@@ -465,7 +465,7 @@ export class Pdf {
     this.ctx.clearRect(0, 0, width, height)
     // 绘制水印
     if (this.editorOptions.watermark.data) {
-      this.waterMark.render(this.doc, this.ctx)
+      this.waterMark.render(this.ctx)
     }
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
