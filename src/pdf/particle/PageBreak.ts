@@ -18,7 +18,7 @@ export class PageBreakParticle {
   }
 
   public render(ctx: Context2d, element: IRowElement, x: number, y: number) {
-    const { font, fontSize, displayName } = PageBreakParticle
+    const { font, fontSize, displayName, lineDash } = PageBreakParticle
     const { defaultRowMargin, defaultBasicRowMarginHeight } = this.options
     const elementWidth = element.width!
     const offsetY = defaultBasicRowMarginHeight * defaultRowMargin
@@ -28,7 +28,7 @@ export class PageBreakParticle {
     const halfX = (elementWidth - textMeasure.width) / 2
 
     // 线段
-    // ctx.setLineDash(lineDash)
+    ctx.setLineDash(lineDash)
     ctx.translate(0, 0.5 + offsetY)
     ctx.beginPath()
     ctx.moveTo(x, y)
