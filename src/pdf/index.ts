@@ -27,8 +27,7 @@ export class Pdf {
   private editorOptions: DeepRequired<IEditorOption>
 
   private doc: jsPDF
-  private pageList: jsPDF[]
-  private ctxList: Context2d[]
+  private ctx: Context2d
   private rowList: IRow[]
   private positionList: IElementPosition[]
 
@@ -53,8 +52,6 @@ export class Pdf {
     this.fakeCtx = this.fakeCanvas.getContext('2d')!
     this.elementList = elementList
     this.editorOptions = options.editorOptions
-    this.pageList = []
-    this.ctxList = []
     this.rowList = []
     this.positionList = []
 
@@ -66,8 +63,7 @@ export class Pdf {
       hotfixes: ['px_scaling'],
       compress: true
     })
-    this.pageList.push(this.doc)
-    this.ctxList.push(this.doc.context2d)
+    this.ctx = this.doc.context2d
 
     this._init()
 
@@ -86,6 +82,14 @@ export class Pdf {
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
     this.checkboxParticle = new CheckboxParticle(this)
+  }
+
+  public getDoc(): jsPDF {
+    return this.doc
+  }
+
+  public getCtx(): Context2d {
+    return this.ctx
   }
 
   public getFakeCtx() {
@@ -122,9 +126,7 @@ export class Pdf {
 
   private _createPage() {
     const { width, height } = this.editorOptions
-    const page = this.doc.addPage([width, height], 'p')
-    this.pageList.push(page)
-    this.ctxList.push(page.context2d)
+    this.doc.addPage([width, height], 'p')
   }
 
   private _getFont(el: IElement): string {
@@ -460,11 +462,10 @@ export class Pdf {
   private _drawPage(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
     const { width, height, margins } = this.editorOptions
     const innerWidth = this.getInnerWidth()
-    const ctx = this.ctxList[pageNo]
-    ctx.clearRect(0, 0, width, height)
+    this.ctx.clearRect(0, 0, width, height)
     // 绘制水印
     if (this.editorOptions.watermark.data) {
-      this.waterMark.render(ctx)
+      this.waterMark.render(this.doc, this.ctx)
     }
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
@@ -472,7 +473,7 @@ export class Pdf {
     let x = leftTopPoint[0]
     let y = leftTopPoint[1]
     let index = positionList.length
-    const drawRowResult = this._drawRow(ctx, {
+    const drawRowResult = this._drawRow(this.ctx, {
       positionList,
       rowList,
       pageNo,
@@ -485,9 +486,9 @@ export class Pdf {
     y = drawRowResult.y
     index = drawRowResult.index
     // 绘制页眉
-    this.header.render(ctx)
+    this.header.render(this.ctx)
     // 绘制页码
-    this.pageNumber.render(ctx, pageNo)
+    this.pageNumber.render(this.ctx, pageNo)
   }
 
   public render(): URL {

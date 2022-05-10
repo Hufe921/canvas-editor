@@ -1,4 +1,4 @@
-import { Context2d } from 'jspdf'
+import jsPDF, { Context2d, GState } from 'jspdf'
 import { Pdf } from '..'
 import { DeepRequired, IEditorOption } from '../../editor'
 
@@ -12,19 +12,20 @@ export class Watermark {
     this.options = <DeepRequired<IEditorOption>>pdf.getOptions()
   }
 
-  public render(ctx: Context2d) {
+  public render(doc: jsPDF, ctx: Context2d) {
     const { watermark: { data, opacity, font, size, color }, width, height } = this.options
     const x = width / 2
     const y = height / 2
     ctx.save()
     const style = ctx.font = `${size}px ${font}`
-    ctx.globalAlpha = opacity
+    doc.setGState(new GState({ opacity }))
     ctx.fillStyle = color
     // 移动到中心位置再旋转
     const measureText = this.pdf.measureText(style, data)
     ctx.translate(x, y)
     ctx.rotate(-45 * Math.PI / 180)
     ctx.fillText(data, - measureText.width / 2, measureText.actualBoundingBoxAscent - size / 2)
+    doc.setGState(new GState({ opacity: 1 }))
     ctx.restore()
   }
 
