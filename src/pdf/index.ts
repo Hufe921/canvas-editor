@@ -122,8 +122,8 @@ export class Pdf {
   }
 
   private _addFont() {
-    this.doc.addFont('/src/assets/font/msyh.ttf', 'Yahei', 'normal')
-    this.doc.addFont('/src/assets/font/msyh-bold.ttf', 'Yahei', 'bold')
+    this.doc.addFont('/canvas-editor-pdf/font/msyh.ttf', 'Yahei', 'normal')
+    this.doc.addFont('/canvas-editor-pdf/font/msyh-bold.ttf', 'Yahei', 'bold')
     this.doc.setFont('Yahei')
   }
 
