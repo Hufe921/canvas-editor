@@ -2,7 +2,7 @@ import { ControlComponent, DeepRequired, ElementType, IDrawRowPayload, IDrawRowR
 import { Context2d, jsPDF } from 'jspdf'
 import { IPdfOption } from './interface/Pdf'
 import { formatElementList } from './utils/element'
-import { TableParticle } from './particle/table/TableParticle'
+import { TableParticle } from './particle/TableParticle'
 import { deepClone } from './utils'
 import { TextParticle } from './particle/TextParticle'
 import { ImageParticle } from './particle/ImageParticle'
@@ -74,7 +74,7 @@ export class Pdf {
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
     this.tableParticle = new TableParticle(this)
-    this.textParticle = new TextParticle()
+    this.textParticle = new TextParticle(this)
     this.imageParticle = new ImageParticle(this)
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
@@ -127,23 +127,21 @@ export class Pdf {
     this.doc.setFont('Yahei')
   }
 
-  private _createPage() {
-    const { width, height } = this.editorOptions
-    this.doc.addPage([width, height], 'p')
-  }
-
-  private _getFont(el: IElement): string {
+  public getFont(el: IElement): string {
     const { defaultSize, defaultFont } = this.editorOptions
     const font = el.font || defaultFont
     const size = el.actualSize || el.size || defaultSize
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${size}px ${font}`
   }
 
+  private _createPage() {
+    const { width, height } = this.editorOptions
+    this.doc.addPage([width, height], 'p')
+  }
+
   private _computeRowList(innerWidth: number, elementList: IElement[]) {
     const { defaultSize, defaultRowMargin, tdPadding, defaultBasicRowMarginHeight, margins } = this.editorOptions
     const tdGap = tdPadding * 2
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     const rowList: IRow[] = []
     if (elementList.length) {
       rowList.push({
@@ -292,8 +290,7 @@ export class Pdf {
           element.actualSize = Math.ceil(size * 0.6)
         }
         metrics.height = element.actualSize || size
-        ctx.font = this._getFont(element)
-        const fontMetrics = this.textParticle.measureText(ctx, element)
+        const fontMetrics = this.textParticle.measureText(element)
         metrics.width = fontMetrics.width
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing
@@ -311,7 +308,7 @@ export class Pdf {
       const height = ascent + descent
       const rowElement: IRowElement = Object.assign(element, {
         metrics,
-        style: this._getFont(element)
+        style: this.getFont(element)
       })
       // 超过限定宽度
       const preElement = elementList[i - 1]
@@ -346,7 +343,7 @@ export class Pdf {
 
   private _drawRow(ctx: Context2d, payload: IDrawRowPayload): IDrawRowResult {
     const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
-    const { scale, tdPadding } = this.editorOptions
+    const { tdPadding } = this.editorOptions
     const tdGap = tdPadding * 2
     let x = startX
     let y = startY
@@ -364,7 +361,6 @@ export class Pdf {
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y
-
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
@@ -442,9 +438,9 @@ export class Pdf {
                 rowList: td.rowList!,
                 pageNo,
                 startIndex: 0,
-                startX: (td.x! + tdPadding) * scale + tablePreX,
-                startY: td.y! * scale + tablePreY,
-                innerWidth: (td.width! - tdGap) * scale
+                startX: td.x! + tdPadding + tablePreX,
+                startY: td.y! + tablePreY,
+                innerWidth: td.width! - tdGap
               })
               x = drawRowResult.x
               y = drawRowResult.y

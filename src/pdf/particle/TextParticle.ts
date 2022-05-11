@@ -1,8 +1,10 @@
 import { Context2d } from 'jspdf'
+import { Pdf } from '..'
 import { IElement, IRowElement } from '../../editor'
 
 export class TextParticle {
 
+  private pdf: Pdf
   private ctx: Context2d | null
   private curX: number
   private curY: number
@@ -11,7 +13,8 @@ export class TextParticle {
   private curColor?: string
   public cacheMeasureText: Map<string, TextMetrics>
 
-  constructor() {
+  constructor(pdf: Pdf) {
+    this.pdf = pdf
     this.ctx = null
     this.curX = -1
     this.curY = -1
@@ -20,14 +23,15 @@ export class TextParticle {
     this.cacheMeasureText = new Map()
   }
 
-  public measureText(ctx: CanvasRenderingContext2D, element: IElement): TextMetrics {
+  public measureText(element: IElement): TextMetrics {
+    const font = this.pdf.getFont(element)
     const value = element.value === `\n` ? '' : element.value
-    const id = `${element.value}${ctx.font}`
+    const id = `${element.value}${font}`
     const cacheTextMetrics = this.cacheMeasureText.get(id)
     if (cacheTextMetrics) {
       return cacheTextMetrics
     }
-    const textMetrics = ctx.measureText(value)
+    const textMetrics = this.pdf.measureText(font, value)
     this.cacheMeasureText.set(id, textMetrics)
     return textMetrics
   }

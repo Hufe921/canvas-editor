@@ -19,14 +19,18 @@ export class Watermark {
     const doc = this.pdf.getDoc()
     ctx.save()
     const style = ctx.font = `${size}px ${font}`
-    doc.setGState(new GState({ opacity }))
+    doc.setGState(new GState({
+      opacity
+    }))
     ctx.fillStyle = color
     // 移动到中心位置再旋转
     const measureText = this.pdf.measureText(style, data)
     ctx.translate(x, y)
     ctx.rotate(-45 * Math.PI / 180)
     ctx.fillText(data, - measureText.width / 2, measureText.actualBoundingBoxAscent - size / 2)
-    doc.setGState(new GState({ opacity: 1 }))
+    doc.setGState(new GState({
+      opacity: 1
+    }))
     ctx.restore()
   }
 

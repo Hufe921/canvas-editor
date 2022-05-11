@@ -1,6 +1,6 @@
 import { Context2d } from 'jspdf'
-import { Pdf } from '../..'
-import { IEditorOption, IElement } from '../../../editor'
+import { Pdf } from '..'
+import { IEditorOption, IElement } from '../../editor'
 
 export class TableParticle {
 
