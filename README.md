@@ -2,14 +2,15 @@
 
 <p align="center"> a rich text editor by canvas</p>
 
-## snapshot
-
-![image](https://github.com/Hufe921/canvas-editor/blob/feature/pdf/src/assets/snapshots/pdf_v0.8.8_1.png)
-![image](https://github.com/Hufe921/canvas-editor/blob/feature/pdf/src/assets/snapshots/pdf_v0.8.8_2.png)
-
 ## tip
 
-The official NPM package will be available after the release of version 1.0.0
+1. export pdf demo: [https://hufe.club/canvas-editor-pdf/](https://hufe.club/canvas-editor-pdf/)
+2. merge into the main branch is not considered now
+
+## snapshot
+
+![image](https://github.com/Hufe921/canvas-editor/blob/feature/pdf/src/assets/snapshots/pdf_v0.8.8_3.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/feature/pdf/src/assets/snapshots/pdf_v0.8.8_4.png)
 
 ## next features
 
