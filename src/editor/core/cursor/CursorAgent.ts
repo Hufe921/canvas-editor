@@ -1,3 +1,4 @@
+import { ElementType } from '../../dataset/enum/Element'
 import { debounce } from '../../utils'
 import { getElementListByHTML } from '../../utils/clipboard'
 import { Draw } from '../draw/Draw'
@@ -56,20 +57,43 @@ export class CursorAgent {
     }
     for (let i = 0; i < clipboardData.items.length; i++) {
       const item = clipboardData.items[i]
-      if (item.kind !== 'string') continue
-      if (item.type === 'text/plain' && !isHTML) {
-        item.getAsString(plainText => {
-          const elementList = plainText.split('').map(value => ({
-            value
-          }))
-          this.draw.insertElementList(elementList)
-        })
-      }
-      if (item.type === 'text/html' && isHTML) {
-        item.getAsString(htmlText => {
-          const elementList = getElementListByHTML(htmlText)
-          this.draw.insertElementList(elementList)
-        })
+      if (item.kind === 'string') {
+        if (item.type === 'text/plain' && !isHTML) {
+          item.getAsString(plainText => {
+            const elementList = plainText.split('').map(value => ({
+              value
+            }))
+            this.draw.insertElementList(elementList)
+          })
+        }
+        if (item.type === 'text/html' && isHTML) {
+          item.getAsString(htmlText => {
+            const elementList = getElementListByHTML(htmlText)
+            this.draw.insertElementList(elementList)
+          })
+        }
+      } else if (item.kind === 'file') {
+        if (item.type.includes('image')) {
+          const file = item.getAsFile()
+          if (file) {
+            const fileReader = new FileReader()
+            fileReader.readAsDataURL(file)
+            fileReader.onload = () => {
+              // 计算宽高
+              const image = new Image()
+              const value = fileReader.result as string
+              image.src = value
+              image.onload = () => {
+                this.draw.insertElementList([{
+                  value,
+                  type: ElementType.IMAGE,
+                  width: image.width,
+                  height: image.height
+                }])
+              }
+            }
+          }
+        }
       }
     }
     evt.preventDefault()

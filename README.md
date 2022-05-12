@@ -4,8 +4,8 @@
 
 ## tips
 
-1. The official NPM package will be available after the release of version 1.0.0
-2. The export pdf feature is in the poc stage, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
+1. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
+2. The official NPM package will be available after the release of version 1.0.0
 
 ## snapshot
 
