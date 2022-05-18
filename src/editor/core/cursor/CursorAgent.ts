@@ -60,10 +60,9 @@ export class CursorAgent {
       if (item.kind === 'string') {
         if (item.type === 'text/plain' && !isHTML) {
           item.getAsString(plainText => {
-            const elementList = plainText.split('').map(value => ({
-              value
-            }))
-            this.draw.insertElementList(elementList)
+            this.draw.insertElementList([{
+              value: plainText
+            }])
           })
         }
         if (item.type === 'text/html' && isHTML) {

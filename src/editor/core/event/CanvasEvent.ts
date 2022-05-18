@@ -19,6 +19,7 @@ import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 import { Control } from '../draw/control/Control'
 import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
+import { splitText } from '../../utils'
 
 export class CanvasEvent {
 
@@ -518,7 +519,7 @@ export class CanvasEvent {
       restArg = { tdId, trId, tableId }
     }
     const element = elementList[endIndex]
-    const inputData: IElement[] = text.split('').map(value => {
+    const inputData: IElement[] = splitText(text).map(value => {
       const newElement: IElement = {
         value,
         ...restArg
