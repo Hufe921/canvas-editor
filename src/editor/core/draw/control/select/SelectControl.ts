@@ -4,6 +4,7 @@ import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { KeyMap } from '../../../../dataset/enum/Keymap'
 import { IControlInstance } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
+import { splitText } from '../../../../utils'
 import { Control } from '../Control'
 
 export class SelectControl implements IControlInstance {
@@ -185,7 +186,7 @@ export class SelectControl implements IControlInstance {
     const elementList = this.control.getElementList()
     const startElement = elementList[startIndex]
     const start = startIndex + 1
-    const data = valueSet.value.split('')
+    const data = splitText(valueSet.value)
     for (let i = 0; i < data.length; i++) {
       elementList.splice(start + i, 0, {
         ...startElement,

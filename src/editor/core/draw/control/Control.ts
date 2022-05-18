@@ -3,7 +3,7 @@ import { ElementType } from '../../../dataset/enum/Element'
 import { IControl, IControlInitOption, IControlInstance, IControlOption } from '../../../interface/Control'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRange } from '../../../interface/Range'
-import { deepClone } from '../../../utils'
+import { deepClone, splitText } from '../../../utils'
 import { pickElementAttr, zipElementList } from '../../../utils/element'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
@@ -275,7 +275,7 @@ export class Control {
     const startElement = elementList[startIndex]
     const control = startElement.control!
     if (!control.placeholder) return
-    const placeholderStrList = control.placeholder.split('')
+    const placeholderStrList = splitText(control.placeholder)
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]
       elementList.splice(startIndex + p + 1, 0, {
