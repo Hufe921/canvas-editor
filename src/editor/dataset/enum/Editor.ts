@@ -17,3 +17,8 @@ export enum EditorMode {
   CLEAN = 'clean',
   READONLY = 'readonly'
 }
+
+export enum PageMode {
+  PAGING = 'paging',
+  CONTINUITY = 'continuity'
+}

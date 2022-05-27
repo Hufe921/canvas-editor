@@ -2,7 +2,7 @@ import { WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
 import { ControlComponent } from '../../dataset/enum/Control'
-import { EditorContext, EditorMode } from '../../dataset/enum/Editor'
+import { EditorContext, EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
@@ -1241,6 +1241,10 @@ export class CommandAdapt {
 
   public getValue(): IEditorResult {
     return this.draw.getValue()
+  }
+
+  public pageMode(payload: PageMode) {
+    this.draw.setPageMode(payload)
   }
 
   public pageScaleRecovery() {
