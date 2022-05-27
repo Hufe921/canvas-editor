@@ -1,3 +1,4 @@
+import { PageMode } from '../../../dataset/enum/Editor'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
 
@@ -12,9 +13,11 @@ export class Margin {
   }
 
   public render(ctx: CanvasRenderingContext2D) {
-    const { marginIndicatorColor } = this.options
+    const { marginIndicatorColor, pageMode } = this.options
     const width = this.draw.getWidth()
-    const height = this.draw.getHeight()
+    const height = pageMode === PageMode.CONTINUITY
+      ? this.draw.getCanvasHeight()
+      : this.draw.getHeight()
     const margins = this.draw.getMargins()
     const marginIndicatorSize = this.draw.getMarginIndicatorSize()
     ctx.save()

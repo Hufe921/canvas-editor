@@ -1,4 +1,4 @@
-import { ElementType } from '..'
+import { ElementType, PageMode } from '..'
 import { RowFlex } from '../dataset/enum/Row'
 import { IControl } from './Control'
 import { IEditorResult } from './Editor'
@@ -35,3 +35,5 @@ export type ISaved = (payload: IEditorResult) => void
 export type IContentChange = () => void
 
 export type IControlChange = (payload: IControl | null) => void
+
+export type IPageModeChange = (payload: PageMode) => void

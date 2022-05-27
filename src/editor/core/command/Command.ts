@@ -1,5 +1,5 @@
 import { IElement } from '../..'
-import { EditorMode } from '../../dataset/enum/Editor'
+import { EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorResult } from '../../interface/Editor'
@@ -57,6 +57,7 @@ export class Command {
   private static print: Function
   private static getImage: Function
   private static getValue: Function
+  private static pageMode: Function
   private static pageScaleRecovery: Function
   private static pageScaleMinus: Function
   private static pageScaleAdd: Function
@@ -111,6 +112,7 @@ export class Command {
     Command.print = adapt.print.bind(adapt)
     Command.getImage = adapt.getImage.bind(adapt)
     Command.getValue = adapt.getValue.bind(adapt)
+    Command.pageMode = adapt.pageMode.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
@@ -313,7 +315,11 @@ export class Command {
     return Command.getValue()
   }
 
-  // 页面缩放
+  // 页面模式、页面缩放
+  public executePageMode(payload: PageMode) {
+    return Command.pageMode(payload)
+  }
+
   public executePageScaleRecovery() {
     return Command.pageScaleRecovery()
   }

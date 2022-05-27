@@ -1,6 +1,6 @@
 import './style.css'
 import prism from 'prismjs'
-import Editor, { ControlType, EditorMode, ElementType, IEditorResult, IElement } from './editor'
+import Editor, { ControlType, EditorMode, ElementType, IEditorResult, IElement, PageMode } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
@@ -636,7 +636,17 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     instance.command.executePrint()
   }
 
-  // 6. 纸张缩放
+  // 6. 页面模式 | 纸张缩放
+  const pageModeDom = document.querySelector<HTMLDivElement>('.page-mode')!
+  const pageModeOptionsDom = pageModeDom.querySelector<HTMLDivElement>('.options')!
+  pageModeDom.onclick = function () {
+    pageModeOptionsDom.classList.toggle('visible')
+  }
+  pageModeOptionsDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    instance.command.executePageMode(<PageMode>li.dataset.pageMode!)
+  }
+
   document.querySelector<HTMLDivElement>('.page-scale-percentage')!.onclick = function () {
     console.log('page-scale-recovery')
     instance.command.executePageScaleRecovery()
@@ -786,6 +796,12 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
       const menuDom = document.querySelector<HTMLDivElement>(`.menu-item__${menu}`)!
       payload ? menuDom.classList.add('disable') : menuDom.classList.remove('disable')
     })
+  }
+
+  instance.listener.pageModeChange = function (payload) {
+    const activeMode = pageModeOptionsDom.querySelector<HTMLLIElement>(`[data-page-mode='${payload}']`)!
+    pageModeOptionsDom.querySelectorAll('li').forEach(li => li.classList.remove('active'))
+    activeMode.classList.add('active')
   }
 
   instance.listener.saved = function (payload) {
