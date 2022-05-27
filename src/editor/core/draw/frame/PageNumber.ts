@@ -1,3 +1,4 @@
+import { PageMode } from '../../../dataset/enum/Editor'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
 
@@ -12,9 +13,11 @@ export class PageNumber {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
-    const { pageNumberSize, pageNumberFont, scale } = this.options
+    const { pageNumberSize, pageNumberFont, scale, pageMode } = this.options
     const width = this.draw.getWidth()
-    const height = this.draw.getHeight()
+    const height = pageMode === PageMode.CONTINUITY
+      ? this.draw.getCanvasHeight()
+      : this.draw.getHeight()
     const pageNumberBottom = this.draw.getPageNumberBottom()
     ctx.save()
     ctx.fillStyle = '#00000'

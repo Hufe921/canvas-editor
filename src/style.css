@@ -551,13 +551,66 @@ ul {
   justify-content: space-between;
   background: #f2f4f7;
   z-index: 9;
-  overflow: hidden;
   position: fixed;
   bottom: 0;
   left: 0;
   font-size: 12px;
   padding: 0 4px 0 20px;
   box-sizing: border-box;
+}
+
+.footer>div:first-child {
+  display: flex;
+  align-items: center;
+}
+
+.footer .page-mode {
+  padding: 1px;
+  position: relative;
+}
+
+.footer .page-mode i {
+  width: 16px;
+  height: 16px;
+  margin-right: 5px;
+  cursor: pointer;
+  display: inline-block;
+  background-image: url('./assets/images/page-mode.svg');
+}
+
+.footer .page-mode .options {
+  width: 70px;
+  position: absolute;
+  left: 0;
+  bottom: 25px;
+  padding: 10px;
+  background: #fff;
+  font-size: 14px;
+  box-shadow: 0 2px 12px 0 rgb(56 56 56 / 20%);
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  display: none;
+}
+
+.footer .page-mode .options.visible {
+  display: block;
+}
+
+.footer .page-mode .options li {
+  padding: 5px;
+  margin: 5px 0;
+  user-select: none;
+  transition: all .3s;
+  text-align: center;
+  cursor: pointer;
+}
+
+.footer .page-mode .options li:hover {
+  background-color: #ebecef;
+}
+
+.footer .page-mode .options li.active {
+  background-color: #e2e6ed;
 }
 
 .footer>div:first-child>span {

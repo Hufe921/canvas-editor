@@ -1,12 +1,12 @@
 import { IElement } from '..'
-import { EditorMode } from '../dataset/enum/Editor'
+import { EditorMode, PageMode } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
 import { IControlOption } from './Control'
 import { IHeader } from './Header'
 import { IWatermark } from './Watermark'
 
 export interface IEditorOption {
-  defaultMode?: EditorMode;
+  mode?: EditorMode;
   defaultType?: string;
   defaultFont?: string;
   defaultSize?: number;
@@ -32,6 +32,7 @@ export interface IEditorOption {
   marginIndicatorSize?: number;
   marginIndicatorColor?: string,
   margins?: [top: number, right: number, bottom: number, left: number],
+  pageMode?: PageMode;
   tdPadding?: number;
   defaultTdHeight?: number;
   defaultHyperlinkColor?: string;
