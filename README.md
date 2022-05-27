@@ -9,7 +9,7 @@
 
 ## snapshot
 
-![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.8.8.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.9.0.png)
 
 ## next features
 
