@@ -23,6 +23,7 @@ import { CanvasEvent } from '../event/CanvasEvent'
 import { HistoryManager } from '../history/HistoryManager'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
+import { WorkerManager } from '../worker/WorkerManager'
 
 
 export class CommandAdapt {
@@ -37,6 +38,7 @@ export class CommandAdapt {
   private tableTool: TableTool
   private options: Required<IEditorOption>
   private control: Control
+  private workerManager: WorkerManager
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -47,6 +49,7 @@ export class CommandAdapt {
     this.tableTool = draw.getTableTool()
     this.options = draw.getOptions()
     this.control = draw.getControl()
+    this.workerManager = draw.getWorkerManager()
   }
 
   public mode(payload: EditorMode) {
@@ -1241,6 +1244,10 @@ export class CommandAdapt {
 
   public getValue(): IEditorResult {
     return this.draw.getValue()
+  }
+
+  public getWordCount(): Promise<number> {
+    return this.workerManager.getWordCount()
   }
 
   public pageMode(payload: PageMode) {

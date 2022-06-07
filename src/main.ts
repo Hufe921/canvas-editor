@@ -804,6 +804,11 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     activeMode.classList.add('active')
   }
 
+  instance.listener.contentChange = async function () {
+    const wordCount = await instance.command.getWordCount()
+    document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${wordCount || 0}`
+  }
+
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
     contentChangeCount = 1

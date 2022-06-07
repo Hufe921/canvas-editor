@@ -1,5 +1,5 @@
 {
-  "version": "0.9.0",
+  "version": "0.9.1",
   "scripts": {
     "dev": "vite",
     "lib": "npm run lint && tsc && vite build --mode lib",
