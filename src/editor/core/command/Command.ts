@@ -57,6 +57,7 @@ export class Command {
   private static print: Function
   private static getImage: Function
   private static getValue: Function
+  private static getWordCount: Function
   private static pageMode: Function
   private static pageScaleRecovery: Function
   private static pageScaleMinus: Function
@@ -112,6 +113,7 @@ export class Command {
     Command.print = adapt.print.bind(adapt)
     Command.getImage = adapt.getImage.bind(adapt)
     Command.getValue = adapt.getValue.bind(adapt)
+    Command.getWordCount = adapt.getWordCount.bind(adapt)
     Command.pageMode = adapt.pageMode.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
@@ -313,6 +315,10 @@ export class Command {
 
   public getValue(): IEditorResult {
     return Command.getValue()
+  }
+
+  public getWordCount(): Promise<number> {
+    return Command.getWordCount()
   }
 
   // 页面模式、页面缩放

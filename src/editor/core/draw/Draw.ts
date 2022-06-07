@@ -41,6 +41,7 @@ import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired } from '../../interface/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
+import { WorkerManager } from '../worker/WorkerManager'
 
 export class Draw {
 
@@ -79,6 +80,7 @@ export class Draw {
   private subscriptParticle: SubscriptParticle
   private checkboxParticle: CheckboxParticle
   private control: Control
+  private workerManager: WorkerManager
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -137,6 +139,8 @@ export class Draw {
     this.canvasEvent.register()
     const globalEvent = new GlobalEvent(this, this.canvasEvent)
     globalEvent.register()
+
+    this.workerManager = new WorkerManager(this)
 
     this.rowList = []
     this.painterStyle = null
@@ -361,6 +365,10 @@ export class Draw {
 
   public getControl(): Control {
     return this.control
+  }
+
+  public getWorkerManager(): WorkerManager {
+    return this.workerManager
   }
 
   public getRowCount(): number {
