@@ -11,6 +11,9 @@ enum ControlComponent {
   VALUE = 'value'
 }
 
+const ZERO = '\u200B'
+const WRAP = '\n'
+
 function pickText(elementList: IElement[]): string {
   let text = ''
   let e = 0
@@ -68,28 +71,59 @@ function pickText(elementList: IElement[]): string {
 }
 
 function groupText(text: string): string[] {
-  const textList: string[] = []
-  for (const t of text) {
-    textList.push(t)
+  const characterList: string[] = []
+  // 英文或数字整体分隔为一个字数
+  const numberReg = /[0-9]/
+  const letterReg = /[A-Za-z]/
+  const blankReg = /\s/
+  // for of 循环字符
+  let isPreLetter = false
+  let isPreNumber = false
+  let compositionText = ''
+  // 处理组合文本
+  function pushCompositionText() {
+    if (compositionText) {
+      characterList.push(compositionText)
+      compositionText = ''
+    }
   }
-  return textList
+  for (const t of text) {
+    if (letterReg.test(t)) {
+      if (!isPreLetter) {
+        pushCompositionText()
+      }
+      compositionText += t
+      isPreLetter = true
+      isPreNumber = false
+    } else if (numberReg.test(t)) {
+      if (!isPreNumber) {
+        pushCompositionText()
+      }
+      compositionText += t
+      isPreLetter = false
+      isPreNumber = true
+    } else {
+      pushCompositionText()
+      isPreLetter = false
+      isPreNumber = false
+      if (!blankReg.test(t)) {
+        characterList.push(t)
+      }
+    }
+  }
+  pushCompositionText()
+  return characterList
 }
 
 onmessage = (evt) => {
   const elementList = <IElement[]>evt.data
-
-  // 提取所有文本
+  // 提取文本
   const originText = pickText(elementList)
-
   // 过滤文本
-  const ZERO = '\u200B'
-  const WRAP = '\n'
   const filterText = originText
     .replace(new RegExp(`^${ZERO}`), '')
     .replace(new RegExp(ZERO, 'g'), WRAP)
-
-  // 英文或数字以逗号/换行符分隔为一个字数
+  // 文本分组
   const textGroup = groupText(filterText)
-
   postMessage(textGroup.length)
 }
