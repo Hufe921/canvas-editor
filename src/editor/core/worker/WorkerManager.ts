@@ -1,4 +1,5 @@
 import { Draw } from '../draw/Draw'
+import WordCountWorker from './works/wordCount?worker'
 
 export class WorkerManager {
 
@@ -7,7 +8,7 @@ export class WorkerManager {
 
   constructor(draw: Draw) {
     this.draw = draw
-    this.wordCountWorker = new Worker(new URL('./works/wordCount.ts', import.meta.url))
+    this.wordCountWorker = new WordCountWorker()
   }
 
   public getWordCount(): Promise<number> {
