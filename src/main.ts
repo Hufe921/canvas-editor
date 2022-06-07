@@ -805,6 +805,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   }
 
   instance.listener.contentChange = async function () {
+    contentChangeCount++
     const wordCount = await instance.command.getWordCount()
     document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${wordCount || 0}`
   }
@@ -813,10 +814,6 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     console.log('elementList: ', payload)
     contentChangeCount = 1
     updateArticle(payload)
-  }
-
-  instance.listener.contentChange = function () {
-    contentChangeCount++
   }
 
 }
