@@ -359,6 +359,7 @@ export class CanvasEvent {
       }
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
+      evt.preventDefault()
     } else if (evt.key === KeyMap.Left) {
       if (isReadonly) return
       if (index > 0) {

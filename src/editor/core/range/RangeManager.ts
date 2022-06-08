@@ -56,7 +56,7 @@ export class RangeManager {
     this.range.isCrossRowCol = !!(startTdIndex || endTdIndex || startTrIndex || endTrIndex)
     // 激活控件
     const control = this.draw.getControl()
-    if (~startIndex && ~endIndex && startIndex === startIndex) {
+    if (~startIndex && ~endIndex) {
       const elementList = this.draw.getElementList()
       const element = elementList[startIndex]
       if (element?.type === ElementType.CONTROL) {
