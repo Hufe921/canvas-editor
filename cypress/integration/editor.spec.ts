@@ -24,7 +24,6 @@ describe('基础功能', () => {
 
       cy.get('@canvas').type(`{ctrl}s`)
     })
-
   })
 
   it('模式切换', () => {
@@ -39,11 +38,9 @@ describe('基础功能', () => {
     cy.get('@canvas').click()
 
     cy.get('.cursor').should('have.css', 'display', 'none')
-
   })
 
   it('页面缩放', () => {
-
     cy.get('.page-scale-add').click()
 
     cy.get('.page-scale-percentage').contains('110%')
@@ -51,7 +48,24 @@ describe('基础功能', () => {
     cy.get('.page-scale-minus').click().click()
 
     cy.get('.page-scale-percentage').contains('90%')
+  })
 
+  it('字数统计', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.listener.contentChange = async function () {
+        const wordCount = await editor.command.getWordCount()
+
+        expect(7).to.be.eq(wordCount)
+      }
+
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([{
+        value: 'canvas-editor 2022 编辑器'
+      }])
+    })
   })
 
 })
