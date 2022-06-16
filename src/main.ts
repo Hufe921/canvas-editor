@@ -106,8 +106,8 @@ window.onload = function () {
   }
 
   const colorControlDom = document.querySelector<HTMLInputElement>('#color')!
-  colorControlDom.onchange = function () {
-    instance.command.executeColor(colorControlDom!.value)
+  colorControlDom.oninput = function () {
+    instance.command.executeColor(colorControlDom.value)
   }
   const colorDom = document.querySelector<HTMLDivElement>('.menu-item__color')!
   const colorSpanDom = colorDom.querySelector('span')!
@@ -117,7 +117,7 @@ window.onload = function () {
   }
 
   const highlightControlDom = document.querySelector<HTMLInputElement>('#highlight')!
-  highlightControlDom.onchange = function () {
+  highlightControlDom.oninput = function () {
     instance.command.executeHighlight(highlightControlDom.value)
   }
   const highlightDom = document.querySelector<HTMLDivElement>('.menu-item__highlight')!
