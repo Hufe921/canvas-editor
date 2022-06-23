@@ -207,6 +207,10 @@
   background-image: url(../images/original-size.svg);
 }
 
+.image-previewer .image-menu i.image-download {
+  background-image: url(../images/image-download.svg);
+}
+
 .table-tool__row {
   position: absolute;
   width: 12px;

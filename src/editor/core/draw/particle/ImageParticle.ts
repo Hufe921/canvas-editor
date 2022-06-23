@@ -1,6 +1,7 @@
 import { IImageParticleCreateResult } from '../../../interface/Draw'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { downloadFile } from '../../../utils'
 import { Draw } from '../Draw'
 
 export class ImageParticle {
@@ -228,6 +229,12 @@ export class ImageParticle {
       this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     menuContainer.append(originalSize)
+    const imageDownload = document.createElement('i')
+    imageDownload.classList.add('image-download')
+    imageDownload.onclick = () => {
+      downloadFile(img.src, `${this.curElement?.id}.png`)
+    }
+    menuContainer.append(imageDownload)
     previewerContainer.append(menuContainer)
     this.previewerContainer = previewerContainer
     document.body.append(previewerContainer)
