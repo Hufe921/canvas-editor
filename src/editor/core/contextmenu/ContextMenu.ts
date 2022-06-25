@@ -95,7 +95,14 @@ export class ContextMenu {
     const isInTable = positionContext.isTable
     // 是否存在跨行/列
     const isCrossRowCol = isInTable && !!crossRowCol
+    // 当前元素
+    const elementList = this.draw.getElementList()
+    const startElement = elementList[startIndex] || null
+    const endElement = elementList[endIndex] || null
+
     return {
+      startElement,
+      endElement,
       isReadonly,
       editorHasSelection,
       editorTextFocus,

@@ -1,4 +1,8 @@
+import { IElement } from '../Element'
+
 export interface IContextMenuContext {
+  startElement: IElement | null;
+  endElement: IElement | null;
   isReadonly: boolean;
   editorHasSelection: boolean;
   editorTextFocus: boolean;

@@ -374,6 +374,10 @@
   background-image: url(../../assets/images/print.svg);
 }
 
+.contextmenu-image {
+  background-image: url(../../assets/images/image.svg);
+}
+
 .contextmenu-insert-row-col {
   background-image: url(../../assets/images/insert-row-col.svg);
 }
