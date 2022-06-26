@@ -378,6 +378,10 @@
   background-image: url(../../assets/images/image.svg);
 }
 
+.contextmenu-image-change {
+  background-image: url(../../assets/images/image-change.svg);
+}
+
 .contextmenu-insert-row-col {
   background-image: url(../../assets/images/insert-row-col.svg);
 }

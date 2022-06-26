@@ -1238,12 +1238,25 @@ export class CommandAdapt {
     }
   }
 
+  public replaceImageElement(payload: string) {
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (!element || element.type !== ElementType.IMAGE) return
+    // 替换图片
+    element.id = getUUID()
+    element.value = payload
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
   public saveAsImageElement() {
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     const element = elementList[startIndex]
     if (!element || element.type !== ElementType.IMAGE) return
-    downloadFile(element.url!, `${element.id!}.png`)
+    downloadFile(element.value, `${element.id!}.png`)
   }
 
   public getImage(): string[] {
