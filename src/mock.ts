@@ -268,6 +268,17 @@ elementList.push(...<IElement[]>[{
   value: '\n'
 }])
 
+// LaTex公式
+elementList.push(...<IElement[]>[{
+  value: '医学公式：'
+},
+{
+  value: `f(x) = {{{a_0}} \over 2} + \sum\limits_{n = 1}^\infty {({a_n}\cos {nx} + {b_n}\sin {nx})}`,
+  type: ElementType.LATEX
+}, {
+  value: '\n'
+}])
+
 // 模拟结尾文本
 elementList.push(...[{
   value: 'E',

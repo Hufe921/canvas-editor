@@ -65,6 +65,10 @@ export interface ICheckboxElement {
   checkbox?: ICheckbox;
 }
 
+export interface ILaTexElement {
+  laTexSVG?: string;
+}
+
 export type IElement = IElementBasic
   & IElementStyle
   & ITable
@@ -73,6 +77,7 @@ export type IElement = IElementBasic
   & ISeparator
   & IControlElement
   & ICheckboxElement
+  & ILaTexElement
 
 export interface IElementMetrics {
   width: number;

@@ -24,6 +24,7 @@
     "dist",
     "node_modules",
     "yarn.lock",
+    "src/editor/core/draw/particle/latex/utils"
   ],
   "typescript.tsdk": "node_modules/typescript/lib",
   "editor.codeActionsOnSave": {

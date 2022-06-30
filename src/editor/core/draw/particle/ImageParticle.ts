@@ -6,26 +6,26 @@ import { Draw } from '../Draw'
 
 export class ImageParticle {
 
-  private container: HTMLDivElement
-  private canvas: HTMLCanvasElement
-  private draw: Draw
-  private options: Required<IEditorOption>
-  private curElement: IElement | null
-  private curPosition: IElementPosition | null
-  private imageCache: Map<string, HTMLImageElement>
+  protected container: HTMLDivElement
+  protected canvas: HTMLCanvasElement
+  protected draw: Draw
+  protected options: Required<IEditorOption>
+  protected curElement: IElement | null
+  protected curPosition: IElementPosition | null
+  protected imageCache: Map<string, HTMLImageElement>
   // 拖拽改变尺寸
-  private resizerSelection: HTMLDivElement
-  private resizerHandleList: HTMLDivElement[]
-  private resizerImageContainer: HTMLDivElement
-  private resizerImage: HTMLImageElement
-  private width: number
-  private height: number
-  private mousedownX: number
-  private mousedownY: number
-  private curHandleIndex: number
+  protected resizerSelection: HTMLDivElement
+  protected resizerHandleList: HTMLDivElement[]
+  protected resizerImageContainer: HTMLDivElement
+  protected resizerImage: HTMLImageElement
+  protected width: number
+  protected height: number
+  protected mousedownX: number
+  protected mousedownY: number
+  protected curHandleIndex: number
   // 预览选区
-  private previewerContainer: HTMLDivElement | null
-  private previewerImage: HTMLImageElement | null
+  protected previewerContainer: HTMLDivElement | null
+  protected previewerImage: HTMLImageElement | null
 
   constructor(draw: Draw) {
     this.container = draw.getContainer()
