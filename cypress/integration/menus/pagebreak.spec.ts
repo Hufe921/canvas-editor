@@ -1,3 +1,5 @@
+import Editor from '../../../src/editor'
+
 describe('菜单-分页符', () => {
 
   beforeEach(() => {
@@ -7,11 +9,17 @@ describe('菜单-分页符', () => {
   })
 
   it('分页符', () => {
-    cy.get('@canvas').click()
 
-    cy.get('.menu-item__page-break').click().click()
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
 
-    cy.get('canvas').should('have.length', 3)
+      editor.command.executeBackspace()
+
+      cy.get('.menu-item__page-break').click().click()
+
+      cy.get('canvas').should('have.length', 2)
+    })
+
   })
 
 })
