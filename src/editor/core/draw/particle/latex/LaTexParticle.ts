@@ -1,6 +1,6 @@
 import { IElement } from '../../../../interface/Element'
 import { ImageParticle } from '../ImageParticle'
-import { LaTexSVG, LaTexUtils } from './utils/LaTeXUtils'
+import { LaTexSVG, LaTexUtils } from './utils/LaTexUtils'
 
 export class LaTexParticle extends ImageParticle {
 
