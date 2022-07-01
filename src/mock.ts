@@ -273,7 +273,7 @@ elementList.push(...<IElement[]>[{
   value: '医学公式：'
 },
 {
-  value: `f(x) = {{{a_0}} \over 2} + \sum\limits_{n = 1}^\infty {({a_n}\cos {nx} + {b_n}\sin {nx})}`,
+  value: `{E_k} = hv - {W_0}`,
   type: ElementType.LATEX
 }, {
   value: '\n'
