@@ -1,5 +1,6 @@
 import { deepClone, getUUID, splitText } from '.'
 import { ElementType, IEditorOption, IElement } from '..'
+import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
@@ -212,6 +213,13 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
       el.value = ZERO
     }
     if (el.type === ElementType.IMAGE) {
+      el.id = getUUID()
+    }
+    if (el.type === ElementType.LATEX) {
+      const { svg, width, height } = LaTexParticle.convertLaTextToSVG(el.value)
+      el.width = el.width || width
+      el.height = el.height || height
+      el.laTexSVG = svg
       el.id = getUUID()
     }
     i++

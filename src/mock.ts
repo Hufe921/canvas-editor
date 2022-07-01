@@ -268,6 +268,17 @@ elementList.push(...<IElement[]>[{
   value: '\n'
 }])
 
+// LaTex公式
+elementList.push(...<IElement[]>[{
+  value: '医学公式：'
+},
+{
+  value: `{E_k} = hv - {W_0}`,
+  type: ElementType.LATEX
+}, {
+  value: '\n'
+}])
+
 // 模拟结尾文本
 elementList.push(...[{
   value: 'E',

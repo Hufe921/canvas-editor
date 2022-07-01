@@ -3,14 +3,13 @@ import { ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_COPY_ATTR } from '../../dataset/constant/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { MouseEventButton } from '../../dataset/enum/Event'
-import { KeyMap } from '../../dataset/enum/Keymap'
+import { KeyMap } from '../../dataset/enum/KeyMap'
 import { IElement } from '../../interface/Element'
 import { ICurrentPosition } from '../../interface/Position'
 import { writeElementList } from '../../utils/clipboard'
 import { Cursor } from '../cursor/Cursor'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
-import { ImageParticle } from '../draw/particle/ImageParticle'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
@@ -20,6 +19,7 @@ import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 import { Control } from '../draw/control/Control'
 import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
 import { splitText } from '../../utils'
+import { Previewer } from '../draw/particle/previewer/Previewer'
 
 export class CanvasEvent {
 
@@ -34,7 +34,7 @@ export class CanvasEvent {
   private range: RangeManager
   private cursor: Cursor | null
   private historyManager: HistoryManager
-  private imageParticle: ImageParticle
+  private previewer: Previewer
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
   private listener: Listener
@@ -52,7 +52,7 @@ export class CanvasEvent {
     this.position = this.draw.getPosition()
     this.range = this.draw.getRange()
     this.historyManager = this.draw.getHistoryManager()
-    this.imageParticle = this.draw.getImageParticle()
+    this.previewer = this.draw.getPreviewer()
     this.tableTool = this.draw.getTableTool()
     this.hyperlinkParticle = this.draw.getHyperlinkParticle()
     this.listener = this.draw.getListener()
@@ -258,10 +258,16 @@ export class CanvasEvent {
         isComputeRowList: false
       })
     }
-    // 图片尺寸拖拽组件
-    this.imageParticle.clearResizer()
+    // 预览工具组件
+    this.previewer.clearResizer()
     if (isDirectHitImage && !isReadonly) {
-      this.imageParticle.drawResizer(curElement, positionList[curIndex])
+      this.previewer.drawResizer(curElement, positionList[curIndex],
+        curElement.type === ElementType.LATEX
+          ? {
+            mime: 'svg',
+            srcKey: 'laTexSVG'
+          }
+          : {})
     }
     // 表格工具组件
     this.tableTool.dispose()
