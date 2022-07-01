@@ -443,6 +443,10 @@ ul {
   background-image: url('./assets/images/checkbox.svg');
 }
 
+.menu-item__latex i {
+  background-image: url('./assets/images/latex.svg');
+}
+
 .menu-item .menu-item__control .options {
   width: 55px;
 }

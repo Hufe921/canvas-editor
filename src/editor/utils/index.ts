@@ -60,3 +60,10 @@ export function splitText(text: string): string[] {
   }
   return data
 }
+
+export function downloadFile(href: string, fileName: string) {
+  const a = document.createElement('a')
+  a.href = href
+  a.download = fileName
+  a.click()
+}

@@ -13,7 +13,7 @@ import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
-import { getUUID } from '../../utils'
+import { downloadFile, getUUID } from '../../utils'
 import { formatElementList } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
@@ -1236,6 +1236,27 @@ export class CommandAdapt {
     if (scale !== 1) {
       this.draw.setPageScale(scale)
     }
+  }
+
+  public replaceImageElement(payload: string) {
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (!element || element.type !== ElementType.IMAGE) return
+    // 替换图片
+    element.id = getUUID()
+    element.value = payload
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
+  public saveAsImageElement() {
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (!element || element.type !== ElementType.IMAGE) return
+    downloadFile(element.value, `${element.id!}.png`)
   }
 
   public getImage(): string[] {

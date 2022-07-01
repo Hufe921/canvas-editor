@@ -55,6 +55,8 @@ export class Command {
   private static search: Function
   private static replace: Function
   private static print: Function
+  private static replaceImageElement: Function
+  private static saveAsImageElement: Function
   private static getImage: Function
   private static getValue: Function
   private static getWordCount: Function
@@ -111,6 +113,8 @@ export class Command {
     Command.search = adapt.search.bind(adapt)
     Command.replace = adapt.replace.bind(adapt)
     Command.print = adapt.print.bind(adapt)
+    Command.replaceImageElement = adapt.replaceImageElement.bind(adapt)
+    Command.saveAsImageElement = adapt.saveAsImageElement.bind(adapt)
     Command.getImage = adapt.getImage.bind(adapt)
     Command.getValue = adapt.getValue.bind(adapt)
     Command.getWordCount = adapt.getWordCount.bind(adapt)
@@ -307,6 +311,14 @@ export class Command {
 
   public executePrint() {
     return Command.print()
+  }
+
+  public executeReplaceImageElement(payload: string) {
+    return Command.replaceImageElement(payload)
+  }
+
+  public executeSaveAsImageElement() {
+    return Command.saveAsImageElement()
   }
 
   public getImage(): string[] {

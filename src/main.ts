@@ -206,7 +206,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
   }
 
-  // 4. | 表格 | 图片 | 超链接 | 分割线 | 水印 | 代码块 | 分隔符 |
+  // 4. | 表格 | 图片 | 超链接 | 分割线 | 水印 | 代码块 | 分隔符 | 控件 | 复选框 | LaTeX
   const tableDom = document.querySelector<HTMLDivElement>('.menu-item__table')!
   const tablePanelContainer = document.querySelector<HTMLDivElement>('.menu-item__table__collapse')!
   const tableClose = document.querySelector<HTMLDivElement>('.table-close')!
@@ -589,6 +589,28 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
       type: ElementType.CHECKBOX,
       value: ''
     }])
+  }
+
+  const latexDom = document.querySelector<HTMLDivElement>('.menu-item__latex')!
+  latexDom.onclick = function () {
+    console.log('LaTeX')
+    new Dialog({
+      title: 'LaTeX',
+      data: [{
+        type: 'textarea',
+        height: 100,
+        name: 'value',
+        placeholder: '请输入LaTeX文本'
+      }],
+      onConfirm: (payload) => {
+        const value = payload.find(p => p.name === 'value')?.value
+        if (!value) return
+        instance.command.executeInsertElementList([{
+          type: ElementType.LATEX,
+          value
+        }])
+      }
+    })
   }
 
   // 5. | 搜索&替换 | 打印 |

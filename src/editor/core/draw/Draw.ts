@@ -21,6 +21,7 @@ import { Strikeout } from './richtext/Strikeout'
 import { Underline } from './richtext/Underline'
 import { ElementType } from '../../dataset/enum/Element'
 import { ImageParticle } from './particle/ImageParticle'
+import { LaTexParticle } from './particle/latex/LaTexParticle'
 import { TextParticle } from './particle/TextParticle'
 import { PageNumber } from './frame/PageNumber'
 import { ScrollObserver } from '../observer/ScrollObserver'
@@ -42,6 +43,7 @@ import { DeepRequired } from '../../interface/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
+import { Previewer } from './particle/previewer/Previewer'
 
 export class Draw {
 
@@ -66,7 +68,9 @@ export class Draw {
   private strikeout: Strikeout
   private highlight: Highlight
   private historyManager: HistoryManager
+  private previewer: Previewer
   private imageParticle: ImageParticle
+  private laTexParticle: LaTexParticle
   private textParticle: TextParticle
   private tableParticle: TableParticle
   private tableTool: TableTool
@@ -116,7 +120,9 @@ export class Draw {
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
+    this.previewer = new Previewer(this)
     this.imageParticle = new ImageParticle(this)
+    this.laTexParticle = new LaTexParticle(this)
     this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
@@ -351,6 +357,10 @@ export class Draw {
     return this.cursor
   }
 
+  public getPreviewer(): Previewer {
+    return this.previewer
+  }
+
   public getImageParticle(): ImageParticle {
     return this.imageParticle
   }
@@ -528,7 +538,7 @@ export class Draw {
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
-      if (element.type === ElementType.IMAGE) {
+      if (element.type === ElementType.IMAGE || element.type === ElementType.LATEX) {
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         // 图片超出尺寸后自适应
@@ -705,7 +715,7 @@ export class Draw {
         curRow.width += metrics.width
         if (curRow.height < height) {
           curRow.height = height
-          if (element.type === ElementType.IMAGE) {
+          if (element.type === ElementType.IMAGE || element.type === ElementType.LATEX) {
             curRow.ascent = metrics.height
           } else {
             curRow.ascent = ascent
@@ -749,7 +759,7 @@ export class Draw {
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
-        const offsetY = element.type === ElementType.IMAGE
+        const offsetY = element.type === ElementType.IMAGE || element.type === ElementType.LATEX
           ? curRow.ascent - metrics.height
           : curRow.ascent
         const positionItem: IElementPosition = {
@@ -773,6 +783,9 @@ export class Draw {
         if (element.type === ElementType.IMAGE) {
           this.textParticle.complete()
           this.imageParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.LATEX) {
+          this.textParticle.complete()
+          this.laTexParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TABLE) {
           if (isCrossRowCol) {
             rangeRecord.x = x

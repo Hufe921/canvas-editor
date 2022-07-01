@@ -25,6 +25,7 @@ import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
 import { defaultCheckboxOption } from './dataset/constant/Checkbox'
 import { DeepRequired } from './interface/Common'
+import { imageMenus } from './core/contextmenu/menus/imageMenus'
 
 export default class Editor {
 
@@ -105,6 +106,7 @@ export default class Editor {
     })
     this.register.contextMenuList(globalMenus)
     this.register.contextMenuList(tableMenus)
+    this.register.contextMenuList(imageMenus)
   }
 
 }
