@@ -1,7 +1,7 @@
 import { EDITOR_COMPONENT } from '../../../../dataset/constant/Editor'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
-import { KeyMap } from '../../../../dataset/enum/Keymap'
+import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import { IControlInstance } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
 import { splitText } from '../../../../utils'

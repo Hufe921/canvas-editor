@@ -1022,8 +1022,8 @@ export class LaTexUtils {
     o += `</svg>`
     return {
       svg: `data:image/svg+xml;base64,${window.btoa(o)}`,
-      width: w,
-      height: h
+      width: Math.ceil(w),
+      height: Math.ceil(h)
     }
   }
 

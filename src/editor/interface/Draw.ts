@@ -14,13 +14,6 @@ export interface IDrawImagePayload {
   value: string;
 }
 
-export interface IImageParticleCreateResult {
-  resizerSelection: HTMLDivElement;
-  resizerHandleList: HTMLDivElement[];
-  resizerImageContainer: HTMLDivElement;
-  resizerImage: HTMLImageElement;
-}
-
 export interface IDrawRowPayload {
   positionList: IElementPosition[];
   rowList: IRow[];

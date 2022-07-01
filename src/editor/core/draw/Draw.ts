@@ -43,6 +43,7 @@ import { DeepRequired } from '../../interface/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
+import { Previewer } from './particle/previewer/Previewer'
 
 export class Draw {
 
@@ -67,6 +68,7 @@ export class Draw {
   private strikeout: Strikeout
   private highlight: Highlight
   private historyManager: HistoryManager
+  private previewer: Previewer
   private imageParticle: ImageParticle
   private laTexParticle: LaTexParticle
   private textParticle: TextParticle
@@ -118,6 +120,7 @@ export class Draw {
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
+    this.previewer = new Previewer(this)
     this.imageParticle = new ImageParticle(this)
     this.laTexParticle = new LaTexParticle(this)
     this.textParticle = new TextParticle(this)
@@ -354,6 +357,10 @@ export class Draw {
     return this.cursor
   }
 
+  public getPreviewer(): Previewer {
+    return this.previewer
+  }
+
   public getImageParticle(): ImageParticle {
     return this.imageParticle
   }
@@ -532,12 +539,6 @@ export class Draw {
         boundingBoxDescent: 0
       }
       if (element.type === ElementType.IMAGE || element.type === ElementType.LATEX) {
-        if (element.type === ElementType.LATEX) {
-          const { svg, width, height } = this.laTexParticle.convertLaTextToSVG(element.value)
-          element.width = width
-          element.height = height
-          element.laTexSVG = svg
-        }
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         // 图片超出尺寸后自适应

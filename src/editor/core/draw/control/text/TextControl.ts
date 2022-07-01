@@ -1,5 +1,5 @@
 import { ControlComponent } from '../../../../dataset/enum/Control'
-import { KeyMap } from '../../../../dataset/enum/Keymap'
+import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import { IControlInstance } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
 import { Control } from '../Control'

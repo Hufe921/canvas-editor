@@ -5,7 +5,7 @@ import { Cursor } from '../cursor/Cursor'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
-import { ImageParticle } from '../draw/particle/ImageParticle'
+import { Previewer } from '../draw/particle/previewer/Previewer'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { RangeManager } from '../range/RangeManager'
 import { CanvasEvent } from './CanvasEvent'
@@ -18,7 +18,7 @@ export class GlobalEvent {
   private cursor: Cursor | null
   private canvasEvent: CanvasEvent
   private range: RangeManager
-  private imageParticle: ImageParticle
+  private previewer: Previewer
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
   private control: Control
@@ -30,7 +30,7 @@ export class GlobalEvent {
     this.canvasEvent = canvasEvent
     this.cursor = null
     this.range = draw.getRange()
-    this.imageParticle = draw.getImageParticle()
+    this.previewer = draw.getPreviewer()
     this.tableTool = draw.getTableTool()
     this.hyperlinkParticle = draw.getHyperlinkParticle()
     this.control = draw.getControl()
@@ -74,7 +74,7 @@ export class GlobalEvent {
     this.cursor.recoveryCursor()
     this.range.recoveryRangeStyle()
     this.range.setRange(-1, -1)
-    this.imageParticle.clearResizer()
+    this.previewer.clearResizer()
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
     this.control.destroyControl()
