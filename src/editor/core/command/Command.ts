@@ -65,6 +65,7 @@ export class Command {
   private static pageScaleMinus: Function
   private static pageScaleAdd: Function
   private static insertElementList: Function
+  private static removeControl: Function
 
   constructor(adapt: CommandAdapt) {
     Command.mode = adapt.mode.bind(adapt)
@@ -123,6 +124,7 @@ export class Command {
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
     Command.insertElementList = adapt.insertElementList.bind(adapt)
+    Command.removeControl = adapt.removeControl.bind(adapt)
   }
 
   // 全局命令
@@ -353,6 +355,10 @@ export class Command {
   // 通用
   public executeInsertElementList(payload: IElement[]) {
     return Command.insertElementList(payload)
+  }
+
+  public executeRemoveControl() {
+    return Command.removeControl()
   }
 
 }

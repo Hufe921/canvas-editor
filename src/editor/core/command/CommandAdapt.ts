@@ -1305,4 +1305,20 @@ export class CommandAdapt {
     this.draw.insertElementList(payload)
   }
 
+  public removeControl() {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (startIndex !== endIndex) return
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (element.type !== ElementType.CONTROL) return
+    // 删除控件
+    const control = this.draw.getControl()
+    const newIndex = control.removeControl(startIndex)
+    // 重新渲染
+    this.range.setRange(newIndex, newIndex)
+    this.draw.render({
+      curIndex: newIndex
+    })
+  }
+
 }

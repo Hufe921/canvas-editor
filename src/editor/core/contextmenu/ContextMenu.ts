@@ -6,6 +6,7 @@ import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
+import { controlMenus } from './menus/controlMenus'
 import { globalMenus } from './menus/globalMenus'
 import { imageMenus } from './menus/imageMenus'
 import { tableMenus } from './menus/tableMenus'
@@ -38,7 +39,8 @@ export class ContextMenu {
     this.contextMenuList = [
       ...globalMenus,
       ...tableMenus,
-      ...imageMenus
+      ...imageMenus,
+      ...controlMenus
     ]
     this.contextMenuContainerList = []
     this.contextMenuRelationShip = new Map()
