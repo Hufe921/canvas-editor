@@ -8,6 +8,7 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { controlMenus } from './menus/controlMenus'
 import { globalMenus } from './menus/globalMenus'
+import { hyperlinkMenus } from './menus/hyperlinkMenus'
 import { imageMenus } from './menus/imageMenus'
 import { tableMenus } from './menus/tableMenus'
 
@@ -40,7 +41,8 @@ export class ContextMenu {
       ...globalMenus,
       ...tableMenus,
       ...imageMenus,
-      ...controlMenus
+      ...controlMenus,
+      ...hyperlinkMenus
     ]
     this.contextMenuContainerList = []
     this.contextMenuRelationShip = new Map()
