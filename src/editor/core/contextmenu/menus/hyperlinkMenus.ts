@@ -9,7 +9,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
       return payload.startElement?.type === ElementType.HYPERLINK
     },
     callback: (command: Command) => {
-      console.log('command: ', command)
+      command.executeDeleteHyperlink()
     }
   },
   {
@@ -18,16 +18,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
       return payload.startElement?.type === ElementType.HYPERLINK
     },
     callback: (command: Command) => {
-      console.log('command: ', command)
-    }
-  },
-  {
-    name: '打开链接',
-    when: (payload) => {
-      return payload.startElement?.type === ElementType.HYPERLINK
-    },
-    callback: (command: Command) => {
-      console.log('command: ', command)
+      command.executeCancelHyperlink()
     }
   }
 ]
