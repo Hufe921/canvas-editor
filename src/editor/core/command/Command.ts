@@ -48,6 +48,8 @@ export class Command {
   private static cancelMergeTableCell: Function
   private static image: Function
   private static hyperlink: Function
+  private static deleteHyperlink: Function
+  private static cancelHyperlink: Function
   private static separator: Function
   private static pageBreak: Function
   private static addWatermark: Function
@@ -107,6 +109,8 @@ export class Command {
     Command.cancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
+    Command.deleteHyperlink = adapt.deleteHyperlink.bind(adapt)
+    Command.cancelHyperlink = adapt.cancelHyperlink.bind(adapt)
     Command.separator = adapt.separator.bind(adapt)
     Command.pageBreak = adapt.pageBreak.bind(adapt)
     Command.addWatermark = adapt.addWatermark.bind(adapt)
@@ -281,6 +285,14 @@ export class Command {
 
   public executeHyperlink(payload: IElement) {
     return Command.hyperlink(payload)
+  }
+
+  public executeDeleteHyperlink() {
+    return Command.deleteHyperlink()
+  }
+
+  public executeCancelHyperlink() {
+    return Command.cancelHyperlink()
   }
 
   public executeImage(payload: IDrawImagePayload) {

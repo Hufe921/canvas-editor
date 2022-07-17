@@ -1013,6 +1013,79 @@ export class CommandAdapt {
     this.draw.render({ curIndex })
   }
 
+  public getHyperlinkRange(): [number, number] | null {
+    let leftIndex = -1
+    let rightIndex = -1
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return null
+    const elementList = this.draw.getElementList()
+    const startElement = elementList[startIndex]
+    if (startElement.type !== ElementType.HYPERLINK) return null
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (preElement.hyperlinkId !== startElement.hyperlinkId) {
+        leftIndex = preIndex
+        break
+      }
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (nextElement.hyperlinkId !== startElement.hyperlinkId) {
+        rightIndex = nextIndex - 1
+        break
+      }
+      nextIndex++
+    }
+    // 控件在最后
+    if (nextIndex === elementList.length) {
+      rightIndex = nextIndex - 1
+    }
+    if (!~leftIndex || !~rightIndex) return null
+    return [leftIndex, rightIndex]
+  }
+
+  public deleteHyperlink() {
+    // 获取超链接索引
+    const hyperRange = this.getHyperlinkRange()
+    if (!hyperRange) return
+    const elementList = this.draw.getElementList()
+    const [leftIndex, rightIndex] = hyperRange
+    // 删除元素
+    elementList.splice(leftIndex + 1, rightIndex - leftIndex)
+    // 重置画布
+    this.range.setRange(leftIndex, leftIndex)
+    this.draw.render({
+      curIndex: leftIndex
+    })
+  }
+
+  public cancelHyperlink() {
+    // 获取超链接索引
+    const hyperRange = this.getHyperlinkRange()
+    if (!hyperRange) return
+    const elementList = this.draw.getElementList()
+    const [leftIndex, rightIndex] = hyperRange
+    // 删除属性
+    for (let i = leftIndex; i <= rightIndex; i++) {
+      const element = elementList[i]
+      delete element.type
+      delete element.url
+      delete element.hyperlinkId
+      delete element.underline
+    }
+    // 重置画布
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex,
+      isComputeRowList: false
+    })
+  }
+
   public separator(payload: number[]) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
