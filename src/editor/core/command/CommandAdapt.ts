@@ -1057,6 +1057,7 @@ export class CommandAdapt {
     const [leftIndex, rightIndex] = hyperRange
     // 删除元素
     elementList.splice(leftIndex + 1, rightIndex - leftIndex)
+    this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
     this.range.setRange(leftIndex, leftIndex)
     this.draw.render({
@@ -1078,6 +1079,7 @@ export class CommandAdapt {
       delete element.hyperlinkId
       delete element.underline
     }
+    this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
     const { endIndex } = this.range.getRange()
     this.draw.render({
