@@ -60,9 +60,7 @@ export class CursorAgent {
       if (item.kind === 'string') {
         if (item.type === 'text/plain' && !isHTML) {
           item.getAsString(plainText => {
-            this.draw.insertElementList([{
-              value: plainText
-            }])
+            this.canvasEvent.input(plainText)
           })
         }
         if (item.type === 'text/html' && isHTML) {
