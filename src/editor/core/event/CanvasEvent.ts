@@ -1,5 +1,5 @@
 import { ElementType } from '../..'
-import { ZERO } from '../../dataset/constant/Common'
+import { NBSP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_COPY_ATTR } from '../../dataset/constant/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { MouseEventButton } from '../../dataset/enum/Event'
@@ -453,6 +453,9 @@ export class CanvasEvent {
       evt.preventDefault()
     } else if (evt.key === KeyMap.ESC) {
       this.clearPainterStyle()
+    } else if (evt.key === KeyMap.TAB) {
+      this.input(NBSP.repeat(4))
+      evt.preventDefault()
     }
   }
 
