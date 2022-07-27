@@ -513,7 +513,7 @@ export class Draw {
   }
 
   private _computeRowList(innerWidth: number, elementList: IElement[]) {
-    const { defaultSize, defaultRowMargin, scale, tdPadding } = this.options
+    const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const tdGap = tdPadding * 2
     const canvas = document.createElement('canvas')
@@ -668,6 +668,11 @@ export class Draw {
         element.width = elementWidth
         metrics.width = elementWidth
         metrics.height = height * scale
+      } else if (element.type === ElementType.TAB) {
+        metrics.width = defaultTabWidth * scale
+        metrics.height = defaultSize * scale
+        metrics.boundingBoxDescent = 0
+        metrics.boundingBoxAscent = metrics.height
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || this.options.defaultSize
@@ -814,6 +819,8 @@ export class Draw {
         ) {
           this.textParticle.complete()
           this.checkboxParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.TAB) {
+          this.textParticle.complete()
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
