@@ -1,5 +1,5 @@
 import { ElementType } from '../..'
-import { NBSP, ZERO } from '../../dataset/constant/Common'
+import { ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_COPY_ATTR } from '../../dataset/constant/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { MouseEventButton } from '../../dataset/enum/Event'
@@ -454,7 +454,10 @@ export class CanvasEvent {
     } else if (evt.key === KeyMap.ESC) {
       this.clearPainterStyle()
     } else if (evt.key === KeyMap.TAB) {
-      this.input(NBSP.repeat(4))
+      this.draw.insertElementList([{
+        type: ElementType.TAB,
+        value: ''
+      }])
       evt.preventDefault()
     }
   }

@@ -55,6 +55,7 @@ export default class Editor {
       defaultSize: 16,
       defaultRowMargin: 1,
       defaultBasicRowMarginHeight: 8,
+      defaultTabWidth: 32,
       width: 794,
       height: 1123,
       scale: 1,

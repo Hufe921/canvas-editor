@@ -281,6 +281,9 @@ elementList.push(...<IElement[]>[{
 
 // 模拟结尾文本
 elementList.push(...[{
+  value: '',
+  type: ElementType.TAB
+}, {
   value: 'E',
   size: 16
 }, {
