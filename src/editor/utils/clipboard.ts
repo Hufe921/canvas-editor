@@ -44,6 +44,14 @@ export function writeElementList(elementList: IElement[]) {
           a.href = element.url
         }
         clipboardDom.append(a)
+      } else if (element.type === ElementType.IMAGE) {
+        const img = document.createElement('img')
+        if (element.value) {
+          img.src = element.value
+          img.width = element.width!
+          img.height = element.height!
+        }
+        clipboardDom.append(img)
       } else if (!element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)) {
         const span = document.createElement('span')
         let text = ''
