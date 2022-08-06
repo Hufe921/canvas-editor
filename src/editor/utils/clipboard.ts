@@ -1,7 +1,8 @@
-import { IElement } from '..'
+import { IEditorOption, IElement, RowFlex } from '..'
 import { ZERO } from '../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { ElementType } from '../dataset/enum/Element'
+import { DeepRequired } from '../interface/Common'
 import { zipElementList } from './element'
 
 export function writeClipboardItem(text: string, html: string) {
@@ -16,7 +17,7 @@ export function writeClipboardItem(text: string, html: string) {
   window.navigator.clipboard.write([item])
 }
 
-export function writeElementList(elementList: IElement[]) {
+export function writeElementList(elementList: IElement[], options: DeepRequired<IEditorOption>) {
   const clipboardDom: HTMLDivElement = document.createElement('div')
   function buildDomFromElementList(payload: IElement[]) {
     for (let e = 0; e < payload.length; e++) {
@@ -30,8 +31,9 @@ export function writeElementList(elementList: IElement[]) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
+            tdDom.style.border = '1px solid'
             const td = tr.tdList[d]
-            tdDom.innerText = td.value[0].value
+            tdDom.innerText = td.value[0]?.value || ''
             trDom.append(tdDom)
           }
           tableDom.append(trDom)
@@ -44,8 +46,22 @@ export function writeElementList(elementList: IElement[]) {
           a.href = element.url
         }
         clipboardDom.append(a)
-      } else if (!element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)) {
-        const span = document.createElement('span')
+      } else if (element.type === ElementType.IMAGE) {
+        const img = document.createElement('img')
+        if (element.value) {
+          img.src = element.value
+          img.width = element.width!
+          img.height = element.height!
+        }
+        clipboardDom.append(img)
+      } else if (element.type === ElementType.SEPARATOR) {
+        const hr = document.createElement('hr')
+        clipboardDom.append(hr)
+      } else if (
+        !element.type
+        || element.type === ElementType.LATEX
+        || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+      ) {
         let text = ''
         if (element.type === ElementType.CONTROL) {
           text = element.control!.value?.[0]?.value || ''
@@ -53,20 +69,26 @@ export function writeElementList(elementList: IElement[]) {
           text = element.value
         }
         if (!text) continue
-        span.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+        const isBlock = element.rowFlex === RowFlex.CENTER || element.rowFlex === RowFlex.RIGHT
+        const dom = document.createElement(isBlock ? 'p' : 'span')
+        dom.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+        dom.style.fontFamily = element.font || options.defaultFont
+        if (element.rowFlex) {
+          dom.style.textAlign = element.rowFlex
+        }
         if (element.color) {
-          span.style.color = element.color
+          dom.style.color = element.color
         }
         if (element.bold) {
-          span.style.fontWeight = '600'
+          dom.style.fontWeight = '600'
         }
         if (element.italic) {
-          span.style.fontStyle = 'italic'
+          dom.style.fontStyle = 'italic'
         }
         if (element.size) {
-          span.style.fontSize = `${element.size}px`
+          dom.style.fontSize = `${element.size}px`
         }
-        clipboardDom.append(span)
+        clipboardDom.append(dom)
       }
     }
   }

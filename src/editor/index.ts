@@ -9,9 +9,7 @@ import { RowFlex } from './dataset/enum/Row'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
-import { globalMenus } from './core/contextmenu/menus/globalMenus'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
-import { tableMenus } from './core/contextmenu/menus/tableMenus'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
 import { EditorComponent, EditorMode, PageMode } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
@@ -25,7 +23,6 @@ import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
 import { defaultCheckboxOption } from './dataset/constant/Checkbox'
 import { DeepRequired } from './interface/Common'
-import { imageMenus } from './core/contextmenu/menus/imageMenus'
 
 export default class Editor {
 
@@ -58,6 +55,7 @@ export default class Editor {
       defaultSize: 16,
       defaultRowMargin: 1,
       defaultBasicRowMarginHeight: 8,
+      defaultTabWidth: 32,
       width: 794,
       height: 1123,
       scale: 1,
@@ -104,9 +102,6 @@ export default class Editor {
     this.register = new Register({
       contextMenu
     })
-    this.register.contextMenuList(globalMenus)
-    this.register.contextMenuList(tableMenus)
-    this.register.contextMenuList(imageMenus)
   }
 
 }

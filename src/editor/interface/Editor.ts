@@ -12,6 +12,7 @@ export interface IEditorOption {
   defaultSize?: number;
   defaultBasicRowMarginHeight?: number;
   defaultRowMargin?: number;
+  defaultTabWidth?: number;
   width?: number;
   height?: number;
   scale?: number;

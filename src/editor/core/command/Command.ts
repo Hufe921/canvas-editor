@@ -6,65 +6,67 @@ import { IEditorResult } from '../../interface/Editor'
 import { IWatermark } from '../../interface/Watermark'
 import { CommandAdapt } from './CommandAdapt'
 
-
 export class Command {
 
-  private static mode: Function
-  private static cut: Function
-  private static copy: Function
-  private static paste: Function
-  private static selectAll: Function
-  private static backspace: Function
-  private static setRange: Function
-  private static undo: Function
-  private static redo: Function
-  private static painter: Function
-  private static applyPainterStyle: Function
-  private static format: Function
-  private static font: Function
-  private static sizeAdd: Function
-  private static sizeMinus: Function
-  private static bold: Function
-  private static italic: Function
-  private static underline: Function
-  private static strikeout: Function
-  private static superscript: Function
-  private static subscript: Function
-  private static color: Function
-  private static highlight: Function
-  private static left: Function
-  private static center: Function
-  private static right: Function
-  private static rowMargin: Function
-  private static insertTable: Function
-  private static insertTableTopRow: Function
-  private static insertTableBottomRow: Function
-  private static insertTableLeftCol: Function
-  private static insertTableRightCol: Function
-  private static deleteTableRow: Function
-  private static deleteTableCol: Function
-  private static deleteTable: Function
-  private static mergeTableCell: Function
-  private static cancelMergeTableCell: Function
-  private static image: Function
-  private static hyperlink: Function
-  private static separator: Function
-  private static pageBreak: Function
-  private static addWatermark: Function
-  private static deleteWatermark: Function
-  private static search: Function
-  private static replace: Function
-  private static print: Function
-  private static replaceImageElement: Function
-  private static saveAsImageElement: Function
-  private static getImage: Function
-  private static getValue: Function
-  private static getWordCount: Function
-  private static pageMode: Function
-  private static pageScaleRecovery: Function
-  private static pageScaleMinus: Function
-  private static pageScaleAdd: Function
-  private static insertElementList: Function
+  private static mode: CommandAdapt['mode']
+  private static cut: CommandAdapt['cut']
+  private static copy: CommandAdapt['copy']
+  private static paste: CommandAdapt['paste']
+  private static selectAll: CommandAdapt['selectAll']
+  private static backspace: CommandAdapt['backspace']
+  private static setRange: CommandAdapt['setRange']
+  private static undo: CommandAdapt['undo']
+  private static redo: CommandAdapt['redo']
+  private static painter: CommandAdapt['painter']
+  private static applyPainterStyle: CommandAdapt['applyPainterStyle']
+  private static format: CommandAdapt['format']
+  private static font: CommandAdapt['font']
+  private static sizeAdd: CommandAdapt['sizeAdd']
+  private static sizeMinus: CommandAdapt['sizeMinus']
+  private static bold: CommandAdapt['bold']
+  private static italic: CommandAdapt['italic']
+  private static underline: CommandAdapt['underline']
+  private static strikeout: CommandAdapt['strikeout']
+  private static superscript: CommandAdapt['superscript']
+  private static subscript: CommandAdapt['subscript']
+  private static color: CommandAdapt['color']
+  private static highlight: CommandAdapt['highlight']
+  private static left: CommandAdapt['rowFlex']
+  private static center: CommandAdapt['rowFlex']
+  private static right: CommandAdapt['rowFlex']
+  private static rowMargin: CommandAdapt['rowMargin']
+  private static insertTable: CommandAdapt['insertTable']
+  private static insertTableTopRow: CommandAdapt['insertTableTopRow']
+  private static insertTableBottomRow: CommandAdapt['insertTableBottomRow']
+  private static insertTableLeftCol: CommandAdapt['insertTableLeftCol']
+  private static insertTableRightCol: CommandAdapt['insertTableRightCol']
+  private static deleteTableRow: CommandAdapt['deleteTableRow']
+  private static deleteTableCol: CommandAdapt['deleteTableCol']
+  private static deleteTable: CommandAdapt['deleteTable']
+  private static mergeTableCell: CommandAdapt['mergeTableCell']
+  private static cancelMergeTableCell: CommandAdapt['cancelMergeTableCell']
+  private static image: CommandAdapt['image']
+  private static hyperlink: CommandAdapt['hyperlink']
+  private static deleteHyperlink: CommandAdapt['deleteHyperlink']
+  private static cancelHyperlink: CommandAdapt['cancelHyperlink']
+  private static separator: CommandAdapt['separator']
+  private static pageBreak: CommandAdapt['pageBreak']
+  private static addWatermark: CommandAdapt['addWatermark']
+  private static deleteWatermark: CommandAdapt['deleteWatermark']
+  private static search: CommandAdapt['search']
+  private static replace: CommandAdapt['replace']
+  private static print: CommandAdapt['print']
+  private static replaceImageElement: CommandAdapt['replaceImageElement']
+  private static saveAsImageElement: CommandAdapt['saveAsImageElement']
+  private static getImage: CommandAdapt['getImage']
+  private static getValue: CommandAdapt['getValue']
+  private static getWordCount: CommandAdapt['getWordCount']
+  private static pageMode: CommandAdapt['pageMode']
+  private static pageScaleRecovery: CommandAdapt['pageScaleRecovery']
+  private static pageScaleMinus: CommandAdapt['pageScaleMinus']
+  private static pageScaleAdd: CommandAdapt['pageScaleAdd']
+  private static insertElementList: CommandAdapt['insertElementList']
+  private static removeControl: CommandAdapt['removeControl']
 
   constructor(adapt: CommandAdapt) {
     Command.mode = adapt.mode.bind(adapt)
@@ -106,6 +108,8 @@ export class Command {
     Command.cancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
+    Command.deleteHyperlink = adapt.deleteHyperlink.bind(adapt)
+    Command.cancelHyperlink = adapt.cancelHyperlink.bind(adapt)
     Command.separator = adapt.separator.bind(adapt)
     Command.pageBreak = adapt.pageBreak.bind(adapt)
     Command.addWatermark = adapt.addWatermark.bind(adapt)
@@ -123,6 +127,7 @@ export class Command {
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
     Command.insertElementList = adapt.insertElementList.bind(adapt)
+    Command.removeControl = adapt.removeControl.bind(adapt)
   }
 
   // 全局命令
@@ -281,6 +286,14 @@ export class Command {
     return Command.hyperlink(payload)
   }
 
+  public executeDeleteHyperlink() {
+    return Command.deleteHyperlink()
+  }
+
+  public executeCancelHyperlink() {
+    return Command.cancelHyperlink()
+  }
+
   public executeImage(payload: IDrawImagePayload) {
     return Command.image(payload)
   }
@@ -353,6 +366,10 @@ export class Command {
   // 通用
   public executeInsertElementList(payload: IElement[]) {
     return Command.insertElementList(payload)
+  }
+
+  public executeRemoveControl() {
+    return Command.removeControl()
   }
 
 }

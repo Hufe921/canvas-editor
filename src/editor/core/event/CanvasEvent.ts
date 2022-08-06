@@ -1,4 +1,4 @@
-import { ElementType } from '../..'
+import { ElementType, IEditorOption } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_COPY_ATTR } from '../../dataset/constant/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
@@ -20,6 +20,7 @@ import { Control } from '../draw/control/Control'
 import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
 import { splitText } from '../../utils'
 import { Previewer } from '../draw/particle/previewer/Previewer'
+import { DeepRequired } from '../../interface/Common'
 
 export class CanvasEvent {
 
@@ -28,6 +29,7 @@ export class CanvasEvent {
   private mouseDownStartPosition: ICurrentPosition | null
 
   private draw: Draw
+  private options: DeepRequired<IEditorOption>
   private pageContainer: HTMLDivElement
   private pageList: HTMLCanvasElement[]
   private position: Position
@@ -48,6 +50,7 @@ export class CanvasEvent {
     this.pageContainer = draw.getPageContainer()
     this.pageList = draw.getPageList()
     this.draw = draw
+    this.options = draw.getOptions()
     this.cursor = null
     this.position = this.draw.getPosition()
     this.range = this.draw.getRange()
@@ -453,6 +456,12 @@ export class CanvasEvent {
       evt.preventDefault()
     } else if (evt.key === KeyMap.ESC) {
       this.clearPainterStyle()
+    } else if (evt.key === KeyMap.TAB) {
+      this.draw.insertElementList([{
+        type: ElementType.TAB,
+        value: ''
+      }])
+      evt.preventDefault()
     }
   }
 
@@ -579,7 +588,7 @@ export class CanvasEvent {
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     if (startIndex !== endIndex) {
-      writeElementList(elementList.slice(startIndex + 1, endIndex + 1))
+      writeElementList(elementList.slice(startIndex + 1, endIndex + 1), this.options)
       let curIndex: number
       if (activeControl) {
         curIndex = this.control.cut()
@@ -596,7 +605,7 @@ export class CanvasEvent {
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     if (startIndex !== endIndex) {
-      writeElementList(elementList.slice(startIndex + 1, endIndex + 1))
+      writeElementList(elementList.slice(startIndex + 1, endIndex + 1), this.options)
     }
   }
 
