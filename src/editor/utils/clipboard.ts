@@ -31,8 +31,9 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
+            tdDom.style.border = '1px solid'
             const td = tr.tdList[d]
-            tdDom.innerText = td.value[0].value
+            tdDom.innerText = td.value[0]?.value || ''
             trDom.append(tdDom)
           }
           tableDom.append(trDom)
@@ -56,7 +57,11 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
       } else if (element.type === ElementType.SEPARATOR) {
         const hr = document.createElement('hr')
         clipboardDom.append(hr)
-      } else if (!element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)) {
+      } else if (
+        !element.type
+        || element.type === ElementType.LATEX
+        || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+      ) {
         let text = ''
         if (element.type === ElementType.CONTROL) {
           text = element.control!.value?.[0]?.value || ''
