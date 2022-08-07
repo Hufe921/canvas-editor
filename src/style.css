@@ -662,6 +662,14 @@ ul {
   user-select: none;
 }
 
+.footer .fullscreen {
+  background-image: url('./assets/images/request-fullscreen.svg');
+}
+
+.footer .fullscreen.exist {
+  background-image: url('./assets/images/exit-fullscreen.svg');
+}
+
 .footer .editor-mode {
   cursor: pointer;
   user-select: none;

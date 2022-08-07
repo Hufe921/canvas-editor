@@ -608,7 +608,7 @@ window.onload = function () {
     instance.command.executePrint()
   }
 
-  // 6. 页面模式 | 纸张缩放
+  // 6. 页面模式 | 纸张缩放 | 全屏
   const pageModeDom = document.querySelector<HTMLDivElement>('.page-mode')!
   const pageModeOptionsDom = pageModeDom.querySelector<HTMLDivElement>('.options')!
   pageModeDom.onclick = function () {
@@ -632,6 +632,27 @@ window.onload = function () {
   document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick = function () {
     console.log('page-scale-add')
     instance.command.executePageScaleAdd()
+  }
+
+  // 全屏
+  const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
+  fullscreenDom.onclick = toggleFullscreen
+  window.addEventListener('keydown', (evt) => {
+    if (evt.key === 'F11') {
+      toggleFullscreen()
+      evt.preventDefault()
+    }
+  })
+  document.addEventListener('fullscreenchange', () => {
+    fullscreenDom.classList.toggle('exist')
+  })
+  function toggleFullscreen() {
+    console.log('fullscreen')
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
   }
 
   // 7. 编辑器使用模式
