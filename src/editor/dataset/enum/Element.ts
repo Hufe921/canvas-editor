@@ -10,5 +10,6 @@ export enum ElementType {
   CONTROL = 'control',
   CHECKBOX = 'checkbox',
   LATEX = 'latex',
-  TAB = 'tab'
+  TAB = 'tab',
+  DATE = 'date'
 }

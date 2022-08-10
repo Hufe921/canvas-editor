@@ -44,6 +44,7 @@ import { ControlComponent } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
+import { DateParticle } from './particle/date/DateParticle'
 
 export class Draw {
 
@@ -78,6 +79,7 @@ export class Draw {
   private waterMark: Watermark
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
+  private dateParticle: DateParticle
   private separatorParticle: SeparatorParticle
   private pageBreakParticle: PageBreakParticle
   private superscriptParticle: SuperscriptParticle
@@ -130,6 +132,7 @@ export class Draw {
     this.waterMark = new Watermark(this)
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.dateParticle = new DateParticle()
     this.separatorParticle = new SeparatorParticle()
     this.pageBreakParticle = new PageBreakParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
@@ -801,6 +804,9 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.DATE) {
+          this.textParticle.complete()
+          this.dateParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this.textParticle.complete()
           this.superscriptParticle.render(ctx, element, x, y + offsetY)

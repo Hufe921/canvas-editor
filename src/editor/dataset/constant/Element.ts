@@ -47,7 +47,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'colgroup',
   'valueList',
   'control',
-  'checkbox'
+  'checkbox',
+  'dateFormat'
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
@@ -55,5 +56,6 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.HYPERLINK,
   ElementType.SUBSCRIPT,
   ElementType.SUPERSCRIPT,
-  ElementType.CONTROL
+  ElementType.CONTROL,
+  ElementType.DATE
 ]
