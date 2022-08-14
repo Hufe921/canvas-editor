@@ -1,3 +1,4 @@
+import { Command } from '../../core/command/Command'
 import { IElement } from '../Element'
 
 export interface IContextMenuContext {
@@ -16,6 +17,6 @@ export interface IRegisterContextMenu {
   name?: string;
   shortCut?: string;
   when?: (payload: IContextMenuContext) => boolean;
-  callback?: Function;
+  callback?: (command: Command, context: IContextMenuContext) => any;
   childMenus?: IRegisterContextMenu[];
 }

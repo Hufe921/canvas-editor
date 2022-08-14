@@ -1,5 +1,5 @@
 import { ElementType } from '../../../dataset/enum/Element'
-import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
+import { IContextMenuContext, IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
 
 export const hyperlinkMenus: IRegisterContextMenu[] = [
@@ -19,6 +19,18 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
     },
     callback: (command: Command) => {
       command.executeCancelHyperlink()
+    }
+  },
+  {
+    name: '编辑链接',
+    when: (payload) => {
+      return payload.startElement?.type === ElementType.HYPERLINK
+    },
+    callback: (command: Command, context: IContextMenuContext) => {
+      const url = window.prompt('编辑链接', context.startElement?.url)
+      if (url) {
+        command.executeEditHyperlink(url)
+      }
     }
   }
 ]

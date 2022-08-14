@@ -49,6 +49,7 @@ export class Command {
   private static hyperlink: CommandAdapt['hyperlink']
   private static deleteHyperlink: CommandAdapt['deleteHyperlink']
   private static cancelHyperlink: CommandAdapt['cancelHyperlink']
+  private static editHyperlink: CommandAdapt['editHyperlink']
   private static separator: CommandAdapt['separator']
   private static pageBreak: CommandAdapt['pageBreak']
   private static addWatermark: CommandAdapt['addWatermark']
@@ -110,6 +111,7 @@ export class Command {
     Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.deleteHyperlink = adapt.deleteHyperlink.bind(adapt)
     Command.cancelHyperlink = adapt.cancelHyperlink.bind(adapt)
+    Command.editHyperlink = adapt.editHyperlink.bind(adapt)
     Command.separator = adapt.separator.bind(adapt)
     Command.pageBreak = adapt.pageBreak.bind(adapt)
     Command.addWatermark = adapt.addWatermark.bind(adapt)
@@ -292,6 +294,10 @@ export class Command {
 
   public executeCancelHyperlink() {
     return Command.cancelHyperlink()
+  }
+
+  public executeEditHyperlink(payload: string) {
+    return Command.editHyperlink(payload)
   }
 
   public executeImage(payload: IDrawImagePayload) {
