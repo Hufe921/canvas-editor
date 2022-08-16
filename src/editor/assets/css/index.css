@@ -1,4 +1,5 @@
 @import './control/select.css';
+@import './date/datePicker.css';
 
 .inputarea {
   width: 0;

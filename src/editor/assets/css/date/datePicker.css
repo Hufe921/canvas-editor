@@ -1,0 +1,7 @@
+.date-container {
+  display: none;
+}
+
+.date-container.active {
+  display: block;
+}

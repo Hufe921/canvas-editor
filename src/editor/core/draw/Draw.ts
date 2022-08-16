@@ -132,7 +132,7 @@ export class Draw {
     this.waterMark = new Watermark(this)
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
-    this.dateParticle = new DateParticle()
+    this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle()
     this.pageBreakParticle = new PageBreakParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
@@ -374,6 +374,10 @@ export class Draw {
 
   public getHyperlinkParticle(): HyperlinkParticle {
     return this.hyperlinkParticle
+  }
+
+  public getDateParticle(): DateParticle {
+    return this.dateParticle
   }
 
   public getControl(): Control {
