@@ -96,7 +96,7 @@ export class DatePicker {
     return {
       container: datePickerContainer,
       title: {
-        preYear: preMonthTitle,
+        preYear: preYearTitle,
         preMonth: preMonthTitle,
         now: nowTitle,
         nextMonth: nextMonthTitle,
@@ -124,7 +124,7 @@ export class DatePicker {
     this.dom.title.nextYear.onclick = () => {
       this._nextYear()
     }
-    this.dom.menu.time.onclick = () => {
+    this.dom.menu.now.onclick = () => {
       this._now()
     }
     this.dom.menu.submit.onclick = () => {
@@ -137,6 +137,10 @@ export class DatePicker {
   }
 
   private _update() {
+    // 本地年月
+    const localDate = new Date()
+    const localYear = localDate.getFullYear()
+    const localMonth = localDate.getMonth() + 1
     // 当前年月日
     const year = this.now.getFullYear()
     const month = this.now.getMonth() + 1
@@ -150,21 +154,30 @@ export class DatePicker {
       curWeek = 7
     }
     const preDay = new Date(year, month - 1, 0).getDate() // 上个月天数
+    this.dom.day.innerHTML = ''
     // 渲染上个月日期
     const preStartDay = preDay - curWeek + 1
     for (let i = preStartDay; i <= preDay; i++) {
       const dayDom = document.createElement('div')
       dayDom.classList.add('disable')
       dayDom.innerText = `${i}`
+      dayDom.onclick = () => {
+        this.now = new Date(year, month - 2, i)
+        this.dispose()
+      }
       this.dom.day.append(dayDom)
     }
     // 渲染当月日期
     for (let i = 1; i <= curDay; i++) {
       const dayDom = document.createElement('div')
-      if (i === day) {
+      if (localYear === year && localMonth === month && i === day) {
         dayDom.classList.add('active')
       }
       dayDom.innerText = `${i}`
+      dayDom.onclick = () => {
+        this.now = new Date(year, month - 1, i)
+        this.dispose()
+      }
       this.dom.day.append(dayDom)
     }
     // 渲染下月日期
@@ -173,6 +186,10 @@ export class DatePicker {
       const dayDom = document.createElement('div')
       dayDom.classList.add('disable')
       dayDom.innerText = `${i}`
+      dayDom.onclick = () => {
+        this.now = new Date(year, month, i)
+        this.dispose()
+      }
       this.dom.day.append(dayDom)
     }
   }
@@ -218,6 +235,7 @@ export class DatePicker {
 
   public dispose() {
     this._toggleVisible(false)
+    return this.now
   }
 
 }
