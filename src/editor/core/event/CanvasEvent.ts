@@ -527,7 +527,7 @@ export class CanvasEvent {
       return
     }
     const activeControl = this.control.getActiveControl()
-    const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT } = ElementType
+    const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
     const text = data.replaceAll(`\n`, ZERO)
     const elementList = this.draw.getElementList()
     const agentDom = this.cursor.getAgentDom()
@@ -553,6 +553,7 @@ export class CanvasEvent {
         element.type === TEXT
         || (!element.type && element.value !== ZERO)
         || (element.type === HYPERLINK && nextElement?.type === HYPERLINK)
+        || (element.type === DATE && nextElement?.type === DATE)
         || (element.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT)
         || (element.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
       ) {

@@ -168,6 +168,17 @@
 
 .time-wrap>li>ol>li {
   line-height: 30px;
+  cursor: pointer;
+  transition: all .3s;
+}
+
+.time-wrap>li>ol>li:hover {
+  background-color: #eaeaea;
+}
+
+.time-wrap>li>ol>li.active {
+  color: #ffffff;
+  background: #5175F4;
 }
 
 .date-menu {
