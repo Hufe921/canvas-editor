@@ -1,9 +1,13 @@
+import { IElement, IElementPosition } from '../../../../interface/Element'
+
 export interface IDatePickerOption {
   mountDom?: HTMLElement
 }
 
 interface IDatePickerDom {
   container: HTMLDivElement;
+  dateWrap: HTMLDivElement;
+  timeWrap: HTMLUListElement;
   title: {
     preYear: HTMLSpanElement;
     preMonth: HTMLSpanElement;
@@ -12,6 +16,11 @@ interface IDatePickerDom {
     nextYear: HTMLSpanElement;
   };
   day: HTMLDivElement;
+  time: {
+    hour: HTMLOListElement;
+    minute: HTMLOListElement;
+    second: HTMLOListElement;
+  };
   menu: {
     time: HTMLButtonElement;
     now: HTMLButtonElement;
@@ -19,11 +28,20 @@ interface IDatePickerDom {
   };
 }
 
+interface IRenderOption {
+  value: string;
+  element: IElement;
+  position: IElementPosition;
+  startTop: number;
+}
+
 export class DatePicker {
 
   private options: IDatePickerOption
   private now: Date
   private dom: IDatePickerDom
+  private renderOptions: IRenderOption | null
+  private isDatePicker: boolean
 
   constructor(options: IDatePickerOption = {}) {
     this.options = {
@@ -32,6 +50,8 @@ export class DatePicker {
     }
     this.now = new Date()
     this.dom = this._createDom()
+    this.renderOptions = null
+    this.isDatePicker = true
     this._bindEvent()
   }
 
@@ -39,6 +59,8 @@ export class DatePicker {
     const datePickerContainer = document.createElement('div')
     datePickerContainer.classList.add('date-container')
     // title-切换年月、年月显示
+    const dateWrap = document.createElement('div')
+    dateWrap.classList.add('date-wrap')
     const datePickerTitle = document.createElement('div')
     datePickerTitle.classList.add('date-title')
     const preYearTitle = document.createElement('span')
@@ -72,12 +94,47 @@ export class DatePicker {
     // day-天数显示
     const datePickerDay = document.createElement('div')
     datePickerDay.classList.add('date-day')
+    // 日期内容构建
+    dateWrap.append(datePickerTitle)
+    dateWrap.append(datePickerWeek)
+    dateWrap.append(datePickerDay)
+    // time-时间选择
+    const timeWrap = document.createElement('ul')
+    timeWrap.classList.add('time-wrap')
+    let hourTime: HTMLOListElement
+    let minuteTime: HTMLOListElement
+    let secondTime: HTMLOListElement
+    const timeList = ['时', '分', '秒']
+    timeList.forEach((t, i) => {
+      const li = document.createElement('li')
+      const timeText = document.createElement('span')
+      timeText.innerText = t
+      li.append(timeText)
+      const ol = document.createElement('ol')
+      const isHour = i === 0
+      const isMinute = i === 1
+      const endIndex = isHour ? 24 : 60
+      for (let i = 0; i < endIndex; i++) {
+        const time = document.createElement('li')
+        time.innerText = `${String(i).padStart(2, '0')}`
+        ol.append(time)
+      }
+      if (isHour) {
+        hourTime = ol
+      } else if (isMinute) {
+        minuteTime = ol
+      } else {
+        secondTime = ol
+      }
+      li.append(ol)
+      timeWrap.append(li)
+    })
     // menu-选择时间、现在、确定
     const datePickerMenu = document.createElement('div')
     datePickerMenu.classList.add('date-menu')
     const timeMenu = document.createElement('button')
     timeMenu.classList.add('date-menu__time')
-    timeMenu.innerText = '时间'
+    timeMenu.innerText = '时间选择'
     const nowMenu = document.createElement('button')
     nowMenu.classList.add('date-menu__now')
     nowMenu.innerText = '此刻'
@@ -88,13 +145,14 @@ export class DatePicker {
     datePickerMenu.append(nowMenu)
     datePickerMenu.append(submitMenu)
     // 构建
-    datePickerContainer.append(datePickerTitle)
-    datePickerContainer.append(datePickerWeek)
-    datePickerContainer.append(datePickerDay)
+    datePickerContainer.append(dateWrap)
+    datePickerContainer.append(timeWrap)
     datePickerContainer.append(datePickerMenu)
     this.options.mountDom!.append(datePickerContainer)
     return {
       container: datePickerContainer,
+      dateWrap,
+      timeWrap,
       title: {
         preYear: preYearTitle,
         preMonth: preMonthTitle,
@@ -103,6 +161,11 @@ export class DatePicker {
         nextYear: nextYearTitle
       },
       day: datePickerDay,
+      time: {
+        hour: hourTime!,
+        minute: minuteTime!,
+        second: secondTime!
+      },
       menu: {
         time: timeMenu,
         now: nowMenu,
@@ -124,6 +187,10 @@ export class DatePicker {
     this.dom.title.nextYear.onclick = () => {
       this._nextYear()
     }
+    this.dom.menu.time.onclick = () => {
+      this.isDatePicker = !this.isDatePicker
+      this._toggleDateTimePicker()
+    }
     this.dom.menu.now.onclick = () => {
       this._now()
     }
@@ -132,15 +199,32 @@ export class DatePicker {
     }
   }
 
+  private _setPosition() {
+    if (!this.renderOptions) return
+    const {
+      position: {
+        coordinate: {
+          leftTop: [left, top]
+        },
+        lineHeight
+      },
+      startTop
+    } = this.renderOptions
+    // 位置
+    this.dom.container.style.left = `${left}px`
+    this.dom.container.style.top = `${top + startTop + lineHeight}px`
+  }
+
   private _setNow() {
     this.now = new Date()
   }
 
   private _update() {
-    // 本地年月
+    // 本地年月日
     const localDate = new Date()
     const localYear = localDate.getFullYear()
     const localMonth = localDate.getMonth() + 1
+    const localDay = localDate.getDate()
     // 当前年月日
     const year = this.now.getFullYear()
     const month = this.now.getMonth() + 1
@@ -163,20 +247,23 @@ export class DatePicker {
       dayDom.innerText = `${i}`
       dayDom.onclick = () => {
         this.now = new Date(year, month - 2, i)
-        this.dispose()
+        this._update()
       }
       this.dom.day.append(dayDom)
     }
     // 渲染当月日期
     for (let i = 1; i <= curDay; i++) {
       const dayDom = document.createElement('div')
-      if (localYear === year && localMonth === month && i === day) {
+      if (localYear === year && localMonth === month && localDay === i) {
         dayDom.classList.add('active')
+      }
+      if (i === day) {
+        dayDom.classList.add('select')
       }
       dayDom.innerText = `${i}`
       dayDom.onclick = () => {
         this.now = new Date(year, month - 1, i)
-        this.dispose()
+        this._update()
       }
       this.dom.day.append(dayDom)
     }
@@ -188,9 +275,21 @@ export class DatePicker {
       dayDom.innerText = `${i}`
       dayDom.onclick = () => {
         this.now = new Date(year, month, i)
-        this.dispose()
+        this._update()
       }
       this.dom.day.append(dayDom)
+    }
+  }
+
+  private _toggleDateTimePicker() {
+    if (this.isDatePicker) {
+      this.dom.dateWrap.classList.add('active')
+      this.dom.timeWrap.classList.remove('active')
+      this.dom.menu.time.innerText = `时间选择`
+    } else {
+      this.dom.dateWrap.classList.remove('active')
+      this.dom.timeWrap.classList.add('active')
+      this.dom.menu.time.innerText = `返回日期`
     }
   }
 
@@ -227,9 +326,13 @@ export class DatePicker {
     }
   }
 
-  public render() {
+  public render(option: IRenderOption) {
+    this.renderOptions = option
     this._setNow()
     this._update()
+    this._setPosition()
+    this.isDatePicker = true
+    this._toggleDateTimePicker()
     this._toggleVisible(true)
   }
 
