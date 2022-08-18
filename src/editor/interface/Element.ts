@@ -69,6 +69,11 @@ export interface ILaTexElement {
   laTexSVG?: string;
 }
 
+export interface IDateElement {
+  dateFormat?: string;
+  dateId?: string;
+}
+
 export type IElement = IElementBasic
   & IElementStyle
   & ITable
@@ -78,6 +83,7 @@ export type IElement = IElementBasic
   & IControlElement
   & ICheckboxElement
   & ILaTexElement
+  & IDateElement
 
 export interface IElementMetrics {
   width: number;

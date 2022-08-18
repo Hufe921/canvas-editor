@@ -21,6 +21,7 @@ import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
 import { splitText } from '../../utils'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { DeepRequired } from '../../interface/Common'
+import { DateParticle } from '../draw/particle/date/DateParticle'
 
 export class CanvasEvent {
 
@@ -39,6 +40,7 @@ export class CanvasEvent {
   private previewer: Previewer
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
+  private dateParticle: DateParticle
   private listener: Listener
   private control: Control
 
@@ -58,6 +60,7 @@ export class CanvasEvent {
     this.previewer = this.draw.getPreviewer()
     this.tableTool = this.draw.getTableTool()
     this.hyperlinkParticle = this.draw.getHyperlinkParticle()
+    this.dateParticle = this.draw.getDateParticle()
     this.listener = this.draw.getListener()
     this.control = this.draw.getControl()
   }
@@ -283,6 +286,11 @@ export class CanvasEvent {
     this.hyperlinkParticle.clearHyperlinkPopup()
     if (curElement.type === ElementType.HYPERLINK) {
       this.hyperlinkParticle.drawHyperlinkPopup(curElement, positionList[curIndex])
+    }
+    // 日期控件
+    this.dateParticle.clearDatePicker()
+    if (curElement.type === ElementType.DATE) {
+      this.dateParticle.renderDatePicker(curElement, positionList[curIndex])
     }
   }
 
@@ -519,7 +527,7 @@ export class CanvasEvent {
       return
     }
     const activeControl = this.control.getActiveControl()
-    const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT } = ElementType
+    const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
     const text = data.replaceAll(`\n`, ZERO)
     const elementList = this.draw.getElementList()
     const agentDom = this.cursor.getAgentDom()
@@ -545,6 +553,7 @@ export class CanvasEvent {
         element.type === TEXT
         || (!element.type && element.value !== ZERO)
         || (element.type === HYPERLINK && nextElement?.type === HYPERLINK)
+        || (element.type === DATE && nextElement?.type === DATE)
         || (element.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT)
         || (element.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
       ) {

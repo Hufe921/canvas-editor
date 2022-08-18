@@ -279,6 +279,20 @@ elementList.push(...<IElement[]>[{
   value: '\n'
 }])
 
+// 日期选择
+elementList.push(...<IElement[]>[{
+  value: '签署日期：'
+},
+{
+  value: '',
+  valueList: [{
+    value: `2022-08-10 17:30:01`
+  }],
+  type: ElementType.DATE
+}, {
+  value: '\n'
+}])
+
 // 模拟结尾文本
 elementList.push(...[{
   value: '',
