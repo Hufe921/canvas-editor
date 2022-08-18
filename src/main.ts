@@ -206,7 +206,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
   }
 
-  // 4. | 表格 | 图片 | 超链接 | 分割线 | 水印 | 代码块 | 分隔符 | 控件 | 复选框 | LaTeX
+  // 4. | 表格 | 图片 | 超链接 | 分割线 | 水印 | 代码块 | 分隔符 | 控件 | 复选框 | LaTeX | 日期选择器
   const tableDom = document.querySelector<HTMLDivElement>('.menu-item__table')!
   const tablePanelContainer = document.querySelector<HTMLDivElement>('.menu-item__table__collapse')!
   const tableClose = document.querySelector<HTMLDivElement>('.table-close')!
@@ -613,6 +613,48 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     })
   }
 
+  const dateDom = document.querySelector<HTMLDivElement>('.menu-item__date')!
+  const dateDomOptionDom = dateDom.querySelector<HTMLDivElement>('.options')!
+  dateDom.onclick = function () {
+    console.log('date')
+    dateDomOptionDom.classList.toggle('visible')
+    // 定位调整
+    const bodyRect = document.body.getBoundingClientRect()
+    const dateDomOptionRect = dateDomOptionDom.getBoundingClientRect()
+    if (dateDomOptionRect.left + dateDomOptionRect.width > bodyRect.width) {
+      dateDomOptionDom.style.right = '0px'
+      dateDomOptionDom.style.left = 'unset'
+    } else {
+      dateDomOptionDom.style.right = 'unset'
+      dateDomOptionDom.style.left = '0px'
+    }
+    // 当前日期
+    const date = new Date()
+    const year = date.getFullYear().toString()
+    const month = (date.getMonth() + 1).toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, '0')
+    const hour = date.getHours().toString().padStart(2, '0')
+    const minute = date.getMinutes().toString().padStart(2, '0')
+    const second = date.getSeconds().toString().padStart(2, '0')
+    const dateString = `${year}-${month}-${day}`
+    const dateTimeString = `${dateString} ${hour}:${minute}:${second}`
+    dateDomOptionDom.querySelector<HTMLLIElement>('li:first-child')!.innerText = dateString
+    dateDomOptionDom.querySelector<HTMLLIElement>('li:last-child')!.innerText = dateTimeString
+  }
+  dateDomOptionDom.onmousedown = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const dateFormat = li.dataset.format!
+    dateDomOptionDom.classList.toggle('visible')
+    instance.command.executeInsertElementList([{
+      type: ElementType.DATE,
+      value: '',
+      dateFormat,
+      valueList: [{
+        value: li.innerText.trim(),
+      }]
+    }])
+  }
+
   // 5. | 搜索&替换 | 打印 |
   const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')!
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
@@ -658,7 +700,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     instance.command.executePrint()
   }
 
-  // 6. 页面模式 | 纸张缩放
+  // 6. 页面模式 | 纸张缩放 | 全屏
   const pageModeDom = document.querySelector<HTMLDivElement>('.page-mode')!
   const pageModeOptionsDom = pageModeDom.querySelector<HTMLDivElement>('.options')!
   pageModeDom.onclick = function () {
@@ -682,6 +724,27 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick = function () {
     console.log('page-scale-add')
     instance.command.executePageScaleAdd()
+  }
+
+  // 全屏
+  const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
+  fullscreenDom.onclick = toggleFullscreen
+  window.addEventListener('keydown', (evt) => {
+    if (evt.key === 'F11') {
+      toggleFullscreen()
+      evt.preventDefault()
+    }
+  })
+  document.addEventListener('fullscreenchange', () => {
+    fullscreenDom.classList.toggle('exist')
+  })
+  function toggleFullscreen() {
+    console.log('fullscreen')
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen()
+    } else {
+      document.exitFullscreen()
+    }
   }
 
   // 7. 编辑器使用模式

@@ -1026,7 +1026,7 @@ export class CommandAdapt {
     while (preIndex > 0) {
       const preElement = elementList[preIndex]
       if (preElement.hyperlinkId !== startElement.hyperlinkId) {
-        leftIndex = preIndex
+        leftIndex = preIndex + 1
         break
       }
       preIndex--
@@ -1056,12 +1056,13 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     const [leftIndex, rightIndex] = hyperRange
     // 删除元素
-    elementList.splice(leftIndex + 1, rightIndex - leftIndex)
+    elementList.splice(leftIndex, rightIndex - leftIndex + 1)
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
-    this.range.setRange(leftIndex, leftIndex)
+    const newIndex = leftIndex - 1
+    this.range.setRange(newIndex, newIndex)
     this.draw.render({
-      curIndex: leftIndex
+      curIndex: newIndex
     })
   }
 
@@ -1078,6 +1079,26 @@ export class CommandAdapt {
       delete element.url
       delete element.hyperlinkId
       delete element.underline
+    }
+    this.draw.getHyperlinkParticle().clearHyperlinkPopup()
+    // 重置画布
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex,
+      isComputeRowList: false
+    })
+  }
+
+  public editHyperlink(payload: string) {
+    // 获取超链接索引
+    const hyperRange = this.getHyperlinkRange()
+    if (!hyperRange) return
+    const elementList = this.draw.getElementList()
+    const [leftIndex, rightIndex] = hyperRange
+    // 替换url
+    for (let i = leftIndex; i <= rightIndex; i++) {
+      const element = elementList[i]
+      element.url = payload
     }
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布

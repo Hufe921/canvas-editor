@@ -1,5 +1,6 @@
 import { ZERO } from '../../../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../../../dataset/constant/Element'
+import { ControlComponent } from '../../../dataset/enum/Control'
 import { EditorContext } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IEditorOption } from '../../../interface/Editor'
@@ -67,7 +68,10 @@ export class Search {
     // 搜索文本
     function searchClosure(payload: string | null, type: EditorContext, elementList: IElement[], restArgs?: ISearchResultRestArgs) {
       if (!payload) return
-      const text = elementList.map(e => !e.type || TEXTLIKE_ELEMENT_TYPE.includes(e.type) ? e.value : ZERO)
+      const text = elementList
+        .map(e => !e.type || (TEXTLIKE_ELEMENT_TYPE.includes(e.type) && e.controlComponent !== ControlComponent.CHECKBOX)
+          ? e.value
+          : ZERO)
         .filter(Boolean)
         .join('')
       const matchStartIndexList = []

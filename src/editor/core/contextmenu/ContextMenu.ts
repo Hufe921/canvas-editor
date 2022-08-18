@@ -29,6 +29,7 @@ export class ContextMenu {
   private contextMenuList: IRegisterContextMenu[]
   private contextMenuContainerList: HTMLDivElement[]
   private contextMenuRelationShip: Map<HTMLDivElement, HTMLDivElement>
+  private context: IContextMenuContext | null
 
   constructor(draw: Draw, command: Command) {
     this.draw = draw
@@ -36,6 +37,7 @@ export class ContextMenu {
     this.range = draw.getRange()
     this.position = draw.getPosition()
     this.container = draw.getContainer()
+    this.context = null
     // 内部菜单
     this.contextMenuList = [
       ...globalMenus,
@@ -53,7 +55,7 @@ export class ContextMenu {
   }
 
   private _proxyContextMenuEvent(evt: MouseEvent) {
-    const context = this._getContext()
+    this.context = this._getContext()
     const renderList: IRegisterContextMenu[] = []
     let isRegisterContextMenu = false
     for (let c = 0; c < this.contextMenuList.length; c++) {
@@ -61,7 +63,7 @@ export class ContextMenu {
       if (menu.isDivider) {
         renderList.push(menu)
       } else {
-        const isMatch = menu.when?.(context)
+        const isMatch = menu.when?.(this.context)
         if (isMatch) {
           renderList.push(menu)
           isRegisterContextMenu = true
@@ -186,8 +188,8 @@ export class ContextMenu {
             this._setHoverStatus(menuItem, false)
           }
           menuItem.onclick = () => {
-            if (menu.callback) {
-              menu.callback(this.command)
+            if (menu.callback && this.context) {
+              menu.callback(this.command, this.context)
             }
             this.dispose()
           }
