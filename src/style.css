@@ -59,7 +59,7 @@ ul {
 .menu-divider {
   width: 1px;
   height: 16px;
-  margin: 0 6px;
+  margin: 0 8px;
   display: inline-block;
   background-color: #cfd2d8;
 }
@@ -78,7 +78,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 5px;
+  margin: 0 4px;
 }
 
 .menu-item>div:hover {
@@ -445,6 +445,18 @@ ul {
 
 .menu-item__latex i {
   background-image: url('./assets/images/latex.svg');
+}
+
+.menu-item__date {
+  position: relative;
+}
+
+.menu-item__date i {
+  background-image: url('./assets/images/date.svg');
+}
+
+.menu-item__date .options {
+  width: 150px;
 }
 
 .menu-item .menu-item__control .options {
