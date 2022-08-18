@@ -1,7 +1,8 @@
 import { IElement, IElementPosition } from '../../../../interface/Element'
 
 export interface IDatePickerOption {
-  mountDom?: HTMLElement
+  mountDom?: HTMLElement;
+  onSubmit?: (date: string) => any;
 }
 
 interface IDatePickerDom {
@@ -32,7 +33,7 @@ interface IRenderOption {
   value: string;
   element: IElement;
   position: IElementPosition;
-  startTop: number;
+  startTop?: number;
 }
 
 export class DatePicker {
@@ -196,9 +197,11 @@ export class DatePicker {
     }
     this.dom.menu.now.onclick = () => {
       this._now()
+      this._submit()
     }
     this.dom.menu.submit.onclick = () => {
       this.dispose()
+      this._submit()
     }
     this.dom.time.hour.onclick = (evt) => {
       if (!this.pickDate) return
@@ -239,7 +242,7 @@ export class DatePicker {
     } = this.renderOptions
     // 位置
     this.dom.container.style.left = `${left}px`
-    this.dom.container.style.top = `${top + startTop + lineHeight}px`
+    this.dom.container.style.top = `${top + (startTop || 0) + lineHeight}px`
   }
 
   public isInvalidDate(value: Date): boolean {
@@ -308,10 +311,11 @@ export class DatePicker {
         dayDom.classList.add('select')
       }
       dayDom.innerText = `${i}`
-      dayDom.onclick = () => {
+      dayDom.onclick = (evt) => {
         const newMonth = month - 1
         this.now = new Date(year, newMonth, i)
         this._setDatePick(year, newMonth, i)
+        evt.stopPropagation()
       }
       this.dom.day.append(dayDom)
     }
@@ -405,6 +409,39 @@ export class DatePicker {
     }
   }
 
+  private _submit() {
+    if (this.options.onSubmit && this.pickDate) {
+      const format = this.renderOptions?.element.dateFormat
+      const pickDateString = this.formatDate(this.pickDate, format)
+      this.options.onSubmit(pickDateString)
+    }
+  }
+
+  public formatDate(date: Date, format = 'yyyy-MM-dd hh:mm:ss'): string {
+    let dateString = format
+    const dateOption = {
+      'y+': date.getFullYear().toString(),
+      'M+': (date.getMonth() + 1).toString(),
+      'd+': date.getDate().toString(),
+      'h+': date.getHours().toString(),
+      'm+': date.getMinutes().toString(),
+      's+': date.getSeconds().toString()
+    }
+    for (const k in dateOption) {
+      const reg = new RegExp('(' + k + ')').exec(format)
+      const key = <keyof typeof dateOption>k
+      if (reg) {
+        dateString = dateString.replace(
+          reg[1],
+          reg[1].length === 1
+            ? (dateOption[key])
+            : (dateOption[key].padStart(reg[1].length, '0'))
+        )
+      }
+    }
+    return dateString
+  }
+
   public render(option: IRenderOption) {
     this.renderOptions = option
     this._setValue()
@@ -417,7 +454,6 @@ export class DatePicker {
 
   public dispose() {
     this._toggleVisible(false)
-    return this.pickDate
   }
 
 }

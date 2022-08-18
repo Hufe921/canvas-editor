@@ -214,6 +214,11 @@
   margin-left: 10px;
 }
 
+.date-menu button:hover {
+  color: #5175F4;
+  border-color: #5175F4;
+}
+
 .date-menu button.date-menu__time {
   border: 1px solid transparent;
   position: absolute;
