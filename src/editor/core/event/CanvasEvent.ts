@@ -289,7 +289,7 @@ export class CanvasEvent {
     }
     // 日期控件
     this.dateParticle.clearDatePicker()
-    if (curElement.type === ElementType.DATE) {
+    if (curElement.type === ElementType.DATE && !isReadonly) {
       this.dateParticle.renderDatePicker(curElement, positionList[curIndex])
     }
   }
