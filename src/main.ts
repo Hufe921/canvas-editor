@@ -676,6 +676,23 @@ window.onload = function () {
     instance.command.executePageScaleAdd()
   }
 
+  // 纸张大小
+  const paperSizeDom = document.querySelector<HTMLDivElement>('.paper-size')!
+  const paperSizeDomOptionsDom = paperSizeDom.querySelector<HTMLDivElement>('.options')!
+  paperSizeDom.onclick = function () {
+    paperSizeDomOptionsDom.classList.toggle('visible')
+  }
+  paperSizeDomOptionsDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const paperType = li.dataset.paperSize!
+    const [width, height] = paperType.split('*').map(Number)
+    instance.command.executePaperSize(width, height)
+    // 纸张状态回显
+    paperSizeDomOptionsDom.querySelectorAll('li')
+      .forEach(child => child.classList.remove('active'))
+    li.classList.add('active')
+  }
+
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen

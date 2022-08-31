@@ -440,7 +440,10 @@ export class Draw {
       canvas.style.height = `${height}px`
       canvas.height = height * dpr
     }
-    this.render({ isSubmitHistory: false, isSetCursor: false })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
     // 回调
     setTimeout(() => {
       if (this.listener.pageModeChange) {
@@ -461,10 +464,29 @@ export class Draw {
       p.style.height = `${height}px`
       p.style.marginBottom = `${this.getPageGap()}px`
     })
-    this.render({ isSubmitHistory: false, isSetCursor: false })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
     }
+  }
+
+  public setPaperSize(width: number, height: number) {
+    this.options.width = width
+    this.options.height = height
+    this.container.style.width = `${width}px`
+    this.pageList.forEach(p => {
+      p.width = width
+      p.height = height
+      p.style.width = `${width}px`
+      p.style.height = `${height}px`
+    })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
   }
 
   public getValue(): IEditorResult {
