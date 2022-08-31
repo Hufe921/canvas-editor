@@ -66,6 +66,7 @@ export class Command {
   private static pageScaleRecovery: CommandAdapt['pageScaleRecovery']
   private static pageScaleMinus: CommandAdapt['pageScaleMinus']
   private static pageScaleAdd: CommandAdapt['pageScaleAdd']
+  private static paperSize: CommandAdapt['paperSize']
   private static insertElementList: CommandAdapt['insertElementList']
   private static removeControl: CommandAdapt['removeControl']
 
@@ -128,6 +129,7 @@ export class Command {
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
+    Command.paperSize = adapt.paperSize.bind(adapt)
     Command.insertElementList = adapt.insertElementList.bind(adapt)
     Command.removeControl = adapt.removeControl.bind(adapt)
   }
@@ -352,7 +354,7 @@ export class Command {
     return Command.getWordCount()
   }
 
-  // 页面模式、页面缩放
+  // 页面模式、页面缩放、纸张大小
   public executePageMode(payload: PageMode) {
     return Command.pageMode(payload)
   }
@@ -367,6 +369,10 @@ export class Command {
 
   public executePageScaleAdd() {
     return Command.pageScaleAdd()
+  }
+
+  public executePaperSize(width: number, height: number) {
+    return Command.paperSize(width, height)
   }
 
   // 通用

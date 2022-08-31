@@ -1394,6 +1394,10 @@ export class CommandAdapt {
     }
   }
 
+  public paperSize(width: number, height: number) {
+    this.draw.setPaperSize(width, height)
+  }
+
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
     const isReadonly = this.draw.isReadonly()
