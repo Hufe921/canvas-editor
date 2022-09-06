@@ -1,4 +1,4 @@
-import { IElement } from '../..'
+import { IElement, ImageDisplay } from '../..'
 import { EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
@@ -59,6 +59,7 @@ export class Command {
   private static print: CommandAdapt['print']
   private static replaceImageElement: CommandAdapt['replaceImageElement']
   private static saveAsImageElement: CommandAdapt['saveAsImageElement']
+  private static changeImageDisplay: CommandAdapt['changeImageDisplay']
   private static getImage: CommandAdapt['getImage']
   private static getValue: CommandAdapt['getValue']
   private static getWordCount: CommandAdapt['getWordCount']
@@ -122,6 +123,7 @@ export class Command {
     Command.print = adapt.print.bind(adapt)
     Command.replaceImageElement = adapt.replaceImageElement.bind(adapt)
     Command.saveAsImageElement = adapt.saveAsImageElement.bind(adapt)
+    Command.changeImageDisplay = adapt.changeImageDisplay.bind(adapt)
     Command.getImage = adapt.getImage.bind(adapt)
     Command.getValue = adapt.getValue.bind(adapt)
     Command.getWordCount = adapt.getWordCount.bind(adapt)
@@ -340,6 +342,10 @@ export class Command {
 
   public executeSaveAsImageElement() {
     return Command.saveAsImageElement()
+  }
+
+  public executeChangeImageDisplay(element: IElement, display: ImageDisplay) {
+    return Command.changeImageDisplay(element, display)
   }
 
   public getImage(): string[] {

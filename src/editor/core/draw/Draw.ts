@@ -40,7 +40,7 @@ import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired } from '../../interface/Common'
-import { ControlComponent } from '../../dataset/enum/Control'
+import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
@@ -571,9 +571,10 @@ export class Draw {
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         // 图片超出尺寸后自适应
-        if (curRow.width + elementWidth > innerWidth) {
+        const curRowWidth = element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
+        if (curRowWidth + elementWidth > innerWidth) {
           // 计算剩余大小
-          const surplusWidth = innerWidth - curRow.width
+          const surplusWidth = innerWidth - curRowWidth
           element.width = surplusWidth
           element.height = elementHeight * surplusWidth / elementWidth
           metrics.width = element.width
@@ -733,7 +734,9 @@ export class Draw {
       // 超过限定宽度
       const preElement = elementList[i - 1]
       if (
-        (preElement && preElement.type === ElementType.TABLE)
+        preElement?.type === ElementType.TABLE
+        || preElement?.imgDisplay === ImageDisplay.INLINE
+        || element.imgDisplay === ImageDisplay.INLINE
         || curRow.width + metrics.width > innerWidth
         || (i !== 0 && element.value === ZERO)
       ) {
@@ -793,9 +796,11 @@ export class Draw {
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
-        const offsetY = element.type === ElementType.IMAGE || element.type === ElementType.LATEX
-          ? curRow.ascent - metrics.height
-          : curRow.ascent
+        const offsetY =
+          (element.imgDisplay !== ImageDisplay.INLINE && element.type === ElementType.IMAGE)
+            || element.type === ElementType.LATEX
+            ? curRow.ascent - metrics.height
+            : curRow.ascent
         const positionItem: IElementPosition = {
           pageNo,
           index,
