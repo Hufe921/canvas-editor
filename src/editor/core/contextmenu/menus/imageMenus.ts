@@ -1,5 +1,6 @@
+import { ImageDisplay } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
-import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
+import { IContextMenuContext, IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
 
 export const imageMenus: IRegisterContextMenu[] = [
@@ -36,5 +37,28 @@ export const imageMenus: IRegisterContextMenu[] = [
     callback: (command: Command) => {
       command.executeSaveAsImageElement()
     }
+  },
+  {
+    name: '文字环绕',
+    when: (payload) => {
+      return !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
+    },
+    childMenus: [
+      {
+        name: '嵌入型',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageDisplay(context.startElement!, ImageDisplay.BLOCK)
+        }
+      },
+      {
+        name: '上下型环绕',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageDisplay(context.startElement!, ImageDisplay.INLINE)
+
+        }
+      }
+    ]
   }
 ]

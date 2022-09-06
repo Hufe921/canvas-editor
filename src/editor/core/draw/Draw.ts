@@ -571,9 +571,10 @@ export class Draw {
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         // 图片超出尺寸后自适应
-        if (curRow.width + elementWidth > innerWidth) {
+        const curRowWidth = element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
+        if (curRowWidth + elementWidth > innerWidth) {
           // 计算剩余大小
-          const surplusWidth = innerWidth - curRow.width
+          const surplusWidth = innerWidth - curRowWidth
           element.width = surplusWidth
           element.height = elementHeight * surplusWidth / elementWidth
           metrics.width = element.width
