@@ -1,4 +1,4 @@
-import { ControlComponent } from '../dataset/enum/Control'
+import { ControlComponent, ImageDisplay } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { RowFlex } from '../dataset/enum/Row'
 import { ICheckbox } from './Checkbox'
@@ -74,6 +74,10 @@ export interface IDateElement {
   dateId?: string;
 }
 
+export interface IImageElement {
+  imgDisplay?: ImageDisplay
+}
+
 export type IElement = IElementBasic
   & IElementStyle
   & ITable
@@ -84,6 +88,7 @@ export type IElement = IElementBasic
   & ICheckboxElement
   & ILaTexElement
   & IDateElement
+  & IImageElement
 
 export interface IElementMetrics {
   width: number;
