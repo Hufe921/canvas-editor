@@ -700,3 +700,7 @@ ul {
   right: 0;
   left: unset;
 }
+
+.contextmenu-signature {
+  background-image: url('./assets/images/signature.svg');
+}
