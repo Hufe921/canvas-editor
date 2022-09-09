@@ -41,6 +41,7 @@ export class Signature {
     this.trashContainer = trashContainer
     this.canvas = canvas
     this.ctx = <CanvasRenderingContext2D>canvas.getContext('2d')
+    this.ctx.lineCap = 'round'
     this._bindEvent()
   }
 
@@ -156,8 +157,6 @@ export class Signature {
     this.x = evt.offsetX
     this.y = evt.offsetY
     this.ctx.lineWidth = 5
-    this.ctx.lineCap = 'butt'
-    this.ctx.lineJoin = 'round'
   }
 
   private _draw(evt: MouseEvent) {
