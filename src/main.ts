@@ -1,9 +1,10 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { ControlType, EditorMode, ElementType, IElement, PageMode } from './editor'
+import Editor, { Command, ControlType, EditorMode, ElementType, IElement, PageMode } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
+import { Signature } from './components/signature/Signature'
 
 window.onload = function () {
 
@@ -864,5 +865,30 @@ window.onload = function () {
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
   }
+
+  // 9. 右键菜单注册
+  instance.register.contextMenuList([
+    {
+      name: '签名',
+      icon: 'signature',
+      when: (payload) => {
+        return !payload.isReadonly && payload.editorTextFocus
+      },
+      callback: (command: Command) => {
+        new Signature({
+          onConfirm(payload) {
+            const { value, width, height } = payload
+            if (!value || !width || !height) return
+            command.executeInsertElementList([{
+              value,
+              width,
+              height,
+              type: ElementType.IMAGE
+            }])
+          }
+        })
+      }
+    }
+  ])
 
 }

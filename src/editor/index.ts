@@ -116,7 +116,8 @@ export {
   EditorComponent,
   EDITOR_COMPONENT,
   PageMode,
-  ImageDisplay
+  ImageDisplay,
+  Command
 }
 
 // 对外类型
