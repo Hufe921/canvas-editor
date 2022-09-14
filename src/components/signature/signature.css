@@ -50,7 +50,7 @@
   background: url(../../assets/images/close.svg);
 }
 
-.signature-operation__trash {
+.signature-operation>div {
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -58,30 +58,36 @@
   user-select: none;
 }
 
-.signature-operation__trash:hover {
+.signature-operation>div:hover {
   color: #6e7175;
 }
 
-.signature-operation__trash i {
+.signature-operation>div i {
   width: 24px;
   height: 24px;
   display: inline-block;
+}
+
+.signature-operation__undo {
+  background: url(../../assets/images/signature-undo.svg) no-repeat;
+}
+
+.signature-operation__trash {
   background: url(../../assets/images/trash.svg) no-repeat;
 }
 
-.signature-operation__trash span {
+.signature-operation>div span {
   font-size: 12px;
-  margin-left: 5px;
+  margin: 0 5px;
 }
 
 .signature-canvas {
   margin: 15px 0;
-  border: 1px solid #e9e9e9;
   user-select: none;
 }
 
 .signature-canvas canvas {
-  background: #fbfbfb;
+  background: #f3f5f7;
 }
 
 .signature-menu {

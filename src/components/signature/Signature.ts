@@ -16,33 +16,36 @@ export interface ISignatureOptions {
 }
 
 export class Signature {
-  private x: number
-  private y: number
-  private isDrawing: boolean
+  private readonly MAX_RECORD_COUNT = 1000
+  private undoStack: Array<Function> = []
+  private x = 0
+  private y = 0
+  private isDrawing = false
+  private isDrawn = false
   private canvasWidth: number
   private canvasHeight: number
   private options: ISignatureOptions
   private mask: HTMLDivElement
   private container: HTMLDivElement
   private trashContainer: HTMLDivElement
+  private undoContainer: HTMLDivElement
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
 
   constructor(options: ISignatureOptions) {
-    this.x = 0
-    this.y = 0
-    this.isDrawing = false
     this.options = options
     this.canvasWidth = options.width || 390
     this.canvasHeight = options.height || 180
-    const { mask, container, trashContainer, canvas } = this._render()
+    const { mask, container, trashContainer, undoContainer, canvas } = this._render()
     this.mask = mask
     this.container = container
     this.trashContainer = trashContainer
+    this.undoContainer = undoContainer
     this.canvas = canvas
     this.ctx = <CanvasRenderingContext2D>canvas.getContext('2d')
     this.ctx.lineCap = 'round'
     this._bindEvent()
+    this._clearUndoFn()
   }
 
   private _render() {
@@ -79,11 +82,21 @@ export class Signature {
     // 操作区
     const operationContainer = document.createElement('div')
     operationContainer.classList.add('signature-operation')
+    // 撤销
+    const undoContainer = document.createElement('div')
+    undoContainer.classList.add('signature-operation__undo')
+    const undoIcon = document.createElement('i')
+    const undoLabel = document.createElement('span')
+    undoLabel.innerText = '撤销'
+    undoContainer.append(undoIcon)
+    undoContainer.append(undoLabel)
+    operationContainer.append(undoContainer)
+    // 清空画布
     const trashContainer = document.createElement('div')
     trashContainer.classList.add('signature-operation__trash')
     const trashIcon = document.createElement('i')
     const trashLabel = document.createElement('span')
-    trashLabel.innerText = '清空画布'
+    trashLabel.innerText = '清空'
     trashContainer.append(trashIcon)
     trashContainer.append(trashLabel)
     operationContainer.append(trashContainer)
@@ -137,18 +150,44 @@ export class Signature {
       mask,
       canvas,
       container,
-      trashContainer
+      trashContainer,
+      undoContainer
     }
   }
 
   private _bindEvent() {
     this.trashContainer.onclick = this._clearCanvas.bind(this)
+    this.undoContainer.onclick = this._undo.bind(this)
     this.canvas.onmousedown = this._startDraw.bind(this)
     this.canvas.onmousemove = this._draw.bind(this)
     this.container.onmouseup = this._stopDraw.bind(this)
   }
 
+  private _undo() {
+    if (this.undoStack.length > 1) {
+      this.undoStack.pop()
+      if (this.undoStack.length) {
+        this.undoStack[this.undoStack.length - 1]()
+      }
+    }
+  }
+
+  private _saveUndoFn(fn: Function) {
+    this.undoStack.push(fn)
+    while (this.undoStack.length > this.MAX_RECORD_COUNT) {
+      this.undoStack.shift()
+    }
+  }
+
+  private _clearUndoFn() {
+    const clearFn = () => {
+      this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
+    }
+    this.undoStack = [clearFn]
+  }
+
   private _clearCanvas() {
+    this._clearUndoFn()
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
   }
 
@@ -168,10 +207,20 @@ export class Signature {
     this.ctx.stroke()
     this.x = offsetX
     this.y = offsetY
+    this.isDrawn = true
   }
 
   private _stopDraw() {
     this.isDrawing = false
+    if (this.isDrawn) {
+      const imageData = this.ctx.getImageData(0, 0, this.canvasWidth, this.canvasHeight)
+      const self = this
+      this._saveUndoFn(function () {
+        self.ctx.clearRect(0, 0, self.canvasWidth, self.canvasHeight)
+        self.ctx.putImageData(imageData, 0, 0)
+      })
+      this.isDrawn = false
+    }
   }
 
   private _toDataURL() {
