@@ -877,6 +877,7 @@ window.onload = function () {
       callback: (command: Command) => {
         new Signature({
           onConfirm(payload) {
+            if (!payload) return
             const { value, width, height } = payload
             if (!value || !width || !height) return
             command.executeInsertElementList([{
