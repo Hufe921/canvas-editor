@@ -1,7 +1,7 @@
 import { EditorComponent, EDITOR_COMPONENT } from '../../editor'
 import './signature.css'
 
-export interface ISignatureConfirm {
+export interface ISignatureResult {
   value: string;
   width: number;
   height: number;
@@ -12,7 +12,7 @@ export interface ISignatureOptions {
   height?: number;
   onClose?: () => void;
   onCancel?: () => void;
-  onConfirm?: (payload: ISignatureConfirm) => void;
+  onConfirm?: (payload: ISignatureResult | null) => void;
 }
 
 export class Signature {
@@ -22,6 +22,7 @@ export class Signature {
   private y = 0
   private isDrawing = false
   private isDrawn = false
+  private linePoints: [number, number][] = []
   private canvasWidth: number
   private canvasHeight: number
   private options: ISignatureOptions
@@ -132,11 +133,7 @@ export class Signature {
     confirmBtn.type = 'primary'
     confirmBtn.onclick = () => {
       if (onConfirm) {
-        onConfirm({
-          width: this.canvasWidth,
-          height: this.canvasHeight,
-          value: this._toDataURL()
-        })
+        onConfirm(this._toData())
       }
       this._dispose()
     }
@@ -207,6 +204,7 @@ export class Signature {
     this.ctx.stroke()
     this.x = offsetX
     this.y = offsetY
+    this.linePoints.push([offsetX, offsetY])
     this.isDrawn = true
   }
 
@@ -223,8 +221,54 @@ export class Signature {
     }
   }
 
-  private _toDataURL() {
-    return this.canvas.toDataURL()
+  private _toData(): ISignatureResult | null {
+    if (!this.linePoints.length) return null
+    // 查找矩形四角坐标
+    const startX = this.linePoints[0][0]
+    const startY = this.linePoints[0][1]
+    let minX = startX
+    let minY = startY
+    let maxX = startX
+    let maxY = startY
+    for (let p = 0; p < this.linePoints.length; p++) {
+      const point = this.linePoints[p]
+      if (minX > point[0]) {
+        minX = point[0]
+      }
+      if (maxX < point[0]) {
+        maxX = point[0]
+      }
+      if (minY > point[1]) {
+        minY = point[1]
+      }
+      if (maxY < point[1]) {
+        maxY = point[1]
+      }
+    }
+    // 增加边框宽度
+    const lineWidth = this.ctx.lineWidth
+    minX = minX < lineWidth ? 0 : minX - lineWidth
+    minY = minY < lineWidth ? 0 : minY - lineWidth
+    maxX = maxX + lineWidth
+    maxY = maxY + lineWidth
+    const sw = maxX - minX
+    const sh = maxY - minY
+    // 裁剪图像
+    const imageData = this.ctx.getImageData(minX, minY, sw, sh)
+    const canvas = document.createElement('canvas')
+    canvas.style.width = `${sw}px`
+    canvas.style.height = `${sh}px`
+    canvas.width = sw
+    canvas.height = sh
+    const ctx = <CanvasRenderingContext2D>canvas.getContext('2d')!
+    ctx.putImageData(imageData, 0, 0)
+    const value = canvas.toDataURL()
+    const { width, height } = imageData
+    return {
+      value,
+      width,
+      height
+    }
   }
 
   private _dispose() {
