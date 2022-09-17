@@ -636,7 +636,6 @@ ul {
 }
 
 .footer>div:last-child {
-  width: 120px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -674,12 +673,16 @@ ul {
   user-select: none;
 }
 
-.footer .fullscreen {
+.footer .fullscreen i {
   background-image: url('./assets/images/request-fullscreen.svg');
 }
 
-.footer .fullscreen.exist {
+.footer .fullscreen.exist i {
   background-image: url('./assets/images/exit-fullscreen.svg');
+}
+
+.footer .paper-margin i {
+  background-image: url('./assets/images/paper-margin.svg');
 }
 
 .footer .editor-mode {
@@ -689,7 +692,6 @@ ul {
 
 .footer .paper-size {
   position: relative;
-  margin-right: 3px;
 }
 
 .footer .paper-size i {

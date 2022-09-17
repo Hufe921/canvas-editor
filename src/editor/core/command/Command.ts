@@ -3,6 +3,7 @@ import { EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorResult } from '../../interface/Editor'
+import { IMargin } from '../../interface/Margin'
 import { IWatermark } from '../../interface/Watermark'
 import { CommandAdapt } from './CommandAdapt'
 
@@ -68,6 +69,8 @@ export class Command {
   private static pageScaleMinus: CommandAdapt['pageScaleMinus']
   private static pageScaleAdd: CommandAdapt['pageScaleAdd']
   private static paperSize: CommandAdapt['paperSize']
+  private static getPaperMargin: CommandAdapt['getPaperMargin']
+  private static setPaperMargin: CommandAdapt['setPaperMargin']
   private static insertElementList: CommandAdapt['insertElementList']
   private static removeControl: CommandAdapt['removeControl']
 
@@ -132,6 +135,8 @@ export class Command {
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
     Command.paperSize = adapt.paperSize.bind(adapt)
+    Command.getPaperMargin = adapt.getPaperMargin.bind(adapt)
+    Command.setPaperMargin = adapt.setPaperMargin.bind(adapt)
     Command.insertElementList = adapt.insertElementList.bind(adapt)
     Command.removeControl = adapt.removeControl.bind(adapt)
   }
@@ -360,7 +365,7 @@ export class Command {
     return Command.getWordCount()
   }
 
-  // 页面模式、页面缩放、纸张大小
+  // 页面模式、页面缩放、纸张大小、页边距
   public executePageMode(payload: PageMode) {
     return Command.pageMode(payload)
   }
@@ -379,6 +384,14 @@ export class Command {
 
   public executePaperSize(width: number, height: number) {
     return Command.paperSize(width, height)
+  }
+
+  public getPaperMargin() {
+    return Command.getPaperMargin()
+  }
+
+  public executeSetPaperMargin(payload: IMargin) {
+    return Command.setPaperMargin(payload)
   }
 
   // 通用
