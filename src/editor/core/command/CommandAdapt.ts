@@ -9,6 +9,7 @@ import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
+import { IMargin } from '../../interface/Margin'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
@@ -1405,6 +1406,14 @@ export class CommandAdapt {
 
   public paperSize(width: number, height: number) {
     this.draw.setPaperSize(width, height)
+  }
+
+  public getPaperMargin(): number[] {
+    return this.draw.getOriginalMargins()
+  }
+
+  public setPaperMargin(payload: IMargin) {
+    return this.draw.setPaperMargin(payload)
   }
 
   public insertElementList(payload: IElement[]) {

@@ -45,6 +45,7 @@ import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
+import { IMargin } from '../../interface/Margin'
 
 export class Draw {
 
@@ -202,8 +203,12 @@ export class Draw {
     return width - margins[1] - margins[3]
   }
 
-  public getMargins(): number[] {
-    return this.options.margins.map(m => m * this.options.scale)
+  public getMargins(): IMargin {
+    return <IMargin>this.options.margins.map(m => m * this.options.scale)
+  }
+
+  public getOriginalMargins(): number[] {
+    return this.options.margins
   }
 
   public getPageGap(): number {
@@ -483,6 +488,14 @@ export class Draw {
       p.style.width = `${width}px`
       p.style.height = `${height}px`
     })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
+  }
+
+  public setPaperMargin(payload: IMargin) {
+    this.options.margins = payload
     this.render({
       isSubmitHistory: false,
       isSetCursor: false

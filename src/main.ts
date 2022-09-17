@@ -694,6 +694,56 @@ window.onload = function () {
     li.classList.add('active')
   }
 
+  // 页面边距
+  const paperMarginDom = document.querySelector<HTMLDivElement>('.paper-margin')!
+  paperMarginDom.onclick = function () {
+    const [topMargin, rightMargin, bottomMargin, leftMargin] = instance.command.getPaperMargin()
+    new Dialog({
+      title: '页边距',
+      data: [{
+        type: 'text',
+        label: '上边距',
+        name: 'top',
+        value: `${topMargin}`,
+        placeholder: '请输入上边距'
+      }, {
+        type: 'text',
+        label: '下边距',
+        name: 'bottom',
+        value: `${bottomMargin}`,
+        placeholder: '请输入下边距'
+      }, {
+        type: 'text',
+        label: '左边距',
+        name: 'left',
+        value: `${leftMargin}`,
+        placeholder: '请输入左边距'
+      }, {
+        type: 'text',
+        label: '右边距',
+        name: 'right',
+        value: `${rightMargin}`,
+        placeholder: '请输入右边距'
+      }],
+      onConfirm: (payload) => {
+        const top = payload.find(p => p.name === 'top')?.value
+        if (!top) return
+        const bottom = payload.find(p => p.name === 'bottom')?.value
+        if (!bottom) return
+        const left = payload.find(p => p.name === 'left')?.value
+        if (!left) return
+        const right = payload.find(p => p.name === 'right')?.value
+        if (!right) return
+        instance.command.executeSetPaperMargin([
+          Number(top),
+          Number(right),
+          Number(bottom),
+          Number(left)
+        ])
+      }
+    })
+  }
+
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen
