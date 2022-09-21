@@ -56,6 +56,8 @@ export class Command {
   private static addWatermark: CommandAdapt['addWatermark']
   private static deleteWatermark: CommandAdapt['deleteWatermark']
   private static search: CommandAdapt['search']
+  private static searchNavigatePre: CommandAdapt['searchNavigatePre']
+  private static searchNavigateNext: CommandAdapt['searchNavigateNext']
   private static replace: CommandAdapt['replace']
   private static print: CommandAdapt['print']
   private static replaceImageElement: CommandAdapt['replaceImageElement']
@@ -122,6 +124,8 @@ export class Command {
     Command.addWatermark = adapt.addWatermark.bind(adapt)
     Command.deleteWatermark = adapt.deleteWatermark.bind(adapt)
     Command.search = adapt.search.bind(adapt)
+    Command.searchNavigatePre = adapt.searchNavigatePre.bind(adapt)
+    Command.searchNavigateNext = adapt.searchNavigateNext.bind(adapt)
     Command.replace = adapt.replace.bind(adapt)
     Command.print = adapt.print.bind(adapt)
     Command.replaceImageElement = adapt.replaceImageElement.bind(adapt)
@@ -331,6 +335,14 @@ export class Command {
 
   public executeSearch(payload: string | null) {
     return Command.search(payload)
+  }
+
+  public executeSearchNavigatePre() {
+    return Command.searchNavigatePre()
+  }
+
+  public executeSearchNavigateNext() {
+    return Command.searchNavigateNext()
   }
 
   public executeReplace(payload: string) {

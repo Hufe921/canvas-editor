@@ -540,6 +540,52 @@ ul {
   background: rgba(25, 55, 88, .04);
 }
 
+.menu-item .menu-item__search__collapse__search {
+  position: relative;
+}
+
+.menu-item .menu-item__search__collapse__search>input {
+  width: 181px;
+  padding: 5px 60px 5px 5px !important;
+}
+
+.menu-item .menu-item__search__collapse__search>div {
+  width: 28px;
+  height: 27px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: absolute;
+  border-left: 1px solid #e2e6ed;
+  transition: all .5s;
+}
+
+.menu-item .menu-item__search__collapse__search>div:hover {
+  background-color: rgba(25, 55, 88, .04);
+}
+
+.menu-item .menu-item__search__collapse__search i {
+  width: 6px;
+  height: 8px;
+  transform: translateY(1px);
+}
+
+.menu-item .menu-item__search__collapse__search .arrow-left {
+  right: 76px;
+}
+
+.menu-item .menu-item__search__collapse__search .arrow-left i {
+  background: url(./assets/images/arrow-left.svg) no-repeat;
+}
+
+.menu-item .menu-item__search__collapse__search .arrow-right {
+  right: 48px;
+}
+
+.menu-item .menu-item__search__collapse__search .arrow-right i {
+  background: url(./assets/images/arrow-right.svg) no-repeat;
+}
+
 .menu-item__print i {
   background-image: url('./assets/images/print.svg');
 }

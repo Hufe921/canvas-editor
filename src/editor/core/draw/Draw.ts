@@ -92,7 +92,6 @@ export class Draw {
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
   private painterOptions: IPainterOptions | null
-  private searchKeyword: string | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
 
@@ -155,7 +154,6 @@ export class Draw {
     this.rowList = []
     this.painterStyle = null
     this.painterOptions = null
-    this.searchKeyword = null
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
 
@@ -415,14 +413,6 @@ export class Draw {
     if (this.getPainterStyle()) {
       this.pageList.forEach(c => c.style.cursor = 'copy')
     }
-  }
-
-  public getSearchKeyword(): string | null {
-    return this.searchKeyword
-  }
-
-  public setSearchKeyword(payload: string | null) {
-    this.searchKeyword = payload
   }
 
   public setDefaultRange() {
@@ -995,7 +985,7 @@ export class Draw {
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制
-    if (this.searchKeyword) {
+    if (this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
     }
     // 绘制水印
@@ -1017,8 +1007,9 @@ export class Draw {
     // 计算行信息
     if (isComputeRowList) {
       this.rowList = this._computeRowList(innerWidth, this.elementList)
-      if (this.searchKeyword) {
-        this.search.compute(this.searchKeyword)
+      const searchKeyword = this.search.getSearchKeyword()
+      if (searchKeyword) {
+        this.search.compute(searchKeyword)
       }
     }
     // 清除光标等副作用

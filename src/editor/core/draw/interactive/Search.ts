@@ -15,13 +15,54 @@ export class Search {
   private draw: Draw
   private options: Required<IEditorOption>
   private position: Position
+  private searchKeyword: string | null
+  private searchNavigateIndex: number | null
+
   private searchMatchList: ISearchResult[]
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
     this.position = draw.getPosition()
+    this.searchKeyword = null
+    this.searchNavigateIndex = null
     this.searchMatchList = []
+  }
+
+  public getSearchKeyword(): string | null {
+    return this.searchKeyword
+  }
+
+  public setSearchKeyword(payload: string | null) {
+    this.searchKeyword = payload
+    if (!payload) {
+      this.searchNavigateIndex = null
+    }
+  }
+
+  public searchNavigatePre(): number | null {
+    if (!this.searchMatchList.length) return null
+    if (this.searchNavigateIndex === null) {
+      this.searchNavigateIndex = 0
+    } else if (this.searchNavigateIndex === 0) {
+      this.searchNavigateIndex = this.searchMatchList.length - 1
+    } else {
+      this.searchNavigateIndex -= 1
+    }
+    return this.searchNavigateIndex
+  }
+
+  public searchNavigateNext(): number | null {
+    if (!this.searchMatchList.length) return null
+    if (
+      this.searchNavigateIndex === null
+      || this.searchNavigateIndex + 1 === this.searchMatchList.length
+    ) {
+      this.searchNavigateIndex = 0
+    } else {
+      this.searchNavigateIndex += 1
+    }
+    return this.searchNavigateIndex
   }
 
   public getSearchMatchList(): ISearchResult[] {
@@ -122,12 +163,11 @@ export class Search {
 
   public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
     if (!this.searchMatchList || !this.searchMatchList.length) return
-    const { searchMatchAlpha, searchMatchColor } = this.options
+    const { searchMatchAlpha, searchMatchColor, searchNavigateMatchColor } = this.options
     const positionList = this.position.getOriginalPositionList()
     const elementList = this.draw.getOriginalElementList()
     ctx.save()
     ctx.globalAlpha = searchMatchAlpha
-    ctx.fillStyle = searchMatchColor
     for (let s = 0; s < this.searchMatchList.length; s++) {
       const searchMatch = this.searchMatchList[s]
       let position: IElementPosition | null = null
@@ -140,6 +180,12 @@ export class Search {
       if (!position) continue
       const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
       if (pageNo !== pageIndex) continue
+      // 高亮当前搜索词
+      if (s === this.searchNavigateIndex) {
+        ctx.fillStyle = searchNavigateMatchColor
+      } else {
+        ctx.fillStyle = searchMatchColor
+      }
       const x = leftTop[0]
       const y = leftTop[1]
       const width = rightTop[0] - leftTop[0]

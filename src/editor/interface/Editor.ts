@@ -27,6 +27,7 @@ export interface IEditorOption {
   rangeAlpha?: number;
   rangeMinWidth?: number;
   searchMatchColor?: string;
+  searchNavigateMatchColor?: string;
   searchMatchAlpha?: number;
   highlightAlpha?: number;
   resizerColor?: string;
