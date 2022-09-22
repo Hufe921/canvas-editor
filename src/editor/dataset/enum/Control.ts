@@ -11,3 +11,8 @@ export enum ControlComponent {
   VALUE = 'value',
   CHECKBOX = 'checkbox'
 }
+
+export enum ImageDisplay {
+  INLINE = 'inline',
+  BLOCK = 'block'
+}

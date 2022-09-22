@@ -1,10 +1,11 @@
 import './style.css'
 import prism from 'prismjs'
-import Editor, { ControlType, EditorMode, ElementType, IEditorResult, IElement, PageMode } from './editor'
+import Editor, { Command, ControlType, EditorMode, ElementType, IEditorResult, IElement, PageMode } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
 import { formatPrismToken } from './utils/prism'
+import { Signature } from './components/signature/Signature'
 
 let contentChangeCount = 0
 window.onbeforeunload = function () {
@@ -660,6 +661,16 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
   const replaceInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__replace input')!
   const searchDom = document.querySelector<HTMLDivElement>('.menu-item__search')!
+  const searchResultDom = searchCollapseDom.querySelector<HTMLLabelElement>('.search-result')!
+  function setSearchResult() {
+    const result = instance.command.getSearchNavigateInfo()
+    if (result) {
+      const { index, count } = result
+      searchResultDom.innerText = `${index}/${count}`
+    } else {
+      searchResultDom.innerText = ''
+    }
+  }
   searchDom.onclick = function () {
     console.log('search')
     searchCollapseDom.style.display = 'block'
@@ -678,13 +689,16 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     searchInputDom.value = ''
     replaceInputDom.value = ''
     instance.command.executeSearch(null)
+    setSearchResult()
   }
   searchInputDom.oninput = function () {
     instance.command.executeSearch(searchInputDom.value || null)
+    setSearchResult()
   }
   searchInputDom.onkeydown = function (evt) {
     if (evt.key === 'Enter') {
       instance.command.executeSearch(searchInputDom.value || null)
+      setSearchResult()
     }
   }
   searchCollapseDom.querySelector<HTMLButtonElement>('button')!.onclick = function () {
@@ -693,6 +707,14 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     if (searchValue && replaceValue && searchValue !== replaceValue) {
       instance.command.executeReplace(replaceValue)
     }
+  }
+  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-left')!.onclick = function () {
+    instance.command.executeSearchNavigatePre()
+    setSearchResult()
+  }
+  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-right')!.onclick = function () {
+    instance.command.executeSearchNavigateNext()
+    setSearchResult()
   }
 
   document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {
@@ -724,6 +746,73 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick = function () {
     console.log('page-scale-add')
     instance.command.executePageScaleAdd()
+  }
+
+  // 纸张大小
+  const paperSizeDom = document.querySelector<HTMLDivElement>('.paper-size')!
+  const paperSizeDomOptionsDom = paperSizeDom.querySelector<HTMLDivElement>('.options')!
+  paperSizeDom.onclick = function () {
+    paperSizeDomOptionsDom.classList.toggle('visible')
+  }
+  paperSizeDomOptionsDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const paperType = li.dataset.paperSize!
+    const [width, height] = paperType.split('*').map(Number)
+    instance.command.executePaperSize(width, height)
+    // 纸张状态回显
+    paperSizeDomOptionsDom.querySelectorAll('li')
+      .forEach(child => child.classList.remove('active'))
+    li.classList.add('active')
+  }
+
+  // 页面边距
+  const paperMarginDom = document.querySelector<HTMLDivElement>('.paper-margin')!
+  paperMarginDom.onclick = function () {
+    const [topMargin, rightMargin, bottomMargin, leftMargin] = instance.command.getPaperMargin()
+    new Dialog({
+      title: '页边距',
+      data: [{
+        type: 'text',
+        label: '上边距',
+        name: 'top',
+        value: `${topMargin}`,
+        placeholder: '请输入上边距'
+      }, {
+        type: 'text',
+        label: '下边距',
+        name: 'bottom',
+        value: `${bottomMargin}`,
+        placeholder: '请输入下边距'
+      }, {
+        type: 'text',
+        label: '左边距',
+        name: 'left',
+        value: `${leftMargin}`,
+        placeholder: '请输入左边距'
+      }, {
+        type: 'text',
+        label: '右边距',
+        name: 'right',
+        value: `${rightMargin}`,
+        placeholder: '请输入右边距'
+      }],
+      onConfirm: (payload) => {
+        const top = payload.find(p => p.name === 'top')?.value
+        if (!top) return
+        const bottom = payload.find(p => p.name === 'bottom')?.value
+        if (!bottom) return
+        const left = payload.find(p => p.name === 'left')?.value
+        if (!left) return
+        const right = payload.find(p => p.name === 'right')?.value
+        if (!right) return
+        instance.command.executeSetPaperMargin([
+          Number(top),
+          Number(right),
+          Number(bottom),
+          Number(left)
+        ])
+      }
+    })
   }
 
   // 全屏
@@ -900,6 +989,32 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     contentChangeCount = 1
     updateArticle(payload)
   }
+
+  // 9. 右键菜单注册
+  instance.register.contextMenuList([
+    {
+      name: '签名',
+      icon: 'signature',
+      when: (payload) => {
+        return !payload.isReadonly && payload.editorTextFocus
+      },
+      callback: (command: Command) => {
+        new Signature({
+          onConfirm(payload) {
+            if (!payload) return
+            const { value, width, height } = payload
+            if (!value || !width || !height) return
+            command.executeInsertElementList([{
+              value,
+              width,
+              height,
+              type: ElementType.IMAGE
+            }])
+          }
+        })
+      }
+    }
+  ])
 
 }
 

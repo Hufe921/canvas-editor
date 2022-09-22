@@ -17,12 +17,13 @@ import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
 import { defaultHeaderOption } from './dataset/constant/Header'
 import { defaultWatermarkOption } from './dataset/constant/Watermark'
-import { ControlType } from './dataset/enum/Control'
+import { ControlType, ImageDisplay } from './dataset/enum/Control'
 import { defaultControlOption } from './dataset/constant/Control'
 import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
 import { defaultCheckboxOption } from './dataset/constant/Checkbox'
 import { DeepRequired } from './interface/Common'
+import { INavigateInfo } from './core/draw/interactive/Search'
 
 export default class Editor {
 
@@ -70,6 +71,7 @@ export default class Editor {
       rangeMinWidth: 5,
       searchMatchAlpha: 0.6,
       searchMatchColor: '#FFFF00',
+      searchNavigateMatchColor: '#AAD280',
       highlightAlpha: 0.6,
       resizerColor: '#4182D9',
       resizerSize: 5,
@@ -115,7 +117,9 @@ export {
   ControlType,
   EditorComponent,
   EDITOR_COMPONENT,
-  PageMode
+  PageMode,
+  ImageDisplay,
+  Command
 }
 
 // 对外类型
@@ -125,5 +129,6 @@ export type {
   IEditorResult,
   IContextMenuContext,
   IRegisterContextMenu,
-  IWatermark
+  IWatermark,
+  INavigateInfo
 }

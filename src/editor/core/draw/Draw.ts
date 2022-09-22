@@ -40,11 +40,12 @@ import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired } from '../../interface/Common'
-import { ControlComponent } from '../../dataset/enum/Control'
+import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
+import { IMargin } from '../../interface/Margin'
 
 export class Draw {
 
@@ -91,7 +92,6 @@ export class Draw {
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
   private painterOptions: IPainterOptions | null
-  private searchKeyword: string | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
 
@@ -154,7 +154,6 @@ export class Draw {
     this.rowList = []
     this.painterStyle = null
     this.painterOptions = null
-    this.searchKeyword = null
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
 
@@ -202,8 +201,12 @@ export class Draw {
     return width - margins[1] - margins[3]
   }
 
-  public getMargins(): number[] {
-    return this.options.margins.map(m => m * this.options.scale)
+  public getMargins(): IMargin {
+    return <IMargin>this.options.margins.map(m => m * this.options.scale)
+  }
+
+  public getOriginalMargins(): number[] {
+    return this.options.margins
   }
 
   public getPageGap(): number {
@@ -412,14 +415,6 @@ export class Draw {
     }
   }
 
-  public getSearchKeyword(): string | null {
-    return this.searchKeyword
-  }
-
-  public setSearchKeyword(payload: string | null) {
-    this.searchKeyword = payload
-  }
-
   public setDefaultRange() {
     if (!this.elementList.length) return
     setTimeout(() => {
@@ -440,7 +435,10 @@ export class Draw {
       canvas.style.height = `${height}px`
       canvas.height = height * dpr
     }
-    this.render({ isSubmitHistory: false, isSetCursor: false })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
     // 回调
     setTimeout(() => {
       if (this.listener.pageModeChange) {
@@ -461,10 +459,37 @@ export class Draw {
       p.style.height = `${height}px`
       p.style.marginBottom = `${this.getPageGap()}px`
     })
-    this.render({ isSubmitHistory: false, isSetCursor: false })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
     }
+  }
+
+  public setPaperSize(width: number, height: number) {
+    this.options.width = width
+    this.options.height = height
+    this.container.style.width = `${width}px`
+    this.pageList.forEach(p => {
+      p.width = width
+      p.height = height
+      p.style.width = `${width}px`
+      p.style.height = `${height}px`
+    })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
+  }
+
+  public setPaperMargin(payload: IMargin) {
+    this.options.margins = payload
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
   }
 
   public getValue(): IEditorResult {
@@ -549,9 +574,10 @@ export class Draw {
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         // 图片超出尺寸后自适应
-        if (curRow.width + elementWidth > innerWidth) {
+        const curRowWidth = element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
+        if (curRowWidth + elementWidth > innerWidth) {
           // 计算剩余大小
-          const surplusWidth = innerWidth - curRow.width
+          const surplusWidth = innerWidth - curRowWidth
           element.width = surplusWidth
           element.height = elementHeight * surplusWidth / elementWidth
           metrics.width = element.width
@@ -711,7 +737,9 @@ export class Draw {
       // 超过限定宽度
       const preElement = elementList[i - 1]
       if (
-        (preElement && preElement.type === ElementType.TABLE)
+        preElement?.type === ElementType.TABLE
+        || preElement?.imgDisplay === ImageDisplay.INLINE
+        || element.imgDisplay === ImageDisplay.INLINE
         || curRow.width + metrics.width > innerWidth
         || (i !== 0 && element.value === ZERO)
       ) {
@@ -771,9 +799,11 @@ export class Draw {
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
-        const offsetY = element.type === ElementType.IMAGE || element.type === ElementType.LATEX
-          ? curRow.ascent - metrics.height
-          : curRow.ascent
+        const offsetY =
+          (element.imgDisplay !== ImageDisplay.INLINE && element.type === ElementType.IMAGE)
+            || element.type === ElementType.LATEX
+            ? curRow.ascent - metrics.height
+            : curRow.ascent
         const positionItem: IElementPosition = {
           pageNo,
           index,
@@ -955,7 +985,7 @@ export class Draw {
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制
-    if (this.searchKeyword) {
+    if (this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
     }
     // 绘制水印
@@ -977,8 +1007,9 @@ export class Draw {
     // 计算行信息
     if (isComputeRowList) {
       this.rowList = this._computeRowList(innerWidth, this.elementList)
-      if (this.searchKeyword) {
-        this.search.compute(this.searchKeyword)
+      const searchKeyword = this.search.getSearchKeyword()
+      if (searchKeyword) {
+        this.search.compute(searchKeyword)
       }
     }
     // 清除光标等副作用

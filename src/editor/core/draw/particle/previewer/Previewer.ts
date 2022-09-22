@@ -293,7 +293,7 @@ export class Previewer {
   public drawResizer(element: IElement, position: IElementPosition, options: IPreviewerDrawOption = {}) {
     this.previewerDrawOption = options
     const { scale } = this.options
-    const { coordinate: { leftTop: [left, top] } } = position
+    const { coordinate: { leftTop: [left, top] }, ascent } = position
     const elementWidth = element.width! * scale
     const elementHeight = element.height! * scale
     const height = this.draw.getHeight()
@@ -302,7 +302,7 @@ export class Previewer {
     const preY = this.draw.getPageNo() * (height + pageGap)
     // 边框
     this.resizerSelection.style.left = `${left}px`
-    this.resizerSelection.style.top = `${top + preY}px`
+    this.resizerSelection.style.top = `${top + preY + ascent}px`
     this.resizerSelection.style.width = `${elementWidth}px`
     this.resizerSelection.style.height = `${elementHeight}px`
     // handle

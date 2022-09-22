@@ -1,8 +1,9 @@
-import { IElement } from '../..'
+import { IElement, ImageDisplay, INavigateInfo } from '../..'
 import { EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorResult } from '../../interface/Editor'
+import { IMargin } from '../../interface/Margin'
 import { IWatermark } from '../../interface/Watermark'
 import { CommandAdapt } from './CommandAdapt'
 
@@ -55,10 +56,14 @@ export class Command {
   private static addWatermark: CommandAdapt['addWatermark']
   private static deleteWatermark: CommandAdapt['deleteWatermark']
   private static search: CommandAdapt['search']
+  private static searchNavigatePre: CommandAdapt['searchNavigatePre']
+  private static searchNavigateNext: CommandAdapt['searchNavigateNext']
+  private static getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   private static replace: CommandAdapt['replace']
   private static print: CommandAdapt['print']
   private static replaceImageElement: CommandAdapt['replaceImageElement']
   private static saveAsImageElement: CommandAdapt['saveAsImageElement']
+  private static changeImageDisplay: CommandAdapt['changeImageDisplay']
   private static getImage: CommandAdapt['getImage']
   private static getValue: CommandAdapt['getValue']
   private static getWordCount: CommandAdapt['getWordCount']
@@ -66,6 +71,9 @@ export class Command {
   private static pageScaleRecovery: CommandAdapt['pageScaleRecovery']
   private static pageScaleMinus: CommandAdapt['pageScaleMinus']
   private static pageScaleAdd: CommandAdapt['pageScaleAdd']
+  private static paperSize: CommandAdapt['paperSize']
+  private static getPaperMargin: CommandAdapt['getPaperMargin']
+  private static setPaperMargin: CommandAdapt['setPaperMargin']
   private static insertElementList: CommandAdapt['insertElementList']
   private static removeControl: CommandAdapt['removeControl']
 
@@ -117,10 +125,14 @@ export class Command {
     Command.addWatermark = adapt.addWatermark.bind(adapt)
     Command.deleteWatermark = adapt.deleteWatermark.bind(adapt)
     Command.search = adapt.search.bind(adapt)
+    Command.searchNavigatePre = adapt.searchNavigatePre.bind(adapt)
+    Command.searchNavigateNext = adapt.searchNavigateNext.bind(adapt)
+    Command.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     Command.replace = adapt.replace.bind(adapt)
     Command.print = adapt.print.bind(adapt)
     Command.replaceImageElement = adapt.replaceImageElement.bind(adapt)
     Command.saveAsImageElement = adapt.saveAsImageElement.bind(adapt)
+    Command.changeImageDisplay = adapt.changeImageDisplay.bind(adapt)
     Command.getImage = adapt.getImage.bind(adapt)
     Command.getValue = adapt.getValue.bind(adapt)
     Command.getWordCount = adapt.getWordCount.bind(adapt)
@@ -128,6 +140,9 @@ export class Command {
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
+    Command.paperSize = adapt.paperSize.bind(adapt)
+    Command.getPaperMargin = adapt.getPaperMargin.bind(adapt)
+    Command.setPaperMargin = adapt.setPaperMargin.bind(adapt)
     Command.insertElementList = adapt.insertElementList.bind(adapt)
     Command.removeControl = adapt.removeControl.bind(adapt)
   }
@@ -324,6 +339,18 @@ export class Command {
     return Command.search(payload)
   }
 
+  public executeSearchNavigatePre() {
+    return Command.searchNavigatePre()
+  }
+
+  public executeSearchNavigateNext() {
+    return Command.searchNavigateNext()
+  }
+
+  public getSearchNavigateInfo(): null | INavigateInfo {
+    return Command.getSearchNavigateInfo()
+  }
+
   public executeReplace(payload: string) {
     return Command.replace(payload)
   }
@@ -340,6 +367,10 @@ export class Command {
     return Command.saveAsImageElement()
   }
 
+  public executeChangeImageDisplay(element: IElement, display: ImageDisplay) {
+    return Command.changeImageDisplay(element, display)
+  }
+
   public getImage(): string[] {
     return Command.getImage()
   }
@@ -352,7 +383,7 @@ export class Command {
     return Command.getWordCount()
   }
 
-  // 页面模式、页面缩放
+  // 页面模式、页面缩放、纸张大小、页边距
   public executePageMode(payload: PageMode) {
     return Command.pageMode(payload)
   }
@@ -367,6 +398,18 @@ export class Command {
 
   public executePageScaleAdd() {
     return Command.pageScaleAdd()
+  }
+
+  public executePaperSize(width: number, height: number) {
+    return Command.paperSize(width, height)
+  }
+
+  public getPaperMargin() {
+    return Command.getPaperMargin()
+  }
+
+  public executeSetPaperMargin(payload: IMargin) {
+    return Command.setPaperMargin(payload)
   }
 
   // 通用

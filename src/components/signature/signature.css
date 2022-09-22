@@ -1,0 +1,128 @@
+.signature-mask {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .5;
+  background: #000000;
+  z-index: 99;
+}
+
+.signature-container {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  overflow: auto;
+  z-index: 999;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.signature {
+  position: absolute;
+  padding: 0 30px 30px;
+  background: #ffffff;
+  box-shadow: 0 2px 12px 0 rgb(56 56 56 / 20%);
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+}
+
+.signature-title {
+  position: relative;
+  border-bottom: 1px solid #e2e6ed;
+  margin-bottom: 15px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.signature-title i {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  display: inline-block;
+  background: url(../../assets/images/close.svg);
+}
+
+.signature-operation>div {
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  color: #3d4757;
+  user-select: none;
+}
+
+.signature-operation>div:hover {
+  color: #6e7175;
+}
+
+.signature-operation>div i {
+  width: 24px;
+  height: 24px;
+  display: inline-block;
+}
+
+.signature-operation__undo {
+  background: url(../../assets/images/signature-undo.svg) no-repeat;
+}
+
+.signature-operation__trash {
+  background: url(../../assets/images/trash.svg) no-repeat;
+}
+
+.signature-operation>div span {
+  font-size: 12px;
+  margin: 0 5px;
+}
+
+.signature-canvas {
+  margin: 15px 0;
+  user-select: none;
+}
+
+.signature-canvas canvas {
+  background: #f3f5f7;
+}
+
+.signature-menu {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.signature-menu button {
+  position: relative;
+  display: inline-block;
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  background: #ffffff;
+  line-height: 22px;
+  padding: 0 16px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.signature-menu button:hover {
+  background: rgba(25, 55, 88, .04);
+}
+
+.signature-menu__cancel {
+  margin-right: 16px;
+}
+
+.signature-menu button[type='primary'] {
+  color: #ffffff;
+  background: #4991f2;
+  border-color: #4991f2;
+}
+
+.signature-menu button[type='primary']:hover {
+  background: #5b9cf3;
+  border-color: #5b9cf3;
+}

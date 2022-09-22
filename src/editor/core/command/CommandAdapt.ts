@@ -1,7 +1,7 @@
 import { WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
-import { ControlComponent } from '../../dataset/enum/Control'
+import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { EditorContext, EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
@@ -9,6 +9,7 @@ import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
+import { IMargin } from '../../interface/Margin'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
@@ -18,6 +19,7 @@ import { formatElementList } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
+import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { HistoryManager } from '../history/HistoryManager'
@@ -39,6 +41,7 @@ export class CommandAdapt {
   private options: Required<IEditorOption>
   private control: Control
   private workerManager: WorkerManager
+  private searchManager: Search
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -50,6 +53,7 @@ export class CommandAdapt {
     this.options = draw.getOptions()
     this.control = draw.getControl()
     this.workerManager = draw.getWorkerManager()
+    this.searchManager = draw.getSearch()
   }
 
   public mode(payload: EditorMode) {
@@ -1210,11 +1214,33 @@ export class CommandAdapt {
   }
 
   public search(payload: string | null) {
-    this.draw.setSearchKeyword(payload)
+    this.searchManager.setSearchKeyword(payload)
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false
     })
+  }
+
+  public searchNavigatePre() {
+    const index = this.searchManager.searchNavigatePre()
+    if (index === null) return
+    this.draw.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
+  public searchNavigateNext() {
+    const index = this.searchManager.searchNavigateNext()
+    if (index === null) return
+    this.draw.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
+  public getSearchNavigateInfo(): null | INavigateInfo {
+    return this.searchManager.getSearchNavigateInfo()
   }
 
   public replace(payload: string) {
@@ -1355,6 +1381,15 @@ export class CommandAdapt {
     downloadFile(element.value, `${element.id!}.png`)
   }
 
+  public changeImageDisplay(element: IElement, display: ImageDisplay) {
+    if (element.imgDisplay === display) return
+    element.imgDisplay = display
+    this.draw.getPreviewer().clearResizer()
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
   public getImage(): string[] {
     return this.draw.getDataURL()
   }
@@ -1392,6 +1427,18 @@ export class CommandAdapt {
     if (nextScale <= 30) {
       this.draw.setPageScale(nextScale / 10)
     }
+  }
+
+  public paperSize(width: number, height: number) {
+    this.draw.setPaperSize(width, height)
+  }
+
+  public getPaperMargin(): number[] {
+    return this.draw.getOriginalMargins()
+  }
+
+  public setPaperMargin(payload: IMargin) {
+    return this.draw.setPaperMargin(payload)
   }
 
   public insertElementList(payload: IElement[]) {

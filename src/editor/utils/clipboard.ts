@@ -65,6 +65,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         let text = ''
         if (element.type === ElementType.CONTROL) {
           text = element.control!.value?.[0]?.value || ''
+        } else if (element.type === ElementType.DATE) {
+          text = element.valueList?.map(v => v.value).join('') || ''
         } else {
           text = element.value
         }
