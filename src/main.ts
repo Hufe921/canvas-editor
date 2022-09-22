@@ -645,6 +645,12 @@ window.onload = function () {
       instance.command.executeReplace(replaceValue)
     }
   }
+  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-left')!.onclick = function () {
+    instance.command.executeSearchNavigatePre()
+  }
+  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-right')!.onclick = function () {
+    instance.command.executeSearchNavigateNext()
+  }
 
   document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {
     console.log('print')

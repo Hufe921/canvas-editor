@@ -70,6 +70,7 @@ export default class Editor {
       rangeMinWidth: 5,
       searchMatchAlpha: 0.6,
       searchMatchColor: '#FFFF00',
+      searchNavigateMatchColor: '#AAD280',
       highlightAlpha: 0.6,
       resizerColor: '#4182D9',
       resizerSize: 5,

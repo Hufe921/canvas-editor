@@ -19,6 +19,7 @@ import { formatElementList } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
+import { Search } from '../draw/interactive/Search'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { HistoryManager } from '../history/HistoryManager'
@@ -40,6 +41,7 @@ export class CommandAdapt {
   private options: Required<IEditorOption>
   private control: Control
   private workerManager: WorkerManager
+  private searchManager: Search
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -51,6 +53,7 @@ export class CommandAdapt {
     this.options = draw.getOptions()
     this.control = draw.getControl()
     this.workerManager = draw.getWorkerManager()
+    this.searchManager = draw.getSearch()
   }
 
   public mode(payload: EditorMode) {
@@ -1211,7 +1214,25 @@ export class CommandAdapt {
   }
 
   public search(payload: string | null) {
-    this.draw.setSearchKeyword(payload)
+    this.searchManager.setSearchKeyword(payload)
+    this.draw.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
+  public searchNavigatePre() {
+    const index = this.searchManager.searchNavigatePre()
+    if (index === null) return
+    this.draw.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
+  public searchNavigateNext() {
+    const index = this.searchManager.searchNavigateNext()
+    if (index === null) return
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false
