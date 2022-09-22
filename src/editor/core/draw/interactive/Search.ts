@@ -34,9 +34,7 @@ export class Search {
 
   public setSearchKeyword(payload: string | null) {
     this.searchKeyword = payload
-    if (!payload) {
-      this.searchNavigateIndex = null
-    }
+    this.searchNavigateIndex = null
   }
 
   public searchNavigatePre(): number | null {
