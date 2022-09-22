@@ -472,7 +472,7 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse {
-  width: 235px;
+  width: 260px;
   height: 72px;
   box-sizing: border-box;
   position: absolute;
@@ -489,7 +489,7 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse>div {
-  width: 225px;
+  width: 250px;
   height: 36px;
   padding: 0 5px;
   line-height: 36px;
@@ -500,6 +500,7 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse>div input {
+  width: 205px;
   height: 27px;
   appearance: none;
   background-color: #fff;
@@ -544,9 +545,15 @@ ul {
   position: relative;
 }
 
+.menu-item .menu-item__search__collapse__search label {
+  right: 110px;
+  font-size: 12px;
+  color: #3d4757;
+  position: absolute;
+}
+
 .menu-item .menu-item__search__collapse__search>input {
-  width: 181px;
-  padding: 5px 60px 5px 5px !important;
+  padding: 5px 90px 5px 5px !important;
 }
 
 .menu-item .menu-item__search__collapse__search>div {

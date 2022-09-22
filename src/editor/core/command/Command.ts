@@ -1,4 +1,4 @@
-import { IElement, ImageDisplay } from '../..'
+import { IElement, ImageDisplay, INavigateInfo } from '../..'
 import { EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
@@ -58,6 +58,7 @@ export class Command {
   private static search: CommandAdapt['search']
   private static searchNavigatePre: CommandAdapt['searchNavigatePre']
   private static searchNavigateNext: CommandAdapt['searchNavigateNext']
+  private static getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   private static replace: CommandAdapt['replace']
   private static print: CommandAdapt['print']
   private static replaceImageElement: CommandAdapt['replaceImageElement']
@@ -126,6 +127,7 @@ export class Command {
     Command.search = adapt.search.bind(adapt)
     Command.searchNavigatePre = adapt.searchNavigatePre.bind(adapt)
     Command.searchNavigateNext = adapt.searchNavigateNext.bind(adapt)
+    Command.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     Command.replace = adapt.replace.bind(adapt)
     Command.print = adapt.print.bind(adapt)
     Command.replaceImageElement = adapt.replaceImageElement.bind(adapt)
@@ -343,6 +345,10 @@ export class Command {
 
   public executeSearchNavigateNext() {
     return Command.searchNavigateNext()
+  }
+
+  public getSearchNavigateInfo(): null | INavigateInfo {
+    return Command.getSearchNavigateInfo()
   }
 
   public executeReplace(payload: string) {

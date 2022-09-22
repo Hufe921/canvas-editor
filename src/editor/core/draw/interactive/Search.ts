@@ -10,6 +10,11 @@ import { getUUID } from '../../../utils'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
+export interface INavigateInfo {
+  index: number;
+  count: number;
+}
+
 export class Search {
 
   private draw: Draw
@@ -118,6 +123,25 @@ export class Search {
 
   public getSearchMatchList(): ISearchResult[] {
     return this.searchMatchList
+  }
+
+  public getSearchNavigateInfo(): null | INavigateInfo {
+    if (!this.searchKeyword || !this.searchMatchList.length) return null
+    const index = this.searchNavigateIndex !== null
+      ? (this.searchNavigateIndex / this.searchKeyword.length) + 1
+      : 0
+    let count = 0
+    let groupId = null
+    for (let s = 0; s < this.searchMatchList.length; s++) {
+      const match = this.searchMatchList[s]
+      if (groupId === match.groupId) continue
+      groupId = match.groupId
+      count += 1
+    }
+    return {
+      index,
+      count
+    }
   }
 
   public compute(payload: string) {
