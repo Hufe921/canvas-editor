@@ -17,15 +17,14 @@ export class Search {
   private position: Position
   private searchKeyword: string | null
   private searchNavigateIndex: number | null
-
   private searchMatchList: ISearchResult[]
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
     this.position = draw.getPosition()
-    this.searchKeyword = null
     this.searchNavigateIndex = null
+    this.searchKeyword = null
     this.searchMatchList = []
   }
 
@@ -41,28 +40,62 @@ export class Search {
   }
 
   public searchNavigatePre(): number | null {
-    if (!this.searchMatchList.length) return null
+    if (!this.searchMatchList.length || !this.searchKeyword) return null
     if (this.searchNavigateIndex === null) {
       this.searchNavigateIndex = 0
-    } else if (this.searchNavigateIndex === 0) {
-      this.searchNavigateIndex = this.searchMatchList.length - 1
     } else {
-      this.searchNavigateIndex -= 1
+      let index = this.searchNavigateIndex - 1
+      let isExistPre = false
+      const searchNavigateId = this.searchMatchList[this.searchNavigateIndex].groupId
+      while (index >= 0) {
+        const match = this.searchMatchList[index]
+        if (searchNavigateId !== match.groupId) {
+          isExistPre = true
+          this.searchNavigateIndex = index - (this.searchKeyword.length - 1)
+          break
+        }
+        index--
+      }
+      if (!isExistPre) {
+        const lastSearchMatch = this.searchMatchList[this.searchMatchList.length - 1]
+        if (lastSearchMatch.groupId === searchNavigateId) return null
+        this.searchNavigateIndex = this.searchMatchList.length - 1 - (this.searchKeyword.length - 1)
+      }
     }
     return this.searchNavigateIndex
   }
 
   public searchNavigateNext(): number | null {
-    if (!this.searchMatchList.length) return null
-    if (
-      this.searchNavigateIndex === null
-      || this.searchNavigateIndex + 1 === this.searchMatchList.length
-    ) {
+    if (!this.searchMatchList.length || !this.searchKeyword) return null
+    if (this.searchNavigateIndex === null) {
       this.searchNavigateIndex = 0
     } else {
-      this.searchNavigateIndex += 1
+      let index = this.searchNavigateIndex + 1
+      let isExistNext = false
+      const searchNavigateId = this.searchMatchList[this.searchNavigateIndex].groupId
+      while (index < this.searchMatchList.length) {
+        const match = this.searchMatchList[index]
+        if (searchNavigateId !== match.groupId) {
+          isExistNext = true
+          this.searchNavigateIndex = index
+          break
+        }
+        index++
+      }
+      if (!isExistNext) {
+        const firstSearchMatch = this.searchMatchList[0]
+        if (firstSearchMatch.groupId === searchNavigateId) return null
+        this.searchNavigateIndex = 0
+      }
     }
     return this.searchNavigateIndex
+  }
+
+  public getSearchNavigateIndexList() {
+    if (this.searchNavigateIndex === null || !this.searchKeyword) return []
+    return new Array(this.searchKeyword.length)
+      .fill(this.searchNavigateIndex)
+      .map((navigate, index) => navigate + index)
   }
 
   public getSearchMatchList(): ISearchResult[] {
@@ -162,7 +195,7 @@ export class Search {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
-    if (!this.searchMatchList || !this.searchMatchList.length) return
+    if (!this.searchMatchList || !this.searchMatchList.length || !this.searchKeyword) return
     const { searchMatchAlpha, searchMatchColor, searchNavigateMatchColor } = this.options
     const positionList = this.position.getOriginalPositionList()
     const elementList = this.draw.getOriginalElementList()
@@ -181,7 +214,8 @@ export class Search {
       const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
       if (pageNo !== pageIndex) continue
       // 高亮当前搜索词
-      if (s === this.searchNavigateIndex) {
+      const searchMatchIndexList = this.getSearchNavigateIndexList()
+      if (searchMatchIndexList.includes(s)) {
         ctx.fillStyle = searchNavigateMatchColor
       } else {
         ctx.fillStyle = searchMatchColor
