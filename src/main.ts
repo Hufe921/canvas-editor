@@ -611,6 +611,16 @@ window.onload = function () {
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
   const replaceInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__replace input')!
   const searchDom = document.querySelector<HTMLDivElement>('.menu-item__search')!
+  const searchResultDom = searchCollapseDom.querySelector<HTMLLabelElement>('.search-result')!
+  function setSearchResult() {
+    const result = instance.command.getSearchNavigateInfo()
+    if (result) {
+      const { index, count } = result
+      searchResultDom.innerText = `${index}/${count}`
+    } else {
+      searchResultDom.innerText = ''
+    }
+  }
   searchDom.onclick = function () {
     console.log('search')
     searchCollapseDom.style.display = 'block'
@@ -629,13 +639,16 @@ window.onload = function () {
     searchInputDom.value = ''
     replaceInputDom.value = ''
     instance.command.executeSearch(null)
+    setSearchResult()
   }
   searchInputDom.oninput = function () {
     instance.command.executeSearch(searchInputDom.value || null)
+    setSearchResult()
   }
   searchInputDom.onkeydown = function (evt) {
     if (evt.key === 'Enter') {
       instance.command.executeSearch(searchInputDom.value || null)
+      setSearchResult()
     }
   }
   searchCollapseDom.querySelector<HTMLButtonElement>('button')!.onclick = function () {
@@ -647,9 +660,11 @@ window.onload = function () {
   }
   searchCollapseDom.querySelector<HTMLDivElement>('.arrow-left')!.onclick = function () {
     instance.command.executeSearchNavigatePre()
+    setSearchResult()
   }
   searchCollapseDom.querySelector<HTMLDivElement>('.arrow-right')!.onclick = function () {
     instance.command.executeSearchNavigateNext()
+    setSearchResult()
   }
 
   document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {

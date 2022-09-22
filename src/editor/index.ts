@@ -23,6 +23,7 @@ import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
 import { defaultCheckboxOption } from './dataset/constant/Checkbox'
 import { DeepRequired } from './interface/Common'
+import { INavigateInfo } from './core/draw/interactive/Search'
 
 export default class Editor {
 
@@ -128,5 +129,6 @@ export type {
   IEditorResult,
   IContextMenuContext,
   IRegisterContextMenu,
-  IWatermark
+  IWatermark,
+  INavigateInfo
 }

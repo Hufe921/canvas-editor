@@ -19,7 +19,7 @@ import { formatElementList } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
-import { Search } from '../draw/interactive/Search'
+import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { HistoryManager } from '../history/HistoryManager'
@@ -1237,6 +1237,10 @@ export class CommandAdapt {
       isSetCursor: false,
       isSubmitHistory: false
     })
+  }
+
+  public getSearchNavigateInfo(): null | INavigateInfo {
+    return this.searchManager.getSearchNavigateInfo()
   }
 
   public replace(payload: string) {
