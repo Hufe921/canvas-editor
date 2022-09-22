@@ -91,6 +91,26 @@ export class Search {
     return this.searchNavigateIndex
   }
 
+  public searchNavigateScrollIntoView(position: IElementPosition) {
+    const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
+    const preY = pageNo * (height + pageGap)
+    // 创建定位锚点
+    const anchor = document.createElement('div')
+    anchor.style.position = 'absolute'
+    // 扩大搜索词尺寸，使可视范围更广
+    const ANCHOR_OVERFLOW_SIZE = 50
+    anchor.style.width = `${rightTop[0] - leftTop[0] + ANCHOR_OVERFLOW_SIZE}px`
+    anchor.style.height = `${leftBottom[1] - leftTop[1] + ANCHOR_OVERFLOW_SIZE}px`
+    anchor.style.left = `${leftTop[0]}px`
+    anchor.style.top = `${leftTop[1] + preY}px`
+    this.draw.getContainer().append(anchor)
+    // 移动到可视范围
+    anchor.scrollIntoView(false)
+    anchor.remove()
+  }
+
   public getSearchNavigateIndexList() {
     if (this.searchNavigateIndex === null || !this.searchKeyword) return []
     return new Array(this.searchKeyword.length)
@@ -213,10 +233,11 @@ export class Search {
       if (!position) continue
       const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
       if (pageNo !== pageIndex) continue
-      // 高亮当前搜索词
+      // 高亮并定位当前搜索词
       const searchMatchIndexList = this.getSearchNavigateIndexList()
       if (searchMatchIndexList.includes(s)) {
         ctx.fillStyle = searchNavigateMatchColor
+        this.searchNavigateScrollIntoView(position)
       } else {
         ctx.fillStyle = searchMatchColor
       }
