@@ -91,6 +91,11 @@ describe('菜单-搜索', () => {
 
       cy.get('.menu-item__search__collapse input').eq(0).type(searchText)
 
+      // 搜索导航
+      cy.get('.menu-item__search__collapse .arrow-right').click()
+      cy.get('.menu-item__search__collapse__search .search-result')
+        .should('have.text', '1/3')
+
       cy.get('.menu-item__search__collapse__replace').as('replace')
 
       cy.get('@replace').find('input').type(replaceText)

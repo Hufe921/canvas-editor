@@ -767,6 +767,13 @@ export class Draw {
     return rowList
   }
 
+  private _drawRichText(ctx: CanvasRenderingContext2D) {
+    this.underline.render(ctx)
+    this.strikeout.render(ctx)
+    this.highlight.render(ctx)
+    this.textParticle.complete()
+  }
+
   private _drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload): IDrawRowResult {
     const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
     const { scale, tdPadding } = this.options
@@ -823,10 +830,10 @@ export class Draw {
         positionList.push(positionItem)
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
           this.imageParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.LATEX) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
           this.laTexParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TABLE) {
           if (isCrossRowCol) {
@@ -836,16 +843,16 @@ export class Draw {
           }
           this.tableParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.HYPERLINK) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
           this.dateParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUPERSCRIPT) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUBSCRIPT) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
           this.subscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
@@ -857,24 +864,24 @@ export class Draw {
           element.type === ElementType.CHECKBOX ||
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
           this.checkboxParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TAB) {
-          this.textParticle.complete()
+          this._drawRichText(ctx)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
-        // 下划线绘制
+        // 下划线记录
         if (element.underline) {
-          this.underline.render(ctx, element.color!, x, y + curRow.height, metrics.width)
+          this.underline.recordFillInfo(ctx, x, y + curRow.height, metrics.width, 0, element.color)
         }
-        // 删除线绘制
+        // 删除线记录
         if (element.strikeout) {
-          this.strikeout.render(ctx, x, y + curRow.height / 2, metrics.width)
+          this.strikeout.recordFillInfo(ctx, x, y + curRow.height / 2, metrics.width)
         }
-        // 元素高亮
+        // 元素高亮记录
         if (element.highlight) {
-          this.highlight.render(ctx, element.highlight, x, y, metrics.width, curRow.height)
+          this.highlight.recordFillInfo(ctx, x, y, metrics.width, curRow.height, element.highlight)
         }
         // 选区记录
         const { startIndex, endIndex } = this.range.getRange()
@@ -937,7 +944,8 @@ export class Draw {
           y = tablePreY
         }
       }
-      this.textParticle.complete()
+      // 绘制富文本及文字
+      this._drawRichText(ctx)
       // 绘制选区
       if (rangeRecord.width && rangeRecord.height) {
         const { x, y, width, height } = rangeRecord
