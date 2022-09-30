@@ -145,6 +145,7 @@ export class Search {
   }
 
   public compute(payload: string) {
+    const keyword = payload.toLocaleLowerCase()
     const searchMatchList: ISearchResult[] = []
     // 分组
     const elementListGroup: { type: EditorContext, elementList: IElement[], index: number }[] = []
@@ -190,6 +191,7 @@ export class Search {
           : ZERO)
         .filter(Boolean)
         .join('')
+        .toLocaleLowerCase()
       const matchStartIndexList = []
       let index = text.indexOf(payload)
       while (index !== -1) {
@@ -224,11 +226,11 @@ export class Search {
               tdIndex: d,
               tdId: td.id
             }
-            searchClosure(payload, group.type, td.value, restArgs)
+            searchClosure(keyword, group.type, td.value, restArgs)
           }
         }
       } else {
-        searchClosure(payload, group.type, group.elementList, {
+        searchClosure(keyword, group.type, group.elementList, {
           startIndex: group.index
         })
       }
