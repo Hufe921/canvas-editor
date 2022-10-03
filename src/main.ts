@@ -55,7 +55,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
   const instance = new Editor(container, <IElement[]>data, {
-    margins: [100, 120, 100, 120],
+    margins: options.margins,
     header: {
       data: name
     },
