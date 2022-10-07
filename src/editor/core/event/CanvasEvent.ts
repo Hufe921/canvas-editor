@@ -18,7 +18,7 @@ import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 import { Control } from '../draw/control/Control'
 import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
-import { splitText } from '../../utils'
+import { splitText, threeClick } from '../../utils'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { DeepRequired } from '../../interface/Common'
 import { DateParticle } from '../draw/particle/date/DateParticle'
@@ -72,6 +72,7 @@ export class CanvasEvent {
     this.pageContainer.addEventListener('mouseleave', this.mouseleave.bind(this))
     this.pageContainer.addEventListener('mousemove', this.mousemove.bind(this))
     this.pageContainer.addEventListener('dblclick', this.dblclick.bind(this))
+    threeClick(this.pageContainer, this.threeClick.bind(this))
   }
 
   public setIsAllowDrag(payload: boolean) {
@@ -504,6 +505,46 @@ export class CanvasEvent {
         } else {
           break
         }
+      }
+    }
+    // 设置选中区域
+    this.range.setRange(index - upCount - 1, index + downCount)
+    // 刷新文档
+    this.draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false,
+      isComputeRowList: false
+    })
+  }
+
+  public threeClick() {
+    const cursorPosition = this.position.getCursorPosition()
+    if (!cursorPosition) return
+    const { index } = cursorPosition
+    const elementList = this.draw.getElementList()
+    // 判断是否是零宽字符
+    let upCount = 0
+    let downCount = 0
+    // 向上查询
+    let upStartIndex = index - 1
+    while (upStartIndex > 0) {
+      const value = elementList[upStartIndex].value
+      if (value !== ZERO) {
+        upCount++
+        upStartIndex--
+      } else {
+        break
+      }
+    }
+    // 向下查询
+    let downStartIndex = index + 1
+    while (downStartIndex < elementList.length) {
+      const value = elementList[downStartIndex].value
+      if (value !== ZERO) {
+        downCount++
+        downStartIndex++
+      } else {
+        break
       }
     }
     // 设置选中区域
