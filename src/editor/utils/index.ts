@@ -67,3 +67,24 @@ export function downloadFile(href: string, fileName: string) {
   a.download = fileName
   a.click()
 }
+
+export function threeClick(dom: HTMLElement, fn: (evt: MouseEvent) => any) {
+  nClickEvent(3, dom, fn)
+}
+
+function nClickEvent(n: number, dom: HTMLElement, fn: (evt: MouseEvent) => any) {
+  let count = 0
+  let lastTime = 0
+
+  const handler = function (evt: MouseEvent) {
+    const currentTime = new Date().getTime()
+    count = (currentTime - lastTime < 300) ? count + 1 : 0
+    lastTime = new Date().getTime()
+    if (count >= n - 1) {
+      fn(evt)
+      count = 0
+    }
+  }
+
+  dom.addEventListener('click', handler)
+}
