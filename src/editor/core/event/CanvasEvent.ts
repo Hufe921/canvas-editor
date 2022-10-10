@@ -242,6 +242,7 @@ export class CanvasEvent {
     const isDirectHitCheckbox = !!(isDirectHit && isCheckbox)
     if (~index) {
       this.range.setRange(curIndex, curIndex)
+      this.position.setCursorPosition(positionList[curIndex])
       // 复选框
       const isSetCheckbox = isDirectHitCheckbox && !isReadonly
       if (isSetCheckbox) {
