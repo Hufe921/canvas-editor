@@ -89,6 +89,6 @@ function nClickEvent(n: number, dom: HTMLElement, fn: (evt: MouseEvent) => any) 
   dom.addEventListener('click', handler)
 }
 
-export function createSVGElement(tag: string) {
+export function createSVGElement<K extends keyof SVGElementTagNameMap>(tag: K): SVGElementTagNameMap[K] {
   return document.createElementNS('http://www.w3.org/2000/svg', tag)
 }
