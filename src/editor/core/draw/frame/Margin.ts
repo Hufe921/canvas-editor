@@ -12,7 +12,7 @@ export class Margin {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: SVGElement) {
     const { marginIndicatorColor, pageMode } = this.options
     const width = this.draw.getWidth()
     const height = pageMode === PageMode.CONTINUITY

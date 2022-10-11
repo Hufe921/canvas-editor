@@ -606,7 +606,8 @@ ul {
   width: 100%;
 }
 
-.page-container canvas {
+.page-container canvas,
+.page-container svg {
   display: block;
   background-color: #ffffff;
   box-shadow: rgb(158 161 165 / 40%) 0px 2px 12px 0px;

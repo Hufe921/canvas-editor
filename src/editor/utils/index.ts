@@ -88,3 +88,7 @@ function nClickEvent(n: number, dom: HTMLElement, fn: (evt: MouseEvent) => any) 
 
   dom.addEventListener('click', handler)
 }
+
+export function createSVGElement(tag: string) {
+  return document.createElementNS('http://www.w3.org/2000/svg', tag)
+}

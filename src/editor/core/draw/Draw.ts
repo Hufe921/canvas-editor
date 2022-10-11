@@ -5,7 +5,7 @@ import { IDrawOption, IDrawRowPayload, IDrawRowResult, IPainterOptions } from '.
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
-import { deepClone, getUUID } from '../../utils'
+import { createSVGElement, deepClone, getUUID } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { GlobalEvent } from '../event/GlobalEvent'
@@ -51,7 +51,7 @@ export class Draw {
 
   private container: HTMLDivElement
   private pageContainer: HTMLDivElement
-  private pageList: HTMLCanvasElement[]
+  private pageList: SVGElement[]
   private ctxList: CanvasRenderingContext2D[]
   private pageNo: number
   private mode: EditorMode
@@ -182,12 +182,12 @@ export class Draw {
 
   public getCanvasWidth(): number {
     const page = this.getPage()
-    return page.width
+    return Number(page.getAttribute('width'))
   }
 
   public getCanvasHeight(): number {
     const page = this.getPage()
-    return page.height
+    return Number(page.getAttribute('height'))
   }
 
   public getInnerWidth(): number {
@@ -271,11 +271,11 @@ export class Draw {
     this.pageNo = payload
   }
 
-  public getPage(): HTMLCanvasElement {
+  public getPage(): SVGElement {
     return this.pageList[this.pageNo]
   }
 
-  public getPageList(): HTMLCanvasElement[] {
+  public getPageList(): SVGElement[] {
     return this.pageList
   }
 
@@ -396,7 +396,7 @@ export class Draw {
   }
 
   public getDataURL(): string[] {
-    return this.pageList.map(c => c.toDataURL())
+    return this.pageList.map(c => c.outerHTML)
   }
 
   public getPainterStyle(): IElementStyle | null {
@@ -430,10 +430,8 @@ export class Draw {
     // 纸张大小重置
     if (payload === PageMode.PAGING) {
       const { height } = this.options
-      const dpr = window.devicePixelRatio
       const canvas = this.pageList[0]
       canvas.style.height = `${height}px`
-      canvas.height = height * dpr
     }
     this.render({
       isSubmitHistory: false,
@@ -453,8 +451,8 @@ export class Draw {
     const height = this.getHeight()
     this.container.style.width = `${width}px`
     this.pageList.forEach(p => {
-      p.width = width
-      p.height = height
+      p.setAttribute('width', `${width}`)
+      p.setAttribute('height', `${height}`)
       p.style.width = `${width}px`
       p.style.height = `${height}px`
       p.style.marginBottom = `${this.getPageGap()}px`
@@ -473,8 +471,8 @@ export class Draw {
     this.options.height = height
     this.container.style.width = `${width}px`
     this.pageList.forEach(p => {
-      p.width = width
-      p.height = height
+      p.setAttribute('width', `${width}`)
+      p.setAttribute('height', `${height}`)
       p.style.width = `${width}px`
       p.style.height = `${height}px`
     })
@@ -520,22 +518,16 @@ export class Draw {
   private _createPage(pageNo: number) {
     const width = this.getWidth()
     const height = this.getHeight()
-    const canvas = document.createElement('canvas')
-    canvas.style.width = `${width}px`
-    canvas.style.height = `${height}px`
+    const canvas = createSVGElement('svg')
+    canvas.setAttribute('width', `${width}`)
+    canvas.setAttribute('height', `${height}`)
+    canvas.setAttribute('viewBox', `0 0 ${width} ${height}`)
     canvas.style.marginBottom = `${this.getPageGap()}px`
     canvas.setAttribute('data-index', String(pageNo))
     this.pageContainer.append(canvas)
-    // 调整分辨率
-    const dpr = window.devicePixelRatio
-    canvas.width = width * dpr
-    canvas.height = height * dpr
     canvas.style.cursor = 'text'
-    const ctx = canvas.getContext('2d')!
-    ctx.scale(dpr, dpr)
     // 缓存上下文
     this.pageList.push(canvas)
-    this.ctxList.push(ctx)
   }
 
   private _getFont(el: IElement, scale = 1): string {
@@ -769,10 +761,10 @@ export class Draw {
   }
 
   private _drawRichText(ctx: CanvasRenderingContext2D) {
-    this.underline.render(ctx)
-    this.strikeout.render(ctx)
-    this.highlight.render(ctx)
-    this.textParticle.complete()
+    // this.underline.render(ctx)
+    // this.strikeout.render(ctx)
+    // this.highlight.render(ctx)
+    // this.textParticle.complete()
   }
 
   private _drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload): IDrawRowResult {
@@ -832,45 +824,45 @@ export class Draw {
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
           this._drawRichText(ctx)
-          this.imageParticle.render(ctx, element, x, y + offsetY)
+          // this.imageParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.LATEX) {
           this._drawRichText(ctx)
-          this.laTexParticle.render(ctx, element, x, y + offsetY)
+          // this.laTexParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TABLE) {
           if (isCrossRowCol) {
             rangeRecord.x = x
             rangeRecord.y = y
             tableRangeElement = element
           }
-          this.tableParticle.render(ctx, element, x, y)
+          // this.tableParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.HYPERLINK) {
           this._drawRichText(ctx)
-          this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+          // this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
           this._drawRichText(ctx)
-          this.dateParticle.render(ctx, element, x, y + offsetY)
+          // this.dateParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this._drawRichText(ctx)
-          this.superscriptParticle.render(ctx, element, x, y + offsetY)
+          // this.superscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUBSCRIPT) {
           this._drawRichText(ctx)
-          this.subscriptParticle.render(ctx, element, x, y + offsetY)
+          // this.subscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SEPARATOR) {
-          this.separatorParticle.render(ctx, element, x, y)
+          // this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
           if (this.mode !== EditorMode.CLEAN) {
-            this.pageBreakParticle.render(ctx, element, x, y)
+            // this.pageBreakParticle.render(ctx, element, x, y)
           }
         } else if (
           element.type === ElementType.CHECKBOX ||
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
           this._drawRichText(ctx)
-          this.checkboxParticle.render(ctx, element, x, y + offsetY)
+          // this.checkboxParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TAB) {
           this._drawRichText(ctx)
         } else {
-          this.textParticle.record(ctx, element, x, y + offsetY)
+          // this.textParticle.record(ctx, element, x, y + offsetY)
         }
         // 下划线记录
         if (element.underline) {
@@ -950,10 +942,10 @@ export class Draw {
       // 绘制选区
       if (rangeRecord.width && rangeRecord.height) {
         const { x, y, width, height } = rangeRecord
-        this.range.render(ctx, x, y, width, height)
+        // this.range.render(ctx, x, y, width, height)
       }
       if (isCrossRowCol && tableRangeElement && tableRangeElement.id === tableId) {
-        this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+        // this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
       }
       x = startX
       y += curRow.height
@@ -967,12 +959,12 @@ export class Draw {
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     const pageDom = this.pageList[pageNo]
-    ctx.clearRect(0, 0, pageDom.width, pageDom.height)
+    // ctx.clearRect(0, 0, pageDom.width, pageDom.height)
     // 绘制背景
-    this.background.render(ctx)
+    // this.background.render(ctx)
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
-    this.margin.render(ctx)
+    this.margin.render(pageDom)
     // 渲染元素
     let x = leftTopPoint[0]
     let y = leftTopPoint[1]
@@ -990,17 +982,17 @@ export class Draw {
     y = drawRowResult.y
     index = drawRowResult.index
     // 绘制页眉
-    this.header.render(ctx)
+    // this.header.render(ctx)
     // 绘制页码
-    this.pageNumber.render(ctx, pageNo)
+    // this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制
-    if (this.search.getSearchKeyword()) {
-      this.search.render(ctx, pageNo)
-    }
-    // 绘制水印
-    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
-      this.waterMark.render(ctx)
-    }
+    // if (this.search.getSearchKeyword()) {
+    //   this.search.render(ctx, pageNo)
+    // }
+    // // 绘制水印
+    // if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
+    //   this.waterMark.render(ctx)
+    // }
   }
 
   public render(payload?: IDrawOption) {
@@ -1035,16 +1027,13 @@ export class Draw {
       pageRowList[0] = this.rowList
       // 重置高度
       pageHeight += this.rowList.reduce((pre, cur) => pre + cur.height, 0)
-      const dpr = window.devicePixelRatio
       const pageDom = this.pageList[0]
       const pageDomHeight = Number(pageDom.style.height.replace('px', ''))
       if (pageHeight > pageDomHeight) {
         pageDom.style.height = `${pageHeight}px`
-        pageDom.height = pageHeight * dpr
       } else {
         const reduceHeight = pageHeight < height ? height : pageHeight
         pageDom.style.height = `${reduceHeight}px`
-        pageDom.height = reduceHeight * dpr
       }
     } else {
       for (let i = 0; i < this.rowList.length; i++) {
