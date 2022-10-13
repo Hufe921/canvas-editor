@@ -35,6 +35,7 @@ export class Command {
   private static left: CommandAdapt['rowFlex']
   private static center: CommandAdapt['rowFlex']
   private static right: CommandAdapt['rowFlex']
+  private static alignment: CommandAdapt['rowFlex']
   private static rowMargin: CommandAdapt['rowMargin']
   private static insertTable: CommandAdapt['insertTable']
   private static insertTableTopRow: CommandAdapt['insertTableTopRow']
@@ -104,6 +105,7 @@ export class Command {
     Command.left = adapt.rowFlex.bind(adapt)
     Command.center = adapt.rowFlex.bind(adapt)
     Command.right = adapt.rowFlex.bind(adapt)
+    Command.alignment = adapt.rowFlex.bind(adapt)
     Command.rowMargin = adapt.rowMargin.bind(adapt)
     Command.insertTable = adapt.insertTable.bind(adapt)
     Command.insertTableTopRow = adapt.insertTableTopRow.bind(adapt)
@@ -252,6 +254,10 @@ export class Command {
 
   public executeRight() {
     return Command.right(RowFlex.RIGHT)
+  }
+
+  public executeAlignment() {
+    return Command.alignment(RowFlex.ALIGNMENT)
   }
 
   public executeRowMargin(payload: number) {
