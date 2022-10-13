@@ -266,6 +266,10 @@ ul {
   background-image: url('./assets/images/right.svg');
 }
 
+.menu-item__alignment i {
+  background-image: url('./assets/images/alignment.svg');
+}
+
 .menu-item__row-margin {
   position: relative;
 }

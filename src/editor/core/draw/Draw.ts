@@ -744,6 +744,15 @@ export class Draw {
         || curRow.width + metrics.width > innerWidth
         || (i !== 0 && element.value === ZERO)
       ) {
+        // 两端对齐
+        if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRow.width + metrics.width > innerWidth) {
+          const gap = (innerWidth - curRow.width) / curRow.elementList.length
+          for (let e = 0; e < curRow.elementList.length; e++) {
+            const el = curRow.elementList[e]
+            el.metrics.width += gap
+          }
+          curRow.width = innerWidth
+        }
         rowList.push({
           width: metrics.width,
           height,
@@ -785,13 +794,11 @@ export class Draw {
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 计算行偏移量（行居左、居中、居右）
-      if (curRow.rowFlex && curRow.rowFlex !== RowFlex.LEFT) {
-        if (curRow.rowFlex === RowFlex.CENTER) {
-          x += (innerWidth - curRow.width) / 2
-        } else {
-          x += innerWidth - curRow.width
-        }
+      // 计算行偏移量（行居中、居右）
+      if (curRow.rowFlex === RowFlex.CENTER) {
+        x += (innerWidth - curRow.width) / 2
+      } else if (curRow.rowFlex === RowFlex.RIGHT) {
+        x += innerWidth - curRow.width
       }
       // 当前td所在位置
       const tablePreX = x
@@ -868,6 +875,10 @@ export class Draw {
           this._drawRichText(ctx)
           this.checkboxParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TAB) {
+          this._drawRichText(ctx)
+        } else if (element.rowFlex === RowFlex.ALIGNMENT) {
+          // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本
+          this.textParticle.record(ctx, element, x, y + offsetY)
           this._drawRichText(ctx)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
