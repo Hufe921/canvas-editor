@@ -5,7 +5,7 @@ import { IDrawOption, IDrawRowPayload, IDrawRowResult, IPainterOptions } from '.
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
-import { createSVGElement, deepClone, getUUID } from '../../utils'
+import { deepClone, getUUID } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { GlobalEvent } from '../event/GlobalEvent'
@@ -13,7 +13,6 @@ import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
-import { Background } from './frame/Background'
 import { Highlight } from './richtext/Highlight'
 import { Margin } from './frame/Margin'
 import { Search } from './interactive/Search'
@@ -21,7 +20,7 @@ import { Strikeout } from './richtext/Strikeout'
 import { Underline } from './richtext/Underline'
 import { ElementType } from '../../dataset/enum/Element'
 import { ImageParticle } from './particle/ImageParticle'
-import { LaTexParticle } from './particle/latex/LaTexParticle'
+// import { LaTexParticle } from './particle/latex/LaTexParticle'
 import { TextParticle } from './particle/TextParticle'
 import { PageNumber } from './frame/PageNumber'
 import { ScrollObserver } from '../observer/ScrollObserver'
@@ -30,15 +29,15 @@ import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
 import { Header } from './frame/Header'
-import { SuperscriptParticle } from './particle/Superscript'
-import { SubscriptParticle } from './particle/Subscript'
-import { SeparatorParticle } from './particle/Separator'
-import { PageBreakParticle } from './particle/PageBreak'
+// import { SuperscriptParticle } from './particle/Superscript'
+// import { SubscriptParticle } from './particle/Subscript'
+// import { SeparatorParticle } from './particle/Separator'
+// import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
 import { EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
-import { CheckboxParticle } from './particle/CheckboxParticle'
+// import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired } from '../../interface/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
@@ -46,6 +45,7 @@ import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
+import { createSVGElement } from '../../utils/svg'
 
 export class Draw {
 
@@ -64,7 +64,6 @@ export class Draw {
   private cursor: Cursor
   private range: RangeManager
   private margin: Margin
-  private background: Background
   private search: Search
   private underline: Underline
   private strikeout: Strikeout
@@ -72,7 +71,7 @@ export class Draw {
   private historyManager: HistoryManager
   private previewer: Previewer
   private imageParticle: ImageParticle
-  private laTexParticle: LaTexParticle
+  // private laTexParticle: LaTexParticle
   private textParticle: TextParticle
   private tableParticle: TableParticle
   private tableTool: TableTool
@@ -81,11 +80,11 @@ export class Draw {
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
   private dateParticle: DateParticle
-  private separatorParticle: SeparatorParticle
-  private pageBreakParticle: PageBreakParticle
-  private superscriptParticle: SuperscriptParticle
-  private subscriptParticle: SubscriptParticle
-  private checkboxParticle: CheckboxParticle
+  // private separatorParticle: SeparatorParticle
+  // private pageBreakParticle: PageBreakParticle
+  // private superscriptParticle: SuperscriptParticle
+  // private subscriptParticle: SubscriptParticle
+  // private checkboxParticle: CheckboxParticle
   private control: Control
   private workerManager: WorkerManager
 
@@ -117,14 +116,13 @@ export class Draw {
     this.position = new Position(this)
     this.range = new RangeManager(this)
     this.margin = new Margin(this)
-    this.background = new Background(this)
     this.search = new Search(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
     this.previewer = new Previewer(this)
     this.imageParticle = new ImageParticle(this)
-    this.laTexParticle = new LaTexParticle(this)
+    // this.laTexParticle = new LaTexParticle(this)
     this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
@@ -133,11 +131,11 @@ export class Draw {
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
-    this.separatorParticle = new SeparatorParticle()
-    this.pageBreakParticle = new PageBreakParticle(this)
-    this.superscriptParticle = new SuperscriptParticle()
-    this.subscriptParticle = new SubscriptParticle()
-    this.checkboxParticle = new CheckboxParticle(this)
+    // this.separatorParticle = new SeparatorParticle()
+    // this.pageBreakParticle = new PageBreakParticle(this)
+    // this.superscriptParticle = new SuperscriptParticle()
+    // this.subscriptParticle = new SubscriptParticle()
+    // this.checkboxParticle = new CheckboxParticle(this)
     this.control = new Control(this)
 
     new ScrollObserver(this)
@@ -941,7 +939,7 @@ export class Draw {
       this._drawRichText(ctx)
       // 绘制选区
       if (rangeRecord.width && rangeRecord.height) {
-        const { x, y, width, height } = rangeRecord
+        // const { x, y, width, height } = rangeRecord
         // this.range.render(ctx, x, y, width, height)
       }
       if (isCrossRowCol && tableRangeElement && tableRangeElement.id === tableId) {
@@ -953,15 +951,17 @@ export class Draw {
     return { x, y, index }
   }
 
+  private _clearPage(pageNo: number) {
+    this.pageList[pageNo].innerHTML = ''
+  }
+
   private _drawPage(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
     const { pageMode } = this.options
     const margins = this.getMargins()
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     const pageDom = this.pageList[pageNo]
-    // ctx.clearRect(0, 0, pageDom.width, pageDom.height)
-    // 绘制背景
-    // this.background.render(ctx)
+    this._clearPage(pageNo)
     // 绘制页边距
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     this.margin.render(pageDom)
@@ -982,17 +982,17 @@ export class Draw {
     y = drawRowResult.y
     index = drawRowResult.index
     // 绘制页眉
-    // this.header.render(ctx)
+    this.header.render(pageDom)
     // 绘制页码
-    // this.pageNumber.render(ctx, pageNo)
+    this.pageNumber.render(pageDom, pageNo)
     // 搜索匹配绘制
-    // if (this.search.getSearchKeyword()) {
-    //   this.search.render(ctx, pageNo)
-    // }
-    // // 绘制水印
-    // if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
-    //   this.waterMark.render(ctx)
-    // }
+    if (this.search.getSearchKeyword()) {
+      this.search.render(pageDom, pageNo)
+    }
+    // 绘制水印
+    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
+      this.waterMark.render(pageDom)
+    }
   }
 
   public render(payload?: IDrawOption) {

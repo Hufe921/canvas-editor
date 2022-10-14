@@ -1,7 +1,6 @@
 import { PageMode } from '../../../dataset/enum/Editor'
 import { IEditorOption } from '../../../interface/Editor'
-import { createSVGElement } from '../../../utils'
-import { CanvasPath2SvgPath } from '../../../utils/path'
+import { CanvasPath2SvgPath, createSVGElement } from '../../../utils/svg'
 import { Draw } from '../Draw'
 
 export class Margin {
@@ -28,30 +27,43 @@ export class Margin {
     const leftBottomPoint: [number, number] = [margins[3], height - margins[2]]
     const rightBottomPoint: [number, number] = [width - margins[1], height - margins[2]]
     const g = createSVGElement('g')
+    const pathList: string[] = []
     // 上左
-    const letTopCtx = new CanvasPath2SvgPath()
-    letTopCtx.moveTo(leftTopPoint[0] - marginIndicatorSize, leftTopPoint[1])
-    letTopCtx.lineTo(...leftTopPoint)
-    letTopCtx.lineTo(leftTopPoint[0], leftTopPoint[1] - marginIndicatorSize)
-    const topLeft = createSVGElement('path')
-    topLeft.setAttribute('d', letTopCtx.toString())
-    topLeft.setAttribute('stroke', marginIndicatorColor)
-    topLeft.setAttribute('fill', 'none')
-    g.append(topLeft)
-
+    const topLeftCtx = new CanvasPath2SvgPath()
+    topLeftCtx.moveTo(leftTopPoint[0] - marginIndicatorSize, leftTopPoint[1])
+    topLeftCtx.lineTo(...leftTopPoint)
+    topLeftCtx.lineTo(leftTopPoint[0], leftTopPoint[1] - marginIndicatorSize)
+    pathList.push(topLeftCtx.toString())
 
     // 上右
-    // ctx.moveTo(rightTopPoint[0] + marginIndicatorSize, rightTopPoint[1])
-    // ctx.lineTo(...rightTopPoint)
-    // ctx.lineTo(rightTopPoint[0], rightTopPoint[1] - marginIndicatorSize)
+    const topRightCtx = new CanvasPath2SvgPath()
+    topRightCtx.moveTo(rightTopPoint[0] + marginIndicatorSize, rightTopPoint[1])
+    topRightCtx.lineTo(...rightTopPoint)
+    topRightCtx.lineTo(rightTopPoint[0], rightTopPoint[1] - marginIndicatorSize)
+    pathList.push(topRightCtx.toString())
+
     // 下左
-    // ctx.moveTo(leftBottomPoint[0] - marginIndicatorSize, leftBottomPoint[1])
-    // ctx.lineTo(...leftBottomPoint)
-    // ctx.lineTo(leftBottomPoint[0], leftBottomPoint[1] + marginIndicatorSize)
+    const bottomLeftCtx = new CanvasPath2SvgPath()
+    bottomLeftCtx.moveTo(leftBottomPoint[0] - marginIndicatorSize, leftBottomPoint[1])
+    bottomLeftCtx.lineTo(...leftBottomPoint)
+    bottomLeftCtx.lineTo(leftBottomPoint[0], leftBottomPoint[1] + marginIndicatorSize)
+    pathList.push(bottomLeftCtx.toString())
+
     // 下右
-    // ctx.moveTo(rightBottomPoint[0] + marginIndicatorSize, rightBottomPoint[1])
-    // ctx.lineTo(...rightBottomPoint)
-    // ctx.lineTo(rightBottomPoint[0], rightBottomPoint[1] + marginIndicatorSize)
+    const bottomRightCtx = new CanvasPath2SvgPath()
+    bottomRightCtx.moveTo(rightBottomPoint[0] + marginIndicatorSize, rightBottomPoint[1])
+    bottomRightCtx.lineTo(...rightBottomPoint)
+    bottomRightCtx.lineTo(rightBottomPoint[0], rightBottomPoint[1] + marginIndicatorSize)
+    pathList.push(bottomRightCtx.toString())
+
+    // 追加
+    pathList.forEach(path => {
+      const pathElement = createSVGElement('path')
+      pathElement.setAttribute('d', path)
+      pathElement.setAttribute('stroke', marginIndicatorColor)
+      pathElement.setAttribute('fill', 'none')
+      g.append(pathElement)
+    })
 
     ctx.append(g)
   }

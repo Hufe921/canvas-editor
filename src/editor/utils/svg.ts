@@ -141,3 +141,26 @@ export class CanvasPath2SvgPath {
   }
 
 }
+
+export function createSVGElement<K extends keyof SVGElementTagNameMap>(tag: K): SVGElementTagNameMap[K] {
+  return document.createElementNS('http://www.w3.org/2000/svg', tag)
+}
+
+export interface IMeasureTextOption {
+  data: string;
+  size?: number;
+  font?: string;
+  bold?: boolean;
+  italic?: boolean;
+}
+export function measureText(options: IMeasureTextOption): TextMetrics | null {
+  const { data, size, font, bold, italic } = options
+  if (!data) return null
+  const canvas = document.createElement('canvas')
+  const ctx = <CanvasRenderingContext2D>canvas.getContext('2d')
+  if (size || font || bold || italic) {
+    const fontStyle = `${italic ? 'italic ' : ''}${bold ? 'bold ' : ''}${size ? `${size}px ` : ''}${font || ''}`
+    ctx.font = fontStyle.trim()
+  }
+  return ctx.measureText(options.data)
+}

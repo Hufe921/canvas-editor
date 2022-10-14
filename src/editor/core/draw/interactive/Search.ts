@@ -7,6 +7,7 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { ISearchResult, ISearchResultRestArgs } from '../../../interface/Search'
 import { getUUID } from '../../../utils'
+import { createSVGElement } from '../../../utils/svg'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
@@ -238,13 +239,11 @@ export class Search {
     this.searchMatchList = searchMatchList
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public render(ctx: SVGElement, pageIndex: number) {
     if (!this.searchMatchList || !this.searchMatchList.length || !this.searchKeyword) return
     const { searchMatchAlpha, searchMatchColor, searchNavigateMatchColor } = this.options
     const positionList = this.position.getOriginalPositionList()
     const elementList = this.draw.getOriginalElementList()
-    ctx.save()
-    ctx.globalAlpha = searchMatchAlpha
     for (let s = 0; s < this.searchMatchList.length; s++) {
       const searchMatch = this.searchMatchList[s]
       let position: IElementPosition | null = null
@@ -257,21 +256,26 @@ export class Search {
       if (!position) continue
       const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
       if (pageNo !== pageIndex) continue
+      const rect = createSVGElement('rect')
       // 高亮并定位当前搜索词
       const searchMatchIndexList = this.getSearchNavigateIndexList()
       if (searchMatchIndexList.includes(s)) {
-        ctx.fillStyle = searchNavigateMatchColor
+        rect.style.fill = searchNavigateMatchColor
         this.searchNavigateScrollIntoView(position)
       } else {
-        ctx.fillStyle = searchMatchColor
+        rect.style.fill = searchMatchColor
       }
       const x = leftTop[0]
       const y = leftTop[1]
       const width = rightTop[0] - leftTop[0]
       const height = leftBottom[1] - leftTop[1]
-      ctx.fillRect(x, y, width, height)
+      rect.setAttribute('x', `${x}`)
+      rect.setAttribute('y', `${y}`)
+      rect.setAttribute('width', `${width}`)
+      rect.setAttribute('height', `${height}`)
+      rect.style.opacity = `${searchMatchAlpha}`
+      ctx.append(rect)
     }
-    ctx.restore()
   }
 
 }
