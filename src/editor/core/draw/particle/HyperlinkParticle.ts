@@ -2,6 +2,7 @@ import { IElement } from '../../..'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElementPosition } from '../../../interface/Element'
 import { IRowElement } from '../../../interface/Row'
+import { createSVGElement } from '../../../utils/svg'
 import { Draw } from '../Draw'
 
 export class HyperlinkParticle {
@@ -50,18 +51,30 @@ export class HyperlinkParticle {
     this.hyperlinkPopupContainer.style.display = 'none'
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
-    ctx.save()
-    ctx.font = element.style
-    if (!element.color) {
+  public render(ctx: SVGElement, element: IRowElement, x: number, y: number) {
+    const { scale } = this.options
+    const { italic, bold, size, color } = element
+    const text = createSVGElement('text')
+    if (italic) {
+      text.style.fontStyle = 'italic'
+    }
+    if (bold) {
+      text.style.fontWeight = 'bold'
+    }
+    if (size) {
+      text.style.fontSize = `${size * scale}px`
+    }
+    if (!color) {
       element.color = this.options.defaultHyperlinkColor
     }
-    ctx.fillStyle = element.color
+    text.style.fill = element.color!
     if (element.underline === undefined) {
       element.underline = true
     }
-    ctx.fillText(element.value, x, y)
-    ctx.restore()
+    text.setAttribute('x', `${x}`)
+    text.setAttribute('y', `${y}`)
+    text.append(document.createTextNode(element.value))
+    ctx.append(text)
   }
 
 }

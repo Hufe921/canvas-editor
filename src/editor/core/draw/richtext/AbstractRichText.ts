@@ -18,7 +18,7 @@ export abstract class AbstractRichText {
     }
   }
 
-  public recordFillInfo(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height?: number, color?: string) {
+  public recordFillInfo(ctx: SVGElement, x: number, y: number, width: number, height?: number, color?: string) {
     const isFirstRecord = !this.fillRect.width
     if (!isFirstRecord && this.fillColor && this.fillColor !== color) {
       this.render(ctx)
@@ -36,6 +36,6 @@ export abstract class AbstractRichText {
     this.fillColor = color
   }
 
-  public abstract render(ctx: CanvasRenderingContext2D): void
+  public abstract render(ctx: SVGElement): void
 
 }

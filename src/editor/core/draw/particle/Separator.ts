@@ -1,20 +1,19 @@
 import { IRowElement } from '../../../interface/Row'
+import { createSVGElement } from '../../../utils/svg'
 export class SeparatorParticle {
 
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
-    ctx.save()
-    if (element.color) {
-      ctx.strokeStyle = element.color
-    }
+  public render(ctx: SVGElement, element: IRowElement, x: number, y: number) {
+    const line = createSVGElement('line')
+    line.setAttribute('stroke', element.color || '#000000')
     if (element.dashArray && element.dashArray.length) {
-      ctx.setLineDash(element.dashArray)
+      line.setAttribute('stroke-dasharray', `${element.dashArray.join(',')}`)
     }
-    ctx.translate(0, 0.5) // 从1处渲染，避免线宽度等于3
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + element.width!, y)
-    ctx.stroke()
-    ctx.restore()
+    line.style.transform = 'translate(0px, 0.5px)' // 从1处渲染，避免线宽度等于3
+    line.setAttribute('x1', `${x}`)
+    line.setAttribute('y1', `${y}`)
+    line.setAttribute('x2', `${x + element.width!}`)
+    line.setAttribute('y2', `${y}`)
+    ctx.append(line)
   }
 
 }

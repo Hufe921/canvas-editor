@@ -20,7 +20,7 @@ import { Strikeout } from './richtext/Strikeout'
 import { Underline } from './richtext/Underline'
 import { ElementType } from '../../dataset/enum/Element'
 import { ImageParticle } from './particle/ImageParticle'
-// import { LaTexParticle } from './particle/latex/LaTexParticle'
+import { LaTexParticle } from './particle/latex/LaTexParticle'
 import { TextParticle } from './particle/TextParticle'
 import { PageNumber } from './frame/PageNumber'
 import { ScrollObserver } from '../observer/ScrollObserver'
@@ -29,15 +29,15 @@ import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
 import { Header } from './frame/Header'
-// import { SuperscriptParticle } from './particle/Superscript'
-// import { SubscriptParticle } from './particle/Subscript'
-// import { SeparatorParticle } from './particle/Separator'
-// import { PageBreakParticle } from './particle/PageBreak'
+import { SuperscriptParticle } from './particle/Superscript'
+import { SubscriptParticle } from './particle/Subscript'
+import { SeparatorParticle } from './particle/Separator'
+import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
 import { EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
-// import { CheckboxParticle } from './particle/CheckboxParticle'
+import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired } from '../../interface/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
@@ -71,7 +71,7 @@ export class Draw {
   private historyManager: HistoryManager
   private previewer: Previewer
   private imageParticle: ImageParticle
-  // private laTexParticle: LaTexParticle
+  private laTexParticle: LaTexParticle
   private textParticle: TextParticle
   private tableParticle: TableParticle
   private tableTool: TableTool
@@ -80,11 +80,11 @@ export class Draw {
   private header: Header
   private hyperlinkParticle: HyperlinkParticle
   private dateParticle: DateParticle
-  // private separatorParticle: SeparatorParticle
-  // private pageBreakParticle: PageBreakParticle
-  // private superscriptParticle: SuperscriptParticle
-  // private subscriptParticle: SubscriptParticle
-  // private checkboxParticle: CheckboxParticle
+  private separatorParticle: SeparatorParticle
+  private pageBreakParticle: PageBreakParticle
+  private superscriptParticle: SuperscriptParticle
+  private subscriptParticle: SubscriptParticle
+  private checkboxParticle: CheckboxParticle
   private control: Control
   private workerManager: WorkerManager
 
@@ -122,7 +122,7 @@ export class Draw {
     this.highlight = new Highlight(this)
     this.previewer = new Previewer(this)
     this.imageParticle = new ImageParticle(this)
-    // this.laTexParticle = new LaTexParticle(this)
+    this.laTexParticle = new LaTexParticle(this)
     this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
@@ -131,11 +131,11 @@ export class Draw {
     this.header = new Header(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
-    // this.separatorParticle = new SeparatorParticle()
-    // this.pageBreakParticle = new PageBreakParticle(this)
-    // this.superscriptParticle = new SuperscriptParticle()
-    // this.subscriptParticle = new SubscriptParticle()
-    // this.checkboxParticle = new CheckboxParticle(this)
+    this.separatorParticle = new SeparatorParticle()
+    this.pageBreakParticle = new PageBreakParticle(this)
+    this.superscriptParticle = new SuperscriptParticle(this)
+    this.subscriptParticle = new SubscriptParticle(this)
+    this.checkboxParticle = new CheckboxParticle(this)
     this.control = new Control(this)
 
     new ScrollObserver(this)
@@ -277,8 +277,8 @@ export class Draw {
     return this.pageList
   }
 
-  public getCtx(): CanvasRenderingContext2D {
-    return this.ctxList[this.pageNo]
+  public getCtx(): SVGElement {
+    return this.pageList[this.pageNo]
   }
 
   public getOptions(): DeepRequired<IEditorOption> {
@@ -517,6 +517,7 @@ export class Draw {
     const width = this.getWidth()
     const height = this.getHeight()
     const canvas = createSVGElement('svg')
+    canvas.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
     canvas.setAttribute('width', `${width}`)
     canvas.setAttribute('height', `${height}`)
     canvas.setAttribute('viewBox', `0 0 ${width} ${height}`)
@@ -758,14 +759,14 @@ export class Draw {
     return rowList
   }
 
-  private _drawRichText(ctx: CanvasRenderingContext2D) {
-    // this.underline.render(ctx)
-    // this.strikeout.render(ctx)
-    // this.highlight.render(ctx)
-    // this.textParticle.complete()
+  private _drawRichText(ctx: SVGElement) {
+    this.underline.render(ctx)
+    this.strikeout.render(ctx)
+    this.highlight.render(ctx)
+    this.textParticle.complete()
   }
 
-  private _drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload): IDrawRowResult {
+  private _drawRow(ctx: SVGElement, payload: IDrawRowPayload): IDrawRowResult {
     const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
     const { scale, tdPadding } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
@@ -822,45 +823,45 @@ export class Draw {
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
           this._drawRichText(ctx)
-          // this.imageParticle.render(ctx, element, x, y + offsetY)
+          this.imageParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.LATEX) {
           this._drawRichText(ctx)
-          // this.laTexParticle.render(ctx, element, x, y + offsetY)
+          this.laTexParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TABLE) {
           if (isCrossRowCol) {
             rangeRecord.x = x
             rangeRecord.y = y
             tableRangeElement = element
           }
-          // this.tableParticle.render(ctx, element, x, y)
+          this.tableParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.HYPERLINK) {
           this._drawRichText(ctx)
-          // this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+          this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
           this._drawRichText(ctx)
-          // this.dateParticle.render(ctx, element, x, y + offsetY)
+          this.dateParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this._drawRichText(ctx)
-          // this.superscriptParticle.render(ctx, element, x, y + offsetY)
+          this.superscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUBSCRIPT) {
           this._drawRichText(ctx)
-          // this.subscriptParticle.render(ctx, element, x, y + offsetY)
+          this.subscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SEPARATOR) {
-          // this.separatorParticle.render(ctx, element, x, y)
+          this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
           if (this.mode !== EditorMode.CLEAN) {
-            // this.pageBreakParticle.render(ctx, element, x, y)
+            this.pageBreakParticle.render(ctx, element, x, y)
           }
         } else if (
           element.type === ElementType.CHECKBOX ||
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
           this._drawRichText(ctx)
-          // this.checkboxParticle.render(ctx, element, x, y + offsetY)
+          this.checkboxParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TAB) {
           this._drawRichText(ctx)
         } else {
-          // this.textParticle.record(ctx, element, x, y + offsetY)
+          this.textParticle.record(ctx, element, x, y + offsetY)
         }
         // 下划线记录
         if (element.underline) {
@@ -939,11 +940,11 @@ export class Draw {
       this._drawRichText(ctx)
       // 绘制选区
       if (rangeRecord.width && rangeRecord.height) {
-        // const { x, y, width, height } = rangeRecord
-        // this.range.render(ctx, x, y, width, height)
+        const { x, y, width, height } = rangeRecord
+        this.range.render(ctx, x, y, width, height)
       }
       if (isCrossRowCol && tableRangeElement && tableRangeElement.id === tableId) {
-        // this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+        this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
       }
       x = startX
       y += curRow.height
@@ -959,7 +960,6 @@ export class Draw {
     const { pageMode } = this.options
     const margins = this.getMargins()
     const innerWidth = this.getInnerWidth()
-    const ctx = this.ctxList[pageNo]
     const pageDom = this.pageList[pageNo]
     this._clearPage(pageNo)
     // 绘制页边距
@@ -969,7 +969,7 @@ export class Draw {
     let x = leftTopPoint[0]
     let y = leftTopPoint[1]
     let index = positionList.length
-    const drawRowResult = this._drawRow(ctx, {
+    const drawRowResult = this._drawRow(pageDom, {
       positionList,
       rowList,
       pageNo,

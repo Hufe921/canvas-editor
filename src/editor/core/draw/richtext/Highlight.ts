@@ -1,6 +1,7 @@
 import { AbstractRichText } from './AbstractRichText'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
+import { createSVGElement } from '../../../utils/svg'
 
 export class Highlight extends AbstractRichText {
 
@@ -11,15 +12,18 @@ export class Highlight extends AbstractRichText {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: SVGElement) {
     if (!this.fillRect.width) return
     const { highlightAlpha } = this.options
     const { x, y, width, height } = this.fillRect
-    ctx.save()
-    ctx.globalAlpha = highlightAlpha
-    ctx.fillStyle = this.fillColor!
-    ctx.fillRect(x, y, width, height)
-    ctx.restore()
+    const rect = createSVGElement('rect')
+    rect.style.opacity = `${highlightAlpha}`
+    rect.style.fill = this.fillColor!
+    rect.setAttribute('x', `${x}`)
+    rect.setAttribute('y', `${y}`)
+    rect.setAttribute('width', `${width}`)
+    rect.setAttribute('height', `${height}`)
+    ctx.append(rect)
     this.clearFillInfo()
   }
 

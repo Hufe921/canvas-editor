@@ -1,5 +1,6 @@
 import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
+import { CanvasPath2SvgPath, createSVGElement, measureText } from '../../../utils/svg'
 import { Draw } from '../Draw'
 
 export class PageBreakParticle {
@@ -17,28 +18,42 @@ export class PageBreakParticle {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
+  public render(ctx: SVGElement, element: IRowElement, x: number, y: number) {
     const { font, fontSize, displayName, lineDash } = PageBreakParticle
     const { scale, defaultRowMargin } = this.options
     const size = fontSize * scale
     const elementWidth = element.width!
     const offsetY = this.draw.getDefaultBasicRowMarginHeight() * defaultRowMargin
-    ctx.save()
-    ctx.font = `${size}px ${font}`
-    const textMeasure = ctx.measureText(displayName)
+    const textMeasure = measureText({
+      data: displayName,
+      size,
+      font
+    })
+    if (!textMeasure) return
     const halfX = (elementWidth - textMeasure.width) / 2
+    const g = createSVGElement('g')
+    g.style.transform = `translate(0px, ${0.5 + offsetY}px)`
     // 线段
-    ctx.setLineDash(lineDash)
-    ctx.translate(0, 0.5 + offsetY)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + halfX, y)
-    ctx.moveTo(x + halfX + textMeasure.width, y)
-    ctx.lineTo(x + elementWidth, y)
-    ctx.stroke()
+    const path = createSVGElement('path')
+    path.setAttribute('stroke-dasharray', `${lineDash.join(',')}`)
+    const svgCtx = new CanvasPath2SvgPath()
+    svgCtx.moveTo(x, y)
+    svgCtx.lineTo(x + halfX, y)
+    svgCtx.moveTo(x + halfX + textMeasure.width, y)
+    svgCtx.lineTo(x + elementWidth, y)
+    path.setAttribute('d', svgCtx.toString())
+    path.setAttribute('stroke', '#000000')
+    path.setAttribute('fill', 'none')
+    g.append(path)
     // 文字
-    ctx.fillText(displayName, x + halfX, y + textMeasure.actualBoundingBoxAscent - size / 2)
-    ctx.restore()
+    const text = createSVGElement('text')
+    text.style.fontSize = `${size}px`
+    text.style.fontFamily = `${font}`
+    text.append(document.createTextNode(displayName))
+    text.setAttribute('x', `${x + halfX}`)
+    text.setAttribute('y', `${y + textMeasure.actualBoundingBoxAscent - size / 2}`)
+    g.append(text)
+    ctx.append(g)
   }
 
 }

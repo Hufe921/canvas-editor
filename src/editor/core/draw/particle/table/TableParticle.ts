@@ -1,5 +1,6 @@
 import { ElementType, IElement } from '../../../..'
 import { IEditorOption } from '../../../../interface/Editor'
+import { CanvasPath2SvgPath, createSVGElement } from '../../../../utils/svg'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 
@@ -13,16 +14,18 @@ export class TableParticle {
     this.options = draw.getOptions()
   }
 
-  private _drawBorder(ctx: CanvasRenderingContext2D, startX: number, startY: number, width: number, height: number) {
-    ctx.beginPath()
+  private _drawBorder(ctx: SVGGElement, startX: number, startY: number, width: number, height: number) {
     const x = Math.round(startX)
     const y = Math.round(startY)
-    ctx.translate(0.5, 0.5)
-    ctx.moveTo(x, y + height)
-    ctx.lineTo(x, y)
-    ctx.lineTo(x + width, y)
-    ctx.stroke()
-    ctx.translate(-0.5, -0.5)
+    const path = createSVGElement('path')
+    path.setAttribute('fill', 'none')
+    path.setAttribute('stroke', '#000000')
+    const svgCtx = new CanvasPath2SvgPath()
+    svgCtx.moveTo(x, y + height)
+    svgCtx.lineTo(x, y)
+    svgCtx.lineTo(x + width, y)
+    path.setAttribute('d', svgCtx.toString())
+    ctx.append(path)
   }
 
   public computeRowColInfo(element: IElement) {
@@ -117,7 +120,7 @@ export class TableParticle {
     }
   }
 
-  public drawRange(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+  public drawRange(ctx: SVGElement, element: IElement, startX: number, startY: number) {
     const { scale, rangeAlpha, rangeColor } = this.options
     const { type, trList } = element
     if (!trList || type !== ElementType.TABLE) return
@@ -134,7 +137,7 @@ export class TableParticle {
     const endColIndex = endTd.colIndex! + (endTd.colspan - 1)
     const startRowIndex = startTd.rowIndex!
     const endRowIndex = endTd.rowIndex! + (endTd.rowspan - 1)
-    ctx.save()
+    const g = createSVGElement('g')
     for (let t = 0; t < trList.length; t++) {
       const tr = trList[t]
       for (let d = 0; d < tr.tdList.length; d++) {
@@ -149,24 +152,30 @@ export class TableParticle {
           const y = td.y! * scale
           const width = td.width! * scale
           const height = td.height! * scale
-          ctx.globalAlpha = rangeAlpha
-          ctx.fillStyle = rangeColor
-          ctx.fillRect(x + startX, y + startY, width, height)
+          const rect = createSVGElement('rect')
+          rect.style.opacity = `${rangeAlpha}`
+          rect.style.fill = rangeColor
+          rect.setAttribute('x', `${x + startX}`)
+          rect.setAttribute('y', `${y + startY}`)
+          rect.setAttribute('width', `${width}`)
+          rect.setAttribute('height', `${height}`)
+          g.append(rect)
         }
       }
     }
-    ctx.restore()
+    ctx.append(g)
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+  public render(ctx: SVGElement, element: IElement, startX: number, startY: number) {
     const { colgroup, trList } = element
     if (!colgroup || !trList) return
     const { scale } = this.options
     const tableWidth = element.width! * scale
     const tableHeight = element.height! * scale
-    ctx.save()
+    const g = createSVGElement('g')
+    g.style.transform = `translate(0.5px, 0.5px)`
     // 渲染边框
-    this._drawBorder(ctx, startX, startY, tableWidth, tableHeight)
+    this._drawBorder(g, startX, startY, tableWidth, tableHeight)
     // 渲染表格
     for (let t = 0; t < trList.length; t++) {
       const tr = trList[t]
@@ -176,17 +185,18 @@ export class TableParticle {
         const height = td.height! * scale
         const x = Math.round(td.x! * scale + startX + width)
         const y = Math.round(td.y! * scale + startY)
-        ctx.translate(0.5, 0.5)
-        // 绘制线条
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        ctx.lineTo(x, y + height)
-        ctx.lineTo(x - width, y + height)
-        ctx.stroke()
-        ctx.translate(-0.5, -0.5)
+        const path = createSVGElement('path')
+        path.setAttribute('fill', 'none')
+        path.setAttribute('stroke', '#000000')
+        const svgCtx = new CanvasPath2SvgPath()
+        svgCtx.moveTo(x, y)
+        svgCtx.lineTo(x, y + height)
+        svgCtx.lineTo(x - width, y + height)
+        path.setAttribute('d', svgCtx.toString())
+        g.append(path)
       }
     }
-    ctx.restore()
+    ctx.append(g)
   }
 
 }

@@ -1,23 +1,28 @@
-import { IElement } from '../../..'
+import { IEditorOption, IElement } from '../../..'
+import { DeepRequired } from '../../../interface/Common'
 import { IRowElement } from '../../../interface/Row'
+import { createSVGElement } from '../../../utils/svg'
 import { Draw } from '../Draw'
 
 export class TextParticle {
 
-  private ctx: CanvasRenderingContext2D
+  private options: DeepRequired<IEditorOption>
+  private ctx: SVGElement
   private curX: number
   private curY: number
   private text: string
   private curStyle: string
-  private curColor?: string
+  private curElement?: IElement | null
   public cacheMeasureText: Map<string, TextMetrics>
 
   constructor(draw: Draw) {
+    this.options = draw.getOptions()
     this.ctx = draw.getCtx()
     this.curX = -1
     this.curY = -1
     this.text = ''
     this.curStyle = ''
+    this.curElement = null
     this.cacheMeasureText = new Map()
   }
 
@@ -37,7 +42,7 @@ export class TextParticle {
     this.text = ''
   }
 
-  public record(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
+  public record(ctx: SVGElement, element: IRowElement, x: number, y: number) {
     this.ctx = ctx
     // 主动完成的重设起始点
     if (!this.text) {
@@ -46,14 +51,14 @@ export class TextParticle {
     // 样式发生改变
     if (
       (this.curStyle && element.style !== this.curStyle) ||
-      (element.color !== this.curColor)
+      (element.color !== this.curElement?.color)
     ) {
       this.complete()
       this._setCurXY(x, y)
     }
     this.text += element.value
     this.curStyle = element.style
-    this.curColor = element.color
+    this.curElement = element
   }
 
   private _setCurXY(x: number, y: number) {
@@ -62,14 +67,26 @@ export class TextParticle {
   }
 
   private _render() {
-    if (!this.text || !~this.curX || !~this.curX) return
-    this.ctx.save()
-    this.ctx.font = this.curStyle
-    if (this.curColor) {
-      this.ctx.fillStyle = this.curColor
+    if (!this.text || !~this.curX || !~this.curX || !this.curElement) return
+    const text = createSVGElement('text')
+    const { scale } = this.options
+    const { italic, bold, size, color } = this.curElement
+    if (italic) {
+      text.style.fontStyle = 'italic'
     }
-    this.ctx.fillText(this.text, this.curX, this.curY)
-    this.ctx.restore()
+    if (bold) {
+      text.style.fontWeight = 'bold'
+    }
+    if (size) {
+      text.style.fontSize = `${size * scale}px`
+    }
+    if (color) {
+      text.style.fill = color
+    }
+    text.setAttribute('x', `${this.curX}`)
+    text.setAttribute('y', `${this.curY}`)
+    text.append(document.createTextNode(this.text))
+    this.ctx.append(text)
   }
 
 }

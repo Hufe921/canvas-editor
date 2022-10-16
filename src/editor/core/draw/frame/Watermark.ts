@@ -33,10 +33,9 @@ export class Watermark {
     text.style.fontFamily = font
 
     const centerY = (textMeasure.actualBoundingBoxAscent + textMeasure.actualBoundingBoxDescent) / 2
-    text.style.transform = `translate(${x}px,${centerY}px) rotate(${-45}deg) translate(${-x}px,${-centerY}px)`
-    text.setAttribute('x', `0`)
+    text.style.transform = `translate(${x}px,${y}px) rotate(${-45}deg) translate(${-x}px,${-y}px)`
+    text.setAttribute('x', `${-((textMeasure.width - width) / 2)}`)
     text.setAttribute('y', `${y + centerY}`)
-
     text.append(document.createTextNode(data))
     ctx.append(text)
   }

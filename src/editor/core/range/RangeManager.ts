@@ -3,6 +3,7 @@ import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { IRange } from '../../interface/Range'
+import { createSVGElement } from '../../utils/svg'
 import { Draw } from '../draw/Draw'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
@@ -222,12 +223,16 @@ export class RangeManager {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
-    ctx.save()
-    ctx.globalAlpha = this.options.rangeAlpha
-    ctx.fillStyle = this.options.rangeColor
-    ctx.fillRect(x, y, width, height)
-    ctx.restore()
+  public render(ctx: SVGElement, x: number, y: number, width: number, height: number) {
+    const { rangeAlpha, rangeColor } = this.options
+    const rect = createSVGElement('rect')
+    rect.style.opacity = `${rangeAlpha}`
+    rect.style.fill = rangeColor
+    rect.setAttribute('x', `${x}`)
+    rect.setAttribute('y', `${y}`)
+    rect.setAttribute('width', `${width}`)
+    rect.setAttribute('height', `${height}`)
+    ctx.append(rect)
   }
 
 }

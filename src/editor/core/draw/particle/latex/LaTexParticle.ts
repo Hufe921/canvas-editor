@@ -13,21 +13,14 @@ export class LaTexParticle extends ImageParticle {
     })
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IElement, x: number, y: number) {
+  public render(ctx: SVGElement, element: IElement, x: number, y: number) {
     const { scale } = this.options
     const width = element.width! * scale
     const height = element.height! * scale
-    if (this.imageCache.has(element.value)) {
-      const img = this.imageCache.get(element.value)!
-      ctx.drawImage(img, x, y, width, height)
-    } else {
-      const img = new Image()
-      img.src = element.laTexSVG!
-      img.onload = () => {
-        ctx.drawImage(img, x, y, width, height)
-        this.imageCache.set(element.value, img)
-      }
-    }
+    const href = element.laTexSVG!
+    const imgElement = this.createImageElement(href, x, y, width, height)
+    ctx.append(imgElement)
+    this.imageCache.set(element.id!, href)
   }
 
 }

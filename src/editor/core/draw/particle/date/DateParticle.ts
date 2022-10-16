@@ -1,6 +1,8 @@
 import { ElementType } from '../../../../dataset/enum/Element'
+import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 import { IRowElement } from '../../../../interface/Row'
+import { createSVGElement } from '../../../../utils/svg'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 import { DatePicker } from './DatePicker'
@@ -8,11 +10,13 @@ import { DatePicker } from './DatePicker'
 export class DateParticle {
 
   private draw: Draw
+  private options: Required<IEditorOption>
   private range: RangeManager
   private datePicker: DatePicker
 
   constructor(draw: Draw) {
     this.draw = draw
+    this.options = draw.getOptions()
     this.range = draw.getRange()
     this.datePicker = new DatePicker({
       mountDom: draw.getContainer(),
@@ -98,14 +102,29 @@ export class DateParticle {
     })
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
-    ctx.save()
-    ctx.font = element.style
-    if (element.color) {
-      ctx.fillStyle = element.color
+  public render(ctx: SVGElement, element: IRowElement, x: number, y: number) {
+    const text = createSVGElement('text')
+    const { scale } = this.options
+    const { italic, bold, size, color, value } = element
+    if (italic) {
+      text.style.fontStyle = 'italic'
     }
-    ctx.fillText(element.value, x, y)
-    ctx.restore()
+    if (bold) {
+      text.style.fontWeight = 'bold'
+    }
+    if (size) {
+      text.style.fontSize = `${size * scale}px`
+    }
+    if (color) {
+      text.style.fill = color
+    }
+    if (element.color) {
+      ctx.style.fill = element.color
+    }
+    text.setAttribute('x', `${x}`)
+    text.setAttribute('y', `${y}`)
+    text.append(document.createTextNode(value))
+    ctx.append(text)
   }
 
 }
