@@ -13,7 +13,7 @@ import { CanvasEvent } from './CanvasEvent'
 export class GlobalEvent {
 
   private draw: Draw
-  private canvas: HTMLCanvasElement
+  private canvas: SVGElement
   private options: Required<IEditorOption>
   private cursor: Cursor | null
   private canvasEvent: CanvasEvent

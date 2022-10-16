@@ -18,7 +18,7 @@ import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 import { Control } from '../draw/control/Control'
 import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
-import { splitText, threeClick } from '../../utils'
+import { findParent, splitText, threeClick } from '../../utils'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { DeepRequired } from '../../interface/Common'
 import { DateParticle } from '../draw/particle/date/DateParticle'
@@ -32,7 +32,7 @@ export class CanvasEvent {
   private draw: Draw
   private options: DeepRequired<IEditorOption>
   private pageContainer: HTMLDivElement
-  private pageList: HTMLCanvasElement[]
+  private pageList: SVGElement[]
   private position: Position
   private range: RangeManager
   private cursor: Cursor | null
@@ -169,8 +169,9 @@ export class CanvasEvent {
   public mousedown(evt: MouseEvent) {
     if (evt.button === MouseEventButton.RIGHT) return
     const isReadonly = this.draw.isReadonly()
-    const target = evt.target as HTMLDivElement
-    const pageIndex = target.dataset.index
+    const svg = <SVGElement>findParent(<SVGElement>evt.target, (node: Node) => node.nodeName === 'svg')
+    if (!svg) return
+    const pageIndex = svg.dataset.index
     // 设置pageNo
     if (pageIndex) {
       this.draw.setPageNo(Number(pageIndex))

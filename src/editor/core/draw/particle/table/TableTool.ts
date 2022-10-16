@@ -19,7 +19,7 @@ export class TableTool {
   private minTdWidth = 20
 
   private draw: Draw
-  private canvas: HTMLCanvasElement
+  private canvas: SVGElement
   private options: Required<IEditorOption>
   private position: Position
   private container: HTMLDivElement

@@ -31,7 +31,7 @@ export function isBody(node: Element): boolean {
   return node && node.nodeType === 1 && node.tagName.toLowerCase() === 'body'
 }
 
-export function findParent(node: Element, filterFn: Function, includeSelf: boolean) {
+export function findParent(node: Element, filterFn: Function, includeSelf = true) {
   if (node && !isBody(node)) {
     node = includeSelf ? node : node.parentNode as Element
     while (node) {

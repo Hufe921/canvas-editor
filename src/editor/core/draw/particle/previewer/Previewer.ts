@@ -7,7 +7,7 @@ import { Draw } from '../../Draw'
 export class Previewer {
 
   private container: HTMLDivElement
-  private canvas: HTMLCanvasElement
+  private canvas: SVGElement
   private draw: Draw
   private options: Required<IEditorOption>
   private curElement: IElement | null
