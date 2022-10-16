@@ -4,8 +4,9 @@
 
 ## tips
 
-1. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
-2. The official NPM package will be available after the release of version 1.0.0
+1. The render layer by svg is under development, see [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)
+2. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
+3. The official NPM package will be available after the release of version 1.0.0
 
 ## snapshot
 
