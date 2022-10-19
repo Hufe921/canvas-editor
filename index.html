@@ -12,23 +12,23 @@
   <div id="app">
     <div class="menu" editor-component="menu">
       <div class="menu-item">
-        <div class="menu-item__undo">
+        <div class="menu-item__undo" title="撤销(Ctrl+Z)">
           <i></i>
         </div>
-        <div class="menu-item__redo">
+        <div class="menu-item__redo" title="重做(Ctrl+Y)">
           <i></i>
         </div>
-        <div class="menu-item__painter">
+        <div class="menu-item__painter" title="格式刷(双击可连续使用)">
           <i></i>
         </div>
-        <div class="menu-item__format">
+        <div class="menu-item__format" title="清除格式">
           <i></i>
         </div>
       </div>
       <div class="menu-divider"></div>
       <div class="menu-item">
         <div class="menu-item__font">
-          <span class="select">微软雅黑</span>
+          <span class="select" title="字体">微软雅黑</span>
           <div class="options">
             <ul>
               <li data-family='Yahei'>微软雅黑</li>
@@ -39,36 +39,36 @@
             </ul>
           </div>
         </div>
-        <div class="menu-item__size-add">
+        <div class="menu-item__size-add" title="增大字号">
           <i></i>
         </div>
-        <div class="menu-item__size-minus">
+        <div class="menu-item__size-minus" title="减小字号">
           <i></i>
         </div>
-        <div class="menu-item__bold">
+        <div class="menu-item__bold" title="加粗">
           <i></i>
         </div>
-        <div class="menu-item__italic">
+        <div class="menu-item__italic" title="斜体">
           <i></i>
         </div>
-        <div class="menu-item__underline">
+        <div class="menu-item__underline" title="下划线">
           <i></i>
         </div>
-        <div class="menu-item__strikeout">
+        <div class="menu-item__strikeout" title="删除线">
           <i></i>
         </div>
-        <div class="menu-item__superscript">
+        <div class="menu-item__superscript" title="上标">
           <i></i>
         </div>
-        <div class="menu-item__subscript">
+        <div class="menu-item__subscript" title="下标">
           <i></i>
         </div>
-        <div class="menu-item__color">
+        <div class="menu-item__color" title="字体颜色">
           <i></i>
           <span></span>
           <input type="color" id="color" />
         </div>
-        <div class="menu-item__highlight">
+        <div class="menu-item__highlight" title="高亮">
           <i></i>
           <span></span>
           <input type="color" id="highlight">
@@ -76,20 +76,20 @@
       </div>
       <div class="menu-divider"></div>
       <div class="menu-item">
-        <div class="menu-item__left">
+        <div class="menu-item__left" title="左对齐">
           <i></i>
         </div>
-        <div class="menu-item__center">
+        <div class="menu-item__center" title="居中对齐">
           <i></i>
         </div>
-        <div class="menu-item__right">
+        <div class="menu-item__right" title="右对齐">
           <i></i>
         </div>
-        <div class="menu-item__alignment">
+        <div class="menu-item__alignment" title="两端对齐">
           <i></i>
         </div>
         <div class="menu-item__row-margin">
-          <i></i>
+          <i title="行间距"></i>
           <div class="options">
             <ul>
               <li data-rowmargin='1'>1</li>
@@ -106,7 +106,7 @@
       <div class="menu-divider"></div>
       <div class="menu-item">
         <div class="menu-item__table">
-          <i></i>
+          <i title="表格"></i>
         </div>
         <div class="menu-item__table__collapse">
           <div class="table-close">×</div>
@@ -117,14 +117,14 @@
           <div class="table-panel"></div>
         </div>
         <div class="menu-item__image">
-          <i></i>
+          <i title="图片"></i>
           <input type="file" id="image" accept=".png, .jpg, .jpeg">
         </div>
         <div class="menu-item__hyperlink">
-          <i></i>
+          <i title="超链接"></i>
         </div>
         <div class="menu-item__separator">
-          <i></i>
+          <i title="分割线"></i>
           <div class="options">
             <ul>
               <li data-separator='0,0'>
@@ -149,7 +149,7 @@
           </div>
         </div>
         <div class="menu-item__watermark">
-          <i></i>
+          <i title="水印(添加、删除)"></i>
           <div class="options">
             <ul>
               <li data-menu="add">添加水印</li>
@@ -157,14 +157,14 @@
             </ul>
           </div>
         </div>
-        <div class="menu-item__codeblock">
+        <div class="menu-item__codeblock" title="代码块">
           <i></i>
         </div>
-        <div class="menu-item__page-break">
+        <div class="menu-item__page-break" title="分页符">
           <i></i>
         </div>
         <div class="menu-item__control">
-          <i></i>
+          <i title="控件"></i>
           <div class="options">
             <ul>
               <li data-control='text'>文本</li>
@@ -173,14 +173,14 @@
             </ul>
           </div>
         </div>
-        <div class="menu-item__checkbox">
+        <div class="menu-item__checkbox" title="复选框">
           <i></i>
         </div>
-        <div class="menu-item__latex">
+        <div class="menu-item__latex" title="LateX">
           <i></i>
         </div>
         <div class="menu-item__date">
-          <i></i>
+          <i title="日期"></i>
           <div class="options">
             <ul>
               <li data-format="yyyy-MM-dd"></li>
@@ -192,7 +192,7 @@
       <div class="menu-divider"></div>
       <div class="menu-item">
         <div class="menu-item__search" data-menu="search">
-          <i></i>
+          <i title="搜索与替换"></i>
         </div>
         <div class="menu-item__search__collapse" data-menu="search">
           <div class="menu-item__search__collapse__search">
@@ -211,7 +211,7 @@
             <button>替换</button>
           </div>
         </div>
-        <div class="menu-item__print" data-menu="print">
+        <div class="menu-item__print" data-menu="print" title="打印">
           <i></i>
         </div>
       </div>
@@ -220,7 +220,7 @@
     <div class="footer" editor-component="footer">
       <div>
         <div class="page-mode">
-          <i></i>
+          <i title="页面模式(分页、连页)"></i>
           <div class="options">
             <ul>
               <li data-page-mode="paging" class="active">分页</li>
@@ -232,17 +232,17 @@
         <span>页面：<span class="page-no">1</span>/<span class="page-size">1</span></span>
         <span>字数：<span class="word-count">0</span></span>
       </div>
-      <div class="editor-mode">编辑模式</div>
+      <div class="editor-mode" title="编辑模式(编辑、清洁、只读)">编辑模式</div>
       <div>
-        <div class="page-scale-minus">
+        <div class="page-scale-minus" title="缩小">
           <i></i>
         </div>
-        <span class="page-scale-percentage">100%</span>
-        <div class="page-scale-add">
+        <span class="page-scale-percentage" title="显示比例(点击可复原)">100%</span>
+        <div class="page-scale-add" title="放大">
           <i></i>
         </div>
         <div class="paper-size">
-          <i></i>
+          <i title="纸张类型"></i>
           <div class="options">
             <ul>
               <li data-paper-size="794*1123" class="active">A4</li>
@@ -258,10 +258,10 @@
             </ul>
           </div>
         </div>
-        <div class="paper-margin">
+        <div class="paper-margin" title="页边距">
           <i></i>
         </div>
-        <div class="fullscreen">
+        <div class="fullscreen" title="全屏显示">
           <i></i>
         </div>
       </div>
