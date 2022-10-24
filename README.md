@@ -14,8 +14,8 @@
 
 ## next features
 
-1. fix bugs
-2. controls
+1. shortcut key
+2. control rules
 3. table paging
 4. docs
 
