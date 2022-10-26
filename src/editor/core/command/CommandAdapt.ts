@@ -183,75 +183,23 @@ export class CommandAdapt {
   }
 
   public sizeAdd() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
-    const { defaultSize } = this.options
-    if (!~lessThanMaxSizeIndex) return
-    selection.forEach(el => {
-      if (!el.size) {
-        el.size = defaultSize
-      }
-      if (el.size + 2 > 72) return
-      el.size += 2
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.sizeAdd()
   }
 
   public sizeMinus() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const greaterThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size - 2 >= 8)
-    if (!~greaterThanMaxSizeIndex) return
-    const { defaultSize } = this.options
-    selection.forEach(el => {
-      if (!el.size) {
-        el.size = defaultSize
-      }
-      if (el.size - 2 < 8) return
-      el.size -= 2
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.sizeMinus()
   }
 
   public bold() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const noBoldIndex = selection.findIndex(s => !s.bold)
-    selection.forEach(el => {
-      el.bold = !!~noBoldIndex
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.bold()
   }
 
   public italic() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const noItalicIndex = selection.findIndex(s => !s.italic)
-    selection.forEach(el => {
-      el.italic = !!~noItalicIndex
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.italic()
   }
 
   public underline() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const noUnderlineIndex = selection.findIndex(s => !s.underline)
-    selection.forEach(el => {
-      el.underline = !!~noUnderlineIndex
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.underline()
   }
 
   public strikeout() {
@@ -339,29 +287,7 @@ export class CommandAdapt {
   }
 
   public rowFlex(payload: RowFlex) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const { startIndex, endIndex } = this.range.getRange()
-    if (!~startIndex && !~endIndex) return
-    const pageNo = this.draw.getPageNo()
-    const positionList = this.position.getPositionList()
-    // 开始/结束行号
-    const startRowNo = positionList[startIndex].rowNo
-    const endRowNo = positionList[endIndex].rowNo
-    const elementList = this.draw.getElementList()
-    // 当前选区所在行
-    for (let p = 0; p < positionList.length; p++) {
-      const position = positionList[p]
-      if (position.pageNo !== pageNo) continue
-      if (position.rowNo > endRowNo) break
-      if (position.rowNo >= startRowNo && position.rowNo <= endRowNo) {
-        elementList[p].rowFlex = payload
-      }
-    }
-    // 光标定位
-    const isSetCursor = startIndex === endIndex
-    const curIndex = isSetCursor ? endIndex : startIndex
-    this.draw.render({ curIndex, isSetCursor })
+    this.canvasEvent.rowFlex(payload)
   }
 
   public rowMargin(payload: number) {
