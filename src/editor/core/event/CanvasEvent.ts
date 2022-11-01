@@ -315,7 +315,8 @@ export class CanvasEvent {
     // 当前激活控件
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
     const activeControl = this.control.getActiveControl()
-    if (evt.key === KeyMap.Backspace) {
+    const evtKey = evt.key.toLocaleLowerCase()
+    if (evtKey === KeyMap.Backspace) {
       if (isReadonly || isPartRangeInControlOutside) return
       let curIndex: number
       if (activeControl) {
@@ -335,7 +336,7 @@ export class CanvasEvent {
       }
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
-    } else if (evt.key === KeyMap.Delete) {
+    } else if (evtKey === KeyMap.Delete) {
       if (isReadonly || isPartRangeInControlOutside) return
       let curIndex: number
       if (activeControl) {
@@ -352,7 +353,7 @@ export class CanvasEvent {
       }
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
-    } else if (evt.key === KeyMap.Enter) {
+    } else if (evtKey === KeyMap.Enter) {
       if (isReadonly || isPartRangeInControlOutside) return
       // 表格需要上下文信息
       const positionContext = this.position.getPositionContext()
@@ -379,7 +380,7 @@ export class CanvasEvent {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
       evt.preventDefault()
-    } else if (evt.key === KeyMap.Left) {
+    } else if (evtKey === KeyMap.Left) {
       if (isReadonly) return
       if (index > 0) {
         const curIndex = index - 1
@@ -390,7 +391,7 @@ export class CanvasEvent {
           isComputeRowList: false
         })
       }
-    } else if (evt.key === KeyMap.Right) {
+    } else if (evtKey === KeyMap.Right) {
       if (isReadonly) return
       if (index < position.length - 1) {
         const curIndex = index + 1
@@ -401,12 +402,12 @@ export class CanvasEvent {
           isComputeRowList: false
         })
       }
-    } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
+    } else if (evtKey === KeyMap.Up || evtKey === KeyMap.Down) {
       if (isReadonly) return
       const { rowNo, index, coordinate: { leftTop, rightTop } } = cursorPosition
-      if ((evt.key === KeyMap.Up && rowNo !== 0) || (evt.key === KeyMap.Down && rowNo !== this.draw.getRowCount())) {
+      if ((evtKey === KeyMap.Up && rowNo !== 0) || (evtKey === KeyMap.Down && rowNo !== this.draw.getRowCount())) {
         // 下一个光标点所在行位置集合
-        const probablePosition = evt.key === KeyMap.Up
+        const probablePosition = evtKey === KeyMap.Up
           ? position.slice(0, index).filter(p => p.rowNo === rowNo - 1)
           : position.slice(index, position.length - 1).filter(p => p.rowNo === rowNo + 1)
         // 查找与当前位置元素点交叉最多的位置
@@ -443,62 +444,60 @@ export class CanvasEvent {
           isComputeRowList: false
         })
       }
-    } else if (evt.ctrlKey && evt.key === KeyMap.Z) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.Z) {
       if (isReadonly) return
       this.historyManager.undo()
       evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.Y) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.Y) {
       if (isReadonly) return
       this.historyManager.redo()
       evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.C) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.C) {
       this.copy()
-    } else if (evt.ctrlKey && evt.key === KeyMap.X) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.X) {
       if (isReadonly) return
-      this.cut()
-    } else if (evt.ctrlKey && evt.key === KeyMap.A) {
+      if (evt.shiftKey) {
+        this.strikeout()
+      } else {
+        this.cut()
+      }
+    } else if (evt.ctrlKey && evtKey === KeyMap.A) {
       this.selectAll()
-    } else if (evt.ctrlKey && evt.key === KeyMap.S) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.S) {
       if (isReadonly) return
       if (this.listener.saved) {
         this.listener.saved(this.draw.getValue())
       }
       evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.LEFT_BRACKET) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.LEFT_BRACKET) {
       this.sizeAdd()
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.RIGHT_BRACKET) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.RIGHT_BRACKET) {
       this.sizeMinus()
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.B) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.B) {
       this.bold()
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.I) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.I) {
       this.italic()
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.U) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.U) {
       this.underline()
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.L) {
+    } else if (evt.ctrlKey && evt.shiftKey && evtKey === KeyMap.RIGHT_ANGLE_BRACKET) {
+      this.superscript()
+    } else if (evt.ctrlKey && evt.shiftKey && evtKey === KeyMap.LEFT_ANGLE_BRACKET) {
+      this.subscript()
+    } else if (evt.ctrlKey && evtKey === KeyMap.L) {
       this.rowFlex(RowFlex.LEFT)
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.E) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.E) {
       this.rowFlex(RowFlex.CENTER)
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.R) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.R) {
       this.rowFlex(RowFlex.RIGHT)
-      evt.preventDefault()
-    } else if (evt.ctrlKey && evt.key === KeyMap.J) {
+    } else if (evt.ctrlKey && evtKey === KeyMap.J) {
       this.rowFlex(RowFlex.ALIGNMENT)
-      evt.preventDefault()
-    } else if (evt.key === KeyMap.ESC) {
+    } else if (evtKey === KeyMap.ESC) {
       this.clearPainterStyle()
-    } else if (evt.key === KeyMap.TAB) {
+    } else if (evtKey === KeyMap.TAB) {
       this.draw.insertElementList([{
         type: ElementType.TAB,
         value: ''
       }])
-      evt.preventDefault()
     }
   }
 
@@ -765,6 +764,68 @@ export class CanvasEvent {
     const noUnderlineIndex = selection.findIndex(s => !s.underline)
     selection.forEach(el => {
       el.underline = !!~noUnderlineIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public strikeout() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
+    selection.forEach(el => {
+      el.strikeout = !!~noStrikeoutIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public superscript() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
+    selection.forEach(el => {
+      // 取消上标
+      if (~superscriptIndex) {
+        if (el.type === ElementType.SUPERSCRIPT) {
+          el.type = ElementType.TEXT
+          delete el.actualSize
+        }
+      } else {
+        // 设置上标
+        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUBSCRIPT) {
+          el.type = ElementType.SUPERSCRIPT
+        }
+      }
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public subscript() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
+    selection.forEach(el => {
+      // 取消下标
+      if (~subscriptIndex) {
+        if (el.type === ElementType.SUBSCRIPT) {
+          el.type = ElementType.TEXT
+          delete el.actualSize
+        }
+      } else {
+        // 设置下标
+        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUPERSCRIPT) {
+          el.type = ElementType.SUBSCRIPT
+        }
+      }
     })
     this.draw.render({ isSetCursor: false })
   }

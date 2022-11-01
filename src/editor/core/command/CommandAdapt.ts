@@ -203,65 +203,15 @@ export class CommandAdapt {
   }
 
   public strikeout() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
-    selection.forEach(el => {
-      el.strikeout = !!~noStrikeoutIndex
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.strikeout()
   }
 
   public superscript() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
-    selection.forEach(el => {
-      // 取消上标
-      if (~superscriptIndex) {
-        if (el.type === ElementType.SUPERSCRIPT) {
-          el.type = ElementType.TEXT
-          delete el.actualSize
-        }
-      } else {
-        // 设置上标
-        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUBSCRIPT) {
-          el.type = ElementType.SUPERSCRIPT
-        }
-      }
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.superscript()
   }
 
   public subscript() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
-    selection.forEach(el => {
-      // 取消下标
-      if (~subscriptIndex) {
-        if (el.type === ElementType.SUBSCRIPT) {
-          el.type = ElementType.TEXT
-          delete el.actualSize
-        }
-      } else {
-        // 设置下标
-        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUPERSCRIPT) {
-          el.type = ElementType.SUBSCRIPT
-        }
-      }
-    })
-    this.draw.render({ isSetCursor: false })
+    this.canvasEvent.subscript()
   }
 
   public color(payload: string) {
