@@ -315,8 +315,7 @@ export class CanvasEvent {
     // 当前激活控件
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
     const activeControl = this.control.getActiveControl()
-    const evtKey = evt.key.toLocaleLowerCase()
-    if (evtKey === KeyMap.Backspace) {
+    if (evt.key === KeyMap.Backspace) {
       if (isReadonly || isPartRangeInControlOutside) return
       let curIndex: number
       if (activeControl) {
@@ -336,7 +335,7 @@ export class CanvasEvent {
       }
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
-    } else if (evtKey === KeyMap.Delete) {
+    } else if (evt.key === KeyMap.Delete) {
       if (isReadonly || isPartRangeInControlOutside) return
       let curIndex: number
       if (activeControl) {
@@ -353,7 +352,7 @@ export class CanvasEvent {
       }
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
-    } else if (evtKey === KeyMap.Enter) {
+    } else if (evt.key === KeyMap.Enter) {
       if (isReadonly || isPartRangeInControlOutside) return
       // 表格需要上下文信息
       const positionContext = this.position.getPositionContext()
@@ -380,7 +379,7 @@ export class CanvasEvent {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({ curIndex })
       evt.preventDefault()
-    } else if (evtKey === KeyMap.Left) {
+    } else if (evt.key === KeyMap.Left) {
       if (isReadonly) return
       if (index > 0) {
         const curIndex = index - 1
@@ -391,7 +390,7 @@ export class CanvasEvent {
           isComputeRowList: false
         })
       }
-    } else if (evtKey === KeyMap.Right) {
+    } else if (evt.key === KeyMap.Right) {
       if (isReadonly) return
       if (index < position.length - 1) {
         const curIndex = index + 1
@@ -402,12 +401,12 @@ export class CanvasEvent {
           isComputeRowList: false
         })
       }
-    } else if (evtKey === KeyMap.Up || evtKey === KeyMap.Down) {
+    } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
       if (isReadonly) return
       const { rowNo, index, coordinate: { leftTop, rightTop } } = cursorPosition
-      if ((evtKey === KeyMap.Up && rowNo !== 0) || (evtKey === KeyMap.Down && rowNo !== this.draw.getRowCount())) {
+      if ((evt.key === KeyMap.Up && rowNo !== 0) || (evt.key === KeyMap.Down && rowNo !== this.draw.getRowCount())) {
         // 下一个光标点所在行位置集合
-        const probablePosition = evtKey === KeyMap.Up
+        const probablePosition = evt.key === KeyMap.Up
           ? position.slice(0, index).filter(p => p.rowNo === rowNo - 1)
           : position.slice(index, position.length - 1).filter(p => p.rowNo === rowNo + 1)
         // 查找与当前位置元素点交叉最多的位置
@@ -444,56 +443,57 @@ export class CanvasEvent {
           isComputeRowList: false
         })
       }
-    } else if (evt.ctrlKey && evtKey === KeyMap.Z) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.Z) {
       if (isReadonly) return
       this.historyManager.undo()
       evt.preventDefault()
-    } else if (evt.ctrlKey && evtKey === KeyMap.Y) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.Y) {
       if (isReadonly) return
       this.historyManager.redo()
       evt.preventDefault()
-    } else if (evt.ctrlKey && evtKey === KeyMap.C) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.C) {
       this.copy()
-    } else if (evt.ctrlKey && evtKey === KeyMap.X) {
+    } else if (evt.ctrlKey && evt.key.toLocaleLowerCase() === KeyMap.X) {
       if (isReadonly) return
       if (evt.shiftKey) {
         this.strikeout()
       } else {
         this.cut()
       }
-    } else if (evt.ctrlKey && evtKey === KeyMap.A) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.A) {
       this.selectAll()
-    } else if (evt.ctrlKey && evtKey === KeyMap.S) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.S) {
       if (isReadonly) return
       if (this.listener.saved) {
         this.listener.saved(this.draw.getValue())
       }
       evt.preventDefault()
-    } else if (evt.ctrlKey && evtKey === KeyMap.LEFT_BRACKET) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.LEFT_BRACKET) {
       this.sizeAdd()
-    } else if (evt.ctrlKey && evtKey === KeyMap.RIGHT_BRACKET) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.RIGHT_BRACKET) {
       this.sizeMinus()
-    } else if (evt.ctrlKey && evtKey === KeyMap.B) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.B) {
       this.bold()
-    } else if (evt.ctrlKey && evtKey === KeyMap.I) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.I) {
       this.italic()
-    } else if (evt.ctrlKey && evtKey === KeyMap.U) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.U) {
       this.underline()
-    } else if (evt.ctrlKey && evt.shiftKey && evtKey === KeyMap.RIGHT_ANGLE_BRACKET) {
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.shiftKey && evt.key === KeyMap.RIGHT_ANGLE_BRACKET) {
       this.superscript()
-    } else if (evt.ctrlKey && evt.shiftKey && evtKey === KeyMap.LEFT_ANGLE_BRACKET) {
+    } else if (evt.ctrlKey && evt.shiftKey && evt.key === KeyMap.LEFT_ANGLE_BRACKET) {
       this.subscript()
-    } else if (evt.ctrlKey && evtKey === KeyMap.L) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.L) {
       this.rowFlex(RowFlex.LEFT)
-    } else if (evt.ctrlKey && evtKey === KeyMap.E) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.E) {
       this.rowFlex(RowFlex.CENTER)
-    } else if (evt.ctrlKey && evtKey === KeyMap.R) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.R) {
       this.rowFlex(RowFlex.RIGHT)
-    } else if (evt.ctrlKey && evtKey === KeyMap.J) {
+    } else if (evt.ctrlKey && evt.key === KeyMap.J) {
       this.rowFlex(RowFlex.ALIGNMENT)
-    } else if (evtKey === KeyMap.ESC) {
+    } else if (evt.key === KeyMap.ESC) {
       this.clearPainterStyle()
-    } else if (evtKey === KeyMap.TAB) {
+    } else if (evt.key === KeyMap.TAB) {
       this.draw.insertElementList([{
         type: ElementType.TAB,
         value: ''
