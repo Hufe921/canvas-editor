@@ -453,6 +453,7 @@ export class CanvasEvent {
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.C) {
       this.copy()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key.toLocaleLowerCase() === KeyMap.X) {
       if (isReadonly) return
       if (evt.shiftKey) {
@@ -460,8 +461,10 @@ export class CanvasEvent {
       } else {
         this.cut()
       }
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.A) {
       this.selectAll()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.S) {
       if (isReadonly) return
       if (this.listener.saved) {
@@ -470,34 +473,46 @@ export class CanvasEvent {
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.LEFT_BRACKET) {
       this.sizeAdd()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.RIGHT_BRACKET) {
       this.sizeMinus()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.B) {
       this.bold()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.I) {
       this.italic()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.U) {
       this.underline()
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.shiftKey && evt.key === KeyMap.RIGHT_ANGLE_BRACKET) {
       this.superscript()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.shiftKey && evt.key === KeyMap.LEFT_ANGLE_BRACKET) {
       this.subscript()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.L) {
       this.rowFlex(RowFlex.LEFT)
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.E) {
       this.rowFlex(RowFlex.CENTER)
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.R) {
       this.rowFlex(RowFlex.RIGHT)
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.J) {
       this.rowFlex(RowFlex.ALIGNMENT)
+      evt.preventDefault()
     } else if (evt.key === KeyMap.ESC) {
       this.clearPainterStyle()
+      evt.preventDefault()
     } else if (evt.key === KeyMap.TAB) {
       this.draw.insertElementList([{
         type: ElementType.TAB,
         value: ''
       }])
+      evt.preventDefault()
     }
   }
 
