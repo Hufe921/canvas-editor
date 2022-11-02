@@ -196,6 +196,12 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     instance.command.executeRight()
   }
 
+  const alignmentDom = document.querySelector<HTMLDivElement>('.menu-item__alignment')!
+  alignmentDom.onclick = function () {
+    console.log('alignment')
+    instance.command.executeAlignment()
+  }
+
   const rowMarginDom = document.querySelector<HTMLDivElement>('.menu-item__row-margin')!
   const rowOptionDom = rowMarginDom.querySelector<HTMLDivElement>('.options')!
   rowMarginDom.onclick = function () {
@@ -916,10 +922,13 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     leftDom.classList.remove('active')
     centerDom.classList.remove('active')
     rightDom.classList.remove('active')
+    alignmentDom.classList.remove('active')
     if (payload.rowFlex && payload.rowFlex === 'right') {
       rightDom.classList.add('active')
     } else if (payload.rowFlex && payload.rowFlex === 'center') {
       centerDom.classList.add('active')
+    } else if (payload.rowFlex && payload.rowFlex === 'alignment') {
+      alignmentDom.classList.add('active')
     } else {
       leftDom.classList.add('active')
     }

@@ -1,4 +1,4 @@
-import { ElementType, IEditorOption } from '../..'
+import { ElementType, IEditorOption, RowFlex } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_COPY_ATTR } from '../../dataset/constant/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
@@ -18,7 +18,7 @@ import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 import { Control } from '../draw/control/Control'
 import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
-import { splitText } from '../../utils'
+import { splitText, threeClick } from '../../utils'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { DeepRequired } from '../../interface/Common'
 import { DateParticle } from '../draw/particle/date/DateParticle'
@@ -72,6 +72,7 @@ export class CanvasEvent {
     this.pageContainer.addEventListener('mouseleave', this.mouseleave.bind(this))
     this.pageContainer.addEventListener('mousemove', this.mousemove.bind(this))
     this.pageContainer.addEventListener('dblclick', this.dblclick.bind(this))
+    threeClick(this.pageContainer, this.threeClick.bind(this))
   }
 
   public setIsAllowDrag(payload: boolean) {
@@ -241,6 +242,7 @@ export class CanvasEvent {
     const isDirectHitCheckbox = !!(isDirectHit && isCheckbox)
     if (~index) {
       this.range.setRange(curIndex, curIndex)
+      this.position.setCursorPosition(positionList[curIndex])
       // 复选框
       const isSetCheckbox = isDirectHitCheckbox && !isReadonly
       if (isSetCheckbox) {
@@ -451,19 +453,60 @@ export class CanvasEvent {
       evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.C) {
       this.copy()
-    } else if (evt.ctrlKey && evt.key === KeyMap.X) {
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key.toLocaleLowerCase() === KeyMap.X) {
       if (isReadonly) return
-      this.cut()
+      if (evt.shiftKey) {
+        this.strikeout()
+      } else {
+        this.cut()
+      }
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.A) {
       this.selectAll()
+      evt.preventDefault()
     } else if (evt.ctrlKey && evt.key === KeyMap.S) {
       if (isReadonly) return
       if (this.listener.saved) {
         this.listener.saved(this.draw.getValue())
       }
       evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.LEFT_BRACKET) {
+      this.sizeAdd()
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.RIGHT_BRACKET) {
+      this.sizeMinus()
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.B) {
+      this.bold()
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.I) {
+      this.italic()
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.U) {
+      this.underline()
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.shiftKey && evt.key === KeyMap.RIGHT_ANGLE_BRACKET) {
+      this.superscript()
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.shiftKey && evt.key === KeyMap.LEFT_ANGLE_BRACKET) {
+      this.subscript()
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.L) {
+      this.rowFlex(RowFlex.LEFT)
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.E) {
+      this.rowFlex(RowFlex.CENTER)
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.R) {
+      this.rowFlex(RowFlex.RIGHT)
+      evt.preventDefault()
+    } else if (evt.ctrlKey && evt.key === KeyMap.J) {
+      this.rowFlex(RowFlex.ALIGNMENT)
+      evt.preventDefault()
     } else if (evt.key === KeyMap.ESC) {
       this.clearPainterStyle()
+      evt.preventDefault()
     } else if (evt.key === KeyMap.TAB) {
       this.draw.insertElementList([{
         type: ElementType.TAB,
@@ -504,6 +547,46 @@ export class CanvasEvent {
         } else {
           break
         }
+      }
+    }
+    // 设置选中区域
+    this.range.setRange(index - upCount - 1, index + downCount)
+    // 刷新文档
+    this.draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false,
+      isComputeRowList: false
+    })
+  }
+
+  public threeClick() {
+    const cursorPosition = this.position.getCursorPosition()
+    if (!cursorPosition) return
+    const { index } = cursorPosition
+    const elementList = this.draw.getElementList()
+    // 判断是否是零宽字符
+    let upCount = 0
+    let downCount = 0
+    // 向上查询
+    let upStartIndex = index - 1
+    while (upStartIndex > 0) {
+      const value = elementList[upStartIndex].value
+      if (value !== ZERO) {
+        upCount++
+        upStartIndex--
+      } else {
+        break
+      }
+    }
+    // 向下查询
+    let downStartIndex = index + 1
+    while (downStartIndex < elementList.length) {
+      const value = elementList[downStartIndex].value
+      if (value !== ZERO) {
+        downCount++
+        downStartIndex++
+      } else {
+        break
       }
     }
     // 设置选中区域
@@ -626,6 +709,166 @@ export class CanvasEvent {
       isSetCursor: false,
       isComputeRowList: false
     })
+  }
+
+  public sizeAdd() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
+    const { defaultSize } = this.options
+    if (!~lessThanMaxSizeIndex) return
+    selection.forEach(el => {
+      if (!el.size) {
+        el.size = defaultSize
+      }
+      if (el.size + 2 > 72) return
+      el.size += 2
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public sizeMinus() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const greaterThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size - 2 >= 8)
+    if (!~greaterThanMaxSizeIndex) return
+    const { defaultSize } = this.options
+    selection.forEach(el => {
+      if (!el.size) {
+        el.size = defaultSize
+      }
+      if (el.size - 2 < 8) return
+      el.size -= 2
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public bold() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noBoldIndex = selection.findIndex(s => !s.bold)
+    selection.forEach(el => {
+      el.bold = !!~noBoldIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public italic() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noItalicIndex = selection.findIndex(s => !s.italic)
+    selection.forEach(el => {
+      el.italic = !!~noItalicIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public underline() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noUnderlineIndex = selection.findIndex(s => !s.underline)
+    selection.forEach(el => {
+      el.underline = !!~noUnderlineIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public strikeout() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
+    selection.forEach(el => {
+      el.strikeout = !!~noStrikeoutIndex
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public superscript() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
+    selection.forEach(el => {
+      // 取消上标
+      if (~superscriptIndex) {
+        if (el.type === ElementType.SUPERSCRIPT) {
+          el.type = ElementType.TEXT
+          delete el.actualSize
+        }
+      } else {
+        // 设置上标
+        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUBSCRIPT) {
+          el.type = ElementType.SUPERSCRIPT
+        }
+      }
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public subscript() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const activeControl = this.control.getActiveControl()
+    if (activeControl) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
+    selection.forEach(el => {
+      // 取消下标
+      if (~subscriptIndex) {
+        if (el.type === ElementType.SUBSCRIPT) {
+          el.type = ElementType.TEXT
+          delete el.actualSize
+        }
+      } else {
+        // 设置下标
+        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUPERSCRIPT) {
+          el.type = ElementType.SUBSCRIPT
+        }
+      }
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  public rowFlex(payload: RowFlex) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const pageNo = this.draw.getPageNo()
+    const positionList = this.position.getPositionList()
+    // 开始/结束行号
+    const startRowNo = positionList[startIndex].rowNo
+    const endRowNo = positionList[endIndex].rowNo
+    const elementList = this.draw.getElementList()
+    // 当前选区所在行
+    for (let p = 0; p < positionList.length; p++) {
+      const position = positionList[p]
+      if (position.pageNo !== pageNo) continue
+      if (position.rowNo > endRowNo) break
+      if (position.rowNo >= startRowNo && position.rowNo <= endRowNo) {
+        elementList[p].rowFlex = payload
+      }
+    }
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
   }
 
   public compositionstart() {

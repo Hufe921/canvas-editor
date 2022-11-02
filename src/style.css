@@ -78,7 +78,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 4px;
+  margin: 0 3px;
 }
 
 .menu-item>div:hover {
@@ -264,6 +264,10 @@ ul {
 
 .menu-item__right i {
   background-image: url('./assets/images/right.svg');
+}
+
+.menu-item__alignment i {
+  background-image: url('./assets/images/alignment.svg');
 }
 
 .menu-item__row-margin {
