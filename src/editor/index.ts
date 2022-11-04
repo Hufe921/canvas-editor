@@ -24,6 +24,8 @@ import { ICheckboxOption } from './interface/Checkbox'
 import { defaultCheckboxOption } from './dataset/constant/Checkbox'
 import { DeepRequired } from './interface/Common'
 import { INavigateInfo } from './core/draw/interactive/Search'
+import { Shortcut } from './core/shortcut/Shortcut'
+import { KeyMap } from './dataset/enum/KeyMap'
 
 export default class Editor {
 
@@ -100,9 +102,12 @@ export default class Editor {
     this.command = new Command(new CommandAdapt(draw))
     // 菜单
     const contextMenu = new ContextMenu(draw, this.command)
+    // 快捷键
+    const shortcut = new Shortcut(draw, this.command)
     // 注册
     this.register = new Register({
-      contextMenu
+      contextMenu,
+      shortcut
     })
   }
 
@@ -119,7 +124,8 @@ export {
   EDITOR_COMPONENT,
   PageMode,
   ImageDisplay,
-  Command
+  Command,
+  KeyMap
 }
 
 // 对外类型

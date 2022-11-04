@@ -1,6 +1,6 @@
 import './style.css'
 import prism from 'prismjs'
-import Editor, { Command, ControlType, EditorMode, ElementType, IEditorResult, IElement, PageMode } from './editor'
+import Editor, { Command, ControlType, EditorMode, ElementType, IEditorResult, IElement, PageMode, KeyMap } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
@@ -1021,6 +1021,26 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
             }])
           }
         })
+      }
+    }
+  ])
+
+  // 10. 快捷键注册
+  instance.register.shortcutList([
+    {
+      key: KeyMap.P,
+      ctrl: true,
+      isGlobal: true,
+      callback: (command: Command) => {
+        command.executePrint()
+      }
+    },
+    {
+      key: KeyMap.F,
+      ctrl: true,
+      isGlobal: true,
+      callback: () => {
+        searchDom.click()
       }
     }
   ])
