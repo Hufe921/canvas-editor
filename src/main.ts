@@ -1,7 +1,7 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { Command, ControlType, EditorMode, ElementType, IElement, PageMode } from './editor'
+import Editor, { Command, ControlType, EditorMode, ElementType, IElement, KeyMap, PageMode } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
@@ -968,6 +968,26 @@ window.onload = function () {
             }])
           }
         })
+      }
+    }
+  ])
+
+  // 10. 快捷键注册
+  instance.register.shortcutList([
+    {
+      key: KeyMap.P,
+      ctrl: true,
+      isGlobal: true,
+      callback: (command: Command) => {
+        command.executePrint()
+      }
+    },
+    {
+      key: KeyMap.F,
+      ctrl: true,
+      isGlobal: true,
+      callback: () => {
+        searchDom.click()
       }
     }
   ])
