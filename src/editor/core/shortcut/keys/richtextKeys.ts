@@ -1,6 +1,6 @@
 import { Command } from '../../..'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
-import { IRegisterShortcut } from '../Shortcut'
+import { IRegisterShortcut } from '../../../interface/shortcut/Shortcut'
 
 export const richtextKeys: IRegisterShortcut[] = [
   {

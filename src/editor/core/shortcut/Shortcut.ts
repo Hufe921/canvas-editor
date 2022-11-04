@@ -1,5 +1,5 @@
-import { richtextKeys } from '../../interface/shortcut/keys/richtextKeys'
 import { IRegisterShortcut } from '../../interface/shortcut/Shortcut'
+import { richtextKeys } from './keys/richtextKeys'
 import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
 
