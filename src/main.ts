@@ -639,6 +639,7 @@ window.onload = function () {
     } else {
       searchCollapseDom.style.right = 'unset'
     }
+    searchInputDom.focus()
   }
   searchCollapseDom.querySelector<HTMLSpanElement>('span')!.onclick = function () {
     searchCollapseDom.style.display = 'none'
@@ -988,6 +989,22 @@ window.onload = function () {
       isGlobal: true,
       callback: () => {
         searchDom.click()
+      }
+    },
+    {
+      key: KeyMap.MINUS,
+      ctrl: true,
+      isGlobal: true,
+      callback: (command: Command) => {
+        command.executePageScaleMinus()
+      }
+    },
+    {
+      key: KeyMap.EQUAL,
+      ctrl: true,
+      isGlobal: true,
+      callback: (command: Command) => {
+        command.executePageScaleAdd()
       }
     }
   ])
