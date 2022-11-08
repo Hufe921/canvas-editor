@@ -1006,6 +1006,14 @@ window.onload = function () {
       callback: (command: Command) => {
         command.executePageScaleAdd()
       }
+    },
+    {
+      key: KeyMap.ZERO,
+      ctrl: true,
+      isGlobal: true,
+      callback: (command: Command) => {
+        command.executePageScaleRecovery()
+      }
     }
   ])
 
