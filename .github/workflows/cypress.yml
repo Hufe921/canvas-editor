@@ -14,7 +14,7 @@ on:
 jobs:
   cypress:
     runs-on: ubuntu-latest
-    container: cypress/browsers:node16.14.0-slim-chrome99-ff97
+    container: cypress/browsers:node16.17.0-chrome106
 
     steps:
     - uses: actions/checkout@v2
