@@ -22,7 +22,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm i yarn serve -g
+    - run: npm i yarn serve@14.0.1 -g
     - run: yarn
     - run: yarn run build
     - run: mv dist canvas-editor
