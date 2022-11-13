@@ -14,7 +14,7 @@ on:
 jobs:
   cypress:
     runs-on: ubuntu-latest
-    container: cypress/browsers:node16.14.0-slim-chrome99-ff97
+    container: cypress/browsers:node16.17.0-chrome106
 
     steps:
     - uses: actions/checkout@v2
@@ -22,7 +22,7 @@ jobs:
       uses: actions/setup-node@v1
       with:
         node-version: ${{ matrix.node-version }}
-    - run: npm i yarn serve -g
+    - run: npm i yarn serve@14.0.1 -g
     - run: yarn
     - run: yarn run build
     - run: mv dist canvas-editor
