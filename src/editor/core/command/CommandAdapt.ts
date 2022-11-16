@@ -343,18 +343,17 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const pageNo = this.draw.getPageNo()
+    // 选区行信息
+    const rangeRow = this.range.getRangeRow()
+    if (!rangeRow) return
     const positionList = this.position.getPositionList()
-    // 开始/结束行号
-    const startRowNo = positionList[startIndex].rowNo
-    const endRowNo = positionList[endIndex].rowNo
     const elementList = this.draw.getElementList()
     // 当前选区所在行
     for (let p = 0; p < positionList.length; p++) {
       const position = positionList[p]
-      if (position.pageNo !== pageNo) continue
-      if (position.rowNo > endRowNo) break
-      if (position.rowNo >= startRowNo && position.rowNo <= endRowNo) {
+      const rowSet = rangeRow.get(position.pageNo)
+      if (!rowSet) continue
+      if (rowSet.has(position.rowNo)) {
         elementList[p].rowFlex = payload
       }
     }
@@ -369,18 +368,17 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const pageNo = this.draw.getPageNo()
+    // 选区行信息
+    const rangeRow = this.range.getRangeRow()
+    if (!rangeRow) return
     const positionList = this.position.getPositionList()
-    // 开始/结束行号
-    const startRowNo = positionList[startIndex].rowNo
-    const endRowNo = positionList[endIndex].rowNo
     const elementList = this.draw.getElementList()
     // 当前选区所在行
     for (let p = 0; p < positionList.length; p++) {
       const position = positionList[p]
-      if (position.pageNo !== pageNo) continue
-      if (position.rowNo > endRowNo) break
-      if (position.rowNo >= startRowNo && position.rowNo <= endRowNo) {
+      const rowSet = rangeRow.get(position.pageNo)
+      if (!rowSet) continue
+      if (rowSet.has(position.rowNo)) {
         elementList[p].rowMargin = payload
       }
     }
