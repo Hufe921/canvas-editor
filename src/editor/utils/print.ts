@@ -18,6 +18,8 @@ export function printImageBase64(base64List: string[], width: number, height: nu
     doc.write(`${style.outerHTML}${container.innerHTML}`)
     iframe.contentWindow?.print()
     doc.close()
-    iframe.remove()
+    setTimeout(() => {
+      iframe.remove()
+    })
   })
 }
