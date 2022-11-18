@@ -116,8 +116,8 @@ export class RangeManager {
     const dashArray = curElement.dashArray || []
     // 菜单
     const painter = !!this.draw.getPainterStyle()
-    const undo = this.historyManager.isCanUndo()
-    const redo = this.historyManager.isCanRedo()
+    const undo = this.historyManager.isCanUndo
+    const redo = this.historyManager.isCanRedo
     this.listener.rangeStyleChange({
       type,
       undo,
@@ -141,8 +141,8 @@ export class RangeManager {
     const font = this.options.defaultFont
     const rowMargin = this.options.defaultRowMargin
     const painter = !!this.draw.getPainterStyle()
-    const undo = this.historyManager.isCanUndo()
-    const redo = this.historyManager.isCanRedo()
+    const undo = this.historyManager.isCanUndo
+    const redo = this.historyManager.isCanRedo
     this.listener.rangeStyleChange({
       type: null,
       undo,
