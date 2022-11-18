@@ -4,8 +4,28 @@ export class HistoryManager {
   private undoStack: Array<Function> = []
   private redoStack: Array<Function> = []
 
+  /**
+   * judge whether undoStack overflows
+   * @returns boolean
+   */
+  private get isOverflow(): boolean {
+    return this.undoStack.length > this.MAX_RECORD_COUNT
+  }
+
+  /**
+   * remove overflow data
+   */
+  private cutOverflow() {
+    while (this.isOverflow) {
+      this.undoStack.shift()
+    }
+  }
+
+  /**
+   * undo
+   */
   public undo() {
-    if (this.undoStack.length > 1) {
+    if (this.isCanRedo) {
       const pop = this.undoStack.pop()!
       this.redoStack.push(pop)
       if (this.undoStack.length) {
@@ -14,29 +34,42 @@ export class HistoryManager {
     }
   }
 
+  /**
+   * redo
+   */
   public redo() {
-    if (this.redoStack.length) {
+    if (this.isCanRedo) {
       const pop = this.redoStack.pop()!
       this.undoStack.push(pop)
       pop()
     }
   }
 
+  /**
+   * add new undo event
+   * @param fn Function undo/redo will execute function
+   */
   public execute(fn: Function) {
     this.undoStack.push(fn)
-    if (this.redoStack.length) {
+    if (this.isCanRedo) {
       this.redoStack = []
     }
-    while (this.undoStack.length > this.MAX_RECORD_COUNT) {
-      this.undoStack.shift()
-    }
+    this.cutOverflow()
   }
 
-  public isCanUndo(): boolean {
+  /**
+   * Judge whether it can be Undo
+   * @returns boolean
+   */
+  public get isCanUndo(): boolean {
     return this.undoStack.length > 1
   }
 
-  public isCanRedo(): boolean {
+  /**
+   * Judge whether it can be Redo
+   * @returns boolean
+   */
+  public get isCanRedo(): boolean {
     return !!this.redoStack.length
   }
 
