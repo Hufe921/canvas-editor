@@ -306,7 +306,7 @@ export class CanvasEvent {
   public keydown(evt: KeyboardEvent) {
     const isReadonly = this.draw.isReadonly()
     const cursorPosition = this.position.getCursorPosition()
-    if (!cursorPosition) return
+    if (!cursorPosition || this.isCompositing) return
     const elementList = this.draw.getElementList()
     const position = this.position.getPositionList()
     const { index } = cursorPosition
