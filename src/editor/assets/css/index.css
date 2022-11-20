@@ -449,4 +449,9 @@
   border-bottom-style: solid;
   padding-bottom: 2px;
   color: #0000ff;
+  display: inline-block;
+  max-width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
