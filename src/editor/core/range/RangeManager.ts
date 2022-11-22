@@ -1,4 +1,5 @@
 import { ElementType } from '../..'
+import { ZERO } from '../../dataset/constant/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
@@ -251,6 +252,14 @@ export class RangeManager {
     ctx.fillStyle = this.options.rangeColor
     ctx.fillRect(x, y, width, height)
     ctx.restore()
+  }
+
+  public toString(): string {
+    const selection = this.getSelection()
+    if (!selection) return ''
+    return selection.map(s => s.value)
+      .join('')
+      .replace(new RegExp(ZERO, 'g'), '')
   }
 
 }

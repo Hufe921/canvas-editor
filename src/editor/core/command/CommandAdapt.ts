@@ -1400,6 +1400,10 @@ export class CommandAdapt {
     return this.workerManager.getWordCount()
   }
 
+  public getRangeText(): string {
+    return this.range.toString()
+  }
+
   public pageMode(payload: PageMode) {
     this.draw.setPageMode(payload)
   }
