@@ -1023,6 +1023,18 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
           }
         })
       }
+    },
+    {
+      name: '百度搜索',
+      when: (payload) => {
+        return payload.editorHasSelection
+      },
+      callback: (command: Command) => {
+        const text = command.getRangeText()
+        if (text) {
+          window.open(`https://www.baidu.com/s?ie=UTF-8&wd=${text}`, '_blank')
+        }
+      }
     }
   ])
 
