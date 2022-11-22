@@ -1,11 +1,13 @@
 import { ElementType } from '../..'
+import { ZERO } from '../../dataset/constant/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
-import { IRange } from '../../interface/Range'
+import { IRange, RangeRowMap } from '../../interface/Range'
 import { Draw } from '../draw/Draw'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
+import { Position } from '../position/Position'
 
 export class RangeManager {
 
@@ -13,12 +15,14 @@ export class RangeManager {
   private options: Required<IEditorOption>
   private range: IRange
   private listener: Listener
+  private position: Position
   private historyManager: HistoryManager
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
     this.listener = draw.getListener()
+    this.position = draw.getPosition()
     this.historyManager = draw.getHistoryManager()
     this.range = {
       startIndex: -1,
@@ -35,6 +39,26 @@ export class RangeManager {
     if (startIndex === endIndex) return null
     const elementList = this.draw.getElementList()
     return elementList.slice(startIndex + 1, endIndex + 1)
+  }
+
+  // 获取光标所选位置行信息
+  public getRangeRow(): RangeRowMap | null {
+    const { startIndex, endIndex } = this.range
+    if (!~startIndex && !~endIndex) return null
+    const positionList = this.position.getPositionList()
+    const rangeRow: RangeRowMap = new Map()
+    for (let p = startIndex; p < endIndex + 1; p++) {
+      const { pageNo, rowNo } = positionList[p]
+      const rowSet = rangeRow.get(pageNo)
+      if (!rowSet) {
+        rangeRow.set(pageNo, new Set([rowNo]))
+      } else {
+        if (!rowSet.has(rowNo)) {
+          rowSet.add(rowNo)
+        }
+      }
+    }
+    return rangeRow
   }
 
   public setRange(
@@ -228,6 +252,14 @@ export class RangeManager {
     ctx.fillStyle = this.options.rangeColor
     ctx.fillRect(x, y, width, height)
     ctx.restore()
+  }
+
+  public toString(): string {
+    const selection = this.getSelection()
+    if (!selection) return ''
+    return selection.map(s => s.value)
+      .join('')
+      .replace(new RegExp(ZERO, 'g'), '')
   }
 
 }

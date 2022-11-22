@@ -68,6 +68,7 @@ export class Command {
   private static getImage: CommandAdapt['getImage']
   private static getValue: CommandAdapt['getValue']
   private static getWordCount: CommandAdapt['getWordCount']
+  private static getRangeText: CommandAdapt['getRangeText']
   private static pageMode: CommandAdapt['pageMode']
   private static pageScaleRecovery: CommandAdapt['pageScaleRecovery']
   private static pageScaleMinus: CommandAdapt['pageScaleMinus']
@@ -138,6 +139,7 @@ export class Command {
     Command.getImage = adapt.getImage.bind(adapt)
     Command.getValue = adapt.getValue.bind(adapt)
     Command.getWordCount = adapt.getWordCount.bind(adapt)
+    Command.getRangeText = adapt.getRangeText.bind(adapt)
     Command.pageMode = adapt.pageMode.bind(adapt)
     Command.pageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
@@ -387,6 +389,10 @@ export class Command {
 
   public getWordCount(): Promise<number> {
     return Command.getWordCount()
+  }
+
+  public getRangeText(): string {
+    return Command.getRangeText()
   }
 
   // 页面模式、页面缩放、纸张大小、页边距

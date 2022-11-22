@@ -8,3 +8,5 @@ export interface IRange {
   startTrIndex?: number;
   endTrIndex?: number;
 }
+
+export type RangeRowMap = Map<number, Set<number>>
