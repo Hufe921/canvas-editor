@@ -341,8 +341,12 @@
 }
 
 .contextmenu-content .contextmenu-item span {
+  max-width: 300px;
   font-size: 12px;
   color: #3d4757;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .contextmenu-content .contextmenu-item span.shortcut {

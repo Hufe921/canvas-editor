@@ -1,3 +1,4 @@
+import { NAME_PLACEHOLDER } from '../../dataset/constant/ContextMenu'
 import { EDITOR_COMPONENT } from '../../dataset/constant/Editor'
 import { EditorComponent } from '../../dataset/enum/Editor'
 import { IContextMenuContext, IRegisterContextMenu } from '../../interface/contextmenu/ContextMenu'
@@ -202,7 +203,8 @@ export class ContextMenu {
         }
         // 文本
         const span = document.createElement('span')
-        span.append(document.createTextNode(menu.name!))
+        const name = this._formatName(menu.name!)
+        span.append(document.createTextNode(name))
         menuItem.append(span)
         // 快捷方式提示
         if (menu.shortCut) {
@@ -239,6 +241,21 @@ export class ContextMenu {
     } else {
       payload.classList.remove('hover')
     }
+  }
+
+  private _formatName(name: string): string {
+    const placeholderValues = Object.values(NAME_PLACEHOLDER)
+    const placeholderReg = new RegExp(`${placeholderValues.join('|')}`)
+    let formatName = name
+    if (placeholderReg.test(formatName)) {
+      // 选区名称
+      const selectedReg = new RegExp(NAME_PLACEHOLDER.SELECTED_TEXT, 'g')
+      if (selectedReg.test(formatName)) {
+        const selectedText = this.range.toString()
+        formatName = formatName.replace(selectedReg, selectedText)
+      }
+    }
+    return formatName
   }
 
   public registerContextMenuList(payload: IRegisterContextMenu[]) {
