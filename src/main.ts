@@ -1025,7 +1025,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
       }
     },
     {
-      name: '百度搜索',
+      name: '百度搜索：%s',
       when: (payload) => {
         return payload.editorHasSelection
       },
