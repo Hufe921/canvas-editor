@@ -14,9 +14,10 @@
 
 ## next features
 
-1. control rules
-2. table paging
-3. docs
+1. content block
+2. control rules
+3. table paging
+4. docs
 
 ## install
 
