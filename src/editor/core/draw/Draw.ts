@@ -984,13 +984,19 @@ export class Draw {
     return { x, y, index }
   }
 
+  private _clearPage(pageNo: number) {
+    const ctx = this.ctxList[pageNo]
+    const pageDom = this.pageList[pageNo]
+    ctx.clearRect(0, 0, pageDom.width, pageDom.height)
+    this.blockParticle.clear()
+  }
+
   private _drawPage(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
     const { pageMode } = this.options
     const margins = this.getMargins()
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
-    const pageDom = this.pageList[pageNo]
-    ctx.clearRect(0, 0, pageDom.width, pageDom.height)
+    this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx)
     // 绘制页边距

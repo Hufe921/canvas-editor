@@ -21,6 +21,10 @@ export class BaseBlock {
     this.blockContainer.append(this.blockItem)
   }
 
+  public getBlockElement(): IRowElement {
+    return this.element
+  }
+
   private _createBlockItem(): HTMLDivElement {
     const blockItem = document.createElement('div')
     blockItem.classList.add('block-item')
@@ -46,6 +50,10 @@ export class BaseBlock {
     // 位置
     this.blockItem.style.left = `${x}px`
     this.blockItem.style.top = `${preY + y}px`
+  }
+
+  public remove() {
+    this.blockItem.remove()
   }
 
 }

@@ -1,3 +1,4 @@
+import { ElementType } from '../../../../dataset/enum/Element'
 import { IRowElement } from '../../../../interface/Row'
 import { Draw } from '../../Draw'
 import { BaseBlock } from './modules/BaseBlock'
@@ -42,6 +43,25 @@ export class BlockParticle {
       newBlock.setClientRects(pageNo, x, y)
       this.blockMap.set(id, newBlock)
     }
+  }
+
+  public clear() {
+    if (!this.blockMap.size) return
+    const elementList = this.draw.getElementList()
+    const blockElementIds: string[] = []
+    for (let e = 0; e < elementList.length; e++) {
+      const element = elementList[e]
+      if (element.type === ElementType.BLOCK) {
+        blockElementIds.push(element.id!)
+      }
+    }
+    this.blockMap.forEach(block => {
+      const id = block.getBlockElement().id!
+      if (!blockElementIds.includes(id)) {
+        block.remove()
+        this.blockMap.delete(id)
+      }
+    })
   }
 
 }
