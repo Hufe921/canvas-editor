@@ -1,7 +1,7 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { Command, ControlType, EditorMode, ElementType, IElement, KeyMap, PageMode } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IElement, KeyMap, PageMode } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
@@ -610,6 +610,51 @@ window.onload = function () {
         value: li.innerText.trim(),
       }]
     }])
+  }
+
+  const blockDom = document.querySelector<HTMLDivElement>('.menu-item__block')!
+  blockDom.onclick = function () {
+    console.log('block')
+    new Dialog({
+      title: '内容块',
+      data: [{
+        type: 'number',
+        label: '宽度',
+        name: 'width',
+        placeholder: '请输入宽度'
+      }, {
+        type: 'number',
+        label: '宽度',
+        name: 'height',
+        placeholder: '请输入宽度'
+      }, {
+        type: 'textarea',
+        label: '地址',
+        height: 100,
+        name: 'value',
+        placeholder: '请输入地址'
+      }],
+      onConfirm: (payload) => {
+        const value = payload.find(p => p.name === 'value')?.value
+        if (!value) return
+        const width = payload.find(p => p.name === 'width')?.value
+        if (!width) return
+        const height = payload.find(p => p.name === 'height')?.value
+        if (!height) return
+        instance.command.executeInsertElementList([{
+          type: ElementType.BLOCK,
+          value: '',
+          width: Number(width),
+          height: Number(height),
+          block: {
+            type: BlockType.IFRAME,
+            iframeBlock: {
+              src: value
+            }
+          }
+        }])
+      }
+    })
   }
 
   // 5. | 搜索&替换 | 打印 |

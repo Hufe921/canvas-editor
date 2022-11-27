@@ -463,6 +463,10 @@ ul {
   width: 150px;
 }
 
+.menu-item__block i {
+  background-image: url('./assets/images/block.svg');
+}
+
 .menu-item .menu-item__control .options {
   width: 55px;
 }
