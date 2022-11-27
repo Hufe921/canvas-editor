@@ -1,5 +1,6 @@
 @import './control/select.css';
 @import './date/datePicker.css';
+@import './block/block.css';
 
 .inputarea {
   width: 0;

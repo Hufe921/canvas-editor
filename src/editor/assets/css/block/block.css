@@ -1,0 +1,7 @@
+.block-item {
+  position: absolute;
+  z-index: 0;
+  overflow: hidden;
+  border-radius: 8px;
+  border: 1px solid rgb(235 236 240);
+}

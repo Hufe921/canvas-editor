@@ -5,6 +5,7 @@
   left: 0;
   right: 0;
   position: absolute;
+  z-index: 1;
   color: #606266;
   background: #ffffff;
   border-radius: 4px;
