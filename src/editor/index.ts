@@ -27,6 +27,7 @@ import { INavigateInfo } from './core/draw/interactive/Search'
 import { Shortcut } from './core/shortcut/Shortcut'
 import { KeyMap } from './dataset/enum/KeyMap'
 import { BlockType } from './dataset/enum/Block'
+import { IBlock } from './interface/Block'
 
 export default class Editor {
 
@@ -138,5 +139,6 @@ export type {
   IContextMenuContext,
   IRegisterContextMenu,
   IWatermark,
-  INavigateInfo
+  INavigateInfo,
+  IBlock
 }

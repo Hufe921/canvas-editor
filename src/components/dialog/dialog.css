@@ -64,7 +64,8 @@
 }
 
 .dialog-option__item input,
-.dialog-option__item textarea {
+.dialog-option__item textarea,
+.dialog-option__item select {
   width: 276px;
   height: 30px;
   border-radius: 2px;

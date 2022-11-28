@@ -1,7 +1,7 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IElement, KeyMap, PageMode } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IElement, KeyMap, PageMode } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
@@ -618,6 +618,18 @@ window.onload = function () {
     new Dialog({
       title: '内容块',
       data: [{
+        type: 'select',
+        label: '类型',
+        name: 'type',
+        value: 'iframe',
+        options: [{
+          label: '网址',
+          value: 'iframe'
+        }, {
+          label: '视频',
+          value: 'video'
+        }]
+      }, {
         type: 'number',
         label: '宽度',
         name: 'width',
@@ -635,23 +647,32 @@ window.onload = function () {
         placeholder: '请输入地址'
       }],
       onConfirm: (payload) => {
+        const type = payload.find(p => p.name === 'type')?.value
+        if (!type) return
         const value = payload.find(p => p.name === 'value')?.value
         if (!value) return
         const width = payload.find(p => p.name === 'width')?.value
         if (!width) return
         const height = payload.find(p => p.name === 'height')?.value
         if (!height) return
+        const block: IBlock = {
+          type: <BlockType>type
+        }
+        if (block.type === BlockType.IFRAME) {
+          block.iframeBlock = {
+            src: value
+          }
+        } else if (block.type === BlockType.VIDEO) {
+          block.videoBlock = {
+            src: value
+          }
+        }
         instance.command.executeInsertElementList([{
           type: ElementType.BLOCK,
           value: '',
           width: Number(width),
           height: Number(height),
-          block: {
-            type: BlockType.IFRAME,
-            iframeBlock: {
-              src: value
-            }
-          }
+          block
         }])
       }
     })
