@@ -1,3 +1,4 @@
 export enum BlockType {
-  IFRAME = 'iframe'
+  IFRAME = 'iframe',
+  VIDEO = 'video'
 }

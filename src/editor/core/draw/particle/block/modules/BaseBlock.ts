@@ -3,12 +3,13 @@ import { IRowElement } from '../../../../../interface/Row'
 import { Draw } from '../../../Draw'
 import { BlockParticle } from '../BlockParticle'
 import { IFrameBlock } from './IFrameBlock'
+import { VideoBlock } from './VideoBlock'
 
 export class BaseBlock {
 
   private draw: Draw
   private element: IRowElement
-  private block: IFrameBlock | null
+  private block: IFrameBlock | VideoBlock | null
   private blockContainer: HTMLDivElement
   private blockItem: HTMLDivElement
 
@@ -35,6 +36,9 @@ export class BaseBlock {
     const block = this.element.block!
     if (block.type === BlockType.IFRAME) {
       this.block = new IFrameBlock(this.element)
+      this.block.render(this.blockItem)
+    } else if (block.type === BlockType.VIDEO) {
+      this.block = new VideoBlock(this.element)
       this.block.render(this.blockItem)
     }
   }
