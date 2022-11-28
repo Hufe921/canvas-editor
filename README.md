@@ -14,7 +14,7 @@
 
 ## next features
 
-1. content block
+1. content block (iframe,video,gif etc), see [feature/content-block](https://github.com/Hufe921/canvas-editor/tree/feature/codeblock)
 2. control rules
 3. table paging
 4. docs
