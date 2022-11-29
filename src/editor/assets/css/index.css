@@ -443,6 +443,7 @@
   padding: 16px;
   white-space: nowrap;
   position: absolute;
+  z-index: 1;
   text-align: center;
   display: none;
 }
