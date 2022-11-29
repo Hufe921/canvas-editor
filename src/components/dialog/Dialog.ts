@@ -10,6 +10,7 @@ export interface IDialogData {
   placeholder?: string;
   width?: number;
   height?: number;
+  required?: boolean;
 }
 
 export interface IDialogConfirm {
@@ -84,6 +85,9 @@ export class Dialog {
         const optionName = document.createElement('span')
         optionName.append(document.createTextNode(option.label))
         optionItemContainer.append(optionName)
+        if (option.required) {
+          optionName.classList.add('dialog-option__item--require')
+        }
       }
       // 选项输入框
       let optionInput: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
