@@ -9,10 +9,10 @@ import { ControlComponent, ControlType } from '../dataset/enum/Control'
 
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean;
-  editorOptions?: Required<IEditorOption>;
+  editorOptions: Required<IEditorOption>;
 }
 
-export function formatElementList(elementList: IElement[], options: IFormatElementListOption = {}) {
+export function formatElementList(elementList: IElement[], options: IFormatElementListOption) {
   const { isHandleFirstElement, editorOptions } = <IFormatElementListOption>{
     isHandleFirstElement: true,
     ...options
@@ -239,6 +239,13 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
     }
     if (el.type === ElementType.IMAGE) {
       el.id = getUUID()
+    }
+    if (el.type === ElementType.BLOCK) {
+      el.id = getUUID()
+      if (!el.width) {
+        const { editorOptions: { width, margins } } = options
+        el.width = width - margins[1] - margins[3]
+      }
     }
     if (el.type === ElementType.LATEX) {
       const { svg, width, height } = LaTexParticle.convertLaTextToSVG(el.value)

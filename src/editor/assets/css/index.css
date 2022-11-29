@@ -1,5 +1,6 @@
 @import './control/select.css';
 @import './date/datePicker.css';
+@import './block/block.css';
 
 .inputarea {
   width: 0;
@@ -442,6 +443,7 @@
   padding: 16px;
   white-space: nowrap;
   position: absolute;
+  z-index: 1;
   text-align: center;
   display: none;
 }

@@ -26,6 +26,8 @@ import { DeepRequired } from './interface/Common'
 import { INavigateInfo } from './core/draw/interactive/Search'
 import { Shortcut } from './core/shortcut/Shortcut'
 import { KeyMap } from './dataset/enum/KeyMap'
+import { BlockType } from './dataset/enum/Block'
+import { IBlock } from './interface/Block'
 
 export default class Editor {
 
@@ -125,7 +127,8 @@ export {
   PageMode,
   ImageDisplay,
   Command,
-  KeyMap
+  KeyMap,
+  BlockType
 }
 
 // 对外类型
@@ -136,5 +139,6 @@ export type {
   IContextMenuContext,
   IRegisterContextMenu,
   IWatermark,
-  INavigateInfo
+  INavigateInfo,
+  IBlock
 }
