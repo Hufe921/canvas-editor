@@ -711,7 +711,9 @@ export class Draw {
         metrics.boundingBoxDescent = 0
         metrics.boundingBoxAscent = metrics.height
       } else if (element.type === ElementType.BLOCK) {
-        metrics.width = element.width! * scale
+        metrics.width = element.width
+          ? element.width * scale
+          : this.getInnerWidth()
         metrics.height = element.height! * scale
         metrics.boundingBoxDescent = metrics.height
         metrics.boundingBoxAscent = 0

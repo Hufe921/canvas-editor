@@ -237,15 +237,8 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
     if (el.value === '\n') {
       el.value = ZERO
     }
-    if (el.type === ElementType.IMAGE) {
+    if (el.type === ElementType.IMAGE || el.type === ElementType.BLOCK) {
       el.id = getUUID()
-    }
-    if (el.type === ElementType.BLOCK) {
-      el.id = getUUID()
-      if (!el.width) {
-        const { editorOptions: { width, margins } } = options
-        el.width = width - margins[1] - margins[3]
-      }
     }
     if (el.type === ElementType.LATEX) {
       const { svg, width, height } = LaTexParticle.convertLaTextToSVG(el.value)

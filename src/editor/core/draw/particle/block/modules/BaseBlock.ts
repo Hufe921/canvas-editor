@@ -44,13 +44,13 @@ export class BaseBlock {
   }
 
   public setClientRects(pageNo: number, x: number, y: number) {
-    const scale = this.draw.getOptions().scale
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
     const preY = pageNo * (height + pageGap)
     // 尺寸
-    this.blockItem.style.width = `${this.element.width! * scale}px`
-    this.blockItem.style.height = `${this.element.height! * scale}px`
+    const { metrics } = this.element
+    this.blockItem.style.width = `${metrics.width}px`
+    this.blockItem.style.height = `${metrics.height}px`
     // 位置
     this.blockItem.style.left = `${x}px`
     this.blockItem.style.top = `${preY + y}px`
