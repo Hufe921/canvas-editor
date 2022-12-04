@@ -61,10 +61,12 @@
   margin-right: 12px;
   font-size: 14px;
   color: #3d4757;
+  position: relative;
 }
 
 .dialog-option__item input,
-.dialog-option__item textarea {
+.dialog-option__item textarea,
+.dialog-option__item select {
   width: 276px;
   height: 30px;
   border-radius: 2px;
@@ -81,6 +83,14 @@
 .dialog-option__item input:focus,
 .dialog-option__item textarea:focus {
   border-color: #4991f2;
+}
+
+.dialog-option__item--require::before {
+  content: "*";
+  color: #f56c6c;
+  margin-right: 4px;
+  position: absolute;
+  left: -8px;
 }
 
 .dialog-menu {

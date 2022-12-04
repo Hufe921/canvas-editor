@@ -10,13 +10,14 @@
 
 ## snapshot
 
-![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.9.6.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.9.8.png)
 
 ## next features
 
-1. control rules
-2. table paging
-3. docs
+1. optimize content block
+2. control rules
+3. table paging
+4. docs
 
 ## install
 

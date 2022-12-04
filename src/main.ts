@@ -1,6 +1,6 @@
 import './style.css'
 import prism from 'prismjs'
-import Editor, { Command, ControlType, EditorMode, ElementType, IEditorResult, IElement, PageMode, KeyMap } from './editor'
+import Editor, { Command, ControlType, EditorMode, ElementType, IEditorResult, IElement, PageMode, KeyMap, IBlock, BlockType } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
@@ -323,11 +323,13 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
         type: 'text',
         label: '文本',
         name: 'name',
+        required: true,
         placeholder: '请输入文本'
       }, {
         type: 'text',
         label: '链接',
         name: 'url',
+        required: true,
         placeholder: '请输入链接'
       }],
       onConfirm: (payload) => {
@@ -390,16 +392,19 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
           type: 'text',
           label: '内容',
           name: 'data',
+          required: true,
           placeholder: '请输入内容'
         }, {
           type: 'color',
           label: '颜色',
           name: 'color',
+          required: true,
           value: '#AEB5C0'
         }, {
           type: 'number',
           label: '字体大小',
           name: 'size',
+          required: true,
           value: '120'
         }],
         onConfirm: (payload) => {
@@ -485,6 +490,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
             type: 'text',
             label: '占位符',
             name: 'placeholder',
+            required: true,
             placeholder: '请输入占位符'
           }, {
             type: 'text',
@@ -519,6 +525,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
             type: 'text',
             label: '占位符',
             name: 'placeholder',
+            required: true,
             placeholder: '请输入占位符'
           }, {
             type: 'text',
@@ -529,6 +536,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
             type: 'textarea',
             label: '值集',
             name: 'valueSets',
+            required: true,
             height: 100,
             placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
           }],
@@ -564,6 +572,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
             type: 'textarea',
             label: '值集',
             name: 'valueSets',
+            required: true,
             height: 100,
             placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
           }],
@@ -660,6 +669,77 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
         value: li.innerText.trim(),
       }]
     }])
+  }
+
+  const blockDom = document.querySelector<HTMLDivElement>('.menu-item__block')!
+  blockDom.onclick = function () {
+    console.log('block')
+    new Dialog({
+      title: '内容块',
+      data: [{
+        type: 'select',
+        label: '类型',
+        name: 'type',
+        value: 'iframe',
+        required: true,
+        options: [{
+          label: '网址',
+          value: 'iframe'
+        }, {
+          label: '视频',
+          value: 'video'
+        }]
+      }, {
+        type: 'number',
+        label: '宽度',
+        name: 'width',
+        placeholder: '请输入宽度（默认页面内宽度）'
+      }, {
+        type: 'number',
+        label: '高度',
+        name: 'height',
+        required: true,
+        placeholder: '请输入高度'
+      }, {
+        type: 'textarea',
+        label: '地址',
+        height: 100,
+        name: 'value',
+        required: true,
+        placeholder: '请输入地址'
+      }],
+      onConfirm: (payload) => {
+        const type = payload.find(p => p.name === 'type')?.value
+        if (!type) return
+        const value = payload.find(p => p.name === 'value')?.value
+        if (!value) return
+        const width = payload.find(p => p.name === 'width')?.value
+        const height = payload.find(p => p.name === 'height')?.value
+        if (!height) return
+        const block: IBlock = {
+          type: <BlockType>type
+        }
+        if (block.type === BlockType.IFRAME) {
+          block.iframeBlock = {
+            src: value
+          }
+        } else if (block.type === BlockType.VIDEO) {
+          block.videoBlock = {
+            src: value
+          }
+        }
+        const blockElement: IElement = {
+          type: ElementType.BLOCK,
+          value: '',
+          height: Number(height),
+          block
+        }
+        if (width) {
+          blockElement.width = Number(width)
+        }
+        instance.command.executeInsertElementList([blockElement])
+      }
+    })
   }
 
   // 5. | 搜索&替换 | 打印 |
@@ -782,24 +862,28 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
         type: 'text',
         label: '上边距',
         name: 'top',
+        required: true,
         value: `${topMargin}`,
         placeholder: '请输入上边距'
       }, {
         type: 'text',
         label: '下边距',
         name: 'bottom',
+        required: true,
         value: `${bottomMargin}`,
         placeholder: '请输入下边距'
       }, {
         type: 'text',
         label: '左边距',
         name: 'left',
+        required: true,
         value: `${leftMargin}`,
         placeholder: '请输入左边距'
       }, {
         type: 'text',
         label: '右边距',
         name: 'right',
+        required: true,
         value: `${rightMargin}`,
         placeholder: '请输入右边距'
       }],

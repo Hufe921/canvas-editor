@@ -218,7 +218,13 @@ export class ContextMenu {
     }
     contextMenuContainer.append(contextMenuContent)
     contextMenuContainer.style.display = 'block'
-    contextMenuContainer.style.left = `${left}px`
+    const innerWidth = window.innerWidth
+    const contextMenuWidth = contextMenuContainer.getBoundingClientRect().width
+    // 右侧空间不足时，以菜单右上角作为起始点
+    const adjustLeft = left + contextMenuWidth > innerWidth
+      ? left - contextMenuWidth
+      : left
+    contextMenuContainer.style.left = `${adjustLeft}px`
     contextMenuContainer.style.top = `${top}px`
     this.contextMenuContainerList.push(contextMenuContainer)
     return contextMenuContainer

@@ -46,6 +46,7 @@ import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
+import { BlockParticle } from './particle/block/BlockParticle'
 
 export class Draw {
 
@@ -86,6 +87,7 @@ export class Draw {
   private superscriptParticle: SuperscriptParticle
   private subscriptParticle: SubscriptParticle
   private checkboxParticle: CheckboxParticle
+  private blockParticle: BlockParticle
   private control: Control
   private workerManager: WorkerManager
 
@@ -138,6 +140,7 @@ export class Draw {
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
     this.checkboxParticle = new CheckboxParticle(this)
+    this.blockParticle = new BlockParticle(this)
     this.control = new Control(this)
 
     new ScrollObserver(this)
@@ -707,6 +710,17 @@ export class Draw {
         metrics.height = defaultSize * scale
         metrics.boundingBoxDescent = 0
         metrics.boundingBoxAscent = metrics.height
+      } else if (element.type === ElementType.BLOCK) {
+        const innerWidth = this.getInnerWidth()
+        if (!element.width) {
+          metrics.width = innerWidth
+        } else {
+          const elementWidth = element.width * scale
+          metrics.width = elementWidth > innerWidth ? innerWidth : elementWidth
+        }
+        metrics.height = element.height! * scale
+        metrics.boundingBoxDescent = metrics.height
+        metrics.boundingBoxAscent = 0
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || this.options.defaultSize
@@ -739,6 +753,8 @@ export class Draw {
       const preElement = elementList[i - 1]
       if (
         preElement?.type === ElementType.TABLE
+        || preElement?.type === ElementType.BLOCK
+        || element.type === ElementType.BLOCK
         || preElement?.imgDisplay === ImageDisplay.INLINE
         || element.imgDisplay === ImageDisplay.INLINE
         || curRow.width + metrics.width > innerWidth
@@ -880,6 +896,9 @@ export class Draw {
           // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本
           this.textParticle.record(ctx, element, x, y + offsetY)
           this._drawRichText(ctx)
+        } else if (element.type === ElementType.BLOCK) {
+          this._drawRichText(ctx)
+          this.blockParticle.render(pageNo, element, x, y)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
@@ -972,13 +991,19 @@ export class Draw {
     return { x, y, index }
   }
 
+  private _clearPage(pageNo: number) {
+    const ctx = this.ctxList[pageNo]
+    const pageDom = this.pageList[pageNo]
+    ctx.clearRect(0, 0, pageDom.width, pageDom.height)
+    this.blockParticle.clear()
+  }
+
   private _drawPage(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
     const { pageMode } = this.options
     const margins = this.getMargins()
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
-    const pageDom = this.pageList[pageNo]
-    ctx.clearRect(0, 0, pageDom.width, pageDom.height)
+    this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx)
     // 绘制页边距

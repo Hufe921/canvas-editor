@@ -9,10 +9,10 @@ import { ControlComponent, ControlType } from '../dataset/enum/Control'
 
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean;
-  editorOptions?: Required<IEditorOption>;
+  editorOptions: Required<IEditorOption>;
 }
 
-export function formatElementList(elementList: IElement[], options: IFormatElementListOption = {}) {
+export function formatElementList(elementList: IElement[], options: IFormatElementListOption) {
   const { isHandleFirstElement, editorOptions } = <IFormatElementListOption>{
     isHandleFirstElement: true,
     ...options
@@ -237,7 +237,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
     if (el.value === '\n') {
       el.value = ZERO
     }
-    if (el.type === ElementType.IMAGE) {
+    if (el.type === ElementType.IMAGE || el.type === ElementType.BLOCK) {
       el.id = getUUID()
     }
     if (el.type === ElementType.LATEX) {

@@ -430,7 +430,9 @@ export class CommandAdapt {
       trList
     }
     // 格式化element
-    formatElementList([element])
+    formatElementList([element], {
+      editorOptions: this.options
+    })
     const curIndex = startIndex + 1
     if (startIndex === endIndex) {
       elementList.splice(curIndex, 0, element)

@@ -6,9 +6,11 @@ export interface IDialogData {
   label?: string;
   name: string;
   value?: string;
+  options?: { label: string; value: string; }[];
   placeholder?: string;
   width?: number;
   height?: number;
+  required?: boolean;
 }
 
 export interface IDialogConfirm {
@@ -29,7 +31,7 @@ export class Dialog {
   private options: IDialogOptions
   private mask: HTMLDivElement | null
   private container: HTMLDivElement | null
-  private inputList: (HTMLInputElement | HTMLTextAreaElement)[]
+  private inputList: (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement)[]
 
   constructor(options: IDialogOptions) {
     this.options = options
@@ -83,10 +85,21 @@ export class Dialog {
         const optionName = document.createElement('span')
         optionName.append(document.createTextNode(option.label))
         optionItemContainer.append(optionName)
+        if (option.required) {
+          optionName.classList.add('dialog-option__item--require')
+        }
       }
       // 选项输入框
-      let optionInput: HTMLInputElement | HTMLTextAreaElement
-      if (option.type === 'textarea') {
+      let optionInput: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      if (option.type === 'select') {
+        optionInput = document.createElement('select')
+        option.options?.forEach(item => {
+          const optionItem = document.createElement('option')
+          optionItem.value = item.value
+          optionItem.label = item.label
+          optionInput.append(optionItem)
+        })
+      } else if (option.type === 'textarea') {
         optionInput = document.createElement('textarea')
       } else {
         optionInput = document.createElement('input')
@@ -100,7 +113,9 @@ export class Dialog {
       }
       optionInput.name = option.name
       optionInput.value = option.value || ''
-      optionInput.placeholder = option.placeholder || ''
+      if (!(optionInput instanceof HTMLSelectElement)) {
+        optionInput.placeholder = option.placeholder || ''
+      }
       optionItemContainer.append(optionInput)
       optionContainer.append(optionItemContainer)
       this.inputList.push(optionInput)
