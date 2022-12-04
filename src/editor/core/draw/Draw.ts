@@ -711,9 +711,13 @@ export class Draw {
         metrics.boundingBoxDescent = 0
         metrics.boundingBoxAscent = metrics.height
       } else if (element.type === ElementType.BLOCK) {
-        metrics.width = element.width
-          ? element.width * scale
-          : this.getInnerWidth()
+        const innerWidth = this.getInnerWidth()
+        if (!element.width) {
+          metrics.width = innerWidth
+        } else {
+          const elementWidth = element.width * scale
+          metrics.width = elementWidth > innerWidth ? innerWidth : elementWidth
+        }
         metrics.height = element.height! * scale
         metrics.boundingBoxDescent = metrics.height
         metrics.boundingBoxAscent = 0
@@ -750,6 +754,7 @@ export class Draw {
       if (
         preElement?.type === ElementType.TABLE
         || preElement?.type === ElementType.BLOCK
+        || element.type === ElementType.BLOCK
         || preElement?.imgDisplay === ImageDisplay.INLINE
         || element.imgDisplay === ImageDisplay.INLINE
         || curRow.width + metrics.width > innerWidth
