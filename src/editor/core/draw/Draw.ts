@@ -112,6 +112,7 @@ export class Draw {
     this.elementList = elementList
     this.listener = listener
 
+    this._formatContainer()
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
@@ -511,9 +512,13 @@ export class Draw {
     }
   }
 
-  private _createPageContainer(): HTMLDivElement {
+  private _formatContainer() {
     // 容器宽度需跟随纸张宽度
+    this.container.style.position = 'relative'
     this.container.style.width = `${this.getWidth()}px`
+  }
+
+  private _createPageContainer(): HTMLDivElement {
     const pageContainer = document.createElement('div')
     pageContainer.classList.add('page-container')
     this.container.append(pageContainer)
@@ -526,6 +531,8 @@ export class Draw {
     const canvas = document.createElement('canvas')
     canvas.style.width = `${width}px`
     canvas.style.height = `${height}px`
+    canvas.style.display = 'block'
+    canvas.style.backgroundColor = '#ffffff'
     canvas.style.marginBottom = `${this.getPageGap()}px`
     canvas.setAttribute('data-index', String(pageNo))
     this.pageContainer.append(canvas)

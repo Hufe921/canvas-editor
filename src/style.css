@@ -607,7 +607,6 @@ ul {
 
 .editor {
   margin: 80px auto;
-  position: relative;
 }
 
 .page-container {
@@ -615,8 +614,6 @@ ul {
 }
 
 .page-container canvas {
-  display: block;
-  background-color: #ffffff;
   box-shadow: rgb(158 161 165 / 40%) 0px 2px 12px 0px;
 }
 
