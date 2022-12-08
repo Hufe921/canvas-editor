@@ -1,24 +1,40 @@
-import { defineConfig, UserConfig } from 'vite'
+import { defineConfig } from 'vite'
+import typescript from '@rollup/plugin-typescript'
+import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import * as path from 'path'
 
 export default defineConfig(({ mode }) => {
   const name = 'canvas-editor'
-  const defaultOptions: UserConfig = {
-    base: `/${name}/`
-  }
   if (mode === 'lib') {
     return {
-      ...defaultOptions,
+      plugins: [
+        cssInjectedByJsPlugin(),
+        {
+          ...typescript({
+            tsconfig: './tsconfig.json',
+            include: ['./src/editor/**'],
+          }),
+          apply: 'build',
+          declaration: true,
+          declarationDir: 'types/',
+          rootDir: '/'
+        }
+      ],
       build: {
         lib: {
           name,
-          fileName: (format) => `${name}.${format}.js`,
+          fileName: name,
           entry: path.resolve(__dirname, 'src/editor/index.ts')
+        },
+        rollupOptions: {
+          output: {
+            sourcemap: true
+          }
         }
       }
     }
   }
   return {
-    ...defaultOptions
+    base: `/${name}/`
   }
 })

@@ -35,7 +35,7 @@ import { SubscriptParticle } from './particle/Subscript'
 import { SeparatorParticle } from './particle/Separator'
 import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
-import { EditorMode, PageMode } from '../../dataset/enum/Editor'
+import { EditorComponent, EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
@@ -47,6 +47,7 @@ import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
 import { BlockParticle } from './particle/block/BlockParticle'
+import { EDITOR_COMPONENT } from '../../dataset/constant/Editor'
 
 export class Draw {
 
@@ -516,6 +517,7 @@ export class Draw {
     // 容器宽度需跟随纸张宽度
     this.container.style.position = 'relative'
     this.container.style.width = `${this.getWidth()}px`
+    this.container.setAttribute(EDITOR_COMPONENT, EditorComponent.MAIN)
   }
 
   private _createPageContainer(): HTMLDivElement {
