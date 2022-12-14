@@ -38,6 +38,14 @@ export class GlobalEvent {
 
   public register() {
     this.cursor = this.draw.getCursor()
+    window.addEventListener('blur', (evt) => {
+      this.recoverEffect(evt)
+    })
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState) {
+        this.cursor?.drawCursor()
+      }
+    })
     document.addEventListener('keyup', () => {
       this.setRangeStyle()
     })
@@ -52,7 +60,7 @@ export class GlobalEvent {
     }, { passive: false })
   }
 
-  public recoverEffect(evt: MouseEvent) {
+  public recoverEffect(evt: Event) {
     if (!this.cursor) return
     const cursorDom = this.cursor.getCursorDom()
     const agentDom = this.cursor.getAgentDom()
@@ -73,7 +81,6 @@ export class GlobalEvent {
     }
     this.cursor.recoveryCursor()
     this.range.recoveryRangeStyle()
-    this.range.setRange(-1, -1)
     this.previewer.clearResizer()
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
