@@ -1,3 +1,4 @@
+import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 
 export interface IDatePickerOption {
@@ -60,25 +61,25 @@ export class DatePicker {
 
   private _createDom(): IDatePickerDom {
     const datePickerContainer = document.createElement('div')
-    datePickerContainer.classList.add('date-container')
+    datePickerContainer.classList.add(`${EDITOR_PREFIX}-date-container`)
     // title-切换年月、年月显示
     const dateWrap = document.createElement('div')
-    dateWrap.classList.add('date-wrap')
+    dateWrap.classList.add(`${EDITOR_PREFIX}-date-wrap`)
     const datePickerTitle = document.createElement('div')
-    datePickerTitle.classList.add('date-title')
+    datePickerTitle.classList.add(`${EDITOR_PREFIX}-date-title`)
     const preYearTitle = document.createElement('span')
-    preYearTitle.classList.add('date-title__pre-year')
+    preYearTitle.classList.add(`${EDITOR_PREFIX}-date-title__pre-year`)
     preYearTitle.innerText = `<<`
     const preMonthTitle = document.createElement('span')
-    preMonthTitle.classList.add('date-title__pre-month')
+    preMonthTitle.classList.add(`${EDITOR_PREFIX}-date-title__pre-month`)
     preMonthTitle.innerText = `<`
     const nowTitle = document.createElement('span')
-    nowTitle.classList.add('date-title__now')
+    nowTitle.classList.add(`${EDITOR_PREFIX}-date-title__now`)
     const nextMonthTitle = document.createElement('span')
-    nextMonthTitle.classList.add('date-title__next-month')
+    nextMonthTitle.classList.add(`${EDITOR_PREFIX}-date-title__next-month`)
     nextMonthTitle.innerText = `>`
     const nextYearTitle = document.createElement('span')
-    nextYearTitle.classList.add('date-title__next-year')
+    nextYearTitle.classList.add(`${EDITOR_PREFIX}-date-title__next-year`)
     nextYearTitle.innerText = `>>`
     datePickerTitle.append(preYearTitle)
     datePickerTitle.append(preMonthTitle)
@@ -87,7 +88,7 @@ export class DatePicker {
     datePickerTitle.append(nextYearTitle)
     // week-星期显示
     const datePickerWeek = document.createElement('div')
-    datePickerWeek.classList.add('date-week')
+    datePickerWeek.classList.add(`${EDITOR_PREFIX}-date-week`)
     const weekList = ['日', '一', '二', '三', '四', '五', '六']
     weekList.forEach(week => {
       const weekDom = document.createElement('span')
@@ -96,14 +97,14 @@ export class DatePicker {
     })
     // day-天数显示
     const datePickerDay = document.createElement('div')
-    datePickerDay.classList.add('date-day')
+    datePickerDay.classList.add(`${EDITOR_PREFIX}-date-day`)
     // 日期内容构建
     dateWrap.append(datePickerTitle)
     dateWrap.append(datePickerWeek)
     dateWrap.append(datePickerDay)
     // time-时间选择
     const timeWrap = document.createElement('ul')
-    timeWrap.classList.add('time-wrap')
+    timeWrap.classList.add(`${EDITOR_PREFIX}-time-wrap`)
     let hourTime: HTMLOListElement
     let minuteTime: HTMLOListElement
     let secondTime: HTMLOListElement
@@ -135,15 +136,15 @@ export class DatePicker {
     })
     // menu-选择时间、现在、确定
     const datePickerMenu = document.createElement('div')
-    datePickerMenu.classList.add('date-menu')
+    datePickerMenu.classList.add(`${EDITOR_PREFIX}-date-menu`)
     const timeMenu = document.createElement('button')
-    timeMenu.classList.add('date-menu__time')
+    timeMenu.classList.add(`${EDITOR_PREFIX}-date-menu__time`)
     timeMenu.innerText = '时间选择'
     const nowMenu = document.createElement('button')
-    nowMenu.classList.add('date-menu__now')
+    nowMenu.classList.add(`${EDITOR_PREFIX}-date-menu__now`)
     nowMenu.innerText = '此刻'
     const submitMenu = document.createElement('button')
-    submitMenu.classList.add('date-menu__submit')
+    submitMenu.classList.add(`${EDITOR_PREFIX}-date-menu__submit`)
     submitMenu.innerText = '确定'
     datePickerMenu.append(timeMenu)
     datePickerMenu.append(nowMenu)

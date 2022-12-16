@@ -1,4 +1,5 @@
 import { IElement } from '../../..'
+import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElementPosition } from '../../../interface/Element'
 import { IRowElement } from '../../../interface/Row'
@@ -23,7 +24,7 @@ export class HyperlinkParticle {
 
   private _createHyperlinkPopupDom() {
     const hyperlinkPopupContainer = document.createElement('div')
-    hyperlinkPopupContainer.classList.add('hyperlink-popup')
+    hyperlinkPopupContainer.classList.add(`${EDITOR_PREFIX}-hyperlink-popup`)
     const hyperlinkDom = document.createElement('a')
     hyperlinkDom.target = '_blank'
     hyperlinkPopupContainer.append(hyperlinkDom)

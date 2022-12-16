@@ -1,12 +1,29 @@
 <h1 align="center">canvas-editor</h1>
 
-<p align="center"> a rich text editor by canvas</p>
+<p align="center"> a rich text editor by canvas/svg</p>
 
 ## tips
 
 1. The render layer by svg is under development, see [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)
 2. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
-3. The official NPM package will be available after the release of version 1.0.0
+
+## usage
+
+```bash
+npm i @hufe921/canvas-editor --save
+```
+```html
+<div class="canvas-editor"></div>
+```
+```javascript
+import Editor from "@hufe921/canvas-editor"
+
+new Editor(document.querySelector(".canvas-editor"), [
+    {
+      value: "Hello World"
+    }
+  ])
+```
 
 ## snapshot
 
@@ -14,7 +31,7 @@
 
 ## next features
 
-1. optimize content block
+1. page header and footer
 2. control rules
 3. table paging
 4. docs

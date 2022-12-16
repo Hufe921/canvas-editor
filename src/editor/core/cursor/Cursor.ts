@@ -1,4 +1,5 @@
 import { CURSOR_AGENT_HEIGHT } from '../../dataset/constant/Cursor'
+import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { IEditorOption } from '../../interface/Editor'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -21,7 +22,7 @@ export class Cursor {
     this.options = draw.getOptions()
 
     this.cursorDom = document.createElement('div')
-    this.cursorDom.classList.add('cursor')
+    this.cursorDom.classList.add(`${EDITOR_PREFIX}-cursor`)
     this.container.append(this.cursorDom)
     this.cursorAgent = new CursorAgent(draw, canvasEvent)
   }
@@ -64,13 +65,13 @@ export class Cursor {
     this.cursorDom.style.display = isReadonly ? 'none' : 'block'
     this.cursorDom.style.height = `${cursorHeight}px`
     setTimeout(() => {
-      this.cursorDom.classList.add('cursor--animation')
+      this.cursorDom.classList.add(`${EDITOR_PREFIX}-cursor--animation`)
     }, 200)
   }
 
   public recoveryCursor() {
     this.cursorDom.style.display = 'none'
-    this.cursorDom.classList.remove('cursor--animation')
+    this.cursorDom.classList.remove(`${EDITOR_PREFIX}-cursor--animation`)
   }
 
 }

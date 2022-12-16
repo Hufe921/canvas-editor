@@ -35,7 +35,7 @@ import { SubscriptParticle } from './particle/Subscript'
 import { SeparatorParticle } from './particle/Separator'
 import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
-import { EditorMode, PageMode } from '../../dataset/enum/Editor'
+import { EditorComponent, EditorMode, PageMode } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
@@ -47,6 +47,7 @@ import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
 import { BlockParticle } from './particle/block/BlockParticle'
+import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 
 export class Draw {
 
@@ -62,6 +63,7 @@ export class Draw {
   private listener: Listener
 
   private canvasEvent: CanvasEvent
+  private globalEvent: GlobalEvent
   private cursor: Cursor
   private range: RangeManager
   private margin: Margin
@@ -90,6 +92,8 @@ export class Draw {
   private blockParticle: BlockParticle
   private control: Control
   private workerManager: WorkerManager
+  private scrollObserver: ScrollObserver
+  private selectionObserver: SelectionObserver
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -98,12 +102,12 @@ export class Draw {
   private intersectionPageNo: number
 
   constructor(
-    container: HTMLDivElement,
+    rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
     elementList: IElement[],
     listener: Listener
   ) {
-    this.container = container
+    this.container = this._wrapContainer(rootContainer)
     this.pageList = []
     this.ctxList = []
     this.pageNo = 0
@@ -112,6 +116,7 @@ export class Draw {
     this.elementList = elementList
     this.listener = listener
 
+    this._formatContainer()
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
@@ -143,14 +148,14 @@ export class Draw {
     this.blockParticle = new BlockParticle(this)
     this.control = new Control(this)
 
-    new ScrollObserver(this)
-    new SelectionObserver()
+    this.scrollObserver = new ScrollObserver(this)
+    this.selectionObserver = new SelectionObserver()
 
     this.canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, this.canvasEvent)
     this.canvasEvent.register()
-    const globalEvent = new GlobalEvent(this, this.canvasEvent)
-    globalEvent.register()
+    this.globalEvent = new GlobalEvent(this, this.canvasEvent)
+    this.globalEvent.register()
 
     this.workerManager = new WorkerManager(this)
 
@@ -511,11 +516,22 @@ export class Draw {
     }
   }
 
-  private _createPageContainer(): HTMLDivElement {
+  private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
+    const container = document.createElement('div')
+    rootContainer.append(container)
+    return container
+  }
+
+  private _formatContainer() {
     // 容器宽度需跟随纸张宽度
+    this.container.style.position = 'relative'
     this.container.style.width = `${this.getWidth()}px`
+    this.container.setAttribute(EDITOR_COMPONENT, EditorComponent.MAIN)
+  }
+
+  private _createPageContainer(): HTMLDivElement {
     const pageContainer = document.createElement('div')
-    pageContainer.classList.add('page-container')
+    pageContainer.classList.add(`${EDITOR_PREFIX}-page-container`)
     this.container.append(pageContainer)
     return pageContainer
   }
@@ -526,6 +542,8 @@ export class Draw {
     const canvas = document.createElement('canvas')
     canvas.style.width = `${width}px`
     canvas.style.height = `${height}px`
+    canvas.style.display = 'block'
+    canvas.style.backgroundColor = '#ffffff'
     canvas.style.marginBottom = `${this.getPageGap()}px`
     canvas.setAttribute('data-index', String(pageNo))
     this.pageContainer.append(canvas)
@@ -1160,6 +1178,13 @@ export class Draw {
         this.listener.contentChange()
       }
     })
+  }
+
+  public destroy() {
+    this.container.remove()
+    this.globalEvent.removeEvent()
+    this.scrollObserver.removeEvent()
+    this.selectionObserver.removeEvent()
   }
 
 }

@@ -5,6 +5,7 @@ import { Cursor } from '../cursor/Cursor'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
+import { DateParticle } from '../draw/particle/date/DateParticle'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { RangeManager } from '../range/RangeManager'
@@ -22,6 +23,7 @@ export class GlobalEvent {
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
   private control: Control
+  private dateParticle: DateParticle
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -33,26 +35,34 @@ export class GlobalEvent {
     this.previewer = draw.getPreviewer()
     this.tableTool = draw.getTableTool()
     this.hyperlinkParticle = draw.getHyperlinkParticle()
+    this.dateParticle = draw.getDateParticle()
     this.control = draw.getControl()
   }
 
   public register() {
     this.cursor = this.draw.getCursor()
-    document.addEventListener('keyup', () => {
-      this.setRangeStyle()
-    })
-    document.addEventListener('click', (evt) => {
-      this.recoverEffect(evt)
-    })
-    document.addEventListener('mouseup', () => {
-      this.setDragState()
-    })
-    document.addEventListener('wheel', (evt: WheelEvent) => {
-      this.setPageScale(evt)
-    }, { passive: false })
+    this.addEvent()
   }
 
-  public recoverEffect(evt: MouseEvent) {
+  private addEvent() {
+    window.addEventListener('blur', this.recoverEffect)
+    document.addEventListener('keyup', this.setRangeStyle)
+    document.addEventListener('click', this.recoverEffect)
+    document.addEventListener('mouseup', this.setDragState)
+    document.addEventListener('wheel', this.setPageScale, { passive: false })
+    document.addEventListener('visibilitychange', this._handleVisibilityChange)
+  }
+
+  public removeEvent() {
+    window.removeEventListener('blur', this.recoverEffect)
+    document.removeEventListener('keyup', this.setRangeStyle)
+    document.removeEventListener('click', this.recoverEffect)
+    document.removeEventListener('mouseup', this.setDragState)
+    document.removeEventListener('wheel', this.setPageScale)
+    document.removeEventListener('visibilitychange', this._handleVisibilityChange)
+  }
+
+  public recoverEffect = (evt: Event) => {
     if (!this.cursor) return
     const cursorDom = this.cursor.getCursorDom()
     const agentDom = this.cursor.getAgentDom()
@@ -73,22 +83,22 @@ export class GlobalEvent {
     }
     this.cursor.recoveryCursor()
     this.range.recoveryRangeStyle()
-    this.range.setRange(-1, -1)
     this.previewer.clearResizer()
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
     this.control.destroyControl()
+    this.dateParticle.clearDatePicker()
   }
 
-  public setDragState() {
+  public setDragState = () => {
     this.canvasEvent.setIsAllowDrag(false)
   }
 
-  public setRangeStyle() {
+  public setRangeStyle = () => {
     this.range.setRangeStyle()
   }
 
-  public setPageScale(evt: WheelEvent) {
+  public setPageScale = (evt: WheelEvent) => {
     if (!evt.ctrlKey) return
     evt.preventDefault()
     const { scale } = this.options
@@ -104,6 +114,12 @@ export class GlobalEvent {
       if (nextScale >= 5) {
         this.draw.setPageScale(nextScale / 10)
       }
+    }
+  }
+
+  private _handleVisibilityChange = () => {
+    if (document.visibilityState) {
+      this.cursor?.drawCursor()
     }
   }
 

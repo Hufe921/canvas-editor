@@ -1,3 +1,4 @@
+import { EDITOR_PREFIX } from '../../../../../dataset/constant/Editor'
 import { BlockType } from '../../../../../dataset/enum/Block'
 import { IRowElement } from '../../../../../interface/Row'
 import { Draw } from '../../../Draw'
@@ -28,7 +29,7 @@ export class BaseBlock {
 
   private _createBlockItem(): HTMLDivElement {
     const blockItem = document.createElement('div')
-    blockItem.classList.add('block-item')
+    blockItem.classList.add(`${EDITOR_PREFIX}-block-item`)
     return blockItem
   }
 

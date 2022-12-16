@@ -605,18 +605,12 @@ ul {
   background-image: url('./assets/images/print.svg');
 }
 
-.editor {
+.editor>div {
   margin: 80px auto;
-  position: relative;
 }
 
-.page-container {
-  width: 100%;
-}
 
-.page-container canvas {
-  display: block;
-  background-color: #ffffff;
+.ce-page-container canvas {
   box-shadow: rgb(158 161 165 / 40%) 0px 2px 12px 0px;
 }
 
@@ -764,7 +758,7 @@ ul {
   left: unset;
 }
 
-.contextmenu-signature {
+.ce-contextmenu-signature {
   background-image: url('./assets/images/signature.svg');
 }
 

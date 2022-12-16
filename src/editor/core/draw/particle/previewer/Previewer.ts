@@ -1,3 +1,4 @@
+import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 import { IPreviewerCreateResult, IPreviewerDrawOption } from '../../../../interface/Previewer'
@@ -57,7 +58,7 @@ export class Previewer {
   private _createResizerDom(): IPreviewerCreateResult {
     // 拖拽边框
     const resizerSelection = document.createElement('div')
-    resizerSelection.classList.add('resizer-selection')
+    resizerSelection.classList.add(`${EDITOR_PREFIX}-resizer-selection`)
     resizerSelection.style.display = 'none'
     resizerSelection.style.borderColor = this.options.resizerColor
     const resizerHandleList: HTMLDivElement[] = []
@@ -73,7 +74,7 @@ export class Previewer {
     this.container.append(resizerSelection)
     // 拖拽镜像
     const resizerImageContainer = document.createElement('div')
-    resizerImageContainer.classList.add('resizer-image')
+    resizerImageContainer.classList.add(`${EDITOR_PREFIX}-resizer-image`)
     resizerImageContainer.style.display = 'none'
     const resizerImage = document.createElement('img')
     resizerImageContainer.append(resizerImage)
@@ -175,7 +176,7 @@ export class Previewer {
 
   private _drawPreviewer() {
     const previewerContainer = document.createElement('div')
-    previewerContainer.classList.add('image-previewer')
+    previewerContainer.classList.add(`${EDITOR_PREFIX}-image-previewer`)
     // 关闭按钮
     const closeBtn = document.createElement('i')
     closeBtn.classList.add('image-close')
@@ -185,7 +186,7 @@ export class Previewer {
     previewerContainer.append(closeBtn)
     // 图片
     const imgContainer = document.createElement('div')
-    imgContainer.classList.add('image-container')
+    imgContainer.classList.add(`${EDITOR_PREFIX}-image-container`)
     const img = document.createElement('img')
     img.src = this.curElementSrc
     img.draggable = false
@@ -198,7 +199,7 @@ export class Previewer {
     let scaleSize = 1
     let rotateSize = 0
     const menuContainer = document.createElement('div')
-    menuContainer.classList.add('image-menu')
+    menuContainer.classList.add(`${EDITOR_PREFIX}-image-menu`)
     const zoomIn = document.createElement('i')
     zoomIn.classList.add('zoom-in')
     zoomIn.onclick = () => {

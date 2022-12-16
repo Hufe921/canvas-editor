@@ -29,7 +29,7 @@ describe('基础功能', () => {
   it('模式切换', () => {
     cy.get('@canvas').click()
 
-    cy.get('.cursor').should('have.css', 'display', 'block')
+    cy.get('.ce-cursor').should('have.css', 'display', 'block')
 
     cy.get('.editor-mode').click().click()
 
@@ -37,7 +37,7 @@ describe('基础功能', () => {
 
     cy.get('@canvas').click()
 
-    cy.get('.cursor').should('have.css', 'display', 'none')
+    cy.get('.ce-cursor').should('have.css', 'display', 'none')
   })
 
   it('页面缩放', () => {

@@ -8,10 +8,17 @@
     "sourceMap": true,
     "resolveJsonModule": true,
     "esModuleInterop": true,
+    "declaration": true,
     "noEmit": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "outDir": "dist",
+    "rootDir": "",
   },
-  "include": ["./src"]
+  "include": ["./src/"],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }

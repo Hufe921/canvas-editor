@@ -1,5 +1,36 @@
 {
-  "version": "0.9.8",
+  "name": "@hufe921/canvas-editor",
+  "author": "Hufe",
+  "license": "MIT",
+  "version": "0.9.10",
+  "description": "rich text editor by canvas/svg",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/",
+    "access": "public"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "package.json"
+  ],
+  "typings": "./dist/src/editor/index.d.ts",
+  "main": "./dist/canvas-editor.umd.js",
+  "module": "./dist/canvas-editor.es.js",
+  "homepage": "https://github.com/Hufe921/canvas-editor",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hufe921/canvas-editor.git"
+  },
+  "keywords": [
+    "canvas-editor",
+    "editor",
+    "wysiwyg",
+    "emr"
+  ],
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "scripts": {
     "dev": "vite",
     "lib": "npm run lint && tsc && vite build --mode lib",
@@ -11,6 +42,7 @@
     "type:check": "tsc --noEmit"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^10.0.1",
     "@types/node": "^16.11.12",
     "@types/prismjs": "^1.26.0",
     "@typescript-eslint/eslint-plugin": "4.33.0",
@@ -19,7 +51,8 @@
     "cypress-file-upload": "^5.0.8",
     "eslint": "7.32.0",
     "typescript": "^4.3.2",
-    "vite": "^2.4.2"
+    "vite": "^2.4.2",
+    "vite-plugin-css-injected-by-js": "^2.1.1"
   },
   "dependencies": {
     "axios": "^0.24.0",
