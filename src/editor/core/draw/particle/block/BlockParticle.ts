@@ -1,3 +1,4 @@
+import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { IRowElement } from '../../../../interface/Row'
 import { Draw } from '../../Draw'
@@ -20,7 +21,7 @@ export class BlockParticle {
 
   private _createBlockContainer(): HTMLDivElement {
     const blockContainer = document.createElement('div')
-    blockContainer.classList.add('block-container')
+    blockContainer.classList.add(`${EDITOR_PREFIX}-block-container`)
     return blockContainer
   }
 

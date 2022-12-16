@@ -1,5 +1,5 @@
 import { NAME_PLACEHOLDER } from '../../dataset/constant/ContextMenu'
-import { EDITOR_COMPONENT } from '../../dataset/constant/Editor'
+import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { EditorComponent } from '../../dataset/enum/Editor'
 import { IContextMenuContext, IRegisterContextMenu } from '../../interface/contextmenu/ContextMenu'
 import { findParent } from '../../utils'
@@ -137,7 +137,7 @@ export class ContextMenu {
 
   private _createContextMenuContainer(): HTMLDivElement {
     const contextMenuContainer = document.createElement('div')
-    contextMenuContainer.classList.add('contextmenu-container')
+    contextMenuContainer.classList.add(`${EDITOR_PREFIX}-contextmenu-container`)
     contextMenuContainer.setAttribute(EDITOR_COMPONENT, EditorComponent.CONTEXTMENU)
     this.container.append(contextMenuContainer)
     return contextMenuContainer
@@ -147,7 +147,7 @@ export class ContextMenu {
     const { contextMenuList, left, top, parentMenuContainer } = payload
     const contextMenuContainer = this._createContextMenuContainer()
     const contextMenuContent = document.createElement('div')
-    contextMenuContent.classList.add('contextmenu-content')
+    contextMenuContent.classList.add(`${EDITOR_PREFIX}-contextmenu-content`)
     // 直接子菜单
     let childMenuContainer: HTMLDivElement | null = null
     // 父菜单添加子菜单映射关系
@@ -160,15 +160,15 @@ export class ContextMenu {
         // 首尾分隔符不渲染
         if (c !== 0 && c !== contextMenuList.length - 1) {
           const divider = document.createElement('div')
-          divider.classList.add('contextmenu-divider')
+          divider.classList.add(`${EDITOR_PREFIX}-contextmenu-divider`)
           contextMenuContent.append(divider)
         }
       } else {
         const menuItem = document.createElement('div')
-        menuItem.classList.add('contextmenu-item')
+        menuItem.classList.add(`${EDITOR_PREFIX}-contextmenu-item`)
         // 菜单事件
         if (menu.childMenus) {
-          menuItem.classList.add('contextmenu-sub-item')
+          menuItem.classList.add(`${EDITOR_PREFIX}-contextmenu-sub-item`)
           menuItem.onmouseenter = () => {
             this._setHoverStatus(menuItem, true)
             this._removeSubMenu(contextMenuContainer)
@@ -208,7 +208,7 @@ export class ContextMenu {
         const icon = document.createElement('i')
         menuItem.append(icon)
         if (menu.icon) {
-          icon.classList.add(`contextmenu-${menu.icon}`)
+          icon.classList.add(`${EDITOR_PREFIX}-contextmenu-${menu.icon}`)
         }
         // 文本
         const span = document.createElement('span')
@@ -218,7 +218,7 @@ export class ContextMenu {
         // 快捷方式提示
         if (menu.shortCut) {
           const span = document.createElement('span')
-          span.classList.add('shortcut')
+          span.classList.add(`${EDITOR_PREFIX}-shortcut`)
           span.append(document.createTextNode(menu.shortCut))
           menuItem.append(span)
         }
@@ -250,7 +250,7 @@ export class ContextMenu {
 
   private _setHoverStatus(payload: HTMLDivElement, status: boolean) {
     if (status) {
-      payload.parentNode?.querySelectorAll('.contextmenu-item')
+      payload.parentNode?.querySelectorAll(`${EDITOR_PREFIX}-contextmenu-item`)
         .forEach(child => child.classList.remove('hover'))
       payload.classList.add('hover')
     } else {

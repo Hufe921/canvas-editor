@@ -609,11 +609,8 @@ ul {
   margin: 80px auto;
 }
 
-.page-container {
-  width: 100%;
-}
 
-.page-container canvas {
+.ce-page-container canvas {
   box-shadow: rgb(158 161 165 / 40%) 0px 2px 12px 0px;
 }
 
@@ -761,6 +758,6 @@ ul {
   left: unset;
 }
 
-.contextmenu-signature {
+.ce-contextmenu-signature {
   background-image: url('./assets/images/signature.svg');
 }

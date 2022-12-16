@@ -1,0 +1,51 @@
+.ce-resizer-selection {
+  position: absolute;
+  border: 1px solid;
+}
+
+.ce-resizer-selection>div {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 1px 4px 0 rgb(0 0 0 / 30%);
+  border-radius: 5px;
+  border: 2px solid #ffffff;
+  box-sizing: border-box;
+}
+
+.ce-resizer-selection .handle-0 {
+  cursor: nw-resize;
+}
+
+.ce-resizer-selection .handle-1 {
+  cursor: n-resize;
+}
+
+.ce-resizer-selection .handle-2 {
+  cursor: ne-resize;
+}
+
+.ce-resizer-selection .handle-3 {
+  cursor: e-resize;
+}
+
+.ce-resizer-selection .handle-4 {
+  cursor: se-resize;
+}
+
+.ce-resizer-selection .handle-5 {
+  cursor: s-resize;
+}
+
+.ce-resizer-selection .handle-6 {
+  cursor: sw-resize;
+}
+
+.ce-resizer-selection .handle-7 {
+  cursor: w-resize;
+}
+
+.ce-resizer-image {
+  position: absolute;
+  opacity: 0.5;
+}

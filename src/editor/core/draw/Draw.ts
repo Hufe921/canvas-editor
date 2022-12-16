@@ -47,7 +47,7 @@ import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
 import { BlockParticle } from './particle/block/BlockParticle'
-import { EDITOR_COMPONENT } from '../../dataset/constant/Editor'
+import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 
 export class Draw {
 
@@ -531,7 +531,7 @@ export class Draw {
 
   private _createPageContainer(): HTMLDivElement {
     const pageContainer = document.createElement('div')
-    pageContainer.classList.add('page-container')
+    pageContainer.classList.add(`${EDITOR_PREFIX}-page-container`)
     this.container.append(pageContainer)
     return pageContainer
   }

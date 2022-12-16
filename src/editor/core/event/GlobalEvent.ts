@@ -5,6 +5,7 @@ import { Cursor } from '../cursor/Cursor'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
+import { DateParticle } from '../draw/particle/date/DateParticle'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { RangeManager } from '../range/RangeManager'
@@ -22,6 +23,7 @@ export class GlobalEvent {
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
   private control: Control
+  private dateParticle: DateParticle
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -33,6 +35,7 @@ export class GlobalEvent {
     this.previewer = draw.getPreviewer()
     this.tableTool = draw.getTableTool()
     this.hyperlinkParticle = draw.getHyperlinkParticle()
+    this.dateParticle = draw.getDateParticle()
     this.control = draw.getControl()
   }
 
@@ -81,6 +84,7 @@ export class GlobalEvent {
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
     this.control.destroyControl()
+    this.dateParticle.clearDatePicker()
   }
 
   public setDragState = () => {

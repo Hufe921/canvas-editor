@@ -1,4 +1,4 @@
-import { EDITOR_COMPONENT } from '../../../../dataset/constant/Editor'
+import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
@@ -210,7 +210,7 @@ export class SelectControl implements IControlInstance {
     if (!position) return
     // dom树：<div><ul><li>item</li></ul></div>
     const selectPopupContainer = document.createElement('div')
-    selectPopupContainer.classList.add('select-control-popup')
+    selectPopupContainer.classList.add(`${EDITOR_PREFIX}-select-control-popup`)
     selectPopupContainer.setAttribute(EDITOR_COMPONENT, EditorComponent.POPUP)
     const ul = document.createElement('ul')
     for (let v = 0; v < valueSets.length; v++) {

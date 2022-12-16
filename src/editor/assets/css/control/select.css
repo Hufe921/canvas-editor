@@ -1,4 +1,4 @@
-.select-control-popup {
+.ce-select-control-popup {
   max-width: 160px;
   min-width: 69px;
   max-height: 225px;
@@ -13,14 +13,14 @@
   overflow-y: auto;
 }
 
-.select-control-popup ul {
+.ce-select-control-popup ul {
   list-style: none;
   padding: 3px 0;
   margin: 0;
   box-sizing: border-box;
 }
 
-.select-control-popup ul li {
+.ce-select-control-popup ul li {
   font-size: 13px;
   padding: 0 20px;
   position: relative;
@@ -34,11 +34,11 @@
   cursor: pointer;
 }
 
-.select-control-popup ul li:hover {
+.ce-select-control-popup ul li:hover {
   background-color: #EEF2FD;
 }
 
-.select-control-popup ul li.active {
+.ce-select-control-popup ul li.active {
   color: var(--COLOR-HOVER, #5175f4);
   font-weight: 700;
 }

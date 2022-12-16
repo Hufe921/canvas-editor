@@ -36,7 +36,7 @@ describe('控件-文本型', () => {
 
       cy.get('@canvas').type(`{leftArrow}`)
 
-      cy.get('.inputarea').type(text)
+      cy.get('.ce-inputarea').type(text)
 
       cy.get('@canvas').type('{ctrl}s')
     })

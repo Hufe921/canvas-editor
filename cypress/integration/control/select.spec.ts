@@ -45,7 +45,7 @@ describe('控件-列举型', () => {
 
       cy.get('@canvas').type(`{leftArrow}`)
 
-      cy.get('.select-control-popup li').eq(0).click()
+      cy.get('.ce-select-control-popup li').eq(0).click()
 
       cy.get('@canvas').type('{ctrl}s')
     })

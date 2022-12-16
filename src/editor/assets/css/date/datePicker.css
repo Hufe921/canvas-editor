@@ -1,4 +1,4 @@
-.date-container {
+.ce-date-container {
   display: none;
   width: 300px;
   overflow: hidden;
@@ -15,19 +15,19 @@
   box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
 }
 
-.date-container.active {
+.ce-date-container.active {
   display: block;
 }
 
-.date-wrap {
+.ce-date-wrap {
   display: none;
 }
 
-.date-wrap.active {
+.ce-date-wrap.active {
   display: block;
 }
 
-.date-title {
+.ce-date-title {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -36,40 +36,40 @@
   font-size: 16px;
 }
 
-.date-title>span {
+.ce-date-title>span {
   display: inline-block;
 }
 
-.date-title>span:not(.date-title__now) {
+.ce-date-title>span:not(.ce-date-title__now) {
   font-family: cursive;
   cursor: pointer;
 }
 
-.date-title>span:not(.date-title__now):hover {
+.ce-date-title>span:not(.ce-date-title__now):hover {
   color: #5175F4;
 }
 
-.date-title .date-title__pre-year {
+.ce-date-title .ce-date-title__pre-year {
   width: 15%;
 }
 
-.date-title .date-title__pre-month {
+.ce-date-title .ce-date-title__pre-month {
   width: 15%;
 }
 
-.date-title .date-title__now {
+.ce-date-title .ce-date-title__now {
   width: 40%;
 }
 
-.date-title .date-title__next-year {
+.ce-date-title .ce-date-title__next-year {
   width: 15%;
 }
 
-.date-title .date-title__next-month {
+.ce-date-title .ce-date-title__next-month {
   width: 15%;
 }
 
-.date-week {
+.ce-date-week {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -78,7 +78,7 @@
   border-bottom: 1px solid #e4e7ed;
 }
 
-.date-week>span {
+.ce-date-week>span {
   list-style: none;
   width: calc(100%/7);
   text-align: center;
@@ -86,7 +86,7 @@
   font-size: 14px;
 }
 
-.date-day {
+.ce-date-day {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
@@ -94,7 +94,7 @@
   margin-top: 5px;
 }
 
-.date-day>div {
+.ce-date-day>div {
   width: calc(100%/7);
   height: 40px;
   text-align: center;
@@ -105,85 +105,85 @@
   border-radius: 4px;
 }
 
-.date-day>div:hover {
+.ce-date-day>div:hover {
   color: #5175F4;
   opacity: .8;
 }
 
-.date-day>div.active {
+.ce-date-day>div.active {
   color: #5175F4;
   font-weight: 700;
 }
 
-.date-day>div.disable {
+.ce-date-day>div.disable {
   color: #c0c4cc;
 }
 
-.date-day>div.select {
+.ce-date-day>div.select {
   color: #fff;
   background-color: #5175F4;
 }
 
-.time-wrap {
+.ce-time-wrap {
   display: none;
   padding: 10px;
   height: 286px;
 }
 
-.time-wrap ::-webkit-scrollbar {
+.ce-time-wrap ::-webkit-scrollbar {
   width: 0;
 }
 
-.time-wrap.active {
+.ce-time-wrap.active {
   display: flex;
 }
 
-.time-wrap li {
+.ce-time-wrap li {
   list-style: none;
 }
 
-.time-wrap>li {
+.ce-time-wrap>li {
   width: 33.3%;
   height: 100%;
   text-align: center;
 }
 
-.time-wrap>li>span {
+.ce-time-wrap>li>span {
   transform: translateY(-5px);
   display: inline-block;
 }
 
-.time-wrap>li>ol {
+.ce-time-wrap>li>ol {
   height: calc(100% - 20px);
   overflow-y: auto;
   border: 1px solid #e2e2e2;
   position: relative;
 }
 
-.time-wrap>li:first-child>ol {
+.ce-time-wrap>li:first-child>ol {
   border-right: 0;
 }
 
-.time-wrap>li:last-child>ol {
+.ce-time-wrap>li:last-child>ol {
   border-left: 0;
 }
 
-.time-wrap>li>ol>li {
+.ce-time-wrap>li>ol>li {
   line-height: 30px;
   cursor: pointer;
   transition: all .3s;
 }
 
-.time-wrap>li>ol>li:hover {
+.ce-time-wrap>li>ol>li:hover {
   background-color: #eaeaea;
 }
 
-.time-wrap>li>ol>li.active {
+.ce-time-wrap>li>ol>li.active {
   color: #ffffff;
   background: #5175F4;
 }
 
-.date-menu {
+.ce-date-menu {
   width: 100%;
   height: 28px;
   display: flex;
@@ -194,7 +194,7 @@
   border-top: 1px solid #e4e7ed;
 }
 
-.date-menu button {
+.ce-date-menu button {
   display: inline-block;
   line-height: 1;
   white-space: nowrap;
@@ -216,18 +216,18 @@
   margin-left: 10px;
 }
 
-.date-menu button:hover {
+.ce-date-menu button:hover {
   color: #5175F4;
   border-color: #5175F4;
 }
 
-.date-menu button.date-menu__time {
+.ce-date-menu button.ce-date-menu__time {
   border: 1px solid transparent;
   position: absolute;
   left: 0;
   margin-left: 0;
 }
 
-.date-menu button.date-menu__time:hover {
+.ce-date-menu button.ce-date-menu__time:hover {
   color: #5175F4;
 }
