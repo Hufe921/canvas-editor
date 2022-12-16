@@ -18,10 +18,18 @@ export class Shortcut {
       ...richtextKeys
     ])
     // 全局快捷键
-    document.addEventListener('keydown', this._globalKeydown.bind(this))
+    this._addEvent()
     // 编辑器快捷键
     const agentDom = draw.getCursor().getAgentDom()
     agentDom.addEventListener('keydown', this._agentKeydown.bind(this))
+  }
+
+  private _addEvent() {
+    document.addEventListener('keydown', this._globalKeydown)
+  }
+
+  public removeEvent() {
+    document.removeEventListener('keydown', this._globalKeydown)
   }
 
   private _addShortcutList(payload: IRegisterShortcut[]) {
@@ -39,7 +47,7 @@ export class Shortcut {
     this._addShortcutList(payload)
   }
 
-  private _globalKeydown(evt: KeyboardEvent) {
+  private _globalKeydown = (evt: KeyboardEvent) => {
     if (!this.globalShortcutList.length) return
     this._execute(evt, this.globalShortcutList)
   }

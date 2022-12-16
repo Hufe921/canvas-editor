@@ -63,6 +63,7 @@ export class Draw {
   private listener: Listener
 
   private canvasEvent: CanvasEvent
+  private globalEvent: GlobalEvent
   private cursor: Cursor
   private range: RangeManager
   private margin: Margin
@@ -91,6 +92,8 @@ export class Draw {
   private blockParticle: BlockParticle
   private control: Control
   private workerManager: WorkerManager
+  private scrollObserver: ScrollObserver
+  private selectionObserver: SelectionObserver
 
   private rowList: IRow[]
   private painterStyle: IElementStyle | null
@@ -99,12 +102,12 @@ export class Draw {
   private intersectionPageNo: number
 
   constructor(
-    container: HTMLDivElement,
+    rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
     elementList: IElement[],
     listener: Listener
   ) {
-    this.container = container
+    this.container = this._wrapContainer(rootContainer)
     this.pageList = []
     this.ctxList = []
     this.pageNo = 0
@@ -145,14 +148,14 @@ export class Draw {
     this.blockParticle = new BlockParticle(this)
     this.control = new Control(this)
 
-    new ScrollObserver(this)
-    new SelectionObserver()
+    this.scrollObserver = new ScrollObserver(this)
+    this.selectionObserver = new SelectionObserver()
 
     this.canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, this.canvasEvent)
     this.canvasEvent.register()
-    const globalEvent = new GlobalEvent(this, this.canvasEvent)
-    globalEvent.register()
+    this.globalEvent = new GlobalEvent(this, this.canvasEvent)
+    this.globalEvent.register()
 
     this.workerManager = new WorkerManager(this)
 
@@ -511,6 +514,12 @@ export class Draw {
       watermark: watermark.data ? watermark : undefined,
       data
     }
+  }
+
+  private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
+    const container = document.createElement('div')
+    rootContainer.append(container)
+    return container
   }
 
   private _formatContainer() {
@@ -1169,6 +1178,13 @@ export class Draw {
         this.listener.contentChange()
       }
     })
+  }
+
+  public destroy() {
+    this.container.remove()
+    this.globalEvent.removeEvent()
+    this.scrollObserver.removeEvent()
+    this.selectionObserver.removeEvent()
   }
 
 }

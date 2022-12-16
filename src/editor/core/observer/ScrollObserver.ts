@@ -21,10 +21,18 @@ export class ScrollObserver {
         this._observer()
       }
     })
-    document.addEventListener('scroll', debounce(this._observer.bind(this), 150))
+    this._addEvent()
   }
 
-  private _observer() {
+  private _addEvent() {
+    document.addEventListener('scroll', this._observer)
+  }
+
+  public removeEvent() {
+    document.removeEventListener('scroll', this._observer)
+  }
+
+  private _observer = debounce(() => {
     const rect = this.pageContainer.getBoundingClientRect()
     const top = Math.abs(rect.top)
     const bottom = top + window.innerHeight
@@ -55,6 +63,6 @@ export class ScrollObserver {
     }
     this.draw.setIntersectionPageNo(intersectionPageNo)
     this.draw.setVisiblePageNoList(visiblePageNoList)
-  }
+  }, 150)
 
 }

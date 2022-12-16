@@ -34,6 +34,7 @@ export default class Editor {
   public command: Command
   public listener: Listener
   public register: Register
+  public destroy: Function
 
   constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
     const headerOptions: Required<IHeader> = {
@@ -111,6 +112,12 @@ export default class Editor {
       contextMenu,
       shortcut
     })
+    // 注册销毁方法
+    this.destroy = () => {
+      draw.destroy()
+      shortcut.removeEvent()
+      contextMenu.removeEvent()
+    }
   }
 
 }

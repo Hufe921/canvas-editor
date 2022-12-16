@@ -38,21 +38,24 @@ export class GlobalEvent {
 
   public register() {
     this.cursor = this.draw.getCursor()
-    document.addEventListener('keyup', () => {
-      this.setRangeStyle()
-    })
-    document.addEventListener('click', (evt) => {
-      this.recoverEffect(evt)
-    })
-    document.addEventListener('mouseup', () => {
-      this.setDragState()
-    })
-    document.addEventListener('wheel', (evt: WheelEvent) => {
-      this.setPageScale(evt)
-    }, { passive: false })
+    this.addEvent()
   }
 
-  public recoverEffect(evt: MouseEvent) {
+  private addEvent() {
+    document.addEventListener('keyup', this.setRangeStyle)
+    document.addEventListener('click', this.recoverEffect)
+    document.addEventListener('mouseup', this.setDragState)
+    document.addEventListener('wheel', this.setPageScale, { passive: false })
+  }
+
+  public removeEvent() {
+    document.removeEventListener('keyup', this.setRangeStyle)
+    document.removeEventListener('click', this.recoverEffect)
+    document.removeEventListener('mouseup', this.setDragState)
+    document.removeEventListener('wheel', this.setPageScale)
+  }
+
+  public recoverEffect = (evt: MouseEvent) => {
     if (!this.cursor) return
     const cursorDom = this.cursor.getCursorDom()
     const agentDom = this.cursor.getAgentDom()
@@ -80,15 +83,15 @@ export class GlobalEvent {
     this.control.destroyControl()
   }
 
-  public setDragState() {
+  public setDragState = () => {
     this.canvasEvent.setIsAllowDrag(false)
   }
 
-  public setRangeStyle() {
+  public setRangeStyle = () => {
     this.range.setRangeStyle()
   }
 
-  public setPageScale(evt: WheelEvent) {
+  public setPageScale = (evt: WheelEvent) => {
     if (!evt.ctrlKey) return
     evt.preventDefault()
     const { scale } = this.options

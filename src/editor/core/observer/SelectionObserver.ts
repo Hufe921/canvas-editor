@@ -20,22 +20,31 @@ export class SelectionObserver {
     this.isMoving = false
     this.clientWidth = 0
     this.clientHeight = 0
-
-    document.addEventListener('mousedown', this._mousedown.bind(this))
-    document.addEventListener('mousemove', this._mousemove.bind(this))
-    document.addEventListener('mouseup', this._mouseup.bind(this))
+    this._addEvent()
   }
 
-  private _mousedown() {
+  private _addEvent() {
+    document.addEventListener('mousedown', this._mousedown)
+    document.addEventListener('mousemove', this._mousemove)
+    document.addEventListener('mouseup', this._mouseup)
+  }
+
+  public removeEvent() {
+    document.removeEventListener('mousedown', this._mousedown)
+    document.removeEventListener('mousemove', this._mousemove)
+    document.removeEventListener('mouseup', this._mouseup)
+  }
+
+  private _mousedown = () => {
     this.isMousedown = true
   }
 
-  private _mouseup() {
+  private _mouseup = () => {
     this.isMousedown = false
     this._stopMove()
   }
 
-  private _mousemove(evt: MouseEvent) {
+  private _mousemove = (evt: MouseEvent) => {
     if (!this.isMousedown) return
     const { x, y } = evt
     if (y < this.tippingPoints[0]) {

@@ -49,13 +49,22 @@ export class ContextMenu {
     ]
     this.contextMenuContainerList = []
     this.contextMenuRelationShip = new Map()
-    // 接管菜单权限
-    document.addEventListener('contextmenu', this._proxyContextMenuEvent.bind(this))
-    // 副作用处理
-    document.addEventListener('mousedown', this._handleEffect.bind(this))
+    this._addEvent()
   }
 
-  private _proxyContextMenuEvent(evt: MouseEvent) {
+  private _addEvent() {
+    // 接管菜单权限
+    document.addEventListener('contextmenu', this._proxyContextMenuEvent)
+    // 副作用处理
+    document.addEventListener('mousedown', this._handleEffect)
+  }
+
+  public removeEvent() {
+    document.removeEventListener('contextmenu', this._proxyContextMenuEvent)
+    document.removeEventListener('mousedown', this._handleEffect)
+  }
+
+  private _proxyContextMenuEvent = (evt: MouseEvent) => {
     this.context = this._getContext()
     const renderList: IRegisterContextMenu[] = []
     let isRegisterContextMenu = false
@@ -82,7 +91,7 @@ export class ContextMenu {
     evt.preventDefault()
   }
 
-  private _handleEffect(evt: MouseEvent) {
+  private _handleEffect = (evt: MouseEvent) => {
     if (this.contextMenuContainerList.length) {
       // 点击非右键菜单内
       const contextMenuDom = findParent(

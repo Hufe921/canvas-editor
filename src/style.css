@@ -605,7 +605,7 @@ ul {
   background-image: url('./assets/images/print.svg');
 }
 
-.editor {
+.editor>div {
   margin: 80px auto;
 }
 
