@@ -45,20 +45,24 @@ export class GlobalEvent {
   }
 
   private addEvent() {
+    window.addEventListener('blur', this.recoverEffect)
     document.addEventListener('keyup', this.setRangeStyle)
     document.addEventListener('click', this.recoverEffect)
     document.addEventListener('mouseup', this.setDragState)
     document.addEventListener('wheel', this.setPageScale, { passive: false })
+    document.addEventListener('visibilitychange', this._handleVisibilityChange)
   }
 
   public removeEvent() {
+    window.removeEventListener('blur', this.recoverEffect)
     document.removeEventListener('keyup', this.setRangeStyle)
     document.removeEventListener('click', this.recoverEffect)
     document.removeEventListener('mouseup', this.setDragState)
     document.removeEventListener('wheel', this.setPageScale)
+    document.removeEventListener('visibilitychange', this._handleVisibilityChange)
   }
 
-  public recoverEffect = (evt: MouseEvent) => {
+  public recoverEffect = (evt: Event) => {
     if (!this.cursor) return
     const cursorDom = this.cursor.getCursorDom()
     const agentDom = this.cursor.getAgentDom()
@@ -79,7 +83,6 @@ export class GlobalEvent {
     }
     this.cursor.recoveryCursor()
     this.range.recoveryRangeStyle()
-    this.range.setRange(-1, -1)
     this.previewer.clearResizer()
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
@@ -111,6 +114,12 @@ export class GlobalEvent {
       if (nextScale >= 5) {
         this.draw.setPageScale(nextScale / 10)
       }
+    }
+  }
+
+  private _handleVisibilityChange = () => {
+    if (document.visibilityState) {
+      this.cursor?.drawCursor()
     }
   }
 
