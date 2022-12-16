@@ -31,7 +31,7 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. optimize content block
+1. page header and footer
 2. control rules
 3. table paging
 4. docs
