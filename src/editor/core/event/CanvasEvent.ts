@@ -634,25 +634,43 @@ export class CanvasEvent {
   }
 
   public cut() {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~startIndex) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
     if (isPartRangeInControlOutside) return
     const activeControl = this.control.getActiveControl()
-    const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
-    if (startIndex !== endIndex) {
-      writeElementList(elementList.slice(startIndex + 1, endIndex + 1), this.options)
-      let curIndex: number
-      if (activeControl) {
-        curIndex = this.control.cut()
-      } else {
-        elementList.splice(startIndex + 1, endIndex - startIndex)
-        curIndex = startIndex
+    let start = startIndex
+    let end = endIndex
+    // 无选区则剪切一行
+    if (startIndex === endIndex) {
+      const positionList = this.position.getPositionList()
+      const curRowNo = positionList[startIndex].rowNo
+      const cutElementIndexList: number[] = []
+      for (let p = 0; p < positionList.length; p++) {
+        const position = positionList[p]
+        if (position.rowNo > curRowNo) break
+        if (position.rowNo === curRowNo) {
+          cutElementIndexList.push(p)
+        }
       }
-      this.range.setRange(curIndex, curIndex)
-      this.draw.render({ curIndex })
+      const firstElementIndex = cutElementIndexList[0] - 1
+      start = firstElementIndex < 0 ? 0 : firstElementIndex
+      end = cutElementIndexList[cutElementIndexList.length - 1]
     }
+    // 写入粘贴板
+    writeElementList(elementList.slice(start + 1, end + 1), this.options)
+    let curIndex: number
+    if (activeControl) {
+      curIndex = this.control.cut()
+    } else {
+      elementList.splice(start + 1, end - start)
+      curIndex = start
+    }
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({ curIndex })
   }
 
   public copy() {
