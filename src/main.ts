@@ -1071,8 +1071,14 @@ window.onload = function () {
       key: KeyMap.F,
       ctrl: true,
       isGlobal: true,
-      callback: () => {
+      callback: (command: Command) => {
+        const text = command.getRangeText()
         searchDom.click()
+        if (text) {
+          searchInputDom.value = text
+          instance.command.executeSearch(text)
+          setSearchResult()
+        }
       }
     },
     {
