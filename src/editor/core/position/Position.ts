@@ -193,4 +193,60 @@ export class Position {
     }
   }
 
+  public adjustPositionContext(payload: Pick<IGetPositionByXYPayload, 'x' | 'y'>): ICurrentPosition {
+    const isReadonly = this.draw.isReadonly()
+    const { x, y } = payload
+    const positionResult = this.getPositionByXY({
+      x,
+      y
+    })
+    // 移动控件内光标
+    if (positionResult.isControl && !isReadonly) {
+      const {
+        index,
+        isTable,
+        trIndex,
+        tdIndex,
+        tdValueIndex
+      } = positionResult
+      const control = this.draw.getControl()
+      const { newIndex } = control.moveCursor({
+        index,
+        isTable,
+        trIndex,
+        tdIndex,
+        tdValueIndex
+      })
+      if (isTable) {
+        positionResult.tdValueIndex = newIndex
+      } else {
+        positionResult.index = newIndex
+      }
+    }
+    const {
+      index,
+      isCheckbox,
+      isControl,
+      isTable,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
+    } = positionResult
+    // 设置位置上下文
+    this.setPositionContext({
+      isTable: isTable || false,
+      isCheckbox: isCheckbox || false,
+      isControl: isControl || false,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
+    })
+    return positionResult
+  }
+
 }

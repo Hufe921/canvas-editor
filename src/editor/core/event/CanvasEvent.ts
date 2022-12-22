@@ -18,14 +18,14 @@ import { RangeManager } from '../range/RangeManager'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../dataset/constant/Regular'
 import { Control } from '../draw/control/Control'
 import { CheckboxControl } from '../draw/control/checkbox/CheckboxControl'
-import { splitText, threeClick } from '../../utils'
+import { findParent, splitText, threeClick } from '../../utils'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { DeepRequired } from '../../interface/Common'
 import { DateParticle } from '../draw/particle/date/DateParticle'
 
 export class CanvasEvent {
 
-  private isAllowDrag: boolean
+  private isAllowSelection: boolean
   private isCompositing: boolean
   private mouseDownStartPosition: ICurrentPosition | null
 
@@ -45,7 +45,7 @@ export class CanvasEvent {
   private control: Control
 
   constructor(draw: Draw) {
-    this.isAllowDrag = false
+    this.isAllowSelection = false
     this.isCompositing = false
     this.mouseDownStartPosition = null
 
@@ -72,11 +72,15 @@ export class CanvasEvent {
     this.pageContainer.addEventListener('mouseleave', this.mouseleave.bind(this))
     this.pageContainer.addEventListener('mousemove', this.mousemove.bind(this))
     this.pageContainer.addEventListener('dblclick', this.dblclick.bind(this))
+
+    this.pageContainer.addEventListener('dragover', this.dragover.bind(this))
+    this.pageContainer.addEventListener('drop', this.drop.bind(this))
+
     threeClick(this.pageContainer, this.threeClick.bind(this))
   }
 
-  public setIsAllowDrag(payload: boolean) {
-    this.isAllowDrag = payload
+  public setIsAllowSelection(payload: boolean) {
+    this.isAllowSelection = payload
     if (!payload) {
       this.applyPainterStyle()
     }
@@ -110,7 +114,7 @@ export class CanvasEvent {
   }
 
   public mousemove(evt: MouseEvent) {
-    if (!this.isAllowDrag || !this.mouseDownStartPosition) return
+    if (!this.isAllowSelection || !this.mouseDownStartPosition) return
     const target = evt.target as HTMLDivElement
     const pageIndex = target.dataset.index
     // 设置pageNo
@@ -175,59 +179,19 @@ export class CanvasEvent {
     if (pageIndex) {
       this.draw.setPageNo(Number(pageIndex))
     }
-    this.isAllowDrag = true
-    const positionResult = this.position.getPositionByXY({
+    this.isAllowSelection = true
+    const positionResult = this.position.adjustPositionContext({
       x: evt.offsetX,
       y: evt.offsetY
     })
-    // 激活控件
-    if (positionResult.isControl && !isReadonly) {
-      const {
-        index,
-        isTable,
-        trIndex,
-        tdIndex,
-        tdValueIndex
-      } = positionResult
-      const { newIndex } = this.control.moveCursor({
-        index,
-        isTable,
-        trIndex,
-        tdIndex,
-        tdValueIndex
-      })
-      if (isTable) {
-        positionResult.tdValueIndex = newIndex
-      } else {
-        positionResult.index = newIndex
-      }
-    }
     const {
       index,
       isDirectHit,
       isCheckbox,
-      isControl,
       isImage,
       isTable,
-      trIndex,
-      tdIndex,
       tdValueIndex,
-      tdId,
-      trId,
-      tableId
     } = positionResult
-    // 设置位置上下文
-    this.position.setPositionContext({
-      isTable: isTable || false,
-      isCheckbox: isCheckbox || false,
-      isControl: isControl || false,
-      index,
-      trIndex,
-      tdIndex,
-      tdId,
-      trId,
-      tableId
-    })
     // 记录选区开始位置
     this.mouseDownStartPosition = {
       ...positionResult,
@@ -300,7 +264,7 @@ export class CanvasEvent {
     // 是否还在canvas内部
     const { x, y, width, height } = this.pageContainer.getBoundingClientRect()
     if (evt.x >= x && evt.x <= x + width && evt.y >= y && evt.y <= y + height) return
-    this.setIsAllowDrag(false)
+    this.setIsAllowSelection(false)
   }
 
   public keydown(evt: KeyboardEvent) {
@@ -697,6 +661,45 @@ export class CanvasEvent {
 
   public compositionend() {
     this.isCompositing = false
+  }
+
+  public drop(evt: DragEvent) {
+    evt.preventDefault()
+    const data = evt.dataTransfer?.getData('text')
+    if (data) {
+      this.input(data)
+    }
+  }
+
+  public dragover(evt: DragEvent) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    evt.preventDefault()
+    // 非编辑器区禁止拖放
+    const pageContainer = findParent(
+      evt.target as Element,
+      (node: Element) => node === this.pageContainer,
+      true
+    )
+    if (!pageContainer) return
+    const target = evt.target as HTMLDivElement
+    const pageIndex = target.dataset.index
+    // 设置pageNo
+    if (pageIndex) {
+      this.draw.setPageNo(Number(pageIndex))
+    }
+    const { isTable, tdValueIndex, index } = this.position.adjustPositionContext({
+      x: evt.offsetX,
+      y: evt.offsetY
+    })
+    // 设置选区及光标位置
+    const positionList = this.position.getPositionList()
+    const curIndex = isTable ? tdValueIndex! : index
+    if (~index) {
+      this.range.setRange(curIndex, curIndex)
+      this.position.setCursorPosition(positionList[curIndex])
+    }
+    this.cursor?.drawCursor()
   }
 
 }
