@@ -61,6 +61,18 @@ export class RangeManager {
     return rangeRow
   }
 
+  public getIsPointInRange(x: number, y: number): boolean {
+    const { startIndex, endIndex } = this.range
+    const positionList = this.position.getPositionList()
+    for (let p = startIndex + 1; p <= endIndex; p++) {
+      const { coordinate: { leftTop, rightBottom } } = positionList[p]
+      if (x >= leftTop[0] && x <= rightBottom[0] && y >= leftTop[1] && y <= rightBottom[1]) {
+        return true
+      }
+    }
+    return false
+  }
+
   public setRange(
     startIndex: number,
     endIndex: number,
