@@ -31,10 +31,11 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. page header and footer
-2. control rules
-3. table paging
-4. docs
+1. drag text (optimization)
+2. page header and footer
+3. control rules
+4. table paging
+5. docs
 
 ## install
 
