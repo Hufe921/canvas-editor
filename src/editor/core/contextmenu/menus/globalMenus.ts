@@ -6,7 +6,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     name: '剪切',
     shortCut: 'Ctrl + X',
     when: (payload) => {
-      return !payload.isReadonly && payload.editorHasSelection
+      return !payload.isReadonly
     },
     callback: (command: Command) => {
       command.executeCut()

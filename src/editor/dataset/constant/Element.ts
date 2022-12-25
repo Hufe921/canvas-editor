@@ -1,7 +1,7 @@
 import { ElementType } from '../enum/Element'
 import { IElement } from '../../interface/Element'
 
-export const EDITOR_ELEMENT_STYLE_ATTR = [
+export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
   'bold',
   'color',
   'highlight',

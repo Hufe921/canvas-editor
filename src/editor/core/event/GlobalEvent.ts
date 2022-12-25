@@ -48,7 +48,7 @@ export class GlobalEvent {
     window.addEventListener('blur', this.recoverEffect)
     document.addEventListener('keyup', this.setRangeStyle)
     document.addEventListener('click', this.recoverEffect)
-    document.addEventListener('mouseup', this.setDragState)
+    document.addEventListener('mouseup', this.setCanvasEventAbility)
     document.addEventListener('wheel', this.setPageScale, { passive: false })
     document.addEventListener('visibilitychange', this._handleVisibilityChange)
   }
@@ -57,7 +57,7 @@ export class GlobalEvent {
     window.removeEventListener('blur', this.recoverEffect)
     document.removeEventListener('keyup', this.setRangeStyle)
     document.removeEventListener('click', this.recoverEffect)
-    document.removeEventListener('mouseup', this.setDragState)
+    document.removeEventListener('mouseup', this.setCanvasEventAbility)
     document.removeEventListener('wheel', this.setPageScale)
     document.removeEventListener('visibilitychange', this._handleVisibilityChange)
   }
@@ -90,8 +90,9 @@ export class GlobalEvent {
     this.dateParticle.clearDatePicker()
   }
 
-  public setDragState = () => {
+  public setCanvasEventAbility = () => {
     this.canvasEvent.setIsAllowDrag(false)
+    this.canvasEvent.setIsAllowSelection(false)
   }
 
   public setRangeStyle = () => {
