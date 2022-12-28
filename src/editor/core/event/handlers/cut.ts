@@ -19,12 +19,14 @@ export function cut(host: CanvasEvent) {
   if (startIndex === endIndex) {
     const position = draw.getPosition()
     const positionList = position.getPositionList()
-    const curRowNo = positionList[startIndex].rowNo
+    const startPosition = positionList[startIndex]
+    const curRowNo = startPosition.rowNo
+    const curPageNo = startPosition.pageNo
     const cutElementIndexList: number[] = []
     for (let p = 0; p < positionList.length; p++) {
       const position = positionList[p]
-      if (position.rowNo > curRowNo) break
-      if (position.rowNo === curRowNo) {
+      if (position.pageNo > curPageNo) break
+      if (position.pageNo === curPageNo && position.rowNo === curRowNo) {
         cutElementIndexList.push(p)
       }
     }
