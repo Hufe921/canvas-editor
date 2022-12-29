@@ -21,6 +21,7 @@ export class Margin {
     const margins = this.draw.getMargins()
     const marginIndicatorSize = this.draw.getMarginIndicatorSize()
     ctx.save()
+    ctx.translate(0.5, 0.5)
     ctx.strokeStyle = marginIndicatorColor
     ctx.beginPath()
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
