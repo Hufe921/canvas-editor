@@ -19,7 +19,7 @@ jobs:
     - run: npm i yarn -g
     - run: yarn
     - run: yarn run docs:build
-    - run: mv ./docs/.vitepress/dist canvas-editor-docs
+    - run: mv ./docs/.vitepress/dist ./docs/.vitepress/canvas-editor-docs
     - name: Copy folder content recursively to remote
       uses: garygrossgarten/github-action-scp@release
       with:
