@@ -17,7 +17,8 @@
     "TEXTLIKE",
     "trlist",
     "vite",
-    "Yahei"
+    "Yahei",
+    "vitepress"
   ],
   "cSpell.ignorePaths": [
     ".github",
