@@ -18,7 +18,8 @@
     "trlist",
     "vite",
     "Yahei",
-    "vitepress"
+    "vitepress",
+    "contenteditable"
   ],
   "cSpell.ignorePaths": [
     ".github",

@@ -9,12 +9,27 @@ export function writeClipboardItem(text: string, html: string) {
   if (!text || !html) return
   const plainText = new Blob([text], { type: 'text/plain' })
   const htmlText = new Blob([html], { type: 'text/html' })
-  // @ts-ignore
-  const item = new ClipboardItem({
-    [plainText.type]: plainText,
-    [htmlText.type]: htmlText
-  })
-  window.navigator.clipboard.write([item])
+  if (window.ClipboardItem) {
+    // @ts-ignore
+    const item = new ClipboardItem({
+      [plainText.type]: plainText,
+      [htmlText.type]: htmlText
+    })
+    window.navigator.clipboard.write([item])
+  } else {
+    const fakeElement = document.createElement('div')
+    fakeElement.setAttribute('contenteditable', 'true')
+    fakeElement.innerHTML = html
+    document.body.append(fakeElement)
+    // add new range
+    const selection = window.getSelection()
+    const range = document.createRange()
+    range.selectNodeContents(fakeElement)
+    selection?.removeAllRanges()
+    selection?.addRange(range)
+    document.execCommand('copy')
+    fakeElement.remove()
+  }
 }
 
 export function writeElementList(elementList: IElement[], options: DeepRequired<IEditorOption>) {
