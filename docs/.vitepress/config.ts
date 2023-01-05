@@ -49,6 +49,12 @@ export default defineConfig({
           { text: '内部右键菜单', link: '/guide/contextmenu-internal' },
           { text: '自定义右键菜单', link: '/guide/contextmenu-custom' }
         ]
+      },
+      {
+        text: 'API',
+        items: [
+          { text: '全局API', link: '/guide/api' }
+        ]
       }
     ],
     socialLinks: [{
