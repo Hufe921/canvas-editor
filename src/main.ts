@@ -975,9 +975,10 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
 
     // 富文本
     fontOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
-    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family=${payload.font}]`)
+    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family='${payload.font}']`)
     if (curFontDom) {
       fontSelectDom.innerText = curFontDom.innerText
+      fontSelectDom.style.fontFamily = payload.font
       curFontDom.classList.add('active')
     }
     payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')

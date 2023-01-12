@@ -1,0 +1,31 @@
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'docs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+    - run: npm i yarn -g
+    - run: yarn
+    - run: yarn run docs:build
+    - run: mv ./docs/.vitepress/dist ./docs/.vitepress/canvas-editor-docs
+    - name: Copy folder content recursively to remote
+      uses: garygrossgarten/github-action-scp@release
+      with:
+        local: ./docs/.vitepress/canvas-editor-docs
+        remote: ${{ secrets.DOCS_PATH }}
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        rmRemote: true
