@@ -88,24 +88,30 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Left) {
     if (isReadonly) return
     if (index > 0) {
-      const curIndex = index - 1
-      rangeManager.setRange(curIndex, curIndex)
+      const curIndex = startIndex - 1
+      // shift则向左扩大选区
+      const anchorIndex = evt.shiftKey ? endIndex : curIndex
+      rangeManager.setRange(curIndex, anchorIndex)
       draw.render({
         curIndex,
         isSubmitHistory: false,
         isComputeRowList: false
       })
+      evt.preventDefault()
     }
   } else if (evt.key === KeyMap.Right) {
     if (isReadonly) return
     if (index < positionList.length - 1) {
-      const curIndex = index + 1
-      rangeManager.setRange(curIndex, curIndex)
+      const curIndex = endIndex + 1
+      // shift则向右扩大选区
+      const anchorIndex = evt.shiftKey ? startIndex : curIndex
+      rangeManager.setRange(anchorIndex, curIndex)
       draw.render({
         curIndex,
         isSubmitHistory: false,
         isComputeRowList: false
       })
+      evt.preventDefault()
     }
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     if (isReadonly) return
