@@ -1,7 +1,7 @@
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
-import { IElement } from '../../../interface/Element'
+import { IElement, IElementPosition } from '../../../interface/Element'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
@@ -89,11 +89,30 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     if (isReadonly) return
     if (index > 0) {
       const curIndex = startIndex - 1
-      // shift则向左扩大选区
-      const anchorIndex = evt.shiftKey ? endIndex : curIndex
-      rangeManager.setRange(curIndex, anchorIndex)
+      // shift则缩放选区
+      let anchorStartIndex = curIndex
+      let anchorEndIndex = curIndex
+      const cursorPosition = position.getCursorPosition()
+      if (evt.shiftKey && cursorPosition) {
+        if (startIndex !== endIndex) {
+          if (startIndex === cursorPosition.index) {
+            // 减小选区
+            anchorStartIndex = startIndex
+            anchorEndIndex = endIndex - 1
+          } else {
+            anchorStartIndex = curIndex
+            anchorEndIndex = endIndex
+          }
+        } else {
+          anchorEndIndex = endIndex
+        }
+      }
+      if (!~anchorStartIndex || !~anchorEndIndex) return
+      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
+      const isCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex,
+        curIndex: isCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isCollapsed,
         isSubmitHistory: false,
         isComputeRowList: false
       })
@@ -103,11 +122,31 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     if (isReadonly) return
     if (index < positionList.length - 1) {
       const curIndex = endIndex + 1
-      // shift则向右扩大选区
-      const anchorIndex = evt.shiftKey ? startIndex : curIndex
-      rangeManager.setRange(anchorIndex, curIndex)
+      // shift则缩放选区
+      let anchorStartIndex = curIndex
+      let anchorEndIndex = curIndex
+      const cursorPosition = position.getCursorPosition()
+      if (evt.shiftKey && cursorPosition) {
+        if (startIndex !== endIndex) {
+          if (startIndex === cursorPosition.index) {
+            // 增大选区
+            anchorStartIndex = startIndex
+            anchorEndIndex = curIndex
+          } else {
+            anchorStartIndex = startIndex + 1
+            anchorEndIndex = endIndex
+          }
+        } else {
+          anchorStartIndex = startIndex
+        }
+      }
+      const maxElementListIndex = elementList.length - 1
+      if (anchorStartIndex > maxElementListIndex || anchorEndIndex > maxElementListIndex) return
+      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
+      const isCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex,
+        curIndex: isCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isCollapsed,
         isSubmitHistory: false,
         isComputeRowList: false
       })
@@ -115,12 +154,23 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     if (isReadonly) return
-    const { rowNo, index, coordinate: { leftTop, rightTop } } = cursorPosition
-    if ((evt.key === KeyMap.Up && rowNo !== 0) || (evt.key === KeyMap.Down && rowNo !== draw.getRowCount())) {
+    let anchorPosition: IElementPosition = cursorPosition
+    const isUp = evt.key === KeyMap.Up
+    if (evt.shiftKey) {
+      if (startIndex === cursorPosition.index) {
+        anchorPosition = positionList[endIndex]
+      } else {
+        anchorPosition = positionList[startIndex]
+      }
+    }
+    const { rowNo, index, pageNo, coordinate: { leftTop, rightTop } } = anchorPosition
+    if ((isUp && rowNo !== 0) || (!isUp && rowNo !== draw.getRowCount())) {
       // 下一个光标点所在行位置集合
-      const probablePosition = evt.key === KeyMap.Up
-        ? positionList.slice(0, index).filter(p => p.rowNo === rowNo - 1)
-        : positionList.slice(index, positionList.length - 1).filter(p => p.rowNo === rowNo + 1)
+      const probablePosition = isUp
+        ? positionList.slice(0, index)
+          .filter(p => p.rowNo === rowNo - 1 && pageNo === p.pageNo)
+        : positionList.slice(index, positionList.length - 1)
+          .filter(p => p.rowNo === rowNo + 1 && pageNo === p.pageNo)
       // 查找与当前位置元素点交叉最多的位置
       let maxIndex = 0
       let maxDistance = 0
@@ -132,6 +182,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
           if (curDistance > maxDistance) {
             maxIndex = position.index
             maxDistance = curDistance
+            break
           }
         }
         // 当前光标在后
@@ -140,6 +191,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
           if (curDistance > maxDistance) {
             maxIndex = position.index
             maxDistance = curDistance
+            break
           }
         }
         // 匹配不到
@@ -148,9 +200,32 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         }
       }
       const curIndex = maxIndex
-      rangeManager.setRange(curIndex, curIndex)
+      // shift则缩放选区
+      let anchorStartIndex = curIndex
+      let anchorEndIndex = curIndex
+      if (evt.shiftKey) {
+        if (startIndex !== endIndex) {
+          if (startIndex === cursorPosition.index) {
+            anchorStartIndex = startIndex
+          } else {
+            anchorEndIndex = endIndex
+          }
+        } else {
+          if (isUp) {
+            anchorEndIndex = endIndex
+          } else {
+            anchorStartIndex = startIndex
+          }
+        }
+      }
+      if (anchorStartIndex > anchorEndIndex) {
+        [anchorStartIndex, anchorEndIndex] = [anchorEndIndex, anchorStartIndex]
+      }
+      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
+      const isCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex,
+        curIndex: isCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isCollapsed,
         isSubmitHistory: false,
         isComputeRowList: false
       })
