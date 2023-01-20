@@ -89,11 +89,30 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     if (isReadonly) return
     if (index > 0) {
       const curIndex = startIndex - 1
-      // shift则向左扩大选区
-      const anchorIndex = evt.shiftKey ? endIndex : curIndex
-      rangeManager.setRange(curIndex, anchorIndex)
+      // shift则缩放选区
+      let anchorStartIndex = curIndex
+      let anchorEndIndex = curIndex
+      const cursorPosition = position.getCursorPosition()
+      if (evt.shiftKey && cursorPosition) {
+        if (startIndex !== endIndex) {
+          if (startIndex === cursorPosition.index) {
+            // 减小选区
+            anchorStartIndex = startIndex
+            anchorEndIndex = endIndex - 1
+          } else {
+            anchorStartIndex = curIndex
+            anchorEndIndex = endIndex
+          }
+        } else {
+          anchorEndIndex = endIndex
+        }
+      }
+      if (!~anchorStartIndex || !~anchorEndIndex) return
+      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
+      const isCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex,
+        curIndex: isCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isCollapsed,
         isSubmitHistory: false,
         isComputeRowList: false
       })
@@ -103,11 +122,31 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     if (isReadonly) return
     if (index < positionList.length - 1) {
       const curIndex = endIndex + 1
-      // shift则向右扩大选区
-      const anchorIndex = evt.shiftKey ? startIndex : curIndex
-      rangeManager.setRange(anchorIndex, curIndex)
+      // shift则缩放选区
+      let anchorStartIndex = curIndex
+      let anchorEndIndex = curIndex
+      const cursorPosition = position.getCursorPosition()
+      if (evt.shiftKey && cursorPosition) {
+        if (startIndex !== endIndex) {
+          if (startIndex === cursorPosition.index) {
+            // 增大选区
+            anchorStartIndex = startIndex
+            anchorEndIndex = curIndex
+          } else {
+            anchorStartIndex = startIndex + 1
+            anchorEndIndex = endIndex
+          }
+        } else {
+          anchorStartIndex = startIndex
+        }
+      }
+      const maxElementListIndex = elementList.length - 1
+      if (anchorStartIndex > maxElementListIndex || anchorEndIndex > maxElementListIndex) return
+      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
+      const isCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex,
+        curIndex: isCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isCollapsed,
         isSubmitHistory: false,
         isComputeRowList: false
       })
