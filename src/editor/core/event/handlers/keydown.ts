@@ -1,7 +1,7 @@
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
-import { IElement } from '../../../interface/Element'
+import { IElement, IElementPosition } from '../../../interface/Element'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
@@ -154,12 +154,23 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     if (isReadonly) return
-    const { rowNo, index, coordinate: { leftTop, rightTop } } = cursorPosition
-    if ((evt.key === KeyMap.Up && rowNo !== 0) || (evt.key === KeyMap.Down && rowNo !== draw.getRowCount())) {
+    let anchorPosition: IElementPosition = cursorPosition
+    const isUp = evt.key === KeyMap.Up
+    if (evt.shiftKey) {
+      if (startIndex === cursorPosition.index) {
+        anchorPosition = positionList[endIndex]
+      } else {
+        anchorPosition = positionList[startIndex]
+      }
+    }
+    const { rowNo, index, pageNo, coordinate: { leftTop, rightTop } } = anchorPosition
+    if ((isUp && rowNo !== 0) || (!isUp && rowNo !== draw.getRowCount())) {
       // 下一个光标点所在行位置集合
-      const probablePosition = evt.key === KeyMap.Up
-        ? positionList.slice(0, index).filter(p => p.rowNo === rowNo - 1)
-        : positionList.slice(index, positionList.length - 1).filter(p => p.rowNo === rowNo + 1)
+      const probablePosition = isUp
+        ? positionList.slice(0, index)
+          .filter(p => p.rowNo === rowNo - 1 && pageNo === p.pageNo)
+        : positionList.slice(index, positionList.length - 1)
+          .filter(p => p.rowNo === rowNo + 1 && pageNo === p.pageNo)
       // 查找与当前位置元素点交叉最多的位置
       let maxIndex = 0
       let maxDistance = 0
@@ -171,6 +182,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
           if (curDistance > maxDistance) {
             maxIndex = position.index
             maxDistance = curDistance
+            break
           }
         }
         // 当前光标在后
@@ -179,6 +191,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
           if (curDistance > maxDistance) {
             maxIndex = position.index
             maxDistance = curDistance
+            break
           }
         }
         // 匹配不到
@@ -187,9 +200,32 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         }
       }
       const curIndex = maxIndex
-      rangeManager.setRange(curIndex, curIndex)
+      // shift则缩放选区
+      let anchorStartIndex = curIndex
+      let anchorEndIndex = curIndex
+      if (evt.shiftKey) {
+        if (startIndex !== endIndex) {
+          if (startIndex === cursorPosition.index) {
+            anchorStartIndex = startIndex
+          } else {
+            anchorEndIndex = endIndex
+          }
+        } else {
+          if (isUp) {
+            anchorEndIndex = endIndex
+          } else {
+            anchorStartIndex = startIndex
+          }
+        }
+      }
+      if (anchorStartIndex > anchorEndIndex) {
+        [anchorStartIndex, anchorEndIndex] = [anchorEndIndex, anchorStartIndex]
+      }
+      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
+      const isCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex,
+        curIndex: isCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isCollapsed,
         isSubmitHistory: false,
         isComputeRowList: false
       })
