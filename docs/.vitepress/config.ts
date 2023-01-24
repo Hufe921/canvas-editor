@@ -5,6 +5,11 @@ export default defineConfig({
   title: 'canvas-editor',
   description: 'rich text editor by canvas/svg',
   themeConfig: {
+    algolia: {
+      appId: 'RWSVW6F3S5',
+      apiKey: 'e462fffb4d2e9ab4a78c29e0b457ab33',
+      indexName: 'hufe',
+    },
     logo: '/favicon.png',
     nav: [{
       text: '指南',
