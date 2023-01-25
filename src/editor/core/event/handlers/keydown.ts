@@ -120,7 +120,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
   } else if (evt.key === KeyMap.Right) {
     if (isReadonly) return
-    if (index < positionList.length - 1) {
+    if (index < positionList.length) {
       const curIndex = endIndex + 1
       // shift则缩放选区
       let anchorStartIndex = curIndex
