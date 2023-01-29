@@ -53,14 +53,14 @@ export class ContextMenu {
   }
 
   private _addEvent() {
-    // 接管菜单权限
-    document.addEventListener('contextmenu', this._proxyContextMenuEvent)
+    // 菜单权限
+    this.container.addEventListener('contextmenu', this._proxyContextMenuEvent)
     // 副作用处理
     document.addEventListener('mousedown', this._handleEffect)
   }
 
   public removeEvent() {
-    document.removeEventListener('contextmenu', this._proxyContextMenuEvent)
+    this.container.removeEventListener('contextmenu', this._proxyContextMenuEvent)
     document.removeEventListener('mousedown', this._handleEffect)
   }
 
