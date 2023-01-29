@@ -1,6 +1,7 @@
 import { IEditorOption, IElement, RowFlex } from '..'
 import { ZERO } from '../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { DeepRequired } from '../interface/Common'
 import { zipElementList } from './element'
@@ -72,6 +73,13 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
       } else if (element.type === ElementType.SEPARATOR) {
         const hr = document.createElement('hr')
         clipboardDom.append(hr)
+      } else if (element.type === ElementType.CHECKBOX) {
+        const checkbox = document.createElement('input')
+        checkbox.type = 'checkbox'
+        if (element.checkbox?.value) {
+          checkbox.setAttribute('checked', 'true')
+        }
+        clipboardDom.append(checkbox)
       } else if (
         !element.type
         || element.type === ElementType.LATEX
@@ -157,6 +165,14 @@ export function getElementListByHTML(htmlText: string): IElement[] {
               url: aElement.href
             })
           }
+        } else if (node.nodeName === 'INPUT' && (<HTMLInputElement>node).type === ControlComponent.CHECKBOX) {
+          elementList.push({
+            type: ElementType.CHECKBOX,
+            value: '',
+            checkbox: {
+              value: (<HTMLInputElement>node).checked
+            }
+          })
         } else {
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
