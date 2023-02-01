@@ -170,6 +170,16 @@ export function getElementListByHTML(htmlText: string): IElement[] {
             value: '\n',
             type: ElementType.SEPARATOR,
           })
+        } else if (node.nodeName === 'IMG') {
+          const { src, width, height } = node as HTMLImageElement
+          if (src && width && height) {
+            elementList.push({
+              width,
+              height,
+              value: src,
+              type: ElementType.IMAGE
+            })
+          }
         } else if (node.nodeName === 'INPUT' && (<HTMLInputElement>node).type === ControlComponent.CHECKBOX) {
           elementList.push({
             type: ElementType.CHECKBOX,
