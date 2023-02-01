@@ -165,6 +165,11 @@ export function getElementListByHTML(htmlText: string): IElement[] {
               url: aElement.href
             })
           }
+        } else if (node.nodeName === 'HR') {
+          elementList.push({
+            value: '\n',
+            type: ElementType.SEPARATOR,
+          })
         } else if (node.nodeName === 'INPUT' && (<HTMLInputElement>node).type === ControlComponent.CHECKBOX) {
           elementList.push({
             type: ElementType.CHECKBOX,
