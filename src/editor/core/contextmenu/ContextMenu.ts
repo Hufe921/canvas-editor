@@ -277,6 +277,10 @@ export class ContextMenu {
     this.contextMenuList.push(...payload)
   }
 
+  public getContextMenuList() {
+    return this.contextMenuList
+  }
+
   public dispose() {
     this.contextMenuContainerList.forEach(child => child.remove())
     this.contextMenuContainerList = []

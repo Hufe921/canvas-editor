@@ -12,11 +12,13 @@ export class Register {
 
   public contextMenuList: (payload: IRegisterContextMenu[]) => void
   public shortcutList: (payload: IRegisterShortcut[]) => void
+  public getContextMenuList: () => IRegisterContextMenu[]
 
   constructor(payload: IRegisterPayload) {
     const { contextMenu, shortcut } = payload
     this.contextMenuList = contextMenu.registerContextMenuList.bind(contextMenu)
     this.shortcutList = shortcut.registerShortcutList.bind(shortcut)
+    this.getContextMenuList = contextMenu.getContextMenuList.bind(contextMenu)
   }
 
 }

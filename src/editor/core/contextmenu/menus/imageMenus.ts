@@ -5,6 +5,7 @@ import { Command } from '../../command/Command'
 
 export const imageMenus: IRegisterContextMenu[] = [
   {
+    id: 'replaceImageElement',
     name: '更改图片',
     icon: 'image-change',
     when: (payload) => {
@@ -29,6 +30,7 @@ export const imageMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    id: 'saveAsImageElement',
     name: '另存为图片',
     icon: 'image',
     when: (payload) => {
@@ -39,12 +41,14 @@ export const imageMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    id: 'changeImageDisplay',
     name: '文字环绕',
     when: (payload) => {
       return !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
     },
     childMenus: [
       {
+        id: 'changeImageDisplayBlock',
         name: '嵌入型',
         when: () => true,
         callback: (command: Command, context: IContextMenuContext) => {
@@ -52,6 +56,7 @@ export const imageMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        id: 'changeImageDisplayInline',
         name: '上下型环绕',
         when: () => true,
         callback: (command: Command, context: IContextMenuContext) => {

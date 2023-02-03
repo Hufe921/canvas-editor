@@ -3,6 +3,7 @@ import { Command } from '../../command/Command'
 
 export const globalMenus: IRegisterContextMenu[] = [
   {
+    id: 'cut',
     name: '剪切',
     shortCut: 'Ctrl + X',
     when: (payload) => {
@@ -13,6 +14,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    id: 'copy',
     name: '复制',
     shortCut: 'Ctrl + C',
     when: (payload) => {
@@ -23,6 +25,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    id: 'paste',
     name: '粘贴',
     shortCut: 'Ctrl + V',
     when: (payload) => {
@@ -33,6 +36,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    id: 'selectAll',
     name: '全选',
     shortCut: 'Ctrl + A',
     when: (payload) => {
@@ -46,6 +50,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     isDivider: true
   },
   {
+    id: 'print',
     icon: 'print',
     name: '打印',
     when: () => true,

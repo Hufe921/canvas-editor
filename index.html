@@ -31,23 +31,23 @@
           <span class="select" title="字体">微软雅黑</span>
           <div class="options">
             <ul>
-              <li data-family="Yahei" style="font-family:'Yahei';">微软雅黑</li>
-              <li data-family="宋体" style="font-family:'宋体';">宋体</li>
-              <li data-family="黑体" style="font-family:'黑体';">黑体</li>
-              <li data-family="仿宋" style="font-family:'仿宋';">仿宋</li>
-              <li data-family="楷体" style="font-family:'楷体';">楷体</li>
-              <li data-family="等线" style="font-family:'等线';">等线</li>
-              <li data-family="华文琥珀" style="font-family:'华文琥珀';">华文琥珀</li>
-              <li data-family="华文楷体" style="font-family:'华文楷体';">华文楷体</li>
-              <li data-family="华文隶书" style="font-family:'华文隶书';">华文隶书</li>
-              <li data-family="华文新魏" style="font-family:'华文新魏';">华文新魏</li>
-              <li data-family="华文行楷" style="font-family:'华文行楷';">华文行楷</li>
-              <li data-family="华文中宋" style="font-family:'华文中宋';">华文中宋</li>
-              <li data-family="华文彩云" style="font-family:'华文彩云';">华文彩云</li>
-              <li data-family="Arial" style="font-family:'Arial';">Arial</li>
-              <li data-family="Segoe UI" style="font-family:'Segoe UI';">Segoe UI</li>
-              <li data-family="Ink Free" style="font-family:'Ink Free';">Ink Free</li>
-              <li data-family="Fantasy" style="font-family:'Fantasy';">Fantasy</li>
+              <li class="font-yahei" data-family="Yahei" style="font-family:'Yahei';">微软雅黑</li>
+              <li class="font-times" data-family="宋体" style="font-family:'宋体';">宋体</li>
+              <li class="font-blackbody" data-family="黑体" style="font-family:'黑体';">黑体</li>
+              <li class="font-dinastiasong" data-family="仿宋" style="font-family:'仿宋';">仿宋</li>
+              <li class="font-italico" data-family="楷体" style="font-family:'楷体';">楷体</li>
+              <li class="font-linha" data-family="等线" style="font-family:'等线';">等线</li>
+              <li class="font-ambarchines" data-family="华文琥珀" style="font-family:'华文琥珀';">华文琥珀</li>
+              <li class="font-italicochines" data-family="华文楷体" style="font-family:'华文楷体';">华文楷体</li>
+              <li class="font-escritaoficialchinesa" data-family="华文隶书" style="font-family:'华文隶书';">华文隶书</li>
+              <li class="font-novochineswei" data-family="华文新魏" style="font-family:'华文新魏';">华文新魏</li>
+              <li class="font-escritanormalchinesa" data-family="华文行楷" style="font-family:'华文行楷';">华文行楷</li>
+              <li class="font-chinesemusica" data-family="华文中宋" style="font-family:'华文中宋';">华文中宋</li>
+              <li class="font-nuvenschinesascoloridas" data-family="华文彩云" style="font-family:'华文彩云';">华文彩云</li>
+              <li class="font-arial" data-family="Arial" style="font-family:'Arial';">Arial</li>
+              <li class="font-segoeui" data-family="Segoe UI" style="font-family:'Segoe UI';">Segoe UI</li>
+              <li class="font-inkfree" data-family="Ink Free" style="font-family:'Ink Free';">Ink Free</li>
+              <li class="font-fantasy" data-family="Fantasy" style="font-family:'Fantasy';">Fantasy</li>
             </ul>
           </div>
         </div>
@@ -164,8 +164,8 @@
           <i title="水印(添加、删除)"></i>
           <div class="options">
             <ul>
-              <li data-menu="add">添加水印</li>
-              <li data-menu="delete">删除水印</li>
+              <li class="menu-item__watermark-add" data-menu="add">添加水印</li>
+              <li class="menu-item__watermark-remove" data-menu="delete">删除水印</li>
             </ul>
           </div>
         </div>
@@ -179,9 +179,9 @@
           <i title="控件"></i>
           <div class="options">
             <ul>
-              <li data-control='text'>文本</li>
-              <li data-control="select">列举</li>
-              <li data-control="checkbox">复选框</li>
+              <li class="menu-item__control-text" data-control='text'>文本</li>
+              <li class="menu-item__control-select" data-control="select">列举</li>
+              <li class="menu-item__control-checkbox" data-control="checkbox">复选框</li>
             </ul>
           </div>
         </div>
@@ -229,6 +229,16 @@
         <div class="menu-item__print" data-menu="print" title="打印(Ctrl+P)">
           <i></i>
         </div>
+        <div class="menu-item__language">
+          <i title="语言"></i>
+          <div class="options">
+            <ul>
+              <li class="menu-item__language-ch" data-control='ch'>简体中文</li>
+              <li class="menu-item__language-en" data-control='en'>英语</li>
+              <li class="menu-item__language-pt-br" data-control='pt-br'>葡萄牙语</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
     <div class="editor"></div>
@@ -238,14 +248,14 @@
           <i title="页面模式(分页、连页)"></i>
           <div class="options">
             <ul>
-              <li data-page-mode="paging" class="active">分页</li>
-              <li data-page-mode="continuity">连页</li>
+              <li class="page-mode__paging active" data-page-mode="paging">分页</li>
+              <li class="page-mode__continuity" data-page-mode="continuity">连页</li>
             </ul>
           </div>
         </div>
-        <span>可见页码：<span class="page-no-list">1</span></span>
-        <span>页面：<span class="page-no">1</span>/<span class="page-size">1</span></span>
-        <span>字数：<span class="word-count">0</span></span>
+        <span><span class="item-page-no-list">可见页码</span>：<span class="page-no-list">1</span></span>
+        <span><span class="item-page">页面</span>：<span class="page-no">1</span>/<span class="page-size">1</span></span>
+        <span><span class="item-word-count">字数</span>：<span class="word-count">0</span></span>
       </div>
       <div class="editor-mode" title="编辑模式(编辑、清洁、只读)">编辑模式</div>
       <div>
@@ -260,16 +270,16 @@
           <i title="纸张类型"></i>
           <div class="options">
             <ul>
-              <li data-paper-size="794*1123" class="active">A4</li>
-              <li data-paper-size="1593*2251">A2</li>
-              <li data-paper-size="1125*1593">A3</li>
-              <li data-paper-size="565*796">A5</li>
-              <li data-paper-size="412*488">5号信封</li>
-              <li data-paper-size="450*866">6号信封</li>
-              <li data-paper-size="609*862">7号信封</li>
-              <li data-paper-size="862*1221">9号信封</li>
-              <li data-paper-size="813*1266">法律用纸</li>
-              <li data-paper-size="813*1054">信纸</li>
+              <li class="paper-size__a4 active" data-paper-size="794*1123">A4</li>
+              <li class="paper-size__a2" data-paper-size="1593*2251">A2</li>
+              <li class="paper-size__a3" data-paper-size="1125*1593">A3</li>
+              <li class="paper-size__a5" data-paper-size="565*796">A5</li>
+              <li class="paper-size__envelope5" data-paper-size="412*488">5号信封</li>
+              <li class="paper-size__envelope6" data-paper-size="450*866">6号信封</li>
+              <li class="paper-size__envelope7" data-paper-size="609*862">7号信封</li>
+              <li class="paper-size__envelope9" data-paper-size="862*1221">9号信封</li>
+              <li class="paper-size__legaldocument" data-paper-size="813*1266">法律用纸</li>
+              <li class="paper-size__stationery" data-paper-size="813*1054">信纸</li>
             </ul>
           </div>
         </div>

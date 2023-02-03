@@ -6,6 +6,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     isDivider: true
   },
   {
+    id: 'insertTableRow',
     name: '插入行列',
     icon: 'insert-row-col',
     when: (payload) => {
@@ -13,6 +14,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     },
     childMenus: [
       {
+        id: 'insertTableTopRow',
         name: '上方插入1行',
         icon: 'insert-top-row',
         when: () => true,
@@ -21,6 +23,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        id: 'insertTableBottomRow',
         name: '下方插入1行',
         icon: 'insert-bottom-row',
         when: () => true,
@@ -29,6 +32,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        id: 'insertTableLeftCol',
         name: '左侧插入1列',
         icon: 'insert-left-col',
         when: () => true,
@@ -37,6 +41,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        id: 'insertTableRightCol',
         name: '右侧插入1列',
         icon: 'insert-right-col',
         when: () => true,
@@ -47,6 +52,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     ]
   },
   {
+    id: 'deleteTableRow',
     name: '删除行列',
     icon: 'delete-row-col',
     when: (payload) => {
@@ -54,6 +60,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     },
     childMenus: [
       {
+        id: 'deleteTableOneRow',
         name: '删除1行',
         icon: 'delete-row',
         when: () => true,
@@ -62,6 +69,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        id: 'deleteTableCol',
         name: '删除一列',
         icon: 'delete-col',
         when: () => true,
@@ -70,6 +78,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        id: 'deleteTable',
         name: '删除整个表格',
         icon: 'delete-table',
         when: () => true,
@@ -80,6 +89,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     ]
   },
   {
+    id: 'mergeTableCell',
     name: '合并单元格',
     icon: 'merge-cell',
     when: (payload) => {
@@ -90,6 +100,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    id: 'cancelMergeTableCell',
     name: '取消合并',
     icon: 'merge-cancel-cell',
     when: (payload) => {

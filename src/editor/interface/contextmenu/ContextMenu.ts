@@ -12,6 +12,7 @@ export interface IContextMenuContext {
 }
 
 export interface IRegisterContextMenu {
+  id?: string;
   isDivider?: boolean;
   icon?: string;
   name?: string;

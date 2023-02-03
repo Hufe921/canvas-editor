@@ -5,12 +5,22 @@ import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBloc
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
+import { Translate } from './components/translate/translate'
+
+let instance: Editor
+let translate: Translate
+const defaultLang = 'ch'
 
 window.onload = function () {
+  translate = new Translate(defaultLang, instance)
+  init()
+  translate.updateTranslateContextMenus(instance)
+}
 
+async function init() {
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
-  const instance = new Editor(container, <IElement[]>data, options)
+  instance = new Editor(container, <IElement[]>data, options)
   console.log('实例: ', instance)
   // cypress使用
   Reflect.set(window, 'editor', instance)
@@ -53,7 +63,16 @@ window.onload = function () {
   const fontOptionDom = fontDom.querySelector<HTMLDivElement>('.options')!
   fontDom.onclick = function () {
     console.log('font')
+    const bodyRect = document.body.getBoundingClientRect()
     fontOptionDom.classList.toggle('visible')
+    const fontDomRect = fontDom.getBoundingClientRect()
+    if (fontDomRect.left + fontDomRect.width > bodyRect.width) {
+      fontOptionDom.style.right = (fontDomRect.right - fontDomRect.width) + 'px'
+      fontOptionDom.style.left = 'unset'
+    } else {
+      fontOptionDom.style.right = 'unset'
+      fontOptionDom.style.left = (fontDomRect.x) + 'px'
+    }
   }
   fontOptionDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
@@ -157,6 +176,15 @@ window.onload = function () {
   rowMarginDom.onclick = function () {
     console.log('row-margin')
     rowOptionDom.classList.toggle('visible')
+    const bodyRect = document.body.getBoundingClientRect()
+    const rowMarginDomRect = rowMarginDom.getBoundingClientRect()
+    if (rowMarginDomRect.left + rowMarginDomRect.width > bodyRect.width) {
+      rowOptionDom.style.right = (rowMarginDomRect.right - rowMarginDomRect.width) + 'px'
+      rowOptionDom.style.left = 'unset'
+    } else {
+      rowOptionDom.style.right = 'unset'
+      rowOptionDom.style.left = (rowMarginDomRect.x) + 'px'
+    }
   }
   rowOptionDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
@@ -267,20 +295,25 @@ window.onload = function () {
   const hyperlinkDom = document.querySelector<HTMLDivElement>('.menu-item__hyperlink')!
   hyperlinkDom.onclick = function () {
     console.log('hyperlink')
+    const { inputs, buttonCancel, buttonConfirm } = translate.options.translateDialogHyperlink
+    const titleDialog = translate.options.translateDialogHyperlink.title
+    const [input1, input2] = inputs
     new Dialog({
-      title: '超链接',
+      title: titleDialog,
+      labelCancel: buttonCancel,
+      labelConfirm: buttonConfirm,
       data: [{
         type: 'text',
-        label: '文本',
+        label: input1 ? input1.label : '文本',
         name: 'name',
         required: true,
-        placeholder: '请输入文本'
+        placeholder: input1 ? input1.placeholder : '请输入文本'
       }, {
         type: 'text',
-        label: '链接',
+        label: input2 ? input2.label : '链接',
         name: 'url',
         required: true,
-        placeholder: '请输入链接'
+        placeholder: input2 ? input2.placeholder : '请输入链接'
       }],
       onConfirm: (payload) => {
         const name = payload.find(p => p.name === 'name')?.value
@@ -305,6 +338,15 @@ window.onload = function () {
   separatorDom.onclick = function () {
     console.log('separator')
     separatorOptionDom.classList.toggle('visible')
+    const bodyRect = document.body.getBoundingClientRect()
+    const separatorDomRect = separatorDom.getBoundingClientRect()
+    if (separatorDomRect.left + separatorDomRect.width > bodyRect.width) {
+      separatorOptionDom.style.right = (separatorDomRect.right - separatorDomRect.width) + 'px'
+      separatorOptionDom.style.left = 'unset'
+    } else {
+      separatorOptionDom.style.right = 'unset'
+      separatorOptionDom.style.left = (separatorDomRect.x) + 'px'
+    }
   }
   separatorOptionDom.onmousedown = function (evt) {
     let payload: number[] = []
@@ -330,29 +372,44 @@ window.onload = function () {
   watermarkDom.onclick = function () {
     console.log('watermark')
     watermarkOptionDom.classList.toggle('visible')
+    const bodyRect = document.body.getBoundingClientRect()
+    const watermarkDomRect = watermarkDom.getBoundingClientRect()
+    if (watermarkDomRect.left + watermarkDomRect.width > bodyRect.width) {
+      watermarkOptionDom.style.right = (watermarkDomRect.right - watermarkDomRect.width) + 'px'
+      watermarkOptionDom.style.left = 'unset'
+    } else {
+      watermarkOptionDom.style.right = 'unset'
+      watermarkOptionDom.style.left = (watermarkDomRect.x) + 'px'
+    }
   }
   watermarkOptionDom.onmousedown = function (evt) {
     const li = evt.target as HTMLLIElement
     const menu = li.dataset.menu!
     watermarkOptionDom.classList.toggle('visible')
     if (menu === 'add') {
+      const { inputs, buttonCancel, buttonConfirm } = translate.options.translateWatermarkOption
+      const { title = '水印' } = translate.options.translateWatermarkOption
+      const [input1, input2, input3] = inputs
+
       new Dialog({
-        title: '水印',
+        title: title,
+        labelCancel: buttonCancel,
+        labelConfirm: buttonConfirm,
         data: [{
           type: 'text',
-          label: '内容',
+          label: input1 ? input1.label : '内容',
           name: 'data',
           required: true,
-          placeholder: '请输入内容'
+          placeholder: input1 ? input1.placeholder : '请输入内容'
         }, {
           type: 'color',
-          label: '颜色',
+          label: input2 ? input2.label : '颜色',
           name: 'color',
           required: true,
           value: '#AEB5C0'
         }, {
           type: 'number',
-          label: '字体大小',
+          label: input3 ? input3.label : '字体大小',
           name: 'size',
           required: true,
           value: '120'
@@ -379,12 +436,17 @@ window.onload = function () {
   const codeblockDom = document.querySelector<HTMLDivElement>('.menu-item__codeblock')!
   codeblockDom.onclick = function () {
     console.log('codeblock')
+    const { inputs, buttonCancel, buttonConfirm } = translate.options.translateCodeblock
+    const { title = '代码块' } = translate.options.translateCodeblock
+    const [input1] = inputs
     new Dialog({
-      title: '代码块',
+      title: title,
+      labelCancel: buttonCancel,
+      labelConfirm: buttonConfirm,
       data: [{
         type: 'textarea',
         name: 'codeblock',
-        placeholder: '请输入代码',
+        placeholder: input1 ? input1.placeholder : '请输入代码',
         width: 500,
         height: 300
       }],
@@ -427,26 +489,40 @@ window.onload = function () {
   controlDom.onclick = function () {
     console.log('control')
     controlOptionDom.classList.toggle('visible')
+    const bodyRect = document.body.getBoundingClientRect()
+    const controlDomRect = controlDom.getBoundingClientRect()
+    if (controlDomRect.left + controlDomRect.width > bodyRect.width) {
+      controlOptionDom.style.right = (controlDomRect.right - controlDomRect.width) + 'px'
+      controlOptionDom.style.left = 'unset'
+    } else {
+      controlOptionDom.style.right = 'unset'
+      controlOptionDom.style.left = (controlDomRect.x) + 'px'
+    }
   }
   controlOptionDom.onmousedown = function (evt) {
     controlOptionDom.classList.toggle('visible')
     const li = evt.target as HTMLLIElement
     const type = <ControlType>li.dataset.control
     switch (type) {
-      case ControlType.TEXT:
+      case ControlType.TEXT: {
+        const { inputs, buttonCancel, buttonConfirm } = translate.options.translateControlOptionText
+        const { title = '文本控件' } = translate.options.translateControlOptionText
+        const [input1, input2] = inputs
         new Dialog({
-          title: '文本控件',
+          title: title,
+          labelCancel: buttonCancel,
+          labelConfirm: buttonConfirm,
           data: [{
             type: 'text',
-            label: '占位符',
+            label: input1 ? input1.label : '占位符',
             name: 'placeholder',
             required: true,
-            placeholder: '请输入占位符'
+            placeholder: input1 ? input1.placeholder : '请输入占位符'
           }, {
             type: 'text',
-            label: '默认值',
+            label: input2 ? input2.label : '默认值',
             name: 'value',
-            placeholder: '请输入默认值'
+            placeholder: input2 ? input2.placeholder : '请输入默认值'
           }],
           onConfirm: (payload) => {
             const placeholder = payload.find(p => p.name === 'placeholder')?.value
@@ -468,27 +544,33 @@ window.onload = function () {
           }
         })
         break
-      case ControlType.SELECT:
+      }
+      case ControlType.SELECT: {
+        const { inputs, buttonCancel, buttonConfirm } = translate.options.translateControlOptionSelect
+        const { title = '列举控件' } = translate.options.translateControlOptionSelect
+        const [input1, input2, input3] = inputs
         new Dialog({
-          title: '列举控件',
+          title: title,
+          labelCancel: buttonCancel,
+          labelConfirm: buttonConfirm,
           data: [{
             type: 'text',
-            label: '占位符',
+            label: input1 ? input1.label : '占位符',
             name: 'placeholder',
             required: true,
-            placeholder: '请输入占位符'
+            placeholder: input1 ? input1.placeholder : '请输入占位符'
           }, {
             type: 'text',
-            label: '默认值',
+            label: input2 ? input2.label : '默认值',
             name: 'code',
-            placeholder: '请输入默认值'
+            placeholder: input2 ? input2.placeholder : '请输入默认值'
           }, {
             type: 'textarea',
-            label: '值集',
+            label: input3 ? input3.label : '值集',
             name: 'valueSets',
             required: true,
             height: 100,
-            placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            placeholder: input3 ? input3.placeholder : `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
           }],
           onConfirm: (payload) => {
             const placeholder = payload.find(p => p.name === 'placeholder')?.value
@@ -510,21 +592,27 @@ window.onload = function () {
           }
         })
         break
-      case ControlType.CHECKBOX:
+      }
+      case ControlType.CHECKBOX: {
+        const { inputs, buttonCancel, buttonConfirm } = translate.options.translateControlOptionCheckbox
+        const { title = '复选框控件' } = translate.options.translateControlOptionCheckbox
+        const [input1, input2] = inputs
         new Dialog({
-          title: '复选框控件',
+          title: title,
+          labelCancel: buttonCancel,
+          labelConfirm: buttonConfirm,
           data: [{
             type: 'text',
-            label: '默认值',
+            label: input1 ? input1.label : '默认值',
             name: 'code',
-            placeholder: '请输入默认值，多个值以英文逗号分割'
+            placeholder: input1 ? input1.placeholder : '请输入默认值，多个值以英文逗号分割'
           }, {
             type: 'textarea',
-            label: '值集',
+            label: input2 ? input2.label : '值集',
             name: 'valueSets',
             required: true,
             height: 100,
-            placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            placeholder: input2 ? input2.placeholder : `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
           }],
           onConfirm: (payload) => {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
@@ -543,6 +631,7 @@ window.onload = function () {
           }
         })
         break
+      }
       default:
         break
     }
@@ -560,13 +649,18 @@ window.onload = function () {
   const latexDom = document.querySelector<HTMLDivElement>('.menu-item__latex')!
   latexDom.onclick = function () {
     console.log('LaTeX')
+    const { inputs, buttonCancel, buttonConfirm } = translate.options.translateLatex
+    const { title = 'LaTeX' } = translate.options.translateLatex
+    const [input1] = inputs
     new Dialog({
-      title: 'LaTeX',
+      title: title,
+      labelCancel: buttonCancel,
+      labelConfirm: buttonConfirm,
       data: [{
         type: 'textarea',
         height: 100,
         name: 'value',
-        placeholder: '请输入LaTeX文本'
+        placeholder: input1 ? input1.placeholder : '请输入LaTeX文本'
       }],
       onConfirm: (payload) => {
         const value = payload.find(p => p.name === 'value')?.value
@@ -586,13 +680,13 @@ window.onload = function () {
     dateDomOptionDom.classList.toggle('visible')
     // 定位调整
     const bodyRect = document.body.getBoundingClientRect()
-    const dateDomOptionRect = dateDomOptionDom.getBoundingClientRect()
-    if (dateDomOptionRect.left + dateDomOptionRect.width > bodyRect.width) {
-      dateDomOptionDom.style.right = '0px'
+    const dateDomRect = dateDom.getBoundingClientRect()
+    if (dateDomRect.left + dateDomRect.width > bodyRect.width) {
+      dateDomOptionDom.style.right = (dateDomRect.x - dateDomRect.width) + 'px'
       dateDomOptionDom.style.left = 'unset'
     } else {
       dateDomOptionDom.style.right = 'unset'
-      dateDomOptionDom.style.left = '0px'
+      dateDomOptionDom.style.left = (dateDomRect.x) + 'px'
     }
     // 当前日期
     const date = new Date()
@@ -624,39 +718,45 @@ window.onload = function () {
   const blockDom = document.querySelector<HTMLDivElement>('.menu-item__block')!
   blockDom.onclick = function () {
     console.log('block')
+    const { inputs, buttonCancel, buttonConfirm } = translate.options.translateBlock
+    const { title = '内容块' } = translate.options.translateBlock
+    const [input1, input2, input3, input4] = inputs
+    const [option1, option2] = input1.options
     new Dialog({
-      title: '内容块',
+      title: title,
+      labelCancel: buttonCancel,
+      labelConfirm: buttonConfirm,
       data: [{
         type: 'select',
-        label: '类型',
+        label: input1 ? input1.label : '类型',
         name: 'type',
         value: 'iframe',
         required: true,
         options: [{
-          label: '网址',
+          label: option1 ? option1.label : '网址',
           value: 'iframe'
         }, {
-          label: '视频',
+          label: option2 ? option2.label : '视频',
           value: 'video'
         }]
       }, {
         type: 'number',
-        label: '宽度',
+        label: input2 ? input2.label : '宽度',
         name: 'width',
-        placeholder: '请输入宽度（默认页面内宽度）'
+        placeholder: input2 ? input2.placeholder : '请输入宽度（默认页面内宽度）'
       }, {
         type: 'number',
-        label: '高度',
+        label: input3 ? input3.label : '高度',
         name: 'height',
         required: true,
-        placeholder: '请输入高度'
+        placeholder: input3 ? input3.placeholder : '请输入高度'
       }, {
         type: 'textarea',
-        label: '地址',
+        label: input4 ? input4.label : '地址',
         height: 100,
         name: 'value',
         required: true,
-        placeholder: '请输入地址'
+        placeholder: input4 ? input4.placeholder : '请输入地址'
       }],
       onConfirm: (payload) => {
         const type = payload.find(p => p.name === 'type')?.value
@@ -712,12 +812,12 @@ window.onload = function () {
     searchCollapseDom.style.display = 'block'
     const bodyRect = document.body.getBoundingClientRect()
     const searchRect = searchDom.getBoundingClientRect()
-    const searchCollapseRect = searchCollapseDom.getBoundingClientRect()
-    if (searchRect.left + searchCollapseRect.width > bodyRect.width) {
-      searchCollapseDom.style.right = '0px'
+    if (searchRect.left + searchRect.width > bodyRect.width) {
+      searchCollapseDom.style.right = '5px'
       searchCollapseDom.style.left = 'unset'
     } else {
       searchCollapseDom.style.right = 'unset'
+      searchCollapseDom.style.left = searchRect.x + 'px'
     }
     searchInputDom.focus()
   }
@@ -806,36 +906,41 @@ window.onload = function () {
   const paperMarginDom = document.querySelector<HTMLDivElement>('.paper-margin')!
   paperMarginDom.onclick = function () {
     const [topMargin, rightMargin, bottomMargin, leftMargin] = instance.command.getPaperMargin()
+    const { inputs, buttonCancel, buttonConfirm } = translate.options.translateTopMargin
+    const { title = '页边距' } = translate.options.translateTopMargin
+    const [input1, input2, input3, input4] = inputs
     new Dialog({
-      title: '页边距',
+      title: title,
+      labelCancel: buttonCancel,
+      labelConfirm: buttonConfirm,
       data: [{
         type: 'text',
-        label: '上边距',
+        label: input1 ? input1.label : '上边距',
         name: 'top',
         required: true,
         value: `${topMargin}`,
-        placeholder: '请输入上边距'
+        placeholder: input1 ? input1.placeholder : '请输入上边距'
       }, {
         type: 'text',
-        label: '下边距',
+        label: input2 ? input2.label : '下边距',
         name: 'bottom',
         required: true,
         value: `${bottomMargin}`,
-        placeholder: '请输入下边距'
+        placeholder: input2 ? input2.placeholder : '请输入下边距'
       }, {
         type: 'text',
-        label: '左边距',
+        label: input3 ? input3.label : '左边距',
         name: 'left',
         required: true,
         value: `${leftMargin}`,
-        placeholder: '请输入左边距'
+        placeholder: input3 ? input3.placeholder : '请输入左边距'
       }, {
         type: 'text',
-        label: '右边距',
+        label: input4 ? input4.label : '右边距',
         name: 'right',
         required: true,
         value: `${rightMargin}`,
-        placeholder: '请输入右边距'
+        placeholder: input4 ? input4.placeholder : '请输入右边距'
       }],
       onConfirm: (payload) => {
         const top = payload.find(p => p.name === 'top')?.value
@@ -879,22 +984,12 @@ window.onload = function () {
 
   // 7. 编辑器使用模式
   let modeIndex = 0
-  const modeList = [{
-    mode: EditorMode.EDIT,
-    name: '编辑模式'
-  }, {
-    mode: EditorMode.CLEAN,
-    name: '清洁模式'
-  }, {
-    mode: EditorMode.READONLY,
-    name: '只读模式'
-  }]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
   modeElement.onclick = function () {
     // 模式选择循环
     modeIndex === 2 ? modeIndex = 0 : modeIndex++
     // 设置模式
-    const { name, mode } = modeList[modeIndex]
+    const { name, mode } = translate.options.modeList[modeIndex]
     modeElement.innerText = name
     instance.command.executeMode(mode)
     // 设置菜单栏权限视觉反馈
@@ -1035,13 +1130,15 @@ window.onload = function () {
   // 9. 右键菜单注册
   instance.register.contextMenuList([
     {
-      name: '签名',
+      id: 'signature',
+      name: translate.options.translateContextMenuSignature.title,
       icon: 'signature',
       when: (payload) => {
         return !payload.isReadonly && payload.editorTextFocus
       },
       callback: (command: Command) => {
         new Signature({
+          labels: translate.options.dialogLabelsSignature,
           onConfirm(payload) {
             if (!payload) return
             const { value, width, height } = payload
@@ -1108,4 +1205,30 @@ window.onload = function () {
     }
   ])
 
+
+  const languageDom = document.querySelector<HTMLDivElement>('.menu-item__language')!
+  const languageDomOptionDom = languageDom.querySelector<HTMLDivElement>('.options')!
+  languageDom.onclick = function () {
+    console.log('language')
+    languageDomOptionDom.classList.toggle('visible')
+    // 定位调整
+    const bodyRect = document.body.getBoundingClientRect()
+    const languageDomRect = languageDom.getBoundingClientRect()
+    const languageDomOptionRect = languageDomOptionDom.getBoundingClientRect()
+    if (languageDomRect.x + languageDomOptionRect.width > bodyRect.width) {
+      languageDomOptionDom.style.right = '0px'
+      languageDomOptionDom.style.left = 'unset'
+    } else {
+      languageDomOptionDom.style.right = 'unset'
+      languageDomOptionDom.style.left = (languageDomRect.x) + 'px'
+    }
+  }
+  languageDomOptionDom.onmousedown = function (evt) {
+    const li = evt.target as HTMLLIElement
+    languageDomOptionDom.classList.toggle('visible')
+    const selectedLang = li.getAttribute('data-control')
+    if (selectedLang) {
+      translate.setTranslation(selectedLang, instance)
+    }
+  }
 }

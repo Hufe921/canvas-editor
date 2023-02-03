@@ -1,0 +1,912 @@
+[
+  {
+    "key": ".menu-item__undo",
+    "values": {
+      "text": "",
+      "title": "Undo(Ctrl+Z)"
+    }
+  },
+  {
+    "key": ".menu-item__redo",
+    "values": {
+      "text": "",
+      "title": "Redo(Ctrl+Y)"
+    }
+  },
+  {
+    "key": ".menu-item__painter",
+    "values": {
+      "text": "",
+      "title": "Format Painter (double-click for continuous use)"
+    }
+  },
+  {
+    "key": ".menu-item__format",
+    "values": {
+      "text": "",
+      "title": "Clear format"
+    }
+  },
+  {
+    "key": ".select",
+    "values": {
+      "text": "Yahei",
+      "title": "Font"
+    }
+  },
+  {
+    "key": ".menu-item__font .font-yahei",
+    "values": {
+      "text": "Yahei",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-times",
+    "values": {
+      "text": "Times New Roman",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-blackbody",
+    "values": {
+      "text": "Black body",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-dinastiasong",
+    "values": {
+      "text": "Imitation of the Song Dynasty",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-italico",
+    "values": {
+      "text": "Italic",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-linha",
+    "values": {
+      "text": "Line",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-ambarchines",
+    "values": {
+      "text": "Chinese amber",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-italicochines",
+    "values": {
+      "text": "Chinese italic",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-escritaoficialchinesa",
+    "values": {
+      "text": "Chinese official script",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-novochineswei",
+    "values": {
+      "text": "New Chinese Wei",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-escritanormalchinesa",
+    "values": {
+      "text": "Chinese standard writing",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-chinesemusica",
+    "values": {
+      "text": "Chinese and music",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-nuvenschinesascoloridas",
+    "values": {
+      "text": "Colorful chinese clouds",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-arial",
+    "values": {
+      "text": "Arial",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-segoeui",
+    "values": {
+      "text": "Segoe UI",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-inkfree",
+    "values": {
+      "text": "Ink Free",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__font .font-fantasy",
+    "values": {
+      "text": "Fantasy",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__size-add",
+    "values": {
+      "text": "",
+      "title": "Increase font size(Ctrl+[)"
+    }
+  },
+  {
+    "key": ".menu-item__size-minus",
+    "values": {
+      "text": "",
+      "title": "Reduce font size(Ctrl+])"
+    }
+  },
+  {
+    "key": ".menu-item__bold",
+    "values": {
+      "text": "",
+      "title": "Bold(Ctrl+B)"
+    }
+  },
+  {
+    "key": ".menu-item__italic",
+    "values": {
+      "text": "",
+      "title": "Italic(Ctrl+I)"
+    }
+  },
+  {
+    "key": ".menu-item__underline",
+    "values": {
+      "text": "",
+      "title": "Underline(Ctrl+U)"
+    }
+  },
+  {
+    "key": ".menu-item__strikeout",
+    "values": {
+      "text": "",
+      "title": "Strikethrough(Ctrl+Shift+X)"
+    }
+  },
+  {
+    "key": ".menu-item__superscript",
+    "values": {
+      "text": "",
+      "title": "Superscript(Ctrl+Shift+.)"
+    }
+  },
+  {
+    "key": ".menu-item__subscript",
+    "values": {
+      "text": "",
+      "title": "Subscript(Ctrl+Shift+,)"
+    }
+  },
+  {
+    "key": ".menu-item__color",
+    "values": {
+      "text": "",
+      "title": "Font color"
+    }
+  },
+  {
+    "key": ".menu-item__highlight",
+    "values": {
+      "text": "",
+      "title": "Highlight"
+    }
+  },
+  {
+    "key": ".menu-item__left",
+    "values": {
+      "text": "",
+      "title": "Align left(Ctrl+L)"
+    }
+  },
+  {
+    "key": ".menu-item__center",
+    "values": {
+      "text": "",
+      "title": "Align center(Ctrl+E)"
+    }
+  },
+  {
+    "key": ".menu-item__right",
+    "values": {
+      "text": "",
+      "title": "Align Right(Ctrl+R)"
+    }
+  },
+  {
+    "key": ".menu-item__alignment",
+    "values": {
+      "text": "",
+      "title": "Justify(Ctrl+J)"
+    }
+  },
+  {
+    "key": ".menu-item__row-margin i",
+    "values": {
+      "text": "",
+      "title": "Line spacing"
+    }
+  },
+  {
+    "key": ".menu-item__table i",
+    "values": {
+      "text": "",
+      "title": "Table"
+    }
+  },
+  {
+    "key": ".table-select",
+    "values": {
+      "text": "Insert",
+      "title": ""
+    }
+  },
+  {
+    "key": ".table-title span:last-child",
+    "values": {
+      "text": "Table",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__image",
+    "values": {
+      "text": "",
+      "title": "Image"
+    }
+  },
+  {
+    "key": ".menu-item__hyperlink i",
+    "values": {
+      "text": "",
+      "title": "Hiperlinks"
+    }
+  },
+  {
+    "key": ".menu-item__separator i",
+    "values": {
+      "text": "",
+      "title": "Dividing line"
+    }
+  },
+  {
+    "key": ".menu-item__watermark i",
+    "values": {
+      "text": "",
+      "title": "Watermark (add, delete)"
+    }
+  },
+  {
+    "key": ".menu-item__watermark-add",
+    "values": {
+      "text": "Add a Watermark",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__watermark-remove",
+    "values": {
+      "text": "Remove watermark",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__codeblock",
+    "values": {
+      "text": "",
+      "title": "Code block"
+    }
+  },
+  {
+    "key": ".menu-item__page-break",
+    "values": {
+      "text": "",
+      "title": "Page breaks"
+    }
+  },
+  {
+    "key": ".menu-item__control i",
+    "values": {
+      "text": "",
+      "title": "Control"
+    }
+  },
+  {
+    "key": ".menu-item__control-text",
+    "values": {
+      "text": "Text",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__control-select",
+    "values": {
+      "text": "Select",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__control-checkbox",
+    "values": {
+      "text": "Checkbox",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__checkbox",
+    "values": {
+      "text": "",
+      "title": "Checkbox"
+    }
+  },
+  {
+    "key": ".menu-item__latex",
+    "values": {
+      "text": "",
+      "title": "LateX"
+    }
+  },
+  {
+    "key": ".menu-item__date i",
+    "values": {
+      "text": "",
+      "title": "Date"
+    }
+  },
+  {
+    "key": ".menu-item__block",
+    "values": {
+      "text": "",
+      "title": "Content block"
+    }
+  },
+  {
+    "key": ".menu-item__search",
+    "values": {
+      "text": "",
+      "title": "Search and Replace(Ctrl+F)"
+    }
+  },
+  {
+    "key": ".menu-item__search__collapse__replace button",
+    "values": {
+      "text": "Replace",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__print",
+    "values": {
+      "text": "",
+      "title": "Print(Ctrl+P)"
+    }
+  },
+  {
+    "key": ".page-mode i",
+    "values": {
+      "text": "",
+      "title": "Page mode (page break, continuous page)"
+    }
+  },
+  {
+    "key": ".page-mode__paging",
+    "values": {
+      "text": "Pagination",
+      "title": ""
+    }
+  },
+  {
+    "key": ".page-mode__continuity",
+    "values": {
+      "text": "Linked pages",
+      "title": ""
+    }
+  },
+  {
+    "key": ".item-page-no-list",
+    "values": {
+      "text": "Visible page number",
+      "title": ""
+    }
+  },
+  {
+    "key": ".item-page",
+    "values": {
+      "text": "Page",
+      "title": ""
+    }
+  },
+  {
+    "key": ".item-word-count",
+    "values": {
+      "text": "Word count",
+      "title": ""
+    }
+  },
+  {
+    "key": ".editor-mode",
+    "values": {
+      "text": "Edit mode",
+      "title": "Edit mode(edit, clear, read-only)"
+    }
+  },
+  {
+    "key": ".page-scale-minus",
+    "values": {
+      "text": "",
+      "title": "Zoom Out(Ctrl+-)"
+    }
+  },
+  {
+    "key": ".page-scale-percentage",
+    "values": {
+      "text": "",
+      "title": "Display rate (click to reset Ctrl+0)"
+    }
+  },
+  {
+    "key": ".page-scale-add",
+    "values": {
+      "text": "",
+      "title": "Zoom in (Ctrl+=)"
+    }
+  },
+  {
+    "key": ".paper-size i",
+    "values": {
+      "text": "",
+      "title": "Paper type"
+    }
+  },
+  {
+    "key": ".paper-size__a4",
+    "values": {
+      "text": "A4",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__a2",
+    "values": {
+      "text": "A2",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__a3",
+    "values": {
+      "text": "A3",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__a5",
+    "values": {
+      "text": "A5",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__envelope5",
+    "values": {
+      "text": "Envelope 5",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__envelope6",
+    "values": {
+      "text": "Envelope 6",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__envelope7",
+    "values": {
+      "text": "Envelope 7",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__envelope9",
+    "values": {
+      "text": "Envelope 9",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__legaldocument",
+    "values": {
+      "text": "Legal document",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-size__stationery",
+    "values": {
+      "text": "Stationary store",
+      "title": ""
+    }
+  },
+  {
+    "key": ".paper-margin",
+    "values": {
+      "text": "",
+      "title": "Margins"
+    }
+  },
+  {
+    "key": ".fullscreen",
+    "values": {
+      "text": "",
+      "title": "Full screen display"
+    }
+  },
+  {
+    "key": ".menu-item__language i",
+    "values": {
+      "text": "",
+      "title": "Language"
+    }
+  },
+  {
+    "key": ".menu-item__language-ch",
+    "values": {
+      "text": "Simplified Chinese",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__language-en",
+    "values": {
+      "text": "English",
+      "title": ""
+    }
+  },
+  {
+    "key": ".menu-item__language-pt-br",
+    "values": {
+      "text": "Portuguese",
+      "title": ""
+    }
+  },
+  {
+    "dialog-hiperlink": {
+      "title": "Hiperlinks",
+      "inputs": [
+        {
+          "label": "Text",
+          "placeholder": "Please enter the text"
+        },
+        {
+          "label": "Link",
+          "placeholder": "Please enter the link"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-watermark": {
+      "title": "Water mark",
+      "inputs": [
+        {
+          "label": "Contents",
+          "placeholder": "Insert the content"
+        },
+        {
+          "label": "Color"
+        },
+        {
+          "label": "Font size"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-codeblock": {
+      "title": "Code block",
+      "inputs": [
+        {
+          "placeholder": "Please enter the code"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-controloptiontext": {
+      "title": "Text control",
+      "inputs": [
+        {
+          "label": "Placeholder",
+          "placeholder": "Insert a placeholder"
+        },
+        {
+          "label": "Default",
+          "placeholder": "Enter a default value"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-controloptionselect": {
+      "title": "Checklist",
+      "inputs": [
+        {
+          "label": "Placeholder",
+          "placeholder": "Insert a placeholder"
+        },
+        {
+          "label": "Default",
+          "placeholder": "Enter a default value"
+        },
+        {
+          "label": "Set value",
+          "placeholder": "Enter a set of JSON values，example：\n[{\n\"value\":\"has\",\n\"code\":\"98175\"\n}]"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-controloptioncheckbox": {
+      "title": "Check box control",
+      "inputs": [
+        {
+          "label": "Default",
+          "placeholder": "Enter default value, multiple values separated by commas"
+        },
+        {
+          "label": "Set of values",
+          "placeholder": "Enter a set of JSON values，example：\n[{\n\"value\":\"has\",\n\"code\":\"98175\"\n}]"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-latex": {
+      "title": "LaTeX",
+      "inputs": [
+        {
+          "placeholder": "Please enter LaTeX text"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-block": {
+      "title": "Content block",
+      "inputs": [
+        {
+          "label": "Types of",
+          "options": [
+            {
+              "label": "Url"
+            },
+            {
+              "label": "Video"
+            }
+          ]
+        },
+        {
+          "label": "Width",
+          "placeholder": "Enter width (the default page width)"
+        },
+        {
+          "label": "Height",
+          "placeholder": "Please enter the height"
+        },
+        {
+          "label": "Address",
+          "placeholder": "Please enter the address"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "dialog-topmargin": {
+      "title": "Margins",
+      "inputs": [
+        {
+          "label": "Top margin",
+          "placeholder": "Enter the top margin"
+        },
+        {
+          "label": "Bottom margin",
+          "placeholder": "Insert the bottom margin"
+        },
+        {
+          "label": "Left margin",
+          "placeholder": "Insert left margin"
+        },
+        {
+          "label": "Right bank",
+          "placeholder": "Insert right margin"
+        }
+      ],
+      "buttonCancel": "Cancel",
+      "buttonConfirm": "Confirm"
+    }
+  },
+  {
+    "mode-edit": "Edit mode"
+  },
+  {
+    "mode-clean": "Clean mode"
+  },
+  {
+    "mode-readonly": "Read only mode"
+  },
+  {
+    "contextmenu": [
+      {
+        "id": "cut",
+        "name": "Cut"
+      },
+      {
+        "id": "copy",
+        "name": "Copiy"
+      },
+      {
+        "id": "paste",
+        "name": "Paste"
+      },
+      {
+        "id": "selectAll",
+        "name": "Select all"
+      },
+      {
+        "id": "print",
+        "name": "Print"
+      },
+      {
+        "id": "insertTableRow",
+        "name": "Insert row",
+        "childMenus": [
+          {
+            "id": "insertTableTopRow",
+            "name": "Insert 1 row above"
+          },
+          {
+            "id": "insertTableBottomRow",
+            "name": "Insert 1 line below"
+          },
+          {
+            "id": "insertTableLeftCol",
+            "name": "Insert 1 column to the left"
+          },
+          {
+            "id": "insertTableRightCol",
+            "name": "Insert 1 column to the right"
+          }
+        ]
+      },
+      {
+        "id": "deleteTableRow",
+        "name": "Delete line",
+        "childMenus": [
+          {
+            "id": "deleteTableOneRow",
+            "name": "Delete 1 line"
+          },
+          {
+            "id": "deleteTableCol",
+            "name": "Delete 1 column"
+          },
+          {
+            "id": "deleteTable",
+            "name": "Delete the entire table"
+          }
+        ]
+      },
+      {
+        "id": "mergeTableCell",
+        "name": "Merge Cells"
+      },
+      {
+        "id": "cancelMergeTableCell",
+        "name": "Unmerge"
+      },
+      {
+        "id": "replaceImageElement",
+        "name": "Change image"
+      },
+      {
+        "id": "saveAsImageElement",
+        "name": "Save as image"
+      },
+      {
+        "id": "changeImageDisplay",
+        "name": "Text wrapping",
+        "childMenus": [
+          {
+            "id": "changeImageDisplayBlock",
+            "name": "Embedded"
+          },
+          {
+            "id": "changeImageDisplayInline",
+            "name": "Up and down around"
+          }
+        ]
+      },
+      {
+        "id": "removeControl",
+        "name": "Delete control"
+      },
+      {
+        "id": "deleteHyperlink",
+        "name": "Delete link"
+      },
+      {
+        "id": "cancelHyperlink",
+        "name": "Unlink"
+      },
+      {
+        "id": "editHyperlink",
+        "name": "Edit link"
+      },
+      {
+        "id": "signature",
+        "name": "Signature"
+      }
+    ]
+  },
+  {
+    "contextmenu-signature": {
+      "id": "signature",
+      "title": "Signature",
+      "dialog-labels": {
+        "title": "Insert signature",
+        "undo": "Undo",
+        "trash": "Clear",
+        "cancel-button": "Cancel",
+        "confirm-button": "Confirm"
+      }
+    }
+  }
+]

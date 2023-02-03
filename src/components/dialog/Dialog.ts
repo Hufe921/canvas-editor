@@ -24,6 +24,8 @@ export interface IDialogOptions {
   onConfirm?: (payload: IDialogConfirm[]) => void;
   title: string;
   data: IDialogData[];
+  labelCancel?: string;
+  labelConfirm?: string;
 }
 
 export class Dialog {
@@ -42,7 +44,7 @@ export class Dialog {
   }
 
   private _render() {
-    const { title, data, onClose, onCancel, onConfirm } = this.options
+    const { title, data, labelCancel, labelConfirm, onClose, onCancel, onConfirm } = this.options
     // 渲染遮罩层
     const mask = document.createElement('div')
     mask.classList.add('dialog-mask')
@@ -127,7 +129,8 @@ export class Dialog {
     // 取消按钮
     const cancelBtn = document.createElement('button')
     cancelBtn.classList.add('dialog-menu__cancel')
-    cancelBtn.append(document.createTextNode('取消'))
+    const labelButtonCancel = document.createTextNode(labelCancel ? labelCancel : '取消')
+    cancelBtn.append(labelButtonCancel)
     cancelBtn.type = 'default'
     cancelBtn.onclick = () => {
       if (onCancel) {
@@ -138,7 +141,8 @@ export class Dialog {
     menuContainer.append(cancelBtn)
     // 确认按钮
     const confirmBtn = document.createElement('button')
-    confirmBtn.append(document.createTextNode('确定'))
+    const labelButtonConfirm = document.createTextNode(labelConfirm ? labelConfirm : '确定')
+    confirmBtn.append(labelButtonConfirm)
     confirmBtn.type = 'primary'
     confirmBtn.onclick = () => {
       if (onConfirm) {

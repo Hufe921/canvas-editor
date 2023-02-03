@@ -8,6 +8,13 @@ export interface ISignatureResult {
 }
 
 export interface ISignatureOptions {
+  labels?: {
+    title?: string;
+    undo?: string;
+    trash?: string;
+    'cancel-button'?: string;
+    'confirm-button'?: string;
+  };
   width?: number;
   height?: number;
   onClose?: () => void;
@@ -50,7 +57,7 @@ export class Signature {
   }
 
   private _render() {
-    const { onClose, onCancel, onConfirm } = this.options
+    const { onClose, onCancel, onConfirm, labels } = this.options
     // 渲染遮罩层
     const mask = document.createElement('div')
     mask.classList.add('signature-mask')
@@ -69,7 +76,9 @@ export class Signature {
     titleContainer.classList.add('signature-title')
     // 标题&关闭按钮
     const titleSpan = document.createElement('span')
-    titleSpan.append(document.createTextNode('插入签名'))
+    const title = (labels && labels.title) ? labels.title : '插入签名'
+    const textTitle = document.createTextNode(title)
+    titleSpan.append(textTitle)
     const titleClose = document.createElement('i')
     titleClose.onclick = () => {
       if (onClose) {
@@ -88,7 +97,8 @@ export class Signature {
     undoContainer.classList.add('signature-operation__undo')
     const undoIcon = document.createElement('i')
     const undoLabel = document.createElement('span')
-    undoLabel.innerText = '撤销'
+    const undo = (labels && labels.undo) ? labels.undo : '撤销'
+    undoLabel.innerText = undo
     undoContainer.append(undoIcon)
     undoContainer.append(undoLabel)
     operationContainer.append(undoContainer)
@@ -97,7 +107,8 @@ export class Signature {
     trashContainer.classList.add('signature-operation__trash')
     const trashIcon = document.createElement('i')
     const trashLabel = document.createElement('span')
-    trashLabel.innerText = '清空'
+    const trash = (labels && labels.trash) ? labels.trash : '清空'
+    trashLabel.innerText = trash
     trashContainer.append(trashIcon)
     trashContainer.append(trashLabel)
     operationContainer.append(trashContainer)
@@ -118,7 +129,8 @@ export class Signature {
     // 取消按钮
     const cancelBtn = document.createElement('button')
     cancelBtn.classList.add('signature-menu__cancel')
-    cancelBtn.append(document.createTextNode('取消'))
+    const cancelButton = (labels && labels['cancel-button']) ? labels['cancel-button'] : '取消'
+    cancelBtn.append(document.createTextNode(cancelButton))
     cancelBtn.type = 'default'
     cancelBtn.onclick = () => {
       if (onCancel) {
@@ -129,7 +141,8 @@ export class Signature {
     menuContainer.append(cancelBtn)
     // 确认按钮
     const confirmBtn = document.createElement('button')
-    confirmBtn.append(document.createTextNode('确定'))
+    const confirmButton = (labels && labels['confirm-button']) ? labels['confirm-button'] : '确定'
+    confirmBtn.append(document.createTextNode(confirmButton))
     confirmBtn.type = 'primary'
     confirmBtn.onclick = () => {
       if (onConfirm) {
