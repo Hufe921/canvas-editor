@@ -66,7 +66,9 @@ export class CursorAgent {
         }
         if (item.type === 'text/html' && isHTML) {
           item.getAsString(htmlText => {
-            const elementList = getElementListByHTML(htmlText)
+            const elementList = getElementListByHTML(htmlText, {
+              innerWidth: this.draw.getOriginalInnerWidth()
+            })
             this.draw.insertElementList(elementList)
           })
         }
