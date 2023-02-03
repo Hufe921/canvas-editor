@@ -4,6 +4,8 @@ import { TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { DeepRequired } from '../interface/Common'
+import { ITd } from '../interface/table/Td'
+import { ITr } from '../interface/table/Tr'
 import { zipElementList } from './element'
 
 export function writeClipboardItem(text: string, html: string) {
@@ -49,6 +51,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
             const tdDom = document.createElement('td')
             tdDom.style.border = '1px solid'
             const td = tr.tdList[d]
+            tdDom.colSpan = td.colspan
+            tdDom.rowSpan = td.rowspan
             tdDom.innerText = td.value[0]?.value || ''
             trDom.append(tdDom)
           }
@@ -128,13 +132,17 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
   writeClipboardItem(text, html)
 }
 
-export function getElementListByHTML(htmlText: string): IElement[] {
+interface IGetElementListByHTMLOption {
+  innerWidth: number;
+}
+
+export function getElementListByHTML(htmlText: string, options: IGetElementListByHTMLOption): IElement[] {
   const elementList: IElement[] = []
   function findTextNode(dom: Element | Node) {
     if (dom.nodeType === 3) {
       const style = window.getComputedStyle(dom.parentNode as Element)
       const value = dom.textContent
-      if (value) {
+      if (value && dom.parentNode?.nodeName !== 'STYLE') {
         elementList.push({
           value,
           color: style.color,
@@ -164,6 +172,66 @@ export function getElementListByHTML(htmlText: string): IElement[] {
               }],
               url: aElement.href
             })
+          }
+        } else if (node.nodeName === 'HR') {
+          elementList.push({
+            value: '\n',
+            type: ElementType.SEPARATOR,
+          })
+        } else if (node.nodeName === 'IMG') {
+          const { src, width, height } = node as HTMLImageElement
+          if (src && width && height) {
+            elementList.push({
+              width,
+              height,
+              value: src,
+              type: ElementType.IMAGE
+            })
+          }
+        } else if (node.nodeName === 'TABLE') {
+          const tableElement = node as HTMLTableElement
+          const element: IElement = {
+            type: ElementType.TABLE,
+            value: '\n',
+            colgroup: [],
+            trList: []
+          }
+          let tdCount = 0
+          // 基础数据
+          tableElement.querySelectorAll('tr').forEach((trElement, trIndex) => {
+            const trHeightStr = window.getComputedStyle(trElement).height.replace('px', '')
+            const tr: ITr = {
+              height: Number(trHeightStr),
+              tdList: []
+            }
+            trElement.querySelectorAll('td').forEach(tdElement => {
+              const colspan = tdElement.colSpan
+              const rowspan = tdElement.rowSpan
+              if (trIndex === 0) {
+                tdCount += colspan
+              }
+              const td: ITd = {
+                colspan,
+                rowspan,
+                value: [{
+                  value: tdElement.innerText
+                }]
+              }
+              tr.tdList.push(td)
+            })
+            element.trList!.push(tr)
+          })
+          // 列选项数据
+          if (tdCount) {
+            const width = Math.ceil(options.innerWidth / tdCount)
+            for (let i = 0; i < tdCount; i++) {
+              element.colgroup!.push({
+                width
+              })
+            }
+          }
+          if (element.colgroup) {
+            elementList.push(element)
           }
         } else if (node.nodeName === 'INPUT' && (<HTMLInputElement>node).type === ControlComponent.CHECKBOX) {
           elementList.push({
