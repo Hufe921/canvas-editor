@@ -142,7 +142,7 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
     if (dom.nodeType === 3) {
       const style = window.getComputedStyle(dom.parentNode as Element)
       const value = dom.textContent
-      if (value) {
+      if (value && dom.parentNode?.nodeName !== 'STYLE') {
         elementList.push({
           value,
           color: style.color,
