@@ -49,6 +49,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
             const tdDom = document.createElement('td')
             tdDom.style.border = '1px solid'
             const td = tr.tdList[d]
+            tdDom.colSpan = td.colspan
+            tdDom.rowSpan = td.rowspan
             tdDom.innerText = td.value[0]?.value || ''
             trDom.append(tdDom)
           }
