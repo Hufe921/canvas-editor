@@ -196,41 +196,37 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             colgroup: [],
             trList: []
           }
-          let tdCount = 0
           // 基础数据
-          tableElement.querySelectorAll('tr').forEach((trElement, trIndex) => {
+          tableElement.querySelectorAll('tr').forEach(trElement => {
             const trHeightStr = window.getComputedStyle(trElement).height.replace('px', '')
             const tr: ITr = {
               height: Number(trHeightStr),
               tdList: []
             }
-            trElement.querySelectorAll('td').forEach(tdElement => {
-              const colspan = tdElement.colSpan
-              const rowspan = tdElement.rowSpan
-              if (trIndex === 0) {
-                tdCount += colspan
-              }
+            trElement.querySelectorAll('th,td').forEach(tdElement => {
+              const tableCell = <HTMLTableCellElement>tdElement
               const td: ITd = {
-                colspan,
-                rowspan,
+                colspan: tableCell.colSpan,
+                rowspan: tableCell.rowSpan,
                 value: [{
-                  value: tdElement.innerText
+                  value: tableCell.innerText
                 }]
               }
               tr.tdList.push(td)
             })
-            element.trList!.push(tr)
+            if (tr.tdList.length) {
+              element.trList!.push(tr)
+            }
           })
-          // 列选项数据
-          if (tdCount) {
+          if (element.trList!.length) {
+            // 列选项数据
+            const tdCount = element.trList![0].tdList.reduce((pre, cur) => pre + cur.colspan, 0)
             const width = Math.ceil(options.innerWidth / tdCount)
             for (let i = 0; i < tdCount; i++) {
               element.colgroup!.push({
                 width
               })
             }
-          }
-          if (element.colgroup) {
             elementList.push(element)
           }
         } else if (node.nodeName === 'INPUT' && (<HTMLInputElement>node).type === ControlComponent.CHECKBOX) {
