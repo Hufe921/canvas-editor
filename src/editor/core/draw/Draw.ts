@@ -792,7 +792,7 @@ export class Draw {
           height,
           elementList: [rowElement],
           ascent,
-          rowFlex: rowElement.rowFlex,
+          rowFlex: elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         })
       } else {
