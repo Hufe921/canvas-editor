@@ -6,7 +6,7 @@ import { ElementType } from '../dataset/enum/Element'
 import { DeepRequired } from '../interface/Common'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
-import { zipElementList } from './element'
+import { getElementRowFlex, zipElementList } from './element'
 
 export function writeClipboardItem(text: string, html: string) {
   if (!text || !html) return
@@ -103,7 +103,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         dom.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
         dom.style.fontFamily = element.font || options.defaultFont
         if (element.rowFlex) {
-          dom.style.textAlign = element.rowFlex
+          const isAlignment = element.rowFlex === RowFlex.ALIGNMENT
+          dom.style.textAlign = isAlignment ? 'justify' : element.rowFlex
         }
         if (element.color) {
           dom.style.color = element.color
@@ -140,16 +141,22 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
   const elementList: IElement[] = []
   function findTextNode(dom: Element | Node) {
     if (dom.nodeType === 3) {
-      const style = window.getComputedStyle(dom.parentNode as Element)
+      const parentNode = <HTMLElement>dom.parentNode
+      const rowFlex = getElementRowFlex(parentNode)
       const value = dom.textContent
-      if (value && dom.parentNode?.nodeName !== 'STYLE') {
-        elementList.push({
+      const style = window.getComputedStyle(parentNode)
+      if (value && parentNode.nodeName !== 'STYLE') {
+        const element: IElement = {
           value,
           color: style.color,
           bold: Number(style.fontWeight) > 500,
           italic: style.fontStyle.includes('italic'),
           size: Math.floor(Number(style.fontSize.replace('px', '')))
-        })
+        }
+        if (rowFlex !== RowFlex.LEFT) {
+          element.rowFlex = rowFlex
+        }
+        elementList.push(element)
       }
     } else if (dom.nodeType === 1) {
       const childNodes = dom.childNodes
