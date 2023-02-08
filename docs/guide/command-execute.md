@@ -527,3 +527,11 @@ instance.command.executeInsertElementList(IElement[])
 ```javascript
 instance.command.executeRemoveControl()
 ```
+
+## executeSetLocale
+功能：设置本地语言
+
+用法：
+```javascript
+instance.command.executeSetLocale(locale)
+```
