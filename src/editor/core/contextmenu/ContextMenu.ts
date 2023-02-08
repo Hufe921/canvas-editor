@@ -5,6 +5,7 @@ import { IContextMenuContext, IRegisterContextMenu } from '../../interface/conte
 import { findParent } from '../../utils'
 import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
+import { I18n } from '../i18n/I18n'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { controlMenus } from './menus/controlMenus'
@@ -26,6 +27,7 @@ export class ContextMenu {
   private command: Command
   private range: RangeManager
   private position: Position
+  private i18n: I18n
   private container: HTMLDivElement
   private contextMenuList: IRegisterContextMenu[]
   private contextMenuContainerList: HTMLDivElement[]
@@ -37,6 +39,7 @@ export class ContextMenu {
     this.command = command
     this.range = draw.getRange()
     this.position = draw.getPosition()
+    this.i18n = draw.getI18n()
     this.container = draw.getContainer()
     this.context = null
     // 内部菜单
@@ -212,7 +215,9 @@ export class ContextMenu {
         }
         // 文本
         const span = document.createElement('span')
-        const name = this._formatName(menu.name!)
+        const name = menu.i18nPath
+          ? this._formatName(this.i18n.t(menu.i18nPath))
+          : this._formatName(menu.name || '')
         span.append(document.createTextNode(name))
         menuItem.append(span)
         // 快捷方式提示

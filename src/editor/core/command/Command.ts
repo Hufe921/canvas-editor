@@ -78,6 +78,7 @@ export class Command {
   private static setPaperMargin: CommandAdapt['setPaperMargin']
   private static insertElementList: CommandAdapt['insertElementList']
   private static removeControl: CommandAdapt['removeControl']
+  private static setLocale: CommandAdapt['setLocale']
 
   constructor(adapt: CommandAdapt) {
     Command.mode = adapt.mode.bind(adapt)
@@ -149,6 +150,7 @@ export class Command {
     Command.setPaperMargin = adapt.setPaperMargin.bind(adapt)
     Command.insertElementList = adapt.insertElementList.bind(adapt)
     Command.removeControl = adapt.removeControl.bind(adapt)
+    Command.setLocale = adapt.setLocale.bind(adapt)
   }
 
   // 全局命令
@@ -431,6 +433,10 @@ export class Command {
 
   public executeRemoveControl() {
     return Command.removeControl()
+  }
+
+  public executeSetLocale(payload: string) {
+    return Command.setLocale(payload)
   }
 
 }

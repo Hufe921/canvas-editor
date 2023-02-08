@@ -1,0 +1,61 @@
+{
+  "contextmenu": {
+    "global": {
+      "cut": "剪切",
+      "copy": "复制",
+      "paste": "粘贴",
+      "selectAll": "全选",
+      "print": "打印"
+    },
+    "control": {
+      "delete": "删除控件"
+    },
+    "hyperlink": {
+      "delete": "删除链接",
+      "cancel": "取消链接",
+      "edit": "编辑链接"
+    },
+    "image": {
+      "change": "更改图片",
+      "saveAs": "另存为图片",
+      "textWrap": "文字环绕",
+      "textWrapType": {
+        "embed": "嵌入型",
+        "upDown": "上下型环绕"
+      }
+    },
+    "table": {
+      "insertRowCol": "插入行列",
+      "insertTopRow": "上方插入1行",
+      "insertBottomRow": "下方插入1行",
+      "insertLeftCol": "左侧插入1列",
+      "insertRightCol": "右侧插入1列",
+      "deleteRowCol": "删除行列",
+      "deleteRow": "删除1行",
+      "deleteCol": "删除1列",
+      "deleteTable": "删除整个表格",
+      "mergeCell": "合并单元格",
+      "mergeCancelCell": "取消合并"
+    }
+  },
+  "datePicker": {
+    "now": "此刻",
+    "confirm": "确定",
+    "return": "返回日期",
+    "timeSelect": "时间选择",
+    "weeks": {
+      "sun": "日",
+      "mon": "一",
+      "tue": "二",
+      "wed": "三",
+      "thu": "四",
+      "fri": "五",
+      "sat": "六"
+    },
+    "year": "年",
+    "month": "月",
+    "hour": "时",
+    "minute": "分",
+    "second": "秒"
+  }
+}

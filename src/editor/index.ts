@@ -28,6 +28,7 @@ import { Shortcut } from './core/shortcut/Shortcut'
 import { KeyMap } from './dataset/enum/KeyMap'
 import { BlockType } from './dataset/enum/Block'
 import { IBlock } from './interface/Block'
+import { ILang } from './interface/i18n/I18n'
 
 export default class Editor {
 
@@ -110,7 +111,8 @@ export default class Editor {
     // 注册
     this.register = new Register({
       contextMenu,
-      shortcut
+      shortcut,
+      i18n: draw.getI18n()
     })
     // 注册销毁方法
     this.destroy = () => {
@@ -147,5 +149,6 @@ export type {
   IRegisterContextMenu,
   IWatermark,
   INavigateInfo,
-  IBlock
+  IBlock,
+  ILang
 }

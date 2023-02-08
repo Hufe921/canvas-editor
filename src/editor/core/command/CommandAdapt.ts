@@ -23,6 +23,7 @@ import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { HistoryManager } from '../history/HistoryManager'
+import { I18n } from '../i18n/I18n'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
@@ -42,6 +43,7 @@ export class CommandAdapt {
   private control: Control
   private workerManager: WorkerManager
   private searchManager: Search
+  private i18n: I18n
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -54,6 +56,7 @@ export class CommandAdapt {
     this.control = draw.getControl()
     this.workerManager = draw.getWorkerManager()
     this.searchManager = draw.getSearch()
+    this.i18n = draw.getI18n()
   }
 
   public mode(payload: EditorMode) {
@@ -1466,6 +1469,10 @@ export class CommandAdapt {
     this.draw.render({
       curIndex: newIndex
     })
+  }
+
+  public setLocale(payload: string) {
+    this.i18n.setLocale(payload)
   }
 
 }
