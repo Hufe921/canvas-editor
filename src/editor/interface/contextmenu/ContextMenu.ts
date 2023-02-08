@@ -12,6 +12,7 @@ export interface IContextMenuContext {
 }
 
 export interface IRegisterContextMenu {
+  i18nPath?: string;
   isDivider?: boolean;
   icon?: string;
   name?: string;
@@ -19,4 +20,44 @@ export interface IRegisterContextMenu {
   when?: (payload: IContextMenuContext) => boolean;
   callback?: (command: Command, context: IContextMenuContext) => any;
   childMenus?: IRegisterContextMenu[];
+}
+
+export interface IContextmenuLang {
+  global: {
+    cut: string;
+    copy: string;
+    paste: string;
+    selectAll: string;
+    print: string;
+  };
+  control: {
+    delete: string;
+  };
+  hyperlink: {
+    delete: string;
+    cancel: string;
+    edit: string;
+  };
+  image: {
+    change: string;
+    saveAs: string;
+    textWrap: string;
+    textWrapType: {
+      embed: string;
+      upDown: string;
+    }
+  };
+  table: {
+    insertRowCol: string;
+    insertTopRow: string;
+    insertBottomRow: string;
+    insertLeftCol: string;
+    insertRightCol: string;
+    deleteRowCol: string;
+    deleteRow: string;
+    deleteCol: string;
+    deleteTable: string;
+    mergeCell: string;
+    mergeCancelCell: string;
+  };
 }

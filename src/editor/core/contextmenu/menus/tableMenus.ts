@@ -6,14 +6,14 @@ export const tableMenus: IRegisterContextMenu[] = [
     isDivider: true
   },
   {
-    name: '插入行列',
+    i18nPath: 'contextmenu.table.insertRowCol',
     icon: 'insert-row-col',
     when: (payload) => {
       return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
       {
-        name: '上方插入1行',
+        i18nPath: 'contextmenu.table.insertTopRow',
         icon: 'insert-top-row',
         when: () => true,
         callback: (command: Command) => {
@@ -21,7 +21,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        name: '下方插入1行',
+        i18nPath: 'contextmenu.table.insertBottomRow',
         icon: 'insert-bottom-row',
         when: () => true,
         callback: (command: Command) => {
@@ -29,7 +29,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        name: '左侧插入1列',
+        i18nPath: 'contextmenu.table.insertLeftCol',
         icon: 'insert-left-col',
         when: () => true,
         callback: (command: Command) => {
@@ -37,7 +37,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        name: '右侧插入1列',
+        i18nPath: 'contextmenu.table.insertRightCol',
         icon: 'insert-right-col',
         when: () => true,
         callback: (command: Command) => {
@@ -47,14 +47,14 @@ export const tableMenus: IRegisterContextMenu[] = [
     ]
   },
   {
-    name: '删除行列',
+    i18nPath: 'contextmenu.table.deleteRowCol',
     icon: 'delete-row-col',
     when: (payload) => {
       return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
       {
-        name: '删除1行',
+        i18nPath: 'contextmenu.table.deleteRow',
         icon: 'delete-row',
         when: () => true,
         callback: (command: Command) => {
@@ -62,7 +62,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        name: '删除一列',
+        i18nPath: 'contextmenu.table.deleteCol',
         icon: 'delete-col',
         when: () => true,
         callback: (command: Command) => {
@@ -70,7 +70,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        name: '删除整个表格',
+        i18nPath: 'contextmenu.table.deleteTable',
         icon: 'delete-table',
         when: () => true,
         callback: (command: Command) => {
@@ -80,7 +80,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     ]
   },
   {
-    name: '合并单元格',
+    i18nPath: 'contextmenu.table.mergeCell',
     icon: 'merge-cell',
     when: (payload) => {
       return !payload.isReadonly && payload.isCrossRowCol
@@ -90,7 +90,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '取消合并',
+    i18nPath: 'contextmenu.table.mergeCancelCell',
     icon: 'merge-cancel-cell',
     when: (payload) => {
       return !payload.isReadonly && payload.isInTable

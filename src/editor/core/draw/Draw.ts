@@ -48,6 +48,7 @@ import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
 import { BlockParticle } from './particle/block/BlockParticle'
 import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
+import { I18n } from '../i18n/I18n'
 
 export class Draw {
 
@@ -62,6 +63,7 @@ export class Draw {
   private elementList: IElement[]
   private listener: Listener
 
+  private i18n: I18n
   private canvasEvent: CanvasEvent
   private globalEvent: GlobalEvent
   private cursor: Cursor
@@ -120,6 +122,7 @@ export class Draw {
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
+    this.i18n = new I18n()
     this.historyManager = new HistoryManager()
     this.position = new Position(this)
     this.range = new RangeManager(this)
@@ -397,6 +400,10 @@ export class Draw {
 
   public getWorkerManager(): WorkerManager {
     return this.workerManager
+  }
+
+  public getI18n(): I18n {
+    return this.i18n
   }
 
   public getRowCount(): number {

@@ -1,0 +1,61 @@
+{
+  "contextmenu": {
+    "global": {
+      "cut": "Cut",
+      "copy": "Copy",
+      "paste": "Paste",
+      "selectAll": "Select all",
+      "print": "Print"
+    },
+    "control": {
+      "delete": "Delete control"
+    },
+    "hyperlink": {
+      "delete": "Delete hyperlink",
+      "cancel": "Cancel hyperlink",
+      "edit": "Edit hyperlink"
+    },
+    "image": {
+      "change": "Change image",
+      "saveAs": "Save as image",
+      "textWrap": "Text wrap",
+      "textWrapType": {
+        "embed": "Embed",
+        "upDown": "Up down"
+      }
+    },
+    "table": {
+      "insertRowCol": "Insert row col",
+      "insertTopRow": "Insert top 1 row",
+      "insertBottomRow": "Insert bottom 1 row",
+      "insertLeftCol": "Insert left 1 col",
+      "insertRightCol": "Insert right 1 col",
+      "deleteRowCol": "Delete row col",
+      "deleteRow": "Delete 1 row",
+      "deleteCol": "Delete 1 col",
+      "deleteTable": "Delete table",
+      "mergeCell": "Merge cell",
+      "mergeCancelCell": "Cancel merge cell"
+    }
+  },
+  "datePicker": {
+    "now": "Now",
+    "confirm": "Confirm",
+    "return": "Return",
+    "timeSelect": "Time select",
+    "weeks": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "year": " ",
+    "month": " ",
+    "hour": "Hour",
+    "minute": "Minute",
+    "second": "Second"
+  }
+}

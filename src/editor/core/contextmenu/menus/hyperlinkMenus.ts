@@ -4,7 +4,7 @@ import { Command } from '../../command/Command'
 
 export const hyperlinkMenus: IRegisterContextMenu[] = [
   {
-    name: '删除链接',
+    i18nPath: 'contextmenu.hyperlink.delete',
     when: (payload) => {
       return payload.startElement?.type === ElementType.HYPERLINK
     },
@@ -13,7 +13,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '取消链接',
+    i18nPath: 'contextmenu.hyperlink.cancel',
     when: (payload) => {
       return payload.startElement?.type === ElementType.HYPERLINK
     },
@@ -22,7 +22,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '编辑链接',
+    i18nPath: 'contextmenu.hyperlink.edit',
     when: (payload) => {
       return payload.startElement?.type === ElementType.HYPERLINK
     },
