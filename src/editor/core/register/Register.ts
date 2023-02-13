@@ -4,6 +4,7 @@ import { ContextMenu } from '../contextmenu/ContextMenu'
 import { Shortcut } from '../shortcut/Shortcut'
 import { I18n } from '../i18n/I18n'
 import { ILang } from '../../interface/i18n/I18n'
+import { DeepPartial } from '../../interface/Common'
 
 interface IRegisterPayload {
   contextMenu: ContextMenu;
@@ -15,7 +16,7 @@ export class Register {
 
   public contextMenuList: (payload: IRegisterContextMenu[]) => void
   public shortcutList: (payload: IRegisterShortcut[]) => void
-  public langMap: (locale: string, lang: ILang) => void
+  public langMap: (locale: string, lang: DeepPartial<ILang>) => void
 
   constructor(payload: IRegisterPayload) {
     const { contextMenu, shortcut, i18n } = payload

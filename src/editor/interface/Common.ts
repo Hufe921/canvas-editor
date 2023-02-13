@@ -23,3 +23,7 @@ export type DeepRequired<T> = T extends Error
   : T extends {}
   ? { [K in keyof T]-?: DeepRequired<T[K]> }
   : Required<T>
+
+export type DeepPartial<T> = {
+  [P in keyof T]?: DeepPartial<T[P]>;
+}

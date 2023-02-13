@@ -88,3 +88,27 @@ function nClickEvent(n: number, dom: HTMLElement, fn: (evt: MouseEvent) => any) 
 
   dom.addEventListener('click', handler)
 }
+
+export function isObject(type: unknown): type is Record<string, unknown> {
+  return Object.prototype.toString.call(type) === '[object Object]'
+}
+
+export function isArray(type: unknown): type is Array<unknown> {
+  return Array.isArray(type)
+}
+
+export function mergeObject<T>(source: T, target: T): T {
+  if (isObject(source) && isObject(target)) {
+    const objectTarget = <Record<string, unknown>>target
+    for (const [key, val] of Object.entries(source)) {
+      if (!objectTarget[key]) {
+        objectTarget[key] = val
+      } else {
+        objectTarget[key] = mergeObject(val, objectTarget[key])
+      }
+    }
+  } else if (isArray(source) && isArray(target)) {
+    target.push(...source)
+  }
+  return target
+}

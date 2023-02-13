@@ -1,6 +1,8 @@
 import { ILang } from '../../interface/i18n/I18n'
 import zhCN from './lang/zh-CN.json'
 import en from './lang/en.json'
+import { mergeObject } from '../../utils'
+import { DeepPartial } from '../../interface/Common'
 
 export class I18n {
 
@@ -11,8 +13,12 @@ export class I18n {
 
   private currentLocale = 'zhCN'
 
-  public registerLangMap(locale: string, lang: ILang) {
-    this.langMap.set(locale, lang)
+  public registerLangMap(locale: string, lang: DeepPartial<ILang>) {
+    const sourceLang = this.langMap.get(locale)
+    this.langMap.set(
+      locale,
+      <ILang>mergeObject(sourceLang || zhCN, lang)
+    )
   }
 
   public setLocale(locale: string) {
