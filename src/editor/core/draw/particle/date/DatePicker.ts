@@ -1,14 +1,38 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
+import { datePicker } from '../../../i18n/lang/zh-CN.json'
+
+export interface IDatePickerLang {
+  now: string;
+  confirm: string;
+  return: string;
+  timeSelect: string;
+  weeks: {
+    sun: string;
+    mon: string;
+    tue: string;
+    wed: string;
+    thu: string;
+    fri: string;
+    sat: string;
+  };
+  year: string;
+  month: string;
+  hour: string;
+  minute: string;
+  second: string;
+}
 
 export interface IDatePickerOption {
   mountDom?: HTMLElement;
   onSubmit?: (date: string) => any;
+  getLang?: () => IDatePickerLang
 }
 
 interface IDatePickerDom {
   container: HTMLDivElement;
   dateWrap: HTMLDivElement;
+  datePickerWeek: HTMLDivElement;
   timeWrap: HTMLUListElement;
   title: {
     preYear: HTMLSpanElement;
@@ -45,12 +69,14 @@ export class DatePicker {
   private renderOptions: IRenderOption | null
   private isDatePicker: boolean
   private pickDate: Date | null
+  private lang: IDatePickerLang
 
   constructor(options: IDatePickerOption = {}) {
     this.options = {
       mountDom: document.body,
       ...options
     }
+    this.lang = datePicker
     this.now = new Date()
     this.dom = this._createDom()
     this.renderOptions = null
@@ -89,7 +115,8 @@ export class DatePicker {
     // week-星期显示
     const datePickerWeek = document.createElement('div')
     datePickerWeek.classList.add(`${EDITOR_PREFIX}-date-week`)
-    const weekList = ['日', '一', '二', '三', '四', '五', '六']
+    const { weeks: { sun, mon, tue, wed, thu, fri, sat } } = this.lang
+    const weekList = [sun, mon, tue, wed, thu, fri, sat]
     weekList.forEach(week => {
       const weekDom = document.createElement('span')
       weekDom.innerText = `${week}`
@@ -108,7 +135,7 @@ export class DatePicker {
     let hourTime: HTMLOListElement
     let minuteTime: HTMLOListElement
     let secondTime: HTMLOListElement
-    const timeList = ['时', '分', '秒']
+    const timeList = [this.lang.hour, this.lang.minute, this.lang.second]
     timeList.forEach((t, i) => {
       const li = document.createElement('li')
       const timeText = document.createElement('span')
@@ -139,13 +166,13 @@ export class DatePicker {
     datePickerMenu.classList.add(`${EDITOR_PREFIX}-date-menu`)
     const timeMenu = document.createElement('button')
     timeMenu.classList.add(`${EDITOR_PREFIX}-date-menu__time`)
-    timeMenu.innerText = '时间选择'
+    timeMenu.innerText = this.lang.timeSelect
     const nowMenu = document.createElement('button')
     nowMenu.classList.add(`${EDITOR_PREFIX}-date-menu__now`)
-    nowMenu.innerText = '此刻'
+    nowMenu.innerText = this.lang.now
     const submitMenu = document.createElement('button')
     submitMenu.classList.add(`${EDITOR_PREFIX}-date-menu__submit`)
-    submitMenu.innerText = '确定'
+    submitMenu.innerText = this.lang.confirm
     datePickerMenu.append(timeMenu)
     datePickerMenu.append(nowMenu)
     datePickerMenu.append(submitMenu)
@@ -157,6 +184,7 @@ export class DatePicker {
     return {
       container: datePickerContainer,
       dateWrap,
+      datePickerWeek,
       timeWrap,
       title: {
         preYear: preYearTitle,
@@ -261,6 +289,23 @@ export class DatePicker {
     this.pickDate = new Date(this.now)
   }
 
+  private _setLang() {
+    this.dom.menu.time.innerText = this.lang.timeSelect
+    this.dom.menu.now.innerText = this.lang.now
+    this.dom.menu.submit.innerText = this.lang.confirm
+    const { weeks: { sun, mon, tue, wed, thu, fri, sat } } = this.lang
+    const weekList = [sun, mon, tue, wed, thu, fri, sat]
+    this.dom.datePickerWeek.childNodes.forEach((child, i) => {
+      (<HTMLSpanElement>child).innerText = weekList[i]
+    })
+    const hourTitle = (<HTMLSpanElement>this.dom.time.hour.previousElementSibling)
+    hourTitle.innerText = this.lang.hour
+    const minuteTitle = (<HTMLSpanElement>this.dom.time.minute.previousElementSibling)
+    minuteTitle.innerText = this.lang.minute
+    const secondTitle = (<HTMLSpanElement>this.dom.time.second.previousElementSibling)
+    secondTitle.innerText = this.lang.second
+  }
+
   private _update() {
     // 本地年月日
     const localDate = new Date()
@@ -279,7 +324,7 @@ export class DatePicker {
     // 当前年月日
     const year = this.now.getFullYear()
     const month = this.now.getMonth() + 1
-    this.dom.title.now.innerText = `${year}年 ${String(month).padStart(2, '0')}月`
+    this.dom.title.now.innerText = `${year}${this.lang.year} ${String(month).padStart(2, '0')}${this.lang.month}`
     // 日期补差
     const curDate = new Date(year, month, 0) // 当月日期
     const curDay = curDate.getDate() // 当月总天数
@@ -338,11 +383,11 @@ export class DatePicker {
     if (this.isDatePicker) {
       this.dom.dateWrap.classList.add('active')
       this.dom.timeWrap.classList.remove('active')
-      this.dom.menu.time.innerText = `时间选择`
+      this.dom.menu.time.innerText = this.lang.timeSelect
     } else {
       this.dom.dateWrap.classList.remove('active')
       this.dom.timeWrap.classList.add('active')
-      this.dom.menu.time.innerText = `返回日期`
+      this.dom.menu.time.innerText = this.lang.return
       // 设置时分秒选择
       this._setTimePick()
     }
@@ -467,6 +512,10 @@ export class DatePicker {
 
   public render(option: IRenderOption) {
     this.renderOptions = option
+    if (this.options.getLang) {
+      this.lang = this.options.getLang()
+      this._setLang()
+    }
     this._setValue()
     this._update()
     this._setPosition()

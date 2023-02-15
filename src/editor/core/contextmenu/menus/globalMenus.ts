@@ -3,7 +3,7 @@ import { Command } from '../../command/Command'
 
 export const globalMenus: IRegisterContextMenu[] = [
   {
-    name: '剪切',
+    i18nPath: 'contextmenu.global.cut',
     shortCut: 'Ctrl + X',
     when: (payload) => {
       return !payload.isReadonly
@@ -13,7 +13,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '复制',
+    i18nPath: 'contextmenu.global.copy',
     shortCut: 'Ctrl + C',
     when: (payload) => {
       return payload.editorHasSelection
@@ -23,7 +23,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '粘贴',
+    i18nPath: 'contextmenu.global.paste',
     shortCut: 'Ctrl + V',
     when: (payload) => {
       return !payload.isReadonly && payload.editorTextFocus
@@ -33,7 +33,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '全选',
+    i18nPath: 'contextmenu.global.selectAll',
     shortCut: 'Ctrl + A',
     when: (payload) => {
       return payload.editorTextFocus
@@ -46,8 +46,8 @@ export const globalMenus: IRegisterContextMenu[] = [
     isDivider: true
   },
   {
+    i18nPath: 'contextmenu.global.print',
     icon: 'print',
-    name: '打印',
     when: () => true,
     callback: (command: Command) => {
       command.executePrint()

@@ -48,6 +48,7 @@ import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
 import { BlockParticle } from './particle/block/BlockParticle'
 import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
+import { I18n } from '../i18n/I18n'
 
 export class Draw {
 
@@ -62,6 +63,7 @@ export class Draw {
   private elementList: IElement[]
   private listener: Listener
 
+  private i18n: I18n
   private canvasEvent: CanvasEvent
   private globalEvent: GlobalEvent
   private cursor: Cursor
@@ -120,6 +122,7 @@ export class Draw {
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
+    this.i18n = new I18n()
     this.historyManager = new HistoryManager()
     this.position = new Position(this)
     this.range = new RangeManager(this)
@@ -397,6 +400,10 @@ export class Draw {
 
   public getWorkerManager(): WorkerManager {
     return this.workerManager
+  }
+
+  public getI18n(): I18n {
+    return this.i18n
   }
 
   public getRowCount(): number {
@@ -792,7 +799,7 @@ export class Draw {
           height,
           elementList: [rowElement],
           ascent,
-          rowFlex: rowElement.rowFlex,
+          rowFlex: elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         })
       } else {
@@ -920,17 +927,24 @@ export class Draw {
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
+        const preElement = curRow.elementList[j - 1]
         // 下划线记录
         if (element.underline) {
           this.underline.recordFillInfo(ctx, x, y + curRow.height, metrics.width, 0, element.color)
+        } else if (preElement && preElement.underline) {
+          this.underline.render(ctx)
         }
         // 删除线记录
         if (element.strikeout) {
           this.strikeout.recordFillInfo(ctx, x, y + curRow.height / 2, metrics.width)
+        } else if (preElement && preElement.strikeout) {
+          this.strikeout.render(ctx)
         }
         // 元素高亮记录
         if (element.highlight) {
           this.highlight.recordFillInfo(ctx, x, y, metrics.width, curRow.height, element.highlight)
+        } else if (preElement && preElement.highlight) {
+          this.highlight.render(ctx)
         }
         // 选区记录
         const { startIndex, endIndex } = this.range.getRange()

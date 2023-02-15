@@ -4,7 +4,7 @@ import { Command } from '../../command/Command'
 
 export const controlMenus: IRegisterContextMenu[] = [
   {
-    name: '删除控件',
+    i18nPath: 'contextmenu.control.delete',
     when: (payload) => {
       return !payload.editorHasSelection && payload.startElement?.type === ElementType.CONTROL
     },

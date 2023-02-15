@@ -5,7 +5,7 @@ import { Command } from '../../command/Command'
 
 export const imageMenus: IRegisterContextMenu[] = [
   {
-    name: '更改图片',
+    i18nPath: 'contextmenu.image.change',
     icon: 'image-change',
     when: (payload) => {
       return !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
@@ -29,7 +29,7 @@ export const imageMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '另存为图片',
+    i18nPath: 'contextmenu.image.saveAs',
     icon: 'image',
     when: (payload) => {
       return !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
@@ -39,20 +39,20 @@ export const imageMenus: IRegisterContextMenu[] = [
     }
   },
   {
-    name: '文字环绕',
+    i18nPath: 'contextmenu.image.textWrap',
     when: (payload) => {
       return !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
     },
     childMenus: [
       {
-        name: '嵌入型',
+        i18nPath: 'contextmenu.image.textWrapType.embed',
         when: () => true,
         callback: (command: Command, context: IContextMenuContext) => {
           command.executeChangeImageDisplay(context.startElement!, ImageDisplay.BLOCK)
         }
       },
       {
-        name: '上下型环绕',
+        i18nPath: 'contextmenu.image.textWrapType.upDown',
         when: () => true,
         callback: (command: Command, context: IContextMenuContext) => {
           command.executeChangeImageDisplay(context.startElement!, ImageDisplay.INLINE)

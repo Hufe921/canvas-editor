@@ -1,5 +1,5 @@
 import { deepClone, getUUID, splitText } from '.'
-import { ElementType, IEditorOption, IElement } from '..'
+import { ElementType, IEditorOption, IElement, RowFlex } from '..'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
@@ -396,4 +396,22 @@ export function zipElementList(payload: IElement[]): IElement[] {
     zipElementListData.push(pickElement)
   }
   return zipElementListData
+}
+
+export function getElementRowFlex(node: HTMLElement) {
+  const textAlign = window.getComputedStyle(node).textAlign
+  switch (textAlign) {
+    case 'left':
+    case 'start':
+      return RowFlex.LEFT
+    case 'center':
+      return RowFlex.CENTER
+    case 'right':
+    case 'end':
+      return RowFlex.RIGHT
+    case 'justify':
+      return RowFlex.ALIGNMENT
+    default:
+      return RowFlex.LEFT
+  }
 }
