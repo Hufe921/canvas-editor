@@ -927,17 +927,24 @@ export class Draw {
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
+        const preElement = curRow.elementList[j - 1]
         // 下划线记录
         if (element.underline) {
           this.underline.recordFillInfo(ctx, x, y + curRow.height, metrics.width, 0, element.color)
+        } else if (preElement && preElement.underline) {
+          this.underline.render(ctx)
         }
         // 删除线记录
         if (element.strikeout) {
           this.strikeout.recordFillInfo(ctx, x, y + curRow.height / 2, metrics.width)
+        } else if (preElement && preElement.strikeout) {
+          this.strikeout.render(ctx)
         }
         // 元素高亮记录
         if (element.highlight) {
           this.highlight.recordFillInfo(ctx, x, y, metrics.width, curRow.height, element.highlight)
+        } else if (preElement && preElement.highlight) {
+          this.highlight.render(ctx)
         }
         // 选区记录
         const { startIndex, endIndex } = this.range.getRange()
