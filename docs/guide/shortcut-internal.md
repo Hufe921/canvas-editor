@@ -39,56 +39,56 @@
 ## Tab
 功能：增加缩进
 
-## Ctrl + Z
+## Ctrl/Cmd + Z
 功能：撤销
 
-## Ctrl + Y
+## Ctrl/Cmd + Y
 功能：重做
 
-## Ctrl + C
+## Ctrl/Cmd + C
 功能：复制
 
-## Ctrl + X
+## Ctrl/Cmd + X
 功能：剪切
 
-## Ctrl + A
+## Ctrl/Cmd + A
 功能：全选
 
-## Ctrl + S
+## Ctrl/Cmd + S
 功能：保存
 
-## Ctrl + {
+## Ctrl/Cmd + {
 功能：增大字体
 
-## Ctrl + }
+## Ctrl/Cmd + }
 功能：减小字体
 
-## Ctrl + B
+## Ctrl/Cmd + B
 功能：加粗
 
-## Ctrl + I
+## Ctrl/Cmd + I
 功能：斜体
 
-## Ctrl + U
+## Ctrl/Cmd + U
 功能：下划线
 
-## Ctrl + L
+## Ctrl/Cmd + L
 功能：行居左
 
-## Ctrl + E
+## Ctrl/Cmd + E
 功能：行居中
 
-## Ctrl + R
+## Ctrl/Cmd + R
 功能：行居右
 
-## Ctrl + J
+## Ctrl/Cmd + J
 功能：两端对齐
 
 ## Ctrl + Shift + X
 功能：删除线
 
-## Ctrl + Shift + >
+## Ctrl/Cmd + Shift + >
 功能：上标
 
-## Ctrl + Shift + <
+## Ctrl/Cmd + Shift + <
 功能：下标

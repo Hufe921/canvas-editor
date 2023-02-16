@@ -10,6 +10,8 @@ instance.register.shortcutList([
     {
       key: KeyMap;
       ctrl?: boolean;
+      meta?: boolean;
+      mod?: boolean; // windows:ctrl || mac:command
       shift?: boolean;
       alt?: boolean;
       isGlobal?: boolean;
