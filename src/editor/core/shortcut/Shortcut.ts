@@ -62,10 +62,13 @@ export class Shortcut {
     for (let s = 0; s < shortCutList.length; s++) {
       const shortCut = shortCutList[s]
       if (
-        evt.ctrlKey === !!shortCut.ctrl &&
+        (
+          shortCut.mod
+            ? isMod(evt) === !!shortCut.mod
+            : evt.ctrlKey === !!shortCut.ctrl && evt.metaKey === !!shortCut.meta
+        ) &&
         evt.shiftKey === !!shortCut.shift &&
         evt.altKey === !!shortCut.alt &&
-        isMod(evt) === !!shortCut.mod &&
         evt.key === shortCut.key
       ) {
         shortCut.callback(this.command)
