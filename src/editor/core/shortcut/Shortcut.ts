@@ -2,6 +2,7 @@ import { IRegisterShortcut } from '../../interface/shortcut/Shortcut'
 import { richtextKeys } from './keys/richtextKeys'
 import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
+import { isMod } from '../../utils/hotkey'
 
 export class Shortcut {
 
@@ -64,6 +65,7 @@ export class Shortcut {
         evt.ctrlKey === !!shortCut.ctrl &&
         evt.shiftKey === !!shortCut.shift &&
         evt.altKey === !!shortCut.alt &&
+        isMod(evt) === !!shortCut.mod &&
         evt.key === shortCut.key
       ) {
         shortCut.callback(this.command)

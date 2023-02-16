@@ -2,6 +2,7 @@ import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { isMod } from '../../../utils/hotkey'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
@@ -230,24 +231,24 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         isComputeRowList: false
       })
     }
-  } else if (evt.ctrlKey && evt.key === KeyMap.Z) {
+  } else if (isMod(evt) && evt.key === KeyMap.Z) {
     if (isReadonly) return
     historyManager.undo()
     evt.preventDefault()
-  } else if (evt.ctrlKey && evt.key === KeyMap.Y) {
+  } else if (isMod(evt) && evt.key === KeyMap.Y) {
     if (isReadonly) return
     historyManager.redo()
     evt.preventDefault()
-  } else if (evt.ctrlKey && evt.key === KeyMap.C) {
+  } else if (isMod(evt) && evt.key === KeyMap.C) {
     host.copy()
     evt.preventDefault()
-  } else if (evt.ctrlKey && evt.key === KeyMap.X) {
+  } else if (isMod(evt) && evt.key === KeyMap.X) {
     host.cut()
     evt.preventDefault()
-  } else if (evt.ctrlKey && evt.key === KeyMap.A) {
+  } else if (isMod(evt) && evt.key === KeyMap.A) {
     host.selectAll()
     evt.preventDefault()
-  } else if (evt.ctrlKey && evt.key === KeyMap.S) {
+  } else if (isMod(evt) && evt.key === KeyMap.S) {
     if (isReadonly) return
     const listener = draw.getListener()
     if (listener.saved) {
