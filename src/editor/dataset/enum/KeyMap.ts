@@ -8,6 +8,7 @@ export enum KeyMap {
   Down = 'ArrowDown',
   ESC = 'Escape',
   TAB = 'Tab',
+  META = 'Meta',
   LEFT_BRACKET = '[',
   RIGHT_BRACKET = ']',
   COMMA = ',',

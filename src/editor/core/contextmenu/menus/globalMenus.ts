@@ -1,10 +1,11 @@
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
+import { isApple } from '../../../utils/ua'
 import { Command } from '../../command/Command'
 
 export const globalMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.global.cut',
-    shortCut: 'Ctrl + X',
+    shortCut: `${isApple ? '⌘' : 'Ctrl'} + X`,
     when: (payload) => {
       return !payload.isReadonly
     },
@@ -14,7 +15,7 @@ export const globalMenus: IRegisterContextMenu[] = [
   },
   {
     i18nPath: 'contextmenu.global.copy',
-    shortCut: 'Ctrl + C',
+    shortCut: `${isApple ? '⌘' : 'Ctrl'} + C`,
     when: (payload) => {
       return payload.editorHasSelection
     },
@@ -24,7 +25,7 @@ export const globalMenus: IRegisterContextMenu[] = [
   },
   {
     i18nPath: 'contextmenu.global.paste',
-    shortCut: 'Ctrl + V',
+    shortCut: `${isApple ? '⌘' : 'Ctrl'} + V`,
     when: (payload) => {
       return !payload.isReadonly && payload.editorTextFocus
     },
@@ -34,7 +35,7 @@ export const globalMenus: IRegisterContextMenu[] = [
   },
   {
     i18nPath: 'contextmenu.global.selectAll',
-    shortCut: 'Ctrl + A',
+    shortCut: `${isApple ? '⌘' : 'Ctrl'} + A`,
     when: (payload) => {
       return payload.editorTextFocus
     },

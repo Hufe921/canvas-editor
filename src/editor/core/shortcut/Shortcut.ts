@@ -2,6 +2,7 @@ import { IRegisterShortcut } from '../../interface/shortcut/Shortcut'
 import { richtextKeys } from './keys/richtextKeys'
 import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
+import { isMod } from '../../utils/hotkey'
 
 export class Shortcut {
 
@@ -61,7 +62,11 @@ export class Shortcut {
     for (let s = 0; s < shortCutList.length; s++) {
       const shortCut = shortCutList[s]
       if (
-        evt.ctrlKey === !!shortCut.ctrl &&
+        (
+          shortCut.mod
+            ? isMod(evt) === !!shortCut.mod
+            : evt.ctrlKey === !!shortCut.ctrl && evt.metaKey === !!shortCut.meta
+        ) &&
         evt.shiftKey === !!shortCut.shift &&
         evt.altKey === !!shortCut.alt &&
         evt.key === shortCut.key

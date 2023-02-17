@@ -7,6 +7,8 @@ import { queryParams } from './utils'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
 
+const isApple = typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
+
 let contentChangeCount = 0
 window.onbeforeunload = function () {
   return contentChangeCount > 1 ? false : null
@@ -67,12 +69,14 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
 
   // 2. | 撤销 | 重做 | 格式刷 | 清除格式 |
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
+  undoDom.title = `撤销(${isApple ? '⌘' : 'Ctrl'}+Z)`
   undoDom.onclick = function () {
     console.log('undo')
     instance.command.executeUndo()
   }
 
   const redoDom = document.querySelector<HTMLDivElement>('.menu-item__redo')!
+  redoDom.title = `重做(${isApple ? '⌘' : 'Ctrl'}+Y)`
   redoDom.onclick = function () {
     console.log('redo')
     instance.command.executeRedo()
@@ -110,29 +114,36 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     instance.command.executeFont(li.dataset.family!)
   }
 
-  document.querySelector<HTMLDivElement>('.menu-item__size-add')!.onclick = function () {
+  const sizeAddDom = document.querySelector<HTMLDivElement>('.menu-item__size-add')!
+  sizeAddDom.title = `增大字号(${isApple ? '⌘' : 'Ctrl'}+[)`
+  sizeAddDom.onclick = function () {
     console.log('size-add')
     instance.command.executeSizeAdd()
   }
 
-  document.querySelector<HTMLDivElement>('.menu-item__size-minus')!.onclick = function () {
+  const sizeMinusDom = document.querySelector<HTMLDivElement>('.menu-item__size-minus')!
+  sizeMinusDom.title = `减小字号(${isApple ? '⌘' : 'Ctrl'}+])`
+  sizeMinusDom.onclick = function () {
     console.log('size-minus')
     instance.command.executeSizeMinus()
   }
 
   const boldDom = document.querySelector<HTMLDivElement>('.menu-item__bold')!
+  boldDom.title = `加粗(${isApple ? '⌘' : 'Ctrl'}+B)`
   boldDom.onclick = function () {
     console.log('bold')
     instance.command.executeBold()
   }
 
   const italicDom = document.querySelector<HTMLDivElement>('.menu-item__italic')!
+  italicDom.title = `斜体(${isApple ? '⌘' : 'Ctrl'}+I)`
   italicDom.onclick = function () {
     console.log('italic')
     instance.command.executeItalic()
   }
 
   const underlineDom = document.querySelector<HTMLDivElement>('.menu-item__underline')!
+  underlineDom.title = `下划线(${isApple ? '⌘' : 'Ctrl'}+U)`
   underlineDom.onclick = function () {
     console.log('underline')
     instance.command.executeUnderline()
@@ -145,12 +156,14 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   }
 
   const superscriptDom = document.querySelector<HTMLDivElement>('.menu-item__superscript')!
+  superscriptDom.title = `上标(${isApple ? '⌘' : 'Ctrl'}+Shift+,)`
   superscriptDom.onclick = function () {
     console.log('superscript')
     instance.command.executeSuperscript()
   }
 
   const subscriptDom = document.querySelector<HTMLDivElement>('.menu-item__subscript')!
+  subscriptDom.title = `下标(${isApple ? '⌘' : 'Ctrl'}+Shift+.)`
   subscriptDom.onclick = function () {
     console.log('subscript')
     instance.command.executeSubscript()
@@ -179,24 +192,28 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   }
 
   const leftDom = document.querySelector<HTMLDivElement>('.menu-item__left')!
+  leftDom.title = `左对齐(${isApple ? '⌘' : 'Ctrl'}+L)`
   leftDom.onclick = function () {
     console.log('left')
     instance.command.executeLeft()
   }
 
   const centerDom = document.querySelector<HTMLDivElement>('.menu-item__center')!
+  centerDom.title = `居中对齐(${isApple ? '⌘' : 'Ctrl'}+E)`
   centerDom.onclick = function () {
     console.log('center')
     instance.command.executeCenter()
   }
 
   const rightDom = document.querySelector<HTMLDivElement>('.menu-item__right')!
+  rightDom.title = `右对齐(${isApple ? '⌘' : 'Ctrl'}+R)`
   rightDom.onclick = function () {
     console.log('right')
     instance.command.executeRight()
   }
 
   const alignmentDom = document.querySelector<HTMLDivElement>('.menu-item__alignment')!
+  alignmentDom.title = `两端对齐(${isApple ? '⌘' : 'Ctrl'}+J)`
   alignmentDom.onclick = function () {
     console.log('alignment')
     instance.command.executeAlignment()
@@ -747,6 +764,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
   const replaceInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__replace input')!
   const searchDom = document.querySelector<HTMLDivElement>('.menu-item__search')!
+  searchDom.title = `搜索与替换(${isApple ? '⌘' : 'Ctrl'}+F)`
   const searchResultDom = searchCollapseDom.querySelector<HTMLLabelElement>('.search-result')!
   function setSearchResult() {
     const result = instance.command.getSearchNavigateInfo()
@@ -804,7 +822,9 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     setSearchResult()
   }
 
-  document.querySelector<HTMLDivElement>('.menu-item__print')!.onclick = function () {
+  const printDom = document.querySelector<HTMLDivElement>('.menu-item__print')!
+  printDom.title = `打印(${isApple ? '⌘' : 'Ctrl'}+P)`
+  printDom.onclick = function () {
     console.log('print')
     instance.command.executePrint()
   }
@@ -1127,7 +1147,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
   instance.register.shortcutList([
     {
       key: KeyMap.P,
-      ctrl: true,
+      mod: true,
       isGlobal: true,
       callback: (command: Command) => {
         command.executePrint()
@@ -1135,7 +1155,7 @@ function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResul
     },
     {
       key: KeyMap.F,
-      ctrl: true,
+      mod: true,
       isGlobal: true,
       callback: (command: Command) => {
         const text = command.getRangeText()
