@@ -463,16 +463,21 @@ export class Draw {
   }
 
   public setPageScale(payload: number) {
+    const dpr = window.devicePixelRatio
     this.options.scale = payload
     const width = this.getWidth()
     const height = this.getHeight()
     this.container.style.width = `${width}px`
-    this.pageList.forEach(p => {
+    this.pageList.forEach((p, i) => {
       p.width = width
       p.height = height
       p.style.width = `${width}px`
       p.style.height = `${height}px`
       p.style.marginBottom = `${this.getPageGap()}px`
+      // 分辨率
+      p.width = width * dpr
+      p.height = height * dpr
+      this.ctxList[i].scale(dpr, dpr)
     })
     this.render({
       isSubmitHistory: false,
@@ -481,6 +486,21 @@ export class Draw {
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
     }
+  }
+
+  public setPageDevicePixel() {
+    const dpr = window.devicePixelRatio
+    const width = this.getWidth()
+    const height = this.getHeight()
+    this.pageList.forEach((p, i) => {
+      p.width = width * dpr
+      p.height = height * dpr
+      this.ctxList[i].scale(dpr, dpr)
+    })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
   }
 
   public setPaperSize(width: number, height: number) {
