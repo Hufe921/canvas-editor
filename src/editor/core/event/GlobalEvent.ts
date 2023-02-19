@@ -24,6 +24,7 @@ export class GlobalEvent {
   private hyperlinkParticle: HyperlinkParticle
   private control: Control
   private dateParticle: DateParticle
+  private dprMediaQueryList: MediaQueryList
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -37,6 +38,7 @@ export class GlobalEvent {
     this.hyperlinkParticle = draw.getHyperlinkParticle()
     this.dateParticle = draw.getDateParticle()
     this.control = draw.getControl()
+    this.dprMediaQueryList = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
   }
 
   public register() {
@@ -51,6 +53,7 @@ export class GlobalEvent {
     document.addEventListener('mouseup', this.setCanvasEventAbility)
     document.addEventListener('wheel', this.setPageScale, { passive: false })
     document.addEventListener('visibilitychange', this._handleVisibilityChange)
+    this.dprMediaQueryList.addEventListener('change', this._handleDprChange)
   }
 
   public removeEvent() {
@@ -60,6 +63,7 @@ export class GlobalEvent {
     document.removeEventListener('mouseup', this.setCanvasEventAbility)
     document.removeEventListener('wheel', this.setPageScale)
     document.removeEventListener('visibilitychange', this._handleVisibilityChange)
+    this.dprMediaQueryList.removeEventListener('change', this._handleDprChange)
   }
 
   public recoverEffect = (evt: Event) => {
@@ -122,6 +126,10 @@ export class GlobalEvent {
     if (document.visibilityState) {
       this.cursor?.drawCursor()
     }
+  }
+
+  private _handleDprChange = () => {
+    this.draw.setPageDevicePixel()
   }
 
 }
