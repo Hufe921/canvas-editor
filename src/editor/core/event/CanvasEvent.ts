@@ -19,10 +19,19 @@ import click from './handlers/click'
 import composition from './handlers/composition'
 import drag from './handlers/drag'
 
+export interface ICompositionInfo {
+  elementList: IElement[];
+  startIndex: number;
+  endIndex: number;
+  value: string;
+}
+
 export class CanvasEvent {
 
   public isAllowSelection: boolean
-  public isCompositing: boolean
+  public isComposing: boolean
+  public compositionInfo: ICompositionInfo | null
+
   public isAllowDrag: boolean
   public isAllowDrop: boolean
   public cacheRange: IRange | null
@@ -44,7 +53,8 @@ export class CanvasEvent {
     this.position = this.draw.getPosition()
 
     this.isAllowSelection = false
-    this.isCompositing = false
+    this.isComposing = false
+    this.compositionInfo = null
     this.isAllowDrag = false
     this.isAllowDrop = false
     this.cacheRange = null
@@ -161,8 +171,8 @@ export class CanvasEvent {
     composition.compositionstart(this)
   }
 
-  public compositionend() {
-    composition.compositionend(this)
+  public compositionend(evt: CompositionEvent) {
+    composition.compositionend(this, evt)
   }
 
   public drop(evt: DragEvent) {

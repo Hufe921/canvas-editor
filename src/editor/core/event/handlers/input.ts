@@ -11,22 +11,24 @@ export function input(data: string, host: CanvasEvent) {
   if (isReadonly) return
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
-  if (!data || !cursorPosition || host.isCompositing) return
+  if (!data || !cursorPosition) return
   const control = draw.getControl()
   if (control.isPartRangeInControlOutside()) {
     // 忽略选区部分在控件的输入
     return
   }
+  // 移除合成输入
+  if (!host.isComposing) {
+    const cursor = draw.getCursor()
+    cursor.clearAgentDomValue()
+  } else {
+    removeComposingInput(host)
+  }
   const activeControl = control.getActiveControl()
   const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
   const text = data.replaceAll(`\n`, ZERO)
-  const cursor = draw.getCursor()
-  const agentDom = cursor.getAgentDom()
-  agentDom.value = ''
-  const { index } = cursorPosition
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
-  const isCollapsed = startIndex === endIndex
   // 表格需要上下文信息
   const positionContext = position.getPositionContext()
   let restArg = {}
@@ -57,6 +59,9 @@ export function input(data: string, host: CanvasEvent) {
         }
       })
     }
+    if (host.isComposing) {
+      newElement.underline = true
+    }
     return newElement
   })
   // 控件-移除placeholder
@@ -64,19 +69,35 @@ export function input(data: string, host: CanvasEvent) {
   if (activeControl && elementList[endIndex + 1]?.controlId === element.controlId) {
     curIndex = control.setValue(inputData)
   } else {
-    let start = 0
-    if (isCollapsed) {
-      start = index + 1
-    } else {
-      start = startIndex + 1
-      elementList.splice(startIndex + 1, endIndex - startIndex)
+    const start = startIndex + 1
+    if (startIndex !== endIndex) {
+      elementList.splice(start, endIndex - startIndex)
     }
     // 禁止直接使用解构存在性能问题
     for (let i = 0; i < inputData.length; i++) {
       elementList.splice(start + i, 0, inputData[i])
     }
-    curIndex = (isCollapsed ? index : startIndex) + inputData.length
+    curIndex = startIndex + inputData.length
   }
   rangeManager.setRange(curIndex, curIndex)
-  draw.render({ curIndex })
+  draw.render({
+    curIndex
+  })
+  if (host.isComposing) {
+    host.compositionInfo = {
+      elementList,
+      value: text,
+      startIndex: curIndex - inputData.length,
+      endIndex: curIndex
+    }
+  }
+}
+
+export function removeComposingInput(host: CanvasEvent) {
+  if (!host.compositionInfo) return
+  const { elementList, startIndex, endIndex } = host.compositionInfo
+  elementList.splice(startIndex + 1, endIndex - startIndex)
+  const rangeManager = host.getDraw().getRange()
+  rangeManager.setRange(startIndex, startIndex)
+  host.compositionInfo = null
 }
