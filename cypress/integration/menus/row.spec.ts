@@ -12,12 +12,6 @@ describe('菜单-行处理', () => {
 
   it('左对齐', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].rowFlex).to.eq('left')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -29,19 +23,17 @@ describe('菜单-行处理', () => {
       cy.get('.menu-item__left')
         .click()
         .then(() => {
-          cy.get('@canvas').type('{ctrl}s')
+          const payload = editor.command.getValue()
+
+          const data = payload.data
+
+          expect(data[0].rowFlex).to.eq('left')
         })
     })
   })
 
   it('居中对齐', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].rowFlex).to.eq('center')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -53,19 +45,17 @@ describe('菜单-行处理', () => {
       cy.get('.menu-item__center')
         .click()
         .then(() => {
-          cy.get('@canvas').type('{ctrl}s')
+          const payload = editor.command.getValue()
+
+          const data = payload.data
+
+          expect(data[0].rowFlex).to.eq('center')
         })
     })
   })
 
   it('靠右对齐', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].rowFlex).to.eq('right')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -77,19 +67,17 @@ describe('菜单-行处理', () => {
       cy.get('.menu-item__right')
         .click()
         .then(() => {
-          cy.get('@canvas').type('{ctrl}s')
+          const payload = editor.command.getValue()
+
+          const data = payload.data
+
+          expect(data[0].rowFlex).to.eq('right')
         })
     })
   })
 
   it('行间距', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].rowMargin).to.eq(1.25)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -100,9 +88,17 @@ describe('菜单-行处理', () => {
 
       cy.get('.menu-item__row-margin').as('rowMargin').click()
 
-      cy.get('@rowMargin').find('li').eq(1).click()
+      cy.get('@rowMargin')
+        .find('li')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].rowMargin).to.eq(1.25)
+        })
     })
   })
 

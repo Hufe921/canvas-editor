@@ -13,14 +13,6 @@ describe('菜单-水印', () => {
 
   it('添加水印', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const { watermark } = payload
-
-        expect(watermark?.data).to.eq(text)
-
-        expect(watermark?.size).to.eq(size)
-      }
-
       cy.get('.menu-item__watermark').click()
 
       cy.get('.menu-item__watermark li').eq(0).click()
@@ -33,27 +25,37 @@ describe('菜单-水印', () => {
 
       cy.get('@size').type(`${size}`)
 
-      cy.get('.dialog-menu button').eq(1).click()
+      cy.get('.dialog-menu button')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const { watermark } = payload
+
+          expect(watermark?.data).to.eq(text)
+
+          expect(watermark?.size).to.eq(size)
+        })
     })
   })
 
   it('删除水印', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const { watermark } = payload
-
-        expect(watermark?.data).to.eq(undefined)
-
-        expect(watermark?.size).to.eq(undefined)
-      }
-
       cy.get('.menu-item__watermark').click()
 
-      cy.get('.menu-item__watermark li').eq(1).click()
+      cy.get('.menu-item__watermark li')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const { watermark } = payload
+
+          expect(watermark?.data).to.eq(undefined)
+
+          expect(watermark?.size).to.eq(undefined)
+        })
     })
   })
 

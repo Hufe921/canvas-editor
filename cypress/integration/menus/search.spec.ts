@@ -14,17 +14,6 @@ describe('菜单-搜索', () => {
 
   it('搜索', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        // 普通文本
-        expect(data[0].value).to.be.eq(replaceText)
-
-        // 表格内文本
-        expect(data[1].trList![0].tdList[0].value[0].value).to.be.eq(replaceText)
-        expect(data[1].trList![1].tdList[1].value[0].value).to.be.eq(replaceText)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -100,9 +89,21 @@ describe('菜单-搜索', () => {
 
       cy.get('@replace').find('input').type(replaceText)
 
-      cy.get('@replace').find('button').click()
+      cy.get('@replace')
+        .find('button')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          // 普通文本
+          expect(data[0].value).to.be.eq(replaceText)
+
+          // 表格内文本
+          expect(data[1].trList![0].tdList[0].value[0].value).to.be.eq(replaceText)
+          expect(data[1].trList![1].tdList[1].value[0].value).to.be.eq(replaceText)
+        })
     })
   })
 

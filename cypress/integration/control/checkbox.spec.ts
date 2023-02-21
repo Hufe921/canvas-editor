@@ -13,12 +13,6 @@ describe('控件-复选框', () => {
 
   it('复选框', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data[0]
-
-        expect(data.control!.code).to.be.eq('98175')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -40,7 +34,11 @@ describe('控件-复选框', () => {
         }
       }])
 
-      cy.get('@canvas').type('{ctrl}s')
+      const payload = editor.command.getValue()
+
+      const data = payload.data[0]
+
+      expect(data.control!.code).to.be.eq('98175')
     })
   })
 
