@@ -13,16 +13,6 @@ describe('菜单-超链接', () => {
 
   it('超链接', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].type).to.eq('hyperlink')
-
-        expect(data[0].url).to.eq(url)
-
-        expect(data[0]?.valueList?.[0].value).to.eq(text)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -33,9 +23,20 @@ describe('菜单-超链接', () => {
 
       cy.get('.dialog-option__item [name="url"]').type(url)
 
-      cy.get('.dialog-menu button').eq(1).click()
+      cy.get('.dialog-menu button')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].type).to.eq('hyperlink')
+
+          expect(data[0].url).to.eq(url)
+
+          expect(data[0]?.valueList?.[0].value).to.eq(text)
+        })
     })
   })
 

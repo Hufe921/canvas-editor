@@ -13,12 +13,6 @@ describe('菜单-文本处理', () => {
 
   it('字体', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].font).to.eq('宋体')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -31,20 +25,22 @@ describe('菜单-文本处理', () => {
 
       cy.get('.menu-item__font').as('font').click()
 
-      cy.get('@font').find('li').eq(1).click()
+      cy.get('@font')
+        .find('li')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].font).to.eq('宋体')
+        })
     })
   })
 
   it('字体增大', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].size).to.eq(18)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -55,20 +51,20 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__size-add').click()
+      cy.get('.menu-item__size-add')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].size).to.eq(18)
+        })
     })
   })
 
   it('字体减小', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].size).to.eq(14)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -79,20 +75,20 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__size-minus').click()
+      cy.get('.menu-item__size-minus')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].size).to.eq(14)
+        })
     })
   })
 
   it('加粗', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].bold).to.eq(true)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -103,20 +99,20 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__bold').click()
+      cy.get('.menu-item__bold')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].bold).to.eq(true)
+        })
     })
   })
 
   it('斜体', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].italic).to.eq(true)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -127,20 +123,20 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__italic').click()
+      cy.get('.menu-item__italic')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].italic).to.eq(true)
+        })
     })
   })
 
   it('下划线', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].underline).to.eq(true)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -151,20 +147,20 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__underline').click()
+      cy.get('.menu-item__underline')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].underline).to.eq(true)
+        })
     })
   })
 
   it('删除线', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].strikeout).to.eq(true)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -175,20 +171,20 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__strikeout').click()
+      cy.get('.menu-item__strikeout')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].strikeout).to.eq(true)
+        })
     })
   })
 
   it('上标', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].type).to.eq('superscript')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -199,20 +195,20 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__superscript').click()
+      cy.get('.menu-item__superscript')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].type).to.eq('superscript')
+        })
     })
   })
 
   it('下标', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].type).to.eq('subscript')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -223,20 +219,18 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__subscript').click()
+      cy.get('.menu-item__subscript').click().then(() => {
+        const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+        const data = payload.data
+
+        expect(data[0].type).to.eq('subscript')
+      })
     })
   })
 
   it('字体颜色', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].color).to.eq('red')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -249,18 +243,16 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeColor('red')
 
-      cy.get('@canvas').type('{ctrl}s')
+      const payload = editor.command.getValue()
+
+      const data = payload.data
+
+      expect(data[0].color).to.eq('red')
     })
   })
 
   it('高亮', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].highlight).to.eq('red')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -273,7 +265,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeHighlight('red')
 
-      cy.get('@canvas').type('{ctrl}s')
+      const payload = editor.command.getValue()
+
+      const data = payload.data
+
+      expect(data[0].highlight).to.eq('red')
     })
   })
 

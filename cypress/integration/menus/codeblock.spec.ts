@@ -12,14 +12,6 @@ describe('菜单-代码块', () => {
 
   it('代码块', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data[2]
-
-        expect(data.value).to.eq('log')
-
-        expect(data.color).to.eq('#b9a40a')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -28,9 +20,18 @@ describe('菜单-代码块', () => {
 
       cy.get('.dialog-option [name="codeblock"]').type(text)
 
-      cy.get('.dialog-menu button').eq(1).click()
+      cy.get('.dialog-menu button')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data[2]
+
+          expect(data.value).to.eq('log')
+
+          expect(data.color).to.eq('#b9a40a')
+        })
     })
   })
 

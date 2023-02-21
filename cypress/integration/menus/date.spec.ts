@@ -10,21 +10,22 @@ describe('菜单-日期选择器', () => {
 
   it('LaTeX', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].type).to.eq('date')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
       cy.get('.menu-item__date').click()
 
-      cy.get('.menu-item__date li').first().click()
+      cy.get('.menu-item__date li')
+        .first()
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].type).to.eq('date')
+        })
     })
   })
 

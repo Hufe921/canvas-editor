@@ -12,17 +12,17 @@ describe('基础功能', () => {
 
   it('编辑保存', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        expect(payload.data[0].value).to.eq(text)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
-      cy.get('@canvas').type(text)
+      cy.get('@canvas')
+        .type(text)
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type(`{ctrl}s`)
+          expect(payload.data[0].value).to.eq(text)
+        })
     })
   })
 
@@ -51,13 +51,7 @@ describe('基础功能', () => {
   })
 
   it('字数统计', () => {
-    cy.getEditor().then((editor: Editor) => {
-      editor.listener.contentChange = async function () {
-        const wordCount = await editor.command.getWordCount()
-
-        expect(7).to.be.eq(wordCount)
-      }
-
+    cy.getEditor().then(async (editor: Editor) => {
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -65,6 +59,8 @@ describe('基础功能', () => {
       editor.command.executeInsertElementList([{
         value: 'canvas-editor 2022 编辑器'
       }])
+
+      cy.get('.word-count').contains('7')
     })
   })
 

@@ -12,28 +12,24 @@ describe('菜单-撤销&重做', () => {
 
   it('撤销', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        expect(payload.data[0].value).to.eq(text)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
       cy.get('@canvas').type(`${text}1`)
 
-      cy.get('.menu-item__undo').click()
+      cy.get('.menu-item__undo')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type(`{ctrl}s`)
+          expect(payload.data[0].value).to.eq(text)
+        })
     })
   })
 
   it('重做', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        expect(payload.data[0].value).to.eq(`${text}1`)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -42,9 +38,13 @@ describe('菜单-撤销&重做', () => {
 
       cy.get('.menu-item__undo').click()
 
-      cy.get('.menu-item__redo').click()
+      cy.get('.menu-item__redo')
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type(`{ctrl}s`)
+          expect(payload.data[0].value).to.eq(`${text}1`)
+        })
     })
   })
 
