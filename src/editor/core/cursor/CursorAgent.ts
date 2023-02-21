@@ -103,8 +103,8 @@ export class CursorAgent {
     this.canvasEvent.compositionstart()
   }
 
-  private _compositionend() {
-    this.canvasEvent.compositionend()
+  private _compositionend(evt: CompositionEvent) {
+    this.canvasEvent.compositionend(evt)
   }
 
 }
