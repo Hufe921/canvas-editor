@@ -14,14 +14,6 @@ describe('控件-列举型', () => {
 
   it('列举型', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data[0]
-
-        expect(data.control!.value![0].value).to.be.eq(text)
-
-        expect(data.control!.code).to.be.eq('98175')
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -45,9 +37,18 @@ describe('控件-列举型', () => {
 
       cy.get('@canvas').type(`{leftArrow}`)
 
-      cy.get('.ce-select-control-popup li').eq(0).click()
+      cy.get('.ce-select-control-popup li')
+        .eq(0)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data[0]
+
+          expect(data.control!.value![0].value).to.be.eq(text)
+
+          expect(data.control!.code).to.be.eq('98175')
+        })
     })
   })
 

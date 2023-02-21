@@ -35,6 +35,14 @@ export class Cursor {
     return this.cursorAgent.getAgentCursorDom()
   }
 
+  public getAgentDomValue(): string {
+    return this.getAgentDom().value
+  }
+
+  public clearAgentDomValue(): string {
+    return this.getAgentDom().value = ''
+  }
+
   public drawCursor() {
     const isReadonly = this.draw.isReadonly()
     const cursorPosition = this.position.getCursorPosition()

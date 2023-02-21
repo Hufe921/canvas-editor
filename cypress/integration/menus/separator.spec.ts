@@ -10,25 +10,25 @@ describe('菜单-分割线', () => {
 
   it('分割线', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].type).to.eq('separator')
-
-        expect(data[0]?.dashArray?.[0]).to.eq(1)
-
-        expect(data[0]?.dashArray?.[1]).to.eq(1)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
       cy.get('.menu-item__separator').click()
 
-      cy.get('.menu-item__separator li').eq(1).click()
+      cy.get('.menu-item__separator li')
+        .eq(1)
+        .click()
         .then(() => {
-          cy.get('@canvas').type('{ctrl}s')
+          const payload = editor.command.getValue()
+
+          const data = payload.data
+
+          expect(data[0].type).to.eq('separator')
+
+          expect(data[0]?.dashArray?.[0]).to.eq(1)
+
+          expect(data[0]?.dashArray?.[1]).to.eq(1)
         })
     })
   })

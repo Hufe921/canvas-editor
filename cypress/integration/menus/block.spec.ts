@@ -12,14 +12,6 @@ describe('菜单-内容块', () => {
 
   it('内容块', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].type).to.eq('block')
-
-        expect(data[0].block?.iframeBlock?.src).to.eq(url)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -32,9 +24,18 @@ describe('菜单-内容块', () => {
 
       cy.get('.dialog-option__item [name="value"]').type(url)
 
-      cy.get('.dialog-menu button').eq(1).click()
+      cy.get('.dialog-menu button')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].type).to.eq('block')
+
+          expect(data[0].block?.iframeBlock?.src).to.eq(url)
+        })
     })
   })
 

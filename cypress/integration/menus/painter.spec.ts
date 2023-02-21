@@ -13,16 +13,6 @@ describe('菜单-格式刷', () => {
 
   it('格式刷', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data.length).to.eq(1)
-
-        expect(data[0].italic).to.eq(true)
-
-        expect(data[0].bold).to.eq(true)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -46,7 +36,15 @@ describe('菜单-格式刷', () => {
 
           editor.command.executeApplyPainterStyle()
 
-          cy.get('@canvas').type('{ctrl}s')
+          const payload = editor.command.getValue()
+
+          const data = payload.data
+
+          expect(data.length).to.eq(1)
+
+          expect(data[0].italic).to.eq(true)
+
+          expect(data[0].bold).to.eq(true)
         })
     })
   })

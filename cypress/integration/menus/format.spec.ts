@@ -13,14 +13,6 @@ describe('菜单-清除格式', () => {
 
   it('清除格式', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].italic).to.eq(false)
-
-        expect(data[0].bold).to.eq(false)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -36,7 +28,13 @@ describe('菜单-清除格式', () => {
       cy.get('.menu-item__format')
         .click()
         .then(() => {
-          cy.get('@canvas').type('{ctrl}s')
+          const payload = editor.command.getValue()
+
+          const data = payload.data
+
+          expect(data[0].italic).to.eq(false)
+
+          expect(data[0].bold).to.eq(false)
         })
     })
   })

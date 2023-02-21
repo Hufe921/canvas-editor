@@ -6,6 +6,7 @@ import { isMod } from '../../../utils/hotkey'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
+  if (host.isComposing) return
   const draw = host.getDraw()
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()

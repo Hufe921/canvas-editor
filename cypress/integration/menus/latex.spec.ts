@@ -12,14 +12,6 @@ describe('菜单-LaTeX', () => {
 
   it('LaTeX', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data
-
-        expect(data[0].type).to.eq('latex')
-
-        expect(data[0].value).to.eq(text)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -28,9 +20,18 @@ describe('菜单-LaTeX', () => {
 
       cy.get('.dialog-option__item [name="value"]').type(text)
 
-      cy.get('.dialog-menu button').eq(1).click()
+      cy.get('.dialog-menu button')
+        .eq(1)
+        .click()
+        .then(() => {
+          const payload = editor.command.getValue()
 
-      cy.get('@canvas').type('{ctrl}s')
+          const data = payload.data
+
+          expect(data[0].type).to.eq('latex')
+
+          expect(data[0].value).to.eq(text)
+        })
     })
   })
 

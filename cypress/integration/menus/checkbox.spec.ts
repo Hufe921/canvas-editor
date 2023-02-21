@@ -12,12 +12,6 @@ describe('菜单-复选框', () => {
 
   it('代码块', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.listener.saved = function (payload) {
-        const data = payload.data[0]
-
-        expect(data.checkbox?.value).to.eq(true)
-      }
-
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
@@ -30,7 +24,11 @@ describe('菜单-复选框', () => {
         }
       }])
 
-      cy.get('@canvas').type('{ctrl}s')
+      const payload = editor.command.getValue()
+
+      const data = payload.data[0]
+
+      expect(data.checkbox?.value).to.eq(true)
     })
   })
 
