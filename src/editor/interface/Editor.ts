@@ -2,6 +2,7 @@ import { IElement } from '..'
 import { EditorMode, PageMode } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
 import { IControlOption } from './Control'
+import { ICursorOption } from './Cursor'
 import { IHeader } from './Header'
 import { IMargin } from './Margin'
 import { IWatermark } from './Watermark'
@@ -44,6 +45,7 @@ export interface IEditorOption {
   watermark?: IWatermark;
   control?: IControlOption;
   checkbox?: ICheckboxOption;
+  cursor?: ICursorOption;
 }
 
 export interface IEditorResult {
