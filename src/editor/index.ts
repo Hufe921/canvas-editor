@@ -29,6 +29,8 @@ import { KeyMap } from './dataset/enum/KeyMap'
 import { BlockType } from './dataset/enum/Block'
 import { IBlock } from './interface/Block'
 import { ILang } from './interface/i18n/I18n'
+import { ICursorOption } from './interface/Cursor'
+import { defaultCursorOption } from './dataset/constant/Cursor'
 
 export default class Editor {
 
@@ -53,6 +55,10 @@ export default class Editor {
     const checkboxOptions: Required<ICheckboxOption> = {
       ...defaultCheckboxOption,
       ...options.checkbox
+    }
+    const cursorOptions: Required<ICursorOption> = {
+      ...defaultCursorOption,
+      ...options.cursor
     }
 
     const editorOptions: DeepRequired<IEditorOption> = {
@@ -93,7 +99,8 @@ export default class Editor {
       header: headerOptions,
       watermark: waterMarkOptions,
       control: controlOptions,
-      checkbox: checkboxOptions
+      checkbox: checkboxOptions,
+      cursor: cursorOptions
     }
     formatElementList(elementList, {
       editorOptions
