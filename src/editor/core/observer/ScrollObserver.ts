@@ -1,20 +1,21 @@
-import { IEditorOption } from '../../interface/Editor'
 import { debounce } from '../../utils'
 import { Draw } from '../draw/Draw'
+
+export interface IElementVisibleInfo {
+  intersectionHeight: number;
+}
+
+export interface IPageVisibleInfo {
+  intersectionPageNo: number;
+  visiblePageNoList: number[];
+}
 
 export class ScrollObserver {
 
   private draw: Draw
-  private options: Required<IEditorOption>
-  private pageContainer: HTMLDivElement
-  private pageHeight: number
 
   constructor(draw: Draw) {
     this.draw = draw
-    this.options = draw.getOptions()
-    this.pageContainer = draw.getPageContainer()
-    const { height, pageGap } = this.options
-    this.pageHeight = height + pageGap
     // 监听滚轮
     setTimeout(() => {
       if (!window.scrollY) {
@@ -32,35 +33,41 @@ export class ScrollObserver {
     document.removeEventListener('scroll', this._observer)
   }
 
-  private _observer = debounce(() => {
-    const rect = this.pageContainer.getBoundingClientRect()
-    const top = Math.abs(rect.top)
-    const bottom = top + window.innerHeight
+  public getElementVisibleInfo(element: Element): IElementVisibleInfo {
+    const rect = element.getBoundingClientRect()
+    const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight)
+    const visibleHeight = Math.min(rect.bottom, viewHeight) - Math.max(rect.top, 0)
+    return {
+      intersectionHeight: visibleHeight > 0 ? visibleHeight : 0
+    }
+  }
+
+  public getPageVisibleInfo(): IPageVisibleInfo {
     const pageList = this.draw.getPageList()
-    // 计算显示页
     const visiblePageNoList: number[] = []
     let intersectionPageNo = 0
     let intersectionMaxHeight = 0
     for (let i = 0; i < pageList.length; i++) {
-      const curTop = i * this.pageHeight
-      const curBottom = (i + 1) * this.pageHeight
-      if (curTop > bottom) break
-      if (curBottom < top) continue
-      // 计算交叉高度
-      let intersectionHeight = 0
-      if (curTop < top && curBottom < bottom) {
-        intersectionHeight = curBottom - top
-      } else if (curTop > top && curBottom > bottom) {
-        intersectionHeight = bottom - curTop
-      } else {
-        intersectionHeight = rect.height
+      const curPage = pageList[i]
+      const { intersectionHeight } = this.getElementVisibleInfo(curPage)
+      // 之前页存在交叉 && 当前页不交叉则后续均不交叉，结束循环
+      if (intersectionMaxHeight && !intersectionHeight) break
+      if (intersectionHeight) {
+        visiblePageNoList.push(i)
       }
       if (intersectionHeight > intersectionMaxHeight) {
         intersectionMaxHeight = intersectionHeight
         intersectionPageNo = i
       }
-      visiblePageNoList.push(i)
     }
+    return {
+      intersectionPageNo,
+      visiblePageNoList
+    }
+  }
+
+  private _observer = debounce(() => {
+    const { intersectionPageNo, visiblePageNoList } = this.getPageVisibleInfo()
     this.draw.setIntersectionPageNo(intersectionPageNo)
     this.draw.setVisiblePageNoList(visiblePageNoList)
   }, 150)
