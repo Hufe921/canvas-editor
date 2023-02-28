@@ -118,7 +118,7 @@ export class CommandAdapt {
     const isCollapsed = startIndex === endIndex
     this.draw.render({
       curIndex: isCollapsed ? startIndex : undefined,
-      isComputeRowList: false,
+      isCompute: false,
       isSubmitHistory: false,
       isSetCursor: isCollapsed
     })
@@ -1092,7 +1092,7 @@ export class CommandAdapt {
     const { endIndex } = this.range.getRange()
     this.draw.render({
       curIndex: endIndex,
-      isComputeRowList: false
+      isCompute: false
     })
   }
 
@@ -1112,7 +1112,7 @@ export class CommandAdapt {
     const { endIndex } = this.range.getRange()
     this.draw.render({
       curIndex: endIndex,
-      isComputeRowList: false
+      isCompute: false
     })
   }
 

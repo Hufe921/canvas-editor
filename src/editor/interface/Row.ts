@@ -11,6 +11,7 @@ export interface IRow {
   height: number;
   ascent: number;
   rowFlex?: RowFlex;
+  startIndex: number;
   isPageBreak?: boolean;
   elementList: IRowElement[];
 }

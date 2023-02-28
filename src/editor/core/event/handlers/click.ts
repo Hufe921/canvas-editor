@@ -44,7 +44,7 @@ function dblclick(host: CanvasEvent) {
   draw.render({
     isSubmitHistory: false,
     isSetCursor: false,
-    isComputeRowList: false
+    isCompute: false
   })
 }
 
@@ -87,7 +87,7 @@ function threeClick(host: CanvasEvent) {
   draw.render({
     isSubmitHistory: false,
     isSetCursor: false,
-    isComputeRowList: false
+    isCompute: false
   })
 }
 
