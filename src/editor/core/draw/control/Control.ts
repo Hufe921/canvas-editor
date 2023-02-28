@@ -243,7 +243,8 @@ export class Control {
     if (nextIndex === elementList.length) {
       rightIndex = nextIndex - 1
     }
-    if (!~leftIndex || !~rightIndex) return startIndex
+    if (!~leftIndex && !~rightIndex) return startIndex
+    leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
     elementList.splice(leftIndex + 1, rightIndex - leftIndex)
     return leftIndex
