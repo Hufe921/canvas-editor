@@ -1168,23 +1168,21 @@ export class Draw {
         this._createPage(i)
       }
     }
+    // 移除多余页
+    const curPageCount = this.pageRowList.length
+    const prePageCount = this.pageList.length
+    if (prePageCount > curPageCount) {
+      const deleteCount = prePageCount - curPageCount
+      this.ctxList.splice(curPageCount, deleteCount)
+      this.pageList.splice(curPageCount, deleteCount)
+        .forEach(page => page.remove())
+    }
     // 绘制元素
     if (isLazy) {
       this._lazyRender()
     } else {
       this._immediateRender()
     }
-    // 移除多余页
-    nextTick(() => {
-      const curPageCount = this.pageRowList.length
-      const prePageCount = this.pageList.length
-      if (prePageCount > curPageCount) {
-        const deleteCount = prePageCount - curPageCount
-        this.ctxList.splice(curPageCount, deleteCount)
-        this.pageList.splice(curPageCount, deleteCount)
-          .forEach(page => page.remove())
-      }
-    })
     // 光标重绘
     if (isSetCursor) {
       const positionContext = this.position.getPositionContext()
