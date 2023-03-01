@@ -326,7 +326,10 @@ export class Draw {
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
     const activeControl = this.control.getActiveControl()
-    if (activeControl) return
+    if (activeControl) {
+      const element = activeControl.getElement()
+      if (element.controlComponent !== ControlComponent.POSTFIX) return
+    }
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
     if (isPartRangeInControlOutside) return
     const { startIndex, endIndex } = this.range.getRange()
