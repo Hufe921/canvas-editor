@@ -90,7 +90,7 @@ export class Position {
         positionList.push(positionItem)
         index++
         x += metrics.width
-        // 绘制表格内元素
+        // 计算表格内元素位置
         if (element.type === ElementType.TABLE) {
           const tdGap = tdPadding * 2
           for (let t = 0; t < element.trList!.length; t++) {
