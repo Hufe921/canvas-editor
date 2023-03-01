@@ -5,7 +5,8 @@ export interface IDrawOption {
   curIndex?: number;
   isSetCursor?: boolean;
   isSubmitHistory?: boolean;
-  isComputeRowList?: boolean;
+  isCompute?: boolean;
+  isLazy?: boolean;
 }
 
 export interface IDrawImagePayload {
@@ -19,15 +20,7 @@ export interface IDrawRowPayload {
   rowList: IRow[];
   pageNo: number;
   startIndex: number;
-  startX: number;
-  startY: number;
   innerWidth: number;
-}
-
-export interface IDrawRowResult {
-  x: number;
-  y: number;
-  index: number;
 }
 
 export interface IPainterOptions {

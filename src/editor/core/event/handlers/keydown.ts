@@ -116,7 +116,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         curIndex: isCollapsed ? anchorStartIndex : undefined,
         isSetCursor: isCollapsed,
         isSubmitHistory: false,
-        isComputeRowList: false
+        isCompute: false
       })
       evt.preventDefault()
     }
@@ -150,7 +150,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         curIndex: isCollapsed ? anchorStartIndex : undefined,
         isSetCursor: isCollapsed,
         isSubmitHistory: false,
-        isComputeRowList: false
+        isCompute: false
       })
       evt.preventDefault()
     }
@@ -229,7 +229,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         curIndex: isCollapsed ? anchorStartIndex : undefined,
         isSetCursor: isCollapsed,
         isSubmitHistory: false,
-        isComputeRowList: false
+        isCompute: false
       })
     }
   } else if (isMod(evt) && evt.key === KeyMap.Z) {

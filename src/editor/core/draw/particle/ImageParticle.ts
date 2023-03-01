@@ -4,12 +4,18 @@ import { Draw } from '../Draw'
 
 export class ImageParticle {
 
+  private draw: Draw
   protected options: Required<IEditorOption>
   protected imageCache: Map<string, HTMLImageElement>
 
   constructor(draw: Draw) {
+    this.draw = draw
     this.options = draw.getOptions()
     this.imageCache = new Map()
+  }
+
+  protected addImageObserver(promise: Promise<unknown>) {
+    this.draw.getImageObserver().add(promise)
   }
 
   public render(ctx: CanvasRenderingContext2D, element: IElement, x: number, y: number) {
@@ -20,12 +26,19 @@ export class ImageParticle {
       const img = this.imageCache.get(element.id!)!
       ctx.drawImage(img, x, y, width, height)
     } else {
-      const img = new Image()
-      img.src = element.value
-      img.onload = () => {
-        ctx.drawImage(img, x, y, width, height)
-        this.imageCache.set(element.id!, img)
-      }
+      const imageLoadPromise = new Promise((resolve, reject) => {
+        const img = new Image()
+        img.src = element.value
+        img.onload = () => {
+          ctx.drawImage(img, x, y, width, height)
+          this.imageCache.set(element.id!, img)
+          resolve(element)
+        }
+        img.onerror = (error) => {
+          reject(error)
+        }
+      })
+      this.addImageObserver(imageLoadPromise)
     }
   }
 

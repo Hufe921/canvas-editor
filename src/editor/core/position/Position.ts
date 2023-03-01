@@ -1,6 +1,7 @@
-import { ElementType } from '../..'
+import { ElementType, RowFlex } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
-import { ControlComponent } from '../../dataset/enum/Control'
+import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
+import { IComputePageRowPositionPayload, IComputePageRowPositionResult } from '../../interface/Position'
 import { IEditorOption } from '../../interface/Editor'
 import { IElementPosition } from '../../interface/Element'
 import { ICurrentPosition, IGetPositionByXYPayload, IPositionContext } from '../../interface/Position'
@@ -43,6 +44,106 @@ export class Position {
 
   public setPositionList(payload: IElementPosition[]) {
     this.positionList = payload
+  }
+
+  private computePageRowPosition(payload: IComputePageRowPositionPayload): IComputePageRowPositionResult {
+    const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
+    const { scale, tdPadding } = this.options
+    let x = startX
+    let y = startY
+    let index = startIndex
+    for (let i = 0; i < rowList.length; i++) {
+      const curRow = rowList[i]
+      // 计算行偏移量（行居中、居右）
+      if (curRow.rowFlex === RowFlex.CENTER) {
+        x += (innerWidth - curRow.width) / 2
+      } else if (curRow.rowFlex === RowFlex.RIGHT) {
+        x += innerWidth - curRow.width
+      }
+      // 当前td所在位置
+      const tablePreX = x
+      const tablePreY = y
+      for (let j = 0; j < curRow.elementList.length; j++) {
+        const element = curRow.elementList[j]
+        const metrics = element.metrics
+        const offsetY =
+          (element.imgDisplay !== ImageDisplay.INLINE && element.type === ElementType.IMAGE)
+            || element.type === ElementType.LATEX
+            ? curRow.ascent - metrics.height
+            : curRow.ascent
+        const positionItem: IElementPosition = {
+          pageNo,
+          index,
+          value: element.value,
+          rowNo: i,
+          metrics,
+          ascent: offsetY,
+          lineHeight: curRow.height,
+          isLastLetter: j === curRow.elementList.length - 1,
+          coordinate: {
+            leftTop: [x, y],
+            leftBottom: [x, y + curRow.height],
+            rightTop: [x + metrics.width, y],
+            rightBottom: [x + metrics.width, y + curRow.height]
+          }
+        }
+        positionList.push(positionItem)
+        index++
+        x += metrics.width
+        // 绘制表格内元素
+        if (element.type === ElementType.TABLE) {
+          const tdGap = tdPadding * 2
+          for (let t = 0; t < element.trList!.length; t++) {
+            const tr = element.trList![t]
+            for (let d = 0; d < tr.tdList!.length; d++) {
+              const td = tr.tdList[d]
+              td.positionList = []
+              const drawRowResult = this.computePageRowPosition({
+                positionList: td.positionList,
+                rowList: td.rowList!,
+                pageNo,
+                startIndex: 0,
+                startX: (td.x! + tdPadding) * scale + tablePreX,
+                startY: td.y! * scale + tablePreY,
+                innerWidth: (td.width! - tdGap) * scale
+              })
+              x = drawRowResult.x
+              y = drawRowResult.y
+            }
+          }
+          // 恢复初始x、y
+          x = tablePreX
+          y = tablePreY
+        }
+      }
+      x = startX
+      y += curRow.height
+    }
+    return { x, y, index }
+  }
+
+  public computePositionList() {
+    // 置空原位置信息
+    this.positionList = []
+    // 按每页行计算
+    const innerWidth = this.draw.getInnerWidth()
+    const pageRowList = this.draw.getPageRowList()
+    const margins = this.draw.getMargins()
+    const startX = margins[3]
+    const startY = margins[0]
+    for (let i = 0; i < pageRowList.length; i++) {
+      const rowList = pageRowList[i]
+      const startIndex = rowList[0].startIndex
+      this.computePageRowPosition({
+        positionList: this.positionList,
+        rowList,
+        pageNo: i,
+        startIndex,
+        startX,
+        startY,
+        innerWidth
+      })
+    }
   }
 
   public setCursorPosition(position: IElementPosition | null) {

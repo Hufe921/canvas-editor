@@ -123,7 +123,7 @@ export class CanvasEvent {
     this.draw.render({
       isSubmitHistory: false,
       isSetCursor: false,
-      isComputeRowList: false
+      isCompute: false
     })
   }
 

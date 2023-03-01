@@ -261,7 +261,11 @@ export class Search {
       const searchMatchIndexList = this.getSearchNavigateIndexList()
       if (searchMatchIndexList.includes(s)) {
         ctx.fillStyle = searchNavigateMatchColor
-        this.searchNavigateScrollIntoView(position)
+        // 是否是第一个字符，则移动到可视范围
+        const preSearchMatch = this.searchMatchList[s - 1]
+        if (!preSearchMatch || preSearchMatch.groupId !== searchMatch.groupId) {
+          this.searchNavigateScrollIntoView(position)
+        }
       } else {
         ctx.fillStyle = searchMatchColor
       }

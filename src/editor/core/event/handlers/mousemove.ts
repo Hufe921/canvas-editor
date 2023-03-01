@@ -73,6 +73,6 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   draw.render({
     isSubmitHistory: false,
     isSetCursor: false,
-    isComputeRowList: false
+    isCompute: false
   })
 }

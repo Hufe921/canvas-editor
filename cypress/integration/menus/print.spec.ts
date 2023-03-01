@@ -10,16 +10,16 @@ describe('菜单-打印', () => {
 
   it('打印', () => {
 
-    cy.getEditor().then((editor: Editor) => {
-      const imageList2 = editor.command.getImage()
+    cy.getEditor().then(async (editor: Editor) => {
+      const imageList2 = await editor.command.getImage()
       expect(imageList2.length).to.eq(2)
 
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
-      cy.wait(200).then(() => {
-        const imageList1 = editor.command.getImage()
+      cy.wait(200).then(async () => {
+        const imageList1 = await editor.command.getImage()
         expect(imageList1.length).to.eq(1)
       })
     })
