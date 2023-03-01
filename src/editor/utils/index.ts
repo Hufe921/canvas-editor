@@ -112,3 +112,9 @@ export function mergeObject<T>(source: T, target: T): T {
   }
   return target
 }
+
+export function nextTick(fn: Function) {
+  setTimeout(() => {
+    fn()
+  }, 0)
+}

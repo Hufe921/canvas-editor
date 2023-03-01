@@ -17,8 +17,9 @@ export function input(data: string, host: CanvasEvent) {
     // 忽略选区部分在控件的输入
     return
   }
+  const isComposing = host.isComposing
   // 移除合成输入
-  if (!host.isComposing) {
+  if (!isComposing) {
     const cursor = draw.getCursor()
     cursor.clearAgentDomValue()
   } else {
@@ -59,7 +60,7 @@ export function input(data: string, host: CanvasEvent) {
         }
       })
     }
-    if (host.isComposing) {
+    if (isComposing) {
       newElement.underline = true
     }
     return newElement
@@ -81,9 +82,10 @@ export function input(data: string, host: CanvasEvent) {
   }
   rangeManager.setRange(curIndex, curIndex)
   draw.render({
-    curIndex
+    curIndex,
+    isSubmitHistory: !isComposing
   })
-  if (host.isComposing) {
+  if (isComposing) {
     host.compositionInfo = {
       elementList,
       value: text,

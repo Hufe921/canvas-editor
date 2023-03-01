@@ -79,7 +79,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       curIndex,
       isSubmitHistory: isSetCheckbox,
       isSetCursor: !isDirectHitImage && !isDirectHitCheckbox,
-      isComputeRowList: false
+      isCompute: false
     })
   }
   // 预览工具组件

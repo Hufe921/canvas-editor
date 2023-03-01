@@ -26,17 +26,16 @@ new Editor(document.querySelector(".canvas-editor"), [
   ])
 ```
 
+## next features
+
+1. improve performance
+2. page header and footer
+3. control rules
+4. table paging
+
 ## snapshot
 
 ![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.9.8.png)
-
-## next features
-
-1. support mac os
-2. drag text (optimization)
-3. page header and footer
-4. control rules
-5. table paging
 
 ## install
 

@@ -118,7 +118,7 @@ export class CommandAdapt {
     const isCollapsed = startIndex === endIndex
     this.draw.render({
       curIndex: isCollapsed ? startIndex : undefined,
-      isComputeRowList: false,
+      isCompute: false,
       isSubmitHistory: false,
       isSetCursor: isCollapsed
     })
@@ -327,7 +327,10 @@ export class CommandAdapt {
     selection.forEach(el => {
       el.color = payload
     })
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
   public highlight(payload: string) {
@@ -338,7 +341,10 @@ export class CommandAdapt {
     selection.forEach(el => {
       el.highlight = payload
     })
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
   public rowFlex(payload: RowFlex) {
@@ -1092,7 +1098,7 @@ export class CommandAdapt {
     const { endIndex } = this.range.getRange()
     this.draw.render({
       curIndex: endIndex,
-      isComputeRowList: false
+      isCompute: false
     })
   }
 
@@ -1112,7 +1118,7 @@ export class CommandAdapt {
     const { endIndex } = this.range.getRange()
     this.draw.render({
       curIndex: endIndex,
-      isComputeRowList: false
+      isCompute: false
     })
   }
 
@@ -1173,7 +1179,8 @@ export class CommandAdapt {
     options.watermark.font = payload.font || font
     this.draw.render({
       isSetCursor: false,
-      isSubmitHistory: false
+      isSubmitHistory: false,
+      isCompute: false
     })
   }
 
@@ -1185,7 +1192,8 @@ export class CommandAdapt {
       options.watermark = { ...defaultWatermarkOption }
       this.draw.render({
         isSetCursor: false,
-        isSubmitHistory: false
+        isSubmitHistory: false,
+        isCompute: false
       })
     }
   }
@@ -1229,7 +1237,9 @@ export class CommandAdapt {
     if (index === null) return
     this.draw.render({
       isSetCursor: false,
-      isSubmitHistory: false
+      isSubmitHistory: false,
+      isCompute: false,
+      isLazy: false
     })
   }
 
@@ -1238,7 +1248,9 @@ export class CommandAdapt {
     if (index === null) return
     this.draw.render({
       isSetCursor: false,
-      isSubmitHistory: false
+      isSubmitHistory: false,
+      isCompute: false,
+      isLazy: false
     })
   }
 
@@ -1352,12 +1364,13 @@ export class CommandAdapt {
     })
   }
 
-  public print() {
+  public async print() {
     const { width, height, scale } = this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
-    printImageBase64(this.draw.getDataURL(), width, height)
+    const base64List = await this.draw.getDataURL()
+    printImageBase64(base64List, width, height)
     if (scale !== 1) {
       this.draw.setPageScale(scale)
     }
@@ -1393,7 +1406,7 @@ export class CommandAdapt {
     })
   }
 
-  public getImage(): string[] {
+  public getImage(): Promise<string[]> {
     return this.draw.getDataURL()
   }
 
