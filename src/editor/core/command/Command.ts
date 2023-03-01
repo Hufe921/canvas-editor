@@ -381,7 +381,7 @@ export class Command {
     return Command.changeImageDisplay(element, display)
   }
 
-  public getImage(): string[] {
+  public getImage(): Promise<string[]> {
     return Command.getImage()
   }
 

@@ -6,6 +6,7 @@ export interface IDrawOption {
   isSetCursor?: boolean;
   isSubmitHistory?: boolean;
   isCompute?: boolean;
+  isLazy?: boolean;
 }
 
 export interface IDrawImagePayload {

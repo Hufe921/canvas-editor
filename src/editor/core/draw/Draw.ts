@@ -49,6 +49,7 @@ import { IMargin } from '../../interface/Margin'
 import { BlockParticle } from './particle/block/BlockParticle'
 import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { I18n } from '../i18n/I18n'
+import { ImageObserver } from '../observer/ImageObserver'
 
 export class Draw {
 
@@ -96,6 +97,7 @@ export class Draw {
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
   private selectionObserver: SelectionObserver
+  private imageObserver: ImageObserver
 
   private rowList: IRow[]
   private pageRowList: IRow[][]
@@ -103,6 +105,7 @@ export class Draw {
   private painterOptions: IPainterOptions | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
+  private lazyRenderIntersectionObserver: IntersectionObserver | null
 
   constructor(
     rootContainer: HTMLElement,
@@ -154,6 +157,7 @@ export class Draw {
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver()
+    this.imageObserver = new ImageObserver()
 
     this.canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, this.canvasEvent)
@@ -169,6 +173,7 @@ export class Draw {
     this.painterOptions = null
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
+    this.lazyRenderIntersectionObserver = null
 
     this.render({ isSetCursor: false })
   }
@@ -412,6 +417,10 @@ export class Draw {
     return this.workerManager
   }
 
+  public getImageObserver(): ImageObserver {
+    return this.imageObserver
+  }
+
   public getI18n(): I18n {
     return this.i18n
   }
@@ -420,7 +429,14 @@ export class Draw {
     return this.rowList.length
   }
 
-  public getDataURL(): string[] {
+  public async getDataURL(): Promise<string[]> {
+    this.render({
+      isLazy: false,
+      isCompute: false,
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+    await this.imageObserver.allSettled()
     return this.pageList.map(c => c.toDataURL())
   }
 
@@ -1096,11 +1112,35 @@ export class Draw {
     }
   }
 
+  private _lazyRender() {
+    const positionList = this.position.getOriginalPositionList()
+    this.lazyRenderIntersectionObserver?.disconnect()
+    this.lazyRenderIntersectionObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const index = Number((<HTMLCanvasElement>entry.target).dataset.index)
+          this._drawPage(positionList, this.pageRowList[index], index)
+        }
+      })
+    })
+    this.pageList.forEach(el => {
+      this.lazyRenderIntersectionObserver!.observe(el)
+    })
+  }
+
+  private _immediateRender() {
+    const positionList = this.position.getOriginalPositionList()
+    for (let i = 0; i < this.pageRowList.length; i++) {
+      this._drawPage(positionList, this.pageRowList[i], i)
+    }
+  }
+
   public render(payload?: IDrawOption) {
     const {
       isSubmitHistory = true,
       isSetCursor = true,
-      isCompute = true
+      isCompute = true,
+      isLazy = true
     } = payload || {}
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
@@ -1118,30 +1158,22 @@ export class Draw {
         this.search.compute(searchKeyword)
       }
     }
-    // 清除光标
+    // 清除光标等副作用
+    this.imageObserver.clearAll()
     this.cursor.recoveryCursor()
-    // 绘制元素
+    // 创建纸张
     const positionList = this.position.getOriginalPositionList()
-    const { visiblePageNoList } = this.scrollObserver.getPageVisibleInfo()
-    const minPageNo = visiblePageNoList[0]
-    const maxPageNo = visiblePageNoList[visiblePageNoList.length - 1]
     for (let i = 0; i < this.pageRowList.length; i++) {
       if (!this.pageList[i]) {
         this._createPage(i)
       }
-      // 优先绘制可见页
-      if (i >= minPageNo && i <= maxPageNo) {
-        this._drawPage(positionList, this.pageRowList[i], i)
-      }
     }
-    // 渲染后续不可见页
-    nextTick(() => {
-      for (let i = 0; i < this.pageRowList.length; i++) {
-        if (i < minPageNo || i > maxPageNo) {
-          this._drawPage(positionList, this.pageRowList[i], i)
-        }
-      }
-    })
+    // 绘制元素
+    if (isLazy) {
+      this._lazyRender()
+    } else {
+      this._immediateRender()
+    }
     // 移除多余页
     nextTick(() => {
       const curPageCount = this.pageRowList.length
@@ -1187,9 +1219,8 @@ export class Draw {
         self.render({ curIndex, isSubmitHistory: false })
       })
     }
-
     // 信息变动回调
-    setTimeout(() => {
+    nextTick(() => {
       // 页面尺寸改变
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(this.pageRowList.length)
