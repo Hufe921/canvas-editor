@@ -2,24 +2,20 @@ import { MoveDirection } from '../../dataset/enum/Observer'
 
 export class SelectionObserver {
 
-  private threshold: number
-  private requestAnimationFrameId: number
-  private tippingPoints: [top: number, down: number, left: number, right: number]
+  // 每次滚动长度
+  private readonly step: number = 5
+  // 触发滚动阀值
+  private readonly thresholdPoints: [top: number, down: number, left: number, right: number] = [70, 40, 10, 20]
 
+  private requestAnimationFrameId: number | null
   private isMousedown: boolean
   private isMoving: boolean
-  private clientWidth: number
-  private clientHeight: number
 
   constructor() {
-    this.threshold = 10
-    this.tippingPoints = [70, 40, 10, 20]
-    this.requestAnimationFrameId = -1
-
+    this.requestAnimationFrameId = null
     this.isMousedown = false
     this.isMoving = false
-    this.clientWidth = 0
-    this.clientHeight = 0
+
     this._addEvent()
   }
 
@@ -47,13 +43,15 @@ export class SelectionObserver {
   private _mousemove = (evt: MouseEvent) => {
     if (!this.isMousedown) return
     const { x, y } = evt
-    if (y < this.tippingPoints[0]) {
+    const clientWidth = document.documentElement.clientWidth
+    const clientHeight = document.documentElement.clientHeight
+    if (y < this.thresholdPoints[0]) {
       this._startMove(MoveDirection.UP)
-    } else if (this.clientHeight - y <= this.tippingPoints[1]) {
+    } else if (clientHeight - y <= this.thresholdPoints[1]) {
       this._startMove(MoveDirection.DOWN)
-    } else if (x < this.tippingPoints[2]) {
+    } else if (x < this.thresholdPoints[2]) {
       this._startMove(MoveDirection.LEFT)
-    } else if (this.clientWidth - x < this.tippingPoints[3]) {
+    } else if (clientWidth - x < this.thresholdPoints[3]) {
       this._startMove(MoveDirection.RIGHT)
     } else {
       this._stopMove()
@@ -61,34 +59,32 @@ export class SelectionObserver {
   }
 
   private _move(direction: MoveDirection) {
-    const x = window.screenX
-    const y = window.screenY
+    const x = window.scrollX
+    const y = window.scrollY
     if (direction === MoveDirection.DOWN) {
-      window.scrollBy(x, y + this.threshold)
+      window.scrollTo(x, y + this.step)
     } else if (direction === MoveDirection.UP) {
-      window.scrollBy(x, y - this.threshold)
+      window.scrollTo(x, y - this.step)
     } else if (direction === MoveDirection.LEFT) {
-      window.scrollBy(x - this.threshold, y)
+      window.scrollTo(x - this.step, y)
     } else {
-      window.scrollBy(x + this.threshold, y)
+      window.scrollTo(x + this.step, y)
     }
     this.requestAnimationFrameId = window.requestAnimationFrame(this._move.bind(this, direction))
   }
 
   private _startMove(direction: MoveDirection) {
     if (this.isMoving) return
-    this.clientWidth = document.documentElement.clientWidth
-    this.clientHeight = document.documentElement.clientHeight
     this.isMoving = true
-    this.requestAnimationFrameId = window.requestAnimationFrame(this._move.bind(this, direction))
+    this._move(direction)
   }
 
   private _stopMove() {
-    if (!this.isMoving) return
-    if (~this.requestAnimationFrameId) {
+    if (this.requestAnimationFrameId) {
       window.cancelAnimationFrame(this.requestAnimationFrameId)
+      this.requestAnimationFrameId = null
+      this.isMoving = false
     }
-    this.isMoving = false
   }
 
 }
