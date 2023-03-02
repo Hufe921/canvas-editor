@@ -37,7 +37,10 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
             const td = tr.tdList[d]
             const tdId = getUUID()
             td.id = tdId
-            formatElementList(td.value, options)
+            formatElementList(td.value, {
+              ...options,
+              isHandleFirstElement: true
+            })
             for (let v = 0; v < td.value.length; v++) {
               const value = td.value[v]
               value.tdId = tdId
