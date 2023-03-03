@@ -16,7 +16,7 @@ export class PageNumber {
     const { pageNumberSize, pageNumberFont, scale, pageMode } = this.options
     const width = this.draw.getWidth()
     const height = pageMode === PageMode.CONTINUITY
-      ? this.draw.getCanvasHeight()
+      ? this.draw.getCanvasHeight(pageNo)
       : this.draw.getHeight()
     const pageNumberBottom = this.draw.getPageNumberBottom()
     ctx.save()

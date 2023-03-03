@@ -12,11 +12,11 @@ export class Margin {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     const { marginIndicatorColor, pageMode } = this.options
     const width = this.draw.getWidth()
     const height = pageMode === PageMode.CONTINUITY
-      ? this.draw.getCanvasHeight()
+      ? this.draw.getCanvasHeight(pageNo)
       : this.draw.getHeight()
     const margins = this.draw.getMargins()
     const marginIndicatorSize = this.draw.getMarginIndicatorSize()

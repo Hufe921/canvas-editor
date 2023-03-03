@@ -198,13 +198,13 @@ export class Draw {
     return Math.floor(this.options.height * this.options.scale)
   }
 
-  public getCanvasWidth(): number {
-    const page = this.getPage()
+  public getCanvasWidth(pageNo = -1): number {
+    const page = this.getPage(pageNo)
     return page.width
   }
 
-  public getCanvasHeight(): number {
-    const page = this.getPage()
+  public getCanvasHeight(pageNo = -1): number {
+    const page = this.getPage(pageNo)
     return page.height
   }
 
@@ -289,8 +289,8 @@ export class Draw {
     this.pageNo = payload
   }
 
-  public getPage(): HTMLCanvasElement {
-    return this.pageList[this.pageNo]
+  public getPage(pageNo = -1): HTMLCanvasElement {
+    return this.pageList[~pageNo ? pageNo : this.pageNo]
   }
 
   public getPageList(): HTMLCanvasElement[] {
@@ -482,6 +482,8 @@ export class Draw {
       const canvas = this.pageList[0]
       canvas.style.height = `${height}px`
       canvas.height = height * dpr
+      // canvas尺寸发生变化，上下文被重置
+      this.ctxList[0].scale(dpr, dpr)
     }
     this.render({
       isSubmitHistory: false,
@@ -896,6 +898,7 @@ export class Draw {
         pageDom.style.height = `${reduceHeight}px`
         pageDom.height = reduceHeight * dpr
       }
+      this.ctxList[0].scale(dpr, dpr)
     } else {
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]
@@ -1095,7 +1098,7 @@ export class Draw {
     // 绘制背景
     this.background.render(ctx)
     // 绘制页边距
-    this.margin.render(ctx)
+    this.margin.render(ctx, pageNo)
     // 渲染元素
     const index = rowList[0].startIndex
     this._drawRow(ctx, {
@@ -1143,6 +1146,7 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
+    const { pageMode } = this.options
     const {
       isSubmitHistory = true,
       isSetCursor = true,
@@ -1185,7 +1189,8 @@ export class Draw {
         .forEach(page => page.remove())
     }
     // 绘制元素
-    if (isLazy) {
+    // 连续页因为有高度的变化会导致canvas渲染空白，需立即渲染，否则会出现闪动
+    if (isLazy && pageMode === PageMode.PAGING) {
       this._lazyRender()
     } else {
       this._immediateRender()
