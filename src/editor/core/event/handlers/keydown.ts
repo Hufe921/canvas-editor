@@ -74,7 +74,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       ...restArg
     }
     let curIndex: number
-    if (activeControl) {
+    if (activeControl && !control.isRangInPostfix()) {
       curIndex = control.setValue([enterText])
     } else {
       if (isCollapsed) {
@@ -84,8 +84,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
       curIndex = index + 1
     }
-    rangeManager.setRange(curIndex, curIndex)
-    draw.render({ curIndex })
+    if (~curIndex) {
+      rangeManager.setRange(curIndex, curIndex)
+      draw.render({ curIndex })
+    }
     evt.preventDefault()
   } else if (evt.key === KeyMap.Left) {
     if (isReadonly) return

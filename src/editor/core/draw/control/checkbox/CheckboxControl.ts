@@ -61,8 +61,7 @@ export class CheckboxControl implements IControlInstance {
   }
 
   public setValue(): number {
-    const { endIndex } = this.control.getRange()
-    return endIndex
+    return -1
   }
 
   public setSelect() {
