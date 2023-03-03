@@ -68,8 +68,7 @@ export class SelectControl implements IControlInstance {
   }
 
   public setValue(): number {
-    const range = this.control.getRange()
-    return range.endIndex
+    return -1
   }
 
   public keydown(evt: KeyboardEvent): number {

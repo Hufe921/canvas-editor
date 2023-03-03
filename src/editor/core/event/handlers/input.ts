@@ -67,7 +67,7 @@ export function input(data: string, host: CanvasEvent) {
   })
   // 控件-移除placeholder
   let curIndex: number
-  if (activeControl && elementList[endIndex + 1]?.controlId === element.controlId) {
+  if (activeControl && !control.isRangInPostfix()) {
     curIndex = control.setValue(inputData)
   } else {
     const start = startIndex + 1
@@ -80,11 +80,13 @@ export function input(data: string, host: CanvasEvent) {
     }
     curIndex = startIndex + inputData.length
   }
-  rangeManager.setRange(curIndex, curIndex)
-  draw.render({
-    curIndex,
-    isSubmitHistory: !isComposing
-  })
+  if (~curIndex) {
+    rangeManager.setRange(curIndex, curIndex)
+    draw.render({
+      curIndex,
+      isSubmitHistory: !isComposing
+    })
+  }
   if (isComposing) {
     host.compositionInfo = {
       elementList,

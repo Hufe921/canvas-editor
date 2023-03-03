@@ -48,6 +48,16 @@ export class Control {
     return false
   }
 
+  // 判断选区是否在后缀处
+  public isRangInPostfix(): boolean {
+    if (!this.activeControl) return false
+    const { startIndex, endIndex } = this.getRange()
+    if (startIndex !== endIndex) return false
+    const elementList = this.getElementList()
+    const element = elementList[startIndex]
+    return element.controlComponent === ControlComponent.POSTFIX
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }

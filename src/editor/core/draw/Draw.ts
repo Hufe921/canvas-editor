@@ -340,11 +340,6 @@ export class Draw {
 
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) {
-      const element = activeControl.getElement()
-      if (element.controlComponent !== ControlComponent.POSTFIX) return
-    }
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
     if (isPartRangeInControlOutside) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -353,27 +348,36 @@ export class Draw {
       isHandleFirstElement: false,
       editorOptions: this.options
     })
-    const elementList = this.getElementList()
-    const isCollapsed = startIndex === endIndex
-    const start = startIndex + 1
-    if (!isCollapsed) {
-      elementList.splice(start, endIndex - startIndex)
-    }
-    const positionContext = this.position.getPositionContext()
-    for (let i = 0; i < payload.length; i++) {
-      const element = payload[i]
-      if (positionContext.isTable) {
-        element.tdId = positionContext.tdId
-        element.trId = positionContext.trId
-        element.tableId = positionContext.tableId
+    let curIndex = -1
+    // 判断是否在控件内
+    const activeControl = this.control.getActiveControl()
+    if (activeControl && !this.control.isRangInPostfix()) {
+      curIndex = activeControl.setValue(payload)
+    } else {
+      const elementList = this.getElementList()
+      const isCollapsed = startIndex === endIndex
+      const start = startIndex + 1
+      if (!isCollapsed) {
+        elementList.splice(start, endIndex - startIndex)
       }
-      elementList.splice(start + i, 0, element)
+      const positionContext = this.position.getPositionContext()
+      for (let i = 0; i < payload.length; i++) {
+        const element = payload[i]
+        if (positionContext.isTable) {
+          element.tdId = positionContext.tdId
+          element.trId = positionContext.trId
+          element.tableId = positionContext.tableId
+        }
+        elementList.splice(start + i, 0, element)
+      }
+      curIndex = startIndex + payload.length
     }
-    const curIndex = startIndex + payload.length
-    this.range.setRange(curIndex, curIndex)
-    this.render({
-      curIndex
-    })
+    if (~curIndex) {
+      this.range.setRange(curIndex, curIndex)
+      this.render({
+        curIndex
+      })
+    }
   }
 
   public getOriginalElementList() {
