@@ -1,6 +1,7 @@
 import { ElementType } from '../../../dataset/enum/Element'
 import { MouseEventButton } from '../../../dataset/enum/Event'
 import { deepClone } from '../../../utils'
+import { isMod } from '../../../utils/hotkey'
 import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -106,7 +107,11 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const hyperlinkParticle = draw.getHyperlinkParticle()
   hyperlinkParticle.clearHyperlinkPopup()
   if (curElement.type === ElementType.HYPERLINK) {
-    hyperlinkParticle.drawHyperlinkPopup(curElement, positionList[curIndex])
+    if (isMod(evt)) {
+      hyperlinkParticle.openHyperlink(curElement)
+    } else {
+      hyperlinkParticle.drawHyperlinkPopup(curElement, positionList[curIndex])
+    }
   }
   // 日期控件
   const dateParticle = draw.getDateParticle()
