@@ -17,6 +17,8 @@ export interface ISignatureOptions {
 
 export class Signature {
   private readonly MAX_RECORD_COUNT = 1000
+  private readonly DEFAULT_WIDTH = 390
+  private readonly DEFAULT_HEIGHT = 180
   private undoStack: Array<Function> = []
   private x = 0
   private y = 0
@@ -32,11 +34,13 @@ export class Signature {
   private undoContainer: HTMLDivElement
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
+  private dpr: number
 
   constructor(options: ISignatureOptions) {
     this.options = options
-    this.canvasWidth = options.width || 390
-    this.canvasHeight = options.height || 180
+    this.dpr = window.devicePixelRatio
+    this.canvasWidth = (options.width || this.DEFAULT_WIDTH) * this.dpr
+    this.canvasHeight = (options.height || this.DEFAULT_HEIGHT) * this.dpr
     const { mask, container, trashContainer, undoContainer, canvas } = this._render()
     this.mask = mask
     this.container = container
@@ -44,6 +48,7 @@ export class Signature {
     this.undoContainer = undoContainer
     this.canvas = canvas
     this.ctx = <CanvasRenderingContext2D>canvas.getContext('2d')
+    this.ctx.scale(this.dpr, this.dpr)
     this.ctx.lineCap = 'round'
     this._bindEvent()
     this._clearUndoFn()
@@ -108,8 +113,8 @@ export class Signature {
     const canvas = document.createElement('canvas')
     canvas.width = this.canvasWidth
     canvas.height = this.canvasHeight
-    canvas.style.width = `${this.canvasWidth}px`
-    canvas.style.height = `${this.canvasHeight}px`
+    canvas.style.width = `${this.canvasWidth / this.dpr}px`
+    canvas.style.height = `${this.canvasHeight / this.dpr}px`
     canvasContainer.append(canvas)
     signatureContainer.append(canvasContainer)
     // 按钮容器
@@ -254,20 +259,24 @@ export class Signature {
     const sw = maxX - minX
     const sh = maxY - minY
     // 裁剪图像
-    const imageData = this.ctx.getImageData(minX, minY, sw, sh)
+    const imageData = this.ctx.getImageData(
+      minX * this.dpr,
+      minY * this.dpr,
+      sw * this.dpr,
+      sh * this.dpr
+    )
     const canvas = document.createElement('canvas')
     canvas.style.width = `${sw}px`
     canvas.style.height = `${sh}px`
-    canvas.width = sw
-    canvas.height = sh
+    canvas.width = sw * this.dpr
+    canvas.height = sh * this.dpr
     const ctx = <CanvasRenderingContext2D>canvas.getContext('2d')!
     ctx.putImageData(imageData, 0, 0)
     const value = canvas.toDataURL()
-    const { width, height } = imageData
     return {
       value,
-      width,
-      height
+      width: sw,
+      height: sh
     }
   }
 
