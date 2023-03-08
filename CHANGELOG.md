@@ -1,3 +1,25 @@
+## [0.9.20](https://github.com/Hufe921/canvas-editor/compare/v0.9.19...v0.9.20) (2023-03-08)
+
+
+### Bug Fixes
+
+* near highlight elements render error ([17b469b](https://github.com/Hufe921/canvas-editor/commit/17b469be6b95621b635383c9fc20c9c0adcb8d2b))
+
+
+### Chores
+
+* add CHANGELOG.md ([367a247](https://github.com/Hufe921/canvas-editor/commit/367a24730a739514d24d7c882524f8ded479fb38))
+* add issue template ([7a26819](https://github.com/Hufe921/canvas-editor/commit/7a268199b3607a8c629fc5bc0242be89abbbac90))
+
+
+### Features
+
+* signature adapt to high-resolution screen ([4acf243](https://github.com/Hufe921/canvas-editor/commit/4acf243fed01b0b41ebbcc46c4b6603cabf6c825))
+* open hyperlink shortcut ([3295e37](https://github.com/Hufe921/canvas-editor/commit/3295e3711ae92f5503064691c5558afea99e3f0c))
+* copy and paste highlight element ([0493ae2](https://github.com/Hufe921/canvas-editor/commit/0493ae2d5e10daf917e39a9deb4e29c90e096420))
+
+
+
 ## [0.9.19](https://github.com/Hufe921/canvas-editor/compare/v0.9.18...v0.9.19) (2023-03-03)
 
 
