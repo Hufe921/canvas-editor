@@ -118,6 +118,9 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         if (element.size) {
           dom.style.fontSize = `${element.size}px`
         }
+        if (element.highlight) {
+          dom.style.backgroundColor = element.highlight
+        }
         clipboardDom.append(dom)
       }
     }
@@ -155,6 +158,9 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
         }
         if (rowFlex !== RowFlex.LEFT) {
           element.rowFlex = rowFlex
+        }
+        if (style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+          element.highlight = style.backgroundColor
         }
         elementList.push(element)
       }

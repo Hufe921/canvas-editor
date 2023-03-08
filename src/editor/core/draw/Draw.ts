@@ -1001,19 +1001,23 @@ export class Draw {
         // 下划线记录
         if (element.underline) {
           this.underline.recordFillInfo(ctx, x, y + curRow.height, metrics.width, 0, element.color)
-        } else if (preElement && preElement.underline) {
+        } else if (preElement?.underline) {
           this.underline.render(ctx)
         }
         // 删除线记录
         if (element.strikeout) {
           this.strikeout.recordFillInfo(ctx, x, y + curRow.height / 2, metrics.width)
-        } else if (preElement && preElement.strikeout) {
+        } else if (preElement?.strikeout) {
           this.strikeout.render(ctx)
         }
         // 元素高亮记录
         if (element.highlight) {
+          // 高亮元素相连需立即绘制，并记录下一元素坐标
+          if (preElement && preElement.highlight && preElement.highlight !== element.highlight) {
+            this.highlight.render(ctx)
+          }
           this.highlight.recordFillInfo(ctx, x, y, metrics.width, curRow.height, element.highlight)
-        } else if (preElement && preElement.highlight) {
+        } else if (preElement?.highlight) {
           this.highlight.render(ctx)
         }
         // 选区记录

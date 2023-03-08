@@ -27,6 +27,7 @@ export class HyperlinkParticle {
     hyperlinkPopupContainer.classList.add(`${EDITOR_PREFIX}-hyperlink-popup`)
     const hyperlinkDom = document.createElement('a')
     hyperlinkDom.target = '_blank'
+    hyperlinkDom.rel = 'noopener'
     hyperlinkPopupContainer.append(hyperlinkDom)
     this.container.append(hyperlinkPopupContainer)
     return { hyperlinkPopupContainer, hyperlinkDom }
@@ -49,6 +50,13 @@ export class HyperlinkParticle {
 
   public clearHyperlinkPopup() {
     this.hyperlinkPopupContainer.style.display = 'none'
+  }
+
+  public openHyperlink(element: IElement) {
+    const newTab = window.open(element.url, '_blank')
+    if (newTab) {
+      newTab.opener = null
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
