@@ -477,7 +477,7 @@ instance.command.executePageMode(pageMode)
 
 用法：
 ```javascript
-instance.command.executePageMode()
+instance.command.executePageScaleRecovery()
 ```
 
 ## executePageScaleMinus
