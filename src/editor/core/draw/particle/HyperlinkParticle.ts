@@ -45,6 +45,7 @@ export class HyperlinkParticle {
     // 标签
     const url = element.url || '#'
     this.hyperlinkDom.href = url
+    this.hyperlinkDom.title = url
     this.hyperlinkDom.innerText = url
   }
 
