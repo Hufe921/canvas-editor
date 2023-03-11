@@ -1,3 +1,25 @@
+## [0.9.21](https://github.com/Hufe921/canvas-editor/compare/v0.9.20...v0.9.21) (2023-03-11)
+
+
+### Bug Fixes
+
+* reset canvas context properties that can be overwritten by css #144 ([a3664a2](https://github.com/Hufe921/canvas-editor/commit/a3664a2012ea0ef8bcaa58bd41acd7a6bcd17968)), closes [#144](https://github.com/Hufe921/canvas-editor/issues/144)
+* hyperlink popup max width ([1cad605](https://github.com/Hufe921/canvas-editor/commit/1cad605d4f672b8dd01a59ccb55526353e611242))
+
+
+### Documentation
+
+* next features roadmap ([d86a155](https://github.com/Hufe921/canvas-editor/commit/d86a155159b9f0e768954d3c18a5fccf3c7aba22))
+* fix usage errors ([74447a1](https://github.com/Hufe921/canvas-editor/commit/74447a1c5cadaee9fdb9df0116b97cc5e294e016))
+
+
+### Features
+
+* drag and drop element ([9b9a0a0](https://github.com/Hufe921/canvas-editor/commit/9b9a0a09aeb36c1ae50641cdc8585615a06c28e4))
+* render checkbox control with style ([9f64a06](https://github.com/Hufe921/canvas-editor/commit/9f64a068b13b0789dc2974e443ad000655a2c929))
+
+
+
 ## [0.9.20](https://github.com/Hufe921/canvas-editor/compare/v0.9.19...v0.9.20) (2023-03-08)
 
 
