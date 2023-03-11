@@ -483,7 +483,7 @@ export class Draw {
       canvas.style.height = `${height}px`
       canvas.height = height * dpr
       // canvas尺寸发生变化，上下文被重置
-      this.ctxList[0].scale(dpr, dpr)
+      this._initPageContext(this.ctxList[0])
     }
     this.render({
       isSubmitHistory: false,
@@ -615,10 +615,20 @@ export class Draw {
     canvas.height = height * dpr
     canvas.style.cursor = 'text'
     const ctx = canvas.getContext('2d')!
-    ctx.scale(dpr, dpr)
+    // 初始化上下文配置
+    this._initPageContext(ctx)
     // 缓存上下文
     this.pageList.push(canvas)
     this.ctxList.push(ctx)
+  }
+
+  private _initPageContext(ctx: CanvasRenderingContext2D) {
+    const dpr = window.devicePixelRatio
+    ctx.scale(dpr, dpr)
+    // 重置以下属性是因部分浏览器(chrome)会应用css样式
+    ctx.letterSpacing = '0px'
+    ctx.wordSpacing = '0px'
+    ctx.direction = 'ltr'
   }
 
   private _getFont(el: IElement, scale = 1): string {
@@ -898,7 +908,7 @@ export class Draw {
         pageDom.style.height = `${reduceHeight}px`
         pageDom.height = reduceHeight * dpr
       }
-      this.ctxList[0].scale(dpr, dpr)
+      this._initPageContext(this.ctxList[0])
     } else {
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]

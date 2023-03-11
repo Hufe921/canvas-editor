@@ -70,7 +70,7 @@ instance.listener.controlChange = (payload: IControl | null)=>{}
 
 用法：
 ```javascript
-instance.listener.controlChange = (payload: PageMode)=>{}
+instance.listener.pageModeChange = (payload: PageMode)=>{}
 ```
 
 ## saved

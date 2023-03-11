@@ -134,6 +134,12 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         if (type === ControlType.CHECKBOX) {
           const codeList = code ? code.split(',') : []
           if (Array.isArray(valueSets) && valueSets.length) {
+            // 拆分valueList优先使用其属性
+            const valueStyleList = valueList.reduce(
+              (pre, cur) => pre.concat(cur.value.split('').map(v => ({ ...cur, value: v }))),
+              [] as IElement[]
+            )
+            let valueStyleIndex = 0
             for (let v = 0; v < valueSets.length; v++) {
               const valueSet = valueSets[v]
               // checkbox组件
@@ -155,6 +161,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
                 const value = valueStrList[e]
                 const isLastLetter = e === valueStrList.length - 1
                 elementList.splice(i, 0, {
+                  ...valueStyleList[valueStyleIndex],
                   controlId,
                   value,
                   type: el.type,
@@ -162,6 +169,7 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
                 })
+                valueStyleIndex++
                 i++
               }
             }
