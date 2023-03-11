@@ -103,6 +103,18 @@ export class RangeManager {
     control.destroyControl()
   }
 
+  public replaceRange(range: IRange) {
+    this.setRange(
+      range.startIndex,
+      range.endIndex,
+      range.tableId,
+      range.startTdIndex,
+      range.endTdIndex,
+      range.startTrIndex,
+      range.endTrIndex
+    )
+  }
+
   public setRangeStyle() {
     if (!this.listener.rangeStyleChange) return
     let curElementList = this.getSelection()

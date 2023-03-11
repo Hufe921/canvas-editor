@@ -122,8 +122,7 @@ export class CheckboxControl implements IControlInstance {
   }
 
   public cut(): number {
-    const { endIndex } = this.control.getRange()
-    return endIndex
+    return -1
   }
 
 }
