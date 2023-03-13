@@ -31,10 +31,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const range = rangeManager.getRange()
     // 是否是不可拖拽的控件结构元素
     const dragElementList = cacheElementList.slice(cacheRange.startIndex + 1, cacheRange.endIndex + 1)
-    const isContainControl = dragElementList.find(element =>
-      element.type === ElementType.CONTROL ||
-      element.type === ElementType.DATE
-    )
+    const isContainControl = dragElementList.find(element => element.type === ElementType.CONTROL)
     if (isContainControl) {
       // 仅允许 (最前/后元素不是控件 || 在控件前后 || 文本控件且是值) 拖拽
       const cacheStartElement = cacheElementList[cacheRange.startIndex + 1]
@@ -48,9 +45,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
           (
             cacheEndElement.type !== ElementType.CONTROL ||
             cacheEndElement.controlComponent === ControlComponent.POSTFIX
-          ) &&
-          cacheStartElement.type !== ElementType.DATE &&
-          cacheEndElement.type !== ElementType.DATE
+          )
         ) ||
         (
           cacheStartElement.controlId === cacheEndElement.controlId &&
