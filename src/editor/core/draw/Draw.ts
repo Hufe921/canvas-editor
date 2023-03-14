@@ -35,7 +35,7 @@ import { SubscriptParticle } from './particle/Subscript'
 import { SeparatorParticle } from './particle/Separator'
 import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
-import { EditorComponent, EditorMode, PageMode } from '../../dataset/enum/Editor'
+import { EditorComponent, EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
@@ -190,12 +190,22 @@ export class Draw {
     return this.mode === EditorMode.READONLY
   }
 
+  public getOriginalWidth(): number {
+    const { paperDirection, width, height } = this.options
+    return paperDirection === PaperDirection.VERTICAL ? width : height
+  }
+
+  public getOriginalHeight(): number {
+    const { paperDirection, width, height } = this.options
+    return paperDirection === PaperDirection.VERTICAL ? height : width
+  }
+
   public getWidth(): number {
-    return Math.floor(this.options.width * this.options.scale)
+    return Math.floor(this.getOriginalWidth() * this.options.scale)
   }
 
   public getHeight(): number {
-    return Math.floor(this.options.height * this.options.scale)
+    return Math.floor(this.getOriginalHeight() * this.options.scale)
   }
 
   public getCanvasWidth(pageNo = -1): number {
@@ -539,6 +549,25 @@ export class Draw {
     const dpr = window.devicePixelRatio
     this.options.width = width
     this.options.height = height
+    this.container.style.width = `${width}px`
+    this.pageList.forEach((p, i) => {
+      p.width = width * dpr
+      p.height = height * dpr
+      p.style.width = `${width}px`
+      p.style.height = `${height}px`
+      this._initPageContext(this.ctxList[i])
+    })
+    this.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
+  }
+
+  public setPaperDirection(payload: PaperDirection) {
+    const dpr = window.devicePixelRatio
+    this.options.paperDirection = payload
+    const width = this.getWidth()
+    const height = this.getHeight()
     this.container.style.width = `${width}px`
     this.pageList.forEach((p, i) => {
       p.width = width * dpr

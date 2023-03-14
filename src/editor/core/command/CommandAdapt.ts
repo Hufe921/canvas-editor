@@ -2,7 +2,7 @@ import { WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
-import { EditorContext, EditorMode, PageMode } from '../../dataset/enum/Editor'
+import { EditorContext, EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
@@ -1365,10 +1365,12 @@ export class CommandAdapt {
   }
 
   public async print() {
-    const { width, height, scale } = this.options
+    const { scale } = this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
+    const width = this.draw.getOriginalWidth()
+    const height = this.draw.getOriginalHeight()
     const base64List = await this.draw.getDataURL()
     printImageBase64(base64List, width, height)
     if (scale !== 1) {
@@ -1451,6 +1453,10 @@ export class CommandAdapt {
 
   public paperSize(width: number, height: number) {
     this.draw.setPaperSize(width, height)
+  }
+
+  public paperDirection(payload: PaperDirection) {
+    this.draw.setPaperDirection(payload)
   }
 
   public getPaperMargin(): number[] {

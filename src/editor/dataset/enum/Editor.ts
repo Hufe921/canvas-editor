@@ -22,3 +22,8 @@ export enum PageMode {
   PAGING = 'paging',
   CONTINUITY = 'continuity'
 }
+
+export enum PaperDirection {
+  VERTICAL = 'vertical',
+  HORIZONTAL = 'horizontal'
+}

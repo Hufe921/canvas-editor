@@ -1,7 +1,7 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IElement, KeyMap, PageMode } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IElement, KeyMap, PageMode, PaperDirection } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
@@ -778,7 +778,7 @@ window.onload = function () {
     instance.command.executePrint()
   }
 
-  // 6. 页面模式 | 纸张缩放 | 全屏
+  // 6. 页面模式 | 纸张缩放 | 纸张大小 | 纸张方向 | 页边距 | 全屏
   const pageModeDom = document.querySelector<HTMLDivElement>('.page-mode')!
   const pageModeOptionsDom = pageModeDom.querySelector<HTMLDivElement>('.options')!
   pageModeDom.onclick = function () {
@@ -817,6 +817,22 @@ window.onload = function () {
     instance.command.executePaperSize(width, height)
     // 纸张状态回显
     paperSizeDomOptionsDom.querySelectorAll('li')
+      .forEach(child => child.classList.remove('active'))
+    li.classList.add('active')
+  }
+
+  // 纸张方向
+  const paperDirectionDom = document.querySelector<HTMLDivElement>('.paper-direction')!
+  const paperDirectionDomOptionsDom = paperDirectionDom.querySelector<HTMLDivElement>('.options')!
+  paperDirectionDom.onclick = function () {
+    paperDirectionDomOptionsDom.classList.toggle('visible')
+  }
+  paperDirectionDomOptionsDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const paperDirection = li.dataset.paperDirection!
+    instance.command.executePaperDirection(<PaperDirection>paperDirection)
+    // 纸张方向状态回显
+    paperDirectionDomOptionsDom.querySelectorAll('li')
       .forEach(child => child.classList.remove('active'))
     li.classList.add('active')
   }

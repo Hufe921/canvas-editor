@@ -758,6 +758,19 @@ ul {
   left: unset;
 }
 
+.footer .paper-direction {
+  position: relative;
+}
+
+.footer .paper-direction i {
+  background-image: url('./assets/images/paper-direction.svg');
+}
+
+.footer .paper-direction .options {
+  right: 0;
+  left: unset;
+}
+
 .ce-contextmenu-signature {
   background-image: url('./assets/images/signature.svg');
 }

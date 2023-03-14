@@ -11,7 +11,7 @@ import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
-import { EditorComponent, EditorMode, PageMode } from './dataset/enum/Editor'
+import { EditorComponent, EditorMode, PageMode, PaperDirection } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
@@ -95,6 +95,7 @@ export default class Editor {
       defaultTdHeight: 40,
       defaultHyperlinkColor: '#0000FF',
       headerTop: 50,
+      paperDirection: PaperDirection.VERTICAL,
       ...options,
       header: headerOptions,
       watermark: waterMarkOptions,
@@ -144,7 +145,8 @@ export {
   ImageDisplay,
   Command,
   KeyMap,
-  BlockType
+  BlockType,
+  PaperDirection
 }
 
 // 对外类型

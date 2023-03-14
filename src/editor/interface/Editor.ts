@@ -1,5 +1,5 @@
 import { IElement } from '..'
-import { EditorMode, PageMode } from '../dataset/enum/Editor'
+import { EditorMode, PageMode, PaperDirection } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
 import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
@@ -41,6 +41,7 @@ export interface IEditorOption {
   defaultTdHeight?: number;
   defaultHyperlinkColor?: string;
   headerTop?: number;
+  paperDirection?: PaperDirection;
   header?: IHeader;
   watermark?: IWatermark;
   control?: IControlOption;
