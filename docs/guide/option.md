@@ -48,6 +48,7 @@ interface IEditorOption {
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
   headerTop?: number; // 页眉距离上边距。默认：50
   header?: IHeader; // 页眉信息。{data:string; color?:string; size?:number; font?:string;}
+  paperDirection?: PaperDirection; // 纸张方向：纵向、横向
   watermark?: IWatermark; // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption; // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}
   checkbox?: ICheckboxOption; // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; fontStyle?: string;}

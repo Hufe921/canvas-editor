@@ -504,6 +504,14 @@ instance.command.executePageScaleAdd()
 instance.command.executePaperSize(width: number, height: number)
 ```
 
+## executePaperDirection
+功能：设置纸张方向
+
+用法：
+```javascript
+instance.command.executePaperDirection(paperDirection: PaperDirection)
+```
+
 ## executeSetPaperMargin
 功能：设置纸张页边距
 
