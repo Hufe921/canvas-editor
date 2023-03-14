@@ -504,15 +504,12 @@ export class Draw {
     const height = this.getHeight()
     this.container.style.width = `${width}px`
     this.pageList.forEach((p, i) => {
-      p.width = width
-      p.height = height
+      p.width = width * dpr
+      p.height = height * dpr
       p.style.width = `${width}px`
       p.style.height = `${height}px`
       p.style.marginBottom = `${this.getPageGap()}px`
-      // 分辨率
-      p.width = width * dpr
-      p.height = height * dpr
-      this.ctxList[i].scale(dpr, dpr)
+      this._initPageContext(this.ctxList[i])
     })
     this.render({
       isSubmitHistory: false,
@@ -530,7 +527,7 @@ export class Draw {
     this.pageList.forEach((p, i) => {
       p.width = width * dpr
       p.height = height * dpr
-      this.ctxList[i].scale(dpr, dpr)
+      this._initPageContext(this.ctxList[i])
     })
     this.render({
       isSubmitHistory: false,
@@ -539,14 +536,16 @@ export class Draw {
   }
 
   public setPaperSize(width: number, height: number) {
+    const dpr = window.devicePixelRatio
     this.options.width = width
     this.options.height = height
     this.container.style.width = `${width}px`
-    this.pageList.forEach(p => {
-      p.width = width
-      p.height = height
+    this.pageList.forEach((p, i) => {
+      p.width = width * dpr
+      p.height = height * dpr
       p.style.width = `${width}px`
       p.style.height = `${height}px`
+      this._initPageContext(this.ctxList[i])
     })
     this.render({
       isSubmitHistory: false,
