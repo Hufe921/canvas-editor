@@ -14,7 +14,7 @@ instance.command.commandName()
 
 用法：
 ```javascript
-instance.command.executeMode(EditorMode)
+instance.command.executeMode(editorMode: EditorMode)
 ```
 
 ## executeCut
@@ -62,7 +62,7 @@ instance.command.executeBackspace()
 
 用法：
 ```javascript
-instance.command.executeSetRange(startIndex, endIndex)
+instance.command.executeSetRange(startIndex: number , endIndex: number)
 ```
 
 ## executeUndo
@@ -110,7 +110,7 @@ instance.command.executeFormat()
 
 用法：
 ```javascript
-instance.command.executeFont(font)
+instance.command.executeFont(font: string)
 ```
 
 ## executeSizeAdd
@@ -230,7 +230,7 @@ instance.command.executeAlignment()
 
 用法：
 ```javascript
-instance.command.executeRowMargin(number)
+instance.command.executeRowMargin(rowMargin: number)
 ```
 
 ## executeInsertTable
@@ -238,7 +238,7 @@ instance.command.executeRowMargin(number)
 
 用法：
 ```javascript
-instance.command.executeInsertTable(row, col)
+instance.command.executeInsertTable(row: number, col: number)
 ```
 
 ## executeInsertTableTopRow
@@ -332,8 +332,8 @@ instance.command.executeImage({
 ```javascript
 instance.command.executeHyperlink({
   type: ElementType.HYPERLINK,
-  value: '',
-  url,
+  value: string,
+  url: string,
   valueList: IElement[]
 })
 ```
@@ -359,7 +359,7 @@ instance.command.executeCancelHyperlink()
 
 用法：
 ```javascript
-instance.command.executeEditHyperlink(newUrl)
+instance.command.executeEditHyperlink(newUrl: string)
 ```
 
 ## executeSeparator
@@ -367,7 +367,7 @@ instance.command.executeEditHyperlink(newUrl)
 
 用法：
 ```javascript
-instance.command.executeSeparator(dashArray)
+instance.command.executeSeparator(dashArray: number[])
 ```
 
 ## executePageBreak
@@ -405,7 +405,7 @@ instance.command.executeDeleteWatermark()
 
 用法：
 ```javascript
-instance.command.executeSearch(keyword)
+instance.command.executeSearch(keyword: string)
 ```
 
 ## executeSearchNavigatePre
@@ -429,7 +429,7 @@ instance.command.executeSearchNavigateNext()
 
 用法：
 ```javascript
-instance.command.executeReplace(newWord)
+instance.command.executeReplace(newWord: string)
 ```
 
 ## executePrint
@@ -445,7 +445,7 @@ instance.command.executePrint()
 
 用法：
 ```javascript
-instance.command.executeReplaceImageElement(newUrl)
+instance.command.executeReplaceImageElement(newUrl: string)
 ```
 
 ## executeSaveAsImageElement
@@ -461,7 +461,7 @@ instance.command.executeSaveAsImageElement()
 
 用法：
 ```javascript
-instance.command.executeSaveAsImageElement(element, display)
+instance.command.executeSaveAsImageElement(element: IElement, display: ImageDisplay)
 ```
 
 ## executePageMode
@@ -469,7 +469,7 @@ instance.command.executeSaveAsImageElement(element, display)
 
 用法：
 ```javascript
-instance.command.executePageMode(pageMode)
+instance.command.executePageMode(pageMode: PageMode)
 ```
 
 ## executePageScaleRecovery
@@ -501,7 +501,15 @@ instance.command.executePageScaleAdd()
 
 用法：
 ```javascript
-instance.command.executePaperSize(width, height)
+instance.command.executePaperSize(width: number, height: number)
+```
+
+## executePaperDirection
+功能：设置纸张方向
+
+用法：
+```javascript
+instance.command.executePaperDirection(paperDirection: PaperDirection)
 ```
 
 ## executeSetPaperMargin
@@ -517,7 +525,7 @@ instance.command.executeSetPaperMargin([top: number, right: number, bottom: numb
 
 用法：
 ```javascript
-instance.command.executeInsertElementList(IElement[])
+instance.command.executeInsertElementList(elementList: IElement[])
 ```
 
 ## executeRemoveControl
@@ -533,5 +541,5 @@ instance.command.executeRemoveControl()
 
 用法：
 ```javascript
-instance.command.executeSetLocale(locale)
+instance.command.executeSetLocale(locale: string)
 ```

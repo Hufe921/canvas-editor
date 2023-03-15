@@ -1,5 +1,5 @@
 import { IElement, ImageDisplay, INavigateInfo } from '../..'
-import { EditorMode, PageMode } from '../../dataset/enum/Editor'
+import { EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorResult } from '../../interface/Editor'
@@ -74,6 +74,7 @@ export class Command {
   private static pageScaleMinus: CommandAdapt['pageScaleMinus']
   private static pageScaleAdd: CommandAdapt['pageScaleAdd']
   private static paperSize: CommandAdapt['paperSize']
+  private static paperDirection: CommandAdapt['paperDirection']
   private static getPaperMargin: CommandAdapt['getPaperMargin']
   private static setPaperMargin: CommandAdapt['setPaperMargin']
   private static insertElementList: CommandAdapt['insertElementList']
@@ -146,6 +147,7 @@ export class Command {
     Command.pageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     Command.pageScaleAdd = adapt.pageScaleAdd.bind(adapt)
     Command.paperSize = adapt.paperSize.bind(adapt)
+    Command.paperDirection = adapt.paperDirection.bind(adapt)
     Command.getPaperMargin = adapt.getPaperMargin.bind(adapt)
     Command.setPaperMargin = adapt.setPaperMargin.bind(adapt)
     Command.insertElementList = adapt.insertElementList.bind(adapt)
@@ -397,7 +399,7 @@ export class Command {
     return Command.getRangeText()
   }
 
-  // 页面模式、页面缩放、纸张大小、页边距
+  // 页面模式、页面缩放、纸张大小、纸张方向、页边距
   public executePageMode(payload: PageMode) {
     return Command.pageMode(payload)
   }
@@ -416,6 +418,10 @@ export class Command {
 
   public executePaperSize(width: number, height: number) {
     return Command.paperSize(width, height)
+  }
+
+  public executePaperDirection(payload: PaperDirection) {
+    return Command.paperDirection(payload)
   }
 
   public getPaperMargin() {
