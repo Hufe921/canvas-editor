@@ -1,3 +1,27 @@
+## [0.9.22](https://github.com/Hufe921/canvas-editor/compare/v0.9.21...v0.9.22) (2023-03-15)
+
+
+### Bug Fixes
+
+* init page context when paper change ([bb63eeb](https://github.com/Hufe921/canvas-editor/commit/bb63eeb335e45899cf5b6906f26fc1bb7599356e))
+
+
+### Documentation
+
+* set paper direction api ([0963fc1](https://github.com/Hufe921/canvas-editor/commit/0963fc1adfeda7e3938bf7fbe2bfab1433f401d5))
+* update command execute api ([82b5256](https://github.com/Hufe921/canvas-editor/commit/82b525649fea0793fc54897e9befba1b91efe782))
+* next features roadmap ([dd7a768](https://github.com/Hufe921/canvas-editor/commit/dd7a7686af40b0a99f388961ff302ea41de4c905))
+
+
+### Features
+
+* adjust background when paper direction change ([f076f2b](https://github.com/Hufe921/canvas-editor/commit/f076f2bd00eae6f3adf56559e40807898a8de229))
+* adjust margins when paper direction change ([1eefa57](https://github.com/Hufe921/canvas-editor/commit/1eefa570b23a3330971c595dde8cef0e6ec2f530))
+* add paper direction ([9aeb928](https://github.com/Hufe921/canvas-editor/commit/9aeb928b35c90c0a5a6040b34b77e2d6b91343d5))
+* drag and drop date element ([780a40c](https://github.com/Hufe921/canvas-editor/commit/780a40caae3cabd9ceea347ae796ccfda9e9b3ef))
+
+
+
 ## [0.9.21](https://github.com/Hufe921/canvas-editor/compare/v0.9.20...v0.9.21) (2023-03-11)
 
 
