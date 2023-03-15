@@ -405,8 +405,7 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
-    const { width, margins } = this.options
-    const innerWidth = width - margins[1] - margins[3]
+    const innerWidth = this.draw.getInnerWidth()
     // colgroup
     const colgroup: IColgroup[] = []
     const colWidth = innerWidth / col
@@ -1460,7 +1459,7 @@ export class CommandAdapt {
   }
 
   public getPaperMargin(): number[] {
-    return this.draw.getOriginalMargins()
+    return this.options.margins
   }
 
   public setPaperMargin(payload: IMargin) {

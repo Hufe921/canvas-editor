@@ -225,16 +225,20 @@ export class Draw {
   }
 
   public getOriginalInnerWidth(): number {
-    const { width, margins } = this.options
+    const width = this.getOriginalWidth()
+    const margins = this.getOriginalMargins()
     return width - margins[1] - margins[3]
   }
 
   public getMargins(): IMargin {
-    return <IMargin>this.options.margins.map(m => m * this.options.scale)
+    return <IMargin>this.getOriginalMargins().map(m => m * this.options.scale)
   }
 
   public getOriginalMargins(): number[] {
-    return this.options.margins
+    const { margins, paperDirection } = this.options
+    return paperDirection === PaperDirection.VERTICAL
+      ? margins
+      : [margins[1], margins[2], margins[3], margins[0]]
   }
 
   public getPageGap(): number {
