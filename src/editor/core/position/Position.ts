@@ -46,7 +46,7 @@ export class Position {
     this.positionList = payload
   }
 
-  private computePageRowPosition(payload: IComputePageRowPositionPayload): IComputePageRowPositionResult {
+  public computePageRowPosition(payload: IComputePageRowPositionPayload): IComputePageRowPositionResult {
     const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
     const { scale, tdPadding } = this.options
     let x = startX

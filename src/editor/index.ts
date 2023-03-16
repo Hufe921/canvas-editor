@@ -1,5 +1,5 @@
 import './assets/css/index.css'
-import { IEditorOption, IEditorResult } from './interface/Editor'
+import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
@@ -39,7 +39,7 @@ export default class Editor {
   public register: Register
   public destroy: Function
 
-  constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
+  constructor(container: HTMLDivElement, data: IEditorData, options: IEditorOption = {}) {
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
@@ -103,13 +103,33 @@ export default class Editor {
       checkbox: checkboxOptions,
       cursor: cursorOptions
     }
-    formatElementList(elementList, {
+    // 数据处理
+    let headerElementList: IElement[] = []
+    let mainElementList: IElement[] = []
+    if (Array.isArray(data)) {
+      mainElementList = data
+    } else {
+      headerElementList = data.header || []
+      mainElementList = data.main
+    }
+    formatElementList(headerElementList, {
+      editorOptions
+    })
+    formatElementList(mainElementList, {
       editorOptions
     })
     // 监听
     this.listener = new Listener()
     // 启动
-    const draw = new Draw(container, editorOptions, elementList, this.listener)
+    const draw = new Draw(
+      container,
+      editorOptions,
+      {
+        header: headerElementList,
+        main: mainElementList
+      },
+      this.listener
+    )
     // 命令
     this.command = new Command(new CommandAdapt(draw))
     // 菜单

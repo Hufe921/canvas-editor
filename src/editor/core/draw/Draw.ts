@@ -2,7 +2,7 @@ import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawOption, IDrawRowPayload, IPainterOptions } from '../../interface/Draw'
-import { IEditorOption, IEditorResult } from '../../interface/Editor'
+import { IEditorDrawData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID, nextTick } from '../../utils'
@@ -61,7 +61,9 @@ export class Draw {
   private mode: EditorMode
   private options: DeepRequired<IEditorOption>
   private position: Position
+  private headerElementList: IElement[]
   private elementList: IElement[]
+  private footerElementList: IElement[]
   private listener: Listener
 
   private i18n: I18n
@@ -110,7 +112,7 @@ export class Draw {
   constructor(
     rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
-    elementList: IElement[],
+    data: IEditorDrawData,
     listener: Listener
   ) {
     this.container = this._wrapContainer(rootContainer)
@@ -119,7 +121,9 @@ export class Draw {
     this.pageNo = 0
     this.mode = options.mode
     this.options = options
-    this.elementList = elementList
+    this.headerElementList = data.header || []
+    this.elementList = data.main
+    this.footerElementList = data.footer || []
     this.listener = listener
 
     this._formatContainer()
@@ -343,6 +347,10 @@ export class Draw {
     return this.range
   }
 
+  public getHeaderElementList(): IElement[] {
+    return this.headerElementList
+  }
+
   public getElementList(): IElement[] {
     const positionContext = this.position.getPositionContext()
     if (positionContext.isTable) {
@@ -350,6 +358,10 @@ export class Draw {
       return this.elementList[index!].trList![trIndex!].tdList[tdIndex!].value
     }
     return this.elementList
+  }
+
+  public getFooterElementList(): IElement[] {
+    return this.footerElementList
   }
 
   public insertElementList(payload: IElement[]) {
@@ -596,15 +608,17 @@ export class Draw {
 
   public getValue(): IEditorResult {
     // 配置
-    const { width, height, margins, watermark, header } = this.options
+    const { width, height, margins, watermark } = this.options
     // 数据
-    const data = zipElementList(this.elementList)
+    const data: IEditorDrawData = {
+      header: zipElementList(this.headerElementList),
+      main: zipElementList(this.elementList)
+    }
     return {
       version,
       width,
       height,
       margins,
-      header: header.data ? header : undefined,
       watermark: watermark.data ? watermark : undefined,
       data
     }
@@ -670,7 +684,7 @@ export class Draw {
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${size * scale}px ${font}`
   }
 
-  private _computeRowList(innerWidth: number, elementList: IElement[]) {
+  public computeRowList(innerWidth: number, elementList: IElement[]) {
     const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
@@ -726,7 +740,7 @@ export class Draw {
           let maxTrHeight = 0
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const rowList = this._computeRowList((td.width! - tdGap) * scale, td.value)
+            const rowList = this.computeRowList((td.width! - tdGap) * scale, td.value)
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
@@ -964,7 +978,7 @@ export class Draw {
     this.textParticle.complete()
   }
 
-  private _drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
+  public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
     const { rowList, pageNo, positionList, startIndex } = payload
     const { scale, tdPadding } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
@@ -1104,7 +1118,7 @@ export class Draw {
             const tr = element.trList![t]
             for (let d = 0; d < tr.tdList!.length; d++) {
               const td = tr.tdList[d]
-              this._drawRow(ctx, {
+              this.drawRow(ctx, {
                 positionList: td.positionList!,
                 rowList: td.rowList!,
                 pageNo,
@@ -1147,7 +1161,7 @@ export class Draw {
     this.margin.render(ctx, pageNo)
     // 渲染元素
     const index = rowList[0].startIndex
-    this._drawRow(ctx, {
+    this.drawRow(ctx, {
       positionList,
       rowList,
       pageNo,
@@ -1175,6 +1189,7 @@ export class Draw {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const index = Number((<HTMLCanvasElement>entry.target).dataset.index)
+          this.header.render(this.ctxList[index])
           this._drawPage(positionList, this.pageRowList[index], index)
         }
       })
@@ -1203,8 +1218,10 @@ export class Draw {
     const innerWidth = this.getInnerWidth()
     // 计算文档信息
     if (isCompute) {
+      // 页眉信息
+      this.header.compute()
       // 行信息
-      this.rowList = this._computeRowList(innerWidth, this.elementList)
+      this.rowList = this.computeRowList(innerWidth, this.elementList)
       // 页面信息
       this.pageRowList = this._computePageList()
       // 位置信息

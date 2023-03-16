@@ -1,31 +1,72 @@
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
+import { IElement, IElementPosition } from '../../../interface/Element'
+import { IRow } from '../../../interface/Row'
+import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
 export class Header {
 
   private draw: Draw
+  private position: Position
   private options: DeepRequired<IEditorOption>
+
+  private elementList: IElement[]
+  private rowList: IRow[]
+  private positionList: IElementPosition[]
 
   constructor(draw: Draw) {
     this.draw = draw
-    this.options = <DeepRequired<IEditorOption>>draw.getOptions()
+    this.position = draw.getPosition()
+    this.options = draw.getOptions()
+
+    this.elementList = draw.getHeaderElementList()
+    this.rowList = []
+    this.positionList = []
+  }
+
+  public compute() {
+    this._recovery()
+    this._computeRowList()
+    this._computePositionList()
+  }
+
+  private _recovery() {
+    this.rowList = []
+    this.positionList = []
+  }
+
+  private _computeRowList() {
+    const innerWidth = this.draw.getInnerWidth()
+    this.rowList = this.draw.computeRowList(innerWidth, this.elementList)
+  }
+
+  private _computePositionList() {
+    const { header: { top } } = this.options
+    const innerWidth = this.draw.getInnerWidth()
+    const margins = this.draw.getMargins()
+    const startX = margins[3]
+    const startY = margins[0] + top
+    this.position.computePageRowPosition({
+      positionList: this.positionList,
+      rowList: this.rowList,
+      pageNo: 0,
+      startIndex: 0,
+      startX,
+      startY,
+      innerWidth
+    })
   }
 
   public render(ctx: CanvasRenderingContext2D) {
-    const { header: { data, size, color, font }, scale } = this.options
-    if (!data) return
-    const width = this.draw.getWidth()
-    const top = this.draw.getHeaderTop()
-    ctx.save()
-    ctx.fillStyle = color
-    ctx.font = `${size! * scale}px ${font}`
-    // 文字长度
-    const textWidth = ctx.measureText(`${data}`).width
-    // 偏移量
-    const left = (width - textWidth) / 2
-    ctx.fillText(`${data}`, left < 0 ? 0 : left, top)
-    ctx.restore()
+    const innerWidth = this.draw.getInnerWidth()
+    this.draw.drawRow(ctx, {
+      positionList: this.positionList,
+      rowList: this.rowList,
+      pageNo: 0,
+      startIndex: 0,
+      innerWidth
+    })
   }
 
 }

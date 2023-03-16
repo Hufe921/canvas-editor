@@ -312,9 +312,6 @@ export const data: IElement[] = elementList
 
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
-  header: {
-    data: '人民医院门诊'
-  },
   watermark: {
     data: 'CANVAS-EDITOR',
     size: 120

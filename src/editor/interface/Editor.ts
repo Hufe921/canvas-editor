@@ -7,6 +7,14 @@ import { IHeader } from './Header'
 import { IMargin } from './Margin'
 import { IWatermark } from './Watermark'
 
+export interface IEditorDrawData {
+  header?: IElement[];
+  main: IElement[];
+  footer?: IElement[];
+}
+
+export type IEditorData = IEditorDrawData | IElement[]
+
 export interface IEditorOption {
   mode?: EditorMode;
   defaultType?: string;
@@ -54,7 +62,6 @@ export interface IEditorResult {
   width: number;
   height: number;
   margins: IMargin;
-  header?: IHeader;
   watermark?: IWatermark;
-  data: IElement[];
+  data: IEditorData;
 }
