@@ -28,8 +28,8 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. improve performance
-2. page header and footer
+1. page header(WIP)
+2. improve performance
 3. control rules
 4. table paging
 
