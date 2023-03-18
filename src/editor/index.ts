@@ -39,7 +39,7 @@ export default class Editor {
   public register: Register
   public destroy: Function
 
-  constructor(container: HTMLDivElement, data: IEditorData, options: IEditorOption = {}) {
+  constructor(container: HTMLDivElement, data: IEditorData | IElement[], options: IEditorOption = {}) {
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
@@ -96,6 +96,7 @@ export default class Editor {
       defaultHyperlinkColor: '#0000FF',
       headerTop: 50,
       paperDirection: PaperDirection.VERTICAL,
+      inactiveAlpha: 0.6,
       ...options,
       header: headerOptions,
       watermark: waterMarkOptions,

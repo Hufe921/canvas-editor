@@ -90,6 +90,7 @@ export class RangeManager {
     this.range.startTrIndex = startTrIndex
     this.range.endTrIndex = endTrIndex
     this.range.isCrossRowCol = !!(startTdIndex || endTdIndex || startTrIndex || endTrIndex)
+    this.range.zone = this.draw.getZone().getZone()
     // 激活控件
     const control = this.draw.getControl()
     if (~startIndex && ~endIndex) {

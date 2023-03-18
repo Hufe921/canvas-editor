@@ -36,6 +36,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     x: evt.offsetX,
     y: evt.offsetY
   })
+  if (!positionResult) return
   const {
     index,
     isDirectHit,

@@ -1,4 +1,5 @@
 import { IElement } from '..'
+import { EditorZone } from '../dataset/enum/Editor'
 import { IElementPosition } from './Element'
 import { IRow } from './Row'
 import { ITd } from './table/Td'
@@ -16,6 +17,7 @@ export interface ICurrentPosition {
   tdId?: string;
   trId?: string;
   tableId?: string;
+  zone?: EditorZone;
 }
 
 export interface IGetPositionByXYPayload {

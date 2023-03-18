@@ -1,3 +1,5 @@
+import { maxHeightRadioMapping } from '../../../dataset/constant/Header'
+import { EditorZone } from '../../../dataset/enum/Editor'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -25,6 +27,18 @@ export class Header {
     this.positionList = []
   }
 
+  public setElementList(elementList: IElement[]) {
+    this.elementList = elementList
+  }
+
+  public getElementList(): IElement[] {
+    return this.elementList
+  }
+
+  public getPositionList(): IElementPosition[] {
+    return this.positionList
+  }
+
   public compute() {
     this._recovery()
     this._computeRowList()
@@ -46,7 +60,7 @@ export class Header {
     const innerWidth = this.draw.getInnerWidth()
     const margins = this.draw.getMargins()
     const startX = margins[3]
-    const startY = margins[0] + top
+    const startY = top
     this.position.computePageRowPosition({
       positionList: this.positionList,
       rowList: this.rowList,
@@ -58,14 +72,53 @@ export class Header {
     })
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public getMaxHeight(): number {
+    const { header: { maxHeightRadio }, height } = this.options
+    return height * maxHeightRadioMapping[maxHeightRadio]
+  }
+
+  public getHeight(): number {
+    const maxHeight = this.getMaxHeight()
+    const rowHeight = this.getRowHeight()
+    return rowHeight > maxHeight ? maxHeight : rowHeight
+  }
+
+  public getRowHeight(): number {
+    return this.rowList.reduce((pre, cur) => pre + cur.height, 0)
+  }
+
+  public getExtraHeight(): number {
+    const { header: { top: headerTop } } = this.options
+    // 页眉上边距 + 实际高 - 页面上边距
+    const rowHeight = this.getRowHeight()
+    const margins = this.draw.getOriginalMargins()
+    const extraHeight = headerTop + rowHeight - margins[0]
+    return extraHeight <= 0 ? 0 : extraHeight
+  }
+
+  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+    ctx.globalAlpha = 1
     const innerWidth = this.draw.getInnerWidth()
+    const maxHeight = this.getMaxHeight()
+    // 超出最大高度不渲染
+    const rowList: IRow[] = []
+    let curRowHeight = 0
+    for (let r = 0; r < this.rowList.length; r++) {
+      const row = this.rowList[r]
+      if (curRowHeight + row.height > maxHeight) {
+        break
+      }
+      rowList.push(row)
+      curRowHeight += row.height
+    }
     this.draw.drawRow(ctx, {
+      elementList: this.elementList,
       positionList: this.positionList,
-      rowList: this.rowList,
-      pageNo: 0,
+      rowList,
+      pageNo,
       startIndex: 0,
-      innerWidth
+      innerWidth,
+      zone: EditorZone.HEADER
     })
   }
 

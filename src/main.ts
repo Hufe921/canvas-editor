@@ -15,10 +15,16 @@ window.onload = function () {
     container,
     {
       header: [{
-        value: '人民医院门诊',
-        size: 14,
-        color: '#AAAAAA',
+        value: '第一人民医院',
+        size: 32,
         rowFlex: RowFlex.CENTER
+      }, {
+        value: '\n门诊病历',
+        size: 18,
+        rowFlex: RowFlex.CENTER
+      }, {
+        value: '\n',
+        type: ElementType.SEPARATOR
       }],
       main: <IElement[]>data
     },

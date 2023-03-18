@@ -7,13 +7,11 @@ import { IHeader } from './Header'
 import { IMargin } from './Margin'
 import { IWatermark } from './Watermark'
 
-export interface IEditorDrawData {
+export interface IEditorData {
   header?: IElement[];
   main: IElement[];
   footer?: IElement[];
 }
-
-export type IEditorData = IEditorDrawData | IElement[]
 
 export interface IEditorOption {
   mode?: EditorMode;
@@ -50,6 +48,7 @@ export interface IEditorOption {
   defaultHyperlinkColor?: string;
   headerTop?: number;
   paperDirection?: PaperDirection;
+  inactiveAlpha?: number;
   header?: IHeader;
   watermark?: IWatermark;
   control?: IControlOption;
