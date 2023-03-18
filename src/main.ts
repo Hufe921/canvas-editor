@@ -66,11 +66,13 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
   const instance = new Editor(container, {
-    header: data.header || [{
-      value: name,
-      color: '#AAAAAA',
-      rowFlex: RowFlex.CENTER
-    }],
+    header: data.header && data.header.length
+      ? data.header
+      : [{
+        value: name,
+        color: '#AAAAAA',
+        rowFlex: RowFlex.CENTER
+      }],
     main: data.main
   }, {
     margins: options.margins || [100, 120, 100, 120],
