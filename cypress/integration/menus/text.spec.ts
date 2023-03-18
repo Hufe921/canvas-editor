@@ -30,9 +30,7 @@ describe('菜单-文本处理', () => {
         .eq(1)
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].font).to.eq('宋体')
         })
@@ -54,9 +52,7 @@ describe('菜单-文本处理', () => {
       cy.get('.menu-item__size-add')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].size).to.eq(18)
         })
@@ -78,9 +74,7 @@ describe('菜单-文本处理', () => {
       cy.get('.menu-item__size-minus')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].size).to.eq(14)
         })
@@ -102,9 +96,7 @@ describe('菜单-文本处理', () => {
       cy.get('.menu-item__bold')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].bold).to.eq(true)
         })
@@ -126,9 +118,7 @@ describe('菜单-文本处理', () => {
       cy.get('.menu-item__italic')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].italic).to.eq(true)
         })
@@ -150,9 +140,7 @@ describe('菜单-文本处理', () => {
       cy.get('.menu-item__underline')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].underline).to.eq(true)
         })
@@ -174,9 +162,7 @@ describe('菜单-文本处理', () => {
       cy.get('.menu-item__strikeout')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].strikeout).to.eq(true)
         })
@@ -198,9 +184,7 @@ describe('菜单-文本处理', () => {
       cy.get('.menu-item__superscript')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].type).to.eq('superscript')
         })
@@ -220,9 +204,7 @@ describe('菜单-文本处理', () => {
       editor.command.executeSetRange(0, textLength)
 
       cy.get('.menu-item__subscript').click().then(() => {
-        const payload = editor.command.getValue()
-
-        const data = payload.data
+        const data = editor.command.getValue().data.main
 
         expect(data[0].type).to.eq('subscript')
       })
@@ -243,9 +225,7 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeColor('red')
 
-      const payload = editor.command.getValue()
-
-      const data = payload.data
+      const data = editor.command.getValue().data.main
 
       expect(data[0].color).to.eq('red')
     })
@@ -265,9 +245,7 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeHighlight('red')
 
-      const payload = editor.command.getValue()
-
-      const data = payload.data
+      const data = editor.command.getValue().data.main
 
       expect(data[0].highlight).to.eq('red')
     })

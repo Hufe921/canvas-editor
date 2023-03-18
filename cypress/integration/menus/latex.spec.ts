@@ -24,9 +24,7 @@ describe('菜单-LaTeX', () => {
         .eq(1)
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].type).to.eq('latex')
 

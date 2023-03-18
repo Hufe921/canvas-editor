@@ -1,7 +1,7 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IElement, KeyMap, PageMode, PaperDirection } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IElement, KeyMap, PageMode, PaperDirection, RowFlex } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
@@ -11,7 +11,25 @@ window.onload = function () {
 
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
-  const instance = new Editor(container, <IElement[]>data, options)
+  const instance = new Editor(
+    container,
+    {
+      header: [{
+        value: '第一人民医院',
+        size: 32,
+        rowFlex: RowFlex.CENTER
+      }, {
+        value: '\n门诊病历',
+        size: 18,
+        rowFlex: RowFlex.CENTER
+      }, {
+        value: '\n',
+        type: ElementType.SEPARATOR
+      }],
+      main: <IElement[]>data
+    },
+    options
+  )
   console.log('实例: ', instance)
   // cypress使用
   Reflect.set(window, 'editor', instance)

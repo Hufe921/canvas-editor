@@ -32,6 +32,7 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     x: evt.offsetX,
     y: evt.offsetY
   })
+  if (!~positionResult.index) return
   const {
     index,
     isTable,

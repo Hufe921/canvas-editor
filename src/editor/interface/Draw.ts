@@ -1,4 +1,5 @@
-import { IElementPosition } from './Element'
+import { EditorZone } from '../dataset/enum/Editor'
+import { IElement, IElementPosition } from './Element'
 import { IRow } from './Row'
 
 export interface IDrawOption {
@@ -16,11 +17,20 @@ export interface IDrawImagePayload {
 }
 
 export interface IDrawRowPayload {
+  elementList: IElement[];
   positionList: IElementPosition[];
   rowList: IRow[];
   pageNo: number;
   startIndex: number;
   innerWidth: number;
+  zone: EditorZone;
+}
+
+export interface IDrawPagePayload {
+  elementList: IElement[];
+  positionList: IElementPosition[];
+  rowList: IRow[];
+  pageNo: number;
 }
 
 export interface IPainterOptions {

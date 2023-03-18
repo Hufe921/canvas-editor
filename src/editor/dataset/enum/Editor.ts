@@ -18,6 +18,12 @@ export enum EditorMode {
   READONLY = 'readonly'
 }
 
+export enum EditorZone {
+  HEADER = 'header',
+  MAIN = 'main',
+  FOOTER = 'footer'
+}
+
 export enum PageMode {
   PAGING = 'paging',
   CONTINUITY = 'continuity'

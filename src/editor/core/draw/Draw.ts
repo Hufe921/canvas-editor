@@ -1,9 +1,9 @@
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
-import { IDrawOption, IDrawRowPayload, IPainterOptions } from '../../interface/Draw'
-import { IEditorOption, IEditorResult } from '../../interface/Editor'
-import { IElement, IElementMetrics, IElementPosition, IElementFillRect, IElementStyle } from '../../interface/Element'
+import { IDrawOption, IDrawPagePayload, IDrawRowPayload, IPainterOptions } from '../../interface/Draw'
+import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
+import { IElement, IElementMetrics, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
@@ -35,7 +35,7 @@ import { SubscriptParticle } from './particle/Subscript'
 import { SeparatorParticle } from './particle/Separator'
 import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
-import { EditorComponent, EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
+import { EditorComponent, EditorMode, EditorZone, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
@@ -50,6 +50,7 @@ import { BlockParticle } from './particle/block/BlockParticle'
 import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
+import { Zone } from '../zone/Zone'
 
 export class Draw {
 
@@ -61,7 +62,10 @@ export class Draw {
   private mode: EditorMode
   private options: DeepRequired<IEditorOption>
   private position: Position
+  private zone: Zone
+  private headerElementList: IElement[]
   private elementList: IElement[]
+  private footerElementList: IElement[]
   private listener: Listener
 
   private i18n: I18n
@@ -110,7 +114,7 @@ export class Draw {
   constructor(
     rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
-    elementList: IElement[],
+    data: IEditorData,
     listener: Listener
   ) {
     this.container = this._wrapContainer(rootContainer)
@@ -119,7 +123,9 @@ export class Draw {
     this.pageNo = 0
     this.mode = options.mode
     this.options = options
-    this.elementList = elementList
+    this.headerElementList = data.header || []
+    this.elementList = data.main
+    this.footerElementList = data.footer || []
     this.listener = listener
 
     this._formatContainer()
@@ -129,6 +135,7 @@ export class Draw {
     this.i18n = new I18n()
     this.historyManager = new HistoryManager()
     this.position = new Position(this)
+    this.zone = new Zone()
     this.range = new RangeManager(this)
     this.margin = new Margin(this)
     this.background = new Background(this)
@@ -206,6 +213,12 @@ export class Draw {
 
   public getHeight(): number {
     return Math.floor(this.getOriginalHeight() * this.options.scale)
+  }
+
+  public getOriginalMainHeight(): number {
+    const mainHeight = this.getOriginalHeight()
+    const extraHeight = this.header.getExtraHeight()
+    return mainHeight - extraHeight
   }
 
   public getCanvasWidth(pageNo = -1): number {
@@ -339,17 +352,52 @@ export class Draw {
     return this.position
   }
 
+  public getZone(): Zone {
+    return this.zone
+  }
+
   public getRange(): RangeManager {
     return this.range
   }
 
+  public getHeaderElementList(): IElement[] {
+    return this.headerElementList
+  }
+
+  public getTableElementList(sourceElementList: IElement[]): IElement[] {
+    const positionContext = this.position.getPositionContext()
+    const { index, trIndex, tdIndex } = positionContext
+    return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].value
+  }
+
   public getElementList(): IElement[] {
     const positionContext = this.position.getPositionContext()
-    if (positionContext.isTable) {
-      const { index, trIndex, tdIndex } = positionContext
-      return this.elementList[index!].trList![trIndex!].tdList[tdIndex!].value
-    }
+    const elementList = this.getOriginalElementList()
+    return positionContext.isTable
+      ? this.getTableElementList(elementList)
+      : elementList
+  }
+
+  public getMainElementList(): IElement[] {
+    const positionContext = this.position.getPositionContext()
+    return positionContext.isTable
+      ? this.getTableElementList(this.elementList)
+      : this.elementList
+  }
+
+  public getOriginalElementList() {
+    const zoneManager = this.getZone()
+    return zoneManager.isHeaderActive()
+      ? this.header.getElementList()
+      : this.elementList
+  }
+
+  public getOriginalMainElementList(): IElement[] {
     return this.elementList
+  }
+
+  public getFooterElementList(): IElement[] {
+    return this.footerElementList
   }
 
   public insertElementList(payload: IElement[]) {
@@ -394,10 +442,6 @@ export class Draw {
     }
   }
 
-  public getOriginalElementList() {
-    return this.elementList
-  }
-
   public getCanvasEvent(): CanvasEvent {
     return this.canvasEvent
   }
@@ -420,6 +464,10 @@ export class Draw {
 
   public getTableTool(): TableTool {
     return this.tableTool
+  }
+
+  public getHeader(): Header {
+    return this.header
   }
 
   public getHyperlinkParticle(): HyperlinkParticle {
@@ -596,15 +644,17 @@ export class Draw {
 
   public getValue(): IEditorResult {
     // 配置
-    const { width, height, margins, watermark, header } = this.options
+    const { width, height, margins, watermark } = this.options
     // 数据
-    const data = zipElementList(this.elementList)
+    const data: IEditorData = {
+      header: zipElementList(this.headerElementList),
+      main: zipElementList(this.elementList)
+    }
     return {
       version,
       width,
       height,
       margins,
-      header: header.data ? header : undefined,
       watermark: watermark.data ? watermark : undefined,
       data
     }
@@ -670,7 +720,7 @@ export class Draw {
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${size * scale}px ${font}`
   }
 
-  private _computeRowList(innerWidth: number, elementList: IElement[]) {
+  public computeRowList(innerWidth: number, elementList: IElement[]) {
     const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
@@ -726,7 +776,7 @@ export class Draw {
           let maxTrHeight = 0
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const rowList = this._computeRowList((td.width! - tdGap) * scale, td.value)
+            const rowList = this.computeRowList((td.width! - tdGap) * scale, td.value)
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
@@ -754,7 +804,7 @@ export class Draw {
         metrics.boundingBoxAscent = 0
         // 表格分页处理(拆分表格)
         const margins = this.getMargins()
-        const height = this.getHeight()
+        const height = this.getOriginalMainHeight()
         const marginHeight = margins[0] + margins[2]
         let curPagePreHeight = marginHeight
         for (let r = 0; r < rowList.length; r++) {
@@ -812,13 +862,13 @@ export class Draw {
       } else if (element.type === ElementType.SEPARATOR) {
         element.width = innerWidth
         metrics.width = innerWidth
-        metrics.height = this.options.defaultSize
+        metrics.height = defaultSize
         metrics.boundingBoxAscent = -rowMargin
         metrics.boundingBoxDescent = -rowMargin
       } else if (element.type === ElementType.PAGE_BREAK) {
         element.width = innerWidth
         metrics.width = innerWidth
-        metrics.height = this.options.defaultSize
+        metrics.height = defaultSize
       } else if (
         element.type === ElementType.CHECKBOX ||
         element.controlComponent === ControlComponent.CHECKBOX
@@ -846,7 +896,7 @@ export class Draw {
         metrics.boundingBoxAscent = 0
       } else {
         // 设置上下标真实字体尺寸
-        const size = element.size || this.options.defaultSize
+        const size = element.size || defaultSize
         if (element.type === ElementType.SUPERSCRIPT || element.type === ElementType.SUBSCRIPT) {
           element.actualSize = Math.ceil(size * 0.6)
         }
@@ -920,7 +970,7 @@ export class Draw {
   private _computePageList(): IRow[][] {
     const pageRowList: IRow[][] = [[]]
     const { pageMode } = this.options
-    const height = this.getHeight()
+    const height = this.getOriginalMainHeight()
     const margins = this.getMargins()
     const marginHeight = margins[0] + margins[2]
     let pageHeight = marginHeight
@@ -964,8 +1014,8 @@ export class Draw {
     this.textParticle.complete()
   }
 
-  private _drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
-    const { rowList, pageNo, positionList, startIndex } = payload
+  public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
+    const { rowList, pageNo, elementList, positionList, startIndex, zone } = payload
     const { scale, tdPadding } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
@@ -1063,11 +1113,11 @@ export class Draw {
           this.highlight.render(ctx)
         }
         // 选区记录
-        const { startIndex, endIndex } = this.range.getRange()
-        if (startIndex !== endIndex && startIndex <= index && index <= endIndex) {
+        const { zone: currentZone, startIndex, endIndex } = this.range.getRange()
+        if (currentZone === zone && startIndex !== endIndex && startIndex <= index && index <= endIndex) {
           // 从行尾开始-绘制最小宽度
           if (startIndex === index) {
-            const nextElement = this.elementList[startIndex + 1]
+            const nextElement = elementList[startIndex + 1]
             if (nextElement && nextElement.value === ZERO) {
               rangeRecord.x = x + metrics.width
               rangeRecord.y = y
@@ -1104,12 +1154,14 @@ export class Draw {
             const tr = element.trList![t]
             for (let d = 0; d < tr.tdList!.length; d++) {
               const td = tr.tdList[d]
-              this._drawRow(ctx, {
+              this.drawRow(ctx, {
+                elementList: td.value,
                 positionList: td.positionList!,
                 rowList: td.rowList!,
                 pageNo,
                 startIndex: 0,
-                innerWidth: (td.width! - tdGap) * scale
+                innerWidth: (td.width! - tdGap) * scale,
+                zone
               })
             }
           }
@@ -1136,10 +1188,13 @@ export class Draw {
     this.blockParticle.clear()
   }
 
-  private _drawPage(positionList: IElementPosition[], rowList: IRow[], pageNo: number) {
-    const { pageMode } = this.options
+  private _drawPage(payload: IDrawPagePayload) {
+    const { elementList, positionList, rowList, pageNo } = payload
+    const { inactiveAlpha, pageMode } = this.options
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
+    // 判断当前激活区域-激活页眉时主题元素透明度降低
+    ctx.globalAlpha = this.zone.isHeaderActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx)
@@ -1147,15 +1202,17 @@ export class Draw {
     this.margin.render(ctx, pageNo)
     // 渲染元素
     const index = rowList[0].startIndex
-    this._drawRow(ctx, {
+    this.drawRow(ctx, {
+      elementList,
       positionList,
       rowList,
       pageNo,
       startIndex: index,
-      innerWidth
+      innerWidth,
+      zone: EditorZone.MAIN
     })
     // 绘制页眉
-    this.header.render(ctx)
+    this.header.render(ctx, pageNo)
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
     // 搜索匹配绘制
@@ -1169,13 +1226,20 @@ export class Draw {
   }
 
   private _lazyRender() {
-    const positionList = this.position.getOriginalPositionList()
+    const positionList = this.position.getOriginalMainPositionList()
+    const elementList = this.getOriginalMainElementList()
     this.lazyRenderIntersectionObserver?.disconnect()
     this.lazyRenderIntersectionObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const index = Number((<HTMLCanvasElement>entry.target).dataset.index)
-          this._drawPage(positionList, this.pageRowList[index], index)
+          this.header.render(this.ctxList[index], index)
+          this._drawPage({
+            elementList,
+            positionList,
+            rowList: this.pageRowList[index],
+            pageNo: index
+          })
         }
       })
     })
@@ -1185,9 +1249,15 @@ export class Draw {
   }
 
   private _immediateRender() {
-    const positionList = this.position.getOriginalPositionList()
+    const positionList = this.position.getOriginalMainPositionList()
+    const elementList = this.getOriginalMainElementList()
     for (let i = 0; i < this.pageRowList.length; i++) {
-      this._drawPage(positionList, this.pageRowList[i], i)
+      this._drawPage({
+        elementList,
+        positionList,
+        rowList: this.pageRowList[i],
+        pageNo: i
+      })
     }
   }
 
@@ -1203,8 +1273,10 @@ export class Draw {
     const innerWidth = this.getInnerWidth()
     // 计算文档信息
     if (isCompute) {
+      // 页眉信息
+      this.header.compute()
       // 行信息
-      this.rowList = this._computeRowList(innerWidth, this.elementList)
+      this.rowList = this.computeRowList(innerWidth, this.elementList)
       // 页面信息
       this.pageRowList = this._computePageList()
       // 位置信息
@@ -1219,7 +1291,6 @@ export class Draw {
     this.imageObserver.clearAll()
     this.cursor.recoveryCursor()
     // 创建纸张
-    const positionList = this.position.getOriginalPositionList()
     for (let i = 0; i < this.pageRowList.length; i++) {
       if (!this.pageList[i]) {
         this._createPage(i)
@@ -1243,20 +1314,19 @@ export class Draw {
     }
     // 光标重绘
     if (isSetCursor) {
+      const positionList = this.position.getPositionList()
       const positionContext = this.position.getPositionContext()
       if (positionContext.isTable) {
         const { index, trIndex, tdIndex } = positionContext
-        const tablePositionList = this.elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
+        const elementList = this.getOriginalElementList()
+        const tablePositionList = elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
         if (curIndex === undefined && tablePositionList) {
           curIndex = tablePositionList.length - 1
         }
         const tablePosition = tablePositionList?.[curIndex!]
         this.position.setCursorPosition(tablePosition || null)
       } else {
-        if (curIndex === undefined) {
-          curIndex = positionList.length - 1
-        }
-        this.position.setCursorPosition(positionList[curIndex!] || null)
+        this.position.setCursorPosition(curIndex !== undefined ? positionList[curIndex] : null)
       }
       this.cursor.drawCursor()
     }
@@ -1264,12 +1334,16 @@ export class Draw {
     if (isSubmitHistory) {
       const self = this
       const oldElementList = deepClone(this.elementList)
+      const oldHeaderElementList = deepClone(this.header.getElementList())
       const { startIndex, endIndex } = this.range.getRange()
       const pageNo = this.pageNo
       const oldPositionContext = deepClone(this.position.getPositionContext())
+      const zone = this.zone.getZone()
       this.historyManager.execute(function () {
+        self.zone.setZone(zone)
         self.setPageNo(pageNo)
         self.position.setPositionContext(oldPositionContext)
+        self.header.setElementList(oldHeaderElementList)
         self.elementList = deepClone(oldElementList)
         self.range.setRange(startIndex, endIndex)
         self.render({ curIndex, isSubmitHistory: false })

@@ -3,9 +3,10 @@ import { ZERO } from '../../dataset/constant/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { IComputePageRowPositionPayload, IComputePageRowPositionResult } from '../../interface/Position'
 import { IEditorOption } from '../../interface/Editor'
-import { IElementPosition } from '../../interface/Element'
+import { IElement, IElementPosition } from '../../interface/Element'
 import { ICurrentPosition, IGetPositionByXYPayload, IPositionContext } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
+import { EditorZone } from '../../dataset/enum/Editor'
 
 export class Position {
 
@@ -28,17 +29,30 @@ export class Position {
     this.options = draw.getOptions()
   }
 
-  public getOriginalPositionList(): IElementPosition[] {
-    return this.positionList
+  public getTablePositionList(sourceElementList: IElement[]): IElementPosition[] {
+    const { index, trIndex, tdIndex } = this.positionContext
+    return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].positionList || []
   }
 
   public getPositionList(): IElementPosition[] {
-    const { isTable } = this.positionContext
-    if (isTable) {
-      const { index, trIndex, tdIndex } = this.positionContext
-      const elementList = this.draw.getOriginalElementList()
-      return elementList[index!].trList![trIndex!].tdList[tdIndex!].positionList || []
-    }
+    return this.positionContext.isTable
+      ? this.getTablePositionList(this.draw.getOriginalElementList())
+      : this.getOriginalPositionList()
+  }
+
+  public getMainPositionList(): IElementPosition[] {
+    return this.positionContext.isTable
+      ? this.getTablePositionList(this.draw.getOriginalMainElementList())
+      : this.positionList
+  }
+
+  public getOriginalPositionList(): IElementPosition[] {
+    const zoneManager = this.draw.getZone()
+    const header = this.draw.getHeader()
+    return zoneManager.isHeaderActive() ? header.getPositionList() : this.positionList
+  }
+
+  public getOriginalMainPositionList(): IElementPosition[] {
     return this.positionList
   }
 
@@ -46,7 +60,7 @@ export class Position {
     this.positionList = payload
   }
 
-  private computePageRowPosition(payload: IComputePageRowPositionPayload): IComputePageRowPositionResult {
+  public computePageRowPosition(payload: IComputePageRowPositionPayload): IComputePageRowPositionResult {
     const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
     const { scale, tdPadding } = this.options
     let x = startX
@@ -130,7 +144,10 @@ export class Position {
     const pageRowList = this.draw.getPageRowList()
     const margins = this.draw.getMargins()
     const startX = margins[3]
-    const startY = margins[0]
+    // 起始位置受页眉影响
+    const header = this.draw.getHeader()
+    const extraHeight = header.getExtraHeight()
+    const startY = margins[0] + extraHeight
     for (let i = 0; i < pageRowList.length; i++) {
       const rowList = pageRowList[i]
       const startIndex = rowList[0].startIndex
@@ -169,12 +186,14 @@ export class Position {
       elementList = this.draw.getOriginalElementList()
     }
     if (!positionList) {
-      positionList = this.positionList
+      positionList = this.getOriginalPositionList()
     }
+    const zoneManager = this.draw.getZone()
     const curPageNo = this.draw.getPageNo()
+    const positionNo = zoneManager.isMainActive() ? curPageNo : 0
     for (let j = 0; j < positionList.length; j++) {
       const { index, pageNo, coordinate: { leftTop, rightTop, leftBottom } } = positionList[j]
-      if (curPageNo !== pageNo) continue
+      if (positionNo !== pageNo) continue
       // 命中元素
       if (leftTop[0] <= x && rightTop[0] >= x && leftTop[1] <= y && leftBottom[1] >= y) {
         let curPositionIndex = j
@@ -267,15 +286,15 @@ export class Position {
       }
     }
     // 判断所属行是否存在元素
-    const firstLetterList = positionList.filter(p => p.isLastLetter && p.pageNo === curPageNo)
+    const firstLetterList = positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
     for (let j = 0; j < firstLetterList.length; j++) {
       const { index, pageNo, coordinate: { leftTop, leftBottom } } = firstLetterList[j]
-      if (curPageNo !== pageNo) continue
+      if (positionNo !== pageNo) continue
       if (y > leftTop[1] && y <= leftBottom[1]) {
         const isHead = x < this.options.margins[3]
         // 是否在头部
         if (isHead) {
-          const headIndex = positionList.findIndex(p => p.pageNo === curPageNo && p.rowNo === firstLetterList[j].rowNo)
+          const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === firstLetterList[j].rowNo)
           curPositionIndex = ~headIndex ? headIndex - 1 : index
         } else {
           curPositionIndex = index
@@ -285,8 +304,28 @@ export class Position {
       }
     }
     if (!isLastArea) {
+      // 判断所属位置是否属于header区域，当前位置小于第一行的上边距
+      if (zoneManager.isMainActive()) {
+        if (y < firstLetterList[0].coordinate.leftTop[1]) {
+          return {
+            index: -1,
+            zone: EditorZone.HEADER
+          }
+        }
+      }
+      // 判断所属位置是否属于main区域，当前位置大于第一行的上边距
+      if (zoneManager.isHeaderActive()) {
+        if (y > firstLetterList[0].coordinate.leftTop[1]) {
+          return {
+            index: -1,
+            zone: EditorZone.MAIN
+          }
+        }
+      }
       // 当前页最后一行
-      return { index: firstLetterList[firstLetterList.length - 1]?.index || positionList.length - 1 }
+      return {
+        index: firstLetterList[firstLetterList.length - 1]?.index || positionList.length - 1,
+      }
     }
     return {
       index: curPositionIndex,
@@ -294,13 +333,10 @@ export class Position {
     }
   }
 
-  public adjustPositionContext(payload: Pick<IGetPositionByXYPayload, 'x' | 'y'>): ICurrentPosition {
+  public adjustPositionContext(payload: IGetPositionByXYPayload): ICurrentPosition | null {
     const isReadonly = this.draw.isReadonly()
-    const { x, y } = payload
-    const positionResult = this.getPositionByXY({
-      x,
-      y
-    })
+    const positionResult = this.getPositionByXY(payload)
+    if (!~positionResult.index) return null
     // 移动控件内光标
     if (positionResult.isControl && !isReadonly) {
       const {

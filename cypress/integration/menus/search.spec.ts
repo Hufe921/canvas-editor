@@ -93,9 +93,7 @@ describe('菜单-搜索', () => {
         .find('button')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           // 普通文本
           expect(data[0].value).to.be.eq(replaceText)

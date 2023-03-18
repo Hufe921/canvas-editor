@@ -7,6 +7,12 @@ import { IHeader } from './Header'
 import { IMargin } from './Margin'
 import { IWatermark } from './Watermark'
 
+export interface IEditorData {
+  header?: IElement[];
+  main: IElement[];
+  footer?: IElement[];
+}
+
 export interface IEditorOption {
   mode?: EditorMode;
   defaultType?: string;
@@ -42,6 +48,7 @@ export interface IEditorOption {
   defaultHyperlinkColor?: string;
   headerTop?: number;
   paperDirection?: PaperDirection;
+  inactiveAlpha?: number;
   header?: IHeader;
   watermark?: IWatermark;
   control?: IControlOption;
@@ -54,7 +61,6 @@ export interface IEditorResult {
   width: number;
   height: number;
   margins: IMargin;
-  header?: IHeader;
   watermark?: IWatermark;
-  data: IElement[];
+  data: IEditorData;
 }

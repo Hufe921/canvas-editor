@@ -2,9 +2,25 @@ import { ZERO } from '../../../dataset/constant/Common'
 import { LETTER_REG, NUMBER_LIKE_REG } from '../../../dataset/constant/Regular'
 import { CanvasEvent } from '../CanvasEvent'
 
-function dblclick(host: CanvasEvent) {
+function dblclick(host: CanvasEvent, evt: MouseEvent) {
+  // 切换区域
   const draw = host.getDraw()
   const position = draw.getPosition()
+  const positionContext = position.getPositionByXY({
+    x: evt.offsetX,
+    y: evt.offsetY
+  })
+  if (!~positionContext.index && positionContext.zone) {
+    draw.getZone().setZone(positionContext.zone)
+    draw.getRange().clearRange()
+    draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false,
+      isCompute: false
+    })
+    return
+  }
+  // 自动扩选文字
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return
   const { value, index } = cursorPosition
