@@ -36,9 +36,7 @@ describe('菜单-格式刷', () => {
 
           editor.command.executeApplyPainterStyle()
 
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data.length).to.eq(1)
 

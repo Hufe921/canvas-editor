@@ -16,9 +16,7 @@ describe('菜单-表格', () => {
 
       editor.command.executeInsertTable(8, 8)
 
-      const payload = editor.command.getValue()
-
-      const data = payload.data
+      const data = editor.command.getValue().data.main
 
       expect(data[0].type).to.eq('table')
 
