@@ -62,8 +62,9 @@ export class Cursor {
     // 设置光标代理
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
-    const { metrics, coordinate: { leftTop, rightTop }, ascent } = cursorPosition
-    const curPageNo = this.draw.getPageNo()
+    const { metrics, coordinate: { leftTop, rightTop }, ascent, pageNo } = cursorPosition
+    const zoneManager = this.draw.getZone()
+    const curPageNo = zoneManager.isMainActive() ? pageNo : this.draw.getPageNo()
     const preY = curPageNo * (height + pageGap)
     // 增加1/4字体大小
     const offsetHeight = metrics.height / 4
