@@ -73,8 +73,9 @@ export class Header {
   }
 
   public getMaxHeight(): number {
-    const { header: { maxHeightRadio }, height } = this.options
-    return height * maxHeightRadioMapping[maxHeightRadio]
+    const { header: { maxHeightRadio } } = this.options
+    const height = this.draw.getOriginalHeight()
+    return Math.floor(height * maxHeightRadioMapping[maxHeightRadio])
   }
 
   public getHeight(): number {
@@ -90,9 +91,9 @@ export class Header {
   public getExtraHeight(): number {
     const { header: { top: headerTop } } = this.options
     // 页眉上边距 + 实际高 - 页面上边距
-    const rowHeight = this.getRowHeight()
     const margins = this.draw.getOriginalMargins()
-    const extraHeight = headerTop + rowHeight - margins[0]
+    const headerHeight = this.getHeight()
+    const extraHeight = headerTop + headerHeight - margins[0]
     return extraHeight <= 0 ? 0 : extraHeight
   }
 
