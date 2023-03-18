@@ -19,9 +19,9 @@ describe('基础功能', () => {
       cy.get('@canvas')
         .type(text)
         .then(() => {
-          const payload = editor.command.getValue()
+          const data = editor.command.getValue().data.main
 
-          expect(payload.data[0].value).to.eq(text)
+          expect(data[0].value).to.eq(text)
         })
     })
   })

@@ -20,9 +20,7 @@ describe('菜单-日期选择器', () => {
         .first()
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].type).to.eq('date')
         })

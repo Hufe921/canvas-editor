@@ -24,7 +24,7 @@
 
 ## 待开发
 
-- 可编辑页眉
+- 可编辑页眉（待边界修复）
 - 计算性能
 - 控件规则
 - 表格分页
@@ -44,6 +44,7 @@ npm i @hufe921/canvas-editor --save
 
 ## Step. 3: 实例化编辑器
 
+- 仅包含正文内容
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
@@ -52,6 +53,21 @@ new Editor(document.querySelector(".canvas-editor"), [
       value: "Hello World"
     }
   ], {})
+```
+
+- 包含正文及页眉内容
+```javascript
+import Editor from "@hufe921/canvas-editor"
+
+new Editor(document.querySelector(".canvas-editor"), {
+  header: [{
+    value: "Header",
+    rowFlex: RowFlex.CENTER
+  }],
+  main: [{
+    value: "Hello World"
+  }]
+}, {})
 ```
 
 ## Step. 4: 配置编辑器

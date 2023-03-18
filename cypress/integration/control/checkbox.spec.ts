@@ -34,9 +34,7 @@ describe('控件-复选框', () => {
         }
       }])
 
-      const payload = editor.command.getValue()
-
-      const data = payload.data[0]
+      const data = editor.command.getValue().data.main[0]
 
       expect(data.control!.code).to.be.eq('98175')
     })

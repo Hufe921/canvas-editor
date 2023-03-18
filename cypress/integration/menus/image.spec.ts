@@ -17,8 +17,8 @@ describe('菜单-图片', () => {
       cy.get('#image').attachFile('test.png')
 
       cy.wait(200).then(() => {
-        const payload = editor.command.getValue()
-        const data = payload.data
+        const data = editor.command.getValue().data.main
+
         expect(data[0].type).to.eq('image')
       })
     })

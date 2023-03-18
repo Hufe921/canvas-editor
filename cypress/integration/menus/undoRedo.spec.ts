@@ -21,9 +21,9 @@ describe('菜单-撤销&重做', () => {
       cy.get('.menu-item__undo')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
+          const data = editor.command.getValue().data.main
 
-          expect(payload.data[0].value).to.eq(text)
+          expect(data[0].value).to.eq(text)
         })
     })
   })
@@ -41,9 +41,9 @@ describe('菜单-撤销&重做', () => {
       cy.get('.menu-item__redo')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
+          const data = editor.command.getValue().data.main
 
-          expect(payload.data[0].value).to.eq(`${text}1`)
+          expect(data[0].value).to.eq(`${text}1`)
         })
     })
   })

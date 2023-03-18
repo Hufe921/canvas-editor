@@ -24,9 +24,7 @@ describe('菜单-代码块', () => {
         .eq(1)
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data[2]
+          const data = editor.command.getValue().data.main[2]
 
           expect(data.value).to.eq('log')
 

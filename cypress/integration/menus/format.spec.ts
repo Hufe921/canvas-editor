@@ -28,9 +28,7 @@ describe('菜单-清除格式', () => {
       cy.get('.menu-item__format')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].italic).to.eq(false)
 

@@ -23,9 +23,7 @@ describe('菜单-行处理', () => {
       cy.get('.menu-item__left')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].rowFlex).to.eq('left')
         })
@@ -45,9 +43,7 @@ describe('菜单-行处理', () => {
       cy.get('.menu-item__center')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].rowFlex).to.eq('center')
         })
@@ -67,9 +63,7 @@ describe('菜单-行处理', () => {
       cy.get('.menu-item__right')
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].rowFlex).to.eq('right')
         })
@@ -93,9 +87,7 @@ describe('菜单-行处理', () => {
         .eq(1)
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data
+          const data = editor.command.getValue().data.main
 
           expect(data[0].rowMargin).to.eq(1.25)
         })

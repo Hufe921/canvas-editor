@@ -1,6 +1,6 @@
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IEditorResult, IElement, KeyMap, PageMode, PaperDirection } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IEditorData, IEditorResult, IElement, KeyMap, PageMode, PaperDirection, RowFlex } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
@@ -40,12 +40,21 @@ async function init() {
   id = idParam ? Number(idParam) : articleList[0].id
   const article = await getArticleDetail(id)
   name = article.name
-  let data: IElement[] = []
+
   let options: Partial<Omit<IEditorResult, 'data'>> = {}
+  let data: IEditorData = {
+    main: []
+  }
   try {
     const content = <IEditorResult>JSON.parse(article.content)
     const { data: contentData, ...rest } = content
-    data = Array.isArray(contentData) ? contentData : []
+    const editorData = <IEditorData | IElement[]>contentData
+    // 兼容无页眉时数据结构
+    const isExistHeader = !Array.isArray(editorData)
+    data = {
+      header: isExistHeader ? editorData.header : [],
+      main: isExistHeader ? editorData.main : editorData
+    }
     options = rest
   } catch (error) {
     alert('数据格式错误')
@@ -53,14 +62,18 @@ async function init() {
   initEditorInstance(data, options)
 }
 
-function initEditorInstance(data: IElement[], options: Partial<Omit<IEditorResult, 'data'>>) {
+function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResult, 'data'>>) {
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
-  const instance = new Editor(container, <IElement[]>data, {
+  const instance = new Editor(container, {
+    header: data.header || [{
+      value: name,
+      color: '#AAAAAA',
+      rowFlex: RowFlex.CENTER
+    }],
+    main: data.main
+  }, {
     margins: options.margins || [100, 120, 100, 120],
-    header: {
-      data: name
-    },
     watermark: options.watermark
   })
   console.log('实例: ', instance)

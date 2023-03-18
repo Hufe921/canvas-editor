@@ -34,6 +34,10 @@ export class RangeManager {
     return this.range
   }
 
+  public clearRange() {
+    this.setRange(-1, -1)
+  }
+
   public getSelection(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null
@@ -90,6 +94,7 @@ export class RangeManager {
     this.range.startTrIndex = startTrIndex
     this.range.endTrIndex = endTrIndex
     this.range.isCrossRowCol = !!(startTdIndex || endTdIndex || startTrIndex || endTrIndex)
+    this.range.zone = this.draw.getZone().getZone()
     // 激活控件
     const control = this.draw.getControl()
     if (~startIndex && ~endIndex) {

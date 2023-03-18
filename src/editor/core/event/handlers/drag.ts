@@ -21,10 +21,12 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
     draw.setPageNo(Number(pageIndex))
   }
   const position = draw.getPosition()
-  const { isTable, tdValueIndex, index } = position.adjustPositionContext({
+  const positionContext = position.adjustPositionContext({
     x: evt.offsetX,
     y: evt.offsetY
   })
+  if (!positionContext) return
+  const { isTable, tdValueIndex, index } = positionContext
   // 设置选区及光标位置
   const positionList = position.getPositionList()
   const curIndex = isTable ? tdValueIndex! : index

@@ -1,5 +1,5 @@
 import './assets/css/index.css'
-import { IEditorOption, IEditorResult } from './interface/Editor'
+import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
@@ -11,7 +11,7 @@ import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
-import { EditorComponent, EditorMode, PageMode, PaperDirection } from './dataset/enum/Editor'
+import { EditorComponent, EditorZone, EditorMode, PageMode, PaperDirection } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
@@ -39,7 +39,7 @@ export default class Editor {
   public register: Register
   public destroy: Function
 
-  constructor(container: HTMLDivElement, elementList: IElement[], options: IEditorOption = {}) {
+  constructor(container: HTMLDivElement, data: IEditorData | IElement[], options: IEditorOption = {}) {
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
@@ -96,6 +96,7 @@ export default class Editor {
       defaultHyperlinkColor: '#0000FF',
       headerTop: 50,
       paperDirection: PaperDirection.VERTICAL,
+      inactiveAlpha: 0.6,
       ...options,
       header: headerOptions,
       watermark: waterMarkOptions,
@@ -103,13 +104,33 @@ export default class Editor {
       checkbox: checkboxOptions,
       cursor: cursorOptions
     }
-    formatElementList(elementList, {
+    // 数据处理
+    let headerElementList: IElement[] = []
+    let mainElementList: IElement[] = []
+    if (Array.isArray(data)) {
+      mainElementList = data
+    } else {
+      headerElementList = data.header || []
+      mainElementList = data.main
+    }
+    formatElementList(headerElementList, {
+      editorOptions
+    })
+    formatElementList(mainElementList, {
       editorOptions
     })
     // 监听
     this.listener = new Listener()
     // 启动
-    const draw = new Draw(container, editorOptions, elementList, this.listener)
+    const draw = new Draw(
+      container,
+      editorOptions,
+      {
+        header: headerElementList,
+        main: mainElementList
+      },
+      this.listener
+    )
     // 命令
     this.command = new Command(new CommandAdapt(draw))
     // 菜单
@@ -136,6 +157,7 @@ export default class Editor {
 export {
   Editor,
   RowFlex,
+  EditorZone,
   EditorMode,
   ElementType,
   ControlType,
@@ -152,6 +174,7 @@ export {
 // 对外类型
 export type {
   IElement,
+  IEditorData,
   IEditorOption,
   IEditorResult,
   IContextMenuContext,

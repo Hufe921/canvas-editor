@@ -41,9 +41,7 @@ describe('控件-列举型', () => {
         .eq(0)
         .click()
         .then(() => {
-          const payload = editor.command.getValue()
-
-          const data = payload.data[0]
+          const data = editor.command.getValue().data.main[0]
 
           expect(data.control!.value![0].value).to.be.eq(text)
 
