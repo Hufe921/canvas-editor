@@ -35,16 +35,14 @@ export class Position {
   }
 
   public getPositionList(): IElementPosition[] {
-    const elementList = this.draw.getElementList()
     return this.positionContext.isTable
-      ? this.getTablePositionList(elementList)
+      ? this.getTablePositionList(this.draw.getOriginalElementList())
       : this.getOriginalPositionList()
   }
 
   public getMainPositionList(): IElementPosition[] {
-    const elementList = this.draw.getMainElementList()
     return this.positionContext.isTable
-      ? this.getTablePositionList(elementList)
+      ? this.getTablePositionList(this.draw.getOriginalMainElementList())
       : this.positionList
   }
 

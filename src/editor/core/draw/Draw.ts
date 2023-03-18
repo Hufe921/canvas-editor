@@ -1318,7 +1318,7 @@ export class Draw {
       const positionContext = this.position.getPositionContext()
       if (positionContext.isTable) {
         const { index, trIndex, tdIndex } = positionContext
-        const elementList = this.getElementList()
+        const elementList = this.getOriginalElementList()
         const tablePositionList = elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
         if (curIndex === undefined && tablePositionList) {
           curIndex = tablePositionList.length - 1

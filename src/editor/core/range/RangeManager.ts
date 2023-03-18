@@ -34,6 +34,10 @@ export class RangeManager {
     return this.range
   }
 
+  public clearRange() {
+    this.setRange(-1, -1)
+  }
+
   public getSelection(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null

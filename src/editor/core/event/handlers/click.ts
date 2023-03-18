@@ -11,8 +11,8 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     y: evt.offsetY
   })
   if (!~positionContext.index && positionContext.zone) {
-    const zoneManager = draw.getZone()
-    zoneManager.setZone(positionContext.zone)
+    draw.getZone().setZone(positionContext.zone)
+    draw.getRange().clearRange()
     draw.render({
       isSubmitHistory: false,
       isSetCursor: false,
