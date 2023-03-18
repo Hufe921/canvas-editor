@@ -20,7 +20,7 @@ const {
   margins: IMargin;
   header?: IHeader;
   watermark?: IWatermark;
-  data: IElement[];
+  data: IEditorData;
 } = instance.command.getValue()
 ```
 
