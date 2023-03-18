@@ -11,7 +11,7 @@ import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
-import { EditorComponent, EditorMode, PageMode, PaperDirection } from './dataset/enum/Editor'
+import { EditorComponent, EditorZone, EditorMode, PageMode, PaperDirection } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
@@ -157,6 +157,7 @@ export default class Editor {
 export {
   Editor,
   RowFlex,
+  EditorZone,
   EditorMode,
   ElementType,
   ControlType,
@@ -173,6 +174,7 @@ export {
 // 对外类型
 export type {
   IElement,
+  IEditorData,
   IEditorOption,
   IEditorResult,
   IContextMenuContext,
