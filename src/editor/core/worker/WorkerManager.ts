@@ -21,7 +21,7 @@ export class WorkerManager {
         reject(evt)
       }
 
-      const elementList = this.draw.getOriginalElementList()
+      const elementList = this.draw.getOriginalMainElementList()
       this.wordCountWorker.postMessage(elementList)
     })
   }
