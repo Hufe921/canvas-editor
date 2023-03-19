@@ -1,10 +1,13 @@
 import { EditorZone } from '../../dataset/enum/Editor'
+import { Draw } from '../draw/Draw'
 
 export class Zone {
 
+  private draw: Draw
   private currentZone: EditorZone
 
-  constructor() {
+  constructor(draw: Draw) {
+    this.draw = draw
     this.currentZone = EditorZone.MAIN
   }
 
@@ -21,7 +24,14 @@ export class Zone {
   }
 
   public setZone(payload: EditorZone) {
+    if (this.currentZone === payload) return
     this.currentZone = payload
+    this.draw.getRange().clearRange()
+    this.draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
 }
