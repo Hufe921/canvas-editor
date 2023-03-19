@@ -6,6 +6,7 @@
 @import './previewer/previewer.css';
 @import './contextmenu/contextmenu.css';
 @import './hyperlink/hyperlink.css';
+@import './zone/zone.css';
 
 .ce-inputarea {
   width: 0;
