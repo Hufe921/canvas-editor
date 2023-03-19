@@ -135,7 +135,7 @@ export class Draw {
     this.i18n = new I18n()
     this.historyManager = new HistoryManager()
     this.position = new Position(this)
-    this.zone = new Zone()
+    this.zone = new Zone(this)
     this.range = new RangeManager(this)
     this.margin = new Margin(this)
     this.background = new Background(this)
@@ -215,10 +215,11 @@ export class Draw {
     return Math.floor(this.getOriginalHeight() * this.options.scale)
   }
 
-  public getOriginalMainHeight(): number {
-    const mainHeight = this.getOriginalHeight()
+  public getMainHeight(): number {
+    const pageHeight = this.getHeight()
+    const margins = this.getMargins()
     const extraHeight = this.header.getExtraHeight()
-    return mainHeight - extraHeight
+    return pageHeight - margins[0] - margins[2] - extraHeight
   }
 
   public getCanvasWidth(pageNo = -1): number {
@@ -804,8 +805,9 @@ export class Draw {
         metrics.boundingBoxAscent = 0
         // 表格分页处理(拆分表格)
         const margins = this.getMargins()
-        const height = this.getOriginalMainHeight()
-        const marginHeight = margins[0] + margins[2]
+        const height = this.getHeight()
+        const headerExtraHeight = this.header.getExtraHeight()
+        const marginHeight = margins[0] + margins[2] + headerExtraHeight
         let curPagePreHeight = marginHeight
         for (let r = 0; r < rowList.length; r++) {
           const row = rowList[r]
@@ -816,7 +818,7 @@ export class Draw {
           }
         }
         // 表格高度超过页面高度
-        const rowMarginHeight = rowMargin * 2
+        const rowMarginHeight = rowMargin * 2 * scale
         if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
           const trList = element.trList!
           // 计算需要移除的行数
@@ -826,7 +828,8 @@ export class Draw {
           if (trList.length > 1) {
             for (let r = 0; r < trList.length; r++) {
               const tr = trList[r]
-              if (curPagePreHeight + rowMarginHeight + preTrHeight + tr.height > height) {
+              const trHeight = tr.height * scale
+              if (curPagePreHeight + rowMarginHeight + preTrHeight + trHeight > height) {
                 // 是否跨列
                 if (element.colgroup?.length !== tr.tdList.length) {
                   deleteCount = 0
@@ -835,7 +838,7 @@ export class Draw {
               } else {
                 deleteStart = r + 1
                 deleteCount = trList.length - deleteStart
-                preTrHeight += tr.height
+                preTrHeight += trHeight
               }
             }
           }
@@ -970,9 +973,10 @@ export class Draw {
   private _computePageList(): IRow[][] {
     const pageRowList: IRow[][] = [[]]
     const { pageMode } = this.options
-    const height = this.getOriginalMainHeight()
+    const height = this.getHeight()
     const margins = this.getMargins()
-    const marginHeight = margins[0] + margins[2]
+    const headerExtraHeight = this.header.getExtraHeight()
+    const marginHeight = margins[0] + margins[2] + headerExtraHeight
     let pageHeight = marginHeight
     let pageNo = 0
     if (pageMode === PageMode.CONTINUITY) {

@@ -1,3 +1,35 @@
+## [0.9.23](https://github.com/Hufe921/canvas-editor/compare/v0.9.22...v0.9.23) (2023-03-19)
+
+
+### Bug Fixes
+
+* set editor zone method ([9de29ed](https://github.com/Hufe921/canvas-editor/commit/9de29ed934ffb9556e473911fdb715524f1d2fad))
+* table cursor position in page header ([85a2bbe](https://github.com/Hufe921/canvas-editor/commit/85a2bbea60867d4314b571586785ad03dfd716da))
+
+
+### Documentation
+
+* next features road map ([debc6c1](https://github.com/Hufe921/canvas-editor/commit/debc6c128383a45791763b230d6802b6219d6d8d))
+* add page header ([6d47ce0](https://github.com/Hufe921/canvas-editor/commit/6d47ce0a67144a891a3cb16850bfc25396ba3b55))
+
+
+### Features
+
+* add header indicator ([86707ca](https://github.com/Hufe921/canvas-editor/commit/86707cad47381e8f807aece3ffc76e34f8cffa24))
+* zoom page header ([c0fee3e](https://github.com/Hufe921/canvas-editor/commit/c0fee3ea143412928650aa44f4954fe8209ab264))
+* export page header type ([23b6cd2](https://github.com/Hufe921/canvas-editor/commit/23b6cd28ad80bf8dc4ecf5968e53909681307c6d))
+* paging cursor position ([7b4b33b](https://github.com/Hufe921/canvas-editor/commit/7b4b33b5c5d4b1c27224f7ee25d78f4ba3fe9619))
+* page header boundary value ([ed79d25](https://github.com/Hufe921/canvas-editor/commit/ed79d2587ca2932e0c6e1229c72ac24d71d953fc))
+* edit page header ([6082ab2](https://github.com/Hufe921/canvas-editor/commit/6082ab26d110d5c90e2742ee51688cdf3e4a41fa))
+* render header element ([da2dfd3](https://github.com/Hufe921/canvas-editor/commit/da2dfd3a16d8e87689ea92aae9907cb4f9e21d50))
+
+
+### Tests
+
+* update get editor value ([436d1de](https://github.com/Hufe921/canvas-editor/commit/436d1de2845599e5767833648ffc836647d7e292))
+
+
+
 ## [0.9.22](https://github.com/Hufe921/canvas-editor/compare/v0.9.21...v0.9.22) (2023-03-15)
 
 

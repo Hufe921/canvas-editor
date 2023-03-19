@@ -1,0 +1,8 @@
+.ce-header-indicator>div {
+  padding: 3px 6px;
+  color: #000000;
+  font-size: 12px;
+  background: rgb(218 231 252);
+  position: absolute;
+  transform: translate(10px, 10px);
+}
