@@ -12,12 +12,6 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
   })
   if (!~positionContext.index && positionContext.zone) {
     draw.getZone().setZone(positionContext.zone)
-    draw.getRange().clearRange()
-    draw.render({
-      isSubmitHistory: false,
-      isSetCursor: false,
-      isCompute: false
-    })
     return
   }
   // 自动扩选文字

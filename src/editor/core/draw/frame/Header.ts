@@ -56,11 +56,11 @@ export class Header {
   }
 
   private _computePositionList() {
-    const { header: { top } } = this.options
+    const headerTop = this.getHeaderTop()
     const innerWidth = this.draw.getInnerWidth()
     const margins = this.draw.getMargins()
     const startX = margins[3]
-    const startY = top
+    const startY = headerTop
     this.position.computePageRowPosition({
       positionList: this.positionList,
       rowList: this.rowList,
@@ -72,9 +72,14 @@ export class Header {
     })
   }
 
+  public getHeaderTop(): number {
+    const { header: { top }, scale } = this.options
+    return Math.floor(top * scale)
+  }
+
   public getMaxHeight(): number {
     const { header: { maxHeightRadio } } = this.options
-    const height = this.draw.getOriginalHeight()
+    const height = this.draw.getHeight()
     return Math.floor(height * maxHeightRadioMapping[maxHeightRadio])
   }
 
@@ -89,10 +94,10 @@ export class Header {
   }
 
   public getExtraHeight(): number {
-    const { header: { top: headerTop } } = this.options
     // 页眉上边距 + 实际高 - 页面上边距
-    const margins = this.draw.getOriginalMargins()
+    const margins = this.draw.getMargins()
     const headerHeight = this.getHeight()
+    const headerTop = this.getHeaderTop()
     const extraHeight = headerTop + headerHeight - margins[0]
     return extraHeight <= 0 ? 0 : extraHeight
   }

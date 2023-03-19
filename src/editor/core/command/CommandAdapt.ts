@@ -405,7 +405,7 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
-    const innerWidth = this.draw.getInnerWidth()
+    const innerWidth = this.draw.getOriginalInnerWidth()
     // colgroup
     const colgroup: IColgroup[] = []
     const colWidth = innerWidth / col
