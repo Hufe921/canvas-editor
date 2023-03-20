@@ -5,6 +5,7 @@ import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
 import { IHeader } from './Header'
 import { IMargin } from './Margin'
+import { IPageNumber } from './PageNumber'
 import { IWatermark } from './Watermark'
 
 export interface IEditorData {
@@ -25,9 +26,6 @@ export interface IEditorOption {
   height?: number;
   scale?: number;
   pageGap?: number;
-  pageNumberBottom?: number;
-  pageNumberSize?: number;
-  pageNumberFont?: string;
   underlineColor?: string;
   strikeoutColor?: string;
   rangeColor?: string;
@@ -50,6 +48,7 @@ export interface IEditorOption {
   paperDirection?: PaperDirection;
   inactiveAlpha?: number;
   header?: IHeader;
+  pageNumber?: IPageNumber;
   watermark?: IWatermark;
   control?: IControlOption;
   checkbox?: ICheckboxOption;

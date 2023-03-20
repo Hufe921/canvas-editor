@@ -260,7 +260,8 @@ export class Draw {
   }
 
   public getPageNumberBottom(): number {
-    return this.options.pageNumberBottom * this.options.scale
+    const { pageNumber: { bottom }, scale } = this.options
+    return bottom * scale
   }
 
   public getHeaderTop(): number {

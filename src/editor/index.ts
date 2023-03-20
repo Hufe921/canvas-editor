@@ -31,6 +31,8 @@ import { IBlock } from './interface/Block'
 import { ILang } from './interface/i18n/I18n'
 import { ICursorOption } from './interface/Cursor'
 import { defaultCursorOption } from './dataset/constant/Cursor'
+import { IPageNumber } from './interface/PageNumber'
+import { defaultPageNumberOption } from './dataset/constant/PageNumber'
 
 export default class Editor {
 
@@ -43,6 +45,10 @@ export default class Editor {
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
+    }
+    const pageNumberOptions: Required<IPageNumber> = {
+      ...defaultPageNumberOption,
+      ...options.pageNumber
     }
     const waterMarkOptions: Required<IWatermark> = {
       ...defaultWatermarkOption,
@@ -73,9 +79,6 @@ export default class Editor {
       height: 1123,
       scale: 1,
       pageGap: 20,
-      pageNumberBottom: 60,
-      pageNumberSize: 12,
-      pageNumberFont: 'Yahei',
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,
@@ -99,6 +102,7 @@ export default class Editor {
       inactiveAlpha: 0.6,
       ...options,
       header: headerOptions,
+      pageNumber: pageNumberOptions,
       watermark: waterMarkOptions,
       control: controlOptions,
       checkbox: checkboxOptions,
