@@ -25,9 +25,6 @@ interface IEditorOption {
   height?: number; // 纸张高度。默认：1123
   scale?: number; // 缩放比例。默认：1
   pageGap?: number; // 纸张间隔。默认：20
-  pageNumberBottom?: number; // 页码距离纸张下边距。默认：60
-  pageNumberSize?: number; // 页码字号。默认：12
-  pageNumberFont?: string; // 页码字体。默认：Yahei
   underlineColor?: string; // 下划线颜色。默认：#000000
   strikeoutColor?: string; // 删除线颜色。默认：#FF0000
   rangeColor?: string; // 选区颜色。默认：#AECBFA
@@ -48,6 +45,7 @@ interface IEditorOption {
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
   headerTop?: number; // 页眉距离上边距。默认：50
   header?: IHeader; // 页眉信息。{data:string; color?:string; size?:number; font?:string;}
+  pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex;}
   paperDirection?: PaperDirection; // 纸张方向：纵向、横向
   inactiveAlpha?: number; // 正文内容失焦时透明度。默认值：0.6
   watermark?: IWatermark; // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
