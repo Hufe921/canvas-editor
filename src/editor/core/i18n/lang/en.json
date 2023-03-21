@@ -37,9 +37,9 @@
       "mergeCell": "Merge cell",
       "mergeCancelCell": "Cancel merge cell",
       "verticalAlign": "Vertical align",
-      "verticalAlignTop": "top",
-      "verticalAlignMiddle": "middle",
-      "verticalAlignBottom": "bottom"
+      "verticalAlignTop": "Top",
+      "verticalAlignMiddle": "Middle",
+      "verticalAlignBottom": "Bottom"
     }
   },
   "datePicker": {
