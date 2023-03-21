@@ -775,20 +775,22 @@ export class Draw {
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
-          let maxTrHeight = 0
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const rowList = this.computeRowList((td.width! - tdGap) * scale, td.value)
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTrHeight = (rowHeight + tdGap) / scale
-            if (maxTrHeight < curTrHeight) {
-              maxTrHeight = curTrHeight
+            const curTdHeight = (rowHeight + tdGap) / scale
+            if (td.height! < curTdHeight) {
+              // 内容高度大于当前单元格高度需增加
+              const extraHeight = curTdHeight - td.height!
+              const changeTr = trList[t + td.rowspan - 1]
+              changeTr.height += extraHeight
+              changeTr.tdList.forEach(changeTd => {
+                changeTd.height! += extraHeight
+              })
             }
-          }
-          if (maxTrHeight > tr.height) {
-            tr.height = maxTrHeight
           }
         }
         // 需要重新计算表格内值
