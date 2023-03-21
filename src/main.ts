@@ -81,6 +81,20 @@ window.onload = function () {
     instance.command.executeFont(li.dataset.family!)
   }
 
+  const sizeSetDom = document.querySelector<HTMLDivElement>('.menu-item__size')!
+  const sizeSelectDom = sizeSetDom.querySelector<HTMLDivElement>('.select')!
+  const sizeOptionDom = sizeSetDom.querySelector<HTMLDivElement>('.options')!
+  sizeSetDom.title = `设置字号`
+  sizeSetDom.onclick = function () {
+    console.log('size')
+    sizeOptionDom.classList.toggle('visible')
+  }
+  sizeOptionDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const size = Number(li.dataset.size!) as number
+    instance.command.executeSize(size)
+  }
+
   const sizeAddDom = document.querySelector<HTMLDivElement>('.menu-item__size-add')!
   sizeAddDom.title = `增大字号(${isApple ? '⌘' : 'Ctrl'}+[)`
   sizeAddDom.onclick = function () {
@@ -983,6 +997,12 @@ window.onload = function () {
       fontSelectDom.innerText = curFontDom.innerText
       fontSelectDom.style.fontFamily = payload.font
       curFontDom.classList.add('active')
+    }
+    sizeOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
+    const curSizeDom = sizeOptionDom.querySelector<HTMLLIElement>(`[data-size='${payload.size}']`)
+    if (curSizeDom) {
+      sizeSelectDom.innerText = curSizeDom.innerText
+      curSizeDom.classList.add('active')
     }
     payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')
     payload.italic ? italicDom.classList.add('active') : italicDom.classList.remove('active')
