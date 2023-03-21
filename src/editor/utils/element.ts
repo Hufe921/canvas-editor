@@ -295,12 +295,12 @@ export function zipElementList(payload: IElement[]): IElement[] {
   let e = 0
   while (e < elementList.length) {
     let element = elementList[e]
-    // 筛选所需项
-    if (e === 0 && element.value === ZERO) {
+    // 上下文首字符（占位符）
+    if (e === 0 && element.value === ZERO && (!element.type || element.type === ElementType.TEXT)) {
       e++
       continue
     }
-    // 表格、超链接递归处理
+    // 表格、超链接、日期、控件特殊处理
     if (element.type === ElementType.TABLE) {
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
