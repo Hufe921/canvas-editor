@@ -1,3 +1,4 @@
+import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { IElement, IElementPosition } from '../Element'
 import { IRow } from '../Row'
 
@@ -17,4 +18,5 @@ export interface ITd {
   colIndex?: number;
   rowList?: IRow[];
   positionList?: IElementPosition[];
+  verticalAlign?: VerticalAlign;
 }

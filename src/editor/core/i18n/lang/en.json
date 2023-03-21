@@ -35,7 +35,11 @@
       "deleteCol": "Delete 1 col",
       "deleteTable": "Delete table",
       "mergeCell": "Merge cell",
-      "mergeCancelCell": "Cancel merge cell"
+      "mergeCancelCell": "Cancel merge cell",
+      "verticalAlign": "Vertical align",
+      "verticalAlignTop": "top",
+      "verticalAlignMiddle": "middle",
+      "verticalAlignBottom": "bottom"
     }
   },
   "datePicker": {

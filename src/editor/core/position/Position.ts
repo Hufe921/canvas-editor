@@ -1,4 +1,4 @@
-import { ElementType, RowFlex } from '../..'
+import { ElementType, RowFlex, VerticalAlign } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { IComputePageRowPositionPayload, IComputePageRowPositionResult } from '../../interface/Position'
@@ -112,15 +112,34 @@ export class Position {
             for (let d = 0; d < tr.tdList!.length; d++) {
               const td = tr.tdList[d]
               td.positionList = []
+              const rowList = td.rowList!
               const drawRowResult = this.computePageRowPosition({
                 positionList: td.positionList,
-                rowList: td.rowList!,
+                rowList,
                 pageNo,
                 startIndex: 0,
                 startX: (td.x! + tdPadding) * scale + tablePreX,
                 startY: td.y! * scale + tablePreY,
                 innerWidth: (td.width! - tdGap) * scale
               })
+              // 垂直对齐方式
+              if (
+                td.verticalAlign === VerticalAlign.MIDDLE
+                || td.verticalAlign == VerticalAlign.BOTTOM
+              ) {
+                const rowsHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
+                const blankHeight = td.height! - tdGap - rowsHeight
+                const offsetHeight = td.verticalAlign === VerticalAlign.MIDDLE ? blankHeight / 2 : blankHeight
+                if (Math.floor(offsetHeight) > 0) {
+                  td.positionList.forEach(tdPosition => {
+                    const { coordinate: { leftTop, leftBottom, rightBottom, rightTop } } = tdPosition
+                    leftTop[1] += offsetHeight
+                    leftBottom[1] += offsetHeight
+                    rightBottom[1] += offsetHeight
+                    rightTop[1] += offsetHeight
+                  })
+                }
+              }
               x = drawRowResult.x
               y = drawRowResult.y
             }

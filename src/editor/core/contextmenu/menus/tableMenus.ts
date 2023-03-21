@@ -1,9 +1,43 @@
+import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
 
 export const tableMenus: IRegisterContextMenu[] = [
   {
     isDivider: true
+  },
+  {
+    i18nPath: 'contextmenu.table.verticalAlign',
+    icon: 'vertical-align',
+    when: (payload) => {
+      return !payload.isReadonly && payload.isInTable
+    },
+    childMenus: [
+      {
+        i18nPath: 'contextmenu.table.verticalAlignTop',
+        icon: 'vertical-align-top',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableTdVerticalAlign(VerticalAlign.TOP)
+        }
+      },
+      {
+        i18nPath: 'contextmenu.table.verticalAlignMiddle',
+        icon: 'vertical-align-middle',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableTdVerticalAlign(VerticalAlign.MIDDLE)
+        }
+      },
+      {
+        i18nPath: 'contextmenu.table.verticalAlignBottom',
+        icon: 'vertical-align-bottom',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableTdVerticalAlign(VerticalAlign.BOTTOM)
+        }
+      }
+    ]
   },
   {
     i18nPath: 'contextmenu.table.insertRowCol',

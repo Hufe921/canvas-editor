@@ -33,6 +33,7 @@ import { ICursorOption } from './interface/Cursor'
 import { defaultCursorOption } from './dataset/constant/Cursor'
 import { IPageNumber } from './interface/PageNumber'
 import { defaultPageNumberOption } from './dataset/constant/PageNumber'
+import { VerticalAlign } from './dataset/enum/VerticalAlign'
 
 export default class Editor {
 
@@ -161,6 +162,7 @@ export default class Editor {
 export {
   Editor,
   RowFlex,
+  VerticalAlign,
   EditorZone,
   EditorMode,
   ElementType,

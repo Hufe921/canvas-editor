@@ -6,6 +6,7 @@ import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
+import { ITd } from '../interface/table/Td'
 
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean;
@@ -308,11 +309,15 @@ export function zipElementList(payload: IElement[]): IElement[] {
           delete tr.id
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            tr.tdList[d] = {
+            const zipTd: ITd = {
               colspan: td.colspan,
               rowspan: td.rowspan,
               value: zipElementList(td.value)
             }
+            if (td.verticalAlign) {
+              zipTd.verticalAlign = td.verticalAlign
+            }
+            tr.tdList[d] = zipTd
           }
         }
       }

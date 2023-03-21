@@ -6,6 +6,7 @@ import { EditorContext, EditorMode, PageMode, PaperDirection } from '../../datas
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
+import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
@@ -995,6 +996,30 @@ export class CommandAdapt {
     this.draw.render()
     const position = this.position.getOriginalPositionList()
     this.tableTool.render(element, position[index!])
+  }
+
+  public tableTdVerticalAlign(payload: VerticalAlign) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (
+      !curTd
+      || curTd.verticalAlign === payload
+      || (!curTd.verticalAlign && payload === VerticalAlign.TOP)
+    ) {
+      return
+    }
+    // 重设垂直对齐方式
+    curTd.verticalAlign = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
   }
 
   public hyperlink(payload: IElement) {

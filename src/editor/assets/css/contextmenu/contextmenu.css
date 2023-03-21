@@ -130,3 +130,19 @@
 .ce-contextmenu-merge-cancel-cell {
   background-image: url(../../../assets/images/merge-cancel-cell.svg);
 }
+
+.ce-contextmenu-vertical-align {
+  background-image: url(../../../assets/images/vertical-align.svg);
+}
+
+.ce-contextmenu-vertical-align-top {
+  background-image: url(../../../assets/images/vertical-align-top.svg);
+}
+
+.ce-contextmenu-vertical-align-middle {
+  background-image: url(../../../assets/images/vertical-align-middle.svg);
+}
+
+.ce-contextmenu-vertical-align-bottom {
+  background-image: url(../../../assets/images/vertical-align-bottom.svg);
+}
