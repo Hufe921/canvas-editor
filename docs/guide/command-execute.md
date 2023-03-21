@@ -313,6 +313,14 @@ instance.command.executeMergeTableCell()
 instance.command.executeCancelMergeTableCell()
 ```
 
+## executeTableTdVerticalAlign
+功能：表格单元格垂直对齐方式
+
+用法：
+```javascript
+instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
+```
+
 ## executeImage
 功能：插入图片
 

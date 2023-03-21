@@ -51,6 +51,7 @@ interface IElement {
     tdList: {
       colspan: number;
       rowspan: number;
+      verticalAlign?: VerticalAlign;
       value: IElement[];
     }[];
   }[];
