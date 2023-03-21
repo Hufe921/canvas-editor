@@ -185,6 +185,20 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
+  public sizeSet(size: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getSelection()
+    if (!selection) return
+    const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
+    if (!~lessThanMaxSizeIndex) return
+    selection.forEach(el => {
+      if (size > 72) return
+      el.size = size
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
   public sizeAdd() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return

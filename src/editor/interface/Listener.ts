@@ -9,6 +9,7 @@ export interface IRangeStyle {
   redo: boolean;
   painter: boolean;
   font: string;
+  size: number;
   bold: boolean;
   italic: boolean;
   underline: boolean;
