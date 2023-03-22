@@ -1,3 +1,42 @@
+## [0.9.24](https://github.com/Hufe921/canvas-editor/compare/v0.9.23...v0.9.24) (2023-03-22)
+
+
+### Bug Fixes
+
+* table cell auto height #150 ([e68c0be](https://github.com/Hufe921/canvas-editor/commit/e68c0bebc380f9dd9e870677eac888a7b04c56cb)), closes [#150](https://github.com/Hufe921/canvas-editor/issues/150)
+* cannot copy table element when it in the first position ([73457cb](https://github.com/Hufe921/canvas-editor/commit/73457cb2e8cc693138e4785c382ae4c025d8fedd))
+* compute only the main body word count ([4306d44](https://github.com/Hufe921/canvas-editor/commit/4306d44ed62a0233fdb0fe9b3c3f7d00423ba4da))
+* some IME position error #155 ([b6dfcb5](https://github.com/Hufe921/canvas-editor/commit/b6dfcb5f08f42790395059963b16a57d20367978)), closes [#155](https://github.com/Hufe921/canvas-editor/issues/155)
+
+
+### Documentation
+
+* table cell vertical align ([47918db](https://github.com/Hufe921/canvas-editor/commit/47918db3bbcf78d4af60e43e7ed1183c5525a758))
+* page number options ([c753a9d](https://github.com/Hufe921/canvas-editor/commit/c753a9d00dd3a5bda0b75df7e6237448bd16f21f))
+* font size setting api ([690aa1b](https://github.com/Hufe921/canvas-editor/commit/690aa1b96d185ca7d80b9af884d23a39dac9a2bf))
+* next features road map ([0e8c5fd](https://github.com/Hufe921/canvas-editor/commit/0e8c5fd388a81fabe28a66cf1239348930ae5346))
+
+
+### Features
+
+* table cell vertical align contextmenu i18n ([32643a5](https://github.com/Hufe921/canvas-editor/commit/32643a5573660e66fd7084fa33ae599521457ced))
+* table cell vertical align ([665e201](https://github.com/Hufe921/canvas-editor/commit/665e2018aaae38aacd6ec9d32980fba245f12ddd))
+* page number set row flex ([0a9f44e](https://github.com/Hufe921/canvas-editor/commit/0a9f44eed8fd72ff3318a34222ff91d4f140de9b))
+* add fontSize settings API ([d951532](https://github.com/Hufe921/canvas-editor/commit/d95153299880ef7139d3a2d64d7d3dc16fbef615))
+* fontSize setting  Example ([3f218f6](https://github.com/Hufe921/canvas-editor/commit/3f218f698bd361ae73eac9043f31585c97058963))
+
+
+### Performance Improvements
+
+* font size setting api ([84e2fc9](https://github.com/Hufe921/canvas-editor/commit/84e2fc95699adf81fd361ff7a76b900abfd2b164))
+
+
+### Tests
+
+* font size setting ([89012b7](https://github.com/Hufe921/canvas-editor/commit/89012b7183327f3a5e6497ad96741e6f5badc699))
+
+
+
 ## [0.9.23](https://github.com/Hufe921/canvas-editor/compare/v0.9.22...v0.9.23) (2023-03-19)
 
 
