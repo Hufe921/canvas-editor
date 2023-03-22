@@ -37,6 +37,32 @@ describe('菜单-文本处理', () => {
     })
   })
 
+  it('字号设置', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([{
+        value: text
+      }])
+
+      editor.command.executeSetRange(0, textLength)
+
+      cy.get('.menu-item__size').as('size').click()
+
+      cy.get('@size')
+        .find('li')
+        .eq(0)
+        .click()
+        .then(() => {
+          const data = editor.command.getValue().data.main
+
+          expect(data[0].size).to.eq(56)
+        })
+    })
+  })
+
   it('字体增大', () => {
     cy.getEditor().then((editor: Editor) => {
       editor.command.executeSelectAll()

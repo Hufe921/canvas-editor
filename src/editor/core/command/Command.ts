@@ -22,6 +22,7 @@ export class Command {
   private static applyPainterStyle: CommandAdapt['applyPainterStyle']
   private static format: CommandAdapt['format']
   private static font: CommandAdapt['font']
+  private static size: CommandAdapt['size']
   private static sizeAdd: CommandAdapt['sizeAdd']
   private static sizeMinus: CommandAdapt['sizeMinus']
   private static bold: CommandAdapt['bold']
@@ -96,6 +97,7 @@ export class Command {
     Command.applyPainterStyle = adapt.applyPainterStyle.bind(adapt)
     Command.format = adapt.format.bind(adapt)
     Command.font = adapt.font.bind(adapt)
+    Command.size = adapt.size.bind(adapt)
     Command.sizeAdd = adapt.sizeAdd.bind(adapt)
     Command.sizeMinus = adapt.sizeMinus.bind(adapt)
     Command.bold = adapt.bold.bind(adapt)
@@ -207,9 +209,13 @@ export class Command {
     return Command.format()
   }
 
-  // 字体、字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+  // 字体、字体大小、字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
   public executeFont(payload: string) {
     return Command.font(payload)
+  }
+
+  public executeSize(payload: number) {
+    return Command.size(payload)
   }
 
   public executeSizeAdd() {
