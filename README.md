@@ -28,7 +28,7 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. page header(WIP)
+1. line beginning punctuation
 2. improve performance
 3. control rules
 4. table paging
