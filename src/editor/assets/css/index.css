@@ -9,7 +9,7 @@
 @import './zone/zone.css';
 
 .ce-inputarea {
-  width: 0;
+  width: 1px;
   height: 12px;
   min-width: 0;
   min-height: 0;
@@ -20,6 +20,7 @@
   letter-spacing: 0;
   font-size: 12px;
   position: absolute;
+  z-index: -1;
   outline: none;
   resize: none;
   border: none;
