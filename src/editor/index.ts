@@ -66,6 +66,8 @@ export default class Editor {
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
       defaultSize: 16,
+      minSize: 5,
+      maxSize: 72,
       defaultRowMargin: 1,
       defaultBasicRowMarginHeight: 8,
       defaultTabWidth: 32,

@@ -185,54 +185,70 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
-  public sizeSet(size: number) {
+  public size(payload: number) {
+    const { minSize, maxSize, defaultSize } = this.options
+    if (payload < minSize || payload > maxSize) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
-    if (!~lessThanMaxSizeIndex) return
+    const selection = this.range.getTextLikeSelection()
+    if (!selection || !selection.length) return
+    let isExistUpdate = false
     selection.forEach(el => {
-      if (size > 72) return
-      el.size = size
+      if ((!el.size && payload === defaultSize) || (el.size && el.size === payload)) return
+      el.size = payload
+      isExistUpdate = true
     })
-    this.draw.render({ isSetCursor: false })
+    if (isExistUpdate) {
+      this.draw.render({ isSetCursor: false })
+    }
   }
 
   public sizeAdd() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
-    const { defaultSize } = this.options
-    if (!~lessThanMaxSizeIndex) return
+    const selection = this.range.getTextLikeSelection()
+    if (!selection || !selection.length) return
+    const { defaultSize, maxSize } = this.options
+    let isExistUpdate = false
     selection.forEach(el => {
       if (!el.size) {
         el.size = defaultSize
       }
-      if (el.size + 2 > 72) return
-      el.size += 2
+      if (el.size >= maxSize) return
+      if (el.size + 2 > maxSize) {
+        el.size = maxSize
+      } else {
+        el.size += 2
+      }
+      isExistUpdate = true
     })
-    this.draw.render({ isSetCursor: false })
+    if (isExistUpdate) {
+      this.draw.render({ isSetCursor: false })
+    }
   }
 
   public sizeMinus() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const greaterThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size - 2 >= 8)
-    if (!~greaterThanMaxSizeIndex) return
-    const { defaultSize } = this.options
+    const selection = this.range.getTextLikeSelection()
+    if (!selection || !selection.length) return
+    const { defaultSize, minSize } = this.options
+    let isExistUpdate = false
     selection.forEach(el => {
       if (!el.size) {
         el.size = defaultSize
       }
-      if (el.size - 2 < 8) return
-      el.size -= 2
+      if (el.size <= minSize) return
+      if (el.size - 2 < minSize) {
+        el.size = minSize
+      } else {
+        el.size -= 2
+      }
+      isExistUpdate = true
     })
-    this.draw.render({ isSetCursor: false })
+    if (isExistUpdate) {
+      this.draw.render({ isSetCursor: false })
+    }
   }
 
   public bold() {

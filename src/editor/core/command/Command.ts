@@ -22,7 +22,7 @@ export class Command {
   private static applyPainterStyle: CommandAdapt['applyPainterStyle']
   private static format: CommandAdapt['format']
   private static font: CommandAdapt['font']
-  private static sizeSet: CommandAdapt['sizeSet']
+  private static size: CommandAdapt['size']
   private static sizeAdd: CommandAdapt['sizeAdd']
   private static sizeMinus: CommandAdapt['sizeMinus']
   private static bold: CommandAdapt['bold']
@@ -96,7 +96,7 @@ export class Command {
     Command.applyPainterStyle = adapt.applyPainterStyle.bind(adapt)
     Command.format = adapt.format.bind(adapt)
     Command.font = adapt.font.bind(adapt)
-    Command.sizeSet = adapt.sizeSet.bind(adapt)
+    Command.size = adapt.size.bind(adapt)
     Command.sizeAdd = adapt.sizeAdd.bind(adapt)
     Command.sizeMinus = adapt.sizeMinus.bind(adapt)
     Command.bold = adapt.bold.bind(adapt)
@@ -212,8 +212,8 @@ export class Command {
     return Command.font(payload)
   }
 
-  public executeSize(size: number) {
-    return Command.sizeSet(size)
+  public executeSize(payload: number) {
+    return Command.size(payload)
   }
 
   public executeSizeAdd() {

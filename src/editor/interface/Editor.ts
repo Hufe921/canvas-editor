@@ -18,6 +18,8 @@ export interface IEditorOption {
   defaultType?: string;
   defaultFont?: string;
   defaultSize?: number;
+  minSize?: number;
+  maxSize?: number;
   defaultBasicRowMarginHeight?: number;
   defaultRowMargin?: number;
   defaultTabWidth?: number;

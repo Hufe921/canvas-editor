@@ -156,16 +156,19 @@ ul {
   background-color: #e2e6ed;
 }
 
-.menu-item .menu-item__font,.menu-item .menu-item__size {
+.menu-item .menu-item__font {
   width: 65px;
   position: relative;
 }
 
-.menu-item .menu-item__size{
+.menu-item .menu-item__size {
+  width: 50px;
   text-align: center;
+  position: relative;
 }
 
-.menu-item__font .select,.menu-item__size .select {
+.menu-item__font .select,
+.menu-item__size .select {
   width: 100%;
   height: 100%;
 }
