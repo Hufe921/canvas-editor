@@ -113,6 +113,14 @@ instance.command.executeFormat()
 instance.command.executeFont(font: string)
 ```
 
+## executeSize
+功能：设置字号
+
+用法：
+```javascript
+instance.command.executeSize(size: number)
+```
+
 ## executeSizeAdd
 功能：增大字号
 

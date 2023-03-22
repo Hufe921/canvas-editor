@@ -18,6 +18,8 @@ interface IEditorOption {
   defaultType?: string; // 默认元素类型。默认：TEXT
   defaultFont?: string; // 默认字体。默认：Yahei
   defaultSize?: number; // 默认字号。默认：16
+  minSize?: number; // 最小字号。默认：5
+  maxSize?: number; // 最大字号。默认：72
   defaultBasicRowMarginHeight?: number; // 默认行高。默认：8
   defaultRowMargin?: number; // 默认行间距。默认：1
   defaultTabWidth?: number; // 默认tab宽度。默认：32
