@@ -6,3 +6,28 @@
   position: absolute;
   transform: translate(10px, 10px);
 }
+
+.ce-header-indicator-border__top,
+.ce-header-indicator-border__bottom,
+.ce-header-indicator-border__left,
+.ce-header-indicator-border__right {
+  display: block;
+  position: absolute;
+}
+
+.ce-header-indicator-border__top {
+  border-top: 2px dashed rgb(238, 238, 238);
+}
+
+.ce-header-indicator-border__bottom {
+  border-top: 2px dashed rgb(238, 238, 238);
+  width: 100%;
+}
+
+.ce-header-indicator-border__left {
+  border-left: 2px dashed rgb(238, 238, 238);
+}
+
+.ce-header-indicator-border__right {
+  border-right: 2px dashed rgb(238, 238, 238);
+}
