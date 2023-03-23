@@ -542,8 +542,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public insertTableBottomRow() {
@@ -609,8 +608,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public insertTableLeftCol() {
@@ -667,8 +665,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public insertTableRightCol() {
@@ -725,8 +722,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public deleteTableRow() {
@@ -962,8 +958,7 @@ export class CommandAdapt {
     const curIndex = startTd.value.length - 1
     this.range.setRange(curIndex, curIndex)
     this.draw.render()
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public cancelMergeTableCell() {
@@ -1024,8 +1019,7 @@ export class CommandAdapt {
     const curIndex = curTd.value.length - 1
     this.range.setRange(curIndex, curIndex)
     this.draw.render()
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public tableTdVerticalAlign(payload: VerticalAlign) {
