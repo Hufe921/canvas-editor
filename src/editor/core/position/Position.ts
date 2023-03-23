@@ -290,13 +290,14 @@ export class Position {
     let curPositionIndex = -1
     // 判断是否在表格内
     if (isTable) {
+      const { scale } = this.options
       const { td, tablePosition } = payload
       if (td && tablePosition) {
         const { leftTop } = tablePosition.coordinate
-        const tdX = td.x! + leftTop[0]
-        const tdY = td.y! + leftTop[1]
-        const tdWidth = td.width!
-        const tdHeight = td.height!
+        const tdX = td.x! * scale + leftTop[0]
+        const tdY = td.y! * scale + leftTop[1]
+        const tdWidth = td.width! * scale
+        const tdHeight = td.height! * scale
         if (!(tdX < x && x < tdX + tdWidth && tdY < y && y < tdY + tdHeight)) {
           return {
             index: curPositionIndex
