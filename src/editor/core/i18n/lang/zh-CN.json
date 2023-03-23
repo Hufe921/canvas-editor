@@ -61,5 +61,9 @@
     "hour": "时",
     "minute": "分",
     "second": "秒"
+  },
+  "global": {
+    "header": "页眉",
+    "footer": "页脚"
   }
 }

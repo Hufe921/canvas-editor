@@ -1,3 +1,4 @@
+import { EditorZone } from '../../..'
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
@@ -260,6 +261,9 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     evt.preventDefault()
   } else if (evt.key === KeyMap.ESC) {
     host.clearPainterStyle()
+    if (draw.getZone().isHeaderActive()) {
+      draw.getZone().setZone(EditorZone.MAIN)
+    }
     evt.preventDefault()
   } else if (evt.key === KeyMap.TAB) {
     draw.insertElementList([{

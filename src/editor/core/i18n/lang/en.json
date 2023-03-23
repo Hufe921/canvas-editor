@@ -61,5 +61,9 @@
     "hour": "Hour",
     "minute": "Minute",
     "second": "Second"
+  },
+  "global": {
+    "header": "Header",
+    "footer": "Footer"
   }
 }

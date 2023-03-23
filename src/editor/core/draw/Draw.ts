@@ -1362,6 +1362,10 @@ export class Draw {
       if (isCompute && !this.isReadonly() && positionContext.isTable) {
         this.tableTool.render()
       }
+      // 页眉指示器重新渲染
+      if (isCompute && !this.isReadonly() && this.zone.isHeaderActive()) {
+        this.zone.drawHeaderZoneIndicator()
+      }
       // 页面尺寸改变
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(this.pageRowList.length)
