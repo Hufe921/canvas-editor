@@ -1319,10 +1319,10 @@ export class Draw {
     } else {
       this._immediateRender()
     }
+    const positionContext = this.position.getPositionContext()
     // 光标重绘
     if (isSetCursor) {
       const positionList = this.position.getPositionList()
-      const positionContext = this.position.getPositionContext()
       if (positionContext.isTable) {
         const { index, trIndex, tdIndex } = positionContext
         const elementList = this.getOriginalElementList()
@@ -1344,7 +1344,7 @@ export class Draw {
       const oldHeaderElementList = deepClone(this.header.getElementList())
       const { startIndex, endIndex } = this.range.getRange()
       const pageNo = this.pageNo
-      const oldPositionContext = deepClone(this.position.getPositionContext())
+      const oldPositionContext = deepClone(positionContext)
       const zone = this.zone.getZone()
       this.historyManager.execute(function () {
         self.zone.setZone(zone)
@@ -1358,6 +1358,10 @@ export class Draw {
     }
     // 信息变动回调
     nextTick(() => {
+      // 表格工具重新渲染
+      if (isCompute && !this.isReadonly() && positionContext.isTable) {
+        this.tableTool.render()
+      }
       // 页面尺寸改变
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(this.pageRowList.length)
