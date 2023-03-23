@@ -100,7 +100,9 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const tableTool = draw.getTableTool()
   tableTool.dispose()
   if (isTable && !isReadonly) {
-    tableTool.render()
+    const originalElementList = draw.getOriginalElementList()
+    const originalPositionList = position.getOriginalPositionList()
+    tableTool.render(originalElementList[index], originalPositionList[index])
   }
   // 超链接
   const hyperlinkParticle = draw.getHyperlinkParticle()

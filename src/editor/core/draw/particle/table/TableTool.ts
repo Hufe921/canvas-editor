@@ -2,6 +2,7 @@ import { IElement } from '../../../..'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
 import { IEditorOption } from '../../../../interface/Editor'
+import { IElementPosition } from '../../../../interface/Element'
 import { Position } from '../../../position/Position'
 import { Draw } from '../../Draw'
 
@@ -10,16 +11,13 @@ interface IAnchorMouseDown {
   order: TableOrder;
   index: number;
   element: IElement;
+  position: IElementPosition;
 }
 
 export class TableTool {
 
-  // 单元格最小宽度
-  private readonly MIN_TD_WIDTH = 20
-  // 行列工具相对表格偏移值
-  private readonly ROW_COL_OFFSET = 18
-  // 边框工具宽/高度
-  private readonly BORDER_VALUE = 4
+  private readonly translate = 18
+  private minTdWidth = 20
 
   private draw: Draw
   private canvas: HTMLCanvasElement
@@ -28,7 +26,6 @@ export class TableTool {
   private container: HTMLDivElement
   private toolRowContainer: HTMLDivElement | null
   private toolColContainer: HTMLDivElement | null
-  private toolBorderContainer: HTMLDivElement | null
   private anchorLine: HTMLDivElement | null
   private mousedownX: number
   private mousedownY: number
@@ -42,7 +39,6 @@ export class TableTool {
     // x、y轴
     this.toolRowContainer = null
     this.toolColContainer = null
-    this.toolBorderContainer = null
     this.anchorLine = null
     this.mousedownX = 0
     this.mousedownY = 0
@@ -51,43 +47,29 @@ export class TableTool {
   public dispose() {
     this.toolRowContainer?.remove()
     this.toolColContainer?.remove()
-    this.toolBorderContainer?.remove()
-    this.toolRowContainer = null
-    this.toolColContainer = null
-    this.toolBorderContainer = null
   }
 
-  public render() {
-    const { isTable, index, trIndex, tdIndex } = this.position.getPositionContext()
-    if (!isTable) return
-
-    // 销毁之前工具
+  public render(element: IElement, position: IElementPosition) {
     this.dispose()
-
-    // 渲染所需数据
+    const { trIndex, tdIndex } = this.position.getPositionContext()
     const { scale } = this.options
-    const elementList = this.draw.getOriginalElementList()
-    const positionList = this.position.getOriginalPositionList()
-    const element = elementList[index!]
-    const position = positionList[index!]
-    const { colgroup, trList } = element
-    const { coordinate: { leftTop } } = position
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
+    const { colgroup, trList } = element
+    const { coordinate: { leftTop } } = position
     const prePageHeight = this.draw.getPageNo() * (height + pageGap)
-    const tableX = leftTop[0]
-    const tableY = leftTop[1] + prePageHeight
     const td = element.trList![trIndex!].tdList[tdIndex!]
     const rowIndex = td.rowIndex
     const colIndex = td.colIndex
-
-    // 渲染行工具
-    const rowHeightList = trList!.map(tr => tr.height)
+    // 计算表格行列信息
+    const rowList = trList!.map(tr => tr.height)
+    const colList = colgroup!.map(col => col.width)
+    // 渲染行
     const rowContainer = document.createElement('div')
     rowContainer.classList.add(`${EDITOR_PREFIX}-table-tool__row`)
-    rowContainer.style.transform = `translateX(-${this.ROW_COL_OFFSET * scale}px)`
-    for (let r = 0; r < rowHeightList.length; r++) {
-      const rowHeight = rowHeightList[r] * scale
+    rowContainer.style.transform = `translateX(-${this.translate * scale}px)`
+    for (let r = 0; r < rowList.length; r++) {
+      const rowHeight = rowList[r] * scale
       const rowItem = document.createElement('div')
       rowItem.classList.add(`${EDITOR_PREFIX}-table-tool__row__item`)
       if (r === rowIndex) {
@@ -99,6 +81,7 @@ export class TableTool {
         this._mousedown({
           evt,
           element,
+          position,
           index: r,
           order: TableOrder.ROW
         })
@@ -107,18 +90,17 @@ export class TableTool {
       rowItem.style.height = `${rowHeight}px`
       rowContainer.append(rowItem)
     }
-    rowContainer.style.left = `${tableX}px`
-    rowContainer.style.top = `${tableY}px`
+    rowContainer.style.left = `${leftTop[0]}px`
+    rowContainer.style.top = `${leftTop[1] + prePageHeight}px`
     this.container.append(rowContainer)
     this.toolRowContainer = rowContainer
 
-    // 渲染列工具
-    const colWidthList = colgroup!.map(col => col.width)
+    // 渲染列
     const colContainer = document.createElement('div')
     colContainer.classList.add(`${EDITOR_PREFIX}-table-tool__col`)
-    colContainer.style.transform = `translateY(-${this.ROW_COL_OFFSET * scale}px)`
-    for (let c = 0; c < colWidthList.length; c++) {
-      const colWidth = colWidthList[c] * scale
+    colContainer.style.transform = `translateY(-${this.translate * scale}px)`
+    for (let c = 0; c < colList.length; c++) {
+      const colHeight = colList[c] * scale
       const colItem = document.createElement('div')
       colItem.classList.add(`${EDITOR_PREFIX}-table-tool__col__item`)
       if (c === colIndex) {
@@ -130,70 +112,23 @@ export class TableTool {
         this._mousedown({
           evt,
           element,
+          position,
           index: c,
           order: TableOrder.COL
         })
       }
       colItem.append(colItemAnchor)
-      colItem.style.width = `${colWidth}px`
+      colItem.style.width = `${colHeight}px`
       colContainer.append(colItem)
     }
-    colContainer.style.left = `${tableX}px`
-    colContainer.style.top = `${tableY}px`
+    colContainer.style.left = `${leftTop[0]}px`
+    colContainer.style.top = `${leftTop[1] + prePageHeight}px`
     this.container.append(colContainer)
     this.toolColContainer = colContainer
-
-    // 渲染单元格边框拖拽工具
-    const tableHeight = element.height! * scale
-    const tableWidth = element.width! * scale
-    const borderContainer = document.createElement('div')
-    borderContainer.classList.add(`${EDITOR_PREFIX}-table-tool__border`)
-    borderContainer.style.height = `${tableHeight}px`
-    borderContainer.style.width = `${tableWidth}px`
-    borderContainer.style.left = `${tableX}px`
-    borderContainer.style.top = `${tableY}px`
-    for (let r = 0; r < trList!.length; r++) {
-      const tr = trList![r]
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        const rowBorder = document.createElement('div')
-        rowBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__row`)
-        rowBorder.style.width = `${td.width! * scale}px`
-        rowBorder.style.height = `${this.BORDER_VALUE}px`
-        rowBorder.style.top = `${(td.y! + td.height!) * scale - this.BORDER_VALUE / 2}px`
-        rowBorder.style.left = `${td.x! * scale}px`
-        rowBorder.onmousedown = (evt) => {
-          this._mousedown({
-            evt,
-            element,
-            index: td.rowIndex!,
-            order: TableOrder.ROW
-          })
-        }
-        borderContainer.appendChild(rowBorder)
-        const colBorder = document.createElement('div')
-        colBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__col`)
-        colBorder.style.width = `${this.BORDER_VALUE}px`
-        colBorder.style.height = `${td.height! * scale}px`
-        colBorder.style.top = `${td.y! * scale}px`
-        colBorder.style.left = `${(td.x! + td.width!) * scale - this.BORDER_VALUE / 2}px`
-        colBorder.onmousedown = (evt) => {
-          this._mousedown({
-            evt,
-            element,
-            index: td.colIndex!,
-            order: TableOrder.COL
-          })
-        }
-        borderContainer.appendChild(colBorder)
-      }
-    }
-    this.container.append(borderContainer)
-    this.toolBorderContainer = borderContainer
   }
 
   private _mousedown(payload: IAnchorMouseDown) {
-    const { evt, index, order, element } = payload
+    const { evt, index, order, element, position } = payload
     this.canvas = this.draw.getPage()
     const { scale } = this.options
     const width = this.draw.getWidth()
@@ -255,10 +190,8 @@ export class TableTool {
           const curColWidth = colgroup[index].width
           // 最小移动距离计算
           const moveColWidth = curColWidth + dx
-          const nextColWidth = colgroup[index + 1]?.width || 0
-          // 如果移动距离小于最小宽度，或者大于当前列和下一列宽度之和则移动最小宽度
-          if (moveColWidth < this.MIN_TD_WIDTH || moveColWidth > curColWidth + nextColWidth) {
-            dx = this.MIN_TD_WIDTH - curColWidth
+          if (moveColWidth < this.minTdWidth) {
+            dx = this.minTdWidth - curColWidth
           }
           // 最大移动距离计算
           let moveTableWidth = 0
@@ -292,6 +225,7 @@ export class TableTool {
       }
       if (isChangeSize) {
         this.draw.render({ isSetCursor: false })
+        this.render(element, position)
       }
       // 还原副作用
       anchorLine.remove()

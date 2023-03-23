@@ -83,22 +83,3 @@
   position: absolute;
   border: 1px dotted #000000;
 }
-
-.ce-table-tool__border {
-  position: absolute;
-  z-index: 1;
-  background: transparent;
-  pointer-events: none;
-}
-
-.ce-table-tool__border__row {
-  position: absolute;
-  cursor: row-resize;
-  pointer-events: auto;
-}
-
-.ce-table-tool__border__col {
-  position: absolute;
-  cursor: col-resize;
-  pointer-events: auto;
-}
