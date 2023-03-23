@@ -27,7 +27,6 @@ export class TableTool {
   private toolRowContainer: HTMLDivElement | null
   private toolColContainer: HTMLDivElement | null
   private anchorLine: HTMLDivElement | null
-  private toolBox: HTMLDivElement | null
   private mousedownX: number
   private mousedownY: number
 
@@ -41,7 +40,6 @@ export class TableTool {
     this.toolRowContainer = null
     this.toolColContainer = null
     this.anchorLine = null
-    this.toolBox = null
     this.mousedownX = 0
     this.mousedownY = 0
   }
@@ -49,7 +47,6 @@ export class TableTool {
   public dispose() {
     this.toolRowContainer?.remove()
     this.toolColContainer?.remove()
-    this.toolBox?.remove()
   }
 
   public render(element: IElement, position: IElementPosition) {
@@ -128,66 +125,6 @@ export class TableTool {
     colContainer.style.top = `${leftTop[1] + prePageHeight}px`
     this.container.append(colContainer)
     this.toolColContainer = colContainer
-
-    if (!trList?.length) return
-
-    // 绘制边框拖拽
-    const LINE_THRESHOLD_VALUE = 3
-    const tableHeight = rowList.reduce((pre, cur) => pre + cur, 0)
-    const tableWidth = colList.reduce((pre, cur) => pre + cur, 0)
-
-    // 渲染工具外部容器
-    const tableLineTool = document.createElement('div')
-    tableLineTool.classList.add(`${EDITOR_PREFIX}-table-tool__line`)
-    tableLineTool.style.height = tableHeight * scale + 'px'
-    tableLineTool.style.width = tableWidth * scale + 'px'
-    tableLineTool.style.left = `${leftTop[0]}px`
-    tableLineTool.style.top = `${leftTop[1] + prePageHeight}px`
-
-    for (let i = 0, len = trList.length || 0; i < len; i++) {
-      const tr = trList[i]
-      for (let j = 0; j < tr.tdList.length; j++) {
-        const td = tr.tdList[j]
-        const rowLine = document.createElement('div')
-        rowLine.classList.add(`${EDITOR_PREFIX}-table-tool__rline__resize`)
-        rowLine.dataset.rowIndex = `${td.rowIndex}`
-        rowLine.style.width = td.width! * scale + 'px'
-        rowLine.style.height = LINE_THRESHOLD_VALUE + 'px'
-        rowLine.style.top = td.y! * scale + td.height! * scale - LINE_THRESHOLD_VALUE / 2 + 'px'
-        rowLine.style.left = td.x! * scale + 'px'
-        rowLine.onmousedown = (evt) => {
-          this._mousedown({
-            evt,
-            element,
-            position,
-            index: td.rowIndex || 0,
-            order: TableOrder.ROW
-          })
-        }
-        tableLineTool.appendChild(rowLine)
-
-        const colLine = document.createElement('div')
-        colLine.classList.add(`${EDITOR_PREFIX}-table-tool__cline__resize`)
-        colLine.dataset.colIndex = `${td.colIndex}`
-        colLine.style.height = td.height! * scale + 'px'
-        colLine.style.width = LINE_THRESHOLD_VALUE + 'px'
-        colLine.style.left = td.x! * scale + (td.width! * scale) - LINE_THRESHOLD_VALUE / 2 + 'px'
-        colLine.style.top = td.y! * scale + 'px'
-        colLine.onmousedown = (evt) => {
-          this._mousedown({
-            evt,
-            element,
-            position,
-            index: td.colIndex || 0,
-            order: TableOrder.COL
-          })
-        }
-        tableLineTool.appendChild(colLine)
-      }
-    }
-
-    this.toolBox = tableLineTool
-    this.container.append(tableLineTool)
   }
 
   private _mousedown(payload: IAnchorMouseDown) {
@@ -253,9 +190,7 @@ export class TableTool {
           const curColWidth = colgroup[index].width
           // 最小移动距离计算
           const moveColWidth = curColWidth + dx
-          const nextColWidth = colgroup[index + 1]?.width
-          // 如果移动距离小于最小宽度，或者大于当前列和下一列宽度之和，那么就不移动
-          if (moveColWidth < this.minTdWidth || moveColWidth > curColWidth + nextColWidth) {
+          if (moveColWidth < this.minTdWidth) {
             dx = this.minTdWidth - curColWidth
           }
           // 最大移动距离计算
