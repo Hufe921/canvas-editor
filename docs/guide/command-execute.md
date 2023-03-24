@@ -329,6 +329,14 @@ instance.command.executeCancelMergeTableCell()
 instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
 ```
 
+## executeTableBorderType
+功能：表格边框类型
+
+用法：
+```javascript
+instance.command.executeTableBorderType(payload: TableBorder)
+```
+
 ## executeImage
 功能：插入图片
 
