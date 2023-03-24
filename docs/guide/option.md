@@ -45,7 +45,6 @@ interface IEditorOption {
   tdPadding?: number; // 单元格内边距。默认：5
   defaultTdHeight?: number; // 默认单元格高度。默认：40
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
-  headerTop?: number; // 页眉距离上边距。默认：50
   header?: IHeader; // 页眉信息。{data:string; color?:string; size?:number; font?:string;}
   pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex;}
   paperDirection?: PaperDirection; // 纸张方向：纵向、横向
