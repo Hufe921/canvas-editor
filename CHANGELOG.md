@@ -1,3 +1,12 @@
+## [0.9.27](https://github.com/Hufe921/canvas-editor/compare/v0.9.26...v0.9.27) (2023-03-24)
+
+
+### Chores
+
+* verify release package ([4773c03](https://github.com/Hufe921/canvas-editor/commit/4773c0363ccb15b4ca9b406bb2c888a53c9af777))
+
+
+
 ## [0.9.26](https://github.com/Hufe921/canvas-editor/compare/v0.9.25...v0.9.26) (2023-03-24)
 
 
