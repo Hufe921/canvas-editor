@@ -1,10 +1,44 @@
 import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
+import { TableBorder } from '../../../dataset/enum/table/Table'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
 
 export const tableMenus: IRegisterContextMenu[] = [
   {
     isDivider: true
+  },
+  {
+    i18nPath: 'contextmenu.table.border',
+    icon: 'border-all',
+    when: (payload) => {
+      return !payload.isReadonly && payload.isInTable
+    },
+    childMenus: [
+      {
+        i18nPath: 'contextmenu.table.borderAll',
+        icon: 'border-all',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableBorderType(TableBorder.ALL)
+        }
+      },
+      {
+        i18nPath: 'contextmenu.table.borderEmpty',
+        icon: 'border-empty',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableBorderType(TableBorder.EMPTY)
+        }
+      },
+      {
+        i18nPath: 'contextmenu.table.borderExternal',
+        icon: 'border-external',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableBorderType(TableBorder.EXTERNAL)
+        }
+      }
+    ]
   },
   {
     i18nPath: 'contextmenu.table.verticalAlign',

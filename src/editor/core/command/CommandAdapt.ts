@@ -6,6 +6,7 @@ import { EditorContext, EditorMode, PageMode, PaperDirection } from '../../datas
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
+import { TableBorder } from '../../dataset/enum/table/Table'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
@@ -1032,14 +1033,35 @@ export class CommandAdapt {
     const element = originalElementList[index!]
     const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
     if (
-      !curTd
-      || curTd.verticalAlign === payload
-      || (!curTd.verticalAlign && payload === VerticalAlign.TOP)
+      !curTd ||
+      curTd.verticalAlign === payload ||
+      (!curTd.verticalAlign && payload === VerticalAlign.TOP)
     ) {
       return
     }
     // 重设垂直对齐方式
     curTd.verticalAlign = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableBorderType(payload: TableBorder) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    if (
+      (!element.borderType && payload === TableBorder.ALL) ||
+      element.borderType === payload
+    ) {
+      return
+    }
+    element.borderType = payload
     const { endIndex } = this.range.getRange()
     this.draw.render({
       curIndex: endIndex

@@ -1,6 +1,7 @@
 import { ControlComponent, ImageDisplay } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { RowFlex } from '../dataset/enum/Row'
+import { TableBorder } from '../dataset/enum/table/Table'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
 import { IControl } from './Control'
@@ -32,6 +33,7 @@ export interface IElementStyle {
 export interface ITableAttr {
   colgroup?: IColgroup[];
   trList?: ITr[];
+  borderType?: TableBorder;
 }
 
 export interface ITableElement {
@@ -40,13 +42,13 @@ export interface ITableElement {
   tableId?: string;
 }
 
+export type ITable = ITableAttr & ITableElement
+
 export interface IHyperlinkElement {
   valueList?: IElement[];
   url?: string;
   hyperlinkId?: string;
 }
-
-export type ITable = ITableAttr & ITableElement
 
 export interface ISuperscriptSubscript {
   actualSize?: number;

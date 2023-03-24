@@ -146,3 +146,15 @@
 .ce-contextmenu-vertical-align-bottom {
   background-image: url(../../../assets/images/vertical-align-bottom.svg);
 }
+
+.ce-contextmenu-border-all {
+  background-image: url(../../../assets/images/table-border-all.svg);
+}
+
+.ce-contextmenu-border-empty {
+  background-image: url(../../../assets/images/table-border-empty.svg);
+}
+
+.ce-contextmenu-border-external {
+  background-image: url(../../../assets/images/table-border-external.svg);
+}

@@ -1,7 +1,16 @@
-import { ElementType, IElement } from '../../../..'
+import { ElementType, IElement, TableBorder } from '../../../..'
 import { IEditorOption } from '../../../../interface/Editor'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
+
+interface IDrawTableBorderOption {
+  ctx: CanvasRenderingContext2D;
+  startX: number;
+  startY: number;
+  width: number;
+  height: number;
+  isDrawFullBorder?: boolean;
+}
 
 export class TableParticle {
 
@@ -13,14 +22,19 @@ export class TableParticle {
     this.options = draw.getOptions()
   }
 
-  private _drawBorder(ctx: CanvasRenderingContext2D, startX: number, startY: number, width: number, height: number) {
+  private _drawBorder(payload: IDrawTableBorderOption) {
+    const { ctx, startX, startY, width, height, isDrawFullBorder } = payload
     ctx.beginPath()
     const x = Math.round(startX)
     const y = Math.round(startY)
     ctx.translate(0.5, 0.5)
-    ctx.moveTo(x, y + height)
-    ctx.lineTo(x, y)
-    ctx.lineTo(x + width, y)
+    if (isDrawFullBorder) {
+      ctx.rect(x, y, width, height)
+    } else {
+      ctx.moveTo(x, y + height)
+      ctx.lineTo(x, y)
+      ctx.lineTo(x + width, y)
+    }
     ctx.stroke()
     ctx.translate(-0.5, -0.5)
   }
@@ -159,31 +173,41 @@ export class TableParticle {
   }
 
   public render(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
-    const { colgroup, trList } = element
-    if (!colgroup || !trList) return
+    const { colgroup, trList, borderType } = element
+    if (!colgroup || !trList || borderType === TableBorder.EMPTY) return
     const { scale } = this.options
     const tableWidth = element.width! * scale
     const tableHeight = element.height! * scale
+    const isExternalBorderType = borderType === TableBorder.EXTERNAL
     ctx.save()
     // 渲染边框
-    this._drawBorder(ctx, startX, startY, tableWidth, tableHeight)
-    // 渲染表格
-    for (let t = 0; t < trList.length; t++) {
-      const tr = trList[t]
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        const width = td.width! * scale
-        const height = td.height! * scale
-        const x = Math.round(td.x! * scale + startX + width)
-        const y = Math.round(td.y! * scale + startY)
-        ctx.translate(0.5, 0.5)
-        // 绘制线条
-        ctx.beginPath()
-        ctx.moveTo(x, y)
-        ctx.lineTo(x, y + height)
-        ctx.lineTo(x - width, y + height)
-        ctx.stroke()
-        ctx.translate(-0.5, -0.5)
+    this._drawBorder({
+      ctx,
+      startX,
+      startY,
+      width: tableWidth,
+      height: tableHeight,
+      isDrawFullBorder: isExternalBorderType
+    })
+    if (!isExternalBorderType) {
+      // 渲染表格
+      for (let t = 0; t < trList.length; t++) {
+        const tr = trList[t]
+        for (let d = 0; d < tr.tdList.length; d++) {
+          const td = tr.tdList[d]
+          const width = td.width! * scale
+          const height = td.height! * scale
+          const x = Math.round(td.x! * scale + startX + width)
+          const y = Math.round(td.y! * scale + startY)
+          ctx.translate(0.5, 0.5)
+          // 绘制线条
+          ctx.beginPath()
+          ctx.moveTo(x, y)
+          ctx.lineTo(x, y + height)
+          ctx.lineTo(x - width, y + height)
+          ctx.stroke()
+          ctx.translate(-0.5, -0.5)
+        }
       }
     }
     ctx.restore()

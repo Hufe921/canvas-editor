@@ -1,4 +1,4 @@
-import { IElement, ImageDisplay, INavigateInfo, VerticalAlign } from '../..'
+import { IElement, ImageDisplay, INavigateInfo, TableBorder, VerticalAlign } from '../..'
 import { EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
@@ -49,6 +49,7 @@ export class Command {
   private static mergeTableCell: CommandAdapt['mergeTableCell']
   private static cancelMergeTableCell: CommandAdapt['cancelMergeTableCell']
   private static tableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
+  private static tableBorderType: CommandAdapt['tableBorderType']
   private static image: CommandAdapt['image']
   private static hyperlink: CommandAdapt['hyperlink']
   private static deleteHyperlink: CommandAdapt['deleteHyperlink']
@@ -124,6 +125,7 @@ export class Command {
     Command.mergeTableCell = adapt.mergeTableCell.bind(adapt)
     Command.cancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     Command.tableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
+    Command.tableBorderType = adapt.tableBorderType.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.deleteHyperlink = adapt.deleteHyperlink.bind(adapt)
@@ -321,6 +323,10 @@ export class Command {
 
   public executeTableTdVerticalAlign(payload: VerticalAlign) {
     return Command.tableTdVerticalAlign(payload)
+  }
+
+  public executeTableBorderType(payload: TableBorder) {
+    return Command.tableBorderType(payload)
   }
 
   public executeHyperlink(payload: IElement) {

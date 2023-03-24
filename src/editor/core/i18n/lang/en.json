@@ -39,7 +39,11 @@
       "verticalAlign": "Vertical align",
       "verticalAlignTop": "Top",
       "verticalAlignMiddle": "Middle",
-      "verticalAlignBottom": "Bottom"
+      "verticalAlignBottom": "Bottom",
+      "border": "Table border",
+      "borderAll": "All",
+      "borderEmpty": "Empty",
+      "borderExternal": "External"
     }
   },
   "datePicker": {

@@ -34,6 +34,7 @@ import { defaultCursorOption } from './dataset/constant/Cursor'
 import { IPageNumber } from './interface/PageNumber'
 import { defaultPageNumberOption } from './dataset/constant/PageNumber'
 import { VerticalAlign } from './dataset/enum/VerticalAlign'
+import { TableBorder } from './dataset/enum/table/Table'
 
 export default class Editor {
 
@@ -175,7 +176,8 @@ export {
   Command,
   KeyMap,
   BlockType,
-  PaperDirection
+  PaperDirection,
+  TableBorder
 }
 
 // 对外类型
