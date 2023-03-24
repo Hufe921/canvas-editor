@@ -46,7 +46,6 @@ export interface IEditorOption {
   tdPadding?: number;
   defaultTdHeight?: number;
   defaultHyperlinkColor?: string;
-  headerTop?: number;
   paperDirection?: PaperDirection;
   inactiveAlpha?: number;
   header?: IHeader;

@@ -62,7 +62,7 @@
     "minute": "Minute",
     "second": "Second"
   },
-  "global": {
+  "frame": {
     "header": "Header",
     "footer": "Footer"
   }

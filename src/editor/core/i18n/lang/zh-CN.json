@@ -62,7 +62,7 @@
     "minute": "分",
     "second": "秒"
   },
-  "global": {
+  "frame": {
     "header": "页眉",
     "footer": "页脚"
   }
