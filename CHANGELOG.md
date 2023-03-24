@@ -1,3 +1,32 @@
+## [0.9.25](https://github.com/Hufe921/canvas-editor/compare/v0.9.24...v0.9.25) (2023-03-24)
+
+
+### Bug Fixes
+
+* table elements position when zooming ([3ff0eea](https://github.com/Hufe921/canvas-editor/commit/3ff0eea9482d5ab868b09940d3ebbb3864c71a2b))
+* table tool render option ([4a022a2](https://github.com/Hufe921/canvas-editor/commit/4a022a2724521d842f72f679a3bc8ca2b0e244ea))
+
+
+### Chores
+
+* add eslint global variable ([70f3d17](https://github.com/Hufe921/canvas-editor/commit/70f3d17ff0e4a4477e5d83f0b9b422f91aee1226))
+* add verify git commit message script ([0582da5](https://github.com/Hufe921/canvas-editor/commit/0582da56dde70e1f023f8cd3d8aad64b0e163cc8))
+* update .editorConfig ([4c48c79](https://github.com/Hufe921/canvas-editor/commit/4c48c79f71256449a82d50052216c22914b72afe))
+
+
+### Documentation
+
+* delete headerTop option ([756c706](https://github.com/Hufe921/canvas-editor/commit/756c706b9f5321b67f47be99ec04232339b6fdb5))
+* table border type #152 ([9521d59](https://github.com/Hufe921/canvas-editor/commit/9521d59fafe8a5b5a2e66db97128720bc0206d48)), closes [#152](https://github.com/Hufe921/canvas-editor/issues/152)
+
+
+### Features
+
+* table border tool ([5c529b7](https://github.com/Hufe921/canvas-editor/commit/5c529b76ca8184bed118955fdae36b8f1717dbb9))
+* table border type #152 ([48ad18b](https://github.com/Hufe921/canvas-editor/commit/48ad18bccb16e1a7751680103ac52a20320861d8)), closes [#152](https://github.com/Hufe921/canvas-editor/issues/152)
+
+
+
 ## [0.9.24](https://github.com/Hufe921/canvas-editor/compare/v0.9.23...v0.9.24) (2023-03-22)
 
 
