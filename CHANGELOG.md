@@ -1,3 +1,12 @@
+## [0.9.26](https://github.com/Hufe921/canvas-editor/compare/v0.9.25...v0.9.26) (2023-03-24)
+
+
+### Chores
+
+* add release script ([caa2c34](https://github.com/Hufe921/canvas-editor/commit/caa2c3463d6306b49fbfb893dec6caf6a9f16f0d))
+
+
+
 ## [0.9.25](https://github.com/Hufe921/canvas-editor/compare/v0.9.24...v0.9.25) (2023-03-24)
 
 
