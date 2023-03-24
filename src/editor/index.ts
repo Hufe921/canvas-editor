@@ -100,7 +100,6 @@ export default class Editor {
       tdPadding: 5,
       defaultTdHeight: 40,
       defaultHyperlinkColor: '#0000FF',
-      headerTop: 50,
       paperDirection: PaperDirection.VERTICAL,
       inactiveAlpha: 0.6,
       ...options,

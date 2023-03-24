@@ -260,9 +260,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
     evt.preventDefault()
   } else if (evt.key === KeyMap.ESC) {
+    // 退出格式刷
     host.clearPainterStyle()
-    if (draw.getZone().isHeaderActive()) {
-      draw.getZone().setZone(EditorZone.MAIN)
+    // 退出页眉编辑
+    const zoneManager = draw.getZone()
+    if (zoneManager.isHeaderActive()) {
+      zoneManager.setZone(EditorZone.MAIN)
     }
     evt.preventDefault()
   } else if (evt.key === KeyMap.TAB) {

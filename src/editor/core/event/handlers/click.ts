@@ -11,8 +11,6 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     y: evt.offsetY
   })
   if (!~positionContext.index && positionContext.zone) {
-    const isReadonly = draw.isReadonly()
-    if (isReadonly) return
     draw.getZone().setZone(positionContext.zone)
     return
   }

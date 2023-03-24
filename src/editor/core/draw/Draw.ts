@@ -264,10 +264,6 @@ export class Draw {
     return bottom * scale
   }
 
-  public getHeaderTop(): number {
-    return this.options.headerTop * this.options.scale
-  }
-
   public getMarginIndicatorSize(): number {
     return this.options.marginIndicatorSize * this.options.scale
   }
@@ -1363,7 +1359,7 @@ export class Draw {
         this.tableTool.render()
       }
       // 页眉指示器重新渲染
-      if (isCompute && !this.isReadonly() && this.zone.isHeaderActive()) {
+      if (isCompute && this.zone.isHeaderActive()) {
         this.zone.drawHeaderZoneIndicator()
       }
       // 页面尺寸改变

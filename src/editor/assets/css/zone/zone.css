@@ -4,7 +4,7 @@
   font-size: 12px;
   background: rgb(218 231 252);
   position: absolute;
-  transform: translate(10px, 10px);
+  transform-origin: 0 0;
 }
 
 .ce-header-indicator-border__top,

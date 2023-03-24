@@ -5,6 +5,9 @@ import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
 
 export class Zone {
+
+  private readonly INDICATOR_TITLE_TRANSLATE = [20, 5]
+
   private draw: Draw
   private options: Required<IEditorOption>
   private i18n: I18n
@@ -54,54 +57,56 @@ export class Zone {
   public drawHeaderZoneIndicator() {
     this._clearHeaderZoneIndicator()
     const { scale } = this.options
+    const [offsetX, offsetY] = this.INDICATOR_TITLE_TRANSLATE
     this.headerIndicatorContainer = document.createElement('div')
     this.headerIndicatorContainer.classList.add(`${EDITOR_PREFIX}-header-indicator`)
     const pageList = this.draw.getPageList()
+    const margins = this.draw.getMargins()
+    const innerWidth = this.draw.getInnerWidth()
     const pageHeight = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
     const preY = pageHeight + pageGap
-    const headerHeight = this.draw.getHeader().getHeight()
-    const headerTop = (this.options.header?.top ?? 0) * scale
-    const margins = this.draw.getMargins()
+    const header = this.draw.getHeader()
+    const headerHeight = header.getHeight()
+    const headerTop = header.getHeaderTop()
 
     for (let p = 0; p < pageList.length; p++) {
-      const indicator = document.createElement('div')
-      indicator.innerText = this.i18n.t('global.header')
-      document.body.appendChild(indicator)
-      const indicatorStyle = getComputedStyle(indicator)
-      indicator.style.top = `${preY * p + headerHeight + parseFloat(indicatorStyle.height) * scale}px`
-      this.headerIndicatorContainer.append(indicator)
-
-      // 绘制上，左，下，右边线
+      const startY = preY * p + headerTop
+      const indicatorTitle = document.createElement('div')
+      // 标题
+      indicatorTitle.innerText = this.i18n.t('frame.header')
+      indicatorTitle.style.top = `${startY + headerHeight}px`
+      indicatorTitle.style.transform = `translate(${offsetX * scale}px, ${offsetY * scale}px) scale(${scale})`
+      this.headerIndicatorContainer.append(indicatorTitle)
 
       // 上边线
       const lineTop = document.createElement('span')
       lineTop.classList.add(`${EDITOR_PREFIX}-header-indicator-border__top`)
-      lineTop.style.top = `${(preY * p + headerTop)}px`
-      lineTop.style.width = this.draw.getInnerWidth() + 'px'
-      lineTop.style.marginLeft = margins[3] + 'px'
+      lineTop.style.top = `${startY}px`
+      lineTop.style.width = `${innerWidth}px`
+      lineTop.style.marginLeft = `${margins[3]}px`
       this.headerIndicatorContainer.append(lineTop)
 
       // 左边线
       const lineLeft = document.createElement('span')
       lineLeft.classList.add(`${EDITOR_PREFIX}-header-indicator-border__left`)
-      lineLeft.style.top = `${(preY * p + headerTop)}px`
+      lineLeft.style.top = `${startY}px`
       lineLeft.style.height = `${headerHeight}px`
-      lineLeft.style.left = margins[3] + 'px'
+      lineLeft.style.left = `${margins[3]}px`
       this.headerIndicatorContainer.append(lineLeft)
 
       // 下边线
       const lineBottom = document.createElement('span')
       lineBottom.classList.add(`${EDITOR_PREFIX}-header-indicator-border__bottom`)
-      lineBottom.style.top = `${(preY * p + headerHeight + headerTop)}px`
+      lineBottom.style.top = `${startY + headerHeight}px`
       this.headerIndicatorContainer.append(lineBottom)
 
       // 右边线
       const lineRight = document.createElement('span')
       lineRight.classList.add(`${EDITOR_PREFIX}-header-indicator-border__right`)
-      lineRight.style.top = `${(preY * p + headerTop)}px`
+      lineRight.style.top = `${startY}px`
       lineRight.style.height = `${headerHeight}px`
-      lineRight.style.left = `${(margins[3] + this.draw.getInnerWidth())}px`
+      lineRight.style.left = `${margins[3] + innerWidth}px`
       this.headerIndicatorContainer.append(lineRight)
     }
     this.container.append(this.headerIndicatorContainer)
@@ -109,5 +114,6 @@ export class Zone {
 
   private _clearHeaderZoneIndicator() {
     this.headerIndicatorContainer?.remove()
+    this.headerIndicatorContainer = null
   }
 }
