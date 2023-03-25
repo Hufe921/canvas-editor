@@ -166,7 +166,7 @@ export class TableTool {
           this._mousedown({
             evt,
             element,
-            index: td.rowIndex!,
+            index: td.rowIndex! + td.rowspan - 1,
             order: TableOrder.ROW
           })
         }
@@ -181,7 +181,7 @@ export class TableTool {
           this._mousedown({
             evt,
             element,
-            index: td.colIndex!,
+            index: td.colIndex! + td.colspan - 1,
             order: TableOrder.COL
           })
         }
@@ -253,14 +253,17 @@ export class TableTool {
           // 宽度分配
           const innerWidth = this.draw.getInnerWidth()
           const curColWidth = colgroup[index].width
-          // 最小移动距离计算
-          const moveColWidth = curColWidth + dx
-          const nextColWidth = colgroup[index + 1]?.width || 0
-          // 如果移动距离小于最小宽度，或者大于当前列和下一列宽度之和则移动最小宽度
-          if (moveColWidth < this.MIN_TD_WIDTH || moveColWidth > curColWidth + nextColWidth) {
+          // 最小移动距离计算-如果向左移动：使单元格小于最小宽度，则减少移动量
+          if (dx < 0 && curColWidth + dx < this.MIN_TD_WIDTH) {
             dx = this.MIN_TD_WIDTH - curColWidth
           }
-          // 最大移动距离计算
+          // 最大移动距离计算-如果向右移动：使后面一个单元格小于最小宽度，则减少移动量
+          const nextColWidth = colgroup[index + 1]?.width
+          if (dx > 0 && nextColWidth && nextColWidth - dx < this.MIN_TD_WIDTH) {
+            dx = nextColWidth - this.MIN_TD_WIDTH
+          }
+          const moveColWidth = curColWidth + dx
+          // 开始移动
           let moveTableWidth = 0
           for (let c = 0; c < colgroup.length; c++) {
             const group = colgroup[c]
