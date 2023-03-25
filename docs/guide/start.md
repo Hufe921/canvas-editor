@@ -17,7 +17,7 @@
 - 右键菜单（内部、自定义）
 - 快捷键（内部、自定义）
 - 文字、元素、控件拖拽
-- 页眉、页码
+- 页眉、页脚、页码
 - 页边距
 - 水印
 - 分页
@@ -55,7 +55,7 @@ new Editor(document.querySelector(".canvas-editor"), [
   ], {})
 ```
 
-- 包含正文及页眉内容
+- 包含正文、页眉、页脚内容
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
@@ -66,6 +66,10 @@ new Editor(document.querySelector(".canvas-editor"), {
   }],
   main: [{
     value: "Hello World"
+  }],
+  footer: [{
+    value: 'canvas-editor',
+    size: 12
   }]
 }, {})
 ```
