@@ -48,8 +48,15 @@ export class Position {
 
   public getOriginalPositionList(): IElementPosition[] {
     const zoneManager = this.draw.getZone()
-    const header = this.draw.getHeader()
-    return zoneManager.isHeaderActive() ? header.getPositionList() : this.positionList
+    if (zoneManager.isHeaderActive()) {
+      const header = this.draw.getHeader()
+      return header.getPositionList()
+    }
+    if (zoneManager.isFooterActive()) {
+      const footer = this.draw.getFooter()
+      return footer.getPositionList()
+    }
+    return this.positionList
   }
 
   public getOriginalMainPositionList(): IElementPosition[] {
@@ -209,7 +216,8 @@ export class Position {
     }
     const zoneManager = this.draw.getZone()
     const curPageNo = this.draw.getPageNo()
-    const positionNo = zoneManager.isMainActive() ? curPageNo : 0
+    const isMainActive = zoneManager.isMainActive()
+    const positionNo = isMainActive ? curPageNo : 0
     for (let j = 0; j < positionList.length; j++) {
       const { index, pageNo, coordinate: { leftTop, rightTop, leftBottom } } = positionList[j]
       if (positionNo !== pageNo) continue
@@ -306,15 +314,15 @@ export class Position {
       }
     }
     // 判断所属行是否存在元素
-    const firstLetterList = positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
-    for (let j = 0; j < firstLetterList.length; j++) {
-      const { index, pageNo, coordinate: { leftTop, leftBottom } } = firstLetterList[j]
+    const lastLetterList = positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
+    for (let j = 0; j < lastLetterList.length; j++) {
+      const { index, pageNo, coordinate: { leftTop, leftBottom } } = lastLetterList[j]
       if (positionNo !== pageNo) continue
       if (y > leftTop[1] && y <= leftBottom[1]) {
         const isHead = x < this.options.margins[3]
         // 是否在头部
         if (isHead) {
-          const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === firstLetterList[j].rowNo)
+          const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo)
           curPositionIndex = ~headIndex ? headIndex - 1 : index
         } else {
           curPositionIndex = index
@@ -324,18 +332,30 @@ export class Position {
       }
     }
     if (!isLastArea) {
-      // 判断所属位置是否属于header区域，当前位置小于第一行的上边距
-      if (zoneManager.isMainActive()) {
-        if (y < firstLetterList[0].coordinate.leftTop[1]) {
+      const mainLastLetterList = isMainActive
+        ? lastLetterList
+        : this.getOriginalMainPositionList().filter(p => p.isLastLetter && p.pageNo === positionNo)
+      const firstPosition = mainLastLetterList[0]
+      const lastPosition = mainLastLetterList[mainLastLetterList.length - 1]
+      // 判断所属位置是否属于页眉页脚区域
+      if (isMainActive) {
+        // 页眉：当前位置小于第一行的上边距
+        if (y < firstPosition.coordinate.leftTop[1]) {
           return {
             index: -1,
             zone: EditorZone.HEADER
           }
         }
-      }
-      // 判断所属位置是否属于main区域，当前位置大于第一行的上边距
-      if (zoneManager.isHeaderActive()) {
-        if (y > firstLetterList[0].coordinate.leftTop[1]) {
+        // 页脚：当前位置大于最后一行的下边距
+        if (y > lastPosition.coordinate.leftBottom[1]) {
+          return {
+            index: -1,
+            zone: EditorZone.FOOTER
+          }
+        }
+      } else {
+        // main区域：当前位置大于第一行的上边距 && 小于最后一行的下边距
+        if (y >= firstPosition.coordinate.leftTop[1] && y <= lastPosition.coordinate.leftBottom[1]) {
           return {
             index: -1,
             zone: EditorZone.MAIN
@@ -344,7 +364,7 @@ export class Position {
       }
       // 当前页最后一行
       return {
-        index: firstLetterList[firstLetterList.length - 1]?.index || positionList.length - 1,
+        index: lastLetterList[lastLetterList.length - 1]?.index || positionList.length - 1,
       }
     }
     return {

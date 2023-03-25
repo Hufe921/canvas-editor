@@ -51,6 +51,7 @@ import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
+import { Footer } from './frame/Footer'
 
 export class Draw {
 
@@ -89,6 +90,7 @@ export class Draw {
   private pageNumber: PageNumber
   private waterMark: Watermark
   private header: Header
+  private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
   private dateParticle: DateParticle
   private separatorParticle: SeparatorParticle
@@ -152,6 +154,7 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
     this.header = new Header(this)
+    this.footer = new Footer(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle()
@@ -217,9 +220,14 @@ export class Draw {
 
   public getMainHeight(): number {
     const pageHeight = this.getHeight()
+    return pageHeight - this.getMainOuterHeight()
+  }
+
+  public getMainOuterHeight(): number {
     const margins = this.getMargins()
-    const extraHeight = this.header.getExtraHeight()
-    return pageHeight - margins[0] - margins[2] - extraHeight
+    const headerExtraHeight = this.header.getExtraHeight()
+    const footerExtraHeight = this.footer.getExtraHeight()
+    return margins[0] + margins[2] + headerExtraHeight + footerExtraHeight
   }
 
   public getCanvasWidth(pageNo = -1): number {
@@ -385,9 +393,13 @@ export class Draw {
 
   public getOriginalElementList() {
     const zoneManager = this.getZone()
-    return zoneManager.isHeaderActive()
-      ? this.header.getElementList()
-      : this.elementList
+    if (zoneManager.isHeaderActive()) {
+      return this.header.getElementList()
+    }
+    if (zoneManager.isFooterActive()) {
+      return this.footer.getElementList()
+    }
+    return this.elementList
   }
 
   public getOriginalMainElementList(): IElement[] {
@@ -466,6 +478,10 @@ export class Draw {
 
   public getHeader(): Header {
     return this.header
+  }
+
+  public getFooter(): Footer {
+    return this.footer
   }
 
   public getHyperlinkParticle(): HyperlinkParticle {
@@ -646,7 +662,8 @@ export class Draw {
     // 数据
     const data: IEditorData = {
       header: zipElementList(this.headerElementList),
-      main: zipElementList(this.elementList)
+      main: zipElementList(this.elementList),
+      footer: zipElementList(this.footerElementList)
     }
     return {
       version,
@@ -803,10 +820,8 @@ export class Draw {
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = 0
         // 表格分页处理(拆分表格)
-        const margins = this.getMargins()
         const height = this.getHeight()
-        const headerExtraHeight = this.header.getExtraHeight()
-        const marginHeight = margins[0] + margins[2] + headerExtraHeight
+        const marginHeight = this.getMainOuterHeight()
         let curPagePreHeight = marginHeight
         for (let r = 0; r < rowList.length; r++) {
           const row = rowList[r]
@@ -973,9 +988,7 @@ export class Draw {
     const pageRowList: IRow[][] = [[]]
     const { pageMode } = this.options
     const height = this.getHeight()
-    const margins = this.getMargins()
-    const headerExtraHeight = this.header.getExtraHeight()
-    const marginHeight = margins[0] + margins[2] + headerExtraHeight
+    const marginHeight = this.getMainOuterHeight()
     let pageHeight = marginHeight
     let pageNo = 0
     if (pageMode === PageMode.CONTINUITY) {
@@ -1196,8 +1209,8 @@ export class Draw {
     const { inactiveAlpha, pageMode } = this.options
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
-    // 判断当前激活区域-激活页眉时主题元素透明度降低
-    ctx.globalAlpha = this.zone.isHeaderActive() ? inactiveAlpha : 1
+    // 判断当前激活区域-非正文区域时元素透明度降低
+    ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx)
@@ -1218,6 +1231,8 @@ export class Draw {
     this.header.render(ctx, pageNo)
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
+    // 绘制页脚
+    this.footer.render(ctx, pageNo)
     // 搜索匹配绘制
     if (this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
@@ -1236,7 +1251,6 @@ export class Draw {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const index = Number((<HTMLCanvasElement>entry.target).dataset.index)
-          this.header.render(this.ctxList[index], index)
           this._drawPage({
             elementList,
             positionList,
@@ -1278,6 +1292,8 @@ export class Draw {
     if (isCompute) {
       // 页眉信息
       this.header.compute()
+      // 页脚信息
+      this.footer.compute()
       // 行信息
       this.rowList = this.computeRowList(innerWidth, this.elementList)
       // 页面信息
@@ -1338,6 +1354,7 @@ export class Draw {
       const self = this
       const oldElementList = deepClone(this.elementList)
       const oldHeaderElementList = deepClone(this.header.getElementList())
+      const oldFooterElementList = deepClone(this.footer.getElementList())
       const { startIndex, endIndex } = this.range.getRange()
       const pageNo = this.pageNo
       const oldPositionContext = deepClone(positionContext)
@@ -1345,8 +1362,9 @@ export class Draw {
       this.historyManager.execute(function () {
         self.zone.setZone(zone)
         self.setPageNo(pageNo)
-        self.position.setPositionContext(oldPositionContext)
-        self.header.setElementList(oldHeaderElementList)
+        self.position.setPositionContext(deepClone(oldPositionContext))
+        self.header.setElementList(deepClone(oldHeaderElementList))
+        self.footer.setElementList(deepClone(oldFooterElementList))
         self.elementList = deepClone(oldElementList)
         self.range.setRange(startIndex, endIndex)
         self.render({ curIndex, isSubmitHistory: false })
@@ -1359,8 +1377,8 @@ export class Draw {
         this.tableTool.render()
       }
       // 页眉指示器重新渲染
-      if (isCompute && this.zone.isHeaderActive()) {
-        this.zone.drawHeaderZoneIndicator()
+      if (isCompute && !this.zone.isMainActive()) {
+        this.zone.drawZoneIndicator()
       }
       // 页面尺寸改变
       if (this.listener.pageSizeChange) {

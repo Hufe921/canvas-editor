@@ -3,6 +3,7 @@ import { EditorMode, PageMode, PaperDirection } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
 import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
+import { IFooter } from './Footer'
 import { IHeader } from './Header'
 import { IMargin } from './Margin'
 import { IPageNumber } from './PageNumber'
@@ -49,6 +50,7 @@ export interface IEditorOption {
   paperDirection?: PaperDirection;
   inactiveAlpha?: number;
   header?: IHeader;
+  footer?: IFooter;
   pageNumber?: IPageNumber;
   watermark?: IWatermark;
   control?: IControlOption;

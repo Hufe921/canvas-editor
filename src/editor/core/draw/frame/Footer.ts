@@ -7,7 +7,7 @@ import { IRow } from '../../../interface/Row'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
-export class Header {
+export class Footer {
 
   private draw: Draw
   private position: Position
@@ -22,7 +22,7 @@ export class Header {
     this.position = draw.getPosition()
     this.options = draw.getOptions()
 
-    this.elementList = draw.getHeaderElementList()
+    this.elementList = draw.getFooterElementList()
     this.rowList = []
     this.positionList = []
   }
@@ -56,11 +56,14 @@ export class Header {
   }
 
   private _computePositionList() {
-    const headerTop = this.getHeaderTop()
+    const footerBottom = this.getFooterBottom()
     const innerWidth = this.draw.getInnerWidth()
     const margins = this.draw.getMargins()
     const startX = margins[3]
-    const startY = headerTop
+    // 页面高度 - 页脚顶部距离页面底部高度
+    const pageHeight = this.draw.getHeight()
+    const footerHeight = this.getHeight()
+    const startY = pageHeight - footerBottom - footerHeight
     this.position.computePageRowPosition({
       positionList: this.positionList,
       rowList: this.rowList,
@@ -72,13 +75,13 @@ export class Header {
     })
   }
 
-  public getHeaderTop(): number {
-    const { header: { top }, scale } = this.options
-    return Math.floor(top * scale)
+  public getFooterBottom(): number {
+    const { footer: { bottom }, scale } = this.options
+    return Math.floor(bottom * scale)
   }
 
   public getMaxHeight(): number {
-    const { header: { maxHeightRadio } } = this.options
+    const { footer: { maxHeightRadio } } = this.options
     const height = this.draw.getHeight()
     return Math.floor(height * maxHeightRadioMapping[maxHeightRadio])
   }
@@ -94,11 +97,11 @@ export class Header {
   }
 
   public getExtraHeight(): number {
-    // 页眉上边距 + 实际高 - 页面上边距
+    // 页脚下边距 + 实际高 - 页面上边距
     const margins = this.draw.getMargins()
-    const headerHeight = this.getHeight()
-    const headerTop = this.getHeaderTop()
-    const extraHeight = headerTop + headerHeight - margins[0]
+    const footerHeight = this.getHeight()
+    const footerBottom = this.getFooterBottom()
+    const extraHeight = footerBottom + footerHeight - margins[2]
     return extraHeight <= 0 ? 0 : extraHeight
   }
 
@@ -124,7 +127,7 @@ export class Header {
       pageNo,
       startIndex: 0,
       innerWidth,
-      zone: EditorZone.HEADER
+      zone: EditorZone.FOOTER
     })
   }
 

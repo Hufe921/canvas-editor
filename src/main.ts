@@ -26,7 +26,11 @@ window.onload = function () {
         value: '\n',
         type: ElementType.SEPARATOR
       }],
-      main: <IElement[]>data
+      main: <IElement[]>data,
+      footer: [{
+        value: 'canvas-editor',
+        size: 12
+      }]
     },
     options
   )
