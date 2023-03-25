@@ -262,9 +262,9 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.ESC) {
     // 退出格式刷
     host.clearPainterStyle()
-    // 退出页眉编辑
+    // 退出页眉页脚编辑
     const zoneManager = draw.getZone()
-    if (zoneManager.isHeaderActive()) {
+    if (!zoneManager.isMainActive()) {
       zoneManager.setZone(EditorZone.MAIN)
     }
     evt.preventDefault()

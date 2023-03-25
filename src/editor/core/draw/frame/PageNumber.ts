@@ -32,7 +32,7 @@ export class PageNumber {
     const margins = this.draw.getMargins()
     const { width: textWidth } = ctx.measureText(text)
     if (rowFlex === RowFlex.CENTER) {
-      x = (width + textWidth) / 2
+      x = (width - textWidth) / 2
     } else if (rowFlex === RowFlex.RIGHT) {
       x = width - textWidth - margins[1]
     } else {

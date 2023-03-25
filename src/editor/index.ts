@@ -35,6 +35,9 @@ import { IPageNumber } from './interface/PageNumber'
 import { defaultPageNumberOption } from './dataset/constant/PageNumber'
 import { VerticalAlign } from './dataset/enum/VerticalAlign'
 import { TableBorder } from './dataset/enum/table/Table'
+import { IFooter } from './interface/Footer'
+import { defaultFooterOption } from './dataset/constant/Footer'
+import { MaxHeightRatio } from './dataset/enum/Common'
 
 export default class Editor {
 
@@ -47,6 +50,10 @@ export default class Editor {
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
+    }
+    const footerOptions: Required<IFooter> = {
+      ...defaultFooterOption,
+      ...options.footer
     }
     const pageNumberOptions: Required<IPageNumber> = {
       ...defaultPageNumberOption,
@@ -105,6 +112,7 @@ export default class Editor {
       inactiveAlpha: 0.6,
       ...options,
       header: headerOptions,
+      footer: footerOptions,
       pageNumber: pageNumberOptions,
       watermark: waterMarkOptions,
       control: controlOptions,
@@ -114,18 +122,20 @@ export default class Editor {
     // 数据处理
     let headerElementList: IElement[] = []
     let mainElementList: IElement[] = []
+    let footerElementList: IElement[] = []
     if (Array.isArray(data)) {
       mainElementList = data
     } else {
       headerElementList = data.header || []
       mainElementList = data.main
+      footerElementList = data.footer || []
     }
-    formatElementList(headerElementList, {
-      editorOptions
-    })
-    formatElementList(mainElementList, {
-      editorOptions
-    })
+    [headerElementList, mainElementList, footerElementList]
+      .forEach(elementList => {
+        formatElementList(elementList, {
+          editorOptions
+        })
+      })
     // 监听
     this.listener = new Listener()
     // 启动
@@ -134,7 +144,8 @@ export default class Editor {
       editorOptions,
       {
         header: headerElementList,
-        main: mainElementList
+        main: mainElementList,
+        footer: footerElementList
       },
       this.listener
     )
@@ -177,7 +188,8 @@ export {
   KeyMap,
   BlockType,
   PaperDirection,
-  TableBorder
+  TableBorder,
+  MaxHeightRatio
 }
 
 // 对外类型
