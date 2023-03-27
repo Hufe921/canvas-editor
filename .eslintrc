@@ -13,6 +13,9 @@
   "env": {
     "browser": true
   },
+  "globals": {
+    "process": true
+  },
   "rules": {
     "linebreak-style": 0,
     "no-console": 0,

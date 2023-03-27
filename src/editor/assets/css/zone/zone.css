@@ -1,8 +1,34 @@
-.ce-header-indicator>div {
+.ce-zone-indicator>div {
   padding: 3px 6px;
   color: #000000;
   font-size: 12px;
   background: rgb(218 231 252);
   position: absolute;
-  transform: translate(10px, 10px);
+  transform-origin: 0 0;
+}
+
+.ce-zone-indicator-border__top,
+.ce-zone-indicator-border__bottom,
+.ce-zone-indicator-border__left,
+.ce-zone-indicator-border__right {
+  display: block;
+  position: absolute;
+  z-index: 0;
+}
+
+.ce-zone-indicator-border__top {
+  border-top: 2px dashed rgb(238, 238, 238);
+}
+
+.ce-zone-indicator-border__bottom {
+  border-top: 2px dashed rgb(238, 238, 238);
+  width: 100%;
+}
+
+.ce-zone-indicator-border__left {
+  border-left: 2px dashed rgb(238, 238, 238);
+}
+
+.ce-zone-indicator-border__right {
+  border-right: 2px dashed rgb(238, 238, 238);
 }

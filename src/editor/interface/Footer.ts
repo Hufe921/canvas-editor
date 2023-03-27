@@ -1,6 +1,6 @@
 import { MaxHeightRatio } from '../dataset/enum/Common'
 
-export interface IHeader {
-  top?: number;
+export interface IFooter {
+  bottom?: number;
   maxHeightRadio?: MaxHeightRatio;
 }

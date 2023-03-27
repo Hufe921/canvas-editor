@@ -51,6 +51,7 @@ import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
+import { Footer } from './frame/Footer'
 
 export class Draw {
 
@@ -89,6 +90,7 @@ export class Draw {
   private pageNumber: PageNumber
   private waterMark: Watermark
   private header: Header
+  private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
   private dateParticle: DateParticle
   private separatorParticle: SeparatorParticle
@@ -152,6 +154,7 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
     this.header = new Header(this)
+    this.footer = new Footer(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle()
@@ -217,9 +220,14 @@ export class Draw {
 
   public getMainHeight(): number {
     const pageHeight = this.getHeight()
+    return pageHeight - this.getMainOuterHeight()
+  }
+
+  public getMainOuterHeight(): number {
     const margins = this.getMargins()
-    const extraHeight = this.header.getExtraHeight()
-    return pageHeight - margins[0] - margins[2] - extraHeight
+    const headerExtraHeight = this.header.getExtraHeight()
+    const footerExtraHeight = this.footer.getExtraHeight()
+    return margins[0] + margins[2] + headerExtraHeight + footerExtraHeight
   }
 
   public getCanvasWidth(pageNo = -1): number {
@@ -260,11 +268,8 @@ export class Draw {
   }
 
   public getPageNumberBottom(): number {
-    return this.options.pageNumberBottom * this.options.scale
-  }
-
-  public getHeaderTop(): number {
-    return this.options.headerTop * this.options.scale
+    const { pageNumber: { bottom }, scale } = this.options
+    return bottom * scale
   }
 
   public getMarginIndicatorSize(): number {
@@ -388,9 +393,13 @@ export class Draw {
 
   public getOriginalElementList() {
     const zoneManager = this.getZone()
-    return zoneManager.isHeaderActive()
-      ? this.header.getElementList()
-      : this.elementList
+    if (zoneManager.isHeaderActive()) {
+      return this.header.getElementList()
+    }
+    if (zoneManager.isFooterActive()) {
+      return this.footer.getElementList()
+    }
+    return this.elementList
   }
 
   public getOriginalMainElementList(): IElement[] {
@@ -469,6 +478,10 @@ export class Draw {
 
   public getHeader(): Header {
     return this.header
+  }
+
+  public getFooter(): Footer {
+    return this.footer
   }
 
   public getHyperlinkParticle(): HyperlinkParticle {
@@ -649,7 +662,8 @@ export class Draw {
     // 数据
     const data: IEditorData = {
       header: zipElementList(this.headerElementList),
-      main: zipElementList(this.elementList)
+      main: zipElementList(this.elementList),
+      footer: zipElementList(this.footerElementList)
     }
     return {
       version,
@@ -774,20 +788,61 @@ export class Draw {
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
-          let maxTrHeight = 0
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const rowList = this.computeRowList((td.width! - tdGap) * scale, td.value)
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTrHeight = (rowHeight + tdGap) / scale
-            if (maxTrHeight < curTrHeight) {
-              maxTrHeight = curTrHeight
+            const curTdHeight = (rowHeight + tdGap) / scale
+            // 内容高度大于当前单元格高度需增加
+            if (td.height! < curTdHeight) {
+              const extraHeight = curTdHeight - td.height!
+              const changeTr = trList[t + td.rowspan - 1]
+              changeTr.height += extraHeight
+              changeTr.tdList.forEach(changeTd => {
+                changeTd.height! += extraHeight
+              })
+            }
+            // 当前单元格最小高度及真实高度（包含跨列）
+            let curTdMinHeight = 0
+            let curTdRealHeight = 0
+            let i = 0
+            while (i < td.rowspan) {
+              const curTr = trList[i + t]
+              curTdMinHeight += curTr.minHeight!
+              curTdRealHeight += curTr.height!
+              i++
+            }
+            td.realMinHeight = curTdMinHeight
+            td.realHeight = curTdRealHeight
+            td.mainHeight = curTdHeight
+          }
+        }
+        // 单元格高度大于实际内容高度需减少
+        const reduceTrList = this.tableParticle.getTrListGroupByCol(trList)
+        for (let t = 0; t < reduceTrList.length; t++) {
+          const tr = reduceTrList[t]
+          let reduceHeight = -1
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            const curTdRealHeight = td.realHeight!
+            const curTdHeight = td.mainHeight!
+            const curTdMinHeight = td.realMinHeight!
+            // 获取最大可减少高度
+            const curReduceHeight = curTdHeight < curTdMinHeight
+              ? curTdRealHeight - curTdMinHeight
+              : curTdRealHeight - curTdHeight
+            if (!~reduceHeight || curReduceHeight < reduceHeight) {
+              reduceHeight = curReduceHeight
             }
           }
-          if (maxTrHeight > tr.height) {
-            tr.height = maxTrHeight
+          if (reduceHeight > 0) {
+            const changeTr = trList[t]
+            changeTr.height -= reduceHeight
+            changeTr.tdList.forEach(changeTd => {
+              changeTd.height! -= reduceHeight
+            })
           }
         }
         // 需要重新计算表格内值
@@ -804,10 +859,8 @@ export class Draw {
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = 0
         // 表格分页处理(拆分表格)
-        const margins = this.getMargins()
         const height = this.getHeight()
-        const headerExtraHeight = this.header.getExtraHeight()
-        const marginHeight = margins[0] + margins[2] + headerExtraHeight
+        const marginHeight = this.getMainOuterHeight()
         let curPagePreHeight = marginHeight
         for (let r = 0; r < rowList.length; r++) {
           const row = rowList[r]
@@ -974,9 +1027,7 @@ export class Draw {
     const pageRowList: IRow[][] = [[]]
     const { pageMode } = this.options
     const height = this.getHeight()
-    const margins = this.getMargins()
-    const headerExtraHeight = this.header.getExtraHeight()
-    const marginHeight = margins[0] + margins[2] + headerExtraHeight
+    const marginHeight = this.getMainOuterHeight()
     let pageHeight = marginHeight
     let pageNo = 0
     if (pageMode === PageMode.CONTINUITY) {
@@ -1197,8 +1248,8 @@ export class Draw {
     const { inactiveAlpha, pageMode } = this.options
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
-    // 判断当前激活区域-激活页眉时主题元素透明度降低
-    ctx.globalAlpha = this.zone.isHeaderActive() ? inactiveAlpha : 1
+    // 判断当前激活区域-非正文区域时元素透明度降低
+    ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx)
@@ -1219,6 +1270,8 @@ export class Draw {
     this.header.render(ctx, pageNo)
     // 绘制页码
     this.pageNumber.render(ctx, pageNo)
+    // 绘制页脚
+    this.footer.render(ctx, pageNo)
     // 搜索匹配绘制
     if (this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
@@ -1237,7 +1290,6 @@ export class Draw {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
           const index = Number((<HTMLCanvasElement>entry.target).dataset.index)
-          this.header.render(this.ctxList[index], index)
           this._drawPage({
             elementList,
             positionList,
@@ -1279,6 +1331,8 @@ export class Draw {
     if (isCompute) {
       // 页眉信息
       this.header.compute()
+      // 页脚信息
+      this.footer.compute()
       // 行信息
       this.rowList = this.computeRowList(innerWidth, this.elementList)
       // 页面信息
@@ -1316,10 +1370,10 @@ export class Draw {
     } else {
       this._immediateRender()
     }
+    const positionContext = this.position.getPositionContext()
     // 光标重绘
     if (isSetCursor) {
       const positionList = this.position.getPositionList()
-      const positionContext = this.position.getPositionContext()
       if (positionContext.isTable) {
         const { index, trIndex, tdIndex } = positionContext
         const elementList = this.getOriginalElementList()
@@ -1339,15 +1393,17 @@ export class Draw {
       const self = this
       const oldElementList = deepClone(this.elementList)
       const oldHeaderElementList = deepClone(this.header.getElementList())
+      const oldFooterElementList = deepClone(this.footer.getElementList())
       const { startIndex, endIndex } = this.range.getRange()
       const pageNo = this.pageNo
-      const oldPositionContext = deepClone(this.position.getPositionContext())
+      const oldPositionContext = deepClone(positionContext)
       const zone = this.zone.getZone()
       this.historyManager.execute(function () {
         self.zone.setZone(zone)
         self.setPageNo(pageNo)
-        self.position.setPositionContext(oldPositionContext)
-        self.header.setElementList(oldHeaderElementList)
+        self.position.setPositionContext(deepClone(oldPositionContext))
+        self.header.setElementList(deepClone(oldHeaderElementList))
+        self.footer.setElementList(deepClone(oldFooterElementList))
         self.elementList = deepClone(oldElementList)
         self.range.setRange(startIndex, endIndex)
         self.render({ curIndex, isSubmitHistory: false })
@@ -1355,6 +1411,14 @@ export class Draw {
     }
     // 信息变动回调
     nextTick(() => {
+      // 表格工具重新渲染
+      if (isCompute && !this.isReadonly() && positionContext.isTable) {
+        this.tableTool.render()
+      }
+      // 页眉指示器重新渲染
+      if (isCompute && !this.zone.isMainActive()) {
+        this.zone.drawZoneIndicator()
+      }
       // 页面尺寸改变
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(this.pageRowList.length)

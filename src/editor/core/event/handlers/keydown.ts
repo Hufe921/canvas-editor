@@ -1,3 +1,4 @@
+import { EditorZone } from '../../..'
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
@@ -259,7 +260,13 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
     evt.preventDefault()
   } else if (evt.key === KeyMap.ESC) {
+    // 退出格式刷
     host.clearPainterStyle()
+    // 退出页眉页脚编辑
+    const zoneManager = draw.getZone()
+    if (!zoneManager.isMainActive()) {
+      zoneManager.setZone(EditorZone.MAIN)
+    }
     evt.preventDefault()
   } else if (evt.key === KeyMap.TAB) {
     draw.insertElementList([{

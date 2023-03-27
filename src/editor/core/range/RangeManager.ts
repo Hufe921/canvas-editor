@@ -1,5 +1,6 @@
 import { ElementType } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
+import { TEXTLIKE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
@@ -43,6 +44,12 @@ export class RangeManager {
     if (startIndex === endIndex) return null
     const elementList = this.draw.getElementList()
     return elementList.slice(startIndex + 1, endIndex + 1)
+  }
+
+  public getTextLikeSelection(): IElement[] | null {
+    const selection = this.getSelection()
+    if (!selection) return null
+    return selection.filter(s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type))
   }
 
   // 获取光标所选位置行信息
@@ -135,6 +142,7 @@ export class RangeManager {
     const type = curElement.type || ElementType.TEXT
     // 富文本
     const font = curElement.font || this.options.defaultFont
+    const size = curElement.size || this.options.defaultSize
     const bold = !~curElementList.findIndex(el => !el.bold)
     const italic = !~curElementList.findIndex(el => !el.italic)
     const underline = !~curElementList.findIndex(el => !el.underline)
@@ -154,6 +162,7 @@ export class RangeManager {
       redo,
       painter,
       font,
+      size,
       bold,
       italic,
       underline,
@@ -169,6 +178,7 @@ export class RangeManager {
   public recoveryRangeStyle() {
     if (!this.listener.rangeStyleChange) return
     const font = this.options.defaultFont
+    const size = this.options.defaultSize
     const rowMargin = this.options.defaultRowMargin
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
@@ -179,6 +189,7 @@ export class RangeManager {
       redo,
       painter,
       font,
+      size,
       bold: false,
       italic: false,
       underline: false,

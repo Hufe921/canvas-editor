@@ -6,6 +6,7 @@ import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
 import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
+import { ITd } from '../interface/table/Td'
 
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean;
@@ -33,6 +34,9 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
           const tr = el.trList[t]
           const trId = getUUID()
           tr.id = trId
+          if (!tr.minHeight || tr.minHeight < editorOptions.defaultTrMinHeight) {
+            tr.minHeight = editorOptions.defaultTrMinHeight
+          }
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const tdId = getUUID()
@@ -295,12 +299,12 @@ export function zipElementList(payload: IElement[]): IElement[] {
   let e = 0
   while (e < elementList.length) {
     let element = elementList[e]
-    // 筛选所需项
-    if (e === 0 && element.value === ZERO) {
+    // 上下文首字符（占位符）
+    if (e === 0 && element.value === ZERO && (!element.type || element.type === ElementType.TEXT)) {
       e++
       continue
     }
-    // 表格、超链接递归处理
+    // 表格、超链接、日期、控件特殊处理
     if (element.type === ElementType.TABLE) {
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
@@ -308,11 +312,15 @@ export function zipElementList(payload: IElement[]): IElement[] {
           delete tr.id
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            tr.tdList[d] = {
+            const zipTd: ITd = {
               colspan: td.colspan,
               rowspan: td.rowspan,
               value: zipElementList(td.value)
             }
+            if (td.verticalAlign) {
+              zipTd.verticalAlign = td.verticalAlign
+            }
+            tr.tdList[d] = zipTd
           }
         }
       }

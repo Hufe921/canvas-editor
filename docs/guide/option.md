@@ -18,6 +18,8 @@ interface IEditorOption {
   defaultType?: string; // 默认元素类型。默认：TEXT
   defaultFont?: string; // 默认字体。默认：Yahei
   defaultSize?: number; // 默认字号。默认：16
+  minSize?: number; // 最小字号。默认：5
+  maxSize?: number; // 最大字号。默认：72
   defaultBasicRowMarginHeight?: number; // 默认行高。默认：8
   defaultRowMargin?: number; // 默认行间距。默认：1
   defaultTabWidth?: number; // 默认tab宽度。默认：32
@@ -25,9 +27,6 @@ interface IEditorOption {
   height?: number; // 纸张高度。默认：1123
   scale?: number; // 缩放比例。默认：1
   pageGap?: number; // 纸张间隔。默认：20
-  pageNumberBottom?: number; // 页码距离纸张下边距。默认：60
-  pageNumberSize?: number; // 页码字号。默认：12
-  pageNumberFont?: string; // 页码字体。默认：Yahei
   underlineColor?: string; // 下划线颜色。默认：#000000
   strikeoutColor?: string; // 删除线颜色。默认：#FF0000
   rangeColor?: string; // 选区颜色。默认：#AECBFA
@@ -44,10 +43,11 @@ interface IEditorOption {
   margins?: IMargin, // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode; // 纸张模式：连页、分页。默认：分页
   tdPadding?: number; // 单元格内边距。默认：5
-  defaultTdHeight?: number; // 默认单元格高度。默认：40
+  defaultTrMinHeight?: number; // 默认表格行最小高度。默认：40
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
-  headerTop?: number; // 页眉距离上边距。默认：50
-  header?: IHeader; // 页眉信息。{data:string; color?:string; size?:number; font?:string;}
+  header?: IHeader; // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
+  footer?: IFooter; // 页脚信息。{bottom?:number; maxHeightRadio?:MaxHeightRatio;}
+  pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex;}
   paperDirection?: PaperDirection; // 纸张方向：纵向、横向
   inactiveAlpha?: number; // 正文内容失焦时透明度。默认值：0.6
   watermark?: IWatermark; // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}

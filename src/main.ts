@@ -50,10 +50,11 @@ async function init() {
     const { data: contentData, ...rest } = content
     const editorData = <IEditorData | IElement[]>contentData
     // 兼容无页眉时数据结构
-    const isExistHeader = !Array.isArray(editorData)
+    const isExistPageHeader = !Array.isArray(editorData)
     data = {
-      header: isExistHeader ? editorData.header : [],
-      main: isExistHeader ? editorData.main : editorData
+      header: isExistPageHeader ? editorData.header : [],
+      main: isExistPageHeader ? editorData.main : editorData,
+      footer: isExistPageHeader ? editorData.footer : []
     }
     options = rest
   } catch (error) {
@@ -73,7 +74,8 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
         color: '#AAAAAA',
         rowFlex: RowFlex.CENTER
       }],
-    main: data.main
+    main: data.main,
+    footer: data.footer
   }, {
     margins: options.margins || [100, 120, 100, 120],
     watermark: options.watermark
@@ -127,6 +129,19 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
   fontOptionDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
     instance.command.executeFont(li.dataset.family!)
+  }
+
+  const sizeSetDom = document.querySelector<HTMLDivElement>('.menu-item__size')!
+  const sizeSelectDom = sizeSetDom.querySelector<HTMLDivElement>('.select')!
+  const sizeOptionDom = sizeSetDom.querySelector<HTMLDivElement>('.options')!
+  sizeSetDom.title = `设置字号`
+  sizeSetDom.onclick = function () {
+    console.log('size')
+    sizeOptionDom.classList.toggle('visible')
+  }
+  sizeOptionDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    instance.command.executeSize(Number(li.dataset.size!))
   }
 
   const sizeAddDom = document.querySelector<HTMLDivElement>('.menu-item__size-add')!
@@ -1031,6 +1046,14 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
       fontSelectDom.innerText = curFontDom.innerText
       fontSelectDom.style.fontFamily = payload.font
       curFontDom.classList.add('active')
+    }
+    sizeOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
+    const curSizeDom = sizeOptionDom.querySelector<HTMLLIElement>(`[data-size='${payload.size}']`)
+    if (curSizeDom) {
+      sizeSelectDom.innerText = curSizeDom.innerText
+      curSizeDom.classList.add('active')
+    } else {
+      sizeSelectDom.innerText = `${payload.size}`
     }
     payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')
     payload.italic ? italicDom.classList.add('active') : italicDom.classList.remove('active')

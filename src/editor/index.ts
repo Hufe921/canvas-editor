@@ -31,6 +31,13 @@ import { IBlock } from './interface/Block'
 import { ILang } from './interface/i18n/I18n'
 import { ICursorOption } from './interface/Cursor'
 import { defaultCursorOption } from './dataset/constant/Cursor'
+import { IPageNumber } from './interface/PageNumber'
+import { defaultPageNumberOption } from './dataset/constant/PageNumber'
+import { VerticalAlign } from './dataset/enum/VerticalAlign'
+import { TableBorder } from './dataset/enum/table/Table'
+import { IFooter } from './interface/Footer'
+import { defaultFooterOption } from './dataset/constant/Footer'
+import { MaxHeightRatio } from './dataset/enum/Common'
 
 export default class Editor {
 
@@ -43,6 +50,14 @@ export default class Editor {
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
+    }
+    const footerOptions: Required<IFooter> = {
+      ...defaultFooterOption,
+      ...options.footer
+    }
+    const pageNumberOptions: Required<IPageNumber> = {
+      ...defaultPageNumberOption,
+      ...options.pageNumber
     }
     const waterMarkOptions: Required<IWatermark> = {
       ...defaultWatermarkOption,
@@ -66,6 +81,8 @@ export default class Editor {
       defaultType: 'TEXT',
       defaultFont: 'Yahei',
       defaultSize: 16,
+      minSize: 5,
+      maxSize: 72,
       defaultRowMargin: 1,
       defaultBasicRowMarginHeight: 8,
       defaultTabWidth: 32,
@@ -73,9 +90,6 @@ export default class Editor {
       height: 1123,
       scale: 1,
       pageGap: 20,
-      pageNumberBottom: 60,
-      pageNumberSize: 12,
-      pageNumberFont: 'Yahei',
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,
@@ -92,13 +106,14 @@ export default class Editor {
       margins: [100, 120, 100, 120],
       pageMode: PageMode.PAGING,
       tdPadding: 5,
-      defaultTdHeight: 40,
+      defaultTrMinHeight: 40,
       defaultHyperlinkColor: '#0000FF',
-      headerTop: 50,
       paperDirection: PaperDirection.VERTICAL,
       inactiveAlpha: 0.6,
       ...options,
       header: headerOptions,
+      footer: footerOptions,
+      pageNumber: pageNumberOptions,
       watermark: waterMarkOptions,
       control: controlOptions,
       checkbox: checkboxOptions,
@@ -107,18 +122,20 @@ export default class Editor {
     // 数据处理
     let headerElementList: IElement[] = []
     let mainElementList: IElement[] = []
+    let footerElementList: IElement[] = []
     if (Array.isArray(data)) {
       mainElementList = data
     } else {
       headerElementList = data.header || []
       mainElementList = data.main
+      footerElementList = data.footer || []
     }
-    formatElementList(headerElementList, {
-      editorOptions
-    })
-    formatElementList(mainElementList, {
-      editorOptions
-    })
+    [headerElementList, mainElementList, footerElementList]
+      .forEach(elementList => {
+        formatElementList(elementList, {
+          editorOptions
+        })
+      })
     // 监听
     this.listener = new Listener()
     // 启动
@@ -127,7 +144,8 @@ export default class Editor {
       editorOptions,
       {
         header: headerElementList,
-        main: mainElementList
+        main: mainElementList,
+        footer: footerElementList
       },
       this.listener
     )
@@ -157,6 +175,7 @@ export default class Editor {
 export {
   Editor,
   RowFlex,
+  VerticalAlign,
   EditorZone,
   EditorMode,
   ElementType,
@@ -168,7 +187,9 @@ export {
   Command,
   KeyMap,
   BlockType,
-  PaperDirection
+  PaperDirection,
+  TableBorder,
+  MaxHeightRatio
 }
 
 // 对外类型

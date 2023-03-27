@@ -113,6 +113,14 @@ instance.command.executeFormat()
 instance.command.executeFont(font: string)
 ```
 
+## executeSize
+功能：设置字号
+
+用法：
+```javascript
+instance.command.executeSize(size: number)
+```
+
 ## executeSizeAdd
 功能：增大字号
 
@@ -311,6 +319,22 @@ instance.command.executeMergeTableCell()
 用法：
 ```javascript
 instance.command.executeCancelMergeTableCell()
+```
+
+## executeTableTdVerticalAlign
+功能：表格单元格垂直对齐方式
+
+用法：
+```javascript
+instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
+```
+
+## executeTableBorderType
+功能：表格边框类型
+
+用法：
+```javascript
+instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
 ## executeImage

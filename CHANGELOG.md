@@ -1,3 +1,112 @@
+## [0.9.28](https://github.com/Hufe921/canvas-editor/compare/v0.9.27...v0.9.28) (2023-03-27)
+
+
+### Bug Fixes
+
+* drag table border to change size #160 ([fda18d9](https://github.com/Hufe921/canvas-editor/commit/fda18d968e7f54c11726dcd11a9d3536bca33d9a)), closes [#160](https://github.com/Hufe921/canvas-editor/issues/160)
+* extra blank row appear when insert table #162 ([2f8c6b7](https://github.com/Hufe921/canvas-editor/commit/2f8c6b71d2787e85a677073ca41832c4b00f6c41)), closes [#162](https://github.com/Hufe921/canvas-editor/issues/162)
+* position header and footer zone ([ca5c4be](https://github.com/Hufe921/canvas-editor/commit/ca5c4be9c39f374ccbb1bb6ea126b06fa978c885))
+* table cell height adaptation #162 ([a2090c8](https://github.com/Hufe921/canvas-editor/commit/a2090c82fc2c09ed28a40064094cbca0b9bd1431)), closes [#162](https://github.com/Hufe921/canvas-editor/issues/162)
+
+
+### Documentation
+
+* add page footer ([45a17ba](https://github.com/Hufe921/canvas-editor/commit/45a17ba756eb822060aa66370821434d1167be55))
+* update editor options ([6351b95](https://github.com/Hufe921/canvas-editor/commit/6351b95646d80dab45cc517c223561aa0e8fc725))
+
+
+### Features
+
+* add page footer ([21626cc](https://github.com/Hufe921/canvas-editor/commit/21626cc41b24f72c28694881a8aba92fddcccf35))
+
+
+
+## [0.9.27](https://github.com/Hufe921/canvas-editor/compare/v0.9.26...v0.9.27) (2023-03-24)
+
+
+### Chores
+
+* verify release package ([4773c03](https://github.com/Hufe921/canvas-editor/commit/4773c0363ccb15b4ca9b406bb2c888a53c9af777))
+
+
+
+## [0.9.26](https://github.com/Hufe921/canvas-editor/compare/v0.9.25...v0.9.26) (2023-03-24)
+
+
+### Chores
+
+* add release script ([caa2c34](https://github.com/Hufe921/canvas-editor/commit/caa2c3463d6306b49fbfb893dec6caf6a9f16f0d))
+
+
+
+## [0.9.25](https://github.com/Hufe921/canvas-editor/compare/v0.9.24...v0.9.25) (2023-03-24)
+
+
+### Bug Fixes
+
+* table elements position when zooming ([3ff0eea](https://github.com/Hufe921/canvas-editor/commit/3ff0eea9482d5ab868b09940d3ebbb3864c71a2b))
+* table tool render option ([4a022a2](https://github.com/Hufe921/canvas-editor/commit/4a022a2724521d842f72f679a3bc8ca2b0e244ea))
+
+
+### Chores
+
+* add eslint global variable ([70f3d17](https://github.com/Hufe921/canvas-editor/commit/70f3d17ff0e4a4477e5d83f0b9b422f91aee1226))
+* add verify git commit message script ([0582da5](https://github.com/Hufe921/canvas-editor/commit/0582da56dde70e1f023f8cd3d8aad64b0e163cc8))
+* update .editorConfig ([4c48c79](https://github.com/Hufe921/canvas-editor/commit/4c48c79f71256449a82d50052216c22914b72afe))
+
+
+### Documentation
+
+* delete headerTop option ([756c706](https://github.com/Hufe921/canvas-editor/commit/756c706b9f5321b67f47be99ec04232339b6fdb5))
+* table border type #152 ([9521d59](https://github.com/Hufe921/canvas-editor/commit/9521d59fafe8a5b5a2e66db97128720bc0206d48)), closes [#152](https://github.com/Hufe921/canvas-editor/issues/152)
+
+
+### Features
+
+* table border tool ([5c529b7](https://github.com/Hufe921/canvas-editor/commit/5c529b76ca8184bed118955fdae36b8f1717dbb9))
+* table border type #152 ([48ad18b](https://github.com/Hufe921/canvas-editor/commit/48ad18bccb16e1a7751680103ac52a20320861d8)), closes [#152](https://github.com/Hufe921/canvas-editor/issues/152)
+
+
+
+## [0.9.24](https://github.com/Hufe921/canvas-editor/compare/v0.9.23...v0.9.24) (2023-03-22)
+
+
+### Bug Fixes
+
+* table cell auto height #150 ([e68c0be](https://github.com/Hufe921/canvas-editor/commit/e68c0bebc380f9dd9e870677eac888a7b04c56cb)), closes [#150](https://github.com/Hufe921/canvas-editor/issues/150)
+* cannot copy table element when it in the first position ([73457cb](https://github.com/Hufe921/canvas-editor/commit/73457cb2e8cc693138e4785c382ae4c025d8fedd))
+* compute only the main body word count ([4306d44](https://github.com/Hufe921/canvas-editor/commit/4306d44ed62a0233fdb0fe9b3c3f7d00423ba4da))
+* some IME position error #155 ([b6dfcb5](https://github.com/Hufe921/canvas-editor/commit/b6dfcb5f08f42790395059963b16a57d20367978)), closes [#155](https://github.com/Hufe921/canvas-editor/issues/155)
+
+
+### Documentation
+
+* table cell vertical align ([47918db](https://github.com/Hufe921/canvas-editor/commit/47918db3bbcf78d4af60e43e7ed1183c5525a758))
+* page number options ([c753a9d](https://github.com/Hufe921/canvas-editor/commit/c753a9d00dd3a5bda0b75df7e6237448bd16f21f))
+* font size setting api ([690aa1b](https://github.com/Hufe921/canvas-editor/commit/690aa1b96d185ca7d80b9af884d23a39dac9a2bf))
+* next features road map ([0e8c5fd](https://github.com/Hufe921/canvas-editor/commit/0e8c5fd388a81fabe28a66cf1239348930ae5346))
+
+
+### Features
+
+* table cell vertical align contextmenu i18n ([32643a5](https://github.com/Hufe921/canvas-editor/commit/32643a5573660e66fd7084fa33ae599521457ced))
+* table cell vertical align ([665e201](https://github.com/Hufe921/canvas-editor/commit/665e2018aaae38aacd6ec9d32980fba245f12ddd))
+* page number set row flex ([0a9f44e](https://github.com/Hufe921/canvas-editor/commit/0a9f44eed8fd72ff3318a34222ff91d4f140de9b))
+* add fontSize settings API ([d951532](https://github.com/Hufe921/canvas-editor/commit/d95153299880ef7139d3a2d64d7d3dc16fbef615))
+* fontSize setting  Example ([3f218f6](https://github.com/Hufe921/canvas-editor/commit/3f218f698bd361ae73eac9043f31585c97058963))
+
+
+### Performance Improvements
+
+* font size setting api ([84e2fc9](https://github.com/Hufe921/canvas-editor/commit/84e2fc95699adf81fd361ff7a76b900abfd2b164))
+
+
+### Tests
+
+* font size setting ([89012b7](https://github.com/Hufe921/canvas-editor/commit/89012b7183327f3a5e6497ad96741e6f5badc699))
+
+
+
 ## [0.9.23](https://github.com/Hufe921/canvas-editor/compare/v0.9.22...v0.9.23) (2023-03-19)
 
 

@@ -51,12 +51,14 @@ interface IElement {
     tdList: {
       colspan: number;
       rowspan: number;
+      verticalAlign?: VerticalAlign;
       value: IElement[];
     }[];
   }[];
   tdId?: string;
   trId?: string;
   tableId?: string;
+  borderType?: TableBorder;
   // 超链接
   valueList?: IElement[];
   url?: string;

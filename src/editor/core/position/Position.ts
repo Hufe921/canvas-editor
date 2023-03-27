@@ -1,4 +1,4 @@
-import { ElementType, RowFlex } from '../..'
+import { ElementType, RowFlex, VerticalAlign } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { IComputePageRowPositionPayload, IComputePageRowPositionResult } from '../../interface/Position'
@@ -48,8 +48,15 @@ export class Position {
 
   public getOriginalPositionList(): IElementPosition[] {
     const zoneManager = this.draw.getZone()
-    const header = this.draw.getHeader()
-    return zoneManager.isHeaderActive() ? header.getPositionList() : this.positionList
+    if (zoneManager.isHeaderActive()) {
+      const header = this.draw.getHeader()
+      return header.getPositionList()
+    }
+    if (zoneManager.isFooterActive()) {
+      const footer = this.draw.getFooter()
+      return footer.getPositionList()
+    }
+    return this.positionList
   }
 
   public getOriginalMainPositionList(): IElementPosition[] {
@@ -112,15 +119,34 @@ export class Position {
             for (let d = 0; d < tr.tdList!.length; d++) {
               const td = tr.tdList[d]
               td.positionList = []
+              const rowList = td.rowList!
               const drawRowResult = this.computePageRowPosition({
                 positionList: td.positionList,
-                rowList: td.rowList!,
+                rowList,
                 pageNo,
                 startIndex: 0,
                 startX: (td.x! + tdPadding) * scale + tablePreX,
                 startY: td.y! * scale + tablePreY,
                 innerWidth: (td.width! - tdGap) * scale
               })
+              // 垂直对齐方式
+              if (
+                td.verticalAlign === VerticalAlign.MIDDLE
+                || td.verticalAlign == VerticalAlign.BOTTOM
+              ) {
+                const rowsHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
+                const blankHeight = td.height! - tdGap - rowsHeight
+                const offsetHeight = td.verticalAlign === VerticalAlign.MIDDLE ? blankHeight / 2 : blankHeight
+                if (Math.floor(offsetHeight) > 0) {
+                  td.positionList.forEach(tdPosition => {
+                    const { coordinate: { leftTop, leftBottom, rightBottom, rightTop } } = tdPosition
+                    leftTop[1] += offsetHeight
+                    leftBottom[1] += offsetHeight
+                    rightBottom[1] += offsetHeight
+                    rightTop[1] += offsetHeight
+                  })
+                }
+              }
               x = drawRowResult.x
               y = drawRowResult.y
             }
@@ -190,7 +216,8 @@ export class Position {
     }
     const zoneManager = this.draw.getZone()
     const curPageNo = this.draw.getPageNo()
-    const positionNo = zoneManager.isMainActive() ? curPageNo : 0
+    const isMainActive = zoneManager.isMainActive()
+    const positionNo = isMainActive ? curPageNo : 0
     for (let j = 0; j < positionList.length; j++) {
       const { index, pageNo, coordinate: { leftTop, rightTop, leftBottom } } = positionList[j]
       if (positionNo !== pageNo) continue
@@ -271,13 +298,14 @@ export class Position {
     let curPositionIndex = -1
     // 判断是否在表格内
     if (isTable) {
+      const { scale } = this.options
       const { td, tablePosition } = payload
       if (td && tablePosition) {
         const { leftTop } = tablePosition.coordinate
-        const tdX = td.x! + leftTop[0]
-        const tdY = td.y! + leftTop[1]
-        const tdWidth = td.width!
-        const tdHeight = td.height!
+        const tdX = td.x! * scale + leftTop[0]
+        const tdY = td.y! * scale + leftTop[1]
+        const tdWidth = td.width! * scale
+        const tdHeight = td.height! * scale
         if (!(tdX < x && x < tdX + tdWidth && tdY < y && y < tdY + tdHeight)) {
           return {
             index: curPositionIndex
@@ -286,15 +314,15 @@ export class Position {
       }
     }
     // 判断所属行是否存在元素
-    const firstLetterList = positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
-    for (let j = 0; j < firstLetterList.length; j++) {
-      const { index, pageNo, coordinate: { leftTop, leftBottom } } = firstLetterList[j]
+    const lastLetterList = positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
+    for (let j = 0; j < lastLetterList.length; j++) {
+      const { index, pageNo, coordinate: { leftTop, leftBottom } } = lastLetterList[j]
       if (positionNo !== pageNo) continue
       if (y > leftTop[1] && y <= leftBottom[1]) {
         const isHead = x < this.options.margins[3]
         // 是否在头部
         if (isHead) {
-          const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === firstLetterList[j].rowNo)
+          const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo)
           curPositionIndex = ~headIndex ? headIndex - 1 : index
         } else {
           curPositionIndex = index
@@ -304,18 +332,32 @@ export class Position {
       }
     }
     if (!isLastArea) {
-      // 判断所属位置是否属于header区域，当前位置小于第一行的上边距
-      if (zoneManager.isMainActive()) {
-        if (y < firstLetterList[0].coordinate.leftTop[1]) {
+      // 页眉底部距离页面顶部距离
+      const header = this.draw.getHeader()
+      const headerBottomY = header.getHeaderTop() + header.getHeight()
+      // 页脚上部距离页面顶部距离
+      const footer = this.draw.getFooter()
+      const pageHeight = this.draw.getHeight()
+      const footerTopY = pageHeight - (footer.getFooterBottom() + footer.getHeight())
+      // 判断所属位置是否属于页眉页脚区域
+      if (isMainActive) {
+        // 页眉：当前位置小于页眉底部位置
+        if (y < headerBottomY) {
           return {
             index: -1,
             zone: EditorZone.HEADER
           }
         }
-      }
-      // 判断所属位置是否属于main区域，当前位置大于第一行的上边距
-      if (zoneManager.isHeaderActive()) {
-        if (y > firstLetterList[0].coordinate.leftTop[1]) {
+        // 页脚：当前位置大于页脚顶部位置
+        if (y > footerTopY) {
+          return {
+            index: -1,
+            zone: EditorZone.FOOTER
+          }
+        }
+      } else {
+        // main区域：当前位置小于页眉底部位置 && 大于页脚顶部位置
+        if (y <= footerTopY && y >= headerBottomY) {
           return {
             index: -1,
             zone: EditorZone.MAIN
@@ -324,7 +366,7 @@ export class Position {
       }
       // 当前页最后一行
       return {
-        index: firstLetterList[firstLetterList.length - 1]?.index || positionList.length - 1,
+        index: lastLetterList[lastLetterList.length - 1]?.index || positionList.length - 1,
       }
     }
     return {

@@ -6,6 +6,8 @@ import { EditorContext, EditorMode, PageMode, PaperDirection } from '../../datas
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
+import { TableBorder } from '../../dataset/enum/table/Table'
+import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
@@ -185,40 +187,70 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
+  public size(payload: number) {
+    const { minSize, maxSize, defaultSize } = this.options
+    if (payload < minSize || payload > maxSize) return
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const selection = this.range.getTextLikeSelection()
+    if (!selection || !selection.length) return
+    let isExistUpdate = false
+    selection.forEach(el => {
+      if ((!el.size && payload === defaultSize) || (el.size && el.size === payload)) return
+      el.size = payload
+      isExistUpdate = true
+    })
+    if (isExistUpdate) {
+      this.draw.render({ isSetCursor: false })
+    }
+  }
+
   public sizeAdd() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const lessThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size + 2 <= 72)
-    const { defaultSize } = this.options
-    if (!~lessThanMaxSizeIndex) return
+    const selection = this.range.getTextLikeSelection()
+    if (!selection || !selection.length) return
+    const { defaultSize, maxSize } = this.options
+    let isExistUpdate = false
     selection.forEach(el => {
       if (!el.size) {
         el.size = defaultSize
       }
-      if (el.size + 2 > 72) return
-      el.size += 2
+      if (el.size >= maxSize) return
+      if (el.size + 2 > maxSize) {
+        el.size = maxSize
+      } else {
+        el.size += 2
+      }
+      isExistUpdate = true
     })
-    this.draw.render({ isSetCursor: false })
+    if (isExistUpdate) {
+      this.draw.render({ isSetCursor: false })
+    }
   }
 
   public sizeMinus() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const selection = this.range.getSelection()
-    if (!selection) return
-    const greaterThanMaxSizeIndex = selection.findIndex(s => !s.size || s.size - 2 >= 8)
-    if (!~greaterThanMaxSizeIndex) return
-    const { defaultSize } = this.options
+    const selection = this.range.getTextLikeSelection()
+    if (!selection || !selection.length) return
+    const { defaultSize, minSize } = this.options
+    let isExistUpdate = false
     selection.forEach(el => {
       if (!el.size) {
         el.size = defaultSize
       }
-      if (el.size - 2 < 8) return
-      el.size -= 2
+      if (el.size <= minSize) return
+      if (el.size - 2 < minSize) {
+        el.size = minSize
+      } else {
+        el.size -= 2
+      }
+      isExistUpdate = true
     })
-    this.draw.render({ isSetCursor: false })
+    if (isExistUpdate) {
+      this.draw.render({ isSetCursor: false })
+    }
   }
 
   public bold() {
@@ -433,7 +465,7 @@ export class CommandAdapt {
     }
     const element: IElement = {
       type: ElementType.TABLE,
-      value: ZERO,
+      value: !startIndex ? '' : ZERO,
       colgroup,
       trList
     }
@@ -511,8 +543,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public insertTableBottomRow() {
@@ -578,8 +609,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public insertTableLeftCol() {
@@ -636,8 +666,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public insertTableRightCol() {
@@ -694,8 +723,7 @@ export class CommandAdapt {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public deleteTableRow() {
@@ -931,8 +959,7 @@ export class CommandAdapt {
     const curIndex = startTd.value.length - 1
     this.range.setRange(curIndex, curIndex)
     this.draw.render()
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
   }
 
   public cancelMergeTableCell() {
@@ -993,8 +1020,52 @@ export class CommandAdapt {
     const curIndex = curTd.value.length - 1
     this.range.setRange(curIndex, curIndex)
     this.draw.render()
-    const position = this.position.getOriginalPositionList()
-    this.tableTool.render(element, position[index!])
+    this.tableTool.render()
+  }
+
+  public tableTdVerticalAlign(payload: VerticalAlign) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (
+      !curTd ||
+      curTd.verticalAlign === payload ||
+      (!curTd.verticalAlign && payload === VerticalAlign.TOP)
+    ) {
+      return
+    }
+    // 重设垂直对齐方式
+    curTd.verticalAlign = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableBorderType(payload: TableBorder) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    if (
+      (!element.borderType && payload === TableBorder.ALL) ||
+      element.borderType === payload
+    ) {
+      return
+    }
+    element.borderType = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
   }
 
   public hyperlink(payload: IElement) {

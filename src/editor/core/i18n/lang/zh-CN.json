@@ -35,7 +35,15 @@
       "deleteCol": "删除1列",
       "deleteTable": "删除整个表格",
       "mergeCell": "合并单元格",
-      "mergeCancelCell": "取消合并"
+      "mergeCancelCell": "取消合并",
+      "verticalAlign": "垂直对齐",
+      "verticalAlignTop": "顶端对齐",
+      "verticalAlignMiddle": "垂直居中",
+      "verticalAlignBottom": "底端对齐",
+      "border": "表格边框",
+      "borderAll": "所有框线",
+      "borderEmpty": "无框线",
+      "borderExternal": "外侧框线"
     }
   },
   "datePicker": {
@@ -57,5 +65,9 @@
     "hour": "时",
     "minute": "分",
     "second": "秒"
+  },
+  "frame": {
+    "header": "页眉",
+    "footer": "页脚"
   }
 }

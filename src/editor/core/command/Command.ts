@@ -1,4 +1,4 @@
-import { IElement, ImageDisplay, INavigateInfo } from '../..'
+import { IElement, ImageDisplay, INavigateInfo, TableBorder, VerticalAlign } from '../..'
 import { EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
@@ -22,6 +22,7 @@ export class Command {
   private static applyPainterStyle: CommandAdapt['applyPainterStyle']
   private static format: CommandAdapt['format']
   private static font: CommandAdapt['font']
+  private static size: CommandAdapt['size']
   private static sizeAdd: CommandAdapt['sizeAdd']
   private static sizeMinus: CommandAdapt['sizeMinus']
   private static bold: CommandAdapt['bold']
@@ -47,6 +48,8 @@ export class Command {
   private static deleteTable: CommandAdapt['deleteTable']
   private static mergeTableCell: CommandAdapt['mergeTableCell']
   private static cancelMergeTableCell: CommandAdapt['cancelMergeTableCell']
+  private static tableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
+  private static tableBorderType: CommandAdapt['tableBorderType']
   private static image: CommandAdapt['image']
   private static hyperlink: CommandAdapt['hyperlink']
   private static deleteHyperlink: CommandAdapt['deleteHyperlink']
@@ -95,6 +98,7 @@ export class Command {
     Command.applyPainterStyle = adapt.applyPainterStyle.bind(adapt)
     Command.format = adapt.format.bind(adapt)
     Command.font = adapt.font.bind(adapt)
+    Command.size = adapt.size.bind(adapt)
     Command.sizeAdd = adapt.sizeAdd.bind(adapt)
     Command.sizeMinus = adapt.sizeMinus.bind(adapt)
     Command.bold = adapt.bold.bind(adapt)
@@ -120,6 +124,8 @@ export class Command {
     Command.deleteTable = adapt.deleteTable.bind(adapt)
     Command.mergeTableCell = adapt.mergeTableCell.bind(adapt)
     Command.cancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
+    Command.tableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
+    Command.tableBorderType = adapt.tableBorderType.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.deleteHyperlink = adapt.deleteHyperlink.bind(adapt)
@@ -205,9 +211,13 @@ export class Command {
     return Command.format()
   }
 
-  // 字体、字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
+  // 字体、字体大小、字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
   public executeFont(payload: string) {
     return Command.font(payload)
+  }
+
+  public executeSize(payload: number) {
+    return Command.size(payload)
   }
 
   public executeSizeAdd() {
@@ -309,6 +319,14 @@ export class Command {
 
   public executeCancelMergeTableCell() {
     return Command.cancelMergeTableCell()
+  }
+
+  public executeTableTdVerticalAlign(payload: VerticalAlign) {
+    return Command.tableTdVerticalAlign(payload)
+  }
+
+  public executeTableBorderType(payload: TableBorder) {
+    return Command.tableBorderType(payload)
   }
 
   public executeHyperlink(payload: IElement) {

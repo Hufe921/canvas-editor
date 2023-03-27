@@ -35,7 +35,15 @@
       "deleteCol": "Delete 1 col",
       "deleteTable": "Delete table",
       "mergeCell": "Merge cell",
-      "mergeCancelCell": "Cancel merge cell"
+      "mergeCancelCell": "Cancel merge cell",
+      "verticalAlign": "Vertical align",
+      "verticalAlignTop": "Top",
+      "verticalAlignMiddle": "Middle",
+      "verticalAlignBottom": "Bottom",
+      "border": "Table border",
+      "borderAll": "All",
+      "borderEmpty": "Empty",
+      "borderExternal": "External"
     }
   },
   "datePicker": {
@@ -57,5 +65,9 @@
     "hour": "Hour",
     "minute": "Minute",
     "second": "Second"
+  },
+  "frame": {
+    "header": "Header",
+    "footer": "Footer"
   }
 }
