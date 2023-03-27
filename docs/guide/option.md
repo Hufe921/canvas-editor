@@ -43,7 +43,7 @@ interface IEditorOption {
   margins?: IMargin, // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode; // 纸张模式：连页、分页。默认：分页
   tdPadding?: number; // 单元格内边距。默认：5
-  defaultTdHeight?: number; // 默认单元格高度。默认：40
+  defaultTrMinHeight?: number; // 默认表格行最小高度。默认：40
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
   header?: IHeader; // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
   footer?: IFooter; // 页脚信息。{bottom?:number; maxHeightRadio?:MaxHeightRatio;}
