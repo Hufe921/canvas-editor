@@ -106,7 +106,7 @@ export default class Editor {
       margins: [100, 120, 100, 120],
       pageMode: PageMode.PAGING,
       tdPadding: 5,
-      defaultTdHeight: 40,
+      defaultTrMinHeight: 40,
       defaultHyperlinkColor: '#0000FF',
       paperDirection: PaperDirection.VERTICAL,
       inactiveAlpha: 0.6,

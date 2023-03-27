@@ -795,8 +795,8 @@ export class Draw {
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
             const curTdHeight = (rowHeight + tdGap) / scale
+            // 内容高度大于当前单元格高度需增加
             if (td.height! < curTdHeight) {
-              // 内容高度大于当前单元格高度需增加
               const extraHeight = curTdHeight - td.height!
               const changeTr = trList[t + td.rowspan - 1]
               changeTr.height += extraHeight
@@ -804,6 +804,45 @@ export class Draw {
                 changeTd.height! += extraHeight
               })
             }
+            // 当前单元格最小高度及真实高度（包含跨列）
+            let curTdMinHeight = 0
+            let curTdRealHeight = 0
+            let i = 0
+            while (i < td.rowspan) {
+              const curTr = trList[i + t]
+              curTdMinHeight += curTr.minHeight!
+              curTdRealHeight += curTr.height!
+              i++
+            }
+            td.realMinHeight = curTdMinHeight
+            td.realHeight = curTdRealHeight
+            td.mainHeight = curTdHeight
+          }
+        }
+        // 单元格高度大于实际内容高度需减少
+        const reduceTrList = this.tableParticle.getTrListGroupByCol(trList)
+        for (let t = 0; t < reduceTrList.length; t++) {
+          const tr = reduceTrList[t]
+          let reduceHeight = -1
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            const curTdRealHeight = td.realHeight!
+            const curTdHeight = td.mainHeight!
+            const curTdMinHeight = td.realMinHeight!
+            // 获取最大可减少高度
+            const curReduceHeight = curTdHeight < curTdMinHeight
+              ? curTdRealHeight - curTdMinHeight
+              : curTdRealHeight - curTdHeight
+            if (!~reduceHeight || curReduceHeight < reduceHeight) {
+              reduceHeight = curReduceHeight
+            }
+          }
+          if (reduceHeight > 0) {
+            const changeTr = trList[t]
+            changeTr.height -= reduceHeight
+            changeTr.tdList.forEach(changeTd => {
+              changeTd.height! -= reduceHeight
+            })
           }
         }
         // 需要重新计算表格内值

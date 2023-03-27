@@ -1,5 +1,7 @@
 import { ElementType, IElement, TableBorder } from '../../../..'
 import { IEditorOption } from '../../../../interface/Editor'
+import { ITr } from '../../../../interface/table/Tr'
+import { deepClone } from '../../../../utils'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 
@@ -20,6 +22,23 @@ export class TableParticle {
   constructor(draw: Draw) {
     this.range = draw.getRange()
     this.options = draw.getOptions()
+  }
+
+  public getTrListGroupByCol(payload: ITr[]): ITr[] {
+    const trList = deepClone(payload)
+    for (let t = 0; t < payload.length; t++) {
+      const tr = trList[t]
+      for (let d = tr.tdList.length - 1; d >= 0; d--) {
+        const td = tr.tdList[d]
+        const { rowspan, rowIndex, colIndex } = td
+        const curRowIndex = rowIndex! + rowspan - 1
+        if (curRowIndex !== d) {
+          const changeTd = tr.tdList.splice(d, 1)[0]
+          trList[curRowIndex].tdList.splice(colIndex!, 0, changeTd)
+        }
+      }
+    }
+    return trList
   }
 
   private _drawBorder(payload: IDrawTableBorderOption) {

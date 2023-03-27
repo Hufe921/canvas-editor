@@ -45,7 +45,7 @@ export interface IEditorOption {
   margins?: IMargin,
   pageMode?: PageMode;
   tdPadding?: number;
-  defaultTdHeight?: number;
+  defaultTrMinHeight?: number;
   defaultHyperlinkColor?: string;
   paperDirection?: PaperDirection;
   inactiveAlpha?: number;
