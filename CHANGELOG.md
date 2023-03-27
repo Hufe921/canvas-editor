@@ -1,3 +1,26 @@
+## [0.9.28](https://github.com/Hufe921/canvas-editor/compare/v0.9.27...v0.9.28) (2023-03-27)
+
+
+### Bug Fixes
+
+* drag table border to change size #160 ([fda18d9](https://github.com/Hufe921/canvas-editor/commit/fda18d968e7f54c11726dcd11a9d3536bca33d9a)), closes [#160](https://github.com/Hufe921/canvas-editor/issues/160)
+* extra blank row appear when insert table #162 ([2f8c6b7](https://github.com/Hufe921/canvas-editor/commit/2f8c6b71d2787e85a677073ca41832c4b00f6c41)), closes [#162](https://github.com/Hufe921/canvas-editor/issues/162)
+* position header and footer zone ([ca5c4be](https://github.com/Hufe921/canvas-editor/commit/ca5c4be9c39f374ccbb1bb6ea126b06fa978c885))
+* table cell height adaptation #162 ([a2090c8](https://github.com/Hufe921/canvas-editor/commit/a2090c82fc2c09ed28a40064094cbca0b9bd1431)), closes [#162](https://github.com/Hufe921/canvas-editor/issues/162)
+
+
+### Documentation
+
+* add page footer ([45a17ba](https://github.com/Hufe921/canvas-editor/commit/45a17ba756eb822060aa66370821434d1167be55))
+* update editor options ([6351b95](https://github.com/Hufe921/canvas-editor/commit/6351b95646d80dab45cc517c223561aa0e8fc725))
+
+
+### Features
+
+* add page footer ([21626cc](https://github.com/Hufe921/canvas-editor/commit/21626cc41b24f72c28694881a8aba92fddcccf35))
+
+
+
 ## [0.9.27](https://github.com/Hufe921/canvas-editor/compare/v0.9.26...v0.9.27) (2023-03-24)
 
 
