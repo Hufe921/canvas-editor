@@ -28,6 +28,7 @@ export class ImageParticle {
     } else {
       const imageLoadPromise = new Promise((resolve, reject) => {
         const img = new Image()
+        img.setAttribute('crossOrigin', 'Anonymous')
         img.src = element.value
         img.onload = () => {
           ctx.drawImage(img, x, y, width, height)
