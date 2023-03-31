@@ -1000,17 +1000,20 @@ export class Draw {
       })
       // 超过限定宽度
       const preElement = elementList[i - 1]
+      const nextElement = elementList[i + 1]
+      // 累计行宽 + 当前元素宽度 + 后面标点符号宽度
+      const curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
       if (
         preElement?.type === ElementType.TABLE
         || preElement?.type === ElementType.BLOCK
         || element.type === ElementType.BLOCK
         || preElement?.imgDisplay === ImageDisplay.INLINE
         || element.imgDisplay === ImageDisplay.INLINE
-        || curRow.width + metrics.width > innerWidth
+        || curRowWidth > innerWidth
         || (i !== 0 && element.value === ZERO)
       ) {
         // 两端对齐
-        if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRow.width + metrics.width > innerWidth) {
+        if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRowWidth > innerWidth) {
           const gap = (innerWidth - curRow.width) / curRow.elementList.length
           for (let e = 0; e < curRow.elementList.length; e++) {
             const el = curRow.elementList[e]
