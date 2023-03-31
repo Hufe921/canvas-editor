@@ -135,7 +135,7 @@ export class Position {
                 || td.verticalAlign == VerticalAlign.BOTTOM
               ) {
                 const rowsHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
-                const blankHeight = td.height! - tdGap - rowsHeight
+                const blankHeight = (td.height! - tdGap) * scale - rowsHeight
                 const offsetHeight = td.verticalAlign === VerticalAlign.MIDDLE ? blankHeight / 2 : blankHeight
                 if (Math.floor(offsetHeight) > 0) {
                   td.positionList.forEach(tdPosition => {
