@@ -52,6 +52,7 @@ import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
+import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 
 export class Draw {
 
@@ -1004,7 +1005,8 @@ export class Draw {
       // 累计行宽 + 当前元素宽度 + 后面标点符号宽度
       const curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
       if (
-        preElement?.type === ElementType.TABLE
+        element.type === ElementType.TABLE
+        || preElement?.type === ElementType.TABLE
         || preElement?.type === ElementType.BLOCK
         || element.type === ElementType.BLOCK
         || preElement?.imgDisplay === ImageDisplay.INLINE
@@ -1012,6 +1014,10 @@ export class Draw {
         || curRowWidth > innerWidth
         || (i !== 0 && element.value === ZERO)
       ) {
+        // 减小行元素前第一行空行行高
+        if (curRow.startIndex === 0 && curRow.elementList.length === 1 && INLINE_ELEMENT_TYPE.includes(element.type!)) {
+          curRow.height = defaultBasicRowMarginHeight
+        }
         // 两端对齐
         if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRowWidth > innerWidth) {
           const gap = (innerWidth - curRow.width) / curRow.elementList.length

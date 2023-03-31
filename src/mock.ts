@@ -133,7 +133,7 @@ elementList.splice(575, 0, {
 // 模拟表格
 elementList.push({
   type: ElementType.TABLE,
-  value: `\n`,
+  value: '',
   colgroup: [{
     width: 180
   }, {
