@@ -38,7 +38,11 @@ export function input(data: string, host: CanvasEvent) {
     restArg = { tdId, trId, tableId }
   }
   const elementList = draw.getElementList()
-  const element = elementList[endIndex]
+  const endElement = elementList[endIndex]
+  const endNextElement = elementList[endIndex + 1]
+  const copyElement = endElement.value === ZERO && endNextElement
+    ? endNextElement
+    : endElement
   const inputData: IElement[] = splitText(text).map(value => {
     const newElement: IElement = {
       value,
@@ -46,15 +50,15 @@ export function input(data: string, host: CanvasEvent) {
     }
     const nextElement = elementList[endIndex + 1]
     if (
-      element.type === TEXT
-      || (!element.type && element.value !== ZERO)
-      || (element.type === HYPERLINK && nextElement?.type === HYPERLINK)
-      || (element.type === DATE && nextElement?.type === DATE)
-      || (element.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT)
-      || (element.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
+      copyElement.type === TEXT
+      || (!copyElement.type && copyElement.value !== ZERO)
+      || (copyElement.type === HYPERLINK && nextElement?.type === HYPERLINK)
+      || (copyElement.type === DATE && nextElement?.type === DATE)
+      || (copyElement.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT)
+      || (copyElement.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
     ) {
       EDITOR_ELEMENT_COPY_ATTR.forEach(attr => {
-        const value = element[attr] as never
+        const value = copyElement[attr] as never
         if (value !== undefined) {
           newElement[attr] = value
         }

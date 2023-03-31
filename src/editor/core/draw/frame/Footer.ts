@@ -27,6 +27,10 @@ export class Footer {
     this.positionList = []
   }
 
+  public getRowList(): IRow[] {
+    return this.rowList
+  }
+
   public setElementList(elementList: IElement[]) {
     this.elementList = elementList
   }

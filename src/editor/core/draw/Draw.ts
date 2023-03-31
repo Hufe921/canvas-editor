@@ -330,8 +330,28 @@ export class Draw {
     return this.pageList
   }
 
-  public getRowList(): IRow[] {
+  public getTableRowList(sourceElementList: IElement[]): IRow[] {
+    const positionContext = this.position.getPositionContext()
+    const { index, trIndex, tdIndex } = positionContext
+    return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].rowList!
+  }
+
+  public getOriginalRowList() {
+    const zoneManager = this.getZone()
+    if (zoneManager.isHeaderActive()) {
+      return this.header.getRowList()
+    }
+    if (zoneManager.isFooterActive()) {
+      return this.footer.getRowList()
+    }
     return this.rowList
+  }
+
+  public getRowList(): IRow[] {
+    const positionContext = this.position.getPositionContext()
+    return positionContext.isTable
+      ? this.getTableRowList(this.getOriginalElementList())
+      : this.getOriginalRowList()
   }
 
   public getPageRowList(): IRow[][] {

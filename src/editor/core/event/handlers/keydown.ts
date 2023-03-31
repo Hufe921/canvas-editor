@@ -35,6 +35,16 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         evt.preventDefault()
         return
       }
+      //  清空当前行对齐方式
+      const startElement = elementList[startIndex]
+      if (isCollapsed && startElement.rowFlex && startElement.value === ZERO) {
+        const rowList = draw.getRowList()
+        const rowNo = positionList[startIndex].rowNo
+        const rowFlexElementList = rowList[rowNo].elementList
+        rowFlexElementList.forEach(element => {
+          delete element.rowFlex
+        })
+      }
       if (!isCollapsed) {
         elementList.splice(startIndex + 1, endIndex - startIndex)
       } else {
