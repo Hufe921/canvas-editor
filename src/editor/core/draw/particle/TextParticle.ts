@@ -1,4 +1,5 @@
 import { IElement } from '../../..'
+import { PUNCTUATION_LIST } from '../../../dataset/constant/Common'
 import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
@@ -19,6 +20,11 @@ export class TextParticle {
     this.text = ''
     this.curStyle = ''
     this.cacheMeasureText = new Map()
+  }
+
+  public measurePunctuationWidth(ctx: CanvasRenderingContext2D, element: IElement): number {
+    if (!element || !PUNCTUATION_LIST.includes(element.value)) return 0
+    return this.measureText(ctx, element).width
   }
 
   public measureText(ctx: CanvasRenderingContext2D, element: IElement): TextMetrics {
