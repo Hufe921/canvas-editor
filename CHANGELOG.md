@@ -1,3 +1,26 @@
+## [0.9.29](https://github.com/Hufe921/canvas-editor/compare/v0.9.28...v0.9.29) (2023-04-01)
+
+
+### Bug Fixes
+
+* delete rowFlex when row position change #164 ([5c3ce57](https://github.com/Hufe921/canvas-editor/commit/5c3ce57c24253cfe9b16ddc682f0f75aaab653fd)), closes [#164](https://github.com/Hufe921/canvas-editor/issues/164)
+* failed to execute 'toDataURL' #163 ([f11d5c8](https://github.com/Hufe921/canvas-editor/commit/f11d5c806ea5cc308b59df4eaa58bf82998a3c50)), closes [#163](https://github.com/Hufe921/canvas-editor/issues/163)
+* render composing text error ([310e0e9](https://github.com/Hufe921/canvas-editor/commit/310e0e91fbe4ef64343b5cc746ec4e7d471df974))
+* table cell text render position error #166 ([266915a](https://github.com/Hufe921/canvas-editor/commit/266915af09be90a1a12092fdff2d266d62f3c90d)), closes [#166](https://github.com/Hufe921/canvas-editor/issues/166)
+* table cell vertical align error after page scaled #165 ([1fa1d10](https://github.com/Hufe921/canvas-editor/commit/1fa1d10fc9c279eb1d91b804484019d02fec945d)), closes [#165](https://github.com/Hufe921/canvas-editor/issues/165)
+
+
+### Documentation
+
+* update snapshot ([e0791cf](https://github.com/Hufe921/canvas-editor/commit/e0791cf5f74341547a86809e80c647a3f0fa5a2a))
+
+
+### Features
+
+* avoid punctuation at the beginning of a row ([29a988a](https://github.com/Hufe921/canvas-editor/commit/29a988a1d4d57a98068a299986ddbe38a52d80a4))
+
+
+
 ## [0.9.28](https://github.com/Hufe921/canvas-editor/compare/v0.9.27...v0.9.28) (2023-03-27)
 
 
