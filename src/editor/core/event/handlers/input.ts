@@ -12,18 +12,19 @@ export function input(data: string, host: CanvasEvent) {
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!data || !cursorPosition) return
+  const isComposing = host.isComposing
+  // 正在合成文本进行非输入操作
+  if (isComposing && host.compositionInfo?.value === data) return
   const control = draw.getControl()
   if (control.isPartRangeInControlOutside()) {
     // 忽略选区部分在控件的输入
     return
   }
-  const isComposing = host.isComposing
   // 移除合成输入
+  removeComposingInput(host)
   if (!isComposing) {
     const cursor = draw.getCursor()
     cursor.clearAgentDomValue()
-  } else {
-    removeComposingInput(host)
   }
   const activeControl = control.getActiveControl()
   const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
