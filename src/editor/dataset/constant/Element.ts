@@ -63,3 +63,10 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.CONTROL,
   ElementType.DATE
 ]
+
+export const INLINE_ELEMENT_TYPE: ElementType[] = [
+  ElementType.BLOCK,
+  ElementType.PAGE_BREAK,
+  ElementType.SEPARATOR,
+  ElementType.TABLE
+]

@@ -465,7 +465,7 @@ export class CommandAdapt {
     }
     const element: IElement = {
       type: ElementType.TABLE,
-      value: !startIndex ? '' : ZERO,
+      value: '',
       colgroup,
       trList
     }

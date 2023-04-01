@@ -52,6 +52,7 @@ import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
+import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 
 export class Draw {
 
@@ -330,8 +331,28 @@ export class Draw {
     return this.pageList
   }
 
-  public getRowList(): IRow[] {
+  public getTableRowList(sourceElementList: IElement[]): IRow[] {
+    const positionContext = this.position.getPositionContext()
+    const { index, trIndex, tdIndex } = positionContext
+    return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].rowList!
+  }
+
+  public getOriginalRowList() {
+    const zoneManager = this.getZone()
+    if (zoneManager.isHeaderActive()) {
+      return this.header.getRowList()
+    }
+    if (zoneManager.isFooterActive()) {
+      return this.footer.getRowList()
+    }
     return this.rowList
+  }
+
+  public getRowList(): IRow[] {
+    const positionContext = this.position.getPositionContext()
+    return positionContext.isTable
+      ? this.getTableRowList(this.getOriginalElementList())
+      : this.getOriginalRowList()
   }
 
   public getPageRowList(): IRow[][] {
@@ -980,17 +1001,25 @@ export class Draw {
       })
       // 超过限定宽度
       const preElement = elementList[i - 1]
+      const nextElement = elementList[i + 1]
+      // 累计行宽 + 当前元素宽度 + 后面标点符号宽度
+      const curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
       if (
-        preElement?.type === ElementType.TABLE
+        element.type === ElementType.TABLE
+        || preElement?.type === ElementType.TABLE
         || preElement?.type === ElementType.BLOCK
         || element.type === ElementType.BLOCK
         || preElement?.imgDisplay === ImageDisplay.INLINE
         || element.imgDisplay === ImageDisplay.INLINE
-        || curRow.width + metrics.width > innerWidth
+        || curRowWidth > innerWidth
         || (i !== 0 && element.value === ZERO)
       ) {
+        // 减小行元素前第一行空行行高
+        if (curRow.startIndex === 0 && curRow.elementList.length === 1 && INLINE_ELEMENT_TYPE.includes(element.type!)) {
+          curRow.height = defaultBasicRowMarginHeight
+        }
         // 两端对齐
-        if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRow.width + metrics.width > innerWidth) {
+        if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRowWidth > innerWidth) {
           const gap = (innerWidth - curRow.width) / curRow.elementList.length
           for (let e = 0; e < curRow.elementList.length; e++) {
             const el = curRow.elementList[e]

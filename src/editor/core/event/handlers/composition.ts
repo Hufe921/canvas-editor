@@ -7,23 +7,27 @@ function compositionstart(host: CanvasEvent) {
 
 function compositionend(host: CanvasEvent, evt: CompositionEvent) {
   host.isComposing = false
-  removeComposingInput(host)
+  // 处理输入框关闭
   const draw = host.getDraw()
-  const cursor = draw.getCursor()
-  // 合成结果不存在(输入框关闭)，无法触发input事件需手动触发渲染
+  // 不存在值：删除合成输入
   if (!evt.data) {
-    const agentText = cursor.getAgentDomValue()
-    if (agentText) {
-      input(agentText, host)
-    } else {
-      const rangeManager = draw.getRange()
-      const { endIndex: curIndex } = rangeManager.getRange()
-      draw.render({
-        curIndex
-      })
-    }
+    removeComposingInput(host)
+    const rangeManager = draw.getRange()
+    const { endIndex: curIndex } = rangeManager.getRange()
+    draw.render({
+      curIndex,
+      isSubmitHistory: false
+    })
+  } else {
+    // 存在值：无法触发input事件需手动检测并触发渲染
+    setTimeout(() => {
+      if (host.compositionInfo) {
+        input(evt.data, host)
+      }
+    })
   }
   // 移除代理输入框数据
+  const cursor = draw.getCursor()
   cursor.clearAgentDomValue()
 }
 
