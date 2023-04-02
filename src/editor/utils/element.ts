@@ -37,6 +37,9 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
           if (!tr.minHeight || tr.minHeight < editorOptions.defaultTrMinHeight) {
             tr.minHeight = editorOptions.defaultTrMinHeight
           }
+          if (tr.height < tr.minHeight) {
+            tr.height = tr.minHeight
+          }
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const tdId = getUUID()
