@@ -47,7 +47,7 @@ interface IEditorOption {
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
   header?: IHeader; // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
   footer?: IFooter; // 页脚信息。{bottom?:number; maxHeightRadio?:MaxHeightRatio;}
-  pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex;}
+  pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
   paperDirection?: PaperDirection; // 纸张方向：纵向、横向
   inactiveAlpha?: number; // 正文内容失焦时透明度。默认值：0.6
   watermark?: IWatermark; // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
