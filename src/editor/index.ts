@@ -37,7 +37,7 @@ import { VerticalAlign } from './dataset/enum/VerticalAlign'
 import { TableBorder } from './dataset/enum/table/Table'
 import { IFooter } from './interface/Footer'
 import { defaultFooterOption } from './dataset/constant/Footer'
-import { MaxHeightRatio } from './dataset/enum/Common'
+import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
 
 export default class Editor {
 
@@ -189,7 +189,8 @@ export {
   BlockType,
   PaperDirection,
   TableBorder,
-  MaxHeightRatio
+  MaxHeightRatio,
+  NumberType
 }
 
 // 对外类型

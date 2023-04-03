@@ -295,5 +295,8 @@ export const options: IEditorOption = {
   watermark: {
     data: 'CANVAS-EDITOR',
     size: 120
+  },
+  pageNumber: {
+    format: '第{pageNo}页/共{pageCount}页'
   }
 }
