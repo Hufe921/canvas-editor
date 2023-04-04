@@ -10,7 +10,7 @@ instance.register.contextMenuList([
     {
       isDivider?: boolean;
       icon?: string;
-      name?: string;
+      name?: string; // 使用%s代表选区文本。示例：搜索：%s
       shortCut?: string;
       when?: (payload: IContextMenuContext) => boolean;
       callback?: (command: Command, context: IContextMenuContext) => any;
