@@ -1,3 +1,4 @@
+import { NumberType } from '../dataset/enum/Common'
 import { RowFlex } from '../dataset/enum/Row'
 
 export interface IPageNumber {
@@ -6,4 +7,6 @@ export interface IPageNumber {
   font?: string;
   color?: string;
   rowFlex?: RowFlex;
+  format?: string;
+  numberType?: NumberType;
 }

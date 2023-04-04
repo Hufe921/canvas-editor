@@ -1,6 +1,7 @@
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { EditorZone } from '../../dataset/enum/Editor'
 import { IEditorOption } from '../../interface/Editor'
+import { nextTick } from '../../utils'
 import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
 
@@ -53,6 +54,13 @@ export class Zone {
     })
     // 指示器
     this.drawZoneIndicator()
+    // 回调
+    nextTick(() => {
+      const listener = this.draw.getListener()
+      if (listener.zoneChange) {
+        listener.zoneChange(payload)
+      }
+    })
   }
 
   public drawZoneIndicator() {

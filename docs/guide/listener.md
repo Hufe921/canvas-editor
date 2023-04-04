@@ -80,3 +80,11 @@ instance.listener.pageModeChange = (payload: PageMode)=>{}
 ```javascript
 instance.listener.saved = (payload: IEditorResult)=>{}
 ```
+
+## zoneChange
+功能：区域发生改变
+
+用法：
+```javascript
+instance.listener.zoneChange = (payload: EditorZone)=>{}
+```

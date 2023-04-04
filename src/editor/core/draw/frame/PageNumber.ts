@@ -1,7 +1,10 @@
+import { FORMAT_PLACEHOLDER } from '../../../dataset/constant/PageNumber'
+import { NumberType } from '../../../dataset/enum/Common'
 import { PageMode } from '../../../dataset/enum/Editor'
 import { RowFlex } from '../../../dataset/enum/Row'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
+import { convertNumberToChinese } from '../../../utils'
 import { Draw } from '../Draw'
 
 export class PageNumber {
@@ -15,8 +18,21 @@ export class PageNumber {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
-    const { pageNumber: { size, font, color, rowFlex }, scale, pageMode } = this.options
-    const text = `${pageNo + 1}`
+    const { pageNumber: { size, font, color, rowFlex, numberType, format }, scale, pageMode } = this.options
+    // 处理页码格式
+    let text = format
+    const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
+    if (pageNoReg.test(text)) {
+      const realPageNo = pageNo + 1
+      const pageNoText = numberType === NumberType.CHINESE ? convertNumberToChinese(realPageNo) : `${realPageNo}`
+      text = text.replace(pageNoReg, pageNoText)
+    }
+    const pageCountReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_COUNT)
+    if (pageCountReg.test(text)) {
+      const pageCount = this.draw.getPageCount()
+      const pageCountText = numberType === NumberType.CHINESE ? convertNumberToChinese(pageCount) : `${pageCount}`
+      text = text.replace(pageCountReg, pageCountText)
+    }
     const width = this.draw.getWidth()
     // 计算y位置
     const height = pageMode === PageMode.CONTINUITY

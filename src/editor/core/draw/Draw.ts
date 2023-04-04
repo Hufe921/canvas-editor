@@ -331,6 +331,10 @@ export class Draw {
     return this.pageList
   }
 
+  public getPageCount(): number {
+    return this.pageList.length
+  }
+
   public getTableRowList(sourceElementList: IElement[]): IRow[] {
     const positionContext = this.position.getPositionContext()
     const { index, trIndex, tdIndex } = positionContext

@@ -47,12 +47,56 @@ interface IEditorOption {
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
   header?: IHeader; // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
   footer?: IFooter; // 页脚信息。{bottom?:number; maxHeightRadio?:MaxHeightRatio;}
-  pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex;}
+  pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
   paperDirection?: PaperDirection; // 纸张方向：纵向、横向
   inactiveAlpha?: number; // 正文内容失焦时透明度。默认值：0.6
   watermark?: IWatermark; // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption; // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}
   checkbox?: ICheckboxOption; // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; fontStyle?: string;}
   cursor?: ICursorOption; // 光标样式。{width?: number; color?: string; dragWidth?: number; dragColor?: string;}
+}
+```
+
+## 页眉配置
+
+```typescript
+interface IHeader {
+  top?: number; // 距离页面顶部大小。默认：30
+  maxHeightRadio?: MaxHeightRatio; // 占页面最大高度比。默认：HALF
+}
+```
+
+## 页脚配置
+
+```typescript
+interface IFooter {
+  bottom?: number; // 距离页面底部大小。默认：30
+  maxHeightRadio?: MaxHeightRatio; // 占页面最大高度比。默认：HALF
+}
+```
+
+## 页码配置
+
+```typescript
+interface IPageNumber {
+  bottom?: number; // 距离页面底部大小。默认：60
+  size?: number; // 字体大小。默认：12
+  font?: string; // 字体。默认：Yahei
+  color?: string; // 字体颜色。默认：#000000
+  rowFlex?: RowFlex; // 行对齐方式。默认：CENTER
+  format?: string; // 页码格式。默认：{pageNo}。示例：第{pageNo}页/共{pageCount}页
+  numberType?: NumberType; // 数字类型。默认：ARABIC
+}
+```
+
+## 水印配置
+
+```typescript
+interface IWatermark {
+  data: string; // 文本。
+  color?: string; // 颜色。默认：#AEB5C0
+  opacity?: number; // 透明度。默认：0.3
+  size?: number; // 字体大小。默认：200
+  font?: string; // 字体。默认：Yahei
 }
 ```

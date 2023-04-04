@@ -118,3 +118,23 @@ export function nextTick(fn: Function) {
     fn()
   }, 0)
 }
+
+export function convertNumberToChinese(num: number) {
+  const chineseNum = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
+  const chineseUnit = ['', '十', '百', '千', '万', '十', '百', '千', '亿', '十', '百', '千', '万', '十', '百', '千', '亿']
+  if (!num || isNaN(num)) return '零'
+  const numStr = num.toString().split('')
+  let result = ''
+  for (let i = 0; i < numStr.length; i++) {
+    const desIndex = numStr.length - 1 - i
+    result = `${chineseUnit[i]}${result}`
+    result = `${chineseNum[Number(numStr[desIndex])]}${result}`
+  }
+  result = result.replace(/零(千|百|十)/g, '零').replace(/十零/g, '十')
+  result = result.replace(/零+/g, '零')
+  result = result.replace(/零亿/g, '亿').replace(/零万/g, '万')
+  result = result.replace(/亿万/g, '亿')
+  result = result.replace(/零+$/, '')
+  result = result.replace(/^一十/g, '十')
+  return result
+}

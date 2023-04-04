@@ -7,7 +7,8 @@ import {
   IPageSizeChange,
   IRangeStyleChange,
   ISaved,
-  IVisiblePageNoListChange
+  IVisiblePageNoListChange,
+  IZoneChange
 } from '../../interface/Listener'
 
 export class Listener {
@@ -21,6 +22,7 @@ export class Listener {
   public contentChange: IContentChange | null
   public controlChange: IControlChange | null
   public pageModeChange: IPageModeChange | null
+  public zoneChange: IZoneChange | null
 
   constructor() {
     this.rangeStyleChange = null
@@ -32,6 +34,7 @@ export class Listener {
     this.contentChange = null
     this.controlChange = null
     this.pageModeChange = null
+    this.zoneChange = null
   }
 
 }
