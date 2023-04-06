@@ -200,6 +200,13 @@ instance.command.executeColor()
 ```javascript
 instance.command.executeHighlight()
 ```
+## executeTitle
+功能：标题设置
+
+用法：
+```javascript
+instance.command.executeTitle(TitleLevel | null)
+```
 
 ## executeLeft
 功能：行居左
