@@ -54,6 +54,7 @@ interface IEditorOption {
   control?: IControlOption; // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}
   checkbox?: ICheckboxOption; // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; fontStyle?: string;}
   cursor?: ICursorOption; // 光标样式。{width?: number; color?: string; dragWidth?: number; dragColor?: string;}
+  title?: ITitleOption; // 标题配置。{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
 }
 ```
 

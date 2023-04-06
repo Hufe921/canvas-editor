@@ -7,6 +7,7 @@ import { IFooter } from './Footer'
 import { IHeader } from './Header'
 import { IMargin } from './Margin'
 import { IPageNumber } from './PageNumber'
+import { ITitleOption } from './Title'
 import { IWatermark } from './Watermark'
 
 export interface IEditorData {
@@ -56,6 +57,7 @@ export interface IEditorOption {
   control?: IControlOption;
   checkbox?: ICheckboxOption;
   cursor?: ICursorOption;
+  title?: ITitleOption;
 }
 
 export interface IEditorResult {

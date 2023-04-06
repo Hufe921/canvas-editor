@@ -1,6 +1,7 @@
 import { ControlComponent, ImageDisplay } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { RowFlex } from '../dataset/enum/Row'
+import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
@@ -28,6 +29,12 @@ export interface IElementStyle {
   rowFlex?: RowFlex;
   rowMargin?: number;
   letterSpacing?: number;
+}
+
+export interface ITitleElement {
+  valueList?: IElement[];
+  level?: TitleLevel;
+  titleId?: string;
 }
 
 export interface ITableAttr {
@@ -97,6 +104,7 @@ export type IElement = IElementBasic
   & IDateElement
   & IImageElement
   & IBlockElement
+  & ITitleElement
 
 export interface IElementMetrics {
   width: number;

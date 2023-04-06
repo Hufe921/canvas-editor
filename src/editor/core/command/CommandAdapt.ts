@@ -1,5 +1,6 @@
 import { WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
+import { titleSizeMapping } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { EditorContext, EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
@@ -7,6 +8,7 @@ import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { RowFlex } from '../../dataset/enum/Row'
 import { TableBorder } from '../../dataset/enum/table/Table'
+import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
@@ -377,6 +379,63 @@ export class CommandAdapt {
       isSetCursor: false,
       isCompute: false
     })
+  }
+
+  public title(payload: TitleLevel | null) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    // 需要改变的元素列表
+    let changeElementList: IElement[] = []
+    const elementList = this.draw.getElementList()
+    if (startIndex === endIndex) {
+      // 选区行信息
+      const rangeRow = this.range.getRangeRow()
+      if (!rangeRow) return
+      const positionList = this.position.getPositionList()
+      for (let p = 0; p < positionList.length; p++) {
+        const position = positionList[p]
+        const rowSet = rangeRow.get(position.pageNo)
+        if (!rowSet) continue
+        if (rowSet.has(position.rowNo)) {
+          changeElementList.push(elementList[p])
+        }
+      }
+    } else {
+      changeElementList = elementList.slice(startIndex + 1, endIndex + 1)
+    }
+    // 检验数据合法性
+    const isExistNotTextElement = !!changeElementList.find(el =>
+      el.type &&
+      el.type !== ElementType.TEXT &&
+      el.type !== ElementType.TITLE
+    )
+    if (isExistNotTextElement) return
+    // 设置值
+    const titleId = getUUID()
+    const titleOptions = this.draw.getOptions().title
+    changeElementList.forEach(el => {
+      if (payload) {
+        el.type = ElementType.TITLE
+        el.level = payload
+        el.titleId = titleId
+        el.size = titleOptions[titleSizeMapping[payload]]
+        el.bold = true
+      } else {
+        if (el.type === ElementType.TITLE) {
+          delete el.type
+          delete el.titleId
+          delete el.level
+          delete el.size
+          delete el.bold
+        }
+      }
+    })
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
   }
 
   public rowFlex(payload: RowFlex) {

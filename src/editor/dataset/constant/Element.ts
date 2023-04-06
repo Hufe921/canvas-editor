@@ -26,7 +26,9 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'url',
   'hyperlinkId',
   'dateId',
-  'dateFormat'
+  'dateFormat',
+  'level',
+  'titleId'
 ]
 
 export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
@@ -52,7 +54,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'control',
   'checkbox',
   'dateFormat',
-  'block'
+  'block',
+  'level'
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
@@ -61,7 +64,8 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.SUBSCRIPT,
   ElementType.SUPERSCRIPT,
   ElementType.CONTROL,
-  ElementType.DATE
+  ElementType.DATE,
+  ElementType.TITLE
 ]
 
 export const INLINE_ELEMENT_TYPE: ElementType[] = [

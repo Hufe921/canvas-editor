@@ -78,7 +78,7 @@ ul {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 3px;
+  margin: 0 2px;
 }
 
 .menu-item>div:hover {
@@ -259,6 +259,25 @@ ul {
 
 .menu-item__highlight span {
   background-color: #ffff00;
+}
+
+.menu-item .menu-item__title {
+  width: 60px;
+  position: relative;
+}
+
+.menu-item__title .select {
+  width: calc(100% - 20px);
+  height: 100%;
+}
+
+.menu-item__title i {
+  transform: translateX(-5px);
+  background-image: url('./assets/images/title.svg');
+}
+
+.menu-item__title .options {
+  width: 80px;
 }
 
 .menu-item__left i {
@@ -467,7 +486,7 @@ ul {
 }
 
 .menu-item__date .options {
-  width: 150px;
+  width: 160px;
 }
 
 .menu-item__block i {
