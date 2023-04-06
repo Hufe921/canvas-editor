@@ -1,7 +1,7 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IElement, KeyMap, PageMode, PaperDirection, RowFlex } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IElement, KeyMap, PageMode, PaperDirection, RowFlex, TitleLevel } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
@@ -173,6 +173,19 @@ window.onload = function () {
   highlightDom.onclick = function () {
     console.log('highlight')
     highlightControlDom?.click()
+  }
+
+  const titleDom = document.querySelector<HTMLDivElement>('.menu-item__title')!
+  const titleSelectDom = titleDom.querySelector<HTMLDivElement>('.select')!
+  const titleOptionDom = titleDom.querySelector<HTMLDivElement>('.options')!
+  titleDom.onclick = function () {
+    console.log('title')
+    titleOptionDom.classList.toggle('visible')
+  }
+  titleOptionDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const level = <TitleLevel>li.dataset.level
+    instance.command.executeTitle(level || null)
   }
 
   const leftDom = document.querySelector<HTMLDivElement>('.menu-item__left')!
@@ -1056,6 +1069,17 @@ window.onload = function () {
     payload.undo ? undoDom.classList.remove('no-allow') : undoDom.classList.add('no-allow')
     payload.redo ? redoDom.classList.remove('no-allow') : redoDom.classList.add('no-allow')
     payload.painter ? painterDom.classList.add('active') : painterDom.classList.remove('active')
+
+    // 标题
+    titleOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
+    if (payload.level) {
+      const curTitleDom = titleOptionDom.querySelector<HTMLLIElement>(`[data-level='${payload.level}']`)!
+      titleSelectDom.innerText = curTitleDom.innerText
+      curTitleDom.classList.add('active')
+    } else {
+      titleSelectDom.innerText = '正文'
+      titleOptionDom.querySelector('li:first-child')!.classList.add('active')
+    }
   }
 
   instance.listener.visiblePageNoListChange = function (payload) {

@@ -1,4 +1,4 @@
-import { IElement, ImageDisplay, INavigateInfo, TableBorder, VerticalAlign } from '../..'
+import { IElement, ImageDisplay, INavigateInfo, TableBorder, TitleLevel, VerticalAlign } from '../..'
 import { EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
@@ -33,6 +33,7 @@ export class Command {
   private static subscript: CommandAdapt['subscript']
   private static color: CommandAdapt['color']
   private static highlight: CommandAdapt['highlight']
+  private static title: CommandAdapt['title']
   private static left: CommandAdapt['rowFlex']
   private static center: CommandAdapt['rowFlex']
   private static right: CommandAdapt['rowFlex']
@@ -109,6 +110,7 @@ export class Command {
     Command.subscript = adapt.subscript.bind(adapt)
     Command.color = adapt.color.bind(adapt)
     Command.highlight = adapt.highlight.bind(adapt)
+    Command.title = adapt.title.bind(adapt)
     Command.left = adapt.rowFlex.bind(adapt)
     Command.center = adapt.rowFlex.bind(adapt)
     Command.right = adapt.rowFlex.bind(adapt)
@@ -258,6 +260,11 @@ export class Command {
 
   public executeHighlight(payload: string) {
     return Command.highlight(payload)
+  }
+
+  // 标题、对齐方式
+  public executeTitle(payload: TitleLevel | null) {
+    return Command.title(payload)
   }
 
   public executeLeft() {
