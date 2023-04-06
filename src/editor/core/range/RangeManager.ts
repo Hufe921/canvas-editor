@@ -152,6 +152,7 @@ export class RangeManager {
     const rowFlex = curElement.rowFlex || null
     const rowMargin = curElement.rowMargin || this.options.defaultRowMargin
     const dashArray = curElement.dashArray || []
+    const level = curElement.level || null
     // 菜单
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
@@ -171,7 +172,8 @@ export class RangeManager {
       highlight,
       rowFlex,
       rowMargin,
-      dashArray
+      dashArray,
+      level
     })
   }
 
@@ -198,7 +200,8 @@ export class RangeManager {
       highlight: null,
       rowFlex: null,
       rowMargin,
-      dashArray: []
+      dashArray: [],
+      level: null
     })
   }
 

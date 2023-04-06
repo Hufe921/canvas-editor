@@ -12,5 +12,6 @@ export enum ElementType {
   LATEX = 'latex',
   TAB = 'tab',
   DATE = 'date',
-  BLOCK = 'block'
+  BLOCK = 'block',
+  TITLE = 'title'
 }
