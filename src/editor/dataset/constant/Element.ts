@@ -64,8 +64,7 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.SUBSCRIPT,
   ElementType.SUPERSCRIPT,
   ElementType.CONTROL,
-  ElementType.DATE,
-  ElementType.TITLE
+  ElementType.DATE
 ]
 
 export const INLINE_ELEMENT_TYPE: ElementType[] = [

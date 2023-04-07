@@ -64,8 +64,8 @@ export function convertElementToDom(element: IElement, options: DeepRequired<IEd
 }
 
 export function writeElementList(elementList: IElement[], options: DeepRequired<IEditorOption>) {
-  const clipboardDom: HTMLDivElement = document.createElement('div')
-  function buildDomFromElementList(payload: IElement[]) {
+  function buildDomFromElementList(payload: IElement[]): HTMLDivElement {
+    const clipboardDom = document.createElement('div')
     for (let e = 0; e < payload.length; e++) {
       const element = payload[e]
       // 构造表格
@@ -96,10 +96,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         clipboardDom.append(a)
       } else if (element.type === ElementType.TITLE) {
         const h = document.createElement(`h${titleOrderNumberMapping[element.level!]}`)
-        element.valueList!.forEach(el => {
-          const dom = convertElementToDom(el, options)
-          h.append(dom)
-        })
+        const childDom = buildDomFromElementList(zipElementList(element.valueList!))
+        h.innerHTML = childDom.innerHTML
         clipboardDom.append(h)
       } else if (element.type === ElementType.IMAGE) {
         const img = document.createElement('img')
@@ -142,8 +140,9 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         clipboardDom.append(dom)
       }
     }
+    return clipboardDom
   }
-  buildDomFromElementList(zipElementList(elementList))
+  const clipboardDom = buildDomFromElementList(zipElementList(elementList))
   // 写入剪贴板
   document.body.append(clipboardDom)
   const text = clipboardDom.innerText
@@ -207,7 +206,6 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
         } else if (/H[1-6]/.test(node.nodeName)) {
           const hElement = node as HTMLTitleElement
           const valueList = getElementListByHTML(hElement.innerHTML, options)
-            .filter(el => !el.type || el.type === ElementType.TEXT)
           elementList.push({
             value: '',
             type: ElementType.TITLE,

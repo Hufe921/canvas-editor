@@ -4,7 +4,7 @@ import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
-import { EDITOR_ELEMENT_ZIP_ATTR } from '../dataset/constant/Element'
+import { EDITOR_ELEMENT_ZIP_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { titleSizeMapping } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
 import { ITd } from '../interface/table/Td'
@@ -109,8 +109,12 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
     } else if (el.type === ElementType.TITLE) {
       // 移除父节点
       elementList.splice(i, 1)
-      // 元素展开
-      const valueList = unzipElementList(el.valueList || [])
+      // 格式化元素
+      const valueList = el.valueList || []
+      formatElementList(valueList, {
+        ...options,
+        isHandleFirstElement: false
+      })
       // 追加节点
       if (valueList.length) {
         const titleId = getUUID()
@@ -118,13 +122,15 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
           value.titleId = titleId
-          value.type = el.type
           value.level = el.level
-          if (!value.size) {
-            value.size = titleOptions[titleSizeMapping[value.level!]]
-          }
-          if (value.bold === undefined) {
-            value.bold = true
+          // 文本型元素设置字体及加粗
+          if (isTextLikeElement(value)) {
+            if (!value.size) {
+              value.size = titleOptions[titleSizeMapping[value.level!]]
+            }
+            if (value.bold === undefined) {
+              value.bold = true
+            }
           }
           elementList.splice(i, 0, value)
           i++
@@ -394,7 +400,7 @@ export function zipElementList(payload: IElement[]): IElement[] {
       }
       dateElement.valueList = zipElementList(valueList)
       element = dateElement
-    } else if (element.type === ElementType.TITLE) {
+    } else if (element.titleId && element.level) {
       // 标题处理
       const titleId = element.titleId
       const level = element.level
@@ -410,7 +416,6 @@ export function zipElementList(payload: IElement[]): IElement[] {
           e--
           break
         }
-        delete titleE.type
         delete titleE.level
         valueList.push(titleE)
         e++
@@ -483,4 +488,8 @@ export function getElementRowFlex(node: HTMLElement) {
     default:
       return RowFlex.LEFT
   }
+}
+
+export function isTextLikeElement(element: IElement): boolean {
+  return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
