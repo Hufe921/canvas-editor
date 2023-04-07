@@ -43,12 +43,12 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## dev
 
-`yarn run dev`
+`npm run dev`
 
 ## build
 
 #### app
-`yarn run build`
+`npm run build`
 
 #### lib
-`yarn run lib`
+`npm run lib`

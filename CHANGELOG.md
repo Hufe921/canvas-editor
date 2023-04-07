@@ -1,3 +1,17 @@
+## [0.9.31](https://github.com/Hufe921/canvas-editor/compare/v0.9.30...v0.9.31) (2023-04-07)
+
+
+### Bug Fixes
+
+* lose line break when set title ([722a910](https://github.com/Hufe921/canvas-editor/commit/722a91014508d9a8d65a30ab7d71b23924fa9b91))
+
+
+### Performance Improvements
+
+* range style anchor element ([d9eec5b](https://github.com/Hufe921/canvas-editor/commit/d9eec5b9be6cbb545c57cf8816b197a214c70f3e))
+
+
+
 ## [0.9.30](https://github.com/Hufe921/canvas-editor/compare/v0.9.29...v0.9.30) (2023-04-07)
 
 
