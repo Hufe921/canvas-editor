@@ -73,3 +73,8 @@ export const INLINE_ELEMENT_TYPE: ElementType[] = [
   ElementType.SEPARATOR,
   ElementType.TABLE
 ]
+
+export const INLINE_NODE_NAME: string[] = [
+  'HR',
+  'TABLE'
+]

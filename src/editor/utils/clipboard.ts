@@ -1,6 +1,6 @@
 import { IEditorOption, IElement, RowFlex } from '..'
 import { ZERO } from '../dataset/constant/Common'
-import { TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { INLINE_NODE_NAME, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { titleNodeNameMapping, titleOrderNumberMapping } from '../dataset/constant/Title'
 import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
@@ -81,7 +81,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
             const td = tr.tdList[d]
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
-            tdDom.innerText = td.value[0]?.value || ''
+            const childDom = buildDomFromElementList(zipElementList(td.value!))
+            tdDom.innerHTML = childDom.innerHTML
             trDom.append(tdDom)
           }
           tableDom.append(trDom)
@@ -212,9 +213,11 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             level: titleNodeNameMapping[node.nodeName],
             valueList
           })
-          elementList.push({
-            value: '\n'
-          })
+          if (node.nextSibling && !INLINE_NODE_NAME.includes(node.nextSibling.nodeName)) {
+            elementList.push({
+              value: '\n'
+            })
+          }
         } else if (node.nodeName === 'HR') {
           elementList.push({
             value: '\n',
@@ -247,12 +250,11 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             }
             trElement.querySelectorAll('th,td').forEach(tdElement => {
               const tableCell = <HTMLTableCellElement>tdElement
+              const valueList = getElementListByHTML(tableCell.innerHTML, options)
               const td: ITd = {
                 colspan: tableCell.colSpan,
                 rowspan: tableCell.rowSpan,
-                value: [{
-                  value: tableCell.innerText
-                }]
+                value: valueList
               }
               tr.tdList.push(td)
             })
