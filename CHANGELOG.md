@@ -1,3 +1,43 @@
+## [0.9.30](https://github.com/Hufe921/canvas-editor/compare/v0.9.29...v0.9.30) (2023-04-07)
+
+
+### Bug Fixes
+
+* set defaultTrMinHeight option invalid #168 ([045e2ff](https://github.com/Hufe921/canvas-editor/commit/045e2ffe4ece76d46a8a579fad267f14a6778b1e)), closes [#168](https://github.com/Hufe921/canvas-editor/issues/168)
+
+
+### Chores
+
+* add image accept values ([189ca73](https://github.com/Hufe921/canvas-editor/commit/189ca73c3213cb9b76fa84df400f9b3624ec0d42))
+
+
+### Documentation
+
+* add page number format option ([72e97b7](https://github.com/Hufe921/canvas-editor/commit/72e97b7883f0f84961afd7ed93b740d1915f731c))
+* add title api and option ([a9b4438](https://github.com/Hufe921/canvas-editor/commit/a9b44387bd174cbd1bab8c308bb732f68800ef34))
+* add zone change listener ([3cba30b](https://github.com/Hufe921/canvas-editor/commit/3cba30bcf969a9b777885a4ca6daca3019afd9d0))
+* improve editor options ([51d4a03](https://github.com/Hufe921/canvas-editor/commit/51d4a036a0e1c99e48a02b326ab459319536ab7b))
+
+
+### Features
+
+* add page number format option ([4987723](https://github.com/Hufe921/canvas-editor/commit/4987723f27684a3f4ba4e9952b75c16926f4a07b))
+* add title element ([9701b21](https://github.com/Hufe921/canvas-editor/commit/9701b2153e4de71697776765081f39bbfda82eb7))
+* add zone change listener ([86871c3](https://github.com/Hufe921/canvas-editor/commit/86871c310be1402f03831ca182698e7ba78a7912))
+* format title element value ([1fc276f](https://github.com/Hufe921/canvas-editor/commit/1fc276fbae6a0dd7c8cff39a5c5ca6aa7d7f47ed))
+
+
+### Performance Improvements
+
+* copy title and table element ([03cd85f](https://github.com/Hufe921/canvas-editor/commit/03cd85f423d207eea7f88c4267552f4af6945030))
+
+
+### Tests
+
+* add title test case ([c275216](https://github.com/Hufe921/canvas-editor/commit/c275216fb4626e811d702c7f72f1e987823c4787))
+
+
+
 ## [0.9.29](https://github.com/Hufe921/canvas-editor/compare/v0.9.28...v0.9.29) (2023-04-01)
 
 
