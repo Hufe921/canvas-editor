@@ -48,7 +48,7 @@ async function init() {
   try {
     const content = <IEditorResult>JSON.parse(article.content)
     const { data: contentData, ...rest } = content
-    const editorData = <IEditorData | IElement[]>contentData
+    const editorData = <IEditorData | IElement[]>contentData || []
     // 兼容无页眉时数据结构
     const isExistPageHeader = !Array.isArray(editorData)
     data = {
