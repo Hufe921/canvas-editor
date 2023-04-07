@@ -409,6 +409,7 @@ export class CommandAdapt {
     const titleId = getUUID()
     const titleOptions = this.draw.getOptions().title
     changeElementList.forEach(el => {
+      if (!el.type && el.value === ZERO) return
       if (payload) {
         el.level = payload
         el.titleId = titleId

@@ -129,15 +129,19 @@ export class RangeManager {
 
   public setRangeStyle() {
     if (!this.listener.rangeStyleChange) return
-    let curElementList = this.getSelection()
-    if (!curElementList) {
-      const elementList = this.draw.getElementList()
-      const { endIndex } = this.range
-      const index = ~endIndex ? endIndex : 0
-      curElementList = [elementList[index]]
-    }
-    const curElement = curElementList[curElementList.length - 1]
+    // 结束光标位置
+    const { endIndex } = this.range
+    const index = ~endIndex ? endIndex : 0
+    // 行首以第一个非换行符元素定位
+    const elementList = this.draw.getElementList()
+    const endElement = elementList[index]
+    const endNextElement = elementList[index + 1]
+    const curElement = endElement.value === ZERO && endNextElement
+      ? endNextElement
+      : endElement
     if (!curElement) return
+    // 选取元素列表
+    const curElementList = this.getSelection() || [curElement]
     // 类型
     const type = curElement.type || ElementType.TEXT
     // 富文本
