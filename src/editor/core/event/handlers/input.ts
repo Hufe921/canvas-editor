@@ -27,7 +27,7 @@ export function input(data: string, host: CanvasEvent) {
     cursor.clearAgentDomValue()
   }
   const activeControl = control.getActiveControl()
-  const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE, TITLE } = ElementType
+  const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
   const text = data.replaceAll(`\n`, ZERO)
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
@@ -55,7 +55,6 @@ export function input(data: string, host: CanvasEvent) {
       || (!copyElement.type && copyElement.value !== ZERO)
       || (copyElement.type === HYPERLINK && nextElement?.type === HYPERLINK)
       || (copyElement.type === DATE && nextElement?.type === DATE)
-      || copyElement.type === TITLE
       || (copyElement.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT)
       || (copyElement.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
     ) {

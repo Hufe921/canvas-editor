@@ -19,7 +19,7 @@ import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
 import { downloadFile, getUUID } from '../../utils'
-import { formatElementList } from '../../utils/element'
+import { formatElementList, isTextLikeElement } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -405,26 +405,19 @@ export class CommandAdapt {
     } else {
       changeElementList = elementList.slice(startIndex + 1, endIndex + 1)
     }
-    // 检验数据合法性
-    const isExistNotTextElement = !!changeElementList.find(el =>
-      el.type &&
-      el.type !== ElementType.TEXT &&
-      el.type !== ElementType.TITLE
-    )
-    if (isExistNotTextElement) return
     // 设置值
     const titleId = getUUID()
     const titleOptions = this.draw.getOptions().title
     changeElementList.forEach(el => {
       if (payload) {
-        el.type = ElementType.TITLE
         el.level = payload
         el.titleId = titleId
-        el.size = titleOptions[titleSizeMapping[payload]]
-        el.bold = true
+        if (isTextLikeElement(el)) {
+          el.size = titleOptions[titleSizeMapping[payload]]
+          el.bold = true
+        }
       } else {
-        if (el.type === ElementType.TITLE) {
-          delete el.type
+        if (el.titleId) {
           delete el.titleId
           delete el.level
           delete el.size

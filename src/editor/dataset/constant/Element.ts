@@ -64,8 +64,7 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.SUBSCRIPT,
   ElementType.SUPERSCRIPT,
   ElementType.CONTROL,
-  ElementType.DATE,
-  ElementType.TITLE
+  ElementType.DATE
 ]
 
 export const INLINE_ELEMENT_TYPE: ElementType[] = [
@@ -73,4 +72,9 @@ export const INLINE_ELEMENT_TYPE: ElementType[] = [
   ElementType.PAGE_BREAK,
   ElementType.SEPARATOR,
   ElementType.TABLE
+]
+
+export const INLINE_NODE_NAME: string[] = [
+  'HR',
+  'TABLE'
 ]

@@ -1,6 +1,6 @@
 import { IEditorOption, IElement, RowFlex } from '..'
 import { ZERO } from '../dataset/constant/Common'
-import { TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { INLINE_NODE_NAME, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { titleNodeNameMapping, titleOrderNumberMapping } from '../dataset/constant/Title'
 import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
@@ -64,8 +64,8 @@ export function convertElementToDom(element: IElement, options: DeepRequired<IEd
 }
 
 export function writeElementList(elementList: IElement[], options: DeepRequired<IEditorOption>) {
-  const clipboardDom: HTMLDivElement = document.createElement('div')
-  function buildDomFromElementList(payload: IElement[]) {
+  function buildDomFromElementList(payload: IElement[]): HTMLDivElement {
+    const clipboardDom = document.createElement('div')
     for (let e = 0; e < payload.length; e++) {
       const element = payload[e]
       // 构造表格
@@ -81,7 +81,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
             const td = tr.tdList[d]
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
-            tdDom.innerText = td.value[0]?.value || ''
+            const childDom = buildDomFromElementList(zipElementList(td.value!))
+            tdDom.innerHTML = childDom.innerHTML
             trDom.append(tdDom)
           }
           tableDom.append(trDom)
@@ -96,10 +97,8 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         clipboardDom.append(a)
       } else if (element.type === ElementType.TITLE) {
         const h = document.createElement(`h${titleOrderNumberMapping[element.level!]}`)
-        element.valueList!.forEach(el => {
-          const dom = convertElementToDom(el, options)
-          h.append(dom)
-        })
+        const childDom = buildDomFromElementList(zipElementList(element.valueList!))
+        h.innerHTML = childDom.innerHTML
         clipboardDom.append(h)
       } else if (element.type === ElementType.IMAGE) {
         const img = document.createElement('img')
@@ -142,8 +141,9 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         clipboardDom.append(dom)
       }
     }
+    return clipboardDom
   }
-  buildDomFromElementList(zipElementList(elementList))
+  const clipboardDom = buildDomFromElementList(zipElementList(elementList))
   // 写入剪贴板
   document.body.append(clipboardDom)
   const text = clipboardDom.innerText
@@ -207,16 +207,17 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
         } else if (/H[1-6]/.test(node.nodeName)) {
           const hElement = node as HTMLTitleElement
           const valueList = getElementListByHTML(hElement.innerHTML, options)
-            .filter(el => !el.type || el.type === ElementType.TEXT)
           elementList.push({
             value: '',
             type: ElementType.TITLE,
             level: titleNodeNameMapping[node.nodeName],
             valueList
           })
-          elementList.push({
-            value: '\n'
-          })
+          if (node.nextSibling && !INLINE_NODE_NAME.includes(node.nextSibling.nodeName)) {
+            elementList.push({
+              value: '\n'
+            })
+          }
         } else if (node.nodeName === 'HR') {
           elementList.push({
             value: '\n',
@@ -249,12 +250,11 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             }
             trElement.querySelectorAll('th,td').forEach(tdElement => {
               const tableCell = <HTMLTableCellElement>tdElement
+              const valueList = getElementListByHTML(tableCell.innerHTML, options)
               const td: ITd = {
                 colspan: tableCell.colSpan,
                 rowspan: tableCell.rowSpan,
-                value: [{
-                  value: tableCell.innerText
-                }]
+                value: valueList
               }
               tr.tdList.push(td)
             })
