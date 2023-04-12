@@ -391,14 +391,14 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     if (startIndex === endIndex) {
       // 选区行信息
-      const rangeRow = this.range.getRangeRow()
+      const rangeRow = this.range.getRangeParagraph()
       if (!rangeRow) return
       const positionList = this.position.getPositionList()
       for (let p = 0; p < positionList.length; p++) {
         const position = positionList[p]
-        const rowSet = rangeRow.get(position.pageNo)
-        if (!rowSet) continue
-        if (rowSet.has(position.rowNo)) {
+        const rowArray = rangeRow.get(position.pageNo)
+        if (!rowArray) continue
+        if (rowArray.includes(position.rowNo)) {
           changeElementList.push(elementList[p])
         }
       }

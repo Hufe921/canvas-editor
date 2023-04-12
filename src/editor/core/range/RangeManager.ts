@@ -4,7 +4,7 @@ import { TEXTLIKE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
-import { IRange, RangeRowMap } from '../../interface/Range'
+import { IRange, RangeRowArray, RangeRowMap } from '../../interface/Range'
 import { Draw } from '../draw/Draw'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
@@ -68,6 +68,52 @@ export class RangeManager {
           rowSet.add(rowNo)
         }
       }
+    }
+    return rangeRow
+  }
+
+  // 获取选取段落信息
+  public getRangeParagraph(): RangeRowArray | null {
+    const { startIndex, endIndex } = this.range
+    if (!~startIndex && !~endIndex) return null
+    const positionList = this.position.getPositionList()
+    const elementList = this.draw.getElementList()
+    const rangeRow: RangeRowArray = new Map()
+    // 向上查找
+    let start = startIndex
+    while (start > 0) {
+      if (
+        positionList[start].value === ZERO ||
+        (elementList[start].titleId !== elementList[start - 1]?.titleId)
+      ) break
+      const { pageNo, rowNo } = positionList[start]
+      let rowArray = rangeRow.get(pageNo)
+      if (!rowArray) {
+        rowArray = []
+        rangeRow.set(pageNo, rowArray)
+      }
+      if (!rowArray.includes(rowNo)) {
+        rowArray.unshift(rowNo)
+      }
+      start--
+    }
+    // 向下查找
+    let end = endIndex
+    while (end < positionList.length) {
+      if (
+        positionList[end].value === ZERO ||
+        elementList[end].titleId !== elementList[end + 1]?.titleId
+      ) break
+      const { pageNo, rowNo } = positionList[end]
+      let rowArray = rangeRow.get(pageNo)
+      if (!rowArray) {
+        rowArray = []
+        rangeRow.set(pageNo, rowArray)
+      }
+      if (!rowArray.includes(rowNo)) {
+        rowArray.push(rowNo)
+      }
+      end++
     }
     return rangeRow
   }
