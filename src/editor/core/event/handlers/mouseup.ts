@@ -29,6 +29,18 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const cacheElementList = host.cacheElementList!
     const cachePositionList = host.cachePositionList!
     const range = rangeManager.getRange()
+    // 是否需要拖拽-位置发生改变
+    if (range.startIndex >= cacheRange.startIndex && range.endIndex <= cacheRange.endIndex) {
+      rangeManager.replaceRange({
+        ...cacheRange
+      })
+      draw.render({
+        isSetCursor: false,
+        isCompute: false,
+        isSubmitHistory: false
+      })
+      return
+    }
     // 是否是不可拖拽的控件结构元素
     const dragElementList = cacheElementList.slice(cacheRange.startIndex + 1, cacheRange.endIndex + 1)
     const isContainControl = dragElementList.find(element => element.type === ElementType.CONTROL)
