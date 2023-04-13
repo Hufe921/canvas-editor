@@ -176,15 +176,23 @@ export class RangeManager {
   public setRangeStyle() {
     if (!this.listener.rangeStyleChange) return
     // 结束光标位置
-    const { endIndex } = this.range
-    const index = ~endIndex ? endIndex : 0
-    // 行首以第一个非换行符元素定位
-    const elementList = this.draw.getElementList()
-    const endElement = elementList[index]
-    const endNextElement = elementList[index + 1]
-    const curElement = endElement.value === ZERO && endNextElement
-      ? endNextElement
-      : endElement
+    const { endIndex, isCrossRowCol } = this.range
+    let curElement: IElement
+    if (isCrossRowCol) {
+      // 单元格选择以当前表格定位
+      const originalElementList = this.draw.getOriginalElementList()
+      const positionContext = this.position.getPositionContext()
+      curElement = originalElementList[positionContext.index!]
+    } else {
+      const index = ~endIndex ? endIndex : 0
+      // 行首以第一个非换行符元素定位
+      const elementList = this.draw.getElementList()
+      const endElement = elementList[index]
+      const endNextElement = elementList[index + 1]
+      curElement = endElement.value === ZERO && endNextElement
+        ? endNextElement
+        : endElement
+    }
     if (!curElement) return
     // 选取元素列表
     const curElementList = this.getSelection() || [curElement]
