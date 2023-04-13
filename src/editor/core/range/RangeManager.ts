@@ -123,8 +123,10 @@ export class RangeManager {
     const positionList = this.position.getPositionList()
     for (let p = startIndex + 1; p <= endIndex; p++) {
       const { coordinate: { leftTop, rightBottom } } = positionList[p]
-      if (x >= leftTop[0] && x <= rightBottom[0] && y >= leftTop[1] && y <= rightBottom[1]) {
-        return true
+      if (positionList[p]) {
+        if (x >= leftTop[0] && x <= rightBottom[0] && y >= leftTop[1] && y <= rightBottom[1]) {
+          return true
+        }
       }
     }
     return false
@@ -182,7 +184,7 @@ export class RangeManager {
     const elementList = this.draw.getElementList()
     const endElement = elementList[index]
     const endNextElement = elementList[index + 1]
-    const curElement = endElement.value === ZERO && endNextElement
+    const curElement = endElement?.value === ZERO && endNextElement
       ? endNextElement
       : endElement
     if (!curElement) return
