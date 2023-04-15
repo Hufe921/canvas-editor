@@ -132,7 +132,7 @@ export class Position {
               // 垂直对齐方式
               if (
                 td.verticalAlign === VerticalAlign.MIDDLE
-                || td.verticalAlign == VerticalAlign.BOTTOM
+                || td.verticalAlign === VerticalAlign.BOTTOM
               ) {
                 const rowsHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
                 const blankHeight = (td.height! - tdGap) * scale - rowsHeight

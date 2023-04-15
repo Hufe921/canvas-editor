@@ -116,13 +116,13 @@
   margin-right: 16px;
 }
 
-.signature-menu button[type='primary'] {
+.signature-menu button[type='submit'] {
   color: #ffffff;
   background: #4991f2;
   border-color: #4991f2;
 }
 
-.signature-menu button[type='primary']:hover {
+.signature-menu button[type='submit']:hover {
   background: #5b9cf3;
   border-color: #5b9cf3;
 }

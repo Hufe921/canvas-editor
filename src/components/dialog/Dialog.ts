@@ -128,7 +128,7 @@ export class Dialog {
     const cancelBtn = document.createElement('button')
     cancelBtn.classList.add('dialog-menu__cancel')
     cancelBtn.append(document.createTextNode('取消'))
-    cancelBtn.type = 'default'
+    cancelBtn.type = 'button'
     cancelBtn.onclick = () => {
       if (onCancel) {
         onCancel()
@@ -139,7 +139,7 @@ export class Dialog {
     // 确认按钮
     const confirmBtn = document.createElement('button')
     confirmBtn.append(document.createTextNode('确定'))
-    confirmBtn.type = 'primary'
+    confirmBtn.type = 'submit'
     confirmBtn.onclick = () => {
       if (onConfirm) {
         const payload = this.inputList.map<IDialogConfirm>(input => ({

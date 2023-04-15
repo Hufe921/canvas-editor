@@ -124,7 +124,7 @@ export class Signature {
     const cancelBtn = document.createElement('button')
     cancelBtn.classList.add('signature-menu__cancel')
     cancelBtn.append(document.createTextNode('取消'))
-    cancelBtn.type = 'default'
+    cancelBtn.type = 'button'
     cancelBtn.onclick = () => {
       if (onCancel) {
         onCancel()
@@ -135,7 +135,7 @@ export class Signature {
     // 确认按钮
     const confirmBtn = document.createElement('button')
     confirmBtn.append(document.createTextNode('确定'))
-    confirmBtn.type = 'primary'
+    confirmBtn.type = 'submit'
     confirmBtn.onclick = () => {
       if (onConfirm) {
         onConfirm(this._toData())
