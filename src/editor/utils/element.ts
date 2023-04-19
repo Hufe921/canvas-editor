@@ -137,6 +137,27 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         }
       }
       i--
+    } else if (el.type === ElementType.LIST) {
+      // 移除父节点
+      elementList.splice(i, 1)
+      // 格式化元素
+      const valueList = el.valueList || []
+      formatElementList(valueList, {
+        ...options
+      })
+      // 追加节点
+      if (valueList.length) {
+        const listId = getUUID()
+        for (let v = 0; v < valueList.length; v++) {
+          const value = valueList[v]
+          value.listId = listId
+          value.listType = el.listType
+          value.listStyle = el.listStyle
+          elementList.splice(i, 0, value)
+          i++
+        }
+      }
+      i--
     } else if (el.type === ElementType.CONTROL) {
       const { prefix, postfix, value, placeholder, code, type, valueSets } = el.control!
       const controlId = getUUID()
@@ -422,6 +443,32 @@ export function zipElementList(payload: IElement[]): IElement[] {
       }
       titleElement.valueList = zipElementList(valueList)
       element = titleElement
+    } else if (element.listId && element.listType) {
+      // 列表处理
+      const listId = element.listId
+      const listType = element.listType
+      const listStyle = element.listStyle
+      const listElement: IElement = {
+        type: ElementType.LIST,
+        value: '',
+        listId,
+        listType,
+        listStyle
+      }
+      const valueList: IElement[] = []
+      while (e < elementList.length) {
+        const listE = elementList[e]
+        if (listId !== listE.listId) {
+          e--
+          break
+        }
+        delete listE.listType
+        delete listE.listStyle
+        valueList.push(listE)
+        e++
+      }
+      listElement.valueList = zipElementList(valueList)
+      element = listElement
     } else if (element.type === ElementType.CONTROL) {
       // 控件处理
       const controlId = element.controlId

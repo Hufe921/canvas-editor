@@ -1,4 +1,4 @@
-import { IElement, ImageDisplay, INavigateInfo, TableBorder, TitleLevel, VerticalAlign } from '../..'
+import { IElement, ImageDisplay, INavigateInfo, ListStyle, ListType, TableBorder, TitleLevel, VerticalAlign } from '../..'
 import { EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
@@ -34,6 +34,7 @@ export class Command {
   private static color: CommandAdapt['color']
   private static highlight: CommandAdapt['highlight']
   private static title: CommandAdapt['title']
+  private static list: CommandAdapt['list']
   private static left: CommandAdapt['rowFlex']
   private static center: CommandAdapt['rowFlex']
   private static right: CommandAdapt['rowFlex']
@@ -111,6 +112,7 @@ export class Command {
     Command.color = adapt.color.bind(adapt)
     Command.highlight = adapt.highlight.bind(adapt)
     Command.title = adapt.title.bind(adapt)
+    Command.list = adapt.list.bind(adapt)
     Command.left = adapt.rowFlex.bind(adapt)
     Command.center = adapt.rowFlex.bind(adapt)
     Command.right = adapt.rowFlex.bind(adapt)
@@ -262,7 +264,7 @@ export class Command {
     return Command.highlight(payload)
   }
 
-  // 标题、对齐方式
+  // 标题、对齐方式、列表
   public executeTitle(payload: TitleLevel | null) {
     return Command.title(payload)
   }
@@ -285,6 +287,10 @@ export class Command {
 
   public executeRowMargin(payload: number) {
     return Command.rowMargin(payload)
+  }
+
+  public executeList(listType: ListType | null, listStyle?: ListStyle) {
+    return Command.list(listType, listStyle)
   }
 
   // 表格、图片上传、超链接、搜索、打印

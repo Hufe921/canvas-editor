@@ -55,7 +55,18 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'checkbox',
   'dateFormat',
   'block',
-  'level'
+  'level',
+  'listType',
+  'listStyle'
+]
+
+export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
+  'tdId',
+  'trId',
+  'tableId',
+  'listId',
+  'listType',
+  'listStyle'
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [

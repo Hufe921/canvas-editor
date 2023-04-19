@@ -32,6 +32,10 @@ export class Control {
     this.activeControl = null
   }
 
+  public getDraw(): Draw {
+    return this.draw
+  }
+
   // 判断选区部分在控件边界外
   public isPartRangeInControlOutside(): boolean {
     const { startIndex, endIndex } = this.getRange()
@@ -256,7 +260,7 @@ export class Control {
     if (!~leftIndex && !~rightIndex) return startIndex
     leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
-    elementList.splice(leftIndex + 1, rightIndex - leftIndex)
+    this.draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
     return leftIndex
   }
 
@@ -273,7 +277,7 @@ export class Control {
         const curElement = elementList[index]
         if (curElement.controlId !== startElement.controlId) break
         if (curElement.controlComponent === ControlComponent.PLACEHOLDER) {
-          elementList.splice(index, 1)
+          this.draw.spliceElementList(elementList, index, 1)
         } else {
           index++
         }
@@ -289,7 +293,7 @@ export class Control {
     const placeholderStrList = splitText(control.placeholder)
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]
-      elementList.splice(startIndex + p + 1, 0, {
+      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, {
         value,
         controlId: startElement.controlId,
         type: ElementType.CONTROL,

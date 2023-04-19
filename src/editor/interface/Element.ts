@@ -1,5 +1,6 @@
 import { ControlComponent, ImageDisplay } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
+import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
 import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
@@ -35,6 +36,13 @@ export interface ITitleElement {
   valueList?: IElement[];
   level?: TitleLevel;
   titleId?: string;
+}
+
+export interface IListElement {
+  valueList?: IElement[];
+  listType?: ListType;
+  listStyle?: ListStyle;
+  listId?: string;
 }
 
 export interface ITableAttr {
@@ -105,6 +113,7 @@ export type IElement = IElementBasic
   & IImageElement
   & IBlockElement
   & ITitleElement
+  & IListElement
 
 export interface IElementMetrics {
   width: number;

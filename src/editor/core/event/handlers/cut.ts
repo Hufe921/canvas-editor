@@ -41,7 +41,7 @@ export function cut(host: CanvasEvent) {
   if (activeControl) {
     curIndex = control.cut()
   } else {
-    elementList.splice(start + 1, end - start)
+    draw.spliceElementList(elementList, start + 1, end - start)
     curIndex = start
   }
   rangeManager.setRange(curIndex, curIndex)

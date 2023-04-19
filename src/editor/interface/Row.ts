@@ -13,5 +13,8 @@ export interface IRow {
   rowFlex?: RowFlex;
   startIndex: number;
   isPageBreak?: boolean;
+  isList?: boolean;
+  listIndex?: number;
+  offsetX?: number;
   elementList: IRowElement[];
 }

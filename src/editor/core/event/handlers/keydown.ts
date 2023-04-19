@@ -46,9 +46,9 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         })
       }
       if (!isCollapsed) {
-        elementList.splice(startIndex + 1, endIndex - startIndex)
+        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
       } else {
-        elementList.splice(index, 1)
+        draw.spliceElementList(elementList, index, 1)
       }
       curIndex = isCollapsed ? index - 1 : startIndex
     }
@@ -63,9 +63,9 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       curIndex = control.removeControl(endIndex + 1)
     } else {
       if (!isCollapsed) {
-        elementList.splice(startIndex + 1, endIndex - startIndex)
+        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
       } else {
-        elementList.splice(index + 1, 1)
+        draw.spliceElementList(elementList, index + 1, 1)
       }
       curIndex = isCollapsed ? index : startIndex
     }
@@ -73,25 +73,17 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Enter) {
     if (isReadonly || isPartRangeInControlOutside) return
-    // 表格需要上下文信息
-    const positionContext = position.getPositionContext()
-    let restArg = {}
-    if (positionContext.isTable) {
-      const { tdId, trId, tableId } = positionContext
-      restArg = { tdId, trId, tableId }
-    }
     const enterText: IElement = {
-      value: ZERO,
-      ...restArg
+      value: ZERO
     }
     let curIndex: number
     if (activeControl && !control.isRangInPostfix()) {
       curIndex = control.setValue([enterText])
     } else {
       if (isCollapsed) {
-        elementList.splice(index + 1, 0, enterText)
+        draw.spliceElementList(elementList, index + 1, 0, enterText)
       } else {
-        elementList.splice(startIndex + 1, endIndex - startIndex, enterText)
+        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex, enterText)
       }
       curIndex = index + 1
     }
