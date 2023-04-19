@@ -52,7 +52,8 @@ import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
-import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
+import { EDITOR_ELEMENT_CONTEXT_ATTR, INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
+import { ListParticle } from './particle/ListParticle'
 
 export class Draw {
 
@@ -100,6 +101,7 @@ export class Draw {
   private subscriptParticle: SubscriptParticle
   private checkboxParticle: CheckboxParticle
   private blockParticle: BlockParticle
+  private listParticle: ListParticle
   private control: Control
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
@@ -164,6 +166,7 @@ export class Draw {
     this.subscriptParticle = new SubscriptParticle()
     this.checkboxParticle = new CheckboxParticle(this)
     this.blockParticle = new BlockParticle(this)
+    this.listParticle = new ListParticle(this)
     this.control = new Control(this)
 
     this.scrollObserver = new ScrollObserver(this)
@@ -435,6 +438,18 @@ export class Draw {
     return this.footerElementList
   }
 
+  public formatElementContext(anchorElement: IElement, targetElement: IElement) {
+    for (let i = 0; i < EDITOR_ELEMENT_CONTEXT_ATTR.length; i++) {
+      const attr = EDITOR_ELEMENT_CONTEXT_ATTR[i]
+      const value = anchorElement[attr] as never
+      if (value !== undefined) {
+        targetElement[attr] = value
+      } else {
+        delete targetElement[attr]
+      }
+    }
+  }
+
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
@@ -455,18 +470,9 @@ export class Draw {
       const isCollapsed = startIndex === endIndex
       const start = startIndex + 1
       if (!isCollapsed) {
-        elementList.splice(start, endIndex - startIndex)
+        this.spliceElementList(elementList, start, endIndex - startIndex)
       }
-      const positionContext = this.position.getPositionContext()
-      for (let i = 0; i < payload.length; i++) {
-        const element = payload[i]
-        if (positionContext.isTable) {
-          element.tdId = positionContext.tdId
-          element.trId = positionContext.trId
-          element.tableId = positionContext.tableId
-        }
-        elementList.splice(start + i, 0, element)
-      }
+      this.spliceElementList(elementList, start, 0, ...payload)
       curIndex = startIndex + payload.length
     }
     if (~curIndex) {
@@ -475,6 +481,41 @@ export class Draw {
         curIndex
       })
     }
+  }
+
+  public spliceElementList(elementList: IElement[], start: number, deleteCount: number, ...items: IElement[]) {
+    if (deleteCount > 0) {
+      // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
+      const endIndex = start + deleteCount - 1
+      const endElement = elementList[endIndex]
+      const endElementListId = endElement?.listId
+      if (endElementListId && elementList[start - 1]?.listId !== endElementListId) {
+        let startIndex = endIndex
+        while (startIndex < elementList.length) {
+          const curElement = elementList[startIndex]
+          if (curElement.listId !== endElementListId || curElement.value === ZERO) break
+          delete curElement.listId
+          delete curElement.listType
+          delete curElement.listStyle
+          startIndex++
+        }
+      }
+    }
+    if (items.length) {
+      // 格式化新增数据
+      const endIndex = start + deleteCount - 1
+      const endElement = elementList[endIndex]
+      const endNextElement = elementList[endIndex + 1]
+      const anchorElement = endElement?.value === ZERO && endNextElement && endNextElement.value !== ZERO
+        ? endNextElement
+        : endElement
+      if (anchorElement) {
+        for (let i = 0; i < items.length; i++) {
+          this.formatElementContext(anchorElement, items[i])
+        }
+      }
+    }
+    elementList.splice(start, deleteCount, ...items)
   }
 
   public getCanvasEvent(): CanvasEvent {
@@ -515,6 +556,10 @@ export class Draw {
 
   public getDateParticle(): DateParticle {
     return this.dateParticle
+  }
+
+  public getListParticle(): ListParticle {
+    return this.listParticle
   }
 
   public getControl(): Control {
@@ -765,6 +810,8 @@ export class Draw {
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    // 计算列表偏移宽度
+    const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
     const rowList: IRow[] = []
     if (elementList.length) {
       rowList.push({
@@ -776,6 +823,9 @@ export class Draw {
         rowFlex: elementList?.[1]?.rowFlex
       })
     }
+    // 列表位置
+    let listId: string | undefined
+    let listIndex = 0
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
@@ -930,7 +980,7 @@ export class Draw {
             const cloneElement = deepClone(element)
             cloneElement.trList = cloneTrList
             cloneElement.id = getUUID()
-            elementList.splice(i + 1, 0, cloneElement)
+            this.spliceElementList(elementList, i + 1, 0, cloneElement)
             // 换页的是当前行则改变上下文
             const positionContext = this.position.getPositionContext()
             if (positionContext.isTable && positionContext.trIndex === deleteStart) {
@@ -1007,7 +1057,17 @@ export class Draw {
       const preElement = elementList[i - 1]
       const nextElement = elementList[i + 1]
       // 累计行宽 + 当前元素宽度 + 后面标点符号宽度
-      const curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
+      let curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
+      // 列表信息
+      if (element.listId) {
+        curRowWidth += listStyleMap.get(element.listId) || 0
+        if (element.listId !== listId) {
+          listIndex = 0
+        } else if (element.value === ZERO) {
+          listIndex++
+        }
+      }
+      listId = element.listId
       if (
         element.type === ElementType.TABLE
         || preElement?.type === ElementType.TABLE
@@ -1017,9 +1077,14 @@ export class Draw {
         || element.imgDisplay === ImageDisplay.INLINE
         || curRowWidth > innerWidth
         || (i !== 0 && element.value === ZERO)
+        || (preElement?.listId !== element.listId)
       ) {
         // 减小行元素前第一行空行行高
-        if (curRow.startIndex === 0 && curRow.elementList.length === 1 && INLINE_ELEMENT_TYPE.includes(element.type!)) {
+        if (
+          curRow.startIndex === 0 &&
+          curRow.elementList.length === 1 &&
+          (INLINE_ELEMENT_TYPE.includes(element.type!) || element.listId)
+        ) {
           curRow.height = defaultBasicRowMarginHeight
         }
         // 两端对齐
@@ -1031,7 +1096,7 @@ export class Draw {
           }
           curRow.width = innerWidth
         }
-        rowList.push({
+        const row: IRow = {
           width: metrics.width,
           height,
           startIndex: i,
@@ -1039,7 +1104,13 @@ export class Draw {
           ascent,
           rowFlex: elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
-        })
+        }
+        if (element.listId) {
+          row.isList = true
+          row.offsetX = listStyleMap.get(element.listId!)
+          row.listIndex = listIndex
+        }
+        rowList.push(row)
       } else {
         curRow.width += metrics.width
         if (curRow.height < height) {
@@ -1254,6 +1325,10 @@ export class Draw {
             }
           }
         }
+      }
+      // 绘制列表样式
+      if (curRow.isList) {
+        this.listParticle.drawListStyle(ctx, curRow, positionList[curRow.startIndex])
       }
       // 绘制富文本及文字
       this._drawRichText(ctx)

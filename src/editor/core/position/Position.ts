@@ -81,6 +81,10 @@ export class Position {
       } else if (curRow.rowFlex === RowFlex.RIGHT) {
         x += innerWidth - curRow.width
       }
+      // 列表向右移动-留出列表样式位置
+      if (curRow.isList) {
+        x += curRow.offsetX || 0
+      }
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y

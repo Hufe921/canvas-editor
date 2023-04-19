@@ -1,4 +1,4 @@
-import { EditorZone, ElementType, PageMode, TitleLevel } from '..'
+import { EditorZone, ElementType, ListStyle, ListType, PageMode, TitleLevel } from '..'
 import { RowFlex } from '../dataset/enum/Row'
 import { IControl } from './Control'
 import { IEditorResult } from './Editor'
@@ -20,6 +20,8 @@ export interface IRangeStyle {
   rowMargin: number;
   dashArray: number[];
   level: TitleLevel | null;
+  listType: ListType | null;
+  listStyle: ListStyle | null;
 }
 
 export type IRangeStyleChange = (payload: IRangeStyle) => void

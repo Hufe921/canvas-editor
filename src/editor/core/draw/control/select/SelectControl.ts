@@ -164,7 +164,8 @@ export class SelectControl implements IControlInstance {
     }
     if (!~leftIndex || !~rightIndex) return -1
     // 删除元素
-    elementList.splice(leftIndex + 1, rightIndex - leftIndex)
+    const draw = this.control.getDraw()
+    draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
     // 增加占位符
     this.control.addPlaceholder(preIndex)
     this.element.control!.code = null
@@ -186,8 +187,9 @@ export class SelectControl implements IControlInstance {
     const startElement = elementList[startIndex]
     const start = startIndex + 1
     const data = splitText(valueSet.value)
+    const draw = this.control.getDraw()
     for (let i = 0; i < data.length; i++) {
-      elementList.splice(start + i, 0, {
+      draw.spliceElementList(elementList, start + i, 0, {
         ...startElement,
         value: data[i],
         controlComponent: ControlComponent.VALUE
