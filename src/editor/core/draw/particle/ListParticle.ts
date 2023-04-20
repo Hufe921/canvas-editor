@@ -52,10 +52,11 @@ export class ListParticle {
   }
 
   public getListStyleWidth(ctx: CanvasRenderingContext2D, listElementList: IElement[]): number {
+    const { scale } = this.options
     const startElement = listElementList[0]
     // 非递增样式返回固定值
     if (startElement.listStyle && startElement.listStyle !== ListStyle.DECIMAL) {
-      return this.UN_COUNT_STYLE_WIDTH
+      return this.UN_COUNT_STYLE_WIDTH * scale
     }
     // 计算列表数量
     const count = listElementList.reduce((pre, cur) => {
@@ -68,7 +69,7 @@ export class ListParticle {
     // 以递增样式最大宽度为准
     const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length)}${KeyMap.PERIOD}`
     const textMetrics = ctx.measureText(text)
-    return Math.ceil(textMetrics.width + this.LIST_GAP)
+    return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
   }
 
   public drawListStyle(ctx: CanvasRenderingContext2D, row: IRow, position: IElementPosition) {
