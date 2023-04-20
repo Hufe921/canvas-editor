@@ -4,7 +4,7 @@ import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
-import { EDITOR_ELEMENT_ZIP_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { EDITOR_ELEMENT_CONTEXT_ATTR, EDITOR_ELEMENT_ZIP_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { titleSizeMapping } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
 import { ITd } from '../interface/table/Td'
@@ -31,7 +31,8 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
     isHandleFirstElement: true,
     ...options
   }
-  if (isHandleFirstElement && elementList[0]?.value !== ZERO) {
+  const startElement = elementList[0]
+  if (isHandleFirstElement && startElement?.value !== ZERO && startElement?.value !== '\n') {
     elementList.unshift({
       value: ZERO
     })
@@ -539,4 +540,25 @@ export function getElementRowFlex(node: HTMLElement) {
 
 export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+}
+
+export function formatElementContext(sourceElementList: IElement[], formatElementList: IElement[], anchorIndex: number) {
+  const anchorElement = sourceElementList[anchorIndex]
+  const anchorNextElement = sourceElementList[anchorIndex + 1]
+  const copyElement = anchorElement?.value === ZERO && anchorNextElement && anchorNextElement.value !== ZERO
+    ? anchorNextElement
+    : anchorElement
+  if (!copyElement) return
+  for (let e = 0; e < formatElementList.length; e++) {
+    const targetElement = formatElementList[e]
+    for (let i = 0; i < EDITOR_ELEMENT_CONTEXT_ATTR.length; i++) {
+      const attr = EDITOR_ELEMENT_CONTEXT_ATTR[i]
+      const value = copyElement[attr] as never
+      if (value !== undefined) {
+        targetElement[attr] = value
+      } else {
+        delete targetElement[attr]
+      }
+    }
+  }
 }

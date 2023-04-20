@@ -3,6 +3,7 @@ import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { formatElementContext } from '../../../utils/element'
 import { isMod } from '../../../utils/hotkey'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -76,6 +77,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     const enterText: IElement = {
       value: ZERO
     }
+    formatElementContext(elementList, [enterText], startIndex)
     let curIndex: number
     if (activeControl && !control.isRangInPostfix()) {
       curIndex = control.setValue([enterText])

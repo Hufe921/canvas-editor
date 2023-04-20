@@ -2,6 +2,7 @@ import { ControlComponent } from '../../../../dataset/enum/Control'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import { IControlInstance } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
+import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class TextControl implements IControlInstance {
@@ -74,11 +75,13 @@ export class TextControl implements IControlInstance {
     const startElement = elementList[startIndex]
     const start = range.startIndex + 1
     for (let i = 0; i < data.length; i++) {
-      draw.spliceElementList(elementList, start + i, 0, {
+      const newElement: IElement = {
         ...startElement,
         ...data[i],
         controlComponent: ControlComponent.VALUE
-      })
+      }
+      formatElementContext(elementList, [newElement], startIndex)
+      draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     return start + data.length - 1
   }

@@ -95,10 +95,29 @@ export class RangeManager {
       if (positionList[start]?.value === ZERO) break
       start--
     }
+    // 中间选择
+    if (startIndex !== endIndex) {
+      let middle = startIndex + 1
+      while (middle < endIndex) {
+        const { pageNo, rowNo } = positionList[middle]
+        let rowArray = rangeRow.get(pageNo)
+        if (!rowArray) {
+          rowArray = []
+          rangeRow.set(pageNo, rowArray)
+        }
+        if (!rowArray.includes(rowNo)) {
+          rowArray.push(rowNo)
+        }
+        middle++
+      }
+    }
     // 向下查找
-    let end = startIndex + 1
+    let end = endIndex
     while (end < positionList.length) {
-      if (elementList[end].titleId !== elementList[end + 1]?.titleId) break
+      if (
+        positionList[end].value === ZERO ||
+        elementList[end].titleId !== elementList[end + 1]?.titleId
+      ) break
       const { pageNo, rowNo } = positionList[end]
       let rowArray = rangeRow.get(pageNo)
       if (!rowArray) {
@@ -108,7 +127,6 @@ export class RangeManager {
       if (!rowArray.includes(rowNo)) {
         rowArray.push(rowNo)
       }
-      if (positionList[end].value === ZERO) break
       end++
     }
     return rangeRow

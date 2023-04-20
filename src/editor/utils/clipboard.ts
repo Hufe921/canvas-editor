@@ -1,6 +1,7 @@
-import { IEditorOption, IElement, RowFlex } from '..'
+import { IEditorOption, IElement, ListStyle, ListType, RowFlex } from '..'
 import { ZERO } from '../dataset/constant/Common'
 import { INLINE_NODE_NAME, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { listStyleCSSMapping, listTypeElementMapping } from '../dataset/constant/List'
 import { titleNodeNameMapping, titleOrderNumberMapping } from '../dataset/constant/Title'
 import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
@@ -53,9 +54,7 @@ export function convertElementToDom(element: IElement, options: DeepRequired<IEd
   if (element.italic) {
     dom.style.fontStyle = 'italic'
   }
-  if (element.size) {
-    dom.style.fontSize = `${element.size}px`
-  }
+  dom.style.fontSize = `${element.size || options.defaultSize}px`
   if (element.highlight) {
     dom.style.backgroundColor = element.highlight
   }
@@ -100,6 +99,38 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         const childDom = buildDomFromElementList(zipElementList(element.valueList!))
         h.innerHTML = childDom.innerHTML
         clipboardDom.append(h)
+      } else if (element.type === ElementType.LIST) {
+        const list = document.createElement(listTypeElementMapping[element.listType!])
+        if (element.listStyle) {
+          list.style.listStyleType = listStyleCSSMapping[element.listStyle]
+        }
+        // 按照换行符拆分
+        let curListIndex = 0
+        const listElementListMap: Map<number, IElement[]> = new Map()
+        const zipList = zipElementList(element.valueList!)
+        for (let z = 0; z < zipList.length; z++) {
+          const zipElement = zipList[z]
+          const zipValueList = zipElement.value.split('\n')
+          for (let c = 0; c < zipValueList.length; c++) {
+            if (c > 0) {
+              curListIndex += 1
+            }
+            const value = zipValueList[c]
+            const listElementList = listElementListMap.get(curListIndex) || []
+            listElementList.push({
+              ...zipElement,
+              value,
+            })
+            listElementListMap.set(curListIndex, listElementList)
+          }
+        }
+        listElementListMap.forEach(listElementList => {
+          const li = document.createElement('li')
+          const childDom = buildDomFromElementList(listElementList)
+          li.innerHTML = childDom.innerHTML
+          list.append(li)
+        })
+        clipboardDom.append(list)
       } else if (element.type === ElementType.IMAGE) {
         const img = document.createElement('img')
         if (element.value) {
@@ -218,6 +249,27 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
               value: '\n'
             })
           }
+        } else if (node.nodeName === 'UL' || node.nodeName === 'OL') {
+          const listNode = node as HTMLOListElement | HTMLUListElement
+          const listElement: IElement = {
+            value: '',
+            type: ElementType.LIST,
+            valueList: []
+          }
+          if (node.nodeName === 'OL') {
+            listElement.listType = ListType.OL
+          } else {
+            listElement.listType = ListType.UL
+            listElement.listStyle = <ListStyle><unknown>listNode.style.listStyleType
+          }
+          listNode.querySelectorAll('li').forEach(li => {
+            const liValueList = getElementListByHTML(li.innerHTML, options)
+            liValueList.unshift({
+              value: '\n'
+            })
+            listElement.valueList!.push(...liValueList)
+          })
+          elementList.push(listElement)
         } else if (node.nodeName === 'HR') {
           elementList.push({
             value: '\n',

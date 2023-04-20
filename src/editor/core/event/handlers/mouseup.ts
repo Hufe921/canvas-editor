@@ -3,7 +3,7 @@ import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { deepClone, getUUID } from '../../../utils'
-import { formatElementList } from '../../../utils/element'
+import { formatElementContext, formatElementList } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
 type IDragElement = IElement & { dragId: string }
@@ -103,6 +103,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         return newElement
       }
     })
+    formatElementContext(elementList, replaceElementList, range.startIndex)
     // 缓存拖拽选区开始结束id
     const cacheRangeStartId = createDragId(cacheElementList[cacheRange.startIndex])
     const cacheRangeEndId = createDragId(cacheElementList[cacheRange.endIndex])

@@ -1,7 +1,11 @@
+import { ZERO } from '../../dataset/constant/Common'
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
+import { VIRTUAL_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ElementType } from '../../dataset/enum/Element'
+import { IElement } from '../../interface/Element'
 import { debounce } from '../../utils'
 import { getElementListByHTML } from '../../utils/clipboard'
+import { formatElementContext } from '../../utils/element'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 
@@ -47,6 +51,9 @@ export class CursorAgent {
   private _paste(evt: ClipboardEvent) {
     const clipboardData = evt.clipboardData
     if (!clipboardData) return
+    const rangeManager = this.draw.getRange()
+    const { startIndex } = rangeManager.getRange()
+    const elementList = this.draw.getElementList()
     // 从粘贴板提取数据
     let isHTML = false
     for (let i = 0; i < clipboardData.items.length; i++) {
@@ -66,10 +73,34 @@ export class CursorAgent {
         }
         if (item.type === 'text/html' && isHTML) {
           item.getAsString(htmlText => {
-            const elementList = getElementListByHTML(htmlText, {
+            const pasteElementList = getElementListByHTML(htmlText, {
               innerWidth: this.draw.getOriginalInnerWidth()
             })
-            this.draw.insertElementList(elementList)
+            if (~startIndex) {
+              // 如果是复制到虚拟元素里，则粘贴列表的虚拟元素需扁平化处理
+              const anchorElement = elementList[startIndex]
+              if (anchorElement?.titleId || anchorElement?.listId) {
+                let start = 0
+                while (start < pasteElementList.length) {
+                  const pasteElement = pasteElementList[start]
+                  if (VIRTUAL_ELEMENT_TYPE.includes(pasteElement.type!)) {
+                    pasteElementList.splice(start, 1)
+                    if (pasteElement.valueList) {
+                      for (let v = 0; v < pasteElement.valueList.length; v++) {
+                        const element = pasteElement.valueList[v]
+                        if (element.value === ZERO || element.value === '\n') continue
+                        pasteElementList.splice(start, 0, element)
+                        start++
+                      }
+                    }
+                    start--
+                  }
+                  start++
+                }
+              }
+              formatElementContext(elementList, pasteElementList, startIndex)
+            }
+            this.draw.insertElementList(pasteElementList)
           })
         }
       } else if (item.kind === 'file') {
@@ -84,12 +115,16 @@ export class CursorAgent {
               const value = fileReader.result as string
               image.src = value
               image.onload = () => {
-                this.draw.insertElementList([{
+                const imageElement: IElement = {
                   value,
                   type: ElementType.IMAGE,
                   width: image.width,
                   height: image.height
-                }])
+                }
+                if (~startIndex) {
+                  formatElementContext(elementList, [imageElement], startIndex)
+                }
+                this.draw.insertElementList([imageElement])
               }
             }
           }
