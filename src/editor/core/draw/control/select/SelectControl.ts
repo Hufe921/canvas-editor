@@ -5,6 +5,7 @@ import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import { IControlInstance } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
 import { splitText } from '../../../../utils'
+import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class SelectControl implements IControlInstance {
@@ -189,11 +190,13 @@ export class SelectControl implements IControlInstance {
     const data = splitText(valueSet.value)
     const draw = this.control.getDraw()
     for (let i = 0; i < data.length; i++) {
-      draw.spliceElementList(elementList, start + i, 0, {
+      const newElement: IElement = {
         ...startElement,
         value: data[i],
         controlComponent: ControlComponent.VALUE
-      })
+      }
+      formatElementContext(elementList, [newElement], startIndex)
+      draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     // render
     const newIndex = start + data.length - 1

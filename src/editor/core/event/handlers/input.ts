@@ -3,6 +3,7 @@ import { EDITOR_ELEMENT_COPY_ATTR } from '../../../dataset/constant/Element'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { splitText } from '../../../utils'
+import { formatElementContext } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function input(data: string, host: CanvasEvent) {
@@ -72,6 +73,7 @@ export function input(data: string, host: CanvasEvent) {
     if (startIndex !== endIndex) {
       draw.spliceElementList(elementList, start, endIndex - startIndex)
     }
+    formatElementContext(elementList, inputData, startIndex)
     draw.spliceElementList(elementList, start, 0, ...inputData)
     curIndex = startIndex + inputData.length
   }

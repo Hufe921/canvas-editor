@@ -20,7 +20,7 @@ import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
 import { downloadFile, getUUID } from '../../utils'
-import { formatElementList, isTextLikeElement } from '../../utils/element'
+import { formatElementContext, formatElementList, isTextLikeElement } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -543,12 +543,14 @@ export class CommandAdapt {
     formatElementList([element], {
       editorOptions: this.options
     })
+    formatElementContext(elementList, [element], startIndex)
     const curIndex = startIndex + 1
-    if (startIndex === endIndex) {
-      this.draw.spliceElementList(elementList, curIndex, 0, element)
-    } else {
-      this.draw.spliceElementList(elementList, curIndex, endIndex - startIndex, element)
-    }
+    this.draw.spliceElementList(
+      elementList,
+      curIndex,
+      startIndex === endIndex ? 0 : endIndex - startIndex,
+      element
+    )
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex, isSetCursor: false })
   }
@@ -1156,11 +1158,13 @@ export class CommandAdapt {
     }))
     if (!newElementList) return
     const start = startIndex + 1
-    if (startIndex === endIndex) {
-      this.draw.spliceElementList(elementList, start, 0, ...newElementList)
-    } else {
-      this.draw.spliceElementList(elementList, start, endIndex - startIndex, ...newElementList)
-    }
+    formatElementContext(elementList, newElementList, startIndex)
+    this.draw.spliceElementList(
+      elementList,
+      start,
+      startIndex === endIndex ? 0 : endIndex - startIndex,
+      ...newElementList
+    )
     const curIndex = start + newElementList.length - 1
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
@@ -1284,6 +1288,7 @@ export class CommandAdapt {
         dashArray: payload
       }
       // 从行头增加分割线
+      formatElementContext(elementList, [newElement], startIndex)
       if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
         this.draw.spliceElementList(elementList, startIndex, 1, newElement)
         curIndex = startIndex - 1
@@ -1355,11 +1360,13 @@ export class CommandAdapt {
       type: ElementType.IMAGE
     }
     const curIndex = startIndex + 1
-    if (startIndex === endIndex) {
-      this.draw.spliceElementList(elementList, curIndex, 0, element)
-    } else {
-      this.draw.spliceElementList(elementList, curIndex, endIndex - startIndex, element)
-    }
+    formatElementContext(elementList, [element], startIndex)
+    this.draw.spliceElementList(
+      elementList,
+      curIndex,
+      startIndex === endIndex ? 0 : endIndex - startIndex,
+      element
+    )
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }
@@ -1611,6 +1618,10 @@ export class CommandAdapt {
     if (!payload.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    // 格式化上下文信息
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    formatElementContext(elementList, payload, startIndex)
     this.draw.insertElementList(payload)
   }
 

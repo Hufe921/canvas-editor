@@ -4,7 +4,7 @@ import { IControl, IControlInitOption, IControlInstance, IControlOption } from '
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRange } from '../../../interface/Range'
 import { deepClone, splitText } from '../../../utils'
-import { pickElementAttr, zipElementList } from '../../../utils/element'
+import { formatElementContext, pickElementAttr, zipElementList } from '../../../utils/element'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -293,14 +293,16 @@ export class Control {
     const placeholderStrList = splitText(control.placeholder)
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]
-      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, {
+      const newElement: IElement = {
         value,
         controlId: startElement.controlId,
         type: ElementType.CONTROL,
         control: startElement.control,
         controlComponent: ControlComponent.PLACEHOLDER,
         color: this.options.placeholderColor
-      })
+      }
+      formatElementContext(elementList, [newElement], startIndex)
+      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, newElement)
     }
   }
 

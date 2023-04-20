@@ -52,7 +52,7 @@ import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
-import { EDITOR_ELEMENT_CONTEXT_ATTR, INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
+import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 
 export class Draw {
@@ -438,18 +438,6 @@ export class Draw {
     return this.footerElementList
   }
 
-  public formatElementContext(anchorElement: IElement, targetElement: IElement) {
-    for (let i = 0; i < EDITOR_ELEMENT_CONTEXT_ATTR.length; i++) {
-      const attr = EDITOR_ELEMENT_CONTEXT_ATTR[i]
-      const value = anchorElement[attr] as never
-      if (value !== undefined) {
-        targetElement[attr] = value
-      } else {
-        delete targetElement[attr]
-      }
-    }
-  }
-
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
     const isPartRangeInControlOutside = this.control.isPartRangeInControlOutside()
@@ -498,20 +486,6 @@ export class Draw {
           delete curElement.listType
           delete curElement.listStyle
           startIndex++
-        }
-      }
-    }
-    if (items.length) {
-      // 格式化新增数据
-      const endIndex = start + deleteCount - 1
-      const endElement = elementList[endIndex]
-      const endNextElement = elementList[endIndex + 1]
-      const anchorElement = endElement?.value === ZERO && endNextElement && endNextElement.value !== ZERO
-        ? endNextElement
-        : endElement
-      if (anchorElement) {
-        for (let i = 0; i < items.length; i++) {
-          this.formatElementContext(anchorElement, items[i])
         }
       }
     }
