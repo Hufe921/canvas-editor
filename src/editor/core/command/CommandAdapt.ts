@@ -507,7 +507,15 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
-    const innerWidth = this.draw.getOriginalInnerWidth()
+    let offsetX = 0
+    if (elementList[startIndex]?.listId) {
+      const positionList = this.position.getPositionList()
+      const { rowIndex } = positionList[startIndex]
+      const rowList = this.draw.getRowList()
+      const row = rowList[rowIndex]
+      offsetX = row?.offsetX || 0
+    }
+    const innerWidth = this.draw.getOriginalInnerWidth() - offsetX
     // colgroup
     const colgroup: IColgroup[] = []
     const colWidth = innerWidth / col

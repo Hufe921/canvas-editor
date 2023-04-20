@@ -68,7 +68,7 @@ export class Position {
   }
 
   public computePageRowPosition(payload: IComputePageRowPositionPayload): IComputePageRowPositionResult {
-    const { positionList, rowList, pageNo, startX, startY, startIndex, innerWidth } = payload
+    const { positionList, rowList, pageNo, startX, startY, startRowIndex, startIndex, innerWidth } = payload
     const { scale, tdPadding } = this.options
     let x = startX
     let y = startY
@@ -100,6 +100,7 @@ export class Position {
           pageNo,
           index,
           value: element.value,
+          rowIndex: startRowIndex + i,
           rowNo: i,
           metrics,
           ascent: offsetY,
@@ -128,6 +129,7 @@ export class Position {
                 positionList: td.positionList,
                 rowList,
                 pageNo,
+                startRowIndex: 0,
                 startIndex: 0,
                 startX: (td.x! + tdPadding) * scale + tablePreX,
                 startY: td.y! * scale + tablePreY,
@@ -178,6 +180,7 @@ export class Position {
     const header = this.draw.getHeader()
     const extraHeight = header.getExtraHeight()
     const startY = margins[0] + extraHeight
+    let startRowIndex = 0
     for (let i = 0; i < pageRowList.length; i++) {
       const rowList = pageRowList[i]
       const startIndex = rowList[0].startIndex
@@ -185,11 +188,13 @@ export class Position {
         positionList: this.positionList,
         rowList,
         pageNo: i,
+        startRowIndex,
         startIndex,
         startX,
         startY,
         innerWidth
       })
+      startRowIndex += rowList.length
     }
   }
 

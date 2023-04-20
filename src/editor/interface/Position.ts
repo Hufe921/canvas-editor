@@ -46,6 +46,7 @@ export interface IComputePageRowPositionPayload {
   positionList: IElementPosition[];
   rowList: IRow[];
   pageNo: number;
+  startRowIndex: number;
   startIndex: number;
   startX: number;
   startY: number;

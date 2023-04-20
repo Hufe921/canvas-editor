@@ -126,6 +126,7 @@ export interface IElementPosition {
   pageNo: number;
   index: number;
   value: string,
+  rowIndex: number;
   rowNo: number;
   ascent: number;
   lineHeight: number;
