@@ -1023,7 +1023,8 @@ export class Draw {
           metrics.boundingBoxDescent += metrics.height / 2
         }
       }
-      const ascent = element.type === ElementType.IMAGE || element.type === ElementType.LATEX
+      const ascent = (element.imgDisplay !== ImageDisplay.INLINE && element.type === ElementType.IMAGE) ||
+        element.type === ElementType.LATEX
         ? metrics.height
         : metrics.boundingBoxAscent + rowMargin
       const height = rowMargin + metrics.boundingBoxAscent + metrics.boundingBoxDescent + rowMargin
