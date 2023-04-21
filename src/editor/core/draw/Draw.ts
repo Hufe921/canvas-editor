@@ -474,7 +474,7 @@ export class Draw {
   public spliceElementList(elementList: IElement[], start: number, deleteCount: number, ...items: IElement[]) {
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
-      const endIndex = start + deleteCount - 1
+      const endIndex = start + deleteCount
       const endElement = elementList[endIndex]
       const endElementListId = endElement?.listId
       if (endElementListId && elementList[start - 1]?.listId !== endElementListId) {
