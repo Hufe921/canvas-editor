@@ -1,6 +1,7 @@
 import { ElementType } from '../../../../dataset/enum/Element'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 import { IRowElement } from '../../../../interface/Row'
+import { formatElementContext } from '../../../../utils/element'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 import { DatePicker } from './DatePicker'
@@ -53,14 +54,16 @@ export class DateParticle {
     this.draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
     this.range.setRange(leftIndex, leftIndex)
     // 插入新时间
-    this.draw.insertElementList([{
+    const dateElement: IElement = {
       type: ElementType.DATE,
       value: '',
       dateFormat: startElement.dateFormat,
       valueList: [{
         value: date
       }]
-    }])
+    }
+    formatElementContext(elementList, [dateElement], leftIndex)
+    this.draw.insertElementList([dateElement])
   }
 
   public getDateElementRange(): [number, number] | null {

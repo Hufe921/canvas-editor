@@ -551,6 +551,9 @@ export function formatElementContext(sourceElementList: IElement[], formatElemen
   if (!copyElement) return
   for (let e = 0; e < formatElementList.length; e++) {
     const targetElement = formatElementList[e]
+    if (targetElement.valueList && targetElement.valueList.length) {
+      formatElementContext(sourceElementList, targetElement.valueList, anchorIndex)
+    }
     for (let i = 0; i < EDITOR_ELEMENT_CONTEXT_ATTR.length; i++) {
       const attr = EDITOR_ELEMENT_CONTEXT_ATTR[i]
       const value = copyElement[attr] as never
