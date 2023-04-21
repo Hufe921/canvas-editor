@@ -1096,6 +1096,16 @@ export class Draw {
           }
         }
         curRow.elementList.push(rowElement)
+        if (curRow.width >= innerWidth) {
+          rowList.push({
+            width: 0,
+            height: 0,
+            ascent: 0,
+            elementList: [],
+            startIndex: i + 1,
+            rowFlex: elementList?.[1]?.rowFlex,
+          })
+        }
       }
     }
     return rowList
