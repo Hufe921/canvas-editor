@@ -53,6 +53,8 @@ export class Previewer {
     resizerSelection.ondblclick = this._dblclick.bind(this)
     this.previewerContainer = null
     this.previewerImage = null
+    // 光标移动
+    this._keydown = this._keydown.bind(this)
   }
 
   private _createResizerDom(): IPreviewerCreateResult {
@@ -80,6 +82,15 @@ export class Previewer {
     resizerImageContainer.append(resizerImage)
     this.container.append(resizerImageContainer)
     return { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage }
+  }
+
+  private _keydown(evt: KeyboardEvent){
+    const previewerIsFocus = this.resizerSelection.style.display === 'block'
+    if (previewerIsFocus) {
+      this.clearResizer()
+      this.draw.getCanvasEvent().keydown(evt)
+      document.removeEventListener('keydown', this._keydown)
+    }
   }
 
   private _mousedown(evt: MouseEvent) {
@@ -327,6 +338,8 @@ export class Previewer {
     this.curPosition = position
     this.width = this.curElement.width! * scale
     this.height = this.curElement.height! * scale
+    // 键盘移动
+    document.addEventListener('keydown',this._keydown)
   }
 
   public clearResizer() {
