@@ -4,7 +4,7 @@ import { IControl, IControlInitOption, IControlInstance, IControlOption } from '
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRange } from '../../../interface/Range'
 import { deepClone, splitText } from '../../../utils'
-import { pickElementAttr, zipElementList } from '../../../utils/element'
+import { formatElementContext, pickElementAttr, zipElementList } from '../../../utils/element'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -30,6 +30,10 @@ export class Control {
     this.listener = draw.getListener()
     this.options = draw.getOptions().control
     this.activeControl = null
+  }
+
+  public getDraw(): Draw {
+    return this.draw
   }
 
   // 判断选区部分在控件边界外
@@ -256,7 +260,7 @@ export class Control {
     if (!~leftIndex && !~rightIndex) return startIndex
     leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
-    elementList.splice(leftIndex + 1, rightIndex - leftIndex)
+    this.draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
     return leftIndex
   }
 
@@ -273,7 +277,7 @@ export class Control {
         const curElement = elementList[index]
         if (curElement.controlId !== startElement.controlId) break
         if (curElement.controlComponent === ControlComponent.PLACEHOLDER) {
-          elementList.splice(index, 1)
+          this.draw.spliceElementList(elementList, index, 1)
         } else {
           index++
         }
@@ -289,14 +293,16 @@ export class Control {
     const placeholderStrList = splitText(control.placeholder)
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]
-      elementList.splice(startIndex + p + 1, 0, {
+      const newElement: IElement = {
         value,
         controlId: startElement.controlId,
         type: ElementType.CONTROL,
         control: startElement.control,
         controlComponent: ControlComponent.PLACEHOLDER,
         color: this.options.placeholderColor
-      })
+      }
+      formatElementContext(elementList, [newElement], startIndex)
+      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, newElement)
     }
   }
 

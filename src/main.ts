@@ -1,6 +1,6 @@
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IEditorData, IEditorResult, IElement, KeyMap, PageMode, PaperDirection, RowFlex, TitleLevel } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IEditorData, IEditorResult, IElement, KeyMap, ListStyle, ListType, PageMode, PaperDirection, RowFlex, TitleLevel } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
@@ -271,6 +271,19 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
   rowOptionDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
+  }
+
+  const listDom = document.querySelector<HTMLDivElement>('.menu-item__list')!
+  const listOptionDom = listDom.querySelector<HTMLDivElement>('.options')!
+  listDom.onclick = function () {
+    console.log('list')
+    listOptionDom.classList.toggle('visible')
+  }
+  listOptionDom.onclick = function (evt) {
+    const li = evt.target as HTMLLIElement
+    const listType = <ListType>li.dataset.listType || null
+    const listStyle = <ListStyle><unknown>li.dataset.listStyle
+    instance.command.executeList(listType, listStyle)
   }
 
   // 4. | 表格 | 图片 | 超链接 | 分割线 | 水印 | 代码块 | 分隔符 | 控件 | 复选框 | LaTeX | 日期选择器
@@ -1125,6 +1138,21 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
     } else {
       titleSelectDom.innerText = '正文'
       titleOptionDom.querySelector('li:first-child')!.classList.add('active')
+    }
+
+    // 列表
+    listOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
+    if (payload.listType) {
+      const listType = payload.listType
+      const listStyle = payload.listType === ListType.OL ? ListStyle.DECIMAL : payload.listType
+      const curListDom = listOptionDom
+        .querySelector<HTMLLIElement>(`[data-list-type='${listType}'][data-list-style='${listStyle}']`)
+      if (curListDom) {
+        curListDom.classList.add('active')
+        listDom.classList.add('active')
+      }
+    } else {
+      listDom.classList.remove('active')
     }
   }
 

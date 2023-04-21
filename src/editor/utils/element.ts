@@ -4,7 +4,7 @@ import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
-import { EDITOR_ELEMENT_ZIP_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { EDITOR_ELEMENT_CONTEXT_ATTR, EDITOR_ELEMENT_ZIP_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { titleSizeMapping } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
 import { ITd } from '../interface/table/Td'
@@ -31,7 +31,8 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
     isHandleFirstElement: true,
     ...options
   }
-  if (isHandleFirstElement && elementList[0]?.value !== ZERO) {
+  const startElement = elementList[0]
+  if (isHandleFirstElement && startElement?.value !== ZERO && startElement?.value !== '\n') {
     elementList.unshift({
       value: ZERO
     })
@@ -132,6 +133,27 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
               value.bold = true
             }
           }
+          elementList.splice(i, 0, value)
+          i++
+        }
+      }
+      i--
+    } else if (el.type === ElementType.LIST) {
+      // 移除父节点
+      elementList.splice(i, 1)
+      // 格式化元素
+      const valueList = el.valueList || []
+      formatElementList(valueList, {
+        ...options
+      })
+      // 追加节点
+      if (valueList.length) {
+        const listId = getUUID()
+        for (let v = 0; v < valueList.length; v++) {
+          const value = valueList[v]
+          value.listId = listId
+          value.listType = el.listType
+          value.listStyle = el.listStyle
           elementList.splice(i, 0, value)
           i++
         }
@@ -422,6 +444,32 @@ export function zipElementList(payload: IElement[]): IElement[] {
       }
       titleElement.valueList = zipElementList(valueList)
       element = titleElement
+    } else if (element.listId && element.listType) {
+      // 列表处理
+      const listId = element.listId
+      const listType = element.listType
+      const listStyle = element.listStyle
+      const listElement: IElement = {
+        type: ElementType.LIST,
+        value: '',
+        listId,
+        listType,
+        listStyle
+      }
+      const valueList: IElement[] = []
+      while (e < elementList.length) {
+        const listE = elementList[e]
+        if (listId !== listE.listId) {
+          e--
+          break
+        }
+        delete listE.listType
+        delete listE.listStyle
+        valueList.push(listE)
+        e++
+      }
+      listElement.valueList = zipElementList(valueList)
+      element = listElement
     } else if (element.type === ElementType.CONTROL) {
       // 控件处理
       const controlId = element.controlId
@@ -492,4 +540,28 @@ export function getElementRowFlex(node: HTMLElement) {
 
 export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+}
+
+export function formatElementContext(sourceElementList: IElement[], formatElementList: IElement[], anchorIndex: number) {
+  const anchorElement = sourceElementList[anchorIndex]
+  const anchorNextElement = sourceElementList[anchorIndex + 1]
+  const copyElement = anchorElement?.value === ZERO && anchorNextElement && anchorNextElement.value !== ZERO
+    ? anchorNextElement
+    : anchorElement
+  if (!copyElement) return
+  for (let e = 0; e < formatElementList.length; e++) {
+    const targetElement = formatElementList[e]
+    if (targetElement.valueList && targetElement.valueList.length) {
+      formatElementContext(sourceElementList, targetElement.valueList, anchorIndex)
+    }
+    for (let i = 0; i < EDITOR_ELEMENT_CONTEXT_ATTR.length; i++) {
+      const attr = EDITOR_ELEMENT_CONTEXT_ATTR[i]
+      const value = copyElement[attr] as never
+      if (value !== undefined) {
+        targetElement[attr] = value
+      } else {
+        delete targetElement[attr]
+      }
+    }
+  }
 }

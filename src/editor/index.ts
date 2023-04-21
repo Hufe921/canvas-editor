@@ -41,6 +41,7 @@ import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
 import { ITitleOption } from './interface/Title'
 import { defaultTitleOption } from './dataset/constant/Title'
 import { TitleLevel } from './dataset/enum/Title'
+import { ListStyle, ListType } from './dataset/enum/List'
 
 export default class Editor {
 
@@ -199,7 +200,9 @@ export {
   TableBorder,
   MaxHeightRatio,
   NumberType,
-  TitleLevel
+  TitleLevel,
+  ListType,
+  ListStyle
 }
 
 // 对外类型

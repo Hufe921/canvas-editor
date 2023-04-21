@@ -3,6 +3,7 @@ import { EDITOR_ELEMENT_COPY_ATTR } from '../../../dataset/constant/Element'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { splitText } from '../../../utils'
+import { formatElementContext } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function input(data: string, host: CanvasEvent) {
@@ -31,13 +32,7 @@ export function input(data: string, host: CanvasEvent) {
   const text = data.replaceAll(`\n`, ZERO)
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
-  // 表格需要上下文信息
-  const positionContext = position.getPositionContext()
-  let restArg = {}
-  if (positionContext.isTable) {
-    const { tdId, trId, tableId } = positionContext
-    restArg = { tdId, trId, tableId }
-  }
+  // 格式化元素
   const elementList = draw.getElementList()
   const endElement = elementList[endIndex]
   const endNextElement = elementList[endIndex + 1]
@@ -46,8 +41,7 @@ export function input(data: string, host: CanvasEvent) {
     : endElement
   const inputData: IElement[] = splitText(text).map(value => {
     const newElement: IElement = {
-      value,
-      ...restArg
+      value
     }
     const nextElement = elementList[endIndex + 1]
     if (
@@ -77,12 +71,10 @@ export function input(data: string, host: CanvasEvent) {
   } else {
     const start = startIndex + 1
     if (startIndex !== endIndex) {
-      elementList.splice(start, endIndex - startIndex)
+      draw.spliceElementList(elementList, start, endIndex - startIndex)
     }
-    // 禁止直接使用解构存在性能问题
-    for (let i = 0; i < inputData.length; i++) {
-      elementList.splice(start + i, 0, inputData[i])
-    }
+    formatElementContext(elementList, inputData, startIndex)
+    draw.spliceElementList(elementList, start, 0, ...inputData)
     curIndex = startIndex + inputData.length
   }
   if (~curIndex) {

@@ -6,6 +6,7 @@ import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { EditorContext, EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
+import { ListStyle, ListType } from '../../dataset/enum/List'
 import { RowFlex } from '../../dataset/enum/Row'
 import { TableBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
@@ -19,7 +20,7 @@ import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
 import { downloadFile, getUUID } from '../../utils'
-import { formatElementList, isTextLikeElement } from '../../utils/element'
+import { formatElementContext, formatElementList, isTextLikeElement } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -107,9 +108,9 @@ export class CommandAdapt {
       return
     }
     if (!isCollapsed) {
-      elementList.splice(startIndex + 1, endIndex - startIndex)
+      this.draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
-      elementList.splice(startIndex, 1)
+      this.draw.spliceElementList(elementList, startIndex, 1)
     }
     const curIndex = isCollapsed ? startIndex - 1 : startIndex
     this.range.setRange(curIndex, curIndex)
@@ -386,25 +387,12 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    // 需要改变的元素列表
-    let changeElementList: IElement[] = []
     const elementList = this.draw.getElementList()
-    if (startIndex === endIndex) {
-      // 选区行信息
-      const rangeRow = this.range.getRangeRow()
-      if (!rangeRow) return
-      const positionList = this.position.getPositionList()
-      for (let p = 0; p < positionList.length; p++) {
-        const position = positionList[p]
-        const rowSet = rangeRow.get(position.pageNo)
-        if (!rowSet) continue
-        if (rowSet.has(position.rowNo)) {
-          changeElementList.push(elementList[p])
-        }
-      }
-    } else {
-      changeElementList = elementList.slice(startIndex + 1, endIndex + 1)
-    }
+    // 需要改变的元素列表
+    const changeElementList = startIndex === endIndex
+      ? this.range.getRangeElementList()
+      : elementList.slice(startIndex + 1, endIndex + 1)
+    if (!changeElementList || !changeElementList.length) return
     // 设置值
     const titleId = getUUID()
     const titleOptions = this.draw.getOptions().title
@@ -423,6 +411,35 @@ export class CommandAdapt {
           delete el.level
           delete el.size
           delete el.bold
+        }
+      }
+    })
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public list(listType: ListType | null, listStyle?: ListStyle) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    // 需要改变的元素列表
+    const changeElementList = this.range.getRangeElementList()
+    if (!changeElementList || !changeElementList.length) return
+    // 设置值
+    const listId = getUUID()
+    changeElementList.forEach(el => {
+      if (listType) {
+        el.listId = listId
+        el.listType = listType
+        el.listStyle = listStyle
+      } else {
+        if (el.listId) {
+          delete el.listId
+          delete el.listType
+          delete el.listStyle
         }
       }
     })
@@ -490,7 +507,15 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
-    const innerWidth = this.draw.getOriginalInnerWidth()
+    let offsetX = 0
+    if (elementList[startIndex]?.listId) {
+      const positionList = this.position.getPositionList()
+      const { rowIndex } = positionList[startIndex]
+      const rowList = this.draw.getRowList()
+      const row = rowList[rowIndex]
+      offsetX = row?.offsetX || 0
+    }
+    const innerWidth = this.draw.getOriginalInnerWidth() - offsetX
     // colgroup
     const colgroup: IColgroup[] = []
     const colWidth = innerWidth / col
@@ -526,12 +551,14 @@ export class CommandAdapt {
     formatElementList([element], {
       editorOptions: this.options
     })
+    formatElementContext(elementList, [element], startIndex)
     const curIndex = startIndex + 1
-    if (startIndex === endIndex) {
-      elementList.splice(curIndex, 0, element)
-    } else {
-      elementList.splice(curIndex, endIndex - startIndex, element)
-    }
+    this.draw.spliceElementList(
+      elementList,
+      curIndex,
+      startIndex === endIndex ? 0 : endIndex - startIndex,
+      element
+    )
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex, isSetCursor: false })
   }
@@ -1139,11 +1166,13 @@ export class CommandAdapt {
     }))
     if (!newElementList) return
     const start = startIndex + 1
-    if (startIndex === endIndex) {
-      elementList.splice(start, 0, ...newElementList)
-    } else {
-      elementList.splice(start, endIndex - startIndex, ...newElementList)
-    }
+    formatElementContext(elementList, newElementList, startIndex)
+    this.draw.spliceElementList(
+      elementList,
+      start,
+      startIndex === endIndex ? 0 : endIndex - startIndex,
+      ...newElementList
+    )
     const curIndex = start + newElementList.length - 1
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
@@ -1192,7 +1221,7 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     const [leftIndex, rightIndex] = hyperRange
     // 删除元素
-    elementList.splice(leftIndex, rightIndex - leftIndex + 1)
+    this.draw.spliceElementList(elementList, leftIndex, rightIndex - leftIndex + 1)
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
     const newIndex = leftIndex - 1
@@ -1267,11 +1296,12 @@ export class CommandAdapt {
         dashArray: payload
       }
       // 从行头增加分割线
+      formatElementContext(elementList, [newElement], startIndex)
       if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
-        elementList.splice(startIndex, 1, newElement)
+        this.draw.spliceElementList(elementList, startIndex, 1, newElement)
         curIndex = startIndex - 1
       } else {
-        elementList.splice(startIndex + 1, 0, newElement)
+        this.draw.spliceElementList(elementList, startIndex + 1, 0, newElement)
         curIndex = startIndex
       }
     }
@@ -1338,11 +1368,13 @@ export class CommandAdapt {
       type: ElementType.IMAGE
     }
     const curIndex = startIndex + 1
-    if (startIndex === endIndex) {
-      elementList.splice(curIndex, 0, element)
-    } else {
-      elementList.splice(curIndex, endIndex - startIndex, element)
-    }
+    formatElementContext(elementList, [element], startIndex)
+    this.draw.spliceElementList(
+      elementList,
+      curIndex,
+      startIndex === endIndex ? 0 : endIndex - startIndex,
+      element
+    )
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }
@@ -1411,7 +1443,7 @@ export class CommandAdapt {
         const curIndex = index + tableDiffCount
         const tableElement = tableElementList[curIndex]
         if (curGroupId === match.groupId) {
-          tableElementList.splice(curIndex, 1)
+          this.draw.spliceElementList(tableElementList, curIndex, 1)
           tableDiffCount--
           continue
         }
@@ -1420,7 +1452,7 @@ export class CommandAdapt {
           if (p === 0) {
             tableElement.value = value
           } else {
-            tableElementList.splice(curIndex + p, 0, {
+            this.draw.spliceElementList(tableElementList, curIndex + p, 0, {
               ...tableElement,
               value
             })
@@ -1440,7 +1472,7 @@ export class CommandAdapt {
           firstMatchIndex = m
         }
         if (curGroupId === match.groupId) {
-          elementList.splice(curIndex, 1)
+          this.draw.spliceElementList(elementList, curIndex, 1)
           pageDiffCount--
           continue
         }
@@ -1449,7 +1481,7 @@ export class CommandAdapt {
           if (p === 0) {
             element.value = value
           } else {
-            elementList.splice(curIndex + p, 0, {
+            this.draw.spliceElementList(elementList, curIndex + p, 0, {
               ...element,
               value
             })
@@ -1594,6 +1626,10 @@ export class CommandAdapt {
     if (!payload.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    // 格式化上下文信息
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    formatElementContext(elementList, payload, startIndex)
     this.draw.insertElementList(payload)
   }
 

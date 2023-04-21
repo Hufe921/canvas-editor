@@ -72,6 +72,7 @@ export class Footer {
       positionList: this.positionList,
       rowList: this.rowList,
       pageNo: 0,
+      startRowIndex: 0,
       startIndex: 0,
       startX,
       startY,

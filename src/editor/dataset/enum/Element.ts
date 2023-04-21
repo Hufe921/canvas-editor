@@ -13,5 +13,6 @@ export enum ElementType {
   TAB = 'tab',
   DATE = 'date',
   BLOCK = 'block',
-  TITLE = 'title'
+  TITLE = 'title',
+  LIST = 'list'
 }

@@ -119,13 +119,13 @@
   margin-right: 16px;
 }
 
-.dialog-menu button[type='primary'] {
+.dialog-menu button[type='submit'] {
   color: #ffffff;
   background: #4991f2;
   border-color: #4991f2;
 }
 
-.dialog-menu button[type='primary']:hover {
+.dialog-menu button[type='submit']:hover {
   background: #5b9cf3;
   border-color: #5b9cf3;
 }

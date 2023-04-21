@@ -12,4 +12,6 @@ export interface IRange {
   zone?: EditorZone;
 }
 
+export type RangeRowArray = Map<number, number[]>
+
 export type RangeRowMap = Map<number, Set<number>>

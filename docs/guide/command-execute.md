@@ -208,6 +208,14 @@ instance.command.executeHighlight()
 instance.command.executeTitle(TitleLevel | null)
 ```
 
+## executeList
+功能：列表设置
+
+用法：
+```javascript
+instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
+```
+
 ## executeLeft
 功能：行居左
 

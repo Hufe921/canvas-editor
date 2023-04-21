@@ -304,6 +304,26 @@ ul {
   background-image: url('./assets/images/row-margin.svg');
 }
 
+.menu-item__list {
+  position: relative;
+}
+
+.menu-item__list i {
+  background-image: url('./assets/images/list.svg');
+}
+
+.menu-item__list .options {
+  width: 110px;
+}
+
+.menu-item__list .options>ul>li * {
+  pointer-events: none;
+}
+
+.menu-item__list .options>ul>li li {
+  margin-left: 18px;
+}
+
 .menu-item__image i {
   background-image: url('./assets/images/image.svg');
 }
