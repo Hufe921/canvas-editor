@@ -810,16 +810,20 @@ export class Draw {
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
+      // 实际可用宽度
+      const offsetX = element.listId ? listStyleMap.get(element.listId) || 0 : 0
+      const availableWidth = innerWidth - offsetX
       if (element.type === ElementType.IMAGE || element.type === ElementType.LATEX) {
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         // 图片超出尺寸后自适应
         const curRowWidth = element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
-        if (curRowWidth + elementWidth > innerWidth) {
+        if (curRowWidth + elementWidth > availableWidth) {
           // 计算剩余大小
-          const surplusWidth = innerWidth - curRowWidth
-          element.width = surplusWidth
-          element.height = elementHeight * surplusWidth / elementWidth
+          const surplusWidth = availableWidth - curRowWidth
+          const adaptiveWidth = surplusWidth > 0 ? surplusWidth : Math.min(elementWidth, availableWidth)
+          element.width = adaptiveWidth
+          element.height = elementHeight * adaptiveWidth / elementWidth
           metrics.width = element.width
           metrics.height = element.height
           metrics.boundingBoxDescent = element.height
@@ -965,14 +969,14 @@ export class Draw {
           }
         }
       } else if (element.type === ElementType.SEPARATOR) {
-        element.width = innerWidth
-        metrics.width = innerWidth
+        element.width = availableWidth
+        metrics.width = availableWidth
         metrics.height = defaultSize
         metrics.boundingBoxAscent = -rowMargin
         metrics.boundingBoxDescent = -rowMargin
       } else if (element.type === ElementType.PAGE_BREAK) {
-        element.width = innerWidth
-        metrics.width = innerWidth
+        element.width = availableWidth
+        metrics.width = availableWidth
         metrics.height = defaultSize
       } else if (
         element.type === ElementType.CHECKBOX ||
@@ -989,12 +993,11 @@ export class Draw {
         metrics.boundingBoxDescent = 0
         metrics.boundingBoxAscent = metrics.height
       } else if (element.type === ElementType.BLOCK) {
-        const innerWidth = this.getInnerWidth()
         if (!element.width) {
-          metrics.width = innerWidth
+          metrics.width = availableWidth
         } else {
           const elementWidth = element.width * scale
-          metrics.width = elementWidth > innerWidth ? innerWidth : elementWidth
+          metrics.width = Math.min(elementWidth, availableWidth)
         }
         metrics.height = element.height! * scale
         metrics.boundingBoxDescent = metrics.height
@@ -1020,9 +1023,10 @@ export class Draw {
           metrics.boundingBoxDescent += metrics.height / 2
         }
       }
-      const ascent = metrics.boundingBoxAscent + rowMargin
-      const descent = metrics.boundingBoxDescent + rowMargin
-      const height = ascent + descent
+      const ascent = element.type === ElementType.IMAGE || element.type === ElementType.LATEX
+        ? metrics.height
+        : metrics.boundingBoxAscent + rowMargin
+      const height = rowMargin + metrics.boundingBoxAscent + metrics.boundingBoxDescent + rowMargin
       const rowElement: IRowElement = Object.assign(element, {
         metrics,
         style: this._getFont(element, scale)
@@ -1031,10 +1035,9 @@ export class Draw {
       const preElement = elementList[i - 1]
       const nextElement = elementList[i + 1]
       // 累计行宽 + 当前元素宽度 + 后面标点符号宽度
-      let curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
+      const curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
       // 列表信息
       if (element.listId) {
-        curRowWidth += listStyleMap.get(element.listId) || 0
         if (element.listId !== listId) {
           listIndex = 0
         } else if (element.value === ZERO) {
@@ -1049,7 +1052,7 @@ export class Draw {
         || element.type === ElementType.BLOCK
         || preElement?.imgDisplay === ImageDisplay.INLINE
         || element.imgDisplay === ImageDisplay.INLINE
-        || curRowWidth > innerWidth
+        || curRowWidth > availableWidth
         || (i !== 0 && element.value === ZERO)
         || (preElement?.listId !== element.listId)
       ) {
@@ -1062,13 +1065,13 @@ export class Draw {
           curRow.height = defaultBasicRowMarginHeight
         }
         // 两端对齐
-        if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRowWidth > innerWidth) {
-          const gap = (innerWidth - curRow.width) / curRow.elementList.length
+        if (preElement?.rowFlex === RowFlex.ALIGNMENT && curRowWidth > availableWidth) {
+          const gap = (availableWidth - curRow.width) / curRow.elementList.length
           for (let e = 0; e < curRow.elementList.length; e++) {
             const el = curRow.elementList[e]
             el.metrics.width += gap
           }
-          curRow.width = innerWidth
+          curRow.width = availableWidth
         }
         const row: IRow = {
           width: metrics.width,
@@ -1089,11 +1092,7 @@ export class Draw {
         curRow.width += metrics.width
         if (curRow.height < height) {
           curRow.height = height
-          if (element.type === ElementType.IMAGE || element.type === ElementType.LATEX) {
-            curRow.ascent = metrics.height
-          } else {
-            curRow.ascent = ascent
-          }
+          curRow.ascent = ascent
         }
         curRow.elementList.push(rowElement)
       }
