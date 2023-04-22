@@ -82,6 +82,14 @@ export class Previewer {
     return { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage }
   }
 
+  private _keydown = () => {
+    // 有键盘事件触发时，主动销毁拖拽选区
+    if (this.resizerSelection.style.display === 'block') {
+      this.clearResizer()
+      document.removeEventListener('keydown', this._keydown)
+    }
+  }
+
   private _mousedown(evt: MouseEvent) {
     this.canvas = this.draw.getPage()
     if (!this.curPosition || !this.curElement) return
@@ -327,10 +335,12 @@ export class Previewer {
     this.curPosition = position
     this.width = this.curElement.width! * scale
     this.height = this.curElement.height! * scale
+    document.addEventListener('keydown', this._keydown)
   }
 
   public clearResizer() {
     this.resizerSelection.style.display = 'none'
+    document.removeEventListener('keydown', this._keydown)
   }
 
 }

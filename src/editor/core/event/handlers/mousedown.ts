@@ -95,6 +95,10 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
           srcKey: 'laTexSVG'
         }
         : {})
+    // 光标事件代理丢失，重新定位
+    draw.getCursor().drawCursor({
+      isShow: false
+    })
   }
   // 表格工具组件
   const tableTool = draw.getTableTool()
