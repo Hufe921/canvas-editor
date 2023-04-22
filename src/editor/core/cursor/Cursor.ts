@@ -10,6 +10,7 @@ import { CursorAgent } from './CursorAgent'
 
 export type IDrawCursorOption = ICursorOption &
 {
+  isShow?: boolean;
   isBlink?: boolean;
 }
 
@@ -57,6 +58,7 @@ export class Cursor {
     const {
       color,
       width,
+      isShow = true,
       isBlink = true
     } = { ...cursor, ...payload }
     // 设置光标代理
@@ -81,6 +83,7 @@ export class Cursor {
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT * scale}px`
     // 模拟光标显示
+    if (!isShow) return
     const isReadonly = this.draw.isReadonly()
     this.cursorDom.style.width = `${width}px`
     this.cursorDom.style.backgroundColor = color

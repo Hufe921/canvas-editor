@@ -53,8 +53,6 @@ export class Previewer {
     resizerSelection.ondblclick = this._dblclick.bind(this)
     this.previewerContainer = null
     this.previewerImage = null
-    // 光标移动
-    this._keydown = this._keydown.bind(this)
   }
 
   private _createResizerDom(): IPreviewerCreateResult {
@@ -84,11 +82,10 @@ export class Previewer {
     return { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage }
   }
 
-  private _keydown(evt: KeyboardEvent){
-    const previewerIsFocus = this.resizerSelection.style.display === 'block'
-    if (previewerIsFocus) {
+  private _keydown = () => {
+    // 有键盘事件触发时，主动销毁拖拽选区
+    if (this.resizerSelection.style.display === 'block') {
       this.clearResizer()
-      this.draw.getCanvasEvent().keydown(evt)
       document.removeEventListener('keydown', this._keydown)
     }
   }
@@ -338,12 +335,12 @@ export class Previewer {
     this.curPosition = position
     this.width = this.curElement.width! * scale
     this.height = this.curElement.height! * scale
-    // 键盘移动
-    document.addEventListener('keydown',this._keydown)
+    document.addEventListener('keydown', this._keydown)
   }
 
   public clearResizer() {
     this.resizerSelection.style.display = 'none'
+    document.removeEventListener('keydown', this._keydown)
   }
 
 }
