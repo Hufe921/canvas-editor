@@ -1025,7 +1025,7 @@ export class Draw {
       }
       const ascent = (element.imgDisplay !== ImageDisplay.INLINE && element.type === ElementType.IMAGE) ||
         element.type === ElementType.LATEX
-        ? metrics.height
+        ? metrics.height + rowMargin
         : metrics.boundingBoxAscent + rowMargin
       const height = rowMargin + metrics.boundingBoxAscent + metrics.boundingBoxDescent + rowMargin
       const rowElement: IRowElement = Object.assign(element, {
