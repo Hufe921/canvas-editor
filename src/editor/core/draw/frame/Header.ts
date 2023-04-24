@@ -78,7 +78,8 @@ export class Header {
   }
 
   public getHeaderTop(): number {
-    const { header: { top }, scale } = this.options
+    const { header: { top, disabled }, scale } = this.options
+    if (disabled) return 0
     return Math.floor(top * scale)
   }
 

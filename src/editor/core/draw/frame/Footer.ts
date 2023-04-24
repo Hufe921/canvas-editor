@@ -81,7 +81,8 @@ export class Footer {
   }
 
   public getFooterBottom(): number {
-    const { footer: { bottom }, scale } = this.options
+    const { footer: { bottom, disabled }, scale } = this.options
+    if (disabled) return 0
     return Math.floor(bottom * scale)
   }
 
