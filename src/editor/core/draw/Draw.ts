@@ -656,15 +656,17 @@ export class Draw {
   }
 
   public setPaperSize(width: number, height: number) {
-    const dpr = window.devicePixelRatio
     this.options.width = width
     this.options.height = height
-    this.container.style.width = `${width}px`
+    const dpr = window.devicePixelRatio
+    const realWidth = this.getWidth()
+    const realHeight = this.getHeight()
+    this.container.style.width = `${realWidth}px`
     this.pageList.forEach((p, i) => {
-      p.width = width * dpr
-      p.height = height * dpr
-      p.style.width = `${width}px`
-      p.style.height = `${height}px`
+      p.width = realWidth * dpr
+      p.height = realHeight * dpr
+      p.style.width = `${realWidth}px`
+      p.style.height = `${realHeight}px`
       this._initPageContext(this.ctxList[i])
     })
     this.render({

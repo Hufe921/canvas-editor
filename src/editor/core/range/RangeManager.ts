@@ -5,6 +5,7 @@ import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { IRange, RangeRowArray, RangeRowMap } from '../../interface/Range'
+import { getAnchorElement } from '../../utils/element'
 import { Draw } from '../draw/Draw'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
@@ -154,6 +155,12 @@ export class RangeManager {
     return rangeElementList
   }
 
+  public getIsSelectAll() {
+    const elementList = this.draw.getElementList()
+    const { startIndex, endIndex } = this.range
+    return startIndex === 0 && elementList.length - 1 === endIndex
+  }
+
   public getIsPointInRange(x: number, y: number): boolean {
     const { startIndex, endIndex } = this.range
     const positionList = this.position.getPositionList()
@@ -213,7 +220,7 @@ export class RangeManager {
     if (!this.listener.rangeStyleChange) return
     // 结束光标位置
     const { endIndex, isCrossRowCol } = this.range
-    let curElement: IElement
+    let curElement: IElement | null
     if (isCrossRowCol) {
       // 单元格选择以当前表格定位
       const originalElementList = this.draw.getOriginalElementList()
@@ -223,11 +230,7 @@ export class RangeManager {
       const index = ~endIndex ? endIndex : 0
       // 行首以第一个非换行符元素定位
       const elementList = this.draw.getElementList()
-      const endElement = elementList[index]
-      const endNextElement = elementList[index + 1]
-      curElement = endElement.value === ZERO && endNextElement && endNextElement.value !== ZERO
-        ? endNextElement
-        : endElement
+      curElement = getAnchorElement(elementList, index)
     }
     if (!curElement) return
     // 选取元素列表

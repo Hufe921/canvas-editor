@@ -3,7 +3,7 @@ import { EDITOR_ELEMENT_COPY_ATTR } from '../../../dataset/constant/Element'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { splitText } from '../../../utils'
-import { formatElementContext } from '../../../utils/element'
+import { formatElementContext, getAnchorElement } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function input(data: string, host: CanvasEvent) {
@@ -34,11 +34,8 @@ export function input(data: string, host: CanvasEvent) {
   const { startIndex, endIndex } = rangeManager.getRange()
   // 格式化元素
   const elementList = draw.getElementList()
-  const endElement = elementList[endIndex]
-  const endNextElement = elementList[endIndex + 1]
-  const copyElement = endElement.value === ZERO && endNextElement
-    ? endNextElement
-    : endElement
+  const copyElement = getAnchorElement(elementList, endIndex)
+  if (!copyElement) return
   const inputData: IElement[] = splitText(text).map(value => {
     const newElement: IElement = {
       value

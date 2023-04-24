@@ -76,8 +76,9 @@ export class CursorAgent {
             const pasteElementList = getElementListByHTML(htmlText, {
               innerWidth: this.draw.getOriginalInnerWidth()
             })
-            if (~startIndex) {
-              // 如果是复制到虚拟元素里，则粘贴列表的虚拟元素需扁平化处理
+            // 全选粘贴无需格式化上下文
+            if (~startIndex && !rangeManager.getIsSelectAll()) {
+              // 如果是复制到虚拟元素里，则粘贴列表的虚拟元素需扁平化处理，避免产生新的虚拟元素
               const anchorElement = elementList[startIndex]
               if (anchorElement?.titleId || anchorElement?.listId) {
                 let start = 0
