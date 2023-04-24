@@ -154,6 +154,12 @@ export class RangeManager {
     return rangeElementList
   }
 
+  public getIsSelectAll() {
+    const elementList = this.draw.getElementList()
+    const { startIndex, endIndex } = this.range
+    return startIndex === 0 && elementList.length - 1 === endIndex
+  }
+
   public getIsPointInRange(x: number, y: number): boolean {
     const { startIndex, endIndex } = this.range
     const positionList = this.position.getPositionList()

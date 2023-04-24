@@ -353,7 +353,7 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
   document.body.appendChild(clipboardDom)
   const deleteNodes: ChildNode[] = []
   clipboardDom.childNodes.forEach(child => {
-    if (child.nodeType !== 1) {
+    if (child.nodeType !== 1 && !child.textContent?.trim()) {
       deleteNodes.push(child)
     }
   })
