@@ -543,15 +543,23 @@ export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
 
-export function formatElementContext(sourceElementList: IElement[], formatElementList: IElement[], anchorIndex: number) {
-  const anchorElement = sourceElementList[anchorIndex]
-  const anchorNextElement = sourceElementList[anchorIndex + 1]
-  const copyElement = anchorElement?.value === ZERO && anchorNextElement && anchorNextElement.value !== ZERO
+export function getAnchorElement(elementList: IElement[], anchorIndex: number): IElement | null {
+  const anchorElement = elementList[anchorIndex]
+  if (!anchorElement) return null
+  const anchorNextElement = elementList[anchorIndex + 1]
+  // 非列表元素 && 当前元素是换行符 && 下一个元素不是换行符 则以下一个元素作为参考元素
+  return !anchorElement.listId && anchorElement.value === ZERO && anchorNextElement && anchorNextElement.value !== ZERO
     ? anchorNextElement
     : anchorElement
+}
+
+export function formatElementContext(sourceElementList: IElement[], formatElementList: IElement[], anchorIndex: number) {
+  const copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
   for (let e = 0; e < formatElementList.length; e++) {
     const targetElement = formatElementList[e]
+    // 定位元素非列表，无需处理粘贴列表的上下文
+    if (!copyElement.listId && targetElement.type === ElementType.LIST) continue
     if (targetElement.valueList && targetElement.valueList.length) {
       formatElementContext(sourceElementList, targetElement.valueList, anchorIndex)
     }

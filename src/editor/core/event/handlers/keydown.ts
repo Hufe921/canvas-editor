@@ -77,7 +77,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     const enterText: IElement = {
       value: ZERO
     }
-    formatElementContext(elementList, [enterText], startIndex)
+    // 标题结尾处回车无需格式化
+    const endElement = elementList[endIndex]
+    if (!(endElement.titleId && endElement.titleId !== elementList[endIndex + 1]?.titleId)) {
+      formatElementContext(elementList, [enterText], startIndex)
+    }
     let curIndex: number
     if (activeControl && !control.isRangInPostfix()) {
       curIndex = control.setValue([enterText])

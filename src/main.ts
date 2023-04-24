@@ -1097,13 +1097,13 @@ window.onload = function () {
     // 列表
     listOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
     if (payload.listType) {
+      listDom.classList.add('active')
       const listType = payload.listType
       const listStyle = payload.listType === ListType.OL ? ListStyle.DECIMAL : payload.listType
       const curListDom = listOptionDom
         .querySelector<HTMLLIElement>(`[data-list-type='${listType}'][data-list-style='${listStyle}']`)
       if (curListDom) {
         curListDom.classList.add('active')
-        listDom.classList.add('active')
       }
     } else {
       listDom.classList.remove('active')
