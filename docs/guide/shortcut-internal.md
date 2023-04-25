@@ -92,3 +92,30 @@
 
 ## Ctrl/Cmd + Shift + <
 功能：下标
+
+## Ctrl + Alt/Option + 0
+功能：正文
+
+## Ctrl + Alt/Option + 1
+功能：标题一
+
+## Ctrl + Alt/Option + 2
+功能：标题二
+
+## Ctrl + Alt/Option + 3
+功能：标题三
+
+## Ctrl + Alt/Option + 4
+功能：标题四
+
+## Ctrl + Alt/Option + 5
+功能：标题五
+
+## Ctrl + Alt/Option + 6
+功能：标题六
+
+## Ctrl/Cmd + Shift + I
+功能：无序列表
+
+## Ctrl/Cmd + Shift + U
+功能：有序列表
