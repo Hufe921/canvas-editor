@@ -1,3 +1,47 @@
+## [0.9.32](https://github.com/Hufe921/canvas-editor/compare/v0.9.31...v0.9.32) (2023-04-26)
+
+
+### Bug Fixes
+
+*  not wrap when exceeding container width #177 ([e8f61d9](https://github.com/Hufe921/canvas-editor/commit/e8f61d9d15c1aa5e3179e3565f956382dca9cace)), closes [#177](https://github.com/Hufe921/canvas-editor/issues/177)
+* delete list element boundary error ([9a37179](https://github.com/Hufe921/canvas-editor/commit/9a37179c748af63d652735f0ad9e4c5dd65f7e23))
+* error when selecting table cells #174 ([f0b6014](https://github.com/Hufe921/canvas-editor/commit/f0b6014daa4ac3ac1d88acb941aa92e183eef6fa)), closes [#174](https://github.com/Hufe921/canvas-editor/issues/174)
+* header and footer compute position list error ([3b66b26](https://github.com/Hufe921/canvas-editor/commit/3b66b26c85c59468a5a5c0bfeed39d7bef793239))
+* image element row margin error ([3daacc6](https://github.com/Hufe921/canvas-editor/commit/3daacc6cb80506aefd25069f8960766b85e2d88a))
+* inline image ascent value ([59065bb](https://github.com/Hufe921/canvas-editor/commit/59065bb29e9e7e85cca83eb6dd5ccdd99533a183))
+* paste and format element boundary error ([86569f5](https://github.com/Hufe921/canvas-editor/commit/86569f51d3a32a7c148dbd6f06b5734a98836e68))
+* paste list element boundary error ([5935eb7](https://github.com/Hufe921/canvas-editor/commit/5935eb77d04824c60a4e1ffe6149097045188336))
+* set paper size  error #181 ([10ada8c](https://github.com/Hufe921/canvas-editor/commit/10ada8cf542e8b8f5ddd9e619637c4d22d66f0b6)), closes [#181](https://github.com/Hufe921/canvas-editor/issues/181)
+* tslint error ([8202c1c](https://github.com/Hufe921/canvas-editor/commit/8202c1c67b2ff18feee09223f3f2eea4c8fc7bac))
+* unset list error ([c02a96c](https://github.com/Hufe921/canvas-editor/commit/c02a96cb8a24514f8d3aa8386d915e5e9e42050f))
+
+
+### Chores
+
+* add git pre commit hook ([ef9ee07](https://github.com/Hufe921/canvas-editor/commit/ef9ee07a55b17111011c970adc5f67ee02a93eff))
+
+
+### Documentation
+
+* add list command ([a5b5f87](https://github.com/Hufe921/canvas-editor/commit/a5b5f8785d598ee632b3fb14ce2bcff93a497ce9))
+* update schema, shortcut, option ([2f64395](https://github.com/Hufe921/canvas-editor/commit/2f64395cbdd6b0d4ab04bf40c2e113af7a0fa4c5))
+
+
+### Features
+
+* adaptive list style during page scaling ([e53c0c5](https://github.com/Hufe921/canvas-editor/commit/e53c0c5d3b1f6e83482ed470d09bb6851600e368))
+* add list and title shortcuts ([bb28755](https://github.com/Hufe921/canvas-editor/commit/bb2875516c1339d334068462905e96f28895da6f))
+* add list element ([c2330a8](https://github.com/Hufe921/canvas-editor/commit/c2330a8c11d83568f406cbecc8dbad2396d0df40))
+* enable keyboard event when image resizer (#179) ([fb78f0a](https://github.com/Hufe921/canvas-editor/commit/fb78f0a0aa4e19e156a09dc530e84bf86e5b861a)), closes [#179](https://github.com/Hufe921/canvas-editor/issues/179)
+* handle boundary when dragging elements ([8fba929](https://github.com/Hufe921/canvas-editor/commit/8fba929fb8c0567e195ca9ecdd90f9d677c0aa3e))
+* handle list boundary ([406fca3](https://github.com/Hufe921/canvas-editor/commit/406fca359034991fbde568ee3a6f981dac3f73d1))
+* header,footer,page number disabled option #180 ([797b9a1](https://github.com/Hufe921/canvas-editor/commit/797b9a14dffa5e3fcdff8bbc5dd9ebc41cc5c7c8)), closes [#180](https://github.com/Hufe921/canvas-editor/issues/180)
+* insert table in list element ([3ec7d71](https://github.com/Hufe921/canvas-editor/commit/3ec7d71f2e597841fe063cdd955c36a9d0187339))
+* recursion format element context ([9f84285](https://github.com/Hufe921/canvas-editor/commit/9f8428576302a00d182aa3c469def0b6d3d0e708))
+* set title at paragraph level ([8a56a49](https://github.com/Hufe921/canvas-editor/commit/8a56a49a0ae23fc59d2edd9ec7894756d36542c7))
+
+
+
 ## [0.9.31](https://github.com/Hufe921/canvas-editor/compare/v0.9.30...v0.9.31) (2023-04-07)
 
 
