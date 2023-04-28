@@ -126,5 +126,6 @@ interface IElement {
   // 列表
   listType?: ListType;
   listStyle?: ListStyle;
+  listWrap?: boolean;
 }
 ```
