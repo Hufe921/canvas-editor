@@ -224,6 +224,10 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
   const titleDom = document.querySelector<HTMLDivElement>('.menu-item__title')!
   const titleSelectDom = titleDom.querySelector<HTMLDivElement>('.select')!
   const titleOptionDom = titleDom.querySelector<HTMLDivElement>('.options')!
+  titleOptionDom.querySelectorAll('li').forEach((li, index) => {
+    li.title = `Ctrl+${isApple ? 'Option' : 'Alt'}+${index}`
+  })
+
   titleDom.onclick = function () {
     console.log('title')
     titleOptionDom.classList.toggle('visible')
@@ -274,6 +278,7 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
   }
 
   const listDom = document.querySelector<HTMLDivElement>('.menu-item__list')!
+  listDom.title = `列表(${isApple ? '⌘' : 'Ctrl'}+Shift+U)`
   const listOptionDom = listDom.querySelector<HTMLDivElement>('.options')!
   listDom.onclick = function () {
     console.log('list')

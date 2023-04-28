@@ -3,6 +3,8 @@ import { richtextKeys } from './keys/richtextKeys'
 import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
 import { isMod } from '../../utils/hotkey'
+import { titleKeys } from './keys/titleKeys'
+import { listKeys } from './keys/listKeys'
 
 export class Shortcut {
 
@@ -16,7 +18,9 @@ export class Shortcut {
     this.agentShortcutList = []
     // 内部快捷键
     this._addShortcutList([
-      ...richtextKeys
+      ...richtextKeys,
+      ...titleKeys,
+      ...listKeys
     ])
     // 全局快捷键
     this._addEvent()

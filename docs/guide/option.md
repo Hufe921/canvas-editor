@@ -64,6 +64,7 @@ interface IEditorOption {
 interface IHeader {
   top?: number; // 距离页面顶部大小。默认：30
   maxHeightRadio?: MaxHeightRatio; // 占页面最大高度比。默认：HALF
+  disabled?: boolean; // 是否禁用
 }
 ```
 
@@ -73,6 +74,7 @@ interface IHeader {
 interface IFooter {
   bottom?: number; // 距离页面底部大小。默认：30
   maxHeightRadio?: MaxHeightRatio; // 占页面最大高度比。默认：HALF
+  disabled?: boolean; // 是否禁用
 }
 ```
 
@@ -87,6 +89,7 @@ interface IPageNumber {
   rowFlex?: RowFlex; // 行对齐方式。默认：CENTER
   format?: string; // 页码格式。默认：{pageNo}。示例：第{pageNo}页/共{pageCount}页
   numberType?: NumberType; // 数字类型。默认：ARABIC
+  disabled?: boolean; // 是否禁用
 }
 ```
 

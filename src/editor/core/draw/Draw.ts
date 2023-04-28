@@ -1043,7 +1043,7 @@ export class Draw {
       if (element.listId) {
         if (element.listId !== listId) {
           listIndex = 0
-        } else if (element.value === ZERO) {
+        } else if (element.value === ZERO && !element.listWrap) {
           listIndex++
         }
       }
@@ -1329,7 +1329,7 @@ export class Draw {
 
   private _drawPage(payload: IDrawPagePayload) {
     const { elementList, positionList, rowList, pageNo } = payload
-    const { inactiveAlpha, pageMode } = this.options
+    const { inactiveAlpha, pageMode, header, footer, pageNumber } = this.options
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -1351,11 +1351,17 @@ export class Draw {
       zone: EditorZone.MAIN
     })
     // 绘制页眉
-    this.header.render(ctx, pageNo)
+    if (!header.disabled) {
+      this.header.render(ctx, pageNo)
+    }
     // 绘制页码
-    this.pageNumber.render(ctx, pageNo)
+    if (!pageNumber.disabled) {
+      this.pageNumber.render(ctx, pageNo)
+    }
     // 绘制页脚
-    this.footer.render(ctx, pageNo)
+    if (!footer.disabled) {
+      this.footer.render(ctx, pageNo)
+    }
     // 搜索匹配绘制
     if (this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
@@ -1402,7 +1408,7 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
-    const { pageMode } = this.options
+    const { pageMode, header, footer } = this.options
     const {
       isSubmitHistory = true,
       isSetCursor = true,
@@ -1414,9 +1420,13 @@ export class Draw {
     // 计算文档信息
     if (isCompute) {
       // 页眉信息
-      this.header.compute()
+      if (!header.disabled) {
+        this.header.compute()
+      }
       // 页脚信息
-      this.footer.compute()
+      if (!footer.disabled) {
+        this.footer.compute()
+      }
       // 行信息
       this.rowList = this.computeRowList(innerWidth, this.elementList)
       // 页面信息

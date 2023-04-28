@@ -21,6 +21,7 @@ interface IElement {
     BLOCK = 'block'
   };
   value: string;
+  valueList?: IElement[]; // 复合元素（超链接、标题、列表等）使用
   // 样式
   font?: string;
   size?: number;
@@ -42,11 +43,9 @@ interface IElement {
   letterSpacing?: number;
   // 表格
   colgroup?: {
-    id?: string;
     width: number;
   }[];
   trList?: {
-    id?: string;
     height: number;
     tdList: {
       colspan: number;
@@ -55,14 +54,9 @@ interface IElement {
       value: IElement[];
     }[];
   }[];
-  tdId?: string;
-  trId?: string;
-  tableId?: string;
   borderType?: TableBorder;
   // 超链接
-  valueList?: IElement[];
   url?: string;
-  hyperlinkId?: string;
   // 上下标
   actualSize?: number;
   // 分割线
@@ -92,7 +86,6 @@ interface IElement {
       disabled?: boolean;
     };
   };
-  controlId?: string;
   controlComponent?: {
     PREFIX = 'prefix',
     POSTFIX = 'postfix',
@@ -110,7 +103,6 @@ interface IElement {
   laTexSVG?: string;
   // 日期
   dateFormat?: string;
-  dateId?: string;
   // 图片
   imgDisplay?: {
     INLINE = 'inline',
@@ -129,5 +121,11 @@ interface IElement {
       src: string;
     };
   };
+  // 标题
+  level?: TitleLevel;
+  // 列表
+  listType?: ListType;
+  listStyle?: ListStyle;
+  listWrap?: boolean;
 }
 ```

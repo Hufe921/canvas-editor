@@ -428,10 +428,12 @@ export class CommandAdapt {
     // 需要改变的元素列表
     const changeElementList = this.range.getRangeElementList()
     if (!changeElementList || !changeElementList.length) return
+    // 如果包含列表则设置为取消列表
+    const isUnsetList = changeElementList.find(el => el.listType === listType && el.listStyle === listStyle)
     // 设置值
     const listId = getUUID()
     changeElementList.forEach(el => {
-      if (listType) {
+      if (!isUnsetList && listType) {
         el.listId = listId
         el.listType = listType
         el.listStyle = listStyle

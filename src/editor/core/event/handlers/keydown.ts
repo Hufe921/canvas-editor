@@ -77,8 +77,13 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     const enterText: IElement = {
       value: ZERO
     }
-    // 标题结尾处回车无需格式化
+    const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
+    // 列表块内换行
+    if (evt.shiftKey && startElement.listId) {
+      enterText.listWrap = true
+    }
+    // 标题结尾处回车无需格式化
     if (!(endElement.titleId && endElement.titleId !== elementList[endIndex + 1]?.titleId)) {
       formatElementContext(elementList, [enterText], startIndex)
     }
