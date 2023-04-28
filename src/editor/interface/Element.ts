@@ -43,6 +43,7 @@ export interface IListElement {
   listType?: ListType;
   listStyle?: ListStyle;
   listId?: string;
+  listWrap?: boolean;
 }
 
 export interface ITableAttr {

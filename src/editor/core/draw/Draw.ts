@@ -1043,7 +1043,7 @@ export class Draw {
       if (element.listId) {
         if (element.listId !== listId) {
           listIndex = 0
-        } else if (element.value === ZERO) {
+        } else if (element.value === ZERO && !element.listWrap) {
           listIndex++
         }
       }

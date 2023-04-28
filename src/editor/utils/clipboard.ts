@@ -110,18 +110,24 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         const zipList = zipElementList(element.valueList!)
         for (let z = 0; z < zipList.length; z++) {
           const zipElement = zipList[z]
-          const zipValueList = zipElement.value.split('\n')
-          for (let c = 0; c < zipValueList.length; c++) {
-            if (c > 0) {
-              curListIndex += 1
-            }
-            const value = zipValueList[c]
+          if (zipElement.listWrap) {
             const listElementList = listElementListMap.get(curListIndex) || []
-            listElementList.push({
-              ...zipElement,
-              value,
-            })
+            listElementList.push(zipElement)
             listElementListMap.set(curListIndex, listElementList)
+          } else {
+            const zipValueList = zipElement.value.split('\n')
+            for (let c = 0; c < zipValueList.length; c++) {
+              if (c > 0) {
+                curListIndex += 1
+              }
+              const value = zipValueList[c]
+              const listElementList = listElementListMap.get(curListIndex) || []
+              listElementList.push({
+                ...zipElement,
+                value,
+              })
+              listElementListMap.set(curListIndex, listElementList)
+            }
           }
         }
         listElementListMap.forEach(listElementList => {
@@ -264,6 +270,11 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
           }
           listNode.querySelectorAll('li').forEach(li => {
             const liValueList = getElementListByHTML(li.innerHTML, options)
+            liValueList.forEach(list => {
+              if (list.value === '\n') {
+                list.listWrap = true
+              }
+            })
             liValueList.unshift({
               value: '\n'
             })

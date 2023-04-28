@@ -75,7 +75,7 @@ export class ListParticle {
   public drawListStyle(ctx: CanvasRenderingContext2D, row: IRow, position: IElementPosition) {
     const { elementList, offsetX, listIndex, ascent } = row
     const startElement = elementList[0]
-    if (startElement.value !== ZERO) return
+    if (startElement.value !== ZERO || startElement.listWrap) return
     let text = ''
     if (startElement.listType === ListType.UL) {
       if (startElement.listStyle) {

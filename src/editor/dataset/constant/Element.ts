@@ -55,7 +55,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'block',
   'level',
   'listType',
-  'listStyle'
+  'listStyle',
+  'listWrap'
 ]
 
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
