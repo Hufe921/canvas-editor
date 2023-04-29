@@ -702,6 +702,10 @@ export class Draw {
     })
   }
 
+  public setEnableVirtualKeyboard(isShow: boolean) {
+    this.cursor.setEnableVirtualKeyboard(isShow)
+  }
+
   public getValue(): IEditorResult {
     // 配置
     const { width, height, margins, watermark } = this.options

@@ -39,6 +39,13 @@ export class Cursor {
     return this.cursorDom
   }
 
+  public setEnableVirtualKeyboard(isShow: boolean) {
+    if (isShow) {
+      return this.cursorAgent.showVirtualKeyboard()
+    }
+    return this.cursorAgent.hideVirtualKeyboard()
+  }
+
   public getAgentDom(): HTMLTextAreaElement {
     return this.cursorAgent.getAgentCursorDom()
   }
@@ -72,10 +79,12 @@ export class Cursor {
     const offsetHeight = metrics.height / 4
     const cursorHeight = metrics.height + offsetHeight * 2
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
-    setTimeout(() => {
-      agentCursorDom.focus()
-      agentCursorDom.setSelectionRange(0, 0)
-    })
+    if (this.cursorAgent.enableVirtualKeyboard) {
+      setTimeout(() => {
+        agentCursorDom.focus()
+        agentCursorDom.setSelectionRange(0, 0)
+      })
+    }
     // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
     const descent = metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop = (leftTop[1] + ascent) + descent - (cursorHeight - offsetHeight) + preY

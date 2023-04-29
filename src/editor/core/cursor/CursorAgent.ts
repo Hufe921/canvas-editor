@@ -6,6 +6,7 @@ import { IElement } from '../../interface/Element'
 import { debounce } from '../../utils'
 import { getElementListByHTML } from '../../utils/clipboard'
 import { formatElementContext } from '../../utils/element'
+import { isMobileDevice } from '../../utils/ua'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 
@@ -15,12 +16,14 @@ export class CursorAgent {
   private container: HTMLDivElement
   private agentCursorDom: HTMLTextAreaElement
   private canvasEvent: CanvasEvent
+  public enableVirtualKeyboard: boolean
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
     this.container = draw.getContainer()
     this.canvasEvent = canvasEvent
     // 代理光标绘制
+    this.enableVirtualKeyboard = true
     const agentCursorDom = document.createElement('textarea')
     agentCursorDom.autocomplete = 'off'
     agentCursorDom.classList.add(`${EDITOR_PREFIX}-inputarea`)
@@ -37,6 +40,19 @@ export class CursorAgent {
 
   public getAgentCursorDom(): HTMLTextAreaElement {
     return this.agentCursorDom
+  }
+
+  public showVirtualKeyboard() {
+    if (!this.enableVirtualKeyboard) {
+      this.enableVirtualKeyboard = true
+    }
+  }
+  public hideVirtualKeyboard() {
+    if (isMobileDevice) {
+      if (this.enableVirtualKeyboard) {
+        this.enableVirtualKeyboard = false
+      }
+    }
   }
 
   private _keyDown(evt: KeyboardEvent) {

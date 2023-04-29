@@ -1,1 +1,2 @@
 export const isApple = typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
+export const isMobileDevice = (typeof window.orientation !== 'undefined') || (navigator.userAgent.indexOf('IEMobile') !== -1)
