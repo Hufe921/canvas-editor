@@ -1,3 +1,23 @@
+## [0.9.33](https://github.com/Hufe921/canvas-editor/compare/v0.9.32...v0.9.33) (2023-05-02)
+
+
+### Bug Fixes
+
+* get range paragraph boundary error ([84b236f](https://github.com/Hufe921/canvas-editor/commit/84b236fe224e48002f7991abefda0c9c646447e2))
+* some IME position error #184 ([c5699bc](https://github.com/Hufe921/canvas-editor/commit/c5699bcb4cad9c9dcd7dad9eba00e0dd6d60cf3a)), closes [#184](https://github.com/Hufe921/canvas-editor/issues/184)
+
+
+### Documentation
+
+* update list schema and shortcut ([98ea30e](https://github.com/Hufe921/canvas-editor/commit/98ea30e203003f5336911a4cb52d5bce6b8e08e5))
+
+
+### Features
+
+* wrap within list item ([69750a1](https://github.com/Hufe921/canvas-editor/commit/69750a115a5adcc5ab61c69846fcde402d1019b3))
+
+
+
 ## [0.9.32](https://github.com/Hufe921/canvas-editor/compare/v0.9.31...v0.9.32) (2023-04-26)
 
 

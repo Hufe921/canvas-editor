@@ -28,10 +28,11 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. improve list and title
-2. improve performance
-3. control rules
-4. table paging
+1. catalog
+2. improve list and title
+3. improve performance
+4. control rules
+5. table paging
 
 ## snapshot
 
