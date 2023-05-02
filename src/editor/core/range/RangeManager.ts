@@ -82,8 +82,7 @@ export class RangeManager {
     const rangeRow: RangeRowArray = new Map()
     // 向上查找
     let start = startIndex
-    while (start > 0) {
-      if (elementList[start].titleId !== elementList[start - 1]?.titleId) break
+    while (start >= 0) {
       const { pageNo, rowNo } = positionList[start]
       let rowArray = rangeRow.get(pageNo)
       if (!rowArray) {
@@ -93,7 +92,10 @@ export class RangeManager {
       if (!rowArray.includes(rowNo)) {
         rowArray.unshift(rowNo)
       }
-      if (positionList[start]?.value === ZERO) break
+      if (
+        positionList[start]?.value === ZERO ||
+        elementList[start].titleId !== elementList[start - 1]?.titleId
+      ) break
       start--
     }
     // 中间选择
