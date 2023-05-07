@@ -39,6 +39,7 @@ const base64StringList = await instance.command.getImage()
 ```javascript
 const wordCount = await instance.command.getWordCount()
 ```
+
 ## getRangeText
 功能：获取选区文本
 
@@ -64,4 +65,12 @@ const {
   index: number;
   count: number;
 } = instance.command.getSearchNavigateInfo()
+```
+
+## getCatalog
+功能：获取目录
+
+用法：
+```javascript
+const catalog = await instance.command.getCatalog()
 ```
