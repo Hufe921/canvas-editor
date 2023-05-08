@@ -16,12 +16,15 @@ export type IDrawCursorOption = ICursorOption &
 
 export class Cursor {
 
+  private readonly ANIMATION_CLASS = `${EDITOR_PREFIX}-cursor--animation`
+
   private draw: Draw
   private container: HTMLDivElement
   private options: DeepRequired<IEditorOption>
   private position: Position
   private cursorDom: HTMLDivElement
   private cursorAgent: CursorAgent
+  private blinkTimeout: number | null
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -33,6 +36,7 @@ export class Cursor {
     this.cursorDom.classList.add(`${EDITOR_PREFIX}-cursor`)
     this.container.append(this.cursorDom)
     this.cursorAgent = new CursorAgent(draw, canvasEvent)
+    this.blinkTimeout = null
   }
 
   public getCursorDom(): HTMLDivElement {
@@ -49,6 +53,29 @@ export class Cursor {
 
   public clearAgentDomValue(): string {
     return this.getAgentDom().value = ''
+  }
+
+  private _blinkStart() {
+    this.cursorDom.classList.add(this.ANIMATION_CLASS)
+  }
+
+  private _blinkStop() {
+    this.cursorDom.classList.remove(this.ANIMATION_CLASS)
+  }
+
+  private _setBlinkTimeout() {
+    this._clearBlinkTimeout()
+    this.blinkTimeout = window.setTimeout(() => {
+      this._blinkStart()
+    }, 500)
+  }
+
+  private _clearBlinkTimeout() {
+    if (this.blinkTimeout) {
+      this._blinkStop()
+      window.clearTimeout(this.blinkTimeout)
+      this.blinkTimeout = null
+    }
   }
 
   public drawCursor(payload?: IDrawCursorOption) {
@@ -91,19 +118,16 @@ export class Cursor {
     this.cursorDom.style.top = `${cursorTop}px`
     this.cursorDom.style.display = isReadonly ? 'none' : 'block'
     this.cursorDom.style.height = `${cursorHeight}px`
-    const animationClassName = `${EDITOR_PREFIX}-cursor--animation`
     if (isBlink) {
-      setTimeout(() => {
-        this.cursorDom.classList.add(animationClassName)
-      }, 200)
+      this._setBlinkTimeout()
     } else {
-      this.cursorDom.classList.remove(animationClassName)
+      this._clearBlinkTimeout()
     }
   }
 
   public recoveryCursor() {
     this.cursorDom.style.display = 'none'
-    this.cursorDom.classList.remove(`${EDITOR_PREFIX}-cursor--animation`)
+    this._clearBlinkTimeout()
   }
 
 }
