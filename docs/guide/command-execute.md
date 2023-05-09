@@ -582,3 +582,11 @@ instance.command.executeRemoveControl()
 ```javascript
 instance.command.executeSetLocale(locale: string)
 ```
+
+## executeLocationCatalog
+功能：定位目录位置
+
+用法：
+```javascript
+instance.command.executeLocationCatalog(titleId: string)
+```
