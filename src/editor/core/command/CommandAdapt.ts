@@ -11,6 +11,7 @@ import { RowFlex } from '../../dataset/enum/Row'
 import { TableBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
+import { ICatalog } from '../../interface/Catalog'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
@@ -1653,6 +1654,10 @@ export class CommandAdapt {
 
   public setLocale(payload: string) {
     this.i18n.setLocale(payload)
+  }
+
+  public getCatalog(): Promise<ICatalog | null> {
+    return this.workerManager.getCatalog()
   }
 
 }

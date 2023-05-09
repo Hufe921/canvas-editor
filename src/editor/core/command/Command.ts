@@ -1,6 +1,7 @@
 import { IElement, ImageDisplay, INavigateInfo, ListStyle, ListType, TableBorder, TitleLevel, VerticalAlign } from '../..'
 import { EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
+import { ICatalog } from '../../interface/Catalog'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
 import { IEditorResult } from '../../interface/Editor'
 import { IMargin } from '../../interface/Margin'
@@ -85,6 +86,7 @@ export class Command {
   private static insertElementList: CommandAdapt['insertElementList']
   private static removeControl: CommandAdapt['removeControl']
   private static setLocale: CommandAdapt['setLocale']
+  private static getCatalog: CommandAdapt['getCatalog']
 
   constructor(adapt: CommandAdapt) {
     Command.mode = adapt.mode.bind(adapt)
@@ -163,6 +165,7 @@ export class Command {
     Command.insertElementList = adapt.insertElementList.bind(adapt)
     Command.removeControl = adapt.removeControl.bind(adapt)
     Command.setLocale = adapt.setLocale.bind(adapt)
+    Command.getCatalog = adapt.getCatalog.bind(adapt)
   }
 
   // 全局命令
@@ -474,6 +477,10 @@ export class Command {
 
   public executeSetLocale(payload: string) {
     return Command.setLocale(payload)
+  }
+
+  public getCatalog(): Promise<ICatalog | null> {
+    return Command.getCatalog()
   }
 
 }
