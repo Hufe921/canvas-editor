@@ -271,6 +271,11 @@ export class Draw {
     return this.options.pageGap * this.options.scale
   }
 
+  public getPageNumberTop(): number {
+    const { pageNumber: { top }, scale } = this.options
+    return top * scale
+  }
+
   public getPageNumberBottom(): number {
     const { pageNumber: { bottom }, scale } = this.options
     return bottom * scale
