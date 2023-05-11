@@ -42,6 +42,7 @@ import { ITitleOption } from './interface/Title'
 import { defaultTitleOption } from './dataset/constant/Title'
 import { TitleLevel } from './dataset/enum/Title'
 import { ListStyle, ListType } from './dataset/enum/List'
+import { ICatalog, ICatalogItem } from './interface/Catalog'
 
 export default class Editor {
 
@@ -216,5 +217,7 @@ export type {
   IWatermark,
   INavigateInfo,
   IBlock,
-  ILang
+  ILang,
+  ICatalog,
+  ICatalogItem
 }
