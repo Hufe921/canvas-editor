@@ -87,6 +87,7 @@ export class Command {
   private static removeControl: CommandAdapt['removeControl']
   private static setLocale: CommandAdapt['setLocale']
   private static getCatalog: CommandAdapt['getCatalog']
+  private static locationCatalog: CommandAdapt['locationCatalog']
 
   constructor(adapt: CommandAdapt) {
     Command.mode = adapt.mode.bind(adapt)
@@ -166,6 +167,7 @@ export class Command {
     Command.removeControl = adapt.removeControl.bind(adapt)
     Command.setLocale = adapt.setLocale.bind(adapt)
     Command.getCatalog = adapt.getCatalog.bind(adapt)
+    Command.locationCatalog = adapt.locationCatalog.bind(adapt)
   }
 
   // 全局命令
@@ -481,6 +483,10 @@ export class Command {
 
   public getCatalog(): Promise<ICatalog | null> {
     return Command.getCatalog()
+  }
+
+  public executeLocationCatalog(titleId: string) {
+    return Command.locationCatalog(titleId)
   }
 
 }

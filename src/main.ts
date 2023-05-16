@@ -1,11 +1,12 @@
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, IEditorData, IEditorResult, IElement, KeyMap, ListStyle, ListType, PageMode, PaperDirection, RowFlex, TitleLevel } from './editor'
+import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, ICatalogItem, IEditorData, IEditorResult, IElement, KeyMap, ListStyle, ListType, PageMode, PaperDirection, RowFlex, TitleLevel } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
 import { queryParams } from './utils'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
+import { debounce } from './utils'
 
 const isApple = typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
 
@@ -890,7 +891,54 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
     instance.command.executePrint()
   }
 
-  // 6. 页面模式 | 纸张缩放 | 纸张大小 | 纸张方向 | 页边距 | 全屏
+  // 6. 目录显隐 | 页面模式 | 纸张缩放 | 纸张大小 | 纸张方向 | 页边距 | 全屏
+  async function updateCatalog() {
+    const catalog = await instance.command.getCatalog()
+    const catalogMainDom = document.querySelector<HTMLDivElement>('.catalog__main')!
+    catalogMainDom.innerHTML = ''
+    if (catalog) {
+      const appendCatalog = (parent: HTMLDivElement, catalogItems: ICatalogItem[]) => {
+        for (let c = 0; c < catalogItems.length; c++) {
+          const catalogItem = catalogItems[c]
+          const catalogItemDom = document.createElement('div')
+          catalogItemDom.classList.add('catalog-item')
+          // 渲染
+          const catalogItemContentDom = document.createElement('div')
+          catalogItemContentDom.classList.add('catalog-item__content')
+          const catalogItemContentSpanDom = document.createElement('span')
+          catalogItemContentSpanDom.innerText = catalogItem.name
+          catalogItemContentDom.append(catalogItemContentSpanDom)
+          // 定位
+          catalogItemContentDom.onclick = () => {
+            instance.command.executeLocationCatalog(catalogItem.id)
+          }
+          catalogItemDom.append(catalogItemContentDom)
+          if (catalogItem.subCatalog && catalogItem.subCatalog.length) {
+            appendCatalog(catalogItemDom, catalogItem.subCatalog)
+          }
+          // 追加
+          parent.append(catalogItemDom)
+        }
+      }
+      appendCatalog(catalogMainDom, catalog)
+    }
+  }
+  let isCatalogShow = true
+  const catalogDom = document.querySelector<HTMLElement>('.catalog')!
+  const catalogModeDom = document.querySelector<HTMLDivElement>('.catalog-mode')!
+  const catalogHeaderCloseDom = document.querySelector<HTMLDivElement>('.catalog__header__close')!
+  const switchCatalog = () => {
+    isCatalogShow = !isCatalogShow
+    if (isCatalogShow) {
+      catalogDom.style.display = 'block'
+      updateCatalog()
+    } else {
+      catalogDom.style.display = 'none'
+    }
+  }
+  catalogModeDom.onclick = switchCatalog
+  catalogHeaderCloseDom.onclick = switchCatalog
+
   const pageModeDom = document.querySelector<HTMLDivElement>('.page-mode')!
   const pageModeOptionsDom = pageModeDom.querySelector<HTMLDivElement>('.options')!
   pageModeDom.onclick = function () {
@@ -1204,11 +1252,15 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
     activeMode.classList.add('active')
   }
 
-  instance.listener.contentChange = async function () {
+  instance.listener.contentChange = debounce(async function () {
     contentChangeCount++
     const wordCount = await instance.command.getWordCount()
     document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${wordCount || 0}`
-  }
+    // 目录
+    if (isCatalogShow) {
+      updateCatalog()
+    }
+  }, 200)
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)

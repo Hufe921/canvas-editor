@@ -1660,4 +1660,23 @@ export class CommandAdapt {
     return this.workerManager.getCatalog()
   }
 
+  public locationCatalog(titleId: string) {
+    const elementList = this.draw.getMainElementList()
+    let newIndex = -1
+    for (let e = 0; e < elementList.length; e++) {
+      const element = elementList[e]
+      if (element.titleId === titleId && elementList[e + 1]?.titleId !== titleId) {
+        newIndex = e
+        break
+      }
+    }
+    if (!~newIndex) return
+    this.range.setRange(newIndex, newIndex)
+    this.draw.render({
+      curIndex: newIndex,
+      isCompute: false,
+      isSubmitHistory: false
+    })
+  }
+
 }
