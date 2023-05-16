@@ -1,3 +1,25 @@
+## [0.9.34](https://github.com/Hufe921/canvas-editor/compare/v0.9.33...v0.9.34) (2023-05-16)
+
+
+### Documentation
+
+* get catalog api ([c2cc8d9](https://github.com/Hufe921/canvas-editor/commit/c2cc8d98d29a472ccbe35aa39893e1dfc8df74e0))
+* location catalog api ([402e448](https://github.com/Hufe921/canvas-editor/commit/402e448559a5e2a1d2dd6399889758172651bcef))
+
+
+### Features
+
+* add catalog demo ([9343afe](https://github.com/Hufe921/canvas-editor/commit/9343afe83136b4e1a23bad813adb5f9cf813604a))
+* get catalog api ([237c0f2](https://github.com/Hufe921/canvas-editor/commit/237c0f22cbd26ac737187b8a195bc08665dcc450))
+* location catalog api ([535562e](https://github.com/Hufe921/canvas-editor/commit/535562e396ce150916456a0ed791edc4ff208de4))
+
+
+### Performance Improvements
+
+* optimize cursor blink ([7ad4ba3](https://github.com/Hufe921/canvas-editor/commit/7ad4ba3a2664744bbcee200775028a009fecd5b4))
+
+
+
 ## [0.9.33](https://github.com/Hufe921/canvas-editor/compare/v0.9.32...v0.9.33) (2023-05-02)
 
 
