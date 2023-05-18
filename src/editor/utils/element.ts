@@ -56,8 +56,10 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         const titleOptions = editorOptions.title
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
-          value.titleId = titleId
-          value.level = el.level
+          if (el.level) {
+            value.titleId = titleId
+            value.level = el.level
+          }
           // 文本型元素设置字体及加粗
           if (isTextLikeElement(value)) {
             if (!value.size) {
