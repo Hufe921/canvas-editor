@@ -15,5 +15,7 @@ export const defaultPageNumberOption: Readonly<Required<IPageNumber>> = {
   rowFlex: RowFlex.CENTER,
   format: FORMAT_PLACEHOLDER.PAGE_NO,
   numberType: NumberType.ARABIC,
-  disabled: false
+  disabled: false,
+  startPageNo: 1,
+  fromPageNo: 0
 }

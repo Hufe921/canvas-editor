@@ -10,4 +10,6 @@ export interface IPageNumber {
   format?: string;
   numberType?: NumberType;
   disabled?: boolean;
+  startPageNo?: number;
+  fromPageNo?: number;
 }
