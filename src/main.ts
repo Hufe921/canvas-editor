@@ -6,6 +6,8 @@ import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
 import { debounce } from './utils'
+import * as Y from 'yjs'
+import { WebsocketProvider } from 'y-websocket'
 
 window.onload = function () {
   const isApple = typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
@@ -38,6 +40,28 @@ window.onload = function () {
   console.log('实例: ', instance)
   // cypress使用
   Reflect.set(window, 'editor', instance)
+
+  // 测试CRDT
+  const doc = new Y.Doc()
+  new WebsocketProvider(
+    'ws://localhost:1234', 'canvas-editor-crdt-demo', doc
+  )
+  const yArray = doc.getArray<IElement>()
+  doc.on('update', update => {
+    Y.applyUpdate(doc, update)
+    instance.command.executeSelectAll()
+    instance.command.executeBackspace()
+    const yElementList = yArray.toArray()
+    instance.command.executeInsertElementList(yElementList)
+  })
+
+  document.addEventListener('keyup', debounce(() => {
+    const data = instance.command.getValue()
+    console.log('当前编辑器数据: ', data)
+    const { data: { main } } = data
+    yArray.delete(0, yArray.length)
+    yArray.insert(0, main)
+  }, 1000))
 
   // 2. | 撤销 | 重做 | 格式刷 | 清除格式 |
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
