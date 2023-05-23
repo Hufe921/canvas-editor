@@ -501,7 +501,12 @@ export function zipElementList(payload: IElement[]): IElement[] {
     }
     // 组合元素
     const pickElement = pickElementAttr(element)
-    if (!element.type || element.type === ElementType.TEXT) {
+    if (
+      !element.type
+      || element.type === ElementType.TEXT
+      || element.type === ElementType.SUBSCRIPT
+      || element.type === ElementType.SUPERSCRIPT
+    ) {
       while (e < elementList.length) {
         const nextElement = elementList[e + 1]
         e++

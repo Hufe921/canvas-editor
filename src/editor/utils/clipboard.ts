@@ -38,8 +38,15 @@ export function writeClipboardItem(text: string, html: string) {
 }
 
 export function convertElementToDom(element: IElement, options: DeepRequired<IEditorOption>): HTMLElement {
-  const isBlock = element.rowFlex === RowFlex.CENTER || element.rowFlex === RowFlex.RIGHT
-  const dom = document.createElement(isBlock ? 'p' : 'span')
+  let tagName: keyof HTMLElementTagNameMap = 'span'
+  if (element.type === ElementType.SUPERSCRIPT) {
+    tagName = 'sup'
+  } else if (element.type === ElementType.SUBSCRIPT) {
+    tagName = 'sub'
+  } else if (element.rowFlex === RowFlex.CENTER || element.rowFlex === RowFlex.RIGHT) {
+    tagName = 'p'
+  }
+  const dom = document.createElement(tagName)
   dom.style.fontFamily = element.font || options.defaultFont
   if (element.rowFlex) {
     const isAlignment = element.rowFlex === RowFlex.ALIGNMENT
@@ -191,6 +198,37 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
   writeClipboardItem(text, html)
 }
 
+export function convertTextNodeToElement(textNode: Element | Node): IElement | null {
+  if (!textNode || textNode.nodeType !== 3) return null
+  const parentNode = <HTMLElement>textNode.parentNode
+  const rowFlex = getElementRowFlex(parentNode)
+  const value = textNode.textContent
+  const style = window.getComputedStyle(parentNode)
+  if (!value || parentNode.nodeName === 'STYLE') return null
+  const element: IElement = {
+    value,
+    color: style.color,
+    bold: Number(style.fontWeight) > 500,
+    italic: style.fontStyle.includes('italic'),
+    size: Math.floor(parseFloat(style.fontSize))
+  }
+  // 元素类型-默认文本
+  if (parentNode.nodeName === 'SUB') {
+    element.type = ElementType.SUBSCRIPT
+  } else if (parentNode.nodeName === 'SUP') {
+    element.type = ElementType.SUPERSCRIPT
+  }
+  // 行对齐
+  if (rowFlex !== RowFlex.LEFT) {
+    element.rowFlex = rowFlex
+  }
+  // 高亮色
+  if (style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
+    element.highlight = style.backgroundColor
+  }
+  return element
+}
+
 interface IGetElementListByHTMLOption {
   innerWidth: number;
 }
@@ -199,24 +237,8 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
   const elementList: IElement[] = []
   function findTextNode(dom: Element | Node) {
     if (dom.nodeType === 3) {
-      const parentNode = <HTMLElement>dom.parentNode
-      const rowFlex = getElementRowFlex(parentNode)
-      const value = dom.textContent
-      const style = window.getComputedStyle(parentNode)
-      if (value && parentNode.nodeName !== 'STYLE') {
-        const element: IElement = {
-          value,
-          color: style.color,
-          bold: Number(style.fontWeight) > 500,
-          italic: style.fontStyle.includes('italic'),
-          size: Math.floor(Number(style.fontSize.replace('px', '')))
-        }
-        if (rowFlex !== RowFlex.LEFT) {
-          element.rowFlex = rowFlex
-        }
-        if (style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
-          element.highlight = style.backgroundColor
-        }
+      const element = convertTextNodeToElement(dom)
+      if (element) {
         elementList.push(element)
       }
     } else if (dom.nodeType === 1) {
