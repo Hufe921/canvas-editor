@@ -1151,6 +1151,25 @@ export class CommandAdapt {
     })
   }
 
+  public tableTdBackgroundColor(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const rowCol = this.draw.getTableParticle().getRangeRowCol()
+    if (!rowCol) return
+    for (let r = 0; r < rowCol.length; r++) {
+      const row = rowCol[r]
+      for (let c = 0; c < row.length; c++) {
+        const col = row[c]
+        col.backgroundColor = payload
+      }
+    }
+    const { endIndex } = this.range.getRange()
+    this.range.setRange(endIndex, endIndex)
+    this.draw.render({
+      isCompute: false
+    })
+  }
+
   public hyperlink(payload: IElement) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return

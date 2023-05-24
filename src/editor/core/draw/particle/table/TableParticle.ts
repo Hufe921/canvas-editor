@@ -1,5 +1,6 @@
 import { ElementType, IElement, TableBorder } from '../../../..'
 import { IEditorOption } from '../../../../interface/Editor'
+import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
 import { deepClone } from '../../../../utils'
 import { RangeManager } from '../../../range/RangeManager'
@@ -16,10 +17,12 @@ interface IDrawTableBorderOption {
 
 export class TableParticle {
 
+  private draw: Draw
   private range: RangeManager
   private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
+    this.draw = draw
     this.range = draw.getRange()
     this.options = draw.getOptions()
   }
@@ -41,7 +44,51 @@ export class TableParticle {
     return trList
   }
 
-  private _drawBorder(payload: IDrawTableBorderOption) {
+  public getRangeRowCol(): ITd[][] | null {
+    const { isTable, index, trIndex, tdIndex } = this.draw.getPosition().getPositionContext()
+    if (!isTable) return null
+    const { isCrossRowCol, startTdIndex, endTdIndex, startTrIndex, endTrIndex } = this.range.getRange()
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    // 非跨列直接返回光标所在单元格
+    if (!isCrossRowCol) {
+      return [[curTrList[trIndex!].tdList[tdIndex!]]]
+    }
+    let startTd = curTrList[startTrIndex!].tdList[startTdIndex!]
+    let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
+    // 交换起始位置
+    if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      [startTd, endTd] = [endTd, startTd]
+    }
+    const startColIndex = startTd.colIndex!
+    const endColIndex = endTd.colIndex! + (endTd.colspan - 1)
+    const startRowIndex = startTd.rowIndex!
+    const endRowIndex = endTd.rowIndex! + (endTd.rowspan - 1)
+    // 选区行列
+    const rowCol: ITd[][] = []
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      const tdList: ITd[] = []
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        const tdColIndex = td.colIndex!
+        const tdRowIndex = td.rowIndex!
+        if (
+          tdColIndex >= startColIndex && tdColIndex <= endColIndex
+          && tdRowIndex >= startRowIndex && tdRowIndex <= endRowIndex
+        ) {
+          tdList.push(td)
+        }
+      }
+      if (tdList.length) {
+        rowCol.push(tdList)
+      }
+    }
+    return rowCol.length ? rowCol : null
+  }
+
+  private _drawOuterBorder(payload: IDrawTableBorderOption) {
     const { ctx, startX, startY, width, height, isDrawFullBorder } = payload
     ctx.beginPath()
     const x = Math.round(startX)
@@ -56,6 +103,68 @@ export class TableParticle {
     }
     ctx.stroke()
     ctx.translate(-0.5, -0.5)
+  }
+
+  private _drawBorder(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+    const { colgroup, trList, borderType } = element
+    if (!colgroup || !trList || borderType === TableBorder.EMPTY) return
+    const { scale } = this.options
+    const tableWidth = element.width! * scale
+    const tableHeight = element.height! * scale
+    const isExternalBorderType = borderType === TableBorder.EXTERNAL
+    ctx.save()
+    // 渲染边框
+    this._drawOuterBorder({
+      ctx,
+      startX,
+      startY,
+      width: tableWidth,
+      height: tableHeight,
+      isDrawFullBorder: isExternalBorderType
+    })
+    if (!isExternalBorderType) {
+      // 渲染表格
+      for (let t = 0; t < trList.length; t++) {
+        const tr = trList[t]
+        for (let d = 0; d < tr.tdList.length; d++) {
+          const td = tr.tdList[d]
+          const width = td.width! * scale
+          const height = td.height! * scale
+          const x = Math.round(td.x! * scale + startX + width)
+          const y = Math.round(td.y! * scale + startY)
+          ctx.translate(0.5, 0.5)
+          // 绘制线条
+          ctx.beginPath()
+          ctx.moveTo(x, y)
+          ctx.lineTo(x, y + height)
+          ctx.lineTo(x - width, y + height)
+          ctx.stroke()
+          ctx.translate(-0.5, -0.5)
+        }
+      }
+    }
+    ctx.restore()
+  }
+
+  private _drawBackgroundColor(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+    const { trList } = element
+    if (!trList) return
+    const { scale } = this.options
+    for (let t = 0; t < trList.length; t++) {
+      const tr = trList[t]
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        if (!td.backgroundColor) continue
+        ctx.save()
+        const width = td.width! * scale
+        const height = td.height! * scale
+        const x = Math.round(td.x! * scale + startX)
+        const y = Math.round(td.y! * scale + startY)
+        ctx.fillStyle = td.backgroundColor
+        ctx.fillRect(x, y, width, height)
+        ctx.restore()
+      }
+    }
   }
 
   public computeRowColInfo(element: IElement) {
@@ -192,44 +301,8 @@ export class TableParticle {
   }
 
   public render(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
-    const { colgroup, trList, borderType } = element
-    if (!colgroup || !trList || borderType === TableBorder.EMPTY) return
-    const { scale } = this.options
-    const tableWidth = element.width! * scale
-    const tableHeight = element.height! * scale
-    const isExternalBorderType = borderType === TableBorder.EXTERNAL
-    ctx.save()
-    // 渲染边框
-    this._drawBorder({
-      ctx,
-      startX,
-      startY,
-      width: tableWidth,
-      height: tableHeight,
-      isDrawFullBorder: isExternalBorderType
-    })
-    if (!isExternalBorderType) {
-      // 渲染表格
-      for (let t = 0; t < trList.length; t++) {
-        const tr = trList[t]
-        for (let d = 0; d < tr.tdList.length; d++) {
-          const td = tr.tdList[d]
-          const width = td.width! * scale
-          const height = td.height! * scale
-          const x = Math.round(td.x! * scale + startX + width)
-          const y = Math.round(td.y! * scale + startY)
-          ctx.translate(0.5, 0.5)
-          // 绘制线条
-          ctx.beginPath()
-          ctx.moveTo(x, y)
-          ctx.lineTo(x, y + height)
-          ctx.lineTo(x - width, y + height)
-          ctx.stroke()
-          ctx.translate(-0.5, -0.5)
-        }
-      }
-    }
-    ctx.restore()
+    this._drawBackgroundColor(ctx, element, startX, startY)
+    this._drawBorder(ctx, element, startX, startY)
   }
 
 }

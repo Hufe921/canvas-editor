@@ -53,6 +53,7 @@ export class Command {
   private static cancelMergeTableCell: CommandAdapt['cancelMergeTableCell']
   private static tableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
   private static tableBorderType: CommandAdapt['tableBorderType']
+  private static tableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
   private static image: CommandAdapt['image']
   private static hyperlink: CommandAdapt['hyperlink']
   private static deleteHyperlink: CommandAdapt['deleteHyperlink']
@@ -133,6 +134,7 @@ export class Command {
     Command.cancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     Command.tableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
     Command.tableBorderType = adapt.tableBorderType.bind(adapt)
+    Command.tableTdBackgroundColor = adapt.tableTdBackgroundColor.bind(adapt)
     Command.image = adapt.image.bind(adapt)
     Command.hyperlink = adapt.hyperlink.bind(adapt)
     Command.deleteHyperlink = adapt.deleteHyperlink.bind(adapt)
@@ -345,6 +347,10 @@ export class Command {
 
   public executeTableBorderType(payload: TableBorder) {
     return Command.tableBorderType(payload)
+  }
+
+  public executeTableTdBackgroundColor(payload: string) {
+    return Command.tableTdBackgroundColor(payload)
   }
 
   public executeHyperlink(payload: IElement) {

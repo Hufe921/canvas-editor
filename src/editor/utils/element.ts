@@ -426,6 +426,9 @@ export function zipElementList(payload: IElement[]): IElement[] {
             if (td.verticalAlign) {
               zipTd.verticalAlign = td.verticalAlign
             }
+            if (td.backgroundColor) {
+              zipTd.backgroundColor = td.backgroundColor
+            }
             tr.tdList[d] = zipTd
           }
         }

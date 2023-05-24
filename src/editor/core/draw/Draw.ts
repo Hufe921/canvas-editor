@@ -516,6 +516,10 @@ export class Draw {
     return this.tableTool
   }
 
+  public getTableParticle(): TableParticle {
+    return this.tableParticle
+  }
+
   public getHeader(): Header {
     return this.header
   }
