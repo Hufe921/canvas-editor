@@ -89,6 +89,9 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
             tdDom.rowSpan = td.rowspan
             const childDom = buildDomFromElementList(zipElementList(td.value!))
             tdDom.innerHTML = childDom.innerHTML
+            if (td.backgroundColor) {
+              tdDom.style.backgroundColor = td.backgroundColor
+            }
             trDom.append(tdDom)
           }
           tableDom.append(trDom)
@@ -340,6 +343,9 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
                 colspan: tableCell.colSpan,
                 rowspan: tableCell.rowSpan,
                 value: valueList
+              }
+              if (tableCell.style.backgroundColor) {
+                td.backgroundColor = tableCell.style.backgroundColor
               }
               tr.tdList.push(td)
             })
