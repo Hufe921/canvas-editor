@@ -56,8 +56,10 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         const titleOptions = editorOptions.title
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
-          value.titleId = titleId
-          value.level = el.level
+          if (el.level) {
+            value.titleId = titleId
+            value.level = el.level
+          }
           // 文本型元素设置字体及加粗
           if (isTextLikeElement(value)) {
             if (!value.size) {
@@ -424,6 +426,9 @@ export function zipElementList(payload: IElement[]): IElement[] {
             if (td.verticalAlign) {
               zipTd.verticalAlign = td.verticalAlign
             }
+            if (td.backgroundColor) {
+              zipTd.backgroundColor = td.backgroundColor
+            }
             tr.tdList[d] = zipTd
           }
         }
@@ -499,7 +504,12 @@ export function zipElementList(payload: IElement[]): IElement[] {
     }
     // 组合元素
     const pickElement = pickElementAttr(element)
-    if (!element.type || element.type === ElementType.TEXT) {
+    if (
+      !element.type
+      || element.type === ElementType.TEXT
+      || element.type === ElementType.SUBSCRIPT
+      || element.type === ElementType.SUPERSCRIPT
+    ) {
       while (e < elementList.length) {
         const nextElement = elementList[e + 1]
         e++

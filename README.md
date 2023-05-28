@@ -33,6 +33,7 @@ new Editor(document.querySelector(".canvas-editor"), [
 3. improve performance
 4. control rules
 5. table paging
+6. [CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)
 
 ## snapshot
 

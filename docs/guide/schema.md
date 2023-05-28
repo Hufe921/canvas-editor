@@ -51,6 +51,7 @@ interface IElement {
       colspan: number;
       rowspan: number;
       verticalAlign?: VerticalAlign;
+      backgroundColor?: string;
       value: IElement[];
     }[];
   }[];

@@ -78,9 +78,7 @@ export class ListParticle {
     if (startElement.value !== ZERO || startElement.listWrap) return
     let text = ''
     if (startElement.listType === ListType.UL) {
-      if (startElement.listStyle) {
-        text = ulStyleMapping[<UlStyle><unknown>startElement.listStyle] || ulStyleMapping[UlStyle.DISC]
-      }
+      text = ulStyleMapping[<UlStyle><unknown>startElement.listStyle] || ulStyleMapping[UlStyle.DISC]
     } else {
       text = `${listIndex! + 1}${KeyMap.PERIOD}`
     }

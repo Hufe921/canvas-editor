@@ -90,6 +90,8 @@ interface IPageNumber {
   format?: string; // 页码格式。默认：{pageNo}。示例：第{pageNo}页/共{pageCount}页
   numberType?: NumberType; // 数字类型。默认：ARABIC
   disabled?: boolean; // 是否禁用
+  startPageNo?: number; // 起始页码。默认：1
+  fromPageNo?: number; // 从第几页开始出现页码。默认：0
 }
 ```
 
