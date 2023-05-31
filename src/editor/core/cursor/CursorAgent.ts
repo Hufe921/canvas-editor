@@ -84,6 +84,7 @@ export class CursorAgent {
                 let start = 0
                 while (start < pasteElementList.length) {
                   const pasteElement = pasteElementList[start]
+                  if (anchorElement.titleId && /^\n/.test(pasteElement.value)) break
                   if (VIRTUAL_ELEMENT_TYPE.includes(pasteElement.type!)) {
                     pasteElementList.splice(start, 1)
                     if (pasteElement.valueList) {
@@ -99,7 +100,9 @@ export class CursorAgent {
                   start++
                 }
               }
-              formatElementContext(elementList, pasteElementList, startIndex)
+              formatElementContext(elementList, pasteElementList, startIndex, {
+                isBreakWhenWrap: true
+              })
             }
             this.draw.insertElementList(pasteElementList)
           })

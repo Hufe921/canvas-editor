@@ -563,11 +563,17 @@ export function getAnchorElement(elementList: IElement[], anchorIndex: number): 
     : anchorElement
 }
 
-export function formatElementContext(sourceElementList: IElement[], formatElementList: IElement[], anchorIndex: number) {
+export interface IFormatElementContextOption {
+  isBreakWhenWrap: boolean;
+}
+
+export function formatElementContext(sourceElementList: IElement[], formatElementList: IElement[], anchorIndex: number, options?: IFormatElementContextOption) {
   const copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
+  const { isBreakWhenWrap = false } = options || {}
   for (let e = 0; e < formatElementList.length; e++) {
     const targetElement = formatElementList[e]
+    if (isBreakWhenWrap && !copyElement.listId && /^\n/.test(targetElement.value)) break
     // 定位元素非列表，无需处理粘贴列表的上下文
     if (!copyElement.listId && targetElement.type === ElementType.LIST) continue
     if (targetElement.valueList && targetElement.valueList.length) {
