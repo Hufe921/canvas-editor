@@ -28,12 +28,11 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. improve page number
-2. improve list and title
-3. improve performance
-4. control rules
-5. table paging
-6. [CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)
+1. improve list and title
+2. improve performance
+3. control rules
+4. table paging
+5. [CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)
 
 ## snapshot
 
