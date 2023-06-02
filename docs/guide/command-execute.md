@@ -598,3 +598,11 @@ instance.command.executeSetLocale(locale: string)
 ```javascript
 instance.command.executeLocationCatalog(titleId: string)
 ```
+
+## executeWordTool
+功能：文字工具（删除空行、行首空格）
+
+用法：
+```javascript
+instance.command.executeWordTool()
+```
