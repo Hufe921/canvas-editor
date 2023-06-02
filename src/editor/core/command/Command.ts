@@ -89,6 +89,7 @@ export class Command {
   private static setLocale: CommandAdapt['setLocale']
   private static getCatalog: CommandAdapt['getCatalog']
   private static locationCatalog: CommandAdapt['locationCatalog']
+  private static wordTool: CommandAdapt['wordTool']
 
   constructor(adapt: CommandAdapt) {
     Command.mode = adapt.mode.bind(adapt)
@@ -170,6 +171,7 @@ export class Command {
     Command.setLocale = adapt.setLocale.bind(adapt)
     Command.getCatalog = adapt.getCatalog.bind(adapt)
     Command.locationCatalog = adapt.locationCatalog.bind(adapt)
+    Command.wordTool = adapt.wordTool.bind(adapt)
   }
 
   // 全局命令
@@ -493,6 +495,10 @@ export class Command {
 
   public executeLocationCatalog(titleId: string) {
     return Command.locationCatalog(titleId)
+  }
+
+  public executeWordTool() {
+    return Command.wordTool()
   }
 
 }

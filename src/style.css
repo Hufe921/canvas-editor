@@ -906,3 +906,7 @@ ul {
 .ce-contextmenu-signature {
   background-image: url('./assets/images/signature.svg');
 }
+
+.ce-contextmenu-word-tool {
+  background-image: url('./assets/images/word-tool.svg');
+}

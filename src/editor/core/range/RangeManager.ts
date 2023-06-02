@@ -40,6 +40,11 @@ export class RangeManager {
     this.setRange(-1, -1)
   }
 
+  public getIsCollapsed(): boolean {
+    const { startIndex, endIndex } = this.range
+    return startIndex === endIndex
+  }
+
   public getSelection(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null

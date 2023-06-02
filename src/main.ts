@@ -1243,6 +1243,16 @@ window.onload = function () {
           }
         })
       }
+    },
+    {
+      name: '格式整理',
+      icon: 'word-tool',
+      when: (payload) => {
+        return !payload.isReadonly
+      },
+      callback: (command: Command) => {
+        command.executeWordTool()
+      }
     }
   ])
 

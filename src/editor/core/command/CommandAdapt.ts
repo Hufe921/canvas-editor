@@ -1,4 +1,4 @@
-import { WRAP, ZERO } from '../../dataset/constant/Common'
+import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { titleSizeMapping } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
@@ -1696,6 +1696,34 @@ export class CommandAdapt {
       isCompute: false,
       isSubmitHistory: false
     })
+  }
+
+  public wordTool() {
+    const elementList = this.draw.getMainElementList()
+    let isApply = false
+    for (let i = 0; i < elementList.length; i++) {
+      const element = elementList[i]
+      // 删除空行、行首空格
+      if (element.value === ZERO) {
+        while (i + 1 < elementList.length) {
+          const nextElement = elementList[i + 1]
+          if (nextElement.value !== ZERO && nextElement.value !== NBSP) break
+          elementList.splice(i + 1, 1)
+          isApply = true
+        }
+      }
+    }
+    if (!isApply) {
+      // 避免输入框光标丢失
+      const isCollapsed = this.range.getIsCollapsed()
+      this.draw.getCursor().drawCursor({
+        isShow: isCollapsed
+      })
+    } else {
+      this.draw.render({
+        isSetCursor: false
+      })
+    }
   }
 
 }
