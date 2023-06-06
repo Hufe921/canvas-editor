@@ -204,10 +204,13 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
 export function convertTextNodeToElement(textNode: Element | Node): IElement | null {
   if (!textNode || textNode.nodeType !== 3) return null
   const parentNode = <HTMLElement>textNode.parentNode
-  const rowFlex = getElementRowFlex(parentNode)
+  const anchorNode = parentNode.nodeName === 'FONT'
+    ? <HTMLElement>parentNode.parentNode
+    : parentNode
+  const rowFlex = getElementRowFlex(anchorNode)
   const value = textNode.textContent
-  const style = window.getComputedStyle(parentNode)
-  if (!value || parentNode.nodeName === 'STYLE') return null
+  const style = window.getComputedStyle(anchorNode)
+  if (!value || anchorNode.nodeName === 'STYLE') return null
   const element: IElement = {
     value,
     color: style.color,
@@ -216,9 +219,9 @@ export function convertTextNodeToElement(textNode: Element | Node): IElement | n
     size: Math.floor(parseFloat(style.fontSize))
   }
   // 元素类型-默认文本
-  if (parentNode.nodeName === 'SUB') {
+  if (anchorNode.nodeName === 'SUB' || style.verticalAlign === 'sub') {
     element.type = ElementType.SUBSCRIPT
-  } else if (parentNode.nodeName === 'SUP') {
+  } else if (anchorNode.nodeName === 'SUP' || style.verticalAlign === 'super') {
     element.type = ElementType.SUPERSCRIPT
   }
   // 行对齐
