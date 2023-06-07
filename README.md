@@ -36,7 +36,7 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## snapshot
 
-![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.9.32.png)
+![image](https://github.com/Hufe921/canvas-editor/blob/main/src/assets/snapshots/main_v0.9.35.png)
 
 ## install
 
