@@ -55,6 +55,7 @@ interface IEditorOption {
   checkbox?: ICheckboxOption; // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; fontStyle?: string;}
   cursor?: ICursorOption; // 光标样式。{width?: number; color?: string; dragWidth?: number; dragColor?: string;}
   title?: ITitleOption; // 标题配置。{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
+  placeholder?: IPlaceholder; // 编辑器空白占位文本
 }
 ```
 
@@ -103,6 +104,18 @@ interface IWatermark {
   color?: string; // 颜色。默认：#AEB5C0
   opacity?: number; // 透明度。默认：0.3
   size?: number; // 字体大小。默认：200
+  font?: string; // 字体。默认：Yahei
+}
+```
+
+## 占位文本配置
+
+```typescript
+interface IPlaceholder {
+  data: string; // 文本。
+  color?: string; // 颜色。默认：#DCDFE6
+  opacity?: number; // 透明度。默认：1
+  size?: number; // 字体大小。默认：16
   font?: string; // 字体。默认：Yahei
 }
 ```
