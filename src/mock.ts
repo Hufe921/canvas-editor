@@ -331,5 +331,8 @@ export const options: IEditorOption = {
   },
   pageNumber: {
     format: '第{pageNo}页/共{pageCount}页'
+  },
+  placeholder: {
+    data: '请输入正文'
   }
 }

@@ -23,7 +23,7 @@ export interface IDrawRowPayload {
   pageNo: number;
   startIndex: number;
   innerWidth: number;
-  zone: EditorZone;
+  zone?: EditorZone;
 }
 
 export interface IDrawPagePayload {

@@ -54,6 +54,7 @@ import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
 import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
+import { Placeholder } from './frame/Placeholder'
 
 export class Draw {
 
@@ -91,6 +92,7 @@ export class Draw {
   private tableTool: TableTool
   private pageNumber: PageNumber
   private waterMark: Watermark
+  private placeholder: Placeholder
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
@@ -156,6 +158,7 @@ export class Draw {
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
+    this.placeholder = new Placeholder(this)
     this.header = new Header(this)
     this.footer = new Footer(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
@@ -1373,6 +1376,10 @@ export class Draw {
     // 绘制水印
     if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
       this.waterMark.render(ctx)
+    }
+    // 绘制空白占位符
+    if (this.elementList.length <= 1) {
+      this.placeholder.render(ctx)
     }
   }
 
