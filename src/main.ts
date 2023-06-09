@@ -39,6 +39,15 @@ window.onload = function () {
   // cypress使用
   Reflect.set(window, 'editor', instance)
 
+  // 菜单弹窗销毁
+  window.addEventListener('click', (evt) => {
+    const visibleDom = document.querySelector('.visible')
+    if (!visibleDom || visibleDom.contains(<Node>evt.target)) return
+    visibleDom.classList.remove('visible')
+  }, {
+    capture: true
+  })
+
   // 2. | 撤销 | 重做 | 格式刷 | 清除格式 |
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
   undoDom.title = `撤销(${isApple ? '⌘' : 'Ctrl'}+Z)`
