@@ -917,6 +917,12 @@ window.onload = function () {
   pageModeDom.onclick = function () {
     pageModeOptionsDom.classList.toggle('visible')
   }
+  clickOutside(pageModeDom, {
+    enabled: true,
+    callback: () =>{
+      pageModeOptionsDom.classList.remove('visible')
+    }
+  })
   pageModeOptionsDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
     instance.command.executePageMode(<PageMode>li.dataset.pageMode!)
