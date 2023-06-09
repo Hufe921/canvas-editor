@@ -3,9 +3,11 @@ import './style.css'
 import prism from 'prismjs'
 import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, ICatalogItem, IElement, KeyMap, ListStyle, ListType, PageMode, PaperDirection, RowFlex, TitleLevel } from './editor'
 import { Dialog } from './components/dialog/Dialog'
-import { formatPrismToken } from './utils/prism'
+import { formatPrismToken } from './utils'
 import { Signature } from './components/signature/Signature'
 import { debounce } from './utils'
+import { clickOutside } from './utils'
+
 
 window.onload = function () {
   const isApple = typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
@@ -86,6 +88,11 @@ window.onload = function () {
     instance.command.executeFont(li.dataset.family!)
   }
 
+
+  clickOutside(fontDom, {enabled: true, callback: () => {
+    fontOptionDom.classList.remove('visible')
+  }})
+
   const sizeSetDom = document.querySelector<HTMLDivElement>('.menu-item__size')!
   const sizeSelectDom = sizeSetDom.querySelector<HTMLDivElement>('.select')!
   const sizeOptionDom = sizeSetDom.querySelector<HTMLDivElement>('.options')!
@@ -112,6 +119,10 @@ window.onload = function () {
     console.log('size-minus')
     instance.command.executeSizeMinus()
   }
+
+  clickOutside(sizeSetDom, {enabled: true, callback: () => {
+    sizeOptionDom.classList.remove('visible')
+  }})
 
   const boldDom = document.querySelector<HTMLDivElement>('.menu-item__bold')!
   boldDom.title = `加粗(${isApple ? '⌘' : 'Ctrl'}+B)`
@@ -187,6 +198,14 @@ window.onload = function () {
     console.log('title')
     titleOptionDom.classList.toggle('visible')
   }
+
+  clickOutside(titleDom, {
+    enabled: true,
+    callback: () => {
+      titleOptionDom.classList.remove('visible')
+    }
+  })
+
   titleOptionDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
     const level = <TitleLevel>li.dataset.level
@@ -924,6 +943,12 @@ window.onload = function () {
   paperSizeDom.onclick = function () {
     paperSizeDomOptionsDom.classList.toggle('visible')
   }
+  clickOutside(paperSizeDom, {
+    enabled: true,
+    callback: () => {
+      paperSizeDomOptionsDom.classList.remove('visible')
+    }
+  })
   paperSizeDomOptionsDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
     const paperType = li.dataset.paperSize!
@@ -941,6 +966,13 @@ window.onload = function () {
   paperDirectionDom.onclick = function () {
     paperDirectionDomOptionsDom.classList.toggle('visible')
   }
+
+  clickOutside(paperDirectionDom, {
+    enabled: true,
+    callback: () => {
+      paperDirectionDomOptionsDom.classList.remove('visible')
+    }
+  })
   paperDirectionDomOptionsDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
     const paperDirection = li.dataset.paperDirection!
