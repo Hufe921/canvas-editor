@@ -599,6 +599,10 @@ export class Draw {
     })
   }
 
+  public getIsPagingMode(): boolean {
+    return this.options.pageMode === PageMode.PAGING
+  }
+
   public setPageMode(payload: PageMode) {
     if (!payload || this.options.pageMode === payload) return
     this.options.pageMode = payload
@@ -611,6 +615,11 @@ export class Draw {
       canvas.height = height * dpr
       // canvas尺寸发生变化，上下文被重置
       this._initPageContext(this.ctxList[0])
+    } else {
+      // 连页模式：移除懒加载监听&清空页眉页脚计算数据
+      this._disconnectLazyRender()
+      this.header.recovery()
+      this.footer.recovery()
     }
     this.render({
       isSubmitHistory: false,
@@ -1357,17 +1366,19 @@ export class Draw {
       innerWidth,
       zone: EditorZone.MAIN
     })
-    // 绘制页眉
-    if (!header.disabled) {
-      this.header.render(ctx, pageNo)
-    }
-    // 绘制页码
-    if (!pageNumber.disabled) {
-      this.pageNumber.render(ctx, pageNo)
-    }
-    // 绘制页脚
-    if (!footer.disabled) {
-      this.footer.render(ctx, pageNo)
+    if (this.getIsPagingMode()) {
+      // 绘制页眉
+      if (!header.disabled) {
+        this.header.render(ctx, pageNo)
+      }
+      // 绘制页码
+      if (!pageNumber.disabled) {
+        this.pageNumber.render(ctx, pageNo)
+      }
+      // 绘制页脚
+      if (!footer.disabled) {
+        this.footer.render(ctx, pageNo)
+      }
     }
     // 搜索匹配绘制
     if (this.search.getSearchKeyword()) {
@@ -1383,10 +1394,14 @@ export class Draw {
     }
   }
 
+  private _disconnectLazyRender() {
+    this.lazyRenderIntersectionObserver?.disconnect()
+  }
+
   private _lazyRender() {
     const positionList = this.position.getOriginalMainPositionList()
     const elementList = this.getOriginalMainElementList()
-    this.lazyRenderIntersectionObserver?.disconnect()
+    this._disconnectLazyRender()
     this.lazyRenderIntersectionObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -1419,7 +1434,7 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
-    const { pageMode, header, footer } = this.options
+    const { header, footer } = this.options
     const {
       isSubmitHistory = true,
       isSetCursor = true,
@@ -1428,15 +1443,18 @@ export class Draw {
     } = payload || {}
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
+    const isPagingMode = this.getIsPagingMode()
     // 计算文档信息
     if (isCompute) {
-      // 页眉信息
-      if (!header.disabled) {
-        this.header.compute()
-      }
-      // 页脚信息
-      if (!footer.disabled) {
-        this.footer.compute()
+      if (isPagingMode) {
+        // 页眉信息
+        if (!header.disabled) {
+          this.header.compute()
+        }
+        // 页脚信息
+        if (!footer.disabled) {
+          this.footer.compute()
+        }
       }
       // 行信息
       this.rowList = this.computeRowList(innerWidth, this.elementList)
@@ -1470,7 +1488,7 @@ export class Draw {
     }
     // 绘制元素
     // 连续页因为有高度的变化会导致canvas渲染空白，需立即渲染，否则会出现闪动
-    if (isLazy && pageMode === PageMode.PAGING) {
+    if (isLazy && isPagingMode) {
       this._lazyRender()
     } else {
       this._immediateRender()
