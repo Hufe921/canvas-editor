@@ -44,12 +44,12 @@ export class Footer {
   }
 
   public compute() {
-    this._recovery()
+    this.recovery()
     this._computeRowList()
     this._computePositionList()
   }
 
-  private _recovery() {
+  public recovery() {
     this.rowList = []
     this.positionList = []
   }
