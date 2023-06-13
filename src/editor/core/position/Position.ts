@@ -331,10 +331,11 @@ export class Position {
         const isHead = x < this.options.margins[3]
         // 是否在头部
         if (isHead) {
-          let headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo)
-          //判断头部元素是否为空元素
-          headIndex = positionList[headIndex].value === ZERO ? headIndex : headIndex - 1
-          curPositionIndex = ~headIndex ? headIndex: index
+          const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo)
+          // 头部元素为空元素时无需选中
+          curPositionIndex = ~headIndex
+            ? positionList[headIndex].value === ZERO ? headIndex : headIndex - 1
+            : index
         } else {
           curPositionIndex = index
         }
