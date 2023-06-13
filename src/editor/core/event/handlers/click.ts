@@ -3,17 +3,18 @@ import { LETTER_REG, NUMBER_LIKE_REG } from '../../../dataset/constant/Regular'
 import { CanvasEvent } from '../CanvasEvent'
 
 function dblclick(host: CanvasEvent, evt: MouseEvent) {
-  // 切换区域
   const draw = host.getDraw()
   const position = draw.getPosition()
-  const isPagingMode = draw.getIsPagingMode()
-  const positionContext = position.getPositionByXY({
-    x: evt.offsetX,
-    y: evt.offsetY
-  })
-  if (!~positionContext.index && positionContext.zone && isPagingMode) {
-    draw.getZone().setZone(positionContext.zone)
-    return
+  // 切换区域
+  if (draw.getIsPagingMode()) {
+    const positionContext = position.getPositionByXY({
+      x: evt.offsetX,
+      y: evt.offsetY
+    })
+    if (!~positionContext.index && positionContext.zone) {
+      draw.getZone().setZone(positionContext.zone)
+      return
+    }
   }
   // 自动扩选文字
   const cursorPosition = position.getCursorPosition()
