@@ -620,6 +620,7 @@ export class Draw {
       this._disconnectLazyRender()
       this.header.recovery()
       this.footer.recovery()
+      this.getZone().setZone(EditorZone.MAIN)
     }
     this.render({
       isSubmitHistory: false,

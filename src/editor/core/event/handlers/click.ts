@@ -6,11 +6,12 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
   // 切换区域
   const draw = host.getDraw()
   const position = draw.getPosition()
+  const isPagingMode = draw.getIsPagingMode()
   const positionContext = position.getPositionByXY({
     x: evt.offsetX,
     y: evt.offsetY
   })
-  if (!~positionContext.index && positionContext.zone) {
+  if (!~positionContext.index && positionContext.zone && isPagingMode) {
     draw.getZone().setZone(positionContext.zone)
     return
   }
