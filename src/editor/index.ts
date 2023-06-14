@@ -43,6 +43,8 @@ import { defaultTitleOption } from './dataset/constant/Title'
 import { TitleLevel } from './dataset/enum/Title'
 import { ListStyle, ListType } from './dataset/enum/List'
 import { ICatalog, ICatalogItem } from './interface/Catalog'
+import { IPlaceholder } from './interface/Placeholder'
+import { defaultPlaceholderOption } from './dataset/constant/Placeholder'
 
 export default class Editor {
 
@@ -83,6 +85,10 @@ export default class Editor {
     const titleOptions: Required<ITitleOption> = {
       ...defaultTitleOption,
       ...options.title
+    }
+    const placeholderOptions: Required<IPlaceholder> = {
+      ...defaultPlaceholderOption,
+      ...options.placeholder
     }
 
     const editorOptions: DeepRequired<IEditorOption> = {
@@ -127,7 +133,8 @@ export default class Editor {
       control: controlOptions,
       checkbox: checkboxOptions,
       cursor: cursorOptions,
-      title: titleOptions
+      title: titleOptions,
+      placeholder: placeholderOptions
     }
     // 数据处理
     let headerElementList: IElement[] = []

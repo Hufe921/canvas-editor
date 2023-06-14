@@ -54,6 +54,7 @@ import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
 import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
+import { Placeholder } from './frame/Placeholder'
 
 export class Draw {
 
@@ -91,6 +92,7 @@ export class Draw {
   private tableTool: TableTool
   private pageNumber: PageNumber
   private waterMark: Watermark
+  private placeholder: Placeholder
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
@@ -156,6 +158,7 @@ export class Draw {
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
+    this.placeholder = new Placeholder(this)
     this.header = new Header(this)
     this.footer = new Footer(this)
     this.hyperlinkParticle = new HyperlinkParticle(this)
@@ -596,6 +599,10 @@ export class Draw {
     })
   }
 
+  public getIsPagingMode(): boolean {
+    return this.options.pageMode === PageMode.PAGING
+  }
+
   public setPageMode(payload: PageMode) {
     if (!payload || this.options.pageMode === payload) return
     this.options.pageMode = payload
@@ -608,6 +615,12 @@ export class Draw {
       canvas.height = height * dpr
       // canvas尺寸发生变化，上下文被重置
       this._initPageContext(this.ctxList[0])
+    } else {
+      // 连页模式：移除懒加载监听&清空页眉页脚计算数据
+      this._disconnectLazyRender()
+      this.header.recovery()
+      this.footer.recovery()
+      this.zone.setZone(EditorZone.MAIN)
     }
     this.render({
       isSubmitHistory: false,
@@ -1178,6 +1191,17 @@ export class Draw {
             leftTop: [x, y]
           }
         } = positionList[curRow.startIndex + j]
+        const preElement = curRow.elementList[j - 1]
+        // 元素高亮记录
+        if (element.highlight) {
+          // 高亮元素相连需立即绘制，并记录下一元素坐标
+          if (preElement && preElement.highlight && preElement.highlight !== element.highlight) {
+            this.highlight.render(ctx)
+          }
+          this.highlight.recordFillInfo(ctx, x, y, metrics.width, curRow.height, element.highlight)
+        } else if (preElement?.highlight) {
+          this.highlight.render(ctx)
+        }
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
           this._drawRichText(ctx)
@@ -1228,7 +1252,6 @@ export class Draw {
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
-        const preElement = curRow.elementList[j - 1]
         // 下划线记录
         if (element.underline) {
           this.underline.recordFillInfo(ctx, x, y + curRow.height, metrics.width, 0, element.color)
@@ -1240,16 +1263,6 @@ export class Draw {
           this.strikeout.recordFillInfo(ctx, x, y + curRow.height / 2, metrics.width)
         } else if (preElement?.strikeout) {
           this.strikeout.render(ctx)
-        }
-        // 元素高亮记录
-        if (element.highlight) {
-          // 高亮元素相连需立即绘制，并记录下一元素坐标
-          if (preElement && preElement.highlight && preElement.highlight !== element.highlight) {
-            this.highlight.render(ctx)
-          }
-          this.highlight.recordFillInfo(ctx, x, y, metrics.width, curRow.height, element.highlight)
-        } else if (preElement?.highlight) {
-          this.highlight.render(ctx)
         }
         // 选区记录
         const { zone: currentZone, startIndex, endIndex } = this.range.getRange()
@@ -1354,17 +1367,19 @@ export class Draw {
       innerWidth,
       zone: EditorZone.MAIN
     })
-    // 绘制页眉
-    if (!header.disabled) {
-      this.header.render(ctx, pageNo)
-    }
-    // 绘制页码
-    if (!pageNumber.disabled) {
-      this.pageNumber.render(ctx, pageNo)
-    }
-    // 绘制页脚
-    if (!footer.disabled) {
-      this.footer.render(ctx, pageNo)
+    if (this.getIsPagingMode()) {
+      // 绘制页眉
+      if (!header.disabled) {
+        this.header.render(ctx, pageNo)
+      }
+      // 绘制页码
+      if (!pageNumber.disabled) {
+        this.pageNumber.render(ctx, pageNo)
+      }
+      // 绘制页脚
+      if (!footer.disabled) {
+        this.footer.render(ctx, pageNo)
+      }
     }
     // 搜索匹配绘制
     if (this.search.getSearchKeyword()) {
@@ -1374,12 +1389,20 @@ export class Draw {
     if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
       this.waterMark.render(ctx)
     }
+    // 绘制空白占位符
+    if (this.elementList.length <= 1) {
+      this.placeholder.render(ctx)
+    }
+  }
+
+  private _disconnectLazyRender() {
+    this.lazyRenderIntersectionObserver?.disconnect()
   }
 
   private _lazyRender() {
     const positionList = this.position.getOriginalMainPositionList()
     const elementList = this.getOriginalMainElementList()
-    this.lazyRenderIntersectionObserver?.disconnect()
+    this._disconnectLazyRender()
     this.lazyRenderIntersectionObserver = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -1412,7 +1435,7 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
-    const { pageMode, header, footer } = this.options
+    const { header, footer } = this.options
     const {
       isSubmitHistory = true,
       isSetCursor = true,
@@ -1421,15 +1444,18 @@ export class Draw {
     } = payload || {}
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
+    const isPagingMode = this.getIsPagingMode()
     // 计算文档信息
     if (isCompute) {
-      // 页眉信息
-      if (!header.disabled) {
-        this.header.compute()
-      }
-      // 页脚信息
-      if (!footer.disabled) {
-        this.footer.compute()
+      if (isPagingMode) {
+        // 页眉信息
+        if (!header.disabled) {
+          this.header.compute()
+        }
+        // 页脚信息
+        if (!footer.disabled) {
+          this.footer.compute()
+        }
       }
       // 行信息
       this.rowList = this.computeRowList(innerWidth, this.elementList)
@@ -1463,7 +1489,7 @@ export class Draw {
     }
     // 绘制元素
     // 连续页因为有高度的变化会导致canvas渲染空白，需立即渲染，否则会出现闪动
-    if (isLazy && pageMode === PageMode.PAGING) {
+    if (isLazy && isPagingMode) {
       this._lazyRender()
     } else {
       this._immediateRender()

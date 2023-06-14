@@ -1,3 +1,29 @@
+## [0.9.35](https://github.com/Hufe921/canvas-editor/compare/v0.9.34...v0.9.35) (2023-05-31)
+
+
+### Chores
+
+* add CRDT CSpell word ([ef31552](https://github.com/Hufe921/canvas-editor/commit/ef315526be244c210b2a2a220dd3bed986660d75))
+
+
+### Documentation
+
+* starting page number option ([618cb47](https://github.com/Hufe921/canvas-editor/commit/618cb47f77f2aed05d4ca72135ea5312b6d26b00))
+* table cell background color ([9225bef](https://github.com/Hufe921/canvas-editor/commit/9225bef99192d8c4848536d973bb2467ea205f27))
+* update next features ([c6ea0a6](https://github.com/Hufe921/canvas-editor/commit/c6ea0a655c997645cda6df7ced4377707973680f))
+
+
+### Features
+
+* copy and paste sub and sup elements ([a500402](https://github.com/Hufe921/canvas-editor/commit/a500402dd401c6eac55222a366f5fc596c27d7c3))
+* copy and paste table cell background color ([c97c6ef](https://github.com/Hufe921/canvas-editor/commit/c97c6eff4047a91e68079cc9b228f41e02bef1ab))
+* optimize paste title ([bf52e25](https://github.com/Hufe921/canvas-editor/commit/bf52e2588b3af426382334d45d16d1a33510fde1))
+* starting page number option ([bfc61a8](https://github.com/Hufe921/canvas-editor/commit/bfc61a8a06b6c2c09fd968767f2a6ccbe280fe55))
+* table cell background color ([dbcab3b](https://github.com/Hufe921/canvas-editor/commit/dbcab3b48557f5a4ba77b9e6ec40b7ac8d36cc40))
+* unordered list default style ([c8b2a7e](https://github.com/Hufe921/canvas-editor/commit/c8b2a7e59fdd97ac268b0a38e80bac98dfd797ce))
+
+
+
 ## [0.9.34](https://github.com/Hufe921/canvas-editor/compare/v0.9.33...v0.9.34) (2023-05-16)
 
 

@@ -85,6 +85,15 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
   // cypress使用
   Reflect.set(window, 'editor', instance)
 
+  // 菜单弹窗销毁
+  window.addEventListener('click', (evt) => {
+    const visibleDom = document.querySelector('.visible')
+    if (!visibleDom || visibleDom.contains(<Node>evt.target)) return
+    visibleDom.classList.remove('visible')
+  }, {
+    capture: true
+  })
+
   // 2. | 撤销 | 重做 | 格式刷 | 清除格式 |
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
   undoDom.title = `撤销(${isApple ? '⌘' : 'Ctrl'}+Z)`
@@ -243,28 +252,28 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
   leftDom.title = `左对齐(${isApple ? '⌘' : 'Ctrl'}+L)`
   leftDom.onclick = function () {
     console.log('left')
-    instance.command.executeLeft()
+    instance.command.executeRowFlex(RowFlex.LEFT)
   }
 
   const centerDom = document.querySelector<HTMLDivElement>('.menu-item__center')!
   centerDom.title = `居中对齐(${isApple ? '⌘' : 'Ctrl'}+E)`
   centerDom.onclick = function () {
     console.log('center')
-    instance.command.executeCenter()
+    instance.command.executeRowFlex(RowFlex.CENTER)
   }
 
   const rightDom = document.querySelector<HTMLDivElement>('.menu-item__right')!
   rightDom.title = `右对齐(${isApple ? '⌘' : 'Ctrl'}+R)`
   rightDom.onclick = function () {
     console.log('right')
-    instance.command.executeRight()
+    instance.command.executeRowFlex(RowFlex.RIGHT)
   }
 
   const alignmentDom = document.querySelector<HTMLDivElement>('.menu-item__alignment')!
   alignmentDom.title = `两端对齐(${isApple ? '⌘' : 'Ctrl'}+J)`
   alignmentDom.onclick = function () {
     console.log('alignment')
-    instance.command.executeAlignment()
+    instance.command.executeRowFlex(RowFlex.ALIGNMENT)
   }
 
   const rowMarginDom = document.querySelector<HTMLDivElement>('.menu-item__row-margin')!
@@ -1290,6 +1299,16 @@ function initEditorInstance(data: IEditorData, options: Partial<Omit<IEditorResu
             }])
           }
         })
+      }
+    },
+    {
+      name: '格式整理',
+      icon: 'word-tool',
+      when: (payload) => {
+        return !payload.isReadonly
+      },
+      callback: (command: Command) => {
+        command.executeWordTool()
       }
     },
     {

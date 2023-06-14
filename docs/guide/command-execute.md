@@ -216,36 +216,12 @@ instance.command.executeTitle(TitleLevel | null)
 instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 ```
 
-## executeLeft
-功能：行居左
+## executeRowFlex
+功能：行对齐
 
 用法：
 ```javascript
-instance.command.executeLeft()
-```
-
-## executeCenter
-功能：行居中
-
-用法：
-```javascript
-instance.command.executeCenter()
-```
-
-## executeRight
-功能：行居右
-
-用法：
-```javascript
-instance.command.executeRight()
-```
-
-## executeAlignment
-功能：行两端对齐
-
-用法：
-```javascript
-instance.command.executeAlignment()
+instance.command.executeRowFlex(rowFlex: RowFlex)
 ```
 
 ## executeRowMargin
@@ -597,4 +573,12 @@ instance.command.executeSetLocale(locale: string)
 用法：
 ```javascript
 instance.command.executeLocationCatalog(titleId: string)
+```
+
+## executeWordTool
+功能：文字工具（删除空行、行首空格）
+
+用法：
+```javascript
+instance.command.executeWordTool()
 ```
