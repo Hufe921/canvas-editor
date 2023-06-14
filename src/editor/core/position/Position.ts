@@ -332,7 +332,10 @@ export class Position {
         // 是否在头部
         if (isHead) {
           const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo)
-          curPositionIndex = ~headIndex ? headIndex - 1 : index
+          // 头部元素为空元素时无需选中
+          curPositionIndex = ~headIndex
+            ? positionList[headIndex].value === ZERO ? headIndex : headIndex - 1
+            : index
         } else {
           curPositionIndex = index
         }
