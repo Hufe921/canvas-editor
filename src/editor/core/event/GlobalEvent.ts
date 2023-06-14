@@ -86,6 +86,8 @@ export class GlobalEvent {
       return
     }
     this.cursor.recoveryCursor()
+    // 失去光标清除键盘监听事件
+    document.removeEventListener('keyup', this.setRangeStyle)
     this.range.recoveryRangeStyle()
     this.previewer.clearResizer()
     this.tableTool.dispose()
