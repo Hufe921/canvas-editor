@@ -1,4 +1,4 @@
-import { Command } from '../../..'
+import { Command, RowFlex } from '../../..'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
 import { IRegisterShortcut } from '../../../interface/shortcut/Shortcut'
 import { isApple } from '../../../utils/ua'
@@ -67,28 +67,28 @@ export const richtextKeys: IRegisterShortcut[] = [
     key: KeyMap.L,
     mod: true,
     callback: (command: Command) => {
-      command.executeLeft()
+      command.executeRowFlex(RowFlex.LEFT)
     }
   },
   {
     key: KeyMap.E,
     mod: true,
     callback: (command: Command) => {
-      command.executeCenter()
+      command.executeRowFlex(RowFlex.CENTER)
     }
   },
   {
     key: KeyMap.R,
     mod: true,
     callback: (command: Command) => {
-      command.executeRight()
+      command.executeRowFlex(RowFlex.RIGHT)
     }
   },
   {
     key: KeyMap.J,
     mod: true,
     callback: (command: Command) => {
-      command.executeAlignment()
+      command.executeRowFlex(RowFlex.ALIGNMENT)
     }
   }
 ]
