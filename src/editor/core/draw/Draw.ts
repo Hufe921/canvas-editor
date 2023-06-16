@@ -173,7 +173,7 @@ export class Draw {
     this.control = new Control(this)
 
     this.scrollObserver = new ScrollObserver(this)
-    this.selectionObserver = new SelectionObserver()
+    this.selectionObserver = new SelectionObserver(this)
     this.imageObserver = new ImageObserver()
 
     this.canvasEvent = new CanvasEvent(this)
