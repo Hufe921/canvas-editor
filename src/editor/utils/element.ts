@@ -1,10 +1,10 @@
-import { deepClone, getUUID, splitText } from '.'
+import { cloneProperty, deepClone, getUUID, splitText } from '.'
 import { ElementType, IEditorOption, IElement, RowFlex } from '..'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
-import { EDITOR_ELEMENT_CONTEXT_ATTR, EDITOR_ELEMENT_ZIP_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import { EDITOR_ELEMENT_CONTEXT_ATTR, EDITOR_ELEMENT_ZIP_ATTR, TABLE_CONTEXT_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
 import { titleSizeMapping } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
 import { ITd } from '../interface/table/Td'
@@ -575,18 +575,15 @@ export function formatElementContext(sourceElementList: IElement[], formatElemen
     const targetElement = formatElementList[e]
     if (isBreakWhenWrap && !copyElement.listId && /^\n/.test(targetElement.value)) break
     // 定位元素非列表，无需处理粘贴列表的上下文
-    if (!copyElement.listId && targetElement.type === ElementType.LIST) continue
-    if (targetElement.valueList && targetElement.valueList.length) {
+    if (!copyElement.listId && targetElement.type === ElementType.LIST) {
+      targetElement.valueList?.forEach((valueItem) => {
+        cloneProperty<IElement>(TABLE_CONTEXT_ATTR, copyElement, valueItem)
+      })
+      continue
+    }
+    if (targetElement.valueList?.length) {
       formatElementContext(sourceElementList, targetElement.valueList, anchorIndex)
     }
-    for (let i = 0; i < EDITOR_ELEMENT_CONTEXT_ATTR.length; i++) {
-      const attr = EDITOR_ELEMENT_CONTEXT_ATTR[i]
-      const value = copyElement[attr] as never
-      if (value !== undefined) {
-        targetElement[attr] = value
-      } else {
-        delete targetElement[attr]
-      }
-    }
+    cloneProperty<IElement>(EDITOR_ELEMENT_CONTEXT_ATTR, copyElement, targetElement)
   }
 }

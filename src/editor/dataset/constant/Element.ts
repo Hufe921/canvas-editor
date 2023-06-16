@@ -59,15 +59,27 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'listWrap'
 ]
 
-export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
+export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [
   'tdId',
   'trId',
-  'tableId',
+  'tableId'
+]
+
+export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = [
   'level',
   'titleId',
+]
+
+export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
   'listId',
   'listType',
   'listStyle'
+]
+
+export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
+  ...TABLE_CONTEXT_ATTR,
+  ...TITLE_CONTEXT_ATTR,
+  ...LIST_CONTEXT_ATTR
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [

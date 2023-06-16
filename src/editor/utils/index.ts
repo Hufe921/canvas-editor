@@ -137,3 +137,15 @@ export function convertNumberToChinese(num: number) {
   result = result.replace(/^一十/g, '十')
   return result
 }
+
+export function cloneProperty<T>(properties: (keyof T)[], sourceElement: T, targetElement: T) {
+  for (let i = 0; i < properties.length; i++) {
+    const property = properties[i]
+    const value = sourceElement[property]
+    if (value !== undefined) {
+      targetElement[property] = value
+    } else {
+      delete targetElement[property]
+    }
+  }
+}
