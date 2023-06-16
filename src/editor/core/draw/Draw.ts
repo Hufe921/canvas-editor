@@ -140,7 +140,7 @@ export class Draw {
     this._createPage(0)
 
     this.i18n = new I18n()
-    this.historyManager = new HistoryManager()
+    this.historyManager = new HistoryManager(this)
     this.position = new Position(this)
     this.zone = new Zone(this)
     this.range = new RangeManager(this)
