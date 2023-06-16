@@ -125,6 +125,7 @@ export default class Editor {
       defaultHyperlinkColor: '#0000FF',
       paperDirection: PaperDirection.VERTICAL,
       inactiveAlpha: 0.6,
+      historyMaxRecordCount: 100,
       ...options,
       header: headerOptions,
       footer: footerOptions,

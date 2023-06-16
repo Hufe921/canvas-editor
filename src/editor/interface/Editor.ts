@@ -51,6 +51,7 @@ export interface IEditorOption {
   defaultHyperlinkColor?: string;
   paperDirection?: PaperDirection;
   inactiveAlpha?: number;
+  historyMaxRecordCount?: number;
   header?: IHeader;
   footer?: IFooter;
   pageNumber?: IPageNumber;

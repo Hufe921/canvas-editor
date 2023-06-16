@@ -83,6 +83,7 @@ export class GlobalEvent {
     )
     if (outerEditorDom) {
       this.setRangeStyle()
+      this.watchCursorActive()
       return
     }
     this.cursor.recoveryCursor()
@@ -101,6 +102,20 @@ export class GlobalEvent {
 
   public setRangeStyle = () => {
     this.range.setRangeStyle()
+  }
+
+  public watchCursorActive() {
+    // 选区闭合&实际光标移出光标代理
+    if (!this.range.getIsCollapsed()) return
+    setTimeout(() => {
+      // 将模拟光标变成失活显示状态
+      if (!this.cursor?.getAgentIsActive()) {
+        this.cursor?.drawCursor({
+          isFocus: false,
+          isBlink: false
+        })
+      }
+    })
   }
 
   public setPageScale = (evt: WheelEvent) => {

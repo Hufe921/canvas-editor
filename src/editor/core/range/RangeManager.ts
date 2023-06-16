@@ -226,7 +226,8 @@ export class RangeManager {
   public setRangeStyle() {
     if (!this.listener.rangeStyleChange) return
     // 结束光标位置
-    const { endIndex, isCrossRowCol } = this.range
+    const { startIndex, endIndex, isCrossRowCol } = this.range
+    if (!~startIndex && !~endIndex) return
     let curElement: IElement | null
     if (isCrossRowCol) {
       // 单元格选择以当前表格定位

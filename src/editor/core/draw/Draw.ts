@@ -140,7 +140,7 @@ export class Draw {
     this._createPage(0)
 
     this.i18n = new I18n()
-    this.historyManager = new HistoryManager()
+    this.historyManager = new HistoryManager(this)
     this.position = new Position(this)
     this.zone = new Zone(this)
     this.range = new RangeManager(this)
@@ -173,7 +173,7 @@ export class Draw {
     this.control = new Control(this)
 
     this.scrollObserver = new ScrollObserver(this)
-    this.selectionObserver = new SelectionObserver()
+    this.selectionObserver = new SelectionObserver(this)
     this.imageObserver = new ImageObserver()
 
     this.canvasEvent = new CanvasEvent(this)
