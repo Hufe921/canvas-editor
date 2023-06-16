@@ -12,6 +12,7 @@ export type IDrawCursorOption = ICursorOption &
 {
   isShow?: boolean;
   isBlink?: boolean;
+  isFocus?: boolean;
 }
 
 export class Cursor {
@@ -45,6 +46,10 @@ export class Cursor {
 
   public getAgentDom(): HTMLTextAreaElement {
     return this.cursorAgent.getAgentCursorDom()
+  }
+
+  public getAgentIsActive(): boolean {
+    return this.getAgentDom() === document.activeElement
   }
 
   public getAgentDomValue(): string {
@@ -86,7 +91,8 @@ export class Cursor {
       color,
       width,
       isShow = true,
-      isBlink = true
+      isBlink = true,
+      isFocus = true
     } = { ...cursor, ...payload }
     // 设置光标代理
     const height = this.draw.getHeight()
@@ -99,10 +105,12 @@ export class Cursor {
     const offsetHeight = metrics.height / 4
     const cursorHeight = metrics.height + offsetHeight * 2
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
-    setTimeout(() => {
-      agentCursorDom.focus()
-      agentCursorDom.setSelectionRange(0, 0)
-    })
+    if (isFocus) {
+      setTimeout(() => {
+        agentCursorDom.focus()
+        agentCursorDom.setSelectionRange(0, 0)
+      })
+    }
     // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
     const descent = metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop = (leftTop[1] + ascent) + descent - (cursorHeight - offsetHeight) + preY
