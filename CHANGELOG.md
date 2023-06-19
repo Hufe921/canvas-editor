@@ -1,3 +1,43 @@
+## [0.9.36](https://github.com/Hufe921/canvas-editor/compare/v0.9.35...v0.9.36) (2023-06-16)
+
+
+### Bug Fixes
+
+* close toolbar menu when click outside #192 ([9c39c54](https://github.com/Hufe921/canvas-editor/commit/9c39c540ff4a2a2f3806f8cea6b053bc6f2e7279)), closes [#192](https://github.com/Hufe921/canvas-editor/issues/192)
+* copy highlight element #193 ([88ebfd2](https://github.com/Hufe921/canvas-editor/commit/88ebfd2f74b4cb1f3686478d0bba6a8231020ccb)), closes [#193](https://github.com/Hufe921/canvas-editor/issues/193)
+* inability to select list pasted into table #206 ([53dd962](https://github.com/Hufe921/canvas-editor/commit/53dd9628caa8de064f6e87bef905113947273d84)), closes [#206](https://github.com/Hufe921/canvas-editor/issues/206)
+* multiple editor instances conflict #205 ([68bea13](https://github.com/Hufe921/canvas-editor/commit/68bea13333a2ea10ec537700a8fd6e9295d963fb)), closes [#205](https://github.com/Hufe921/canvas-editor/issues/205)
+* not allow change zone in continuous mode #201 ([16c2e9a](https://github.com/Hufe921/canvas-editor/commit/16c2e9a6d7d325aa33a8e8b5aec518f9e9d3861a)), closes [#201](https://github.com/Hufe921/canvas-editor/issues/201)
+* prevent page auto scroll when no selection #204 ([183e644](https://github.com/Hufe921/canvas-editor/commit/183e644089f6ec471a9ad26a037873e4b132911d)), closes [#204](https://github.com/Hufe921/canvas-editor/issues/204)
+* remove header and footer in continuous mode ([b92bd40](https://github.com/Hufe921/canvas-editor/commit/b92bd407ddc64e5663c24a63a1fb7dadd15fbf58))
+
+
+### Chores
+
+* update mock data ([2120780](https://github.com/Hufe921/canvas-editor/commit/21207808a3987136f18f3a49b55b909facce54b9))
+* update README.md ([7594942](https://github.com/Hufe921/canvas-editor/commit/759494272a64129533f6f74da2ea8760657f0044))
+
+
+### Documentation
+
+* add editor placeholder ([3a371e6](https://github.com/Hufe921/canvas-editor/commit/3a371e6ee312b7bff8bf8091a42a7ce5df1623bb))
+* add word tool ([e4ea580](https://github.com/Hufe921/canvas-editor/commit/e4ea580263443cbc9cb978272d11bf35c8423d11))
+
+
+### Features
+
+* add editor placeholder ([5ded5c3](https://github.com/Hufe921/canvas-editor/commit/5ded5c3428fc70e6074d9c9101ba34ef7eeb7d19))
+* add history max record option #203 ([c467505](https://github.com/Hufe921/canvas-editor/commit/c46750557ad14ec2625d8aaef8a5ae08eb10ac96)), closes [#203](https://github.com/Hufe921/canvas-editor/issues/203)
+* add word tool ([2a3c2e2](https://github.com/Hufe921/canvas-editor/commit/2a3c2e2ec674beed8b20f28764e4d1bb636ce83c))
+
+
+### Performance Improvements
+
+* cursor selection at the beginning of a line #202 ([a133585](https://github.com/Hufe921/canvas-editor/commit/a1335850a3f0ce1b90a2bf13ad8532f0ccf06cff)), closes [#202](https://github.com/Hufe921/canvas-editor/issues/202)
+* range style callback and inactive cursor style #204 ([7628eee](https://github.com/Hufe921/canvas-editor/commit/7628eee283da7236961f61c48c42625442ae02ed)), closes [#204](https://github.com/Hufe921/canvas-editor/issues/204)
+
+
+
 ## [0.9.35](https://github.com/Hufe921/canvas-editor/compare/v0.9.34...v0.9.35) (2023-05-31)
 
 

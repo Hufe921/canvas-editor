@@ -1,4 +1,6 @@
 import { MoveDirection } from '../../dataset/enum/Observer'
+import { Draw } from '../draw/Draw'
+import { RangeManager } from '../range/RangeManager'
 
 export class SelectionObserver {
 
@@ -7,14 +9,16 @@ export class SelectionObserver {
   // 触发滚动阀值
   private readonly thresholdPoints: [top: number, down: number, left: number, right: number] = [70, 40, 10, 20]
 
+  private rangeManager: RangeManager
   private requestAnimationFrameId: number | null
   private isMousedown: boolean
   private isMoving: boolean
 
-  constructor() {
+  constructor(draw: Draw) {
     this.requestAnimationFrameId = null
     this.isMousedown = false
     this.isMoving = false
+    this.rangeManager = draw.getRange()
 
     this._addEvent()
   }
@@ -41,7 +45,7 @@ export class SelectionObserver {
   }
 
   private _mousemove = (evt: MouseEvent) => {
-    if (!this.isMousedown) return
+    if (!this.isMousedown || this.rangeManager.getIsCollapsed()) return
     const { x, y } = evt
     const clientWidth = document.documentElement.clientWidth
     const clientHeight = document.documentElement.clientHeight

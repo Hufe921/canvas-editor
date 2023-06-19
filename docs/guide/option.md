@@ -39,8 +39,8 @@ interface IEditorOption {
   resizerColor?: string; // 图片尺寸器颜色。默认：#4182D9
   resizerSize?: number; // 图片尺寸器大小。默认：5
   marginIndicatorSize?: number; // 页边距指示器长度。默认：35
-  marginIndicatorColor?: string, // 页边距指示器颜色。默认：#BABABA
-  margins?: IMargin, // 页面边距。默认：[100, 120, 100, 120]
+  marginIndicatorColor?: string; // 页边距指示器颜色。默认：#BABABA
+  margins?: IMargin; // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode; // 纸张模式：连页、分页。默认：分页
   tdPadding?: number; // 单元格内边距。默认：5
   defaultTrMinHeight?: number; // 默认表格行最小高度。默认：40
@@ -50,6 +50,7 @@ interface IEditorOption {
   pageNumber?: IPageNumber; // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
   paperDirection?: PaperDirection; // 纸张方向：纵向、横向
   inactiveAlpha?: number; // 正文内容失焦时透明度。默认值：0.6
+  historyMaxRecordCount: number; // 历史（撤销重做）最大记录次数。默认：100次
   watermark?: IWatermark; // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption; // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}
   checkbox?: ICheckboxOption; // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; fontStyle?: string;}
