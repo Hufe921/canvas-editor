@@ -28,7 +28,7 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. improve list and title
+1. [plugin](https://github.com/Hufe921/canvas-editor/tree/feature/plugin)
 2. improve performance
 3. control rules
 4. table paging
