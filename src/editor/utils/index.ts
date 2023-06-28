@@ -149,3 +149,11 @@ export function cloneProperty<T>(properties: (keyof T)[], sourceElement: T, targ
     }
   }
 }
+
+export function convertStringToBase64(input: string) {
+  const encoder = new TextEncoder()
+  const data = encoder.encode(input)
+  const charArray = Array.from(data, byte => String.fromCharCode(byte))
+  const base64 = window.btoa(charArray.join(''))
+  return base64
+}
