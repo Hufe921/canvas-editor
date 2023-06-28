@@ -61,6 +61,12 @@ export default defineConfig({
         items: [
           { text: '全局API', link: '/guide/api' }
         ]
+      },
+      {
+        text: '插件',
+        items: [
+          { text: '自定义插件', link: '/guide/plugin' }
+        ]
       }
     ],
     socialLinks: [{
