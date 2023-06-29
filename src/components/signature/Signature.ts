@@ -34,10 +34,12 @@ export class Signature {
   private undoContainer: HTMLDivElement
   private canvas: HTMLCanvasElement
   private ctx: CanvasRenderingContext2D
+  private preTimeStamp: number
   private dpr: number
 
   constructor(options: ISignatureOptions) {
     this.options = options
+    this.preTimeStamp = 0
     this.dpr = window.devicePixelRatio
     this.canvasWidth = (options.width || this.DEFAULT_WIDTH) * this.dpr
     this.canvasHeight = (options.height || this.DEFAULT_HEIGHT) * this.dpr
@@ -197,11 +199,22 @@ export class Signature {
     this.isDrawing = true
     this.x = evt.offsetX
     this.y = evt.offsetY
-    this.ctx.lineWidth = 5
+    this.ctx.lineWidth = 1
   }
 
   private _draw(evt: MouseEvent) {
     if (!this.isDrawing) return
+    // 计算鼠标移动速度
+    const curTimestamp = performance.now()
+    const distance = Math.sqrt(evt.movementX ** 2 + evt.movementY ** 2)
+    const speed = distance / (curTimestamp - this.preTimeStamp)
+    // 目标线宽：最小速度1，最大速度5，系数3
+    const SPEED_FACTOR = 3
+    const targetLineWidth = Math.min(5, Math.max(1, 5 - speed * SPEED_FACTOR))
+    // 平滑过渡算法（20%的变化比例）调整线条粗细：系数0.2
+    const SMOOTH_FACTOR = 0.2
+    this.ctx.lineWidth = this.ctx.lineWidth * (1 - SMOOTH_FACTOR) + targetLineWidth * SMOOTH_FACTOR
+    // 绘制
     const { offsetX, offsetY } = evt
     this.ctx.beginPath()
     this.ctx.moveTo(this.x, this.y)
@@ -211,6 +224,8 @@ export class Signature {
     this.y = offsetY
     this.linePoints.push([offsetX, offsetY])
     this.isDrawn = true
+    // 缓存之前时间戳
+    this.preTimeStamp = curTimestamp
   }
 
   private _stopDraw() {
