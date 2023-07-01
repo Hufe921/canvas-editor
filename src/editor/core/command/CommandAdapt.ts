@@ -13,7 +13,7 @@ import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
 import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
-import { IEditorOption, IEditorResult } from '../../interface/Editor'
+import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
 import { IColgroup } from '../../interface/table/Colgroup'
@@ -1653,6 +1653,10 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     formatElementContext(elementList, payload, startIndex)
     this.draw.insertElementList(payload)
+  }
+
+  public setValue(payload: Partial<IEditorData>) {
+    this.draw.setValue(payload)
   }
 
   public removeControl() {

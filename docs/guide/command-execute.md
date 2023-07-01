@@ -551,6 +551,14 @@ instance.command.executeSetPaperMargin([top: number, right: number, bottom: numb
 instance.command.executeInsertElementList(elementList: IElement[])
 ```
 
+## executeSetValue
+功能：设置编辑器数据
+
+用法：
+```javascript
+instance.command.executeSetValue(payload: Partial<IEditorData>)
+```
+
 ## executeRemoveControl
 功能：删除控件
 

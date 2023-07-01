@@ -738,6 +738,34 @@ export class Draw {
     }
   }
 
+  public setValue(payload: Partial<IEditorData>) {
+    const { header, main, footer } = payload
+    if (!header && !main && !footer) return
+    if (header) {
+      formatElementList(header, {
+        editorOptions: this.options
+      })
+      this.header.setElementList(header)
+    }
+    if (main) {
+      formatElementList(main, {
+        editorOptions: this.options
+      })
+      this.elementList = main
+    }
+    if (footer) {
+      formatElementList(footer, {
+        editorOptions: this.options
+      })
+      this.footer.setElementList(footer)
+    }
+    // 渲染&计算&清空历史记录
+    this.historyManager.recovery()
+    this.render({
+      isSetCursor: false
+    })
+  }
+
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
     const container = document.createElement('div')
     rootContainer.append(container)
