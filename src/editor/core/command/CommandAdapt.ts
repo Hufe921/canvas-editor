@@ -1655,6 +1655,10 @@ export class CommandAdapt {
     this.draw.insertElementList(payload)
   }
 
+  public setMainValue(payload: IElement[]) {
+    this.draw.setMainValue(payload)
+  }
+
   public removeControl() {
     const { startIndex, endIndex } = this.range.getRange()
     if (startIndex !== endIndex) return

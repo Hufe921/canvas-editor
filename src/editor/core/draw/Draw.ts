@@ -738,6 +738,14 @@ export class Draw {
     }
   }
 
+  public setMainValue(payload:IElement[]) {
+    formatElementList(payload,  { editorOptions:this.options })
+    this.elementList = payload
+    this.render({
+      isSetCursor: false
+    })
+  }
+
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
     const container = document.createElement('div')
     rootContainer.append(container)
