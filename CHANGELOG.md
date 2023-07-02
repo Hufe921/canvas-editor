@@ -1,3 +1,26 @@
+## [0.9.37](https://github.com/Hufe921/canvas-editor/compare/v0.9.36...v0.9.37) (2023-07-02)
+
+
+### Chores
+
+* add plugin demo ([107c4b8](https://github.com/Hufe921/canvas-editor/commit/107c4b86a8703bd1ab01ab7fc9d3cc8a1078591d))
+* update next features roadmap ([ca28454](https://github.com/Hufe921/canvas-editor/commit/ca284540493b985081c86623b569eeef4bf9dcdc))
+
+
+### Documentation
+
+* add plugin ([d0e1c9b](https://github.com/Hufe921/canvas-editor/commit/d0e1c9b5267e15c0afa94bbd400502735846050b))
+
+
+### Features
+
+* add fallback placeholder image ([366374e](https://github.com/Hufe921/canvas-editor/commit/366374eb105a49360f7ddecfdb63420e48254698))
+* add plugin interface ([ad0bb32](https://github.com/Hufe921/canvas-editor/commit/ad0bb32b70cd2a7b8cf2c25a83091e92cc13f53b))
+* add setValue command api #210 ([193bd21](https://github.com/Hufe921/canvas-editor/commit/193bd21f7049a565abddd3ae9be761d95d49fea1)), closes [#210](https://github.com/Hufe921/canvas-editor/issues/210)
+* smooth signature drawing ([c328778](https://github.com/Hufe921/canvas-editor/commit/c3287783abfb27670e3572db8c431f23cc04c6ce))
+
+
+
 ## [0.9.36](https://github.com/Hufe921/canvas-editor/compare/v0.9.35...v0.9.36) (2023-06-16)
 
 
