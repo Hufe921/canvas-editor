@@ -14,6 +14,7 @@ const sourcePkg = fs.readFileSync(pkgPath, 'utf-8')
 
 // 删除无用属性
 const targetPkg = JSON.parse(sourcePkg)
+Reflect.deleteProperty(targetPkg, 'dependencies')
 Reflect.deleteProperty(targetPkg.scripts, 'postinstall')
 fs.writeFileSync(pkgPath, JSON.stringify(targetPkg, null, 2))
 
