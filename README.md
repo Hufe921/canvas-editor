@@ -5,8 +5,9 @@
 ## tips
 
 1. [docs](https://hufe.club/canvas-editor-docs/)
-2. The render layer by svg is under development, see [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)
-3. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
+2. [plugin](https://github.com/Hufe921/canvas-editor-plugin)
+3. The render layer by svg is under development, see [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)
+4. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
 
 ## usage
 
