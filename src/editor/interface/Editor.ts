@@ -1,5 +1,5 @@
 import { IElement } from '..'
-import { EditorMode, PageMode, PaperDirection } from '../dataset/enum/Editor'
+import { EditorMode, PageMode, PaperDirection, WordBreak } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
 import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
@@ -52,6 +52,7 @@ export interface IEditorOption {
   paperDirection?: PaperDirection;
   inactiveAlpha?: number;
   historyMaxRecordCount?: number;
+  wordBreak?: WordBreak;
   header?: IHeader;
   footer?: IFooter;
   pageNumber?: IPageNumber;

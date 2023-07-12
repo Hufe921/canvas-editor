@@ -12,8 +12,8 @@ import { TableBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
-import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
-import { IEditorOption, IEditorResult } from '../../interface/Editor'
+import { IAppendElementListOption, IDrawImagePayload, IGetValueOption, IPainterOption } from '../../interface/Draw'
+import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
 import { IColgroup } from '../../interface/table/Colgroup'
@@ -142,7 +142,7 @@ export class CommandAdapt {
     this.historyManager.redo()
   }
 
-  public painter(options: IPainterOptions) {
+  public painter(options: IPainterOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const selection = this.range.getSelection()
@@ -1589,8 +1589,8 @@ export class CommandAdapt {
     return this.draw.getDataURL()
   }
 
-  public getValue(): IEditorResult {
-    return this.draw.getValue()
+  public getValue(options?: IGetValueOption): IEditorResult {
+    return this.draw.getValue(options)
   }
 
   public getWordCount(): Promise<number> {
@@ -1653,6 +1653,17 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     formatElementContext(elementList, payload, startIndex)
     this.draw.insertElementList(payload)
+  }
+
+  public appendElementList(elementList: IElement[], options?: IAppendElementListOption) {
+    if (!elementList.length) return
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.appendElementList(elementList, options)
+  }
+
+  public setValue(payload: Partial<IEditorData>) {
+    this.draw.setValue(payload)
   }
 
   public removeControl() {

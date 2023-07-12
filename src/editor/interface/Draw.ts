@@ -33,6 +33,14 @@ export interface IDrawPagePayload {
   pageNo: number;
 }
 
-export interface IPainterOptions {
+export interface IPainterOption {
   isDblclick: boolean;
+}
+
+export interface IGetValueOption {
+  pageNo?: number;
+}
+
+export interface IAppendElementListOption {
+  isPrepend?: boolean;
 }

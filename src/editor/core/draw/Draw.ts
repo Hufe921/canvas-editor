@@ -1,7 +1,7 @@
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
-import { IDrawOption, IDrawPagePayload, IDrawRowPayload, IPainterOptions } from '../../interface/Draw'
+import { IAppendElementListOption, IDrawOption, IDrawPagePayload, IDrawRowPayload, IGetValueOption, IPainterOption } from '../../interface/Draw'
 import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
@@ -35,7 +35,7 @@ import { SubscriptParticle } from './particle/Subscript'
 import { SeparatorParticle } from './particle/Separator'
 import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
-import { EditorComponent, EditorMode, EditorZone, PageMode, PaperDirection } from '../../dataset/enum/Editor'
+import { EditorComponent, EditorMode, EditorZone, PageMode, PaperDirection, WordBreak } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
@@ -55,6 +55,7 @@ import { Footer } from './frame/Footer'
 import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
+import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
 
 export class Draw {
 
@@ -113,7 +114,7 @@ export class Draw {
   private rowList: IRow[]
   private pageRowList: IRow[][]
   private painterStyle: IElementStyle | null
-  private painterOptions: IPainterOptions | null
+  private painterOptions: IPainterOption | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
@@ -474,6 +475,27 @@ export class Draw {
     }
   }
 
+  public appendElementList(elementList: IElement[], options: IAppendElementListOption = {}) {
+    if (!elementList.length) return
+    formatElementList(elementList, {
+      isHandleFirstElement: false,
+      editorOptions: this.options
+    })
+    let curIndex: number
+    const { isPrepend } = options
+    if (isPrepend) {
+      this.elementList.splice(1, 0, ...elementList)
+      curIndex = elementList.length
+    } else {
+      this.elementList.push(...elementList)
+      curIndex = this.elementList.length - 1
+    }
+    this.range.setRange(curIndex, curIndex)
+    this.render({
+      curIndex
+    })
+  }
+
   public spliceElementList(elementList: IElement[], start: number, deleteCount: number, ...items: IElement[]) {
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
@@ -578,11 +600,11 @@ export class Draw {
     return this.painterStyle && Object.keys(this.painterStyle).length ? this.painterStyle : null
   }
 
-  public getPainterOptions(): IPainterOptions | null {
+  public getPainterOptions(): IPainterOption | null {
     return this.painterOptions
   }
 
-  public setPainterStyle(payload: IElementStyle | null, options?: IPainterOptions) {
+  public setPainterStyle(payload: IElementStyle | null, options?: IPainterOption) {
     this.painterStyle = payload
     this.painterOptions = options || null
     if (this.getPainterStyle()) {
@@ -719,13 +741,18 @@ export class Draw {
     })
   }
 
-  public getValue(): IEditorResult {
+  public getValue(options: IGetValueOption = {}): IEditorResult {
     // 配置
     const { width, height, margins, watermark } = this.options
     // 数据
+    const { pageNo } = options
+    let mainElementList = this.elementList
+    if (Number.isInteger(pageNo) && pageNo! >= 0 && pageNo! < this.pageRowList.length) {
+      mainElementList = this.pageRowList[pageNo!].flatMap(row => row.elementList)
+    }
     const data: IEditorData = {
       header: zipElementList(this.headerElementList),
-      main: zipElementList(this.elementList),
+      main: zipElementList(mainElementList),
       footer: zipElementList(this.footerElementList)
     }
     return {
@@ -736,6 +763,34 @@ export class Draw {
       watermark: watermark.data ? watermark : undefined,
       data
     }
+  }
+
+  public setValue(payload: Partial<IEditorData>) {
+    const { header, main, footer } = payload
+    if (!header && !main && !footer) return
+    if (header) {
+      formatElementList(header, {
+        editorOptions: this.options
+      })
+      this.header.setElementList(header)
+    }
+    if (main) {
+      formatElementList(main, {
+        editorOptions: this.options
+      })
+      this.elementList = main
+    }
+    if (footer) {
+      formatElementList(footer, {
+        editorOptions: this.options
+      })
+      this.footer.setElementList(footer)
+    }
+    // 渲染&计算&清空历史记录
+    this.historyManager.recovery()
+    this.render({
+      isSetCursor: false
+    })
   }
 
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
@@ -1053,9 +1108,25 @@ export class Draw {
       })
       // 超过限定宽度
       const preElement = elementList[i - 1]
-      const nextElement = elementList[i + 1]
-      // 累计行宽 + 当前元素宽度 + 后面标点符号宽度
-      const curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
+      let nextElement = elementList[i + 1]
+      // 累计行宽 + 当前元素宽度 + 排版宽度(英文单词整体宽度 + 后面标点符号宽度)
+      let curRowWidth = curRow.width + metrics.width
+      if (this.options.wordBreak === WordBreak.BREAK_WORD) {
+        if (
+          (!preElement?.type || preElement?.type === ElementType.TEXT) &&
+          (!element.type || element.type === ElementType.TEXT)
+        ) {
+          // 英文单词
+          const word = `${preElement?.value || ''}${element.value}`
+          if (WORD_LIKE_REG.test(word)) {
+            const { width, endElement } = this.textParticle.measureWord(ctx, elementList, i)
+            curRowWidth += width
+            nextElement = endElement
+          }
+          // 标点符号
+          curRowWidth += this.textParticle.measurePunctuationWidth(ctx, nextElement)
+        }
+      }
       // 列表信息
       if (element.listId) {
         if (element.listId !== listId) {

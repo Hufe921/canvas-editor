@@ -5,8 +5,9 @@
 ## tips
 
 1. [docs](https://hufe.club/canvas-editor-docs/)
-2. The render layer by svg is under development, see [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)
-3. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
+2. [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)
+3. The render layer by svg is under development, see [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)
+4. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
 
 ## usage
 
@@ -28,11 +29,10 @@ new Editor(document.querySelector(".canvas-editor"), [
 
 ## next features
 
-1. [plugin](https://github.com/Hufe921/canvas-editor/tree/feature/plugin)
-2. improve performance
-3. control rules
-4. table paging
-5. [CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)
+1. improve performance
+2. control rules
+3. table paging
+4. [CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)
 
 ## snapshot
 

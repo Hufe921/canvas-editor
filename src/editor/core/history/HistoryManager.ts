@@ -47,4 +47,9 @@ export class HistoryManager {
     return !!this.redoStack.length
   }
 
+  public recovery() {
+    this.undoStack = []
+    this.redoStack = []
+  }
+
 }
