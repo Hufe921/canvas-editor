@@ -33,7 +33,7 @@ export interface IDrawPagePayload {
   pageNo: number;
 }
 
-export interface IPainterOptions {
+export interface IPainterOption {
   isDblclick: boolean;
 }
 

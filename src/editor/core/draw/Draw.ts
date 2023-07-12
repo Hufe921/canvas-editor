@@ -1,7 +1,7 @@
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
-import { IAppendElementListOption, IDrawOption, IDrawPagePayload, IDrawRowPayload, IGetValueOption, IPainterOptions } from '../../interface/Draw'
+import { IAppendElementListOption, IDrawOption, IDrawPagePayload, IDrawRowPayload, IGetValueOption, IPainterOption } from '../../interface/Draw'
 import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
@@ -113,7 +113,7 @@ export class Draw {
   private rowList: IRow[]
   private pageRowList: IRow[][]
   private painterStyle: IElementStyle | null
-  private painterOptions: IPainterOptions | null
+  private painterOptions: IPainterOption | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
@@ -599,11 +599,11 @@ export class Draw {
     return this.painterStyle && Object.keys(this.painterStyle).length ? this.painterStyle : null
   }
 
-  public getPainterOptions(): IPainterOptions | null {
+  public getPainterOptions(): IPainterOption | null {
     return this.painterOptions
   }
 
-  public setPainterStyle(payload: IElementStyle | null, options?: IPainterOptions) {
+  public setPainterStyle(payload: IElementStyle | null, options?: IPainterOption) {
     this.painterStyle = payload
     this.painterOptions = options || null
     if (this.getPainterStyle()) {

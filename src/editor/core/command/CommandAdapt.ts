@@ -12,7 +12,7 @@ import { TableBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
-import { IAppendElementListOption, IDrawImagePayload, IGetValueOption, IPainterOptions } from '../../interface/Draw'
+import { IAppendElementListOption, IDrawImagePayload, IGetValueOption, IPainterOption } from '../../interface/Draw'
 import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
@@ -142,7 +142,7 @@ export class CommandAdapt {
     this.historyManager.redo()
   }
 
-  public painter(options: IPainterOptions) {
+  public painter(options: IPainterOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const selection = this.range.getSelection()
