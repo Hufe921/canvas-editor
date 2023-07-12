@@ -21,7 +21,7 @@ const {
   header?: IHeader;
   watermark?: IWatermark;
   data: IEditorData;
-} = instance.command.getValue()
+} = instance.command.getValue(options?: IGetValueOption)
 ```
 
 ## getImage

@@ -551,6 +551,14 @@ instance.command.executeSetPaperMargin([top: number, right: number, bottom: numb
 instance.command.executeInsertElementList(elementList: IElement[])
 ```
 
+## executeAppendElementList
+功能：追加元素
+
+用法：
+```javascript
+instance.command.executeAppendElementList(elementList: IElement[], options?: IAppendElementListOption)
+```
+
 ## executeSetValue
 功能：设置编辑器数据
 

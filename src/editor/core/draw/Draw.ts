@@ -1,7 +1,7 @@
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
-import { IDrawOption, IDrawPagePayload, IDrawRowPayload, IPainterOptions } from '../../interface/Draw'
+import { IAppendElementListOption, IDrawOption, IDrawPagePayload, IDrawRowPayload, IGetValueOption, IPainterOptions } from '../../interface/Draw'
 import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementMetrics, IElementFillRect, IElementStyle } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
@@ -474,6 +474,27 @@ export class Draw {
     }
   }
 
+  public appendElementList(elementList: IElement[], options: IAppendElementListOption = {}) {
+    if (!elementList.length) return
+    formatElementList(elementList, {
+      isHandleFirstElement: false,
+      editorOptions: this.options
+    })
+    let curIndex: number
+    const { isPrepend } = options
+    if (isPrepend) {
+      this.elementList.splice(1, 0, ...elementList)
+      curIndex = elementList.length
+    } else {
+      this.elementList.push(...elementList)
+      curIndex = this.elementList.length - 1
+    }
+    this.range.setRange(curIndex, curIndex)
+    this.render({
+      curIndex
+    })
+  }
+
   public spliceElementList(elementList: IElement[], start: number, deleteCount: number, ...items: IElement[]) {
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
@@ -719,13 +740,18 @@ export class Draw {
     })
   }
 
-  public getValue(): IEditorResult {
+  public getValue(options: IGetValueOption = {}): IEditorResult {
     // 配置
     const { width, height, margins, watermark } = this.options
     // 数据
+    const { pageNo } = options
+    let mainElementList = this.elementList
+    if (Number.isInteger(pageNo) && pageNo! >= 0 && pageNo! < this.pageRowList.length) {
+      mainElementList = this.pageRowList[pageNo!].flatMap(row => row.elementList)
+    }
     const data: IEditorData = {
       header: zipElementList(this.headerElementList),
-      main: zipElementList(this.elementList),
+      main: zipElementList(mainElementList),
       footer: zipElementList(this.footerElementList)
     }
     return {
