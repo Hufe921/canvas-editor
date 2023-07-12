@@ -1,7 +1,13 @@
 import { IElement } from '../../..'
 import { PUNCTUATION_LIST } from '../../../dataset/constant/Common'
+import { LETTER_REG } from '../../../dataset/constant/Regular'
 import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
+
+export interface IMeasureWordResult {
+  width: number;
+  endElement: IElement;
+}
 
 export class TextParticle {
 
@@ -20,6 +26,25 @@ export class TextParticle {
     this.text = ''
     this.curStyle = ''
     this.cacheMeasureText = new Map()
+  }
+
+  public measureWord(ctx: CanvasRenderingContext2D, elementList: IElement[], curIndex: number): IMeasureWordResult {
+    let width = 0
+    let endElement: IElement = elementList[curIndex]
+    let i = curIndex
+    while (i < elementList.length) {
+      const element = elementList[i]
+      if (!LETTER_REG.test(element.value)) {
+        endElement = element
+        break
+      }
+      width += this.measureText(ctx, element).width
+      i++
+    }
+    return {
+      width,
+      endElement
+    }
   }
 
   public measurePunctuationWidth(ctx: CanvasRenderingContext2D, element: IElement): number {

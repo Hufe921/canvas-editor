@@ -35,7 +35,7 @@ import { SubscriptParticle } from './particle/Subscript'
 import { SeparatorParticle } from './particle/Separator'
 import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
-import { EditorComponent, EditorMode, EditorZone, PageMode, PaperDirection } from '../../dataset/enum/Editor'
+import { EditorComponent, EditorMode, EditorZone, PageMode, PaperDirection, WordBreak } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
@@ -55,6 +55,7 @@ import { Footer } from './frame/Footer'
 import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
+import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
 
 export class Draw {
 
@@ -1107,9 +1108,20 @@ export class Draw {
       })
       // 超过限定宽度
       const preElement = elementList[i - 1]
-      const nextElement = elementList[i + 1]
-      // 累计行宽 + 当前元素宽度 + 后面标点符号宽度
-      const curRowWidth = curRow.width + metrics.width + this.textParticle.measurePunctuationWidth(ctx, nextElement)
+      let nextElement = elementList[i + 1]
+      // 累计行宽 + 当前元素宽度 + 排版宽度(英文单词整体宽度 + 后面标点符号宽度)
+      let curRowWidth = curRow.width + metrics.width
+      if (this.options.wordBreak === WordBreak.BREAK_WORD) {
+        // 英文单词
+        const word = `${preElement?.value || ''}${element.value}`
+        if (WORD_LIKE_REG.test(word)) {
+          const { width, endElement } = this.textParticle.measureWord(ctx, elementList, i)
+          curRowWidth += width
+          nextElement = endElement
+        }
+        // 标点符号
+        curRowWidth += this.textParticle.measurePunctuationWidth(ctx, nextElement)
+      }
       // 列表信息
       if (element.listId) {
         if (element.listId !== listId) {

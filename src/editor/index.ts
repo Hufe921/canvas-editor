@@ -11,7 +11,7 @@ import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
-import { EditorComponent, EditorZone, EditorMode, PageMode, PaperDirection } from './dataset/enum/Editor'
+import { EditorComponent, EditorZone, EditorMode, PageMode, PaperDirection, WordBreak } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
@@ -129,6 +129,7 @@ export default class Editor {
       paperDirection: PaperDirection.VERTICAL,
       inactiveAlpha: 0.6,
       historyMaxRecordCount: 100,
+      wordBreak: WordBreak.BREAK_WORD,
       ...options,
       header: headerOptions,
       footer: footerOptions,

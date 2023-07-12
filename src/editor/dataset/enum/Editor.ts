@@ -34,3 +34,8 @@ export enum PaperDirection {
   VERTICAL = 'vertical',
   HORIZONTAL = 'horizontal'
 }
+
+export enum WordBreak {
+  BREAK_ALL = 'break-all',
+  BREAK_WORD = 'break-word'
+}
