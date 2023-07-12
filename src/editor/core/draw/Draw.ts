@@ -1112,15 +1112,20 @@ export class Draw {
       // 累计行宽 + 当前元素宽度 + 排版宽度(英文单词整体宽度 + 后面标点符号宽度)
       let curRowWidth = curRow.width + metrics.width
       if (this.options.wordBreak === WordBreak.BREAK_WORD) {
-        // 英文单词
-        const word = `${preElement?.value || ''}${element.value}`
-        if (WORD_LIKE_REG.test(word)) {
-          const { width, endElement } = this.textParticle.measureWord(ctx, elementList, i)
-          curRowWidth += width
-          nextElement = endElement
+        if (
+          (!preElement?.type || preElement?.type === ElementType.TEXT) &&
+          (!element.type || element.type === ElementType.TEXT)
+        ) {
+          // 英文单词
+          const word = `${preElement?.value || ''}${element.value}`
+          if (WORD_LIKE_REG.test(word)) {
+            const { width, endElement } = this.textParticle.measureWord(ctx, elementList, i)
+            curRowWidth += width
+            nextElement = endElement
+          }
+          // 标点符号
+          curRowWidth += this.textParticle.measurePunctuationWidth(ctx, nextElement)
         }
-        // 标点符号
-        curRowWidth += this.textParticle.measurePunctuationWidth(ctx, nextElement)
       }
       // 列表信息
       if (element.listId) {
