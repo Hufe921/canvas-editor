@@ -16,12 +16,13 @@ import { IAppendElementListOption, IDrawImagePayload, IGetValueOption, IPainterO
 import { IEditorData, IEditorOption, IEditorResult } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
+import { RangeContext } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
-import { downloadFile, getUUID } from '../../utils'
-import { formatElementContext, formatElementList, isTextLikeElement } from '../../utils/element'
+import { deepClone, downloadFile, getUUID } from '../../utils'
+import { formatElementContext, formatElementList, isTextLikeElement, pickElementAttr } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -1599,6 +1600,29 @@ export class CommandAdapt {
 
   public getRangeText(): string {
     return this.range.toString()
+  }
+
+  public getRangeContext(): RangeContext | null {
+    const range = this.range.getRange()
+    const { startIndex, endIndex } = range
+    if (!~startIndex && !~endIndex) return null
+    // 选区信息
+    const isCollapsed = startIndex === endIndex
+    // 元素信息
+    const elementList = this.draw.getElementList()
+    const startElement = pickElementAttr(elementList[isCollapsed ? startIndex : startIndex + 1])
+    const endElement = pickElementAttr(elementList[endIndex])
+    // 页码信息
+    const positionList = this.position.getPositionList()
+    const startPageNo = positionList[startIndex].pageNo
+    const endPageNo = positionList[endIndex].pageNo
+    return deepClone({
+      isCollapsed,
+      startElement,
+      endElement,
+      startPageNo,
+      endPageNo
+    })
   }
 
   public pageMode(payload: PageMode) {
