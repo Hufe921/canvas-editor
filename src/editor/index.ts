@@ -218,7 +218,8 @@ export {
   NumberType,
   TitleLevel,
   ListType,
-  ListStyle
+  ListStyle,
+  WordBreak
 }
 
 // 对外类型
