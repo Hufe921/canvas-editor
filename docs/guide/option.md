@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode; // 编辑器模式：编辑、清洁、只读。默认：编辑
+  mode?: EditorMode; // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读。默认：编辑
   defaultType?: string; // 默认元素类型。默认：TEXT
   defaultFont?: string; // 默认字体。默认：Yahei
   defaultSize?: number; // 默认字号。默认：16
