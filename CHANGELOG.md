@@ -1,3 +1,18 @@
+## [0.9.39](https://github.com/Hufe921/canvas-editor/compare/v0.9.38...v0.9.39) (2023-07-14)
+
+
+### Documentation
+
+* add clean mode remark #214 ([abcc241](https://github.com/Hufe921/canvas-editor/commit/abcc2417966dfa6a43246e3b33dfc39fc65595be)), closes [#214](https://github.com/Hufe921/canvas-editor/issues/214)
+
+
+### Features
+
+* add table row and col size option #214 ([8d1100c](https://github.com/Hufe921/canvas-editor/commit/8d1100cdb1646bf8822112993c00881cf9e39a5e)), closes [#214](https://github.com/Hufe921/canvas-editor/issues/214)
+* get range context info ([09c4d53](https://github.com/Hufe921/canvas-editor/commit/09c4d53bca9744b115b5e7c94a42ebe81da487b8))
+
+
+
 ## [0.9.38](https://github.com/Hufe921/canvas-editor/compare/v0.9.37...v0.9.38) (2023-07-12)
 
 
