@@ -48,6 +48,7 @@ export interface IEditorOption {
   pageMode?: PageMode;
   tdPadding?: number;
   defaultTrMinHeight?: number;
+  defaultColMinWidth?: number;
   defaultHyperlinkColor?: string;
   paperDirection?: PaperDirection;
   inactiveAlpha?: number;

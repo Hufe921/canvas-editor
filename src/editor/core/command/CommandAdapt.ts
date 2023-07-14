@@ -35,10 +35,7 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 
-
 export class CommandAdapt {
-
-  private readonly defaultWidth: number = 40
 
   private draw: Draw
   private range: RangeManager
@@ -533,7 +530,7 @@ export class CommandAdapt {
     for (let r = 0; r < row; r++) {
       const tdList: ITd[] = []
       const tr: ITr = {
-        height: 40,
+        height: this.options.defaultTrMinHeight,
         tdList
       }
       for (let c = 0; c < col; c++) {
@@ -726,7 +723,7 @@ export class CommandAdapt {
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.defaultWidth
+      width: this.options.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
@@ -783,7 +780,7 @@ export class CommandAdapt {
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.defaultWidth
+      width: this.options.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
