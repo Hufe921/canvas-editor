@@ -6,7 +6,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.hyperlink.delete',
     when: (payload) => {
-      return payload.startElement?.type === ElementType.HYPERLINK
+      return !payload.isReadonly && payload.startElement?.type === ElementType.HYPERLINK
     },
     callback: (command: Command) => {
       command.executeDeleteHyperlink()
@@ -15,7 +15,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.hyperlink.cancel',
     when: (payload) => {
-      return payload.startElement?.type === ElementType.HYPERLINK
+      return !payload.isReadonly && payload.startElement?.type === ElementType.HYPERLINK
     },
     callback: (command: Command) => {
       command.executeCancelHyperlink()
@@ -24,7 +24,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.hyperlink.edit',
     when: (payload) => {
-      return payload.startElement?.type === ElementType.HYPERLINK
+      return !payload.isReadonly && payload.startElement?.type === ElementType.HYPERLINK
     },
     callback: (command: Command, context: IContextMenuContext) => {
       const url = window.prompt('编辑链接', context.startElement?.url)
