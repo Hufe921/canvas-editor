@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode; // 编辑器模式：编辑、清洁、只读。默认：编辑
+  mode?: EditorMode; // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读。默认：编辑
   defaultType?: string; // 默认元素类型。默认：TEXT
   defaultFont?: string; // 默认字体。默认：Yahei
   defaultSize?: number; // 默认字号。默认：16
@@ -44,6 +44,7 @@ interface IEditorOption {
   pageMode?: PageMode; // 纸张模式：连页、分页。默认：分页
   tdPadding?: number; // 单元格内边距。默认：5
   defaultTrMinHeight?: number; // 默认表格行最小高度。默认：40
+  defaultColMinWidth?: number; // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
   defaultHyperlinkColor?: string; // 默认超链接颜色。默认：#0000FF
   header?: IHeader; // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
   footer?: IFooter; // 页脚信息。{bottom?:number; maxHeightRadio?:MaxHeightRatio;}

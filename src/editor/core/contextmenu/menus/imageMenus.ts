@@ -8,7 +8,7 @@ export const imageMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.image.change',
     icon: 'image-change',
     when: (payload) => {
-      return !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
+      return !payload.isReadonly && !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
     },
     callback: (command: Command) => {
       // 创建代理元素
@@ -41,7 +41,7 @@ export const imageMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.image.textWrap',
     when: (payload) => {
-      return !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
+      return !payload.isReadonly && !payload.editorHasSelection && payload.startElement?.type === ElementType.IMAGE
     },
     childMenus: [
       {

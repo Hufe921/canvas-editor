@@ -1,3 +1,40 @@
+## [0.9.39](https://github.com/Hufe921/canvas-editor/compare/v0.9.38...v0.9.39) (2023-07-14)
+
+
+### Documentation
+
+* add clean mode remark #214 ([abcc241](https://github.com/Hufe921/canvas-editor/commit/abcc2417966dfa6a43246e3b33dfc39fc65595be)), closes [#214](https://github.com/Hufe921/canvas-editor/issues/214)
+
+
+### Features
+
+* add table row and col size option #214 ([8d1100c](https://github.com/Hufe921/canvas-editor/commit/8d1100cdb1646bf8822112993c00881cf9e39a5e)), closes [#214](https://github.com/Hufe921/canvas-editor/issues/214)
+* get range context info ([09c4d53](https://github.com/Hufe921/canvas-editor/commit/09c4d53bca9744b115b5e7c94a42ebe81da487b8))
+
+
+
+## [0.9.38](https://github.com/Hufe921/canvas-editor/compare/v0.9.37...v0.9.38) (2023-07-12)
+
+
+### Bug Fixes
+
+* limit word break element type #212 ([d7424f8](https://github.com/Hufe921/canvas-editor/commit/d7424f8b8798cc889df3b54748523c1367af2776)), closes [#212](https://github.com/Hufe921/canvas-editor/issues/212)
+
+
+### Chores
+
+* add plugin tip ([8c6eee1](https://github.com/Hufe921/canvas-editor/commit/8c6eee1a57f5130919d1bdfa6a1067615f3a95e3))
+* update README.md ([ccb1aa7](https://github.com/Hufe921/canvas-editor/commit/ccb1aa70abacd9398f9ff0e5b066ad51cfc27274))
+* update release script ([4d1ad65](https://github.com/Hufe921/canvas-editor/commit/4d1ad650746ff2c4aa58dde2b725704ab9e7a639))
+
+
+### Features
+
+* add word break option #212 ([d471165](https://github.com/Hufe921/canvas-editor/commit/d471165430e27e5322160e22da5a5f53fc969b0f)), closes [#212](https://github.com/Hufe921/canvas-editor/issues/212)
+* get page value and append element api #211 ([85a9dcb](https://github.com/Hufe921/canvas-editor/commit/85a9dcbcf29a2fc0e1f89293c4f3ecbc976868b7)), closes [#211](https://github.com/Hufe921/canvas-editor/issues/211)
+
+
+
 ## [0.9.37](https://github.com/Hufe921/canvas-editor/compare/v0.9.36...v0.9.37) (2023-07-02)
 
 

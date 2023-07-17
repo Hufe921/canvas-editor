@@ -80,6 +80,7 @@ export class Command {
   public getValue: CommandAdapt['getValue']
   public getWordCount: CommandAdapt['getWordCount']
   public getRangeText: CommandAdapt['getRangeText']
+  public getRangeContext: CommandAdapt['getRangeContext']
   public getPaperMargin: CommandAdapt['getPaperMargin']
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
 
@@ -168,6 +169,7 @@ export class Command {
     this.getValue = adapt.getValue.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
+    this.getRangeContext = adapt.getRangeContext.bind(adapt)
     this.getCatalog = adapt.getCatalog.bind(adapt)
     this.getPaperMargin = adapt.getPaperMargin.bind(adapt)
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)

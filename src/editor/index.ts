@@ -125,6 +125,7 @@ export default class Editor {
       pageMode: PageMode.PAGING,
       tdPadding: 5,
       defaultTrMinHeight: 40,
+      defaultColMinWidth: 40,
       defaultHyperlinkColor: '#0000FF',
       paperDirection: PaperDirection.VERTICAL,
       inactiveAlpha: 0.6,
@@ -218,7 +219,8 @@ export {
   NumberType,
   TitleLevel,
   ListType,
-  ListStyle
+  ListStyle,
+  WordBreak
 }
 
 // 对外类型

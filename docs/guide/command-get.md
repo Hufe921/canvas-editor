@@ -48,6 +48,14 @@ const wordCount = await instance.command.getWordCount()
 const rangeText = instance.command.getRangeText()
 ```
 
+## getRangeContext
+功能：获取选区上下文
+
+用法：
+```javascript
+const rangeContext = instance.command.getRangeContext()
+```
+
 ## getPaperMargin
 功能：获取页边距
 
