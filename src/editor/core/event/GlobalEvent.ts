@@ -139,7 +139,10 @@ export class GlobalEvent {
 
   private _handleVisibilityChange = () => {
     if (document.visibilityState) {
-      this.cursor?.drawCursor()
+      const isCollapsed = this.range.getIsCollapsed()
+      this.cursor?.drawCursor({
+        isShow: isCollapsed
+      })
     }
   }
 
