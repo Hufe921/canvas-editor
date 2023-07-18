@@ -10,7 +10,7 @@ export const tableMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.table.border',
     icon: 'border-all',
-    when: (payload) => {
+    when: payload => {
       return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
@@ -43,7 +43,7 @@ export const tableMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.table.verticalAlign',
     icon: 'vertical-align',
-    when: (payload) => {
+    when: payload => {
       return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
@@ -76,7 +76,7 @@ export const tableMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.table.insertRowCol',
     icon: 'insert-row-col',
-    when: (payload) => {
+    when: payload => {
       return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
@@ -117,7 +117,7 @@ export const tableMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.table.deleteRowCol',
     icon: 'delete-row-col',
-    when: (payload) => {
+    when: payload => {
       return !payload.isReadonly && payload.isInTable
     },
     childMenus: [
@@ -150,7 +150,7 @@ export const tableMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.table.mergeCell',
     icon: 'merge-cell',
-    when: (payload) => {
+    when: payload => {
       return !payload.isReadonly && payload.isCrossRowCol
     },
     callback: (command: Command) => {
@@ -160,7 +160,7 @@ export const tableMenus: IRegisterContextMenu[] = [
   {
     i18nPath: 'contextmenu.table.mergeCancelCell',
     icon: 'merge-cancel-cell',
-    when: (payload) => {
+    when: payload => {
       return !payload.isReadonly && payload.isInTable
     },
     callback: (command: Command) => {

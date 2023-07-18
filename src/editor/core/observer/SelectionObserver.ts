@@ -3,11 +3,15 @@ import { Draw } from '../draw/Draw'
 import { RangeManager } from '../range/RangeManager'
 
 export class SelectionObserver {
-
   // 每次滚动长度
   private readonly step: number = 5
   // 触发滚动阀值
-  private readonly thresholdPoints: [top: number, down: number, left: number, right: number] = [70, 40, 10, 20]
+  private readonly thresholdPoints: [
+    top: number,
+    down: number,
+    left: number,
+    right: number
+  ] = [70, 40, 10, 20]
 
   private rangeManager: RangeManager
   private requestAnimationFrameId: number | null
@@ -74,7 +78,9 @@ export class SelectionObserver {
     } else {
       window.scrollTo(x + this.step, y)
     }
-    this.requestAnimationFrameId = window.requestAnimationFrame(this._move.bind(this, direction))
+    this.requestAnimationFrameId = window.requestAnimationFrame(
+      this._move.bind(this, direction)
+    )
   }
 
   private _startMove(direction: MoveDirection) {
@@ -90,5 +96,4 @@ export class SelectionObserver {
       this.isMoving = false
     }
   }
-
 }

@@ -12,7 +12,6 @@ import { RangeManager } from '../range/RangeManager'
 import { CanvasEvent } from './CanvasEvent'
 
 export class GlobalEvent {
-
   private draw: Draw
   private canvas: HTMLCanvasElement
   private options: Required<IEditorOption>
@@ -38,7 +37,9 @@ export class GlobalEvent {
     this.hyperlinkParticle = draw.getHyperlinkParticle()
     this.dateParticle = draw.getDateParticle()
     this.control = draw.getControl()
-    this.dprMediaQueryList = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
+    this.dprMediaQueryList = window.matchMedia(
+      `(resolution: ${window.devicePixelRatio}dppx)`
+    )
   }
 
   public register() {
@@ -62,7 +63,10 @@ export class GlobalEvent {
     document.removeEventListener('click', this.recoverEffect)
     document.removeEventListener('mouseup', this.setCanvasEventAbility)
     document.removeEventListener('wheel', this.setPageScale)
-    document.removeEventListener('visibilitychange', this._handleVisibilityChange)
+    document.removeEventListener(
+      'visibilitychange',
+      this._handleVisibilityChange
+    )
     this.dprMediaQueryList.removeEventListener('change', this._handleDprChange)
   }
 
@@ -78,7 +82,8 @@ export class GlobalEvent {
     // 编辑器外部dom
     const outerEditorDom = findParent(
       evt.target as Element,
-      (node: Node & Element) => !!node && node.nodeType === 1 && !!node.getAttribute(EDITOR_COMPONENT),
+      (node: Node & Element) =>
+        !!node && node.nodeType === 1 && !!node.getAttribute(EDITOR_COMPONENT),
       true
     )
     if (outerEditorDom) {
@@ -149,5 +154,4 @@ export class GlobalEvent {
   private _handleDprChange = () => {
     this.draw.setPageDevicePixel()
   }
-
 }

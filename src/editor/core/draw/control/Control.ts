@@ -1,10 +1,19 @@
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
-import { IControl, IControlInitOption, IControlInstance, IControlOption } from '../../../interface/Control'
+import {
+  IControl,
+  IControlInitOption,
+  IControlInstance,
+  IControlOption
+} from '../../../interface/Control'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRange } from '../../../interface/Range'
 import { deepClone, splitText } from '../../../utils'
-import { formatElementContext, pickElementAttr, zipElementList } from '../../../utils/element'
+import {
+  formatElementContext,
+  pickElementAttr,
+  zipElementList
+} from '../../../utils/element'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -13,11 +22,10 @@ import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 
 interface IMoveCursorResult {
-  newIndex: number;
-  newElement: IElement;
+  newIndex: number
+  newElement: IElement
 }
 export class Control {
-
   private draw: Draw
   private range: RangeManager
   private listener: Listener
@@ -44,8 +52,9 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement.type === ElementType.CONTROL || endElement.type === ElementType.CONTROL)
-      && startElement.controlId !== endElement.controlId
+      (startElement.type === ElementType.CONTROL ||
+        endElement.type === ElementType.CONTROL) &&
+      startElement.controlId !== endElement.controlId
     ) {
       return true
     }
@@ -195,8 +204,8 @@ export class Control {
       while (startIndex < elementList.length) {
         const nextElement = elementList[startIndex]
         if (
-          nextElement.controlId !== element.controlId
-          || nextElement.controlComponent !== ControlComponent.PREFIX
+          nextElement.controlId !== element.controlId ||
+          nextElement.controlComponent !== ControlComponent.PREFIX
         ) {
           return {
             newIndex: startIndex - 1,
@@ -211,8 +220,8 @@ export class Control {
       while (startIndex > 0) {
         const preElement = elementList[startIndex]
         if (
-          preElement.controlId !== element.controlId
-          || preElement.controlComponent === ControlComponent.PREFIX
+          preElement.controlId !== element.controlId ||
+          preElement.controlComponent === ControlComponent.PREFIX
         ) {
           return {
             newIndex: startIndex,
@@ -260,7 +269,11 @@ export class Control {
     if (!~leftIndex && !~rightIndex) return startIndex
     leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
-    this.draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
+    this.draw.spliceElementList(
+      elementList,
+      leftIndex + 1,
+      rightIndex - leftIndex
+    )
     return leftIndex
   }
 
@@ -302,7 +315,12 @@ export class Control {
         color: this.options.placeholderColor
       }
       formatElementContext(elementList, [newElement], startIndex)
-      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, newElement)
+      this.draw.spliceElementList(
+        elementList,
+        startIndex + p + 1,
+        0,
+        newElement
+      )
     }
   }
 
@@ -326,5 +344,4 @@ export class Control {
     }
     return this.activeControl.cut()
   }
-
 }

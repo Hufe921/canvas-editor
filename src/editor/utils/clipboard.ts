@@ -1,8 +1,17 @@
 import { IEditorOption, IElement, ListStyle, ListType, RowFlex } from '..'
 import { ZERO } from '../dataset/constant/Common'
-import { INLINE_NODE_NAME, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
-import { listStyleCSSMapping, listTypeElementMapping } from '../dataset/constant/List'
-import { titleNodeNameMapping, titleOrderNumberMapping } from '../dataset/constant/Title'
+import {
+  INLINE_NODE_NAME,
+  TEXTLIKE_ELEMENT_TYPE
+} from '../dataset/constant/Element'
+import {
+  listStyleCSSMapping,
+  listTypeElementMapping
+} from '../dataset/constant/List'
+import {
+  titleNodeNameMapping,
+  titleOrderNumberMapping
+} from '../dataset/constant/Title'
 import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { DeepRequired } from '../interface/Common'
@@ -37,13 +46,19 @@ export function writeClipboardItem(text: string, html: string) {
   }
 }
 
-export function convertElementToDom(element: IElement, options: DeepRequired<IEditorOption>): HTMLElement {
+export function convertElementToDom(
+  element: IElement,
+  options: DeepRequired<IEditorOption>
+): HTMLElement {
   let tagName: keyof HTMLElementTagNameMap = 'span'
   if (element.type === ElementType.SUPERSCRIPT) {
     tagName = 'sup'
   } else if (element.type === ElementType.SUBSCRIPT) {
     tagName = 'sub'
-  } else if (element.rowFlex === RowFlex.CENTER || element.rowFlex === RowFlex.RIGHT) {
+  } else if (
+    element.rowFlex === RowFlex.CENTER ||
+    element.rowFlex === RowFlex.RIGHT
+  ) {
     tagName = 'p'
   }
   const dom = document.createElement(tagName)
@@ -69,7 +84,10 @@ export function convertElementToDom(element: IElement, options: DeepRequired<IEd
   return dom
 }
 
-export function writeElementList(elementList: IElement[], options: DeepRequired<IEditorOption>) {
+export function writeElementList(
+  elementList: IElement[],
+  options: DeepRequired<IEditorOption>
+) {
   function buildDomFromElementList(payload: IElement[]): HTMLDivElement {
     const clipboardDom = document.createElement('div')
     for (let e = 0; e < payload.length; e++) {
@@ -105,12 +123,18 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         }
         clipboardDom.append(a)
       } else if (element.type === ElementType.TITLE) {
-        const h = document.createElement(`h${titleOrderNumberMapping[element.level!]}`)
-        const childDom = buildDomFromElementList(zipElementList(element.valueList!))
+        const h = document.createElement(
+          `h${titleOrderNumberMapping[element.level!]}`
+        )
+        const childDom = buildDomFromElementList(
+          zipElementList(element.valueList!)
+        )
         h.innerHTML = childDom.innerHTML
         clipboardDom.append(h)
       } else if (element.type === ElementType.LIST) {
-        const list = document.createElement(listTypeElementMapping[element.listType!])
+        const list = document.createElement(
+          listTypeElementMapping[element.listType!]
+        )
         if (element.listStyle) {
           list.style.listStyleType = listStyleCSSMapping[element.listStyle]
         }
@@ -134,7 +158,7 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
               const listElementList = listElementListMap.get(curListIndex) || []
               listElementList.push({
                 ...zipElement,
-                value,
+                value
               })
               listElementListMap.set(curListIndex, listElementList)
             }
@@ -166,9 +190,9 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
         }
         clipboardDom.append(checkbox)
       } else if (
-        !element.type
-        || element.type === ElementType.LATEX
-        || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+        !element.type ||
+        element.type === ElementType.LATEX ||
+        TEXTLIKE_ELEMENT_TYPE.includes(element.type)
       ) {
         let text = ''
         if (element.type === ElementType.CONTROL) {
@@ -201,12 +225,15 @@ export function writeElementList(elementList: IElement[], options: DeepRequired<
   writeClipboardItem(text, html)
 }
 
-export function convertTextNodeToElement(textNode: Element | Node): IElement | null {
+export function convertTextNodeToElement(
+  textNode: Element | Node
+): IElement | null {
   if (!textNode || textNode.nodeType !== 3) return null
   const parentNode = <HTMLElement>textNode.parentNode
-  const anchorNode = parentNode.nodeName === 'FONT'
-    ? <HTMLElement>parentNode.parentNode
-    : parentNode
+  const anchorNode =
+    parentNode.nodeName === 'FONT'
+      ? <HTMLElement>parentNode.parentNode
+      : parentNode
   const rowFlex = getElementRowFlex(anchorNode)
   const value = textNode.textContent
   const style = window.getComputedStyle(anchorNode)
@@ -236,10 +263,13 @@ export function convertTextNodeToElement(textNode: Element | Node): IElement | n
 }
 
 interface IGetElementListByHTMLOption {
-  innerWidth: number;
+  innerWidth: number
 }
 
-export function getElementListByHTML(htmlText: string, options: IGetElementListByHTMLOption): IElement[] {
+export function getElementListByHTML(
+  htmlText: string,
+  options: IGetElementListByHTMLOption
+): IElement[] {
   const elementList: IElement[] = []
   function findTextNode(dom: Element | Node) {
     if (dom.nodeType === 3) {
@@ -263,9 +293,11 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             elementList.push({
               type: ElementType.HYPERLINK,
               value: '',
-              valueList: [{
-                value
-              }],
+              valueList: [
+                {
+                  value
+                }
+              ],
               url: aElement.href
             })
           }
@@ -278,7 +310,10 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             level: titleNodeNameMapping[node.nodeName],
             valueList
           })
-          if (node.nextSibling && !INLINE_NODE_NAME.includes(node.nextSibling.nodeName)) {
+          if (
+            node.nextSibling &&
+            !INLINE_NODE_NAME.includes(node.nextSibling.nodeName)
+          ) {
             elementList.push({
               value: '\n'
             })
@@ -294,7 +329,9 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             listElement.listType = ListType.OL
           } else {
             listElement.listType = ListType.UL
-            listElement.listStyle = <ListStyle><unknown>listNode.style.listStyleType
+            listElement.listStyle = <ListStyle>(
+              (<unknown>listNode.style.listStyleType)
+            )
           }
           listNode.querySelectorAll('li').forEach(li => {
             const liValueList = getElementListByHTML(li.innerHTML, options)
@@ -312,7 +349,7 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
         } else if (node.nodeName === 'HR') {
           elementList.push({
             value: '\n',
-            type: ElementType.SEPARATOR,
+            type: ElementType.SEPARATOR
           })
         } else if (node.nodeName === 'IMG') {
           const { src, width, height } = node as HTMLImageElement
@@ -334,14 +371,19 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
           }
           // 基础数据
           tableElement.querySelectorAll('tr').forEach(trElement => {
-            const trHeightStr = window.getComputedStyle(trElement).height.replace('px', '')
+            const trHeightStr = window
+              .getComputedStyle(trElement)
+              .height.replace('px', '')
             const tr: ITr = {
               height: Number(trHeightStr),
               tdList: []
             }
             trElement.querySelectorAll('th,td').forEach(tdElement => {
               const tableCell = <HTMLTableCellElement>tdElement
-              const valueList = getElementListByHTML(tableCell.innerHTML, options)
+              const valueList = getElementListByHTML(
+                tableCell.innerHTML,
+                options
+              )
               const td: ITd = {
                 colspan: tableCell.colSpan,
                 rowspan: tableCell.rowSpan,
@@ -358,7 +400,10 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
           })
           if (element.trList!.length) {
             // 列选项数据
-            const tdCount = element.trList![0].tdList.reduce((pre, cur) => pre + cur.colspan, 0)
+            const tdCount = element.trList![0].tdList.reduce(
+              (pre, cur) => pre + cur.colspan,
+              0
+            )
             const width = Math.ceil(options.innerWidth / tdCount)
             for (let i = 0; i < tdCount; i++) {
               element.colgroup!.push({
@@ -367,7 +412,10 @@ export function getElementListByHTML(htmlText: string, options: IGetElementListB
             }
             elementList.push(element)
           }
-        } else if (node.nodeName === 'INPUT' && (<HTMLInputElement>node).type === ControlComponent.CHECKBOX) {
+        } else if (
+          node.nodeName === 'INPUT' &&
+          (<HTMLInputElement>node).type === ControlComponent.CHECKBOX
+        ) {
           elementList.push({
             type: ElementType.CHECKBOX,
             value: '',

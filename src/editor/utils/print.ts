@@ -1,4 +1,8 @@
-export function printImageBase64(base64List: string[], width: number, height: number) {
+export function printImageBase64(
+  base64List: string[],
+  width: number,
+  height: number
+) {
   const iframe = document.createElement('iframe')
   // 离屏渲染
   iframe.style.visibility = 'hidden'
@@ -28,10 +32,14 @@ export function printImageBase64(base64List: string[], width: number, height: nu
     contentWindow.print()
     doc.close()
     // 移除iframe
-    window.addEventListener('mouseover', () => {
-      iframe?.remove()
-    }, {
-      once: true
-    })
+    window.addEventListener(
+      'mouseover',
+      () => {
+        iframe?.remove()
+      },
+      {
+        once: true
+      }
+    )
   })
 }

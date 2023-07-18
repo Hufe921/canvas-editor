@@ -6,7 +6,6 @@ import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class TextControl implements IControlInstance {
-
   private element: IElement
   private control: Control
 
@@ -99,7 +98,11 @@ export class TextControl implements IControlInstance {
     if (evt.key === KeyMap.Backspace) {
       // 移除选区元素
       if (startIndex !== endIndex) {
-        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+        draw.spliceElementList(
+          elementList,
+          startIndex + 1,
+          endIndex - startIndex
+        )
         const value = this.getValue()
         if (!value.length) {
           this.control.addPlaceholder(startIndex)
@@ -126,7 +129,11 @@ export class TextControl implements IControlInstance {
     } else if (evt.key === KeyMap.Delete) {
       // 移除选区元素
       if (startIndex !== endIndex) {
-        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+        draw.spliceElementList(
+          elementList,
+          startIndex + 1,
+          endIndex - startIndex
+        )
         const value = this.getValue()
         if (!value.length) {
           this.control.addPlaceholder(startIndex)
@@ -134,8 +141,9 @@ export class TextControl implements IControlInstance {
         return startIndex
       } else {
         const endNextElement = elementList[endIndex + 1]
-        if ((startElement.controlComponent === ControlComponent.PREFIX &&
-          endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
+        if (
+          (startElement.controlComponent === ControlComponent.PREFIX &&
+            endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
           endNextElement.controlComponent === ControlComponent.POSTFIX ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
@@ -170,5 +178,4 @@ export class TextControl implements IControlInstance {
     }
     return startIndex
   }
-
 }

@@ -7,7 +7,6 @@ import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
 export class Placeholder {
-
   private draw: Draw
   private position: Position
   private options: DeepRequired<IEditorOption>
@@ -61,16 +60,20 @@ export class Placeholder {
   }
 
   public render(ctx: CanvasRenderingContext2D) {
-    const { placeholder: { data, font, size, color, opacity } } = this.options
+    const {
+      placeholder: { data, font, size, color, opacity }
+    } = this.options
     if (!data) return
     this._recovery()
     // 构建元素列表并格式化
-    this.elementList = [{
-      value: data,
-      font,
-      size,
-      color
-    }]
+    this.elementList = [
+      {
+        value: data,
+        font,
+        size,
+        color
+      }
+    ]
     formatElementList(this.elementList, {
       editorOptions: this.options
     })
@@ -90,5 +93,4 @@ export class Placeholder {
     })
     ctx.restore()
   }
-
 }

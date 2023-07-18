@@ -4,7 +4,22 @@ export const ZERO = '\u200B'
 export const WRAP = '\n'
 export const HORIZON_TAB = '\t'
 export const NBSP = '\u0020'
-export const PUNCTUATION_LIST = ['·', '、', ':', '：', ',', '，', '.', '。', ';', '；', '?', '？', '!', '！']
+export const PUNCTUATION_LIST = [
+  '·',
+  '、',
+  ':',
+  '：',
+  ',',
+  '，',
+  '.',
+  '。',
+  ';',
+  '；',
+  '?',
+  '？',
+  '!',
+  '！'
+]
 
 export const maxHeightRadioMapping: Record<MaxHeightRatio, number> = {
   [MaxHeightRatio.HALF]: 1 / 2,

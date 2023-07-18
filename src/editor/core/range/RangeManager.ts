@@ -12,7 +12,6 @@ import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
 
 export class RangeManager {
-
   private draw: Draw
   private options: Required<IEditorOption>
   private range: IRange
@@ -55,7 +54,9 @@ export class RangeManager {
   public getTextLikeSelection(): IElement[] | null {
     const selection = this.getSelection()
     if (!selection) return null
-    return selection.filter(s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type))
+    return selection.filter(
+      s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type)
+    )
   }
 
   // 获取光标所选位置行信息
@@ -100,7 +101,9 @@ export class RangeManager {
       if (
         positionList[start]?.value === ZERO ||
         elementList[start].titleId !== elementList[start - 1]?.titleId
-      ) break
+      ) {
+        break
+      }
       start--
     }
     // 中间选择
@@ -125,7 +128,9 @@ export class RangeManager {
       if (
         positionList[end].value === ZERO ||
         elementList[end].titleId !== elementList[end + 1]?.titleId
-      ) break
+      ) {
+        break
+      }
       const { pageNo, rowNo } = positionList[end]
       let rowArray = rangeRow.get(pageNo)
       if (!rowArray) {
@@ -172,8 +177,15 @@ export class RangeManager {
     const { startIndex, endIndex } = this.range
     const positionList = this.position.getPositionList()
     for (let p = startIndex + 1; p <= endIndex; p++) {
-      const { coordinate: { leftTop, rightBottom } } = positionList[p]
-      if (x >= leftTop[0] && x <= rightBottom[0] && y >= leftTop[1] && y <= rightBottom[1]) {
+      const {
+        coordinate: { leftTop, rightBottom }
+      } = positionList[p]
+      if (
+        x >= leftTop[0] &&
+        x <= rightBottom[0] &&
+        y >= leftTop[1] &&
+        y <= rightBottom[1]
+      ) {
         return true
       }
     }
@@ -196,7 +208,12 @@ export class RangeManager {
     this.range.endTdIndex = endTdIndex
     this.range.startTrIndex = startTrIndex
     this.range.endTrIndex = endTrIndex
-    this.range.isCrossRowCol = !!(startTdIndex || endTdIndex || startTrIndex || endTrIndex)
+    this.range.isCrossRowCol = !!(
+      startTdIndex ||
+      endTdIndex ||
+      startTrIndex ||
+      endTrIndex
+    )
     this.range.zone = this.draw.getZone().getZone()
     // 激活控件
     const control = this.draw.getControl()
@@ -349,8 +366,8 @@ export class RangeManager {
         while (index > 0) {
           const preElement = elementList[index]
           if (
-            preElement.controlId !== endElement.controlId
-            || preElement.controlComponent === ControlComponent.PREFIX
+            preElement.controlId !== endElement.controlId ||
+            preElement.controlComponent === ControlComponent.PREFIX
           ) {
             range.startIndex = index
             range.endIndex = index
@@ -365,12 +382,14 @@ export class RangeManager {
         while (index < elementList.length) {
           const nextElement = elementList[index]
           if (
-            nextElement.controlId !== startElement.controlId
-            || nextElement.controlComponent === ControlComponent.VALUE
+            nextElement.controlId !== startElement.controlId ||
+            nextElement.controlComponent === ControlComponent.VALUE
           ) {
             range.startIndex = index - 1
             break
-          } else if (nextElement.controlComponent === ControlComponent.PLACEHOLDER) {
+          } else if (
+            nextElement.controlComponent === ControlComponent.PLACEHOLDER
+          ) {
             range.startIndex = index - 1
             range.endIndex = index - 1
             return
@@ -384,12 +403,14 @@ export class RangeManager {
         while (index > 0) {
           const preElement = elementList[index]
           if (
-            preElement.controlId !== startElement.controlId
-            || preElement.controlComponent === ControlComponent.VALUE
+            preElement.controlId !== startElement.controlId ||
+            preElement.controlComponent === ControlComponent.VALUE
           ) {
             range.startIndex = index
             break
-          } else if (preElement.controlComponent === ControlComponent.PLACEHOLDER) {
+          } else if (
+            preElement.controlComponent === ControlComponent.PLACEHOLDER
+          ) {
             range.startIndex = index
             range.endIndex = index
             return
@@ -400,7 +421,13 @@ export class RangeManager {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) {
     ctx.save()
     ctx.globalAlpha = this.options.rangeAlpha
     ctx.fillStyle = this.options.rangeColor
@@ -411,9 +438,9 @@ export class RangeManager {
   public toString(): string {
     const selection = this.getSelection()
     if (!selection) return ''
-    return selection.map(s => s.value)
+    return selection
+      .map(s => s.value)
       .join('')
       .replace(new RegExp(ZERO, 'g'), '')
   }
-
 }

@@ -2,36 +2,39 @@ import { EditorComponent, EDITOR_COMPONENT } from '../../editor'
 import './dialog.css'
 
 export interface IDialogData {
-  type: string;
-  label?: string;
-  name: string;
-  value?: string;
-  options?: { label: string; value: string; }[];
-  placeholder?: string;
-  width?: number;
-  height?: number;
-  required?: boolean;
+  type: string
+  label?: string
+  name: string
+  value?: string
+  options?: { label: string; value: string }[]
+  placeholder?: string
+  width?: number
+  height?: number
+  required?: boolean
 }
 
 export interface IDialogConfirm {
-  name: string;
-  value: string;
+  name: string
+  value: string
 }
 
 export interface IDialogOptions {
-  onClose?: () => void;
-  onCancel?: () => void;
-  onConfirm?: (payload: IDialogConfirm[]) => void;
-  title: string;
-  data: IDialogData[];
+  onClose?: () => void
+  onCancel?: () => void
+  onConfirm?: (payload: IDialogConfirm[]) => void
+  title: string
+  data: IDialogData[]
 }
 
 export class Dialog {
-
   private options: IDialogOptions
   private mask: HTMLDivElement | null
   private container: HTMLDivElement | null
-  private inputList: (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement)[]
+  private inputList: (
+    | HTMLInputElement
+    | HTMLTextAreaElement
+    | HTMLSelectElement
+  )[]
 
   constructor(options: IDialogOptions) {
     this.options = options
@@ -90,7 +93,10 @@ export class Dialog {
         }
       }
       // 选项输入框
-      let optionInput: HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+      let optionInput:
+        | HTMLInputElement
+        | HTMLTextAreaElement
+        | HTMLSelectElement
       if (option.type === 'select') {
         optionInput = document.createElement('select')
         option.options?.forEach(item => {
@@ -162,5 +168,4 @@ export class Dialog {
     this.mask?.remove()
     this.container?.remove()
   }
-
 }

@@ -115,7 +115,7 @@ function groupText(text: string): string[] {
   return characterList
 }
 
-onmessage = (evt) => {
+onmessage = evt => {
   const elementList = <IElement[]>evt.data
   // 提取文本
   const originText = pickText(elementList)

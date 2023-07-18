@@ -1,12 +1,14 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
-import { IPreviewerCreateResult, IPreviewerDrawOption } from '../../../../interface/Previewer'
+import {
+  IPreviewerCreateResult,
+  IPreviewerDrawOption
+} from '../../../../interface/Previewer'
 import { downloadFile } from '../../../../utils'
 import { Draw } from '../../Draw'
 
 export class Previewer {
-
   private container: HTMLDivElement
   private canvas: HTMLCanvasElement
   private draw: Draw
@@ -39,7 +41,12 @@ export class Previewer {
     this.previewerDrawOption = {}
     this.curPosition = null
     // 图片尺寸缩放
-    const { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage } = this._createResizerDom()
+    const {
+      resizerSelection,
+      resizerHandleList,
+      resizerImageContainer,
+      resizerImage
+    } = this._createResizerDom()
     this.resizerSelection = resizerSelection
     this.resizerHandleList = resizerHandleList
     this.resizerImageContainer = resizerImageContainer
@@ -79,7 +86,12 @@ export class Previewer {
     const resizerImage = document.createElement('img')
     resizerImageContainer.append(resizerImage)
     this.container.append(resizerImageContainer)
-    return { resizerSelection, resizerHandleList, resizerImageContainer, resizerImage }
+    return {
+      resizerSelection,
+      resizerHandleList,
+      resizerImageContainer,
+      resizerImage
+    }
   }
 
   private _keydown = () => {
@@ -107,7 +119,11 @@ export class Previewer {
     // 拖拽图片镜像
     this.resizerImage.src = this.curElementSrc
     this.resizerImageContainer.style.display = 'block'
-    const { coordinate: { leftTop: [left, top] } } = this.curPosition
+    const {
+      coordinate: {
+        leftTop: [left, top]
+      }
+    } = this.curPosition
     const prePageHeight = this.draw.getPageNo() * (height + pageGap)
     this.resizerImageContainer.style.left = `${left}px`
     this.resizerImageContainer.style.top = `${top + prePageHeight}px`
@@ -116,22 +132,30 @@ export class Previewer {
     // 追加全局事件
     const mousemoveFn = this._mousemove.bind(this)
     document.addEventListener('mousemove', mousemoveFn)
-    document.addEventListener('mouseup', () => {
-      // 改变尺寸
-      if (this.curElement && this.curPosition) {
-        this.curElement.width = this.width
-        this.curElement.height = this.height
-        this.draw.render({ isSetCursor: false })
-        this.drawResizer(this.curElement, this.curPosition, this.previewerDrawOption)
+    document.addEventListener(
+      'mouseup',
+      () => {
+        // 改变尺寸
+        if (this.curElement && this.curPosition) {
+          this.curElement.width = this.width
+          this.curElement.height = this.height
+          this.draw.render({ isSetCursor: false })
+          this.drawResizer(
+            this.curElement,
+            this.curPosition,
+            this.previewerDrawOption
+          )
+        }
+        // 还原副作用
+        this.resizerImageContainer.style.display = 'none'
+        document.removeEventListener('mousemove', mousemoveFn)
+        document.body.style.cursor = ''
+        this.canvas.style.cursor = 'text'
+      },
+      {
+        once: true
       }
-      // 还原副作用
-      this.resizerImageContainer.style.display = 'none'
-      document.removeEventListener('mousemove', mousemoveFn)
-      document.body.style.cursor = ''
-      this.canvas.style.cursor = 'text'
-    }, {
-      once: true
-    })
+    )
     evt.preventDefault()
   }
 
@@ -254,7 +278,7 @@ export class Previewer {
     let startX = 0
     let startY = 0
     let isAllowDrag = false
-    img.onmousedown = (evt) => {
+    img.onmousedown = evt => {
       isAllowDrag = true
       startX = evt.x
       startY = evt.y
@@ -262,8 +286,8 @@ export class Previewer {
     }
     previewerContainer.onmousemove = (evt: MouseEvent) => {
       if (!isAllowDrag) return
-      x += (evt.x - startX)
-      y += (evt.y - startY)
+      x += evt.x - startX
+      y += evt.y - startY
       startX = evt.x
       startY = evt.y
       this._setPreviewerTransform(scaleSize, rotateSize, x, y)
@@ -272,7 +296,7 @@ export class Previewer {
       isAllowDrag = false
       previewerContainer.style.cursor = 'auto'
     }
-    previewerContainer.onwheel = (evt) => {
+    previewerContainer.onwheel = evt => {
       evt.preventDefault()
       if (evt.deltaY < 0) {
         // 放大
@@ -286,11 +310,18 @@ export class Previewer {
     }
   }
 
-  public _setPreviewerTransform(scale: number, rotate: number, x: number, y: number) {
+  public _setPreviewerTransform(
+    scale: number,
+    rotate: number,
+    x: number,
+    y: number
+  ) {
     if (!this.previewerImage) return
     this.previewerImage.style.left = `${x}px`
     this.previewerImage.style.top = `${y}px`
-    this.previewerImage.style.transform = `scale(${scale}) rotate(${rotate * 90}deg)`
+    this.previewerImage.style.transform = `scale(${scale}) rotate(${
+      rotate * 90
+    }deg)`
   }
 
   private _clearPreviewer() {
@@ -299,10 +330,19 @@ export class Previewer {
     document.body.style.overflow = 'auto'
   }
 
-  public drawResizer(element: IElement, position: IElementPosition, options: IPreviewerDrawOption = {}) {
+  public drawResizer(
+    element: IElement,
+    position: IElementPosition,
+    options: IPreviewerDrawOption = {}
+  ) {
     this.previewerDrawOption = options
     const { scale } = this.options
-    const { coordinate: { leftTop: [left, top] }, ascent } = position
+    const {
+      coordinate: {
+        leftTop: [left, top]
+      },
+      ascent
+    } = position
     const elementWidth = element.width! * scale
     const elementHeight = element.height! * scale
     const height = this.draw.getHeight()
@@ -316,14 +356,16 @@ export class Previewer {
     this.resizerSelection.style.height = `${elementHeight}px`
     // handle
     for (let i = 0; i < 8; i++) {
-      const left = i === 0 || i === 6 || i === 7
-        ? -handleSize
-        : i === 1 || i === 5
+      const left =
+        i === 0 || i === 6 || i === 7
+          ? -handleSize
+          : i === 1 || i === 5
           ? elementWidth / 2
           : elementWidth - handleSize
-      const top = i === 0 || i === 1 || i === 2
-        ? -handleSize
-        : i === 3 || i === 7
+      const top =
+        i === 0 || i === 1 || i === 2
+          ? -handleSize
+          : i === 3 || i === 7
           ? elementHeight / 2 - handleSize
           : elementHeight - handleSize
       this.resizerHandleList[i].style.left = `${left}px`
@@ -342,5 +384,4 @@ export class Previewer {
     this.resizerSelection.style.display = 'none'
     document.removeEventListener('keydown', this._keydown)
   }
-
 }

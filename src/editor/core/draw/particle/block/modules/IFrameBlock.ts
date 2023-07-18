@@ -1,7 +1,6 @@
 import { IRowElement } from '../../../../../interface/Row'
 
 export class IFrameBlock {
-
   private static readonly sandbox = [
     'allow-forms',
     'allow-scripts',
@@ -24,5 +23,4 @@ export class IFrameBlock {
     iframe.src = block.iframeBlock?.src || ''
     blockItemContainer.append(iframe)
   }
-
 }

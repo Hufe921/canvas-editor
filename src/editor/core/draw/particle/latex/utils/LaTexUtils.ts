@@ -6,7 +6,7 @@ const CONFIG: Record<string, number> = {
   SQRT_MAG_SCALE: 0.5,
   FRAC_SCALE: 0.85,
   LINE_SPACING: 0.5,
-  FRAC_SPACING: 0.4,
+  FRAC_SPACING: 0.4
 }
 
 function tokenize(str: string): string[] {
@@ -49,27 +49,40 @@ function tokenize(str: string): string[] {
 }
 
 interface Bbox {
-  x: number, y: number, w: number, h: number
+  x: number
+  y: number
+  w: number
+  h: number
 }
 
 interface Expr {
-  type: string;
-  text: string;
-  mode: string;
-  chld: Expr[];
-  bbox: Bbox;
+  type: string
+  text: string
+  mode: string
+  chld: Expr[]
+  bbox: Bbox
 }
 
 function parseAtom(x: string): Expr {
-  // @ts-ignore
-  return { type: SYMB[x] ? 'symb' : 'char', mode: 'math', text: x, chld: [], bbox: null }
+  return {
+    type: SYMB[x] ? 'symb' : 'char',
+    mode: 'math',
+    text: x,
+    chld: [],
+    // @ts-ignore
+    bbox: null
+  }
 }
 
 function parse(tokens: string[]): Expr {
   let i = 0
   let expr: Expr = {
+    type: 'node',
+    text: '',
+    mode: 'math',
+    chld: [],
     // @ts-ignore
-    type: 'node', text: '', mode: 'math', chld: [], bbox: null
+    bbox: null
   }
 
   function takeOpt(): Expr | null {
@@ -133,8 +146,12 @@ function parse(tokens: string[]): Expr {
   for (i = 0; i < tokens.length; i++) {
     const s: Symb = SYMB[tokens[i]]
     const e: Expr = {
+      type: '',
+      text: tokens[i],
+      mode: 'math',
+      chld: [],
       // @ts-ignore
-      type: '', text: tokens[i], mode: 'math', chld: [], bbox: null
+      bbox: null
     }
     if (s) {
       if (s.arity) {
@@ -190,7 +207,14 @@ function environments(exprs: Expr[]) {
   }
 }
 
-function transform(expr: Expr, sclx: number, scly: number, x: number, y: number, notFirst?: boolean) {
+function transform(
+  expr: Expr,
+  sclx: number,
+  scly: number,
+  x: number,
+  y: number,
+  notFirst?: boolean
+) {
   if (scly == null) {
     scly = sclx
   }
@@ -209,8 +233,10 @@ function transform(expr: Expr, sclx: number, scly: number, x: number, y: number,
 }
 
 function computeBbox(exprs: Expr[]): Bbox {
-  let xmin = Infinity; let xmax = -Infinity
-  let ymin = Infinity; let ymax = -Infinity
+  let xmin = Infinity
+  let xmax = -Infinity
+  let ymin = Infinity
+  let ymax = -Infinity
   for (let i = 0; i < exprs.length; i++) {
     if (!exprs[i].bbox) {
       continue
@@ -238,8 +264,11 @@ function group(exprs: Expr[]): Expr {
     exprs[i].bbox.y -= bbox.y
   }
   const expr: Expr = {
-    type: 'node', text: '', mode: 'math',
-    chld: exprs, bbox
+    type: 'node',
+    text: '',
+    mode: 'math',
+    chld: exprs,
+    bbox
   }
   return expr
 }
@@ -249,7 +278,10 @@ function align(exprs: Expr[], alignment = 'center'): void {
     if (exprs[i].text == '^' || exprs[i].text == '\'') {
       let h = 0
       let j = i
-      while (j > 0 && (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == '\'')) {
+      while (
+        j > 0 &&
+        (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == '\'')
+      ) {
         j--
       }
       h = exprs[j].bbox.y
@@ -269,7 +301,10 @@ function align(exprs: Expr[], alignment = 'center'): void {
     } else if (exprs[i].text == '_') {
       let h = 1
       let j = i
-      while (j > 0 && (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == '\'')) {
+      while (
+        j > 0 &&
+        (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == '\'')
+      ) {
         j--
       }
       h = exprs[j].bbox.y + exprs[j].bbox.h
@@ -284,12 +319,18 @@ function align(exprs: Expr[], alignment = 'center'): void {
       }
     }
   }
-  function searchHigh(i: number, l: string, r: string, dir: number, lvl0: number): number[] {
+  function searchHigh(
+    i: number,
+    l: string,
+    r: string,
+    dir: number,
+    lvl0: number
+  ): number[] {
     let j = i
     let lvl = lvl0
     let ymin = Infinity
     let ymax = -Infinity
-    while ((dir > 0) ? (j < exprs.length) : (j >= 0)) {
+    while (dir > 0 ? j < exprs.length : j >= 0) {
       if (exprs[j].text == l) {
         lvl++
       } else if (exprs[j].text == r) {
@@ -312,13 +353,13 @@ function align(exprs: Expr[], alignment = 'center'): void {
       const [ymin, ymax] = searchHigh(i, '\\left', '\\right', 1, 0)
       if (ymin != Infinity && ymax != -Infinity) {
         exprs[i].bbox.y = ymin
-        transform(exprs[i], 1, ((ymax - ymin) / exprs[i].bbox.h), 0, 0)
+        transform(exprs[i], 1, (ymax - ymin) / exprs[i].bbox.h, 0, 0)
       }
     } else if (exprs[i].text == '\\right') {
       const [ymin, ymax] = searchHigh(i, '\\right', '\\left', -1, 0)
       if (ymin != Infinity && ymax != -Infinity) {
         exprs[i].bbox.y = ymin
-        transform(exprs[i], 1, ((ymax - ymin) / exprs[i].bbox.h), 0, 0)
+        transform(exprs[i], 1, (ymax - ymin) / exprs[i].bbox.h, 0, 0)
       }
     } else if (exprs[i].text == '\\middle') {
       const [lmin, lmax] = searchHigh(i, '\\right', '\\left', -1, 1)
@@ -327,12 +368,12 @@ function align(exprs: Expr[], alignment = 'center'): void {
       const ymax = Math.max(lmax, rmax)
       if (ymin != Infinity && ymax != -Infinity) {
         exprs[i].bbox.y = ymin
-        transform(exprs[i], 1, ((ymax - ymin) / exprs[i].bbox.h), 0, 0)
+        transform(exprs[i], 1, (ymax - ymin) / exprs[i].bbox.h, 0, 0)
       }
     }
   }
 
-  if (!exprs.some((x) => (x.text == '&' || x.text == '\\\\'))) {
+  if (!exprs.some(x => x.text == '&' || x.text == '\\\\')) {
     return
   }
 
@@ -408,28 +449,27 @@ function align(exprs: Expr[], alignment = 'center'): void {
     ybds[i][1] += shft
   }
 
-
   exprs.splice(0, exprs.length)
   for (let i = 0; i < erows.length; i++) {
     let dx = 0
     for (let j = 0; j < erows[i].length; j++) {
       const e: Expr = erows[i][j]
       if (!e) {
-        dx += (colws[j])
+        dx += colws[j]
         continue
       }
       e.bbox.x += dx
-      dx += (colws[j] - e.bbox.w)
+      dx += colws[j] - e.bbox.w
       // e.bbox.w = colws[j];
       if (alignment == 'center') {
         e.bbox.x += (colws[j] - e.bbox.w) / 2
       } else if (alignment == 'left') {
         //ok
       } else if (alignment == 'right') {
-        e.bbox.x += (colws[j] - e.bbox.w)
+        e.bbox.x += colws[j] - e.bbox.w
       } else if (alignment == 'equation') {
         if (j != erows[i].length - 1) {
-          e.bbox.x += (colws[j] - e.bbox.w)
+          e.bbox.x += colws[j] - e.bbox.w
         }
       }
       exprs.push(e)
@@ -438,28 +478,29 @@ function align(exprs: Expr[], alignment = 'center'): void {
 }
 
 function plan(expr: Expr, mode = 'math'): void {
-  const tmd: string = {
-    '\\text': 'text',
-    '\\mathnormal': 'math',
-    '\\mathrm': 'rm',
-    '\\mathit': 'it',
-    '\\mathbf': 'bf',
-    '\\mathsf': 'sf',
-    '\\mathtt': 'tt',
-    '\\mathfrak': 'frak',
-    '\\mathcal': 'cal',
-    '\\mathbb': 'bb',
-    '\\mathscr': 'scr',
-    '\\rm': 'rm',
-    '\\it': 'it',
-    '\\bf': 'bf',
-    '\\sf': 'tt',
-    '\\tt': 'tt',
-    '\\frak': 'frak',
-    '\\cal': 'cal',
-    '\\bb': 'bb',
-    '\\scr': 'scr',
-  }[expr.text] ?? mode
+  const tmd: string =
+    {
+      '\\text': 'text',
+      '\\mathnormal': 'math',
+      '\\mathrm': 'rm',
+      '\\mathit': 'it',
+      '\\mathbf': 'bf',
+      '\\mathsf': 'sf',
+      '\\mathtt': 'tt',
+      '\\mathfrak': 'frak',
+      '\\mathcal': 'cal',
+      '\\mathbb': 'bb',
+      '\\mathscr': 'scr',
+      '\\rm': 'rm',
+      '\\it': 'it',
+      '\\bf': 'bf',
+      '\\sf': 'tt',
+      '\\tt': 'tt',
+      '\\frak': 'frak',
+      '\\cal': 'cal',
+      '\\bb': 'bb',
+      '\\scr': 'scr'
+    }[expr.text] ?? mode
   if (!expr.chld.length) {
     if (SYMB[expr.text]) {
       if (SYMB[expr.text].flags.big) {
@@ -517,9 +558,20 @@ function plan(expr: Expr, mode = 'math'): void {
     const mw: number = Math.max(a.bbox.w, b.bbox.w) * s
     // @ts-ignore
     transform(a, s, null, (mw - a.bbox.w * s) / 2, 0)
-    // @ts-ignore
-    transform(b, s, null, (mw - b.bbox.w * s) / 2, a.bbox.h + CONFIG.FRAC_SPACING)
-    expr.bbox = { x: 0, y: -a.bbox.h + 1 - CONFIG.FRAC_SPACING / 2, w: mw, h: a.bbox.h + b.bbox.h + CONFIG.FRAC_SPACING }
+    transform(
+      b,
+      s,
+      // @ts-ignore
+      null,
+      (mw - b.bbox.w * s) / 2,
+      a.bbox.h + CONFIG.FRAC_SPACING
+    )
+    expr.bbox = {
+      x: 0,
+      y: -a.bbox.h + 1 - CONFIG.FRAC_SPACING / 2,
+      w: mw,
+      h: a.bbox.h + b.bbox.h + CONFIG.FRAC_SPACING
+    }
   } else if (expr.text == '\\binom') {
     const a: Expr = expr.chld[0]
     const b: Expr = expr.chld[1]
@@ -548,20 +600,22 @@ function plan(expr: Expr, mode = 'math'): void {
     }
     // @ts-ignore
     transform(e, 1, null, 1 + pl, 0.5)
-    expr.bbox = { x: 0, y: 2 - e.bbox.h - 0.5, w: e.bbox.w + 1 + pl, h: e.bbox.h + 0.5 }
-
+    expr.bbox = {
+      x: 0,
+      y: 2 - e.bbox.h - 0.5,
+      w: e.bbox.w + 1 + pl,
+      h: e.bbox.h + 0.5
+    }
   } else if (SYMB[expr.text] && SYMB[expr.text].flags.hat) {
     const e: Expr = expr.chld[0]
     plan(e)
     const y0 = e.bbox.y - 0.5
     e.bbox.y = 0.5
     expr.bbox = { x: 0, y: y0, w: e.bbox.w, h: e.bbox.h + 0.5 }
-
   } else if (SYMB[expr.text] && SYMB[expr.text].flags.mat) {
     const e: Expr = expr.chld[0]
     plan(e)
     expr.bbox = { x: 0, y: 0, w: e.bbox.w, h: e.bbox.h + 0.5 }
-
   } else {
     let dx = 0
     let dy = 0
@@ -569,13 +623,14 @@ function plan(expr: Expr, mode = 'math'): void {
     for (let i = 0; i < expr.chld.length; i++) {
       const c: Expr = expr.chld[i]
       // @ts-ignore
-      const spac: number = {
-        '\\quad': 2,
-        '\\,': 2 * 3 / 18,
-        '\\:': 2 * 4 / 18,
-        '\\;': 2 * 5 / 18,
-        '\\!': 2 * (-3) / 18,
-      }[c.text] ?? null
+      const spac: number =
+        {
+          '\\quad': 2,
+          '\\,': (2 * 3) / 18,
+          '\\:': (2 * 4) / 18,
+          '\\;': (2 * 5) / 18,
+          '\\!': (2 * -3) / 18
+        }[c.text] ?? null
 
       if (c.text == '\\\\') {
         dy += mh
@@ -593,10 +648,16 @@ function plan(expr: Expr, mode = 'math'): void {
         transform(c, 1, null, dx, dy)
         if (c.text == '^' || c.text == '_' || c.text == '\'') {
           let j: number = i
-          while (j > 0 && (expr.chld[j].text == '^' || expr.chld[j].text == '_' || expr.chld[j].text == '\'')) {
+          while (
+            j > 0 &&
+            (expr.chld[j].text == '^' ||
+              expr.chld[j].text == '_' ||
+              expr.chld[j].text == '\'')
+          ) {
             j--
           }
-          const wasBig = SYMB[expr.chld[j].text] && SYMB[expr.chld[j].text].flags.big
+          const wasBig =
+            SYMB[expr.chld[j].text] && SYMB[expr.chld[j].text].flags.big
           if (c.text == '\'') {
             let k = j + 1
             let nth = 0
@@ -606,13 +667,21 @@ function plan(expr: Expr, mode = 'math'): void {
               }
               k++
             }
-            c.bbox.x = expr.chld[j].bbox.x + expr.chld[j].bbox.w + c.bbox.w * nth
+            c.bbox.x =
+              expr.chld[j].bbox.x + expr.chld[j].bbox.w + c.bbox.w * nth
             dx = Math.max(dx, c.bbox.x + c.bbox.w)
           } else {
             if (wasBig) {
-              const ex = expr.chld[j].bbox.x + (expr.chld[j].bbox.w - c.bbox.w * CONFIG.SUB_SUP_SCALE) / 2
+              const ex =
+                expr.chld[j].bbox.x +
+                (expr.chld[j].bbox.w - c.bbox.w * CONFIG.SUB_SUP_SCALE) / 2
               c.bbox.x = ex
-              dx = Math.max(dx, expr.chld[j].bbox.x + expr.chld[j].bbox.w + (c.bbox.w * CONFIG.SUB_SUP_SCALE - expr.chld[j].bbox.w) / 2)
+              dx = Math.max(
+                dx,
+                expr.chld[j].bbox.x +
+                  expr.chld[j].bbox.w +
+                  (c.bbox.w * CONFIG.SUB_SUP_SCALE - expr.chld[j].bbox.w) / 2
+              )
             } else {
               c.bbox.x = expr.chld[j].bbox.x + expr.chld[j].bbox.w
               dx = Math.max(dx, c.bbox.x + c.bbox.w * CONFIG.SUB_SUP_SCALE)
@@ -629,19 +698,20 @@ function plan(expr: Expr, mode = 'math'): void {
     }
     dy += mh
     const m2s: Record<string, string[]> = {
-      'bmatrix': ['[', ']'],
-      'pmatrix': ['(', ')'],
-      'Bmatrix': ['\\{', '\\}'],
-      'cases': ['\\{']
+      bmatrix: ['[', ']'],
+      pmatrix: ['(', ')'],
+      Bmatrix: ['\\{', '\\}'],
+      cases: ['\\{']
     }
-    const alt: string = {
-      'bmatrix': 'center',
-      'pmatrix': 'center',
-      'Bmatrix': 'center',
-      'cases': 'left',
-      'matrix': 'center',
-      'aligned': 'equation',
-    }[expr.text] ?? 'left'
+    const alt: string =
+      {
+        bmatrix: 'center',
+        pmatrix: 'center',
+        Bmatrix: 'center',
+        cases: 'left',
+        matrix: 'center',
+        aligned: 'equation'
+      }[expr.text] ?? 'left'
 
     const hasLp = !!m2s[expr.text]
     const hasRp = !!m2s[expr.text] && m2s[expr.text].length > 1
@@ -657,16 +727,29 @@ function plan(expr: Expr, mode = 'math'): void {
       // @ts-ignore
       transform(expr.chld[i], 1, null, -bb.x + (hasLp ? 1.5 : 0), -bb.y)
     }
-    expr.bbox = { x: 0, y: 0, w: bb.w + 1.5 * Number(hasLp) + 1.5 * Number(hasRp), h: bb.h }
+    expr.bbox = {
+      x: 0,
+      y: 0,
+      w: bb.w + 1.5 * Number(hasLp) + 1.5 * Number(hasRp),
+      h: bb.h
+    }
 
     if (hasLp) {
       expr.chld.unshift({
-        type: 'symb', text: m2s[expr.text][0], mode: expr.mode, chld: [], bbox: { x: 0, y: 0, w: 1, h: bb.h }
+        type: 'symb',
+        text: m2s[expr.text][0],
+        mode: expr.mode,
+        chld: [],
+        bbox: { x: 0, y: 0, w: 1, h: bb.h }
       })
     }
     if (hasRp) {
       expr.chld.push({
-        type: 'symb', text: m2s[expr.text][1], mode: expr.mode, chld: [], bbox: { x: bb.w + 2, y: 0, w: 1, h: bb.h }
+        type: 'symb',
+        text: m2s[expr.text][1],
+        mode: expr.mode,
+        chld: [],
+        bbox: { x: bb.w + 2, y: 0, w: 1, h: bb.h }
       })
     }
     if (hasLp || hasRp || expr.text == 'matrix') {
@@ -684,7 +767,8 @@ function flatten(expr: Expr) {
       dx += expr.bbox.x
       dy += expr.bbox.y
       if (expr.text == '\\frac') {
-        const h: number = expr.chld[1].bbox.y - (expr.chld[0].bbox.y + expr.chld[0].bbox.h)
+        const h: number =
+          expr.chld[1].bbox.y - (expr.chld[0].bbox.y + expr.chld[0].bbox.h)
         const e: Expr = {
           type: 'symb',
           mode: expr.mode,
@@ -693,13 +777,17 @@ function flatten(expr: Expr) {
             x: dx,
             y: dy + (expr.chld[1].bbox.y - h / 2) - h / 2,
             w: expr.bbox.w,
-            h: h,
-          }, chld: [],
+            h: h
+          },
+          chld: []
         }
         ff.push(e)
       } else if (expr.text == '\\sqrt') {
         const h: number = expr.chld[0].bbox.y
-        const xx: number = Math.max(0, expr.chld[0].bbox.x - expr.chld[0].bbox.h / 2)
+        const xx: number = Math.max(
+          0,
+          expr.chld[0].bbox.x - expr.chld[0].bbox.h / 2
+        )
         const e: Expr = {
           type: 'symb',
           mode: expr.mode,
@@ -708,8 +796,9 @@ function flatten(expr: Expr) {
             x: dx + xx,
             y: dy + h / 2,
             w: expr.chld[0].bbox.x - xx,
-            h: expr.bbox.h - h / 2,
-          }, chld: [],
+            h: expr.bbox.h - h / 2
+          },
+          chld: []
         }
         ff.push(e)
         ff.push({
@@ -720,8 +809,9 @@ function flatten(expr: Expr) {
             x: dx + expr.chld[0].bbox.x,
             y: dy,
             w: expr.bbox.w - expr.chld[0].bbox.x,
-            h: h,
-          }, chld: [],
+            h: h
+          },
+          chld: []
         })
       } else if (expr.text == '\\binom') {
         const w = Math.min(expr.chld[0].bbox.x, expr.chld[1].bbox.x)
@@ -733,8 +823,9 @@ function flatten(expr: Expr) {
             x: dx,
             y: dy,
             w: w,
-            h: expr.bbox.h,
-          }, chld: [],
+            h: expr.bbox.h
+          },
+          chld: []
         }
         ff.push(e)
         ff.push({
@@ -745,8 +836,9 @@ function flatten(expr: Expr) {
             x: dx + expr.bbox.w - w,
             y: dy,
             w: w,
-            h: expr.bbox.h,
-          }, chld: [],
+            h: expr.bbox.h
+          },
+          chld: []
         })
       } else if (SYMB[expr.text] && SYMB[expr.text].flags.hat) {
         const h: number = expr.chld[0].bbox.y
@@ -758,8 +850,9 @@ function flatten(expr: Expr) {
             x: dx,
             y: dy,
             w: expr.bbox.w,
-            h: h,
-          }, chld: [],
+            h: h
+          },
+          chld: []
         }
         ff.push(e)
       } else if (SYMB[expr.text] && SYMB[expr.text].flags.mat) {
@@ -772,21 +865,23 @@ function flatten(expr: Expr) {
             x: dx,
             y: dy + h,
             w: expr.bbox.w,
-            h: expr.bbox.h - h,
-          }, chld: [],
+            h: expr.bbox.h - h
+          },
+          chld: []
         }
         ff.push(e)
-      } else if (expr.type != 'node'
-        && expr.text != '^'
-        && expr.text != '_'
-      ) {
+      } else if (expr.type != 'node' && expr.text != '^' && expr.text != '_') {
         const e: Expr = {
-          type: expr.type == 'func' ? 'symb' : expr.type, text: expr.text, mode: expr.mode, bbox: {
+          type: expr.type == 'func' ? 'symb' : expr.type,
+          text: expr.text,
+          mode: expr.mode,
+          bbox: {
             x: dx,
             y: dy,
             w: expr.bbox.w,
             h: expr.bbox.h
-          }, chld: [],
+          },
+          chld: []
         }
         ff.push(e)
       }
@@ -809,8 +904,12 @@ function render(expr: Expr): number[][][] {
     const e: Expr = expr.chld[i]
     let s = e.bbox.h / 2
     let isSmallHat = false
-    if (SYMB[e.text] && SYMB[e.text].flags.hat &&
-      !SYMB[e.text].flags.xfl && !SYMB[e.text].flags.yfl) {
+    if (
+      SYMB[e.text] &&
+      SYMB[e.text].flags.hat &&
+      !SYMB[e.text].flags.xfl &&
+      !SYMB[e.text].flags.yfl
+    ) {
       s *= 4
       isSmallHat = true
     }
@@ -824,25 +923,24 @@ function render(expr: Expr): number[][][] {
           let y = d.polylines[j][k][1]
 
           if (SYMB[e.text].flags.xfl) {
-            x = (x - d.xmin) / Math.max(d.xmax - d.xmin, 1) * e.bbox.w
+            x = ((x - d.xmin) / Math.max(d.xmax - d.xmin, 1)) * e.bbox.w
             x += e.bbox.x
-          } else if (d.w / 16 * s > e.bbox.w) {
-            x = x / Math.max(d.w, 1) * e.bbox.w
+          } else if ((d.w / 16) * s > e.bbox.w) {
+            x = (x / Math.max(d.w, 1)) * e.bbox.w
             x += e.bbox.x
           } else {
-
-            x = x / 16 * s
-            const p = (e.bbox.w - d.w / 16 * s) / 2
+            x = (x / 16) * s
+            const p = (e.bbox.w - (d.w / 16) * s) / 2
             x += e.bbox.x + p
           }
           if (SYMB[e.text].flags.yfl) {
-            y = (y - d.ymin) / Math.max(d.ymax - d.ymin, 1) * e.bbox.h
+            y = ((y - d.ymin) / Math.max(d.ymax - d.ymin, 1)) * e.bbox.h
             y += e.bbox.y
           } else {
-            y = y / 16 * s
+            y = (y / 16) * s
             if (isSmallHat) {
               const p = (d.ymax + d.ymin) / 2
-              y -= p / 16 * s
+              y -= (p / 16) * s
             }
             y += e.bbox.y + e.bbox.h / 2
           }
@@ -850,7 +948,7 @@ function render(expr: Expr): number[][][] {
         }
         o.push(l)
       }
-    } else if ((SYMB[e.text] && SYMB[e.text].flags.txt) || (e.type == 'char')) {
+    } else if ((SYMB[e.text] && SYMB[e.text].flags.txt) || e.type == 'char') {
       let x0 = e.bbox.x
       const isVerb = !!(SYMB[e.text] && SYMB[e.text].flags.txt)
       for (let n = Number(isVerb); n < e.text.length; n++) {
@@ -874,7 +972,6 @@ function render(expr: Expr): number[][][] {
               } else {
                 x += (16 - d.w) / 2 / 16
               }
-
             }
             x += x0
             y += e.bbox.y + e.bbox.h / 2
@@ -885,7 +982,7 @@ function render(expr: Expr): number[][][] {
         if (e.mode == 'tt') {
           x0 += s
         } else {
-          x0 += d.w / 16 * s
+          x0 += (d.w / 16) * s
         }
       }
     }
@@ -894,16 +991,16 @@ function render(expr: Expr): number[][][] {
 }
 
 interface ExportOpt {
-  MIN_CHAR_H?: number;
-  MAX_W?: number;
-  MAX_H?: number;
-  MARGIN_X?: number;
-  MARGIN_Y?: number;
-  SCALE_X?: number;
-  SCALE_Y?: number;
-  STROKE_W?: number;
-  FG_COLOR?: string;
-  BG_COLOR?: string;
+  MIN_CHAR_H?: number
+  MAX_W?: number
+  MAX_H?: number
+  MARGIN_X?: number
+  MARGIN_Y?: number
+  SCALE_X?: number
+  SCALE_Y?: number
+  STROKE_W?: number
+  FG_COLOR?: string
+  BG_COLOR?: string
 }
 
 function nf(x: number): number {
@@ -911,16 +1008,16 @@ function nf(x: number): number {
 }
 
 export interface LaTexSVG {
-  svg: string;
-  width: number;
-  height: number;
+  svg: string
+  width: number
+  height: number
 }
 
 export class LaTexUtils {
-  _latex: string;
-  _tree: Expr;
-  _tokens: string[];
-  _polylines: number[][][];
+  _latex: string
+  _tree: Expr
+  _tokens: string[]
+  _polylines: number[][][]
 
   constructor(latex: string) {
     this._latex = latex
@@ -943,9 +1040,11 @@ export class LaTexUtils {
       let mh = 0
       for (let i = 0; i < this._tree.chld.length; i++) {
         const c: Expr = this._tree.chld[i]
-        if (c.type == 'char' ||
+        if (
+          c.type == 'char' ||
           (SYMB[c.text] &&
-            (SYMB[c.text].flags.txt || !Object.keys(SYMB[c.text].flags).length))) {
+            (SYMB[c.text].flags.txt || !Object.keys(SYMB[c.text].flags).length))
+        ) {
           mh = Math.min(c.bbox.h, mh)
         }
       }
@@ -956,12 +1055,12 @@ export class LaTexUtils {
     if (opt.MAX_W != undefined) {
       const s0 = sclx
       sclx = Math.min(sclx, opt.MAX_W / this._tree.bbox.w)
-      scly *= (sclx / s0)
+      scly *= sclx / s0
     }
     if (opt.MAX_H != undefined) {
       const s0 = scly
       scly = Math.min(scly, opt.MAX_H / this._tree.bbox.h)
-      sclx *= (scly / s0)
+      sclx *= scly / s0
     }
     const px: number = opt.MARGIN_X ?? sclx
     const py: number = opt.MARGIN_Y ?? scly
@@ -989,7 +1088,7 @@ export class LaTexUtils {
     for (let i = 0; i < this._polylines.length; i++) {
       for (let j = 0; j < this._polylines[i].length; j++) {
         const [x, y] = this._polylines[i][j]
-        d += (!j) ? 'M' : 'L'
+        d += !j ? 'M' : 'L'
         d += `${nf(px + x * sclx)} ${nf(py + y * scly)}`
       }
     }
@@ -1004,18 +1103,22 @@ export class LaTexUtils {
     let o = `<svg
       xmlns="http://www.w3.org/2000/svg"
       width="${w}" height="${h}"
-      fill="none" stroke="${opt.FG_COLOR ?? 'black'}" stroke-width="${opt.STROKE_W ?? 1}"
+      fill="none" stroke="${opt.FG_COLOR ?? 'black'}" stroke-width="${
+      opt.STROKE_W ?? 1
+    }"
       stroke-linecap="round" stroke-linejoin="round"
     >`
     if (opt.BG_COLOR) {
-      o += `<rect x="${0}" y="${0}" width="${w}" height="${h}" fill="${opt.BG_COLOR}" stroke="none"></rect>`
+      o += `<rect x="${0}" y="${0}" width="${w}" height="${h}" fill="${
+        opt.BG_COLOR
+      }" stroke="none"></rect>`
     }
     o += `<path d="`
     for (let i = 0; i < this._polylines.length; i++) {
       o += 'M'
       for (let j = 0; j < this._polylines[i].length; j++) {
         const [x, y] = this._polylines[i][j]
-        o += (nf(px + x * sclx)) + ' ' + (nf(py + y * scly)) + ' '
+        o += nf(px + x * sclx) + ' ' + nf(py + y * scly) + ' '
       }
     }
     o += `"/>`
@@ -1040,10 +1143,14 @@ export class LaTexUtils {
     let pdf = ''
     let count = 4
     for (let i = 0; i < this._polylines.length; i++) {
-      pdf += `${count} 0 obj \n<< /Length 0 >>\n stream\n 1 j 1 J ${opt.STROKE_W ?? 1} w\n`
+      pdf += `${count} 0 obj \n<< /Length 0 >>\n stream\n 1 j 1 J ${
+        opt.STROKE_W ?? 1
+      } w\n`
       for (let j = 0; j < this._polylines[i].length; j++) {
         const [x, y] = this._polylines[i][j]
-        pdf += `${nf(px + x * sclx)} ${nf(height - (py + y * scly))} ${j ? 'l' : 'm'} `
+        pdf += `${nf(px + x * sclx)} ${nf(height - (py + y * scly))} ${
+          j ? 'l' : 'm'
+        } `
       }
       pdf += '\nS\nendstream\nendobj\n'
       head += `${count} 0 R `
@@ -1077,6 +1184,13 @@ export class LaTexUtils {
   }
 }
 
-const _impl: Record<string, Function> = { tokenize, parse, environments, plan, flatten, render }
+const _impl: Record<string, Function> = {
+  tokenize,
+  parse,
+  environments,
+  plan,
+  flatten,
+  render
+}
 
 export { CONFIG, _impl }

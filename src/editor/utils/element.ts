@@ -4,7 +4,12 @@ import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
-import { EDITOR_ELEMENT_CONTEXT_ATTR, EDITOR_ELEMENT_ZIP_ATTR, TABLE_CONTEXT_ATTR, TEXTLIKE_ELEMENT_TYPE } from '../dataset/constant/Element'
+import {
+  EDITOR_ELEMENT_CONTEXT_ATTR,
+  EDITOR_ELEMENT_ZIP_ATTR,
+  TABLE_CONTEXT_ATTR,
+  TEXTLIKE_ELEMENT_TYPE
+} from '../dataset/constant/Element'
 import { titleSizeMapping } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
 import { ITd } from '../interface/table/Td'
@@ -22,17 +27,24 @@ export function unzipElementList(elementList: IElement[]): IElement[] {
 }
 
 interface IFormatElementListOption {
-  isHandleFirstElement?: boolean;
-  editorOptions: Required<IEditorOption>;
+  isHandleFirstElement?: boolean
+  editorOptions: Required<IEditorOption>
 }
 
-export function formatElementList(elementList: IElement[], options: IFormatElementListOption) {
+export function formatElementList(
+  elementList: IElement[],
+  options: IFormatElementListOption
+) {
   const { isHandleFirstElement, editorOptions } = <IFormatElementListOption>{
     isHandleFirstElement: true,
     ...options
   }
   const startElement = elementList[0]
-  if (isHandleFirstElement && startElement?.value !== ZERO && startElement?.value !== '\n') {
+  if (
+    isHandleFirstElement &&
+    startElement?.value !== ZERO &&
+    startElement?.value !== '\n'
+  ) {
     elementList.unshift({
       value: ZERO
     })
@@ -103,7 +115,10 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
           const tr = el.trList[t]
           const trId = getUUID()
           tr.id = trId
-          if (!tr.minHeight || tr.minHeight < editorOptions.defaultTrMinHeight) {
+          if (
+            !tr.minHeight ||
+            tr.minHeight < editorOptions.defaultTrMinHeight
+          ) {
             tr.minHeight = editorOptions.defaultTrMinHeight
           }
           if (tr.height < tr.minHeight) {
@@ -163,7 +178,8 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
       }
       i--
     } else if (el.type === ElementType.CONTROL) {
-      const { prefix, postfix, value, placeholder, code, type, valueSets } = el.control!
+      const { prefix, postfix, value, placeholder, code, type, valueSets } =
+        el.control!
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
@@ -198,7 +214,10 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
           if (Array.isArray(valueSets) && valueSets.length) {
             // 拆分valueList优先使用其属性
             const valueStyleList = valueList.reduce(
-              (pre, cur) => pre.concat(cur.value.split('').map(v => ({ ...cur, value: v }))),
+              (pre, cur) =>
+                pre.concat(
+                  cur.value.split('').map(v => ({ ...cur, value: v }))
+                ),
               [] as IElement[]
             )
             let valueStyleIndex = 0
@@ -241,9 +260,11 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
             if (Array.isArray(valueSets) && valueSets.length) {
               const valueSet = valueSets.find(v => v.code === code)
               if (valueSet) {
-                valueList = [{
-                  value: valueSet.value
-                }]
+                valueList = [
+                  {
+                    value: valueSet.value
+                  }
+                ]
               }
             }
           }
@@ -299,7 +320,10 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
         i++
       }
       i--
-    } else if ((!el.type || el.type === ElementType.TEXT) && el.value.length > 1) {
+    } else if (
+      (!el.type || el.type === ElementType.TEXT) &&
+      el.value.length > 1
+    ) {
       elementList.splice(i, 1)
       const valueList = splitText(el.value)
       for (let v = 0; v < valueList.length; v++) {
@@ -324,7 +348,10 @@ export function formatElementList(elementList: IElement[], options: IFormatEleme
   }
 }
 
-export function isSameElementExceptValue(source: IElement, target: IElement): boolean {
+export function isSameElementExceptValue(
+  source: IElement,
+  target: IElement
+): boolean {
   const sourceKeys = Object.keys(source)
   const targetKeys = Object.keys(target)
   if (sourceKeys.length !== targetKeys.length) return false
@@ -340,7 +367,7 @@ export function isSameElementExceptValue(source: IElement, target: IElement): bo
 
 export function pickElementAttr(payload: IElement): IElement {
   const element: IElement = {
-    value: payload.value === ZERO ? `\n` : payload.value,
+    value: payload.value === ZERO ? `\n` : payload.value
   }
   EDITOR_ELEMENT_ZIP_ATTR.forEach(attr => {
     const value = payload[attr] as never
@@ -358,7 +385,11 @@ export function zipElementList(payload: IElement[]): IElement[] {
   while (e < elementList.length) {
     let element = elementList[e]
     // 上下文首字符（占位符）
-    if (e === 0 && element.value === ZERO && (!element.type || element.type === ElementType.TEXT)) {
+    if (
+      e === 0 &&
+      element.value === ZERO &&
+      (!element.type || element.type === ElementType.TEXT)
+    ) {
       e++
       continue
     }
@@ -505,19 +536,20 @@ export function zipElementList(payload: IElement[]): IElement[] {
     // 组合元素
     const pickElement = pickElementAttr(element)
     if (
-      !element.type
-      || element.type === ElementType.TEXT
-      || element.type === ElementType.SUBSCRIPT
-      || element.type === ElementType.SUPERSCRIPT
+      !element.type ||
+      element.type === ElementType.TEXT ||
+      element.type === ElementType.SUBSCRIPT ||
+      element.type === ElementType.SUPERSCRIPT
     ) {
       while (e < elementList.length) {
         const nextElement = elementList[e + 1]
         e++
         if (
-          nextElement
-          && isSameElementExceptValue(pickElement, pickElementAttr(nextElement))
+          nextElement &&
+          isSameElementExceptValue(pickElement, pickElementAttr(nextElement))
         ) {
-          const nextValue = nextElement.value === ZERO ? '\n' : nextElement.value
+          const nextValue =
+            nextElement.value === ZERO ? '\n' : nextElement.value
           pickElement.value += nextValue
         } else {
           break
@@ -553,37 +585,62 @@ export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
 
-export function getAnchorElement(elementList: IElement[], anchorIndex: number): IElement | null {
+export function getAnchorElement(
+  elementList: IElement[],
+  anchorIndex: number
+): IElement | null {
   const anchorElement = elementList[anchorIndex]
   if (!anchorElement) return null
   const anchorNextElement = elementList[anchorIndex + 1]
   // 非列表元素 && 当前元素是换行符 && 下一个元素不是换行符 则以下一个元素作为参考元素
-  return !anchorElement.listId && anchorElement.value === ZERO && anchorNextElement && anchorNextElement.value !== ZERO
+  return !anchorElement.listId &&
+    anchorElement.value === ZERO &&
+    anchorNextElement &&
+    anchorNextElement.value !== ZERO
     ? anchorNextElement
     : anchorElement
 }
 
 export interface IFormatElementContextOption {
-  isBreakWhenWrap: boolean;
+  isBreakWhenWrap: boolean
 }
 
-export function formatElementContext(sourceElementList: IElement[], formatElementList: IElement[], anchorIndex: number, options?: IFormatElementContextOption) {
+export function formatElementContext(
+  sourceElementList: IElement[],
+  formatElementList: IElement[],
+  anchorIndex: number,
+  options?: IFormatElementContextOption
+) {
   const copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
   const { isBreakWhenWrap = false } = options || {}
   for (let e = 0; e < formatElementList.length; e++) {
     const targetElement = formatElementList[e]
-    if (isBreakWhenWrap && !copyElement.listId && /^\n/.test(targetElement.value)) break
+    if (
+      isBreakWhenWrap &&
+      !copyElement.listId &&
+      /^\n/.test(targetElement.value)
+    ) {
+      break
+    }
     // 定位元素非列表，无需处理粘贴列表的上下文
     if (!copyElement.listId && targetElement.type === ElementType.LIST) {
-      targetElement.valueList?.forEach((valueItem) => {
+      targetElement.valueList?.forEach(valueItem => {
         cloneProperty<IElement>(TABLE_CONTEXT_ATTR, copyElement, valueItem)
       })
       continue
     }
     if (targetElement.valueList?.length) {
-      formatElementContext(sourceElementList, targetElement.valueList, anchorIndex)
+      formatElementContext(
+        sourceElementList,
+        targetElement.valueList,
+        anchorIndex
+      )
     }
-    cloneProperty<IElement>(EDITOR_ELEMENT_CONTEXT_ATTR, copyElement, targetElement)
+    cloneProperty<IElement>(
+      EDITOR_ELEMENT_CONTEXT_ATTR,
+      copyElement,
+      targetElement
+    )
   }
 }

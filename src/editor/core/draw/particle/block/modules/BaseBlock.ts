@@ -7,7 +7,6 @@ import { IFrameBlock } from './IFrameBlock'
 import { VideoBlock } from './VideoBlock'
 
 export class BaseBlock {
-
   private draw: Draw
   private element: IRowElement
   private block: IFrameBlock | VideoBlock | null
@@ -60,5 +59,4 @@ export class BaseBlock {
   public remove() {
     this.blockItem.remove()
   }
-
 }

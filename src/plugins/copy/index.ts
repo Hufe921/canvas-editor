@@ -2,10 +2,13 @@
 import Editor from '../../editor'
 
 export interface ICopyWithCopyrightOption {
-  copyrightText: string;
+  copyrightText: string
 }
 
-export function copyWithCopyrightPlugin(editor: Editor, options?: ICopyWithCopyrightOption) {
+export function copyWithCopyrightPlugin(
+  editor: Editor,
+  options?: ICopyWithCopyrightOption
+) {
   const copy = editor.command.executeCopy
 
   editor.command.executeCopy = () => {
