@@ -1,7 +1,11 @@
 import { IRowElement } from '../../../interface/Row'
 export class SeparatorParticle {
-
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
     ctx.save()
     if (element.color) {
       ctx.strokeStyle = element.color
@@ -16,5 +20,4 @@ export class SeparatorParticle {
     ctx.stroke()
     ctx.restore()
   }
-
 }

@@ -8,7 +8,6 @@ import { convertNumberToChinese } from '../../../utils'
 import { Draw } from '../Draw'
 
 export class PageNumber {
-
   private draw: Draw
   private options: DeepRequired<IEditorOption>
 
@@ -21,7 +20,16 @@ export class PageNumber {
     const {
       scale,
       pageMode,
-      pageNumber: { size, font, color, rowFlex, numberType, format, startPageNo, fromPageNo }
+      pageNumber: {
+        size,
+        font,
+        color,
+        rowFlex,
+        numberType,
+        format,
+        startPageNo,
+        fromPageNo
+      }
     } = this.options
     if (pageNo < fromPageNo) return
     // 处理页码格式
@@ -29,20 +37,27 @@ export class PageNumber {
     const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
     if (pageNoReg.test(text)) {
       const realPageNo = pageNo + startPageNo - fromPageNo
-      const pageNoText = numberType === NumberType.CHINESE ? convertNumberToChinese(realPageNo) : `${realPageNo}`
+      const pageNoText =
+        numberType === NumberType.CHINESE
+          ? convertNumberToChinese(realPageNo)
+          : `${realPageNo}`
       text = text.replace(pageNoReg, pageNoText)
     }
     const pageCountReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_COUNT)
     if (pageCountReg.test(text)) {
       const pageCount = this.draw.getPageCount() - fromPageNo
-      const pageCountText = numberType === NumberType.CHINESE ? convertNumberToChinese(pageCount) : `${pageCount}`
+      const pageCountText =
+        numberType === NumberType.CHINESE
+          ? convertNumberToChinese(pageCount)
+          : `${pageCount}`
       text = text.replace(pageCountReg, pageCountText)
     }
     const width = this.draw.getWidth()
     // 计算y位置
-    const height = pageMode === PageMode.CONTINUITY
-      ? this.draw.getCanvasHeight(pageNo)
-      : this.draw.getHeight()
+    const height =
+      pageMode === PageMode.CONTINUITY
+        ? this.draw.getCanvasHeight(pageNo)
+        : this.draw.getHeight()
     const pageNumberBottom = this.draw.getPageNumberBottom()
     const y = height - pageNumberBottom
     ctx.save()
@@ -62,5 +77,4 @@ export class PageNumber {
     ctx.fillText(text, x, y)
     ctx.restore()
   }
-
 }

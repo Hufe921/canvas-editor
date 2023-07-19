@@ -30,7 +30,10 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     let upStartIndex = index - 1
     while (upStartIndex > 0) {
       const value = elementList[upStartIndex].value
-      if ((isNumber && NUMBER_LIKE_REG.test(value)) || (!isNumber && LETTER_REG.test(value))) {
+      if (
+        (isNumber && NUMBER_LIKE_REG.test(value)) ||
+        (!isNumber && LETTER_REG.test(value))
+      ) {
         upCount++
         upStartIndex--
       } else {
@@ -41,7 +44,10 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     let downStartIndex = index + 1
     while (downStartIndex < elementList.length) {
       const value = elementList[downStartIndex].value
-      if ((isNumber && NUMBER_LIKE_REG.test(value)) || (!isNumber && LETTER_REG.test(value))) {
+      if (
+        (isNumber && NUMBER_LIKE_REG.test(value)) ||
+        (!isNumber && LETTER_REG.test(value))
+      ) {
         downCount++
         downStartIndex++
       } else {

@@ -8,15 +8,13 @@ import { CanvasEvent } from '../event/CanvasEvent'
 import { Position } from '../position/Position'
 import { CursorAgent } from './CursorAgent'
 
-export type IDrawCursorOption = ICursorOption &
-{
-  isShow?: boolean;
-  isBlink?: boolean;
-  isFocus?: boolean;
+export type IDrawCursorOption = ICursorOption & {
+  isShow?: boolean
+  isBlink?: boolean
+  isFocus?: boolean
 }
 
 export class Cursor {
-
   private readonly ANIMATION_CLASS = `${EDITOR_PREFIX}-cursor--animation`
 
   private draw: Draw
@@ -56,8 +54,8 @@ export class Cursor {
     return this.getAgentDom().value
   }
 
-  public clearAgentDomValue(): string {
-    return this.getAgentDom().value = ''
+  public clearAgentDomValue() {
+    this.getAgentDom().value = ''
   }
 
   private _blinkStart() {
@@ -97,9 +95,16 @@ export class Cursor {
     // 设置光标代理
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
-    const { metrics, coordinate: { leftTop, rightTop }, ascent, pageNo } = cursorPosition
+    const {
+      metrics,
+      coordinate: { leftTop, rightTop },
+      ascent,
+      pageNo
+    } = cursorPosition
     const zoneManager = this.draw.getZone()
-    const curPageNo = zoneManager.isMainActive() ? pageNo : this.draw.getPageNo()
+    const curPageNo = zoneManager.isMainActive()
+      ? pageNo
+      : this.draw.getPageNo()
     const preY = curPageNo * (height + pageGap)
     // 增加1/4字体大小
     const offsetHeight = metrics.height / 4
@@ -112,11 +117,15 @@ export class Cursor {
       })
     }
     // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
-    const descent = metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
-    const cursorTop = (leftTop[1] + ascent) + descent - (cursorHeight - offsetHeight) + preY
+    const descent =
+      metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
+    const cursorTop =
+      leftTop[1] + ascent + descent - (cursorHeight - offsetHeight) + preY
     const cursorLeft = rightTop[0]
     agentCursorDom.style.left = `${cursorLeft}px`
-    agentCursorDom.style.top = `${cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT * scale}px`
+    agentCursorDom.style.top = `${
+      cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT * scale
+    }px`
     // 模拟光标显示
     if (!isShow) return
     const isReadonly = this.draw.isReadonly()
@@ -137,5 +146,4 @@ export class Cursor {
     this.cursorDom.style.display = 'none'
     this._clearBlinkTimeout()
   }
-
 }

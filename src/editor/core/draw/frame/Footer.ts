@@ -8,7 +8,6 @@ import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
 export class Footer {
-
   private draw: Draw
   private position: Position
   private options: DeepRequired<IEditorOption>
@@ -81,13 +80,18 @@ export class Footer {
   }
 
   public getFooterBottom(): number {
-    const { footer: { bottom, disabled }, scale } = this.options
+    const {
+      footer: { bottom, disabled },
+      scale
+    } = this.options
     if (disabled) return 0
     return Math.floor(bottom * scale)
   }
 
   public getMaxHeight(): number {
-    const { footer: { maxHeightRadio } } = this.options
+    const {
+      footer: { maxHeightRadio }
+    } = this.options
     const height = this.draw.getHeight()
     return Math.floor(height * maxHeightRadioMapping[maxHeightRadio])
   }
@@ -136,5 +140,4 @@ export class Footer {
       zone: EditorZone.FOOTER
     })
   }
-
 }

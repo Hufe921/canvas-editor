@@ -1,8 +1,8 @@
 interface IPrismKindStyle {
-  color?: string;
-  italic?: boolean;
-  opacity?: number;
-  bold?: boolean;
+  color?: string
+  italic?: boolean
+  opacity?: number
+  bold?: boolean
 }
 
 export function getPrismKindStyle(payload: string): IPrismKindStyle | null {
@@ -55,11 +55,13 @@ export function getPrismKindStyle(payload: string): IPrismKindStyle | null {
 }
 
 type IFormatPrismToken = {
-  type?: string;
-  content: string;
+  type?: string
+  content: string
 } & IPrismKindStyle
 
-export function formatPrismToken(payload: (Prism.Token | string)[]): IFormatPrismToken[] {
+export function formatPrismToken(
+  payload: (Prism.Token | string)[]
+): IFormatPrismToken[] {
   const formatTokenList: IFormatPrismToken[] = []
   function format(tokenList: (Prism.Token | string)[]) {
     for (let i = 0; i < tokenList.length; i++) {

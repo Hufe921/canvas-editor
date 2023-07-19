@@ -2,7 +2,6 @@ import { CommandAdapt } from './CommandAdapt'
 
 // 通过CommandAdapt中转避免直接暴露编辑器上下文
 export class Command {
-
   public executeMode: CommandAdapt['mode']
   public executeCut: CommandAdapt['cut']
   public executeCopy: CommandAdapt['copy']
@@ -130,7 +129,8 @@ export class Command {
     this.executeCancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     this.executeTableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
     this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
-    this.executeTableTdBackgroundColor = adapt.tableTdBackgroundColor.bind(adapt)
+    this.executeTableTdBackgroundColor =
+      adapt.tableTdBackgroundColor.bind(adapt)
     this.executeImage = adapt.image.bind(adapt)
     this.executeHyperlink = adapt.hyperlink.bind(adapt)
     this.executeDeleteHyperlink = adapt.deleteHyperlink.bind(adapt)
@@ -174,5 +174,4 @@ export class Command {
     this.getPaperMargin = adapt.getPaperMargin.bind(adapt)
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
   }
-
 }

@@ -1,8 +1,12 @@
 import { IRowElement } from '../../../interface/Row'
 
 export class SuperscriptParticle {
-
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
     ctx.save()
     ctx.font = element.style
     if (element.color) {
@@ -11,5 +15,4 @@ export class SuperscriptParticle {
     ctx.fillText(element.value, x, y - element.metrics.height / 2)
     ctx.restore()
   }
-
 }

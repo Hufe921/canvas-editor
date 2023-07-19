@@ -2,17 +2,17 @@ import { EditorComponent, EDITOR_COMPONENT } from '../../editor'
 import './signature.css'
 
 export interface ISignatureResult {
-  value: string;
-  width: number;
-  height: number;
+  value: string
+  width: number
+  height: number
 }
 
 export interface ISignatureOptions {
-  width?: number;
-  height?: number;
-  onClose?: () => void;
-  onCancel?: () => void;
-  onConfirm?: (payload: ISignatureResult | null) => void;
+  width?: number
+  height?: number
+  onClose?: () => void
+  onCancel?: () => void
+  onConfirm?: (payload: ISignatureResult | null) => void
 }
 
 export class Signature {
@@ -43,7 +43,8 @@ export class Signature {
     this.dpr = window.devicePixelRatio
     this.canvasWidth = (options.width || this.DEFAULT_WIDTH) * this.dpr
     this.canvasHeight = (options.height || this.DEFAULT_HEIGHT) * this.dpr
-    const { mask, container, trashContainer, undoContainer, canvas } = this._render()
+    const { mask, container, trashContainer, undoContainer, canvas } =
+      this._render()
     this.mask = mask
     this.container = container
     this.trashContainer = trashContainer
@@ -213,7 +214,8 @@ export class Signature {
     const targetLineWidth = Math.min(5, Math.max(1, 5 - speed * SPEED_FACTOR))
     // 平滑过渡算法（20%的变化比例）调整线条粗细：系数0.2
     const SMOOTH_FACTOR = 0.2
-    this.ctx.lineWidth = this.ctx.lineWidth * (1 - SMOOTH_FACTOR) + targetLineWidth * SMOOTH_FACTOR
+    this.ctx.lineWidth =
+      this.ctx.lineWidth * (1 - SMOOTH_FACTOR) + targetLineWidth * SMOOTH_FACTOR
     // 绘制
     const { offsetX, offsetY } = evt
     this.ctx.beginPath()
@@ -231,7 +233,12 @@ export class Signature {
   private _stopDraw() {
     this.isDrawing = false
     if (this.isDrawn) {
-      const imageData = this.ctx.getImageData(0, 0, this.canvasWidth, this.canvasHeight)
+      const imageData = this.ctx.getImageData(
+        0,
+        0,
+        this.canvasWidth,
+        this.canvasHeight
+      )
       const self = this
       this._saveUndoFn(function () {
         self.ctx.clearRect(0, 0, self.canvasWidth, self.canvasHeight)
@@ -299,5 +306,4 @@ export class Signature {
     this.mask.remove()
     this.container.remove()
   }
-
 }

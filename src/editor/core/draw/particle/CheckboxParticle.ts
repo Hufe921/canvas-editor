@@ -4,15 +4,22 @@ import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
 export class CheckboxParticle {
-
   private options: DeepRequired<IEditorOption>
 
   constructor(draw: Draw) {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
-    const { checkbox: { gap, lineWidth, fillStyle, fontStyle }, scale } = this.options
+  public render(
+    ctx: CanvasRenderingContext2D,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
+    const {
+      checkbox: { gap, lineWidth, fillStyle, fontStyle },
+      scale
+    } = this.options
     const { metrics, checkbox } = element
     // left top 四舍五入避免1像素问题
     const left = Math.round(x + gap)
@@ -50,5 +57,4 @@ export class CheckboxParticle {
     ctx.closePath()
     ctx.restore()
   }
-
 }

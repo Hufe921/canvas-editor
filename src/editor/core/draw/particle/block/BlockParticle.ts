@@ -5,7 +5,6 @@ import { Draw } from '../../Draw'
 import { BaseBlock } from './modules/BaseBlock'
 
 export class BlockParticle {
-
   private draw: Draw
   private container: HTMLDivElement
   private blockContainer: HTMLDivElement
@@ -64,5 +63,4 @@ export class BlockParticle {
       }
     })
   }
-
 }

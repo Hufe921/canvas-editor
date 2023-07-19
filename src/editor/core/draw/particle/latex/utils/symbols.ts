@@ -3,17 +3,21 @@ https://oeis.org/wiki/List_of_LaTeX_mathematical_symbols
 https://en.wikibooks.org/wiki/LaTeX/Mathematics
 */
 export interface Symb {
-  glyph: number;
-  arity?: number;
-  flags: Record<string, boolean>;
+  glyph: number
+  arity?: number
+  flags: Record<string, boolean>
 }
 
 const SYMB: Record<string, Symb> = {
   '\\frac': { glyph: 0, arity: 2, flags: {} },
   '\\binom': { glyph: 0, arity: 2, flags: {} },
-  '\\sqrt': { glyph: 2267, arity: 1, flags: { opt: true, xfl: true, yfl: true } },
+  '\\sqrt': {
+    glyph: 2267,
+    arity: 1,
+    flags: { opt: true, xfl: true, yfl: true }
+  },
   '^': { glyph: 0, arity: 1, flags: {} },
-  '_': { glyph: 0, arity: 1, flags: {} },
+  _: { glyph: 0, arity: 1, flags: {} },
   '(': { glyph: 2221, arity: 0, flags: { yfl: true } },
   ')': { glyph: 2222, arity: 0, flags: { yfl: true } },
   '[': { glyph: 2223, arity: 0, flags: { yfl: true } },
@@ -56,12 +60,28 @@ const SYMB: Record<string, Symb> = {
   '\\ell': { glyph: 662, arity: 0, flags: {} },
 
   /*accents*/
-  '\\vec': { glyph: 2261, arity: 1, flags: { hat: true, xfl: true, yfl: true } },
-  '\\overrightarrow': { glyph: 2261, arity: 1, flags: { hat: true, xfl: true, yfl: true } },
-  '\\overleftarrow': { glyph: 2263, arity: 1, flags: { hat: true, xfl: true, yfl: true } },
+  '\\vec': {
+    glyph: 2261,
+    arity: 1,
+    flags: { hat: true, xfl: true, yfl: true }
+  },
+  '\\overrightarrow': {
+    glyph: 2261,
+    arity: 1,
+    flags: { hat: true, xfl: true, yfl: true }
+  },
+  '\\overleftarrow': {
+    glyph: 2263,
+    arity: 1,
+    flags: { hat: true, xfl: true, yfl: true }
+  },
   '\\bar': { glyph: 2231, arity: 1, flags: { hat: true, xfl: true } },
   '\\overline': { glyph: 2231, arity: 1, flags: { hat: true, xfl: true } },
-  '\\widehat': { glyph: 2247, arity: 1, flags: { hat: true, xfl: true, yfl: true } },
+  '\\widehat': {
+    glyph: 2247,
+    arity: 1,
+    flags: { hat: true, xfl: true, yfl: true }
+  },
   '\\hat': { glyph: 2247, arity: 1, flags: { hat: true } },
   '\\acute': { glyph: 2248, arity: 1, flags: { hat: true } },
   '\\grave': { glyph: 2249, arity: 1, flags: { hat: true } },
@@ -219,7 +239,7 @@ const SYMB: Record<string, Symb> = {
   '\\Phi': { glyph: 2047, flags: {} },
   '\\Chi': { glyph: 2048, flags: {} },
   '\\Psi': { glyph: 2049, flags: {} },
-  '\\Omega': { glyph: 2050, flags: {} },
+  '\\Omega': { glyph: 2050, flags: {} }
 }
 
 export { SYMB }
@@ -293,6 +313,6 @@ export function asciiMap(x: string, mode = 'math'): number {
     '>': 2242,
     '~': 2246,
     '@': 2273,
-    '\\': 804,
+    '\\': 804
   }[x]
 }

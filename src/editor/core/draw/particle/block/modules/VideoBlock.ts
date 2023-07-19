@@ -1,7 +1,6 @@
 import { IRowElement } from '../../../../../interface/Row'
 
 export class VideoBlock {
-
   private element: IRowElement
 
   constructor(element: IRowElement) {
@@ -19,5 +18,4 @@ export class VideoBlock {
     video.crossOrigin = 'anonymous'
     blockItemContainer.append(video)
   }
-
 }

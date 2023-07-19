@@ -7,16 +7,15 @@ import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 
 interface IDrawTableBorderOption {
-  ctx: CanvasRenderingContext2D;
-  startX: number;
-  startY: number;
-  width: number;
-  height: number;
-  isDrawFullBorder?: boolean;
+  ctx: CanvasRenderingContext2D
+  startX: number
+  startY: number
+  width: number
+  height: number
+  isDrawFullBorder?: boolean
 }
 
 export class TableParticle {
-
   private draw: Draw
   private range: RangeManager
   private options: Required<IEditorOption>
@@ -45,9 +44,17 @@ export class TableParticle {
   }
 
   public getRangeRowCol(): ITd[][] | null {
-    const { isTable, index, trIndex, tdIndex } = this.draw.getPosition().getPositionContext()
+    const { isTable, index, trIndex, tdIndex } = this.draw
+      .getPosition()
+      .getPositionContext()
     if (!isTable) return null
-    const { isCrossRowCol, startTdIndex, endTdIndex, startTrIndex, endTrIndex } = this.range.getRange()
+    const {
+      isCrossRowCol,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex
+    } = this.range.getRange()
     const originalElementList = this.draw.getOriginalElementList()
     const element = originalElementList[index!]
     const curTrList = element.trList!
@@ -59,6 +66,7 @@ export class TableParticle {
     let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      // prettier-ignore
       [startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
@@ -75,8 +83,10 @@ export class TableParticle {
         const tdColIndex = td.colIndex!
         const tdRowIndex = td.rowIndex!
         if (
-          tdColIndex >= startColIndex && tdColIndex <= endColIndex
-          && tdRowIndex >= startRowIndex && tdRowIndex <= endRowIndex
+          tdColIndex >= startColIndex &&
+          tdColIndex <= endColIndex &&
+          tdRowIndex >= startRowIndex &&
+          tdRowIndex <= endRowIndex
         ) {
           tdList.push(td)
         }
@@ -105,7 +115,12 @@ export class TableParticle {
     ctx.translate(-0.5, -0.5)
   }
 
-  private _drawBorder(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+  private _drawBorder(
+    ctx: CanvasRenderingContext2D,
+    element: IElement,
+    startX: number,
+    startY: number
+  ) {
     const { colgroup, trList, borderType } = element
     if (!colgroup || !trList || borderType === TableBorder.EMPTY) return
     const { scale } = this.options
@@ -146,7 +161,12 @@ export class TableParticle {
     ctx.restore()
   }
 
-  private _drawBackgroundColor(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+  private _drawBackgroundColor(
+    ctx: CanvasRenderingContext2D,
+    element: IElement,
+    startX: number,
+    startY: number
+  ) {
     const { trList } = element
     if (!trList) return
     const { scale } = this.options
@@ -259,11 +279,22 @@ export class TableParticle {
     }
   }
 
-  public drawRange(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+  public drawRange(
+    ctx: CanvasRenderingContext2D,
+    element: IElement,
+    startX: number,
+    startY: number
+  ) {
     const { scale, rangeAlpha, rangeColor } = this.options
     const { type, trList } = element
     if (!trList || type !== ElementType.TABLE) return
-    const { isCrossRowCol, startTdIndex, endTdIndex, startTrIndex, endTrIndex } = this.range.getRange()
+    const {
+      isCrossRowCol,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex
+    } = this.range.getRange()
     // 存在跨行/列
     if (!isCrossRowCol) return
     let startTd = trList[startTrIndex!].tdList[startTdIndex!]
@@ -284,8 +315,10 @@ export class TableParticle {
         const tdColIndex = td.colIndex!
         const tdRowIndex = td.rowIndex!
         if (
-          tdColIndex >= startColIndex && tdColIndex <= endColIndex
-          && tdRowIndex >= startRowIndex && tdRowIndex <= endRowIndex
+          tdColIndex >= startColIndex &&
+          tdColIndex <= endColIndex &&
+          tdRowIndex >= startRowIndex &&
+          tdRowIndex <= endRowIndex
         ) {
           const x = td.x! * scale
           const y = td.y! * scale
@@ -300,9 +333,13 @@ export class TableParticle {
     ctx.restore()
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IElement, startX: number, startY: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    element: IElement,
+    startX: number,
+    startY: number
+  ) {
     this._drawBackgroundColor(ctx, element, startX, startY)
     this._drawBorder(ctx, element, startX, startY)
   }
-
 }

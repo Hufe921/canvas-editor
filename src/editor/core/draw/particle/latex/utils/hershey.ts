@@ -1,10 +1,10 @@
 interface HersheyEntry {
-  w: number;
-  xmin: number;
-  xmax: number;
-  ymin: number;
-  ymax: number;
-  polylines: Array<Array<Array<number>>>;
+  w: number
+  xmin: number
+  xmax: number
+  ymin: number
+  ymax: number
+  polylines: Array<Array<Array<number>>>
 }
 
 const ordR = 'R'.charCodeAt(0)
@@ -53,7 +53,7 @@ function compile(i: number): void {
     xmax: zmax,
     ymin: ymin,
     ymax: ymax,
-    polylines: polylines,
+    polylines: polylines
   }
 }
 const data: Record<number, HersheyEntry> = {}
@@ -1628,5 +1628,5 @@ const raw: Record<number, string> = {
   3923: ' 59E_HMIOIXM[OYQX RINJOJXMZ RHMJNKOKWNYOY RRMPOQPQXU[WY[W RRPSORNQORPRXUZ RRMTOSPSWVYWY RZM\\O[P[W RZP[OZNYOZPZW RZMXOYPYX',
   3924: ' 39I[LONPUZV[XY RMNOOUYWZ RLONMONVXXY RXMVMVOXOXMVOSS RQUNYL[N[NYLYL[ RNTQT RSTVT',
   3925: ' 49I[KOLOMPMYP[UY RMNNONYPZ RKOMMOOOXRZ RVMXOWPW]V_U`SaQaO`MaObQa RVPWOVNUOVPV^U_ RPaNa RVMTOUPU^T`Sa',
-  3926: ' 43L[RNOPOORNTMWOWSRU RTNVOVS RRNUPUSTT RRUWWW]V_U`SaQaO`MaObQa RVWV^U_ RPaNa RTVUWU^T`Sa',
+  3926: ' 43L[RNOPOORNTMWOWSRU RTNVOVS RRNUPUSTT RRUWWW]V_U`SaQaO`MaObQa RVWV^U_ RPaNa RTVUWU^T`Sa'
 }

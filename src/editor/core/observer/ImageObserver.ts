@@ -1,5 +1,4 @@
 export class ImageObserver {
-
   private promiseList: Promise<unknown>[]
 
   constructor() {
@@ -17,5 +16,4 @@ export class ImageObserver {
   public allSettled() {
     return Promise.allSettled(this.promiseList)
   }
-
 }

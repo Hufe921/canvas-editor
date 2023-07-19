@@ -6,7 +6,6 @@ import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
 
 export class Zone {
-
   private readonly INDICATOR_PADDING = 2
   private readonly INDICATOR_TITLE_TRANSLATE = [20, 5]
 
@@ -99,9 +98,13 @@ export class Zone {
         : startY - this.INDICATOR_PADDING
       // 标题
       const indicatorTitle = document.createElement('div')
-      indicatorTitle.innerText = this.i18n.t(`frame.${isHeaderActive ? 'header' : 'footer'}`)
+      indicatorTitle.innerText = this.i18n.t(
+        `frame.${isHeaderActive ? 'header' : 'footer'}`
+      )
       indicatorTitle.style.top = `${indicatorBottomY}px`
-      indicatorTitle.style.transform = `translate(${offsetX * scale}px, ${offsetY * scale}px) scale(${scale})`
+      indicatorTitle.style.transform = `translate(${offsetX * scale}px, ${
+        offsetY * scale
+      }px) scale(${scale})`
       this.indicatorContainer.append(indicatorTitle)
 
       // 上边线
@@ -141,5 +144,4 @@ export class Zone {
     this.indicatorContainer?.remove()
     this.indicatorContainer = null
   }
-
 }

@@ -42,12 +42,12 @@ export function input(data: string, host: CanvasEvent) {
     }
     const nextElement = elementList[endIndex + 1]
     if (
-      copyElement.type === TEXT
-      || (!copyElement.type && copyElement.value !== ZERO)
-      || (copyElement.type === HYPERLINK && nextElement?.type === HYPERLINK)
-      || (copyElement.type === DATE && nextElement?.type === DATE)
-      || (copyElement.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT)
-      || (copyElement.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
+      copyElement.type === TEXT ||
+      (!copyElement.type && copyElement.value !== ZERO) ||
+      (copyElement.type === HYPERLINK && nextElement?.type === HYPERLINK) ||
+      (copyElement.type === DATE && nextElement?.type === DATE) ||
+      (copyElement.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT) ||
+      (copyElement.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
     ) {
       EDITOR_ELEMENT_COPY_ATTR.forEach(attr => {
         const value = copyElement[attr] as never
