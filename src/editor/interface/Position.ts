@@ -18,6 +18,7 @@ export interface ICurrentPosition {
   trId?: string
   tableId?: string
   zone?: EditorZone
+  hitLineStartIndex?: number
 }
 
 export interface IGetPositionByXYPayload {

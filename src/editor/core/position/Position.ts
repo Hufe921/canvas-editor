@@ -128,6 +128,7 @@ export class Position {
           metrics,
           ascent: offsetY,
           lineHeight: curRow.height,
+          isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
           coordinate: {
             leftTop: [x, y],
@@ -262,6 +263,7 @@ export class Position {
       const {
         index,
         pageNo,
+        isFirstLetter,
         coordinate: { leftTop, rightTop, leftBottom }
       } = positionList[j]
       if (positionNo !== pageNo) continue
@@ -290,7 +292,7 @@ export class Position {
                 positionList: td.positionList
               })
               if (~tablePosition.index) {
-                const { index: tdValueIndex } = tablePosition
+                const { index: tdValueIndex, hitLineStartIndex } = tablePosition
                 const tdValueElement = td.value[tdValueIndex]
                 return {
                   index,
@@ -307,7 +309,8 @@ export class Position {
                   tdValueIndex,
                   tdId: td.id,
                   trId: tr.id,
-                  tableId: element.id
+                  tableId: element.id,
+                  hitLineStartIndex
                 }
               }
             }
@@ -334,14 +337,19 @@ export class Position {
             isCheckbox: true
           }
         }
+        let hitLineStartIndex: number | undefined
         // 判断是否在文字中间前后
         if (elementList[index].value !== ZERO) {
           const valueWidth = rightTop[0] - leftTop[0]
           if (x < leftTop[0] + valueWidth / 2) {
             curPositionIndex = j - 1
+            if (isFirstLetter) {
+              hitLineStartIndex = j
+            }
           }
         }
         return {
+          hitLineStartIndex,
           index: curPositionIndex,
           isControl: element.type === ElementType.CONTROL
         }
@@ -350,6 +358,7 @@ export class Position {
     // 非命中区域
     let isLastArea = false
     let curPositionIndex = -1
+    let hitLineStartIndex: number | undefined
     // 判断是否在表格内
     if (isTable) {
       const { scale } = this.options
@@ -386,11 +395,16 @@ export class Position {
             p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo
           )
           // 头部元素为空元素时无需选中
-          curPositionIndex = ~headIndex
-            ? positionList[headIndex].value === ZERO
-              ? headIndex
-              : headIndex - 1
-            : index
+          if (~headIndex) {
+            if (positionList[headIndex].value === ZERO) {
+              curPositionIndex = headIndex
+            } else {
+              curPositionIndex = headIndex - 1
+              hitLineStartIndex = headIndex
+            }
+          } else {
+            curPositionIndex = index
+          }
         } else {
           curPositionIndex = index
         }
@@ -440,6 +454,7 @@ export class Position {
       }
     }
     return {
+      hitLineStartIndex,
       index: curPositionIndex,
       isControl: elementList[curPositionIndex]?.type === ElementType.CONTROL
     }
