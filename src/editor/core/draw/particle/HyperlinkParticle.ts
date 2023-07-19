@@ -6,7 +6,6 @@ import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
 export class HyperlinkParticle {
-
   private draw: Draw
   private options: Required<IEditorOption>
   private container: HTMLDivElement
@@ -17,7 +16,8 @@ export class HyperlinkParticle {
     this.draw = draw
     this.options = draw.getOptions()
     this.container = draw.getContainer()
-    const { hyperlinkPopupContainer, hyperlinkDom } = this._createHyperlinkPopupDom()
+    const { hyperlinkPopupContainer, hyperlinkDom } =
+      this._createHyperlinkPopupDom()
     this.hyperlinkDom = hyperlinkDom
     this.hyperlinkPopupContainer = hyperlinkPopupContainer
   }
@@ -34,7 +34,12 @@ export class HyperlinkParticle {
   }
 
   public drawHyperlinkPopup(element: IElement, position: IElementPosition) {
-    const { coordinate: { leftTop: [left, top] }, lineHeight } = position
+    const {
+      coordinate: {
+        leftTop: [left, top]
+      },
+      lineHeight
+    } = position
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
     const preY = this.draw.getPageNo() * (height + pageGap)
@@ -60,7 +65,12 @@ export class HyperlinkParticle {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
     ctx.save()
     ctx.font = element.style
     if (!element.color) {
@@ -73,5 +83,4 @@ export class HyperlinkParticle {
     ctx.fillText(element.value, x, y)
     ctx.restore()
   }
-
 }

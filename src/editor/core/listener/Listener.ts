@@ -12,7 +12,6 @@ import {
 } from '../../interface/Listener'
 
 export class Listener {
-
   public rangeStyleChange: IRangeStyleChange | null
   public visiblePageNoListChange: IVisiblePageNoListChange | null
   public intersectionPageNoChange: IIntersectionPageNoChange | null
@@ -36,5 +35,4 @@ export class Listener {
     this.pageModeChange = null
     this.zoneChange = null
   }
-
 }

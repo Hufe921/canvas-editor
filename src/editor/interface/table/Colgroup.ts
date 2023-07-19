@@ -1,4 +1,4 @@
 export interface IColgroup {
-  id?: string;
-  width: number;
+  id?: string
+  width: number
 }

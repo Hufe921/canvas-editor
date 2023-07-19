@@ -65,10 +65,7 @@ export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [
   'tableId'
 ]
 
-export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = [
-  'level',
-  'titleId',
-]
+export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = ['level', 'titleId']
 
 export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
   'listId',
@@ -98,12 +95,7 @@ export const INLINE_ELEMENT_TYPE: ElementType[] = [
   ElementType.TABLE
 ]
 
-export const INLINE_NODE_NAME: string[] = [
-  'HR',
-  'TABLE',
-  'UL',
-  'OL'
-]
+export const INLINE_NODE_NAME: string[] = ['HR', 'TABLE', 'UL', 'OL']
 
 export const VIRTUAL_ELEMENT_TYPE: ElementType[] = [
   ElementType.TITLE,

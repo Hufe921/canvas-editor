@@ -36,7 +36,9 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
     position.setCursorPosition(positionList[curIndex])
   }
   const cursor = draw.getCursor()
-  const { cursor: { dragColor, dragWidth } } = draw.getOptions()
+  const {
+    cursor: { dragColor, dragWidth }
+  } = draw.getOptions()
   cursor.drawCursor({
     width: dragWidth,
     color: dragColor,

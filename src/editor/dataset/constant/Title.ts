@@ -29,10 +29,10 @@ export const titleOrderNumberMapping: Record<TitleLevel, number> = {
 }
 
 export const titleNodeNameMapping: Record<string, TitleLevel> = {
-  'H1': TitleLevel.FIRST,
-  'H2': TitleLevel.SECOND,
-  'H3': TitleLevel.THIRD,
-  'H4': TitleLevel.FOURTH,
-  'H5': TitleLevel.FIFTH,
-  'H6': TitleLevel.SIXTH
+  H1: TitleLevel.FIRST,
+  H2: TitleLevel.SECOND,
+  H3: TitleLevel.THIRD,
+  H4: TitleLevel.FOURTH,
+  H5: TitleLevel.FIFTH,
+  H6: TitleLevel.SIXTH
 }

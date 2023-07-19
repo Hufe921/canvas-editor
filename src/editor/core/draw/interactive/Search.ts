@@ -11,12 +11,11 @@ import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
 export interface INavigateInfo {
-  index: number;
-  count: number;
+  index: number
+  count: number
 }
 
 export class Search {
-
   private draw: Draw
   private options: Required<IEditorOption>
   private position: Position
@@ -49,7 +48,8 @@ export class Search {
     } else {
       let index = this.searchNavigateIndex - 1
       let isExistPre = false
-      const searchNavigateId = this.searchMatchList[this.searchNavigateIndex].groupId
+      const searchNavigateId =
+        this.searchMatchList[this.searchNavigateIndex].groupId
       while (index >= 0) {
         const match = this.searchMatchList[index]
         if (searchNavigateId !== match.groupId) {
@@ -60,9 +60,11 @@ export class Search {
         index--
       }
       if (!isExistPre) {
-        const lastSearchMatch = this.searchMatchList[this.searchMatchList.length - 1]
+        const lastSearchMatch =
+          this.searchMatchList[this.searchMatchList.length - 1]
         if (lastSearchMatch.groupId === searchNavigateId) return null
-        this.searchNavigateIndex = this.searchMatchList.length - 1 - (this.searchKeyword.length - 1)
+        this.searchNavigateIndex =
+          this.searchMatchList.length - 1 - (this.searchKeyword.length - 1)
       }
     }
     return this.searchNavigateIndex
@@ -75,7 +77,8 @@ export class Search {
     } else {
       let index = this.searchNavigateIndex + 1
       let isExistNext = false
-      const searchNavigateId = this.searchMatchList[this.searchNavigateIndex].groupId
+      const searchNavigateId =
+        this.searchMatchList[this.searchNavigateIndex].groupId
       while (index < this.searchMatchList.length) {
         const match = this.searchMatchList[index]
         if (searchNavigateId !== match.groupId) {
@@ -95,7 +98,10 @@ export class Search {
   }
 
   public searchNavigateScrollIntoView(position: IElementPosition) {
-    const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
+    const {
+      coordinate: { leftTop, leftBottom, rightTop },
+      pageNo
+    } = position
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
     const preY = pageNo * (height + pageGap)
@@ -105,7 +111,9 @@ export class Search {
     // 扩大搜索词尺寸，使可视范围更广
     const ANCHOR_OVERFLOW_SIZE = 50
     anchor.style.width = `${rightTop[0] - leftTop[0] + ANCHOR_OVERFLOW_SIZE}px`
-    anchor.style.height = `${leftBottom[1] - leftTop[1] + ANCHOR_OVERFLOW_SIZE}px`
+    anchor.style.height = `${
+      leftBottom[1] - leftTop[1] + ANCHOR_OVERFLOW_SIZE
+    }px`
     anchor.style.left = `${leftTop[0]}px`
     anchor.style.top = `${leftTop[1] + preY}px`
     this.draw.getContainer().append(anchor)
@@ -127,9 +135,10 @@ export class Search {
 
   public getSearchNavigateInfo(): null | INavigateInfo {
     if (!this.searchKeyword || !this.searchMatchList.length) return null
-    const index = this.searchNavigateIndex !== null
-      ? (this.searchNavigateIndex / this.searchKeyword.length) + 1
-      : 0
+    const index =
+      this.searchNavigateIndex !== null
+        ? this.searchNavigateIndex / this.searchKeyword.length + 1
+        : 0
     let count = 0
     let groupId = null
     for (let s = 0; s < this.searchMatchList.length; s++) {
@@ -148,7 +157,11 @@ export class Search {
     const keyword = payload.toLocaleLowerCase()
     const searchMatchList: ISearchResult[] = []
     // 分组
-    const elementListGroup: { type: EditorContext, elementList: IElement[], index: number }[] = []
+    const elementListGroup: {
+      type: EditorContext
+      elementList: IElement[]
+      index: number
+    }[] = []
     const originalElementList = this.draw.getOriginalElementList()
     const originalElementListLength = originalElementList.length
     // 查找表格所在位置
@@ -162,7 +175,9 @@ export class Search {
     let i = 0
     let elementIndex = 0
     while (elementIndex < originalElementListLength - 1) {
-      const endIndex = tableIndexList.length ? tableIndexList[i] : originalElementListLength
+      const endIndex = tableIndexList.length
+        ? tableIndexList[i]
+        : originalElementListLength
       const pageElement = originalElementList.slice(elementIndex, endIndex)
       if (pageElement.length) {
         elementListGroup.push({
@@ -183,12 +198,21 @@ export class Search {
       i++
     }
     // 搜索文本
-    function searchClosure(payload: string | null, type: EditorContext, elementList: IElement[], restArgs?: ISearchResultRestArgs) {
+    function searchClosure(
+      payload: string | null,
+      type: EditorContext,
+      elementList: IElement[],
+      restArgs?: ISearchResultRestArgs
+    ) {
       if (!payload) return
       const text = elementList
-        .map(e => !e.type || (TEXTLIKE_ELEMENT_TYPE.includes(e.type) && e.controlComponent !== ControlComponent.CHECKBOX)
-          ? e.value
-          : ZERO)
+        .map(e =>
+          !e.type ||
+          (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
+            e.controlComponent !== ControlComponent.CHECKBOX)
+            ? e.value
+            : ZERO
+        )
         .filter(Boolean)
         .join('')
         .toLocaleLowerCase()
@@ -239,8 +263,15 @@ export class Search {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
-    if (!this.searchMatchList || !this.searchMatchList.length || !this.searchKeyword) return
-    const { searchMatchAlpha, searchMatchColor, searchNavigateMatchColor } = this.options
+    if (
+      !this.searchMatchList ||
+      !this.searchMatchList.length ||
+      !this.searchKeyword
+    ) {
+      return
+    }
+    const { searchMatchAlpha, searchMatchColor, searchNavigateMatchColor } =
+      this.options
     const positionList = this.position.getOriginalPositionList()
     const elementList = this.draw.getOriginalElementList()
     ctx.save()
@@ -250,12 +281,17 @@ export class Search {
       let position: IElementPosition | null = null
       if (searchMatch.type === EditorContext.TABLE) {
         const { tableIndex, trIndex, tdIndex, index } = searchMatch
-        position = elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]?.positionList![index]
+        position =
+          elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]
+            ?.positionList![index]
       } else {
         position = positionList[searchMatch.index]
       }
       if (!position) continue
-      const { coordinate: { leftTop, leftBottom, rightTop }, pageNo } = position
+      const {
+        coordinate: { leftTop, leftBottom, rightTop },
+        pageNo
+      } = position
       if (pageNo !== pageIndex) continue
       // 高亮并定位当前搜索词
       const searchMatchIndexList = this.getSearchNavigateIndexList()
@@ -277,5 +313,4 @@ export class Search {
     }
     ctx.restore()
   }
-
 }

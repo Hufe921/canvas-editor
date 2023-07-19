@@ -20,14 +20,13 @@ import composition from './handlers/composition'
 import drag from './handlers/drag'
 
 export interface ICompositionInfo {
-  elementList: IElement[];
-  startIndex: number;
-  endIndex: number;
-  value: string;
+  elementList: IElement[]
+  startIndex: number
+  endIndex: number
+  value: string
 }
 
 export class CanvasEvent {
-
   public isAllowSelection: boolean
   public isComposing: boolean
   public compositionInfo: ICompositionInfo | null
@@ -70,7 +69,10 @@ export class CanvasEvent {
   public register() {
     this.pageContainer.addEventListener('mousedown', this.mousedown.bind(this))
     this.pageContainer.addEventListener('mouseup', this.mouseup.bind(this))
-    this.pageContainer.addEventListener('mouseleave', this.mouseleave.bind(this))
+    this.pageContainer.addEventListener(
+      'mouseleave',
+      this.mouseleave.bind(this)
+    )
     this.pageContainer.addEventListener('mousemove', this.mousemove.bind(this))
     this.pageContainer.addEventListener('dblclick', this.dblclick.bind(this))
     this.pageContainer.addEventListener('dragover', this.dragover.bind(this))
@@ -182,5 +184,4 @@ export class CanvasEvent {
   public dragover(evt: DragEvent | MouseEvent) {
     drag.dragover(evt, this)
   }
-
 }

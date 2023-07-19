@@ -10,8 +10,15 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     const { startIndex, endIndex } = host.cacheRange!
     const positionList = host.cachePositionList!
     for (let p = startIndex + 1; p <= endIndex; p++) {
-      const { coordinate: { leftTop, rightBottom } } = positionList[p]
-      if (x >= leftTop[0] && x <= rightBottom[0] && y >= leftTop[1] && y <= rightBottom[1]) {
+      const {
+        coordinate: { leftTop, rightBottom }
+      } = positionList[p]
+      if (
+        x >= leftTop[0] &&
+        x <= rightBottom[0] &&
+        y >= leftTop[1] &&
+        y <= rightBottom[1]
+      ) {
         return
       }
     }
@@ -33,14 +40,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     y: evt.offsetY
   })
   if (!~positionResult.index) return
-  const {
-    index,
-    isTable,
-    tdValueIndex,
-    tdIndex,
-    trIndex,
-    tableId
-  } = positionResult
+  const { index, isTable, tdValueIndex, tdIndex, trIndex, tableId } =
+    positionResult
   const {
     index: startIndex,
     isTable: startIsTable,
@@ -50,7 +51,11 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const endIndex = isTable ? tdValueIndex! : index
   // 判断是否是表格跨行/列
   const rangeManager = draw.getRange()
-  if (isTable && startIsTable && (tdIndex !== startTdIndex || trIndex !== startTrIndex)) {
+  if (
+    isTable &&
+    startIsTable &&
+    (tdIndex !== startTdIndex || trIndex !== startTrIndex)
+  ) {
     rangeManager.setRange(
       endIndex,
       endIndex,
@@ -65,6 +70,7 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     // 开始位置
     let start = startIndex
     if (start > end) {
+      // prettier-ignore
       [start, end] = [end, start]
     }
     if (start === end) return

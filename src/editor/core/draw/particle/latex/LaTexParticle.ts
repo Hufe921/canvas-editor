@@ -3,7 +3,6 @@ import { ImageParticle } from '../ImageParticle'
 import { LaTexSVG, LaTexUtils } from './utils/LaTexUtils'
 
 export class LaTexParticle extends ImageParticle {
-
   public static convertLaTextToSVG(laTex: string): LaTexSVG {
     return new LaTexUtils(laTex).svg({
       SCALE_X: 10,
@@ -13,7 +12,12 @@ export class LaTexParticle extends ImageParticle {
     })
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IElement, x: number, y: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    element: IElement,
+    x: number,
+    y: number
+  ) {
     const { scale } = this.options
     const width = element.width! * scale
     const height = element.height! * scale
@@ -29,13 +33,11 @@ export class LaTexParticle extends ImageParticle {
           this.imageCache.set(element.value, img)
           resolve(element)
         }
-        img.onerror = (error) => {
+        img.onerror = error => {
           reject(error)
         }
       })
       this.addImageObserver(laTexLoadPromise)
     }
   }
-
 }
-

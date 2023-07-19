@@ -2,16 +2,15 @@ import { debounce } from '../../utils'
 import { Draw } from '../draw/Draw'
 
 export interface IElementVisibleInfo {
-  intersectionHeight: number;
+  intersectionHeight: number
 }
 
 export interface IPageVisibleInfo {
-  intersectionPageNo: number;
-  visiblePageNoList: number[];
+  intersectionPageNo: number
+  visiblePageNoList: number[]
 }
 
 export class ScrollObserver {
-
   private draw: Draw
 
   constructor(draw: Draw) {
@@ -35,8 +34,12 @@ export class ScrollObserver {
 
   public getElementVisibleInfo(element: Element): IElementVisibleInfo {
     const rect = element.getBoundingClientRect()
-    const viewHeight = Math.max(document.documentElement.clientHeight, window.innerHeight)
-    const visibleHeight = Math.min(rect.bottom, viewHeight) - Math.max(rect.top, 0)
+    const viewHeight = Math.max(
+      document.documentElement.clientHeight,
+      window.innerHeight
+    )
+    const visibleHeight =
+      Math.min(rect.bottom, viewHeight) - Math.max(rect.top, 0)
     return {
       intersectionHeight: visibleHeight > 0 ? visibleHeight : 0
     }
@@ -71,5 +74,4 @@ export class ScrollObserver {
     this.draw.setIntersectionPageNo(intersectionPageNo)
     this.draw.setVisiblePageNoList(visiblePageNoList)
   }, 150)
-
 }

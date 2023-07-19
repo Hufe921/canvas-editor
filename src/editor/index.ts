@@ -10,8 +10,18 @@ import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
-import { IContextMenuContext, IRegisterContextMenu } from './interface/contextmenu/ContextMenu'
-import { EditorComponent, EditorZone, EditorMode, PageMode, PaperDirection, WordBreak } from './dataset/enum/Editor'
+import {
+  IContextMenuContext,
+  IRegisterContextMenu
+} from './interface/contextmenu/ContextMenu'
+import {
+  EditorComponent,
+  EditorZone,
+  EditorMode,
+  PageMode,
+  PaperDirection,
+  WordBreak
+} from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
@@ -49,14 +59,17 @@ import { Plugin } from './core/plugin/Plugin'
 import { UsePlugin } from './interface/Plugin'
 
 export default class Editor {
-
   public command: Command
   public listener: Listener
   public register: Register
   public destroy: () => void
   public use: UsePlugin
 
-  constructor(container: HTMLDivElement, data: IEditorData | IElement[], options: IEditorOption = {}) {
+  constructor(
+    container: HTMLDivElement,
+    data: IEditorData | IElement[],
+    options: IEditorOption = {}
+  ) {
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
@@ -153,12 +166,16 @@ export default class Editor {
       mainElementList = data.main
       footerElementList = data.footer || []
     }
-    [headerElementList, mainElementList, footerElementList]
-      .forEach(elementList => {
-        formatElementList(elementList, {
-          editorOptions
-        })
+    const pageComponentData = [
+      headerElementList,
+      mainElementList,
+      footerElementList
+    ]
+    pageComponentData.forEach(elementList => {
+      formatElementList(elementList, {
+        editorOptions
       })
+    })
     // 监听
     this.listener = new Listener()
     // 启动
@@ -194,7 +211,6 @@ export default class Editor {
     const plugin = new Plugin(this)
     this.use = plugin.use.bind(plugin)
   }
-
 }
 
 // 对外对象

@@ -1,8 +1,14 @@
 // 简化版markdown转IElement插件示例，代码仅为参考
-import Editor, { Command, ElementType, IElement, ListType, TitleLevel } from '../../editor'
+import Editor, {
+  Command,
+  ElementType,
+  IElement,
+  ListType,
+  TitleLevel
+} from '../../editor'
 
 export type CommandWithMarkdown = Command & {
-  executeInsertMarkdown(markdown: string): void;
+  executeInsertMarkdown(markdown: string): void
 }
 
 export const titleNodeNameMapping: Record<string, TitleLevel> = {
@@ -25,36 +31,44 @@ function convertMarkdownToElement(markdown: string): IElement[] {
         type: ElementType.TITLE,
         level: titleNodeNameMapping[level],
         value: '',
-        valueList: [{
-          value: line.slice(level + 1)
-        }]
+        valueList: [
+          {
+            value: line.slice(level + 1)
+          }
+        ]
       })
     } else if (line.startsWith('- ')) {
       elementList.push({
         type: ElementType.LIST,
         listType: ListType.UL,
         value: '',
-        valueList: [{
-          value: line.slice(2)
-        }]
+        valueList: [
+          {
+            value: line.slice(2)
+          }
+        ]
       })
     } else if (/^\d+\.\s/.test(line)) {
       elementList.push({
         type: ElementType.LIST,
         listType: ListType.OL,
         value: '',
-        valueList: [{
-          value: line.replace(/^\d+\.\s/, '')
-        }]
+        valueList: [
+          {
+            value: line.replace(/^\d+\.\s/, '')
+          }
+        ]
       })
     } else if (/^\[.*?\]\(.*?\)$/.test(line)) {
       const match = line.match(/^\[(.*?)\]\((.*?)\)$/)
       elementList.push({
         type: ElementType.HYPERLINK,
         value: '',
-        valueList: [{
-          value: match![1]
-        }],
+        valueList: [
+          {
+            value: match![1]
+          }
+        ],
         url: match![2]
       })
     } else if (/^\*\*(.*?)\*\*$/.test(line)) {

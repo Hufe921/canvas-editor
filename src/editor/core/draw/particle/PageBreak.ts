@@ -3,7 +3,6 @@ import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
 export class PageBreakParticle {
-
   static readonly font: string = 'Yahei'
   static readonly fontSize: number = 12
   static readonly displayName: string = '分页符'
@@ -17,12 +16,18 @@ export class PageBreakParticle {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, element: IRowElement, x: number, y: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
     const { font, fontSize, displayName, lineDash } = PageBreakParticle
     const { scale, defaultRowMargin } = this.options
     const size = fontSize * scale
     const elementWidth = element.width!
-    const offsetY = this.draw.getDefaultBasicRowMarginHeight() * defaultRowMargin
+    const offsetY =
+      this.draw.getDefaultBasicRowMarginHeight() * defaultRowMargin
     ctx.save()
     ctx.font = `${size}px ${font}`
     const textMeasure = ctx.measureText(displayName)
@@ -37,8 +42,11 @@ export class PageBreakParticle {
     ctx.lineTo(x + elementWidth, y)
     ctx.stroke()
     // 文字
-    ctx.fillText(displayName, x + halfX, y + textMeasure.actualBoundingBoxAscent - size / 2)
+    ctx.fillText(
+      displayName,
+      x + halfX,
+      y + textMeasure.actualBoundingBoxAscent - size / 2
+    )
     ctx.restore()
   }
-
 }

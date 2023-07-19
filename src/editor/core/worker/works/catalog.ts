@@ -50,7 +50,8 @@ function getCatalog(elementList: IElement[]): ICatalog | null {
         valueList.push(titleE)
         t++
       }
-      titleElement.value = valueList.map(s => s.value)
+      titleElement.value = valueList
+        .map(s => s.value)
         .join('')
         .replace(new RegExp(ZERO, 'g'), '')
       titleElementList.push(titleElement)
@@ -60,7 +61,8 @@ function getCatalog(elementList: IElement[]): ICatalog | null {
   if (!titleElementList.length) return null
   // 查找到比最新元素大的标题时终止
   const recursiveInsert = (title: IElement, catalogItem: ICatalogItem) => {
-    const subCatalogItem = catalogItem.subCatalog[catalogItem.subCatalog.length - 1]
+    const subCatalogItem =
+      catalogItem.subCatalog[catalogItem.subCatalog.length - 1]
     const catalogItemLevel = titleOrderNumberMapping[subCatalogItem?.level]
     const titleLevel = titleOrderNumberMapping[title.level!]
     if (subCatalogItem && titleLevel > catalogItemLevel) {
@@ -97,7 +99,7 @@ function getCatalog(elementList: IElement[]): ICatalog | null {
   return catalog
 }
 
-onmessage = (evt) => {
+onmessage = evt => {
   const elementList = <IElement[]>evt.data
   const catalog = getCatalog(elementList)
   postMessage(catalog)

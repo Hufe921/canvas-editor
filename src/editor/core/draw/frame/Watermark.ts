@@ -3,7 +3,6 @@ import { DeepRequired } from '../../../interface/Common'
 import { Draw } from '../Draw'
 
 export class Watermark {
-
   private draw: Draw
   private options: DeepRequired<IEditorOption>
 
@@ -13,7 +12,10 @@ export class Watermark {
   }
 
   public render(ctx: CanvasRenderingContext2D) {
-    const { watermark: { data, opacity, font, size, color }, scale } = this.options
+    const {
+      watermark: { data, opacity, font, size, color },
+      scale
+    } = this.options
     const width = this.draw.getWidth()
     const height = this.draw.getHeight()
     const x = width / 2
@@ -25,9 +27,12 @@ export class Watermark {
     // 移动到中心位置再旋转
     const measureText = ctx.measureText(data)
     ctx.translate(x, y)
-    ctx.rotate(-45 * Math.PI / 180)
-    ctx.fillText(data, - measureText.width / 2, measureText.actualBoundingBoxAscent - size / 2)
+    ctx.rotate((-45 * Math.PI) / 180)
+    ctx.fillText(
+      data,
+      -measureText.width / 2,
+      measureText.actualBoundingBoxAscent - size / 2
+    )
     ctx.restore()
   }
-
 }

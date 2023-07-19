@@ -6,7 +6,7 @@ export enum ListType {
 export enum UlStyle {
   DISC = 'disc', // 实心圆点
   CIRCLE = 'circle', // 空心圆点
-  SQUARE = 'square', // 实心方块
+  SQUARE = 'square' // 实心方块
 }
 
 export enum OlStyle {

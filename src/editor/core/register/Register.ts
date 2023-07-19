@@ -7,13 +7,12 @@ import { ILang } from '../../interface/i18n/I18n'
 import { DeepPartial } from '../../interface/Common'
 
 interface IRegisterPayload {
-  contextMenu: ContextMenu;
-  shortcut: Shortcut;
-  i18n: I18n;
+  contextMenu: ContextMenu
+  shortcut: Shortcut
+  i18n: I18n
 }
 
 export class Register {
-
   public contextMenuList: (payload: IRegisterContextMenu[]) => void
   public shortcutList: (payload: IRegisterShortcut[]) => void
   public langMap: (locale: string, lang: DeepPartial<ILang>) => void
@@ -24,5 +23,4 @@ export class Register {
     this.shortcutList = shortcut.registerShortcutList.bind(shortcut)
     this.langMap = i18n.registerLangMap.bind(i18n)
   }
-
 }

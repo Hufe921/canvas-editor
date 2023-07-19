@@ -9,7 +9,6 @@ import { IRow } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
 export class ListParticle {
-
   private options: DeepRequired<IEditorOption>
 
   // 非递增样式直接返回默认值
@@ -21,7 +20,10 @@ export class ListParticle {
     this.options = draw.getOptions()
   }
 
-  public computeListStyle(ctx: CanvasRenderingContext2D, elementList: IElement[]): Map<string, number> {
+  public computeListStyle(
+    ctx: CanvasRenderingContext2D,
+    elementList: IElement[]
+  ): Map<string, number> {
     const listStyleMap = new Map<string, number>()
     let start = 0
     let curListId = elementList[start].listId
@@ -51,11 +53,17 @@ export class ListParticle {
     return listStyleMap
   }
 
-  public getListStyleWidth(ctx: CanvasRenderingContext2D, listElementList: IElement[]): number {
+  public getListStyleWidth(
+    ctx: CanvasRenderingContext2D,
+    listElementList: IElement[]
+  ): number {
     const { scale } = this.options
     const startElement = listElementList[0]
     // 非递增样式返回固定值
-    if (startElement.listStyle && startElement.listStyle !== ListStyle.DECIMAL) {
+    if (
+      startElement.listStyle &&
+      startElement.listStyle !== ListStyle.DECIMAL
+    ) {
       return this.UN_COUNT_STYLE_WIDTH * scale
     }
     // 计算列表数量
@@ -67,23 +75,35 @@ export class ListParticle {
     }, 0)
     if (!count) return 0
     // 以递增样式最大宽度为准
-    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length)}${KeyMap.PERIOD}`
+    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length)}${
+      KeyMap.PERIOD
+    }`
     const textMetrics = ctx.measureText(text)
     return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
   }
 
-  public drawListStyle(ctx: CanvasRenderingContext2D, row: IRow, position: IElementPosition) {
+  public drawListStyle(
+    ctx: CanvasRenderingContext2D,
+    row: IRow,
+    position: IElementPosition
+  ) {
     const { elementList, offsetX, listIndex, ascent } = row
     const startElement = elementList[0]
     if (startElement.value !== ZERO || startElement.listWrap) return
     let text = ''
     if (startElement.listType === ListType.UL) {
-      text = ulStyleMapping[<UlStyle><unknown>startElement.listStyle] || ulStyleMapping[UlStyle.DISC]
+      text =
+        ulStyleMapping[<UlStyle>(<unknown>startElement.listStyle)] ||
+        ulStyleMapping[UlStyle.DISC]
     } else {
       text = `${listIndex! + 1}${KeyMap.PERIOD}`
     }
     if (!text) return
-    const { coordinate: { leftTop: [startX, startY] } } = position
+    const {
+      coordinate: {
+        leftTop: [startX, startY]
+      }
+    } = position
     const x = startX - offsetX!
     const y = startY + ascent
     const { defaultFont, defaultSize, scale } = this.options
@@ -92,5 +112,4 @@ export class ListParticle {
     ctx.fillText(text, x, y)
     ctx.restore()
   }
-
 }

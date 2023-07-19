@@ -1,4 +1,7 @@
-import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
+import {
+  EDITOR_COMPONENT,
+  EDITOR_PREFIX
+} from '../../../../dataset/constant/Editor'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
@@ -9,7 +12,6 @@ import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class SelectControl implements IControlInstance {
-
   private element: IElement
   private control: Control
   private isPopup: boolean
@@ -105,8 +107,9 @@ export class SelectControl implements IControlInstance {
         return this.clearSelect()
       } else {
         const endNextElement = elementList[endIndex + 1]
-        if ((startElement.controlComponent === ControlComponent.PREFIX &&
-          endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
+        if (
+          (startElement.controlComponent === ControlComponent.PREFIX &&
+            endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
           endNextElement.controlComponent === ControlComponent.POSTFIX ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
@@ -232,7 +235,12 @@ export class SelectControl implements IControlInstance {
     }
     selectPopupContainer.append(ul)
     // 定位
-    const { coordinate: { leftTop: [left, top] }, lineHeight } = position
+    const {
+      coordinate: {
+        leftTop: [left, top]
+      },
+      lineHeight
+    } = position
     const preY = this.control.getPreY()
     selectPopupContainer.style.left = `${left}px`
     selectPopupContainer.style.top = `${top + preY + lineHeight}px`
@@ -246,7 +254,9 @@ export class SelectControl implements IControlInstance {
     if (this.isPopup) return
     const { startIndex } = this.control.getRange()
     const elementList = this.control.getElementList()
-    if (elementList[startIndex + 1]?.controlId !== this.element.controlId) return
+    if (elementList[startIndex + 1]?.controlId !== this.element.controlId) {
+      return
+    }
     this._createSelectPopupDom()
     this.isPopup = true
   }
@@ -256,5 +266,4 @@ export class SelectControl implements IControlInstance {
     this.selectDom?.remove()
     this.isPopup = false
   }
-
 }

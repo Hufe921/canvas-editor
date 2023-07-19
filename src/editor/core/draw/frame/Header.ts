@@ -8,7 +8,6 @@ import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
 export class Header {
-
   private draw: Draw
   private position: Position
   private options: DeepRequired<IEditorOption>
@@ -78,13 +77,18 @@ export class Header {
   }
 
   public getHeaderTop(): number {
-    const { header: { top, disabled }, scale } = this.options
+    const {
+      header: { top, disabled },
+      scale
+    } = this.options
     if (disabled) return 0
     return Math.floor(top * scale)
   }
 
   public getMaxHeight(): number {
-    const { header: { maxHeightRadio } } = this.options
+    const {
+      header: { maxHeightRadio }
+    } = this.options
     const height = this.draw.getHeight()
     return Math.floor(height * maxHeightRadioMapping[maxHeightRadio])
   }
@@ -133,5 +137,4 @@ export class Header {
       zone: EditorZone.HEADER
     })
   }
-
 }
