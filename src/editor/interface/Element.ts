@@ -132,6 +132,7 @@ export interface IElementPosition {
   ascent: number
   lineHeight: number
   metrics: IElementMetrics
+  isFirstLetter: boolean
   isLastLetter: boolean
   coordinate: {
     leftTop: number[]

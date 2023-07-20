@@ -40,8 +40,15 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     y: evt.offsetY
   })
   if (!positionResult) return
-  const { index, isDirectHit, isCheckbox, isImage, isTable, tdValueIndex } =
-    positionResult
+  const {
+    index,
+    isDirectHit,
+    isCheckbox,
+    isImage,
+    isTable,
+    tdValueIndex,
+    hitLineStartIndex
+  } = positionResult
   // 记录选区开始位置
   host.mouseDownStartPosition = {
     ...positionResult,
@@ -80,6 +87,12 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       isSetCursor: !isDirectHitImage && !isDirectHitCheckbox,
       isCompute: false
     })
+    // 首字需定位到行首，非上一行最后一个字后
+    if (hitLineStartIndex) {
+      host.getDraw().getCursor().drawCursor({
+        hitLineStartIndex
+      })
+    }
   }
   // 预览工具组件
   const previewer = draw.getPreviewer()

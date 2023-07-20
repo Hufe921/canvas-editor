@@ -12,6 +12,7 @@ export type IDrawCursorOption = ICursorOption & {
   isShow?: boolean
   isBlink?: boolean
   isFocus?: boolean
+  hitLineStartIndex?: number
 }
 
 export class Cursor {
@@ -82,7 +83,7 @@ export class Cursor {
   }
 
   public drawCursor(payload?: IDrawCursorOption) {
-    const cursorPosition = this.position.getCursorPosition()
+    let cursorPosition = this.position.getCursorPosition()
     if (!cursorPosition) return
     const { scale, cursor } = this.options
     const {
@@ -90,11 +91,17 @@ export class Cursor {
       width,
       isShow = true,
       isBlink = true,
-      isFocus = true
+      isFocus = true,
+      hitLineStartIndex
     } = { ...cursor, ...payload }
     // 设置光标代理
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
+    // 光标位置
+    if (hitLineStartIndex) {
+      const positionList = this.position.getPositionList()
+      cursorPosition = positionList[hitLineStartIndex]
+    }
     const {
       metrics,
       coordinate: { leftTop, rightTop },
@@ -121,7 +128,7 @@ export class Cursor {
       metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop =
       leftTop[1] + ascent + descent - (cursorHeight - offsetHeight) + preY
-    const cursorLeft = rightTop[0]
+    const cursorLeft = hitLineStartIndex ? leftTop[0] : rightTop[0]
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${
       cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT * scale
