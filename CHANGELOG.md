@@ -1,3 +1,24 @@
+## [0.9.40](https://github.com/Hufe921/canvas-editor/compare/v0.9.39...v0.9.40) (2023-07-21)
+
+
+### Bug Fixes
+
+* disable partial contextmenu in readonly mode ([3f03d88](https://github.com/Hufe921/canvas-editor/commit/3f03d88443c2d5c746ba3c77f6e5fc69464c7c3c))
+
+
+### Performance Improvements
+
+* cursor drawing when page visible ([9c2bd33](https://github.com/Hufe921/canvas-editor/commit/9c2bd33b7a3cd7b557723e9c18870dcd8d7bba6b))
+* cursor position at the beginning of a line ([1bd2e45](https://github.com/Hufe921/canvas-editor/commit/1bd2e455a5f5c0bd53cb51d30e8205cd6a148e7c))
+* print quality #185 ([842b4fc](https://github.com/Hufe921/canvas-editor/commit/842b4fca0723bf764c8fb05f04a5511c443169db)), closes [#185](https://github.com/Hufe921/canvas-editor/issues/185)
+
+
+### Refactor
+
+* add prettier and format ([d464c50](https://github.com/Hufe921/canvas-editor/commit/d464c5043508c63b29174ae05bc37ec66c87d45f))
+
+
+
 ## [0.9.39](https://github.com/Hufe921/canvas-editor/compare/v0.9.38...v0.9.39) (2023-07-14)
 
 
