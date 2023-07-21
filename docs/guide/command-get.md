@@ -29,7 +29,7 @@ const {
 
 用法：
 ```javascript
-const base64StringList = await instance.command.getImage()
+const base64StringList = await instance.command.getImage(pixelRatio?: number)
 ```
 
 ## getWordCount

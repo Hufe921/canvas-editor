@@ -144,6 +144,7 @@ export default class Editor {
       inactiveAlpha: 0.6,
       historyMaxRecordCount: 100,
       wordBreak: WordBreak.BREAK_WORD,
+      printPixelRatio: 3,
       ...options,
       header: headerOptions,
       footer: footerOptions,

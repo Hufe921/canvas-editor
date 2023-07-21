@@ -58,6 +58,7 @@ export interface IEditorOption {
   paperDirection?: PaperDirection
   inactiveAlpha?: number
   historyMaxRecordCount?: number
+  printPixelRatio?: number
   wordBreak?: WordBreak
   header?: IHeader
   footer?: IFooter

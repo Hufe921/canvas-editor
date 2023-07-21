@@ -1014,6 +1014,7 @@ export class CommandAdapt {
     let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      // prettier-ignore
       [startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
@@ -1628,13 +1629,13 @@ export class CommandAdapt {
   }
 
   public async print() {
-    const { scale } = this.options
+    const { scale, printPixelRatio } = this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
     const width = this.draw.getOriginalWidth()
     const height = this.draw.getOriginalHeight()
-    const base64List = await this.draw.getDataURL()
+    const base64List = await this.draw.getDataURL(printPixelRatio)
     printImageBase64(base64List, width, height)
     if (scale !== 1) {
       this.draw.setPageScale(scale)
@@ -1671,8 +1672,8 @@ export class CommandAdapt {
     })
   }
 
-  public getImage(): Promise<string[]> {
-    return this.draw.getDataURL()
+  public getImage(pixelRatio?: number): Promise<string[]> {
+    return this.draw.getDataURL(pixelRatio)
   }
 
   public getValue(options?: IGetValueOption): IEditorResult {
