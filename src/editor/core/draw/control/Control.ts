@@ -7,13 +7,15 @@ import {
   IControlOption
 } from '../../../interface/Control'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import { deepClone, splitText } from '../../../utils'
+import { deepClone, nextTick, splitText } from '../../../utils'
 import {
   formatElementContext,
   pickElementAttr,
   zipElementList
 } from '../../../utils/element'
+import { EventBus } from '../../event/eventbus/EventBus'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -29,6 +31,7 @@ export class Control {
   private draw: Draw
   private range: RangeManager
   private listener: Listener
+  private eventBus: EventBus<EventBusMap>
   private options: IControlOption
   private activeControl: IControlInstance | null
 
@@ -36,6 +39,8 @@ export class Control {
     this.draw = draw
     this.range = draw.getRange()
     this.listener = draw.getListener()
+    this.eventBus = draw.getEventBus()
+
     this.options = draw.getOptions().control
     this.activeControl = null
   }
@@ -132,16 +137,23 @@ export class Control {
       this.activeControl = new CheckboxControl(element, this)
     }
     // 激活控件回调
-    setTimeout(() => {
-      if (this.listener.controlChange) {
-        let payload: IControl
-        const value = this.activeControl?.getValue()
-        if (value && value.length) {
-          payload = zipElementList(value)[0].control!
-        } else {
-          payload = pickElementAttr(deepClone(element)).control!
-        }
-        this.listener.controlChange(payload)
+    nextTick(() => {
+      const controlChangeListener = this.listener.controlChange
+      const isSubscribeControlChange =
+        this.eventBus.isSubscribe('controlChange')
+      if (!controlChangeListener && !isSubscribeControlChange) return
+      let payload: IControl
+      const value = this.activeControl?.getValue()
+      if (value && value.length) {
+        payload = zipElementList(value)[0].control!
+      } else {
+        payload = pickElementAttr(deepClone(element)).control!
+      }
+      if (controlChangeListener) {
+        controlChangeListener(payload)
+      }
+      if (isSubscribeControlChange) {
+        this.eventBus.emit('controlChange', payload)
       }
     })
   }
@@ -153,9 +165,16 @@ export class Control {
       }
       this.activeControl = null
       // 销毁控件回调
-      setTimeout(() => {
-        if (this.listener.controlChange) {
-          this.listener.controlChange(null)
+      nextTick(() => {
+        const controlChangeListener = this.listener.controlChange
+        const isSubscribeControlChange =
+          this.eventBus.isSubscribe('controlChange')
+        if (!controlChangeListener && !isSubscribeControlChange) return
+        if (controlChangeListener) {
+          controlChangeListener(null)
+        }
+        if (isSubscribeControlChange) {
+          this.eventBus.emit('controlChange', null)
         }
       })
     }

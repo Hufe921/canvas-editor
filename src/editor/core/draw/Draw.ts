@@ -79,6 +79,8 @@ import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
 import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
+import { EventBus } from '../event/eventbus/EventBus'
+import { EventBusMap } from '../../interface/EventBus'
 
 export class Draw {
   private container: HTMLDivElement
@@ -95,6 +97,7 @@ export class Draw {
   private elementList: IElement[]
   private footerElementList: IElement[]
   private listener: Listener
+  private eventBus: EventBus<EventBusMap>
 
   private i18n: I18n
   private canvasEvent: CanvasEvent
@@ -146,7 +149,8 @@ export class Draw {
     rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
     data: IEditorData,
-    listener: Listener
+    listener: Listener,
+    eventBus: EventBus<EventBusMap>
   ) {
     this.container = this._wrapContainer(rootContainer)
     this.pageList = []
@@ -159,6 +163,7 @@ export class Draw {
     this.elementList = data.main
     this.footerElementList = data.footer || []
     this.listener = listener
+    this.eventBus = eventBus
 
     this._formatContainer()
     this.pageContainer = this._createPageContainer()
@@ -336,6 +341,9 @@ export class Draw {
     if (this.listener.visiblePageNoListChange) {
       this.listener.visiblePageNoListChange(this.visiblePageNoList)
     }
+    if (this.eventBus.isSubscribe('visiblePageNoListChange')) {
+      this.eventBus.emit('visiblePageNoListChange', this.visiblePageNoList)
+    }
   }
 
   public getIntersectionPageNo(): number {
@@ -346,6 +354,9 @@ export class Draw {
     this.intersectionPageNo = payload
     if (this.listener.intersectionPageNoChange) {
       this.listener.intersectionPageNoChange(this.intersectionPageNo)
+    }
+    if (this.eventBus.isSubscribe('intersectionPageNoChange')) {
+      this.eventBus.emit('intersectionPageNoChange', this.intersectionPageNo)
     }
   }
 
@@ -569,6 +580,10 @@ export class Draw {
     return this.listener
   }
 
+  public getEventBus(): EventBus<EventBusMap> {
+    return this.eventBus
+  }
+
   public getCursor(): Cursor {
     return this.cursor
   }
@@ -708,6 +723,9 @@ export class Draw {
     setTimeout(() => {
       if (this.listener.pageModeChange) {
         this.listener.pageModeChange(payload)
+      }
+      if (this.eventBus.isSubscribe('pageModeChange')) {
+        this.eventBus.emit('pageModeChange', payload)
       }
     })
   }
@@ -1801,9 +1819,17 @@ export class Draw {
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(this.pageRowList.length)
       }
+      if (this.eventBus.isSubscribe('pageSizeChange')) {
+        this.eventBus.emit('pageSizeChange', this.pageRowList.length)
+      }
       // 文档内容改变
-      if (this.listener.contentChange && isSubmitHistory) {
-        this.listener.contentChange()
+      if (isSubmitHistory) {
+        if (this.listener.contentChange) {
+          this.listener.contentChange()
+        }
+        if (this.eventBus.isSubscribe('contentChange')) {
+          this.eventBus.emit('contentChange')
+        }
       }
     })
   }

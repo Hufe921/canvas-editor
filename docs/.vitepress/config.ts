@@ -39,7 +39,8 @@ export default defineConfig({
       {
         text: '监听',
         items: [
-          { text: '事件监听', link: '/guide/listener' }
+          { text: '事件监听(listener)', link: '/guide/listener' },
+          { text: '事件监听(eventBus)', link: '/guide/eventbus' }
         ]
       },
       {

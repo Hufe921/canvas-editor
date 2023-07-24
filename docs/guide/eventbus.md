@@ -1,6 +1,4 @@
-# 事件监听(listener)
-
-> listener只能响应一个方法，推荐使用eventBus进行事件监听
+# 事件监听(eventBus)
 
 ## 使用方式
 
@@ -8,7 +6,18 @@
 import Editor from "@hufe921/canvas-editor"
 
 const instance = new Editor(container, <IElement[]>data, options)
-instance.listener.eventName = ()=>{}
+
+// 注册
+instance.eventBus.on<K keyof EventMap>(
+  eventName: K,
+  callback: EventMap[K]
+)
+
+// 移除
+instance.eventBus.off<K keyof EventMap>(
+  eventName: K,
+  callback: EventMap[K]
+)
 ```
 
 ## rangeStyleChange
@@ -16,7 +25,7 @@ instance.listener.eventName = ()=>{}
 
 用法：
 ```javascript
-instance.listener.rangeStyleChange = (payload: IRangeStyle)=>{}
+instance.eventBus.on('rangeStyleChange', (payload: IRangeStyle) => void)
 ```
 
 ## visiblePageNoListChange
@@ -24,7 +33,7 @@ instance.listener.rangeStyleChange = (payload: IRangeStyle)=>{}
 
 用法：
 ```javascript
-instance.listener.visiblePageNoListChange = (payload: number[])=>{}
+instance.eventBus.on('visiblePageNoListChange', (payload: number[]) => void)
 ```
 
 ## intersectionPageNoChange
@@ -32,7 +41,7 @@ instance.listener.visiblePageNoListChange = (payload: number[])=>{}
 
 用法：
 ```javascript
-instance.listener.intersectionPageNoChange = (payload: number)=>{}
+instance.eventBus.on('intersectionPageNoChange', (payload: number) => void)
 ```
 
 ## pageSizeChange
@@ -40,7 +49,7 @@ instance.listener.intersectionPageNoChange = (payload: number)=>{}
 
 用法：
 ```javascript
-instance.listener.pageSizeChange = (payload: number)=>{}
+instance.eventBus.on('pageSizeChange', (payload: number) => void)
 ```
 
 ## pageScaleChange
@@ -48,7 +57,7 @@ instance.listener.pageSizeChange = (payload: number)=>{}
 
 用法：
 ```javascript
-instance.listener.pageScaleChange = (payload: number)=>{}
+instance.eventBus.on('pageScaleChange', (payload: number) => void)
 ```
 
 ## contentChange
@@ -56,7 +65,7 @@ instance.listener.pageScaleChange = (payload: number)=>{}
 
 用法：
 ```javascript
-instance.listener.contentChange = ()=>{}
+instance.eventBus.on('contentChange', () => void)
 ```
 
 ## controlChange
@@ -64,7 +73,7 @@ instance.listener.contentChange = ()=>{}
 
 用法：
 ```javascript
-instance.listener.controlChange = (payload: IControl | null)=>{}
+instance.eventBus.on('controlChange', (payload: IControl | null) => void)
 ```
 
 ## pageModeChange
@@ -72,7 +81,7 @@ instance.listener.controlChange = (payload: IControl | null)=>{}
 
 用法：
 ```javascript
-instance.listener.pageModeChange = (payload: PageMode)=>{}
+instance.eventBus.on('pageModeChange', (payload: PageMode) => void)
 ```
 
 ## saved
@@ -80,7 +89,7 @@ instance.listener.pageModeChange = (payload: PageMode)=>{}
 
 用法：
 ```javascript
-instance.listener.saved = (payload: IEditorResult)=>{}
+instance.eventBus.on('saved', (payload: IEditorResult) => void)
 ```
 
 ## zoneChange
@@ -88,5 +97,5 @@ instance.listener.saved = (payload: IEditorResult)=>{}
 
 用法：
 ```javascript
-instance.listener.zoneChange = (payload: EditorZone)=>{}
+instance.eventBus.on('zoneChange', (payload: EditorZone) => void)
 ```
