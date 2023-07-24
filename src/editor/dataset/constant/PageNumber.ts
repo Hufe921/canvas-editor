@@ -10,7 +10,7 @@ export const FORMAT_PLACEHOLDER = {
 export const defaultPageNumberOption: Readonly<Required<IPageNumber>> = {
   bottom: 60,
   size: 12,
-  font: 'Yahei',
+  font: 'Arial',
   color: '#000000',
   rowFlex: RowFlex.CENTER,
   format: FORMAT_PLACEHOLDER.PAGE_NO,
