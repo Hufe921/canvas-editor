@@ -79,3 +79,9 @@ export interface IEditorResult {
   watermark?: IWatermark
   data: IEditorData
 }
+
+export interface IEditorHTML {
+  header: string
+  main: string
+  footer: string
+}

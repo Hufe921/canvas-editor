@@ -82,3 +82,15 @@ const {
 ```javascript
 const catalog = await instance.command.getCatalog()
 ```
+
+## getHTML
+功能：获取HTML
+
+用法：
+```javascript
+const {
+  header: string
+  main: string
+  footer: string
+} = await instance.command.getHTML()
+```

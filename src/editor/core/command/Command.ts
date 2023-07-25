@@ -77,6 +77,7 @@ export class Command {
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getValue: CommandAdapt['getValue']
+  public getHTML: CommandAdapt['getHTML']
   public getWordCount: CommandAdapt['getWordCount']
   public getRangeText: CommandAdapt['getRangeText']
   public getRangeContext: CommandAdapt['getRangeContext']
@@ -167,6 +168,7 @@ export class Command {
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
+    this.getHTML = adapt.getHTML.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)

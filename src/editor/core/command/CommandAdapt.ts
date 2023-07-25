@@ -17,6 +17,7 @@ import { TableBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
+import { DeepRequired } from '../../interface/Common'
 import {
   IAppendElementListOption,
   IDrawImagePayload,
@@ -25,6 +26,7 @@ import {
 } from '../../interface/Draw'
 import {
   IEditorData,
+  IEditorHTML,
   IEditorOption,
   IEditorResult
 } from '../../interface/Editor'
@@ -37,6 +39,7 @@ import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
 import { deepClone, downloadFile, getUUID } from '../../utils'
 import {
+  createDomFromElementList,
   formatElementContext,
   formatElementList,
   isTextLikeElement,
@@ -61,7 +64,7 @@ export class CommandAdapt {
   private historyManager: HistoryManager
   private canvasEvent: CanvasEvent
   private tableTool: TableTool
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
   private control: Control
   private workerManager: WorkerManager
   private searchManager: Search
@@ -1678,6 +1681,18 @@ export class CommandAdapt {
 
   public getValue(options?: IGetValueOption): IEditorResult {
     return this.draw.getValue(options)
+  }
+
+  public getHTML(): IEditorHTML {
+    const options = this.options
+    const headerElementList = this.draw.getHeaderElementList()
+    const mainElementList = this.draw.getOriginalMainElementList()
+    const footerElementList = this.draw.getFooterElementList()
+    return {
+      header: createDomFromElementList(headerElementList, options).innerHTML,
+      main: createDomFromElementList(mainElementList, options).innerHTML,
+      footer: createDomFromElementList(footerElementList, options).innerHTML
+    }
   }
 
   public getWordCount(): Promise<number> {
