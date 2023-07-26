@@ -24,10 +24,10 @@ export class DOMEventHandlers {
     data: IEditorData | IElement[],
     options: IEditorOption = {}
   ) {
-    if (DOMEventHandlers.instance) {
-      console.log('tried to register again. Returning')
-      return
-    }
+    // if (DOMEventHandlers.instance) {
+    //   console.log('tried to register again. Returning')
+    //   return
+    // }
     DOMEventHandlers.instance = new Editor(container, data, options)
   }
 
@@ -116,5 +116,13 @@ export class DOMEventHandlers {
       listType,
       listStyle
     )
+  }
+
+  static getContent() {
+    return DOMEventHandlers.getEditorInstance().command.getValue()
+  }
+
+  static setContent(payload: Partial<IEditorData>) {
+    DOMEventHandlers.getEditorInstance().command.executeSetValue(payload)
   }
 }
