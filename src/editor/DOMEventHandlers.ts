@@ -6,6 +6,7 @@ import Editor, {
   ListType,
   RowFlex
 } from '.'
+import en from '../editor/core/i18n/lang/en.json'
 
 export class DOMEventHandlers {
   private static instance: Editor
@@ -29,6 +30,8 @@ export class DOMEventHandlers {
     //   return
     // }
     DOMEventHandlers.instance = new Editor(container, data, options)
+    DOMEventHandlers.instance.command.executeSetLocale('en')
+    DOMEventHandlers.instance.register.langMap('en', en)
   }
 
   static handleUndo() {
@@ -124,5 +127,12 @@ export class DOMEventHandlers {
 
   static setContent(payload: Partial<IEditorData>) {
     DOMEventHandlers.getEditorInstance().command.executeSetValue(payload)
+  }
+
+  static createTable(payload: { rowIndex: number; colIndex: number }) {
+    DOMEventHandlers.getEditorInstance().command.executeInsertTable(
+      payload.rowIndex,
+      payload.colIndex
+    )
   }
 }
