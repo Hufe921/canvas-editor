@@ -61,7 +61,7 @@ export class ContextMenu {
     // 菜单权限
     this.container.addEventListener('contextmenu', this._proxyContextMenuEvent)
     // 副作用处理
-    document.addEventListener('mousedown', this._handleEffect)
+    document.addEventListener('mousedown', this._handleSideEffect)
   }
 
   public removeEvent() {
@@ -69,7 +69,7 @@ export class ContextMenu {
       'contextmenu',
       this._proxyContextMenuEvent
     )
-    document.removeEventListener('mousedown', this._handleEffect)
+    document.removeEventListener('mousedown', this._handleSideEffect)
   }
 
   private _proxyContextMenuEvent = (evt: MouseEvent) => {
@@ -99,11 +99,12 @@ export class ContextMenu {
     evt.preventDefault()
   }
 
-  private _handleEffect = (evt: MouseEvent) => {
+  private _handleSideEffect = (evt: MouseEvent) => {
     if (this.contextMenuContainerList.length) {
       // 点击非右键菜单内
+      const target = <Element>(evt?.composedPath()[0] || evt.target)
       const contextMenuDom = findParent(
-        evt.target as Element,
+        target,
         (node: Node & Element) =>
           !!node &&
           node.nodeType === 1 &&
