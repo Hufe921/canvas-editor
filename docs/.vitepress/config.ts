@@ -5,20 +5,24 @@ export default defineConfig({
   title: 'canvas-editor',
   description: 'rich text editor by canvas/svg',
   themeConfig: {
+    i18nRouting: false,
     algolia: {
       appId: 'RWSVW6F3S5',
       apiKey: 'e462fffb4d2e9ab4a78c29e0b457ab33',
-      indexName: 'hufe',
+      indexName: 'hufe'
     },
     logo: '/favicon.png',
-    nav: [{
-      text: '指南',
-      link: '/guide/start',
-      activeMatch: '/guide/'
-    }, {
-      text: 'Demo',
-      link: 'https://hufe.club/canvas-editor'
-    }],
+    nav: [
+      {
+        text: '指南',
+        link: '/guide/start',
+        activeMatch: '/guide/'
+      },
+      {
+        text: 'Demo',
+        link: 'https://hufe.club/canvas-editor'
+      }
+    ],
     sidebar: [
       {
         text: '开始',
@@ -47,7 +51,7 @@ export default defineConfig({
         text: '快捷键',
         items: [
           { text: '内部快捷键', link: '/guide/shortcut-internal' },
-          { text: '自定义快捷键', link: '/guide/shortcut-custom' },
+          { text: '自定义快捷键', link: '/guide/shortcut-custom' }
         ]
       },
       {
@@ -59,24 +63,33 @@ export default defineConfig({
       },
       {
         text: 'API',
-        items: [
-          { text: '全局API', link: '/guide/api' }
-        ]
+        items: [{ text: '全局API', link: '/guide/api' }]
       },
       {
         text: '插件',
-        items: [
-          { text: '自定义插件', link: '/guide/plugin' }
-        ]
+        items: [{ text: '自定义插件', link: '/guide/plugin' }]
       }
     ],
-    socialLinks: [{
-      icon: 'github',
-      link: 'https://github.com/Hufe921/canvas-editor'
-    }],
+    socialLinks: [
+      {
+        icon: 'github',
+        link: 'https://github.com/Hufe921/canvas-editor'
+      }
+    ],
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2021-present Hufe'
+    }
+  },
+  locales: {
+    root: {
+      label: '简体中文',
+      lang: 'zh-CN'
+    },
+    'en-US': {
+      label: 'English',
+      lang: 'en-US',
+      link: '/en-US/'
     }
   }
 })
