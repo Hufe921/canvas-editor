@@ -79,6 +79,8 @@ import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
 import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
+import { EventBus } from '../event/eventbus/EventBus'
+import { EventBusMap } from '../../interface/EventBus'
 
 export class Draw {
   private container: HTMLDivElement
@@ -86,6 +88,7 @@ export class Draw {
   private pageList: HTMLCanvasElement[]
   private ctxList: CanvasRenderingContext2D[]
   private pageNo: number
+  private pagePixelRatio: number | null
   private mode: EditorMode
   private options: DeepRequired<IEditorOption>
   private position: Position
@@ -94,6 +97,7 @@ export class Draw {
   private elementList: IElement[]
   private footerElementList: IElement[]
   private listener: Listener
+  private eventBus: EventBus<EventBusMap>
 
   private i18n: I18n
   private canvasEvent: CanvasEvent
@@ -145,18 +149,21 @@ export class Draw {
     rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
     data: IEditorData,
-    listener: Listener
+    listener: Listener,
+    eventBus: EventBus<EventBusMap>
   ) {
     this.container = this._wrapContainer(rootContainer)
     this.pageList = []
     this.ctxList = []
     this.pageNo = 0
+    this.pagePixelRatio = null
     this.mode = options.mode
     this.options = options
     this.headerElementList = data.header || []
     this.elementList = data.main
     this.footerElementList = data.footer || []
     this.listener = listener
+    this.eventBus = eventBus
 
     this._formatContainer()
     this.pageContainer = this._createPageContainer()
@@ -334,6 +341,9 @@ export class Draw {
     if (this.listener.visiblePageNoListChange) {
       this.listener.visiblePageNoListChange(this.visiblePageNoList)
     }
+    if (this.eventBus.isSubscribe('visiblePageNoListChange')) {
+      this.eventBus.emit('visiblePageNoListChange', this.visiblePageNoList)
+    }
   }
 
   public getIntersectionPageNo(): number {
@@ -344,6 +354,9 @@ export class Draw {
     this.intersectionPageNo = payload
     if (this.listener.intersectionPageNoChange) {
       this.listener.intersectionPageNoChange(this.intersectionPageNo)
+    }
+    if (this.eventBus.isSubscribe('intersectionPageNoChange')) {
+      this.eventBus.emit('intersectionPageNoChange', this.intersectionPageNo)
     }
   }
 
@@ -567,6 +580,10 @@ export class Draw {
     return this.listener
   }
 
+  public getEventBus(): EventBus<EventBusMap> {
+    return this.eventBus
+  }
+
   public getCursor(): Cursor {
     return this.cursor
   }
@@ -627,7 +644,10 @@ export class Draw {
     return this.rowList.length
   }
 
-  public async getDataURL(): Promise<string[]> {
+  public async getDataURL(pixelRatio?: number): Promise<string[]> {
+    if (pixelRatio) {
+      this.setPagePixelRatio(pixelRatio)
+    }
     this.render({
       isLazy: false,
       isCompute: false,
@@ -635,7 +655,11 @@ export class Draw {
       isSubmitHistory: false
     })
     await this.imageObserver.allSettled()
-    return this.pageList.map(c => c.toDataURL())
+    const dataUrlList = this.pageList.map(c => c.toDataURL())
+    if (pixelRatio) {
+      this.setPagePixelRatio(null)
+    }
+    return dataUrlList
   }
 
   public getPainterStyle(): IElementStyle | null {
@@ -678,7 +702,7 @@ export class Draw {
     // 纸张大小重置
     if (payload === PageMode.PAGING) {
       const { height } = this.options
-      const dpr = window.devicePixelRatio
+      const dpr = this.getPagePixelRatio()
       const canvas = this.pageList[0]
       canvas.style.height = `${height}px`
       canvas.height = height * dpr
@@ -700,11 +724,14 @@ export class Draw {
       if (this.listener.pageModeChange) {
         this.listener.pageModeChange(payload)
       }
+      if (this.eventBus.isSubscribe('pageModeChange')) {
+        this.eventBus.emit('pageModeChange', payload)
+      }
     })
   }
 
   public setPageScale(payload: number) {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     this.options.scale = payload
     const width = this.getWidth()
     const height = this.getHeight()
@@ -726,8 +753,23 @@ export class Draw {
     }
   }
 
+  public getPagePixelRatio(): number {
+    return this.pagePixelRatio || window.devicePixelRatio
+  }
+
+  public setPagePixelRatio(payload: number | null) {
+    if (
+      (!this.pagePixelRatio && payload === window.devicePixelRatio) ||
+      payload === this.pagePixelRatio
+    ) {
+      return
+    }
+    this.pagePixelRatio = payload
+    this.setPageDevicePixel()
+  }
+
   public setPageDevicePixel() {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     const width = this.getWidth()
     const height = this.getHeight()
     this.pageList.forEach((p, i) => {
@@ -744,7 +786,7 @@ export class Draw {
   public setPaperSize(width: number, height: number) {
     this.options.width = width
     this.options.height = height
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     const realWidth = this.getWidth()
     const realHeight = this.getHeight()
     this.container.style.width = `${realWidth}px`
@@ -762,7 +804,7 @@ export class Draw {
   }
 
   public setPaperDirection(payload: PaperDirection) {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     this.options.paperDirection = payload
     const width = this.getWidth()
     const height = this.getHeight()
@@ -878,7 +920,7 @@ export class Draw {
     canvas.setAttribute('data-index', String(pageNo))
     this.pageContainer.append(canvas)
     // 调整分辨率
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     canvas.width = width * dpr
     canvas.height = height * dpr
     canvas.style.cursor = 'text'
@@ -891,7 +933,7 @@ export class Draw {
   }
 
   private _initPageContext(ctx: CanvasRenderingContext2D) {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     ctx.scale(dpr, dpr)
     // 重置以下属性是因部分浏览器(chrome)会应用css样式
     ctx.letterSpacing = '0px'
@@ -1309,7 +1351,7 @@ export class Draw {
       pageRowList[0] = this.rowList
       // 重置高度
       pageHeight += this.rowList.reduce((pre, cur) => pre + cur.height, 0)
-      const dpr = window.devicePixelRatio
+      const dpr = this.getPagePixelRatio()
       const pageDom = this.pageList[0]
       const pageDomHeight = Number(pageDom.style.height.replace('px', ''))
       if (pageHeight > pageDomHeight) {
@@ -1777,9 +1819,17 @@ export class Draw {
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(this.pageRowList.length)
       }
+      if (this.eventBus.isSubscribe('pageSizeChange')) {
+        this.eventBus.emit('pageSizeChange', this.pageRowList.length)
+      }
       // 文档内容改变
-      if (this.listener.contentChange && isSubmitHistory) {
-        this.listener.contentChange()
+      if (isSubmitHistory) {
+        if (this.listener.contentChange) {
+          this.listener.contentChange()
+        }
+        if (this.eventBus.isSubscribe('contentChange')) {
+          this.eventBus.emit('contentChange')
+        }
       }
     })
   }

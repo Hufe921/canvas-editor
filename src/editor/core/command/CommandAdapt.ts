@@ -17,6 +17,7 @@ import { TableBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
+import { DeepRequired } from '../../interface/Common'
 import {
   IAppendElementListOption,
   IDrawImagePayload,
@@ -25,6 +26,7 @@ import {
 } from '../../interface/Draw'
 import {
   IEditorData,
+  IEditorHTML,
   IEditorOption,
   IEditorResult
 } from '../../interface/Editor'
@@ -37,6 +39,7 @@ import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
 import { deepClone, downloadFile, getUUID } from '../../utils'
 import {
+  createDomFromElementList,
   formatElementContext,
   formatElementList,
   isTextLikeElement,
@@ -61,7 +64,7 @@ export class CommandAdapt {
   private historyManager: HistoryManager
   private canvasEvent: CanvasEvent
   private tableTool: TableTool
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
   private control: Control
   private workerManager: WorkerManager
   private searchManager: Search
@@ -1014,6 +1017,7 @@ export class CommandAdapt {
     let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      // prettier-ignore
       [startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
@@ -1628,13 +1632,13 @@ export class CommandAdapt {
   }
 
   public async print() {
-    const { scale } = this.options
+    const { scale, printPixelRatio } = this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
     const width = this.draw.getOriginalWidth()
     const height = this.draw.getOriginalHeight()
-    const base64List = await this.draw.getDataURL()
+    const base64List = await this.draw.getDataURL(printPixelRatio)
     printImageBase64(base64List, width, height)
     if (scale !== 1) {
       this.draw.setPageScale(scale)
@@ -1671,12 +1675,24 @@ export class CommandAdapt {
     })
   }
 
-  public getImage(): Promise<string[]> {
-    return this.draw.getDataURL()
+  public getImage(pixelRatio?: number): Promise<string[]> {
+    return this.draw.getDataURL(pixelRatio)
   }
 
   public getValue(options?: IGetValueOption): IEditorResult {
     return this.draw.getValue(options)
+  }
+
+  public getHTML(): IEditorHTML {
+    const options = this.options
+    const headerElementList = this.draw.getHeaderElementList()
+    const mainElementList = this.draw.getOriginalMainElementList()
+    const footerElementList = this.draw.getFooterElementList()
+    return {
+      header: createDomFromElementList(headerElementList, options).innerHTML,
+      main: createDomFromElementList(mainElementList, options).innerHTML,
+      footer: createDomFromElementList(footerElementList, options).innerHTML
+    }
   }
 
   public getWordCount(): Promise<number> {

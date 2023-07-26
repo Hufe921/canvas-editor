@@ -58,6 +58,7 @@ export interface IEditorOption {
   paperDirection?: PaperDirection
   inactiveAlpha?: number
   historyMaxRecordCount?: number
+  printPixelRatio?: number
   wordBreak?: WordBreak
   header?: IHeader
   footer?: IFooter
@@ -77,4 +78,10 @@ export interface IEditorResult {
   margins: IMargin
   watermark?: IWatermark
   data: IEditorData
+}
+
+export interface IEditorHTML {
+  header: string
+  main: string
+  footer: string
 }

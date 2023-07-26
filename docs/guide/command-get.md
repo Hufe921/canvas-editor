@@ -29,7 +29,7 @@ const {
 
 用法：
 ```javascript
-const base64StringList = await instance.command.getImage()
+const base64StringList = await instance.command.getImage(pixelRatio?: number)
 ```
 
 ## getWordCount
@@ -81,4 +81,16 @@ const {
 用法：
 ```javascript
 const catalog = await instance.command.getCatalog()
+```
+
+## getHTML
+功能：获取HTML
+
+用法：
+```javascript
+const {
+  header: string
+  main: string
+  footer: string
+} = await instance.command.getHTML()
 ```

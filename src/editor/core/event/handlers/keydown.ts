@@ -308,6 +308,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     if (listener.saved) {
       listener.saved(draw.getValue())
     }
+    const eventBus = draw.getEventBus()
+    if (eventBus.isSubscribe('saved')) {
+      eventBus.emit('saved', draw.getValue())
+    }
     evt.preventDefault()
   } else if (evt.key === KeyMap.ESC) {
     // 退出格式刷
