@@ -10,7 +10,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /guide/start.html
+      link: /en/guide/start.html
     - theme: alt
       text: View on Github
       link: https://github.com/Hufe921/canvas-editor

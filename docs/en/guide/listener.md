@@ -12,81 +12,101 @@ instance.listener.eventName = ()=>{}
 ```
 
 ## rangeStyleChange
-Feature:  The selection style changes
+
+Feature: The selection style changes
 
 Usage:
+
 ```javascript
-instance.listener.rangeStyleChange = (payload: IRangeStyle)=>{}
+instance.listener.rangeStyleChange = (payload: IRangeStyle) => {}
 ```
 
 ## visiblePageNoListChange
+
 Feature: The visible page changes
 
 Usage:
+
 ```javascript
-instance.listener.visiblePageNoListChange = (payload: number[])=>{}
+instance.listener.visiblePageNoListChange = (payload: number[]) => {}
 ```
 
 ## intersectionPageNoChange
+
 Feature: The current page changes
 
 Usage:
+
 ```javascript
-instance.listener.intersectionPageNoChange = (payload: number)=>{}
+instance.listener.intersectionPageNoChange = (payload: number) => {}
 ```
 
 ## pageSizeChange
+
 Feature: The current page size has changed
 
 Usage:
+
 ```javascript
-instance.listener.pageSizeChange = (payload: number)=>{}
+instance.listener.pageSizeChange = (payload: number) => {}
 ```
 
 ## pageScaleChange
+
 Feature: The current page scaling has changed
 
 Usage:
+
 ```javascript
-instance.listener.pageScaleChange = (payload: number)=>{}
+instance.listener.pageScaleChange = (payload: number) => {}
 ```
 
 ## contentChange
+
 Feature: The current content has changed
 
 Usage:
+
 ```javascript
-instance.listener.contentChange = ()=>{}
+instance.listener.contentChange = () => {}
 ```
 
 ## controlChange
+
 Feature: The control where the current cursor is located changes
 
 Usage:
+
 ```javascript
-instance.listener.controlChange = (payload: IControl | null)=>{}
+instance.listener.controlChange = (payload: IControl | null) => {}
 ```
 
 ## pageModeChange
+
 Feature: The page mode changes
 
 Usage:
+
 ```javascript
-instance.listener.pageModeChange = (payload: PageMode)=>{}
+instance.listener.pageModeChange = (payload: PageMode) => {}
 ```
 
 ## saved
+
 Feature: Document saved
 
 Usage:
+
 ```javascript
-instance.listener.saved = (payload: IEditorResult)=>{}
+instance.listener.saved = (payload: IEditorResult) => {}
 ```
 
 ## zoneChange
+
 Feature: 区域发生改变
 
 Usage:
+
 ```javascript
-instance.listener.zoneChange = (payload: EditorZone)=>{}
+instance.listener.zoneChange = (payload: EditorZone) => {}
 ```

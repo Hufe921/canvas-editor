@@ -8,10 +8,13 @@ import Editor from "@hufe921/canvas-editor"
 const instance = new Editor(container, <IElement[]>data, options)
 const value = instance.command.commandName()
 ```
+
 ## getValue
+
 Feature: Get the current document value
 
 Usage:
+
 ```javascript
 const {
   version: string;
@@ -25,49 +28,62 @@ const {
 ```
 
 ## getImage
+
 Feature: Gets the base64 string of the current page image
 
 Usage:
+
 ```javascript
 const base64StringList = await instance.command.getImage(pixelRatio?: number)
 ```
 
 ## getWordCount
+
 Feature: Get document word count
 
 Usage:
+
 ```javascript
 const wordCount = await instance.command.getWordCount()
 ```
 
 ## getRangeText
+
 Feature: Get selection text
 
 Usage:
+
 ```javascript
 const rangeText = instance.command.getRangeText()
 ```
 
 ## getRangeContext
+
 Feature: Get selection context
 
 Usage:
+
 ```javascript
 const rangeContext = instance.command.getRangeContext()
 ```
 
 ## getPaperMargin
+
 Feature: Gets the margins
 
 Usage:
+
 ```javascript
-const [top: number, right: number, bottom: number, left: number] = instance.command.getPaperMargin()
+const [top: number, right: number, bottom: number, left: number] =
+  instance.command.getPaperMargin()
 ```
 
 ## getSearchNavigateInfo
+
 Feature: Get search navigation information
 
 Usage:
+
 ```javascript
 const {
   index: number;
@@ -76,17 +92,21 @@ const {
 ```
 
 ## getCatalog
+
 Feature: Get directory
 
 Usage:
+
 ```javascript
 const catalog = await instance.command.getCatalog()
 ```
 
 ## getHTML
+
 Feature: Get HTML
 
 Usage:
+
 ```javascript
 const {
   header: string

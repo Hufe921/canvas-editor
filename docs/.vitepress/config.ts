@@ -86,10 +86,70 @@ export default defineConfig({
       label: '简体中文',
       lang: 'zh-CN'
     },
-    'en-US': {
+    en: {
       label: 'English',
-      lang: 'en-US',
-      link: '/en-US/'
+      lang: 'en',
+      link: '/en/',
+      themeConfig: {
+        nav: [
+          {
+            text: 'Guide',
+            link: '/en/guide/start',
+            activeMatch: '/en/guide/'
+          },
+          {
+            text: 'Demo',
+            link: 'https://hufe.club/canvas-editor'
+          }
+        ],
+        sidebar: [
+          {
+            text: 'Start',
+            items: [
+              { text: 'start', link: '/en/guide/start' },
+              { text: 'option', link: '/en/guide/option' },
+              { text: 'i18n', link: '/en/guide/i18n' },
+              { text: 'schema', link: '/en/guide/schema' }
+            ]
+          },
+          {
+            text: 'Command',
+            items: [
+              { text: 'execute', link: '/en/guide/command-execute' },
+              { text: 'get', link: '/en/guide/command-get' }
+            ]
+          },
+          {
+            text: 'Listener',
+            items: [
+              { text: 'listener', link: '/en/guide/listener' },
+              { text: 'eventbus', link: '/en/guide/eventbus' }
+            ]
+          },
+          {
+            text: 'Shortcut',
+            items: [
+              { text: 'internal', link: '/en/guide/shortcut-internal' },
+              { text: 'custom', link: '/en/guide/shortcut-custom' }
+            ]
+          },
+          {
+            text: 'Contextmenu',
+            items: [
+              { text: 'internal', link: '/en/guide/contextmenu-internal' },
+              { text: 'custom', link: '/en/guide/contextmenu-custom' }
+            ]
+          },
+          {
+            text: 'Api',
+            items: [{ text: 'api', link: '/en/guide/api' }]
+          },
+          {
+            text: 'Plugin',
+            items: [{ text: 'plugin', link: '/en/guide/plugin' }]
+          }
+        ]
+      }
     }
   }
 })

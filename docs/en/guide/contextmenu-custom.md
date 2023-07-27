@@ -1,4 +1,4 @@
-# Customize the Right Click Menu
+# Customize Contextmenu
 
 ## How to Use
 

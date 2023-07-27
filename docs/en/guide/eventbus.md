@@ -21,81 +21,101 @@ instance.eventBus.off<K keyof EventMap>(
 ```
 
 ## rangeStyleChange
+
 Feature: The selection style changes
 
 Usage:
+
 ```javascript
 instance.eventBus.on('rangeStyleChange', (payload: IRangeStyle) => void)
 ```
 
 ## visiblePageNoListChange
+
 Feature: The visible page changes
 
 Usage:
+
 ```javascript
 instance.eventBus.on('visiblePageNoListChange', (payload: number[]) => void)
 ```
 
 ## intersectionPageNoChange
+
 Feature: The current page changes
 
 Usage:
+
 ```javascript
 instance.eventBus.on('intersectionPageNoChange', (payload: number) => void)
 ```
 
 ## pageSizeChange
+
 Feature: The current number of pages has changed
 
 Usage:
+
 ```javascript
 instance.eventBus.on('pageSizeChange', (payload: number) => void)
 ```
 
 ## pageScaleChange
+
 Feature: The current page scaling has changed
 
 Usage:
+
 ```javascript
 instance.eventBus.on('pageScaleChange', (payload: number) => void)
 ```
 
 ## contentChange
+
 Feature: The current content has changed
 
 Usage:
+
 ```javascript
 instance.eventBus.on('contentChange', () => void)
 ```
 
 ## controlChange
+
 Feature: The control where the current cursor is located changes
 
 Usage:
+
 ```javascript
 instance.eventBus.on('controlChange', (payload: IControl | null) => void)
 ```
 
 ## pageModeChange
+
 Feature: The page mode changes
 
 Usage:
+
 ```javascript
 instance.eventBus.on('pageModeChange', (payload: PageMode) => void)
 ```
 
 ## saved
+
 Feature: Document saved
 
 Usage:
+
 ```javascript
 instance.eventBus.on('saved', (payload: IEditorResult) => void)
 ```
 
 ## zoneChange
+
 Feature: The zone changes
 
 Usage:
+
 ```javascript
 instance.eventBus.on('zoneChange', (payload: EditorZone) => void)
 ```

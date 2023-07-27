@@ -8,10 +8,13 @@ import Editor from "@hufe921/canvas-editor"
 const instance = new Editor(container, <IElement[]>data, options)
 instance.apiName()
 ```
+
 ## destroy
+
 Feature: Destroy the editor
 
 Usage：
+
 ```javascript
 instance.destroy()
 ```

@@ -1,6 +1,7 @@
-# Internal Right Click Menu
+# Internal Contextmenu
 
 ## Global
+
 - Cut
 - Copy
 - Paste
@@ -8,11 +9,13 @@
 - Print
 
 ## Hyperlinks
+
 - Delete the link
 - Unlink
 - Edit the link
 
 ## Image
+
 - Change the picture
 - Save as picture
 - Text wrapping
@@ -20,6 +23,7 @@
 - Upper and lower surrounding
 
 ## Table
+
 - Table borders
 - All borders
 - Borderless
@@ -41,4 +45,5 @@
 - Cancel the merge
 
 ## control
+
 - Delete the control
