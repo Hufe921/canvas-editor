@@ -1,8 +1,8 @@
-# 数据结构
+# Data Structure
 
 ```typescript
 interface IElement {
-  // 基础
+  // basic
   id?: string;
   type?: {
     TEXT = 'text',
@@ -21,8 +21,8 @@ interface IElement {
     BLOCK = 'block'
   };
   value: string;
-  valueList?: IElement[]; // 复合元素（超链接、标题、列表等）使用
-  // 样式
+  valueList?: IElement[]; // Use of composite elements (hyperlinks, titles, lists, and so on).
+  // style
   font?: string;
   size?: number;
   width?: number;
@@ -41,7 +41,7 @@ interface IElement {
   };
   rowMargin?: number;
   letterSpacing?: number;
-  // 表格
+  // table
   colgroup?: {
     width: number;
   }[];
@@ -56,13 +56,13 @@ interface IElement {
     }[];
   }[];
   borderType?: TableBorder;
-  // 超链接
+  // Hyperlinks
   url?: string;
-  // 上下标
+  // Superscript and subscript
   actualSize?: number;
-  // 分割线
+  // Dividing line
   dashArray?: number[];
-  // 控件
+  // control
   control?: {
     type: {
       TEXT = 'text',
@@ -94,7 +94,7 @@ interface IElement {
     VALUE = 'value',
     CHECKBOX = 'checkbox'
   };
-  // 复选框
+  // checkbox
   checkbox?: {
     value: boolean | null;
     code?: string;
@@ -102,14 +102,14 @@ interface IElement {
   };
   // LaTeX
   laTexSVG?: string;
-  // 日期
+  // date
   dateFormat?: string;
-  // 图片
+  // picture
   imgDisplay?: {
     INLINE = 'inline',
     BLOCK = 'block'
   }
-  // 内容块
+  // block
   block?: {
     type: {
       IFRAME = 'iframe',
@@ -122,9 +122,9 @@ interface IElement {
       src: string;
     };
   };
-  // 标题
+  // title
   level?: TitleLevel;
-  // 列表
+  // list
   listType?: ListType;
   listStyle?: ListStyle;
   listWrap?: boolean;
