@@ -24,15 +24,19 @@ export class DOMEventHandlers {
     data: IEditorData | IElement[],
     options: IEditorOption = {}
   ) {
-    if (DOMEventHandlers.instance) {
-      console.log('tried to register again. Returning')
-      return
-    }
+    // if (DOMEventHandlers.instance) {
+    //   console.log('tried to register again. Returning')
+    //   return
+    // }
     DOMEventHandlers.instance = new Editor(container, data, options)
   }
 
   static handleUndo() {
     DOMEventHandlers.getEditorInstance().command.executeUndo()
+  }
+
+  static getContent(){
+    return DOMEventHandlers.getEditorInstance().command.getValue()
   }
 
   static handleRedo() {
@@ -116,5 +120,33 @@ export class DOMEventHandlers {
       listType,
       listStyle
     )
+  }
+
+  static setContent(payload: Partial<IEditorData>) {
+    DOMEventHandlers.getEditorInstance().command.executeSetValue(payload)
+  }
+
+  static setFontColor(payload: string) {
+    DOMEventHandlers.getEditorInstance().command.executeColor(payload)
+  }
+
+  static highlightText(payload: string) {
+    DOMEventHandlers.getEditorInstance().command.executeHighlight(payload)
+  }
+
+  static setFont(payload: string) {
+    DOMEventHandlers.getEditorInstance().command.executeFont(payload)
+  }
+
+  static setSize(payload: number) {
+    DOMEventHandlers.getEditorInstance().command.executeSize(payload)
+  }
+
+  static increaseFontSize() {
+    DOMEventHandlers.getEditorInstance().command.executeSizeAdd()
+  }
+
+  static decreaseFontSize() {
+    DOMEventHandlers.getEditorInstance().command.executeSizeMinus()
   }
 }
