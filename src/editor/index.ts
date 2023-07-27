@@ -57,11 +57,14 @@ import { IPlaceholder } from './interface/Placeholder'
 import { defaultPlaceholderOption } from './dataset/constant/Placeholder'
 import { Plugin } from './core/plugin/Plugin'
 import { UsePlugin } from './interface/Plugin'
+import { EventBus } from './core/event/eventbus/EventBus'
+import { EventBusMap } from './interface/EventBus'
 import { DOMEventHandlers } from './DOMEventHandlers'
 
 export default class Editor {
   public command: Command
   public listener: Listener
+  public eventBus: EventBus<EventBusMap>
   public register: Register
   public destroy: () => void
   public use: UsePlugin
@@ -145,6 +148,7 @@ export default class Editor {
       inactiveAlpha: 0.6,
       historyMaxRecordCount: 100,
       wordBreak: WordBreak.BREAK_WORD,
+      printPixelRatio: 3,
       ...options,
       header: headerOptions,
       footer: footerOptions,
@@ -179,6 +183,8 @@ export default class Editor {
     })
     // 监听
     this.listener = new Listener()
+    // 事件
+    this.eventBus = new EventBus<EventBusMap>()
     // 启动
     const draw = new Draw(
       container,
@@ -188,7 +194,8 @@ export default class Editor {
         main: mainElementList,
         footer: footerElementList
       },
-      this.listener
+      this.listener,
+      this.eventBus
     )
     // 命令
     this.command = new Command(new CommandAdapt(draw))
