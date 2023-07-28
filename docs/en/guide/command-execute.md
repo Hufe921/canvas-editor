@@ -743,3 +743,11 @@ Usage:
 ```javascript
 instance.command.executeWordTool()
 ```
+
+## executeSetHTML
+Feature: Set the editor HTML data
+
+Usage:
+```javascript
+instance.command.executeSetHTML(payload: Partial<IEditorHTML)
+```

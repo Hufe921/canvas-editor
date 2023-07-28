@@ -43,7 +43,8 @@ import {
   formatElementContext,
   formatElementList,
   isTextLikeElement,
-  pickElementAttr
+  pickElementAttr,
+  getElementListByHTML
 } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
@@ -1868,5 +1869,17 @@ export class CommandAdapt {
         isSetCursor: false
       })
     }
+  }
+
+  public setHTML(payload: Partial<IEditorHTML>) {
+    const { header, main, footer } = payload
+    const headerElementList = getElementListByHTML(header ?? '', { innerWidth })
+    const mainElementList = getElementListByHTML(main ?? '', { innerWidth })
+    const footerElementList = getElementListByHTML(footer ?? '', { innerWidth })
+    this.setValue({
+      header: headerElementList,
+      main: mainElementList,
+      footer: footerElementList
+    })
   }
 }
