@@ -1,3 +1,25 @@
+## [0.9.41](https://github.com/Hufe921/canvas-editor/compare/v0.9.40...v0.9.41) (2023-07-27)
+
+
+### Chores
+
+* add id to style element #219 ([166ff7f](https://github.com/Hufe921/canvas-editor/commit/166ff7f3f90c515487d63c06aca5a1e528a5f51a)), closes [#219](https://github.com/Hufe921/canvas-editor/issues/219)
+
+
+### Documentation
+
+* support document internationalization #222 ([9f80168](https://github.com/Hufe921/canvas-editor/commit/9f8016884f56431fd29a77241bcc69368ffdbb37)), closes [#222](https://github.com/Hufe921/canvas-editor/issues/222) [#213](https://github.com/Hufe921/canvas-editor/issues/213) [#222](https://github.com/Hufe921/canvas-editor/issues/222)
+
+
+### Features
+
+* add event bus ([0bacc11](https://github.com/Hufe921/canvas-editor/commit/0bacc113cdf8eec3dd01e4dc89937f2538f65e19))
+* add getHTML api #218 ([b12c6cc](https://github.com/Hufe921/canvas-editor/commit/b12c6cc4282d5777118c9d2e177f0198af048989)), closes [#218](https://github.com/Hufe921/canvas-editor/issues/218)
+* clear contextmenu side effect in web component #219 ([fc356c7](https://github.com/Hufe921/canvas-editor/commit/fc356c7eb66b92fc418838f218ac45f383525573)), closes [#219](https://github.com/Hufe921/canvas-editor/issues/219)
+* clear side effect in web component #219 ([ce70f0d](https://github.com/Hufe921/canvas-editor/commit/ce70f0d7e8cd4f997191c88dd4462b6903f09104)), closes [#219](https://github.com/Hufe921/canvas-editor/issues/219)
+
+
+
 ## [0.9.40](https://github.com/Hufe921/canvas-editor/compare/v0.9.39...v0.9.40) (2023-07-21)
 
 

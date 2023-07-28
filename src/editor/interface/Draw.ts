@@ -8,6 +8,7 @@ export interface IDrawOption {
   isSubmitHistory?: boolean
   isCompute?: boolean
   isLazy?: boolean
+  isInit?: boolean
 }
 
 export interface IDrawImagePayload {
