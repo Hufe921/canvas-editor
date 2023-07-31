@@ -1,8 +1,8 @@
-# 事件监听(listener)
+# Event Listening(listener)
 
-> listener 只能响应一个方法，推荐使用 eventBus 进行事件监听
+> The listener can respond to only one method. eventBus is recommended for event listening
 
-## 使用方式
+## How to Use
 
 ```javascript
 import Editor from "@hufe921/canvas-editor"
@@ -13,9 +13,9 @@ instance.listener.eventName = ()=>{}
 
 ## rangeStyleChange
 
-功能：选区样式发生改变
+Feature: The selection style changes
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.rangeStyleChange = (payload: IRangeStyle) => {}
@@ -23,9 +23,9 @@ instance.listener.rangeStyleChange = (payload: IRangeStyle) => {}
 
 ## visiblePageNoListChange
 
-功能：可见页发生改变
+Feature: The visible page changes
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.visiblePageNoListChange = (payload: number[]) => {}
@@ -33,9 +33,9 @@ instance.listener.visiblePageNoListChange = (payload: number[]) => {}
 
 ## intersectionPageNoChange
 
-功能：当前页发生改变
+Feature: The current page changes
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.intersectionPageNoChange = (payload: number) => {}
@@ -43,9 +43,9 @@ instance.listener.intersectionPageNoChange = (payload: number) => {}
 
 ## pageSizeChange
 
-功能：当前页数发生改变
+Feature: The current page size has changed
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.pageSizeChange = (payload: number) => {}
@@ -53,9 +53,9 @@ instance.listener.pageSizeChange = (payload: number) => {}
 
 ## pageScaleChange
 
-功能：当前页面缩放比例发生改变
+Feature: The current page scaling has changed
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.pageScaleChange = (payload: number) => {}
@@ -63,9 +63,9 @@ instance.listener.pageScaleChange = (payload: number) => {}
 
 ## contentChange
 
-功能：当前内容发生改变
+Feature: The current content has changed
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.contentChange = () => {}
@@ -73,9 +73,9 @@ instance.listener.contentChange = () => {}
 
 ## controlChange
 
-功能：当前光标所在控件发生改变
+Feature: The control where the current cursor is located changes
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.controlChange = (payload: IControl | null) => {}
@@ -83,9 +83,9 @@ instance.listener.controlChange = (payload: IControl | null) => {}
 
 ## pageModeChange
 
-功能：页面模式发生改变
+Feature: The page mode changes
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.pageModeChange = (payload: PageMode) => {}
@@ -93,9 +93,9 @@ instance.listener.pageModeChange = (payload: PageMode) => {}
 
 ## saved
 
-功能：文档执行保存
+Feature: Document saved
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.saved = (payload: IEditorResult) => {}
@@ -103,9 +103,9 @@ instance.listener.saved = (payload: IEditorResult) => {}
 
 ## zoneChange
 
-功能：区域发生改变
+Feature: 区域发生改变
 
-用法：
+Usage:
 
 ```javascript
 instance.listener.zoneChange = (payload: EditorZone) => {}

@@ -1,6 +1,6 @@
-# 自定义快捷键
+# Custom shortcut keys
 
-## 使用方式
+## How to use?
 
 ```javascript
 import Editor from "@hufe921/canvas-editor"

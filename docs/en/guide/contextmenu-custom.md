@@ -1,6 +1,6 @@
-# 自定义右键菜单
+# Customize Contextmenu
 
-## 使用方式
+## How to Use
 
 ```javascript
 import Editor from "@hufe921/canvas-editor"
@@ -10,7 +10,7 @@ instance.register.contextMenuList([
     {
       isDivider?: boolean;
       icon?: string;
-      name?: string; // 使用%s代表选区文本。示例：搜索：%s
+      name?: string; // Use %s for selection text. Example: Search: %s
       shortCut?: string;
       when?: (payload: IContextMenuContext) => boolean;
       callback?: (command: Command, context: IContextMenuContext) => any;

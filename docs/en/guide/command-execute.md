@@ -1,6 +1,6 @@
-# 执行动作命令
+# Execute Command
 
-## 使用方式
+## How to Use
 
 ```javascript
 import Editor from "@hufe921/canvas-editor"
@@ -11,9 +11,9 @@ instance.command.commandName()
 
 ## executeMode
 
-功能：切换编辑器模式（编辑、清洁、只读）
+Feature: Switch editor mode (Edit, Clean, Read only)
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeMode(editorMode: EditorMode)
@@ -21,9 +21,9 @@ instance.command.executeMode(editorMode: EditorMode)
 
 ## executeCut
 
-功能：剪切
+Feature: Cut
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeCut()
@@ -31,9 +31,9 @@ instance.command.executeCut()
 
 ## executeCopy
 
-功能：复制
+Feature: Copy
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeCopy()
@@ -41,9 +41,9 @@ instance.command.executeCopy()
 
 ## executePaste
 
-功能：粘贴
+Feature: Paste
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePaste()
@@ -51,9 +51,9 @@ instance.command.executePaste()
 
 ## executeSelectAll
 
-功能：全选
+Feature: Select all
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSelectAll()
@@ -61,9 +61,9 @@ instance.command.executeSelectAll()
 
 ## executeBackspace
 
-功能：向前删除
+Feature: Forward delete
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeBackspace()
@@ -71,9 +71,9 @@ instance.command.executeBackspace()
 
 ## executeSetRange
 
-功能：设置选区
+Feature: Set selection
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSetRange(startIndex: number , endIndex: number)
@@ -81,9 +81,9 @@ instance.command.executeSetRange(startIndex: number , endIndex: number)
 
 ## executeUndo
 
-功能：撤销
+Feature: Undo
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeUndo()
@@ -91,9 +91,9 @@ instance.command.executeUndo()
 
 ## executeRedo
 
-功能：重做
+Feature: Redo
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeRedo()
@@ -101,9 +101,9 @@ instance.command.executeRedo()
 
 ## executePainter
 
-功能：格式刷-复制样式
+Feature: Format Brush - Copy style
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePainter()
@@ -111,9 +111,9 @@ instance.command.executePainter()
 
 ## executeApplyPainterStyle
 
-功能：格式刷-应用样式
+Feature: Format brush - Apply style
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeApplyPainterStyle()
@@ -121,9 +121,9 @@ instance.command.executeApplyPainterStyle()
 
 ## executeFormat
 
-功能：清除样式
+Feature: Clear format
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeFormat()
@@ -131,9 +131,9 @@ instance.command.executeFormat()
 
 ## executeFont
 
-功能：设置字体
+Feature: Set font
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeFont(font: string)
@@ -141,9 +141,9 @@ instance.command.executeFont(font: string)
 
 ## executeSize
 
-功能：设置字号
+Feature: Set font size
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSize(size: number)
@@ -151,9 +151,9 @@ instance.command.executeSize(size: number)
 
 ## executeSizeAdd
 
-功能：增大字号
+Feature: Increase the font size
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSizeAdd()
@@ -161,9 +161,9 @@ instance.command.executeSizeAdd()
 
 ## executeSizeMinus
 
-功能：减小字号
+Feature: Reduce the font size
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSizeMinus()
@@ -171,9 +171,9 @@ instance.command.executeSizeMinus()
 
 ## executeBold
 
-功能：字体加粗
+Feature: Bold
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeBold()
@@ -181,9 +181,9 @@ instance.command.executeBold()
 
 ## executeItalic
 
-功能：字体斜体
+Feature: Italic
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeItalic()
@@ -191,9 +191,9 @@ instance.command.executeItalic()
 
 ## executeUnderline
 
-功能：下划线
+Feature: Underline
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeUnderline()
@@ -201,9 +201,9 @@ instance.command.executeUnderline()
 
 ## executeStrikeout
 
-功能：删除线
+Feature: Strikeout
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeStrikeout()
@@ -211,9 +211,9 @@ instance.command.executeStrikeout()
 
 ## executeSuperscript
 
-功能：上标
+Feature: Superscript
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSuperscript()
@@ -221,9 +221,9 @@ instance.command.executeSuperscript()
 
 ## executeSubscript
 
-功能：上下标
+Feature: Subscript
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSubscript()
@@ -231,9 +231,9 @@ instance.command.executeSubscript()
 
 ## executeColor
 
-功能：字体颜色
+Feature: Font color
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeColor()
@@ -241,9 +241,9 @@ instance.command.executeColor()
 
 ## executeHighlight
 
-功能：高亮
+Feature: Highlight
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeHighlight()
@@ -251,9 +251,9 @@ instance.command.executeHighlight()
 
 ## executeTitle
 
-功能：标题设置
+Feature: Set title
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeTitle(TitleLevel | null)
@@ -261,9 +261,9 @@ instance.command.executeTitle(TitleLevel | null)
 
 ## executeList
 
-功能：列表设置
+Feature: Set list
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
@@ -271,9 +271,9 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 
 ## executeRowFlex
 
-功能：行对齐
+Feature: Line alignment
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeRowFlex(rowFlex: RowFlex)
@@ -281,9 +281,9 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 
 ## executeRowMargin
 
-功能：行间距
+Feature: Line spacing
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeRowMargin(rowMargin: number)
@@ -291,9 +291,9 @@ instance.command.executeRowMargin(rowMargin: number)
 
 ## executeInsertTable
 
-功能：插入表格
+Feature: Insert table
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeInsertTable(row: number, col: number)
@@ -301,9 +301,9 @@ instance.command.executeInsertTable(row: number, col: number)
 
 ## executeInsertTableTopRow
 
-功能：向上插入一行
+Feature: Insert a row up
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeInsertTableTopRow()
@@ -311,9 +311,9 @@ instance.command.executeInsertTableTopRow()
 
 ## executeInsertTableBottomRow
 
-功能：向下插入一行
+Feature: Insert a row down
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeInsertTableBottomRow()
@@ -321,9 +321,9 @@ instance.command.executeInsertTableBottomRow()
 
 ## executeInsertTableLeftCol
 
-功能：向左插入一列
+Feature: Insert a column to the left
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeInsertTableLeftCol()
@@ -331,9 +331,9 @@ instance.command.executeInsertTableLeftCol()
 
 ## executeInsertTableRightCol
 
-功能：向右插入一列
+Feature: Insert a column to the right
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeInsertTableRightCol()
@@ -341,9 +341,9 @@ instance.command.executeInsertTableRightCol()
 
 ## executeDeleteTableRow
 
-功能：删除当前行
+Feature: Deletes the current row
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeDeleteTableRow()
@@ -351,9 +351,9 @@ instance.command.executeDeleteTableRow()
 
 ## executeDeleteTableCol
 
-功能：删除当前列
+Feature: Delete the current column
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeDeleteTableCol()
@@ -361,9 +361,9 @@ instance.command.executeDeleteTableCol()
 
 ## executeDeleteTable
 
-功能：删除表格
+Feature: Delete the table
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeDeleteTable()
@@ -371,9 +371,9 @@ instance.command.executeDeleteTable()
 
 ## executeMergeTableCell
 
-功能：合并表格
+Feature: Merge tables
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeMergeTableCell()
@@ -381,9 +381,9 @@ instance.command.executeMergeTableCell()
 
 ## executeCancelMergeTableCell
 
-功能：取消合并表格
+Feature: Cancel the merge form
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeCancelMergeTableCell()
@@ -391,9 +391,9 @@ instance.command.executeCancelMergeTableCell()
 
 ## executeTableTdVerticalAlign
 
-功能：表格单元格垂直对齐方式
+Feature: Table cell vertical alignment
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
@@ -401,9 +401,9 @@ instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
 
 ## executeTableBorderType
 
-功能：表格边框类型
+Feature: Table border type
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeTableBorderType(payload: TableBorder)
@@ -411,9 +411,9 @@ instance.command.executeTableBorderType(payload: TableBorder)
 
 ## executeTableTdBackgroundColor
 
-功能：表格单元格背景色
+Feature: Table cell background color
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeTableTdBackgroundColor(payload: string)
@@ -421,9 +421,9 @@ instance.command.executeTableTdBackgroundColor(payload: string)
 
 ## executeImage
 
-功能：插入图片
+Feature: Insert a picture
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeImage({
@@ -435,9 +435,9 @@ instance.command.executeImage({
 
 ## executeHyperlink
 
-功能：插入链接
+Feature: Insert a link
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeHyperlink({
@@ -450,9 +450,9 @@ instance.command.executeHyperlink({
 
 ## executeDeleteHyperlink
 
-功能：删除链接
+Feature: Delete the link
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeDeleteHyperlink()
@@ -460,9 +460,9 @@ instance.command.executeDeleteHyperlink()
 
 ## executeCancelHyperlink
 
-功能：取消链接
+Feature: Unlink
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeCancelHyperlink()
@@ -470,9 +470,9 @@ instance.command.executeCancelHyperlink()
 
 ## executeEditHyperlink
 
-功能：编辑链接
+Feature: Edit the link
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeEditHyperlink(newUrl: string)
@@ -480,9 +480,9 @@ instance.command.executeEditHyperlink(newUrl: string)
 
 ## executeSeparator
 
-功能：插入分割线
+Feature: Insert a dividing line
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSeparator(dashArray: number[])
@@ -490,9 +490,9 @@ instance.command.executeSeparator(dashArray: number[])
 
 ## executePageBreak
 
-功能：分页符
+Feature: Page breaks
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePageBreak()
@@ -500,9 +500,9 @@ instance.command.executePageBreak()
 
 ## executeAddWatermark
 
-功能：添加水印
+Feature: Add a watermark
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeAddWatermark({
@@ -516,9 +516,9 @@ instance.command.executeAddWatermark({
 
 ## executeDeleteWatermark
 
-功能：删除水印
+Feature: Remove the watermark
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeDeleteWatermark()
@@ -526,9 +526,9 @@ instance.command.executeDeleteWatermark()
 
 ## executeSearch
 
-功能：搜索
+Feature: 搜索
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSearch(keyword: string)
@@ -536,9 +536,9 @@ instance.command.executeSearch(keyword: string)
 
 ## executeSearchNavigatePre
 
-功能：搜索导航-上一个
+Feature: Search Navigation - Previous
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSearchNavigatePre()
@@ -546,9 +546,9 @@ instance.command.executeSearchNavigatePre()
 
 ## executeSearchNavigateNext
 
-功能：搜索导航-下一个
+Feature: Search Navigation - Next
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSearchNavigateNext()
@@ -556,9 +556,9 @@ instance.command.executeSearchNavigateNext()
 
 ## executeReplace
 
-功能：搜索替换
+Feature: Search for replacement
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeReplace(newWord: string)
@@ -566,9 +566,9 @@ instance.command.executeReplace(newWord: string)
 
 ## executePrint
 
-功能：打印
+Feature: Print
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePrint()
@@ -576,9 +576,9 @@ instance.command.executePrint()
 
 ## executeReplaceImageElement
 
-功能：替换图片
+Feature: Replace the picture
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeReplaceImageElement(newUrl: string)
@@ -586,9 +586,9 @@ instance.command.executeReplaceImageElement(newUrl: string)
 
 ## executeSaveAsImageElement
 
-功能：另存为图片
+Feature: Save as picture
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSaveAsImageElement()
@@ -596,9 +596,9 @@ instance.command.executeSaveAsImageElement()
 
 ## executeChangeImageDisplay
 
-功能：改变图片行显示方式
+Feature: Change how image rows are displayed
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSaveAsImageElement(element: IElement, display: ImageDisplay)
@@ -606,9 +606,9 @@ instance.command.executeSaveAsImageElement(element: IElement, display: ImageDisp
 
 ## executePageMode
 
-功能：页面模式
+Feature: Page mode
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePageMode(pageMode: PageMode)
@@ -616,9 +616,9 @@ instance.command.executePageMode(pageMode: PageMode)
 
 ## executePageScaleRecovery
 
-功能：恢复页面原始缩放比例
+Feature: Restore the original zoom factor of the page
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePageScaleRecovery()
@@ -626,9 +626,9 @@ instance.command.executePageScaleRecovery()
 
 ## executePageScaleMinus
 
-功能：页面缩小
+Feature: Page zoom out
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePageScaleMinus()
@@ -636,9 +636,9 @@ instance.command.executePageScaleMinus()
 
 ## executePageScaleAdd
 
-功能：页面放大
+Feature: Page zoom in
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePageScaleAdd()
@@ -646,9 +646,9 @@ instance.command.executePageScaleAdd()
 
 ## executePaperSize
 
-功能：设置纸张大小
+Feature: Set the paper size
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePaperSize(width: number, height: number)
@@ -656,9 +656,9 @@ instance.command.executePaperSize(width: number, height: number)
 
 ## executePaperDirection
 
-功能：设置纸张方向
+Feature: Set the paper orientation
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executePaperDirection(paperDirection: PaperDirection)
@@ -666,9 +666,9 @@ instance.command.executePaperDirection(paperDirection: PaperDirection)
 
 ## executeSetPaperMargin
 
-功能：设置纸张页边距
+Feature: Set the paper margins
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
@@ -676,9 +676,9 @@ instance.command.executeSetPaperMargin([top: number, right: number, bottom: numb
 
 ## executeInsertElementList
 
-功能：插入元素
+Feature: Insert an element
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeInsertElementList(elementList: IElement[])
@@ -686,9 +686,9 @@ instance.command.executeInsertElementList(elementList: IElement[])
 
 ## executeAppendElementList
 
-功能：追加元素
+Feature: Append elements
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeAppendElementList(elementList: IElement[], options?: IAppendElementListOption)
@@ -696,9 +696,9 @@ instance.command.executeAppendElementList(elementList: IElement[], options?: IAp
 
 ## executeSetValue
 
-功能：设置编辑器数据
+Feature: Set the editor data
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSetValue(payload: Partial<IEditorData>)
@@ -706,9 +706,9 @@ instance.command.executeSetValue(payload: Partial<IEditorData>)
 
 ## executeRemoveControl
 
-功能：删除控件
+Feature: Delete the control
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeRemoveControl()
@@ -716,9 +716,9 @@ instance.command.executeRemoveControl()
 
 ## executeSetLocale
 
-功能：设置本地语言
+Feature: Set local language
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeSetLocale(locale: string)
@@ -726,9 +726,9 @@ instance.command.executeSetLocale(locale: string)
 
 ## executeLocationCatalog
 
-功能：定位目录位置
+Feature: Locate directory location
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeLocationCatalog(titleId: string)
@@ -736,9 +736,9 @@ instance.command.executeLocationCatalog(titleId: string)
 
 ## executeWordTool
 
-功能：文字工具（删除空行、行首空格）
+Feature: Word Tool (Delete blank lines and leading Spaces)
 
-用法：
+Usage:
 
 ```javascript
 instance.command.executeWordTool()

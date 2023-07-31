@@ -1432,7 +1432,7 @@ window.onload = function () {
     activeMode.classList.add('active')
   }
 
-  instance.listener.contentChange = debounce(async function () {
+  const handleContentChange = async function () {
     // 字数
     const wordCount = await instance.command.getWordCount()
     document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${
@@ -1442,7 +1442,9 @@ window.onload = function () {
     if (isCatalogShow) {
       updateCatalog()
     }
-  }, 200)
+  }
+  instance.listener.contentChange = debounce(handleContentChange, 200)
+  handleContentChange()
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
