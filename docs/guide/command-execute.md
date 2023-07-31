@@ -743,3 +743,11 @@ instance.command.executeLocationCatalog(titleId: string)
 ```javascript
 instance.command.executeWordTool()
 ```
+
+## executeSetHTML
+功能：设置编辑器HTML数据
+
+用法：
+```javascript
+instance.command.executeSetHTML(payload: Partial<IEditorHTML)
+```
