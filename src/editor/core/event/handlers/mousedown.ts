@@ -15,7 +15,10 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   if (!host.isAllowDrag) {
     const range = rangeManager.getRange()
     if (!isReadonly && range.startIndex !== range.endIndex) {
-      const isPointInRange = rangeManager.getIsPointInRange(evt.offsetX, evt.offsetY)
+      const isPointInRange = rangeManager.getIsPointInRange(
+        evt.offsetX,
+        evt.offsetY
+      )
       if (isPointInRange) {
         host.isAllowDrag = true
         host.cacheRange = deepClone(range)
@@ -44,6 +47,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     isImage,
     isTable,
     tdValueIndex,
+    hitLineStartIndex
   } = positionResult
   // 记录选区开始位置
   host.mouseDownStartPosition = {
@@ -83,18 +87,27 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       isSetCursor: !isDirectHitImage && !isDirectHitCheckbox,
       isCompute: false
     })
+    // 首字需定位到行首，非上一行最后一个字后
+    if (hitLineStartIndex) {
+      host.getDraw().getCursor().drawCursor({
+        hitLineStartIndex
+      })
+    }
   }
   // 预览工具组件
   const previewer = draw.getPreviewer()
   previewer.clearResizer()
   if (isDirectHitImage && !isReadonly) {
-    previewer.drawResizer(curElement, positionList[curIndex],
+    previewer.drawResizer(
+      curElement,
+      positionList[curIndex],
       curElement.type === ElementType.LATEX
         ? {
-          mime: 'svg',
-          srcKey: 'laTexSVG'
-        }
-        : {})
+            mime: 'svg',
+            srcKey: 'laTexSVG'
+          }
+        : {}
+    )
     // 光标事件代理丢失，重新定位
     draw.getCursor().drawCursor({
       isShow: false

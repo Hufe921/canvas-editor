@@ -3,7 +3,12 @@ import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { titleSizeMapping } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
-import { EditorContext, EditorMode, PageMode, PaperDirection } from '../../dataset/enum/Editor'
+import {
+  EditorContext,
+  EditorMode,
+  PageMode,
+  PaperDirection
+} from '../../dataset/enum/Editor'
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
@@ -12,16 +17,34 @@ import { TableBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
-import { IDrawImagePayload, IPainterOptions } from '../../interface/Draw'
-import { IEditorOption, IEditorResult } from '../../interface/Editor'
+import { DeepRequired } from '../../interface/Common'
+import {
+  IAppendElementListOption,
+  IDrawImagePayload,
+  IGetValueOption,
+  IPainterOption
+} from '../../interface/Draw'
+import {
+  IEditorData,
+  IEditorHTML,
+  IEditorOption,
+  IEditorResult
+} from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
+import { RangeContext } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
 import { IWatermark } from '../../interface/Watermark'
-import { downloadFile, getUUID } from '../../utils'
-import { formatElementContext, formatElementList, isTextLikeElement } from '../../utils/element'
+import { deepClone, downloadFile, getUUID } from '../../utils'
+import {
+  createDomFromElementList,
+  formatElementContext,
+  formatElementList,
+  isTextLikeElement,
+  pickElementAttr
+} from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -34,18 +57,14 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 
-
 export class CommandAdapt {
-
-  private readonly defaultWidth: number = 40
-
   private draw: Draw
   private range: RangeManager
   private position: Position
   private historyManager: HistoryManager
   private canvasEvent: CanvasEvent
   private tableTool: TableTool
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
   private control: Control
   private workerManager: WorkerManager
   private searchManager: Search
@@ -105,11 +124,19 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
     // 首字符禁止删除
-    if (isCollapsed && elementList[startIndex].value === ZERO && startIndex === 0) {
+    if (
+      isCollapsed &&
+      elementList[startIndex].value === ZERO &&
+      startIndex === 0
+    ) {
       return
     }
     if (!isCollapsed) {
-      this.draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+      this.draw.spliceElementList(
+        elementList,
+        startIndex + 1,
+        endIndex - startIndex
+      )
     } else {
       this.draw.spliceElementList(elementList, startIndex, 1)
     }
@@ -142,7 +169,7 @@ export class CommandAdapt {
     this.historyManager.redo()
   }
 
-  public painter(options: IPainterOptions) {
+  public painter(options: IPainterOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const selection = this.range.getSelection()
@@ -200,7 +227,12 @@ export class CommandAdapt {
     if (!selection || !selection.length) return
     let isExistUpdate = false
     selection.forEach(el => {
-      if ((!el.size && payload === defaultSize) || (el.size && el.size === payload)) return
+      if (
+        (!el.size && payload === defaultSize) ||
+        (el.size && el.size === payload)
+      ) {
+        return
+      }
       el.size = payload
       isExistUpdate = true
     })
@@ -312,7 +344,9 @@ export class CommandAdapt {
     if (activeControl) return
     const selection = this.range.getSelection()
     if (!selection) return
-    const superscriptIndex = selection.findIndex(s => s.type === ElementType.SUPERSCRIPT)
+    const superscriptIndex = selection.findIndex(
+      s => s.type === ElementType.SUPERSCRIPT
+    )
     selection.forEach(el => {
       // 取消上标
       if (~superscriptIndex) {
@@ -322,7 +356,11 @@ export class CommandAdapt {
         }
       } else {
         // 设置上标
-        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUBSCRIPT) {
+        if (
+          !el.type ||
+          el.type === ElementType.TEXT ||
+          el.type === ElementType.SUBSCRIPT
+        ) {
           el.type = ElementType.SUPERSCRIPT
         }
       }
@@ -337,7 +375,9 @@ export class CommandAdapt {
     if (activeControl) return
     const selection = this.range.getSelection()
     if (!selection) return
-    const subscriptIndex = selection.findIndex(s => s.type === ElementType.SUBSCRIPT)
+    const subscriptIndex = selection.findIndex(
+      s => s.type === ElementType.SUBSCRIPT
+    )
     selection.forEach(el => {
       // 取消下标
       if (~subscriptIndex) {
@@ -347,7 +387,11 @@ export class CommandAdapt {
         }
       } else {
         // 设置下标
-        if (!el.type || el.type === ElementType.TEXT || el.type === ElementType.SUPERSCRIPT) {
+        if (
+          !el.type ||
+          el.type === ElementType.TEXT ||
+          el.type === ElementType.SUPERSCRIPT
+        ) {
           el.type = ElementType.SUBSCRIPT
         }
       }
@@ -390,9 +434,10 @@ export class CommandAdapt {
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
     // 需要改变的元素列表
-    const changeElementList = startIndex === endIndex
-      ? this.range.getRangeElementList()
-      : elementList.slice(startIndex + 1, endIndex + 1)
+    const changeElementList =
+      startIndex === endIndex
+        ? this.range.getRangeElementList()
+        : elementList.slice(startIndex + 1, endIndex + 1)
     if (!changeElementList || !changeElementList.length) return
     // 设置值
     const titleId = getUUID()
@@ -430,7 +475,9 @@ export class CommandAdapt {
     const changeElementList = this.range.getRangeElementList()
     if (!changeElementList || !changeElementList.length) return
     // 如果包含列表则设置为取消列表
-    const isUnsetList = changeElementList.find(el => el.listType === listType && el.listStyle === listStyle)
+    const isUnsetList = changeElementList.find(
+      el => el.listType === listType && el.listStyle === listStyle
+    )
     // 设置值
     const listId = getUUID()
     changeElementList.forEach(el => {
@@ -532,7 +579,7 @@ export class CommandAdapt {
     for (let r = 0; r < row; r++) {
       const tdList: ITd[] = []
       const tr: ITr = {
-        height: 40,
+        height: this.options.defaultTrMinHeight,
         tdList
       }
       for (let c = 0; c < col; c++) {
@@ -603,13 +650,15 @@ export class CommandAdapt {
         id: newTdId,
         rowspan: 1,
         colspan: curTd.colspan,
-        value: [{
-          value: ZERO,
-          size: 16,
-          tableId,
-          trId: newTrId,
-          tdId: newTdId
-        }]
+        value: [
+          {
+            value: ZERO,
+            size: 16,
+            tableId,
+            trId: newTrId,
+            tdId: newTdId
+          }
+        ]
       })
     }
     curTrList.splice(trIndex!, 0, newTr)
@@ -639,9 +688,8 @@ export class CommandAdapt {
     const element = originalElementList[index!]
     const curTrList = element.trList!
     const curTr = curTrList[trIndex!]
-    const anchorTr = curTrList.length - 1 === trIndex
-      ? curTr
-      : curTrList[trIndex! + 1]
+    const anchorTr =
+      curTrList.length - 1 === trIndex ? curTr : curTrList[trIndex! + 1]
     // 之前/当前行跨行的增加跨行数
     if (anchorTr.tdList.length < element.colgroup!.length) {
       const curTrNo = anchorTr.tdList[0].rowIndex!
@@ -669,13 +717,15 @@ export class CommandAdapt {
         id: newTdId,
         rowspan: 1,
         colspan: curTd.colspan,
-        value: [{
-          value: ZERO,
-          size: 16,
-          tableId,
-          trId: newTrId,
-          tdId: newTdId
-        }]
+        value: [
+          {
+            value: ZERO,
+            size: 16,
+            tableId,
+            trId: newTrId,
+            tdId: newTdId
+          }
+        ]
       })
     }
     curTrList.splice(trIndex! + 1, 0, newTr)
@@ -713,19 +763,21 @@ export class CommandAdapt {
         id: tdId,
         rowspan: 1,
         colspan: 1,
-        value: [{
-          value: ZERO,
-          size: 16,
-          tableId,
-          trId: tr.id,
-          tdId
-        }]
+        value: [
+          {
+            value: ZERO,
+            size: 16,
+            tableId,
+            trId: tr.id,
+            tdId
+          }
+        ]
       })
     }
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.defaultWidth
+      width: this.options.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
@@ -770,19 +822,21 @@ export class CommandAdapt {
         id: tdId,
         rowspan: 1,
         colspan: 1,
-        value: [{
-          value: ZERO,
-          size: 16,
-          tableId,
-          trId: tr.id,
-          tdId
-        }]
+        value: [
+          {
+            value: ZERO,
+            size: 16,
+            tableId,
+            trId: tr.id,
+            tdId
+          }
+        ]
       })
     }
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.defaultWidth
+      width: this.options.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
@@ -836,13 +890,15 @@ export class CommandAdapt {
             id: tdId,
             rowspan: 1,
             colspan: 1,
-            value: [{
-              value: ZERO,
-              size: 16,
-              tableId: element.id,
-              trId: tr.id,
-              tdId
-            }]
+            value: [
+              {
+                value: ZERO,
+                size: 16,
+                tableId: element.id,
+                trId: tr.id,
+                tdId
+              }
+            ]
           })
           start += 1
         }
@@ -887,7 +943,10 @@ export class CommandAdapt {
         if (td.colspan > 1) {
           const tdColIndex = td.colIndex!
           // 交叉减去一列
-          if (tdColIndex <= curColIndex && tdColIndex + td.colspan - 1 >= curColIndex) {
+          if (
+            tdColIndex <= curColIndex &&
+            tdColIndex + td.colspan - 1 >= curColIndex
+          ) {
             td.colspan -= 1
           }
         }
@@ -942,7 +1001,13 @@ export class CommandAdapt {
     if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { isCrossRowCol, startTdIndex, endTdIndex, startTrIndex, endTrIndex } = this.range.getRange()
+    const {
+      isCrossRowCol,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex
+    } = this.range.getRange()
     if (!isCrossRowCol) return
     const { index } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
@@ -952,6 +1017,7 @@ export class CommandAdapt {
     let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      // prettier-ignore
       [startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
@@ -968,8 +1034,10 @@ export class CommandAdapt {
         const tdColIndex = td.colIndex!
         const tdRowIndex = td.rowIndex!
         if (
-          tdColIndex >= startColIndex && tdColIndex <= endColIndex
-          && tdRowIndex >= startRowIndex && tdRowIndex <= endRowIndex
+          tdColIndex >= startColIndex &&
+          tdColIndex <= endColIndex &&
+          tdRowIndex >= startRowIndex &&
+          tdRowIndex <= endRowIndex
         ) {
           tdList.push(td)
         }
@@ -996,7 +1064,12 @@ export class CommandAdapt {
         const tdEndX = tdStartX + td.width!
         const tdEndY = tdStartY + td.height!
         // 存在不符合项
-        if (startX > tdStartX || startY > tdStartY || endX < tdEndX || endY < tdEndY) {
+        if (
+          startX > tdStartX ||
+          startY > tdStartY ||
+          endX < tdEndX ||
+          endY < tdEndY
+        ) {
           return
         }
       }
@@ -1066,13 +1139,15 @@ export class CommandAdapt {
           id: tdId,
           rowspan: 1,
           colspan: 1,
-          value: [{
-            value: ZERO,
-            size: 16,
-            tableId: element.id,
-            trId: curTr.id,
-            tdId
-          }]
+          value: [
+            {
+              value: ZERO,
+              size: 16,
+              tableId: element.id,
+              trId: curTr.id,
+              tdId
+            }
+          ]
         })
       }
       curTd.colspan = 1
@@ -1087,13 +1162,15 @@ export class CommandAdapt {
             id: tdId,
             rowspan: 1,
             colspan: 1,
-            value: [{
-              value: ZERO,
-              size: 16,
-              tableId: element.id,
-              trId: tr.id,
-              tdId
-            }]
+            value: [
+              {
+                value: ZERO,
+                size: 16,
+                tableId: element.id,
+                trId: tr.id,
+                tdId
+              }
+            ]
           })
         }
       }
@@ -1243,7 +1320,11 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     const [leftIndex, rightIndex] = hyperRange
     // 删除元素
-    this.draw.spliceElementList(elementList, leftIndex, rightIndex - leftIndex + 1)
+    this.draw.spliceElementList(
+      elementList,
+      leftIndex,
+      rightIndex - leftIndex + 1
+    )
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
     const newIndex = leftIndex - 1
@@ -1308,7 +1389,12 @@ export class CommandAdapt {
     // 光标存在分割线，则判断为修改线段逻辑
     const endElement = elementList[endIndex + 1]
     if (endElement && endElement.type === ElementType.SEPARATOR) {
-      if (endElement.dashArray && endElement.dashArray.join() === payload.join()) return
+      if (
+        endElement.dashArray &&
+        endElement.dashArray.join() === payload.join()
+      ) {
+        return
+      }
       curIndex = endIndex
       endElement.dashArray = payload
     } else {
@@ -1336,10 +1422,12 @@ export class CommandAdapt {
     if (isReadonly) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
-    this.insertElementList([{
-      type: ElementType.PAGE_BREAK,
-      value: WRAP
-    }])
+    this.insertElementList([
+      {
+        type: ElementType.PAGE_BREAK,
+        value: WRAP
+      }
+    ])
   }
 
   public addWatermark(payload: IWatermark) {
@@ -1460,7 +1548,8 @@ export class CommandAdapt {
         }
         curTdId = tdId!
         const curTableIndex = tableIndex! + pageDiffCount
-        const tableElementList = elementList[curTableIndex].trList![trIndex!].tdList[tdIndex!].value
+        const tableElementList =
+          elementList[curTableIndex].trList![trIndex!].tdList[tdIndex!].value
         // 表格内元素
         const curIndex = index + tableDiffCount
         const tableElement = tableElementList[curIndex]
@@ -1485,8 +1574,8 @@ export class CommandAdapt {
         const curIndex = match.index + pageDiffCount
         const element = elementList[curIndex]
         if (
-          element.type === ElementType.CONTROL
-          && element.controlComponent !== ControlComponent.VALUE
+          element.type === ElementType.CONTROL &&
+          element.controlComponent !== ControlComponent.VALUE
         ) {
           continue
         }
@@ -1519,7 +1608,8 @@ export class CommandAdapt {
     const firstIndex = firstMatch.index + (payload.length - 1)
     if (firstMatch.type === EditorContext.TABLE) {
       const { tableIndex, trIndex, tdIndex, index } = firstMatch
-      const element = elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!].value[index]
+      const element =
+        elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!].value[index]
       this.position.setPositionContext({
         isTable: true,
         index: tableIndex,
@@ -1542,13 +1632,13 @@ export class CommandAdapt {
   }
 
   public async print() {
-    const { scale } = this.options
+    const { scale, printPixelRatio } = this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
     const width = this.draw.getOriginalWidth()
     const height = this.draw.getOriginalHeight()
-    const base64List = await this.draw.getDataURL()
+    const base64List = await this.draw.getDataURL(printPixelRatio)
     printImageBase64(base64List, width, height)
     if (scale !== 1) {
       this.draw.setPageScale(scale)
@@ -1585,12 +1675,24 @@ export class CommandAdapt {
     })
   }
 
-  public getImage(): Promise<string[]> {
-    return this.draw.getDataURL()
+  public getImage(pixelRatio?: number): Promise<string[]> {
+    return this.draw.getDataURL(pixelRatio)
   }
 
-  public getValue(): IEditorResult {
-    return this.draw.getValue()
+  public getValue(options?: IGetValueOption): IEditorResult {
+    return this.draw.getValue(options)
+  }
+
+  public getHTML(): IEditorHTML {
+    const options = this.options
+    const headerElementList = this.draw.getHeaderElementList()
+    const mainElementList = this.draw.getOriginalMainElementList()
+    const footerElementList = this.draw.getFooterElementList()
+    return {
+      header: createDomFromElementList(headerElementList, options).innerHTML,
+      main: createDomFromElementList(mainElementList, options).innerHTML,
+      footer: createDomFromElementList(footerElementList, options).innerHTML
+    }
   }
 
   public getWordCount(): Promise<number> {
@@ -1599,6 +1701,31 @@ export class CommandAdapt {
 
   public getRangeText(): string {
     return this.range.toString()
+  }
+
+  public getRangeContext(): RangeContext | null {
+    const range = this.range.getRange()
+    const { startIndex, endIndex } = range
+    if (!~startIndex && !~endIndex) return null
+    // 选区信息
+    const isCollapsed = startIndex === endIndex
+    // 元素信息
+    const elementList = this.draw.getElementList()
+    const startElement = pickElementAttr(
+      elementList[isCollapsed ? startIndex : startIndex + 1]
+    )
+    const endElement = pickElementAttr(elementList[endIndex])
+    // 页码信息
+    const positionList = this.position.getPositionList()
+    const startPageNo = positionList[startIndex].pageNo
+    const endPageNo = positionList[endIndex].pageNo
+    return deepClone({
+      isCollapsed,
+      startElement,
+      endElement,
+      startPageNo,
+      endPageNo
+    })
   }
 
   public pageMode(payload: PageMode) {
@@ -1655,6 +1782,20 @@ export class CommandAdapt {
     this.draw.insertElementList(payload)
   }
 
+  public appendElementList(
+    elementList: IElement[],
+    options?: IAppendElementListOption
+  ) {
+    if (!elementList.length) return
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.appendElementList(elementList, options)
+  }
+
+  public setValue(payload: Partial<IEditorData>) {
+    this.draw.setValue(payload)
+  }
+
   public removeControl() {
     const { startIndex, endIndex } = this.range.getRange()
     if (startIndex !== endIndex) return
@@ -1684,7 +1825,10 @@ export class CommandAdapt {
     let newIndex = -1
     for (let e = 0; e < elementList.length; e++) {
       const element = elementList[e]
-      if (element.titleId === titleId && elementList[e + 1]?.titleId !== titleId) {
+      if (
+        element.titleId === titleId &&
+        elementList[e + 1]?.titleId !== titleId
+      ) {
         newIndex = e
         break
       }
@@ -1725,5 +1869,4 @@ export class CommandAdapt {
       })
     }
   }
-
 }

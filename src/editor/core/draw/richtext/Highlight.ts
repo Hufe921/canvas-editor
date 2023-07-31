@@ -3,7 +3,6 @@ import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
 
 export class Highlight extends AbstractRichText {
-
   private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
@@ -22,5 +21,4 @@ export class Highlight extends AbstractRichText {
     ctx.restore()
     this.clearFillInfo()
   }
-
 }

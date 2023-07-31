@@ -1,37 +1,60 @@
 import { data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
-import Editor, { BlockType, Command, ControlType, EditorMode, ElementType, IBlock, ICatalogItem, IElement, KeyMap, ListStyle, ListType, PageMode, PaperDirection, RowFlex, TitleLevel } from './editor'
+import Editor, {
+  BlockType,
+  Command,
+  ControlType,
+  EditorMode,
+  ElementType,
+  IBlock,
+  ICatalogItem,
+  IElement,
+  KeyMap,
+  ListStyle,
+  ListType,
+  PageMode,
+  PaperDirection,
+  RowFlex,
+  TitleLevel
+} from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
 import { debounce } from './utils'
 
 window.onload = function () {
-  const isApple = typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
+  const isApple =
+    typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
 
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
   const instance = new Editor(
     container,
     {
-      header: [{
-        value: '第一人民医院',
-        size: 32,
-        rowFlex: RowFlex.CENTER
-      }, {
-        value: '\n门诊病历',
-        size: 18,
-        rowFlex: RowFlex.CENTER
-      }, {
-        value: '\n',
-        type: ElementType.SEPARATOR
-      }],
+      header: [
+        {
+          value: '第一人民医院',
+          size: 32,
+          rowFlex: RowFlex.CENTER
+        },
+        {
+          value: '\n门诊病历',
+          size: 18,
+          rowFlex: RowFlex.CENTER
+        },
+        {
+          value: '\n',
+          type: ElementType.SEPARATOR
+        }
+      ],
       main: <IElement[]>data,
-      footer: [{
-        value: 'canvas-editor',
-        size: 12
-      }]
+      footer: [
+        {
+          value: 'canvas-editor',
+          size: 12
+        }
+      ]
     },
     options
   )
@@ -40,13 +63,17 @@ window.onload = function () {
   Reflect.set(window, 'editor', instance)
 
   // 菜单弹窗销毁
-  window.addEventListener('click', (evt) => {
-    const visibleDom = document.querySelector('.visible')
-    if (!visibleDom || visibleDom.contains(<Node>evt.target)) return
-    visibleDom.classList.remove('visible')
-  }, {
-    capture: true
-  })
+  window.addEventListener(
+    'click',
+    evt => {
+      const visibleDom = document.querySelector('.visible')
+      if (!visibleDom || visibleDom.contains(<Node>evt.target)) return
+      visibleDom.classList.remove('visible')
+    },
+    {
+      capture: true
+    }
+  )
 
   // 2. | 撤销 | 重做 | 格式刷 | 清除格式 |
   const undoDom = document.querySelector<HTMLDivElement>('.menu-item__undo')!
@@ -63,7 +90,9 @@ window.onload = function () {
     instance.command.executeRedo()
   }
 
-  const painterDom = document.querySelector<HTMLDivElement>('.menu-item__painter')!
+  const painterDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__painter'
+  )!
   painterDom.onclick = function () {
     console.log('painter')
     instance.command.executePainter({
@@ -77,10 +106,11 @@ window.onload = function () {
     })
   }
 
-  document.querySelector<HTMLDivElement>('.menu-item__format')!.onclick = function () {
-    console.log('format')
-    instance.command.executeFormat()
-  }
+  document.querySelector<HTMLDivElement>('.menu-item__format')!.onclick =
+    function () {
+      console.log('format')
+      instance.command.executeFormat()
+    }
 
   // 3. | 字体 | 字体变大 | 字体变小 | 加粗 | 斜体 | 下划线 | 删除线 | 上标 | 下标 | 字体颜色 | 背景色 |
   const fontDom = document.querySelector<HTMLDivElement>('.menu-item__font')!
@@ -108,14 +138,18 @@ window.onload = function () {
     instance.command.executeSize(Number(li.dataset.size!))
   }
 
-  const sizeAddDom = document.querySelector<HTMLDivElement>('.menu-item__size-add')!
+  const sizeAddDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__size-add'
+  )!
   sizeAddDom.title = `增大字号(${isApple ? '⌘' : 'Ctrl'}+[)`
   sizeAddDom.onclick = function () {
     console.log('size-add')
     instance.command.executeSizeAdd()
   }
 
-  const sizeMinusDom = document.querySelector<HTMLDivElement>('.menu-item__size-minus')!
+  const sizeMinusDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__size-minus'
+  )!
   sizeMinusDom.title = `减小字号(${isApple ? '⌘' : 'Ctrl'}+])`
   sizeMinusDom.onclick = function () {
     console.log('size-minus')
@@ -129,34 +163,43 @@ window.onload = function () {
     instance.command.executeBold()
   }
 
-  const italicDom = document.querySelector<HTMLDivElement>('.menu-item__italic')!
+  const italicDom =
+    document.querySelector<HTMLDivElement>('.menu-item__italic')!
   italicDom.title = `斜体(${isApple ? '⌘' : 'Ctrl'}+I)`
   italicDom.onclick = function () {
     console.log('italic')
     instance.command.executeItalic()
   }
 
-  const underlineDom = document.querySelector<HTMLDivElement>('.menu-item__underline')!
+  const underlineDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__underline'
+  )!
   underlineDom.title = `下划线(${isApple ? '⌘' : 'Ctrl'}+U)`
   underlineDom.onclick = function () {
     console.log('underline')
     instance.command.executeUnderline()
   }
 
-  const strikeoutDom = document.querySelector<HTMLDivElement>('.menu-item__strikeout')!
+  const strikeoutDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__strikeout'
+  )!
   strikeoutDom.onclick = function () {
     console.log('strikeout')
     instance.command.executeStrikeout()
   }
 
-  const superscriptDom = document.querySelector<HTMLDivElement>('.menu-item__superscript')!
+  const superscriptDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__superscript'
+  )!
   superscriptDom.title = `上标(${isApple ? '⌘' : 'Ctrl'}+Shift+,)`
   superscriptDom.onclick = function () {
     console.log('superscript')
     instance.command.executeSuperscript()
   }
 
-  const subscriptDom = document.querySelector<HTMLDivElement>('.menu-item__subscript')!
+  const subscriptDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__subscript'
+  )!
   subscriptDom.title = `下标(${isApple ? '⌘' : 'Ctrl'}+Shift+.)`
   subscriptDom.onclick = function () {
     console.log('subscript')
@@ -174,11 +217,14 @@ window.onload = function () {
     colorControlDom.click()
   }
 
-  const highlightControlDom = document.querySelector<HTMLInputElement>('#highlight')!
+  const highlightControlDom =
+    document.querySelector<HTMLInputElement>('#highlight')!
   highlightControlDom.oninput = function () {
     instance.command.executeHighlight(highlightControlDom.value)
   }
-  const highlightDom = document.querySelector<HTMLDivElement>('.menu-item__highlight')!
+  const highlightDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__highlight'
+  )!
   const highlightSpanDom = highlightDom.querySelector('span')!
   highlightDom.onclick = function () {
     console.log('highlight')
@@ -209,7 +255,8 @@ window.onload = function () {
     instance.command.executeRowFlex(RowFlex.LEFT)
   }
 
-  const centerDom = document.querySelector<HTMLDivElement>('.menu-item__center')!
+  const centerDom =
+    document.querySelector<HTMLDivElement>('.menu-item__center')!
   centerDom.title = `居中对齐(${isApple ? '⌘' : 'Ctrl'}+E)`
   centerDom.onclick = function () {
     console.log('center')
@@ -223,14 +270,18 @@ window.onload = function () {
     instance.command.executeRowFlex(RowFlex.RIGHT)
   }
 
-  const alignmentDom = document.querySelector<HTMLDivElement>('.menu-item__alignment')!
+  const alignmentDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__alignment'
+  )!
   alignmentDom.title = `两端对齐(${isApple ? '⌘' : 'Ctrl'}+J)`
   alignmentDom.onclick = function () {
     console.log('alignment')
     instance.command.executeRowFlex(RowFlex.ALIGNMENT)
   }
 
-  const rowMarginDom = document.querySelector<HTMLDivElement>('.menu-item__row-margin')!
+  const rowMarginDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__row-margin'
+  )!
   const rowOptionDom = rowMarginDom.querySelector<HTMLDivElement>('.options')!
   rowMarginDom.onclick = function () {
     console.log('row-margin')
@@ -251,13 +302,15 @@ window.onload = function () {
   listOptionDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
     const listType = <ListType>li.dataset.listType || null
-    const listStyle = <ListStyle><unknown>li.dataset.listStyle
+    const listStyle = <ListStyle>(<unknown>li.dataset.listStyle)
     instance.command.executeList(listType, listStyle)
   }
 
   // 4. | 表格 | 图片 | 超链接 | 分割线 | 水印 | 代码块 | 分隔符 | 控件 | 复选框 | LaTeX | 日期选择器
   const tableDom = document.querySelector<HTMLDivElement>('.menu-item__table')!
-  const tablePanelContainer = document.querySelector<HTMLDivElement>('.menu-item__table__collapse')!
+  const tablePanelContainer = document.querySelector<HTMLDivElement>(
+    '.menu-item__table__collapse'
+  )!
   const tableClose = document.querySelector<HTMLDivElement>('.table-close')!
   const tableTitle = document.querySelector<HTMLDivElement>('.table-select')!
   const tablePanel = document.querySelector<HTMLDivElement>('.table-panel')!
@@ -349,32 +402,37 @@ window.onload = function () {
         instance.command.executeImage({
           value,
           width: image.width,
-          height: image.height,
+          height: image.height
         })
         imageFileDom.value = ''
       }
     }
   }
 
-  const hyperlinkDom = document.querySelector<HTMLDivElement>('.menu-item__hyperlink')!
+  const hyperlinkDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__hyperlink'
+  )!
   hyperlinkDom.onclick = function () {
     console.log('hyperlink')
     new Dialog({
       title: '超链接',
-      data: [{
-        type: 'text',
-        label: '文本',
-        name: 'name',
-        required: true,
-        placeholder: '请输入文本'
-      }, {
-        type: 'text',
-        label: '链接',
-        name: 'url',
-        required: true,
-        placeholder: '请输入链接'
-      }],
-      onConfirm: (payload) => {
+      data: [
+        {
+          type: 'text',
+          label: '文本',
+          name: 'name',
+          required: true,
+          placeholder: '请输入文本'
+        },
+        {
+          type: 'text',
+          label: '链接',
+          name: 'url',
+          required: true,
+          placeholder: '请输入链接'
+        }
+      ],
+      onConfirm: payload => {
         const name = payload.find(p => p.name === 'name')?.value
         if (!name) return
         const url = payload.find(p => p.name === 'url')?.value
@@ -392,8 +450,11 @@ window.onload = function () {
     })
   }
 
-  const separatorDom = document.querySelector<HTMLDivElement>('.menu-item__separator')!
-  const separatorOptionDom = separatorDom.querySelector<HTMLDivElement>('.options')!
+  const separatorDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__separator'
+  )!
+  const separatorOptionDom =
+    separatorDom.querySelector<HTMLDivElement>('.options')!
   separatorDom.onclick = function () {
     console.log('separator')
     separatorOptionDom.classList.toggle('visible')
@@ -411,14 +472,19 @@ window.onload = function () {
     instance.command.executeSeparator(payload)
   }
 
-  const pageBreakDom = document.querySelector<HTMLDivElement>('.menu-item__page-break')!
+  const pageBreakDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__page-break'
+  )!
   pageBreakDom.onclick = function () {
     console.log('pageBreak')
     instance.command.executePageBreak()
   }
 
-  const watermarkDom = document.querySelector<HTMLDivElement>('.menu-item__watermark')!
-  const watermarkOptionDom = watermarkDom.querySelector<HTMLDivElement>('.options')!
+  const watermarkDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__watermark'
+  )!
+  const watermarkOptionDom =
+    watermarkDom.querySelector<HTMLDivElement>('.options')!
   watermarkDom.onclick = function () {
     console.log('watermark')
     watermarkOptionDom.classList.toggle('visible')
@@ -430,26 +496,30 @@ window.onload = function () {
     if (menu === 'add') {
       new Dialog({
         title: '水印',
-        data: [{
-          type: 'text',
-          label: '内容',
-          name: 'data',
-          required: true,
-          placeholder: '请输入内容'
-        }, {
-          type: 'color',
-          label: '颜色',
-          name: 'color',
-          required: true,
-          value: '#AEB5C0'
-        }, {
-          type: 'number',
-          label: '字体大小',
-          name: 'size',
-          required: true,
-          value: '120'
-        }],
-        onConfirm: (payload) => {
+        data: [
+          {
+            type: 'text',
+            label: '内容',
+            name: 'data',
+            required: true,
+            placeholder: '请输入内容'
+          },
+          {
+            type: 'color',
+            label: '颜色',
+            name: 'color',
+            required: true,
+            value: '#AEB5C0'
+          },
+          {
+            type: 'number',
+            label: '字体大小',
+            name: 'size',
+            required: true,
+            value: '120'
+          }
+        ],
+        onConfirm: payload => {
           const nullableIndex = payload.findIndex(p => !p.value)
           if (~nullableIndex) return
           const watermark = payload.reduce((pre, cur) => {
@@ -468,19 +538,23 @@ window.onload = function () {
     }
   }
 
-  const codeblockDom = document.querySelector<HTMLDivElement>('.menu-item__codeblock')!
+  const codeblockDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__codeblock'
+  )!
   codeblockDom.onclick = function () {
     console.log('codeblock')
     new Dialog({
       title: '代码块',
-      data: [{
-        type: 'textarea',
-        name: 'codeblock',
-        placeholder: '请输入代码',
-        width: 500,
-        height: 300
-      }],
-      onConfirm: (payload) => {
+      data: [
+        {
+          type: 'textarea',
+          name: 'codeblock',
+          placeholder: '请输入代码',
+          width: 500,
+          height: 300
+        }
+      ],
+      onConfirm: payload => {
         const codeblock = payload.find(p => p.name === 'codeblock')?.value
         if (!codeblock) return
         const tokenList = prism.tokenize(codeblock, prism.languages.javascript)
@@ -514,7 +588,9 @@ window.onload = function () {
     })
   }
 
-  const controlDom = document.querySelector<HTMLDivElement>('.menu-item__control')!
+  const controlDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__control'
+  )!
   const controlOptionDom = controlDom.querySelector<HTMLDivElement>('.options')!
   controlDom.onclick = function () {
     console.log('control')
@@ -528,110 +604,132 @@ window.onload = function () {
       case ControlType.TEXT:
         new Dialog({
           title: '文本控件',
-          data: [{
-            type: 'text',
-            label: '占位符',
-            name: 'placeholder',
-            required: true,
-            placeholder: '请输入占位符'
-          }, {
-            type: 'text',
-            label: '默认值',
-            name: 'value',
-            placeholder: '请输入默认值'
-          }],
-          onConfirm: (payload) => {
-            const placeholder = payload.find(p => p.name === 'placeholder')?.value
+          data: [
+            {
+              type: 'text',
+              label: '占位符',
+              name: 'placeholder',
+              required: true,
+              placeholder: '请输入占位符'
+            },
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'value',
+              placeholder: '请输入默认值'
+            }
+          ],
+          onConfirm: payload => {
+            const placeholder = payload.find(
+              p => p.name === 'placeholder'
+            )?.value
             if (!placeholder) return
             const value = payload.find(p => p.name === 'value')?.value || ''
-            instance.command.executeInsertElementList([{
-              type: ElementType.CONTROL,
-              value: '',
-              control: {
-                type,
-                value: value
-                  ? [{
-                    value
-                  }]
-                  : null,
-                placeholder
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  value: value
+                    ? [
+                        {
+                          value
+                        }
+                      ]
+                    : null,
+                  placeholder
+                }
               }
-            }])
+            ])
           }
         })
         break
       case ControlType.SELECT:
         new Dialog({
           title: '列举控件',
-          data: [{
-            type: 'text',
-            label: '占位符',
-            name: 'placeholder',
-            required: true,
-            placeholder: '请输入占位符'
-          }, {
-            type: 'text',
-            label: '默认值',
-            name: 'code',
-            placeholder: '请输入默认值'
-          }, {
-            type: 'textarea',
-            label: '值集',
-            name: 'valueSets',
-            required: true,
-            height: 100,
-            placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
-          }],
-          onConfirm: (payload) => {
-            const placeholder = payload.find(p => p.name === 'placeholder')?.value
+          data: [
+            {
+              type: 'text',
+              label: '占位符',
+              name: 'placeholder',
+              required: true,
+              placeholder: '请输入占位符'
+            },
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'code',
+              placeholder: '请输入默认值'
+            },
+            {
+              type: 'textarea',
+              label: '值集',
+              name: 'valueSets',
+              required: true,
+              height: 100,
+              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            }
+          ],
+          onConfirm: payload => {
+            const placeholder = payload.find(
+              p => p.name === 'placeholder'
+            )?.value
             if (!placeholder) return
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([{
-              type: ElementType.CONTROL,
-              value: '',
-              control: {
-                type,
-                code,
-                value: null,
-                placeholder,
-                valueSets: JSON.parse(valueSets)
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  code,
+                  value: null,
+                  placeholder,
+                  valueSets: JSON.parse(valueSets)
+                }
               }
-            }])
+            ])
           }
         })
         break
       case ControlType.CHECKBOX:
         new Dialog({
           title: '复选框控件',
-          data: [{
-            type: 'text',
-            label: '默认值',
-            name: 'code',
-            placeholder: '请输入默认值，多个值以英文逗号分割'
-          }, {
-            type: 'textarea',
-            label: '值集',
-            name: 'valueSets',
-            required: true,
-            height: 100,
-            placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
-          }],
-          onConfirm: (payload) => {
+          data: [
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'code',
+              placeholder: '请输入默认值，多个值以英文逗号分割'
+            },
+            {
+              type: 'textarea',
+              label: '值集',
+              name: 'valueSets',
+              required: true,
+              height: 100,
+              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            }
+          ],
+          onConfirm: payload => {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([{
-              type: ElementType.CONTROL,
-              value: '',
-              control: {
-                type,
-                code,
-                value: null,
-                valueSets: JSON.parse(valueSets)
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  code,
+                  value: null,
+                  valueSets: JSON.parse(valueSets)
+                }
               }
-            }])
+            ])
           }
         })
         break
@@ -640,13 +738,17 @@ window.onload = function () {
     }
   }
 
-  const checkboxDom = document.querySelector<HTMLDivElement>('.menu-item__checkbox')!
+  const checkboxDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__checkbox'
+  )!
   checkboxDom.onclick = function () {
     console.log('checkbox')
-    instance.command.executeInsertElementList([{
-      type: ElementType.CHECKBOX,
-      value: ''
-    }])
+    instance.command.executeInsertElementList([
+      {
+        type: ElementType.CHECKBOX,
+        value: ''
+      }
+    ])
   }
 
   const latexDom = document.querySelector<HTMLDivElement>('.menu-item__latex')!
@@ -654,19 +756,23 @@ window.onload = function () {
     console.log('LaTeX')
     new Dialog({
       title: 'LaTeX',
-      data: [{
-        type: 'textarea',
-        height: 100,
-        name: 'value',
-        placeholder: '请输入LaTeX文本'
-      }],
-      onConfirm: (payload) => {
+      data: [
+        {
+          type: 'textarea',
+          height: 100,
+          name: 'value',
+          placeholder: '请输入LaTeX文本'
+        }
+      ],
+      onConfirm: payload => {
         const value = payload.find(p => p.name === 'value')?.value
         if (!value) return
-        instance.command.executeInsertElementList([{
-          type: ElementType.LATEX,
-          value
-        }])
+        instance.command.executeInsertElementList([
+          {
+            type: ElementType.LATEX,
+            value
+          }
+        ])
       }
     })
   }
@@ -696,21 +802,27 @@ window.onload = function () {
     const second = date.getSeconds().toString().padStart(2, '0')
     const dateString = `${year}-${month}-${day}`
     const dateTimeString = `${dateString} ${hour}:${minute}:${second}`
-    dateDomOptionDom.querySelector<HTMLLIElement>('li:first-child')!.innerText = dateString
-    dateDomOptionDom.querySelector<HTMLLIElement>('li:last-child')!.innerText = dateTimeString
+    dateDomOptionDom.querySelector<HTMLLIElement>('li:first-child')!.innerText =
+      dateString
+    dateDomOptionDom.querySelector<HTMLLIElement>('li:last-child')!.innerText =
+      dateTimeString
   }
   dateDomOptionDom.onmousedown = function (evt) {
     const li = evt.target as HTMLLIElement
     const dateFormat = li.dataset.format!
     dateDomOptionDom.classList.toggle('visible')
-    instance.command.executeInsertElementList([{
-      type: ElementType.DATE,
-      value: '',
-      dateFormat,
-      valueList: [{
-        value: li.innerText.trim(),
-      }]
-    }])
+    instance.command.executeInsertElementList([
+      {
+        type: ElementType.DATE,
+        value: '',
+        dateFormat,
+        valueList: [
+          {
+            value: li.innerText.trim()
+          }
+        ]
+      }
+    ])
   }
 
   const blockDom = document.querySelector<HTMLDivElement>('.menu-item__block')!
@@ -718,39 +830,47 @@ window.onload = function () {
     console.log('block')
     new Dialog({
       title: '内容块',
-      data: [{
-        type: 'select',
-        label: '类型',
-        name: 'type',
-        value: 'iframe',
-        required: true,
-        options: [{
-          label: '网址',
-          value: 'iframe'
-        }, {
-          label: '视频',
-          value: 'video'
-        }]
-      }, {
-        type: 'number',
-        label: '宽度',
-        name: 'width',
-        placeholder: '请输入宽度（默认页面内宽度）'
-      }, {
-        type: 'number',
-        label: '高度',
-        name: 'height',
-        required: true,
-        placeholder: '请输入高度'
-      }, {
-        type: 'textarea',
-        label: '地址',
-        height: 100,
-        name: 'value',
-        required: true,
-        placeholder: '请输入地址'
-      }],
-      onConfirm: (payload) => {
+      data: [
+        {
+          type: 'select',
+          label: '类型',
+          name: 'type',
+          value: 'iframe',
+          required: true,
+          options: [
+            {
+              label: '网址',
+              value: 'iframe'
+            },
+            {
+              label: '视频',
+              value: 'video'
+            }
+          ]
+        },
+        {
+          type: 'number',
+          label: '宽度',
+          name: 'width',
+          placeholder: '请输入宽度（默认页面内宽度）'
+        },
+        {
+          type: 'number',
+          label: '高度',
+          name: 'height',
+          required: true,
+          placeholder: '请输入高度'
+        },
+        {
+          type: 'textarea',
+          label: '地址',
+          height: 100,
+          name: 'value',
+          required: true,
+          placeholder: '请输入地址'
+        }
+      ],
+      onConfirm: payload => {
         const type = payload.find(p => p.name === 'type')?.value
         if (!type) return
         const value = payload.find(p => p.name === 'value')?.value
@@ -785,12 +905,20 @@ window.onload = function () {
   }
 
   // 5. | 搜索&替换 | 打印 |
-  const searchCollapseDom = document.querySelector<HTMLDivElement>('.menu-item__search__collapse')!
-  const searchInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__search input')!
-  const replaceInputDom = document.querySelector<HTMLInputElement>('.menu-item__search__collapse__replace input')!
-  const searchDom = document.querySelector<HTMLDivElement>('.menu-item__search')!
+  const searchCollapseDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__search__collapse'
+  )!
+  const searchInputDom = document.querySelector<HTMLInputElement>(
+    '.menu-item__search__collapse__search input'
+  )!
+  const replaceInputDom = document.querySelector<HTMLInputElement>(
+    '.menu-item__search__collapse__replace input'
+  )!
+  const searchDom =
+    document.querySelector<HTMLDivElement>('.menu-item__search')!
   searchDom.title = `搜索与替换(${isApple ? '⌘' : 'Ctrl'}+F)`
-  const searchResultDom = searchCollapseDom.querySelector<HTMLLabelElement>('.search-result')!
+  const searchResultDom =
+    searchCollapseDom.querySelector<HTMLLabelElement>('.search-result')!
   function setSearchResult() {
     const result = instance.command.getSearchNavigateInfo()
     if (result) {
@@ -814,13 +942,14 @@ window.onload = function () {
     }
     searchInputDom.focus()
   }
-  searchCollapseDom.querySelector<HTMLSpanElement>('span')!.onclick = function () {
-    searchCollapseDom.style.display = 'none'
-    searchInputDom.value = ''
-    replaceInputDom.value = ''
-    instance.command.executeSearch(null)
-    setSearchResult()
-  }
+  searchCollapseDom.querySelector<HTMLSpanElement>('span')!.onclick =
+    function () {
+      searchCollapseDom.style.display = 'none'
+      searchInputDom.value = ''
+      replaceInputDom.value = ''
+      instance.command.executeSearch(null)
+      setSearchResult()
+    }
   searchInputDom.oninput = function () {
     instance.command.executeSearch(searchInputDom.value || null)
     setSearchResult()
@@ -831,21 +960,24 @@ window.onload = function () {
       setSearchResult()
     }
   }
-  searchCollapseDom.querySelector<HTMLButtonElement>('button')!.onclick = function () {
-    const searchValue = searchInputDom.value
-    const replaceValue = replaceInputDom.value
-    if (searchValue && replaceValue && searchValue !== replaceValue) {
-      instance.command.executeReplace(replaceValue)
+  searchCollapseDom.querySelector<HTMLButtonElement>('button')!.onclick =
+    function () {
+      const searchValue = searchInputDom.value
+      const replaceValue = replaceInputDom.value
+      if (searchValue && replaceValue && searchValue !== replaceValue) {
+        instance.command.executeReplace(replaceValue)
+      }
     }
-  }
-  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-left')!.onclick = function () {
-    instance.command.executeSearchNavigatePre()
-    setSearchResult()
-  }
-  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-right')!.onclick = function () {
-    instance.command.executeSearchNavigateNext()
-    setSearchResult()
-  }
+  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-left')!.onclick =
+    function () {
+      instance.command.executeSearchNavigatePre()
+      setSearchResult()
+    }
+  searchCollapseDom.querySelector<HTMLDivElement>('.arrow-right')!.onclick =
+    function () {
+      instance.command.executeSearchNavigateNext()
+      setSearchResult()
+    }
 
   const printDom = document.querySelector<HTMLDivElement>('.menu-item__print')!
   printDom.title = `打印(${isApple ? '⌘' : 'Ctrl'}+P)`
@@ -857,10 +989,14 @@ window.onload = function () {
   // 6. 目录显隐 | 页面模式 | 纸张缩放 | 纸张大小 | 纸张方向 | 页边距 | 全屏
   async function updateCatalog() {
     const catalog = await instance.command.getCatalog()
-    const catalogMainDom = document.querySelector<HTMLDivElement>('.catalog__main')!
+    const catalogMainDom =
+      document.querySelector<HTMLDivElement>('.catalog__main')!
     catalogMainDom.innerHTML = ''
     if (catalog) {
-      const appendCatalog = (parent: HTMLDivElement, catalogItems: ICatalogItem[]) => {
+      const appendCatalog = (
+        parent: HTMLDivElement,
+        catalogItems: ICatalogItem[]
+      ) => {
         for (let c = 0; c < catalogItems.length; c++) {
           const catalogItem = catalogItems[c]
           const catalogItemDom = document.createElement('div')
@@ -888,8 +1024,11 @@ window.onload = function () {
   }
   let isCatalogShow = true
   const catalogDom = document.querySelector<HTMLElement>('.catalog')!
-  const catalogModeDom = document.querySelector<HTMLDivElement>('.catalog-mode')!
-  const catalogHeaderCloseDom = document.querySelector<HTMLDivElement>('.catalog__header__close')!
+  const catalogModeDom =
+    document.querySelector<HTMLDivElement>('.catalog-mode')!
+  const catalogHeaderCloseDom = document.querySelector<HTMLDivElement>(
+    '.catalog__header__close'
+  )!
   const switchCatalog = () => {
     isCatalogShow = !isCatalogShow
     if (isCatalogShow) {
@@ -903,7 +1042,8 @@ window.onload = function () {
   catalogHeaderCloseDom.onclick = switchCatalog
 
   const pageModeDom = document.querySelector<HTMLDivElement>('.page-mode')!
-  const pageModeOptionsDom = pageModeDom.querySelector<HTMLDivElement>('.options')!
+  const pageModeOptionsDom =
+    pageModeDom.querySelector<HTMLDivElement>('.options')!
   pageModeDom.onclick = function () {
     pageModeOptionsDom.classList.toggle('visible')
   }
@@ -912,24 +1052,28 @@ window.onload = function () {
     instance.command.executePageMode(<PageMode>li.dataset.pageMode!)
   }
 
-  document.querySelector<HTMLDivElement>('.page-scale-percentage')!.onclick = function () {
-    console.log('page-scale-recovery')
-    instance.command.executePageScaleRecovery()
-  }
+  document.querySelector<HTMLDivElement>('.page-scale-percentage')!.onclick =
+    function () {
+      console.log('page-scale-recovery')
+      instance.command.executePageScaleRecovery()
+    }
 
-  document.querySelector<HTMLDivElement>('.page-scale-minus')!.onclick = function () {
-    console.log('page-scale-minus')
-    instance.command.executePageScaleMinus()
-  }
+  document.querySelector<HTMLDivElement>('.page-scale-minus')!.onclick =
+    function () {
+      console.log('page-scale-minus')
+      instance.command.executePageScaleMinus()
+    }
 
-  document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick = function () {
-    console.log('page-scale-add')
-    instance.command.executePageScaleAdd()
-  }
+  document.querySelector<HTMLDivElement>('.page-scale-add')!.onclick =
+    function () {
+      console.log('page-scale-add')
+      instance.command.executePageScaleAdd()
+    }
 
   // 纸张大小
   const paperSizeDom = document.querySelector<HTMLDivElement>('.paper-size')!
-  const paperSizeDomOptionsDom = paperSizeDom.querySelector<HTMLDivElement>('.options')!
+  const paperSizeDomOptionsDom =
+    paperSizeDom.querySelector<HTMLDivElement>('.options')!
   paperSizeDom.onclick = function () {
     paperSizeDomOptionsDom.classList.toggle('visible')
   }
@@ -939,14 +1083,17 @@ window.onload = function () {
     const [width, height] = paperType.split('*').map(Number)
     instance.command.executePaperSize(width, height)
     // 纸张状态回显
-    paperSizeDomOptionsDom.querySelectorAll('li')
+    paperSizeDomOptionsDom
+      .querySelectorAll('li')
       .forEach(child => child.classList.remove('active'))
     li.classList.add('active')
   }
 
   // 纸张方向
-  const paperDirectionDom = document.querySelector<HTMLDivElement>('.paper-direction')!
-  const paperDirectionDomOptionsDom = paperDirectionDom.querySelector<HTMLDivElement>('.options')!
+  const paperDirectionDom =
+    document.querySelector<HTMLDivElement>('.paper-direction')!
+  const paperDirectionDomOptionsDom =
+    paperDirectionDom.querySelector<HTMLDivElement>('.options')!
   paperDirectionDom.onclick = function () {
     paperDirectionDomOptionsDom.classList.toggle('visible')
   }
@@ -955,47 +1102,55 @@ window.onload = function () {
     const paperDirection = li.dataset.paperDirection!
     instance.command.executePaperDirection(<PaperDirection>paperDirection)
     // 纸张方向状态回显
-    paperDirectionDomOptionsDom.querySelectorAll('li')
+    paperDirectionDomOptionsDom
+      .querySelectorAll('li')
       .forEach(child => child.classList.remove('active'))
     li.classList.add('active')
   }
 
   // 页面边距
-  const paperMarginDom = document.querySelector<HTMLDivElement>('.paper-margin')!
+  const paperMarginDom =
+    document.querySelector<HTMLDivElement>('.paper-margin')!
   paperMarginDom.onclick = function () {
-    const [topMargin, rightMargin, bottomMargin, leftMargin] = instance.command.getPaperMargin()
+    const [topMargin, rightMargin, bottomMargin, leftMargin] =
+      instance.command.getPaperMargin()
     new Dialog({
       title: '页边距',
-      data: [{
-        type: 'text',
-        label: '上边距',
-        name: 'top',
-        required: true,
-        value: `${topMargin}`,
-        placeholder: '请输入上边距'
-      }, {
-        type: 'text',
-        label: '下边距',
-        name: 'bottom',
-        required: true,
-        value: `${bottomMargin}`,
-        placeholder: '请输入下边距'
-      }, {
-        type: 'text',
-        label: '左边距',
-        name: 'left',
-        required: true,
-        value: `${leftMargin}`,
-        placeholder: '请输入左边距'
-      }, {
-        type: 'text',
-        label: '右边距',
-        name: 'right',
-        required: true,
-        value: `${rightMargin}`,
-        placeholder: '请输入右边距'
-      }],
-      onConfirm: (payload) => {
+      data: [
+        {
+          type: 'text',
+          label: '上边距',
+          name: 'top',
+          required: true,
+          value: `${topMargin}`,
+          placeholder: '请输入上边距'
+        },
+        {
+          type: 'text',
+          label: '下边距',
+          name: 'bottom',
+          required: true,
+          value: `${bottomMargin}`,
+          placeholder: '请输入下边距'
+        },
+        {
+          type: 'text',
+          label: '左边距',
+          name: 'left',
+          required: true,
+          value: `${leftMargin}`,
+          placeholder: '请输入左边距'
+        },
+        {
+          type: 'text',
+          label: '右边距',
+          name: 'right',
+          required: true,
+          value: `${rightMargin}`,
+          placeholder: '请输入右边距'
+        }
+      ],
+      onConfirm: payload => {
         const top = payload.find(p => p.name === 'top')?.value
         if (!top) return
         const bottom = payload.find(p => p.name === 'bottom')?.value
@@ -1017,7 +1172,7 @@ window.onload = function () {
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen
-  window.addEventListener('keydown', (evt) => {
+  window.addEventListener('keydown', evt => {
     if (evt.key === 'F11') {
       toggleFullscreen()
       evt.preventDefault()
@@ -1037,20 +1192,24 @@ window.onload = function () {
 
   // 7. 编辑器使用模式
   let modeIndex = 0
-  const modeList = [{
-    mode: EditorMode.EDIT,
-    name: '编辑模式'
-  }, {
-    mode: EditorMode.CLEAN,
-    name: '清洁模式'
-  }, {
-    mode: EditorMode.READONLY,
-    name: '只读模式'
-  }]
+  const modeList = [
+    {
+      mode: EditorMode.EDIT,
+      name: '编辑模式'
+    },
+    {
+      mode: EditorMode.CLEAN,
+      name: '清洁模式'
+    },
+    {
+      mode: EditorMode.READONLY,
+      name: '只读模式'
+    }
+  ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
   modeElement.onclick = function () {
     // 模式选择循环
-    modeIndex === 2 ? modeIndex = 0 : modeIndex++
+    modeIndex === 2 ? (modeIndex = 0) : modeIndex++
     // 设置模式
     const { name, mode } = modeList[modeIndex]
     modeElement.innerText = name
@@ -1069,38 +1228,64 @@ window.onload = function () {
   // 8. 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
     // 控件类型
-    payload.type === ElementType.SUBSCRIPT ? subscriptDom.classList.add('active') : subscriptDom.classList.remove('active')
-    payload.type === ElementType.SUPERSCRIPT ? superscriptDom.classList.add('active') : superscriptDom.classList.remove('active')
-    payload.type === ElementType.SEPARATOR ? separatorDom.classList.add('active') : separatorDom.classList.remove('active')
-    separatorOptionDom.querySelectorAll('li').forEach(li => li.classList.remove('active'))
+    payload.type === ElementType.SUBSCRIPT
+      ? subscriptDom.classList.add('active')
+      : subscriptDom.classList.remove('active')
+    payload.type === ElementType.SUPERSCRIPT
+      ? superscriptDom.classList.add('active')
+      : superscriptDom.classList.remove('active')
+    payload.type === ElementType.SEPARATOR
+      ? separatorDom.classList.add('active')
+      : separatorDom.classList.remove('active')
+    separatorOptionDom
+      .querySelectorAll('li')
+      .forEach(li => li.classList.remove('active'))
     if (payload.type === ElementType.SEPARATOR) {
       const separator = payload.dashArray.join(',') || '0,0'
-      const curSeparatorDom = separatorOptionDom.querySelector<HTMLLIElement>(`[data-separator='${separator}']`)!
+      const curSeparatorDom = separatorOptionDom.querySelector<HTMLLIElement>(
+        `[data-separator='${separator}']`
+      )!
       if (curSeparatorDom) {
         curSeparatorDom.classList.add('active')
       }
     }
 
     // 富文本
-    fontOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
-    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(`[data-family='${payload.font}']`)
+    fontOptionDom
+      .querySelectorAll<HTMLLIElement>('li')
+      .forEach(li => li.classList.remove('active'))
+    const curFontDom = fontOptionDom.querySelector<HTMLLIElement>(
+      `[data-family='${payload.font}']`
+    )
     if (curFontDom) {
       fontSelectDom.innerText = curFontDom.innerText
       fontSelectDom.style.fontFamily = payload.font
       curFontDom.classList.add('active')
     }
-    sizeOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
-    const curSizeDom = sizeOptionDom.querySelector<HTMLLIElement>(`[data-size='${payload.size}']`)
+    sizeOptionDom
+      .querySelectorAll<HTMLLIElement>('li')
+      .forEach(li => li.classList.remove('active'))
+    const curSizeDom = sizeOptionDom.querySelector<HTMLLIElement>(
+      `[data-size='${payload.size}']`
+    )
     if (curSizeDom) {
       sizeSelectDom.innerText = curSizeDom.innerText
       curSizeDom.classList.add('active')
     } else {
       sizeSelectDom.innerText = `${payload.size}`
     }
-    payload.bold ? boldDom.classList.add('active') : boldDom.classList.remove('active')
-    payload.italic ? italicDom.classList.add('active') : italicDom.classList.remove('active')
-    payload.underline ? underlineDom.classList.add('active') : underlineDom.classList.remove('active')
-    payload.strikeout ? strikeoutDom.classList.add('active') : strikeoutDom.classList.remove('active')
+    payload.bold
+      ? boldDom.classList.add('active')
+      : boldDom.classList.remove('active')
+    payload.italic
+      ? italicDom.classList.add('active')
+      : italicDom.classList.remove('active')
+    payload.underline
+      ? underlineDom.classList.add('active')
+      : underlineDom.classList.remove('active')
+    payload.strikeout
+      ? strikeoutDom.classList.add('active')
+      : strikeoutDom.classList.remove('active')
     if (payload.color) {
       colorDom.classList.add('active')
       colorControlDom.value = payload.color
@@ -1136,19 +1321,33 @@ window.onload = function () {
     }
 
     // 行间距
-    rowOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
-    const curRowMarginDom = rowOptionDom.querySelector<HTMLLIElement>(`[data-rowmargin='${payload.rowMargin}']`)!
+    rowOptionDom
+      .querySelectorAll<HTMLLIElement>('li')
+      .forEach(li => li.classList.remove('active'))
+    const curRowMarginDom = rowOptionDom.querySelector<HTMLLIElement>(
+      `[data-rowmargin='${payload.rowMargin}']`
+    )!
     curRowMarginDom.classList.add('active')
 
     // 功能
-    payload.undo ? undoDom.classList.remove('no-allow') : undoDom.classList.add('no-allow')
-    payload.redo ? redoDom.classList.remove('no-allow') : redoDom.classList.add('no-allow')
-    payload.painter ? painterDom.classList.add('active') : painterDom.classList.remove('active')
+    payload.undo
+      ? undoDom.classList.remove('no-allow')
+      : undoDom.classList.add('no-allow')
+    payload.redo
+      ? redoDom.classList.remove('no-allow')
+      : redoDom.classList.add('no-allow')
+    payload.painter
+      ? painterDom.classList.add('active')
+      : painterDom.classList.remove('active')
 
     // 标题
-    titleOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
+    titleOptionDom
+      .querySelectorAll<HTMLLIElement>('li')
+      .forEach(li => li.classList.remove('active'))
     if (payload.level) {
-      const curTitleDom = titleOptionDom.querySelector<HTMLLIElement>(`[data-level='${payload.level}']`)!
+      const curTitleDom = titleOptionDom.querySelector<HTMLLIElement>(
+        `[data-level='${payload.level}']`
+      )!
       titleSelectDom.innerText = curTitleDom.innerText
       curTitleDom.classList.add('active')
     } else {
@@ -1157,13 +1356,17 @@ window.onload = function () {
     }
 
     // 列表
-    listOptionDom.querySelectorAll<HTMLLIElement>('li').forEach(li => li.classList.remove('active'))
+    listOptionDom
+      .querySelectorAll<HTMLLIElement>('li')
+      .forEach(li => li.classList.remove('active'))
     if (payload.listType) {
       listDom.classList.add('active')
       const listType = payload.listType
-      const listStyle = payload.listType === ListType.OL ? ListStyle.DECIMAL : payload.listType
-      const curListDom = listOptionDom
-        .querySelector<HTMLLIElement>(`[data-list-type='${listType}'][data-list-style='${listStyle}']`)
+      const listStyle =
+        payload.listType === ListType.OL ? ListStyle.DECIMAL : payload.listType
+      const curListDom = listOptionDom.querySelector<HTMLLIElement>(
+        `[data-list-type='${listType}'][data-list-style='${listStyle}']`
+      )
       if (curListDom) {
         curListDom.classList.add('active')
       }
@@ -1178,15 +1381,21 @@ window.onload = function () {
   }
 
   instance.listener.pageSizeChange = function (payload) {
-    document.querySelector<HTMLSpanElement>('.page-size')!.innerText = `${payload}`
+    document.querySelector<HTMLSpanElement>(
+      '.page-size'
+    )!.innerText = `${payload}`
   }
 
   instance.listener.intersectionPageNoChange = function (payload) {
-    document.querySelector<HTMLSpanElement>('.page-no')!.innerText = `${payload + 1}`
+    document.querySelector<HTMLSpanElement>('.page-no')!.innerText = `${
+      payload + 1
+    }`
   }
 
   instance.listener.pageScaleChange = function (payload) {
-    document.querySelector<HTMLSpanElement>('.page-scale-percentage')!.innerText = `${Math.floor(payload * 10 * 10)}%`
+    document.querySelector<HTMLSpanElement>(
+      '.page-scale-percentage'
+    )!.innerText = `${Math.floor(payload * 10 * 10)}%`
   }
 
   instance.listener.controlChange = function (payload) {
@@ -1204,26 +1413,38 @@ window.onload = function () {
     ]
     // 菜单操作权限
     disableMenusInControlContext.forEach(menu => {
-      const menuDom = document.querySelector<HTMLDivElement>(`.menu-item__${menu}`)!
-      payload ? menuDom.classList.add('disable') : menuDom.classList.remove('disable')
+      const menuDom = document.querySelector<HTMLDivElement>(
+        `.menu-item__${menu}`
+      )!
+      payload
+        ? menuDom.classList.add('disable')
+        : menuDom.classList.remove('disable')
     })
   }
 
   instance.listener.pageModeChange = function (payload) {
-    const activeMode = pageModeOptionsDom.querySelector<HTMLLIElement>(`[data-page-mode='${payload}']`)!
-    pageModeOptionsDom.querySelectorAll('li').forEach(li => li.classList.remove('active'))
+    const activeMode = pageModeOptionsDom.querySelector<HTMLLIElement>(
+      `[data-page-mode='${payload}']`
+    )!
+    pageModeOptionsDom
+      .querySelectorAll('li')
+      .forEach(li => li.classList.remove('active'))
     activeMode.classList.add('active')
   }
 
-  instance.listener.contentChange = debounce(async function () {
+  const handleContentChange = async function () {
     // 字数
     const wordCount = await instance.command.getWordCount()
-    document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${wordCount || 0}`
+    document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${
+      wordCount || 0
+    }`
     // 目录
     if (isCatalogShow) {
       updateCatalog()
     }
-  }, 200)
+  }
+  instance.listener.contentChange = debounce(handleContentChange, 200)
+  handleContentChange()
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
@@ -1234,7 +1455,7 @@ window.onload = function () {
     {
       name: '签名',
       icon: 'signature',
-      when: (payload) => {
+      when: payload => {
         return !payload.isReadonly && payload.editorTextFocus
       },
       callback: (command: Command) => {
@@ -1243,12 +1464,14 @@ window.onload = function () {
             if (!payload) return
             const { value, width, height } = payload
             if (!value || !width || !height) return
-            command.executeInsertElementList([{
-              value,
-              width,
-              height,
-              type: ElementType.IMAGE
-            }])
+            command.executeInsertElementList([
+              {
+                value,
+                width,
+                height,
+                type: ElementType.IMAGE
+              }
+            ])
           }
         })
       }
@@ -1256,7 +1479,7 @@ window.onload = function () {
     {
       name: '格式整理',
       icon: 'word-tool',
-      when: (payload) => {
+      when: payload => {
         return !payload.isReadonly
       },
       callback: (command: Command) => {
@@ -1314,5 +1537,4 @@ window.onload = function () {
       }
     }
   ])
-
 }

@@ -3,7 +3,6 @@ import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
 
 export class Underline extends AbstractRichText {
-
   private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
@@ -25,5 +24,4 @@ export class Underline extends AbstractRichText {
     ctx.restore()
     this.clearFillInfo()
   }
-
 }

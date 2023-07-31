@@ -3,36 +3,45 @@ import { IElement, IElementPosition } from './Element'
 import { IRow } from './Row'
 
 export interface IDrawOption {
-  curIndex?: number;
-  isSetCursor?: boolean;
-  isSubmitHistory?: boolean;
-  isCompute?: boolean;
-  isLazy?: boolean;
+  curIndex?: number
+  isSetCursor?: boolean
+  isSubmitHistory?: boolean
+  isCompute?: boolean
+  isLazy?: boolean
+  isInit?: boolean
 }
 
 export interface IDrawImagePayload {
-  width: number;
-  height: number;
-  value: string;
+  width: number
+  height: number
+  value: string
 }
 
 export interface IDrawRowPayload {
-  elementList: IElement[];
-  positionList: IElementPosition[];
-  rowList: IRow[];
-  pageNo: number;
-  startIndex: number;
-  innerWidth: number;
-  zone?: EditorZone;
+  elementList: IElement[]
+  positionList: IElementPosition[]
+  rowList: IRow[]
+  pageNo: number
+  startIndex: number
+  innerWidth: number
+  zone?: EditorZone
 }
 
 export interface IDrawPagePayload {
-  elementList: IElement[];
-  positionList: IElementPosition[];
-  rowList: IRow[];
-  pageNo: number;
+  elementList: IElement[]
+  positionList: IElementPosition[]
+  rowList: IRow[]
+  pageNo: number
 }
 
-export interface IPainterOptions {
-  isDblclick: boolean;
+export interface IPainterOption {
+  isDblclick: boolean
+}
+
+export interface IGetValueOption {
+  pageNo?: number
+}
+
+export interface IAppendElementListOption {
+  isPrepend?: boolean
 }

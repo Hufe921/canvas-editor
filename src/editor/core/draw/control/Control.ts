@@ -1,10 +1,21 @@
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
-import { IControl, IControlInitOption, IControlInstance, IControlOption } from '../../../interface/Control'
+import {
+  IControl,
+  IControlInitOption,
+  IControlInstance,
+  IControlOption
+} from '../../../interface/Control'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import { deepClone, splitText } from '../../../utils'
-import { formatElementContext, pickElementAttr, zipElementList } from '../../../utils/element'
+import { deepClone, nextTick, splitText } from '../../../utils'
+import {
+  formatElementContext,
+  pickElementAttr,
+  zipElementList
+} from '../../../utils/element'
+import { EventBus } from '../../event/eventbus/EventBus'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -13,14 +24,14 @@ import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 
 interface IMoveCursorResult {
-  newIndex: number;
-  newElement: IElement;
+  newIndex: number
+  newElement: IElement
 }
 export class Control {
-
   private draw: Draw
   private range: RangeManager
   private listener: Listener
+  private eventBus: EventBus<EventBusMap>
   private options: IControlOption
   private activeControl: IControlInstance | null
 
@@ -28,6 +39,8 @@ export class Control {
     this.draw = draw
     this.range = draw.getRange()
     this.listener = draw.getListener()
+    this.eventBus = draw.getEventBus()
+
     this.options = draw.getOptions().control
     this.activeControl = null
   }
@@ -44,8 +57,9 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement.type === ElementType.CONTROL || endElement.type === ElementType.CONTROL)
-      && startElement.controlId !== endElement.controlId
+      (startElement.type === ElementType.CONTROL ||
+        endElement.type === ElementType.CONTROL) &&
+      startElement.controlId !== endElement.controlId
     ) {
       return true
     }
@@ -123,16 +137,23 @@ export class Control {
       this.activeControl = new CheckboxControl(element, this)
     }
     // 激活控件回调
-    setTimeout(() => {
-      if (this.listener.controlChange) {
-        let payload: IControl
-        const value = this.activeControl?.getValue()
-        if (value && value.length) {
-          payload = zipElementList(value)[0].control!
-        } else {
-          payload = pickElementAttr(deepClone(element)).control!
-        }
-        this.listener.controlChange(payload)
+    nextTick(() => {
+      const controlChangeListener = this.listener.controlChange
+      const isSubscribeControlChange =
+        this.eventBus.isSubscribe('controlChange')
+      if (!controlChangeListener && !isSubscribeControlChange) return
+      let payload: IControl
+      const value = this.activeControl?.getValue()
+      if (value && value.length) {
+        payload = zipElementList(value)[0].control!
+      } else {
+        payload = pickElementAttr(deepClone(element)).control!
+      }
+      if (controlChangeListener) {
+        controlChangeListener(payload)
+      }
+      if (isSubscribeControlChange) {
+        this.eventBus.emit('controlChange', payload)
       }
     })
   }
@@ -144,9 +165,16 @@ export class Control {
       }
       this.activeControl = null
       // 销毁控件回调
-      setTimeout(() => {
-        if (this.listener.controlChange) {
-          this.listener.controlChange(null)
+      nextTick(() => {
+        const controlChangeListener = this.listener.controlChange
+        const isSubscribeControlChange =
+          this.eventBus.isSubscribe('controlChange')
+        if (!controlChangeListener && !isSubscribeControlChange) return
+        if (controlChangeListener) {
+          controlChangeListener(null)
+        }
+        if (isSubscribeControlChange) {
+          this.eventBus.emit('controlChange', null)
         }
       })
     }
@@ -195,8 +223,8 @@ export class Control {
       while (startIndex < elementList.length) {
         const nextElement = elementList[startIndex]
         if (
-          nextElement.controlId !== element.controlId
-          || nextElement.controlComponent !== ControlComponent.PREFIX
+          nextElement.controlId !== element.controlId ||
+          nextElement.controlComponent !== ControlComponent.PREFIX
         ) {
           return {
             newIndex: startIndex - 1,
@@ -211,8 +239,8 @@ export class Control {
       while (startIndex > 0) {
         const preElement = elementList[startIndex]
         if (
-          preElement.controlId !== element.controlId
-          || preElement.controlComponent === ControlComponent.PREFIX
+          preElement.controlId !== element.controlId ||
+          preElement.controlComponent === ControlComponent.PREFIX
         ) {
           return {
             newIndex: startIndex,
@@ -260,7 +288,11 @@ export class Control {
     if (!~leftIndex && !~rightIndex) return startIndex
     leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
-    this.draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
+    this.draw.spliceElementList(
+      elementList,
+      leftIndex + 1,
+      rightIndex - leftIndex
+    )
     return leftIndex
   }
 
@@ -302,7 +334,12 @@ export class Control {
         color: this.options.placeholderColor
       }
       formatElementContext(elementList, [newElement], startIndex)
-      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, newElement)
+      this.draw.spliceElementList(
+        elementList,
+        startIndex + p + 1,
+        0,
+        newElement
+      )
     }
   }
 
@@ -326,5 +363,4 @@ export class Control {
     }
     return this.activeControl.cut()
   }
-
 }

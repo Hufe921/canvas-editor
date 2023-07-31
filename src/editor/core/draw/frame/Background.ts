@@ -1,7 +1,6 @@
 import { Draw } from '../Draw'
 
 export class Background {
-
   private draw: Draw
 
   constructor(draw: Draw) {
@@ -16,5 +15,4 @@ export class Background {
     ctx.fillRect(0, 0, width, height)
     ctx.restore()
   }
-
 }

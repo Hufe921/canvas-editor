@@ -1,15 +1,21 @@
 import { ElementType, RowFlex, VerticalAlign } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
-import { IComputePageRowPositionPayload, IComputePageRowPositionResult } from '../../interface/Position'
+import {
+  IComputePageRowPositionPayload,
+  IComputePageRowPositionResult
+} from '../../interface/Position'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement, IElementPosition } from '../../interface/Element'
-import { ICurrentPosition, IGetPositionByXYPayload, IPositionContext } from '../../interface/Position'
+import {
+  ICurrentPosition,
+  IGetPositionByXYPayload,
+  IPositionContext
+} from '../../interface/Position'
 import { Draw } from '../draw/Draw'
 import { EditorZone } from '../../dataset/enum/Editor'
 
 export class Position {
-
   private cursorPosition: IElementPosition | null
   private positionContext: IPositionContext
   private positionList: IElementPosition[]
@@ -29,9 +35,14 @@ export class Position {
     this.options = draw.getOptions()
   }
 
-  public getTablePositionList(sourceElementList: IElement[]): IElementPosition[] {
+  public getTablePositionList(
+    sourceElementList: IElement[]
+  ): IElementPosition[] {
     const { index, trIndex, tdIndex } = this.positionContext
-    return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].positionList || []
+    return (
+      sourceElementList[index!].trList![trIndex!].tdList[tdIndex!]
+        .positionList || []
+    )
   }
 
   public getPositionList(): IElementPosition[] {
@@ -67,8 +78,19 @@ export class Position {
     this.positionList = payload
   }
 
-  public computePageRowPosition(payload: IComputePageRowPositionPayload): IComputePageRowPositionResult {
-    const { positionList, rowList, pageNo, startX, startY, startRowIndex, startIndex, innerWidth } = payload
+  public computePageRowPosition(
+    payload: IComputePageRowPositionPayload
+  ): IComputePageRowPositionResult {
+    const {
+      positionList,
+      rowList,
+      pageNo,
+      startX,
+      startY,
+      startRowIndex,
+      startIndex,
+      innerWidth
+    } = payload
     const { scale, tdPadding } = this.options
     let x = startX
     let y = startY
@@ -92,8 +114,9 @@ export class Position {
         const element = curRow.elementList[j]
         const metrics = element.metrics
         const offsetY =
-          (element.imgDisplay !== ImageDisplay.INLINE && element.type === ElementType.IMAGE)
-            || element.type === ElementType.LATEX
+          (element.imgDisplay !== ImageDisplay.INLINE &&
+            element.type === ElementType.IMAGE) ||
+          element.type === ElementType.LATEX
             ? curRow.ascent - metrics.height
             : curRow.ascent
         const positionItem: IElementPosition = {
@@ -105,6 +128,7 @@ export class Position {
           metrics,
           ascent: offsetY,
           lineHeight: curRow.height,
+          isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
           coordinate: {
             leftTop: [x, y],
@@ -137,15 +161,23 @@ export class Position {
               })
               // 垂直对齐方式
               if (
-                td.verticalAlign === VerticalAlign.MIDDLE
-                || td.verticalAlign === VerticalAlign.BOTTOM
+                td.verticalAlign === VerticalAlign.MIDDLE ||
+                td.verticalAlign === VerticalAlign.BOTTOM
               ) {
-                const rowsHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
+                const rowsHeight = rowList.reduce(
+                  (pre, cur) => pre + cur.height,
+                  0
+                )
                 const blankHeight = (td.height! - tdGap) * scale - rowsHeight
-                const offsetHeight = td.verticalAlign === VerticalAlign.MIDDLE ? blankHeight / 2 : blankHeight
+                const offsetHeight =
+                  td.verticalAlign === VerticalAlign.MIDDLE
+                    ? blankHeight / 2
+                    : blankHeight
                 if (Math.floor(offsetHeight) > 0) {
                   td.positionList.forEach(tdPosition => {
-                    const { coordinate: { leftTop, leftBottom, rightBottom, rightTop } } = tdPosition
+                    const {
+                      coordinate: { leftTop, leftBottom, rightBottom, rightTop }
+                    } = tdPosition
                     leftTop[1] += offsetHeight
                     leftBottom[1] += offsetHeight
                     rightBottom[1] += offsetHeight
@@ -228,10 +260,20 @@ export class Position {
     const isMainActive = zoneManager.isMainActive()
     const positionNo = isMainActive ? curPageNo : 0
     for (let j = 0; j < positionList.length; j++) {
-      const { index, pageNo, coordinate: { leftTop, rightTop, leftBottom } } = positionList[j]
+      const {
+        index,
+        pageNo,
+        isFirstLetter,
+        coordinate: { leftTop, rightTop, leftBottom }
+      } = positionList[j]
       if (positionNo !== pageNo) continue
       // 命中元素
-      if (leftTop[0] <= x && rightTop[0] >= x && leftTop[1] <= y && leftBottom[1] >= y) {
+      if (
+        leftTop[0] <= x &&
+        rightTop[0] >= x &&
+        leftTop[1] <= y &&
+        leftBottom[1] >= y
+      ) {
         let curPositionIndex = j
         const element = elementList[j]
         // 表格被命中
@@ -250,12 +292,14 @@ export class Position {
                 positionList: td.positionList
               })
               if (~tablePosition.index) {
-                const { index: tdValueIndex } = tablePosition
+                const { index: tdValueIndex, hitLineStartIndex } = tablePosition
                 const tdValueElement = td.value[tdValueIndex]
                 return {
                   index,
-                  isCheckbox: tdValueElement.type === ElementType.CHECKBOX ||
-                    tdValueElement.controlComponent === ControlComponent.CHECKBOX,
+                  isCheckbox:
+                    tdValueElement.type === ElementType.CHECKBOX ||
+                    tdValueElement.controlComponent ===
+                      ControlComponent.CHECKBOX,
                   isControl: tdValueElement.type === ElementType.CONTROL,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
@@ -265,14 +309,18 @@ export class Position {
                   tdValueIndex,
                   tdId: td.id,
                   trId: tr.id,
-                  tableId: element.id
+                  tableId: element.id,
+                  hitLineStartIndex
                 }
               }
             }
           }
         }
         // 图片区域均为命中
-        if (element.type === ElementType.IMAGE || element.type === ElementType.LATEX) {
+        if (
+          element.type === ElementType.IMAGE ||
+          element.type === ElementType.LATEX
+        ) {
           return {
             index: curPositionIndex,
             isDirectHit: true,
@@ -289,22 +337,28 @@ export class Position {
             isCheckbox: true
           }
         }
+        let hitLineStartIndex: number | undefined
         // 判断是否在文字中间前后
         if (elementList[index].value !== ZERO) {
           const valueWidth = rightTop[0] - leftTop[0]
           if (x < leftTop[0] + valueWidth / 2) {
             curPositionIndex = j - 1
+            if (isFirstLetter) {
+              hitLineStartIndex = j
+            }
           }
         }
         return {
+          hitLineStartIndex,
           index: curPositionIndex,
-          isControl: element.type === ElementType.CONTROL,
+          isControl: element.type === ElementType.CONTROL
         }
       }
     }
     // 非命中区域
     let isLastArea = false
     let curPositionIndex = -1
+    let hitLineStartIndex: number | undefined
     // 判断是否在表格内
     if (isTable) {
       const { scale } = this.options
@@ -323,19 +377,34 @@ export class Position {
       }
     }
     // 判断所属行是否存在元素
-    const lastLetterList = positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
+    const lastLetterList = positionList.filter(
+      p => p.isLastLetter && p.pageNo === positionNo
+    )
     for (let j = 0; j < lastLetterList.length; j++) {
-      const { index, pageNo, coordinate: { leftTop, leftBottom } } = lastLetterList[j]
+      const {
+        index,
+        pageNo,
+        coordinate: { leftTop, leftBottom }
+      } = lastLetterList[j]
       if (positionNo !== pageNo) continue
       if (y > leftTop[1] && y <= leftBottom[1]) {
         const isHead = x < this.options.margins[3]
         // 是否在头部
         if (isHead) {
-          const headIndex = positionList.findIndex(p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo)
+          const headIndex = positionList.findIndex(
+            p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo
+          )
           // 头部元素为空元素时无需选中
-          curPositionIndex = ~headIndex
-            ? positionList[headIndex].value === ZERO ? headIndex : headIndex - 1
-            : index
+          if (~headIndex) {
+            if (positionList[headIndex].value === ZERO) {
+              curPositionIndex = headIndex
+            } else {
+              curPositionIndex = headIndex - 1
+              hitLineStartIndex = headIndex
+            }
+          } else {
+            curPositionIndex = index
+          }
         } else {
           curPositionIndex = index
         }
@@ -350,7 +419,8 @@ export class Position {
       // 页脚上部距离页面顶部距离
       const footer = this.draw.getFooter()
       const pageHeight = this.draw.getHeight()
-      const footerTopY = pageHeight - (footer.getFooterBottom() + footer.getHeight())
+      const footerTopY =
+        pageHeight - (footer.getFooterBottom() + footer.getHeight())
       // 判断所属位置是否属于页眉页脚区域
       if (isMainActive) {
         // 页眉：当前位置小于页眉底部位置
@@ -378,28 +448,27 @@ export class Position {
       }
       // 当前页最后一行
       return {
-        index: lastLetterList[lastLetterList.length - 1]?.index || positionList.length - 1,
+        index:
+          lastLetterList[lastLetterList.length - 1]?.index ||
+          positionList.length - 1
       }
     }
     return {
+      hitLineStartIndex,
       index: curPositionIndex,
       isControl: elementList[curPositionIndex]?.type === ElementType.CONTROL
     }
   }
 
-  public adjustPositionContext(payload: IGetPositionByXYPayload): ICurrentPosition | null {
+  public adjustPositionContext(
+    payload: IGetPositionByXYPayload
+  ): ICurrentPosition | null {
     const isReadonly = this.draw.isReadonly()
     const positionResult = this.getPositionByXY(payload)
     if (!~positionResult.index) return null
     // 移动控件内光标
     if (positionResult.isControl && !isReadonly) {
-      const {
-        index,
-        isTable,
-        trIndex,
-        tdIndex,
-        tdValueIndex
-      } = positionResult
+      const { index, isTable, trIndex, tdIndex, tdValueIndex } = positionResult
       const control = this.draw.getControl()
       const { newIndex } = control.moveCursor({
         index,
@@ -439,5 +508,4 @@ export class Position {
     })
     return positionResult
   }
-
 }

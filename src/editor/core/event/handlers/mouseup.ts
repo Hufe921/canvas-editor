@@ -15,7 +15,7 @@ function createDragId(element: IElement): string {
 }
 
 function getElementIndexByDragId(dragId: string, elementList: IElement[]) {
-  return (<IDragElement[]>elementList).findIndex((el) => el.dragId === dragId)
+  return (<IDragElement[]>elementList).findIndex(el => el.dragId === dragId)
 }
 
 export function mouseup(evt: MouseEvent, host: CanvasEvent) {
@@ -30,7 +30,10 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const cachePositionList = host.cachePositionList!
     const range = rangeManager.getRange()
     // 是否需要拖拽-位置发生改变
-    if (range.startIndex >= cacheRange.startIndex && range.endIndex <= cacheRange.endIndex) {
+    if (
+      range.startIndex >= cacheRange.startIndex &&
+      range.endIndex <= cacheRange.endIndex
+    ) {
       rangeManager.replaceRange({
         ...cacheRange
       })
@@ -42,34 +45,29 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       return
     }
     // 是否是不可拖拽的控件结构元素
-    const dragElementList = cacheElementList.slice(cacheRange.startIndex + 1, cacheRange.endIndex + 1)
-    const isContainControl = dragElementList.find(element => element.type === ElementType.CONTROL)
+    const dragElementList = cacheElementList.slice(
+      cacheRange.startIndex + 1,
+      cacheRange.endIndex + 1
+    )
+    const isContainControl = dragElementList.find(
+      element => element.type === ElementType.CONTROL
+    )
     if (isContainControl) {
       // 仅允许 (最前/后元素不是控件 || 在控件前后 || 文本控件且是值) 拖拽
       const cacheStartElement = cacheElementList[cacheRange.startIndex + 1]
       const cacheEndElement = cacheElementList[cacheRange.endIndex]
       const isAllowDragControl =
-        (
-          (
-            cacheStartElement.type !== ElementType.CONTROL ||
-            cacheStartElement.controlComponent === ControlComponent.PREFIX
-          ) &&
-          (
-            cacheEndElement.type !== ElementType.CONTROL ||
-            cacheEndElement.controlComponent === ControlComponent.POSTFIX
-          )
-        ) ||
-        (
-          cacheStartElement.controlId === cacheEndElement.controlId &&
+        ((cacheStartElement.type !== ElementType.CONTROL ||
+          cacheStartElement.controlComponent === ControlComponent.PREFIX) &&
+          (cacheEndElement.type !== ElementType.CONTROL ||
+            cacheEndElement.controlComponent === ControlComponent.POSTFIX)) ||
+        (cacheStartElement.controlId === cacheEndElement.controlId &&
           cacheStartElement.controlComponent === ControlComponent.PREFIX &&
-          cacheEndElement.controlComponent === ControlComponent.POSTFIX
-        ) ||
-        (
-          cacheStartElement.control?.type === ControlType.TEXT &&
+          cacheEndElement.controlComponent === ControlComponent.POSTFIX) ||
+        (cacheStartElement.control?.type === ControlType.TEXT &&
           cacheStartElement.controlComponent === ControlComponent.VALUE &&
           cacheEndElement.control?.type === ControlType.TEXT &&
-          cacheEndElement.controlComponent === ControlComponent.VALUE
-        )
+          cacheEndElement.controlComponent === ControlComponent.VALUE)
       if (!isAllowDragControl) {
         draw.render({
           curIndex: range.startIndex,
@@ -83,7 +81,11 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const editorOptions = draw.getOptions()
     const elementList = draw.getElementList()
     const replaceElementList = dragElementList.map(el => {
-      if (!el.type || el.type === ElementType.TEXT || el.control?.type === ControlType.TEXT) {
+      if (
+        !el.type ||
+        el.type === ElementType.TEXT ||
+        el.control?.type === ControlType.TEXT
+      ) {
         const newElement: IElement = {
           value: el.value
         }
@@ -98,14 +100,16 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         const newElement = deepClone(el)
         formatElementList([newElement], {
           isHandleFirstElement: false,
-          editorOptions,
+          editorOptions
         })
         return newElement
       }
     })
     formatElementContext(elementList, replaceElementList, range.startIndex)
     // 缓存拖拽选区开始结束id
-    const cacheRangeStartId = createDragId(cacheElementList[cacheRange.startIndex])
+    const cacheRangeStartId = createDragId(
+      cacheElementList[cacheRange.startIndex]
+    )
     const cacheRangeEndId = createDragId(cacheElementList[cacheRange.endIndex])
     // 设置拖拽值
     const replaceLength = replaceElementList.length
@@ -113,11 +117,19 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     let rangeEnd = rangeStart + replaceLength
     const control = draw.getControl()
     const activeControl = control.getActiveControl()
-    if (activeControl && cacheElementList[rangeStart].controlComponent !== ControlComponent.POSTFIX) {
+    if (
+      activeControl &&
+      cacheElementList[rangeStart].controlComponent !== ControlComponent.POSTFIX
+    ) {
       rangeEnd = activeControl.setValue(replaceElementList)
       rangeStart = rangeEnd - replaceLength
     } else {
-      draw.spliceElementList(elementList, rangeStart + 1, 0, ...replaceElementList)
+      draw.spliceElementList(
+        elementList,
+        rangeStart + 1,
+        0,
+        ...replaceElementList
+      )
     }
     if (!~rangeEnd) {
       draw.render({
@@ -129,10 +141,19 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const rangeStartId = createDragId(elementList[rangeStart])
     const rangeEndId = createDragId(elementList[rangeEnd])
     // 删除原有拖拽元素
-    const cacheRangeStartIndex = getElementIndexByDragId(cacheRangeStartId, cacheElementList)
-    const cacheRangeEndIndex = getElementIndexByDragId(cacheRangeEndId, cacheElementList)
+    const cacheRangeStartIndex = getElementIndexByDragId(
+      cacheRangeStartId,
+      cacheElementList
+    )
+    const cacheRangeEndIndex = getElementIndexByDragId(
+      cacheRangeEndId,
+      cacheElementList
+    )
     const cacheEndElement = cacheElementList[cacheRangeEndIndex]
-    if (cacheEndElement.type === ElementType.CONTROL && cacheEndElement.controlComponent !== ControlComponent.POSTFIX) {
+    if (
+      cacheEndElement.type === ElementType.CONTROL &&
+      cacheEndElement.controlComponent !== ControlComponent.POSTFIX
+    ) {
       rangeManager.replaceRange({
         ...cacheRange,
         startIndex: cacheRangeStartIndex,
@@ -140,7 +161,11 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       })
       control.getActiveControl()?.cut()
     } else {
-      draw.spliceElementList(cacheElementList, cacheRangeStartIndex + 1, cacheRangeEndIndex - cacheRangeStartIndex)
+      draw.spliceElementList(
+        cacheElementList,
+        cacheRangeStartIndex + 1,
+        cacheRangeEndIndex - cacheRangeStartIndex
+      )
     }
     // 重设上下文
     const startElement = elementList[range.startIndex]

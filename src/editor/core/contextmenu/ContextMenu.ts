@@ -1,7 +1,10 @@
 import { NAME_PLACEHOLDER } from '../../dataset/constant/ContextMenu'
 import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { EditorComponent } from '../../dataset/enum/Editor'
-import { IContextMenuContext, IRegisterContextMenu } from '../../interface/contextmenu/ContextMenu'
+import {
+  IContextMenuContext,
+  IRegisterContextMenu
+} from '../../interface/contextmenu/ContextMenu'
 import { findParent } from '../../utils'
 import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
@@ -15,14 +18,13 @@ import { imageMenus } from './menus/imageMenus'
 import { tableMenus } from './menus/tableMenus'
 
 interface IRenderPayload {
-  contextMenuList: IRegisterContextMenu[];
-  left: number;
-  top: number;
-  parentMenuContainer?: HTMLDivElement;
+  contextMenuList: IRegisterContextMenu[]
+  left: number
+  top: number
+  parentMenuContainer?: HTMLDivElement
 }
 
 export class ContextMenu {
-
   private draw: Draw
   private command: Command
   private range: RangeManager
@@ -59,12 +61,15 @@ export class ContextMenu {
     // 菜单权限
     this.container.addEventListener('contextmenu', this._proxyContextMenuEvent)
     // 副作用处理
-    document.addEventListener('mousedown', this._handleEffect)
+    document.addEventListener('mousedown', this._handleSideEffect)
   }
 
   public removeEvent() {
-    this.container.removeEventListener('contextmenu', this._proxyContextMenuEvent)
-    document.removeEventListener('mousedown', this._handleEffect)
+    this.container.removeEventListener(
+      'contextmenu',
+      this._proxyContextMenuEvent
+    )
+    document.removeEventListener('mousedown', this._handleSideEffect)
   }
 
   private _proxyContextMenuEvent = (evt: MouseEvent) => {
@@ -88,19 +93,22 @@ export class ContextMenu {
       this._render({
         contextMenuList: renderList,
         left: evt.x,
-        top: evt.y,
+        top: evt.y
       })
     }
     evt.preventDefault()
   }
 
-  private _handleEffect = (evt: MouseEvent) => {
+  private _handleSideEffect = (evt: MouseEvent) => {
     if (this.contextMenuContainerList.length) {
       // 点击非右键菜单内
+      const target = <Element>(evt?.composedPath()[0] || evt.target)
       const contextMenuDom = findParent(
-        evt.target as Element,
-        (node: Node & Element) => !!node && node.nodeType === 1
-          && node.getAttribute(EDITOR_COMPONENT) === EditorComponent.CONTEXTMENU,
+        target,
+        (node: Node & Element) =>
+          !!node &&
+          node.nodeType === 1 &&
+          node.getAttribute(EDITOR_COMPONENT) === EditorComponent.CONTEXTMENU,
         true
       )
       if (!contextMenuDom) {
@@ -112,7 +120,11 @@ export class ContextMenu {
   private _getContext(): IContextMenuContext {
     // 是否是只读模式
     const isReadonly = this.draw.isReadonly()
-    const { isCrossRowCol: crossRowCol, startIndex, endIndex } = this.range.getRange()
+    const {
+      isCrossRowCol: crossRowCol,
+      startIndex,
+      endIndex
+    } = this.range.getRange()
     // 是否存在焦点
     const editorTextFocus = !!(~startIndex || ~endIndex)
     // 是否存在选区
@@ -141,7 +153,10 @@ export class ContextMenu {
   private _createContextMenuContainer(): HTMLDivElement {
     const contextMenuContainer = document.createElement('div')
     contextMenuContainer.classList.add(`${EDITOR_PREFIX}-contextmenu-container`)
-    contextMenuContainer.setAttribute(EDITOR_COMPONENT, EditorComponent.CONTEXTMENU)
+    contextMenuContainer.setAttribute(
+      EDITOR_COMPONENT,
+      EditorComponent.CONTEXTMENU
+    )
     this.container.append(contextMenuContainer)
     return contextMenuContainer
   }
@@ -155,7 +170,10 @@ export class ContextMenu {
     let childMenuContainer: HTMLDivElement | null = null
     // 父菜单添加子菜单映射关系
     if (parentMenuContainer) {
-      this.contextMenuRelationShip.set(parentMenuContainer, contextMenuContainer)
+      this.contextMenuRelationShip.set(
+        parentMenuContainer,
+        contextMenuContainer
+      )
     }
     for (let c = 0; c < contextMenuList.length; c++) {
       const menu = contextMenuList[c]
@@ -186,9 +204,12 @@ export class ContextMenu {
               parentMenuContainer: contextMenuContainer
             })
           }
-          menuItem.onmouseleave = (evt) => {
+          menuItem.onmouseleave = evt => {
             // 移动到子菜单选项选中状态不变化
-            if (!childMenuContainer || !childMenuContainer.contains(evt.relatedTarget as Node)) {
+            if (
+              !childMenuContainer ||
+              !childMenuContainer.contains(evt.relatedTarget as Node)
+            ) {
               this._setHoverStatus(menuItem, false)
             }
           }
@@ -235,9 +256,8 @@ export class ContextMenu {
     const innerWidth = window.innerWidth
     const contextMenuWidth = contextMenuContainer.getBoundingClientRect().width
     // 右侧空间不足时，以菜单右上角作为起始点
-    const adjustLeft = left + contextMenuWidth > innerWidth
-      ? left - contextMenuWidth
-      : left
+    const adjustLeft =
+      left + contextMenuWidth > innerWidth ? left - contextMenuWidth : left
     contextMenuContainer.style.left = `${adjustLeft}px`
     contextMenuContainer.style.top = `${top}px`
     this.contextMenuContainerList.push(contextMenuContainer)
@@ -255,7 +275,8 @@ export class ContextMenu {
 
   private _setHoverStatus(payload: HTMLDivElement, status: boolean) {
     if (status) {
-      payload.parentNode?.querySelectorAll(`${EDITOR_PREFIX}-contextmenu-item`)
+      payload.parentNode
+        ?.querySelectorAll(`${EDITOR_PREFIX}-contextmenu-item`)
         .forEach(child => child.classList.remove('hover'))
       payload.classList.add('hover')
     } else {
@@ -287,5 +308,4 @@ export class ContextMenu {
     this.contextMenuContainerList = []
     this.contextMenuRelationShip.clear()
   }
-
 }

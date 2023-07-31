@@ -10,15 +10,23 @@ export abstract class AbstractRichText {
 
   public clearFillInfo() {
     this.fillColor = undefined
-    return this.fillRect = {
+    this.fillRect = {
       x: 0,
       y: 0,
       width: 0,
       height: 0
     }
+    return this.fillRect
   }
 
-  public recordFillInfo(ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height?: number, color?: string) {
+  public recordFillInfo(
+    ctx: CanvasRenderingContext2D,
+    x: number,
+    y: number,
+    width: number,
+    height?: number,
+    color?: string
+  ) {
     const isFirstRecord = !this.fillRect.width
     if (!isFirstRecord && this.fillColor && this.fillColor !== color) {
       this.render(ctx)
@@ -37,5 +45,4 @@ export abstract class AbstractRichText {
   }
 
   public abstract render(ctx: CanvasRenderingContext2D): void
-
 }

@@ -5,7 +5,6 @@ import { IElement } from '../../../../interface/Element'
 import { Control } from '../Control'
 
 export class CheckboxControl implements IControlInstance {
-
   private element: IElement
   private control: Control
 
@@ -124,5 +123,4 @@ export class CheckboxControl implements IControlInstance {
   public cut(): number {
     return -1
   }
-
 }

@@ -4,13 +4,11 @@ import { VIRTUAL_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ElementType } from '../../dataset/enum/Element'
 import { IElement } from '../../interface/Element'
 import { debounce } from '../../utils'
-import { getElementListByHTML } from '../../utils/clipboard'
-import { formatElementContext } from '../../utils/element'
+import { formatElementContext, getElementListByHTML } from '../../utils/element'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 
 export class CursorAgent {
-
   private draw: Draw
   private container: HTMLDivElement
   private agentCursorDom: HTMLTextAreaElement
@@ -31,8 +29,14 @@ export class CursorAgent {
     agentCursorDom.onkeydown = (evt: KeyboardEvent) => this._keyDown(evt)
     agentCursorDom.oninput = debounce(this._input.bind(this), 0)
     agentCursorDom.onpaste = (evt: ClipboardEvent) => this._paste(evt)
-    agentCursorDom.addEventListener('compositionstart', this._compositionstart.bind(this))
-    agentCursorDom.addEventListener('compositionend', this._compositionend.bind(this))
+    agentCursorDom.addEventListener(
+      'compositionstart',
+      this._compositionstart.bind(this)
+    )
+    agentCursorDom.addEventListener(
+      'compositionend',
+      this._compositionend.bind(this)
+    )
   }
 
   public getAgentCursorDom(): HTMLTextAreaElement {
@@ -84,13 +88,17 @@ export class CursorAgent {
                 let start = 0
                 while (start < pasteElementList.length) {
                   const pasteElement = pasteElementList[start]
-                  if (anchorElement.titleId && /^\n/.test(pasteElement.value)) break
+                  if (anchorElement.titleId && /^\n/.test(pasteElement.value)) {
+                    break
+                  }
                   if (VIRTUAL_ELEMENT_TYPE.includes(pasteElement.type!)) {
                     pasteElementList.splice(start, 1)
                     if (pasteElement.valueList) {
                       for (let v = 0; v < pasteElement.valueList.length; v++) {
                         const element = pasteElement.valueList[v]
-                        if (element.value === ZERO || element.value === '\n') continue
+                        if (element.value === ZERO || element.value === '\n') {
+                          continue
+                        }
                         pasteElementList.splice(start, 0, element)
                         start++
                       }
@@ -145,5 +153,4 @@ export class CursorAgent {
   private _compositionend(evt: CompositionEvent) {
     this.canvasEvent.compositionend(evt)
   }
-
 }

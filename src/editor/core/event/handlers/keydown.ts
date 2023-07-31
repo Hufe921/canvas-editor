@@ -47,7 +47,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         })
       }
       if (!isCollapsed) {
-        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+        draw.spliceElementList(
+          elementList,
+          startIndex + 1,
+          endIndex - startIndex
+        )
       } else {
         draw.spliceElementList(elementList, index, 1)
       }
@@ -64,7 +68,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       curIndex = control.removeControl(endIndex + 1)
     } else {
       if (!isCollapsed) {
-        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+        draw.spliceElementList(
+          elementList,
+          startIndex + 1,
+          endIndex - startIndex
+        )
       } else {
         draw.spliceElementList(elementList, index + 1, 1)
       }
@@ -84,7 +92,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       enterText.listWrap = true
     }
     // 标题结尾处回车无需格式化
-    if (!(endElement.titleId && endElement.titleId !== elementList[endIndex + 1]?.titleId)) {
+    if (
+      !(
+        endElement.titleId &&
+        endElement.titleId !== elementList[endIndex + 1]?.titleId
+      )
+    ) {
       formatElementContext(elementList, [enterText], startIndex)
     }
     let curIndex: number
@@ -94,7 +107,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       if (isCollapsed) {
         draw.spliceElementList(elementList, index + 1, 0, enterText)
       } else {
-        draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex, enterText)
+        draw.spliceElementList(
+          elementList,
+          startIndex + 1,
+          endIndex - startIndex,
+          enterText
+        )
       }
       curIndex = index + 1
     }
@@ -159,7 +177,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         }
       }
       const maxElementListIndex = elementList.length - 1
-      if (anchorStartIndex > maxElementListIndex || anchorEndIndex > maxElementListIndex) return
+      if (
+        anchorStartIndex > maxElementListIndex ||
+        anchorEndIndex > maxElementListIndex
+      ) {
+        return
+      }
       rangeManager.setRange(anchorStartIndex, anchorEndIndex)
       const isCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
@@ -181,21 +204,31 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         anchorPosition = positionList[startIndex]
       }
     }
-    const { rowNo, index, pageNo, coordinate: { leftTop, rightTop } } = anchorPosition
+    const {
+      rowNo,
+      index,
+      pageNo,
+      coordinate: { leftTop, rightTop }
+    } = anchorPosition
     if ((isUp && rowNo !== 0) || (!isUp && rowNo !== draw.getRowCount())) {
       // 下一个光标点所在行位置集合
       const probablePosition = isUp
-        ? positionList.slice(0, index)
-          .filter(p => p.rowNo === rowNo - 1 && pageNo === p.pageNo)
-        : positionList.slice(index, positionList.length - 1)
-          .filter(p => p.rowNo === rowNo + 1 && pageNo === p.pageNo)
+        ? positionList
+            .slice(0, index)
+            .filter(p => p.rowNo === rowNo - 1 && pageNo === p.pageNo)
+        : positionList
+            .slice(index, positionList.length - 1)
+            .filter(p => p.rowNo === rowNo + 1 && pageNo === p.pageNo)
       // 查找与当前位置元素点交叉最多的位置
       let maxIndex = 0
       let maxDistance = 0
       for (let p = 0; p < probablePosition.length; p++) {
         const position = probablePosition[p]
         // 当前光标在前
-        if (position.coordinate.leftTop[0] >= leftTop[0] && position.coordinate.leftTop[0] <= rightTop[0]) {
+        if (
+          position.coordinate.leftTop[0] >= leftTop[0] &&
+          position.coordinate.leftTop[0] <= rightTop[0]
+        ) {
           const curDistance = rightTop[0] - position.coordinate.leftTop[0]
           if (curDistance > maxDistance) {
             maxIndex = position.index
@@ -204,7 +237,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
           }
         }
         // 当前光标在后
-        else if (position.coordinate.leftTop[0] <= leftTop[0] && position.coordinate.rightTop[0] >= leftTop[0]) {
+        else if (
+          position.coordinate.leftTop[0] <= leftTop[0] &&
+          position.coordinate.rightTop[0] >= leftTop[0]
+        ) {
           const curDistance = position.coordinate.rightTop[0] - leftTop[0]
           if (curDistance > maxDistance) {
             maxIndex = position.index
@@ -237,6 +273,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         }
       }
       if (anchorStartIndex > anchorEndIndex) {
+        // prettier-ignore
         [anchorStartIndex, anchorEndIndex] = [anchorEndIndex, anchorStartIndex]
       }
       rangeManager.setRange(anchorStartIndex, anchorEndIndex)
@@ -271,6 +308,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     if (listener.saved) {
       listener.saved(draw.getValue())
     }
+    const eventBus = draw.getEventBus()
+    if (eventBus.isSubscribe('saved')) {
+      eventBus.emit('saved', draw.getValue())
+    }
     evt.preventDefault()
   } else if (evt.key === KeyMap.ESC) {
     // 退出格式刷
@@ -282,10 +323,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
     evt.preventDefault()
   } else if (evt.key === KeyMap.TAB) {
-    draw.insertElementList([{
-      type: ElementType.TAB,
-      value: ''
-    }])
+    draw.insertElementList([
+      {
+        type: ElementType.TAB,
+        value: ''
+      }
+    ])
     evt.preventDefault()
   }
 }

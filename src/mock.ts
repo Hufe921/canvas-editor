@@ -1,9 +1,27 @@
-import { ControlType, ElementType, IEditorOption, IElement, ListType, TitleLevel } from './editor'
+import {
+  ControlType,
+  ElementType,
+  IEditorOption,
+  IElement,
+  ListType,
+  TitleLevel
+} from './editor'
 
 const text = `主诉：\n发热三天，咳嗽五天。\n现病史：\n患者于三天前无明显诱因，感冒后发现面部水肿，无皮疹，尿量减少，出现乏力，在外治疗无好转，现来我院就诊。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。报告其他既往疾病。\n流行病史：\n否认14天内接触过确诊患者、疑似患者、无症状感染者及其密切接触者；否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属无以上情况。\n体格检查：\nT：39.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10/L（偏高）参考值：0.1～0.6；\n门诊诊断：处置治疗：电子签名：【】\n其他记录：`
 
 // 模拟标题
-const titleText = ['主诉：', '现病史：', '既往史：', '流行病史：', '体格检查：', '辅助检查：', '门诊诊断：', '处置治疗：', '电子签名：', '其他记录：']
+const titleText = [
+  '主诉：',
+  '现病史：',
+  '既往史：',
+  '流行病史：',
+  '体格检查：',
+  '辅助检查：',
+  '门诊诊断：',
+  '处置治疗：',
+  '电子签名：',
+  '其他记录：'
+]
 const titleMap: Map<number, string> = new Map()
 for (let t = 0; t < titleText.length; t++) {
   const value = titleText[t]
@@ -15,17 +33,29 @@ for (let t = 0; t < titleText.length; t++) {
 
 // 模拟颜色字
 const colorText = ['传染性疾病']
-const colorIndex: number[] = colorText.map(b => {
-  const i = text.indexOf(b)
-  return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
-}).flat()
+const colorIndex: number[] = colorText
+  .map(b => {
+    const i = text.indexOf(b)
+    return ~i
+      ? Array(b.length)
+          .fill(i)
+          .map((_, j) => i + j)
+      : []
+  })
+  .flat()
 
 // 模拟高亮字
 const highlightText = ['血细胞比容']
-const highlightIndex: number[] = highlightText.map(b => {
-  const i = text.indexOf(b)
-  return ~i ? Array(b.length).fill(i).map((_, j) => i + j) : []
-}).flat()
+const highlightIndex: number[] = highlightText
+  .map(b => {
+    const i = text.indexOf(b)
+    return ~i
+      ? Array(b.length)
+          .fill(i)
+          .map((_, j) => i + j)
+      : []
+  })
+  .flat()
 
 const elementList: IElement[] = []
 // 组合纯文本数据
@@ -39,10 +69,12 @@ while (index < textList.length) {
       value: '',
       type: ElementType.TITLE,
       level: TitleLevel.FIRST,
-      valueList: [{
-        value: title,
-        size: 18
-      }]
+      valueList: [
+        {
+          value: title,
+          size: 18
+        }
+      ]
     })
     index += title.length - 1
   } else if (colorIndex.includes(index)) {
@@ -89,16 +121,20 @@ elementList.splice(94, 0, {
     placeholder: '有无',
     prefix: '{',
     postfix: '}',
-    valueSets: [{
-      value: '有',
-      code: '98175'
-    }, {
-      value: '无',
-      code: '98176'
-    }, {
-      value: '不详',
-      code: '98177'
-    }]
+    valueSets: [
+      {
+        value: '有',
+        code: '98175'
+      },
+      {
+        value: '无',
+        code: '98176'
+      },
+      {
+        value: '不详',
+        code: '98177'
+      }
+    ]
   }
 })
 
@@ -106,19 +142,24 @@ elementList.splice(94, 0, {
 elementList.splice(116, 0, {
   type: ElementType.HYPERLINK,
   value: '',
-  valueList: [{
-    value: '新',
-    size: 16
-  }, {
-    value: '冠',
-    size: 16
-  }, {
-    value: '肺',
-    size: 16
-  }, {
-    value: '炎',
-    size: 16
-  }],
+  valueList: [
+    {
+      value: '新',
+      size: 16
+    },
+    {
+      value: '冠',
+      size: 16
+    },
+    {
+      value: '肺',
+      size: 16
+    },
+    {
+      value: '炎',
+      size: 16
+    }
+  ],
   url: 'https://hufe.club/canvas-editor'
 })
 
@@ -140,18 +181,23 @@ elementList.splice(450, 0, {
   value: '',
   type: ElementType.LIST,
   listType: ListType.OL,
-  valueList: [{
-    value: '高血压\n糖尿病\n病毒性感冒\n过敏性鼻炎\n过敏性鼻息肉'
-  }]
+  valueList: [
+    {
+      value: '高血压\n糖尿病\n病毒性感冒\n过敏性鼻炎\n过敏性鼻息肉'
+    }
+  ]
 })
 
 elementList.splice(452, 0, {
   value: '',
   type: ElementType.LIST,
   listType: ListType.OL,
-  valueList: [{
-    value: '超声引导下甲状腺细针穿刺术；\n乙型肝炎表面抗体测定；\n膜式病变细胞采集术、后颈皮下肤层；'
-  }]
+  valueList: [
+    {
+      value:
+        '超声引导下甲状腺细针穿刺术；\n乙型肝炎表面抗体测定；\n膜式病变细胞采集术、后颈皮下肤层；'
+    }
+  ]
 })
 
 // 模拟图片
@@ -167,159 +213,209 @@ elementList.splice(455, 0, {
 elementList.push({
   type: ElementType.TABLE,
   value: '',
-  colgroup: [{
-    width: 180
-  }, {
-    width: 80
-  }, {
-    width: 130
-  }, {
-    width: 130
-  }],
-  trList: [{
-    height: 40,
-    tdList: [{
-      colspan: 1,
-      rowspan: 2,
-      value: [
-        { value: `1`, size: 16 },
-        { value: '.', size: 16 }
+  colgroup: [
+    {
+      width: 180
+    },
+    {
+      width: 80
+    },
+    {
+      width: 130
+    },
+    {
+      width: 130
+    }
+  ],
+  trList: [
+    {
+      height: 40,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 2,
+          value: [
+            { value: `1`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `2`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        },
+        {
+          colspan: 2,
+          rowspan: 1,
+          value: [
+            { value: `3`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        }
       ]
-    }, {
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `2`, size: 16 },
-        { value: '.', size: 16 }
+    },
+    {
+      height: 40,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `4`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `5`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `6`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        }
       ]
-    }, {
-      colspan: 2,
-      rowspan: 1,
-      value: [
-        { value: `3`, size: 16 },
-        { value: '.', size: 16 }
+    },
+    {
+      height: 40,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `7`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `8`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `9`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            { value: `1`, size: 16 },
+            { value: `0`, size: 16 },
+            { value: '.', size: 16 }
+          ]
+        }
       ]
-    }]
-  }, {
-    height: 40,
-    tdList: [{
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `4`, size: 16 },
-        { value: '.', size: 16 }
-      ]
-    }, {
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `5`, size: 16 },
-        { value: '.', size: 16 }
-      ]
-    }, {
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `6`, size: 16 },
-        { value: '.', size: 16 }
-      ]
-    }]
-  }, {
-    height: 40,
-    tdList: [{
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `7`, size: 16 },
-        { value: '.', size: 16 }
-      ]
-    }, {
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `8`, size: 16 },
-        { value: '.', size: 16 }
-      ]
-    }, {
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `9`, size: 16 },
-        { value: '.', size: 16 }
-      ]
-    }, {
-      colspan: 1,
-      rowspan: 1,
-      value: [
-        { value: `1`, size: 16 },
-        { value: `0`, size: 16 },
-        { value: '.', size: 16 }
-      ]
-    }]
-  }]
+    }
+  ]
 })
 
 // 模拟checkbox
-elementList.push(...<IElement[]>[{
-  value: '是否同意以上内容：'
-}, {
-  type: ElementType.CONTROL,
-  control: {
-    type: ControlType.CHECKBOX,
-    code: '98175',
-    value: '',
-    valueSets: [{
-      value: '同意',
-      code: '98175'
-    }, {
-      value: '否定',
-      code: '98176'
-    }]
-  },
-  value: ''
-}, {
-  value: '\n'
-}])
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '是否同意以上内容：'
+    },
+    {
+      type: ElementType.CONTROL,
+      control: {
+        type: ControlType.CHECKBOX,
+        code: '98175',
+        value: '',
+        valueSets: [
+          {
+            value: '同意',
+            code: '98175'
+          },
+          {
+            value: '否定',
+            code: '98176'
+          }
+        ]
+      },
+      value: ''
+    },
+    {
+      value: '\n'
+    }
+  ])
+)
 
 // LaTex公式
-elementList.push(...<IElement[]>[{
-  value: '医学公式：'
-},
-{
-  value: `{E_k} = hv - {W_0}`,
-  type: ElementType.LATEX
-}, {
-  value: '\n'
-}])
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '医学公式：'
+    },
+    {
+      value: `{E_k} = hv - {W_0}`,
+      type: ElementType.LATEX
+    },
+    {
+      value: '\n'
+    }
+  ])
+)
 
 // 日期选择
-elementList.push(...<IElement[]>[{
-  value: '签署日期：'
-},
-{
-  value: '',
-  valueList: [{
-    value: `2022-08-10 17:30:01`
-  }],
-  type: ElementType.DATE
-}, {
-  value: '\n'
-}])
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '签署日期：'
+    },
+    {
+      value: '',
+      valueList: [
+        {
+          value: `2022-08-10 17:30:01`
+        }
+      ],
+      type: ElementType.DATE
+    },
+    {
+      value: '\n'
+    }
+  ])
+)
 
 // 模拟结尾文本
-elementList.push(...[{
-  value: '',
-  type: ElementType.TAB
-}, {
-  value: 'E',
-  size: 16
-}, {
-  value: 'O',
-  size: 16
-}, {
-  value: 'F',
-  size: 16
-}])
+elementList.push(
+  ...[
+    {
+      value: '',
+      type: ElementType.TAB
+    },
+    {
+      value: 'E',
+      size: 16
+    },
+    {
+      value: 'O',
+      size: 16
+    },
+    {
+      value: 'F',
+      size: 16
+    }
+  ]
+)
 
 export const data: IElement[] = elementList
 

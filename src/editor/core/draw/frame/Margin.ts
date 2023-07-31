@@ -3,7 +3,6 @@ import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
 
 export class Margin {
-
   private draw: Draw
   private options: Required<IEditorOption>
 
@@ -15,9 +14,10 @@ export class Margin {
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     const { marginIndicatorColor, pageMode } = this.options
     const width = this.draw.getWidth()
-    const height = pageMode === PageMode.CONTINUITY
-      ? this.draw.getCanvasHeight(pageNo)
-      : this.draw.getHeight()
+    const height =
+      pageMode === PageMode.CONTINUITY
+        ? this.draw.getCanvasHeight(pageNo)
+        : this.draw.getHeight()
     const margins = this.draw.getMargins()
     const marginIndicatorSize = this.draw.getMarginIndicatorSize()
     ctx.save()
@@ -27,7 +27,10 @@ export class Margin {
     const leftTopPoint: [number, number] = [margins[3], margins[0]]
     const rightTopPoint: [number, number] = [width - margins[1], margins[0]]
     const leftBottomPoint: [number, number] = [margins[3], height - margins[2]]
-    const rightBottomPoint: [number, number] = [width - margins[1], height - margins[2]]
+    const rightBottomPoint: [number, number] = [
+      width - margins[1],
+      height - margins[2]
+    ]
     // 上左
     ctx.moveTo(leftTopPoint[0] - marginIndicatorSize, leftTopPoint[1])
     ctx.lineTo(...leftTopPoint)
@@ -47,5 +50,4 @@ export class Margin {
     ctx.stroke()
     ctx.restore()
   }
-
 }
