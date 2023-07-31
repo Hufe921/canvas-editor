@@ -1,3 +1,20 @@
+## [0.9.42](https://github.com/Hufe921/canvas-editor/compare/v0.9.41...v0.9.42) (2023-07-31)
+
+
+### Bug Fixes
+
+* contentChange call error during initialization #224 ([1b25afb](https://github.com/Hufe921/canvas-editor/commit/1b25afb664b6feff8a0e96dda53a0a3b252663c7)), closes [#224](https://github.com/Hufe921/canvas-editor/issues/224)
+* control value style not affected by prefix #227 ([cf5dd35](https://github.com/Hufe921/canvas-editor/commit/cf5dd356869ac272dd8d3a1948ff5f4c6536b23d)), closes [#227](https://github.com/Hufe921/canvas-editor/issues/227)
+* limit word break element type ([73014dc](https://github.com/Hufe921/canvas-editor/commit/73014dc87be5360ab8f09e211a12b06dfcbb77e2))
+* set header and footer data error #224 ([b22f0b4](https://github.com/Hufe921/canvas-editor/commit/b22f0b45418b76ba008a2f6200bf8210f3c6f0dd)), closes [#224](https://github.com/Hufe921/canvas-editor/issues/224)
+
+
+### Features
+
+* add SetHTML api ([52f7500](https://github.com/Hufe921/canvas-editor/commit/52f7500ae3e27b1746af423dcbf1faffc9134948))
+
+
+
 ## [0.9.41](https://github.com/Hufe921/canvas-editor/compare/v0.9.40...v0.9.41) (2023-07-27)
 
 

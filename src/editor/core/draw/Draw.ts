@@ -93,9 +93,7 @@ export class Draw {
   private options: DeepRequired<IEditorOption>
   private position: Position
   private zone: Zone
-  private headerElementList: IElement[]
   private elementList: IElement[]
-  private footerElementList: IElement[]
   private listener: Listener
   private eventBus: EventBus<EventBusMap>
 
@@ -159,9 +157,7 @@ export class Draw {
     this.pagePixelRatio = null
     this.mode = options.mode
     this.options = options
-    this.headerElementList = data.header || []
     this.elementList = data.main
-    this.footerElementList = data.footer || []
     this.listener = listener
     this.eventBus = eventBus
 
@@ -189,8 +185,8 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
     this.placeholder = new Placeholder(this)
-    this.header = new Header(this)
-    this.footer = new Footer(this)
+    this.header = new Header(this, data.header)
+    this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle()
@@ -440,7 +436,7 @@ export class Draw {
   }
 
   public getHeaderElementList(): IElement[] {
-    return this.headerElementList
+    return this.header.getElementList()
   }
 
   public getTableElementList(sourceElementList: IElement[]): IElement[] {
@@ -467,10 +463,10 @@ export class Draw {
   public getOriginalElementList() {
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
-      return this.header.getElementList()
+      return this.getHeaderElementList()
     }
     if (zoneManager.isFooterActive()) {
-      return this.footer.getElementList()
+      return this.getFooterElementList()
     }
     return this.elementList
   }
@@ -480,7 +476,7 @@ export class Draw {
   }
 
   public getFooterElementList(): IElement[] {
-    return this.footerElementList
+    return this.footer.getElementList()
   }
 
   public insertElementList(payload: IElement[]) {
@@ -849,9 +845,9 @@ export class Draw {
       )
     }
     const data: IEditorData = {
-      header: zipElementList(this.headerElementList),
+      header: zipElementList(this.getHeaderElementList()),
       main: zipElementList(mainElementList),
-      footer: zipElementList(this.footerElementList)
+      footer: zipElementList(this.getFooterElementList())
     }
     return {
       version,
