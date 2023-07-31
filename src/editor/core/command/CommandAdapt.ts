@@ -1873,13 +1873,18 @@ export class CommandAdapt {
 
   public setHTML(payload: Partial<IEditorHTML>) {
     const { header, main, footer } = payload
-    const headerElementList = getElementListByHTML(header ?? '', { innerWidth })
-    const mainElementList = getElementListByHTML(main ?? '', { innerWidth })
-    const footerElementList = getElementListByHTML(footer ?? '', { innerWidth })
+    const innerWidth = this.draw.getOriginalInnerWidth()
+    // 不设置值时数据为undefined，避免覆盖当前数据
+    const getElementList = (htmlText?: string) =>
+      htmlText !== undefined
+        ? getElementListByHTML(htmlText, {
+            innerWidth
+          })
+        : undefined
     this.setValue({
-      header: headerElementList,
-      main: mainElementList,
-      footer: footerElementList
+      header: getElementList(header),
+      main: getElementList(main),
+      footer: getElementList(footer)
     })
   }
 }
