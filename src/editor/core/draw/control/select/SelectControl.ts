@@ -2,12 +2,13 @@ import {
   EDITOR_COMPONENT,
   EDITOR_PREFIX
 } from '../../../../dataset/constant/Editor'
+import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import { IControlInstance } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
-import { splitText } from '../../../../utils'
+import { omitObject, splitText } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
@@ -189,12 +190,16 @@ export class SelectControl implements IControlInstance {
     // 插入
     const elementList = this.control.getElementList()
     const startElement = elementList[startIndex]
+    const anchorElement =
+      startElement.controlComponent === ControlComponent.PREFIX
+        ? omitObject(startElement, EDITOR_ELEMENT_STYLE_ATTR)
+        : startElement
     const start = startIndex + 1
     const data = splitText(valueSet.value)
     const draw = this.control.getDraw()
     for (let i = 0; i < data.length; i++) {
       const newElement: IElement = {
-        ...startElement,
+        ...anchorElement,
         value: data[i],
         controlComponent: ControlComponent.VALUE
       }
