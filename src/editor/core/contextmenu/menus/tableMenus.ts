@@ -1,3 +1,4 @@
+import { ColorPicker } from '../../../../components/color-picker/ColorPicker'
 import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
 import { TableBorder } from '../../../dataset/enum/table/Table'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
@@ -166,5 +167,29 @@ export const tableMenus: IRegisterContextMenu[] = [
     callback: (command: Command) => {
       command.executeCancelMergeTableCell()
     }
+  },
+  {
+    i18nPath: 'contextmenu.table.tdBgColor',
+    icon: 'td-bgcolor',
+    when: payload => {
+      return !payload.isReadonly && payload.isInTable
+    },
+    childMenus: [
+      {
+        i18nPath: 'contextmenu.table.tdBgColorChild',
+        icon: 'td-bgcolor',
+        when: () => true,
+        callback: (command: Command) => {
+          new ColorPicker({
+            onConfirm(payload) {
+              if (!payload) return
+              const { value } = payload
+              if (!value) return
+              command.executeTableTdBackgroundColor(value)
+            }
+          })
+        }
+      }
+    ]
   }
 ]
