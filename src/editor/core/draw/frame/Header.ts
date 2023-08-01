@@ -16,12 +16,12 @@ export class Header {
   private rowList: IRow[]
   private positionList: IElementPosition[]
 
-  constructor(draw: Draw) {
+  constructor(draw: Draw, data?: IElement[]) {
     this.draw = draw
     this.position = draw.getPosition()
     this.options = draw.getOptions()
 
-    this.elementList = draw.getHeaderElementList()
+    this.elementList = data || []
     this.rowList = []
     this.positionList = []
   }

@@ -43,7 +43,8 @@ import {
   formatElementContext,
   formatElementList,
   isTextLikeElement,
-  pickElementAttr
+  pickElementAttr,
+  getElementListByHTML
 } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
@@ -1868,5 +1869,22 @@ export class CommandAdapt {
         isSetCursor: false
       })
     }
+  }
+
+  public setHTML(payload: Partial<IEditorHTML>) {
+    const { header, main, footer } = payload
+    const innerWidth = this.draw.getOriginalInnerWidth()
+    // 不设置值时数据为undefined，避免覆盖当前数据
+    const getElementList = (htmlText?: string) =>
+      htmlText !== undefined
+        ? getElementListByHTML(htmlText, {
+            innerWidth
+          })
+        : undefined
+    this.setValue({
+      header: getElementList(header),
+      main: getElementList(main),
+      footer: getElementList(footer)
+    })
   }
 }

@@ -16,12 +16,12 @@ export class Footer {
   private rowList: IRow[]
   private positionList: IElementPosition[]
 
-  constructor(draw: Draw) {
+  constructor(draw: Draw, data?: IElement[]) {
     this.draw = draw
     this.position = draw.getPosition()
     this.options = draw.getOptions()
 
-    this.elementList = draw.getFooterElementList()
+    this.elementList = data || []
     this.rowList = []
     this.positionList = []
   }

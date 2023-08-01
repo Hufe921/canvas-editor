@@ -202,6 +202,16 @@ export function cloneProperty<T>(
   }
 }
 
+export function omitObject<T>(object: T, keys: (keyof T)[]): T {
+  const cloneObject = deepClone(object)
+  for (const key in object) {
+    if (keys.includes(key)) {
+      delete cloneObject[key]
+    }
+  }
+  return cloneObject
+}
+
 export function convertStringToBase64(input: string) {
   const encoder = new TextEncoder()
   const data = encoder.encode(input)
