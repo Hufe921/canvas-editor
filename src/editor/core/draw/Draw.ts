@@ -233,7 +233,14 @@ export class Draw {
   }
 
   public isReadonly() {
-    return this.mode === EditorMode.READONLY
+    switch (this.mode) {
+      case EditorMode.READONLY:
+        return true
+      case EditorMode.FORM:
+        return !this.control.isRangeWithinControl()
+      default:
+        return false
+    }
   }
 
   public getOriginalWidth(): number {
