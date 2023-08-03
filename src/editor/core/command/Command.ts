@@ -47,6 +47,10 @@ export class Command {
   public executeTableTdBorderBgBottom: CommandAdapt['tableTdBorderBgBottom']
   public executeTableTdBorderBgLeft: CommandAdapt['tableTdBorderBgLeft']
   public executeTableTdBorderBgRight: CommandAdapt['tableTdBorderBgRight']
+  public executeTableTdBorderWidthTop: CommandAdapt['tableTdBorderWidthTop']
+  public executeTableTdBorderWidthLeft: CommandAdapt['tableTdBorderWidthLeft']
+  public executeTableTdBorderWidthBottom: CommandAdapt['tableTdBorderWidthBottom']
+  public executeTableTdBorderWidthRight: CommandAdapt['tableTdBorderWidthRight']
   public executeImage: CommandAdapt['image']
   public executeHyperlink: CommandAdapt['hyperlink']
   public executeDeleteHyperlink: CommandAdapt['deleteHyperlink']
@@ -140,6 +144,13 @@ export class Command {
     this.executeTableTdBorderBgBottom = adapt.tableTdBorderBgBottom.bind(adapt)
     this.executeTableTdBorderBgLeft = adapt.tableTdBorderBgLeft.bind(adapt)
     this.executeTableTdBorderBgRight = adapt.tableTdBorderBgRight.bind(adapt)
+    this.executeTableTdBorderWidthTop = adapt.tableTdBorderWidthTop.bind(adapt)
+    this.executeTableTdBorderWidthLeft =
+      adapt.tableTdBorderWidthLeft.bind(adapt)
+    this.executeTableTdBorderWidthBottom =
+      adapt.tableTdBorderWidthBottom.bind(adapt)
+    this.executeTableTdBorderWidthRight =
+      adapt.tableTdBorderWidthRight.bind(adapt)
     this.executeImage = adapt.image.bind(adapt)
     this.executeHyperlink = adapt.hyperlink.bind(adapt)
     this.executeDeleteHyperlink = adapt.deleteHyperlink.bind(adapt)

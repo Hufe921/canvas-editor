@@ -27,4 +27,8 @@ export interface ITd {
   borderBgBottom?: string
   borderBgRight?: string
   borderBgLeft?: string
+  borderWidthTop?: number
+  borderWidthBottom?: number
+  borderWidthLeft?: number
+  borderWidthRight?: number
 }
