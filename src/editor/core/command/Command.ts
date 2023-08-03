@@ -43,6 +43,10 @@ export class Command {
   public executeTableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
   public executeTableBorderType: CommandAdapt['tableBorderType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
+  public executeTableTdBorderBgTop: CommandAdapt['tableTdBorderBgTop']
+  public executeTableTdBorderBgBottom: CommandAdapt['tableTdBorderBgBottom']
+  public executeTableTdBorderBgLeft: CommandAdapt['tableTdBorderBgLeft']
+  public executeTableTdBorderBgRight: CommandAdapt['tableTdBorderBgRight']
   public executeImage: CommandAdapt['image']
   public executeHyperlink: CommandAdapt['hyperlink']
   public executeDeleteHyperlink: CommandAdapt['deleteHyperlink']
@@ -132,6 +136,10 @@ export class Command {
     this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
     this.executeTableTdBackgroundColor =
       adapt.tableTdBackgroundColor.bind(adapt)
+    this.executeTableTdBorderBgTop = adapt.tableTdBorderBgTop.bind(adapt)
+    this.executeTableTdBorderBgBottom = adapt.tableTdBorderBgBottom.bind(adapt)
+    this.executeTableTdBorderBgLeft = adapt.tableTdBorderBgLeft.bind(adapt)
+    this.executeTableTdBorderBgRight = adapt.tableTdBorderBgRight.bind(adapt)
     this.executeImage = adapt.image.bind(adapt)
     this.executeHyperlink = adapt.hyperlink.bind(adapt)
     this.executeDeleteHyperlink = adapt.deleteHyperlink.bind(adapt)

@@ -43,7 +43,14 @@
       "border": "Table border",
       "borderAll": "All",
       "borderEmpty": "Empty",
-      "borderExternal": "External"
+      "borderExternal": "External",
+      "tdBgColor": "Cell background color",
+      "tdBgColorChild": "Select color",
+      "borderBg": "Cell border color",
+      "borderBgTop": "Border top",
+      "borderBgBottom": "Border bottom",
+      "borderBgLeft": "Border left",
+      "borderBgRight": "Border right"
     }
   },
   "datePicker": {
