@@ -11,7 +11,7 @@ instance.command.commandName()
 
 ## executeMode
 
-功能：切换编辑器模式（编辑、清洁、只读）
+功能：切换编辑器模式（编辑、清洁、只读、表单）
 
 用法：
 
@@ -745,9 +745,11 @@ instance.command.executeWordTool()
 ```
 
 ## executeSetHTML
-功能：设置编辑器HTML数据
+
+功能：设置编辑器 HTML 数据
 
 用法：
+
 ```javascript
 instance.command.executeSetHTML(payload: Partial<IEditorHTML)
 ```

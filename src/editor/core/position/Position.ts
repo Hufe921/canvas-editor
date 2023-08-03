@@ -13,7 +13,7 @@ import {
   IPositionContext
 } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
-import { EditorZone } from '../../dataset/enum/Editor'
+import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
 
 export class Position {
   private cursorPosition: IElementPosition | null
@@ -463,11 +463,13 @@ export class Position {
   public adjustPositionContext(
     payload: IGetPositionByXYPayload
   ): ICurrentPosition | null {
-    const isReadonly = this.draw.isReadonly()
     const positionResult = this.getPositionByXY(payload)
     if (!~positionResult.index) return null
     // 移动控件内光标
-    if (positionResult.isControl && !isReadonly) {
+    if (
+      positionResult.isControl &&
+      this.draw.getMode() !== EditorMode.READONLY
+    ) {
       const { index, isTable, trIndex, tdIndex, tdValueIndex } = positionResult
       const control = this.draw.getControl()
       const { newIndex } = control.moveCursor({
