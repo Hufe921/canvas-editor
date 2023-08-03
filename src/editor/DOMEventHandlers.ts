@@ -4,7 +4,8 @@ import Editor, {
   IElement,
   ListStyle,
   ListType,
-  RowFlex
+  RowFlex,
+  TitleLevel
 } from '.'
 import en from '../editor/core/i18n/lang/en.json'
 
@@ -69,18 +70,6 @@ export class DOMEventHandlers {
     DOMEventHandlers.getEditorInstance().command.executeFont(fontFamily)
   }
 
-  static handleFontSize(size: number) {
-    DOMEventHandlers.getEditorInstance().command.executeSize(size)
-  }
-
-  static handleFontSizeAdd() {
-    DOMEventHandlers.getEditorInstance().command.executeSizeAdd()
-  }
-
-  static handleFontSizeMinus() {
-    DOMEventHandlers.getEditorInstance().command.executeSizeMinus()
-  }
-
   static handleAlign(alignment: RowFlex) {
     switch (alignment) {
       case RowFlex.LEFT: {
@@ -121,6 +110,29 @@ export class DOMEventHandlers {
     )
   }
 
+  static setFontColor(payload: string) {
+    DOMEventHandlers.getEditorInstance().command.executeColor(payload)
+  }
+
+  static highlightText(payload: string) {
+    DOMEventHandlers.getEditorInstance().command.executeHighlight(payload)
+  }
+
+  static setFont(payload: string) {
+    DOMEventHandlers.getEditorInstance().command.executeFont(payload)
+  }
+
+  static setSize(payload: number) {
+    DOMEventHandlers.getEditorInstance().command.executeSize(payload)
+  }
+
+  static increaseFontSize() {
+    DOMEventHandlers.getEditorInstance().command.executeSizeAdd()
+  }
+
+  static decreaseFontSize() {
+    DOMEventHandlers.getEditorInstance().command.executeSizeMinus()
+  }
   static getContent() {
     return DOMEventHandlers.getEditorInstance().command.getValue()
   }
@@ -134,5 +146,13 @@ export class DOMEventHandlers {
       payload.rowIndex,
       payload.colIndex
     )
+  }
+
+  static setTitle(payload: TitleLevel | null) {
+    DOMEventHandlers.getEditorInstance().command.executeTitle(payload)
+  }
+
+  static getContentStyles() {
+   return DOMEventHandlers.getEditorInstance().command.getContentStyles()
   }
 }
