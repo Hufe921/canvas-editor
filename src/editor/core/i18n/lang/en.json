@@ -47,10 +47,11 @@
       "tdBgColor": "Cell background color",
       "tdBgColorChild": "Select color",
       "borderBg": "Cell border color",
-      "borderBgTop": "Border top",
-      "borderBgBottom": "Border bottom",
-      "borderBgLeft": "Border left",
-      "borderBgRight": "Border right"
+      "top": "Top",
+      "bottom": "Bottom",
+      "left": "Left",
+      "right": "Right",
+      "borderWidth": "Cell border width"
     }
   },
   "datePicker": {

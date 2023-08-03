@@ -132,6 +132,7 @@ export class TableParticle {
         ctx.moveTo(x, currentY)
         currentY += td.height! * scale
         ctx.strokeStyle = td.borderBgLeft ?? 'black'
+        ctx.lineWidth = td.borderWidthLeft ?? 1
         ctx.lineTo(x, currentY)
         ctx.stroke()
         ctx.closePath()
@@ -144,6 +145,7 @@ export class TableParticle {
       ctx.moveTo(currentX, y)
       currentX += td.width! * scale
       ctx.strokeStyle = td.borderBgTop ?? 'black'
+      ctx.lineWidth = td.borderWidthTop ?? 1
       ctx.lineTo(currentX, y)
       ctx.stroke()
       ctx.closePath()
@@ -207,6 +209,11 @@ export class TableParticle {
           : tdNext?.borderBgLeft
           ? tdNext?.borderBgLeft
           : 'black'
+        ctx.lineWidth = td.borderWidthRight
+          ? td.borderWidthRight
+          : tdNext?.borderWidthLeft
+          ? tdNext?.borderWidthLeft
+          : 1
         ctx.lineTo(x, y + height) // border-right
         ctx.stroke()
         ctx.closePath()
@@ -216,6 +223,12 @@ export class TableParticle {
           : trNext?.borderBgTop
           ? trNext?.borderBgTop
           : 'black'
+        ctx.lineWidth = td.borderWidthBottom
+          ? td.borderWidthBottom
+          : trNext?.borderWidthTop
+          ? trNext?.borderWidthTop
+          : 1
+
         ctx.moveTo(x, y + height)
         ctx.lineTo(x - width, y + height) //border-bottom
         ctx.stroke()

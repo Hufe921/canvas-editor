@@ -1,4 +1,5 @@
 import { ColorPicker } from '../../../../components/color-picker/ColorPicker'
+import { RangePicker } from '../../../../components/range/RangePicker'
 import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
 // import { TableBorder } from '../../../dataset/enum/table/Table'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
@@ -200,7 +201,7 @@ export const tableMenus: IRegisterContextMenu[] = [
     },
     childMenus: [
       {
-        i18nPath: 'contextmenu.table.borderBgTop',
+        i18nPath: 'contextmenu.table.top',
         icon: 'td-bgcolor',
         when: () => true,
         callback: (command: Command) => {
@@ -215,7 +216,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        i18nPath: 'contextmenu.table.borderBgBottom',
+        i18nPath: 'contextmenu.table.bottom',
         icon: 'td-bgcolor',
         when: () => true,
         callback: (command: Command) => {
@@ -230,7 +231,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        i18nPath: 'contextmenu.table.borderBgLeft',
+        i18nPath: 'contextmenu.table.left',
         icon: 'td-bgcolor',
         when: () => true,
         callback: (command: Command) => {
@@ -245,7 +246,7 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
-        i18nPath: 'contextmenu.table.borderBgRight',
+        i18nPath: 'contextmenu.table.right',
         icon: 'td-bgcolor',
         when: () => true,
         callback: (command: Command) => {
@@ -255,6 +256,75 @@ export const tableMenus: IRegisterContextMenu[] = [
               const { value } = payload
               if (!value) return
               command.executeTableTdBorderBgRight(value)
+            }
+          })
+        }
+      }
+    ]
+  },
+  {
+    i18nPath: 'contextmenu.table.borderWidth',
+    icon: '',
+    when: payload => {
+      return !payload.isReadonly && payload.isInTable
+    },
+    childMenus: [
+      {
+        i18nPath: 'contextmenu.table.top',
+        icon: '',
+        when: () => true,
+        callback: (command: Command) => {
+          new RangePicker({
+            onConfirm(payload) {
+              if (!payload) return
+              const { value } = payload
+              if (!value) return
+              command.executeTableTdBorderWidthTop(value)
+            }
+          })
+        }
+      },
+      {
+        i18nPath: 'contextmenu.table.bottom',
+        icon: '',
+        when: () => true,
+        callback: (command: Command) => {
+          new RangePicker({
+            onConfirm(payload) {
+              if (!payload) return
+              const { value } = payload
+              if (!value) return
+              command.executeTableTdBorderWidthBottom(value)
+            }
+          })
+        }
+      },
+      {
+        i18nPath: 'contextmenu.table.left',
+        icon: '',
+        when: () => true,
+        callback: (command: Command) => {
+          new RangePicker({
+            onConfirm(payload) {
+              if (!payload) return
+              const { value } = payload
+              if (!value) return
+              command.executeTableTdBorderWidthLeft(value)
+            }
+          })
+        }
+      },
+      {
+        i18nPath: 'contextmenu.table.right',
+        icon: '',
+        when: () => true,
+        callback: (command: Command) => {
+          new RangePicker({
+            onConfirm(payload) {
+              if (!payload) return
+              const { value } = payload
+              if (!value) return
+              command.executeTableTdBorderWidthRight(value)
             }
           })
         }

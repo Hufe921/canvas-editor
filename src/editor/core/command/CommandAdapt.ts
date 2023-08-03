@@ -1322,6 +1322,80 @@ export class CommandAdapt {
     })
   }
 
+  public tableTdBorderWidthTop(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthTop === payload) {
+      return
+    }
+    curTd.borderWidthTop = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdBorderWidthLeft(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthLeft === payload) {
+      return
+    }
+    curTd.borderWidthLeft = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdBorderWidthBottom(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthBottom === payload) {
+      return
+    }
+    curTd.borderWidthBottom = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+  public tableTdBorderWidthRight(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthRight === payload) {
+      return
+    }
+    curTd.borderWidthRight = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
   public hyperlink(payload: IElement) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
