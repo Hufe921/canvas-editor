@@ -4,7 +4,8 @@ import Editor, {
   IElement,
   ListStyle,
   ListType,
-  RowFlex
+  RowFlex,
+  TitleLevel
 } from '.'
 import en from '../editor/core/i18n/lang/en.json'
 
@@ -67,18 +68,6 @@ export class DOMEventHandlers {
 
   static handleFontFamily(fontFamily: string) {
     DOMEventHandlers.getEditorInstance().command.executeFont(fontFamily)
-  }
-
-  static handleFontSize(size: number) {
-    DOMEventHandlers.getEditorInstance().command.executeSize(size)
-  }
-
-  static handleFontSizeAdd() {
-    DOMEventHandlers.getEditorInstance().command.executeSizeAdd()
-  }
-
-  static handleFontSizeMinus() {
-    DOMEventHandlers.getEditorInstance().command.executeSizeMinus()
   }
 
   static handleAlign(alignment: RowFlex) {
@@ -157,5 +146,13 @@ export class DOMEventHandlers {
       payload.rowIndex,
       payload.colIndex
     )
+  }
+
+  static setTitle(payload: TitleLevel | null) {
+    DOMEventHandlers.getEditorInstance().command.executeTitle(payload)
+  }
+
+  static getContentStyles() {
+   return DOMEventHandlers.getEditorInstance().command.getContentStyles()
   }
 }

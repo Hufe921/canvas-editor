@@ -84,6 +84,10 @@ export class CommandAdapt {
     this.i18n = draw.getI18n()
   }
 
+  public getContentStyles() {
+    return this.range.getContentStyles()
+  }
+
   public mode(payload: EditorMode) {
     const mode = this.draw.getMode()
     if (mode === payload) return
@@ -433,13 +437,13 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
-    // 需要改变的元素列表
+    // list of elements to change
     const changeElementList =
       startIndex === endIndex
         ? this.range.getRangeElementList()
         : elementList.slice(startIndex + 1, endIndex + 1)
     if (!changeElementList || !changeElementList.length) return
-    // 设置值
+    // Settings
     const titleId = getUUID()
     const titleOptions = this.draw.getOptions().title
     changeElementList.forEach(el => {
@@ -460,7 +464,7 @@ export class CommandAdapt {
         }
       }
     })
-    // 光标定位
+    // Cursor positioning
     const isSetCursor = startIndex === endIndex
     const curIndex = isSetCursor ? endIndex : startIndex
     this.draw.render({ curIndex, isSetCursor })
