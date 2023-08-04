@@ -1,3 +1,18 @@
+## [0.9.43](https://github.com/Hufe921/canvas-editor/compare/v0.9.42...v0.9.43) (2023-08-04)
+
+
+### Bug Fixes
+
+* cursor navigation across pages #229 ([a96a77a](https://github.com/Hufe921/canvas-editor/commit/a96a77a237a62f0881a2b106b040f29c840fff58)), closes [#229](https://github.com/Hufe921/canvas-editor/issues/229)
+
+
+### Features
+
+* add form mode #221 ([94247c3](https://github.com/Hufe921/canvas-editor/commit/94247c324be8bd3688f4098ab9520fc563d20ded)), closes [#221](https://github.com/Hufe921/canvas-editor/issues/221)
+* cursor following page scrolling #229 ([3db28cc](https://github.com/Hufe921/canvas-editor/commit/3db28cc04f84af502901da51a14e3f63c8a36964)), closes [#229](https://github.com/Hufe921/canvas-editor/issues/229)
+
+
+
 ## [0.9.42](https://github.com/Hufe921/canvas-editor/compare/v0.9.41...v0.9.42) (2023-07-31)
 
 
