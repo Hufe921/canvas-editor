@@ -39,7 +39,7 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
       )
     },
     callback: (command: Command, context: IContextMenuContext) => {
-      const url = window.prompt('编辑链接', context.startElement?.url)
+      const url = window.prompt('Edit link', context.startElement?.url)
       if (url) {
         command.executeEditHyperlink(url)
       }
