@@ -1,4 +1,5 @@
 import Editor, {
+  ElementType,
   IEditorData,
   IEditorOption,
   IElement,
@@ -7,7 +8,9 @@ import Editor, {
   RowFlex,
   TitleLevel
 } from '.'
+import { Dialog } from '../components/dialog/Dialog'
 import en from '../editor/core/i18n/lang/en.json'
+import { IDrawImagePayload } from './interface/Draw'
 
 export class DOMEventHandlers {
   private static instance: Editor
@@ -153,6 +156,47 @@ export class DOMEventHandlers {
   }
 
   static getContentStyles() {
-   return DOMEventHandlers.getEditorInstance().command.getContentStyles()
+    return DOMEventHandlers.getEditorInstance().command.getContentStyles()
+  }
+
+  static setImage(payload: IDrawImagePayload) {
+    DOMEventHandlers.getEditorInstance().command.executeImage(payload)
+  }
+
+  static createHyperLink() {
+    new Dialog({
+      title: 'Link',
+      data: [
+        {
+          type: 'text',
+          label: 'Text',
+          name: 'name',
+          required: true,
+          placeholder: 'Enter text'
+        },
+        {
+          type: 'text',
+          label: 'URL',
+          name: 'url',
+          required: true,
+          placeholder: 'Enter URL'
+        }
+      ],
+      onConfirm: payload => {
+        const name = payload.find(p => p.name === 'name')?.value
+        if (!name) return
+        const url = payload.find(p => p.name === 'url')?.value
+        if (!url) return
+        DOMEventHandlers.getEditorInstance().command.executeHyperlink({
+          type: ElementType.HYPERLINK,
+          value: '',
+          url,
+          valueList: name.split('').map(n => ({
+            value: n,
+            size: 16
+          }))
+        })
+      }
+    })
   }
 }
