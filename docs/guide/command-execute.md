@@ -419,6 +419,16 @@ instance.command.executeTableBorderType(payload: TableBorder)
 instance.command.executeTableTdBackgroundColor(payload: string)
 ```
 
+## executeTableSelectAll
+
+功能：选中整个表格
+
+用法：
+
+```javascript
+instance.command.executeTableSelectAll()
+```
+
 ## executeImage
 
 功能：插入图片

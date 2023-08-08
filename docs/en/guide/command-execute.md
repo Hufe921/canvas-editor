@@ -419,6 +419,16 @@ Usage:
 instance.command.executeTableTdBackgroundColor(payload: string)
 ```
 
+## executeTableSelectAll
+
+Feature: Select the entire table
+
+Usage:
+
+```javascript
+instance.command.executeTableSelectAll()
+```
+
 ## executeImage
 
 Feature: Insert a picture
