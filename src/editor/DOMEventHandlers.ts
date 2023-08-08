@@ -10,6 +10,7 @@ import Editor, {
 } from '.'
 import { Dialog } from '../components/dialog/Dialog'
 import en from '../editor/core/i18n/lang/en.json'
+import { IDrawImagePayload } from './interface/Draw'
 
 export class DOMEventHandlers {
   private static instance: Editor
@@ -156,6 +157,10 @@ export class DOMEventHandlers {
 
   static getContentStyles() {
     return DOMEventHandlers.getEditorInstance().command.getContentStyles()
+  }
+
+  static setImage(payload: IDrawImagePayload) {
+    DOMEventHandlers.getEditorInstance().command.executeImage(payload)
   }
 
   static createHyperLink() {
