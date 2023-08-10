@@ -6,6 +6,7 @@ import {
   IDrawOption,
   IDrawPagePayload,
   IDrawRowPayload,
+  IGetImageOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -142,6 +143,7 @@ export class Draw {
   private visiblePageNoList: number[]
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
+  private printModeData: Required<IEditorData> | null
 
   constructor(
     rootContainer: HTMLElement,
@@ -217,6 +219,7 @@ export class Draw {
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
     this.lazyRenderIntersectionObserver = null
+    this.printModeData = null
 
     this.render({
       isInit: true,
@@ -229,12 +232,34 @@ export class Draw {
   }
 
   public setMode(payload: EditorMode) {
+    if (this.mode === payload) return
+    // 设置打印模式
+    if (payload === EditorMode.PRINT) {
+      this.printModeData = {
+        header: this.header.getElementList(),
+        main: this.elementList,
+        footer: this.footer.getElementList()
+      }
+      this.setEditorData(
+        this.control.filterAssistElement(deepClone(this.printModeData))
+      )
+    }
+    // 取消打印模式
+    if (this.mode === EditorMode.PRINT && this.printModeData) {
+      this.setEditorData(this.printModeData)
+      this.printModeData = null
+    }
     this.mode = payload
+    this.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
   }
 
   public isReadonly() {
     switch (this.mode) {
       case EditorMode.READONLY:
+      case EditorMode.PRINT:
         return true
       case EditorMode.FORM:
         return !this.control.isRangeWithinControl()
@@ -650,9 +675,17 @@ export class Draw {
     return this.rowList.length
   }
 
-  public async getDataURL(pixelRatio?: number): Promise<string[]> {
+  public async getDataURL(payload: IGetImageOption = {}): Promise<string[]> {
+    const { pixelRatio, mode } = payload
+    // 放大像素比
     if (pixelRatio) {
       this.setPagePixelRatio(pixelRatio)
+    }
+    // 不同模式
+    const currentMode = this.mode
+    const isSwitchMode = !!mode && currentMode !== mode
+    if (isSwitchMode) {
+      this.setMode(mode)
     }
     this.render({
       isLazy: false,
@@ -662,8 +695,12 @@ export class Draw {
     })
     await this.imageObserver.allSettled()
     const dataUrlList = this.pageList.map(c => c.toDataURL())
+    // 还原
     if (pixelRatio) {
       this.setPagePixelRatio(null)
+    }
+    if (isSwitchMode) {
+      this.setMode(currentMode)
     }
     return dataUrlList
   }
@@ -869,29 +906,36 @@ export class Draw {
   public setValue(payload: Partial<IEditorData>) {
     const { header, main, footer } = payload
     if (!header && !main && !footer) return
-    if (header) {
-      formatElementList(header, {
+    const pageComponentData = [header, main, footer]
+    pageComponentData.forEach(data => {
+      if (!data) return
+      formatElementList(data, {
         editorOptions: this.options
       })
-      this.header.setElementList(header)
-    }
-    if (main) {
-      formatElementList(main, {
-        editorOptions: this.options
-      })
-      this.elementList = main
-    }
-    if (footer) {
-      formatElementList(footer, {
-        editorOptions: this.options
-      })
-      this.footer.setElementList(footer)
-    }
+    })
+    this.setEditorData({
+      header,
+      main,
+      footer
+    })
     // 渲染&计算&清空历史记录
     this.historyManager.recovery()
     this.render({
       isSetCursor: false
     })
+  }
+
+  public setEditorData(payload: Partial<IEditorData>) {
+    const { header, main, footer } = payload
+    if (header) {
+      this.header.setElementList(header)
+    }
+    if (main) {
+      this.elementList = main
+    }
+    if (footer) {
+      this.footer.setElementList(footer)
+    }
   }
 
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
@@ -1398,6 +1442,7 @@ export class Draw {
   public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
+    const isPrintMode = this.mode === EditorMode.PRINT
     const { scale, tdPadding } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
@@ -1472,7 +1517,7 @@ export class Draw {
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
-          if (this.mode !== EditorMode.CLEAN) {
+          if (this.mode !== EditorMode.CLEAN && !isPrintMode) {
             this.pageBreakParticle.render(ctx, element, x, y)
           }
         } else if (
@@ -1592,21 +1637,23 @@ export class Draw {
       // 绘制富文本及文字
       this._drawRichText(ctx)
       // 绘制选区
-      if (rangeRecord.width && rangeRecord.height) {
-        const { x, y, width, height } = rangeRecord
-        this.range.render(ctx, x, y, width, height)
-      }
-      if (
-        isCrossRowCol &&
-        tableRangeElement &&
-        tableRangeElement.id === tableId
-      ) {
-        const {
-          coordinate: {
-            leftTop: [x, y]
-          }
-        } = positionList[curRow.startIndex]
-        this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+      if (!isPrintMode) {
+        if (rangeRecord.width && rangeRecord.height) {
+          const { x, y, width, height } = rangeRecord
+          this.range.render(ctx, x, y, width, height)
+        }
+        if (
+          isCrossRowCol &&
+          tableRangeElement &&
+          tableRangeElement.id === tableId
+        ) {
+          const {
+            coordinate: {
+              leftTop: [x, y]
+            }
+          } = positionList[curRow.startIndex]
+          this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+        }
       }
     }
   }

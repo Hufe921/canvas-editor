@@ -21,6 +21,7 @@ import { DeepRequired } from '../../interface/Common'
 import {
   IAppendElementListOption,
   IDrawImagePayload,
+  IGetImageOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -86,13 +87,7 @@ export class CommandAdapt {
   }
 
   public mode(payload: EditorMode) {
-    const mode = this.draw.getMode()
-    if (mode === payload) return
     this.draw.setMode(payload)
-    this.draw.render({
-      isSetCursor: false,
-      isSubmitHistory: false
-    })
   }
 
   public cut() {
@@ -1648,7 +1643,10 @@ export class CommandAdapt {
     }
     const width = this.draw.getOriginalWidth()
     const height = this.draw.getOriginalHeight()
-    const base64List = await this.draw.getDataURL(printPixelRatio)
+    const base64List = await this.draw.getDataURL({
+      pixelRatio: printPixelRatio,
+      mode: EditorMode.PRINT
+    })
     printImageBase64(base64List, width, height)
     if (scale !== 1) {
       this.draw.setPageScale(scale)
@@ -1685,8 +1683,8 @@ export class CommandAdapt {
     })
   }
 
-  public getImage(pixelRatio?: number): Promise<string[]> {
-    return this.draw.getDataURL(pixelRatio)
+  public getImage(payload?: IGetImageOption): Promise<string[]> {
+    return this.draw.getDataURL(payload)
   }
 
   public getValue(options?: IGetValueOption): IEditorResult {
