@@ -5,20 +5,24 @@ export default defineConfig({
   title: 'canvas-editor',
   description: 'rich text editor by canvas/svg',
   themeConfig: {
+    i18nRouting: false,
     algolia: {
       appId: 'RWSVW6F3S5',
       apiKey: 'e462fffb4d2e9ab4a78c29e0b457ab33',
-      indexName: 'hufe',
+      indexName: 'hufe'
     },
     logo: '/favicon.png',
-    nav: [{
-      text: '指南',
-      link: '/guide/start',
-      activeMatch: '/guide/'
-    }, {
-      text: 'Demo',
-      link: 'https://hufe.club/canvas-editor'
-    }],
+    nav: [
+      {
+        text: '指南',
+        link: '/guide/start',
+        activeMatch: '/guide/'
+      },
+      {
+        text: 'Demo',
+        link: 'https://hufe.club/canvas-editor'
+      }
+    ],
     sidebar: [
       {
         text: '开始',
@@ -39,14 +43,15 @@ export default defineConfig({
       {
         text: '监听',
         items: [
-          { text: '事件监听', link: '/guide/listener' }
+          { text: '事件监听(listener)', link: '/guide/listener' },
+          { text: '事件监听(eventBus)', link: '/guide/eventbus' }
         ]
       },
       {
         text: '快捷键',
         items: [
           { text: '内部快捷键', link: '/guide/shortcut-internal' },
-          { text: '自定义快捷键', link: '/guide/shortcut-custom' },
+          { text: '自定义快捷键', link: '/guide/shortcut-custom' }
         ]
       },
       {
@@ -58,24 +63,93 @@ export default defineConfig({
       },
       {
         text: 'API',
-        items: [
-          { text: '全局API', link: '/guide/api' }
-        ]
+        items: [{ text: '全局API', link: '/guide/api' }]
       },
       {
         text: '插件',
-        items: [
-          { text: '自定义插件', link: '/guide/plugin' }
-        ]
+        items: [{ text: '自定义插件', link: '/guide/plugin' }]
       }
     ],
-    socialLinks: [{
-      icon: 'github',
-      link: 'https://github.com/Hufe921/canvas-editor'
-    }],
+    socialLinks: [
+      {
+        icon: 'github',
+        link: 'https://github.com/Hufe921/canvas-editor'
+      }
+    ],
     footer: {
       message: 'Released under the MIT License.',
       copyright: 'Copyright © 2021-present Hufe'
+    }
+  },
+  locales: {
+    root: {
+      label: '简体中文',
+      lang: 'zh-CN'
+    },
+    en: {
+      label: 'English',
+      lang: 'en',
+      link: '/en/',
+      themeConfig: {
+        nav: [
+          {
+            text: 'Guide',
+            link: '/en/guide/start',
+            activeMatch: '/en/guide/'
+          },
+          {
+            text: 'Demo',
+            link: 'https://hufe.club/canvas-editor'
+          }
+        ],
+        sidebar: [
+          {
+            text: 'Start',
+            items: [
+              { text: 'start', link: '/en/guide/start' },
+              { text: 'option', link: '/en/guide/option' },
+              { text: 'i18n', link: '/en/guide/i18n' },
+              { text: 'schema', link: '/en/guide/schema' }
+            ]
+          },
+          {
+            text: 'Command',
+            items: [
+              { text: 'execute', link: '/en/guide/command-execute' },
+              { text: 'get', link: '/en/guide/command-get' }
+            ]
+          },
+          {
+            text: 'Listener',
+            items: [
+              { text: 'listener', link: '/en/guide/listener' },
+              { text: 'eventbus', link: '/en/guide/eventbus' }
+            ]
+          },
+          {
+            text: 'Shortcut',
+            items: [
+              { text: 'internal', link: '/en/guide/shortcut-internal' },
+              { text: 'custom', link: '/en/guide/shortcut-custom' }
+            ]
+          },
+          {
+            text: 'Contextmenu',
+            items: [
+              { text: 'internal', link: '/en/guide/contextmenu-internal' },
+              { text: 'custom', link: '/en/guide/contextmenu-custom' }
+            ]
+          },
+          {
+            text: 'Api',
+            items: [{ text: 'api', link: '/en/guide/api' }]
+          },
+          {
+            text: 'Plugin',
+            items: [{ text: 'plugin', link: '/en/guide/plugin' }]
+          }
+        ]
+      }
     }
   }
 })

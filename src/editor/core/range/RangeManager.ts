@@ -4,9 +4,12 @@ import { TEXTLIKE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
+import { EventBusMap } from '../../interface/EventBus'
+import { IRangeStyle } from '../../interface/Listener'
 import { IRange, RangeRowArray, RangeRowMap } from '../../interface/Range'
 import { getAnchorElement } from '../../utils/element'
 import { Draw } from '../draw/Draw'
+import { EventBus } from '../event/eventbus/EventBus'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
@@ -16,6 +19,7 @@ export class RangeManager {
   private options: Required<IEditorOption>
   private range: IRange
   private listener: Listener
+  private eventBus: EventBus<EventBusMap>
   private position: Position
   private historyManager: HistoryManager
 
@@ -23,6 +27,7 @@ export class RangeManager {
     this.draw = draw
     this.options = draw.getOptions()
     this.listener = draw.getListener()
+    this.eventBus = draw.getEventBus()
     this.position = draw.getPosition()
     this.historyManager = draw.getHistoryManager()
     this.range = {
@@ -51,8 +56,33 @@ export class RangeManager {
     return elementList.slice(startIndex + 1, endIndex + 1)
   }
 
+  public getSelectionElementList(): IElement[] | null {
+    if (this.range.isCrossRowCol) {
+      const rowCol = this.draw.getTableParticle().getRangeRowCol()
+      if (!rowCol) return null
+      const elementList: IElement[] = []
+      for (let r = 0; r < rowCol.length; r++) {
+        const row = rowCol[r]
+        for (let c = 0; c < row.length; c++) {
+          const col = row[c]
+          elementList.push(...col.value)
+        }
+      }
+      return elementList
+    }
+    return this.getSelection()
+  }
+
   public getTextLikeSelection(): IElement[] | null {
     const selection = this.getSelection()
+    if (!selection) return null
+    return selection.filter(
+      s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type)
+    )
+  }
+
+  public getTextLikeSelectionElementList(): IElement[] | null {
+    const selection = this.getSelectionElementList()
     if (!selection) return null
     return selection.filter(
       s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type)
@@ -77,6 +107,31 @@ export class RangeManager {
       }
     }
     return rangeRow
+  }
+
+  // 获取光标所选位置元素列表
+  public getRangeRowElementList(): IElement[] | null {
+    const { startIndex, endIndex, isCrossRowCol } = this.range
+    if (!~startIndex && !~endIndex) return null
+    if (isCrossRowCol) {
+      return this.getSelectionElementList()
+    }
+    // 选区行信息
+    const rangeRow = this.getRangeRow()
+    if (!rangeRow) return null
+    const positionList = this.position.getPositionList()
+    const elementList = this.draw.getElementList()
+    // 当前选区所在行
+    const rowElementList: IElement[] = []
+    for (let p = 0; p < positionList.length; p++) {
+      const position = positionList[p]
+      const rowSet = rangeRow.get(position.pageNo)
+      if (!rowSet) continue
+      if (rowSet.has(position.rowNo)) {
+        rowElementList.push(elementList[p])
+      }
+    }
+    return rowElementList
   }
 
   // 获取选取段落信息
@@ -241,7 +296,10 @@ export class RangeManager {
   }
 
   public setRangeStyle() {
-    if (!this.listener.rangeStyleChange) return
+    const rangeStyleChangeListener = this.listener.rangeStyleChange
+    const isSubscribeRangeStyleChange =
+      this.eventBus.isSubscribe('rangeStyleChange')
+    if (!rangeStyleChangeListener && !isSubscribeRangeStyleChange) return
     // 结束光标位置
     const { startIndex, endIndex, isCrossRowCol } = this.range
     if (!~startIndex && !~endIndex) return
@@ -281,7 +339,7 @@ export class RangeManager {
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
-    this.listener.rangeStyleChange({
+    const rangeStyle: IRangeStyle = {
       type,
       undo,
       redo,
@@ -300,18 +358,27 @@ export class RangeManager {
       level,
       listType,
       listStyle
-    })
+    }
+    if (rangeStyleChangeListener) {
+      rangeStyleChangeListener(rangeStyle)
+    }
+    if (isSubscribeRangeStyleChange) {
+      this.eventBus.emit('rangeStyleChange', rangeStyle)
+    }
   }
 
   public recoveryRangeStyle() {
-    if (!this.listener.rangeStyleChange) return
+    const rangeStyleChangeListener = this.listener.rangeStyleChange
+    const isSubscribeRangeStyleChange =
+      this.eventBus.isSubscribe('rangeStyleChange')
+    if (!rangeStyleChangeListener && !isSubscribeRangeStyleChange) return
     const font = this.options.defaultFont
     const size = this.options.defaultSize
     const rowMargin = this.options.defaultRowMargin
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
-    this.listener.rangeStyleChange({
+    const rangeStyle: IRangeStyle = {
       type: null,
       undo,
       redo,
@@ -330,7 +397,13 @@ export class RangeManager {
       level: null,
       listType: null,
       listStyle: null
-    })
+    }
+    if (rangeStyleChangeListener) {
+      rangeStyleChangeListener(rangeStyle)
+    }
+    if (isSubscribeRangeStyleChange) {
+      this.eventBus.emit('rangeStyleChange', rangeStyle)
+    }
   }
 
   public shrinkBoundary() {

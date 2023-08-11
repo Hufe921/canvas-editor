@@ -1,3 +1,78 @@
+## [0.9.43](https://github.com/Hufe921/canvas-editor/compare/v0.9.42...v0.9.43) (2023-08-04)
+
+
+### Bug Fixes
+
+* cursor navigation across pages #229 ([a96a77a](https://github.com/Hufe921/canvas-editor/commit/a96a77a237a62f0881a2b106b040f29c840fff58)), closes [#229](https://github.com/Hufe921/canvas-editor/issues/229)
+
+
+### Features
+
+* add form mode #221 ([94247c3](https://github.com/Hufe921/canvas-editor/commit/94247c324be8bd3688f4098ab9520fc563d20ded)), closes [#221](https://github.com/Hufe921/canvas-editor/issues/221)
+* cursor following page scrolling #229 ([3db28cc](https://github.com/Hufe921/canvas-editor/commit/3db28cc04f84af502901da51a14e3f63c8a36964)), closes [#229](https://github.com/Hufe921/canvas-editor/issues/229)
+
+
+
+## [0.9.42](https://github.com/Hufe921/canvas-editor/compare/v0.9.41...v0.9.42) (2023-07-31)
+
+
+### Bug Fixes
+
+* contentChange call error during initialization #224 ([1b25afb](https://github.com/Hufe921/canvas-editor/commit/1b25afb664b6feff8a0e96dda53a0a3b252663c7)), closes [#224](https://github.com/Hufe921/canvas-editor/issues/224)
+* control value style not affected by prefix #227 ([cf5dd35](https://github.com/Hufe921/canvas-editor/commit/cf5dd356869ac272dd8d3a1948ff5f4c6536b23d)), closes [#227](https://github.com/Hufe921/canvas-editor/issues/227)
+* limit word break element type ([73014dc](https://github.com/Hufe921/canvas-editor/commit/73014dc87be5360ab8f09e211a12b06dfcbb77e2))
+* set header and footer data error #224 ([b22f0b4](https://github.com/Hufe921/canvas-editor/commit/b22f0b45418b76ba008a2f6200bf8210f3c6f0dd)), closes [#224](https://github.com/Hufe921/canvas-editor/issues/224)
+
+
+### Features
+
+* add SetHTML api ([52f7500](https://github.com/Hufe921/canvas-editor/commit/52f7500ae3e27b1746af423dcbf1faffc9134948))
+
+
+
+## [0.9.41](https://github.com/Hufe921/canvas-editor/compare/v0.9.40...v0.9.41) (2023-07-27)
+
+
+### Chores
+
+* add id to style element #219 ([166ff7f](https://github.com/Hufe921/canvas-editor/commit/166ff7f3f90c515487d63c06aca5a1e528a5f51a)), closes [#219](https://github.com/Hufe921/canvas-editor/issues/219)
+
+
+### Documentation
+
+* support document internationalization #222 ([9f80168](https://github.com/Hufe921/canvas-editor/commit/9f8016884f56431fd29a77241bcc69368ffdbb37)), closes [#222](https://github.com/Hufe921/canvas-editor/issues/222) [#213](https://github.com/Hufe921/canvas-editor/issues/213) [#222](https://github.com/Hufe921/canvas-editor/issues/222)
+
+
+### Features
+
+* add event bus ([0bacc11](https://github.com/Hufe921/canvas-editor/commit/0bacc113cdf8eec3dd01e4dc89937f2538f65e19))
+* add getHTML api #218 ([b12c6cc](https://github.com/Hufe921/canvas-editor/commit/b12c6cc4282d5777118c9d2e177f0198af048989)), closes [#218](https://github.com/Hufe921/canvas-editor/issues/218)
+* clear contextmenu side effect in web component #219 ([fc356c7](https://github.com/Hufe921/canvas-editor/commit/fc356c7eb66b92fc418838f218ac45f383525573)), closes [#219](https://github.com/Hufe921/canvas-editor/issues/219)
+* clear side effect in web component #219 ([ce70f0d](https://github.com/Hufe921/canvas-editor/commit/ce70f0d7e8cd4f997191c88dd4462b6903f09104)), closes [#219](https://github.com/Hufe921/canvas-editor/issues/219)
+
+
+
+## [0.9.40](https://github.com/Hufe921/canvas-editor/compare/v0.9.39...v0.9.40) (2023-07-21)
+
+
+### Bug Fixes
+
+* disable partial contextmenu in readonly mode ([3f03d88](https://github.com/Hufe921/canvas-editor/commit/3f03d88443c2d5c746ba3c77f6e5fc69464c7c3c))
+
+
+### Performance Improvements
+
+* cursor drawing when page visible ([9c2bd33](https://github.com/Hufe921/canvas-editor/commit/9c2bd33b7a3cd7b557723e9c18870dcd8d7bba6b))
+* cursor position at the beginning of a line ([1bd2e45](https://github.com/Hufe921/canvas-editor/commit/1bd2e455a5f5c0bd53cb51d30e8205cd6a148e7c))
+* print quality #185 ([842b4fc](https://github.com/Hufe921/canvas-editor/commit/842b4fca0723bf764c8fb05f04a5511c443169db)), closes [#185](https://github.com/Hufe921/canvas-editor/issues/185)
+
+
+### Refactor
+
+* add prettier and format ([d464c50](https://github.com/Hufe921/canvas-editor/commit/d464c5043508c63b29174ae05bc37ec66c87d45f))
+
+
+
 ## [0.9.39](https://github.com/Hufe921/canvas-editor/compare/v0.9.38...v0.9.39) (2023-07-14)
 
 

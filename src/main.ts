@@ -108,7 +108,8 @@ function initEditorInstance(
     },
     {
       margins: options.margins || [100, 120, 100, 120],
-      watermark: options.watermark
+      watermark: options.watermark,
+      maskMargin: [60, 0, 30, 0] // 菜单栏高度60，底部工具栏30为遮盖层
     }
   )
   console.log('实例: ', instance)
@@ -1257,12 +1258,20 @@ function initEditorInstance(
     {
       mode: EditorMode.READONLY,
       name: '只读模式'
+    },
+    {
+      mode: EditorMode.FORM,
+      name: '表单模式'
+    },
+    {
+      mode: EditorMode.PRINT,
+      name: '打印模式'
     }
   ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
   modeElement.onclick = function () {
     // 模式选择循环
-    modeIndex === 2 ? (modeIndex = 0) : modeIndex++
+    modeIndex === modeList.length - 1 ? (modeIndex = 0) : modeIndex++
     // 设置模式
     const { name, mode } = modeList[modeIndex]
     modeElement.innerText = name
@@ -1485,8 +1494,9 @@ function initEditorInstance(
     activeMode.classList.add('active')
   }
 
-  instance.listener.contentChange = debounce(async function () {
+  const handleContentChange = async function () {
     contentChangeCount++
+    // 字数
     const wordCount = await instance.command.getWordCount()
     document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${
       wordCount || 0
@@ -1495,10 +1505,11 @@ function initEditorInstance(
     if (isCatalogShow) {
       updateCatalog()
     }
-  }, 200)
+  }
+  instance.listener.contentChange = debounce(handleContentChange, 200)
+  handleContentChange()
 
   instance.listener.saved = function (payload) {
-    console.log('elementList: ', payload)
     contentChangeCount = 1
     updateArticle(payload)
   }

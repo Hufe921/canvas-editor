@@ -1,6 +1,6 @@
-# 获取数据命令
+# Get Data Command
 
-## 使用方式
+## How to Use
 
 ```javascript
 import Editor from "@hufe921/canvas-editor"
@@ -11,9 +11,9 @@ const value = instance.command.commandName()
 
 ## getValue
 
-功能：获取当前文档信息
+Feature: Get the current document value
 
-用法：
+Usage:
 
 ```javascript
 const {
@@ -29,9 +29,9 @@ const {
 
 ## getImage
 
-功能：获取当前页面图片 base64 字符串
+Feature: Gets the base64 string of the current page image
 
-用法：
+Usage:
 
 ```javascript
 const base64StringList = await instance.command.getImage(option?: IGetImageOption)
@@ -39,9 +39,9 @@ const base64StringList = await instance.command.getImage(option?: IGetImageOptio
 
 ## getWordCount
 
-功能：获取文档字数
+Feature: Get document word count
 
-用法：
+Usage:
 
 ```javascript
 const wordCount = await instance.command.getWordCount()
@@ -49,9 +49,9 @@ const wordCount = await instance.command.getWordCount()
 
 ## getRangeText
 
-功能：获取选区文本
+Feature: Get selection text
 
-用法：
+Usage:
 
 ```javascript
 const rangeText = instance.command.getRangeText()
@@ -59,9 +59,9 @@ const rangeText = instance.command.getRangeText()
 
 ## getRangeContext
 
-功能：获取选区上下文
+Feature: Get selection context
 
-用法：
+Usage:
 
 ```javascript
 const rangeContext = instance.command.getRangeContext()
@@ -69,9 +69,9 @@ const rangeContext = instance.command.getRangeContext()
 
 ## getPaperMargin
 
-功能：获取页边距
+Feature: Gets the margins
 
-用法：
+Usage:
 
 ```javascript
 const [top: number, right: number, bottom: number, left: number] =
@@ -80,9 +80,9 @@ const [top: number, right: number, bottom: number, left: number] =
 
 ## getSearchNavigateInfo
 
-功能：获取搜索导航信息
+Feature: Get search navigation information
 
-用法：
+Usage:
 
 ```javascript
 const {
@@ -93,9 +93,9 @@ const {
 
 ## getCatalog
 
-功能：获取目录
+Feature: Get directory
 
-用法：
+Usage:
 
 ```javascript
 const catalog = await instance.command.getCatalog()
@@ -103,9 +103,9 @@ const catalog = await instance.command.getCatalog()
 
 ## getHTML
 
-功能：获取 HTML
+Feature: Get HTML
 
-用法：
+Usage:
 
 ```javascript
 const {

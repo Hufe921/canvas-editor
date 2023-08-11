@@ -6,14 +6,17 @@ import {
   IControlInstance,
   IControlOption
 } from '../../../interface/Control'
+import { IEditorData } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
+import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import { deepClone, splitText } from '../../../utils'
+import { deepClone, nextTick, splitText } from '../../../utils'
 import {
   formatElementContext,
   pickElementAttr,
   zipElementList
 } from '../../../utils/element'
+import { EventBus } from '../../event/eventbus/EventBus'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -29,6 +32,7 @@ export class Control {
   private draw: Draw
   private range: RangeManager
   private listener: Listener
+  private eventBus: EventBus<EventBusMap>
   private options: IControlOption
   private activeControl: IControlInstance | null
 
@@ -36,12 +40,32 @@ export class Control {
     this.draw = draw
     this.range = draw.getRange()
     this.listener = draw.getListener()
+    this.eventBus = draw.getEventBus()
+
     this.options = draw.getOptions().control
     this.activeControl = null
   }
 
   public getDraw(): Draw {
     return this.draw
+  }
+
+  // 过滤控件辅助元素（前后缀、背景提示）
+  public filterAssistElement(
+    payload: Required<IEditorData>
+  ): Required<IEditorData> {
+    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
+    editorDataKeys.forEach(key => {
+      payload[key] = payload[key].filter(element => {
+        if (element.type !== ElementType.CONTROL) return true
+        return (
+          element.controlComponent !== ControlComponent.PREFIX &&
+          element.controlComponent !== ControlComponent.POSTFIX &&
+          element.controlComponent !== ControlComponent.PLACEHOLDER
+        )
+      })
+    })
+    return payload
   }
 
   // 判断选区部分在控件边界外
@@ -69,6 +93,24 @@ export class Control {
     const elementList = this.getElementList()
     const element = elementList[startIndex]
     return element.controlComponent === ControlComponent.POSTFIX
+  }
+
+  // 判断选区是否在控件内
+  public isRangeWithinControl(): boolean {
+    const { startIndex, endIndex } = this.getRange()
+    if (!~startIndex && !~endIndex) return false
+    const elementList = this.getElementList()
+    const startElement = elementList[startIndex]
+    const endElement = elementList[endIndex]
+    if (
+      (startElement.type === ElementType.CONTROL ||
+        endElement.type === ElementType.CONTROL) &&
+      endElement.controlComponent !== ControlComponent.POSTFIX &&
+      startElement.controlId === endElement.controlId
+    ) {
+      return true
+    }
+    return false
   }
 
   public getContainer(): HTMLDivElement {
@@ -132,16 +174,23 @@ export class Control {
       this.activeControl = new CheckboxControl(element, this)
     }
     // 激活控件回调
-    setTimeout(() => {
-      if (this.listener.controlChange) {
-        let payload: IControl
-        const value = this.activeControl?.getValue()
-        if (value && value.length) {
-          payload = zipElementList(value)[0].control!
-        } else {
-          payload = pickElementAttr(deepClone(element)).control!
-        }
-        this.listener.controlChange(payload)
+    nextTick(() => {
+      const controlChangeListener = this.listener.controlChange
+      const isSubscribeControlChange =
+        this.eventBus.isSubscribe('controlChange')
+      if (!controlChangeListener && !isSubscribeControlChange) return
+      let payload: IControl
+      const value = this.activeControl?.getValue()
+      if (value && value.length) {
+        payload = zipElementList(value)[0].control!
+      } else {
+        payload = pickElementAttr(deepClone(element)).control!
+      }
+      if (controlChangeListener) {
+        controlChangeListener(payload)
+      }
+      if (isSubscribeControlChange) {
+        this.eventBus.emit('controlChange', payload)
       }
     })
   }
@@ -153,9 +202,16 @@ export class Control {
       }
       this.activeControl = null
       // 销毁控件回调
-      setTimeout(() => {
-        if (this.listener.controlChange) {
-          this.listener.controlChange(null)
+      nextTick(() => {
+        const controlChangeListener = this.listener.controlChange
+        const isSubscribeControlChange =
+          this.eventBus.isSubscribe('controlChange')
+        if (!controlChangeListener && !isSubscribeControlChange) return
+        if (controlChangeListener) {
+          controlChangeListener(null)
+        }
+        if (isSubscribeControlChange) {
+          this.eventBus.emit('controlChange', null)
         }
       })
     }

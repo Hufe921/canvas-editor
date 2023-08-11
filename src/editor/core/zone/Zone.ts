@@ -59,6 +59,10 @@ export class Zone {
       if (listener.zoneChange) {
         listener.zoneChange(payload)
       }
+      const eventBus = this.draw.getEventBus()
+      if (eventBus.isSubscribe('zoneChange')) {
+        eventBus.emit('zoneChange', payload)
+      }
     })
   }
 

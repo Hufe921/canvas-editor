@@ -8,11 +8,14 @@ export default defineConfig(({ mode }) => {
   if (mode === 'lib') {
     return {
       plugins: [
-        cssInjectedByJsPlugin(),
+        cssInjectedByJsPlugin({
+          styleId: `${name}-style`,
+          topExecutionPriority: true
+        }),
         {
           ...typescript({
             tsconfig: './tsconfig.json',
-            include: ['./src/editor/**'],
+            include: ['./src/editor/**']
           }),
           apply: 'build',
           declaration: true,

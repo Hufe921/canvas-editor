@@ -13,7 +13,6 @@ import { CanvasEvent } from './CanvasEvent'
 
 export class GlobalEvent {
   private draw: Draw
-  private canvas: HTMLCanvasElement
   private options: Required<IEditorOption>
   private cursor: Cursor | null
   private canvasEvent: CanvasEvent
@@ -27,7 +26,6 @@ export class GlobalEvent {
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
-    this.canvas = draw.getPage()
     this.options = draw.getOptions()
     this.canvasEvent = canvasEvent
     this.cursor = null
@@ -48,9 +46,9 @@ export class GlobalEvent {
   }
 
   private addEvent() {
-    window.addEventListener('blur', this.recoverEffect)
+    window.addEventListener('blur', this.clearSideEffect)
     document.addEventListener('keyup', this.setRangeStyle)
-    document.addEventListener('click', this.recoverEffect)
+    document.addEventListener('click', this.clearSideEffect)
     document.addEventListener('mouseup', this.setCanvasEventAbility)
     document.addEventListener('wheel', this.setPageScale, { passive: false })
     document.addEventListener('visibilitychange', this._handleVisibilityChange)
@@ -58,9 +56,9 @@ export class GlobalEvent {
   }
 
   public removeEvent() {
-    window.removeEventListener('blur', this.recoverEffect)
+    window.removeEventListener('blur', this.clearSideEffect)
     document.removeEventListener('keyup', this.setRangeStyle)
-    document.removeEventListener('click', this.recoverEffect)
+    document.removeEventListener('click', this.clearSideEffect)
     document.removeEventListener('mouseup', this.setCanvasEventAbility)
     document.removeEventListener('wheel', this.setPageScale)
     document.removeEventListener(
@@ -70,18 +68,23 @@ export class GlobalEvent {
     this.dprMediaQueryList.removeEventListener('change', this._handleDprChange)
   }
 
-  public recoverEffect = (evt: Event) => {
+  public clearSideEffect = (evt: Event) => {
     if (!this.cursor) return
-    const cursorDom = this.cursor.getCursorDom()
-    const agentDom = this.cursor.getAgentDom()
-    const innerDoms = [this.canvas, cursorDom, agentDom, document.body]
-    if (innerDoms.includes(evt.target as any)) {
+    // 编辑器内部dom
+    const target = <Element>(evt?.composedPath()[0] || evt.target)
+    const pageList = this.draw.getPageList()
+    const innerEditorDom = findParent(
+      target,
+      (node: any) => pageList.includes(node),
+      true
+    )
+    if (innerEditorDom) {
       this.setRangeStyle()
       return
     }
-    // 编辑器外部dom
+    // 编辑器外部组件dom
     const outerEditorDom = findParent(
-      evt.target as Element,
+      target,
       (node: Node & Element) =>
         !!node && node.nodeType === 1 && !!node.getAttribute(EDITOR_COMPONENT),
       true

@@ -6,6 +6,7 @@ import {
   IDrawOption,
   IDrawPagePayload,
   IDrawRowPayload,
+  IGetImageOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -79,6 +80,8 @@ import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
 import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
+import { EventBus } from '../event/eventbus/EventBus'
+import { EventBusMap } from '../../interface/EventBus'
 
 export class Draw {
   private container: HTMLDivElement
@@ -86,14 +89,14 @@ export class Draw {
   private pageList: HTMLCanvasElement[]
   private ctxList: CanvasRenderingContext2D[]
   private pageNo: number
+  private pagePixelRatio: number | null
   private mode: EditorMode
   private options: DeepRequired<IEditorOption>
   private position: Position
   private zone: Zone
-  private headerElementList: IElement[]
   private elementList: IElement[]
-  private footerElementList: IElement[]
   private listener: Listener
+  private eventBus: EventBus<EventBusMap>
 
   private i18n: I18n
   private canvasEvent: CanvasEvent
@@ -140,23 +143,25 @@ export class Draw {
   private visiblePageNoList: number[]
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
+  private printModeData: Required<IEditorData> | null
 
   constructor(
     rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
     data: IEditorData,
-    listener: Listener
+    listener: Listener,
+    eventBus: EventBus<EventBusMap>
   ) {
     this.container = this._wrapContainer(rootContainer)
     this.pageList = []
     this.ctxList = []
     this.pageNo = 0
+    this.pagePixelRatio = null
     this.mode = options.mode
     this.options = options
-    this.headerElementList = data.header || []
     this.elementList = data.main
-    this.footerElementList = data.footer || []
     this.listener = listener
+    this.eventBus = eventBus
 
     this._formatContainer()
     this.pageContainer = this._createPageContainer()
@@ -182,8 +187,8 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
     this.placeholder = new Placeholder(this)
-    this.header = new Header(this)
-    this.footer = new Footer(this)
+    this.header = new Header(this, data.header)
+    this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle()
@@ -214,8 +219,12 @@ export class Draw {
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
     this.lazyRenderIntersectionObserver = null
+    this.printModeData = null
 
-    this.render({ isSetCursor: false })
+    this.render({
+      isInit: true,
+      isSetCursor: false
+    })
   }
 
   public getMode(): EditorMode {
@@ -223,11 +232,40 @@ export class Draw {
   }
 
   public setMode(payload: EditorMode) {
+    if (this.mode === payload) return
+    // 设置打印模式
+    if (payload === EditorMode.PRINT) {
+      this.printModeData = {
+        header: this.header.getElementList(),
+        main: this.elementList,
+        footer: this.footer.getElementList()
+      }
+      this.setEditorData(
+        this.control.filterAssistElement(deepClone(this.printModeData))
+      )
+    }
+    // 取消打印模式
+    if (this.mode === EditorMode.PRINT && this.printModeData) {
+      this.setEditorData(this.printModeData)
+      this.printModeData = null
+    }
     this.mode = payload
+    this.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
   }
 
   public isReadonly() {
-    return this.mode === EditorMode.READONLY
+    switch (this.mode) {
+      case EditorMode.READONLY:
+      case EditorMode.PRINT:
+        return true
+      case EditorMode.FORM:
+        return !this.control.isRangeWithinControl()
+      default:
+        return false
+    }
   }
 
   public getOriginalWidth(): number {
@@ -334,6 +372,9 @@ export class Draw {
     if (this.listener.visiblePageNoListChange) {
       this.listener.visiblePageNoListChange(this.visiblePageNoList)
     }
+    if (this.eventBus.isSubscribe('visiblePageNoListChange')) {
+      this.eventBus.emit('visiblePageNoListChange', this.visiblePageNoList)
+    }
   }
 
   public getIntersectionPageNo(): number {
@@ -344,6 +385,9 @@ export class Draw {
     this.intersectionPageNo = payload
     if (this.listener.intersectionPageNoChange) {
       this.listener.intersectionPageNoChange(this.intersectionPageNo)
+    }
+    if (this.eventBus.isSubscribe('intersectionPageNoChange')) {
+      this.eventBus.emit('intersectionPageNoChange', this.intersectionPageNo)
     }
   }
 
@@ -424,7 +468,7 @@ export class Draw {
   }
 
   public getHeaderElementList(): IElement[] {
-    return this.headerElementList
+    return this.header.getElementList()
   }
 
   public getTableElementList(sourceElementList: IElement[]): IElement[] {
@@ -451,10 +495,10 @@ export class Draw {
   public getOriginalElementList() {
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
-      return this.header.getElementList()
+      return this.getHeaderElementList()
     }
     if (zoneManager.isFooterActive()) {
-      return this.footer.getElementList()
+      return this.getFooterElementList()
     }
     return this.elementList
   }
@@ -464,7 +508,7 @@ export class Draw {
   }
 
   public getFooterElementList(): IElement[] {
-    return this.footerElementList
+    return this.footer.getElementList()
   }
 
   public insertElementList(payload: IElement[]) {
@@ -567,6 +611,10 @@ export class Draw {
     return this.listener
   }
 
+  public getEventBus(): EventBus<EventBusMap> {
+    return this.eventBus
+  }
+
   public getCursor(): Cursor {
     return this.cursor
   }
@@ -627,7 +675,18 @@ export class Draw {
     return this.rowList.length
   }
 
-  public async getDataURL(): Promise<string[]> {
+  public async getDataURL(payload: IGetImageOption = {}): Promise<string[]> {
+    const { pixelRatio, mode } = payload
+    // 放大像素比
+    if (pixelRatio) {
+      this.setPagePixelRatio(pixelRatio)
+    }
+    // 不同模式
+    const currentMode = this.mode
+    const isSwitchMode = !!mode && currentMode !== mode
+    if (isSwitchMode) {
+      this.setMode(mode)
+    }
     this.render({
       isLazy: false,
       isCompute: false,
@@ -635,7 +694,15 @@ export class Draw {
       isSubmitHistory: false
     })
     await this.imageObserver.allSettled()
-    return this.pageList.map(c => c.toDataURL())
+    const dataUrlList = this.pageList.map(c => c.toDataURL())
+    // 还原
+    if (pixelRatio) {
+      this.setPagePixelRatio(null)
+    }
+    if (isSwitchMode) {
+      this.setMode(currentMode)
+    }
+    return dataUrlList
   }
 
   public getPainterStyle(): IElementStyle | null {
@@ -678,7 +745,7 @@ export class Draw {
     // 纸张大小重置
     if (payload === PageMode.PAGING) {
       const { height } = this.options
-      const dpr = window.devicePixelRatio
+      const dpr = this.getPagePixelRatio()
       const canvas = this.pageList[0]
       canvas.style.height = `${height}px`
       canvas.height = height * dpr
@@ -700,11 +767,14 @@ export class Draw {
       if (this.listener.pageModeChange) {
         this.listener.pageModeChange(payload)
       }
+      if (this.eventBus.isSubscribe('pageModeChange')) {
+        this.eventBus.emit('pageModeChange', payload)
+      }
     })
   }
 
   public setPageScale(payload: number) {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     this.options.scale = payload
     const width = this.getWidth()
     const height = this.getHeight()
@@ -726,8 +796,23 @@ export class Draw {
     }
   }
 
+  public getPagePixelRatio(): number {
+    return this.pagePixelRatio || window.devicePixelRatio
+  }
+
+  public setPagePixelRatio(payload: number | null) {
+    if (
+      (!this.pagePixelRatio && payload === window.devicePixelRatio) ||
+      payload === this.pagePixelRatio
+    ) {
+      return
+    }
+    this.pagePixelRatio = payload
+    this.setPageDevicePixel()
+  }
+
   public setPageDevicePixel() {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     const width = this.getWidth()
     const height = this.getHeight()
     this.pageList.forEach((p, i) => {
@@ -744,7 +829,7 @@ export class Draw {
   public setPaperSize(width: number, height: number) {
     this.options.width = width
     this.options.height = height
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     const realWidth = this.getWidth()
     const realHeight = this.getHeight()
     this.container.style.width = `${realWidth}px`
@@ -762,7 +847,7 @@ export class Draw {
   }
 
   public setPaperDirection(payload: PaperDirection) {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     this.options.paperDirection = payload
     const width = this.getWidth()
     const height = this.getHeight()
@@ -804,9 +889,9 @@ export class Draw {
       )
     }
     const data: IEditorData = {
-      header: zipElementList(this.headerElementList),
+      header: zipElementList(this.getHeaderElementList()),
       main: zipElementList(mainElementList),
-      footer: zipElementList(this.footerElementList)
+      footer: zipElementList(this.getFooterElementList())
     }
     return {
       version,
@@ -821,29 +906,36 @@ export class Draw {
   public setValue(payload: Partial<IEditorData>) {
     const { header, main, footer } = payload
     if (!header && !main && !footer) return
-    if (header) {
-      formatElementList(header, {
+    const pageComponentData = [header, main, footer]
+    pageComponentData.forEach(data => {
+      if (!data) return
+      formatElementList(data, {
         editorOptions: this.options
       })
-      this.header.setElementList(header)
-    }
-    if (main) {
-      formatElementList(main, {
-        editorOptions: this.options
-      })
-      this.elementList = main
-    }
-    if (footer) {
-      formatElementList(footer, {
-        editorOptions: this.options
-      })
-      this.footer.setElementList(footer)
-    }
+    })
+    this.setEditorData({
+      header,
+      main,
+      footer
+    })
     // 渲染&计算&清空历史记录
     this.historyManager.recovery()
     this.render({
       isSetCursor: false
     })
+  }
+
+  public setEditorData(payload: Partial<IEditorData>) {
+    const { header, main, footer } = payload
+    if (header) {
+      this.header.setElementList(header)
+    }
+    if (main) {
+      this.elementList = main
+    }
+    if (footer) {
+      this.footer.setElementList(footer)
+    }
   }
 
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
@@ -878,7 +970,7 @@ export class Draw {
     canvas.setAttribute('data-index', String(pageNo))
     this.pageContainer.append(canvas)
     // 调整分辨率
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     canvas.width = width * dpr
     canvas.height = height * dpr
     canvas.style.cursor = 'text'
@@ -891,7 +983,7 @@ export class Draw {
   }
 
   private _initPageContext(ctx: CanvasRenderingContext2D) {
-    const dpr = window.devicePixelRatio
+    const dpr = this.getPagePixelRatio()
     ctx.scale(dpr, dpr)
     // 重置以下属性是因部分浏览器(chrome)会应用css样式
     ctx.letterSpacing = '0px'
@@ -1309,7 +1401,7 @@ export class Draw {
       pageRowList[0] = this.rowList
       // 重置高度
       pageHeight += this.rowList.reduce((pre, cur) => pre + cur.height, 0)
-      const dpr = window.devicePixelRatio
+      const dpr = this.getPagePixelRatio()
       const pageDom = this.pageList[0]
       const pageDomHeight = Number(pageDom.style.height.replace('px', ''))
       if (pageHeight > pageDomHeight) {
@@ -1350,6 +1442,7 @@ export class Draw {
   public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
+    const isPrintMode = this.mode === EditorMode.PRINT
     const { scale, tdPadding } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
@@ -1424,7 +1517,7 @@ export class Draw {
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
-          if (this.mode !== EditorMode.CLEAN) {
+          if (this.mode !== EditorMode.CLEAN && !isPrintMode) {
             this.pageBreakParticle.render(ctx, element, x, y)
           }
         } else if (
@@ -1544,21 +1637,23 @@ export class Draw {
       // 绘制富文本及文字
       this._drawRichText(ctx)
       // 绘制选区
-      if (rangeRecord.width && rangeRecord.height) {
-        const { x, y, width, height } = rangeRecord
-        this.range.render(ctx, x, y, width, height)
-      }
-      if (
-        isCrossRowCol &&
-        tableRangeElement &&
-        tableRangeElement.id === tableId
-      ) {
-        const {
-          coordinate: {
-            leftTop: [x, y]
-          }
-        } = positionList[curRow.startIndex]
-        this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+      if (!isPrintMode) {
+        if (rangeRecord.width && rangeRecord.height) {
+          const { x, y, width, height } = rangeRecord
+          this.range.render(ctx, x, y, width, height)
+        }
+        if (
+          isCrossRowCol &&
+          tableRangeElement &&
+          tableRangeElement.id === tableId
+        ) {
+          const {
+            coordinate: {
+              leftTop: [x, y]
+            }
+          } = positionList[curRow.startIndex]
+          this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+        }
       }
     }
   }
@@ -1666,7 +1761,8 @@ export class Draw {
       isSubmitHistory = true,
       isSetCursor = true,
       isCompute = true,
-      isLazy = true
+      isLazy = true,
+      isInit = false
     } = payload || {}
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
@@ -1777,9 +1873,17 @@ export class Draw {
       if (this.listener.pageSizeChange) {
         this.listener.pageSizeChange(this.pageRowList.length)
       }
+      if (this.eventBus.isSubscribe('pageSizeChange')) {
+        this.eventBus.emit('pageSizeChange', this.pageRowList.length)
+      }
       // 文档内容改变
-      if (this.listener.contentChange && isSubmitHistory) {
-        this.listener.contentChange()
+      if (isSubmitHistory && !isInit) {
+        if (this.listener.contentChange) {
+          this.listener.contentChange()
+        }
+        if (this.eventBus.isSubscribe('contentChange')) {
+          this.eventBus.emit('contentChange')
+        }
       }
     })
   }
