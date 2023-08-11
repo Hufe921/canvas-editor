@@ -2,6 +2,7 @@ import { EditorZone } from '../../..'
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
+import { MoveDirection } from '../../../dataset/enum/Observer'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { formatElementContext } from '../../../utils/element'
 import { isMod } from '../../../utils/hotkey'
@@ -196,7 +197,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     if (isReadonly) return
     let anchorPosition: IElementPosition = cursorPosition
-    const isUp = evt.key === KeyMap.Up
+    // 扩大选区时，判断移动光标点
     if (evt.shiftKey) {
       if (startIndex === cursorPosition.index) {
         anchorPosition = positionList[endIndex]
@@ -213,14 +214,15 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         rightTop: [curRightX]
       }
     } = anchorPosition
-    // 向上时在首行、向下时再最尾则忽略
+    // 向上时在首行、向下时在尾行则忽略
+    const isUp = evt.key === KeyMap.Up
     if (
       (isUp && rowIndex === 0) ||
       (!isUp && rowIndex === draw.getRowCount() - 1)
     ) {
       return
     }
-    // 查找下一行信息
+    // 查找下一行位置列表
     const probablePosition: IElementPosition[] = []
     if (isUp) {
       let p = index - 1
@@ -269,10 +271,9 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       break
     }
     if (!nextIndex) return
-    const curIndex = nextIndex
     // shift则缩放选区
-    let anchorStartIndex = curIndex
-    let anchorEndIndex = curIndex
+    let anchorStartIndex = nextIndex
+    let anchorEndIndex = nextIndex
     if (evt.shiftKey) {
       if (startIndex !== endIndex) {
         if (startIndex === cursorPosition.index) {
@@ -299,6 +300,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       isSetCursor: isCollapsed,
       isSubmitHistory: false,
       isCompute: false
+    })
+    // 将光标移动到可视范围内
+    draw.getCursor().moveCursorToVisible({
+      cursorPosition: positionList[isUp ? anchorStartIndex : anchorEndIndex],
+      direction: isUp ? MoveDirection.UP : MoveDirection.DOWN
     })
   } else if (isMod(evt) && evt.key === KeyMap.Z) {
     if (isReadonly) return

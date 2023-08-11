@@ -219,3 +219,19 @@ export function convertStringToBase64(input: string) {
   const base64 = window.btoa(charArray.join(''))
   return base64
 }
+
+export function findScrollContainer(element: HTMLElement) {
+  let parent = element.parentElement
+  while (parent) {
+    const style = window.getComputedStyle(parent)
+    const overflowY = style.getPropertyValue('overflow-y')
+    if (
+      parent.scrollHeight > parent.clientHeight &&
+      (overflowY === 'auto' || overflowY === 'scroll')
+    ) {
+      return parent
+    }
+    parent = parent.parentElement
+  }
+  return document.documentElement
+}

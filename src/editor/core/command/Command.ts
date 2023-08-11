@@ -43,6 +43,7 @@ export class Command {
   public executeTableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
   public executeTableBorderType: CommandAdapt['tableBorderType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
+  public executeTableSelectAll: CommandAdapt['tableSelectAll']
   public executeImage: CommandAdapt['image']
   public executeHyperlink: CommandAdapt['hyperlink']
   public executeDeleteHyperlink: CommandAdapt['deleteHyperlink']
@@ -79,6 +80,7 @@ export class Command {
   public getImage: CommandAdapt['getImage']
   public getValue: CommandAdapt['getValue']
   public getHTML: CommandAdapt['getHTML']
+  public getText: CommandAdapt['getText']
   public getWordCount: CommandAdapt['getWordCount']
   public getRangeText: CommandAdapt['getRangeText']
   public getRangeContext: CommandAdapt['getRangeContext']
@@ -133,6 +135,7 @@ export class Command {
     this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
     this.executeTableTdBackgroundColor =
       adapt.tableTdBackgroundColor.bind(adapt)
+    this.executeTableSelectAll = adapt.tableSelectAll.bind(adapt)
     this.executeImage = adapt.image.bind(adapt)
     this.executeHyperlink = adapt.hyperlink.bind(adapt)
     this.executeDeleteHyperlink = adapt.deleteHyperlink.bind(adapt)
@@ -172,6 +175,7 @@ export class Command {
     this.getImage = adapt.getImage.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
+    this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)

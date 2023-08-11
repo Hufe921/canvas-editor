@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control). default: Edit
+  mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control), Print (Visual aids are not displayed, Unwritten content control). default: Edit
   defaultType?: string // Default element type. default: TEXT
   defaultFont?: string // Default font. default: Yahei
   defaultSize?: number // Default font size. default: 16
@@ -53,6 +53,7 @@ interface IEditorOption {
   inactiveAlpha?: number // When the body content is out of focus, transparency. default: 0.6
   historyMaxRecordCount: number // History (undo redo) maximum number of records. default: 100
   printPixelRatio: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
+  maskMargin: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
   wordBreak: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
   watermark?: IWatermark // Watermark{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}

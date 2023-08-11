@@ -148,6 +148,7 @@ export default class Editor {
       historyMaxRecordCount: 100,
       wordBreak: WordBreak.BREAK_WORD,
       printPixelRatio: 3,
+      maskMargin: [0, 0, 0, 0],
       ...options,
       header: headerOptions,
       footer: footerOptions,

@@ -34,7 +34,7 @@ Feature: Gets the base64 string of the current page image
 Usage:
 
 ```javascript
-const base64StringList = await instance.command.getImage(pixelRatio?: number)
+const base64StringList = await instance.command.getImage(option?: IGetImageOption)
 ```
 
 ## getWordCount
@@ -113,4 +113,18 @@ const {
   main: string
   footer: string
 } = await instance.command.getHTML()
+```
+
+## getText
+
+Feature: Get text
+
+Usage:
+
+```javascript
+const {
+  header: string
+  main: string
+  footer: string
+} = await instance.command.getText()
 ```

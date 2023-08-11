@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）。默认：编辑
+  mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）。默认：编辑
   defaultType?: string // 默认元素类型。默认：TEXT
   defaultFont?: string // 默认字体。默认：Yahei
   defaultSize?: number // 默认字号。默认：16
@@ -53,6 +53,7 @@ interface IEditorOption {
   inactiveAlpha?: number // 正文内容失焦时透明度。默认值：0.6
   historyMaxRecordCount: number // 历史（撤销重做）最大记录次数。默认：100次
   printPixelRatio: number // 打印像素比率（值越大越清晰，但尺寸越大）。默认：3
+  maskMargin: IMargin // 编辑器上的遮盖边距（如悬浮到编辑器上的菜单栏、底部工具栏）。默认：[0, 0, 0, 0]
   wordBreak: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
   watermark?: IWatermark // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}

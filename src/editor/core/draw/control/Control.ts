@@ -6,6 +6,7 @@ import {
   IControlInstance,
   IControlOption
 } from '../../../interface/Control'
+import { IEditorData } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
@@ -47,6 +48,24 @@ export class Control {
 
   public getDraw(): Draw {
     return this.draw
+  }
+
+  // 过滤控件辅助元素（前后缀、背景提示）
+  public filterAssistElement(
+    payload: Required<IEditorData>
+  ): Required<IEditorData> {
+    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
+    editorDataKeys.forEach(key => {
+      payload[key] = payload[key].filter(element => {
+        if (element.type !== ElementType.CONTROL) return true
+        return (
+          element.controlComponent !== ControlComponent.PREFIX &&
+          element.controlComponent !== ControlComponent.POSTFIX &&
+          element.controlComponent !== ControlComponent.PLACEHOLDER
+        )
+      })
+    })
+    return payload
   }
 
   // 判断选区部分在控件边界外

@@ -1,8 +1,11 @@
 import { CURSOR_AGENT_HEIGHT } from '../../dataset/constant/Cursor'
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
+import { MoveDirection } from '../../dataset/enum/Observer'
 import { DeepRequired } from '../../interface/Common'
 import { ICursorOption } from '../../interface/Cursor'
 import { IEditorOption } from '../../interface/Editor'
+import { IElementPosition } from '../../interface/Element'
+import { findScrollContainer } from '../../utils'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { Position } from '../position/Position'
@@ -13,6 +16,11 @@ export type IDrawCursorOption = ICursorOption & {
   isBlink?: boolean
   isFocus?: boolean
   hitLineStartIndex?: number
+}
+
+export interface IMoveCursorToVisibleOption {
+  direction: MoveDirection
+  cursorPosition: IElementPosition
 }
 
 export class Cursor {
@@ -152,5 +160,54 @@ export class Cursor {
   public recoveryCursor() {
     this.cursorDom.style.display = 'none'
     this._clearBlinkTimeout()
+  }
+
+  public moveCursorToVisible(payload: IMoveCursorToVisibleOption) {
+    const { cursorPosition, direction } = payload
+    if (!cursorPosition || !direction) return
+    const {
+      pageNo,
+      coordinate: { leftTop, leftBottom }
+    } = cursorPosition
+    // 当前页面距离滚动容器顶部距离
+    const prePageY =
+      pageNo * (this.draw.getHeight() + this.draw.getPageGap()) +
+      this.container.getBoundingClientRect().top
+    // 向上移动时：以顶部距离为准，向下移动时：以底部位置为准
+    const isUp = direction === MoveDirection.UP
+    const x = leftBottom[0]
+    const y = isUp ? leftTop[1] + prePageY : leftBottom[1] + prePageY
+    // 查找滚动容器，如果是滚动容器是document，则限制范围为当前窗口
+    const scrollContainer = findScrollContainer(this.container)
+    const rect = {
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0
+    }
+    if (scrollContainer === document.documentElement) {
+      rect.right = window.innerWidth
+      rect.bottom = window.innerHeight
+    } else {
+      const { left, right, top, bottom } =
+        scrollContainer.getBoundingClientRect()
+      rect.left = left
+      rect.right = right
+      rect.top = top
+      rect.bottom = bottom
+    }
+    // 可视范围根据参数调整
+    const { maskMargin } = this.options
+    rect.top += maskMargin[0]
+    rect.bottom -= maskMargin[2]
+    // 不在可视范围时，移动滚动条到合适位置
+    if (
+      !(x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom)
+    ) {
+      const { scrollLeft, scrollTop } = scrollContainer
+      isUp
+        ? scrollContainer.scroll(scrollLeft, scrollTop - (rect.top - y))
+        : scrollContainer.scroll(scrollLeft, scrollTop + y - rect.bottom)
+    }
   }
 }

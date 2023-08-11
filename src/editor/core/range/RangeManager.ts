@@ -56,8 +56,33 @@ export class RangeManager {
     return elementList.slice(startIndex + 1, endIndex + 1)
   }
 
+  public getSelectionElementList(): IElement[] | null {
+    if (this.range.isCrossRowCol) {
+      const rowCol = this.draw.getTableParticle().getRangeRowCol()
+      if (!rowCol) return null
+      const elementList: IElement[] = []
+      for (let r = 0; r < rowCol.length; r++) {
+        const row = rowCol[r]
+        for (let c = 0; c < row.length; c++) {
+          const col = row[c]
+          elementList.push(...col.value)
+        }
+      }
+      return elementList
+    }
+    return this.getSelection()
+  }
+
   public getTextLikeSelection(): IElement[] | null {
     const selection = this.getSelection()
+    if (!selection) return null
+    return selection.filter(
+      s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type)
+    )
+  }
+
+  public getTextLikeSelectionElementList(): IElement[] | null {
+    const selection = this.getSelectionElementList()
     if (!selection) return null
     return selection.filter(
       s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type)
@@ -82,6 +107,31 @@ export class RangeManager {
       }
     }
     return rangeRow
+  }
+
+  // 获取光标所选位置元素列表
+  public getRangeRowElementList(): IElement[] | null {
+    const { startIndex, endIndex, isCrossRowCol } = this.range
+    if (!~startIndex && !~endIndex) return null
+    if (isCrossRowCol) {
+      return this.getSelectionElementList()
+    }
+    // 选区行信息
+    const rangeRow = this.getRangeRow()
+    if (!rangeRow) return null
+    const positionList = this.position.getPositionList()
+    const elementList = this.draw.getElementList()
+    // 当前选区所在行
+    const rowElementList: IElement[] = []
+    for (let p = 0; p < positionList.length; p++) {
+      const position = positionList[p]
+      const rowSet = rangeRow.get(position.pageNo)
+      if (!rowSet) continue
+      if (rowSet.has(position.rowNo)) {
+        rowElementList.push(elementList[p])
+      }
+    }
+    return rowElementList
   }
 
   // 获取选取段落信息
@@ -459,7 +509,7 @@ export class RangeManager {
   }
 
   public toString(): string {
-    const selection = this.getSelection()
+    const selection = this.getTextLikeSelection()
     if (!selection) return ''
     return selection
       .map(s => s.value)
