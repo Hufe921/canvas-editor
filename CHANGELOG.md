@@ -1,3 +1,14 @@
+## [0.9.44](https://github.com/Hufe921/canvas-editor/compare/v0.9.43...v0.9.44) (2023-08-11)
+
+
+### Features
+
+* add getText api #240 ([f8fdea6](https://github.com/Hufe921/canvas-editor/commit/f8fdea61fcd45d4d0be143b7c889eba9a72dd35b)), closes [#240](https://github.com/Hufe921/canvas-editor/issues/240)
+* add print mode #236 ([fd31b3e](https://github.com/Hufe921/canvas-editor/commit/fd31b3e78c2bbd6701655b060ea50e3c4f070a65)), closes [#236](https://github.com/Hufe921/canvas-editor/issues/236)
+* apply style to entire table #232 ([b54b66d](https://github.com/Hufe921/canvas-editor/commit/b54b66d3d4a9e7366cef02add9b897770bac39c5)), closes [#232](https://github.com/Hufe921/canvas-editor/issues/232)
+
+
+
 ## [0.9.43](https://github.com/Hufe921/canvas-editor/compare/v0.9.42...v0.9.43) (2023-08-04)
 
 
