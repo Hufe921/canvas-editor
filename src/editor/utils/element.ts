@@ -701,6 +701,36 @@ export function convertElementToDom(
   return dom
 }
 
+export function splitListElement(
+  elementList: IElement[]
+): Map<number, IElement[]> {
+  let curListIndex = 0
+  const listElementListMap: Map<number, IElement[]> = new Map()
+  for (let e = 0; e < elementList.length; e++) {
+    const element = elementList[e]
+    if (element.listWrap) {
+      const listElementList = listElementListMap.get(curListIndex) || []
+      listElementList.push(element)
+      listElementListMap.set(curListIndex, listElementList)
+    } else {
+      const valueList = element.value.split('\n')
+      for (let c = 0; c < valueList.length; c++) {
+        if (c > 0) {
+          curListIndex += 1
+        }
+        const value = valueList[c]
+        const listElementList = listElementListMap.get(curListIndex) || []
+        listElementList.push({
+          ...element,
+          value
+        })
+        listElementListMap.set(curListIndex, listElementList)
+      }
+    }
+  }
+  return listElementListMap
+}
+
 export function createDomFromElementList(
   elementList: IElement[],
   options: DeepRequired<IEditorOption>
@@ -754,31 +784,8 @@ export function createDomFromElementList(
           list.style.listStyleType = listStyleCSSMapping[element.listStyle]
         }
         // 按照换行符拆分
-        let curListIndex = 0
-        const listElementListMap: Map<number, IElement[]> = new Map()
         const zipList = zipElementList(element.valueList!)
-        for (let z = 0; z < zipList.length; z++) {
-          const zipElement = zipList[z]
-          if (zipElement.listWrap) {
-            const listElementList = listElementListMap.get(curListIndex) || []
-            listElementList.push(zipElement)
-            listElementListMap.set(curListIndex, listElementList)
-          } else {
-            const zipValueList = zipElement.value.split('\n')
-            for (let c = 0; c < zipValueList.length; c++) {
-              if (c > 0) {
-                curListIndex += 1
-              }
-              const value = zipValueList[c]
-              const listElementList = listElementListMap.get(curListIndex) || []
-              listElementList.push({
-                ...zipElement,
-                value
-              })
-              listElementListMap.set(curListIndex, listElementList)
-            }
-          }
-        }
+        const listElementListMap = splitListElement(zipList)
         listElementListMap.forEach(listElementList => {
           const li = document.createElement('li')
           const childDom = buildDom(listElementList)
@@ -1060,4 +1067,60 @@ export function getElementListByHTML(
   // 移除dom
   clipboardDom.remove()
   return elementList
+}
+
+export function getTextFromElementList(elementList: IElement[]) {
+  function buildText(payload: IElement[]): string {
+    let text = ''
+    for (let e = 0; e < payload.length; e++) {
+      const element = payload[e]
+      // 构造表格
+      if (element.type === ElementType.TABLE) {
+        text += `\n`
+        const trList = element.trList!
+        for (let t = 0; t < trList.length; t++) {
+          const tr = trList[t]
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            const tdText = buildText(zipElementList(td.value!))
+            const isFirst = d === 0
+            const isLast = tr.tdList.length - 1 === d
+            text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
+          }
+        }
+      } else if (element.type === ElementType.HYPERLINK) {
+        text += element.valueList!.map(v => v.value).join('')
+      } else if (element.type === ElementType.TITLE) {
+        text += `${buildText(zipElementList(element.valueList!))}`
+      } else if (element.type === ElementType.LIST) {
+        // 按照换行符拆分
+        const zipList = zipElementList(element.valueList!)
+        const listElementListMap = splitListElement(zipList)
+        listElementListMap.forEach((listElementList, listIndex) => {
+          const isLast = listElementListMap.size - 1 === listIndex
+          text += `\n${listIndex + 1}.${buildText(listElementList)}${
+            isLast ? `\n` : ``
+          }`
+        })
+      } else if (element.type === ElementType.CHECKBOX) {
+        text += element.checkbox?.value ? `☑` : `□`
+      } else if (
+        !element.type ||
+        element.type === ElementType.LATEX ||
+        TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+      ) {
+        let textLike = ''
+        if (element.type === ElementType.CONTROL) {
+          textLike = element.control!.value?.[0]?.value || ''
+        } else if (element.type === ElementType.DATE) {
+          textLike = element.valueList?.map(v => v.value).join('') || ''
+        } else {
+          textLike = element.value
+        }
+        text += textLike.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+      }
+    }
+    return text
+  }
+  return buildText(zipElementList(elementList))
 }

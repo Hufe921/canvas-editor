@@ -86,3 +86,5 @@ export interface IEditorHTML {
   main: string
   footer: string
 }
+
+export type IEditorText = IEditorHTML

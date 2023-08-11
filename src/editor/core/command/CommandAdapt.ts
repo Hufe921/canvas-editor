@@ -29,7 +29,8 @@ import {
   IEditorData,
   IEditorHTML,
   IEditorOption,
-  IEditorResult
+  IEditorResult,
+  IEditorText
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
@@ -45,7 +46,8 @@ import {
   formatElementList,
   isTextLikeElement,
   pickElementAttr,
-  getElementListByHTML
+  getElementListByHTML,
+  getTextFromElementList
 } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
@@ -1700,6 +1702,17 @@ export class CommandAdapt {
       header: createDomFromElementList(headerElementList, options).innerHTML,
       main: createDomFromElementList(mainElementList, options).innerHTML,
       footer: createDomFromElementList(footerElementList, options).innerHTML
+    }
+  }
+
+  public getText(): IEditorText {
+    const headerElementList = this.draw.getHeaderElementList()
+    const mainElementList = this.draw.getOriginalMainElementList()
+    const footerElementList = this.draw.getFooterElementList()
+    return {
+      header: getTextFromElementList(headerElementList),
+      main: getTextFromElementList(mainElementList),
+      footer: getTextFromElementList(footerElementList)
     }
   }
 

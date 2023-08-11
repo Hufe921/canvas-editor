@@ -114,3 +114,17 @@ const {
   footer: string
 } = await instance.command.getHTML()
 ```
+
+## getText
+
+Feature: Get text
+
+Usage:
+
+```javascript
+const {
+  header: string
+  main: string
+  footer: string
+} = await instance.command.getText()
+```
