@@ -215,9 +215,19 @@ export class TableParticle {
               // 小于
               if (pTdX < x) continue
               if (pTdX > x) break
-              if (pTd.x === x && pTdY + pTdHeight > y) {
-                x += pTdWidth
-                offsetXIndex += pTd.colspan
+              if (pTdX === x && pTdY + pTdHeight > y) {
+                // 中间存在断行，则移到断行后td位置
+                const nextPTd = pTr.tdList[pD + 1]
+                if (
+                  nextPTd &&
+                  pTd.colIndex! + pTd.colspan !== nextPTd.colIndex
+                ) {
+                  x = nextPTd.x!
+                  offsetXIndex = nextPTd.colIndex!
+                } else {
+                  x += pTdWidth
+                  offsetXIndex += pTd.colspan
+                }
               }
             }
           }
@@ -301,6 +311,7 @@ export class TableParticle {
     let endTd = trList[endTrIndex!].tdList[endTdIndex!]
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+      // prettier-ignore
       [startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
