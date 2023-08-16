@@ -1,3 +1,5 @@
+import emojiRegex from 'emoji-regex'
+
 export function debounce(func: Function, delay: number) {
   let timer: number
   return function (this: any, ...args: any[]) {
@@ -68,9 +70,39 @@ export function getUUID(): string {
 }
 
 export function splitText(text: string): string[] {
-  const data: string[] = []
-  for (const t of text) {
-    data.push(t)
+  const data = []
+  const map = new Map()
+  const chars = text.split('')
+  const getRange = (match: RegExpMatchArray) => {
+    return {
+      start: match.index,
+      end: (match.index || 0) + match[0].length
+    }
+  }
+  // 匹配emoji
+  for (const match of text.matchAll(emojiRegex())) {
+    const { start, end } = getRange(match)
+    chars.fill('0', start, end)
+    map.set(start, end)
+  }
+  // 匹配代理对
+  for (const match of chars
+    .join('')
+    .matchAll(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g)) {
+    const { start, end } = getRange(match)
+    map.set(start, end)
+  }
+  for (let i = 0, merge = null; i < text.length; i++) {
+    const char = text[i]
+    if (map.has(i)) {
+      merge = map.get(i)
+      data.push('')
+    }
+    if (i < merge) {
+      data[data.length - 1] = data[data.length - 1] + char
+    } else {
+      data.push(char)
+    }
   }
   return data
 }
