@@ -128,3 +128,13 @@ const {
   footer: string
 } = await instance.command.getText()
 ```
+
+## getLocale
+
+功能：获取当前语言
+
+用法：
+
+```javascript
+const locale = await instance.command.getLocale()
+```

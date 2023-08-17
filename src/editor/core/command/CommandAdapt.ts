@@ -1837,6 +1837,10 @@ export class CommandAdapt {
     this.i18n.setLocale(payload)
   }
 
+  public getLocale(): string {
+    return this.i18n.getLocale()
+  }
+
   public getCatalog(): Promise<ICatalog | null> {
     return this.workerManager.getCatalog()
   }

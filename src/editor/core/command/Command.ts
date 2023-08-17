@@ -86,6 +86,7 @@ export class Command {
   public getRangeContext: CommandAdapt['getRangeContext']
   public getPaperMargin: CommandAdapt['getPaperMargin']
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
+  public getLocale: CommandAdapt['getLocale']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -182,5 +183,6 @@ export class Command {
     this.getCatalog = adapt.getCatalog.bind(adapt)
     this.getPaperMargin = adapt.getPaperMargin.bind(adapt)
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
+    this.getLocale = adapt.getLocale.bind(adapt)
   }
 }
