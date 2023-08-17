@@ -1,4 +1,4 @@
-import { EMOJI_REG } from '../dataset/constant/Regular'
+import { UNICODE_SYMBOL_REG } from '../dataset/constant/Regular'
 
 export function debounce(func: Function, delay: number) {
   let timer: number
@@ -71,16 +71,16 @@ export function getUUID(): string {
 
 export function splitText(text: string): string[] {
   const data: string[] = []
-  const emojiMap = new Map<number, string>()
-  for (const match of text.matchAll(EMOJI_REG)) {
-    emojiMap.set(match.index!, match[0])
+  const symbolMap = new Map<number, string>()
+  for (const match of text.matchAll(UNICODE_SYMBOL_REG)) {
+    symbolMap.set(match.index!, match[0])
   }
   let t = 0
   while (t < text.length) {
-    const emoji = emojiMap.get(t)
-    if (emoji) {
-      data.push(emoji)
-      t += emoji.length
+    const symbol = symbolMap.get(t)
+    if (symbol) {
+      data.push(symbol)
+      t += symbol.length
     } else {
       data.push(text[t])
       t++
