@@ -199,4 +199,8 @@ export class DOMEventHandlers {
       }
     })
   }
+
+  static setHorizontalLine(payload: number[]) {
+    DOMEventHandlers.getEditorInstance().command.executeSeparator(payload)
+  }
 }
