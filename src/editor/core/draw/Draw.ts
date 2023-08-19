@@ -1679,7 +1679,7 @@ export class Draw {
     ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
-    this.background.render(ctx)
+    this.background.render(ctx, pageNo)
     // 绘制页边距
     this.margin.render(ctx, pageNo)
     // 渲染元素

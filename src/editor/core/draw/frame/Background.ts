@@ -7,9 +7,9 @@ export class Background {
     this.draw = draw
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
-    const width = this.draw.getOriginalWidth()
-    const height = this.draw.getOriginalHeight()
+  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+    const width = this.draw.getCanvasWidth(pageNo)
+    const height = this.draw.getCanvasHeight(pageNo)
     ctx.save()
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, width, height)
