@@ -114,3 +114,27 @@ const {
   footer: string
 } = await instance.command.getHTML()
 ```
+
+## getText
+
+功能：获取文本
+
+用法：
+
+```javascript
+const {
+  header: string
+  main: string
+  footer: string
+} = await instance.command.getText()
+```
+
+## getLocale
+
+功能：获取当前语言
+
+用法：
+
+```javascript
+const locale = await instance.command.getLocale()
+```

@@ -509,7 +509,7 @@ export class RangeManager {
   }
 
   public toString(): string {
-    const selection = this.getSelection()
+    const selection = this.getTextLikeSelection()
     if (!selection) return ''
     return selection
       .map(s => s.value)

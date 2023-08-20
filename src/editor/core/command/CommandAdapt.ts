@@ -29,7 +29,8 @@ import {
   IEditorData,
   IEditorHTML,
   IEditorOption,
-  IEditorResult
+  IEditorResult,
+  IEditorText
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
@@ -45,7 +46,8 @@ import {
   formatElementList,
   isTextLikeElement,
   pickElementAttr,
-  getElementListByHTML
+  getElementListByHTML,
+  getTextFromElementList
 } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
@@ -1703,6 +1705,17 @@ export class CommandAdapt {
     }
   }
 
+  public getText(): IEditorText {
+    const headerElementList = this.draw.getHeaderElementList()
+    const mainElementList = this.draw.getOriginalMainElementList()
+    const footerElementList = this.draw.getFooterElementList()
+    return {
+      header: getTextFromElementList(headerElementList),
+      main: getTextFromElementList(mainElementList),
+      footer: getTextFromElementList(footerElementList)
+    }
+  }
+
   public getWordCount(): Promise<number> {
     return this.workerManager.getWordCount()
   }
@@ -1822,6 +1835,10 @@ export class CommandAdapt {
 
   public setLocale(payload: string) {
     this.i18n.setLocale(payload)
+  }
+
+  public getLocale(): string {
+    return this.i18n.getLocale()
   }
 
   public getCatalog(): Promise<ICatalog | null> {

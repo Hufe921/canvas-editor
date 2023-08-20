@@ -1,3 +1,32 @@
+## [0.9.45](https://github.com/Hufe921/canvas-editor/compare/v0.9.44...v0.9.45) (2023-08-18)
+
+
+### Bug Fixes
+
+* merge table cell error #241 ([1f552a0](https://github.com/Hufe921/canvas-editor/commit/1f552a05d588da1a661cbc000f36253f8894377c)), closes [#241](https://github.com/Hufe921/canvas-editor/issues/241)
+* reduce underline distance #247 ([33bafbd](https://github.com/Hufe921/canvas-editor/commit/33bafbd427d5e80db059886c4b116e4ac97d3cf8)), closes [#247](https://github.com/Hufe921/canvas-editor/issues/247)
+
+
+### Features
+
+* add getLocale api #248 ([fef6ddf](https://github.com/Hufe921/canvas-editor/commit/fef6ddf7a84f3f40ccf5424b37dfb48b805af7bb)), closes [#248](https://github.com/Hufe921/canvas-editor/issues/248)
+* support for inserting for surrogate pair #250 ([8f145e2](https://github.com/Hufe921/canvas-editor/commit/8f145e251b2cfb8ffc14aec66cebda29a6368061)), closes [#250](https://github.com/Hufe921/canvas-editor/issues/250)
+* support for inserting standard emoji #245 ([913b853](https://github.com/Hufe921/canvas-editor/commit/913b8538b709aa919cb33411dd24924c03effa81)), closes [#245](https://github.com/Hufe921/canvas-editor/issues/245)
+* update emoji regex ([a4f5c94](https://github.com/Hufe921/canvas-editor/commit/a4f5c94c96c6edc4f32049081e8fd6bb563ba708))
+
+
+
+## [0.9.44](https://github.com/Hufe921/canvas-editor/compare/v0.9.43...v0.9.44) (2023-08-11)
+
+
+### Features
+
+* add getText api #240 ([f8fdea6](https://github.com/Hufe921/canvas-editor/commit/f8fdea61fcd45d4d0be143b7c889eba9a72dd35b)), closes [#240](https://github.com/Hufe921/canvas-editor/issues/240)
+* add print mode #236 ([fd31b3e](https://github.com/Hufe921/canvas-editor/commit/fd31b3e78c2bbd6701655b060ea50e3c4f070a65)), closes [#236](https://github.com/Hufe921/canvas-editor/issues/236)
+* apply style to entire table #232 ([b54b66d](https://github.com/Hufe921/canvas-editor/commit/b54b66d3d4a9e7366cef02add9b897770bac39c5)), closes [#232](https://github.com/Hufe921/canvas-editor/issues/232)
+
+
+
 ## [0.9.43](https://github.com/Hufe921/canvas-editor/compare/v0.9.42...v0.9.43) (2023-08-04)
 
 
