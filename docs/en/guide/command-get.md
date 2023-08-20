@@ -67,6 +67,26 @@ Usage:
 const rangeContext = instance.command.getRangeContext()
 ```
 
+## getRangeRow
+
+Feature: Get selection row element list
+
+Usage:
+
+```javascript
+const rowElementList = instance.command.getRangeRow()
+```
+
+## getRangeParagraph
+
+Feature: Get selection paragraph element list
+
+Usage:
+
+```javascript
+const paragraphElementList = instance.command.getRangeParagraph()
+```
+
 ## getPaperMargin
 
 Feature: Gets the margins
@@ -127,4 +147,14 @@ const {
   main: string
   footer: string
 } = await instance.command.getText()
+```
+
+## getLocale
+
+功能：Get current locale
+
+用法：
+
+```javascript
+const locale = await instance.command.getLocale()
 ```

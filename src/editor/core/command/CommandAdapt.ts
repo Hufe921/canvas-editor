@@ -47,7 +47,8 @@ import {
   isTextLikeElement,
   pickElementAttr,
   getElementListByHTML,
-  getTextFromElementList
+  getTextFromElementList,
+  zipElementList
 } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
@@ -434,7 +435,7 @@ export class CommandAdapt {
     // 需要改变的元素列表
     const changeElementList =
       startIndex === endIndex
-        ? this.range.getRangeElementList()
+        ? this.range.getRangeParagraphElementList()
         : elementList.slice(startIndex + 1, endIndex + 1)
     if (!changeElementList || !changeElementList.length) return
     // 设置值
@@ -470,7 +471,7 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     // 需要改变的元素列表
-    const changeElementList = this.range.getRangeElementList()
+    const changeElementList = this.range.getRangeParagraphElementList()
     if (!changeElementList || !changeElementList.length) return
     // 如果包含列表则设置为取消列表
     const isUnsetList = changeElementList.find(
@@ -1749,6 +1750,16 @@ export class CommandAdapt {
     })
   }
 
+  public getRangeRow(): IElement[] | null {
+    const rowElementList = this.range.getRangeRowElementList()
+    return rowElementList ? zipElementList(rowElementList) : null
+  }
+
+  public getRangeParagraph(): IElement[] | null {
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    return paragraphElementList ? zipElementList(paragraphElementList) : null
+  }
+
   public pageMode(payload: PageMode) {
     this.draw.setPageMode(payload)
   }
@@ -1835,6 +1846,10 @@ export class CommandAdapt {
 
   public setLocale(payload: string) {
     this.i18n.setLocale(payload)
+  }
+
+  public getLocale(): string {
+    return this.i18n.getLocale()
   }
 
   public getCatalog(): Promise<ICatalog | null> {

@@ -84,8 +84,11 @@ export class Command {
   public getWordCount: CommandAdapt['getWordCount']
   public getRangeText: CommandAdapt['getRangeText']
   public getRangeContext: CommandAdapt['getRangeContext']
+  public getRangeRow: CommandAdapt['getRangeRow']
+  public getRangeParagraph: CommandAdapt['getRangeParagraph']
   public getPaperMargin: CommandAdapt['getPaperMargin']
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
+  public getLocale: CommandAdapt['getLocale']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -179,8 +182,11 @@ export class Command {
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)
+    this.getRangeRow = adapt.getRangeRow.bind(adapt)
+    this.getRangeParagraph = adapt.getRangeParagraph.bind(adapt)
     this.getCatalog = adapt.getCatalog.bind(adapt)
     this.getPaperMargin = adapt.getPaperMargin.bind(adapt)
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
+    this.getLocale = adapt.getLocale.bind(adapt)
   }
 }

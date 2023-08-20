@@ -1443,7 +1443,8 @@ export class Draw {
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
     const isPrintMode = this.mode === EditorMode.PRINT
-    const { scale, tdPadding } = this.options
+    const { scale, tdPadding, defaultBasicRowMarginHeight, defaultRowMargin } =
+      this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -1540,10 +1541,14 @@ export class Draw {
         }
         // 下划线记录
         if (element.underline) {
+          const rowMargin =
+            defaultBasicRowMarginHeight *
+            (element.rowMargin || defaultRowMargin) *
+            scale
           this.underline.recordFillInfo(
             ctx,
             x,
-            y + curRow.height,
+            y + curRow.height - rowMargin,
             metrics.width,
             0,
             element.color
@@ -1674,7 +1679,7 @@ export class Draw {
     ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
-    this.background.render(ctx)
+    this.background.render(ctx, pageNo)
     // 绘制页边距
     this.margin.render(ctx, pageNo)
     // 渲染元素

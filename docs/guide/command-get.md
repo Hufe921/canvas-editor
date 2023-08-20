@@ -67,6 +67,26 @@ const rangeText = instance.command.getRangeText()
 const rangeContext = instance.command.getRangeContext()
 ```
 
+## getRangeRow
+
+功能：获取选区所在行元素列表
+
+用法：
+
+```javascript
+const rowElementList = instance.command.getRangeRow()
+```
+
+## getRangeParagraph
+
+功能：获取选区所在段落元素列表
+
+用法：
+
+```javascript
+const paragraphElementList = instance.command.getRangeParagraph()
+```
+
 ## getPaperMargin
 
 功能：获取页边距
@@ -127,4 +147,14 @@ const {
   main: string
   footer: string
 } = await instance.command.getText()
+```
+
+## getLocale
+
+功能：获取当前语言
+
+用法：
+
+```javascript
+const locale = await instance.command.getLocale()
 ```
