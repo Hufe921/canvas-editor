@@ -200,8 +200,8 @@ export class RangeManager {
     return rangeRow
   }
 
-  // 获取选区元素列表
-  public getRangeElementList(): IElement[] | null {
+  // 获取选区段落元素列表
+  public getRangeParagraphElementList(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (!~startIndex && !~endIndex) return null
     // 需要改变的元素列表
