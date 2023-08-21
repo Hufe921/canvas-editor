@@ -4,6 +4,7 @@ export const ZERO = '\u200B'
 export const WRAP = '\n'
 export const HORIZON_TAB = '\t'
 export const NBSP = '\u0020'
+export const NON_BREAKING_SPACE = '&nbsp;'
 export const PUNCTUATION_LIST = [
   '·',
   '、',
