@@ -138,7 +138,8 @@ export class ContextMenu {
     const elementList = this.draw.getElementList()
     const startElement = elementList[startIndex] || null
     const endElement = elementList[endIndex] || null
-
+    // 当前区域
+    const zone = this.draw.getZone().getZone()
     return {
       startElement,
       endElement,
@@ -146,7 +147,8 @@ export class ContextMenu {
       editorHasSelection,
       editorTextFocus,
       isInTable,
-      isCrossRowCol
+      isCrossRowCol,
+      zone
     }
   }
 
