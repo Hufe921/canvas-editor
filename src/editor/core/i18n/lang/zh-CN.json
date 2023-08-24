@@ -5,7 +5,8 @@
       "copy": "复制",
       "paste": "粘贴",
       "selectAll": "全选",
-      "print": "打印"
+      "print": "打印",
+      "hyperlink": "hyperlink"
     },
     "control": {
       "delete": "删除控件"

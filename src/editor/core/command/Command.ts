@@ -92,6 +92,7 @@ export class Command {
   public getPaperMargin: CommandAdapt['getPaperMargin']
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getContentStyles: CommandAdapt['getContentStyles']
+  public executeGlobalHyperlink: CommandAdapt['globalHyperlink']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -185,6 +186,7 @@ export class Command {
     this.executeSetLocale = adapt.setLocale.bind(adapt)
     this.executeLocationCatalog = adapt.locationCatalog.bind(adapt)
     this.executeWordTool = adapt.wordTool.bind(adapt)
+    this.executeGlobalHyperlink = adapt.globalHyperlink.bind(adapt)
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)

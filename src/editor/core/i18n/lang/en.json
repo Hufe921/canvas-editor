@@ -5,7 +5,8 @@
       "copy": "Copy",
       "paste": "Paste",
       "selectAll": "Select all",
-      "print": "Print"
+      "print": "Print",
+      "hyperlink": "hyperlink"
     },
     "control": {
       "delete": "Delete control"

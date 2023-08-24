@@ -1392,7 +1392,9 @@ export class Draw {
   public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
-    const { scale, tdPadding } = this.options
+    // const { scale, tdPadding } = this.options
+    const { scale, tdPadding, defaultBasicRowMarginHeight, defaultRowMargin } =
+      this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -1489,10 +1491,15 @@ export class Draw {
         }
         // 下划线记录
         if (element.underline) {
+          const rowMargin =
+            defaultBasicRowMarginHeight *
+            (element.rowMargin || defaultRowMargin) *
+            scale
           this.underline.recordFillInfo(
             ctx,
             x,
-            y + curRow.height,
+            // y + curRow.height,
+            y + curRow.height - rowMargin,
             metrics.width,
             0,
             element.color

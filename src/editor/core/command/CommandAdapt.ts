@@ -1,3 +1,4 @@
+import { Dialog } from '../../../components/dialog/Dialog'
 import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { titleSizeMapping } from '../../dataset/constant/Title'
@@ -1510,17 +1511,56 @@ export class CommandAdapt {
     })
   }
 
-  public editHyperlink(payload: string) {
-    // 获取超链接索引
+  public editHyperlink(url: string) {
+    // Get hyperlink index
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
     const elementList = this.draw.getElementList()
     const [leftIndex, rightIndex] = hyperRange
-    // 替换url
+    // Get hyperlink text
+    let hyperlinkText = ''
     for (let i = leftIndex; i <= rightIndex; i++) {
-      const element = elementList[i]
-      element.url = payload
+      hyperlinkText += elementList[i].value
     }
+
+    new Dialog({
+      title: 'Link',
+      data: [
+        {
+          type: 'text',
+          label: 'Text',
+          name: 'name',
+          required: true,
+          placeholder: 'Enter text',
+          value: hyperlinkText ? hyperlinkText : ''
+        },
+        {
+          type: 'text',
+          label: 'URL',
+          name: 'url',
+          required: true,
+          placeholder: 'Enter URL',
+          value: url ? url : ''
+        }
+      ],
+      onConfirm: payload => {
+        const name = payload.find(p => p.name === 'name')?.value
+        if (!name) return
+        const url = payload.find(p => p.name === 'url')?.value
+        if (!url) return
+        this.deleteHyperlink()
+        this.hyperlink({
+          type: ElementType.HYPERLINK,
+          value: '',
+          url,
+          valueList: name.split('').map(n => ({
+            value: n,
+            size: 16
+          }))
+        })
+      }
+    })
+
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
     const { endIndex } = this.range.getRange()
@@ -2021,5 +2061,44 @@ export class CommandAdapt {
         isSetCursor: false
       })
     }
+  }
+
+  public globalHyperlink() {
+    const selectedText = this.getRangeText()
+    new Dialog({
+      title: 'Hyperlink',
+      data: [
+        {
+          type: 'text',
+          label: 'Text',
+          name: 'name',
+          required: true,
+          placeholder: 'Enter text',
+          value: selectedText ? selectedText : ''
+        },
+        {
+          type: 'text',
+          label: 'URL',
+          name: 'url',
+          required: true,
+          placeholder: 'Enter URL'
+        }
+      ],
+      onConfirm: payload => {
+        const name = payload.find(p => p.name === 'name')?.value
+        if (!name) return
+        const url = payload.find(p => p.name === 'url')?.value
+        if (!url) return
+        this.hyperlink({
+          type: ElementType.HYPERLINK,
+          value: '',
+          url,
+          valueList: name.split('').map(n => ({
+            value: n,
+            size: 16
+          }))
+        })
+      }
+    })
   }
 }

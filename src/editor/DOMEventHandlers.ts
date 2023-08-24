@@ -203,4 +203,15 @@ export class DOMEventHandlers {
   static setHorizontalLine(payload: number[]) {
     DOMEventHandlers.getEditorInstance().command.executeSeparator(payload)
   }
+
+  static setPaperMargins(payload: number[]) {
+    const [topMargin, bottomMargin, leftMargin, rightMargin] = payload
+    
+    DOMEventHandlers.getEditorInstance().command.executeSetPaperMargin([
+      Number(topMargin),
+      Number(rightMargin),
+      Number(bottomMargin),
+      Number(leftMargin)
+    ])
+  }
 }
