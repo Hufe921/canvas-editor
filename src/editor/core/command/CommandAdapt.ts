@@ -321,7 +321,10 @@ export class CommandAdapt {
     selection.forEach(el => {
       el.underline = !!~noUnderlineIndex
     })
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
   public strikeout() {
@@ -333,7 +336,10 @@ export class CommandAdapt {
     selection.forEach(el => {
       el.strikeout = !!~noStrikeoutIndex
     })
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
   public superscript() {
@@ -1920,6 +1926,47 @@ export class CommandAdapt {
       header: getElementList(header),
       main: getElementList(main),
       footer: getElementList(footer)
+    })
+  }
+
+  public setGroup(): string | null {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return null
+    return this.draw.getGroup().setGroup()
+  }
+
+  public deleteGroup(groupId: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.getGroup().deleteGroup(groupId)
+  }
+
+  public getGroupIds(): Promise<string[]> {
+    return this.draw.getWorkerManager().getGroupIds()
+  }
+
+  public locationGroup(groupId: string) {
+    const elementList = this.draw.getOriginalMainElementList()
+    const context = this.draw
+      .getGroup()
+      .getContextByGroupId(elementList, groupId)
+    if (!context) return
+    const { isTable, index, trIndex, tdIndex, tdId, trId, tableId, endIndex } =
+      context
+    this.position.setPositionContext({
+      isTable,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
+    })
+    this.range.setRange(endIndex, endIndex)
+    this.draw.render({
+      curIndex: endIndex,
+      isCompute: false,
+      isSubmitHistory: false
     })
   }
 }

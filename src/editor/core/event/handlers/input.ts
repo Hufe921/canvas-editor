@@ -50,6 +50,8 @@ export function input(data: string, host: CanvasEvent) {
       (copyElement.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
     ) {
       EDITOR_ELEMENT_COPY_ATTR.forEach(attr => {
+        // 在分组外无需复制分组信息
+        if (attr === 'groupIds' && !nextElement?.groupIds) return
         const value = copyElement[attr] as never
         if (value !== undefined) {
           newElement[attr] = value

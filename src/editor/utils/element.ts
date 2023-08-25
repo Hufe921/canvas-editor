@@ -1,4 +1,4 @@
-import { cloneProperty, deepClone, getUUID, splitText } from '.'
+import { cloneProperty, deepClone, getUUID, isArrayEqual, splitText } from '.'
 import {
   ElementType,
   IEditorOption,
@@ -375,7 +375,17 @@ export function isSameElementExceptValue(
   if (sourceKeys.length !== targetKeys.length) return false
   for (let s = 0; s < sourceKeys.length; s++) {
     const key = sourceKeys[s] as never
+    // 值不需要校验
     if (key === 'value') continue
+    // groupIds数组需特殊校验数组是否相等
+    if (
+      key === 'groupIds' &&
+      Array.isArray(source[key]) &&
+      Array.isArray(target[key]) &&
+      isArrayEqual(source[key], target[key])
+    ) {
+      continue
+    }
     if (source[key] !== target[key]) {
       return false
     }
