@@ -86,7 +86,8 @@ while (index < textList.length) {
   } else if (highlightIndex.includes(index)) {
     elementList.push({
       value,
-      highlight: '#F2F27F'
+      highlight: '#F2F27F',
+      groupIds: ['1'] // 模拟批注
     })
   } else {
     elementList.push({
@@ -418,6 +419,24 @@ elementList.push(
 )
 
 export const data: IElement[] = elementList
+
+interface IComment {
+  id: string
+  content: string
+  userName: string
+  rangeText: string
+  createdDate: string
+}
+export const commentList: IComment[] = [
+  {
+    id: '1',
+    content:
+      '红细胞比容（HCT）是指每单位容积中红细胞所占全血容积的比值，用于反映红细胞和血浆的比例。',
+    userName: 'Hufe',
+    rangeText: '血细胞比容',
+    createdDate: '2023-08-20 23:10:55'
+  }
+]
 
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
