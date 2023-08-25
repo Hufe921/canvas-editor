@@ -29,6 +29,7 @@ export interface IRangeStyle {
   level: TitleLevel | null
   listType: ListType | null
   listStyle: ListStyle | null
+  groupIds: string[] | null
 }
 
 export type IRangeStyleChange = (payload: IRangeStyle) => void

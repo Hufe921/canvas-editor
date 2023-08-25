@@ -200,8 +200,8 @@ export class RangeManager {
     return rangeRow
   }
 
-  // 获取选区元素列表
-  public getRangeElementList(): IElement[] | null {
+  // 获取选区段落元素列表
+  public getRangeParagraphElementList(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (!~startIndex && !~endIndex) return null
     // 需要改变的元素列表
@@ -339,6 +339,8 @@ export class RangeManager {
     const painter = !!this.draw.getPainterStyle()
     const undo = this.historyManager.isCanUndo()
     const redo = this.historyManager.isCanRedo()
+    // 组信息
+    const groupIds = curElement.groupIds || null
     const rangeStyle: IRangeStyle = {
       type,
       undo,
@@ -357,7 +359,8 @@ export class RangeManager {
       dashArray,
       level,
       listType,
-      listStyle
+      listStyle,
+      groupIds
     }
     if (rangeStyleChangeListener) {
       rangeStyleChangeListener(rangeStyle)
@@ -396,7 +399,8 @@ export class RangeManager {
       dashArray: [],
       level: null,
       listType: null,
-      listStyle: null
+      listStyle: null,
+      groupIds: null
     }
     if (rangeStyleChangeListener) {
       rangeStyleChangeListener(rangeStyle)

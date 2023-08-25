@@ -82,6 +82,7 @@ import { Placeholder } from './frame/Placeholder'
 import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
+import { Group } from './interactive/Group'
 
 export class Draw {
   private container: HTMLDivElement
@@ -106,6 +107,7 @@ export class Draw {
   private margin: Margin
   private background: Background
   private search: Search
+  private group: Group
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -175,6 +177,7 @@ export class Draw {
     this.margin = new Margin(this)
     this.background = new Background(this)
     this.search = new Search(this)
+    this.group = new Group(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -449,6 +452,10 @@ export class Draw {
 
   public getSearch(): Search {
     return this.search
+  }
+
+  public getGroup(): Group {
+    return this.group
   }
 
   public getHistoryManager(): HistoryManager {
@@ -1443,8 +1450,13 @@ export class Draw {
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
     const isPrintMode = this.mode === EditorMode.PRINT
-    const { scale, tdPadding, defaultBasicRowMarginHeight, defaultRowMargin } =
-      this.options
+    const {
+      scale,
+      tdPadding,
+      defaultBasicRowMarginHeight,
+      defaultRowMargin,
+      group
+    } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -1610,6 +1622,10 @@ export class Draw {
             }
           }
         }
+        // 组信息记录
+        if (!group.disabled && element.groupIds) {
+          this.group.recordFillInfo(element, x, y, metrics.width, curRow.height)
+        }
         index++
         // 绘制表格内元素
         if (element.type === ElementType.TABLE) {
@@ -1641,6 +1657,8 @@ export class Draw {
       }
       // 绘制富文本及文字
       this._drawRichText(ctx)
+      // 绘制批注样式
+      this.group.render(ctx)
       // 绘制选区
       if (!isPrintMode) {
         if (rangeRecord.width && rangeRecord.height) {
@@ -1767,7 +1785,8 @@ export class Draw {
       isSetCursor = true,
       isCompute = true,
       isLazy = true,
-      isInit = false
+      isInit = false,
+      isSourceHistory = false
     } = payload || {}
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
@@ -1861,7 +1880,11 @@ export class Draw {
         self.footer.setElementList(deepClone(oldFooterElementList))
         self.elementList = deepClone(oldElementList)
         self.range.setRange(startIndex, endIndex)
-        self.render({ curIndex, isSubmitHistory: false })
+        self.render({
+          curIndex,
+          isSubmitHistory: false,
+          isSourceHistory: true
+        })
       })
     }
     // 信息变动回调
@@ -1882,7 +1905,7 @@ export class Draw {
         this.eventBus.emit('pageSizeChange', this.pageRowList.length)
       }
       // 文档内容改变
-      if (isSubmitHistory && !isInit) {
+      if ((isSubmitHistory || isSourceHistory) && !isInit) {
         if (this.listener.contentChange) {
           this.listener.contentChange()
         }

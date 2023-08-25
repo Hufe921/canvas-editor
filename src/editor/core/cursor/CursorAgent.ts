@@ -53,6 +53,8 @@ export class CursorAgent {
   }
 
   private _paste(evt: ClipboardEvent) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     const clipboardData = evt.clipboardData
     if (!clipboardData) return
     const rangeManager = this.draw.getRange()

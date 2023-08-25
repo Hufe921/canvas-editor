@@ -5,6 +5,7 @@ import Editor, {
   Command,
   ControlType,
   EditorMode,
+  EditorZone,
   ElementType,
   IBlock,
   ICatalogItem,
@@ -24,7 +25,7 @@ import request from './utils/request'
 import { queryParams } from './utils'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
-import { debounce } from './utils'
+import { debounce, nextTick, scrollIntoView } from './utils'
 
 const isApple =
   typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
@@ -36,6 +37,17 @@ window.onbeforeunload = function () {
 
 window.onload = function () {
   init()
+}
+
+interface IComment {
+  id: string
+  content: string
+  userName: string
+  rangeText: string
+  createdDate: string
+}
+type IResult = IEditorResult & {
+  comment?: IComment[]
 }
 
 let id: number
@@ -61,13 +73,13 @@ async function init() {
   id = idParam ? Number(idParam) : articleList[0].id
   const article = await getArticleDetail(id)
   name = article.name
-
   let options: Partial<Omit<IEditorResult, 'data'>> = {}
+
   let data: IEditorData = {
     main: []
   }
   try {
-    const content = <IEditorResult>JSON.parse(article.content)
+    const content = <IResult>JSON.parse(article.content)
     const { data: contentData, ...rest } = content
     const editorData = <IEditorData | IElement[]>contentData || []
     // 兼容无页眉时数据结构
@@ -76,6 +88,9 @@ async function init() {
       header: isExistPageHeader ? editorData.header : [],
       main: isExistPageHeader ? editorData.main : editorData,
       footer: isExistPageHeader ? editorData.footer : []
+    }
+    if (!Array.isArray(rest.comment)) {
+      rest.comment = []
     }
     options = rest
   } catch (error) {
@@ -86,7 +101,7 @@ async function init() {
 
 function initEditorInstance(
   data: IEditorData,
-  options: Partial<Omit<IEditorResult, 'data'>>
+  options: Partial<Omit<IResult, 'data'>>
 ) {
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
@@ -1287,6 +1302,61 @@ function initEditorInstance(
     })
   }
 
+  // 模拟批注
+  const commentDom = document.querySelector<HTMLDivElement>('.comment')!
+  async function updateComment() {
+    const groupIds = await instance.command.getGroupIds()
+    for (const comment of options.comment!) {
+      const activeCommentDom = commentDom.querySelector<HTMLDivElement>(
+        `.comment-item[data-id='${comment.id}']`
+      )
+      // 编辑器是否存在对应成组id
+      if (groupIds.includes(comment.id)) {
+        // 当前dom是否存在-不存在则追加
+        if (!activeCommentDom) {
+          const commentItem = document.createElement('div')
+          commentItem.classList.add('comment-item')
+          commentItem.setAttribute('data-id', comment.id)
+          commentItem.onclick = () => {
+            instance.command.executeLocationGroup(comment.id)
+          }
+          commentDom.append(commentItem)
+          // 选区信息
+          const commentItemTitle = document.createElement('div')
+          commentItemTitle.classList.add('comment-item__title')
+          commentItemTitle.append(document.createElement('span'))
+          const commentItemTitleContent = document.createElement('span')
+          commentItemTitleContent.innerText = comment.rangeText
+          commentItemTitle.append(commentItemTitleContent)
+          const closeDom = document.createElement('i')
+          closeDom.onclick = () => {
+            instance.command.executeDeleteGroup(comment.id)
+          }
+          commentItemTitle.append(closeDom)
+          commentItem.append(commentItemTitle)
+          // 基础信息
+          const commentItemInfo = document.createElement('div')
+          commentItemInfo.classList.add('comment-item__info')
+          const commentItemInfoName = document.createElement('span')
+          commentItemInfoName.innerText = comment.userName
+          const commentItemInfoDate = document.createElement('span')
+          commentItemInfoDate.innerText = comment.createdDate
+          commentItemInfo.append(commentItemInfoName)
+          commentItemInfo.append(commentItemInfoDate)
+          commentItem.append(commentItemInfo)
+          // 详细评论
+          const commentItemContent = document.createElement('div')
+          commentItemContent.classList.add('comment-item__content')
+          commentItemContent.innerText = comment.content
+          commentItem.append(commentItemContent)
+          commentDom.append(commentItem)
+        }
+      } else {
+        // 编辑器内不存在对应成组id则dom则移除
+        activeCommentDom?.remove()
+      }
+    }
+  }
   // 8. 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
     // 控件类型
@@ -1435,6 +1505,23 @@ function initEditorInstance(
     } else {
       listDom.classList.remove('active')
     }
+
+    // 批注
+    commentDom
+      .querySelectorAll<HTMLDivElement>('.comment-item')
+      .forEach(commentItemDom => {
+        commentItemDom.classList.remove('active')
+      })
+    if (payload.groupIds) {
+      const [id] = payload.groupIds
+      const activeCommentDom = commentDom.querySelector<HTMLDivElement>(
+        `.comment-item[data-id='${id}']`
+      )
+      if (activeCommentDom) {
+        activeCommentDom.classList.add('active')
+        scrollIntoView(commentDom, activeCommentDom)
+      }
+    }
   }
 
   instance.listener.visiblePageNoListChange = function (payload) {
@@ -1503,19 +1590,64 @@ function initEditorInstance(
     }`
     // 目录
     if (isCatalogShow) {
-      updateCatalog()
+      nextTick(() => {
+        updateCatalog()
+      })
     }
+    // 批注
+    nextTick(() => {
+      updateComment()
+    })
   }
   instance.listener.contentChange = debounce(handleContentChange, 200)
   handleContentChange()
 
   instance.listener.saved = function (payload) {
     contentChangeCount = 1
+    Reflect.set(payload, 'comment', options.comment)
     updateArticle(payload)
   }
 
   // 9. 右键菜单注册
   instance.register.contextMenuList([
+    {
+      name: '批注',
+      when: payload => {
+        return (
+          !payload.isReadonly &&
+          payload.editorHasSelection &&
+          payload.zone === EditorZone.MAIN
+        )
+      },
+      callback: (command: Command) => {
+        new Dialog({
+          title: '批注',
+          data: [
+            {
+              type: 'textarea',
+              label: '批注',
+              height: 100,
+              name: 'value',
+              required: true,
+              placeholder: '请输入批注'
+            }
+          ],
+          onConfirm: payload => {
+            const value = payload.find(p => p.name === 'value')?.value
+            if (!value) return
+            const groupId = command.executeSetGroup()
+            if (!groupId) return
+            options.comment!.push({
+              id: groupId,
+              content: value,
+              userName: 'Hufe',
+              rangeText: command.getRangeText(),
+              createdDate: new Date().toLocaleString()
+            })
+          }
+        })
+      }
+    },
     {
       name: '签名',
       icon: 'signature',

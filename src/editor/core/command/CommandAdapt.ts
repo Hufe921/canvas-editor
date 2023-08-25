@@ -47,7 +47,8 @@ import {
   isTextLikeElement,
   pickElementAttr,
   getElementListByHTML,
-  getTextFromElementList
+  getTextFromElementList,
+  zipElementList
 } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
@@ -320,7 +321,10 @@ export class CommandAdapt {
     selection.forEach(el => {
       el.underline = !!~noUnderlineIndex
     })
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
   public strikeout() {
@@ -332,7 +336,10 @@ export class CommandAdapt {
     selection.forEach(el => {
       el.strikeout = !!~noStrikeoutIndex
     })
-    this.draw.render({ isSetCursor: false })
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
   public superscript() {
@@ -434,7 +441,7 @@ export class CommandAdapt {
     // 需要改变的元素列表
     const changeElementList =
       startIndex === endIndex
-        ? this.range.getRangeElementList()
+        ? this.range.getRangeParagraphElementList()
         : elementList.slice(startIndex + 1, endIndex + 1)
     if (!changeElementList || !changeElementList.length) return
     // 设置值
@@ -470,7 +477,7 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     // 需要改变的元素列表
-    const changeElementList = this.range.getRangeElementList()
+    const changeElementList = this.range.getRangeParagraphElementList()
     if (!changeElementList || !changeElementList.length) return
     // 如果包含列表则设置为取消列表
     const isUnsetList = changeElementList.find(
@@ -1749,6 +1756,16 @@ export class CommandAdapt {
     })
   }
 
+  public getRangeRow(): IElement[] | null {
+    const rowElementList = this.range.getRangeRowElementList()
+    return rowElementList ? zipElementList(rowElementList) : null
+  }
+
+  public getRangeParagraph(): IElement[] | null {
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    return paragraphElementList ? zipElementList(paragraphElementList) : null
+  }
+
   public pageMode(payload: PageMode) {
     this.draw.setPageMode(payload)
   }
@@ -1909,6 +1926,47 @@ export class CommandAdapt {
       header: getElementList(header),
       main: getElementList(main),
       footer: getElementList(footer)
+    })
+  }
+
+  public setGroup(): string | null {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return null
+    return this.draw.getGroup().setGroup()
+  }
+
+  public deleteGroup(groupId: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.getGroup().deleteGroup(groupId)
+  }
+
+  public getGroupIds(): Promise<string[]> {
+    return this.draw.getWorkerManager().getGroupIds()
+  }
+
+  public locationGroup(groupId: string) {
+    const elementList = this.draw.getOriginalMainElementList()
+    const context = this.draw
+      .getGroup()
+      .getContextByGroupId(elementList, groupId)
+    if (!context) return
+    const { isTable, index, trIndex, tdIndex, tdId, trId, tableId, endIndex } =
+      context
+    this.position.setPositionContext({
+      isTable,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
+    })
+    this.range.setRange(endIndex, endIndex)
+    this.draw.render({
+      curIndex: endIndex,
+      isCompute: false,
+      isSubmitHistory: false
     })
   }
 }

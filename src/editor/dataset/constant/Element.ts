@@ -26,7 +26,8 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'url',
   'hyperlinkId',
   'dateId',
-  'dateFormat'
+  'dateFormat',
+  'groupIds'
 ]
 
 export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
@@ -56,7 +57,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'level',
   'listType',
   'listStyle',
-  'listWrap'
+  'listWrap',
+  'groupIds'
 ]
 
 export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [
