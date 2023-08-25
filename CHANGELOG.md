@@ -1,3 +1,22 @@
+## [0.9.46](https://github.com/Hufe921/canvas-editor/compare/v0.9.45...v0.9.46) (2023-08-25)
+
+
+### Bug Fixes
+
+* disable paste in read only mode #260 ([f19077b](https://github.com/Hufe921/canvas-editor/commit/f19077b2ce2ed8450257c29a12c77ec627cdd866)), closes [#260](https://github.com/Hufe921/canvas-editor/issues/260)
+* drawing background size error #254 ([01340bb](https://github.com/Hufe921/canvas-editor/commit/01340bb13ce31e51abaac150e5294b7b10e64005)), closes [#254](https://github.com/Hufe921/canvas-editor/issues/254)
+* error converting some element types to HTML #257 ([a805590](https://github.com/Hufe921/canvas-editor/commit/a805590696bed12c0b4ececdc7de222f629a8cc9)), closes [#257](https://github.com/Hufe921/canvas-editor/issues/257)
+
+
+### Features
+
+* add comment demo #238 ([86cdcf3](https://github.com/Hufe921/canvas-editor/commit/86cdcf3481ffcaf4c1acee729d0f7aeb1eaf5dee)), closes [#238](https://github.com/Hufe921/canvas-editor/issues/238)
+* add element group ([3e183ae](https://github.com/Hufe921/canvas-editor/commit/3e183aefa574268658760eab202e1188cd5651ed))
+* add zone field to contextmenu context ([2064236](https://github.com/Hufe921/canvas-editor/commit/2064236d94258dc97bb5decd14ac309288e35db9))
+* get range row and paragraph element list #255 ([9495bfe](https://github.com/Hufe921/canvas-editor/commit/9495bfef397a2d9cb39a674d637d85c05bec2382)), closes [#255](https://github.com/Hufe921/canvas-editor/issues/255)
+
+
+
 ## [0.9.45](https://github.com/Hufe921/canvas-editor/compare/v0.9.44...v0.9.45) (2023-08-18)
 
 
