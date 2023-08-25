@@ -32,6 +32,10 @@ export interface IElementStyle {
   letterSpacing?: number
 }
 
+export interface IElementGroup {
+  groupIds?: string[]
+}
+
 export interface ITitleElement {
   valueList?: IElement[]
   level?: TitleLevel
@@ -103,6 +107,7 @@ export interface IBlockElement {
 
 export type IElement = IElementBasic &
   IElementStyle &
+  IElementGroup &
   ITable &
   IHyperlinkElement &
   ISuperscriptSubscript &

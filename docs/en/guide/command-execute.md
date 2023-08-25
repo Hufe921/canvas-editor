@@ -761,3 +761,33 @@ Usage:
 ```javascript
 instance.command.executeSetHTML(payload: Partial<IEditorHTML)
 ```
+
+## executeSetGroup
+
+Feature: Set group
+
+Usage:
+
+```javascript
+instance.command.executeSetGroup()
+```
+
+## executeDeleteGroup
+
+Feature: Delete group
+
+Usage:
+
+```javascript
+instance.command.executeDeleteGroup(groupId: string)
+```
+
+## executeLocationGroup
+
+Feature: Positioning group position
+
+Usage:
+
+```javascript
+instance.command.executeLocationGroup(groupId: string)
+```

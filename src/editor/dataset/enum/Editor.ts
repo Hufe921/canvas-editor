@@ -5,7 +5,8 @@ export enum EditorComponent {
   FOOTER = 'footer',
   CONTEXTMENU = 'contextmenu',
   POPUP = 'popup',
-  CATALOG = 'catalog'
+  CATALOG = 'catalog',
+  COMMENT = 'comment'
 }
 
 export enum EditorContext {

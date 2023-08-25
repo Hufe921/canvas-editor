@@ -249,3 +249,10 @@ export function findScrollContainer(element: HTMLElement) {
   }
   return document.documentElement
 }
+
+export function isArrayEqual(arr1: unknown[], arr2: unknown[]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false
+  }
+  return !arr1.some(item => !arr2.includes(item))
+}
