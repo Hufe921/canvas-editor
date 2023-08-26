@@ -76,6 +76,9 @@ export class Command {
   public executeLocationCatalog: CommandAdapt['locationCatalog']
   public executeWordTool: CommandAdapt['wordTool']
   public executeSetHTML: CommandAdapt['setHTML']
+  public executeSetGroup: CommandAdapt['setGroup']
+  public executeDeleteGroup: CommandAdapt['deleteGroup']
+  public executeLocationGroup: CommandAdapt['locationGroup']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getValue: CommandAdapt['getValue']
@@ -89,6 +92,7 @@ export class Command {
   public getPaperMargin: CommandAdapt['getPaperMargin']
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
+  public getGroupIds: CommandAdapt['getGroupIds']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -173,7 +177,9 @@ export class Command {
     this.executeLocationCatalog = adapt.locationCatalog.bind(adapt)
     this.executeWordTool = adapt.wordTool.bind(adapt)
     this.executeSetHTML = adapt.setHTML.bind(adapt)
-
+    this.executeSetGroup = adapt.setGroup.bind(adapt)
+    this.executeDeleteGroup = adapt.deleteGroup.bind(adapt)
+    this.executeLocationGroup = adapt.locationGroup.bind(adapt)
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
@@ -188,5 +194,6 @@ export class Command {
     this.getPaperMargin = adapt.getPaperMargin.bind(adapt)
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
+    this.getGroupIds = adapt.getGroupIds.bind(adapt)
   }
 }

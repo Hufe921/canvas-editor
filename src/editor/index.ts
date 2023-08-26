@@ -59,6 +59,8 @@ import { Plugin } from './core/plugin/Plugin'
 import { UsePlugin } from './interface/Plugin'
 import { EventBus } from './core/event/eventbus/EventBus'
 import { EventBusMap } from './interface/EventBus'
+import { IGroup } from './interface/Group'
+import { defaultGroupOption } from './dataset/constant/Group'
 
 export default class Editor {
   public command: Command
@@ -109,6 +111,10 @@ export default class Editor {
       ...defaultPlaceholderOption,
       ...options.placeholder
     }
+    const groupOptions: Required<IGroup> = {
+      ...defaultGroupOption,
+      ...options.group
+    }
 
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
@@ -158,7 +164,8 @@ export default class Editor {
       checkbox: checkboxOptions,
       cursor: cursorOptions,
       title: titleOptions,
-      placeholder: placeholderOptions
+      placeholder: placeholderOptions,
+      group: groupOptions
     }
     // 数据处理
     let headerElementList: IElement[] = []

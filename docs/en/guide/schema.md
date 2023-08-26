@@ -41,6 +41,8 @@ interface IElement {
   };
   rowMargin?: number;
   letterSpacing?: number;
+  // groupIds
+  groupIds?: string[];
   // table
   colgroup?: {
     width: number;

@@ -158,3 +158,13 @@ const {
 ```javascript
 const locale = await instance.command.getLocale()
 ```
+
+## getGroupIds
+
+功能：获取所有成组 id
+
+用法：
+
+```javascript
+const groupIds = await instance.command.getGroupIds()
+```

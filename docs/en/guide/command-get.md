@@ -151,10 +151,20 @@ const {
 
 ## getLocale
 
-功能：Get current locale
+Feature: Get current locale
 
-用法：
+Usage:
 
 ```javascript
 const locale = await instance.command.getLocale()
+```
+
+## getGroupIds
+
+Feature: Get all group ids
+
+Usage:
+
+```javascript
+const groupIds = await instance.command.getGroupIds()
 ```

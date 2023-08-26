@@ -1,4 +1,4 @@
-import { cloneProperty, deepClone, getUUID, splitText } from '.'
+import { cloneProperty, deepClone, getUUID, isArrayEqual, splitText } from '.'
 import {
   ElementType,
   IEditorOption,
@@ -9,7 +9,7 @@ import {
 } from '..'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
-import { ZERO } from '../dataset/constant/Common'
+import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
 import {
   EDITOR_ELEMENT_CONTEXT_ATTR,
@@ -375,7 +375,17 @@ export function isSameElementExceptValue(
   if (sourceKeys.length !== targetKeys.length) return false
   for (let s = 0; s < sourceKeys.length; s++) {
     const key = sourceKeys[s] as never
+    // 值不需要校验
     if (key === 'value') continue
+    // groupIds数组需特殊校验数组是否相等
+    if (
+      key === 'groupIds' &&
+      Array.isArray(source[key]) &&
+      Array.isArray(target[key]) &&
+      isArrayEqual(source[key], target[key])
+    ) {
+      continue
+    }
     if (source[key] !== target[key]) {
       return false
     }
@@ -697,6 +707,9 @@ export function convertElementToDom(
   if (element.highlight) {
     dom.style.backgroundColor = element.highlight
   }
+  if (element.underline) {
+    dom.style.textDecoration = 'underline'
+  }
   dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
 }
@@ -811,6 +824,10 @@ export function createDomFromElementList(
           checkbox.setAttribute('checked', 'true')
         }
         clipboardDom.append(checkbox)
+      } else if (element.type === ElementType.TAB) {
+        const tab = document.createElement('span')
+        tab.innerHTML = `${NON_BREAKING_SPACE}${NON_BREAKING_SPACE}`
+        clipboardDom.append(tab)
       } else if (
         !element.type ||
         element.type === ElementType.LATEX ||
@@ -872,6 +889,10 @@ export function convertTextNodeToElement(
   // 高亮色
   if (style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
     element.highlight = style.backgroundColor
+  }
+  // 下划线
+  if (style.textDecorationLine === 'underline') {
+    element.underline = true
   }
   return element
 }

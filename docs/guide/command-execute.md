@@ -763,3 +763,33 @@ instance.command.executeWordTool()
 ```javascript
 instance.command.executeSetHTML(payload: Partial<IEditorHTML)
 ```
+
+## executeSetGroup
+
+功能：设置成组
+
+用法：
+
+```javascript
+instance.command.executeSetGroup()
+```
+
+## executeDeleteGroup
+
+功能：删除成组
+
+用法：
+
+```javascript
+instance.command.executeDeleteGroup(groupId: string)
+```
+
+## executeLocationGroup
+
+功能：定位成组位置
+
+用法：
+
+```javascript
+instance.command.executeLocationGroup(groupId: string)
+```
