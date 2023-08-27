@@ -1706,6 +1706,10 @@ export class CommandAdapt {
     return this.draw.getDataURL(payload)
   }
 
+  public getOptions(): DeepRequired<IEditorOption> {
+    return this.options
+  }
+
   public getValue(options?: IGetValueOption): IEditorResult {
     return this.draw.getValue(options)
   }

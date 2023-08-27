@@ -37,6 +37,16 @@ const {
 const base64StringList = await instance.command.getImage(option?: IGetImageOption)
 ```
 
+## getOptions
+
+功能：获取编辑器配置
+
+用法：
+
+```javascript
+const editorOption = await instance.command.getOptions()
+```
+
 ## getWordCount
 
 功能：获取文档字数
