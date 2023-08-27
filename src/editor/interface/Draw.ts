@@ -12,6 +12,10 @@ export interface IDrawOption {
   isSourceHistory?: boolean
 }
 
+export interface IForceUpdateOption {
+  isSubmitHistory?: boolean
+}
+
 export interface IDrawImagePayload {
   width: number
   height: number

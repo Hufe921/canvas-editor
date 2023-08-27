@@ -79,6 +79,16 @@ instance.command.executeBackspace()
 instance.command.executeSetRange(startIndex: number , endIndex: number)
 ```
 
+## executeForceUpdate
+
+功能：强制重新渲染文档
+
+用法：
+
+```javascript
+instance.command.executeForceUpdate(options?: IForceUpdateOption)
+```
+
 ## executeUndo
 
 功能：撤销
