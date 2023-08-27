@@ -21,6 +21,7 @@ import { DeepRequired } from '../../interface/Common'
 import {
   IAppendElementListOption,
   IDrawImagePayload,
+  IForceUpdateOption,
   IGetImageOption,
   IGetValueOption,
   IPainterOption
@@ -153,6 +154,15 @@ export class CommandAdapt {
       isCompute: false,
       isSubmitHistory: false,
       isSetCursor: isCollapsed
+    })
+  }
+
+  public forceUpdate(options?: IForceUpdateOption) {
+    const { isSubmitHistory = false } = options || {}
+    this.range.clearRange()
+    this.draw.render({
+      isSubmitHistory,
+      isSetCursor: false
     })
   }
 
@@ -1694,6 +1704,10 @@ export class CommandAdapt {
 
   public getImage(payload?: IGetImageOption): Promise<string[]> {
     return this.draw.getDataURL(payload)
+  }
+
+  public getOptions(): DeepRequired<IEditorOption> {
+    return this.options
   }
 
   public getValue(options?: IGetValueOption): IEditorResult {

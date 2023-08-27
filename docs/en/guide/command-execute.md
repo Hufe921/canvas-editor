@@ -79,6 +79,16 @@ Usage:
 instance.command.executeSetRange(startIndex: number , endIndex: number)
 ```
 
+## executeForceUpdate
+
+Feature: force update editor
+
+Usage:
+
+```javascript
+instance.command.executeForceUpdate(options?: IForceUpdateOption)
+```
+
 ## executeUndo
 
 Feature: Undo
@@ -755,9 +765,11 @@ instance.command.executeWordTool()
 ```
 
 ## executeSetHTML
+
 Feature: Set the editor HTML data
 
 Usage:
+
 ```javascript
 instance.command.executeSetHTML(payload: Partial<IEditorHTML)
 ```
