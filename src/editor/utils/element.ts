@@ -8,9 +8,7 @@ import {
   RowFlex
 } from '..'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
-import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
-import { defaultControlOption } from '../dataset/constant/Control'
 import {
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
@@ -46,7 +44,7 @@ export function unzipElementList(elementList: IElement[]): IElement[] {
 
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean
-  editorOptions: Required<IEditorOption>
+  editorOptions: DeepRequired<IEditorOption>
 }
 
 export function formatElementList(
@@ -198,6 +196,9 @@ export function formatElementList(
     } else if (el.type === ElementType.CONTROL) {
       const { prefix, postfix, value, placeholder, code, type, valueSets } =
         el.control!
+      const {
+        editorOptions: { control: controlOption, checkbox: checkboxOption }
+      } = options
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
@@ -207,7 +208,7 @@ export function formatElementList(
         thePrePostfixArgs.color = editorOptions.control.bracketColor
       }
       // 前缀
-      const prefixStrList = splitText(prefix || defaultControlOption.prefix)
+      const prefixStrList = splitText(prefix || controlOption.prefix)
       for (let p = 0; p < prefixStrList.length; p++) {
         const value = prefixStrList[p]
         elementList.splice(i, 0, {
@@ -264,7 +265,7 @@ export function formatElementList(
                   controlId,
                   value,
                   type: el.type,
-                  letterSpacing: isLastLetter ? defaultCheckboxOption.gap : 0,
+                  letterSpacing: isLastLetter ? checkboxOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
                 })
@@ -324,7 +325,7 @@ export function formatElementList(
         }
       }
       // 后缀
-      const postfixStrList = splitText(postfix || defaultControlOption.postfix)
+      const postfixStrList = splitText(postfix || controlOption.postfix)
       for (let p = 0; p < postfixStrList.length; p++) {
         const value = postfixStrList[p]
         elementList.splice(i, 0, {
