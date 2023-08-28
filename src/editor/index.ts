@@ -61,6 +61,7 @@ import { EventBus } from './core/event/eventbus/EventBus'
 import { EventBusMap } from './interface/EventBus'
 import { IGroup } from './interface/Group'
 import { defaultGroupOption } from './dataset/constant/Group'
+import { IRangeStyle } from './interface/Listener'
 
 export default class Editor {
   public command: Command
@@ -267,5 +268,6 @@ export type {
   IBlock,
   ILang,
   ICatalog,
-  ICatalogItem
+  ICatalogItem,
+  IRangeStyle
 }
