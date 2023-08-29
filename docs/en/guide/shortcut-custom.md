@@ -15,7 +15,8 @@ instance.register.shortcutList([
       shift?: boolean;
       alt?: boolean;
       isGlobal?: boolean;
-      callback: (command: Command) => any;
+      callback?: (command: Command) => any;
+      disable?: boolean;
     }
   ])
 ```
