@@ -62,6 +62,10 @@ export default defineConfig({
         ]
       },
       {
+        text: '重写方法',
+        items: [{ text: '重写方法', link: '/guide/override' }]
+      },
+      {
         text: 'API',
         items: [{ text: '全局API', link: '/guide/api' }]
       },
@@ -139,6 +143,10 @@ export default defineConfig({
               { text: 'internal', link: '/en/guide/contextmenu-internal' },
               { text: 'custom', link: '/en/guide/contextmenu-custom' }
             ]
+          },
+          {
+            text: 'Override',
+            items: [{ text: 'override', link: '/en/guide/override' }]
           },
           {
             text: 'Api',

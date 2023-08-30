@@ -83,6 +83,7 @@ import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
+import { Override } from '../override/Override'
 
 export class Draw {
   private container: HTMLDivElement
@@ -98,6 +99,7 @@ export class Draw {
   private elementList: IElement[]
   private listener: Listener
   private eventBus: EventBus<EventBusMap>
+  private override: Override
 
   private i18n: I18n
   private canvasEvent: CanvasEvent
@@ -152,7 +154,8 @@ export class Draw {
     options: DeepRequired<IEditorOption>,
     data: IEditorData,
     listener: Listener,
-    eventBus: EventBus<EventBusMap>
+    eventBus: EventBus<EventBusMap>,
+    override: Override
   ) {
     this.container = this._wrapContainer(rootContainer)
     this.pageList = []
@@ -164,6 +167,7 @@ export class Draw {
     this.elementList = data.main
     this.listener = listener
     this.eventBus = eventBus
+    this.override = override
 
     this._formatContainer()
     this.pageContainer = this._createPageContainer()
@@ -620,6 +624,10 @@ export class Draw {
 
   public getEventBus(): EventBus<EventBusMap> {
     return this.eventBus
+  }
+
+  public getOverride(): Override {
+    return this.override
   }
 
   public getCursor(): Cursor {
