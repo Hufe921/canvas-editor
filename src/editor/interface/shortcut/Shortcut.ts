@@ -9,5 +9,6 @@ export interface IRegisterShortcut {
   shift?: boolean
   alt?: boolean // windows:alt || mac:option
   isGlobal?: boolean
-  callback: (command: Command) => any
+  callback?: (command: Command) => any
+  disable?: boolean
 }

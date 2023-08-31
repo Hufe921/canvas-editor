@@ -61,11 +61,14 @@ import { EventBus } from './core/event/eventbus/EventBus'
 import { EventBusMap } from './interface/EventBus'
 import { IGroup } from './interface/Group'
 import { defaultGroupOption } from './dataset/constant/Group'
+import { IRangeStyle } from './interface/Listener'
+import { Override } from './core/override/Override'
 
 export default class Editor {
   public command: Command
   public listener: Listener
   public eventBus: EventBus<EventBusMap>
+  public override: Override
   public register: Register
   public destroy: () => void
   public use: UsePlugin
@@ -192,6 +195,8 @@ export default class Editor {
     this.listener = new Listener()
     // 事件
     this.eventBus = new EventBus<EventBusMap>()
+    // 重写
+    this.override = new Override()
     // 启动
     const draw = new Draw(
       container,
@@ -202,7 +207,8 @@ export default class Editor {
         footer: footerElementList
       },
       this.listener,
-      this.eventBus
+      this.eventBus,
+      this.override
     )
     // 命令
     this.command = new Command(new CommandAdapt(draw))
@@ -267,5 +273,6 @@ export type {
   IBlock,
   ILang,
   ICatalog,
-  ICatalogItem
+  ICatalogItem,
+  IRangeStyle
 }

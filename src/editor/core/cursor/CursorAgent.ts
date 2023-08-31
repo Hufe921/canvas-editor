@@ -57,6 +57,12 @@ export class CursorAgent {
     if (isReadonly) return
     const clipboardData = evt.clipboardData
     if (!clipboardData) return
+    // 自定义粘贴事件
+    const { paste } = this.draw.getOverride()
+    if (paste) {
+      paste(evt)
+      return
+    }
     const rangeManager = this.draw.getRange()
     const { startIndex } = rangeManager.getRange()
     const elementList = this.draw.getElementList()

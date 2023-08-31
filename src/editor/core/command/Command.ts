@@ -9,6 +9,7 @@ export class Command {
   public executeSelectAll: CommandAdapt['selectAll']
   public executeBackspace: CommandAdapt['backspace']
   public executeSetRange: CommandAdapt['setRange']
+  public executeForceUpdate: CommandAdapt['forceUpdate']
   public executeUndo: CommandAdapt['undo']
   public executeRedo: CommandAdapt['redo']
   public executePainter: CommandAdapt['painter']
@@ -81,6 +82,7 @@ export class Command {
   public executeLocationGroup: CommandAdapt['locationGroup']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
+  public getOptions: CommandAdapt['getOptions']
   public getValue: CommandAdapt['getValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
@@ -103,6 +105,7 @@ export class Command {
     this.executeSelectAll = adapt.selectAll.bind(adapt)
     this.executeBackspace = adapt.backspace.bind(adapt)
     this.executeSetRange = adapt.setRange.bind(adapt)
+    this.executeForceUpdate = adapt.forceUpdate.bind(adapt)
     // 撤销、重做、格式刷、清除格式
     this.executeUndo = adapt.undo.bind(adapt)
     this.executeRedo = adapt.redo.bind(adapt)
@@ -182,6 +185,7 @@ export class Command {
     this.executeLocationGroup = adapt.locationGroup.bind(adapt)
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
+    this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)

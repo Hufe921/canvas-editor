@@ -33,12 +33,12 @@ export class Shortcut {
   }
 
   private _addShortcutList(payload: IRegisterShortcut[]) {
-    for (let s = 0; s < payload.length; s++) {
+    for (let s = payload.length - 1; s >= 0; s--) {
       const shortCut = payload[s]
       if (shortCut.isGlobal) {
-        this.globalShortcutList.push(shortCut)
+        this.globalShortcutList.unshift(shortCut)
       } else {
-        this.agentShortcutList.push(shortCut)
+        this.agentShortcutList.unshift(shortCut)
       }
     }
   }
@@ -69,8 +69,10 @@ export class Shortcut {
         evt.altKey === !!shortCut.alt &&
         evt.key === shortCut.key
       ) {
-        shortCut.callback(this.command)
-        evt.preventDefault()
+        if (!shortCut.disable) {
+          shortCut?.callback?.(this.command)
+          evt.preventDefault()
+        }
         break
       }
     }

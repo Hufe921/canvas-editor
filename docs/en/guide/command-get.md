@@ -37,6 +37,16 @@ Usage:
 const base64StringList = await instance.command.getImage(option?: IGetImageOption)
 ```
 
+## getOptions
+
+Feature: Get editor options
+
+Usage:
+
+```javascript
+const editorOption = await instance.command.getOptions()
+```
+
 ## getWordCount
 
 Feature: Get document word count
