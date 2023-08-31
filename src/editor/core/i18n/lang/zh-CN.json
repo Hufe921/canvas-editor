@@ -69,5 +69,8 @@
   "frame": {
     "header": "页眉",
     "footer": "页脚"
+  },
+  "pageBreak": {
+    "displayName": "分页符"
   }
 }

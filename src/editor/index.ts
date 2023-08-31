@@ -63,6 +63,8 @@ import { IGroup } from './interface/Group'
 import { defaultGroupOption } from './dataset/constant/Group'
 import { IRangeStyle } from './interface/Listener'
 import { Override } from './core/override/Override'
+import { defaultPageBreakOption } from './dataset/constant/PageBreak'
+import { IPageBreak } from './interface/PageBreak'
 
 export default class Editor {
   public command: Command
@@ -118,6 +120,10 @@ export default class Editor {
       ...defaultGroupOption,
       ...options.group
     }
+    const pageBreakOptions: Required<IPageBreak> = {
+      ...defaultPageBreakOption,
+      ...options.pageBreak
+    }
 
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
@@ -168,7 +174,8 @@ export default class Editor {
       cursor: cursorOptions,
       title: titleOptions,
       placeholder: placeholderOptions,
-      group: groupOptions
+      group: groupOptions,
+      pageBreak: pageBreakOptions
     }
     // 数据处理
     let headerElementList: IElement[] = []

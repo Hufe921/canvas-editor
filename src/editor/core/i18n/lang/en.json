@@ -69,5 +69,8 @@
   "frame": {
     "header": "Header",
     "footer": "Footer"
+  },
+  "pageBreak": {
+    "displayName": "Page Break"
   }
 }
