@@ -344,12 +344,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
     evt.preventDefault()
   } else if (evt.key === KeyMap.TAB) {
-    draw.insertElementList([
-      {
-        type: ElementType.TAB,
-        value: ''
-      }
-    ])
+    const tabElement: IElement = {
+      type: ElementType.TAB,
+      value: ''
+    }
+    formatElementContext(elementList, [tabElement], startIndex)
+    draw.insertElementList([tabElement])
     evt.preventDefault()
   }
 }
