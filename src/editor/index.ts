@@ -177,6 +177,11 @@ export default class Editor {
       group: groupOptions,
       pageBreak: pageBreakOptions
     }
+
+    if (!editorOptions.defaultSize) {
+      editorOptions.defaultSize = editorOptions.minSize
+    }
+
     // 数据处理
     let headerElementList: IElement[] = []
     let mainElementList: IElement[] = []
