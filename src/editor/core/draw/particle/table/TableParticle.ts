@@ -1,4 +1,5 @@
 import { ElementType, IElement, TableBorder } from '../../../..'
+import { TdBorder } from '../../../../dataset/enum/table/Table'
 import { IEditorOption } from '../../../../interface/Editor'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
@@ -122,40 +123,55 @@ export class TableParticle {
     startY: number
   ) {
     const { colgroup, trList, borderType } = element
-    if (!colgroup || !trList || borderType === TableBorder.EMPTY) return
+    if (!colgroup || !trList) return
     const { scale } = this.options
     const tableWidth = element.width! * scale
     const tableHeight = element.height! * scale
+    // 无边框
+    const isEmptyBorderType = borderType === TableBorder.EMPTY
+    // 仅外边框
     const isExternalBorderType = borderType === TableBorder.EXTERNAL
     ctx.save()
     // 渲染边框
-    this._drawOuterBorder({
-      ctx,
-      startX,
-      startY,
-      width: tableWidth,
-      height: tableHeight,
-      isDrawFullBorder: isExternalBorderType
-    })
-    if (!isExternalBorderType) {
-      // 渲染表格
-      for (let t = 0; t < trList.length; t++) {
-        const tr = trList[t]
-        for (let d = 0; d < tr.tdList.length; d++) {
-          const td = tr.tdList[d]
-          const width = td.width! * scale
-          const height = td.height! * scale
-          const x = Math.round(td.x! * scale + startX + width)
-          const y = Math.round(td.y! * scale + startY)
-          ctx.translate(0.5, 0.5)
-          // 绘制线条
-          ctx.beginPath()
+    if (!isEmptyBorderType) {
+      this._drawOuterBorder({
+        ctx,
+        startX,
+        startY,
+        width: tableWidth,
+        height: tableHeight,
+        isDrawFullBorder: isExternalBorderType
+      })
+    }
+    // 渲染单元格
+    for (let t = 0; t < trList.length; t++) {
+      const tr = trList[t]
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        // 没有设置单元格边框 && 没有设置表格边框则忽略
+        if (!td.borderType && (isEmptyBorderType || isExternalBorderType)) {
+          continue
+        }
+        const width = td.width! * scale
+        const height = td.height! * scale
+        const x = Math.round(td.x! * scale + startX + width)
+        const y = Math.round(td.y! * scale + startY)
+        ctx.translate(0.5, 0.5)
+        // 绘制线条
+        ctx.beginPath()
+        if (td.borderType === TdBorder.BOTTOM) {
+          ctx.moveTo(x, y + height)
+          ctx.lineTo(x - width, y + height)
+          ctx.stroke()
+        }
+        if (!isEmptyBorderType && !isExternalBorderType) {
+          ctx.moveTo(x, y + height)
           ctx.moveTo(x, y)
           ctx.lineTo(x, y + height)
           ctx.lineTo(x - width, y + height)
           ctx.stroke()
-          ctx.translate(-0.5, -0.5)
         }
+        ctx.translate(-0.5, -0.5)
       }
     }
     ctx.restore()

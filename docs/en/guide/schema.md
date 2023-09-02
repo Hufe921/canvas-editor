@@ -54,6 +54,7 @@ interface IElement {
       rowspan: number;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
+      borderType?: TdBorder;
       value: IElement[];
     }[];
   }[];

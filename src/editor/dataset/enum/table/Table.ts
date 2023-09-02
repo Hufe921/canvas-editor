@@ -3,3 +3,7 @@ export enum TableBorder {
   EMPTY = 'empty',
   EXTERNAL = 'external'
 }
+
+export enum TdBorder {
+  BOTTOM = 'bottom'
+}

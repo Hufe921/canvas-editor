@@ -158,3 +158,11 @@
 .ce-contextmenu-border-external {
   background-image: url(../../../assets/images/table-border-external.svg);
 }
+
+.ce-contextmenu-border-td {
+  background-image: url(../../../assets/images/table-border-td.svg);
+}
+
+.ce-contextmenu-border-td-bottom {
+  background-image: url(../../../assets/images/table-border-td-bottom.svg);
+}
