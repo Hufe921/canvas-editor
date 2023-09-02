@@ -63,7 +63,7 @@ import {
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
-import { DeepRequired } from '../../interface/Common'
+import { DeepRequired, IPadding } from '../../interface/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
@@ -358,8 +358,9 @@ export class Draw {
     return this.options.defaultBasicRowMarginHeight * this.options.scale
   }
 
-  public getTdPadding(): number {
-    return this.options.tdPadding * this.options.scale
+  public getTdPadding(): IPadding {
+    const { tdPadding, scale } = this.options
+    return <IPadding>tdPadding.map(m => m * scale)
   }
 
   public getContainer(): HTMLDivElement {
@@ -1079,7 +1080,8 @@ export class Draw {
         }
         metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
-        const tdGap = tdPadding * 2
+        const tdPaddingWidth = tdPadding[1] + tdPadding[3]
+        const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
@@ -1089,13 +1091,13 @@ export class Draw {
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const rowList = this.computeRowList(
-              (td.width! - tdGap) * scale,
+              (td.width! - tdPaddingWidth) * scale,
               td.value
             )
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTdHeight = (rowHeight + tdGap) / scale
+            const curTdHeight = (rowHeight + tdPaddingHeight) / scale
             // 内容高度大于当前单元格高度需增加
             if (td.height! < curTdHeight) {
               const extraHeight = curTdHeight - td.height!
@@ -1637,7 +1639,7 @@ export class Draw {
         index++
         // 绘制表格内元素
         if (element.type === ElementType.TABLE) {
-          const tdGap = tdPadding * 2
+          const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           for (let t = 0; t < element.trList!.length; t++) {
             const tr = element.trList![t]
             for (let d = 0; d < tr.tdList!.length; d++) {
@@ -1648,7 +1650,7 @@ export class Draw {
                 rowList: td.rowList!,
                 pageNo,
                 startIndex: 0,
-                innerWidth: (td.width! - tdGap) * scale,
+                innerWidth: (td.width! - tdPaddingWidth) * scale,
                 zone
               })
             }

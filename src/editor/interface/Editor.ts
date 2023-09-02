@@ -6,6 +6,7 @@ import {
   WordBreak
 } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
+import { IPadding } from './Common'
 import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
 import { IFooter } from './Footer'
@@ -53,7 +54,7 @@ export interface IEditorOption {
   marginIndicatorColor?: string
   margins?: IMargin
   pageMode?: PageMode
-  tdPadding?: number
+  tdPadding?: IPadding
   defaultTrMinHeight?: number
   defaultColMinWidth?: number
   defaultHyperlinkColor?: string

@@ -34,3 +34,10 @@ export type DeepRequired<T> = T extends Error
 export type DeepPartial<T> = {
   [P in keyof T]?: DeepPartial<T[P]>
 }
+
+export type IPadding = [
+  top: number,
+  right: number,
+  bottom: number,
+  left: number
+]
