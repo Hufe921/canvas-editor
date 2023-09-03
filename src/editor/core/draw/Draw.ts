@@ -1038,6 +1038,8 @@ export class Draw {
     // 列表位置
     let listId: string | undefined
     let listIndex = 0
+    // 控件最小宽度
+    let controlRealWidth = 0
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
@@ -1311,6 +1313,23 @@ export class Draw {
         metrics,
         style: this._getFont(element, scale)
       })
+      // 暂时只考虑非换行场景：控件开始时统计宽度，结束时消费宽度及还原
+      if (rowElement.control?.minWidth) {
+        if (rowElement.controlComponent) {
+          controlRealWidth += metrics.width
+        }
+        if (rowElement.controlComponent === ControlComponent.POSTFIX) {
+          const extraWidth = rowElement.control.minWidth - controlRealWidth
+          // 消费超出实际最小宽度的长度
+          if (extraWidth > 0) {
+            rowElement.left = extraWidth
+            curRow.width += extraWidth
+          } else {
+            rowElement.left = 0
+          }
+          controlRealWidth = 0
+        }
+      }
       // 超过限定宽度
       const preElement = elementList[i - 1]
       let nextElement = elementList[i + 1]
@@ -1562,20 +1581,27 @@ export class Draw {
           this.textParticle.record(ctx, element, x, y + offsetY)
         }
         // 下划线记录
-        if (element.underline) {
+        if (element.underline || element.control?.underline) {
           const rowMargin =
             defaultBasicRowMarginHeight *
             (element.rowMargin || defaultRowMargin) *
             scale
+          // 元素偏移量
+          const left = element.left || 0
+          // 占位符不参与颜色计算
+          const color =
+            element.controlComponent === ControlComponent.PLACEHOLDER
+              ? undefined
+              : element.color
           this.underline.recordFillInfo(
             ctx,
-            x,
+            x - left,
             y + curRow.height - rowMargin,
-            metrics.width,
+            metrics.width + left,
             0,
-            element.color
+            color
           )
-        } else if (preElement?.underline) {
+        } else if (preElement?.underline || preElement?.control?.underline) {
           this.underline.render(ctx)
         }
         // 删除线记录

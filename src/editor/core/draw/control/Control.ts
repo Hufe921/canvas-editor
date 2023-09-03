@@ -57,7 +57,9 @@ export class Control {
     const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
     editorDataKeys.forEach(key => {
       payload[key] = payload[key].filter(element => {
-        if (element.type !== ElementType.CONTROL) return true
+        if (element.type !== ElementType.CONTROL || element.control?.minWidth) {
+          return true
+        }
         return (
           element.controlComponent !== ControlComponent.PREFIX &&
           element.controlComponent !== ControlComponent.POSTFIX &&
