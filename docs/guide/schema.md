@@ -77,6 +77,8 @@ interface IElement {
     conceptId?: string;
     prefix?: string;
     postfix?: string;
+    minWidth?: number;
+    underline?: boolean;
     code: string | null;
     min?: number;
     max?: number;

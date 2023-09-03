@@ -27,6 +27,8 @@ export interface IControlBasic {
   conceptId?: string
   prefix?: string
   postfix?: string
+  minWidth?: number
+  underline?: boolean
 }
 
 export type IControl = IControlBasic &

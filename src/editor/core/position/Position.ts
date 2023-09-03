@@ -119,6 +119,10 @@ export class Position {
           element.type === ElementType.LATEX
             ? curRow.ascent - metrics.height
             : curRow.ascent
+        // 偏移量
+        if (element.left) {
+          x += element.left
+        }
         const positionItem: IElementPosition = {
           pageNo,
           index,
@@ -126,6 +130,7 @@ export class Position {
           rowIndex: startRowIndex + i,
           rowNo: i,
           metrics,
+          left: element.left || 0,
           ascent: offsetY,
           lineHeight: curRow.height,
           isFirstLetter: j === 0,
@@ -265,13 +270,14 @@ export class Position {
       const {
         index,
         pageNo,
+        left,
         isFirstLetter,
         coordinate: { leftTop, rightTop, leftBottom }
       } = positionList[j]
       if (positionNo !== pageNo) continue
       // 命中元素
       if (
-        leftTop[0] <= x &&
+        leftTop[0] - left <= x &&
         rightTop[0] >= x &&
         leftTop[1] <= y &&
         leftBottom[1] >= y

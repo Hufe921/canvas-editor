@@ -396,9 +396,34 @@ elementList.push(
   ])
 )
 
+// 模拟固定长度下划线
+elementList.push(
+  ...[
+    {
+      value: '患者签名：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        type: ControlType.TEXT,
+        value: null,
+        placeholder: '',
+        prefix: '\u200c',
+        postfix: '\u200c',
+        minWidth: 160,
+        underline: true
+      }
+    }
+  ]
+)
+
 // 模拟结尾文本
 elementList.push(
   ...[
+    {
+      value: '\n'
+    },
     {
       value: '',
       type: ElementType.TAB

@@ -31,6 +31,8 @@ export abstract class AbstractRichText {
     if (!isFirstRecord && this.fillColor && this.fillColor !== color) {
       this.render(ctx)
       this.clearFillInfo()
+      // 重新记录
+      this.recordFillInfo(ctx, x, y, width, height, color)
       return
     }
     if (isFirstRecord) {

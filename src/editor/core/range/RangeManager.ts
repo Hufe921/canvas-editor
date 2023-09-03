@@ -325,7 +325,9 @@ export class RangeManager {
     const size = curElement.size || this.options.defaultSize
     const bold = !~curElementList.findIndex(el => !el.bold)
     const italic = !~curElementList.findIndex(el => !el.italic)
-    const underline = !~curElementList.findIndex(el => !el.underline)
+    const underline = !~curElementList.findIndex(
+      el => !el.underline && !el.control?.underline
+    )
     const strikeout = !~curElementList.findIndex(el => !el.strikeout)
     const color = curElement.color || null
     const highlight = curElement.highlight || null

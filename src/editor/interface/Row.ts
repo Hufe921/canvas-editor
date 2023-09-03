@@ -4,6 +4,7 @@ import { IElement, IElementMetrics } from './Element'
 export type IRowElement = IElement & {
   metrics: IElementMetrics
   style: string
+  left?: number
 }
 
 export interface IRow {
