@@ -1322,8 +1322,12 @@ export class Draw {
           const extraWidth = rowElement.control.minWidth - controlRealWidth
           // 消费超出实际最小宽度的长度
           if (extraWidth > 0) {
-            rowElement.left = extraWidth
-            curRow.width += extraWidth
+            // 超出行宽时截断
+            const rowRemainingWidth =
+              availableWidth - curRow.width - metrics.width
+            const left = Math.min(rowRemainingWidth, extraWidth)
+            rowElement.left = left
+            curRow.width += left
           } else {
             rowElement.left = 0
           }
