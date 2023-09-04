@@ -206,12 +206,22 @@ export class DOMEventHandlers {
 
   static setPaperMargins(payload: number[]) {
     const [topMargin, bottomMargin, leftMargin, rightMargin] = payload
-    
     DOMEventHandlers.getEditorInstance().command.executeSetPaperMargin([
       Number(topMargin),
       Number(rightMargin),
       Number(bottomMargin),
       Number(leftMargin)
     ])
+  }
+
+  static getSelectedText() {
+    return DOMEventHandlers.getEditorInstance().command.getRangeText()
+  }
+
+  static insertElement(payload: string) {
+    const updatedPayload: IElement[] = [{ value: payload }]
+    DOMEventHandlers.getEditorInstance().command.executeInsertElementList(
+      updatedPayload
+    )
   }
 }
