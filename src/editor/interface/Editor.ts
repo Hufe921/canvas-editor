@@ -63,6 +63,7 @@ export interface IEditorOption {
   historyMaxRecordCount?: number
   printPixelRatio?: number
   maskMargin?: IMargin
+  letterClass?: string[]
   wordBreak?: WordBreak
   header?: IHeader
   footer?: IFooter

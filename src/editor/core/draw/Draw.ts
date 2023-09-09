@@ -79,7 +79,6 @@ import { Footer } from './frame/Footer'
 import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
-import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
@@ -140,6 +139,8 @@ export class Draw {
   private selectionObserver: SelectionObserver
   private imageObserver: ImageObserver
 
+  private LETTER_REG: RegExp
+  private WORD_LIKE_REG: RegExp
   private rowList: IRow[]
   private pageRowList: IRow[][]
   private painterStyle: IElementStyle | null
@@ -219,6 +220,11 @@ export class Draw {
 
     this.workerManager = new WorkerManager(this)
 
+    const { letterClass } = options
+    this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
+    this.WORD_LIKE_REG = new RegExp(
+      `${letterClass.map(letter => `[^${letter}][${letter}]`).join('|')}`
+    )
     this.rowList = []
     this.pageRowList = []
     this.painterStyle = null
@@ -232,6 +238,10 @@ export class Draw {
       isInit: true,
       isSetCursor: false
     })
+  }
+
+  public getLetterReg(): RegExp {
+    return this.LETTER_REG
   }
 
   public getMode(): EditorMode {
@@ -1346,7 +1356,7 @@ export class Draw {
         ) {
           // 英文单词
           const word = `${preElement?.value || ''}${element.value}`
-          if (WORD_LIKE_REG.test(word)) {
+          if (this.WORD_LIKE_REG.test(word)) {
             const { width, endElement } = this.textParticle.measureWord(
               ctx,
               elementList,

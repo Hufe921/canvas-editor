@@ -27,3 +27,16 @@ export const maxHeightRadioMapping: Record<MaxHeightRatio, number> = {
   [MaxHeightRatio.ONE_THIRD]: 1 / 3,
   [MaxHeightRatio.QUARTER]: 1 / 4
 }
+
+export const LETTER_CLASS = {
+  ENGLISH: 'A-Za-z',
+  SPANISH: 'A-Za-zÁÉÍÓÚáéíóúÑñÜü',
+  FRENCH: 'A-Za-zÀÂÇàâçÉéÈèÊêËëÎîÏïÔôÙùÛûŸÿ',
+  GERMAN: 'A-Za-zÄäÖöÜüß',
+  RUSSIAN: 'А-Яа-яЁё',
+  PORTUGUESE: 'A-Za-zÁÉÍÓÚáéíóúÃÕãõÇç',
+  ITALIAN: 'A-Za-zÀàÈèÉéÌìÍíÎîÓóÒòÙù',
+  DUTCH: 'A-Za-zÀàÁáÂâÄäÈèÉéÊêËëÌìÍíÎîÏïÓóÒòÔôÖöÙùÛûÜü',
+  SWEDISH: 'A-Za-zÅåÄäÖö',
+  GREEK: 'ΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩω'
+}

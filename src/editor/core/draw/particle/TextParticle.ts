@@ -1,6 +1,5 @@
 import { ElementType, IElement } from '../../..'
 import { PUNCTUATION_LIST } from '../../../dataset/constant/Common'
-import { LETTER_REG } from '../../../dataset/constant/Regular'
 import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
@@ -10,6 +9,7 @@ export interface IMeasureWordResult {
 }
 
 export class TextParticle {
+  private draw: Draw
   private ctx: CanvasRenderingContext2D
   private curX: number
   private curY: number
@@ -19,6 +19,7 @@ export class TextParticle {
   public cacheMeasureText: Map<string, TextMetrics>
 
   constructor(draw: Draw) {
+    this.draw = draw
     this.ctx = draw.getCtx()
     this.curX = -1
     this.curY = -1
@@ -32,6 +33,7 @@ export class TextParticle {
     elementList: IElement[],
     curIndex: number
   ): IMeasureWordResult {
+    const LETTER_REG = this.draw.getLetterReg()
     let width = 0
     let endElement: IElement = elementList[curIndex]
     let i = curIndex
