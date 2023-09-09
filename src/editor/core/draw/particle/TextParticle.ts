@@ -67,6 +67,20 @@ export class TextParticle {
     ctx: CanvasRenderingContext2D,
     element: IElement
   ): TextMetrics {
+    // 优先使用自定义字宽设置
+    if (element.width) {
+      const textMetrics = ctx.measureText(element.value)
+      // TextMetrics是类无法解构
+      return {
+        width: element.width,
+        actualBoundingBoxAscent: textMetrics.actualBoundingBoxAscent,
+        actualBoundingBoxDescent: textMetrics.actualBoundingBoxDescent,
+        actualBoundingBoxLeft: textMetrics.actualBoundingBoxLeft,
+        actualBoundingBoxRight: textMetrics.actualBoundingBoxRight,
+        fontBoundingBoxAscent: textMetrics.fontBoundingBoxAscent,
+        fontBoundingBoxDescent: textMetrics.fontBoundingBoxDescent
+      }
+    }
     const id = `${element.value}${ctx.font}`
     const cacheTextMetrics = this.cacheMeasureText.get(id)
     if (cacheTextMetrics) {
