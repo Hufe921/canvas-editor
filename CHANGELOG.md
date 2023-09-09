@@ -1,3 +1,18 @@
+## [0.9.48](https://github.com/Hufe921/canvas-editor/compare/v0.9.47...v0.9.48) (2023-09-09)
+
+
+### Bug Fixes
+
+* control minimum width boundary ([05caccc](https://github.com/Hufe921/canvas-editor/commit/05caccc74c7d723f4ac357d161acf45364368f4b))
+
+
+### Features
+
+* add control minimum width option ([4b2bbfb](https://github.com/Hufe921/canvas-editor/commit/4b2bbfbe9a9bfe0fcad276dc16eb01b7015e6205))
+* custom letter class #279 ([de76977](https://github.com/Hufe921/canvas-editor/commit/de769778c04266ed08c5721a01670cdbf0992d2b)), closes [#279](https://github.com/Hufe921/canvas-editor/issues/279)
+
+
+
 ## [0.9.47](https://github.com/Hufe921/canvas-editor/compare/v0.9.46...v0.9.47) (2023-09-02)
 
 
