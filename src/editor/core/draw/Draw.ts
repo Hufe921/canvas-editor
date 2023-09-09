@@ -1335,7 +1335,7 @@ export class Draw {
             // 超出行宽时截断
             const rowRemainingWidth =
               availableWidth - curRow.width - metrics.width
-            const left = Math.min(rowRemainingWidth, extraWidth)
+            const left = Math.min(rowRemainingWidth, extraWidth) * scale
             rowElement.left = left
             curRow.width += left
           } else {
