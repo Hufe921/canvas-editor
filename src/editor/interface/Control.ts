@@ -1,6 +1,7 @@
 import { ControlType } from '../dataset/enum/Control'
 import { ICheckbox } from './Checkbox'
 import { IElement } from './Element'
+import { IRange } from './Range'
 
 export interface IValueSet {
   value: string
@@ -64,4 +65,23 @@ export interface IControlInstance {
   keydown(evt: KeyboardEvent): number
 
   cut(): number
+}
+
+export interface IControlContext {
+  range?: IRange
+  elementList?: IElement[]
+}
+
+export interface IGetControlValueOption {
+  conceptId: string
+}
+
+export type IGetControlValueResult = {
+  value: string | null
+  innerText: string | null
+}[]
+
+export interface ISetControlOption {
+  conceptId: string
+  value: string
 }

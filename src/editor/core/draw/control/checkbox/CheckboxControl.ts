@@ -1,6 +1,9 @@
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
-import { IControlInstance } from '../../../../interface/Control'
+import {
+  IControlContext,
+  IControlInstance
+} from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
 import { Control } from '../Control'
 
@@ -63,10 +66,10 @@ export class CheckboxControl implements IControlInstance {
     return -1
   }
 
-  public setSelect() {
+  public setSelect(context: IControlContext = {}) {
     const { control } = this.element
-    const elementList = this.control.getElementList()
-    const { startIndex } = this.control.getRange()
+    const elementList = context.elementList || this.control.getElementList()
+    const { startIndex } = context.range || this.control.getRange()
     const startElement = elementList[startIndex]
     const data: string[] = []
     // 向左查找

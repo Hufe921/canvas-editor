@@ -2,9 +2,13 @@ import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import {
   IControl,
+  IControlContext,
   IControlInitOption,
   IControlInstance,
-  IControlOption
+  IControlOption,
+  IGetControlValueOption,
+  IGetControlValueResult,
+  ISetControlOption
 } from '../../../interface/Control'
 import { IEditorData } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -13,6 +17,7 @@ import { IRange } from '../../../interface/Range'
 import { deepClone, nextTick, splitText } from '../../../utils'
 import {
   formatElementContext,
+  formatElementList,
   pickElementAttr,
   zipElementList
 } from '../../../utils/element'
@@ -401,5 +406,143 @@ export class Control {
       throw new Error('active control is null')
     }
     return this.activeControl.cut()
+  }
+
+  public getValueByConceptId(
+    payload: IGetControlValueOption
+  ): IGetControlValueResult {
+    const { conceptId } = payload
+    const elementList = [
+      ...this.draw.getHeaderElementList(),
+      ...this.draw.getOriginalMainElementList(),
+      ...this.draw.getFooterElementList()
+    ]
+    const result: IGetControlValueResult = []
+    let i = 0
+    while (i < elementList.length) {
+      const element = elementList[i]
+      i++
+      if (element?.control?.conceptId !== conceptId) continue
+      const { type, code, valueSets } = element.control!
+      let j = i
+      let textControlValue = ''
+      while (j < elementList.length) {
+        const nextElement = elementList[j]
+        if (nextElement.controlId !== element.controlId) break
+        if (
+          type === ControlType.TEXT &&
+          nextElement.controlComponent === ControlComponent.VALUE
+        ) {
+          textControlValue += nextElement.value
+        }
+        j++
+      }
+      if (type === ControlType.TEXT) {
+        result.push({
+          value: textControlValue || null,
+          innerText: textControlValue || null
+        })
+      } else if (type === ControlType.SELECT || type === ControlType.CHECKBOX) {
+        const innerText = code
+          ?.split(',')
+          .map(
+            selectCode =>
+              valueSets?.find(valueSet => valueSet.code === selectCode)?.value
+          )
+          .filter(Boolean)
+          .join('')
+        result.push({
+          value: code || null,
+          innerText: innerText || null
+        })
+      }
+      i = j
+    }
+    return result
+  }
+
+  public setValueByConceptId(payload: ISetControlOption) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    let isExistSet = false
+    const { conceptId, value } = payload
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (element?.control?.conceptId !== conceptId) continue
+        isExistSet = true
+        const { type } = element.control!
+        // 当前控件结束索引
+        let currentEndIndex = i
+        while (currentEndIndex < elementList.length) {
+          const nextElement = elementList[currentEndIndex]
+          if (nextElement.controlId !== element.controlId) break
+          currentEndIndex++
+        }
+        // 模拟光标选区上下文
+        const fakeRange = {
+          startIndex: i - 1,
+          endIndex: currentEndIndex - 2
+        }
+        const controlContext: IControlContext = {
+          range: fakeRange,
+          elementList
+        }
+        if (type === ControlType.TEXT) {
+          const formatValue = [{ value }]
+          formatElementList(formatValue, {
+            isHandleFirstElement: false,
+            editorOptions: this.draw.getOptions()
+          })
+          const text = new TextControl(element, this)
+          if (value) {
+            text.setValue(formatValue, controlContext)
+          } else {
+            text.clearValue(controlContext)
+          }
+        } else if (type === ControlType.SELECT) {
+          const select = new SelectControl(element, this)
+          if (value) {
+            select.setSelect(value, controlContext)
+          } else {
+            select.clearSelect(controlContext)
+          }
+        } else if (type === ControlType.CHECKBOX) {
+          const checkbox = new CheckboxControl(element, this)
+          const checkboxElementList = elementList.slice(
+            fakeRange.startIndex + 1,
+            fakeRange.endIndex + 1
+          )
+          const codes = value?.split(',') || []
+          for (const checkElement of checkboxElementList) {
+            if (checkElement.controlComponent === ControlComponent.CHECKBOX) {
+              const checkboxItem = checkElement.checkbox!
+              checkboxItem.value = codes.includes(checkboxItem.code!)
+            }
+          }
+          checkbox.setSelect(controlContext)
+        }
+        // 修改后控件结束索引
+        let newEndIndex = i
+        while (newEndIndex < elementList.length) {
+          const nextElement = elementList[newEndIndex]
+          if (nextElement.controlId !== element.controlId) break
+          newEndIndex++
+        }
+        i = newEndIndex
+      }
+    }
+    if (isExistSet) {
+      this.draw.render({
+        isSetCursor: false
+      })
+    }
   }
 }
