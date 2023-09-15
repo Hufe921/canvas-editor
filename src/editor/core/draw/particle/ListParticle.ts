@@ -76,8 +76,9 @@ export class ListParticle {
     }, 0)
     if (!count) return 0
     // 以递增样式最大宽度为准
-    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length)}${KeyMap.PERIOD
-      }`
+    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length)}${
+      KeyMap.PERIOD
+    }`
     const textMetrics = ctx.measureText(text)
     return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
   }
@@ -89,18 +90,14 @@ export class ListParticle {
   ) {
     const { elementList, offsetX, listIndex, ascent } = row
     const startElement = elementList[0]
-    const firstElement = elementList[1]
     if (startElement.value !== ZERO || startElement.listWrap) return
-    let tab = 0
-    if (firstElement && firstElement.type === ElementType.TAB) {
-      for (let i = 1; i < elementList.length; i++) {
-        const element = elementList[i]
-        const nextElement = elementList[i + 1]
-        if (element && element.type === ElementType.TAB) {
-          tab += this.options.defaultTabWidth
-          if (nextElement && nextElement.type !== ElementType.TAB) break
-        }
-      }
+    // tab width
+    let tabWidth = 0
+    const { defaultTabWidth, scale, defaultFont, defaultSize } = this.options
+    for (let i = 1; i < elementList.length; i++) {
+      const element = elementList[i]
+      if (element?.type !== ElementType.TAB) break
+      tabWidth += defaultTabWidth * scale
     }
     let text = ''
     if (startElement.listType === ListType.UL) {
@@ -116,9 +113,8 @@ export class ListParticle {
         leftTop: [startX, startY]
       }
     } = position
-    const x = startX - offsetX! + tab
+    const x = startX - offsetX! + tabWidth
     const y = startY + ascent
-    const { defaultFont, defaultSize, scale } = this.options
     ctx.save()
     ctx.font = `${defaultSize * scale}px ${defaultFont}`
     ctx.fillText(text, x, y)
