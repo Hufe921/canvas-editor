@@ -63,7 +63,7 @@ import {
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
-import { DeepRequired } from '../../interface/Common'
+import { DeepRequired, IPadding } from '../../interface/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
@@ -79,7 +79,6 @@ import { Footer } from './frame/Footer'
 import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
-import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
@@ -140,6 +139,8 @@ export class Draw {
   private selectionObserver: SelectionObserver
   private imageObserver: ImageObserver
 
+  private LETTER_REG: RegExp
+  private WORD_LIKE_REG: RegExp
   private rowList: IRow[]
   private pageRowList: IRow[][]
   private painterStyle: IElementStyle | null
@@ -219,6 +220,11 @@ export class Draw {
 
     this.workerManager = new WorkerManager(this)
 
+    const { letterClass } = options
+    this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
+    this.WORD_LIKE_REG = new RegExp(
+      `${letterClass.map(letter => `[^${letter}][${letter}]`).join('|')}`
+    )
     this.rowList = []
     this.pageRowList = []
     this.painterStyle = null
@@ -232,6 +238,10 @@ export class Draw {
       isInit: true,
       isSetCursor: false
     })
+  }
+
+  public getLetterReg(): RegExp {
+    return this.LETTER_REG
   }
 
   public getMode(): EditorMode {
@@ -358,8 +368,9 @@ export class Draw {
     return this.options.defaultBasicRowMarginHeight * this.options.scale
   }
 
-  public getTdPadding(): number {
-    return this.options.tdPadding * this.options.scale
+  public getTdPadding(): IPadding {
+    const { tdPadding, scale } = this.options
+    return <IPadding>tdPadding.map(m => m * scale)
   }
 
   public getContainer(): HTMLDivElement {
@@ -1037,6 +1048,8 @@ export class Draw {
     // 列表位置
     let listId: string | undefined
     let listIndex = 0
+    // 控件最小宽度
+    let controlRealWidth = 0
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
@@ -1079,7 +1092,8 @@ export class Draw {
         }
         metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
-        const tdGap = tdPadding * 2
+        const tdPaddingWidth = tdPadding[1] + tdPadding[3]
+        const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
@@ -1089,13 +1103,13 @@ export class Draw {
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const rowList = this.computeRowList(
-              (td.width! - tdGap) * scale,
+              (td.width! - tdPaddingWidth) * scale,
               td.value
             )
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTdHeight = (rowHeight + tdGap) / scale
+            const curTdHeight = (rowHeight + tdPaddingHeight) / scale
             // 内容高度大于当前单元格高度需增加
             if (td.height! < curTdHeight) {
               const extraHeight = curTdHeight - td.height!
@@ -1309,6 +1323,27 @@ export class Draw {
         metrics,
         style: this._getFont(element, scale)
       })
+      // 暂时只考虑非换行场景：控件开始时统计宽度，结束时消费宽度及还原
+      if (rowElement.control?.minWidth) {
+        if (rowElement.controlComponent) {
+          controlRealWidth += metrics.width
+        }
+        if (rowElement.controlComponent === ControlComponent.POSTFIX) {
+          const extraWidth = rowElement.control.minWidth - controlRealWidth
+          // 消费超出实际最小宽度的长度
+          if (extraWidth > 0) {
+            // 超出行宽时截断
+            const rowRemainingWidth =
+              availableWidth - curRow.width - metrics.width
+            const left = Math.min(rowRemainingWidth, extraWidth) * scale
+            rowElement.left = left
+            curRow.width += left
+          } else {
+            rowElement.left = 0
+          }
+          controlRealWidth = 0
+        }
+      }
       // 超过限定宽度
       const preElement = elementList[i - 1]
       let nextElement = elementList[i + 1]
@@ -1321,7 +1356,7 @@ export class Draw {
         ) {
           // 英文单词
           const word = `${preElement?.value || ''}${element.value}`
-          if (WORD_LIKE_REG.test(word)) {
+          if (this.WORD_LIKE_REG.test(word)) {
             const { width, endElement } = this.textParticle.measureWord(
               ctx,
               elementList,
@@ -1558,22 +1593,33 @@ export class Draw {
           this.blockParticle.render(pageNo, element, x, y)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
+          // 如果设置字宽、字间距需单独绘制
+          if (element.width || element.letterSpacing) {
+            this.textParticle.complete()
+          }
         }
         // 下划线记录
-        if (element.underline) {
+        if (element.underline || element.control?.underline) {
           const rowMargin =
             defaultBasicRowMarginHeight *
             (element.rowMargin || defaultRowMargin) *
             scale
+          // 元素偏移量
+          const left = element.left || 0
+          // 占位符不参与颜色计算
+          const color =
+            element.controlComponent === ControlComponent.PLACEHOLDER
+              ? undefined
+              : element.color
           this.underline.recordFillInfo(
             ctx,
-            x,
+            x - left,
             y + curRow.height - rowMargin,
-            metrics.width,
+            metrics.width + left,
             0,
-            element.color
+            color
           )
-        } else if (preElement?.underline) {
+        } else if (preElement?.underline || preElement?.control?.underline) {
           this.underline.render(ctx)
         }
         // 删除线记录
@@ -1637,7 +1683,7 @@ export class Draw {
         index++
         // 绘制表格内元素
         if (element.type === ElementType.TABLE) {
-          const tdGap = tdPadding * 2
+          const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           for (let t = 0; t < element.trList!.length; t++) {
             const tr = element.trList![t]
             for (let d = 0; d < tr.tdList!.length; d++) {
@@ -1648,7 +1694,7 @@ export class Draw {
                 rowList: td.rowList!,
                 pageNo,
                 startIndex: 0,
-                innerWidth: (td.width! - tdGap) * scale,
+                innerWidth: (td.width! - tdPaddingWidth) * scale,
                 zone
               })
             }

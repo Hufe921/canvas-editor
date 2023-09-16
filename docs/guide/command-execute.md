@@ -419,6 +419,16 @@ instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
 instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
+## executeTableTdBorderType
+
+功能：表格单元格边框类型
+
+用法：
+
+```javascript
+instance.command.executeTableTdBorderType(payload: TdBorder)
+```
+
 ## executeTableTdBackgroundColor
 
 功能：表格单元格背景色
@@ -802,4 +812,14 @@ instance.command.executeDeleteGroup(groupId: string)
 
 ```javascript
 instance.command.executeLocationGroup(groupId: string)
+```
+
+## executeSetControlValue
+
+功能：设置控件值
+
+用法：
+
+```javascript
+instance.command.executeSetControlValue(payload: ISetControlOption)
 ```

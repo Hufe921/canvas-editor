@@ -42,8 +42,8 @@ interface IEditorOption {
   marginIndicatorColor?: string // 页边距指示器颜色。默认：#BABABA
   margins?: IMargin // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode // 纸张模式：连页、分页。默认：分页
-  tdPadding?: number // 单元格内边距。默认：5
-  defaultTrMinHeight?: number // 默认表格行最小高度。默认：40
+  tdPadding?: IPadding // 单元格内边距。默认：[0, 5, 5, 5]
+  defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
   defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
   defaultHyperlinkColor?: string // 默认超链接颜色。默认：#0000FF
   header?: IHeader // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
@@ -51,10 +51,11 @@ interface IEditorOption {
   pageNumber?: IPageNumber // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
   paperDirection?: PaperDirection // 纸张方向：纵向、横向
   inactiveAlpha?: number // 正文内容失焦时透明度。默认值：0.6
-  historyMaxRecordCount: number // 历史（撤销重做）最大记录次数。默认：100次
-  printPixelRatio: number // 打印像素比率（值越大越清晰，但尺寸越大）。默认：3
-  maskMargin: IMargin // 编辑器上的遮盖边距（如悬浮到编辑器上的菜单栏、底部工具栏）。默认：[0, 0, 0, 0]
-  wordBreak: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
+  historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次
+  printPixelRatio?: number // 打印像素比率（值越大越清晰，但尺寸越大）。默认：3
+  maskMargin?: IMargin // 编辑器上的遮盖边距（如悬浮到编辑器上的菜单栏、底部工具栏）。默认：[0, 0, 0, 0]
+  letterClass? string[] // 排版支持的字母类。默认：a-zA-Z。内置可选择的字母表类：LETTER_CLASS
+  wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
   watermark?: IWatermark // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}
   checkbox?: ICheckboxOption // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; fontStyle?: string;}
@@ -62,6 +63,7 @@ interface IEditorOption {
   title?: ITitleOption // 标题配置。{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
   placeholder?: IPlaceholder // 编辑器空白占位文本
   group?: IGroup // 成组配置。{opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
+  pageBreak?: IPageBreak // 分页符配置。{font?:string; fontSize?:number; lineDash?:number[];}
 }
 ```
 

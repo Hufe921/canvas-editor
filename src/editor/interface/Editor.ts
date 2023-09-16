@@ -6,12 +6,14 @@ import {
   WordBreak
 } from '../dataset/enum/Editor'
 import { ICheckboxOption } from './Checkbox'
+import { IPadding } from './Common'
 import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
 import { IFooter } from './Footer'
 import { IGroup } from './Group'
 import { IHeader } from './Header'
 import { IMargin } from './Margin'
+import { IPageBreak } from './PageBreak'
 import { IPageNumber } from './PageNumber'
 import { IPlaceholder } from './Placeholder'
 import { ITitleOption } from './Title'
@@ -52,7 +54,7 @@ export interface IEditorOption {
   marginIndicatorColor?: string
   margins?: IMargin
   pageMode?: PageMode
-  tdPadding?: number
+  tdPadding?: IPadding
   defaultTrMinHeight?: number
   defaultColMinWidth?: number
   defaultHyperlinkColor?: string
@@ -61,6 +63,7 @@ export interface IEditorOption {
   historyMaxRecordCount?: number
   printPixelRatio?: number
   maskMargin?: IMargin
+  letterClass?: string[]
   wordBreak?: WordBreak
   header?: IHeader
   footer?: IFooter
@@ -72,6 +75,7 @@ export interface IEditorOption {
   title?: ITitleOption
   placeholder?: IPlaceholder
   group?: IGroup
+  pageBreak?: IPageBreak
 }
 
 export interface IEditorResult {

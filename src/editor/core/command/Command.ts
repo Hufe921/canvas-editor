@@ -43,6 +43,7 @@ export class Command {
   public executeCancelMergeTableCell: CommandAdapt['cancelMergeTableCell']
   public executeTableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
   public executeTableBorderType: CommandAdapt['tableBorderType']
+  public executeTableTdBorderType: CommandAdapt['tableTdBorderType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
   public executeTableSelectAll: CommandAdapt['tableSelectAll']
   public executeImage: CommandAdapt['image']
@@ -80,6 +81,7 @@ export class Command {
   public executeSetGroup: CommandAdapt['setGroup']
   public executeDeleteGroup: CommandAdapt['deleteGroup']
   public executeLocationGroup: CommandAdapt['locationGroup']
+  public executeSetControlValue: CommandAdapt['setControlValue']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -95,6 +97,7 @@ export class Command {
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
+  public getControlValue: CommandAdapt['getControlValue']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -143,6 +146,7 @@ export class Command {
     this.executeCancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     this.executeTableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
     this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
+    this.executeTableTdBorderType = adapt.tableTdBorderType.bind(adapt)
     this.executeTableTdBackgroundColor =
       adapt.tableTdBackgroundColor.bind(adapt)
     this.executeTableSelectAll = adapt.tableSelectAll.bind(adapt)
@@ -199,5 +203,8 @@ export class Command {
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
+    // 控件
+    this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.getControlValue = adapt.getControlValue.bind(adapt)
   }
 }

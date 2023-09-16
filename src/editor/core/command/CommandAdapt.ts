@@ -13,11 +13,16 @@ import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
 import { RowFlex } from '../../dataset/enum/Row'
-import { TableBorder } from '../../dataset/enum/table/Table'
+import { TableBorder, TdBorder } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
 import { DeepRequired } from '../../interface/Common'
+import {
+  IGetControlValueOption,
+  IGetControlValueResult,
+  ISetControlOption
+} from '../../interface/Control'
 import {
   IAppendElementListOption,
   IDrawImagePayload,
@@ -1227,6 +1232,27 @@ export class CommandAdapt {
     })
   }
 
+  public tableTdBorderType(payload: TdBorder) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const rowCol = this.draw.getTableParticle().getRangeRowCol()
+    if (!rowCol) return
+    const tdList = rowCol.flat()
+    // 存在则设置边框类型，否则取消设置
+    const isSetBorderType = tdList.some(td => td.borderType !== payload)
+    tdList.forEach(td => {
+      if (isSetBorderType) {
+        td.borderType = payload
+      } else {
+        delete td.borderType
+      }
+    })
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
   public tableTdBackgroundColor(payload: string) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
@@ -1982,5 +2008,17 @@ export class CommandAdapt {
       isCompute: false,
       isSubmitHistory: false
     })
+  }
+
+  public getControlValue(
+    payload: IGetControlValueOption
+  ): IGetControlValueResult | null {
+    return this.draw.getControl().getValueByConceptId(payload)
+  }
+
+  public setControlValue(payload: ISetControlOption) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.getControl().setValueByConceptId(payload)
   }
 }

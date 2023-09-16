@@ -14,6 +14,7 @@ import {
   EDITOR_ELEMENT_ZIP_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
+  TABLE_TD_ZIP_ATTR,
   TEXTLIKE_ELEMENT_TYPE
 } from '../dataset/constant/Element'
 import {
@@ -483,12 +484,13 @@ export function zipElementList(payload: IElement[]): IElement[] {
               rowspan: td.rowspan,
               value: zipElementList(td.value)
             }
-            if (td.verticalAlign) {
-              zipTd.verticalAlign = td.verticalAlign
-            }
-            if (td.backgroundColor) {
-              zipTd.backgroundColor = td.backgroundColor
-            }
+            // 压缩单元格属性
+            TABLE_TD_ZIP_ATTR.forEach(attr => {
+              const value = td[attr] as never
+              if (value !== undefined) {
+                zipTd[attr] = value
+              }
+            })
             tr.tdList[d] = zipTd
           }
         }

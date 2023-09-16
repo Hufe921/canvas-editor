@@ -43,7 +43,9 @@
       "border": "表格边框",
       "borderAll": "所有框线",
       "borderEmpty": "无框线",
-      "borderExternal": "外侧框线"
+      "borderExternal": "外侧框线",
+      "borderTd": "单元格边框",
+      "borderTdBottom": "下边框"
     }
   },
   "datePicker": {
@@ -69,5 +71,8 @@
   "frame": {
     "header": "页眉",
     "footer": "页脚"
+  },
+  "pageBreak": {
+    "displayName": "分页符"
   }
 }

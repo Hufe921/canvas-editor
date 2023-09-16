@@ -136,6 +136,7 @@ export interface IElementPosition {
   rowNo: number
   ascent: number
   lineHeight: number
+  left: number
   metrics: IElementMetrics
   isFirstLetter: boolean
   isLastLetter: boolean

@@ -1,19 +1,18 @@
+import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
+import { I18n } from '../../i18n/I18n'
 import { Draw } from '../Draw'
 
 export class PageBreakParticle {
-  static readonly font: string = 'Yahei'
-  static readonly fontSize: number = 12
-  static readonly displayName: string = '分页符'
-  static readonly lineDash: number[] = [3, 1]
-
   private draw: Draw
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
+  private i18n: I18n
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
+    this.i18n = draw.getI18n()
   }
 
   public render(
@@ -22,7 +21,10 @@ export class PageBreakParticle {
     x: number,
     y: number
   ) {
-    const { font, fontSize, displayName, lineDash } = PageBreakParticle
+    const {
+      pageBreak: { font, fontSize, lineDash }
+    } = this.options
+    const displayName = this.i18n.t('pageBreak.displayName')
     const { scale, defaultRowMargin } = this.options
     const size = fontSize * scale
     const elementWidth = element.width!
