@@ -1,3 +1,25 @@
+## [0.9.49](https://github.com/Hufe921/canvas-editor/compare/v0.9.48...v0.9.49) (2023-09-16)
+
+
+### Bug Fixes
+
+* control minimum width when scaling ([05ddc2d](https://github.com/Hufe921/canvas-editor/commit/05ddc2db290e58a4ec0fb1b00ad5d64ce7f4cf3a))
+* draw text element letter space error #282 ([c35f8ab](https://github.com/Hufe921/canvas-editor/commit/c35f8ab82c57849269a09fbad9d54d5085065d22)), closes [#282](https://github.com/Hufe921/canvas-editor/issues/282)
+* omitObject function missing reference ([c45317e](https://github.com/Hufe921/canvas-editor/commit/c45317eced93e3d79129aea24776a8629d058050))
+
+
+### Features
+
+* add set and get control value api #278 ([f754741](https://github.com/Hufe921/canvas-editor/commit/f754741f32de6c5d5c27d15dfc9fc31e284d29dc)), closes [#278](https://github.com/Hufe921/canvas-editor/issues/278)
+* text element width #277 ([bb64626](https://github.com/Hufe921/canvas-editor/commit/bb646266b10897c3097ada5932f9b7cef317aebe)), closes [#277](https://github.com/Hufe921/canvas-editor/issues/277)
+
+
+### Performance Improvements
+
+* adjusted the tab draw in the list style #283 ([fc0fdb2](https://github.com/Hufe921/canvas-editor/commit/fc0fdb2fe36966e3b8a51107d9929ca137e5681c)), closes [#283](https://github.com/Hufe921/canvas-editor/issues/283)
+
+
+
 ## [0.9.48](https://github.com/Hufe921/canvas-editor/compare/v0.9.47...v0.9.48) (2023-09-09)
 
 
