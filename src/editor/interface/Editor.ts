@@ -39,6 +39,7 @@ export interface IEditorOption {
   height?: number
   scale?: number
   pageGap?: number
+  backgroundColor?: string
   underlineColor?: string
   strikeoutColor?: string
   rangeColor?: string
