@@ -178,3 +178,16 @@ const locale = await instance.command.getLocale()
 ```javascript
 const groupIds = await instance.command.getGroupIds()
 ```
+
+## getControlValue
+
+功能：获取控件值
+
+用法：
+
+```javascript
+const {
+  value: string | null
+  innerText: string | null
+} = await instance.command.getControlValue(payload: IGetControlValueOption)
+```

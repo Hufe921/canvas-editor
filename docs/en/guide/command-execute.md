@@ -813,3 +813,13 @@ Usage:
 ```javascript
 instance.command.executeLocationGroup(groupId: string)
 ```
+
+## executeSetControlValue
+
+Feature: Set control value
+
+Usage:
+
+```javascript
+instance.command.executeSetControlValue(payload: ISetControlOption)
+```

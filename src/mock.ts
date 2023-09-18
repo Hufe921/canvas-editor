@@ -103,6 +103,7 @@ elementList.splice(12, 0, {
   type: ElementType.CONTROL,
   value: '',
   control: {
+    conceptId: '1',
     type: ControlType.TEXT,
     value: null,
     placeholder: '其他补充',
@@ -116,6 +117,7 @@ elementList.splice(94, 0, {
   type: ElementType.CONTROL,
   value: '',
   control: {
+    conceptId: '2',
     type: ControlType.SELECT,
     value: null,
     code: null,
@@ -337,6 +339,7 @@ elementList.push(
     {
       type: ElementType.CONTROL,
       control: {
+        conceptId: '3',
         type: ControlType.CHECKBOX,
         code: '98175',
         value: '',
@@ -406,6 +409,7 @@ elementList.push(
       type: ElementType.CONTROL,
       value: '',
       control: {
+        conceptId: '4',
         type: ControlType.TEXT,
         value: null,
         placeholder: '',

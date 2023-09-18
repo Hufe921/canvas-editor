@@ -19,6 +19,11 @@ import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
 import { DeepRequired } from '../../interface/Common'
 import {
+  IGetControlValueOption,
+  IGetControlValueResult,
+  ISetControlOption
+} from '../../interface/Control'
+import {
   IAppendElementListOption,
   IDrawImagePayload,
   IForceUpdateOption,
@@ -2003,5 +2008,17 @@ export class CommandAdapt {
       isCompute: false,
       isSubmitHistory: false
     })
+  }
+
+  public getControlValue(
+    payload: IGetControlValueOption
+  ): IGetControlValueResult | null {
+    return this.draw.getControl().getValueByConceptId(payload)
+  }
+
+  public setControlValue(payload: ISetControlOption) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.getControl().setValueByConceptId(payload)
   }
 }

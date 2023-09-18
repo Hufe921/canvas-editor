@@ -813,3 +813,13 @@ instance.command.executeDeleteGroup(groupId: string)
 ```javascript
 instance.command.executeLocationGroup(groupId: string)
 ```
+
+## executeSetControlValue
+
+功能：设置控件值
+
+用法：
+
+```javascript
+instance.command.executeSetControlValue(payload: ISetControlOption)
+```

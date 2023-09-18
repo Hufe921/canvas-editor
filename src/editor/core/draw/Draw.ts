@@ -1593,9 +1593,9 @@ export class Draw {
           this.blockParticle.render(pageNo, element, x, y)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
-          // 如果设置字宽需单独绘制
-          if (element.width) {
-            this._drawRichText(ctx)
+          // 如果设置字宽、字间距需单独绘制
+          if (element.width || element.letterSpacing) {
+            this.textParticle.complete()
           }
         }
         // 下划线记录

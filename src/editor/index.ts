@@ -140,6 +140,7 @@ export default class Editor {
       height: 1123,
       scale: 1,
       pageGap: 20,
+      backgroundColor: '#FFFFFF',
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,

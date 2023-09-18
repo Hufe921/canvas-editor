@@ -178,3 +178,16 @@ Usage:
 ```javascript
 const groupIds = await instance.command.getGroupIds()
 ```
+
+## getControlValue
+
+Feature: Get control value
+
+Usage:
+
+```javascript
+const {
+  value: string | null
+  innerText: string | null
+} = await instance.command.getControlValue(payload: IGetControlValueOption)
+```

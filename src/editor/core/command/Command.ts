@@ -81,6 +81,7 @@ export class Command {
   public executeSetGroup: CommandAdapt['setGroup']
   public executeDeleteGroup: CommandAdapt['deleteGroup']
   public executeLocationGroup: CommandAdapt['locationGroup']
+  public executeSetControlValue: CommandAdapt['setControlValue']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -96,6 +97,7 @@ export class Command {
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
+  public getControlValue: CommandAdapt['getControlValue']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -201,5 +203,8 @@ export class Command {
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
+    // 控件
+    this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.getControlValue = adapt.getControlValue.bind(adapt)
   }
 }
