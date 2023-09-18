@@ -1,9 +1,12 @@
 import { EditorComponent, EDITOR_COMPONENT } from '../../editor'
 import './dialog.css'
 
-export interface IDialogData {
+export interface IDialogForm {
   type: string
   label?: string
+  labelPosition?: string
+  labelDirection?: string
+  id?: string
   name: string
   value?: string
   options?: { label: string; value: string }[]
@@ -11,6 +14,23 @@ export interface IDialogData {
   width?: number
   height?: number
   required?: boolean
+}
+
+export interface IDialogTab {
+  data?: IDialogForm[]
+  name: string
+}
+
+export interface IDialogTabbar {
+  tabs: IDialogTab[]
+  tabsPosition?: string
+  tabsDirection?: string
+}
+
+export interface IDialogData {
+  type?: string
+  form?: IDialogForm[]
+  tab?: IDialogTabbar
 }
 
 export interface IDialogConfirm {
@@ -23,7 +43,9 @@ export interface IDialogOptions {
   onCancel?: () => void
   onConfirm?: (payload: IDialogConfirm[]) => void
   title: string
-  data: IDialogData[]
+  data: IDialogData
+  textCancel?: string
+  textConfirm?: string
 }
 
 export class Dialog {
@@ -45,7 +67,7 @@ export class Dialog {
   }
 
   private _render() {
-    const { title, data, onClose, onCancel, onConfirm } = this.options
+    const { title, data, onClose, onCancel, onConfirm, textCancel, textConfirm } = this.options
     // 渲染遮罩层
     const mask = document.createElement('div')
     mask.classList.add('dialog-mask')
@@ -79,53 +101,77 @@ export class Dialog {
     const optionContainer = document.createElement('div')
     optionContainer.classList.add('dialog-option')
     // 选项
-    for (let i = 0; i < data.length; i++) {
-      const option = data[i]
-      const optionItemContainer = document.createElement('div')
-      optionItemContainer.classList.add('dialog-option__item')
-      // 选项名称
-      if (option.label) {
-        const optionName = document.createElement('span')
-        optionName.append(document.createTextNode(option.label))
-        optionItemContainer.append(optionName)
-        if (option.required) {
-          optionName.classList.add('dialog-option__item--require')
+    if (!data.type || data.type === 'form') {
+      const { form } = data
+      if (form) {
+        for (let i = 0; i < form.length; i++) {
+          const option = form[i]
+          this.appendOptionItemOnContainer(optionContainer, option, this.inputList)
         }
       }
-      // 选项输入框
-      let optionInput:
-        | HTMLInputElement
-        | HTMLTextAreaElement
-        | HTMLSelectElement
-      if (option.type === 'select') {
-        optionInput = document.createElement('select')
-        option.options?.forEach(item => {
-          const optionItem = document.createElement('option')
-          optionItem.value = item.value
-          optionItem.label = item.label
-          optionInput.append(optionItem)
-        })
-      } else if (option.type === 'textarea') {
-        optionInput = document.createElement('textarea')
-      } else {
-        optionInput = document.createElement('input')
-        optionInput.type = option.type
+    } else {
+      const tabbar = data.tab
+      if (tabbar && tabbar.tabs) {
+        const { tabs } = tabbar
+        const optionTabHeaderContainer = document.createElement('div')
+        const optionListHeader = document.createElement('ul')
+        optionListHeader.classList.add('tabbar-header')
+        const optionTabBodyContainer = document.createElement('div')
+        optionTabBodyContainer.classList.add('tabbar-body')
+
+        for (let i = 0; i < tabs.length; i++) {
+          const tab = tabs[i]
+          const { name } = tab
+          const optionItemListHeader = document.createElement('li')
+          optionItemListHeader.innerText = name
+          optionItemListHeader.classList.add('tabbar-header__title', `tab-${i}`)
+          optionItemListHeader.setAttribute('data-tabindex', i.toString())
+          if (i === 0) {
+            optionItemListHeader.classList.add('active')
+          }
+          optionListHeader.append(optionItemListHeader)
+        }
+        optionTabHeaderContainer.append(optionListHeader)
+
+        for (let i = 0; i < tabs.length; i++) {
+          const tab = tabs[i]
+          const { data: form } = tab
+          if (form) {
+            const optionItemBody = document.createElement('div')
+            optionItemBody.classList.add(`tabbar-body__form`, `tab-${i}`)
+            optionItemBody.setAttribute('data-tabindex', i.toString())
+            if (i === 0) {
+              optionItemBody.classList.add('active')
+            }
+
+            for (let i = 0; i < form.length; i++) {
+              const option = form[i]
+              this.appendOptionItemOnContainer(optionItemBody, option, this.inputList)
+            }
+            optionTabBodyContainer.append(optionItemBody)
+          }
+        }
+        const optionTabContainer = document.createElement('div')
+        optionTabContainer.classList.add('tabbar')
+        optionTabContainer.append(optionTabHeaderContainer)
+        optionTabContainer.append(optionTabBodyContainer)
+        optionContainer.append(optionTabContainer)
+        setTimeout(() => {
+          const liTitles = document.getElementsByClassName('tabbar-header__title')
+          for (let i = 0; i < liTitles.length; i++) {
+            const li = liTitles.item(i)
+            li?.addEventListener('click', () => {
+              document.querySelector('.tabbar-header .active')?.classList.remove('active')
+              document.querySelector('.tabbar-body .active')?.classList.remove('active')
+              const index = li.getAttribute('data-tabindex')
+              document.querySelector(`.tabbar-header .tab-${index}`)?.classList.add('active')
+              document.querySelector(`.tabbar-body .tab-${index}`)?.classList.add('active')
+            }, false)
+          }
+        }, 100)
       }
-      if (option.width) {
-        optionInput.style.width = `${option.width}px`
-      }
-      if (option.height) {
-        optionInput.style.height = `${option.height}px`
-      }
-      optionInput.name = option.name
-      optionInput.value = option.value || ''
-      if (!(optionInput instanceof HTMLSelectElement)) {
-        optionInput.placeholder = option.placeholder || ''
-      }
-      optionItemContainer.append(optionInput)
-      optionContainer.append(optionItemContainer)
-      this.inputList.push(optionInput)
     }
+
     dialogContainer.append(optionContainer)
     // 按钮容器
     const menuContainer = document.createElement('div')
@@ -133,7 +179,7 @@ export class Dialog {
     // 取消按钮
     const cancelBtn = document.createElement('button')
     cancelBtn.classList.add('dialog-menu__cancel')
-    cancelBtn.append(document.createTextNode('取消'))
+    cancelBtn.append(document.createTextNode((textCancel ? textCancel : '取消')))
     cancelBtn.type = 'button'
     cancelBtn.onclick = () => {
       if (onCancel) {
@@ -144,14 +190,18 @@ export class Dialog {
     menuContainer.append(cancelBtn)
     // 确认按钮
     const confirmBtn = document.createElement('button')
-    confirmBtn.append(document.createTextNode('确定'))
+    confirmBtn.append(document.createTextNode((textConfirm ? textConfirm : '确定')))
     confirmBtn.type = 'submit'
     confirmBtn.onclick = () => {
       if (onConfirm) {
-        const payload = this.inputList.map<IDialogConfirm>(input => ({
-          name: input.name,
-          value: input.value
-        }))
+        const payload = this.inputList.map((input) => {
+          let value = input.type === 'file' ? input.getAttribute('data-src') : input.value
+          value = value || ''
+          return {
+            name: input.name,
+            value
+          }
+        })
         onConfirm(payload)
       }
       this._dispose()
@@ -167,5 +217,98 @@ export class Dialog {
   private _dispose() {
     this.mask?.remove()
     this.container?.remove()
+  }
+
+  private createOptionItemContainer(option: IDialogForm) {
+    const optionItemContainer = document.createElement('div')
+    optionItemContainer.classList.add('dialog-option__item')
+    // 选项输入框
+    let optionInput:
+      | HTMLInputElement
+      | HTMLTextAreaElement
+      | HTMLSelectElement
+
+    // 选项名称
+    if (option.type === 'select') {
+      optionInput = document.createElement('select')
+      option.options?.forEach(item => {
+        const optionItem = document.createElement('option')
+        optionItem.value = item.value
+        optionItem.label = item.label
+        optionInput.append(optionItem)
+      })
+    } else if (option.type === 'textarea') {
+      optionInput = document.createElement('textarea')
+    } else {
+      optionInput = document.createElement('input')
+      optionInput.type = option.type
+      if (option.type === 'file') {
+        optionInput.onchange = function (event) {
+          const element = event.currentTarget as HTMLInputElement
+          const fileList: FileList | null = element.files
+          if (fileList) {
+            for (let i = 0; i < fileList.length; i++) {
+              const FR = new FileReader()
+              FR.onload = function (event) {
+                const result = event.target?.result || ''
+                optionInput.setAttribute('data-src', result.toString())
+              }
+              FR.readAsDataURL(fileList[i])
+            }
+          }
+        }
+      }
+    }
+    if (option.width) {
+      optionInput.style.width = `${option.width}px`
+    }
+    if (option.height) {
+      optionInput.style.height = `${option.height}px`
+    }
+    if (option.id) {
+      optionInput.id = option.id
+    }
+    optionInput.name = option.name
+    optionInput.value = option.type !== 'file' ? option.value || '' : ''
+    if (!(optionInput instanceof HTMLSelectElement)) {
+      optionInput.placeholder = option.placeholder || ''
+    }
+    optionItemContainer.append(optionInput)
+    if (option.label) {
+      const optionName = document.createElement('label')
+      optionName.append(document.createTextNode(option.label))
+      if (option.labelDirection && option.labelDirection === 'right') {
+        if (option.labelPosition && option.labelPosition === 'top') {
+          optionItemContainer.prepend(optionName)
+        } else {
+          optionItemContainer.append(optionName)
+        }
+        optionItemContainer.classList.add('dialog-option__item--end')
+      } else {
+        optionItemContainer.prepend(optionName)
+      }
+      if (option.id) {
+        optionName.setAttribute('for', option.id)
+      }
+      if (option.required) {
+        optionName.classList.add('dialog-option__item--require')
+      }
+      if (option.labelPosition && option.labelPosition === 'top') {
+        optionItemContainer.classList.add('dialog-option__item--row')
+      }
+    }
+    return {
+      optionItemContainer,
+      optionInput
+    }
+  }
+  private appendOptionItemOnContainer(
+    optionContainer: HTMLDivElement | HTMLUListElement,
+    option: IDialogForm,
+    inputList: (HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement)[]
+  ) {
+    const { optionItemContainer, optionInput } = this.createOptionItemContainer(option)
+    optionContainer.append(optionItemContainer)
+    inputList.push(optionInput)
   }
 }

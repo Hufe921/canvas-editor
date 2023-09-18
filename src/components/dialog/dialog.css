@@ -35,7 +35,7 @@
 .dialog-title {
   position: relative;
   border-bottom: 1px solid #e2e6ed;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   height: 60px;
   display: flex;
   align-items: center;
@@ -57,11 +57,28 @@
   justify-content: space-between;
 }
 
-.dialog-option__item span {
+.dialog-option__item--row {
+  align-items: start !important;
+  justify-content: start !important;
+  flex-direction: column !important;
+}
+
+.dialog-option__item--end {
+  align-items: end !important;
+}
+
+.dialog-option__item label {
   margin-right: 12px;
   font-size: 14px;
   color: #3d4757;
   position: relative;
+  cursor: pointer;
+}
+
+.dialog-option__item--row label {
+  margin-right: 0 !important;
+  margin-bottom: 5px;
+  margin-left: 9px;
 }
 
 .dialog-option__item input,
@@ -80,6 +97,13 @@
   font-family: inherit;
 }
 
+
+.dialog-option__item.dialog-option__item--row input,
+.dialog-option__item.dialog-option__item--row textarea,
+.dialog-option__item.dialog-option__item--row select {
+  width: 100%;
+}
+
 .dialog-option__item input:focus,
 .dialog-option__item textarea:focus {
   border-color: #4991f2;
@@ -89,8 +113,8 @@
   content: "*";
   color: #f56c6c;
   margin-right: 4px;
-  position: absolute;
-  left: -8px;
+  position: relative;
+  left: -4px;
 }
 
 .dialog-menu {
@@ -128,4 +152,54 @@
 .dialog-menu button[type='submit']:hover {
   background: #5b9cf3;
   border-color: #5b9cf3;
+}
+
+.tabbar-header {
+  display: flex;
+  margin: 0;
+  margin-bottom: 0px;
+  padding: 0;
+  list-style: none;
+  position: relative;
+  border-bottom: 1px solid rgba(0, 0, 0, .1);
+  margin-bottom: 5px;
+  max-width: 400px;
+  overflow-x: auto;
+}
+
+.tabbar-header li {
+  flex: 0 0 auto;
+  max-width: 136px;
+  max-height: 45px;
+  padding: 12px 24px;
+  margin-bottom: 3px;
+  cursor: pointer;
+}
+
+.tabbar-header li a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #000;
+}
+
+.tabbar-header li.active {
+  border-bottom: 2px solid rgba(0, 0, 0, 0.24);
+}
+
+.tabbar-header li:hover {
+  background-color: rgba(0,0,0,.1);
+}
+
+.tabbar-body {
+  border: 1px solid rgba(0,0,0,.1);
+  padding: 11px;
+  margin-bottom: 10px;
+}
+
+.tabbar-body__form {
+  display: none;
+}
+
+.tabbar .active {
+  display: block;
 }

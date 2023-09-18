@@ -417,22 +417,24 @@ window.onload = function () {
     console.log('hyperlink')
     new Dialog({
       title: '超链接',
-      data: [
-        {
-          type: 'text',
-          label: '文本',
-          name: 'name',
-          required: true,
-          placeholder: '请输入文本'
-        },
-        {
-          type: 'text',
-          label: '链接',
-          name: 'url',
-          required: true,
-          placeholder: '请输入链接'
-        }
-      ],
+      data: {
+        form: [
+          {
+            type: 'text',
+            label: '文本',
+            name: 'name',
+            required: true,
+            placeholder: '请输入文本'
+          },
+          {
+            type: 'text',
+            label: '链接',
+            name: 'url',
+            required: true,
+            placeholder: '请输入链接'
+          }
+        ]
+      },
       onConfirm: payload => {
         const name = payload.find(p => p.name === 'name')?.value
         if (!name) return
@@ -497,29 +499,31 @@ window.onload = function () {
     if (menu === 'add') {
       new Dialog({
         title: '水印',
-        data: [
-          {
-            type: 'text',
-            label: '内容',
-            name: 'data',
-            required: true,
-            placeholder: '请输入内容'
-          },
-          {
-            type: 'color',
-            label: '颜色',
-            name: 'color',
-            required: true,
-            value: '#AEB5C0'
-          },
-          {
-            type: 'number',
-            label: '字体大小',
-            name: 'size',
-            required: true,
-            value: '120'
-          }
-        ],
+        data: {
+          form: [
+            {
+              type: 'text',
+              label: '内容',
+              name: 'data',
+              required: true,
+              placeholder: '请输入内容'
+            },
+            {
+              type: 'color',
+              label: '颜色',
+              name: 'color',
+              required: true,
+              value: '#AEB5C0'
+            },
+            {
+              type: 'number',
+              label: '字体大小',
+              name: 'size',
+              required: true,
+              value: '120'
+            }
+          ]
+        },
         onConfirm: payload => {
           const nullableIndex = payload.findIndex(p => !p.value)
           if (~nullableIndex) return
@@ -546,15 +550,17 @@ window.onload = function () {
     console.log('codeblock')
     new Dialog({
       title: '代码块',
-      data: [
-        {
-          type: 'textarea',
-          name: 'codeblock',
-          placeholder: '请输入代码',
-          width: 500,
-          height: 300
-        }
-      ],
+      data: {
+        form: [
+          {
+            type: 'textarea',
+            name: 'codeblock',
+            placeholder: '请输入代码',
+            width: 500,
+            height: 300
+          }
+        ]
+      },
       onConfirm: payload => {
         const codeblock = payload.find(p => p.name === 'codeblock')?.value
         if (!codeblock) return
@@ -605,21 +611,23 @@ window.onload = function () {
       case ControlType.TEXT:
         new Dialog({
           title: '文本控件',
-          data: [
-            {
-              type: 'text',
-              label: '占位符',
-              name: 'placeholder',
-              required: true,
-              placeholder: '请输入占位符'
-            },
-            {
-              type: 'text',
-              label: '默认值',
-              name: 'value',
-              placeholder: '请输入默认值'
-            }
-          ],
+          data: {
+            form: [
+              {
+                type: 'text',
+                label: '占位符',
+                name: 'placeholder',
+                required: true,
+                placeholder: '请输入占位符'
+              },
+              {
+                type: 'text',
+                label: '默认值',
+                name: 'value',
+                placeholder: '请输入默认值'
+              }
+            ]
+          },
           onConfirm: payload => {
             const placeholder = payload.find(
               p => p.name === 'placeholder'
@@ -649,29 +657,31 @@ window.onload = function () {
       case ControlType.SELECT:
         new Dialog({
           title: '列举控件',
-          data: [
-            {
-              type: 'text',
-              label: '占位符',
-              name: 'placeholder',
-              required: true,
-              placeholder: '请输入占位符'
-            },
-            {
-              type: 'text',
-              label: '默认值',
-              name: 'code',
-              placeholder: '请输入默认值'
-            },
-            {
-              type: 'textarea',
-              label: '值集',
-              name: 'valueSets',
-              required: true,
-              height: 100,
-              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
-            }
-          ],
+          data: {
+            form: [
+              {
+                type: 'text',
+                label: '占位符',
+                name: 'placeholder',
+                required: true,
+                placeholder: '请输入占位符'
+              },
+              {
+                type: 'text',
+                label: '默认值',
+                name: 'code',
+                placeholder: '请输入默认值'
+              },
+              {
+                type: 'textarea',
+                label: '值集',
+                name: 'valueSets',
+                required: true,
+                height: 100,
+                placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+              }
+            ]
+          },
           onConfirm: payload => {
             const placeholder = payload.find(
               p => p.name === 'placeholder'
@@ -699,22 +709,24 @@ window.onload = function () {
       case ControlType.CHECKBOX:
         new Dialog({
           title: '复选框控件',
-          data: [
-            {
-              type: 'text',
-              label: '默认值',
-              name: 'code',
-              placeholder: '请输入默认值，多个值以英文逗号分割'
-            },
-            {
-              type: 'textarea',
-              label: '值集',
-              name: 'valueSets',
-              required: true,
-              height: 100,
-              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
-            }
-          ],
+          data: {
+            form: [
+              {
+                type: 'text',
+                label: '默认值',
+                name: 'code',
+                placeholder: '请输入默认值，多个值以英文逗号分割'
+              },
+              {
+                type: 'textarea',
+                label: '值集',
+                name: 'valueSets',
+                required: true,
+                height: 100,
+                placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+              }
+            ]
+          },
           onConfirm: payload => {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
@@ -757,14 +769,16 @@ window.onload = function () {
     console.log('LaTeX')
     new Dialog({
       title: 'LaTeX',
-      data: [
-        {
-          type: 'textarea',
-          height: 100,
-          name: 'value',
-          placeholder: '请输入LaTeX文本'
-        }
-      ],
+      data: {
+        form: [
+          {
+            type: 'textarea',
+            height: 100,
+            name: 'value',
+            placeholder: '请输入LaTeX文本'
+          }
+        ]
+      },
       onConfirm: payload => {
         const value = payload.find(p => p.name === 'value')?.value
         if (!value) return
@@ -831,46 +845,48 @@ window.onload = function () {
     console.log('block')
     new Dialog({
       title: '内容块',
-      data: [
-        {
-          type: 'select',
-          label: '类型',
-          name: 'type',
-          value: 'iframe',
-          required: true,
-          options: [
-            {
-              label: '网址',
-              value: 'iframe'
-            },
-            {
-              label: '视频',
-              value: 'video'
-            }
-          ]
-        },
-        {
-          type: 'number',
-          label: '宽度',
-          name: 'width',
-          placeholder: '请输入宽度（默认页面内宽度）'
-        },
-        {
-          type: 'number',
-          label: '高度',
-          name: 'height',
-          required: true,
-          placeholder: '请输入高度'
-        },
-        {
-          type: 'textarea',
-          label: '地址',
-          height: 100,
-          name: 'value',
-          required: true,
-          placeholder: '请输入地址'
-        }
-      ],
+      data: {
+        form: [
+          {
+            type: 'select',
+            label: '类型',
+            name: 'type',
+            value: 'iframe',
+            required: true,
+            options: [
+              {
+                label: '网址',
+                value: 'iframe'
+              },
+              {
+                label: '视频',
+                value: 'video'
+              }
+            ]
+          },
+          {
+            type: 'number',
+            label: '宽度',
+            name: 'width',
+            placeholder: '请输入宽度（默认页面内宽度）'
+          },
+          {
+            type: 'number',
+            label: '高度',
+            name: 'height',
+            required: true,
+            placeholder: '请输入高度'
+          },
+          {
+            type: 'textarea',
+            label: '地址',
+            height: 100,
+            name: 'value',
+            required: true,
+            placeholder: '请输入地址'
+          }
+        ]
+      },
       onConfirm: payload => {
         const type = payload.find(p => p.name === 'type')?.value
         if (!type) return
@@ -1117,40 +1133,42 @@ window.onload = function () {
       instance.command.getPaperMargin()
     new Dialog({
       title: '页边距',
-      data: [
-        {
-          type: 'text',
-          label: '上边距',
-          name: 'top',
-          required: true,
-          value: `${topMargin}`,
-          placeholder: '请输入上边距'
-        },
-        {
-          type: 'text',
-          label: '下边距',
-          name: 'bottom',
-          required: true,
-          value: `${bottomMargin}`,
-          placeholder: '请输入下边距'
-        },
-        {
-          type: 'text',
-          label: '左边距',
-          name: 'left',
-          required: true,
-          value: `${leftMargin}`,
-          placeholder: '请输入左边距'
-        },
-        {
-          type: 'text',
-          label: '右边距',
-          name: 'right',
-          required: true,
-          value: `${rightMargin}`,
-          placeholder: '请输入右边距'
-        }
-      ],
+      data: {
+        form: [
+          {
+            type: 'text',
+            label: '上边距',
+            name: 'top',
+            required: true,
+            value: `${topMargin}`,
+            placeholder: '请输入上边距'
+          },
+          {
+            type: 'text',
+            label: '下边距',
+            name: 'bottom',
+            required: true,
+            value: `${bottomMargin}`,
+            placeholder: '请输入下边距'
+          },
+          {
+            type: 'text',
+            label: '左边距',
+            name: 'left',
+            required: true,
+            value: `${leftMargin}`,
+            placeholder: '请输入左边距'
+          },
+          {
+            type: 'text',
+            label: '右边距',
+            name: 'right',
+            required: true,
+            value: `${rightMargin}`,
+            placeholder: '请输入右边距'
+          }
+        ]
+      },
       onConfirm: payload => {
         const top = payload.find(p => p.name === 'top')?.value
         if (!top) return
@@ -1551,16 +1569,18 @@ window.onload = function () {
       callback: (command: Command) => {
         new Dialog({
           title: '批注',
-          data: [
-            {
-              type: 'textarea',
-              label: '批注',
-              height: 100,
-              name: 'value',
-              required: true,
-              placeholder: '请输入批注'
-            }
-          ],
+          data: {
+            form: [
+              {
+                type: 'textarea',
+                label: '批注',
+                height: 100,
+                name: 'value',
+                required: true,
+                placeholder: '请输入批注'
+              }
+            ]
+          },
           onConfirm: payload => {
             const value = payload.find(p => p.name === 'value')?.value
             if (!value) return
