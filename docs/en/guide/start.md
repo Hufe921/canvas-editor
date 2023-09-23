@@ -24,7 +24,6 @@ The official only provides the editor core layer npm package, the menu bar or ot
 
 ## TODO
 
-- Improve title and list functions
 - Computational performance
 - Control rule
 - Table paging
