@@ -18,6 +18,7 @@ import { drop } from './handlers/drop'
 import click from './handlers/click'
 import composition from './handlers/composition'
 import drag from './handlers/drag'
+import { isIOS } from '../../utils/ua'
 
 export interface ICompositionInfo {
   elementList: IElement[]
@@ -67,6 +68,7 @@ export class CanvasEvent {
   }
 
   public register() {
+    this.pageContainer.addEventListener('click', this.click.bind(this))
     this.pageContainer.addEventListener('mousedown', this.mousedown.bind(this))
     this.pageContainer.addEventListener('mouseup', this.mouseup.bind(this))
     this.pageContainer.addEventListener(
@@ -135,6 +137,13 @@ export class CanvasEvent {
 
   public mousedown(evt: MouseEvent) {
     mousedown(evt, this)
+  }
+
+  public click() {
+    // IOS系统限制非用户主动触发事件的键盘弹出
+    if (isIOS) {
+      this.draw.getCursor().getAgentDom().focus()
+    }
   }
 
   public mouseup(evt: MouseEvent) {

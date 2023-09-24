@@ -27,6 +27,7 @@
   overflow: hidden;
   color: transparent;
   user-select: none;
+  caret-color: transparent;
   background-color: transparent;
 }
 

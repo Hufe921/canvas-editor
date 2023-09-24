@@ -845,11 +845,15 @@ export function createDomFromElementList(
           text = element.value
         }
         if (!text) continue
+        const dom = convertElementToDom(element, options)
         // 前一个元素是标题，移除首行换行符
         if (payload[e - 1]?.type === ElementType.TITLE) {
           text = text.replace(/^\n/, '')
         }
-        const dom = convertElementToDom(element, options)
+        // 块元素移除尾部换行符
+        if (dom.tagName === 'P') {
+          text = text.replace(/\n$/, '')
+        }
         dom.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
         clipboardDom.append(dom)
       }
