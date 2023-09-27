@@ -24,6 +24,14 @@ Feature: Move to the left
 
 Feature: Zoom the selection to the left
 
+## Ctrl/Cmd + ←
+
+Feature: Move to the left(jump word)
+
+## Ctrl/Cmd + Shift + ←
+
+Feature: Zoom the selection to the left(jump word)
+
 ## →
 
 Feature: Move to the right
@@ -31,6 +39,14 @@ Feature: Move to the right
 ## Shift + →
 
 Feature: Zoom the selection to the right
+
+## Ctrl/Cmd + →
+
+Feature: Move to the right(jump word)
+
+## Ctrl/Cmd + Shift + →
+
+Feature: Zoom the selection to the right(jump word)
 
 ## ↑
 
