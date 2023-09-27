@@ -1,4 +1,4 @@
-import { cloneProperty, deepClone, getUUID, splitText } from '.'
+import { cloneProperty, deepClone, getUUID, isArrayEqual, splitText } from '.'
 import {
   ElementType,
   IEditorOption,
@@ -8,14 +8,13 @@ import {
   RowFlex
 } from '..'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
-import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
-import { ZERO } from '../dataset/constant/Common'
-import { defaultControlOption } from '../dataset/constant/Control'
+import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import {
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
+  TABLE_TD_ZIP_ATTR,
   TEXTLIKE_ELEMENT_TYPE
 } from '../dataset/constant/Element'
 import {
@@ -46,7 +45,7 @@ export function unzipElementList(elementList: IElement[]): IElement[] {
 
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean
-  editorOptions: Required<IEditorOption>
+  editorOptions: DeepRequired<IEditorOption>
 }
 
 export function formatElementList(
@@ -198,6 +197,9 @@ export function formatElementList(
     } else if (el.type === ElementType.CONTROL) {
       const { prefix, postfix, value, placeholder, code, type, valueSets } =
         el.control!
+      const {
+        editorOptions: { control: controlOption, checkbox: checkboxOption }
+      } = options
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
@@ -207,7 +209,7 @@ export function formatElementList(
         thePrePostfixArgs.color = editorOptions.control.bracketColor
       }
       // 前缀
-      const prefixStrList = splitText(prefix || defaultControlOption.prefix)
+      const prefixStrList = splitText(prefix || controlOption.prefix)
       for (let p = 0; p < prefixStrList.length; p++) {
         const value = prefixStrList[p]
         elementList.splice(i, 0, {
@@ -264,7 +266,7 @@ export function formatElementList(
                   controlId,
                   value,
                   type: el.type,
-                  letterSpacing: isLastLetter ? defaultCheckboxOption.gap : 0,
+                  letterSpacing: isLastLetter ? checkboxOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
                 })
@@ -324,7 +326,7 @@ export function formatElementList(
         }
       }
       // 后缀
-      const postfixStrList = splitText(postfix || defaultControlOption.postfix)
+      const postfixStrList = splitText(postfix || controlOption.postfix)
       for (let p = 0; p < postfixStrList.length; p++) {
         const value = postfixStrList[p]
         elementList.splice(i, 0, {
@@ -375,7 +377,17 @@ export function isSameElementExceptValue(
   if (sourceKeys.length !== targetKeys.length) return false
   for (let s = 0; s < sourceKeys.length; s++) {
     const key = sourceKeys[s] as never
+    // 值不需要校验
     if (key === 'value') continue
+    // groupIds数组需特殊校验数组是否相等
+    if (
+      key === 'groupIds' &&
+      Array.isArray(source[key]) &&
+      Array.isArray(target[key]) &&
+      isArrayEqual(source[key], target[key])
+    ) {
+      continue
+    }
     if (source[key] !== target[key]) {
       return false
     }
@@ -472,12 +484,13 @@ export function zipElementList(payload: IElement[]): IElement[] {
               rowspan: td.rowspan,
               value: zipElementList(td.value)
             }
-            if (td.verticalAlign) {
-              zipTd.verticalAlign = td.verticalAlign
-            }
-            if (td.backgroundColor) {
-              zipTd.backgroundColor = td.backgroundColor
-            }
+            // 压缩单元格属性
+            TABLE_TD_ZIP_ATTR.forEach(attr => {
+              const value = td[attr] as never
+              if (value !== undefined) {
+                zipTd[attr] = value
+              }
+            })
             tr.tdList[d] = zipTd
           }
         }
@@ -697,8 +710,41 @@ export function convertElementToDom(
   if (element.highlight) {
     dom.style.backgroundColor = element.highlight
   }
+  if (element.underline) {
+    dom.style.textDecoration = 'underline'
+  }
   dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
+}
+
+export function splitListElement(
+  elementList: IElement[]
+): Map<number, IElement[]> {
+  let curListIndex = 0
+  const listElementListMap: Map<number, IElement[]> = new Map()
+  for (let e = 0; e < elementList.length; e++) {
+    const element = elementList[e]
+    if (element.listWrap) {
+      const listElementList = listElementListMap.get(curListIndex) || []
+      listElementList.push(element)
+      listElementListMap.set(curListIndex, listElementList)
+    } else {
+      const valueList = element.value.split('\n')
+      for (let c = 0; c < valueList.length; c++) {
+        if (c > 0) {
+          curListIndex += 1
+        }
+        const value = valueList[c]
+        const listElementList = listElementListMap.get(curListIndex) || []
+        listElementList.push({
+          ...element,
+          value
+        })
+        listElementListMap.set(curListIndex, listElementList)
+      }
+    }
+  }
+  return listElementListMap
 }
 
 export function createDomFromElementList(
@@ -754,31 +800,8 @@ export function createDomFromElementList(
           list.style.listStyleType = listStyleCSSMapping[element.listStyle]
         }
         // 按照换行符拆分
-        let curListIndex = 0
-        const listElementListMap: Map<number, IElement[]> = new Map()
         const zipList = zipElementList(element.valueList!)
-        for (let z = 0; z < zipList.length; z++) {
-          const zipElement = zipList[z]
-          if (zipElement.listWrap) {
-            const listElementList = listElementListMap.get(curListIndex) || []
-            listElementList.push(zipElement)
-            listElementListMap.set(curListIndex, listElementList)
-          } else {
-            const zipValueList = zipElement.value.split('\n')
-            for (let c = 0; c < zipValueList.length; c++) {
-              if (c > 0) {
-                curListIndex += 1
-              }
-              const value = zipValueList[c]
-              const listElementList = listElementListMap.get(curListIndex) || []
-              listElementList.push({
-                ...zipElement,
-                value
-              })
-              listElementListMap.set(curListIndex, listElementList)
-            }
-          }
-        }
+        const listElementListMap = splitListElement(zipList)
         listElementListMap.forEach(listElementList => {
           const li = document.createElement('li')
           const childDom = buildDom(listElementList)
@@ -804,6 +827,10 @@ export function createDomFromElementList(
           checkbox.setAttribute('checked', 'true')
         }
         clipboardDom.append(checkbox)
+      } else if (element.type === ElementType.TAB) {
+        const tab = document.createElement('span')
+        tab.innerHTML = `${NON_BREAKING_SPACE}${NON_BREAKING_SPACE}`
+        clipboardDom.append(tab)
       } else if (
         !element.type ||
         element.type === ElementType.LATEX ||
@@ -818,11 +845,15 @@ export function createDomFromElementList(
           text = element.value
         }
         if (!text) continue
+        const dom = convertElementToDom(element, options)
         // 前一个元素是标题，移除首行换行符
         if (payload[e - 1]?.type === ElementType.TITLE) {
           text = text.replace(/^\n/, '')
         }
-        const dom = convertElementToDom(element, options)
+        // 块元素移除尾部换行符
+        if (dom.tagName === 'P') {
+          text = text.replace(/\n$/, '')
+        }
         dom.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
         clipboardDom.append(dom)
       }
@@ -865,6 +896,10 @@ export function convertTextNodeToElement(
   // 高亮色
   if (style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
     element.highlight = style.backgroundColor
+  }
+  // 下划线
+  if (style.textDecorationLine === 'underline') {
+    element.underline = true
   }
   return element
 }
@@ -1060,4 +1095,60 @@ export function getElementListByHTML(
   // 移除dom
   clipboardDom.remove()
   return elementList
+}
+
+export function getTextFromElementList(elementList: IElement[]) {
+  function buildText(payload: IElement[]): string {
+    let text = ''
+    for (let e = 0; e < payload.length; e++) {
+      const element = payload[e]
+      // 构造表格
+      if (element.type === ElementType.TABLE) {
+        text += `\n`
+        const trList = element.trList!
+        for (let t = 0; t < trList.length; t++) {
+          const tr = trList[t]
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            const tdText = buildText(zipElementList(td.value!))
+            const isFirst = d === 0
+            const isLast = tr.tdList.length - 1 === d
+            text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
+          }
+        }
+      } else if (element.type === ElementType.HYPERLINK) {
+        text += element.valueList!.map(v => v.value).join('')
+      } else if (element.type === ElementType.TITLE) {
+        text += `${buildText(zipElementList(element.valueList!))}`
+      } else if (element.type === ElementType.LIST) {
+        // 按照换行符拆分
+        const zipList = zipElementList(element.valueList!)
+        const listElementListMap = splitListElement(zipList)
+        listElementListMap.forEach((listElementList, listIndex) => {
+          const isLast = listElementListMap.size - 1 === listIndex
+          text += `\n${listIndex + 1}.${buildText(listElementList)}${
+            isLast ? `\n` : ``
+          }`
+        })
+      } else if (element.type === ElementType.CHECKBOX) {
+        text += element.checkbox?.value ? `☑` : `□`
+      } else if (
+        !element.type ||
+        element.type === ElementType.LATEX ||
+        TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+      ) {
+        let textLike = ''
+        if (element.type === ElementType.CONTROL) {
+          textLike = element.control!.value?.[0]?.value || ''
+        } else if (element.type === ElementType.DATE) {
+          textLike = element.valueList?.map(v => v.value).join('') || ''
+        } else {
+          textLike = element.value
+        }
+        text += textLike.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+      }
+    }
+    return text
+  }
+  return buildText(zipElementList(elementList))
 }

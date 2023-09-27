@@ -41,6 +41,8 @@ interface IElement {
   };
   rowMargin?: number;
   letterSpacing?: number;
+  // groupIds
+  groupIds?: string[];
   // table
   colgroup?: {
     width: number;
@@ -52,6 +54,7 @@ interface IElement {
       rowspan: number;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
+      borderType?: TdBorder;
       value: IElement[];
     }[];
   }[];
@@ -74,6 +77,8 @@ interface IElement {
     conceptId?: string;
     prefix?: string;
     postfix?: string;
+    minWidth?: number;
+    underline?: boolean;
     code: string | null;
     min?: number;
     max?: number;

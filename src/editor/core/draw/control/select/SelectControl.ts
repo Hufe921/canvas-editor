@@ -2,12 +2,16 @@ import {
   EDITOR_COMPONENT,
   EDITOR_PREFIX
 } from '../../../../dataset/constant/Editor'
+import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
-import { IControlInstance } from '../../../../interface/Control'
+import {
+  IControlContext,
+  IControlInstance
+} from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
-import { splitText } from '../../../../utils'
+import { omitObject, splitText } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
@@ -134,9 +138,9 @@ export class SelectControl implements IControlInstance {
     return this.clearSelect()
   }
 
-  public clearSelect(): number {
-    const elementList = this.control.getElementList()
-    const { startIndex } = this.control.getRange()
+  public clearSelect(context: IControlContext = {}): number {
+    const elementList = context.elementList || this.control.getElementList()
+    const { startIndex } = context.range || this.control.getRange()
     const startElement = elementList[startIndex]
     let leftIndex = -1
     let rightIndex = -1
@@ -176,7 +180,7 @@ export class SelectControl implements IControlInstance {
     return preIndex
   }
 
-  public setSelect(code: string) {
+  public setSelect(code: string, context: IControlContext = {}) {
     const control = this.element.control!
     const valueSets = control.valueSets
     if (!Array.isArray(valueSets) || !valueSets.length) return
@@ -184,29 +188,35 @@ export class SelectControl implements IControlInstance {
     const valueSet = valueSets.find(v => v.code === code)
     if (!valueSet) return
     // 清空选项
-    const startIndex = this.clearSelect()
+    const startIndex = this.clearSelect(context)
     this.control.removePlaceholder(startIndex)
     // 插入
-    const elementList = this.control.getElementList()
+    const elementList = context.elementList || this.control.getElementList()
     const startElement = elementList[startIndex]
+    const anchorElement =
+      startElement.controlComponent === ControlComponent.PREFIX
+        ? omitObject(startElement, EDITOR_ELEMENT_STYLE_ATTR)
+        : startElement
     const start = startIndex + 1
     const data = splitText(valueSet.value)
     const draw = this.control.getDraw()
     for (let i = 0; i < data.length; i++) {
       const newElement: IElement = {
-        ...startElement,
+        ...anchorElement,
         value: data[i],
         controlComponent: ControlComponent.VALUE
       }
       formatElementContext(elementList, [newElement], startIndex)
       draw.spliceElementList(elementList, start + i, 0, newElement)
     }
-    // render
-    const newIndex = start + data.length - 1
-    this.control.repaintControl(newIndex)
     // 设置状态
     this.element.control!.code = code
-    this.destroy()
+    // 重新渲染控件
+    if (!context.range) {
+      const newIndex = start + data.length - 1
+      this.control.repaintControl(newIndex)
+      this.destroy()
+    }
   }
 
   private _createSelectPopupDom() {

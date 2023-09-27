@@ -6,6 +6,7 @@ import {
   IDrawOption,
   IDrawPagePayload,
   IDrawRowPayload,
+  IGetImageOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -62,7 +63,7 @@ import {
 import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
-import { DeepRequired } from '../../interface/Common'
+import { DeepRequired, IPadding } from '../../interface/Common'
 import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
@@ -78,9 +79,10 @@ import { Footer } from './frame/Footer'
 import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
-import { WORD_LIKE_REG } from '../../dataset/constant/Regular'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
+import { Group } from './interactive/Group'
+import { Override } from '../override/Override'
 
 export class Draw {
   private container: HTMLDivElement
@@ -93,11 +95,10 @@ export class Draw {
   private options: DeepRequired<IEditorOption>
   private position: Position
   private zone: Zone
-  private headerElementList: IElement[]
   private elementList: IElement[]
-  private footerElementList: IElement[]
   private listener: Listener
   private eventBus: EventBus<EventBusMap>
+  private override: Override
 
   private i18n: I18n
   private canvasEvent: CanvasEvent
@@ -107,6 +108,7 @@ export class Draw {
   private margin: Margin
   private background: Background
   private search: Search
+  private group: Group
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -137,6 +139,8 @@ export class Draw {
   private selectionObserver: SelectionObserver
   private imageObserver: ImageObserver
 
+  private LETTER_REG: RegExp
+  private WORD_LIKE_REG: RegExp
   private rowList: IRow[]
   private pageRowList: IRow[][]
   private painterStyle: IElementStyle | null
@@ -144,13 +148,15 @@ export class Draw {
   private visiblePageNoList: number[]
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
+  private printModeData: Required<IEditorData> | null
 
   constructor(
     rootContainer: HTMLElement,
     options: DeepRequired<IEditorOption>,
     data: IEditorData,
     listener: Listener,
-    eventBus: EventBus<EventBusMap>
+    eventBus: EventBus<EventBusMap>,
+    override: Override
   ) {
     this.container = this._wrapContainer(rootContainer)
     this.pageList = []
@@ -159,11 +165,10 @@ export class Draw {
     this.pagePixelRatio = null
     this.mode = options.mode
     this.options = options
-    this.headerElementList = data.header || []
     this.elementList = data.main
-    this.footerElementList = data.footer || []
     this.listener = listener
     this.eventBus = eventBus
+    this.override = override
 
     this._formatContainer()
     this.pageContainer = this._createPageContainer()
@@ -177,6 +182,7 @@ export class Draw {
     this.margin = new Margin(this)
     this.background = new Background(this)
     this.search = new Search(this)
+    this.group = new Group(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -189,8 +195,8 @@ export class Draw {
     this.pageNumber = new PageNumber(this)
     this.waterMark = new Watermark(this)
     this.placeholder = new Placeholder(this)
-    this.header = new Header(this)
-    this.footer = new Footer(this)
+    this.header = new Header(this, data.header)
+    this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle()
@@ -214,6 +220,11 @@ export class Draw {
 
     this.workerManager = new WorkerManager(this)
 
+    const { letterClass } = options
+    this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
+    this.WORD_LIKE_REG = new RegExp(
+      `${letterClass.map(letter => `[^${letter}][${letter}]`).join('|')}`
+    )
     this.rowList = []
     this.pageRowList = []
     this.painterStyle = null
@@ -221,6 +232,7 @@ export class Draw {
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
     this.lazyRenderIntersectionObserver = null
+    this.printModeData = null
 
     this.render({
       isInit: true,
@@ -228,16 +240,49 @@ export class Draw {
     })
   }
 
+  public getLetterReg(): RegExp {
+    return this.LETTER_REG
+  }
+
   public getMode(): EditorMode {
     return this.mode
   }
 
   public setMode(payload: EditorMode) {
+    if (this.mode === payload) return
+    // 设置打印模式
+    if (payload === EditorMode.PRINT) {
+      this.printModeData = {
+        header: this.header.getElementList(),
+        main: this.elementList,
+        footer: this.footer.getElementList()
+      }
+      this.setEditorData(
+        this.control.filterAssistElement(deepClone(this.printModeData))
+      )
+    }
+    // 取消打印模式
+    if (this.mode === EditorMode.PRINT && this.printModeData) {
+      this.setEditorData(this.printModeData)
+      this.printModeData = null
+    }
     this.mode = payload
+    this.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
   }
 
   public isReadonly() {
-    return this.mode === EditorMode.READONLY
+    switch (this.mode) {
+      case EditorMode.READONLY:
+      case EditorMode.PRINT:
+        return true
+      case EditorMode.FORM:
+        return !this.control.isRangeWithinControl()
+      default:
+        return false
+    }
   }
 
   public getOriginalWidth(): number {
@@ -323,8 +368,9 @@ export class Draw {
     return this.options.defaultBasicRowMarginHeight * this.options.scale
   }
 
-  public getTdPadding(): number {
-    return this.options.tdPadding * this.options.scale
+  public getTdPadding(): IPadding {
+    const { tdPadding, scale } = this.options
+    return <IPadding>tdPadding.map(m => m * scale)
   }
 
   public getContainer(): HTMLDivElement {
@@ -423,6 +469,10 @@ export class Draw {
     return this.search
   }
 
+  public getGroup(): Group {
+    return this.group
+  }
+
   public getHistoryManager(): HistoryManager {
     return this.historyManager
   }
@@ -440,7 +490,7 @@ export class Draw {
   }
 
   public getHeaderElementList(): IElement[] {
-    return this.headerElementList
+    return this.header.getElementList()
   }
 
   public getTableElementList(sourceElementList: IElement[]): IElement[] {
@@ -467,10 +517,10 @@ export class Draw {
   public getOriginalElementList() {
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
-      return this.header.getElementList()
+      return this.getHeaderElementList()
     }
     if (zoneManager.isFooterActive()) {
-      return this.footer.getElementList()
+      return this.getFooterElementList()
     }
     return this.elementList
   }
@@ -480,7 +530,7 @@ export class Draw {
   }
 
   public getFooterElementList(): IElement[] {
-    return this.footerElementList
+    return this.footer.getElementList()
   }
 
   public insertElementList(payload: IElement[]) {
@@ -587,6 +637,10 @@ export class Draw {
     return this.eventBus
   }
 
+  public getOverride(): Override {
+    return this.override
+  }
+
   public getCursor(): Cursor {
     return this.cursor
   }
@@ -647,9 +701,17 @@ export class Draw {
     return this.rowList.length
   }
 
-  public async getDataURL(pixelRatio?: number): Promise<string[]> {
+  public async getDataURL(payload: IGetImageOption = {}): Promise<string[]> {
+    const { pixelRatio, mode } = payload
+    // 放大像素比
     if (pixelRatio) {
       this.setPagePixelRatio(pixelRatio)
+    }
+    // 不同模式
+    const currentMode = this.mode
+    const isSwitchMode = !!mode && currentMode !== mode
+    if (isSwitchMode) {
+      this.setMode(mode)
     }
     this.render({
       isLazy: false,
@@ -659,8 +721,12 @@ export class Draw {
     })
     await this.imageObserver.allSettled()
     const dataUrlList = this.pageList.map(c => c.toDataURL())
+    // 还原
     if (pixelRatio) {
       this.setPagePixelRatio(null)
+    }
+    if (isSwitchMode) {
+      this.setMode(currentMode)
     }
     return dataUrlList
   }
@@ -849,9 +915,9 @@ export class Draw {
       )
     }
     const data: IEditorData = {
-      header: zipElementList(this.headerElementList),
+      header: zipElementList(this.getHeaderElementList()),
       main: zipElementList(mainElementList),
-      footer: zipElementList(this.footerElementList)
+      footer: zipElementList(this.getFooterElementList())
     }
     return {
       version,
@@ -866,29 +932,36 @@ export class Draw {
   public setValue(payload: Partial<IEditorData>) {
     const { header, main, footer } = payload
     if (!header && !main && !footer) return
-    if (header) {
-      formatElementList(header, {
+    const pageComponentData = [header, main, footer]
+    pageComponentData.forEach(data => {
+      if (!data) return
+      formatElementList(data, {
         editorOptions: this.options
       })
-      this.header.setElementList(header)
-    }
-    if (main) {
-      formatElementList(main, {
-        editorOptions: this.options
-      })
-      this.elementList = main
-    }
-    if (footer) {
-      formatElementList(footer, {
-        editorOptions: this.options
-      })
-      this.footer.setElementList(footer)
-    }
+    })
+    this.setEditorData({
+      header,
+      main,
+      footer
+    })
     // 渲染&计算&清空历史记录
     this.historyManager.recovery()
     this.render({
       isSetCursor: false
     })
+  }
+
+  public setEditorData(payload: Partial<IEditorData>) {
+    const { header, main, footer } = payload
+    if (header) {
+      this.header.setElementList(header)
+    }
+    if (main) {
+      this.elementList = main
+    }
+    if (footer) {
+      this.footer.setElementList(footer)
+    }
   }
 
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
@@ -975,6 +1048,8 @@ export class Draw {
     // 列表位置
     let listId: string | undefined
     let listIndex = 0
+    // 控件最小宽度
+    let controlRealWidth = 0
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
@@ -1017,7 +1092,8 @@ export class Draw {
         }
         metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
-        const tdGap = tdPadding * 2
+        const tdPaddingWidth = tdPadding[1] + tdPadding[3]
+        const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
@@ -1027,13 +1103,13 @@ export class Draw {
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const rowList = this.computeRowList(
-              (td.width! - tdGap) * scale,
+              (td.width! - tdPaddingWidth) * scale,
               td.value
             )
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTdHeight = (rowHeight + tdGap) / scale
+            const curTdHeight = (rowHeight + tdPaddingHeight) / scale
             // 内容高度大于当前单元格高度需增加
             if (td.height! < curTdHeight) {
               const extraHeight = curTdHeight - td.height!
@@ -1247,6 +1323,27 @@ export class Draw {
         metrics,
         style: this._getFont(element, scale)
       })
+      // 暂时只考虑非换行场景：控件开始时统计宽度，结束时消费宽度及还原
+      if (rowElement.control?.minWidth) {
+        if (rowElement.controlComponent) {
+          controlRealWidth += metrics.width
+        }
+        if (rowElement.controlComponent === ControlComponent.POSTFIX) {
+          const extraWidth = rowElement.control.minWidth - controlRealWidth
+          // 消费超出实际最小宽度的长度
+          if (extraWidth > 0) {
+            // 超出行宽时截断
+            const rowRemainingWidth =
+              availableWidth - curRow.width - metrics.width
+            const left = Math.min(rowRemainingWidth, extraWidth) * scale
+            rowElement.left = left
+            curRow.width += left
+          } else {
+            rowElement.left = 0
+          }
+          controlRealWidth = 0
+        }
+      }
       // 超过限定宽度
       const preElement = elementList[i - 1]
       let nextElement = elementList[i + 1]
@@ -1259,7 +1356,7 @@ export class Draw {
         ) {
           // 英文单词
           const word = `${preElement?.value || ''}${element.value}`
-          if (WORD_LIKE_REG.test(word)) {
+          if (this.WORD_LIKE_REG.test(word)) {
             const { width, endElement } = this.textParticle.measureWord(
               ctx,
               elementList,
@@ -1395,7 +1492,14 @@ export class Draw {
   public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
-    const { scale, tdPadding } = this.options
+    const isPrintMode = this.mode === EditorMode.PRINT
+    const {
+      scale,
+      tdPadding,
+      defaultBasicRowMarginHeight,
+      defaultRowMargin,
+      group
+    } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -1469,7 +1573,7 @@ export class Draw {
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
-          if (this.mode !== EditorMode.CLEAN) {
+          if (this.mode !== EditorMode.CLEAN && !isPrintMode) {
             this.pageBreakParticle.render(ctx, element, x, y)
           }
         } else if (
@@ -1489,18 +1593,33 @@ export class Draw {
           this.blockParticle.render(pageNo, element, x, y)
         } else {
           this.textParticle.record(ctx, element, x, y + offsetY)
+          // 如果设置字宽、字间距需单独绘制
+          if (element.width || element.letterSpacing) {
+            this.textParticle.complete()
+          }
         }
         // 下划线记录
-        if (element.underline) {
+        if (element.underline || element.control?.underline) {
+          const rowMargin =
+            defaultBasicRowMarginHeight *
+            (element.rowMargin || defaultRowMargin) *
+            scale
+          // 元素偏移量
+          const left = element.left || 0
+          // 占位符不参与颜色计算
+          const color =
+            element.controlComponent === ControlComponent.PLACEHOLDER
+              ? undefined
+              : element.color
           this.underline.recordFillInfo(
             ctx,
-            x,
-            y + curRow.height,
-            metrics.width,
+            x - left,
+            y + curRow.height - rowMargin,
+            metrics.width + left,
             0,
-            element.color
+            color
           )
-        } else if (preElement?.underline) {
+        } else if (preElement?.underline || preElement?.control?.underline) {
           this.underline.render(ctx)
         }
         // 删除线记录
@@ -1557,10 +1676,14 @@ export class Draw {
             }
           }
         }
+        // 组信息记录
+        if (!group.disabled && element.groupIds) {
+          this.group.recordFillInfo(element, x, y, metrics.width, curRow.height)
+        }
         index++
         // 绘制表格内元素
         if (element.type === ElementType.TABLE) {
-          const tdGap = tdPadding * 2
+          const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           for (let t = 0; t < element.trList!.length; t++) {
             const tr = element.trList![t]
             for (let d = 0; d < tr.tdList!.length; d++) {
@@ -1571,7 +1694,7 @@ export class Draw {
                 rowList: td.rowList!,
                 pageNo,
                 startIndex: 0,
-                innerWidth: (td.width! - tdGap) * scale,
+                innerWidth: (td.width! - tdPaddingWidth) * scale,
                 zone
               })
             }
@@ -1588,22 +1711,26 @@ export class Draw {
       }
       // 绘制富文本及文字
       this._drawRichText(ctx)
+      // 绘制批注样式
+      this.group.render(ctx)
       // 绘制选区
-      if (rangeRecord.width && rangeRecord.height) {
-        const { x, y, width, height } = rangeRecord
-        this.range.render(ctx, x, y, width, height)
-      }
-      if (
-        isCrossRowCol &&
-        tableRangeElement &&
-        tableRangeElement.id === tableId
-      ) {
-        const {
-          coordinate: {
-            leftTop: [x, y]
-          }
-        } = positionList[curRow.startIndex]
-        this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+      if (!isPrintMode) {
+        if (rangeRecord.width && rangeRecord.height) {
+          const { x, y, width, height } = rangeRecord
+          this.range.render(ctx, x, y, width, height)
+        }
+        if (
+          isCrossRowCol &&
+          tableRangeElement &&
+          tableRangeElement.id === tableId
+        ) {
+          const {
+            coordinate: {
+              leftTop: [x, y]
+            }
+          } = positionList[curRow.startIndex]
+          this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+        }
       }
     }
   }
@@ -1624,7 +1751,7 @@ export class Draw {
     ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
-    this.background.render(ctx)
+    this.background.render(ctx, pageNo)
     // 绘制页边距
     this.margin.render(ctx, pageNo)
     // 渲染元素
@@ -1712,7 +1839,8 @@ export class Draw {
       isSetCursor = true,
       isCompute = true,
       isLazy = true,
-      isInit = false
+      isInit = false,
+      isSourceHistory = false
     } = payload || {}
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
@@ -1806,7 +1934,11 @@ export class Draw {
         self.footer.setElementList(deepClone(oldFooterElementList))
         self.elementList = deepClone(oldElementList)
         self.range.setRange(startIndex, endIndex)
-        self.render({ curIndex, isSubmitHistory: false })
+        self.render({
+          curIndex,
+          isSubmitHistory: false,
+          isSourceHistory: true
+        })
       })
     }
     // 信息变动回调
@@ -1827,7 +1959,7 @@ export class Draw {
         this.eventBus.emit('pageSizeChange', this.pageRowList.length)
       }
       // 文档内容改变
-      if (isSubmitHistory && !isInit) {
+      if ((isSubmitHistory || isSourceHistory) && !isInit) {
         if (this.listener.contentChange) {
           this.listener.contentChange()
         }

@@ -1,4 +1,4 @@
-import { EditorZone } from '../dataset/enum/Editor'
+import { EditorMode, EditorZone } from '../dataset/enum/Editor'
 import { IElement, IElementPosition } from './Element'
 import { IRow } from './Row'
 
@@ -9,6 +9,11 @@ export interface IDrawOption {
   isCompute?: boolean
   isLazy?: boolean
   isInit?: boolean
+  isSourceHistory?: boolean
+}
+
+export interface IForceUpdateOption {
+  isSubmitHistory?: boolean
 }
 
 export interface IDrawImagePayload {
@@ -44,4 +49,9 @@ export interface IGetValueOption {
 
 export interface IAppendElementListOption {
   isPrepend?: boolean
+}
+
+export interface IGetImageOption {
+  pixelRatio?: number
+  mode?: EditorMode
 }

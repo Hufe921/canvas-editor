@@ -34,7 +34,17 @@ Feature: Gets the base64 string of the current page image
 Usage:
 
 ```javascript
-const base64StringList = await instance.command.getImage(pixelRatio?: number)
+const base64StringList = await instance.command.getImage(option?: IGetImageOption)
+```
+
+## getOptions
+
+Feature: Get editor options
+
+Usage:
+
+```javascript
+const editorOption = await instance.command.getOptions()
 ```
 
 ## getWordCount
@@ -65,6 +75,26 @@ Usage:
 
 ```javascript
 const rangeContext = instance.command.getRangeContext()
+```
+
+## getRangeRow
+
+Feature: Get selection row element list
+
+Usage:
+
+```javascript
+const rowElementList = instance.command.getRangeRow()
+```
+
+## getRangeParagraph
+
+Feature: Get selection paragraph element list
+
+Usage:
+
+```javascript
+const paragraphElementList = instance.command.getRangeParagraph()
 ```
 
 ## getPaperMargin
@@ -113,4 +143,51 @@ const {
   main: string
   footer: string
 } = await instance.command.getHTML()
+```
+
+## getText
+
+Feature: Get text
+
+Usage:
+
+```javascript
+const {
+  header: string
+  main: string
+  footer: string
+} = await instance.command.getText()
+```
+
+## getLocale
+
+Feature: Get current locale
+
+Usage:
+
+```javascript
+const locale = await instance.command.getLocale()
+```
+
+## getGroupIds
+
+Feature: Get all group ids
+
+Usage:
+
+```javascript
+const groupIds = await instance.command.getGroupIds()
+```
+
+## getControlValue
+
+Feature: Get control value
+
+Usage:
+
+```javascript
+const {
+  value: string | null
+  innerText: string | null
+} = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```

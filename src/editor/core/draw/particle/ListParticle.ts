@@ -1,5 +1,6 @@
 import { ZERO } from '../../../dataset/constant/Common'
 import { ulStyleMapping } from '../../../dataset/constant/List'
+import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
 import { ListStyle, ListType, UlStyle } from '../../../dataset/enum/List'
 import { DeepRequired } from '../../../interface/Common'
@@ -90,6 +91,14 @@ export class ListParticle {
     const { elementList, offsetX, listIndex, ascent } = row
     const startElement = elementList[0]
     if (startElement.value !== ZERO || startElement.listWrap) return
+    // tab width
+    let tabWidth = 0
+    const { defaultTabWidth, scale, defaultFont, defaultSize } = this.options
+    for (let i = 1; i < elementList.length; i++) {
+      const element = elementList[i]
+      if (element?.type !== ElementType.TAB) break
+      tabWidth += defaultTabWidth * scale
+    }
     let text = ''
     if (startElement.listType === ListType.UL) {
       text =
@@ -104,9 +113,8 @@ export class ListParticle {
         leftTop: [startX, startY]
       }
     } = position
-    const x = startX - offsetX!
+    const x = startX - offsetX! + tabWidth
     const y = startY + ascent
-    const { defaultFont, defaultSize, scale } = this.options
     ctx.save()
     ctx.font = `${defaultSize * scale}px ${defaultFont}`
     ctx.fillText(text, x, y)

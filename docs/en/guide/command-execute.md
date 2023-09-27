@@ -79,6 +79,16 @@ Usage:
 instance.command.executeSetRange(startIndex: number , endIndex: number)
 ```
 
+## executeForceUpdate
+
+Feature: force update editor
+
+Usage:
+
+```javascript
+instance.command.executeForceUpdate(options?: IForceUpdateOption)
+```
+
 ## executeUndo
 
 Feature: Undo
@@ -409,6 +419,16 @@ Usage:
 instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
+## executeTableTdBorderType
+
+Feature: Table td border type
+
+Usage:
+
+```javascript
+instance.command.executeTableTdBorderType(payload: TableBorder)
+```
+
 ## executeTableTdBackgroundColor
 
 Feature: Table cell background color
@@ -417,6 +437,16 @@ Usage:
 
 ```javascript
 instance.command.executeTableTdBackgroundColor(payload: string)
+```
+
+## executeTableSelectAll
+
+Feature: Select the entire table
+
+Usage:
+
+```javascript
+instance.command.executeTableSelectAll()
 ```
 
 ## executeImage
@@ -742,4 +772,54 @@ Usage:
 
 ```javascript
 instance.command.executeWordTool()
+```
+
+## executeSetHTML
+
+Feature: Set the editor HTML data
+
+Usage:
+
+```javascript
+instance.command.executeSetHTML(payload: Partial<IEditorHTML)
+```
+
+## executeSetGroup
+
+Feature: Set group
+
+Usage:
+
+```javascript
+instance.command.executeSetGroup()
+```
+
+## executeDeleteGroup
+
+Feature: Delete group
+
+Usage:
+
+```javascript
+instance.command.executeDeleteGroup(groupId: string)
+```
+
+## executeLocationGroup
+
+Feature: Positioning group position
+
+Usage:
+
+```javascript
+instance.command.executeLocationGroup(groupId: string)
+```
+
+## executeSetControlValue
+
+Feature: Set control value
+
+Usage:
+
+```javascript
+instance.command.executeSetControlValue(payload: ISetControlOption)
 ```

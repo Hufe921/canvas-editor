@@ -1,5 +1,6 @@
 import { ElementType } from '../enum/Element'
 import { IElement } from '../../interface/Element'
+import { ITd } from '../../interface/table/Td'
 
 export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
   'bold',
@@ -26,7 +27,8 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'url',
   'hyperlinkId',
   'dateId',
-  'dateFormat'
+  'dateFormat',
+  'groupIds'
 ]
 
 export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
@@ -56,7 +58,14 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'level',
   'listType',
   'listStyle',
-  'listWrap'
+  'listWrap',
+  'groupIds'
+]
+
+export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
+  'verticalAlign',
+  'backgroundColor',
+  'borderType'
 ]
 
 export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [

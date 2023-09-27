@@ -34,7 +34,17 @@ const {
 用法：
 
 ```javascript
-const base64StringList = await instance.command.getImage(pixelRatio?: number)
+const base64StringList = await instance.command.getImage(option?: IGetImageOption)
+```
+
+## getOptions
+
+功能：获取编辑器配置
+
+用法：
+
+```javascript
+const editorOption = await instance.command.getOptions()
 ```
 
 ## getWordCount
@@ -65,6 +75,26 @@ const rangeText = instance.command.getRangeText()
 
 ```javascript
 const rangeContext = instance.command.getRangeContext()
+```
+
+## getRangeRow
+
+功能：获取选区所在行元素列表
+
+用法：
+
+```javascript
+const rowElementList = instance.command.getRangeRow()
+```
+
+## getRangeParagraph
+
+功能：获取选区所在段落元素列表
+
+用法：
+
+```javascript
+const paragraphElementList = instance.command.getRangeParagraph()
 ```
 
 ## getPaperMargin
@@ -113,4 +143,51 @@ const {
   main: string
   footer: string
 } = await instance.command.getHTML()
+```
+
+## getText
+
+功能：获取文本
+
+用法：
+
+```javascript
+const {
+  header: string
+  main: string
+  footer: string
+} = await instance.command.getText()
+```
+
+## getLocale
+
+功能：获取当前语言
+
+用法：
+
+```javascript
+const locale = await instance.command.getLocale()
+```
+
+## getGroupIds
+
+功能：获取所有成组 id
+
+用法：
+
+```javascript
+const groupIds = await instance.command.getGroupIds()
+```
+
+## getControlValue
+
+功能：获取控件值
+
+用法：
+
+```javascript
+const {
+  value: string | null
+  innerText: string | null
+} = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```

@@ -17,6 +17,10 @@ export class I18n {
     this.langMap.set(locale, <ILang>mergeObject(sourceLang || zhCN, lang))
   }
 
+  public getLocale(): string {
+    return this.currentLocale
+  }
+
   public setLocale(locale: string) {
     this.currentLocale = locale
   }

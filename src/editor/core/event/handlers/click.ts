@@ -1,9 +1,10 @@
 import { ZERO } from '../../../dataset/constant/Common'
-import { LETTER_REG, NUMBER_LIKE_REG } from '../../../dataset/constant/Regular'
+import { NUMBER_LIKE_REG } from '../../../dataset/constant/Regular'
 import { CanvasEvent } from '../CanvasEvent'
 
 function dblclick(host: CanvasEvent, evt: MouseEvent) {
   const draw = host.getDraw()
+  const LETTER_REG = draw.getLetterReg()
   const position = draw.getPosition()
   // 切换区域
   if (draw.getIsPagingMode()) {

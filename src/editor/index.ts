@@ -44,7 +44,7 @@ import { defaultCursorOption } from './dataset/constant/Cursor'
 import { IPageNumber } from './interface/PageNumber'
 import { defaultPageNumberOption } from './dataset/constant/PageNumber'
 import { VerticalAlign } from './dataset/enum/VerticalAlign'
-import { TableBorder } from './dataset/enum/table/Table'
+import { TableBorder, TdBorder } from './dataset/enum/table/Table'
 import { IFooter } from './interface/Footer'
 import { defaultFooterOption } from './dataset/constant/Footer'
 import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
@@ -59,11 +59,19 @@ import { Plugin } from './core/plugin/Plugin'
 import { UsePlugin } from './interface/Plugin'
 import { EventBus } from './core/event/eventbus/EventBus'
 import { EventBusMap } from './interface/EventBus'
+import { IGroup } from './interface/Group'
+import { defaultGroupOption } from './dataset/constant/Group'
+import { IRangeStyle } from './interface/Listener'
+import { Override } from './core/override/Override'
+import { defaultPageBreakOption } from './dataset/constant/PageBreak'
+import { IPageBreak } from './interface/PageBreak'
+import { LETTER_CLASS } from './dataset/constant/Common'
 
 export default class Editor {
   public command: Command
   public listener: Listener
   public eventBus: EventBus<EventBusMap>
+  public override: Override
   public register: Register
   public destroy: () => void
   public use: UsePlugin
@@ -109,6 +117,14 @@ export default class Editor {
       ...defaultPlaceholderOption,
       ...options.placeholder
     }
+    const groupOptions: Required<IGroup> = {
+      ...defaultGroupOption,
+      ...options.group
+    }
+    const pageBreakOptions: Required<IPageBreak> = {
+      ...defaultPageBreakOption,
+      ...options.pageBreak
+    }
 
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
@@ -124,6 +140,7 @@ export default class Editor {
       height: 1123,
       scale: 1,
       pageGap: 20,
+      backgroundColor: '#FFFFFF',
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,
@@ -139,8 +156,8 @@ export default class Editor {
       marginIndicatorColor: '#BABABA',
       margins: [100, 120, 100, 120],
       pageMode: PageMode.PAGING,
-      tdPadding: 5,
-      defaultTrMinHeight: 40,
+      tdPadding: [0, 5, 5, 5],
+      defaultTrMinHeight: 42,
       defaultColMinWidth: 40,
       defaultHyperlinkColor: '#0000FF',
       paperDirection: PaperDirection.VERTICAL,
@@ -148,6 +165,8 @@ export default class Editor {
       historyMaxRecordCount: 100,
       wordBreak: WordBreak.BREAK_WORD,
       printPixelRatio: 3,
+      maskMargin: [0, 0, 0, 0],
+      letterClass: [LETTER_CLASS.ENGLISH],
       ...options,
       header: headerOptions,
       footer: footerOptions,
@@ -157,7 +176,9 @@ export default class Editor {
       checkbox: checkboxOptions,
       cursor: cursorOptions,
       title: titleOptions,
-      placeholder: placeholderOptions
+      placeholder: placeholderOptions,
+      group: groupOptions,
+      pageBreak: pageBreakOptions
     }
     // 数据处理
     let headerElementList: IElement[] = []
@@ -184,6 +205,8 @@ export default class Editor {
     this.listener = new Listener()
     // 事件
     this.eventBus = new EventBus<EventBusMap>()
+    // 重写
+    this.override = new Override()
     // 启动
     const draw = new Draw(
       container,
@@ -194,7 +217,8 @@ export default class Editor {
         footer: footerElementList
       },
       this.listener,
-      this.eventBus
+      this.eventBus,
+      this.override
     )
     // 命令
     this.command = new Command(new CommandAdapt(draw))
@@ -222,6 +246,8 @@ export default class Editor {
 
 // 对外对象
 export {
+  EDITOR_COMPONENT,
+  LETTER_CLASS,
   Editor,
   RowFlex,
   VerticalAlign,
@@ -230,7 +256,6 @@ export {
   ElementType,
   ControlType,
   EditorComponent,
-  EDITOR_COMPONENT,
   PageMode,
   ImageDisplay,
   Command,
@@ -238,6 +263,7 @@ export {
   BlockType,
   PaperDirection,
   TableBorder,
+  TdBorder,
   MaxHeightRatio,
   NumberType,
   TitleLevel,
@@ -259,5 +285,6 @@ export type {
   IBlock,
   ILang,
   ICatalog,
-  ICatalogItem
+  ICatalogItem,
+  IRangeStyle
 }

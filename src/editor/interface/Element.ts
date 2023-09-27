@@ -32,6 +32,10 @@ export interface IElementStyle {
   letterSpacing?: number
 }
 
+export interface IElementGroup {
+  groupIds?: string[]
+}
+
 export interface ITitleElement {
   valueList?: IElement[]
   level?: TitleLevel
@@ -103,6 +107,7 @@ export interface IBlockElement {
 
 export type IElement = IElementBasic &
   IElementStyle &
+  IElementGroup &
   ITable &
   IHyperlinkElement &
   ISuperscriptSubscript &
@@ -131,6 +136,7 @@ export interface IElementPosition {
   rowNo: number
   ascent: number
   lineHeight: number
+  left: number
   metrics: IElementMetrics
   isFirstLetter: boolean
   isLastLetter: boolean

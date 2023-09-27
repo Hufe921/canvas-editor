@@ -43,7 +43,9 @@
       "border": "Table border",
       "borderAll": "All",
       "borderEmpty": "Empty",
-      "borderExternal": "External"
+      "borderExternal": "External",
+      "borderTd": "Table cell border",
+      "borderTdBottom": "Bottom"
     }
   },
   "datePicker": {
@@ -69,5 +71,8 @@
   "frame": {
     "header": "Header",
     "footer": "Footer"
+  },
+  "pageBreak": {
+    "displayName": "Page Break"
   }
 }

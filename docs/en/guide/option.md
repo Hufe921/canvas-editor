@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed.) For example: page break), read-only. default: Edit
+  mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control), Print (Visual aids are not displayed, Unwritten content control). default: Edit
   defaultType?: string // Default element type. default: TEXT
   defaultFont?: string // Default font. default: Yahei
   defaultSize?: number // Default font size. default: 16
@@ -27,6 +27,7 @@ interface IEditorOption {
   height?: number // Paper height. default: 1123
   scale?: number // scaling. default: 1
   pageGap?: number // Paper spacing. default: 20
+  backgroundColor?: string // Paper background color. default: #FFFFFF
   underlineColor?: string // Underline color. default: #000000
   strikeoutColor?: string // Strikeout color. default: #FF0000
   rangeColor?: string // Range color. default: #AECBFA
@@ -42,8 +43,8 @@ interface IEditorOption {
   marginIndicatorColor?: string // The margin indicator color. default: #BABABA
   margins?: IMargin // Page margins. default: [100, 120, 100, 120]
   pageMode?: PageMode // Paper mode: Linkage, Pagination. default: Pagination
-  tdPadding?: number // Cell padding. default: 5
-  defaultTrMinHeight?: number // Default table row minimum height. default: 40
+  tdPadding?: IPadding // Cell padding. default: [0, 5, 5, 5]
+  defaultTrMinHeight?: number // Default table row minimum height. default: 42
   defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise scaled down). default: 40
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF
   header?: IHeader // Header information.{top?:number; maxHeightRadio?:MaxHeightRatio;}
@@ -51,15 +52,19 @@ interface IEditorOption {
   pageNumber?: IPageNumber // Page number information. {bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
   paperDirection?: PaperDirection // Paper orientation: portrait, landscape
   inactiveAlpha?: number // When the body content is out of focus, transparency. default: 0.6
-  historyMaxRecordCount: number // History (undo redo) maximum number of records. default: 100
-  printPixelRatio: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
-  wordBreak: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
+  historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100
+  printPixelRatio?: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
+  maskMargin?: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
+  letterClass? string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
+  wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
   watermark?: IWatermark // Watermark{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string;}
   checkbox?: ICheckboxOption // Checkbox {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; fontStyle?: string;}
   cursor?: ICursorOption // Cursor style. {width?: number; color?: string; dragWidth?: number; dragColor?: string;}
   title?: ITitleOption // Title configuration.{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
   placeholder?: IPlaceholder // Placeholder text
+  group?: IGroup // Group option. {opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
+  pageBreak?: IPageBreak // PageBreak option。{font?:string; fontSize?:number; lineDash?:number[];}
 }
 ```
 

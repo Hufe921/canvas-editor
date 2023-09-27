@@ -46,7 +46,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     index: startIndex,
     isTable: startIsTable,
     tdIndex: startTdIndex,
-    trIndex: startTrIndex
+    trIndex: startTrIndex,
+    tableId: startTableId
   } = host.mouseDownStartPosition
   const endIndex = isTable ? tdValueIndex! : index
   // 判断是否是表格跨行/列
@@ -67,6 +68,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     )
   } else {
     let end = ~endIndex ? endIndex : 0
+    // 开始或结束位置存在表格，但是非相同表格则忽略选区设置
+    if ((startIsTable || isTable) && startTableId !== tableId) return
     // 开始位置
     let start = startIndex
     if (start > end) {

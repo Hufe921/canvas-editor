@@ -11,7 +11,7 @@ instance.command.commandName()
 
 ## executeMode
 
-功能：切换编辑器模式（编辑、清洁、只读）
+功能：切换编辑器模式（编辑、清洁、只读、表单）
 
 用法：
 
@@ -77,6 +77,16 @@ instance.command.executeBackspace()
 
 ```javascript
 instance.command.executeSetRange(startIndex: number , endIndex: number)
+```
+
+## executeForceUpdate
+
+功能：强制重新渲染文档
+
+用法：
+
+```javascript
+instance.command.executeForceUpdate(options?: IForceUpdateOption)
 ```
 
 ## executeUndo
@@ -409,6 +419,16 @@ instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
 instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
+## executeTableTdBorderType
+
+功能：表格单元格边框类型
+
+用法：
+
+```javascript
+instance.command.executeTableTdBorderType(payload: TdBorder)
+```
+
 ## executeTableTdBackgroundColor
 
 功能：表格单元格背景色
@@ -417,6 +437,16 @@ instance.command.executeTableBorderType(payload: TableBorder)
 
 ```javascript
 instance.command.executeTableTdBackgroundColor(payload: string)
+```
+
+## executeTableSelectAll
+
+功能：选中整个表格
+
+用法：
+
+```javascript
+instance.command.executeTableSelectAll()
 ```
 
 ## executeImage
@@ -742,4 +772,54 @@ instance.command.executeLocationCatalog(titleId: string)
 
 ```javascript
 instance.command.executeWordTool()
+```
+
+## executeSetHTML
+
+功能：设置编辑器 HTML 数据
+
+用法：
+
+```javascript
+instance.command.executeSetHTML(payload: Partial<IEditorHTML)
+```
+
+## executeSetGroup
+
+功能：设置成组
+
+用法：
+
+```javascript
+instance.command.executeSetGroup()
+```
+
+## executeDeleteGroup
+
+功能：删除成组
+
+用法：
+
+```javascript
+instance.command.executeDeleteGroup(groupId: string)
+```
+
+## executeLocationGroup
+
+功能：定位成组位置
+
+用法：
+
+```javascript
+instance.command.executeLocationGroup(groupId: string)
+```
+
+## executeSetControlValue
+
+功能：设置控件值
+
+用法：
+
+```javascript
+instance.command.executeSetControlValue(payload: ISetControlOption)
 ```

@@ -1,3 +1,5 @@
+import { UNICODE_SYMBOL_REG } from '../dataset/constant/Regular'
+
 export function debounce(func: Function, delay: number) {
   let timer: number
   return function (this: any, ...args: any[]) {
@@ -69,8 +71,20 @@ export function getUUID(): string {
 
 export function splitText(text: string): string[] {
   const data: string[] = []
-  for (const t of text) {
-    data.push(t)
+  const symbolMap = new Map<number, string>()
+  for (const match of text.matchAll(UNICODE_SYMBOL_REG)) {
+    symbolMap.set(match.index!, match[0])
+  }
+  let t = 0
+  while (t < text.length) {
+    const symbol = symbolMap.get(t)
+    if (symbol) {
+      data.push(symbol)
+      t += symbol.length
+    } else {
+      data.push(text[t])
+      t++
+    }
   }
   return data
 }
@@ -202,10 +216,43 @@ export function cloneProperty<T>(
   }
 }
 
+export function omitObject<T>(object: T, omitKeys: (keyof T)[]): T {
+  const newObject: T = <T>{}
+  for (const key in object) {
+    if (!omitKeys.includes(key)) {
+      newObject[key] = object[key]
+    }
+  }
+  return newObject
+}
+
 export function convertStringToBase64(input: string) {
   const encoder = new TextEncoder()
   const data = encoder.encode(input)
   const charArray = Array.from(data, byte => String.fromCharCode(byte))
   const base64 = window.btoa(charArray.join(''))
   return base64
+}
+
+export function findScrollContainer(element: HTMLElement) {
+  let parent = element.parentElement
+  while (parent) {
+    const style = window.getComputedStyle(parent)
+    const overflowY = style.getPropertyValue('overflow-y')
+    if (
+      parent.scrollHeight > parent.clientHeight &&
+      (overflowY === 'auto' || overflowY === 'scroll')
+    ) {
+      return parent
+    }
+    parent = parent.parentElement
+  }
+  return document.documentElement
+}
+
+export function isArrayEqual(arr1: unknown[], arr2: unknown[]): boolean {
+  if (arr1.length !== arr2.length) {
+    return false
+  }
+  return !arr1.some(item => !arr2.includes(item))
 }

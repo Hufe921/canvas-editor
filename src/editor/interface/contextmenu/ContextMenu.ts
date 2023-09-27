@@ -1,4 +1,5 @@
 import { Command } from '../../core/command/Command'
+import { EditorZone } from '../../dataset/enum/Editor'
 import { IElement } from '../Element'
 
 export interface IContextMenuContext {
@@ -9,6 +10,7 @@ export interface IContextMenuContext {
   editorTextFocus: boolean
   isInTable: boolean
   isCrossRowCol: boolean
+  zone: EditorZone
 }
 
 export interface IRegisterContextMenu {

@@ -2,6 +2,7 @@ import { EditorZone } from '../../..'
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
+import { MoveDirection } from '../../../dataset/enum/Observer'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { formatElementContext } from '../../../utils/element'
 import { isMod } from '../../../utils/hotkey'
@@ -124,17 +125,38 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Left) {
     if (isReadonly) return
     if (index > 0) {
-      const curIndex = startIndex - 1
+      const cursorPosition = position.getCursorPosition()
+      // 单词整体移动
+      let moveCount = 1
+      if (isMod(evt)) {
+        const LETTER_REG = draw.getLetterReg()
+        // 起始位置
+        const moveStartIndex =
+          evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
+            ? endIndex
+            : startIndex
+        if (LETTER_REG.test(elementList[moveStartIndex]?.value)) {
+          let i = moveStartIndex - 1
+          while (i > 0) {
+            const element = elementList[i]
+            if (!LETTER_REG.test(element.value)) {
+              break
+            }
+            moveCount++
+            i--
+          }
+        }
+      }
+      const curIndex = startIndex - moveCount
       // shift则缩放选区
       let anchorStartIndex = curIndex
       let anchorEndIndex = curIndex
-      const cursorPosition = position.getCursorPosition()
       if (evt.shiftKey && cursorPosition) {
         if (startIndex !== endIndex) {
           if (startIndex === cursorPosition.index) {
             // 减小选区
             anchorStartIndex = startIndex
-            anchorEndIndex = endIndex - 1
+            anchorEndIndex = endIndex - moveCount
           } else {
             anchorStartIndex = curIndex
             anchorEndIndex = endIndex
@@ -145,10 +167,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
       if (!~anchorStartIndex || !~anchorEndIndex) return
       rangeManager.setRange(anchorStartIndex, anchorEndIndex)
-      const isCollapsed = anchorStartIndex === anchorEndIndex
+      const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex: isCollapsed ? anchorStartIndex : undefined,
-        isSetCursor: isCollapsed,
+        curIndex: isAnchorCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isAnchorCollapsed,
         isSubmitHistory: false,
         isCompute: false
       })
@@ -157,11 +179,32 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Right) {
     if (isReadonly) return
     if (index < positionList.length) {
-      const curIndex = endIndex + 1
+      const cursorPosition = position.getCursorPosition()
+      let moveCount = 1
+      // 单词整体移动
+      if (isMod(evt)) {
+        const LETTER_REG = draw.getLetterReg()
+        // 起始位置
+        const moveStartIndex =
+          evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
+            ? endIndex
+            : startIndex
+        if (LETTER_REG.test(elementList[moveStartIndex + 1]?.value)) {
+          let i = moveStartIndex + 2
+          while (i < elementList.length) {
+            const element = elementList[i]
+            if (!LETTER_REG.test(element.value)) {
+              break
+            }
+            moveCount++
+            i++
+          }
+        }
+      }
+      const curIndex = endIndex + moveCount
       // shift则缩放选区
       let anchorStartIndex = curIndex
       let anchorEndIndex = curIndex
-      const cursorPosition = position.getCursorPosition()
       if (evt.shiftKey && cursorPosition) {
         if (startIndex !== endIndex) {
           if (startIndex === cursorPosition.index) {
@@ -169,7 +212,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
             anchorStartIndex = startIndex
             anchorEndIndex = curIndex
           } else {
-            anchorStartIndex = startIndex + 1
+            anchorStartIndex = startIndex + moveCount
             anchorEndIndex = endIndex
           }
         } else {
@@ -184,10 +227,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         return
       }
       rangeManager.setRange(anchorStartIndex, anchorEndIndex)
-      const isCollapsed = anchorStartIndex === anchorEndIndex
+      const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex: isCollapsed ? anchorStartIndex : undefined,
-        isSetCursor: isCollapsed,
+        curIndex: isAnchorCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isAnchorCollapsed,
         isSubmitHistory: false,
         isCompute: false
       })
@@ -196,7 +239,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     if (isReadonly) return
     let anchorPosition: IElementPosition = cursorPosition
-    const isUp = evt.key === KeyMap.Up
+    // 扩大选区时，判断移动光标点
     if (evt.shiftKey) {
       if (startIndex === cursorPosition.index) {
         anchorPosition = positionList[endIndex]
@@ -205,86 +248,106 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
     }
     const {
-      rowNo,
       index,
-      pageNo,
-      coordinate: { leftTop, rightTop }
+      rowNo,
+      rowIndex,
+      coordinate: {
+        leftTop: [curLeftX],
+        rightTop: [curRightX]
+      }
     } = anchorPosition
-    if ((isUp && rowNo !== 0) || (!isUp && rowNo !== draw.getRowCount())) {
-      // 下一个光标点所在行位置集合
-      const probablePosition = isUp
-        ? positionList
-            .slice(0, index)
-            .filter(p => p.rowNo === rowNo - 1 && pageNo === p.pageNo)
-        : positionList
-            .slice(index, positionList.length - 1)
-            .filter(p => p.rowNo === rowNo + 1 && pageNo === p.pageNo)
-      // 查找与当前位置元素点交叉最多的位置
-      let maxIndex = 0
-      let maxDistance = 0
-      for (let p = 0; p < probablePosition.length; p++) {
-        const position = probablePosition[p]
-        // 当前光标在前
-        if (
-          position.coordinate.leftTop[0] >= leftTop[0] &&
-          position.coordinate.leftTop[0] <= rightTop[0]
-        ) {
-          const curDistance = rightTop[0] - position.coordinate.leftTop[0]
-          if (curDistance > maxDistance) {
-            maxIndex = position.index
-            maxDistance = curDistance
-            break
-          }
-        }
-        // 当前光标在后
-        else if (
-          position.coordinate.leftTop[0] <= leftTop[0] &&
-          position.coordinate.rightTop[0] >= leftTop[0]
-        ) {
-          const curDistance = position.coordinate.rightTop[0] - leftTop[0]
-          if (curDistance > maxDistance) {
-            maxIndex = position.index
-            maxDistance = curDistance
-            break
-          }
-        }
-        // 匹配不到
-        if (p === probablePosition.length - 1 && maxIndex === 0) {
-          maxIndex = position.index
-        }
-      }
-      const curIndex = maxIndex
-      // shift则缩放选区
-      let anchorStartIndex = curIndex
-      let anchorEndIndex = curIndex
-      if (evt.shiftKey) {
-        if (startIndex !== endIndex) {
-          if (startIndex === cursorPosition.index) {
-            anchorStartIndex = startIndex
-          } else {
-            anchorEndIndex = endIndex
-          }
-        } else {
-          if (isUp) {
-            anchorEndIndex = endIndex
-          } else {
-            anchorStartIndex = startIndex
-          }
-        }
-      }
-      if (anchorStartIndex > anchorEndIndex) {
-        // prettier-ignore
-        [anchorStartIndex, anchorEndIndex] = [anchorEndIndex, anchorStartIndex]
-      }
-      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
-      const isCollapsed = anchorStartIndex === anchorEndIndex
-      draw.render({
-        curIndex: isCollapsed ? anchorStartIndex : undefined,
-        isSetCursor: isCollapsed,
-        isSubmitHistory: false,
-        isCompute: false
-      })
+    // 向上时在首行、向下时在尾行则忽略
+    const isUp = evt.key === KeyMap.Up
+    if (
+      (isUp && rowIndex === 0) ||
+      (!isUp && rowIndex === draw.getRowCount() - 1)
+    ) {
+      return
     }
+    // 查找下一行位置列表
+    const probablePosition: IElementPosition[] = []
+    if (isUp) {
+      let p = index - 1
+      while (p > 0) {
+        const position = positionList[p]
+        p--
+        if (position.rowNo === rowNo) continue
+        if (
+          probablePosition[0] &&
+          probablePosition[0].rowNo !== position.rowNo
+        ) {
+          break
+        }
+        probablePosition.unshift(position)
+      }
+    } else {
+      let p = index + 1
+      while (p < positionList.length) {
+        const position = positionList[p]
+        p++
+        if (position.rowNo === rowNo) continue
+        if (
+          probablePosition[0] &&
+          probablePosition[0].rowNo !== position.rowNo
+        ) {
+          break
+        }
+        probablePosition.push(position)
+      }
+    }
+    // 查找下一行位置：第一个存在交叉宽度的元素位置
+    let nextIndex = 0
+    for (let p = 0; p < probablePosition.length; p++) {
+      const nextPosition = probablePosition[p]
+      const {
+        coordinate: {
+          leftTop: [nextLeftX],
+          rightTop: [nextRightX]
+        }
+      } = nextPosition
+      if (p === probablePosition.length - 1) {
+        nextIndex = nextPosition.index
+      }
+      if (curRightX <= nextLeftX || curLeftX >= nextRightX) continue
+      nextIndex = nextPosition.index
+      break
+    }
+    if (!nextIndex) return
+    // shift则缩放选区
+    let anchorStartIndex = nextIndex
+    let anchorEndIndex = nextIndex
+    if (evt.shiftKey) {
+      if (startIndex !== endIndex) {
+        if (startIndex === cursorPosition.index) {
+          anchorStartIndex = startIndex
+        } else {
+          anchorEndIndex = endIndex
+        }
+      } else {
+        if (isUp) {
+          anchorEndIndex = endIndex
+        } else {
+          anchorStartIndex = startIndex
+        }
+      }
+    }
+    if (anchorStartIndex > anchorEndIndex) {
+      // prettier-ignore
+      [anchorStartIndex, anchorEndIndex] = [anchorEndIndex, anchorStartIndex]
+    }
+    rangeManager.setRange(anchorStartIndex, anchorEndIndex)
+    const isCollapsed = anchorStartIndex === anchorEndIndex
+    draw.render({
+      curIndex: isCollapsed ? anchorStartIndex : undefined,
+      isSetCursor: isCollapsed,
+      isSubmitHistory: false,
+      isCompute: false
+    })
+    // 将光标移动到可视范围内
+    draw.getCursor().moveCursorToVisible({
+      cursorPosition: positionList[isUp ? anchorStartIndex : anchorEndIndex],
+      direction: isUp ? MoveDirection.UP : MoveDirection.DOWN
+    })
   } else if (isMod(evt) && evt.key === KeyMap.Z) {
     if (isReadonly) return
     historyManager.undo()
@@ -323,12 +386,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     }
     evt.preventDefault()
   } else if (evt.key === KeyMap.TAB) {
-    draw.insertElementList([
-      {
-        type: ElementType.TAB,
-        value: ''
-      }
-    ])
+    const tabElement: IElement = {
+      type: ElementType.TAB,
+      value: ''
+    }
+    formatElementContext(elementList, [tabElement], startIndex)
+    draw.insertElementList([tabElement])
     evt.preventDefault()
   }
 }

@@ -86,7 +86,8 @@ while (index < textList.length) {
   } else if (highlightIndex.includes(index)) {
     elementList.push({
       value,
-      highlight: '#F2F27F'
+      highlight: '#F2F27F',
+      groupIds: ['1'] // 模拟批注
     })
   } else {
     elementList.push({
@@ -102,6 +103,7 @@ elementList.splice(12, 0, {
   type: ElementType.CONTROL,
   value: '',
   control: {
+    conceptId: '1',
     type: ControlType.TEXT,
     value: null,
     placeholder: '其他补充',
@@ -115,6 +117,7 @@ elementList.splice(94, 0, {
   type: ElementType.CONTROL,
   value: '',
   control: {
+    conceptId: '2',
     type: ControlType.SELECT,
     value: null,
     code: null,
@@ -336,6 +339,7 @@ elementList.push(
     {
       type: ElementType.CONTROL,
       control: {
+        conceptId: '3',
         type: ControlType.CHECKBOX,
         code: '98175',
         value: '',
@@ -395,9 +399,35 @@ elementList.push(
   ])
 )
 
+// 模拟固定长度下划线
+elementList.push(
+  ...[
+    {
+      value: '患者签名：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        conceptId: '4',
+        type: ControlType.TEXT,
+        value: null,
+        placeholder: '',
+        prefix: '\u200c',
+        postfix: '\u200c',
+        minWidth: 160,
+        underline: true
+      }
+    }
+  ]
+)
+
 // 模拟结尾文本
 elementList.push(
   ...[
+    {
+      value: '\n'
+    },
     {
       value: '',
       type: ElementType.TAB
@@ -419,6 +449,24 @@ elementList.push(
 
 export const data: IElement[] = elementList
 
+interface IComment {
+  id: string
+  content: string
+  userName: string
+  rangeText: string
+  createdDate: string
+}
+export const commentList: IComment[] = [
+  {
+    id: '1',
+    content:
+      '红细胞比容（HCT）是指每单位容积中红细胞所占全血容积的比值，用于反映红细胞和血浆的比例。',
+    userName: 'Hufe',
+    rangeText: '血细胞比容',
+    createdDate: '2023-08-20 23:10:55'
+  }
+]
+
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
   watermark: {
@@ -430,5 +478,6 @@ export const options: IEditorOption = {
   },
   placeholder: {
     data: '请输入正文'
-  }
+  },
+  maskMargin: [60, 0, 30, 0] // 菜单栏高度60，底部工具栏30为遮盖层
 }
