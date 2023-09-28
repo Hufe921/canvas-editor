@@ -429,6 +429,16 @@ instance.command.executeTableBorderType(payload: TableBorder)
 instance.command.executeTableTdBorderType(payload: TdBorder)
 ```
 
+## executeTableTdSlashType
+
+功能：表格单元格内斜线
+
+用法：
+
+```javascript
+instance.command.executeTableTdSlashType(payload: TdSlash)
+```
+
 ## executeTableTdBackgroundColor
 
 功能：表格单元格背景色
