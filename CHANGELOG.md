@@ -1,3 +1,31 @@
+## [0.9.50](https://github.com/Hufe921/canvas-editor/compare/v0.9.49...v0.9.50) (2023-09-28)
+
+
+### Bug Fixes
+
+* remove block element last line break #287 ([0e67395](https://github.com/Hufe921/canvas-editor/commit/0e6739522d022775e39520a3cb9396531a57bf17)), closes [#287](https://github.com/Hufe921/canvas-editor/issues/287)
+
+
+### Chores
+
+* update README.md ([5ad1414](https://github.com/Hufe921/canvas-editor/commit/5ad1414d82b88bccdb1779c550b75db28dfc18e7))
+
+
+### Documentation
+
+* add plugin tips ([acdd107](https://github.com/Hufe921/canvas-editor/commit/acdd1075449a38270e3fe6fd0c9eb75f21c433cb))
+* move the cursor shortcut ([33ebc59](https://github.com/Hufe921/canvas-editor/commit/33ebc59c721cffd54c14c51ed5d6174226c8a33b))
+
+
+### Features
+
+* move the cursor the entire word #281 ([b38e4ed](https://github.com/Hufe921/canvas-editor/commit/b38e4ed0ddaa020c0dcbb0336efa32cc605e281c)), closes [#281](https://github.com/Hufe921/canvas-editor/issues/281)
+* paper background color option ([46be700](https://github.com/Hufe921/canvas-editor/commit/46be70072852e6cb2c827d960734b54880fc0681))
+* support for table cell slash #290 ([4269628](https://github.com/Hufe921/canvas-editor/commit/4269628cc46e7f9fdf0a9832601b2cf07e429aec)), closes [#290](https://github.com/Hufe921/canvas-editor/issues/290)
+* typing on ios devices #286 ([8cf2b19](https://github.com/Hufe921/canvas-editor/commit/8cf2b19d3db2b48b840641c05156d1b3a0297b2b)), closes [#286](https://github.com/Hufe921/canvas-editor/issues/286)
+
+
+
 ## [0.9.49](https://github.com/Hufe921/canvas-editor/compare/v0.9.48...v0.9.49) (2023-09-16)
 
 
