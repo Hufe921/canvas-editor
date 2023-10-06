@@ -45,7 +45,9 @@
       "borderEmpty": "Empty",
       "borderExternal": "External",
       "borderTd": "Table cell border",
-      "borderTdBottom": "Bottom"
+      "borderTdBottom": "Bottom",
+      "borderTdForward": "forward",
+      "borderTdBack": "back"
     }
   },
   "datePicker": {

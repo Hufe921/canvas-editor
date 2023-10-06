@@ -1,5 +1,5 @@
 import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
-import { TableBorder, TdBorder } from '../../../dataset/enum/table/Table'
+import { TableBorder, TdBorder, TdSlash } from '../../../dataset/enum/table/Table'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
 
@@ -49,6 +49,22 @@ export const tableMenus: IRegisterContextMenu[] = [
             when: () => true,
             callback: (command: Command) => {
               command.executeTableTdBorderType(TdBorder.BOTTOM)
+            }
+          },
+          {
+            i18nPath: 'contextmenu.table.borderTdForward',
+            icon: 'border-td-forward',
+            when: () => true,
+            callback: (command: Command) => {
+              command.executeTableTdSlashType(TdSlash.FORWARD)
+            }
+          },
+          {
+            i18nPath: 'contextmenu.table.borderTdBack',
+            icon: 'border-td-back',
+            when: () => true,
+            callback: (command: Command) => {
+              command.executeTableTdSlashType(TdSlash.BACK)
             }
           }
         ]

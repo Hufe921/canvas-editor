@@ -125,17 +125,38 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Left) {
     if (isReadonly) return
     if (index > 0) {
-      const curIndex = startIndex - 1
+      const cursorPosition = position.getCursorPosition()
+      // 单词整体移动
+      let moveCount = 1
+      if (isMod(evt)) {
+        const LETTER_REG = draw.getLetterReg()
+        // 起始位置
+        const moveStartIndex =
+          evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
+            ? endIndex
+            : startIndex
+        if (LETTER_REG.test(elementList[moveStartIndex]?.value)) {
+          let i = moveStartIndex - 1
+          while (i > 0) {
+            const element = elementList[i]
+            if (!LETTER_REG.test(element.value)) {
+              break
+            }
+            moveCount++
+            i--
+          }
+        }
+      }
+      const curIndex = startIndex - moveCount
       // shift则缩放选区
       let anchorStartIndex = curIndex
       let anchorEndIndex = curIndex
-      const cursorPosition = position.getCursorPosition()
       if (evt.shiftKey && cursorPosition) {
         if (startIndex !== endIndex) {
           if (startIndex === cursorPosition.index) {
             // 减小选区
             anchorStartIndex = startIndex
-            anchorEndIndex = endIndex - 1
+            anchorEndIndex = endIndex - moveCount
           } else {
             anchorStartIndex = curIndex
             anchorEndIndex = endIndex
@@ -146,10 +167,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
       if (!~anchorStartIndex || !~anchorEndIndex) return
       rangeManager.setRange(anchorStartIndex, anchorEndIndex)
-      const isCollapsed = anchorStartIndex === anchorEndIndex
+      const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex: isCollapsed ? anchorStartIndex : undefined,
-        isSetCursor: isCollapsed,
+        curIndex: isAnchorCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isAnchorCollapsed,
         isSubmitHistory: false,
         isCompute: false
       })
@@ -158,11 +179,32 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Right) {
     if (isReadonly) return
     if (index < positionList.length) {
-      const curIndex = endIndex + 1
+      const cursorPosition = position.getCursorPosition()
+      let moveCount = 1
+      // 单词整体移动
+      if (isMod(evt)) {
+        const LETTER_REG = draw.getLetterReg()
+        // 起始位置
+        const moveStartIndex =
+          evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
+            ? endIndex
+            : startIndex
+        if (LETTER_REG.test(elementList[moveStartIndex + 1]?.value)) {
+          let i = moveStartIndex + 2
+          while (i < elementList.length) {
+            const element = elementList[i]
+            if (!LETTER_REG.test(element.value)) {
+              break
+            }
+            moveCount++
+            i++
+          }
+        }
+      }
+      const curIndex = endIndex + moveCount
       // shift则缩放选区
       let anchorStartIndex = curIndex
       let anchorEndIndex = curIndex
-      const cursorPosition = position.getCursorPosition()
       if (evt.shiftKey && cursorPosition) {
         if (startIndex !== endIndex) {
           if (startIndex === cursorPosition.index) {
@@ -170,7 +212,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
             anchorStartIndex = startIndex
             anchorEndIndex = curIndex
           } else {
-            anchorStartIndex = startIndex + 1
+            anchorStartIndex = startIndex + moveCount
             anchorEndIndex = endIndex
           }
         } else {
@@ -185,10 +227,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
         return
       }
       rangeManager.setRange(anchorStartIndex, anchorEndIndex)
-      const isCollapsed = anchorStartIndex === anchorEndIndex
+      const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
       draw.render({
-        curIndex: isCollapsed ? anchorStartIndex : undefined,
-        isSetCursor: isCollapsed,
+        curIndex: isAnchorCollapsed ? anchorStartIndex : undefined,
+        isSetCursor: isAnchorCollapsed,
         isSubmitHistory: false,
         isCompute: false
       })

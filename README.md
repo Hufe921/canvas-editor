@@ -1,5 +1,11 @@
 <h1 align="center">canvas-editor</h1>
 
+<p align="center">
+<a href="https://www.npmjs.com/package/@hufe921/canvas-editor"><img src="https://img.shields.io/npm/v/@hufe921/canvas-editor.svg?sanitize=true" alt="Version"></a>
+<a href="https://www.npmjs.com/package/@hufe921/canvas-editor"><img src="https://img.shields.io/npm/l/@hufe921/canvas-editor.svg?sanitize=true" alt="License"></a>
+<a href="https://github.com/Hufe921/canvas-editor/issues/new/choose"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs"></a>
+</p>
+
 <p align="center"> a rich text editor by canvas/svg</p>
 
 ## tips
@@ -14,24 +20,28 @@
 ```bash
 npm i @hufe921/canvas-editor --save
 ```
+
 ```html
 <div class="canvas-editor"></div>
 ```
-```javascript
-import Editor from "@hufe921/canvas-editor"
 
-new Editor(document.querySelector(".canvas-editor"), [
+```javascript
+import Editor from '@hufe921/canvas-editor'
+
+new Editor(document.querySelector('.canvas-editor'), {
+  main: [
     {
-      value: "Hello World"
+      value: 'Hello World'
     }
-  ])
+  ]
+})
 ```
 
 ## next features
 
-1. improve performance
-2. control rules
-3. table paging
+1. table paging
+2. improve performance
+3. control rules
 4. [CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)
 
 ## snapshot
@@ -49,7 +59,9 @@ new Editor(document.querySelector(".canvas-editor"), [
 ## build
 
 #### app
+
 `npm run build`
 
 #### lib
+
 `npm run lib`

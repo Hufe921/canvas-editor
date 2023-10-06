@@ -13,7 +13,7 @@ import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
 import { RowFlex } from '../../dataset/enum/Row'
-import { TableBorder, TdBorder } from '../../dataset/enum/table/Table'
+import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
@@ -1245,6 +1245,27 @@ export class CommandAdapt {
         td.borderType = payload
       } else {
         delete td.borderType
+      }
+    })
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdSlashType(payload: TdSlash) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const rowCol = this.draw.getTableParticle().getRangeRowCol()
+    if (!rowCol) return
+    const tdList = rowCol.flat()
+    // 存在则设置单元格斜线类型，否则取消设置
+    const isSetTdSlashType = tdList.some(td => td.slashType !== payload)
+    tdList.forEach(td => {
+      if (isSetTdSlashType) {
+        td.slashType = payload
+      } else {
+        delete td.slashType
       }
     })
     const { endIndex } = this.range.getRange()

@@ -1,5 +1,5 @@
 import { ElementType, IElement, TableBorder } from '../../../..'
-import { TdBorder } from '../../../../dataset/enum/table/Table'
+import { TdBorder, TdSlash } from '../../../../dataset/enum/table/Table'
 import { IEditorOption } from '../../../../interface/Editor'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
@@ -116,6 +116,31 @@ export class TableParticle {
     ctx.translate(-0.5, -0.5)
   }
 
+  private _drawSlash(
+    ctx: CanvasRenderingContext2D,
+    td: ITd,
+    startX: number,
+    startY: number
+  ) {
+    const { scale } = this.options
+    ctx.save()
+    const width = td.width! * scale
+    const height = td.height! * scale
+    const x = Math.round(td.x! * scale + startX)
+    const y = Math.round(td.y! * scale + startY)
+    // 正斜线 /
+    if (td.slashType === TdSlash.FORWARD) {
+      ctx.moveTo(x + width, y)
+      ctx.lineTo(x, y + height)
+    } else {
+      // 反斜线 \
+      ctx.moveTo(x, y)
+      ctx.lineTo(x + width, y + height)
+    }
+    ctx.stroke()
+    ctx.restore()
+  }
+
   private _drawBorder(
     ctx: CanvasRenderingContext2D,
     element: IElement,
@@ -148,6 +173,10 @@ export class TableParticle {
       const tr = trList[t]
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
+        // 单元格内斜线
+        if (td.slashType) {
+          this._drawSlash(ctx, td, startX, startY)
+        }
         // 没有设置单元格边框 && 没有设置表格边框则忽略
         if (!td.borderType && (isEmptyBorderType || isExternalBorderType)) {
           continue

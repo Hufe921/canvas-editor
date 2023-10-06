@@ -44,7 +44,7 @@ import { defaultCursorOption } from './dataset/constant/Cursor'
 import { IPageNumber } from './interface/PageNumber'
 import { defaultPageNumberOption } from './dataset/constant/PageNumber'
 import { VerticalAlign } from './dataset/enum/VerticalAlign'
-import { TableBorder, TdBorder } from './dataset/enum/table/Table'
+import { TableBorder, TdBorder, TdSlash } from './dataset/enum/table/Table'
 import { IFooter } from './interface/Footer'
 import { defaultFooterOption } from './dataset/constant/Footer'
 import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
@@ -264,6 +264,7 @@ export {
   PaperDirection,
   TableBorder,
   TdBorder,
+  TdSlash,
   MaxHeightRatio,
   NumberType,
   TitleLevel,
