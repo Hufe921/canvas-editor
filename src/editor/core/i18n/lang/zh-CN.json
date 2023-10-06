@@ -45,7 +45,9 @@
       "borderEmpty": "无框线",
       "borderExternal": "外侧框线",
       "borderTd": "单元格边框",
-      "borderTdBottom": "下边框"
+      "borderTdBottom": "下边框",
+      "borderTdForward": "正斜线",
+      "borderTdBack": "反斜线"
     }
   },
   "datePicker": {
