@@ -1,5 +1,5 @@
 import { EditorZone } from '../dataset/enum/Editor'
-import { IElement } from './Element'
+import { IElement, IElementFillRect } from './Element'
 
 export interface IRange {
   startIndex: number
@@ -17,10 +17,13 @@ export type RangeRowArray = Map<number, number[]>
 
 export type RangeRowMap = Map<number, Set<number>>
 
+export type RangeRect = IElementFillRect
+
 export type RangeContext = {
   isCollapsed: boolean
   startElement: IElement
   endElement: IElement
   startPageNo: number
   endPageNo: number
+  rangeRects: RangeRect[]
 }

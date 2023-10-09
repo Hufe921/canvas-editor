@@ -40,7 +40,7 @@ import {
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
-import { RangeContext } from '../../interface/Range'
+import { RangeContext, RangeRect } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
@@ -1808,12 +1808,52 @@ export class CommandAdapt {
     const positionList = this.position.getPositionList()
     const startPageNo = positionList[startIndex].pageNo
     const endPageNo = positionList[endIndex].pageNo
+    // 坐标信息（相对编辑器书写区）
+    const rangeRects: RangeRect[] = []
+    const selectionPositionList = this.position.getSelectionPositionList()
+    if (selectionPositionList) {
+      const height = this.draw.getOriginalHeight()
+      const pageGap = this.draw.getOriginalPageGap()
+      // 起始信息及x坐标
+      let currentRowNo: number | null = null
+      let currentX = 0
+      let rangeRect: RangeRect | null = null
+      for (let p = 0; p < selectionPositionList.length; p++) {
+        const {
+          rowNo,
+          pageNo,
+          coordinate: { leftTop, rightTop },
+          lineHeight
+        } = selectionPositionList[p]
+        // 起始行变化追加选区信息
+        if (currentRowNo === null || currentRowNo !== rowNo) {
+          if (rangeRect) {
+            rangeRects.push(rangeRect)
+          }
+          rangeRect = {
+            x: leftTop[0],
+            y: leftTop[1] + pageNo * (height + pageGap),
+            width: rightTop[0] - leftTop[0],
+            height: lineHeight
+          }
+          currentRowNo = rowNo
+          currentX = leftTop[0]
+        } else {
+          rangeRect!.width = rightTop[0] - currentX
+          // 最后一个元素结束追加选区信息
+          if (p === selectionPositionList.length - 1 && rangeRect) {
+            rangeRects.push(rangeRect)
+          }
+        }
+      }
+    }
     return deepClone({
       isCollapsed,
       startElement,
       endElement,
       startPageNo,
-      endPageNo
+      endPageNo,
+      rangeRects
     })
   }
 
