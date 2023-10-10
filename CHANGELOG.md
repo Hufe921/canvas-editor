@@ -1,3 +1,18 @@
+## [0.9.51](https://github.com/Hufe921/canvas-editor/compare/v0.9.50...v0.9.51) (2023-10-10)
+
+
+### Features
+
+* add bounding rect to getRangeContext api ([319da3f](https://github.com/Hufe921/canvas-editor/commit/319da3fca16da7cbfd8a4d6ec7f54079a8f0f38e))
+* add table cell slash to contextmenu ([d540195](https://github.com/Hufe921/canvas-editor/commit/d540195dfaa80da05e9d8e2dd4b28c87ab312655))
+
+
+### Performance Improvements
+
+* contextmenu boundary position ([1ce2e2f](https://github.com/Hufe921/canvas-editor/commit/1ce2e2f44f99f7e409fba38648bd76806aa7042e))
+
+
+
 ## [0.9.50](https://github.com/Hufe921/canvas-editor/compare/v0.9.49...v0.9.50) (2023-09-28)
 
 
