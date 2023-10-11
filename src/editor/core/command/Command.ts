@@ -99,6 +99,7 @@ export class Command {
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
   public getControlValue: CommandAdapt['getControlValue']
+  public getContainer: CommandAdapt['getContainer']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -205,6 +206,7 @@ export class Command {
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
+    this.getContainer = adapt.getContainer.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)

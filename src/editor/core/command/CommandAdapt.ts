@@ -2082,4 +2082,8 @@ export class CommandAdapt {
     if (isReadonly) return
     this.draw.getControl().setValueByConceptId(payload)
   }
+
+  public getContainer(): HTMLDivElement {
+    return this.draw.getContainer()
+  }
 }

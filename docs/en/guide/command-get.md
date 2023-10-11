@@ -191,3 +191,13 @@ const {
   innerText: string | null
 } = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```
+
+## getContainer
+
+Feature: Get editor container
+
+Usage:
+
+```javascript
+const container = await instance.command.getContainer()
+```

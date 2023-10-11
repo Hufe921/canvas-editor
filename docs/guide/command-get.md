@@ -191,3 +191,13 @@ const {
   innerText: string | null
 } = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```
+
+## getContainer
+
+功能：获取编辑器容器
+
+用法：
+
+```javascript
+const container = await instance.command.getContainer()
+```
