@@ -1840,10 +1840,10 @@ export class CommandAdapt {
           currentX = leftTop[0]
         } else {
           rangeRect!.width = rightTop[0] - currentX
-          // 最后一个元素结束追加选区信息
-          if (p === selectionPositionList.length - 1 && rangeRect) {
-            rangeRects.push(rangeRect)
-          }
+        }
+        // 最后一个元素结束追加选区信息
+        if (p === selectionPositionList.length - 1 && rangeRect) {
+          rangeRects.push(rangeRect)
         }
       }
     }
