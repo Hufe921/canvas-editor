@@ -1,6 +1,6 @@
 {
-  "name": "@harshita/canvas-editor",
-  "author": "Hufe",
+  "name": "@mindfire/canvas-editor",
+  "author": "Mindfire Digital LLP",
   "license": "MIT",
   "version": "0.9.40",
   "description": "rich text editor by canvas/svg",
