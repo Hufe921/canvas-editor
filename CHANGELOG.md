@@ -1,3 +1,19 @@
+## [0.9.52](https://github.com/Hufe921/canvas-editor/compare/v0.9.51...v0.9.52) (2023-10-12)
+
+
+### Bug Fixes
+
+* bounding rect error in getRangeContext api ([06c3a33](https://github.com/Hufe921/canvas-editor/commit/06c3a337aeb1eccf6e7182040e6db1acadc9aee9))
+* set range style when on double click ([6f2fb5d](https://github.com/Hufe921/canvas-editor/commit/6f2fb5de0971fc98a585283f5676aed4dcdae1cc))
+
+
+### Features
+
+* add extend attribute to control element #293 ([0395a72](https://github.com/Hufe921/canvas-editor/commit/0395a72fe6464a78883630abac659aafac11d723)), closes [#293](https://github.com/Hufe921/canvas-editor/issues/293)
+* add getContainer api ([c944872](https://github.com/Hufe921/canvas-editor/commit/c944872ae7ccc273508884f103ca0fe1711c5d2c))
+
+
+
 ## [0.9.51](https://github.com/Hufe921/canvas-editor/compare/v0.9.50...v0.9.51) (2023-10-10)
 
 
