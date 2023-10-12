@@ -439,6 +439,7 @@ export class Control {
       }
       if (type === ControlType.TEXT) {
         result.push({
+          ...element.control,
           value: textControlValue || null,
           innerText: textControlValue || null
         })
@@ -452,6 +453,7 @@ export class Control {
           .filter(Boolean)
           .join('')
         result.push({
+          ...element.control,
           value: code || null,
           innerText: innerText || null
         })
