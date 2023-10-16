@@ -14,7 +14,6 @@
 <br>
 
 ## Table of Contents
----
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -26,7 +25,6 @@
 <br>
 
 ## Features
----
 - **Event Handling:** DOM handlers were not exported so we helped exporting it so others can make use of it.
 <br>
 
@@ -41,7 +39,6 @@
 <br>
 
 ## Installation
----
 ```bash
 npm i @mindfiredigital/canvas-editor
 ```
@@ -50,7 +47,6 @@ npm i @mindfiredigital/canvas-editor
 <br>
 
 ## Usage
----
 
 ```javascript
 import {
@@ -81,7 +77,6 @@ import {
 <br>
 
 ## DOM Handlers 
----
 - `handleUndo`: This handler is responsible for undoing the previous action performed in the editor.
 
 - `handleRedo`: The `handleRedo` handler allows you to redo an action that was previously undone.
@@ -140,14 +135,12 @@ import {
 <br>
 <br>
 ## Contributing
----
 This project welcomes contributions and suggestions.
 
 <br>
 <br>
 
 ## License
----
 Copyright (c) Mindfire Digital llp. All rights reserved.
 
 Licensed under the MIT license.
