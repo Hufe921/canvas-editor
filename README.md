@@ -1,4 +1,4 @@
-<h1 align="center">canvas-editor</h1>
+<h1 align="center">Canvas Editor</h1>
 
 <p align="center">
 <a href="https://www.npmjs.com/package/@mindfiredigital/canvas-editor"><img src="https://img.shields.io/npm/v/@mindfiredigital/canvas-editor.svg?sanitize=true" alt="Version"></a>
@@ -8,10 +8,13 @@
 
 <p align="center"> a rich text editor by canvas/svg</p>
 
-This project uses and extends the [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin), adding useful features like as table support, font size optimisation, and the export of important DOM handlers. We would like to offer our heartfelt appreciation for their substantial contributions to the open-source community.
+**Canvas Editor** project uses and extends the [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin), adding useful features like as table support, font size optimization, and the export of important DOM handlers. We would like to offer our heartfelt appreciation for their substantial contributions to the open-source community.
+
+<br>
+<br>
 
 ## Table of Contents
-
+_________________
 - [Features](#features)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -19,18 +22,35 @@ This project uses and extends the [canvas-editor-plugin](https://github.com/Hufe
 - [Contributing](#contributing)
 - [License](#license)
 
+<br>
+<br>
+
 ## Features
+_________________
 - **Event Handling:** DOM handlers were not exported so we helped exporting it so others can make use of it.
+<br>
+
 - **New Feature:**
      - **Tables**: A new feature has been introduced to enable the use of tables
+
+<br>
+
 - **Improved Font Size:** The font size has been optimized to enhance readability and user experience.
 
+<br>
+<br>
+
 ## Installation
+_________________
 ```bash
 npm i @mindfiredigital/canvas-editor
 ```
-## Usage
 
+<br>
+<br>
+
+## Usage
+_________________
 
 ```javascript
 import {
@@ -57,9 +77,11 @@ import {
     </ButtonWrapper>
 ```
 
+<br>
+<br>
 
 ## DOM Handlers 
-
+_________________
 - `handleUndo`: This handler is responsible for undoing the previous action performed in the editor.
 
 - `handleRedo`: The `handleRedo` handler allows you to redo an action that was previously undone.
@@ -115,15 +137,17 @@ import {
 - `getSelectedText`: The `getSelectedText` handler retrieves the currently selected text in the editor.
 
 - `insertElement`: With the `insertElement` handler, you can insert a custom element into the editor.
-
-
-
-
+<br>
+<br>
 ## Contributing
+_________________
 This project welcomes contributions and suggestions.
 
+<br>
+<br>
 
 ## License
+_________________
 Copyright (c) Mindfire Digital llp. All rights reserved.
 
 Licensed under the MIT license.
