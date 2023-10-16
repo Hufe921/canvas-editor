@@ -1,5 +1,4 @@
-<h1 align="center">Canvas Editor</h1>
-
+<h1 align="center">Canvas Editor</h1><br><br>
 <p align="center">
 <a href="https://www.npmjs.com/package/@mindfiredigital/canvas-editor"><img src="https://img.shields.io/npm/v/@mindfiredigital/canvas-editor.svg?sanitize=true" alt="Version"></a>
 <a href="https://www.npmjs.com/package/@mindfiredigital/canvas-editor"><img src="https://img.shields.io/npm/l/@mindfiredigital/canvas-editor.svg?sanitize=true" alt="License"></a>
@@ -134,6 +133,7 @@ import {
 - `insertElement`: With the `insertElement` handler, you can insert a custom element into the editor.
 <br>
 <br>
+
 ## Contributing
 This project welcomes contributions and suggestions.
 
