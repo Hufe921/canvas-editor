@@ -83,6 +83,7 @@ export class Command {
   public executeDeleteGroup: CommandAdapt['deleteGroup']
   public executeLocationGroup: CommandAdapt['locationGroup']
   public executeSetControlValue: CommandAdapt['setControlValue']
+  public executeSetControlExtension: CommandAdapt['setControlExtension']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -209,6 +210,7 @@ export class Command {
     this.getContainer = adapt.getContainer.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
   }
 }

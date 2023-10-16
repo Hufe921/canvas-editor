@@ -21,6 +21,7 @@ import { DeepRequired } from '../../interface/Common'
 import {
   IGetControlValueOption,
   IGetControlValueResult,
+  ISetControlExtensionOption,
   ISetControlValueOption
 } from '../../interface/Control'
 import {
@@ -2081,6 +2082,12 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.draw.getControl().setValueByConceptId(payload)
+  }
+
+  public setControlExtension(payload: ISetControlExtensionOption) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.getControl().setExtensionByConceptId(payload)
   }
 
   public getContainer(): HTMLDivElement {

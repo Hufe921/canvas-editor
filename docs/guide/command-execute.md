@@ -833,3 +833,13 @@ instance.command.executeLocationGroup(groupId: string)
 ```javascript
 instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```
+
+## executeSetControlExtension
+
+功能：设置控件扩展值
+
+用法：
+
+```javascript
+instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
+```

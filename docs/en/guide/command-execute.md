@@ -833,3 +833,13 @@ Usage:
 ```javascript
 instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```
+
+## executeSetControlExtension
+
+Feature: Set control extension value
+
+Usage:
+
+```javascript
+instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
+```

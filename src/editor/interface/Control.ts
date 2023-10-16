@@ -86,3 +86,8 @@ export interface ISetControlValueOption {
   conceptId: string
   value: string
 }
+
+export interface ISetControlExtensionOption {
+  conceptId: string
+  extension: unknown
+}

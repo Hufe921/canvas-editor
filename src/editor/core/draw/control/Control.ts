@@ -8,6 +8,7 @@ import {
   IControlOption,
   IGetControlValueOption,
   IGetControlValueResult,
+  ISetControlExtensionOption,
   ISetControlValueOption
 } from '../../../interface/Control'
 import { IEditorData } from '../../../interface/Editor'
@@ -545,6 +546,34 @@ export class Control {
       this.draw.render({
         isSetCursor: false
       })
+    }
+  }
+
+  public setExtensionByConceptId(payload: ISetControlExtensionOption) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { conceptId, extension } = payload
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (element?.control?.conceptId !== conceptId) continue
+        element.control.extension = extension
+        // 修改后控件结束索引
+        let newEndIndex = i
+        while (newEndIndex < elementList.length) {
+          const nextElement = elementList[newEndIndex]
+          if (nextElement.controlId !== element.controlId) break
+          newEndIndex++
+        }
+        i = newEndIndex
+      }
     }
   }
 }
