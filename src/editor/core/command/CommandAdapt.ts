@@ -21,7 +21,7 @@ import { DeepRequired } from '../../interface/Common'
 import {
   IGetControlValueOption,
   IGetControlValueResult,
-  ISetControlOption
+  ISetControlValueOption
 } from '../../interface/Control'
 import {
   IAppendElementListOption,
@@ -2077,7 +2077,7 @@ export class CommandAdapt {
     return this.draw.getControl().getValueByConceptId(payload)
   }
 
-  public setControlValue(payload: ISetControlOption) {
+  public setControlValue(payload: ISetControlValueOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.draw.getControl().setValueByConceptId(payload)

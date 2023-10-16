@@ -831,5 +831,5 @@ Feature: Set control value
 Usage:
 
 ```javascript
-instance.command.executeSetControlValue(payload: ISetControlOption)
+instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```

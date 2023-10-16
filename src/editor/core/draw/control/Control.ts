@@ -8,7 +8,7 @@ import {
   IControlOption,
   IGetControlValueOption,
   IGetControlValueResult,
-  ISetControlOption
+  ISetControlValueOption
 } from '../../../interface/Control'
 import { IEditorData } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -463,7 +463,7 @@ export class Control {
     return result
   }
 
-  public setValueByConceptId(payload: ISetControlOption) {
+  public setValueByConceptId(payload: ISetControlValueOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     let isExistSet = false

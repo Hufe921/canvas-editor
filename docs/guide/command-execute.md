@@ -831,5 +831,5 @@ instance.command.executeLocationGroup(groupId: string)
 用法：
 
 ```javascript
-instance.command.executeSetControlValue(payload: ISetControlOption)
+instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```

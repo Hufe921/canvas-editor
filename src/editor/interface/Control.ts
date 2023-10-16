@@ -82,7 +82,7 @@ export type IGetControlValueResult = (Omit<IControl, 'value'> & {
   innerText: string | null
 })[]
 
-export interface ISetControlOption {
+export interface ISetControlValueOption {
   conceptId: string
   value: string
 }
