@@ -10,7 +10,6 @@
 **Canvas Editor** project uses and extends the [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin), adding useful features like as table support, font size optimization, and the export of important DOM handlers. We would like to offer our heartfelt appreciation for their substantial contributions to the open-source community.
 
 <br>
-<br>
 
 ## Table of Contents
 - [Features](#features)
@@ -21,20 +20,13 @@
 - [License](#license)
 
 <br>
-<br>
 
-## Features
+## Features <br>
 - **Event Handling:** DOM handlers were not exported so we helped exporting it so others can make use of it.
-<br>
-
 - **New Feature:**
      - **Tables**: A new feature has been introduced to enable the use of tables
-
-<br>
-
 - **Improved Font Size:** The font size has been optimized to enhance readability and user experience.
 
-<br>
 <br>
 
 ## Installation
@@ -42,7 +34,6 @@
 npm i @mindfiredigital/canvas-editor
 ```
 
-<br>
 <br>
 
 ## Usage
@@ -72,7 +63,6 @@ import {
     </ButtonWrapper>
 ```
 
-<br>
 <br>
 
 ## DOM Handlers 
@@ -132,12 +122,10 @@ import {
 
 - `insertElement`: With the `insertElement` handler, you can insert a custom element into the editor.
 <br>
-<br>
 
 ## Contributing
 This project welcomes contributions and suggestions.
 
-<br>
 <br>
 
 ## License
