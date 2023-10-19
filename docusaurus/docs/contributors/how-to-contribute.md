@@ -3,7 +3,7 @@ sidebar_position: 1
 ---
 # How to contribute
 
-We deeply appreciate your interest in contributing to the React Document Editor project. Your valuable contributions play a pivotal role in enhancing this project. Before you begin, please take a moment to review the following guidelines.
+We deeply appreciate your interest in contributing to the Canvas Editor project. Your valuable contributions play a pivotal role in enhancing this project. Before you begin, please take a moment to review the following guidelines.
 
 ## Table of Contents
 - [Getting Started](#getting-started)
@@ -42,4 +42,4 @@ Kindly be aware that we uphold a Code of Conduct to sustain a positive and inclu
 ## Licensing
 By contributing to this project, you consent to the licensing terms chosen by the project. Ensure you review the project's licensing file for detailed information.
 
-We extend our gratitude for your contributions and eagerly anticipate your active involvement in the React Document Editor project!
+We extend our gratitude for your contributions and eagerly anticipate your active involvement in the Canvas Editor project!
