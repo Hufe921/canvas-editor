@@ -1,8 +1,8 @@
 {
-  "name": "@hufe921/canvas-editor",
-  "author": "Hufe",
+  "name": "@mindfiredigital/canvas-editor",
+  "author": "Mindfire Digital LLP",
   "license": "MIT",
-  "version": "0.9.43",
+  "version": "1.0.3",
   "description": "rich text editor by canvas/svg",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -18,10 +18,10 @@
   "typings": "./dist/src/editor/index.d.ts",
   "main": "./dist/canvas-editor.umd.js",
   "module": "./dist/canvas-editor.es.js",
-  "homepage": "https://github.com/Hufe921/canvas-editor",
+  "homepage": "https://github.com/mindfiredigital/canvas-editor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hufe921/canvas-editor.git"
+    "url": "https://github.com/mindfiredigital/canvas-editor"
   },
   "keywords": [
     "canvas-editor",
@@ -45,7 +45,6 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "postinstall": "simple-git-hooks",
     "release": "node scripts/release.js"
   },
   "devDependencies": {

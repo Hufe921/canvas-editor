@@ -478,6 +478,18 @@ export function zipElementList(payload: IElement[]): IElement[] {
             if (td.backgroundColor) {
               zipTd.backgroundColor = td.backgroundColor
             }
+            if (td.borderBgTop) {
+              zipTd.borderBgTop = td.borderBgTop
+            }
+            if (td.borderBgBottom) {
+              zipTd.borderBgBottom = td.borderBgBottom
+            }
+            if (td.borderBgRight) {
+              zipTd.borderBgRight = td.borderBgRight
+            }
+            if (td.borderBgLeft) {
+              zipTd.borderBgLeft = td.borderBgLeft
+            }
             tr.tdList[d] = zipTd
           }
         }

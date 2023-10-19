@@ -5,7 +5,8 @@
       "copy": "Copy",
       "paste": "Paste",
       "selectAll": "Select all",
-      "print": "Print"
+      "print": "Print",
+      "hyperlink": "hyperlink"
     },
     "control": {
       "delete": "Delete control"
@@ -43,7 +44,15 @@
       "border": "Table border",
       "borderAll": "All",
       "borderEmpty": "Empty",
-      "borderExternal": "External"
+      "borderExternal": "External",
+      "tdBgColor": "Cell background color",
+      "tdBgColorChild": "Select color",
+      "borderBg": "Cell border color",
+      "top": "Top",
+      "bottom": "Bottom",
+      "left": "Left",
+      "right": "Right",
+      "borderWidth": "Cell border width"
     }
   },
   "datePicker": {

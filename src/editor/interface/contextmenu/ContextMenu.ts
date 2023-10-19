@@ -29,6 +29,7 @@ export interface IContextmenuLang {
     paste: string
     selectAll: string
     print: string
+    hyperlink: string
   }
   control: {
     delete: string

@@ -158,3 +158,8 @@
 .ce-contextmenu-border-external {
   background-image: url(../../../assets/images/table-border-external.svg);
 }
+
+.ce-contextmenu-td-bgcolor {
+  background-image: url(../../../assets/images/td-bgcolor.svg);
+  opacity: 0.7;
+}

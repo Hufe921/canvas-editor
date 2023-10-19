@@ -1,3 +1,4 @@
+import { Dialog } from '../../../components/dialog/Dialog'
 import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { titleSizeMapping } from '../../dataset/constant/Title'
@@ -83,6 +84,10 @@ export class CommandAdapt {
     this.workerManager = draw.getWorkerManager()
     this.searchManager = draw.getSearch()
     this.i18n = draw.getI18n()
+  }
+
+  public getContentStyles() {
+    return this.range.getContentStyles()
   }
 
   public mode(payload: EditorMode) {
@@ -434,13 +439,13 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
-    // 需要改变的元素列表
+    // list of elements to change
     const changeElementList =
       startIndex === endIndex
         ? this.range.getRangeElementList()
         : elementList.slice(startIndex + 1, endIndex + 1)
     if (!changeElementList || !changeElementList.length) return
-    // 设置值
+    // Settings
     const titleId = getUUID()
     const titleOptions = this.draw.getOptions().title
     changeElementList.forEach(el => {
@@ -461,7 +466,7 @@ export class CommandAdapt {
         }
       }
     })
-    // 光标定位
+    // Cursor positioning
     const isSetCursor = startIndex === endIndex
     const curIndex = isSetCursor ? endIndex : startIndex
     this.draw.render({ curIndex, isSetCursor })
@@ -1248,6 +1253,155 @@ export class CommandAdapt {
     })
   }
 
+  public tableTdBorderBgTop(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderBgTop === payload) {
+      return
+    }
+    curTd.borderBgTop = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+  public tableTdBorderBgBottom(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderBgBottom === payload) {
+      return
+    }
+    curTd.borderBgBottom = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdBorderBgLeft(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderBgLeft === payload) {
+      return
+    }
+    curTd.borderBgLeft = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdBorderBgRight(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderBgRight === payload) {
+      return
+    }
+    curTd.borderBgRight = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdBorderWidthTop(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthTop === payload) {
+      return
+    }
+    curTd.borderWidthTop = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdBorderWidthLeft(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthLeft === payload) {
+      return
+    }
+    curTd.borderWidthLeft = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
+  public tableTdBorderWidthBottom(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthBottom === payload) {
+      return
+    }
+    curTd.borderWidthBottom = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+  public tableTdBorderWidthRight(payload: number) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index, trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTd = element?.trList?.[trIndex!]?.tdList?.[tdIndex!]
+    if (!curTd || curTd.borderWidthRight === payload) {
+      return
+    }
+    curTd.borderWidthRight = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
   public hyperlink(payload: IElement) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
@@ -1358,17 +1512,56 @@ export class CommandAdapt {
     })
   }
 
-  public editHyperlink(payload: string) {
-    // 获取超链接索引
+  public editHyperlink(url: string) {
+    // Get hyperlink index
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
     const elementList = this.draw.getElementList()
     const [leftIndex, rightIndex] = hyperRange
-    // 替换url
+    // Get hyperlink text
+    let hyperlinkText = ''
     for (let i = leftIndex; i <= rightIndex; i++) {
-      const element = elementList[i]
-      element.url = payload
+      hyperlinkText += elementList[i].value
     }
+
+    new Dialog({
+      title: 'Link',
+      data: [
+        {
+          type: 'text',
+          label: 'Text',
+          name: 'name',
+          required: true,
+          placeholder: 'Enter text',
+          value: hyperlinkText ? hyperlinkText : ''
+        },
+        {
+          type: 'text',
+          label: 'URL',
+          name: 'url',
+          required: true,
+          placeholder: 'Enter URL',
+          value: url ? url : ''
+        }
+      ],
+      onConfirm: payload => {
+        const name = payload.find(p => p.name === 'name')?.value
+        if (!name) return
+        const url = payload.find(p => p.name === 'url')?.value
+        if (!url) return
+        this.deleteHyperlink()
+        this.hyperlink({
+          type: ElementType.HYPERLINK,
+          value: '',
+          url,
+          valueList: name.split('').map(n => ({
+            value: n,
+            size: 16
+          }))
+        })
+      }
+    })
+
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
     const { endIndex } = this.range.getRange()
@@ -1871,20 +2064,42 @@ export class CommandAdapt {
     }
   }
 
-  public setHTML(payload: Partial<IEditorHTML>) {
-    const { header, main, footer } = payload
-    const innerWidth = this.draw.getOriginalInnerWidth()
-    // 不设置值时数据为undefined，避免覆盖当前数据
-    const getElementList = (htmlText?: string) =>
-      htmlText !== undefined
-        ? getElementListByHTML(htmlText, {
-            innerWidth
-          })
-        : undefined
-    this.setValue({
-      header: getElementList(header),
-      main: getElementList(main),
-      footer: getElementList(footer)
+  public globalHyperlink() {
+    const selectedText = this.getRangeText()
+    new Dialog({
+      title: 'Hyperlink',
+      data: [
+        {
+          type: 'text',
+          label: 'Text',
+          name: 'name',
+          required: true,
+          placeholder: 'Enter text',
+          value: selectedText ? selectedText : ''
+        },
+        {
+          type: 'text',
+          label: 'URL',
+          name: 'url',
+          required: true,
+          placeholder: 'Enter URL'
+        }
+      ],
+      onConfirm: payload => {
+        const name = payload.find(p => p.name === 'name')?.value
+        if (!name) return
+        const url = payload.find(p => p.name === 'url')?.value
+        if (!url) return
+        this.hyperlink({
+          type: ElementType.HYPERLINK,
+          value: '',
+          url,
+          valueList: name.split('').map(n => ({
+            value: n,
+            size: 16
+          }))
+        })
+      }
     })
   }
 }

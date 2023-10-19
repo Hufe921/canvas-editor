@@ -98,20 +98,60 @@ export class TableParticle {
     return rowCol.length ? rowCol : null
   }
 
-  private _drawOuterBorder(payload: IDrawTableBorderOption) {
-    const { ctx, startX, startY, width, height, isDrawFullBorder } = payload
-    ctx.beginPath()
+  // private _drawOuterBorder(payload: IDrawTableBorderOption) {
+  //   const { ctx, startX, startY, width, height, isDrawFullBorder } = payload
+  //   ctx.beginPath()
+  //   const x = Math.round(startX)
+  //   const y = Math.round(startY)
+  //   ctx.translate(0.5, 0.5)
+  //   if (isDrawFullBorder) {
+  //     ctx.rect(x, y, width, height)
+  //   } else {
+  //     ctx.moveTo(x, y + height)
+  //     ctx.lineTo(x, y)
+  //     ctx.lineTo(x + width, y)
+  //   }
+  //   ctx.stroke()
+  //   ctx.translate(-0.5, -0.5)
+  // }
+
+  private _drawOuterBorderWithBg(
+    payload: IDrawTableBorderOption & { trList?: ITr[] }
+  ) {
+    const { ctx, startX, startY, trList } = payload
+    const { scale } = this.options
+    if (!trList) return
     const x = Math.round(startX)
     const y = Math.round(startY)
     ctx.translate(0.5, 0.5)
-    if (isDrawFullBorder) {
-      ctx.rect(x, y, width, height)
-    } else {
-      ctx.moveTo(x, y + height)
-      ctx.lineTo(x, y)
-      ctx.lineTo(x + width, y)
-    }
-    ctx.stroke()
+    let currentY = y
+    trList.forEach(tr => {
+      tr.tdList.forEach((td, i) => {
+        if (i > 0) return
+        ctx.beginPath()
+        ctx.moveTo(x, currentY)
+        currentY += td.height! * scale
+        ctx.strokeStyle = td.borderBgLeft ?? 'black'
+        ctx.lineWidth = td.borderWidthLeft ?? 1
+        ctx.lineTo(x, currentY)
+        ctx.stroke()
+        ctx.closePath()
+      })
+    })
+
+    let currentX = x
+    trList[0].tdList.forEach(td => {
+      ctx.beginPath()
+      ctx.moveTo(currentX, y)
+      currentX += td.width! * scale
+      ctx.strokeStyle = td.borderBgTop ?? 'black'
+      ctx.lineWidth = td.borderWidthTop ?? 1
+      ctx.lineTo(currentX, y)
+      ctx.stroke()
+      ctx.closePath()
+    })
+
+    ctx.strokeStyle = 'black'
     ctx.translate(-0.5, -0.5)
   }
 
@@ -122,42 +162,81 @@ export class TableParticle {
     startY: number
   ) {
     const { colgroup, trList, borderType } = element
-    if (!colgroup || !trList || borderType === TableBorder.EMPTY) return
+    // if (!colgroup || !trList || borderType === TableBorder.EMPTY) return
+    if (!colgroup || !trList) return
     const { scale } = this.options
     const tableWidth = element.width! * scale
     const tableHeight = element.height! * scale
     const isExternalBorderType = borderType === TableBorder.EXTERNAL
     ctx.save()
     // 渲染边框
-    this._drawOuterBorder({
+    // this._drawOuterBorder({
+    //   ctx,
+    //   startX,
+    //   startY,
+    //   width: tableWidth,
+    //   height: tableHeight,
+    //   isDrawFullBorder: isExternalBorderType
+    // })
+
+    this._drawOuterBorderWithBg({
       ctx,
       startX,
       startY,
       width: tableWidth,
       height: tableHeight,
-      isDrawFullBorder: isExternalBorderType
+      isDrawFullBorder: isExternalBorderType,
+      trList: element.trList
     })
-    if (!isExternalBorderType) {
-      // 渲染表格
-      for (let t = 0; t < trList.length; t++) {
-        const tr = trList[t]
-        for (let d = 0; d < tr.tdList.length; d++) {
-          const td = tr.tdList[d]
-          const width = td.width! * scale
-          const height = td.height! * scale
-          const x = Math.round(td.x! * scale + startX + width)
-          const y = Math.round(td.y! * scale + startY)
-          ctx.translate(0.5, 0.5)
-          // 绘制线条
-          ctx.beginPath()
-          ctx.moveTo(x, y)
-          ctx.lineTo(x, y + height)
-          ctx.lineTo(x - width, y + height)
-          ctx.stroke()
-          ctx.translate(-0.5, -0.5)
-        }
+    // if (!isExternalBorderType) {
+    // 渲染表格
+    for (let t = 0; t < trList.length; t++) {
+      const tr = trList[t]
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        const tdNext = tr.tdList[d + 1]
+        const trNext = trList[t + 1]?.tdList[d]
+        const width = td.width! * scale
+        const height = td.height! * scale
+        const x = Math.round(td.x! * scale + startX + width)
+        const y = Math.round(td.y! * scale + startY)
+        ctx.translate(0.5, 0.5)
+        // 绘制线条
+        ctx.beginPath()
+        ctx.moveTo(x, y)
+        ctx.strokeStyle = td.borderBgRight
+          ? td.borderBgRight
+          : tdNext?.borderBgLeft
+          ? tdNext?.borderBgLeft
+          : 'black'
+        ctx.lineWidth = td.borderWidthRight
+          ? td.borderWidthRight
+          : tdNext?.borderWidthLeft
+          ? tdNext?.borderWidthLeft
+          : 1
+        ctx.lineTo(x, y + height) // border-right
+        ctx.stroke()
+        ctx.closePath()
+        ctx.beginPath()
+        ctx.strokeStyle = td.borderBgBottom
+          ? td.borderBgBottom
+          : trNext?.borderBgTop
+          ? trNext?.borderBgTop
+          : 'black'
+        ctx.lineWidth = td.borderWidthBottom
+          ? td.borderWidthBottom
+          : trNext?.borderWidthTop
+          ? trNext?.borderWidthTop
+          : 1
+
+        ctx.moveTo(x, y + height)
+        ctx.lineTo(x - width, y + height) //border-bottom
+        ctx.stroke()
+        ctx.closePath()
+        ctx.translate(-0.5, -0.5)
       }
     }
+    // }
     ctx.restore()
   }
 

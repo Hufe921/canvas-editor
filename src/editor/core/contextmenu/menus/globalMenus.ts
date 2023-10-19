@@ -1,6 +1,8 @@
+import { ElementType } from '../../../dataset/enum/Element'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { isApple } from '../../../utils/ua'
 import { Command } from '../../command/Command'
+import '../../../../style.css'
 
 export const globalMenus: IRegisterContextMenu[] = [
   {
@@ -45,6 +47,20 @@ export const globalMenus: IRegisterContextMenu[] = [
   },
   {
     isDivider: true
+  },
+  {
+    i18nPath: 'contextmenu.global.hyperlink',
+    icon: 'hyperlink',
+    when: payload => {
+      return (
+        !payload.isReadonly &&
+        payload.editorTextFocus &&
+        payload.startElement?.type !== ElementType.HYPERLINK
+      )
+    },
+    callback: (command: Command) => {
+      command.executeGlobalHyperlink()
+    }
   },
   {
     i18nPath: 'contextmenu.global.print',

@@ -245,6 +245,78 @@ export class RangeManager {
     )
   }
 
+  public getContentStyles() {
+    const rangeStyleChangeListener = this.listener.rangeStyleChange
+    const isSubscribeRangeStyleChange =
+    this.eventBus.isSubscribe('rangeStyleChange')
+    // 结束光标位置
+    const { startIndex, endIndex, isCrossRowCol } = this.range
+    if (!~startIndex && !~endIndex) return
+    let curElement: IElement | null
+    if (isCrossRowCol) {
+      // 单元格选择以当前表格定位
+      const originalElementList = this.draw.getOriginalElementList()
+      const positionContext = this.position.getPositionContext()
+      curElement = originalElementList[positionContext.index!]
+    } else {
+      const index = ~endIndex ? endIndex : 0
+      // 行首以第一个非换行符元素定位
+      const elementList = this.draw.getElementList()
+      curElement = getAnchorElement(elementList, index)
+    }
+    if (!curElement) return
+    // 选取元素列表
+    const curElementList = this.getSelection() || [curElement]
+    // 类型
+    const type = curElement.type || ElementType.TEXT
+    // 富文本
+    const font = curElement.font || this.options.defaultFont
+    const size = curElement.size || this.options.defaultSize
+    const bold = !~curElementList.findIndex(el => !el.bold)
+    const italic = !~curElementList.findIndex(el => !el.italic)
+    const underline = !~curElementList.findIndex(el => !el.underline)
+    const strikeout = !~curElementList.findIndex(el => !el.strikeout)
+    const color = curElement.color || null
+    const highlight = curElement.highlight || null
+    const rowFlex = curElement.rowFlex || null
+    const rowMargin = curElement.rowMargin || this.options.defaultRowMargin
+    const dashArray = curElement.dashArray || []
+    const level = curElement.level || null
+    const listType = curElement.listType || null
+    const listStyle = curElement.listStyle || null
+    // 菜单
+    const painter = !!this.draw.getPainterStyle()
+    const undo = this.historyManager.isCanUndo()
+    const redo = this.historyManager.isCanRedo()
+    const rangeStyle: IRangeStyle = {
+      type,
+      undo,
+      redo,
+      painter,
+      font,
+      size,
+      bold,
+      italic,
+      underline,
+      strikeout,
+      color,
+      highlight,
+      rowFlex,
+      rowMargin,
+      dashArray,
+      level,
+      listType,
+      listStyle
+    }
+    if (rangeStyleChangeListener) {
+     rangeStyleChangeListener(rangeStyle)
+    }
+    if (isSubscribeRangeStyleChange) {
+      this.eventBus.emit('rangeStyleChange', rangeStyle)
+    }
+    return rangeStyle
+  }
+
   public setRangeStyle() {
     const rangeStyleChangeListener = this.listener.rangeStyleChange
     const isSubscribeRangeStyleChange =

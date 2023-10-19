@@ -16,7 +16,8 @@ export class Underline extends AbstractRichText {
     const { x, y, width } = this.fillRect
     ctx.save()
     ctx.strokeStyle = this.fillColor || underlineColor
-    const adjustY = y + 0.5 // 从1处渲染，避免线宽度等于3
+    // const adjustY = y + 0.5 // 从1处渲染，避免线宽度等于3
+    const adjustY = Math.floor(y + 2 * ctx.lineWidth) + 0.5 // +0.5从1处渲染，避免线宽度等于3
     ctx.beginPath()
     ctx.moveTo(x, adjustY)
     ctx.lineTo(x + width, adjustY)

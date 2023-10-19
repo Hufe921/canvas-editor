@@ -59,6 +59,7 @@ import { Plugin } from './core/plugin/Plugin'
 import { UsePlugin } from './interface/Plugin'
 import { EventBus } from './core/event/eventbus/EventBus'
 import { EventBusMap } from './interface/EventBus'
+import { DOMEventHandlers } from './DOMEventHandlers'
 
 export default class Editor {
   public command: Command
@@ -113,7 +114,7 @@ export default class Editor {
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
       defaultType: 'TEXT',
-      defaultFont: 'Yahei',
+      defaultFont: 'Arial',
       defaultSize: 16,
       minSize: 5,
       maxSize: 72,
@@ -244,7 +245,8 @@ export {
   TitleLevel,
   ListType,
   ListStyle,
-  WordBreak
+  WordBreak,
+  DOMEventHandlers
 }
 
 // 对外类型
