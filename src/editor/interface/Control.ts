@@ -30,6 +30,7 @@ export interface IControlBasic {
   postfix?: string
   minWidth?: number
   underline?: boolean
+  extension?: unknown
 }
 
 export type IControl = IControlBasic &
@@ -76,12 +77,17 @@ export interface IGetControlValueOption {
   conceptId: string
 }
 
-export type IGetControlValueResult = {
+export type IGetControlValueResult = (Omit<IControl, 'value'> & {
   value: string | null
   innerText: string | null
-}[]
+})[]
 
-export interface ISetControlOption {
+export interface ISetControlValueOption {
   conceptId: string
   value: string
+}
+
+export interface ISetControlExtensionOption {
+  conceptId: string
+  extension: unknown
 }

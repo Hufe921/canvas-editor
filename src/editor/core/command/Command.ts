@@ -44,6 +44,7 @@ export class Command {
   public executeTableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
   public executeTableBorderType: CommandAdapt['tableBorderType']
   public executeTableTdBorderType: CommandAdapt['tableTdBorderType']
+  public executeTableTdSlashType: CommandAdapt['tableTdSlashType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
   public executeTableSelectAll: CommandAdapt['tableSelectAll']
   public executeImage: CommandAdapt['image']
@@ -82,6 +83,7 @@ export class Command {
   public executeDeleteGroup: CommandAdapt['deleteGroup']
   public executeLocationGroup: CommandAdapt['locationGroup']
   public executeSetControlValue: CommandAdapt['setControlValue']
+  public executeSetControlExtension: CommandAdapt['setControlExtension']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -98,6 +100,7 @@ export class Command {
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
   public getControlValue: CommandAdapt['getControlValue']
+  public getContainer: CommandAdapt['getContainer']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -147,6 +150,7 @@ export class Command {
     this.executeTableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
     this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
     this.executeTableTdBorderType = adapt.tableTdBorderType.bind(adapt)
+    this.executeTableTdSlashType = adapt.tableTdSlashType.bind(adapt)
     this.executeTableTdBackgroundColor =
       adapt.tableTdBackgroundColor.bind(adapt)
     this.executeTableSelectAll = adapt.tableSelectAll.bind(adapt)
@@ -203,8 +207,10 @@ export class Command {
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
+    this.getContainer = adapt.getContainer.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
   }
 }

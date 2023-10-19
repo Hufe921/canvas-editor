@@ -65,6 +65,8 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     isSetCursor: false,
     isCompute: false
   })
+  // 更新选区
+  rangeManager.setRangeStyle()
 }
 
 function threeClick(host: CanvasEvent) {

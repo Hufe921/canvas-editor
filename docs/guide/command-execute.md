@@ -429,6 +429,16 @@ instance.command.executeTableBorderType(payload: TableBorder)
 instance.command.executeTableTdBorderType(payload: TdBorder)
 ```
 
+## executeTableTdSlashType
+
+功能：表格单元格内斜线
+
+用法：
+
+```javascript
+instance.command.executeTableTdSlashType(payload: TdSlash)
+```
+
 ## executeTableTdBackgroundColor
 
 功能：表格单元格背景色
@@ -821,5 +831,15 @@ instance.command.executeLocationGroup(groupId: string)
 用法：
 
 ```javascript
-instance.command.executeSetControlValue(payload: ISetControlOption)
+instance.command.executeSetControlValue(payload: ISetControlValueOption)
+```
+
+## executeSetControlExtension
+
+功能：设置控件扩展值
+
+用法：
+
+```javascript
+instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```

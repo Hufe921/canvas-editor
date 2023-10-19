@@ -55,6 +55,7 @@ interface IElement {
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
       borderType?: TdBorder;
+      slashType?: TdSlash;
       value: IElement[];
     }[];
   }[];
@@ -79,6 +80,7 @@ interface IElement {
     postfix?: string;
     minWidth?: number;
     underline?: boolean;
+    extension?: unknown;
     code: string | null;
     min?: number;
     max?: number;

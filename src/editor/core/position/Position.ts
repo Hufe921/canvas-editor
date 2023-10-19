@@ -74,6 +74,13 @@ export class Position {
     return this.positionList
   }
 
+  public getSelectionPositionList(): IElementPosition[] | null {
+    const { startIndex, endIndex } = this.draw.getRange().getRange()
+    if (startIndex === endIndex) return null
+    const positionList = this.getPositionList()
+    return positionList.slice(startIndex + 1, endIndex + 1)
+  }
+
   public setPositionList(payload: IElementPosition[]) {
     this.positionList = payload
   }

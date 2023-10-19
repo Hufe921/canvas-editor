@@ -13,7 +13,7 @@ import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
 import { RowFlex } from '../../dataset/enum/Row'
-import { TableBorder, TdBorder } from '../../dataset/enum/table/Table'
+import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
@@ -21,7 +21,8 @@ import { DeepRequired } from '../../interface/Common'
 import {
   IGetControlValueOption,
   IGetControlValueResult,
-  ISetControlOption
+  ISetControlExtensionOption,
+  ISetControlValueOption
 } from '../../interface/Control'
 import {
   IAppendElementListOption,
@@ -40,7 +41,7 @@ import {
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IMargin } from '../../interface/Margin'
-import { RangeContext } from '../../interface/Range'
+import { RangeContext, RangeRect } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
@@ -1253,6 +1254,27 @@ export class CommandAdapt {
     })
   }
 
+  public tableTdSlashType(payload: TdSlash) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const rowCol = this.draw.getTableParticle().getRangeRowCol()
+    if (!rowCol) return
+    const tdList = rowCol.flat()
+    // 存在则设置单元格斜线类型，否则取消设置
+    const isSetTdSlashType = tdList.some(td => td.slashType !== payload)
+    tdList.forEach(td => {
+      if (isSetTdSlashType) {
+        td.slashType = payload
+      } else {
+        delete td.slashType
+      }
+    })
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex
+    })
+  }
+
   public tableTdBackgroundColor(payload: string) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
@@ -1787,12 +1809,52 @@ export class CommandAdapt {
     const positionList = this.position.getPositionList()
     const startPageNo = positionList[startIndex].pageNo
     const endPageNo = positionList[endIndex].pageNo
+    // 坐标信息（相对编辑器书写区）
+    const rangeRects: RangeRect[] = []
+    const selectionPositionList = this.position.getSelectionPositionList()
+    if (selectionPositionList) {
+      const height = this.draw.getOriginalHeight()
+      const pageGap = this.draw.getOriginalPageGap()
+      // 起始信息及x坐标
+      let currentRowNo: number | null = null
+      let currentX = 0
+      let rangeRect: RangeRect | null = null
+      for (let p = 0; p < selectionPositionList.length; p++) {
+        const {
+          rowNo,
+          pageNo,
+          coordinate: { leftTop, rightTop },
+          lineHeight
+        } = selectionPositionList[p]
+        // 起始行变化追加选区信息
+        if (currentRowNo === null || currentRowNo !== rowNo) {
+          if (rangeRect) {
+            rangeRects.push(rangeRect)
+          }
+          rangeRect = {
+            x: leftTop[0],
+            y: leftTop[1] + pageNo * (height + pageGap),
+            width: rightTop[0] - leftTop[0],
+            height: lineHeight
+          }
+          currentRowNo = rowNo
+          currentX = leftTop[0]
+        } else {
+          rangeRect!.width = rightTop[0] - currentX
+        }
+        // 最后一个元素结束追加选区信息
+        if (p === selectionPositionList.length - 1 && rangeRect) {
+          rangeRects.push(rangeRect)
+        }
+      }
+    }
     return deepClone({
       isCollapsed,
       startElement,
       endElement,
       startPageNo,
-      endPageNo
+      endPageNo,
+      rangeRects
     })
   }
 
@@ -2016,9 +2078,19 @@ export class CommandAdapt {
     return this.draw.getControl().getValueByConceptId(payload)
   }
 
-  public setControlValue(payload: ISetControlOption) {
+  public setControlValue(payload: ISetControlValueOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.draw.getControl().setValueByConceptId(payload)
+  }
+
+  public setControlExtension(payload: ISetControlExtensionOption) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.getControl().setExtensionByConceptId(payload)
+  }
+
+  public getContainer(): HTMLDivElement {
+    return this.draw.getContainer()
   }
 }
