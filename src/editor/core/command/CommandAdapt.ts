@@ -44,8 +44,7 @@ import {
   formatElementContext,
   formatElementList,
   isTextLikeElement,
-  pickElementAttr,
-  getElementListByHTML
+  pickElementAttr
 } from '../../utils/element'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'

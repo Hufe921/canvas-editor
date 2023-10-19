@@ -82,7 +82,6 @@ export class Command {
   public executeSetLocale: CommandAdapt['setLocale']
   public executeLocationCatalog: CommandAdapt['locationCatalog']
   public executeWordTool: CommandAdapt['wordTool']
-  public executeSetHTML: CommandAdapt['setHTML']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getValue: CommandAdapt['getValue']
