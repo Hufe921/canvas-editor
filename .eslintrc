@@ -42,5 +42,5 @@
       "allowTemplateLiterals": true
     }]
   },
-  "ignorePatterns": ["node_modules", "dist", "index.html"]
+  "ignorePatterns": ["node_modules", "dist", "index.html", "docusaurus", "docs"]
 }
