@@ -2,12 +2,20 @@
  * CSS files with the .module.css suffix will be treated as CSS modules
  * and scoped locally.
  */
+ html[data-theme='light'] {
+  --background: #f0f2f4;
+}
+
+html[data-theme='dark'] {
+  --background: #242526;
+}
 
 .heroBanner {
   padding: 4rem 0;
   text-align: center;
   position: relative;
   overflow: hidden;
+  background: var(--background);
 }
 
 @media screen and (max-width: 996px) {
