@@ -11,7 +11,7 @@ import {
   IControlInstance
 } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
-import { omitObject, splitText } from '../../../../utils'
+import { omitObject, pickObject, splitText } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
@@ -36,9 +36,9 @@ export class SelectControl implements IControlInstance {
     return this.element.control?.code || null
   }
 
-  public getValue(): IElement[] {
-    const elementList = this.control.getElementList()
-    const { startIndex } = this.control.getRange()
+  public getValue(context: IControlContext = {}): IElement[] {
+    const elementList = context.elementList || this.control.getElementList()
+    const { startIndex } = context.range || this.control.getRange()
     const startElement = elementList[startIndex]
     const data: IElement[] = []
     // 向左查找
@@ -187,26 +187,31 @@ export class SelectControl implements IControlInstance {
     // 转换code
     const valueSet = valueSets.find(v => v.code === code)
     if (!valueSet) return
-    // 清空选项
-    const startIndex = this.clearSelect(context)
-    this.control.removePlaceholder(startIndex)
-    // 插入
     const elementList = context.elementList || this.control.getElementList()
-    const startElement = elementList[startIndex]
-    const anchorElement =
-      startElement.controlComponent === ControlComponent.PREFIX
-        ? omitObject(startElement, EDITOR_ELEMENT_STYLE_ATTR)
-        : startElement
-    const start = startIndex + 1
+    // 样式赋值元素-默认值的第一个字符样式
+    const styleElement = pickObject(
+      this.getValue(context)[0],
+      EDITOR_ELEMENT_STYLE_ATTR
+    )
+    // 清空选项
+    const prefixIndex = this.clearSelect(context)
+    this.control.removePlaceholder(prefixIndex)
+    // 属性赋值元素-默认为前缀属性
+    const propertyElement = omitObject(
+      elementList[prefixIndex],
+      EDITOR_ELEMENT_STYLE_ATTR
+    )
+    const start = prefixIndex + 1
     const data = splitText(valueSet.value)
     const draw = this.control.getDraw()
     for (let i = 0; i < data.length; i++) {
       const newElement: IElement = {
-        ...anchorElement,
+        ...styleElement,
+        ...propertyElement,
         value: data[i],
         controlComponent: ControlComponent.VALUE
       }
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], prefixIndex)
       draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     // 设置状态
