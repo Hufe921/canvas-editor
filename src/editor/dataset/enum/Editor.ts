@@ -16,7 +16,8 @@ export enum EditorContext {
 export enum EditorMode {
   EDIT = 'edit',
   CLEAN = 'clean',
-  READONLY = 'readonly'
+  READONLY = 'readonly',
+  FORM = 'form'
 }
 
 export enum EditorZone {

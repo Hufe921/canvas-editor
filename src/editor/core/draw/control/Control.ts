@@ -76,6 +76,24 @@ export class Control {
     return element.controlComponent === ControlComponent.POSTFIX
   }
 
+  // 判断选区是否在控件内
+  public isRangeWithinControl(): boolean {
+    const { startIndex, endIndex } = this.getRange()
+    if (!~startIndex && !~endIndex) return false
+    const elementList = this.getElementList()
+    const startElement = elementList[startIndex]
+    const endElement = elementList[endIndex]
+    if (
+      (startElement.type === ElementType.CONTROL ||
+        endElement.type === ElementType.CONTROL) &&
+      endElement.controlComponent !== ControlComponent.POSTFIX &&
+      startElement.controlId === endElement.controlId
+    ) {
+      return true
+    }
+    return false
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }

@@ -13,9 +13,9 @@ canvas-editor is essentially a set of npm [packages](https://github.com/mindfire
 
 ## Installation
 
-To install the `canvas-editor` npm package in your project
+To install the `@mindfiredigital/canvas-editor` npm package in your project
 
-The `canvas-editor` will automatically be added to your project after you run the command:
+The `@mindfiredigital/canvas-editor` will automatically be added to your project after you run the command:
 
 ```bash
 npm i @mindfiredigital/canvas-editor

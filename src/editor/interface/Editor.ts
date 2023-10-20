@@ -59,6 +59,7 @@ export interface IEditorOption {
   inactiveAlpha?: number
   historyMaxRecordCount?: number
   printPixelRatio?: number
+  maskMargin?: IMargin
   wordBreak?: WordBreak
   header?: IHeader
   footer?: IFooter

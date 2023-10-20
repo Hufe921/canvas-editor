@@ -1,4 +1,4 @@
-import { IElement } from '../../..'
+import { ElementType, IElement } from '../../..'
 import { PUNCTUATION_LIST } from '../../../dataset/constant/Common'
 import { LETTER_REG } from '../../../dataset/constant/Regular'
 import { IRowElement } from '../../../interface/Row'
@@ -37,7 +37,10 @@ export class TextParticle {
     let i = curIndex
     while (i < elementList.length) {
       const element = elementList[i]
-      if (!LETTER_REG.test(element.value)) {
+      if (
+        (element.type && element.type !== ElementType.TEXT) ||
+        !LETTER_REG.test(element.value)
+      ) {
         endElement = element
         break
       }

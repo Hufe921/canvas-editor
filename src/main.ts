@@ -1182,12 +1182,16 @@ window.onload = function () {
     {
       mode: EditorMode.READONLY,
       name: '只读模式'
+    },
+    {
+      mode: EditorMode.FORM,
+      name: '表单模式'
     }
   ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
   modeElement.onclick = function () {
     // 模式选择循环
-    modeIndex === 2 ? (modeIndex = 0) : modeIndex++
+    modeIndex === modeList.length - 1 ? (modeIndex = 0) : modeIndex++
     // 设置模式
     const { name, mode } = modeList[modeIndex]
     modeElement.innerText = name
@@ -1410,7 +1414,7 @@ window.onload = function () {
     activeMode.classList.add('active')
   }
 
-  instance.listener.contentChange = debounce(async function () {
+  const handleContentChange = async function () {
     // 字数
     const wordCount = await instance.command.getWordCount()
     document.querySelector<HTMLSpanElement>('.word-count')!.innerText = `${
@@ -1420,7 +1424,9 @@ window.onload = function () {
     if (isCatalogShow) {
       updateCatalog()
     }
-  }, 200)
+  }
+  instance.listener.contentChange = debounce(handleContentChange, 200)
+  handleContentChange()
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
