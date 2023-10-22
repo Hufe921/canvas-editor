@@ -18,3 +18,13 @@ instance.override.overrideFunction = ()=>{}
 ```javascript
 instance.override.paste = (evt: ClipboardEvent) => void
 ```
+
+## copy
+
+功能：重写复制方法
+
+用法：
+
+```javascript
+instance.override.copy = () => void
+```
