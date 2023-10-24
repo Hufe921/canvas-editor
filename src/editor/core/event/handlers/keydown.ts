@@ -1,4 +1,4 @@
-import { EditorZone } from '../../..'
+import { EditorMode, EditorZone } from '../../..'
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
@@ -349,11 +349,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       direction: isUp ? MoveDirection.UP : MoveDirection.DOWN
     })
   } else if (isMod(evt) && evt.key === KeyMap.Z) {
-    if (isReadonly) return
+    if (isReadonly && draw.getMode() !== EditorMode.FORM) return
     historyManager.undo()
     evt.preventDefault()
   } else if (isMod(evt) && evt.key === KeyMap.Y) {
-    if (isReadonly) return
+    if (isReadonly && draw.getMode() !== EditorMode.FORM) return
     historyManager.redo()
     evt.preventDefault()
   } else if (isMod(evt) && evt.key === KeyMap.C) {
