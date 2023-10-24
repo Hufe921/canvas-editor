@@ -1,6 +1,8 @@
 import { NAME_PLACEHOLDER } from '../../dataset/constant/ContextMenu'
 import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { EditorComponent } from '../../dataset/enum/Editor'
+import { DeepRequired } from '../../interface/Common'
+import { IEditorOption } from '../../interface/Editor'
 import {
   IContextMenuContext,
   IRegisterContextMenu
@@ -25,6 +27,7 @@ interface IRenderPayload {
 }
 
 export class ContextMenu {
+  private options: DeepRequired<IEditorOption>
   private draw: Draw
   private command: Command
   private range: RangeManager
@@ -37,6 +40,7 @@ export class ContextMenu {
   private context: IContextMenuContext | null
 
   constructor(draw: Draw, command: Command) {
+    this.options = draw.getOptions()
     this.draw = draw
     this.command = command
     this.range = draw.getRange()
@@ -57,6 +61,10 @@ export class ContextMenu {
     this._addEvent()
   }
 
+  public getContextMenuList(): IRegisterContextMenu[] {
+    return this.contextMenuList
+  }
+
   private _addEvent() {
     // 菜单权限
     this.container.addEventListener('contextmenu', this._proxyContextMenuEvent)
@@ -72,22 +80,34 @@ export class ContextMenu {
     document.removeEventListener('mousedown', this._handleSideEffect)
   }
 
-  private _proxyContextMenuEvent = (evt: MouseEvent) => {
-    this.context = this._getContext()
+  private _filterMenuList(
+    menuList: IRegisterContextMenu[]
+  ): IRegisterContextMenu[] {
+    const { contextMenuDisableKeys } = this.options
     const renderList: IRegisterContextMenu[] = []
-    let isRegisterContextMenu = false
-    for (let c = 0; c < this.contextMenuList.length; c++) {
-      const menu = this.contextMenuList[c]
+    for (let m = 0; m < menuList.length; m++) {
+      const menu = menuList[m]
+      if (
+        menu.disable ||
+        (menu.key && contextMenuDisableKeys.includes(menu.key))
+      ) {
+        continue
+      }
       if (menu.isDivider) {
         renderList.push(menu)
       } else {
-        const isMatch = menu.when?.(this.context)
-        if (isMatch) {
+        if (menu.when?.(this.context!)) {
           renderList.push(menu)
-          isRegisterContextMenu = true
         }
       }
     }
+    return renderList
+  }
+
+  private _proxyContextMenuEvent = (evt: MouseEvent) => {
+    this.context = this._getContext()
+    const renderList = this._filterMenuList(this.contextMenuList)
+    const isRegisterContextMenu = renderList.some(menu => !menu.isDivider)
     if (isRegisterContextMenu) {
       this.dispose()
       this._render({
@@ -180,8 +200,12 @@ export class ContextMenu {
     for (let c = 0; c < contextMenuList.length; c++) {
       const menu = contextMenuList[c]
       if (menu.isDivider) {
-        // 首尾分隔符不渲染
-        if (c !== 0 && c !== contextMenuList.length - 1) {
+        // 分割线相邻 || 首尾分隔符时不渲染
+        if (
+          c !== 0 &&
+          c !== contextMenuList.length - 1 &&
+          !contextMenuList[c - 1]?.isDivider
+        ) {
           const divider = document.createElement('div')
           divider.classList.add(`${EDITOR_PREFIX}-contextmenu-divider`)
           contextMenuContent.append(divider)
@@ -191,28 +215,32 @@ export class ContextMenu {
         menuItem.classList.add(`${EDITOR_PREFIX}-contextmenu-item`)
         // 菜单事件
         if (menu.childMenus) {
-          menuItem.classList.add(`${EDITOR_PREFIX}-contextmenu-sub-item`)
-          menuItem.onmouseenter = () => {
-            this._setHoverStatus(menuItem, true)
-            this._removeSubMenu(contextMenuContainer)
-            // 子菜单
-            const subMenuRect = menuItem.getBoundingClientRect()
-            const left = subMenuRect.left + subMenuRect.width
-            const top = subMenuRect.top
-            childMenuContainer = this._render({
-              contextMenuList: menu.childMenus!,
-              left,
-              top,
-              parentMenuContainer: contextMenuContainer
-            })
-          }
-          menuItem.onmouseleave = evt => {
-            // 移动到子菜单选项选中状态不变化
-            if (
-              !childMenuContainer ||
-              !childMenuContainer.contains(evt.relatedTarget as Node)
-            ) {
-              this._setHoverStatus(menuItem, false)
+          const childMenus = this._filterMenuList(menu.childMenus)
+          const isRegisterContextMenu = childMenus.some(menu => !menu.isDivider)
+          if (isRegisterContextMenu) {
+            menuItem.classList.add(`${EDITOR_PREFIX}-contextmenu-sub-item`)
+            menuItem.onmouseenter = () => {
+              this._setHoverStatus(menuItem, true)
+              this._removeSubMenu(contextMenuContainer)
+              // 子菜单
+              const subMenuRect = menuItem.getBoundingClientRect()
+              const left = subMenuRect.left + subMenuRect.width
+              const top = subMenuRect.top
+              childMenuContainer = this._render({
+                contextMenuList: childMenus,
+                left,
+                top,
+                parentMenuContainer: contextMenuContainer
+              })
+            }
+            menuItem.onmouseleave = evt => {
+              // 移动到子菜单选项选中状态不变化
+              if (
+                !childMenuContainer ||
+                !childMenuContainer.contains(evt.relatedTarget as Node)
+              ) {
+                this._setHoverStatus(menuItem, false)
+              }
             }
           }
         } else {

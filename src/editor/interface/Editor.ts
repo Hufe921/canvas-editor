@@ -65,6 +65,7 @@ export interface IEditorOption {
   printPixelRatio?: number
   maskMargin?: IMargin
   letterClass?: string[]
+  contextMenuDisableKeys?: string[]
   wordBreak?: WordBreak
   header?: IHeader
   footer?: IFooter
