@@ -301,9 +301,11 @@ export class Control {
     }
   }
 
-  public removeControl(startIndex: number): number {
+  public removeControl(startIndex: number): number | null {
     const elementList = this.getElementList()
     const startElement = elementList[startIndex]
+    const { deletable = true } = startElement.control!
+    if (!deletable) return null
     let leftIndex = -1
     let rightIndex = -1
     // 向左查找
@@ -395,7 +397,7 @@ export class Control {
     return this.activeControl.setValue(data)
   }
 
-  public keydown(evt: KeyboardEvent): number {
+  public keydown(evt: KeyboardEvent): number | null {
     if (!this.activeControl) {
       throw new Error('active control is null')
     }

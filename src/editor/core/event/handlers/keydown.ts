@@ -28,7 +28,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   const activeControl = control.getActiveControl()
   if (evt.key === KeyMap.Backspace) {
     if (isReadonly || isPartRangeInControlOutside) return
-    let curIndex: number
+    let curIndex: number | null
     if (activeControl) {
       curIndex = control.keydown(evt)
     } else {
@@ -58,11 +58,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
       curIndex = isCollapsed ? index - 1 : startIndex
     }
+    if (curIndex === null) return
     rangeManager.setRange(curIndex, curIndex)
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Delete) {
     if (isReadonly || isPartRangeInControlOutside) return
-    let curIndex: number
+    let curIndex: number | null
     if (activeControl) {
       curIndex = control.keydown(evt)
     } else if (elementList[endIndex + 1]?.type === ElementType.CONTROL) {
@@ -79,6 +80,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
       curIndex = isCollapsed ? index : startIndex
     }
+    if (curIndex === null) return
     rangeManager.setRange(curIndex, curIndex)
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Enter) {

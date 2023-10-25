@@ -108,7 +108,7 @@ export class TextControl implements IControlInstance {
     return startIndex
   }
 
-  public keydown(evt: KeyboardEvent): number {
+  public keydown(evt: KeyboardEvent): number | null {
     const elementList = this.control.getElementList()
     const range = this.control.getRange()
     // 收缩边界到Value内
