@@ -172,6 +172,11 @@ export class CommandAdapt {
     })
   }
 
+  public blur() {
+    this.range.clearRange()
+    this.draw.getCursor().recoveryCursor()
+  }
+
   public undo() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return

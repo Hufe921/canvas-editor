@@ -10,6 +10,7 @@ export class Command {
   public executeBackspace: CommandAdapt['backspace']
   public executeSetRange: CommandAdapt['setRange']
   public executeForceUpdate: CommandAdapt['forceUpdate']
+  public executeBlur: CommandAdapt['blur']
   public executeUndo: CommandAdapt['undo']
   public executeRedo: CommandAdapt['redo']
   public executePainter: CommandAdapt['painter']
@@ -112,6 +113,7 @@ export class Command {
     this.executeBackspace = adapt.backspace.bind(adapt)
     this.executeSetRange = adapt.setRange.bind(adapt)
     this.executeForceUpdate = adapt.forceUpdate.bind(adapt)
+    this.executeBlur = adapt.blur.bind(adapt)
     // 撤销、重做、格式刷、清除格式
     this.executeUndo = adapt.undo.bind(adapt)
     this.executeRedo = adapt.redo.bind(adapt)

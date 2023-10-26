@@ -89,6 +89,16 @@ Usage:
 instance.command.executeForceUpdate(options?: IForceUpdateOption)
 ```
 
+## executeBlur
+
+Feature: Set editor blur
+
+Usage:
+
+```javascript
+instance.command.executeBlur()
+```
+
 ## executeUndo
 
 Feature: Undo
