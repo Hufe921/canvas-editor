@@ -16,7 +16,7 @@ export const INTERNAL_CONTEXT_MENU_KEY = {
   HYPERLINK: {
     DELETE: 'hyperlinkDelete',
     CANCEL: 'hyperlinkCancel',
-    EDIT: 'hyperEdit'
+    EDIT: 'hyperlinkEdit'
   },
   IMAGE: {
     CHANGE: 'imageChange',
