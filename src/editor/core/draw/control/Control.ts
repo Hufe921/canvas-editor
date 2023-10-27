@@ -301,8 +301,11 @@ export class Control {
     }
   }
 
-  public removeControl(startIndex: number): number | null {
-    const elementList = this.getElementList()
+  public removeControl(
+    startIndex: number,
+    context: IControlContext = {}
+  ): number | null {
+    const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     const { deletable = true } = startElement.control!
     if (!deletable) return null
@@ -343,8 +346,8 @@ export class Control {
     return leftIndex
   }
 
-  public removePlaceholder(startIndex: number) {
-    const elementList = this.getElementList()
+  public removePlaceholder(startIndex: number, context: IControlContext = {}) {
+    const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     const nextElement = elementList[startIndex + 1]
     if (
@@ -364,8 +367,8 @@ export class Control {
     }
   }
 
-  public addPlaceholder(startIndex: number) {
-    const elementList = this.getElementList()
+  public addPlaceholder(startIndex: number, context: IControlContext = {}) {
+    const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     const control = startElement.control!
     if (!control.placeholder) return
@@ -471,16 +474,23 @@ export class Control {
     if (isReadonly) return
     let isExistSet = false
     const { conceptId, value } = payload
-    const data = [
-      this.draw.getHeaderElementList(),
-      this.draw.getOriginalMainElementList(),
-      this.draw.getFooterElementList()
-    ]
-    for (const elementList of data) {
+    // 设置值
+    const setValue = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        // 表格下钻处理
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              setValue(td.value)
+            }
+          }
+        }
         if (element?.control?.conceptId !== conceptId) continue
         isExistSet = true
         const { type } = element.control!
@@ -543,6 +553,15 @@ export class Control {
         }
         i = newEndIndex
       }
+    }
+    // 页眉、内容区、页脚同时处理
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      setValue(elementList)
     }
     if (isExistSet) {
       this.draw.render({

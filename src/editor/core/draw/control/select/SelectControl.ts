@@ -175,7 +175,7 @@ export class SelectControl implements IControlInstance {
     const draw = this.control.getDraw()
     draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
     // 增加占位符
-    this.control.addPlaceholder(preIndex)
+    this.control.addPlaceholder(preIndex, context)
     this.element.control!.code = null
     return preIndex
   }
@@ -195,7 +195,7 @@ export class SelectControl implements IControlInstance {
     )
     // 清空选项
     const prefixIndex = this.clearSelect(context)
-    this.control.removePlaceholder(prefixIndex)
+    this.control.removePlaceholder(prefixIndex, context)
     // 属性赋值元素-默认为前缀属性
     const propertyElement = omitObject(
       elementList[prefixIndex],
