@@ -84,8 +84,8 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement.type === ElementType.CONTROL ||
-        endElement.type === ElementType.CONTROL) &&
+      (startElement?.type === ElementType.CONTROL ||
+        endElement?.type === ElementType.CONTROL) &&
       startElement.controlId !== endElement.controlId
     ) {
       return true

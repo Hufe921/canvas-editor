@@ -23,7 +23,7 @@ export const globalMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.global.copy',
     shortCut: `${isApple ? '⌘' : 'Ctrl'} + C`,
     when: payload => {
-      return payload.editorHasSelection
+      return payload.editorHasSelection || payload.isCrossRowCol
     },
     callback: (command: Command) => {
       command.executeCopy()
