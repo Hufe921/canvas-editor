@@ -1,4 +1,4 @@
-import { EditorZone } from '../../..'
+import { EditorMode, EditorZone } from '../../..'
 import { ZERO } from '../../../dataset/constant/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
@@ -24,11 +24,10 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   const isCollapsed = startIndex === endIndex
   // 当前激活控件
   const control = draw.getControl()
-  const isPartRangeInControlOutside = control.isPartRangeInControlOutside()
   const activeControl = control.getActiveControl()
   if (evt.key === KeyMap.Backspace) {
-    if (isReadonly || isPartRangeInControlOutside) return
-    let curIndex: number
+    if (isReadonly || control.isPartRangeInControlOutside()) return
+    let curIndex: number | null
     if (activeControl) {
       curIndex = control.keydown(evt)
     } else {
@@ -58,11 +57,12 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
       curIndex = isCollapsed ? index - 1 : startIndex
     }
+    if (curIndex === null) return
     rangeManager.setRange(curIndex, curIndex)
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Delete) {
-    if (isReadonly || isPartRangeInControlOutside) return
-    let curIndex: number
+    if (isReadonly || control.isPartRangeInControlOutside()) return
+    let curIndex: number | null
     if (activeControl) {
       curIndex = control.keydown(evt)
     } else if (elementList[endIndex + 1]?.type === ElementType.CONTROL) {
@@ -79,10 +79,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       }
       curIndex = isCollapsed ? index : startIndex
     }
+    if (curIndex === null) return
     rangeManager.setRange(curIndex, curIndex)
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Enter) {
-    if (isReadonly || isPartRangeInControlOutside) return
+    if (isReadonly || control.isPartRangeInControlOutside()) return
     const enterText: IElement = {
       value: ZERO
     }
@@ -349,11 +350,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       direction: isUp ? MoveDirection.UP : MoveDirection.DOWN
     })
   } else if (isMod(evt) && evt.key === KeyMap.Z) {
-    if (isReadonly) return
+    if (isReadonly && draw.getMode() !== EditorMode.FORM) return
     historyManager.undo()
     evt.preventDefault()
   } else if (isMod(evt) && evt.key === KeyMap.Y) {
-    if (isReadonly) return
+    if (isReadonly && draw.getMode() !== EditorMode.FORM) return
     historyManager.redo()
     evt.preventDefault()
   } else if (isMod(evt) && evt.key === KeyMap.C) {

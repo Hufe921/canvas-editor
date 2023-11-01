@@ -89,6 +89,16 @@ instance.command.executeSetRange(startIndex: number , endIndex: number)
 instance.command.executeForceUpdate(options?: IForceUpdateOption)
 ```
 
+## executeBlur
+
+功能：设置编辑器失焦
+
+用法：
+
+```javascript
+instance.command.executeBlur()
+```
+
 ## executeUndo
 
 功能：撤销

@@ -14,12 +14,14 @@ interface IRegisterPayload {
 
 export class Register {
   public contextMenuList: (payload: IRegisterContextMenu[]) => void
+  public getContextMenuList: () => IRegisterContextMenu[]
   public shortcutList: (payload: IRegisterShortcut[]) => void
   public langMap: (locale: string, lang: DeepPartial<ILang>) => void
 
   constructor(payload: IRegisterPayload) {
     const { contextMenu, shortcut, i18n } = payload
     this.contextMenuList = contextMenu.registerContextMenuList.bind(contextMenu)
+    this.getContextMenuList = contextMenu.getContextMenuList.bind(contextMenu)
     this.shortcutList = shortcut.registerShortcutList.bind(shortcut)
     this.langMap = i18n.registerLangMap.bind(i18n)
   }

@@ -66,6 +66,7 @@ import { Override } from './core/override/Override'
 import { defaultPageBreakOption } from './dataset/constant/PageBreak'
 import { IPageBreak } from './interface/PageBreak'
 import { LETTER_CLASS } from './dataset/constant/Common'
+import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
 
 export default class Editor {
   public command: Command
@@ -167,6 +168,7 @@ export default class Editor {
       printPixelRatio: 3,
       maskMargin: [0, 0, 0, 0],
       letterClass: [LETTER_CLASS.ENGLISH],
+      contextMenuDisableKeys: [],
       ...options,
       header: headerOptions,
       footer: footerOptions,
@@ -248,6 +250,7 @@ export default class Editor {
 export {
   EDITOR_COMPONENT,
   LETTER_CLASS,
+  INTERNAL_CONTEXT_MENU_KEY,
   Editor,
   RowFlex,
   VerticalAlign,

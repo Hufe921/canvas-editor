@@ -73,7 +73,7 @@ export class TextControl implements IControlInstance {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
       // 移除空白占位符
-      this.control.removePlaceholder(startIndex)
+      this.control.removePlaceholder(startIndex, context)
     }
     // 插入
     const startElement = elementList[startIndex]
@@ -108,7 +108,7 @@ export class TextControl implements IControlInstance {
     return startIndex
   }
 
-  public keydown(evt: KeyboardEvent): number {
+  public keydown(evt: KeyboardEvent): number | null {
     const elementList = this.control.getElementList()
     const range = this.control.getRange()
     // 收缩边界到Value内

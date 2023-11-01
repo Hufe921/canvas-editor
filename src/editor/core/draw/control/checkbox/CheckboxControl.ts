@@ -111,7 +111,7 @@ export class CheckboxControl implements IControlInstance {
     control!.code = data.join(',')
   }
 
-  public keydown(evt: KeyboardEvent): number {
+  public keydown(evt: KeyboardEvent): number | null {
     const range = this.control.getRange()
     // 收缩边界到Value内
     this.control.shrinkBoundary()

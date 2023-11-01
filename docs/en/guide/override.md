@@ -18,3 +18,13 @@ Usage:
 ```javascript
 instance.override.paste = (evt: ClipboardEvent) => void
 ```
+
+## copy
+
+Feature: Override internal copy function
+
+Usage:
+
+```javascript
+instance.override.copy = () => void
+```

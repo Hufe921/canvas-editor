@@ -14,11 +14,13 @@ export interface IContextMenuContext {
 }
 
 export interface IRegisterContextMenu {
+  key?: string
   i18nPath?: string
   isDivider?: boolean
   icon?: string
   name?: string
   shortCut?: string
+  disable?: boolean
   when?: (payload: IContextMenuContext) => boolean
   callback?: (command: Command, context: IContextMenuContext) => any
   childMenus?: IRegisterContextMenu[]

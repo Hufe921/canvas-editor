@@ -1,3 +1,26 @@
+## [0.9.53](https://github.com/Hufe921/canvas-editor/compare/v0.9.52...v0.9.53) (2023-10-26)
+
+
+### Bug Fixes
+
+* cannot undo and redo in form mode #301 ([22c69ee](https://github.com/Hufe921/canvas-editor/commit/22c69eec728e392346de179086bd90f81486a8c9)), closes [#301](https://github.com/Hufe921/canvas-editor/issues/301)
+
+
+### Features
+
+* add control deletable rule #301 ([e5acf6e](https://github.com/Hufe921/canvas-editor/commit/e5acf6efcbb719790770978656f01d8597f6a1e8)), closes [#301](https://github.com/Hufe921/canvas-editor/issues/301)
+* add executeBlur api #262 ([d9f7d50](https://github.com/Hufe921/canvas-editor/commit/d9f7d5045f956f0c184457562d7d0cbd8bf6033d)), closes [#262](https://github.com/Hufe921/canvas-editor/issues/262)
+* add modify internal context menu interface #300 ([0891f05](https://github.com/Hufe921/canvas-editor/commit/0891f053d2279e0db816118e073be9a1e268460a)), closes [#300](https://github.com/Hufe921/canvas-editor/issues/300)
+* add override internal copy function api ([45e7eab](https://github.com/Hufe921/canvas-editor/commit/45e7eab119a303482dde317298478fdc41536294))
+* add set control extension value api #293 ([096778d](https://github.com/Hufe921/canvas-editor/commit/096778d37c8176bb70c2d7eb4534138b4af5a712)), closes [#293](https://github.com/Hufe921/canvas-editor/issues/293)
+
+
+### Performance Improvements
+
+* set select control value style #298 ([f4d7554](https://github.com/Hufe921/canvas-editor/commit/f4d75544d0a063a05a06bc5dbac74fd4d176eb5f)), closes [#298](https://github.com/Hufe921/canvas-editor/issues/298)
+
+
+
 ## [0.9.52](https://github.com/Hufe921/canvas-editor/compare/v0.9.51...v0.9.52) (2023-10-12)
 
 
