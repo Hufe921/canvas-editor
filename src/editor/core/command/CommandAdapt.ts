@@ -1920,11 +1920,12 @@ export class CommandAdapt {
     if (!payload.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
+    const cloneElementList = deepClone(payload)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
-    formatElementContext(elementList, payload, startIndex)
-    this.draw.insertElementList(payload)
+    formatElementContext(elementList, cloneElementList, startIndex)
+    this.draw.insertElementList(cloneElementList)
   }
 
   public appendElementList(
@@ -1934,7 +1935,7 @@ export class CommandAdapt {
     if (!elementList.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    this.draw.appendElementList(elementList, options)
+    this.draw.appendElementList(deepClone(elementList), options)
   }
 
   public setValue(payload: Partial<IEditorData>) {
