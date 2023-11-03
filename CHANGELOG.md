@@ -1,3 +1,25 @@
+## [0.9.54](https://github.com/Hufe921/canvas-editor/compare/v0.9.53...v0.9.54) (2023-11-03)
+
+
+### Bug Fixes
+
+* clone payload data when call add element api #308 ([aeefca3](https://github.com/Hufe921/canvas-editor/commit/aeefca34caa86f9f52fb742e3f7555cd0364baa4)), closes [#308](https://github.com/Hufe921/canvas-editor/issues/308)
+* print error of control assistant components in table #311 ([7fb0150](https://github.com/Hufe921/canvas-editor/commit/7fb0150635f80d62c2c27d2e2c976a3f0fa1deff)), closes [#311](https://github.com/Hufe921/canvas-editor/issues/311)
+* set control value error in table #302 ([7fba458](https://github.com/Hufe921/canvas-editor/commit/7fba458d523ae06678557add90dc9d19a3cb02cb)), closes [#302](https://github.com/Hufe921/canvas-editor/issues/302)
+
+
+### Chores
+
+* update hyperlink spell ([1bde309](https://github.com/Hufe921/canvas-editor/commit/1bde309cb5bcf797416a019f1a1507fd155dbed6))
+
+
+### Features
+
+* add copy table cell content option to contextmenu #307 ([a94328f](https://github.com/Hufe921/canvas-editor/commit/a94328fa956c5164111c27773f557b9761cd775e)), closes [#307](https://github.com/Hufe921/canvas-editor/issues/307)
+* support for insert more elements into control #306 ([d2d649b](https://github.com/Hufe921/canvas-editor/commit/d2d649b01123a13962b5ba45c2982f80cc701306)), closes [#306](https://github.com/Hufe921/canvas-editor/issues/306)
+
+
+
 ## [0.9.53](https://github.com/Hufe921/canvas-editor/compare/v0.9.52...v0.9.53) (2023-10-26)
 
 
