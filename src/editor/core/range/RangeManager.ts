@@ -275,7 +275,7 @@ export class RangeManager {
     if (~startIndex && ~endIndex) {
       const elementList = this.draw.getElementList()
       const element = elementList[startIndex]
-      if (element?.type === ElementType.CONTROL) {
+      if (element?.controlId) {
         control.initControl()
         return
       }

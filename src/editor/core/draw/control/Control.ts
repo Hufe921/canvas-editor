@@ -68,7 +68,7 @@ export class Control {
           }
         }
       }
-      if (element.type !== ElementType.CONTROL || element.control?.minWidth) {
+      if (!element.controlId || element.control?.minWidth) {
         return true
       }
       return (
@@ -87,8 +87,7 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement?.type === ElementType.CONTROL ||
-        endElement?.type === ElementType.CONTROL) &&
+      startElement.controlId &&
       startElement.controlId !== endElement.controlId
     ) {
       return true
@@ -114,10 +113,9 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement.type === ElementType.CONTROL ||
-        endElement.type === ElementType.CONTROL) &&
-      endElement.controlComponent !== ControlComponent.POSTFIX &&
-      startElement.controlId === endElement.controlId
+      startElement.controlId &&
+      startElement.controlId === endElement.controlId &&
+      endElement.controlComponent !== ControlComponent.POSTFIX
     ) {
       return true
     }

@@ -366,8 +366,6 @@ export class CommandAdapt {
   public superscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const superscriptIndex = selection.findIndex(
@@ -397,8 +395,6 @@ export class CommandAdapt {
   public subscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const subscriptIndex = selection.findIndex(
@@ -1947,7 +1943,7 @@ export class CommandAdapt {
     if (startIndex !== endIndex) return
     const elementList = this.draw.getElementList()
     const element = elementList[startIndex]
-    if (element.type !== ElementType.CONTROL) return
+    if (!element.controlId) return
     // 删除控件
     const control = this.draw.getControl()
     const newIndex = control.removeControl(startIndex)

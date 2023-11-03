@@ -65,7 +65,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     let curIndex: number | null
     if (activeControl) {
       curIndex = control.keydown(evt)
-    } else if (elementList[endIndex + 1]?.type === ElementType.CONTROL) {
+    } else if (elementList[endIndex + 1]?.controlId) {
       curIndex = control.removeControl(endIndex + 1)
     } else {
       if (!isCollapsed) {
