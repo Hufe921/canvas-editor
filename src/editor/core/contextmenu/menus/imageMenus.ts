@@ -1,3 +1,4 @@
+import { INTERNAL_CONTEXT_MENU_KEY } from '../../../dataset/constant/ContextMenu'
 import { ImageDisplay } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import {
@@ -5,9 +6,13 @@ import {
   IRegisterContextMenu
 } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
+const {
+  IMAGE: { CHANGE, SAVE_AS, TEXT_WRAP, TEXT_WRAP_EMBED, TEXT_WRAP_UP_DOWN }
+} = INTERNAL_CONTEXT_MENU_KEY
 
 export const imageMenus: IRegisterContextMenu[] = [
   {
+    key: CHANGE,
     i18nPath: 'contextmenu.image.change',
     icon: 'image-change',
     when: payload => {
@@ -36,6 +41,7 @@ export const imageMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    key: SAVE_AS,
     i18nPath: 'contextmenu.image.saveAs',
     icon: 'image',
     when: payload => {
@@ -49,6 +55,7 @@ export const imageMenus: IRegisterContextMenu[] = [
     }
   },
   {
+    key: TEXT_WRAP,
     i18nPath: 'contextmenu.image.textWrap',
     when: payload => {
       return (
@@ -59,6 +66,7 @@ export const imageMenus: IRegisterContextMenu[] = [
     },
     childMenus: [
       {
+        key: TEXT_WRAP_EMBED,
         i18nPath: 'contextmenu.image.textWrapType.embed',
         when: () => true,
         callback: (command: Command, context: IContextMenuContext) => {
@@ -69,6 +77,7 @@ export const imageMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        key: TEXT_WRAP_UP_DOWN,
         i18nPath: 'contextmenu.image.textWrapType.upDown',
         when: () => true,
         callback: (command: Command, context: IContextMenuContext) => {

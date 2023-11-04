@@ -21,6 +21,10 @@ export interface IControlCheckbox {
   checkbox?: ICheckbox
 }
 
+export interface IControlRule {
+  deletable?: boolean
+}
+
 export interface IControlBasic {
   type: ControlType
   value: IElement[] | null
@@ -30,9 +34,11 @@ export interface IControlBasic {
   postfix?: string
   minWidth?: number
   underline?: boolean
+  extension?: unknown
 }
 
 export type IControl = IControlBasic &
+  IControlRule &
   Partial<IControlSelect> &
   Partial<IControlCheckbox>
 
@@ -62,7 +68,7 @@ export interface IControlInstance {
 
   setValue(data: IElement[]): number
 
-  keydown(evt: KeyboardEvent): number
+  keydown(evt: KeyboardEvent): number | null
 
   cut(): number
 }
@@ -76,12 +82,17 @@ export interface IGetControlValueOption {
   conceptId: string
 }
 
-export type IGetControlValueResult = {
+export type IGetControlValueResult = (Omit<IControl, 'value'> & {
   value: string | null
   innerText: string | null
-}[]
+})[]
 
-export interface ISetControlOption {
+export interface ISetControlValueOption {
   conceptId: string
   value: string
+}
+
+export interface ISetControlExtensionOption {
+  conceptId: string
+  extension: unknown
 }

@@ -1549,16 +1549,10 @@ function initEditorInstance(
 
   instance.listener.controlChange = function (payload) {
     const disableMenusInControlContext = [
-      'superscript',
-      'subscript',
       'table',
-      'image',
       'hyperlink',
       'separator',
-      'codeblock',
-      'page-break',
-      'control',
-      'checkbox'
+      'page-break'
     ]
     // 菜单操作权限
     disableMenusInControlContext.forEach(menu => {

@@ -44,7 +44,7 @@ function pickText(elementList: IElement[]): string {
         e++
       }
       text += pickText(valueList)
-    } else if (element.type === ElementType.CONTROL) {
+    } else if (element.controlId) {
       const controlId = element.controlId
       const valueList: IElement[] = []
       while (e < elementList.length) {
@@ -54,7 +54,7 @@ function pickText(elementList: IElement[]): string {
           break
         }
         if (controlE.controlComponent === ControlComponent.VALUE) {
-          delete controlE.type
+          delete controlE.controlId
           valueList.push(controlE)
         }
         e++

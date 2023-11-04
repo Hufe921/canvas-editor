@@ -74,6 +74,13 @@ export class Position {
     return this.positionList
   }
 
+  public getSelectionPositionList(): IElementPosition[] | null {
+    const { startIndex, endIndex } = this.draw.getRange().getRange()
+    if (startIndex === endIndex) return null
+    const positionList = this.getPositionList()
+    return positionList.slice(startIndex + 1, endIndex + 1)
+  }
+
   public setPositionList(payload: IElementPosition[]) {
     this.positionList = payload
   }
@@ -308,7 +315,7 @@ export class Position {
                     tdValueElement.type === ElementType.CHECKBOX ||
                     tdValueElement.controlComponent ===
                       ControlComponent.CHECKBOX,
-                  isControl: tdValueElement.type === ElementType.CONTROL,
+                  isControl: !!tdValueElement.controlId,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
                   isTable: true,
@@ -359,7 +366,7 @@ export class Position {
         return {
           hitLineStartIndex,
           index: curPositionIndex,
-          isControl: element.type === ElementType.CONTROL
+          isControl: !!element.controlId
         }
       }
     }
@@ -464,7 +471,7 @@ export class Position {
     return {
       hitLineStartIndex,
       index: curPositionIndex,
-      isControl: elementList[curPositionIndex]?.type === ElementType.CONTROL
+      isControl: !!elementList[curPositionIndex]?.controlId
     }
   }
 

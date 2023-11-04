@@ -50,17 +50,15 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       cacheRange.startIndex + 1,
       cacheRange.endIndex + 1
     )
-    const isContainControl = dragElementList.find(
-      element => element.type === ElementType.CONTROL
-    )
+    const isContainControl = dragElementList.find(element => element.controlId)
     if (isContainControl) {
       // 仅允许 (最前/后元素不是控件 || 在控件前后 || 文本控件且是值) 拖拽
       const cacheStartElement = cacheElementList[cacheRange.startIndex + 1]
       const cacheEndElement = cacheElementList[cacheRange.endIndex]
       const isAllowDragControl =
-        ((cacheStartElement.type !== ElementType.CONTROL ||
+        ((!cacheStartElement.controlId ||
           cacheStartElement.controlComponent === ControlComponent.PREFIX) &&
-          (cacheEndElement.type !== ElementType.CONTROL ||
+          (!cacheEndElement.controlId ||
             cacheEndElement.controlComponent === ControlComponent.POSTFIX)) ||
         (cacheStartElement.controlId === cacheEndElement.controlId &&
           cacheStartElement.controlComponent === ControlComponent.PREFIX &&
@@ -152,7 +150,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     )
     const cacheEndElement = cacheElementList[cacheRangeEndIndex]
     if (
-      cacheEndElement.type === ElementType.CONTROL &&
+      cacheEndElement.controlId &&
       cacheEndElement.controlComponent !== ControlComponent.POSTFIX
     ) {
       rangeManager.replaceRange({

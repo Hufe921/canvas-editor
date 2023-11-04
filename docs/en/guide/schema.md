@@ -80,6 +80,8 @@ interface IElement {
     postfix?: string;
     minWidth?: number;
     underline?: boolean;
+    extension?: unknown;
+    deletable?: boolean;
     code: string | null;
     min?: number;
     max?: number;

@@ -8,9 +8,9 @@ import {
   IControlOption,
   IGetControlValueOption,
   IGetControlValueResult,
-  ISetControlOption
+  ISetControlExtensionOption,
+  ISetControlValueOption
 } from '../../../interface/Control'
-import { IEditorData } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
@@ -56,23 +56,27 @@ export class Control {
   }
 
   // 过滤控件辅助元素（前后缀、背景提示）
-  public filterAssistElement(
-    payload: Required<IEditorData>
-  ): Required<IEditorData> {
-    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
-    editorDataKeys.forEach(key => {
-      payload[key] = payload[key].filter(element => {
-        if (element.type !== ElementType.CONTROL || element.control?.minWidth) {
-          return true
+  public filterAssistElement(elementList: IElement[]): IElement[] {
+    return elementList.filter(element => {
+      if (element.type === ElementType.TABLE) {
+        const trList = element.trList!
+        for (let r = 0; r < trList.length; r++) {
+          const tr = trList[r]
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            td.value = this.filterAssistElement(td.value)
+          }
         }
-        return (
-          element.controlComponent !== ControlComponent.PREFIX &&
-          element.controlComponent !== ControlComponent.POSTFIX &&
-          element.controlComponent !== ControlComponent.PLACEHOLDER
-        )
-      })
+      }
+      if (!element.controlId || element.control?.minWidth) {
+        return true
+      }
+      return (
+        element.controlComponent !== ControlComponent.PREFIX &&
+        element.controlComponent !== ControlComponent.POSTFIX &&
+        element.controlComponent !== ControlComponent.PLACEHOLDER
+      )
     })
-    return payload
   }
 
   // 判断选区部分在控件边界外
@@ -83,8 +87,7 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement.type === ElementType.CONTROL ||
-        endElement.type === ElementType.CONTROL) &&
+      startElement.controlId &&
       startElement.controlId !== endElement.controlId
     ) {
       return true
@@ -110,10 +113,9 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement.type === ElementType.CONTROL ||
-        endElement.type === ElementType.CONTROL) &&
-      endElement.controlComponent !== ControlComponent.POSTFIX &&
-      startElement.controlId === endElement.controlId
+      startElement.controlId &&
+      startElement.controlId === endElement.controlId &&
+      endElement.controlComponent !== ControlComponent.POSTFIX
     ) {
       return true
     }
@@ -300,9 +302,14 @@ export class Control {
     }
   }
 
-  public removeControl(startIndex: number): number {
-    const elementList = this.getElementList()
+  public removeControl(
+    startIndex: number,
+    context: IControlContext = {}
+  ): number | null {
+    const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
+    const { deletable = true } = startElement.control!
+    if (!deletable) return null
     let leftIndex = -1
     let rightIndex = -1
     // 向左查找
@@ -340,8 +347,8 @@ export class Control {
     return leftIndex
   }
 
-  public removePlaceholder(startIndex: number) {
-    const elementList = this.getElementList()
+  public removePlaceholder(startIndex: number, context: IControlContext = {}) {
+    const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     const nextElement = elementList[startIndex + 1]
     if (
@@ -361,8 +368,8 @@ export class Control {
     }
   }
 
-  public addPlaceholder(startIndex: number) {
-    const elementList = this.getElementList()
+  public addPlaceholder(startIndex: number, context: IControlContext = {}) {
+    const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     const control = startElement.control!
     if (!control.placeholder) return
@@ -394,7 +401,7 @@ export class Control {
     return this.activeControl.setValue(data)
   }
 
-  public keydown(evt: KeyboardEvent): number {
+  public keydown(evt: KeyboardEvent): number | null {
     if (!this.activeControl) {
       throw new Error('active control is null')
     }
@@ -439,6 +446,7 @@ export class Control {
       }
       if (type === ControlType.TEXT) {
         result.push({
+          ...element.control,
           value: textControlValue || null,
           innerText: textControlValue || null
         })
@@ -452,6 +460,7 @@ export class Control {
           .filter(Boolean)
           .join('')
         result.push({
+          ...element.control,
           value: code || null,
           innerText: innerText || null
         })
@@ -461,21 +470,28 @@ export class Control {
     return result
   }
 
-  public setValueByConceptId(payload: ISetControlOption) {
+  public setValueByConceptId(payload: ISetControlValueOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     let isExistSet = false
     const { conceptId, value } = payload
-    const data = [
-      this.draw.getHeaderElementList(),
-      this.draw.getOriginalMainElementList(),
-      this.draw.getFooterElementList()
-    ]
-    for (const elementList of data) {
+    // 设置值
+    const setValue = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        // 表格下钻处理
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              setValue(td.value)
+            }
+          }
+        }
         if (element?.control?.conceptId !== conceptId) continue
         isExistSet = true
         const { type } = element.control!
@@ -539,10 +555,47 @@ export class Control {
         i = newEndIndex
       }
     }
+    // 页眉、内容区、页脚同时处理
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      setValue(elementList)
+    }
     if (isExistSet) {
       this.draw.render({
         isSetCursor: false
       })
+    }
+  }
+
+  public setExtensionByConceptId(payload: ISetControlExtensionOption) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { conceptId, extension } = payload
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (element?.control?.conceptId !== conceptId) continue
+        element.control.extension = extension
+        // 修改后控件结束索引
+        let newEndIndex = i
+        while (newEndIndex < elementList.length) {
+          const nextElement = elementList[newEndIndex]
+          if (nextElement.controlId !== element.controlId) break
+          newEndIndex++
+        }
+        i = newEndIndex
+      }
     }
   }
 }

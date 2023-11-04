@@ -216,6 +216,16 @@ export function cloneProperty<T>(
   }
 }
 
+export function pickObject<T>(object: T, pickKeys: (keyof T)[]): T {
+  const newObject: T = <T>{}
+  for (const key in object) {
+    if (pickKeys.includes(key)) {
+      newObject[key] = object[key]
+    }
+  }
+  return newObject
+}
+
 export function omitObject<T>(object: T, omitKeys: (keyof T)[]): T {
   const newObject: T = <T>{}
   for (const key in object) {
