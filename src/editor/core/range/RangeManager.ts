@@ -416,6 +416,7 @@ export class RangeManager {
     const elementList = this.draw.getElementList()
     const range = this.getRange()
     const { startIndex, endIndex } = range
+    if (!~startIndex && !~endIndex) return
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (startIndex === endIndex) {
