@@ -641,6 +641,10 @@ export class Draw {
     return this.canvasEvent
   }
 
+  public getGlobalEvent(): GlobalEvent {
+    return this.globalEvent
+  }
+
   public getListener(): Listener {
     return this.listener
   }
