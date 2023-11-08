@@ -1811,10 +1811,10 @@ export class CommandAdapt {
     const endPageNo = positionList[endIndex].pageNo
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
+    const height = this.draw.getOriginalHeight()
+    const pageGap = this.draw.getOriginalPageGap()
     const selectionPositionList = this.position.getSelectionPositionList()
     if (selectionPositionList) {
-      const height = this.draw.getOriginalHeight()
-      const pageGap = this.draw.getOriginalPageGap()
       // 起始信息及x坐标
       let currentRowNo: number | null = null
       let currentX = 0
@@ -1847,6 +1847,20 @@ export class CommandAdapt {
           rangeRects.push(rangeRect)
         }
       }
+    } else {
+      const positionList = this.position.getPositionList()
+      const position = positionList[endIndex]
+      const {
+        coordinate: { rightTop },
+        pageNo,
+        lineHeight
+      } = position
+      rangeRects.push({
+        x: rightTop[0],
+        y: rightTop[1] + pageNo * (height + pageGap),
+        width: 0,
+        height: lineHeight
+      })
     }
     return deepClone({
       isCollapsed,
