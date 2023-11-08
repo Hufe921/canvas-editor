@@ -46,7 +46,7 @@ Feature: Paste
 Usage:
 
 ```javascript
-instance.command.executePaste()
+instance.command.executePaste(payload?: IPasteOption)
 ```
 
 ## executeSelectAll

@@ -40,6 +40,7 @@ import {
   IEditorText
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
+import { IPasteOption } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { RangeContext, RangeRect } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
@@ -63,6 +64,7 @@ import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { CanvasEvent } from '../event/CanvasEvent'
+import { pasteByApi } from '../event/handlers/paste'
 import { HistoryManager } from '../history/HistoryManager'
 import { I18n } from '../i18n/I18n'
 import { Position } from '../position/Position'
@@ -110,13 +112,10 @@ export class CommandAdapt {
     this.canvasEvent.copy()
   }
 
-  public async paste() {
+  public paste(payload?: IPasteOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const text = await navigator.clipboard.readText()
-    if (text) {
-      this.canvasEvent.input(text)
-    }
+    pasteByApi(this.canvasEvent, payload)
   }
 
   public selectAll() {
