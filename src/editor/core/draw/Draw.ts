@@ -257,9 +257,15 @@ export class Draw {
         main: this.elementList,
         footer: this.footer.getElementList()
       }
-      this.setEditorData(
-        this.control.filterAssistElement(deepClone(this.printModeData))
-      )
+      // 过滤控件辅助元素
+      const clonePrintModeData = deepClone(this.printModeData)
+      const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
+      editorDataKeys.forEach(key => {
+        clonePrintModeData[key] = this.control.filterAssistElement(
+          clonePrintModeData[key]
+        )
+      })
+      this.setEditorData(clonePrintModeData)
     }
     // 取消打印模式
     if (this.mode === EditorMode.PRINT && this.printModeData) {
@@ -500,7 +506,9 @@ export class Draw {
   public getTableElementList(sourceElementList: IElement[]): IElement[] {
     const positionContext = this.position.getPositionContext()
     const { index, trIndex, tdIndex } = positionContext
-    return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].value
+    return (
+      sourceElementList[index!].trList?.[trIndex!].tdList[tdIndex!].value || []
+    )
   }
 
   public getElementList(): IElement[] {
@@ -631,6 +639,10 @@ export class Draw {
 
   public getCanvasEvent(): CanvasEvent {
     return this.canvasEvent
+  }
+
+  public getGlobalEvent(): GlobalEvent {
+    return this.globalEvent
   }
 
   public getListener(): Listener {

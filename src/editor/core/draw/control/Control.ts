@@ -11,7 +11,6 @@ import {
   ISetControlExtensionOption,
   ISetControlValueOption
 } from '../../../interface/Control'
-import { IEditorData } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
@@ -57,23 +56,27 @@ export class Control {
   }
 
   // 过滤控件辅助元素（前后缀、背景提示）
-  public filterAssistElement(
-    payload: Required<IEditorData>
-  ): Required<IEditorData> {
-    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
-    editorDataKeys.forEach(key => {
-      payload[key] = payload[key].filter(element => {
-        if (element.type !== ElementType.CONTROL || element.control?.minWidth) {
-          return true
+  public filterAssistElement(elementList: IElement[]): IElement[] {
+    return elementList.filter(element => {
+      if (element.type === ElementType.TABLE) {
+        const trList = element.trList!
+        for (let r = 0; r < trList.length; r++) {
+          const tr = trList[r]
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            td.value = this.filterAssistElement(td.value)
+          }
         }
-        return (
-          element.controlComponent !== ControlComponent.PREFIX &&
-          element.controlComponent !== ControlComponent.POSTFIX &&
-          element.controlComponent !== ControlComponent.PLACEHOLDER
-        )
-      })
+      }
+      if (!element.controlId || element.control?.minWidth) {
+        return true
+      }
+      return (
+        element.controlComponent !== ControlComponent.PREFIX &&
+        element.controlComponent !== ControlComponent.POSTFIX &&
+        element.controlComponent !== ControlComponent.PLACEHOLDER
+      )
     })
-    return payload
   }
 
   // 判断选区部分在控件边界外
@@ -84,8 +87,7 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement?.type === ElementType.CONTROL ||
-        endElement?.type === ElementType.CONTROL) &&
+      startElement.controlId &&
       startElement.controlId !== endElement.controlId
     ) {
       return true
@@ -111,10 +113,9 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      (startElement.type === ElementType.CONTROL ||
-        endElement.type === ElementType.CONTROL) &&
-      endElement.controlComponent !== ControlComponent.POSTFIX &&
-      startElement.controlId === endElement.controlId
+      startElement.controlId &&
+      startElement.controlId === endElement.controlId &&
+      endElement.controlComponent !== ControlComponent.POSTFIX
     ) {
       return true
     }

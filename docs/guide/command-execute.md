@@ -46,7 +46,7 @@ instance.command.executeCopy()
 用法：
 
 ```javascript
-instance.command.executePaste()
+instance.command.executePaste(payload?: IPasteOption)
 ```
 
 ## executeSelectAll

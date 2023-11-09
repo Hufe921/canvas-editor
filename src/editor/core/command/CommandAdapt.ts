@@ -40,6 +40,7 @@ import {
   IEditorText
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
+import { IPasteOption } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { RangeContext, RangeRect } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
@@ -63,6 +64,7 @@ import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableTool } from '../draw/particle/table/TableTool'
 import { CanvasEvent } from '../event/CanvasEvent'
+import { pasteByApi } from '../event/handlers/paste'
 import { HistoryManager } from '../history/HistoryManager'
 import { I18n } from '../i18n/I18n'
 import { Position } from '../position/Position'
@@ -110,13 +112,10 @@ export class CommandAdapt {
     this.canvasEvent.copy()
   }
 
-  public async paste() {
+  public paste(payload?: IPasteOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const text = await navigator.clipboard.readText()
-    if (text) {
-      this.canvasEvent.input(text)
-    }
+    pasteByApi(this.canvasEvent, payload)
   }
 
   public selectAll() {
@@ -366,8 +365,6 @@ export class CommandAdapt {
   public superscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const superscriptIndex = selection.findIndex(
@@ -397,8 +394,6 @@ export class CommandAdapt {
   public subscript() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const subscriptIndex = selection.findIndex(
@@ -1816,10 +1811,10 @@ export class CommandAdapt {
     const endPageNo = positionList[endIndex].pageNo
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
+    const height = this.draw.getOriginalHeight()
+    const pageGap = this.draw.getOriginalPageGap()
     const selectionPositionList = this.position.getSelectionPositionList()
     if (selectionPositionList) {
-      const height = this.draw.getOriginalHeight()
-      const pageGap = this.draw.getOriginalPageGap()
       // 起始信息及x坐标
       let currentRowNo: number | null = null
       let currentX = 0
@@ -1852,6 +1847,20 @@ export class CommandAdapt {
           rangeRects.push(rangeRect)
         }
       }
+    } else {
+      const positionList = this.position.getPositionList()
+      const position = positionList[endIndex]
+      const {
+        coordinate: { rightTop },
+        pageNo,
+        lineHeight
+      } = position
+      rangeRects.push({
+        x: rightTop[0],
+        y: rightTop[1] + pageNo * (height + pageGap),
+        width: 0,
+        height: lineHeight
+      })
     }
     return deepClone({
       isCollapsed,
@@ -1947,7 +1956,7 @@ export class CommandAdapt {
     if (startIndex !== endIndex) return
     const elementList = this.draw.getElementList()
     const element = elementList[startIndex]
-    if (element.type !== ElementType.CONTROL) return
+    if (!element.controlId) return
     // 删除控件
     const control = this.draw.getControl()
     const newIndex = control.removeControl(startIndex)

@@ -1,4 +1,4 @@
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
+import { TEXTLIKE_ELEMENT_TYPE } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import {
@@ -6,7 +6,7 @@ import {
   IControlInstance
 } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
-import { omitObject } from '../../../../utils'
+import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
@@ -75,12 +75,15 @@ export class TextControl implements IControlInstance {
       // 移除空白占位符
       this.control.removePlaceholder(startIndex, context)
     }
-    // 插入
+    // 非文本类元素或前缀过渡掉样式属性
     const startElement = elementList[startIndex]
     const anchorElement =
+      (startElement.type &&
+        !TEXTLIKE_ELEMENT_TYPE.includes(startElement.type)) ||
       startElement.controlComponent === ControlComponent.PREFIX
-        ? omitObject(startElement, EDITOR_ELEMENT_STYLE_ATTR)
-        : startElement
+        ? pickObject(startElement, ['control', 'controlId'])
+        : omitObject(startElement, ['type'])
+    // 插入起始位置
     const start = range.startIndex + 1
     for (let i = 0; i < data.length; i++) {
       const newElement: IElement = {

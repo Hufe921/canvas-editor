@@ -315,7 +315,7 @@ export class Position {
                     tdValueElement.type === ElementType.CHECKBOX ||
                     tdValueElement.controlComponent ===
                       ControlComponent.CHECKBOX,
-                  isControl: tdValueElement.type === ElementType.CONTROL,
+                  isControl: !!tdValueElement.controlId,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
                   isTable: true,
@@ -366,7 +366,7 @@ export class Position {
         return {
           hitLineStartIndex,
           index: curPositionIndex,
-          isControl: element.type === ElementType.CONTROL
+          isControl: !!element.controlId
         }
       }
     }
@@ -471,7 +471,7 @@ export class Position {
     return {
       hitLineStartIndex,
       index: curPositionIndex,
-      isControl: elementList[curPositionIndex]?.type === ElementType.CONTROL
+      isControl: !!elementList[curPositionIndex]?.controlId
     }
   }
 

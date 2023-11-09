@@ -97,7 +97,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   // 预览工具组件
   const previewer = draw.getPreviewer()
   previewer.clearResizer()
-  if (isDirectHitImage && !isReadonly) {
+  if (isDirectHitImage) {
     previewer.drawResizer(
       curElement,
       positionList[curIndex],
