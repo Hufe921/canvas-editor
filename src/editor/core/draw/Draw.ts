@@ -391,6 +391,12 @@ export class Draw {
     return this.pageContainer
   }
 
+  public getScrollContainer(): HTMLDivElement | null {
+    return this.options.scrollContainerSelector
+      ? document.querySelector(this.options.scrollContainerSelector)
+      : null
+  }
+
   public getVisiblePageNoList(): number[] {
     return this.visiblePageNoList
   }

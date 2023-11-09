@@ -12,9 +12,10 @@ export interface IPageVisibleInfo {
 
 export class ScrollObserver {
   private draw: Draw
-
+  private scrollContainer: HTMLDivElement | null
   constructor(draw: Draw) {
     this.draw = draw
+    this.scrollContainer = draw.getScrollContainer()
     // 监听滚轮
     setTimeout(() => {
       if (!window.scrollY) {
@@ -25,19 +26,26 @@ export class ScrollObserver {
   }
 
   private _addEvent() {
-    document.addEventListener('scroll', this._observer)
+    if (this.scrollContainer) {
+      this.scrollContainer.addEventListener('scroll', this._observer)
+    } else {
+      document.addEventListener('scroll', this._observer)
+    }
   }
 
   public removeEvent() {
-    document.removeEventListener('scroll', this._observer)
+    if (this.scrollContainer) {
+      this.scrollContainer.removeEventListener('scroll', this._observer)
+    } else {
+      document.removeEventListener('scroll', this._observer)
+    }
   }
 
   public getElementVisibleInfo(element: Element): IElementVisibleInfo {
     const rect = element.getBoundingClientRect()
-    const viewHeight = Math.max(
-      document.documentElement.clientHeight,
-      window.innerHeight
-    )
+    const viewHeight = this.scrollContainer
+      ? this.scrollContainer.clientHeight
+      : Math.max(document.documentElement.clientHeight, window.innerHeight)
     const visibleHeight =
       Math.min(rect.bottom, viewHeight) - Math.max(rect.top, 0)
     return {

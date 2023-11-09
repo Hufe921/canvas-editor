@@ -78,6 +78,7 @@ export interface IEditorOption {
   placeholder?: IPlaceholder
   group?: IGroup
   pageBreak?: IPageBreak
+  scrollContainerSelector?: string
 }
 
 export interface IEditorResult {
