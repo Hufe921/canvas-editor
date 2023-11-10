@@ -871,49 +871,57 @@ export class CommandAdapt {
     if (isReadonly) return
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index, trIndex } = positionContext
+    const { index, trIndex, tdIndex } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
     const element = originalElementList[index!]
-    const curTrList = element.trList!
-    const curTr = curTrList[trIndex!]
+    const trList = element.trList!
+    const curTr = trList[trIndex!]
+    const curTdRowIndex = curTr.tdList[tdIndex!].rowIndex!
     // 如果是最后一行，直接删除整个表格
-    if (curTrList.length <= 1) {
+    if (trList.length <= 1) {
       this.deleteTable()
       return
+    }
+    // 之前行缩小rowspan
+    for (let r = 0; r < curTdRowIndex; r++) {
+      const tr = trList[r]
+      const tdList = tr.tdList
+      for (let d = 0; d < tdList.length; d++) {
+        const td = tdList[d]
+        if (td.rowIndex! + td.rowspan > curTdRowIndex) {
+          td.rowspan--
+        }
+      }
     }
     // 补跨行
     for (let d = 0; d < curTr.tdList.length; d++) {
       const td = curTr.tdList[d]
       if (td.rowspan > 1) {
-        let start = trIndex! + 1
-        while (start < trIndex! + td.rowspan) {
-          const tdId = getUUID()
-          const tr = curTrList[start]
-          tr.tdList.splice(d, 0, {
-            id: tdId,
-            rowspan: 1,
-            colspan: 1,
-            value: [
-              {
-                value: ZERO,
-                size: 16,
-                tableId: element.id,
-                trId: tr.id,
-                tdId
-              }
-            ]
-          })
-          start += 1
-        }
+        const tdId = getUUID()
+        const nextTr = trList[trIndex! + 1]
+        nextTr.tdList.splice(d, 0, {
+          id: tdId,
+          rowspan: td.rowspan - 1,
+          colspan: td.colspan,
+          value: [
+            {
+              value: ZERO,
+              size: 16,
+              tableId: element.id,
+              trId: nextTr.id,
+              tdId
+            }
+          ]
+        })
       }
     }
     // 删除当前行
-    curTrList.splice(trIndex!, 1)
+    trList.splice(trIndex!, 1)
     // 重新设置上下文
     this.position.setPositionContext({
       isTable: false
     })
-    this.range.setRange(0, 0)
+    this.range.clearRange()
     // 重新渲染
     this.draw.render({
       curIndex: positionContext.index
