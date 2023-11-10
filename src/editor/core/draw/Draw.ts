@@ -842,9 +842,6 @@ export class Draw {
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
     }
-    if (this.eventBus.isSubscribe('pageScaleChange')) {
-      this.eventBus.emit('pageScaleChange', payload)
-    }
   }
 
   public getPagePixelRatio(): number {
