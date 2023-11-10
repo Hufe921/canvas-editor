@@ -1,3 +1,23 @@
+## [0.9.55](https://github.com/Hufe921/canvas-editor/compare/v0.9.54...v0.9.55) (2023-11-10)
+
+
+### Bug Fixes
+
+*  break after pasting HTML #318 ([80f6531](https://github.com/Hufe921/canvas-editor/commit/80f6531b96e22b434cd10b4441dba86c8944f99b)), closes [#318](https://github.com/Hufe921/canvas-editor/issues/318)
+* delete table row boundary error #313 ([8f8bc04](https://github.com/Hufe921/canvas-editor/commit/8f8bc046db60a7c66c3b17e61b1f9f5a5c731f58)), closes [#313](https://github.com/Hufe921/canvas-editor/issues/313)
+* reset event ability after delete element #314 ([c6483a4](https://github.com/Hufe921/canvas-editor/commit/c6483a4da68881490cc25c52cafcf96386d9a0a6)), closes [#314](https://github.com/Hufe921/canvas-editor/issues/314)
+* shrink control range boundary error #305 ([a9fc226](https://github.com/Hufe921/canvas-editor/commit/a9fc226a39c3ef78d217fe7435b4b463c5879eac)), closes [#305](https://github.com/Hufe921/canvas-editor/issues/305)
+
+
+### Features
+
+* add pageScaleChange eventbus #321 ([c697586](https://github.com/Hufe921/canvas-editor/commit/c69758686de22328ac84138ed2c2aa9a0668ed78)), closes [#321](https://github.com/Hufe921/canvas-editor/issues/321)
+* add scrollContainerSelection option #320 ([192113e](https://github.com/Hufe921/canvas-editor/commit/192113e271b02cf3e4a462343a7b3d5604b90b23)), closes [#320](https://github.com/Hufe921/canvas-editor/issues/320)
+* collapsed selection rect information ([7c32f95](https://github.com/Hufe921/canvas-editor/commit/7c32f9572f4d29fbf2f5d6d3f775c5dbe2d0ba8b))
+* support for paste richtext data in contextmenu ([8989831](https://github.com/Hufe921/canvas-editor/commit/8989831474f637fe52133abc85d1ed2dc41f6354))
+
+
+
 ## [0.9.54](https://github.com/Hufe921/canvas-editor/compare/v0.9.53...v0.9.54) (2023-11-03)
 
 
