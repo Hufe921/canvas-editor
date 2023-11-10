@@ -112,11 +112,13 @@ export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
         item.getAsString(plainText => {
           host.input(plainText)
         })
+        break
       }
       if (item.type === 'text/html' && isHTML) {
         item.getAsString(htmlText => {
           pastHTML(host, htmlText)
         })
+        break
       }
     } else if (item.kind === 'file') {
       if (item.type.includes('image')) {
