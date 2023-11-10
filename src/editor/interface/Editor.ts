@@ -66,6 +66,7 @@ export interface IEditorOption {
   maskMargin?: IMargin
   letterClass?: string[]
   contextMenuDisableKeys?: string[]
+  scrollContainerSelector?: string
   wordBreak?: WordBreak
   header?: IHeader
   footer?: IFooter
@@ -78,7 +79,6 @@ export interface IEditorOption {
   placeholder?: IPlaceholder
   group?: IGroup
   pageBreak?: IPageBreak
-  scrollContainerSelector?: string
 }
 
 export interface IEditorResult {

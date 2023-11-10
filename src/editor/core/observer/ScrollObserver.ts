@@ -1,3 +1,4 @@
+import { IEditorOption } from '../../interface/Editor'
 import { debounce } from '../../utils'
 import { Draw } from '../draw/Draw'
 
@@ -12,10 +13,13 @@ export interface IPageVisibleInfo {
 
 export class ScrollObserver {
   private draw: Draw
-  private scrollContainer: HTMLDivElement | null
+  private options: Required<IEditorOption>
+  private scrollContainer: Element | Document
+
   constructor(draw: Draw) {
     this.draw = draw
-    this.scrollContainer = draw.getScrollContainer()
+    this.options = draw.getOptions()
+    this.scrollContainer = this.getScrollContainer()
     // 监听滚轮
     setTimeout(() => {
       if (!window.scrollY) {
@@ -25,27 +29,26 @@ export class ScrollObserver {
     this._addEvent()
   }
 
+  public getScrollContainer(): Element | Document {
+    return this.options.scrollContainerSelector
+      ? document.querySelector(this.options.scrollContainerSelector) || document
+      : document
+  }
+
   private _addEvent() {
-    if (this.scrollContainer) {
-      this.scrollContainer.addEventListener('scroll', this._observer)
-    } else {
-      document.addEventListener('scroll', this._observer)
-    }
+    this.scrollContainer.addEventListener('scroll', this._observer)
   }
 
   public removeEvent() {
-    if (this.scrollContainer) {
-      this.scrollContainer.removeEventListener('scroll', this._observer)
-    } else {
-      document.removeEventListener('scroll', this._observer)
-    }
+    this.scrollContainer.removeEventListener('scroll', this._observer)
   }
 
   public getElementVisibleInfo(element: Element): IElementVisibleInfo {
     const rect = element.getBoundingClientRect()
-    const viewHeight = this.scrollContainer
-      ? this.scrollContainer.clientHeight
-      : Math.max(document.documentElement.clientHeight, window.innerHeight)
+    const viewHeight =
+      this.scrollContainer === document
+        ? Math.max(document.documentElement.clientHeight, window.innerHeight)
+        : (<Element>this.scrollContainer).clientHeight
     const visibleHeight =
       Math.min(rect.bottom, viewHeight) - Math.max(rect.top, 0)
     return {
