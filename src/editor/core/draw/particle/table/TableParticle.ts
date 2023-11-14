@@ -37,7 +37,7 @@ export class TableParticle {
         const curRowIndex = rowIndex! + rowspan - 1
         if (curRowIndex !== d) {
           const changeTd = tr.tdList.splice(d, 1)[0]
-          trList[curRowIndex].tdList.splice(colIndex!, 0, changeTd)
+          trList[curRowIndex]?.tdList.splice(colIndex!, 0, changeTd)
         }
       }
     }
@@ -232,6 +232,42 @@ export class TableParticle {
     }
   }
 
+  public getTableWidth(element: IElement): number {
+    return element.colgroup!.reduce((pre, cur) => pre + cur.width, 0)
+  }
+
+  public getTableHeight(element: IElement): number {
+    const trList = element.trList
+    if (!trList?.length) return 0
+    return this.getTdListByColIndex(trList, 0).reduce(
+      (pre, cur) => pre + cur.height!,
+      0
+    )
+  }
+
+  public getRowCountByColIndex(trList: ITr[], colIndex: number): number {
+    return this.getTdListByColIndex(trList, colIndex).reduce(
+      (pre, cur) => pre + cur.rowspan,
+      0
+    )
+  }
+
+  public getTdListByColIndex(trList: ITr[], colIndex: number): ITd[] {
+    const data: ITd[] = []
+    for (let r = 0; r < trList.length; r++) {
+      const tdList = trList[r].tdList
+      for (let d = 0; d < tdList.length; d++) {
+        const td = tdList[d]
+        const min = td.colIndex!
+        const max = min + td.colspan - 1
+        if (colIndex >= min && colIndex <= max) {
+          data.push(td)
+        }
+      }
+    }
+    return data
+  }
+
   public computeRowColInfo(element: IElement) {
     const { colgroup, trList } = element
     if (!colgroup || !trList) return
@@ -245,48 +281,33 @@ export class TableParticle {
       let rowMinHeight = 0
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
-        // 计算之前行x轴偏移量
-        let offsetXIndex = 0
+        // 计算当前td所属列索引
+        let colIndex = 0
+        // 第一行td位置为当前列索引+上一个单元格colspan，否则从第一行开始计算列偏移量
         if (trList.length > 1 && t !== 0) {
-          for (let pT = 0; pT < t; pT++) {
-            const pTr = trList[pT]
-            // 相同x轴是否存在跨行
-            for (let pD = 0; pD < pTr.tdList.length; pD++) {
-              const pTd = pTr.tdList[pD]
-              const pTdX = pTd.x!
-              const pTdY = pTd.y!
-              const pTdWidth = pTd.width!
-              const pTdHeight = pTd.height!
-              // 小于
-              if (pTdX < x) continue
-              if (pTdX > x) break
-              if (pTdX === x && pTdY + pTdHeight > y) {
-                // 中间存在断行，则移到断行后td位置
-                const nextPTd = pTr.tdList[pD + 1]
-                if (
-                  nextPTd &&
-                  pTd.colIndex! + pTd.colspan !== nextPTd.colIndex
-                ) {
-                  x = nextPTd.x!
-                  offsetXIndex = nextPTd.colIndex!
-                } else {
-                  x += pTdWidth
-                  offsetXIndex += pTd.colspan
-                }
+          // 当前列起始索引：以之前单元格为起始点
+          const preTd = tr.tdList[d - 1]
+          const start = preTd ? preTd.colIndex! + preTd.colspan : d
+          for (let c = start; c < colgroup.length; c++) {
+            // 查找相同索引列之前行数，相加判断是否位置被挤占
+            const rowCount = this.getRowCountByColIndex(trList.slice(0, t), c)
+            // 不存在挤占则默认当前单元格可以存在该位置
+            if (rowCount === t) {
+              colIndex = c
+              // 重置单元格起始位置坐标
+              let preColWidth = 0
+              for (let preC = 0; preC < c; preC++) {
+                preColWidth += colgroup[preC].width
               }
+              x = preColWidth
+              break
             }
           }
-        }
-        // 计算格列数
-        let colIndex = 0
-        const preTd = tr.tdList[d - 1]
-        if (preTd) {
-          colIndex = preTd.colIndex! + offsetXIndex + 1
-          if (preTd.colspan > 1) {
-            colIndex += preTd.colspan - 1
-          }
         } else {
-          colIndex += offsetXIndex
+          const preTd = tr.tdList[d - 1]
+          if (preTd) {
+            colIndex = preTd.colIndex! + preTd.colspan
+          }
         }
         // 计算格宽高
         let width = 0
@@ -295,7 +316,8 @@ export class TableParticle {
         }
         let height = 0
         for (let row = 0; row < td.rowspan; row++) {
-          height += trList[row + t].height
+          const curTr = trList[row + t] || trList[t]
+          height += curTr.height
         }
         // y偏移量
         if (rowMinHeight === 0 || rowMinHeight > height) {

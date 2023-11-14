@@ -252,7 +252,8 @@ export class TableTool {
         let isChangeSize = false
         // 改变尺寸
         if (order === TableOrder.ROW) {
-          const tr = element.trList![index]
+          const trList = element.trList!
+          const tr = trList[index] || trList[index - 1]
           // 最大移动高度-向上移动超出最小高度限定，则减少移动量
           const { defaultTrMinHeight } = this.options
           if (dy < 0 && tr.height + dy < defaultTrMinHeight) {
