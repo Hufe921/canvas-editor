@@ -1,3 +1,13 @@
+## [0.9.56](https://github.com/Hufe921/canvas-editor/compare/v0.9.55...v0.9.56) (2023-11-14)
+
+
+### Bug Fixes
+
+* compute table row and col info boundary error #324 ([455b397](https://github.com/Hufe921/canvas-editor/commit/455b397fbc5de18ffe5a22bc9f9f68e23f9874eb)), closes [#324](https://github.com/Hufe921/canvas-editor/issues/324)
+* get and set control property in table #323 ([17cd6cc](https://github.com/Hufe921/canvas-editor/commit/17cd6ccd09e7c368e2ef98c0be2b8de526e8a4c3)), closes [#323](https://github.com/Hufe921/canvas-editor/issues/323)
+
+
+
 ## [0.9.55](https://github.com/Hufe921/canvas-editor/compare/v0.9.54...v0.9.55) (2023-11-10)
 
 
