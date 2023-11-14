@@ -641,6 +641,10 @@ export class Draw {
     return this.canvasEvent
   }
 
+  public getGlobalEvent(): GlobalEvent {
+    return this.globalEvent
+  }
+
   public getListener(): Listener {
     return this.listener
   }
@@ -831,6 +835,9 @@ export class Draw {
     })
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
+    }
+    if (this.eventBus.isSubscribe('pageScaleChange')) {
+      this.eventBus.emit('pageScaleChange', payload)
     }
   }
 
@@ -1136,7 +1143,7 @@ export class Draw {
             let curTdRealHeight = 0
             let i = 0
             while (i < td.rowspan) {
-              const curTr = trList[i + t]
+              const curTr = trList[i + t] || trList[t]
               curTdMinHeight += curTr.minHeight!
               curTdRealHeight += curTr.height!
               i++
@@ -1176,11 +1183,8 @@ export class Draw {
         // 需要重新计算表格内值
         this.tableParticle.computeRowColInfo(element)
         // 计算出表格高度
-        const tableHeight = trList.reduce((pre, cur) => pre + cur.height, 0)
-        const tableWidth = element.colgroup!.reduce(
-          (pre, cur) => pre + cur.width,
-          0
-        )
+        const tableHeight = this.tableParticle.getTableHeight(element)
+        const tableWidth = this.tableParticle.getTableWidth(element)
         element.width = tableWidth
         element.height = tableHeight
         const elementWidth = tableWidth * scale

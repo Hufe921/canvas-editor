@@ -58,6 +58,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       curIndex = isCollapsed ? index - 1 : startIndex
     }
     if (curIndex === null) return
+    draw.getGlobalEvent().setCanvasEventAbility()
     rangeManager.setRange(curIndex, curIndex)
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Delete) {
@@ -80,6 +81,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       curIndex = isCollapsed ? index : startIndex
     }
     if (curIndex === null) return
+    draw.getGlobalEvent().setCanvasEventAbility()
     rangeManager.setRange(curIndex, curIndex)
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Enter) {

@@ -16,7 +16,7 @@ Feature: Override internal paste function
 Usage:
 
 ```javascript
-instance.override.paste = (evt: ClipboardEvent) => void
+instance.override.paste = (evt?: ClipboardEvent) => void
 ```
 
 ## copy

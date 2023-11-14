@@ -16,7 +16,7 @@ instance.override.overrideFunction = ()=>{}
 用法：
 
 ```javascript
-instance.override.paste = (evt: ClipboardEvent) => void
+instance.override.paste = (evt?: ClipboardEvent) => void
 ```
 
 ## copy
