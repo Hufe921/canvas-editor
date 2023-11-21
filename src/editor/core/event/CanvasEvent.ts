@@ -141,7 +141,7 @@ export class CanvasEvent {
 
   public click() {
     // IOS系统限制非用户主动触发事件的键盘弹出
-    if (isIOS) {
+    if (isIOS && !this.draw.isReadonly()) {
       this.draw.getCursor().getAgentDom().focus()
     }
   }
