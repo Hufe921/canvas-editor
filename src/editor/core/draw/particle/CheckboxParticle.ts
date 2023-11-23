@@ -22,7 +22,7 @@ export class CheckboxParticle {
     } = this.options
     const { metrics, checkbox } = element
     // left top 四舍五入避免1像素问题
-    const left = Math.round(x + gap)
+    const left = Math.round(x + gap * scale)
     const top = Math.round(y - metrics.height + lineWidth)
     const width = metrics.width - gap * 2 * scale
     const height = metrics.height
