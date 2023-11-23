@@ -199,7 +199,7 @@ export class Draw {
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
-    this.separatorParticle = new SeparatorParticle()
+    this.separatorParticle = new SeparatorParticle(this)
     this.pageBreakParticle = new PageBreakParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
@@ -1128,7 +1128,7 @@ export class Draw {
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTdHeight = (rowHeight + tdPaddingHeight) / scale
+            const curTdHeight = rowHeight / scale + tdPaddingHeight
             // 内容高度大于当前单元格高度需增加
             if (td.height! < curTdHeight) {
               const extraHeight = curTdHeight - td.height!
