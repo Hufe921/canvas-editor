@@ -40,6 +40,17 @@ export interface IEditorOption {
   scale?: number
   pageGap?: number
   backgroundColor?: string
+  background?: string
+  backgroundAttachment?: string
+  backgroundBlendMode?: string
+  backgroundClip?: string
+  backgroundImage?: string
+  backgroundOrigin?: string
+  backgroundPosition?: string
+  backgroundPositionX?: string
+  backgroundPositionY?: string
+  backgroundRepeat?: string
+  backgroundSize?: string
   underlineColor?: string
   strikeoutColor?: string
   rangeColor?: string
