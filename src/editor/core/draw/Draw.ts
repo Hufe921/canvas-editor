@@ -1616,12 +1616,29 @@ export class Draw {
         }
         // 下划线记录
         if (element.underline || element.control?.underline) {
+          // 上下标元素下划线单独绘制
+          if (
+            (preElement?.type === ElementType.SUPERSCRIPT &&
+              element.type !== ElementType.SUPERSCRIPT) ||
+            (preElement?.type === ElementType.SUBSCRIPT &&
+              element.type !== ElementType.SUBSCRIPT)
+          ) {
+            this.underline.render(ctx)
+          }
+          // 行间距
           const rowMargin =
             defaultBasicRowMarginHeight *
             (element.rowMargin || defaultRowMargin) *
             scale
-          // 元素偏移量
-          const left = element.left || 0
+          // 元素向左偏移量
+          const offsetX = element.left || 0
+          // 上下标元素y轴偏移值
+          let offsetY = 0
+          if (element.type === ElementType.SUBSCRIPT) {
+            offsetY = this.subscriptParticle.getOffsetY(element)
+          } else if (element.type === ElementType.SUPERSCRIPT) {
+            offsetY = this.superscriptParticle.getOffsetY(element)
+          }
           // 占位符不参与颜色计算
           const color =
             element.controlComponent === ControlComponent.PLACEHOLDER
@@ -1629,9 +1646,9 @@ export class Draw {
               : element.color
           this.underline.recordFillInfo(
             ctx,
-            x - left,
-            y + curRow.height - rowMargin,
-            metrics.width + left,
+            x - offsetX,
+            y + curRow.height - rowMargin + offsetY,
+            metrics.width + offsetX,
             0,
             color
           )
