@@ -153,7 +153,7 @@ export class Search {
     }
   }
 
-  public compute(payload: string) {
+  public getMatchList(payload: string): ISearchResult[] {
     const keyword = payload.toLocaleLowerCase()
     const searchMatchList: ISearchResult[] = []
     // 分组
@@ -245,6 +245,7 @@ export class Search {
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const restArgs: ISearchResultRestArgs = {
+              tableId: tableElement.id,
               tableIndex: group.index,
               trIndex: t,
               tdIndex: d,
@@ -259,7 +260,11 @@ export class Search {
         })
       }
     }
-    this.searchMatchList = searchMatchList
+    return searchMatchList
+  }
+
+  public compute(payload: string) {
+    this.searchMatchList = this.getMatchList(payload)
   }
 
   public render(ctx: CanvasRenderingContext2D, pageIndex: number) {

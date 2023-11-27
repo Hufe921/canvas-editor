@@ -42,7 +42,7 @@ import {
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IPasteOption } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
-import { RangeContext, RangeRect } from '../../interface/Range'
+import { IRange, RangeContext, RangeRect } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
@@ -150,9 +150,25 @@ export class CommandAdapt {
     this.draw.render({ curIndex })
   }
 
-  public setRange(startIndex: number, endIndex: number) {
+  public setRange(
+    startIndex: number,
+    endIndex: number,
+    tableId?: string,
+    startTdIndex?: number,
+    endTdIndex?: number,
+    startTrIndex?: number,
+    endTrIndex?: number
+  ) {
     if (startIndex < 0 || endIndex < 0 || endIndex < startIndex) return
-    this.range.setRange(startIndex, endIndex)
+    this.range.setRange(
+      startIndex,
+      endIndex,
+      tableId,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex
+    )
     const isCollapsed = startIndex === endIndex
     this.draw.render({
       curIndex: isCollapsed ? startIndex : undefined,
@@ -160,6 +176,43 @@ export class CommandAdapt {
       isSubmitHistory: false,
       isSetCursor: isCollapsed
     })
+  }
+
+  public replaceRange(range: IRange) {
+    this.setRange(
+      range.startIndex,
+      range.endIndex,
+      range.tableId,
+      range.startTdIndex,
+      range.endTdIndex,
+      range.startTrIndex,
+      range.endTrIndex
+    )
+  }
+
+  public setPositionContext(range: IRange) {
+    const { tableId, startTrIndex, startTdIndex } = range
+    const elementList = this.draw.getOriginalElementList()
+    if (tableId) {
+      const tableElementIndex = elementList.findIndex(el => el.id === tableId)
+      if (!~tableElementIndex) return
+      const tableElement = elementList[tableElementIndex]
+      const tr = tableElement.trList![startTrIndex!]
+      const td = tr.tdList[startTdIndex!]
+      this.position.setPositionContext({
+        isTable: true,
+        index: tableElementIndex,
+        trIndex: startTrIndex,
+        tdIndex: startTdIndex,
+        tdId: td.id,
+        trId: tr.id,
+        tableId
+      })
+    } else {
+      this.position.setPositionContext({
+        isTable: false
+      })
+    }
   }
 
   public forceUpdate(options?: IForceUpdateOption) {
@@ -1888,6 +1941,10 @@ export class CommandAdapt {
   public getRangeParagraph(): IElement[] | null {
     const paragraphElementList = this.range.getRangeParagraphElementList()
     return paragraphElementList ? zipElementList(paragraphElementList) : null
+  }
+
+  public getKeywordRangeList(payload: string): IRange[] {
+    return this.range.getKeywordRangeList(payload)
   }
 
   public pageMode(payload: PageMode) {

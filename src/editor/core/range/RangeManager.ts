@@ -2,6 +2,7 @@ import { ElementType } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ControlComponent } from '../../dataset/enum/Control'
+import { EditorContext } from '../../dataset/enum/Editor'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { EventBusMap } from '../../interface/EventBus'
@@ -245,6 +246,36 @@ export class RangeManager {
       }
     }
     return false
+  }
+
+  public getKeywordRangeList(payload: string): IRange[] {
+    const searchMatchList = this.draw.getSearch().getMatchList(payload)
+    const searchRangeMap: Map<string, IRange> = new Map()
+    for (const searchMatch of searchMatchList) {
+      const searchRange = searchRangeMap.get(searchMatch.groupId)
+      if (searchRange) {
+        searchRange.endIndex += 1
+      } else {
+        const { type, groupId, tableId, index, tdIndex, trIndex } = searchMatch
+        const range: IRange = {
+          startIndex: index - 1,
+          endIndex: index
+        }
+        if (type === EditorContext.TABLE) {
+          range.tableId = tableId
+          range.startTdIndex = tdIndex
+          range.endTdIndex = tdIndex
+          range.startTrIndex = trIndex
+          range.endTrIndex = trIndex
+        }
+        searchRangeMap.set(groupId, range)
+      }
+    }
+    const rangeList: IRange[] = []
+    searchRangeMap.forEach(searchRange => {
+      rangeList.push(searchRange)
+    })
+    return rangeList
   }
 
   public setRange(
