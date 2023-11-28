@@ -67,26 +67,28 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     // 复选框
     const isSetCheckbox = isDirectHitCheckbox && !isReadonly
     if (isSetCheckbox) {
-      const { checkbox } = curElement
-      if (checkbox) {
-        checkbox.value = !checkbox.value
+      const { checkbox, control } = curElement
+      const codes = control?.code?.split(',') || []
+      if (checkbox?.value) {
+        const codeIndex = codes.findIndex(c => c === checkbox.code)
+        codes.splice(codeIndex, 1)
       } else {
-        curElement.checkbox = {
-          value: true
+        if (checkbox?.code) {
+          codes.push(checkbox.code)
         }
       }
-      const control = draw.getControl()
-      const activeControl = control.getActiveControl()
+      const activeControl = draw.getControl().getActiveControl()
       if (activeControl instanceof CheckboxControl) {
-        activeControl.setSelect()
+        activeControl.setSelect(codes)
       }
+    } else {
+      draw.render({
+        curIndex,
+        isCompute: false,
+        isSubmitHistory: false,
+        isSetCursor: !isDirectHitImage && !isDirectHitCheckbox
+      })
     }
-    draw.render({
-      curIndex,
-      isSubmitHistory: isSetCheckbox,
-      isSetCursor: !isDirectHitImage && !isDirectHitCheckbox,
-      isCompute: false
-    })
     // 首字需定位到行首，非上一行最后一个字后
     if (hitLineStartIndex) {
       host.getDraw().getCursor().drawCursor({
