@@ -419,54 +419,71 @@ export class Control {
     payload: IGetControlValueOption
   ): IGetControlValueResult {
     const { conceptId } = payload
+    const result: IGetControlValueResult = []
+    const getValue = (elementList: IElement[]) => {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        // 表格下钻处理
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              getValue(td.value)
+            }
+          }
+        }
+        if (element?.control?.conceptId !== conceptId) continue
+        const { type, code, valueSets } = element.control!
+        let j = i
+        let textControlValue = ''
+        while (j < elementList.length) {
+          const nextElement = elementList[j]
+          if (nextElement.controlId !== element.controlId) break
+          if (
+            type === ControlType.TEXT &&
+            nextElement.controlComponent === ControlComponent.VALUE
+          ) {
+            textControlValue += nextElement.value
+          }
+          j++
+        }
+        if (type === ControlType.TEXT) {
+          result.push({
+            ...element.control,
+            value: textControlValue || null,
+            innerText: textControlValue || null
+          })
+        } else if (
+          type === ControlType.SELECT ||
+          type === ControlType.CHECKBOX
+        ) {
+          const innerText = code
+            ?.split(',')
+            .map(
+              selectCode =>
+                valueSets?.find(valueSet => valueSet.code === selectCode)?.value
+            )
+            .filter(Boolean)
+            .join('')
+          result.push({
+            ...element.control,
+            value: code || null,
+            innerText: innerText || null
+          })
+        }
+        i = j
+      }
+    }
     const elementList = [
       ...this.draw.getHeaderElementList(),
       ...this.draw.getOriginalMainElementList(),
       ...this.draw.getFooterElementList()
     ]
-    const result: IGetControlValueResult = []
-    let i = 0
-    while (i < elementList.length) {
-      const element = elementList[i]
-      i++
-      if (element?.control?.conceptId !== conceptId) continue
-      const { type, code, valueSets } = element.control!
-      let j = i
-      let textControlValue = ''
-      while (j < elementList.length) {
-        const nextElement = elementList[j]
-        if (nextElement.controlId !== element.controlId) break
-        if (
-          type === ControlType.TEXT &&
-          nextElement.controlComponent === ControlComponent.VALUE
-        ) {
-          textControlValue += nextElement.value
-        }
-        j++
-      }
-      if (type === ControlType.TEXT) {
-        result.push({
-          ...element.control,
-          value: textControlValue || null,
-          innerText: textControlValue || null
-        })
-      } else if (type === ControlType.SELECT || type === ControlType.CHECKBOX) {
-        const innerText = code
-          ?.split(',')
-          .map(
-            selectCode =>
-              valueSets?.find(valueSet => valueSet.code === selectCode)?.value
-          )
-          .filter(Boolean)
-          .join('')
-        result.push({
-          ...element.control,
-          value: code || null,
-          innerText: innerText || null
-        })
-      }
-      i = j
-    }
+    getValue(elementList)
     return result
   }
 
@@ -575,16 +592,22 @@ export class Control {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const { conceptId, extension } = payload
-    const data = [
-      this.draw.getHeaderElementList(),
-      this.draw.getOriginalMainElementList(),
-      this.draw.getFooterElementList()
-    ]
-    for (const elementList of data) {
+    const setExtension = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        // 表格下钻处理
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              setExtension(td.value)
+            }
+          }
+        }
         if (element?.control?.conceptId !== conceptId) continue
         element.control.extension = extension
         // 修改后控件结束索引
@@ -596,6 +619,14 @@ export class Control {
         }
         i = newEndIndex
       }
+    }
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      setExtension(elementList)
     }
   }
 }

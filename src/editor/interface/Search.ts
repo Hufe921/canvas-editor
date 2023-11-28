@@ -7,6 +7,7 @@ export interface ISearchResultBasic {
 }
 
 export interface ISearchResultRestArgs {
+  tableId?: string
   tableIndex?: number
   trIndex?: number
   tdIndex?: number

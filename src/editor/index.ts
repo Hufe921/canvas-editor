@@ -67,6 +67,7 @@ import { defaultPageBreakOption } from './dataset/constant/PageBreak'
 import { IPageBreak } from './interface/PageBreak'
 import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
+import { IRange } from './interface/Range'
 
 export default class Editor {
   public command: Command
@@ -169,6 +170,7 @@ export default class Editor {
       maskMargin: [0, 0, 0, 0],
       letterClass: [LETTER_CLASS.ENGLISH],
       contextMenuDisableKeys: [],
+      scrollContainerSelector: '',
       ...options,
       header: headerOptions,
       footer: footerOptions,
@@ -290,5 +292,6 @@ export type {
   ILang,
   ICatalog,
   ICatalogItem,
+  IRange,
   IRangeStyle
 }

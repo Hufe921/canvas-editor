@@ -76,7 +76,35 @@ instance.command.executeBackspace()
 用法：
 
 ```javascript
-instance.command.executeSetRange(startIndex: number , endIndex: number)
+instance.command.executeSetRange(
+  startIndex: number,
+  endIndex: number,
+  tableId?: string,
+  startTdIndex?: number,
+  endTdIndex?: number,
+  startTrIndex?: number,
+  endTrIndex?: number
+)
+```
+
+## executeReplaceRange
+
+功能：替换选区
+
+用法：
+
+```javascript
+instance.command.executeReplaceRange(range: IRange)
+```
+
+## executeSetPositionContext
+
+功能：设置位置上下文
+
+用法：
+
+```javascript
+instance.command.executeSetPositionContext(range: IRange)
 ```
 
 ## executeForceUpdate
