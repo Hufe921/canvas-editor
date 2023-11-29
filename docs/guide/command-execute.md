@@ -862,6 +862,16 @@ instance.command.executeDeleteGroup(groupId: string)
 instance.command.executeLocationGroup(groupId: string)
 ```
 
+## executeSetZone
+
+功能：设置激活区域（页眉、正文、页脚）
+
+用法：
+
+```javascript
+instance.command.executeSetZone(zone: EditorZone)
+```
+
 ## executeSetControlValue
 
 功能：设置控件值

@@ -862,6 +862,16 @@ Usage:
 instance.command.executeLocationGroup(groupId: string)
 ```
 
+## executeSetZone
+
+Feature: Set active zone (header, main, footer)
+
+Usage:
+
+```javascript
+instance.command.executeSetZone(zone: EditorZone)
+```
+
 ## executeSetControlValue
 
 Feature: Set control value
