@@ -242,8 +242,6 @@ export class CommandAdapt {
   }
 
   public painter(options: IPainterOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const selection = this.range.getSelection()
     if (!selection) return
     const painterStyle: IElementStyle = {}
@@ -260,12 +258,16 @@ export class CommandAdapt {
   }
 
   public applyPainterStyle() {
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     this.canvasEvent.applyPainterStyle()
   }
 
   public format() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     selection.forEach(el => {
@@ -280,8 +282,9 @@ export class CommandAdapt {
   }
 
   public font(payload: string) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     selection.forEach(el => {
@@ -293,8 +296,9 @@ export class CommandAdapt {
   public size(payload: number) {
     const { minSize, maxSize, defaultSize } = this.options
     if (payload < minSize || payload > maxSize) return
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getTextLikeSelectionElementList()
     if (!selection || !selection.length) return
     let isExistUpdate = false
@@ -314,8 +318,9 @@ export class CommandAdapt {
   }
 
   public sizeAdd() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getTextLikeSelectionElementList()
     if (!selection || !selection.length) return
     const { defaultSize, maxSize } = this.options
@@ -338,8 +343,9 @@ export class CommandAdapt {
   }
 
   public sizeMinus() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getTextLikeSelectionElementList()
     if (!selection || !selection.length) return
     const { defaultSize, minSize } = this.options
@@ -362,8 +368,9 @@ export class CommandAdapt {
   }
 
   public bold() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const noBoldIndex = selection.findIndex(s => !s.bold)
@@ -374,8 +381,9 @@ export class CommandAdapt {
   }
 
   public italic() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const noItalicIndex = selection.findIndex(s => !s.italic)
@@ -386,8 +394,9 @@ export class CommandAdapt {
   }
 
   public underline() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const noUnderlineIndex = selection.findIndex(s => !s.underline)
@@ -401,8 +410,9 @@ export class CommandAdapt {
   }
 
   public strikeout() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const noStrikeoutIndex = selection.findIndex(s => !s.strikeout)
@@ -416,8 +426,9 @@ export class CommandAdapt {
   }
 
   public superscript() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const superscriptIndex = selection.findIndex(
@@ -445,8 +456,9 @@ export class CommandAdapt {
   }
 
   public subscript() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     const subscriptIndex = selection.findIndex(
@@ -474,8 +486,9 @@ export class CommandAdapt {
   }
 
   public color(payload: string) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     selection.forEach(el => {
@@ -488,8 +501,9 @@ export class CommandAdapt {
   }
 
   public highlight(payload: string) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
     selection.forEach(el => {
@@ -1447,6 +1461,8 @@ export class CommandAdapt {
   }
 
   public deleteHyperlink() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1468,6 +1484,8 @@ export class CommandAdapt {
   }
 
   public cancelHyperlink() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1491,6 +1509,8 @@ export class CommandAdapt {
   }
 
   public editHyperlink(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1595,8 +1615,9 @@ export class CommandAdapt {
   }
 
   public image(payload: IDrawImagePayload) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled =
+      this.draw.isReadonly() || this.control.isDisabledControl()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()

@@ -560,7 +560,9 @@ export class Draw {
     // 判断是否在控件内
     const activeControl = this.control.getActiveControl()
     if (activeControl && !this.control.isRangInPostfix()) {
-      curIndex = activeControl.setValue(payload)
+      curIndex = activeControl.setValue(payload, undefined, {
+        isIgnoreDisabledRule: true
+      })
     } else {
       const elementList = this.getElementList()
       const isCollapsed = startIndex === endIndex
