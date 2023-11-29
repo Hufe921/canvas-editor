@@ -1,34 +1,28 @@
 import Editor from '../../../src/editor'
 
-describe('菜单-分割线', () => {
-
+describe('菜单-日期选择器', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 
-  it('分割线', () => {
+  it('LaTeX', () => {
     cy.getEditor().then((editor: Editor) => {
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
-      cy.get('.menu-item__separator').click()
+      cy.get('.menu-item__date').click()
 
-      cy.get('.menu-item__separator li')
-        .eq(1)
+      cy.get('.menu-item__date li')
+        .first()
         .click()
         .then(() => {
           const data = editor.command.getValue().data.main
 
-          expect(data[0].type).to.eq('separator')
-
-          expect(data[0]?.dashArray?.[0]).to.eq(1)
-
-          expect(data[0]?.dashArray?.[1]).to.eq(1)
+          expect(data[0].type).to.eq('date')
         })
     })
   })
-
 })

@@ -1,7 +1,6 @@
 import Editor, { ControlType, ElementType } from '../../../src/editor'
 
 describe('控件-文本型', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -18,15 +17,17 @@ describe('控件-文本型', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        type: elementType,
-        value: '',
-        control: {
-          type: controlType,
-          value: null,
-          placeholder: '文本型'
+      editor.command.executeInsertElementList([
+        {
+          type: elementType,
+          value: '',
+          control: {
+            type: controlType,
+            value: null,
+            placeholder: '文本型'
+          }
         }
-      }])
+      ])
 
       cy.get('@canvas').type(`{leftArrow}`)
 
@@ -39,5 +40,4 @@ describe('控件-文本型', () => {
         })
     })
   })
-
 })

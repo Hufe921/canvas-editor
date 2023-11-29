@@ -1,27 +1,25 @@
 import Editor from '../../../src/editor'
 
-describe('菜单-表格', () => {
-
+describe('菜单-图片', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 
-  it('表格', () => {
+  it('图片', () => {
     cy.getEditor().then((editor: Editor) => {
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertTable(8, 8)
+      cy.get('#image').attachFile('test.png')
 
-      const data = editor.command.getValue().data.main
+      cy.wait(200).then(() => {
+        const data = editor.command.getValue().data.main
 
-      expect(data[0].type).to.eq('table')
-
-      expect(data[0].trList?.length).to.eq(8)
+        expect(data[0].type).to.eq('image')
+      })
     })
   })
-
 })
