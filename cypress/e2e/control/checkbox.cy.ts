@@ -1,7 +1,6 @@
 import Editor, { ControlType, ElementType } from '../../../src/editor'
 
 describe('控件-复选框', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -17,27 +16,31 @@ describe('控件-复选框', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        type: elementType,
-        value: '',
-        control: {
-          code: '98175',
-          type: controlType,
-          value: null,
-          valueSets: [{
-            value: '有',
-            code: '98175'
-          }, {
-            value: '无',
-            code: '98176'
-          }]
+      editor.command.executeInsertElementList([
+        {
+          type: elementType,
+          value: '',
+          control: {
+            code: '98175',
+            type: controlType,
+            value: null,
+            valueSets: [
+              {
+                value: '有',
+                code: '98175'
+              },
+              {
+                value: '无',
+                code: '98176'
+              }
+            ]
+          }
         }
-      }])
+      ])
 
       const data = editor.command.getValue().data.main[0]
 
       expect(data.control!.code).to.be.eq('98175')
     })
   })
-
 })

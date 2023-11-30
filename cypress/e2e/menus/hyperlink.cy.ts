@@ -1,7 +1,6 @@
 import Editor from '../../../src/editor'
 
 describe('菜单-超链接', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -37,5 +36,4 @@ describe('菜单-超链接', () => {
         })
     })
   })
-
 })

@@ -1,7 +1,6 @@
 import Editor, { ElementType } from '../../../src/editor'
 
 describe('菜单-复选框', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -16,18 +15,19 @@ describe('菜单-复选框', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        type,
-        value: '',
-        checkbox: {
-          value: true
+      editor.command.executeInsertElementList([
+        {
+          type,
+          value: '',
+          checkbox: {
+            value: true
+          }
         }
-      }])
+      ])
 
       const data = editor.command.getValue().data.main[0]
 
       expect(data.checkbox?.value).to.eq(true)
     })
   })
-
 })

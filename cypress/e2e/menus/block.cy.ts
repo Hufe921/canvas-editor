@@ -9,7 +9,6 @@ describe('菜单-内容块', () => {
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 
-
   it('内容块', () => {
     cy.getEditor().then((editor: Editor) => {
       editor.command.executeSelectAll()
@@ -36,5 +35,4 @@ describe('菜单-内容块', () => {
         })
     })
   })
-
 })

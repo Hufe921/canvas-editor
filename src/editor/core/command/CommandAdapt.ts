@@ -6,6 +6,7 @@ import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
 import {
   EditorContext,
   EditorMode,
+  EditorZone,
   PageMode,
   PaperDirection
 } from '../../dataset/enum/Editor'
@@ -2172,6 +2173,10 @@ export class CommandAdapt {
       isCompute: false,
       isSubmitHistory: false
     })
+  }
+
+  public setZone(zone: EditorZone) {
+    this.draw.getZone().setZone(zone)
   }
 
   public getControlValue(

@@ -1,7 +1,6 @@
 import Editor, { ElementType } from '../../../src/editor'
 
 describe('菜单-搜索', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -82,8 +81,10 @@ describe('菜单-搜索', () => {
 
       // 搜索导航
       cy.get('.menu-item__search__collapse .arrow-right').click()
-      cy.get('.menu-item__search__collapse__search .search-result')
-        .should('have.text', '1/3')
+      cy.get('.menu-item__search__collapse__search .search-result').should(
+        'have.text',
+        '1/3'
+      )
 
       cy.get('.menu-item__search__collapse__replace').as('replace')
 
@@ -99,10 +100,13 @@ describe('菜单-搜索', () => {
           expect(data[0].value).to.be.eq(replaceText)
 
           // 表格内文本
-          expect(data[1].trList![0].tdList[0].value[0].value).to.be.eq(replaceText)
-          expect(data[1].trList![1].tdList[1].value[0].value).to.be.eq(replaceText)
+          expect(data[1].trList![0].tdList[0].value[0].value).to.be.eq(
+            replaceText
+          )
+          expect(data[1].trList![1].tdList[1].value[0].value).to.be.eq(
+            replaceText
+          )
         })
     })
   })
-
 })
