@@ -15,5 +15,17 @@ export function copy(host: CanvasEvent) {
     ? rangeManager.getRangeRowElementList()
     : rangeManager.getSelectionElementList()
   if (!copyElementList?.length) return
-  writeElementList(copyElementList, draw.getOptions())
+  // 增加输入框可复制功能
+  const copyList = copyElementList.map(item => {
+    if (
+      item.controlComponent &&
+      (item.controlComponent === 'placeholder' ||
+        item.controlComponent === 'value')
+    ) {
+      return { value: item.value }
+    } else {
+      return item
+    }
+  })
+  writeElementList(copyList, draw.getOptions())
 }
