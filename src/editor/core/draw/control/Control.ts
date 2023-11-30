@@ -6,6 +6,7 @@ import {
   IControlInitOption,
   IControlInstance,
   IControlOption,
+  IControlRuleOption,
   IGetControlValueOption,
   IGetControlValueResult,
   ISetControlExtensionOption,
@@ -122,6 +123,10 @@ export class Control {
     return false
   }
 
+  public isDisabledControl(): boolean {
+    return !!this.activeControl?.getElement().control?.disabled
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
@@ -226,11 +231,18 @@ export class Control {
     }
   }
 
-  public repaintControl(curIndex: number) {
-    this.range.setRange(curIndex, curIndex)
-    this.draw.render({
-      curIndex
-    })
+  public repaintControl(curIndex?: number) {
+    if (curIndex === undefined) {
+      this.range.clearRange()
+      this.draw.render({
+        isSetCursor: false
+      })
+    } else {
+      this.range.setRange(curIndex, curIndex)
+      this.draw.render({
+        curIndex
+      })
+    }
   }
 
   public moveCursor(position: IControlInitOption): IMoveCursorResult {
@@ -528,6 +540,9 @@ export class Control {
           range: fakeRange,
           elementList
         }
+        const controlRule: IControlRuleOption = {
+          isIgnoreDisabledRule: true
+        }
         if (type === ControlType.TEXT) {
           const formatValue = [{ value }]
           formatElementList(formatValue, {
@@ -536,31 +551,21 @@ export class Control {
           })
           const text = new TextControl(element, this)
           if (value) {
-            text.setValue(formatValue, controlContext)
+            text.setValue(formatValue, controlContext, controlRule)
           } else {
-            text.clearValue(controlContext)
+            text.clearValue(controlContext, controlRule)
           }
         } else if (type === ControlType.SELECT) {
           const select = new SelectControl(element, this)
           if (value) {
-            select.setSelect(value, controlContext)
+            select.setSelect(value, controlContext, controlRule)
           } else {
-            select.clearSelect(controlContext)
+            select.clearSelect(controlContext, controlRule)
           }
         } else if (type === ControlType.CHECKBOX) {
           const checkbox = new CheckboxControl(element, this)
-          const checkboxElementList = elementList.slice(
-            fakeRange.startIndex + 1,
-            fakeRange.endIndex + 1
-          )
           const codes = value?.split(',') || []
-          for (const checkElement of checkboxElementList) {
-            if (checkElement.controlComponent === ControlComponent.CHECKBOX) {
-              const checkboxItem = checkElement.checkbox!
-              checkboxItem.value = codes.includes(checkboxItem.code!)
-            }
-          }
-          checkbox.setSelect(controlContext)
+          checkbox.setSelect(codes, controlContext, controlRule)
         }
         // 修改后控件结束索引
         let newEndIndex = i

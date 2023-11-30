@@ -59,7 +59,7 @@ const wordCount = await instance.command.getWordCount()
 
 ## getRangeText
 
-Feature: Get selection text
+Feature: Get range text
 
 Usage:
 
@@ -69,7 +69,7 @@ const rangeText = instance.command.getRangeText()
 
 ## getRangeContext
 
-Feature: Get selection context
+Feature: Get range context
 
 Usage:
 
@@ -79,7 +79,7 @@ const rangeContext = instance.command.getRangeContext()
 
 ## getRangeRow
 
-Feature: Get selection row element list
+Feature: Get range row element list
 
 Usage:
 
@@ -87,9 +87,19 @@ Usage:
 const rowElementList = instance.command.getRangeRow()
 ```
 
+## getKeywordRangeList
+
+Feature: Get range list by keyword
+
+Usage:
+
+```javascript
+const rangeList = instance.command.getKeywordRangeList()
+```
+
 ## getRangeParagraph
 
-Feature: Get selection paragraph element list
+Feature: Get range paragraph element list
 
 Usage:
 

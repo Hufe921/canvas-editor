@@ -1,7 +1,6 @@
 import Editor from '../../../src/editor'
 
 describe('菜单-行处理', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -16,9 +15,11 @@ describe('菜单-行处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       cy.get('.menu-item__left')
         .click()
@@ -36,9 +37,11 @@ describe('菜单-行处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       cy.get('.menu-item__center')
         .click()
@@ -56,9 +59,11 @@ describe('菜单-行处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       cy.get('.menu-item__right')
         .click()
@@ -76,9 +81,11 @@ describe('菜单-行处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       cy.get('.menu-item__row-margin').as('rowMargin').click()
 
@@ -93,5 +100,4 @@ describe('菜单-行处理', () => {
         })
     })
   })
-
 })

@@ -1,7 +1,6 @@
 import Editor from '../../../src/editor'
 
 describe('菜单-文本处理', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -17,9 +16,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -43,9 +44,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -69,9 +72,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -91,9 +96,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -113,9 +120,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -135,9 +144,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -157,9 +168,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -179,9 +192,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -201,9 +216,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -223,17 +240,21 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
-      cy.get('.menu-item__subscript').click().then(() => {
-        const data = editor.command.getValue().data.main
+      cy.get('.menu-item__subscript')
+        .click()
+        .then(() => {
+          const data = editor.command.getValue().data.main
 
-        expect(data[0].type).to.eq('subscript')
-      })
+          expect(data[0].type).to.eq('subscript')
+        })
     })
   })
 
@@ -243,9 +264,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -263,9 +286,11 @@ describe('菜单-文本处理', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -276,5 +301,4 @@ describe('菜单-文本处理', () => {
       expect(data[0].highlight).to.eq('red')
     })
   })
-
 })

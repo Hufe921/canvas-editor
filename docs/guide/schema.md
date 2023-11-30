@@ -82,6 +82,7 @@ interface IElement {
     underline?: boolean;
     extension?: unknown;
     deletable?: boolean;
+    disabled?: boolean;
     code: string | null;
     min?: number;
     max?: number;

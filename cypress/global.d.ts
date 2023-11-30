@@ -7,10 +7,7 @@ declare namespace Editor {
 }
 
 declare namespace Cypress {
-
   interface Chainable {
-
     getEditor(): Chainable<Editor>
-
   }
 }

@@ -1,7 +1,6 @@
 import Editor from '../../../src/editor'
 
 describe('菜单-清除格式', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -17,11 +16,13 @@ describe('菜单-清除格式', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text,
-        bold: true,
-        italic: true
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text,
+          bold: true,
+          italic: true
+        }
+      ])
 
       editor.command.executeSetRange(0, textLength)
 
@@ -36,5 +37,4 @@ describe('菜单-清除格式', () => {
         })
     })
   })
-
 })

@@ -2,7 +2,8 @@ import { ControlComponent } from '../../../../dataset/enum/Control'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import {
   IControlContext,
-  IControlInstance
+  IControlInstance,
+  IControlRuleOption
 } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
 import { Control } from '../Control'
@@ -66,12 +67,19 @@ export class CheckboxControl implements IControlInstance {
     return -1
   }
 
-  public setSelect(context: IControlContext = {}) {
+  public setSelect(
+    codes: string[],
+    context: IControlContext = {},
+    options: IControlRuleOption = {}
+  ) {
+    // 校验是否可以设置
+    if (!options.isIgnoreDisabledRule && this.control.isDisabledControl()) {
+      return
+    }
     const { control } = this.element
     const elementList = context.elementList || this.control.getElementList()
     const { startIndex } = context.range || this.control.getRange()
     const startElement = elementList[startIndex]
-    const data: string[] = []
     // 向左查找
     let preIndex = startIndex
     while (preIndex > 0) {
@@ -83,10 +91,8 @@ export class CheckboxControl implements IControlInstance {
         break
       }
       if (preElement.controlComponent === ControlComponent.CHECKBOX) {
-        const checkbox = preElement.checkbox
-        if (checkbox && checkbox.value && checkbox.code) {
-          data.unshift(checkbox.code)
-        }
+        const checkbox = preElement.checkbox!
+        checkbox.value = codes.includes(checkbox.code!)
       }
       preIndex--
     }
@@ -101,17 +107,19 @@ export class CheckboxControl implements IControlInstance {
         break
       }
       if (nextElement.controlComponent === ControlComponent.CHECKBOX) {
-        const checkbox = nextElement.checkbox
-        if (checkbox && checkbox.value && checkbox.code) {
-          data.push(checkbox.code)
-        }
+        const checkbox = nextElement.checkbox!
+        checkbox.value = codes.includes(checkbox.code!)
       }
       nextIndex++
     }
-    control!.code = data.join(',')
+    control!.code = codes.join(',')
+    this.control.repaintControl()
   }
 
   public keydown(evt: KeyboardEvent): number | null {
+    if (this.control.isDisabledControl()) {
+      return null
+    }
     const range = this.control.getRange()
     // 收缩边界到Value内
     this.control.shrinkBoundary()

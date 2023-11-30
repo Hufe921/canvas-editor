@@ -1,7 +1,6 @@
 import Editor from '../../src/editor'
 
 describe('基础功能', () => {
-
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
@@ -51,17 +50,18 @@ describe('基础功能', () => {
   })
 
   it('字数统计', () => {
-    cy.getEditor().then(async (editor: Editor) => {
+    cy.getEditor().then((editor: Editor) => {
       editor.command.executeSelectAll()
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: 'canvas-editor 2022 编辑器'
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: 'canvas-editor 2022 编辑器'
+        }
+      ])
 
       cy.get('.word-count').contains('7')
     })
   })
-
 })
