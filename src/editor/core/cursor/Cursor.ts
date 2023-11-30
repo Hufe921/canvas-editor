@@ -122,7 +122,10 @@ export class Cursor {
       : this.draw.getPageNo()
     const preY = curPageNo * (height + pageGap)
     // 增加1/4字体大小
-    const offsetHeight = metrics.height / 4
+    let offsetHeight = metrics.height / 4
+    offsetHeight = offsetHeight > CURSOR_AGENT_HEIGHT
+      ? CURSOR_AGENT_HEIGHT
+      : offsetHeight
     const cursorHeight = metrics.height + offsetHeight * 2
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     if (isFocus) {
