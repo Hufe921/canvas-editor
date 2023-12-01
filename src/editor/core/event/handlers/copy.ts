@@ -1,3 +1,4 @@
+import { ElementType } from '../../../dataset/enum/Element'
 import { writeElementList } from '../../../utils/clipboard'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -17,15 +18,10 @@ export function copy(host: CanvasEvent) {
   if (!copyElementList?.length) return
   // 增加输入框可复制功能
   const copyList = copyElementList.map(item => {
-    if (
-      item.controlComponent &&
-      (item.controlComponent === 'placeholder' ||
-        item.controlComponent === 'value')
-    ) {
-      return { value: item.value }
-    } else {
-      return item
+    if (item.type === ElementType.IMAGE) {
+      return { value: '' }
     }
+    return { value: item.value }
   })
   writeElementList(copyList, draw.getOptions())
 }
