@@ -5,6 +5,7 @@ import {
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
+import { ElementType } from '../../../../dataset/enum/Element'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import {
   IControlContext,
@@ -231,6 +232,7 @@ export class SelectControl implements IControlInstance {
       const newElement: IElement = {
         ...styleElement,
         ...propertyElement,
+        type: ElementType.TEXT,
         value: data[i],
         controlComponent: ControlComponent.VALUE
       }

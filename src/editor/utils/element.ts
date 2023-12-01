@@ -265,7 +265,6 @@ export function formatElementList(
                   ...valueStyleList[valueStyleIndex],
                   controlId,
                   value,
-                  type: el.type,
                   letterSpacing: isLastLetter ? checkboxOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
@@ -297,7 +296,7 @@ export function formatElementList(
                 ...element,
                 controlId,
                 value,
-                type: el.type,
+                type: element.type || ElementType.TEXT,
                 control: el.control,
                 controlComponent: ControlComponent.VALUE
               })
@@ -831,21 +830,18 @@ export function createDomFromElementList(
         const tab = document.createElement('span')
         tab.innerHTML = `${NON_BREAKING_SPACE}${NON_BREAKING_SPACE}`
         clipboardDom.append(tab)
+      } else if (element.type === ElementType.CONTROL) {
+        const controlElement = document.createElement('span')
+        const childDom = buildDom(zipElementList(element.control?.value || []))
+        controlElement.innerHTML = childDom.innerHTML
+        clipboardDom.append(controlElement)
       } else if (
         !element.type ||
         element.type === ElementType.LATEX ||
         TEXTLIKE_ELEMENT_TYPE.includes(element.type)
       ) {
         let text = ''
-        if (element.controlId) {
-          text =
-            element
-              .control!.value?.filter(
-                v => !v.type || TEXTLIKE_ELEMENT_TYPE.includes(v.type)
-              )
-              .map(v => v.value)
-              .join('') || ''
-        } else if (element.type === ElementType.DATE) {
+        if (element.type === ElementType.DATE) {
           text = element.valueList?.map(v => v.value).join('') || ''
         } else {
           text = element.value
