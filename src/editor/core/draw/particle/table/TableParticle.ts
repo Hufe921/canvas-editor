@@ -157,6 +157,7 @@ export class TableParticle {
     // 仅外边框
     const isExternalBorderType = borderType === TableBorder.EXTERNAL
     ctx.save()
+    ctx.lineWidth = scale
     // 渲染边框
     if (!isEmptyBorderType) {
       this._drawOuterBorder({

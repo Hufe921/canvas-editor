@@ -1,6 +1,6 @@
 import { ICursorOption } from '../../interface/Cursor'
 
-export const CURSOR_AGENT_HEIGHT = 12
+export const CURSOR_AGENT_OFFSET_HEIGHT = 12
 
 export const defaultCursorOption: Readonly<Required<ICursorOption>> = {
   width: 1,

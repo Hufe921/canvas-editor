@@ -1,4 +1,4 @@
-import { CURSOR_AGENT_HEIGHT } from '../../dataset/constant/Cursor'
+import { CURSOR_AGENT_OFFSET_HEIGHT } from '../../dataset/constant/Cursor'
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { MoveDirection } from '../../dataset/enum/Observer'
 import { DeepRequired } from '../../interface/Common'
@@ -121,9 +121,11 @@ export class Cursor {
       ? pageNo
       : this.draw.getPageNo()
     const preY = curPageNo * (height + pageGap)
-    // 增加1/4字体大小
-    const offsetHeight = metrics.height / 4
-    const cursorHeight = metrics.height + offsetHeight * 2
+    // 默认偏移高度
+    const defaultOffsetHeight = CURSOR_AGENT_OFFSET_HEIGHT * scale
+    // 增加1/4字体大小（最小为defaultOffsetHeight即默认偏移高度）
+    const increaseHeight = Math.min(metrics.height / 4, defaultOffsetHeight)
+    const cursorHeight = metrics.height + increaseHeight * 2
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     if (isFocus) {
       setTimeout(() => {
@@ -135,16 +137,16 @@ export class Cursor {
     const descent =
       metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop =
-      leftTop[1] + ascent + descent - (cursorHeight - offsetHeight) + preY
+      leftTop[1] + ascent + descent - (cursorHeight - increaseHeight) + preY
     const cursorLeft = hitLineStartIndex ? leftTop[0] : rightTop[0]
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${
-      cursorTop + cursorHeight - CURSOR_AGENT_HEIGHT * scale
+      cursorTop + cursorHeight - defaultOffsetHeight
     }px`
     // 模拟光标显示
     if (!isShow) return
     const isReadonly = this.draw.isReadonly()
-    this.cursorDom.style.width = `${width}px`
+    this.cursorDom.style.width = `${width * scale}px`
     this.cursorDom.style.backgroundColor = color
     this.cursorDom.style.left = `${cursorLeft}px`
     this.cursorDom.style.top = `${cursorTop}px`

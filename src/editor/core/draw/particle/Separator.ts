@@ -1,5 +1,14 @@
+import { DeepRequired } from '../../../interface/Common'
+import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
+import { Draw } from '../Draw'
 export class SeparatorParticle {
+  private options: DeepRequired<IEditorOption>
+
+  constructor(draw: Draw) {
+    this.options = draw.getOptions()
+  }
+
   public render(
     ctx: CanvasRenderingContext2D,
     element: IRowElement,
@@ -7,6 +16,7 @@ export class SeparatorParticle {
     y: number
   ) {
     ctx.save()
+    ctx.lineWidth = this.options.scale
     if (element.color) {
       ctx.strokeStyle = element.color
     }

@@ -199,7 +199,7 @@ export class Draw {
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
     this.dateParticle = new DateParticle(this)
-    this.separatorParticle = new SeparatorParticle()
+    this.separatorParticle = new SeparatorParticle(this)
     this.pageBreakParticle = new PageBreakParticle(this)
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
@@ -560,7 +560,9 @@ export class Draw {
     // 判断是否在控件内
     const activeControl = this.control.getActiveControl()
     if (activeControl && !this.control.isRangInPostfix()) {
-      curIndex = activeControl.setValue(payload)
+      curIndex = activeControl.setValue(payload, undefined, {
+        isIgnoreDisabledRule: true
+      })
     } else {
       const elementList = this.getElementList()
       const isCollapsed = startIndex === endIndex
@@ -1128,7 +1130,7 @@ export class Draw {
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTdHeight = (rowHeight + tdPaddingHeight) / scale
+            const curTdHeight = rowHeight / scale + tdPaddingHeight
             // 内容高度大于当前单元格高度需增加
             if (td.height! < curTdHeight) {
               const extraHeight = curTdHeight - td.height!
@@ -1192,7 +1194,7 @@ export class Draw {
         metrics.width = elementWidth
         metrics.height = elementHeight
         metrics.boundingBoxDescent = elementHeight
-        metrics.boundingBoxAscent = 0
+        metrics.boundingBoxAscent = -rowMargin
         // 表格分页处理(拆分表格)
         const height = this.getHeight()
         const marginHeight = this.getMainOuterHeight()
@@ -1616,12 +1618,29 @@ export class Draw {
         }
         // 下划线记录
         if (element.underline || element.control?.underline) {
+          // 上下标元素下划线单独绘制
+          if (
+            (preElement?.type === ElementType.SUPERSCRIPT &&
+              element.type !== ElementType.SUPERSCRIPT) ||
+            (preElement?.type === ElementType.SUBSCRIPT &&
+              element.type !== ElementType.SUBSCRIPT)
+          ) {
+            this.underline.render(ctx)
+          }
+          // 行间距
           const rowMargin =
             defaultBasicRowMarginHeight *
             (element.rowMargin || defaultRowMargin) *
             scale
-          // 元素偏移量
-          const left = element.left || 0
+          // 元素向左偏移量
+          const offsetX = element.left || 0
+          // 上下标元素y轴偏移值
+          let offsetY = 0
+          if (element.type === ElementType.SUBSCRIPT) {
+            offsetY = this.subscriptParticle.getOffsetY(element)
+          } else if (element.type === ElementType.SUPERSCRIPT) {
+            offsetY = this.superscriptParticle.getOffsetY(element)
+          }
           // 占位符不参与颜色计算
           const color =
             element.controlComponent === ControlComponent.PLACEHOLDER
@@ -1629,9 +1648,9 @@ export class Draw {
               : element.color
           this.underline.recordFillInfo(
             ctx,
-            x - left,
-            y + curRow.height - rowMargin,
-            metrics.width + left,
+            x - offsetX,
+            y + curRow.height - rowMargin + offsetY,
+            metrics.width + offsetX,
             0,
             color
           )

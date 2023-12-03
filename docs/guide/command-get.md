@@ -87,6 +87,16 @@ const rangeContext = instance.command.getRangeContext()
 const rowElementList = instance.command.getRangeRow()
 ```
 
+## getKeywordRangeList
+
+功能：获取关键词所在选区列表
+
+用法：
+
+```javascript
+const rangeList = instance.command.getKeywordRangeList()
+```
+
 ## getRangeParagraph
 
 功能：获取选区所在段落元素列表

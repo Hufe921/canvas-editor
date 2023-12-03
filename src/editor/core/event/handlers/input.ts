@@ -27,7 +27,6 @@ export function input(data: string, host: CanvasEvent) {
     const cursor = draw.getCursor()
     cursor.clearAgentDomValue()
   }
-  const activeControl = control.getActiveControl()
   const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
   const text = data.replaceAll(`\n`, ZERO)
   const rangeManager = draw.getRange()
@@ -65,7 +64,7 @@ export function input(data: string, host: CanvasEvent) {
   })
   // 控件-移除placeholder
   let curIndex: number
-  if (activeControl && !control.isRangInPostfix()) {
+  if (control.getActiveControl() && !control.isRangInPostfix()) {
     curIndex = control.setValue(inputData)
   } else {
     const start = startIndex + 1

@@ -2,7 +2,7 @@
   "name": "@hufe921/canvas-editor",
   "author": "Hufe",
   "license": "MIT",
-  "version": "0.9.56",
+  "version": "0.9.57",
   "description": "rich text editor by canvas/svg",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -54,7 +54,7 @@
     "@types/prismjs": "^1.26.0",
     "@typescript-eslint/eslint-plugin": "4.33.0",
     "@typescript-eslint/parser": "4.33.0",
-    "cypress": "^9.5.1",
+    "cypress": "13.6.0",
     "cypress-file-upload": "^5.0.8",
     "eslint": "7.32.0",
     "simple-git-hooks": "^2.8.1",

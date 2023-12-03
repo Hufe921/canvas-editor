@@ -19,9 +19,11 @@ describe('菜单-标题', () => {
 
       editor.command.executeBackspace()
 
-      editor.command.executeInsertElementList([{
-        value: text
-      }])
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
 
       cy.get('.menu-item__title').as('title').click()
 
@@ -38,5 +40,4 @@ describe('菜单-标题', () => {
         })
     })
   })
-
 })

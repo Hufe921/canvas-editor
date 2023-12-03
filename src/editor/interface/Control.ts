@@ -23,6 +23,7 @@ export interface IControlCheckbox {
 
 export interface IControlRule {
   deletable?: boolean
+  disabled?: boolean
 }
 
 export interface IControlBasic {
@@ -66,7 +67,11 @@ export interface IControlInstance {
 
   getValue(): IElement[]
 
-  setValue(data: IElement[]): number
+  setValue(
+    data: IElement[],
+    context?: IControlContext,
+    options?: IControlRuleOption
+  ): number
 
   keydown(evt: KeyboardEvent): number | null
 
@@ -76,6 +81,10 @@ export interface IControlInstance {
 export interface IControlContext {
   range?: IRange
   elementList?: IElement[]
+}
+
+export interface IControlRuleOption {
+  isIgnoreDisabledRule?: boolean // 忽略禁用校验规则
 }
 
 export interface IGetControlValueOption {
