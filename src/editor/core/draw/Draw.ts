@@ -1194,7 +1194,7 @@ export class Draw {
         metrics.width = elementWidth
         metrics.height = elementHeight
         metrics.boundingBoxDescent = elementHeight
-        metrics.boundingBoxAscent = 0
+        metrics.boundingBoxAscent = -rowMargin
         // 表格分页处理(拆分表格)
         const height = this.getHeight()
         const marginHeight = this.getMainOuterHeight()
