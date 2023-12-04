@@ -1,6 +1,6 @@
 import { NAME_PLACEHOLDER } from '../../dataset/constant/ContextMenu'
 import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
-import { EditorComponent } from '../../dataset/enum/Editor'
+import { EditorComponent, EditorMode } from '../../dataset/enum/Editor'
 import { DeepRequired } from '../../interface/Common'
 import { IEditorOption } from '../../interface/Editor'
 import {
@@ -140,6 +140,7 @@ export class ContextMenu {
   private _getContext(): IContextMenuContext {
     // 是否是只读模式
     const isReadonly = this.draw.isReadonly()
+    const isFormMode = this.draw.getMode() === EditorMode.FORM
     const {
       isCrossRowCol: crossRowCol,
       startIndex,
@@ -164,6 +165,7 @@ export class ContextMenu {
       startElement,
       endElement,
       isReadonly,
+      isFormMode,
       editorHasSelection,
       editorTextFocus,
       isInTable,
