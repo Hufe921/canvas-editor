@@ -1,6 +1,5 @@
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
-import { EditorMode } from '../../../dataset/enum/Editor'
 import {
   IControl,
   IControlContext,
@@ -319,8 +318,6 @@ export class Control {
     startIndex: number,
     context: IControlContext = {}
   ): number | null {
-    // 表单模式下不删除控件
-    if (this.draw.getMode() === EditorMode.FORM) return startIndex
     const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     const { deletable = true } = startElement.control!

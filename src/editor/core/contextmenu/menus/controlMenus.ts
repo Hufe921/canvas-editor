@@ -13,8 +13,7 @@ export const controlMenus: IRegisterContextMenu[] = [
       return (
         !payload.isReadonly &&
         !payload.editorHasSelection &&
-        !!payload.startElement?.controlId &&
-        !payload.isFormMode
+        !!payload.startElement?.controlId
       )
     },
     callback: (command: Command) => {
