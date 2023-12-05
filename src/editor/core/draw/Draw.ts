@@ -1788,7 +1788,9 @@ export class Draw {
     // 绘制背景
     this.background.render(ctx, pageNo)
     // 绘制页边距
-    this.margin.render(ctx, pageNo)
+    if (this.mode !== EditorMode.PRINT) {
+      this.margin.render(ctx, pageNo)
+    }
     // 渲染元素
     const index = rowList[0].startIndex
     this.drawRow(ctx, {
