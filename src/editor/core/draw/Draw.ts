@@ -1414,7 +1414,7 @@ export class Draw {
         if (
           curRow.startIndex === 0 &&
           curRow.elementList.length === 1 &&
-          (INLINE_ELEMENT_TYPE.includes(element.type!) || element.listId)
+          INLINE_ELEMENT_TYPE.includes(element.type!)
         ) {
           curRow.height = defaultBasicRowMarginHeight
         }
