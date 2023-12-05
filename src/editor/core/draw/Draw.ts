@@ -1823,7 +1823,7 @@ export class Draw {
       this.waterMark.render(ctx)
     }
     // 绘制空白占位符
-    if (this.elementList.length <= 1) {
+    if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
       this.placeholder.render(ctx)
     }
   }
