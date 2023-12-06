@@ -24,7 +24,7 @@ function compositionend(host: CanvasEvent, evt: CompositionEvent) {
       if (host.compositionInfo) {
         input(evt.data, host)
       }
-    })
+    }, 1) // 如果为0，火狐浏览器会在input事件之前执行导致重复输入
   }
   // 移除代理输入框数据
   const cursor = draw.getCursor()
