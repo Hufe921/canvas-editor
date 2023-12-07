@@ -64,7 +64,11 @@ import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
-import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
+import {
+  ControlComponent,
+  ControlIndentation,
+  ImageDisplay
+} from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
@@ -1083,7 +1087,10 @@ export class Draw {
         boundingBoxDescent: 0
       }
       // 实际可用宽度
-      const offsetX = element.listId ? listStyleMap.get(element.listId) || 0 : 0
+      const offsetX =
+        curRow.offsetX ||
+        (element.listId && listStyleMap.get(element.listId)) ||
+        0
       const availableWidth = innerWidth - offsetX
       if (
         element.type === ElementType.IMAGE ||
@@ -1440,6 +1447,29 @@ export class Draw {
           rowFlex: elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         }
+        // 控件缩进
+        if (
+          rowElement.controlComponent !== ControlComponent.PREFIX &&
+          rowElement.control?.indentation === ControlIndentation.VALUE_START
+        ) {
+          // 查找到非前缀的第一个元素位置
+          const preStartIndex = curRow.elementList.findIndex(
+            el =>
+              el.controlId === rowElement.controlId &&
+              el.controlComponent !== ControlComponent.PREFIX
+          )
+          if (~preStartIndex) {
+            const preRowPositionList = this.position.computeRowPosition({
+              row: curRow,
+              innerWidth: this.getInnerWidth()
+            })
+            const valueStartPosition = preRowPositionList[preStartIndex]
+            if (valueStartPosition) {
+              row.offsetX = valueStartPosition.coordinate.leftTop[0]
+            }
+          }
+        }
+        // 列表缩进
         if (element.listId) {
           row.isList = true
           row.offsetX = listStyleMap.get(element.listId!)

@@ -43,6 +43,11 @@ export interface IPositionContext {
   tableId?: string
 }
 
+export interface IComputeRowPositionPayload {
+  row: IRow
+  innerWidth: number
+}
+
 export interface IComputePageRowPositionPayload {
   positionList: IElementPosition[]
   rowList: IRow[]

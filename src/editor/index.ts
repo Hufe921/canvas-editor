@@ -27,7 +27,11 @@ import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
 import { defaultHeaderOption } from './dataset/constant/Header'
 import { defaultWatermarkOption } from './dataset/constant/Watermark'
-import { ControlType, ImageDisplay } from './dataset/enum/Control'
+import {
+  ControlIndentation,
+  ControlType,
+  ImageDisplay
+} from './dataset/enum/Control'
 import { defaultControlOption } from './dataset/constant/Control'
 import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
@@ -279,7 +283,8 @@ export {
   TitleLevel,
   ListType,
   ListStyle,
-  WordBreak
+  WordBreak,
+  ControlIndentation
 }
 
 // 对外类型

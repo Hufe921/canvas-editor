@@ -1,4 +1,4 @@
-import { ControlType } from '../dataset/enum/Control'
+import { ControlType, ControlIndentation } from '../dataset/enum/Control'
 import { ICheckbox } from './Checkbox'
 import { IElement } from './Element'
 import { IRange } from './Range'
@@ -36,6 +36,7 @@ export interface IControlBasic {
   minWidth?: number
   underline?: boolean
   extension?: unknown
+  indentation?: ControlIndentation
 }
 
 export type IControl = IControlBasic &

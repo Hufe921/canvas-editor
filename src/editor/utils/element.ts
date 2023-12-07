@@ -264,7 +264,7 @@ export function formatElementList(
                 elementList.splice(i, 0, {
                   ...valueStyleList[valueStyleIndex],
                   controlId,
-                  value,
+                  value: value === '\n' ? ZERO : value,
                   letterSpacing: isLastLetter ? checkboxOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
@@ -295,7 +295,7 @@ export function formatElementList(
               elementList.splice(i, 0, {
                 ...element,
                 controlId,
-                value,
+                value: value === '\n' ? ZERO : value,
                 type: element.type || ElementType.TEXT,
                 control: el.control,
                 controlComponent: ControlComponent.VALUE
@@ -315,7 +315,7 @@ export function formatElementList(
           const value = placeholderStrList[p]
           elementList.splice(i, 0, {
             controlId,
-            value,
+            value: value === '\n' ? ZERO : value,
             type: el.type,
             control: el.control,
             controlComponent: ControlComponent.PLACEHOLDER,

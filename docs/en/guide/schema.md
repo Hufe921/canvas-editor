@@ -81,6 +81,7 @@ interface IElement {
     minWidth?: number;
     underline?: boolean;
     extension?: unknown;
+    indentation?: ControlIndentation;
     deletable?: boolean;
     disabled?: boolean;
     code: string | null;
