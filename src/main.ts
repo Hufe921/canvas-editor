@@ -18,7 +18,8 @@ import Editor, {
   PageMode,
   PaperDirection,
   RowFlex,
-  TitleLevel
+  TitleLevel,
+  splitText
 } from './editor'
 import { Dialog } from './components/dialog/Dialog'
 import request from './utils/request'
@@ -510,7 +511,7 @@ function initEditorInstance(
           type: ElementType.HYPERLINK,
           value: '',
           url,
-          valueList: name.split('').map(n => ({
+          valueList: splitText(name).map(n => ({
             value: n,
             size: 16
           }))
@@ -631,7 +632,7 @@ function initEditorInstance(
         const elementList: IElement[] = []
         for (let i = 0; i < formatTokenList.length; i++) {
           const formatToken = formatTokenList[i]
-          const tokenStringList = formatToken.content.split('')
+          const tokenStringList = splitText(formatToken.content)
           for (let j = 0; j < tokenStringList.length; j++) {
             const value = tokenStringList[j]
             const element: IElement = {

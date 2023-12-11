@@ -1,3 +1,26 @@
+## [0.9.58](https://github.com/Hufe921/canvas-editor/compare/v0.9.57...v0.9.58) (2023-12-08)
+
+
+### Bug Fixes
+
+* empty list don't render placeholder ([910f756](https://github.com/Hufe921/canvas-editor/commit/910f75662f62dc38f068a71feb4cd68150b83341))
+* multiple empty lists render error in first row ([1487033](https://github.com/Hufe921/canvas-editor/commit/1487033d75e7c94c2fdf748217f79642181eaaf1))
+* not render margin indicator in print mode #354 ([3f1babe](https://github.com/Hufe921/canvas-editor/commit/3f1babec68b5d22babade28214ca9a7212d3cf8a)), closes [#354](https://github.com/Hufe921/canvas-editor/issues/354)
+* repeated input in firefox browser #357 ([6de3ad8](https://github.com/Hufe921/canvas-editor/commit/6de3ad8b21b557ddc9e218d22b283348dcbd9211)), closes [#357](https://github.com/Hufe921/canvas-editor/issues/357)
+
+
+### Chores
+
+* export splitText function ([bcbd879](https://github.com/Hufe921/canvas-editor/commit/bcbd879e0f44443f0bcac71402330b37def434b2))
+* update eslint fixAll option ([bba0b09](https://github.com/Hufe921/canvas-editor/commit/bba0b090f33e4f3e391a14e22c2b579f132b5348))
+
+
+### Features
+
+* add control indentation option #345 ([5f1cf3a](https://github.com/Hufe921/canvas-editor/commit/5f1cf3ab37aa22180eee45c02486b478dfbc6b99)), closes [#345](https://github.com/Hufe921/canvas-editor/issues/345)
+
+
+
 ## [0.9.57](https://github.com/Hufe921/canvas-editor/compare/v0.9.56...v0.9.57) (2023-12-03)
 
 

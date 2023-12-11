@@ -27,7 +27,11 @@ import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
 import { defaultHeaderOption } from './dataset/constant/Header'
 import { defaultWatermarkOption } from './dataset/constant/Watermark'
-import { ControlType, ImageDisplay } from './dataset/enum/Control'
+import {
+  ControlIndentation,
+  ControlType,
+  ImageDisplay
+} from './dataset/enum/Control'
 import { defaultControlOption } from './dataset/constant/Control'
 import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
@@ -68,6 +72,7 @@ import { IPageBreak } from './interface/PageBreak'
 import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
 import { IRange } from './interface/Range'
+import { splitText } from './utils'
 
 export default class Editor {
   public command: Command
@@ -248,11 +253,14 @@ export default class Editor {
   }
 }
 
-// 对外对象
+// 对外方法
+export { splitText }
+
+// 对外常量
+export { EDITOR_COMPONENT, LETTER_CLASS, INTERNAL_CONTEXT_MENU_KEY }
+
+// 对外枚举
 export {
-  EDITOR_COMPONENT,
-  LETTER_CLASS,
-  INTERNAL_CONTEXT_MENU_KEY,
   Editor,
   RowFlex,
   VerticalAlign,
@@ -275,7 +283,8 @@ export {
   TitleLevel,
   ListType,
   ListStyle,
-  WordBreak
+  WordBreak,
+  ControlIndentation
 }
 
 // 对外类型

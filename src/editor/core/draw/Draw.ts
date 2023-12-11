@@ -64,7 +64,11 @@ import { Control } from './control/Control'
 import { zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
-import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
+import {
+  ControlComponent,
+  ControlIndentation,
+  ImageDisplay
+} from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
@@ -1083,7 +1087,10 @@ export class Draw {
         boundingBoxDescent: 0
       }
       // 实际可用宽度
-      const offsetX = element.listId ? listStyleMap.get(element.listId) || 0 : 0
+      const offsetX =
+        curRow.offsetX ||
+        (element.listId && listStyleMap.get(element.listId)) ||
+        0
       const availableWidth = innerWidth - offsetX
       if (
         element.type === ElementType.IMAGE ||
@@ -1414,7 +1421,7 @@ export class Draw {
         if (
           curRow.startIndex === 0 &&
           curRow.elementList.length === 1 &&
-          (INLINE_ELEMENT_TYPE.includes(element.type!) || element.listId)
+          INLINE_ELEMENT_TYPE.includes(element.type!)
         ) {
           curRow.height = defaultBasicRowMarginHeight
         }
@@ -1440,6 +1447,29 @@ export class Draw {
           rowFlex: elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         }
+        // 控件缩进
+        if (
+          rowElement.controlComponent !== ControlComponent.PREFIX &&
+          rowElement.control?.indentation === ControlIndentation.VALUE_START
+        ) {
+          // 查找到非前缀的第一个元素位置
+          const preStartIndex = curRow.elementList.findIndex(
+            el =>
+              el.controlId === rowElement.controlId &&
+              el.controlComponent !== ControlComponent.PREFIX
+          )
+          if (~preStartIndex) {
+            const preRowPositionList = this.position.computeRowPosition({
+              row: curRow,
+              innerWidth: this.getInnerWidth()
+            })
+            const valueStartPosition = preRowPositionList[preStartIndex]
+            if (valueStartPosition) {
+              row.offsetX = valueStartPosition.coordinate.leftTop[0]
+            }
+          }
+        }
+        // 列表缩进
         if (element.listId) {
           row.isList = true
           row.offsetX = listStyleMap.get(element.listId!)
@@ -1788,7 +1818,9 @@ export class Draw {
     // 绘制背景
     this.background.render(ctx, pageNo)
     // 绘制页边距
-    this.margin.render(ctx, pageNo)
+    if (this.mode !== EditorMode.PRINT) {
+      this.margin.render(ctx, pageNo)
+    }
     // 渲染元素
     const index = rowList[0].startIndex
     this.drawRow(ctx, {
@@ -1823,7 +1855,7 @@ export class Draw {
       this.waterMark.render(ctx)
     }
     // 绘制空白占位符
-    if (this.elementList.length <= 1) {
+    if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
       this.placeholder.render(ctx)
     }
   }
