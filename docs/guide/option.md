@@ -16,7 +16,7 @@ new Editor(container, IEditorData | IElement[], {
 interface IEditorOption {
   mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）。默认：编辑
   defaultType?: string // 默认元素类型。默认：TEXT
-  defaultFont?: string // 默认字体。默认：Yahei
+  defaultFont?: string // 默认字体。默认：Microsoft YaHei
   defaultSize?: number // 默认字号。默认：16
   minSize?: number // 最小字号。默认：5
   maxSize?: number // 最大字号。默认：72
@@ -96,7 +96,7 @@ interface IFooter {
 interface IPageNumber {
   bottom?: number // 距离页面底部大小。默认：60
   size?: number // 字体大小。默认：12
-  font?: string // 字体。默认：Yahei
+  font?: string // 字体。默认：Microsoft YaHei
   color?: string // 字体颜色。默认：#000000
   rowFlex?: RowFlex // 行对齐方式。默认：CENTER
   format?: string // 页码格式。默认：{pageNo}。示例：第{pageNo}页/共{pageCount}页
@@ -115,7 +115,7 @@ interface IWatermark {
   color?: string // 颜色。默认：#AEB5C0
   opacity?: number // 透明度。默认：0.3
   size?: number // 字体大小。默认：200
-  font?: string // 字体。默认：Yahei
+  font?: string // 字体。默认：Microsoft YaHei
 }
 ```
 
@@ -127,6 +127,6 @@ interface IPlaceholder {
   color?: string // 颜色。默认：#DCDFE6
   opacity?: number // 透明度。默认：1
   size?: number // 字体大小。默认：16
-  font?: string // 字体。默认：Yahei
+  font?: string // 字体。默认：Microsoft YaHei
 }
 ```

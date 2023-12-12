@@ -1,7 +1,7 @@
 import { IPageBreak } from '../../interface/PageBreak'
 
 export const defaultPageBreakOption: Readonly<Required<IPageBreak>> = {
-  font: 'Yahei',
+  font: 'Microsoft YaHei',
   fontSize: 12,
   lineDash: [3, 1]
 }
