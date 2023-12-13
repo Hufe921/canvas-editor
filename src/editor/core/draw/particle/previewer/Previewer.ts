@@ -22,6 +22,7 @@ export class Previewer {
   private resizerHandleList: HTMLDivElement[]
   private resizerImageContainer: HTMLDivElement
   private resizerImage: HTMLImageElement
+  private resizerSize: HTMLSpanElement
   private width: number
   private height: number
   private mousedownX: number
@@ -45,12 +46,14 @@ export class Previewer {
       resizerSelection,
       resizerHandleList,
       resizerImageContainer,
-      resizerImage
+      resizerImage,
+      resizerSize
     } = this._createResizerDom()
     this.resizerSelection = resizerSelection
     this.resizerHandleList = resizerHandleList
     this.resizerImageContainer = resizerImageContainer
     this.resizerImage = resizerImage
+    this.resizerSize = resizerSize
     this.width = 0
     this.height = 0
     this.mousedownX = 0
@@ -68,10 +71,12 @@ export class Previewer {
     resizerSelection.classList.add(`${EDITOR_PREFIX}-resizer-selection`)
     resizerSelection.style.display = 'none'
     resizerSelection.style.borderColor = this.options.resizerColor
+    // 拖拽点
     const resizerHandleList: HTMLDivElement[] = []
     for (let i = 0; i < 8; i++) {
       const handleDom = document.createElement('div')
       handleDom.style.background = this.options.resizerColor
+      handleDom.classList.add(`resizer-handle`)
       handleDom.classList.add(`handle-${i}`)
       handleDom.setAttribute('data-index', String(i))
       handleDom.onmousedown = this._mousedown.bind(this)
@@ -79,6 +84,12 @@ export class Previewer {
       resizerHandleList.push(handleDom)
     }
     this.container.append(resizerSelection)
+    // 尺寸查看
+    const resizerSizeView = document.createElement('div')
+    resizerSizeView.classList.add(`${EDITOR_PREFIX}-resizer-size-view`)
+    const resizerSize = document.createElement('span')
+    resizerSizeView.append(resizerSize)
+    resizerSelection.append(resizerSizeView)
     // 拖拽镜像
     const resizerImageContainer = document.createElement('div')
     resizerImageContainer.classList.add(`${EDITOR_PREFIX}-resizer-image`)
@@ -90,7 +101,8 @@ export class Previewer {
       resizerSelection,
       resizerHandleList,
       resizerImageContainer,
-      resizerImage
+      resizerImage,
+      resizerSize
     }
   }
 
@@ -122,11 +134,12 @@ export class Previewer {
     const {
       coordinate: {
         leftTop: [left, top]
-      }
+      },
+      ascent
     } = this.curPosition
     const prePageHeight = this.draw.getPageNo() * (height + pageGap)
     this.resizerImageContainer.style.left = `${left}px`
-    this.resizerImageContainer.style.top = `${top + prePageHeight}px`
+    this.resizerImageContainer.style.top = `${top + prePageHeight + ascent}px`
     this.resizerImage.style.width = `${this.curElement.width! * scale}px`
     this.resizerImage.style.height = `${this.curElement.height! * scale}px`
     // 追加全局事件
@@ -194,10 +207,22 @@ export class Previewer {
         dy = evt.y - this.mousedownY
         break
     }
-    this.width = this.curElement.width! + dx
-    this.height = this.curElement.height! + dy
-    this.resizerImage.style.width = `${this.width * scale}px`
-    this.resizerImage.style.height = `${this.height * scale}px`
+    // 图片实际宽高（变化大小除掉缩放比例）
+    const dw = this.curElement.width! + dx / scale
+    const dh = this.curElement.height! + dy / scale
+    if (dw <= 0 || dh <= 0) return
+    this.width = dw
+    this.height = dh
+    // 图片显示宽高
+    const elementWidth = dw * scale
+    const elementHeight = dh * scale
+    // 更新影子图片尺寸
+    this.resizerImage.style.width = `${elementWidth}px`
+    this.resizerImage.style.height = `${elementHeight}px`
+    // 更新预览包围框尺寸
+    this._updateResizerRect(elementWidth, elementHeight)
+    // 尺寸预览
+    this._updateResizerSizeView(elementWidth, elementHeight)
     evt.preventDefault()
   }
 
@@ -330,6 +355,33 @@ export class Previewer {
     document.body.style.overflow = 'auto'
   }
 
+  public _updateResizerRect(width: number, height: number) {
+    const handleSize = this.options.resizerSize
+    this.resizerSelection.style.width = `${width}px`
+    this.resizerSelection.style.height = `${height}px`
+    // handle
+    for (let i = 0; i < 8; i++) {
+      const left =
+        i === 0 || i === 6 || i === 7
+          ? -handleSize
+          : i === 1 || i === 5
+          ? width / 2
+          : width - handleSize
+      const top =
+        i === 0 || i === 1 || i === 2
+          ? -handleSize
+          : i === 3 || i === 7
+          ? height / 2 - handleSize
+          : height - handleSize
+      this.resizerHandleList[i].style.left = `${left}px`
+      this.resizerHandleList[i].style.top = `${top}px`
+    }
+  }
+
+  public _updateResizerSizeView(width: number, height: number) {
+    this.resizerSize.innerText = `${Math.round(width)} × ${Math.round(height)}`
+  }
+
   public drawResizer(
     element: IElement,
     position: IElementPosition,
@@ -347,30 +399,14 @@ export class Previewer {
     const elementHeight = element.height! * scale
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
-    const handleSize = this.options.resizerSize
     const preY = this.draw.getPageNo() * (height + pageGap)
+    // 尺寸预览
+    this._updateResizerSizeView(elementWidth, elementHeight)
     // 边框
     this.resizerSelection.style.left = `${left}px`
     this.resizerSelection.style.top = `${top + preY + ascent}px`
-    this.resizerSelection.style.width = `${elementWidth}px`
-    this.resizerSelection.style.height = `${elementHeight}px`
-    // handle
-    for (let i = 0; i < 8; i++) {
-      const left =
-        i === 0 || i === 6 || i === 7
-          ? -handleSize
-          : i === 1 || i === 5
-          ? elementWidth / 2
-          : elementWidth - handleSize
-      const top =
-        i === 0 || i === 1 || i === 2
-          ? -handleSize
-          : i === 3 || i === 7
-          ? elementHeight / 2 - handleSize
-          : elementHeight - handleSize
-      this.resizerHandleList[i].style.left = `${left}px`
-      this.resizerHandleList[i].style.top = `${top}px`
-    }
+    // 更新预览包围框尺寸
+    this._updateResizerRect(elementWidth, elementHeight)
     this.resizerSelection.style.display = 'block'
     this.curElement = element
     this.curElementSrc = element[options.srcKey || 'value'] || ''
