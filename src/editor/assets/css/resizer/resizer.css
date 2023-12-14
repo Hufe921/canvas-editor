@@ -47,8 +47,9 @@
 }
 
 .ce-resizer-size-view {
+  display: flex;
+  align-items: center;
   height: 20px;
-  line-height: 19px;
   white-space: nowrap;
   position: absolute;
   top: -30px;
