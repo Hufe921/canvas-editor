@@ -1,4 +1,5 @@
 import { ControlType, ControlIndentation } from '../dataset/enum/Control'
+import { EditorZone } from '../dataset/enum/Editor'
 import { ICheckbox } from './Checkbox'
 import { IElement } from './Element'
 import { IRange } from './Range'
@@ -95,6 +96,7 @@ export interface IGetControlValueOption {
 export type IGetControlValueResult = (Omit<IControl, 'value'> & {
   value: string | null
   innerText: string | null
+  zone: EditorZone
 })[]
 
 export interface ISetControlValueOption {

@@ -1,4 +1,5 @@
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
+import { EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import {
   IControl,
@@ -432,7 +433,7 @@ export class Control {
   ): IGetControlValueResult {
     const { conceptId } = payload
     const result: IGetControlValueResult = []
-    const getValue = (elementList: IElement[]) => {
+    const getValue = (elementList: IElement[], zone: EditorZone) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
@@ -444,7 +445,7 @@ export class Control {
             const tr = trList[r]
             for (let d = 0; d < tr.tdList.length; d++) {
               const td = tr.tdList[d]
-              getValue(td.value)
+              getValue(td.value, zone)
             }
           }
         }
@@ -466,6 +467,7 @@ export class Control {
         if (type === ControlType.TEXT) {
           result.push({
             ...element.control,
+            zone,
             value: textControlValue || null,
             innerText: textControlValue || null
           })
@@ -483,6 +485,7 @@ export class Control {
             .join('')
           result.push({
             ...element.control,
+            zone,
             value: code || null,
             innerText: innerText || null
           })
@@ -490,12 +493,23 @@ export class Control {
         i = j
       }
     }
-    const elementList = [
-      ...this.draw.getHeaderElementList(),
-      ...this.draw.getOriginalMainElementList(),
-      ...this.draw.getFooterElementList()
+    const data = [
+      {
+        zone: EditorZone.HEADER,
+        elementList: this.draw.getHeaderElementList()
+      },
+      {
+        zone: EditorZone.MAIN,
+        elementList: this.draw.getOriginalMainElementList()
+      },
+      {
+        zone: EditorZone.FOOTER,
+        elementList: this.draw.getFooterElementList()
+      }
     ]
-    getValue(elementList)
+    for (const { zone, elementList } of data) {
+      getValue(elementList, zone)
+    }
     return result
   }
 
