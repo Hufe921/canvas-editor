@@ -1821,6 +1821,8 @@ export class Draw {
     if (this.mode !== EditorMode.PRINT) {
       this.margin.render(ctx, pageNo)
     }
+    // 控件高亮
+    this.control.renderHighlightList(ctx, pageNo)
     // 渲染元素
     const index = rowList[0].startIndex
     this.drawRow(ctx, {
@@ -1935,6 +1937,8 @@ export class Draw {
       if (searchKeyword) {
         this.search.compute(searchKeyword)
       }
+      // 控件关键词高亮
+      this.control.computeHighlightList()
     }
     // 清除光标等副作用
     this.imageObserver.clearAll()

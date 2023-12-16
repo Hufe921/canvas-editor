@@ -249,7 +249,9 @@ export class RangeManager {
   }
 
   public getKeywordRangeList(payload: string): IRange[] {
-    const searchMatchList = this.draw.getSearch().getMatchList(payload)
+    const searchMatchList = this.draw
+      .getSearch()
+      .getMatchList(payload, this.draw.getOriginalElementList())
     const searchRangeMap: Map<string, IRange> = new Map()
     for (const searchMatch of searchMatchList) {
       const searchRange = searchRangeMap.get(searchMatch.groupId)

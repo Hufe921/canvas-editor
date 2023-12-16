@@ -23,6 +23,7 @@ import {
   IGetControlValueOption,
   IGetControlValueResult,
   ISetControlExtensionOption,
+  ISetControlHighlightOption,
   ISetControlValueOption
 } from '../../interface/Control'
 import {
@@ -2195,6 +2196,10 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.draw.getControl().setExtensionByConceptId(payload)
+  }
+
+  public setControlHighlight(payload: ISetControlHighlightOption) {
+    this.draw.getControl().setHighlightList(payload)
   }
 
   public getContainer(): HTMLDivElement {
