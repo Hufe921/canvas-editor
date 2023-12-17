@@ -1,3 +1,19 @@
+## [0.9.59](https://github.com/Hufe921/canvas-editor/compare/v0.9.58...v0.9.59) (2023-12-17)
+
+
+### Chores
+
+* update default font #360 ([8ace079](https://github.com/Hufe921/canvas-editor/commit/8ace07962da4f7e373c361776233330fdd8e4139)), closes [#360](https://github.com/Hufe921/canvas-editor/issues/360)
+
+
+### Features
+
+* add  zone attribute to getControlValue api ([285aeec](https://github.com/Hufe921/canvas-editor/commit/285aeec2f6eeba676361b109e595744c2f1e4641))
+* add resizer size Indicator ([61c110d](https://github.com/Hufe921/canvas-editor/commit/61c110d5eed09197fb2187e6ecec2ee9a10d0d27))
+* set control highlight rule #332 ([b6fe212](https://github.com/Hufe921/canvas-editor/commit/b6fe21230b34afa6ac53eee146e1c291a22da04e)), closes [#332](https://github.com/Hufe921/canvas-editor/issues/332)
+
+
+
 ## [0.9.58](https://github.com/Hufe921/canvas-editor/compare/v0.9.57...v0.9.58) (2023-12-08)
 
 
