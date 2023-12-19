@@ -44,6 +44,7 @@ interface IElement {
   // groupIds
   groupIds?: string[];
   // table
+  conceptId?: string;
   colgroup?: {
     width: number;
   }[];
