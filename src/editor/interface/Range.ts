@@ -26,4 +26,5 @@ export type RangeContext = {
   startPageNo: number
   endPageNo: number
   rangeRects: RangeRect[]
+  zone: EditorZone
 }

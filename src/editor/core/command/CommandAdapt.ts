@@ -1946,13 +1946,16 @@ export class CommandAdapt {
         height: lineHeight
       })
     }
+    // 区域信息
+    const zone = this.draw.getZone().getZone()
     return deepClone({
       isCollapsed,
       startElement,
       endElement,
       startPageNo,
       endPageNo,
-      rangeRects
+      rangeRects,
+      zone
     })
   }
 
