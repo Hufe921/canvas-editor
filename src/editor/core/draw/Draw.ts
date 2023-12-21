@@ -955,7 +955,7 @@ export class Draw {
   }
 
   public setValue(payload: Partial<IEditorData>) {
-    const { header, main, footer } = payload
+    const { header, main, footer } = deepClone(payload)
     if (!header && !main && !footer) return
     const pageComponentData = [header, main, footer]
     pageComponentData.forEach(data => {

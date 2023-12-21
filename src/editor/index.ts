@@ -72,7 +72,7 @@ import { IPageBreak } from './interface/PageBreak'
 import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
 import { IRange } from './interface/Range'
-import { splitText } from './utils'
+import { deepClone, splitText } from './utils'
 
 export default class Editor {
   public command: Command
@@ -190,6 +190,7 @@ export default class Editor {
       pageBreak: pageBreakOptions
     }
     // 数据处理
+    data = deepClone(data)
     let headerElementList: IElement[] = []
     let mainElementList: IElement[] = []
     let footerElementList: IElement[] = []
