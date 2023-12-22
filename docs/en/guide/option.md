@@ -67,6 +67,7 @@ interface IEditorOption {
   placeholder?: IPlaceholder // Placeholder text
   group?: IGroup // Group option. {opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
   pageBreak?: IPageBreak // PageBreak option。{font?:string; fontSize?:number; lineDash?:number[];}
+  zone?: IZoneOption // Zone option。{tipDisabled?:boolean;}
 }
 ```
 

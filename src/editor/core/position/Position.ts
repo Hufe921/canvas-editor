@@ -288,7 +288,7 @@ export class Position {
       positionList = this.getOriginalPositionList()
     }
     const zoneManager = this.draw.getZone()
-    const curPageNo = this.draw.getPageNo()
+    const curPageNo = payload.pageNo ?? this.draw.getPageNo()
     const isMainActive = zoneManager.isMainActive()
     const positionNo = isMainActive ? curPageNo : 0
     for (let j = 0; j < positionList.length; j++) {

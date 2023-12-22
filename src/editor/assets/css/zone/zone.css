@@ -32,3 +32,30 @@
 .ce-zone-indicator-border__right {
   border-right: 2px dashed rgb(238, 238, 238);
 }
+
+.ce-zone-tip {
+  display: none;
+  align-items: center;
+  height: 30px;
+  white-space: nowrap;
+  position: fixed;
+  opacity: .9;
+  background-color: #000000;
+  padding: 0 5px;
+  border-radius: 4px;
+  z-index: 9;
+  transition: all .3s;
+  outline: none;
+  user-select: none;
+  pointer-events: none;
+  transform: translate(10px, 10px);
+}
+
+.ce-zone-tip.show {
+  display: flex;
+}
+
+.ce-zone-tip span {
+  color: #ffffff;
+  font-size: 12px;
+}

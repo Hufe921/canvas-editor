@@ -67,6 +67,7 @@ interface IEditorOption {
   placeholder?: IPlaceholder // 编辑器空白占位文本
   group?: IGroup // 成组配置。{opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
   pageBreak?: IPageBreak // 分页符配置。{font?:string; fontSize?:number; lineDash?:number[];}
+  zone?: IZoneOption // 编辑器区域配置。{tipDisabled?:boolean;}
 }
 ```
 

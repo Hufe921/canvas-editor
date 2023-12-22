@@ -12,6 +12,25 @@ export function debounce(func: Function, delay: number) {
   }
 }
 
+export function throttle(func: Function, delay: number) {
+  let lastExecTime = 0
+  let timer: number
+  return function (this: any, ...args: any[]) {
+    const currentTime = Date.now()
+    if (currentTime - lastExecTime >= delay) {
+      window.clearTimeout(timer)
+      func.apply(this, args)
+      lastExecTime = currentTime
+    } else {
+      window.clearTimeout(timer)
+      timer = window.setTimeout(() => {
+        func.apply(this, args)
+        lastExecTime = currentTime
+      }, delay)
+    }
+  }
+}
+
 export function deepClone<T>(obj: T): T {
   if (!obj || typeof obj !== 'object') {
     return obj

@@ -4,6 +4,7 @@ import { IEditorOption } from '../../interface/Editor'
 import { nextTick } from '../../utils'
 import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
+import { ZoneTip } from './ZoneTip'
 
 export class Zone {
   private readonly INDICATOR_PADDING = 2
@@ -24,6 +25,10 @@ export class Zone {
     this.container = draw.getContainer()
     this.currentZone = EditorZone.MAIN
     this.indicatorContainer = null
+    // 区域提示
+    if (!this.options.zone.tipDisabled) {
+      new ZoneTip(draw)
+    }
   }
 
   public isHeaderActive(): boolean {
