@@ -1,3 +1,30 @@
+## [0.9.60](https://github.com/Hufe921/canvas-editor/compare/v0.9.59...v0.9.60) (2023-12-23)
+
+
+### Bug Fixes
+
+* clone the values set to the editor #369 (#371) ([f73759f](https://github.com/Hufe921/canvas-editor/commit/f73759fdd75119fdff113d4ec914d5cc20de6dae)), closes [#369](https://github.com/Hufe921/canvas-editor/issues/369) [#371](https://github.com/Hufe921/canvas-editor/issues/371)
+* format element list boundary error #367 ([7a6f656](https://github.com/Hufe921/canvas-editor/commit/7a6f6566994245da16d3e3f31186565d99bdcf89)), closes [#367](https://github.com/Hufe921/canvas-editor/issues/367)
+
+
+### Chores
+
+* insert hyperlink with default value #368 ([d83fc0f](https://github.com/Hufe921/canvas-editor/commit/d83fc0f37a368cb14b631ff10a4618789562d570)), closes [#368](https://github.com/Hufe921/canvas-editor/issues/368)
+
+
+### Features
+
+* add conceptId attribute to table element ([b55471b](https://github.com/Hufe921/canvas-editor/commit/b55471b13446959e6ac1802d086ab10140a8435d))
+* add zone attribute to getRangeContext api ([57fdcb8](https://github.com/Hufe921/canvas-editor/commit/57fdcb8b81079c1fa0836b9092596df986863382))
+* add zone tooltip #367 ([095414f](https://github.com/Hufe921/canvas-editor/commit/095414fbe68bdf8c714dea36d7159a16d6ee9349)), closes [#367](https://github.com/Hufe921/canvas-editor/issues/367)
+
+
+### Performance Improvements
+
+* compute zone tooltip performance ([28ef4af](https://github.com/Hufe921/canvas-editor/commit/28ef4af15e2a873fac021364449725f78c89348f))
+
+
+
 ## [0.9.59](https://github.com/Hufe921/canvas-editor/compare/v0.9.58...v0.9.59) (2023-12-17)
 
 
