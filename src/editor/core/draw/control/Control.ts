@@ -1,8 +1,11 @@
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
+import { EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
+import { DeepRequired } from '../../../interface/Common'
 import {
   IControl,
   IControlContext,
+  IControlHighlight,
   IControlInitOption,
   IControlInstance,
   IControlOption,
@@ -12,6 +15,7 @@ import {
   ISetControlExtensionOption,
   ISetControlValueOption
 } from '../../../interface/Control'
+import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
@@ -27,6 +31,7 @@ import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
 import { CheckboxControl } from './checkbox/CheckboxControl'
+import { ControlSearch } from './interactive/ControlSearch'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 
@@ -39,7 +44,9 @@ export class Control {
   private range: RangeManager
   private listener: Listener
   private eventBus: EventBus<EventBusMap>
-  private options: IControlOption
+  private controlSearch: ControlSearch
+  private options: DeepRequired<IEditorOption>
+  private controlOptions: IControlOption
   private activeControl: IControlInstance | null
 
   constructor(draw: Draw) {
@@ -47,9 +54,30 @@ export class Control {
     this.range = draw.getRange()
     this.listener = draw.getListener()
     this.eventBus = draw.getEventBus()
+    this.controlSearch = new ControlSearch(this)
 
-    this.options = draw.getOptions().control
+    this.options = draw.getOptions()
+    this.controlOptions = this.options.control
     this.activeControl = null
+  }
+
+  // 搜索高亮匹配
+  public setHighlightList(payload: IControlHighlight[]) {
+    this.controlSearch.setHighlightList(payload)
+  }
+
+  public computeHighlightList() {
+    const highlightList = this.controlSearch.getHighlightList()
+    if (highlightList.length) {
+      this.controlSearch.computeHighlightList()
+    }
+  }
+
+  public renderHighlightList(ctx: CanvasRenderingContext2D, pageNo: number) {
+    const highlightMatchResult = this.controlSearch.getHighlightMatchResult()
+    if (highlightMatchResult.length) {
+      this.controlSearch.renderHighlightList(ctx, pageNo)
+    }
   }
 
   public getDraw(): Draw {
@@ -394,7 +422,7 @@ export class Control {
         type: ElementType.CONTROL,
         control: startElement.control,
         controlComponent: ControlComponent.PLACEHOLDER,
-        color: this.options.placeholderColor
+        color: this.controlOptions.placeholderColor
       }
       formatElementContext(elementList, [newElement], startIndex)
       this.draw.spliceElementList(
@@ -432,7 +460,7 @@ export class Control {
   ): IGetControlValueResult {
     const { conceptId } = payload
     const result: IGetControlValueResult = []
-    const getValue = (elementList: IElement[]) => {
+    const getValue = (elementList: IElement[], zone: EditorZone) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
@@ -444,7 +472,7 @@ export class Control {
             const tr = trList[r]
             for (let d = 0; d < tr.tdList.length; d++) {
               const td = tr.tdList[d]
-              getValue(td.value)
+              getValue(td.value, zone)
             }
           }
         }
@@ -466,6 +494,7 @@ export class Control {
         if (type === ControlType.TEXT) {
           result.push({
             ...element.control,
+            zone,
             value: textControlValue || null,
             innerText: textControlValue || null
           })
@@ -483,6 +512,7 @@ export class Control {
             .join('')
           result.push({
             ...element.control,
+            zone,
             value: code || null,
             innerText: innerText || null
           })
@@ -490,12 +520,23 @@ export class Control {
         i = j
       }
     }
-    const elementList = [
-      ...this.draw.getHeaderElementList(),
-      ...this.draw.getOriginalMainElementList(),
-      ...this.draw.getFooterElementList()
+    const data = [
+      {
+        zone: EditorZone.HEADER,
+        elementList: this.draw.getHeaderElementList()
+      },
+      {
+        zone: EditorZone.MAIN,
+        elementList: this.draw.getOriginalMainElementList()
+      },
+      {
+        zone: EditorZone.FOOTER,
+        elementList: this.draw.getFooterElementList()
+      }
     ]
-    getValue(elementList)
+    for (const { zone, elementList } of data) {
+      getValue(elementList, zone)
+    }
     return result
   }
 
@@ -547,7 +588,7 @@ export class Control {
           const formatValue = [{ value }]
           formatElementList(formatValue, {
             isHandleFirstElement: false,
-            editorOptions: this.draw.getOptions()
+            editorOptions: this.options
           })
           const text = new TextControl(element, this)
           if (value) {

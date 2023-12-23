@@ -16,7 +16,7 @@ new Editor(container, IEditorData | IElement[], {
 interface IEditorOption {
   mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control), Print (Visual aids are not displayed, Unwritten content control). default: Edit
   defaultType?: string // Default element type. default: TEXT
-  defaultFont?: string // Default font. default: Yahei
+  defaultFont?: string // Default font. default: Microsoft YaHei
   defaultSize?: number // Default font size. default: 16
   minSize?: number // Min font size。default: 5
   maxSize?: number // Max font size。default: 72
@@ -67,6 +67,7 @@ interface IEditorOption {
   placeholder?: IPlaceholder // Placeholder text
   group?: IGroup // Group option. {opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
   pageBreak?: IPageBreak // PageBreak option。{font?:string; fontSize?:number; lineDash?:number[];}
+  zone?: IZoneOption // Zone option。{tipDisabled?:boolean;}
 }
 ```
 
@@ -96,7 +97,7 @@ interface IFooter {
 interface IPageNumber {
   bottom?: number // The size from the bottom of the page.default: 60
   size?: number // font size.default: 12
-  font?: string // font.default: Yahei
+  font?: string // font.default: Microsoft YaHei
   color?: string // font color.default: #000000
   rowFlex?: RowFlex // Line alignment.default: CENTER
   format?: string // Page number format.default: {pageNo}。example：{pageNo}/{pageCount}
@@ -115,7 +116,7 @@ interface IWatermark {
   color?: string // color.default: #AEB5C0
   opacity?: number // transparency.default: 0.3
   size?: number // font size.default: 200
-  font?: string // font.default: Yahei
+  font?: string // font.default: Microsoft YaHei
 }
 ```
 
@@ -127,6 +128,6 @@ interface IPlaceholder {
   color?: string // color.default: #DCDFE6
   opacity?: number // transparency.default: 1
   size?: number // font size.default: 16
-  font?: string // font.default: Yahei
+  font?: string // font.default: Microsoft YaHei
 }
 ```

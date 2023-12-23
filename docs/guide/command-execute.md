@@ -891,3 +891,13 @@ instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```javascript
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```
+
+## executeSetControlHighlight
+
+功能：设置控件高亮（根据关键词）
+
+用法：
+
+```javascript
+instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
+```

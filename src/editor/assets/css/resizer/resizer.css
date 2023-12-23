@@ -3,7 +3,7 @@
   border: 1px solid;
 }
 
-.ce-resizer-selection>div {
+.ce-resizer-selection .resizer-handle {
   position: absolute;
   z-index: 9;
   width: 10px;
@@ -44,6 +44,25 @@
 
 .ce-resizer-selection .handle-7 {
   cursor: w-resize;
+}
+
+.ce-resizer-size-view {
+  display: flex;
+  align-items: center;
+  height: 20px;
+  white-space: nowrap;
+  position: absolute;
+  top: -30px;
+  left: 0;
+  opacity: .9;
+  background-color: #000000;
+  padding: 0 5px;
+  border-radius: 4px;
+}
+
+.ce-resizer-size-view span {
+  color: #ffffff;
+  font-size: 12px;
 }
 
 .ce-resizer-image {

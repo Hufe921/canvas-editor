@@ -492,7 +492,8 @@ function initEditorInstance(
           label: '文本',
           name: 'name',
           required: true,
-          placeholder: '请输入文本'
+          placeholder: '请输入文本',
+          value: instance.command.getRangeText()
         },
         {
           type: 'text',

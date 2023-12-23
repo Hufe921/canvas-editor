@@ -76,5 +76,9 @@
   },
   "pageBreak": {
     "displayName": "Page Break"
+  },
+  "zone": {
+    "headerTip": "Double click to edit header",
+    "footerTip": "Double click to edit footer"
   }
 }

@@ -4,6 +4,7 @@ import { IEditorOption } from '../../interface/Editor'
 import { nextTick } from '../../utils'
 import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
+import { ZoneTip } from './ZoneTip'
 
 export class Zone {
   private readonly INDICATOR_PADDING = 2
@@ -24,6 +25,10 @@ export class Zone {
     this.container = draw.getContainer()
     this.currentZone = EditorZone.MAIN
     this.indicatorContainer = null
+    // 区域提示
+    if (!this.options.zone.tipDisabled) {
+      new ZoneTip(draw, this)
+    }
   }
 
   public isHeaderActive(): boolean {
@@ -64,6 +69,26 @@ export class Zone {
         eventBus.emit('zoneChange', payload)
       }
     })
+  }
+
+  public getZoneByY(y: number): EditorZone {
+    // 页眉底部距离页面顶部距离
+    const header = this.draw.getHeader()
+    const headerBottomY = header.getHeaderTop() + header.getHeight()
+    // 页脚上部距离页面顶部距离
+    const footer = this.draw.getFooter()
+    const pageHeight = this.draw.getHeight()
+    const footerTopY =
+      pageHeight - (footer.getFooterBottom() + footer.getHeight())
+    // 页眉：当前位置小于页眉底部位置
+    if (y < headerBottomY) {
+      return EditorZone.HEADER
+    }
+    // 页脚：当前位置大于页脚顶部位置
+    if (y > footerTopY) {
+      return EditorZone.FOOTER
+    }
+    return EditorZone.MAIN
   }
 
   public drawZoneIndicator() {

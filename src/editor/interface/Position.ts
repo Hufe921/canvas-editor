@@ -24,6 +24,7 @@ export interface ICurrentPosition {
 export interface IGetPositionByXYPayload {
   x: number
   y: number
+  pageNo?: number
   isTable?: boolean
   td?: ITd
   tablePosition?: IElementPosition

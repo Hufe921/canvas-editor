@@ -59,7 +59,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'listType',
   'listStyle',
   'listWrap',
-  'groupIds'
+  'groupIds',
+  'conceptId'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [

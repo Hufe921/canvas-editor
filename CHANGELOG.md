@@ -1,3 +1,46 @@
+## [0.9.60](https://github.com/Hufe921/canvas-editor/compare/v0.9.59...v0.9.60) (2023-12-23)
+
+
+### Bug Fixes
+
+* clone the values set to the editor #369 (#371) ([f73759f](https://github.com/Hufe921/canvas-editor/commit/f73759fdd75119fdff113d4ec914d5cc20de6dae)), closes [#369](https://github.com/Hufe921/canvas-editor/issues/369) [#371](https://github.com/Hufe921/canvas-editor/issues/371)
+* format element list boundary error #367 ([7a6f656](https://github.com/Hufe921/canvas-editor/commit/7a6f6566994245da16d3e3f31186565d99bdcf89)), closes [#367](https://github.com/Hufe921/canvas-editor/issues/367)
+
+
+### Chores
+
+* insert hyperlink with default value #368 ([d83fc0f](https://github.com/Hufe921/canvas-editor/commit/d83fc0f37a368cb14b631ff10a4618789562d570)), closes [#368](https://github.com/Hufe921/canvas-editor/issues/368)
+
+
+### Features
+
+* add conceptId attribute to table element ([b55471b](https://github.com/Hufe921/canvas-editor/commit/b55471b13446959e6ac1802d086ab10140a8435d))
+* add zone attribute to getRangeContext api ([57fdcb8](https://github.com/Hufe921/canvas-editor/commit/57fdcb8b81079c1fa0836b9092596df986863382))
+* add zone tooltip #367 ([095414f](https://github.com/Hufe921/canvas-editor/commit/095414fbe68bdf8c714dea36d7159a16d6ee9349)), closes [#367](https://github.com/Hufe921/canvas-editor/issues/367)
+
+
+### Performance Improvements
+
+* compute zone tooltip performance ([28ef4af](https://github.com/Hufe921/canvas-editor/commit/28ef4af15e2a873fac021364449725f78c89348f))
+
+
+
+## [0.9.59](https://github.com/Hufe921/canvas-editor/compare/v0.9.58...v0.9.59) (2023-12-17)
+
+
+### Chores
+
+* update default font #360 ([8ace079](https://github.com/Hufe921/canvas-editor/commit/8ace07962da4f7e373c361776233330fdd8e4139)), closes [#360](https://github.com/Hufe921/canvas-editor/issues/360)
+
+
+### Features
+
+* add  zone attribute to getControlValue api ([285aeec](https://github.com/Hufe921/canvas-editor/commit/285aeec2f6eeba676361b109e595744c2f1e4641))
+* add resizer size Indicator ([61c110d](https://github.com/Hufe921/canvas-editor/commit/61c110d5eed09197fb2187e6ecec2ee9a10d0d27))
+* set control highlight rule #332 ([b6fe212](https://github.com/Hufe921/canvas-editor/commit/b6fe21230b34afa6ac53eee146e1c291a22da04e)), closes [#332](https://github.com/Hufe921/canvas-editor/issues/332)
+
+
+
 ## [0.9.58](https://github.com/Hufe921/canvas-editor/compare/v0.9.57...v0.9.58) (2023-12-08)
 
 

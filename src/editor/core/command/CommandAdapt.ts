@@ -23,6 +23,7 @@ import {
   IGetControlValueOption,
   IGetControlValueResult,
   ISetControlExtensionOption,
+  ISetControlHighlightOption,
   ISetControlValueOption
 } from '../../interface/Control'
 import {
@@ -1945,13 +1946,16 @@ export class CommandAdapt {
         height: lineHeight
       })
     }
+    // 区域信息
+    const zone = this.draw.getZone().getZone()
     return deepClone({
       isCollapsed,
       startElement,
       endElement,
       startPageNo,
       endPageNo,
-      rangeRects
+      rangeRects,
+      zone
     })
   }
 
@@ -2195,6 +2199,10 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.draw.getControl().setExtensionByConceptId(payload)
+  }
+
+  public setControlHighlight(payload: ISetControlHighlightOption) {
+    this.draw.getControl().setHighlightList(payload)
   }
 
   public getContainer(): HTMLDivElement {

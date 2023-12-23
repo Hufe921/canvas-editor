@@ -891,3 +891,13 @@ Usage:
 ```javascript
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```
+
+## executeSetControlHighlight
+
+Feature: Set control highlight (by keyword)
+
+Usage:
+
+```javascript
+instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
+```

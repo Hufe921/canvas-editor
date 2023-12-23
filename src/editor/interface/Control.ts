@@ -1,4 +1,5 @@
 import { ControlType, ControlIndentation } from '../dataset/enum/Control'
+import { EditorZone } from '../dataset/enum/Editor'
 import { ICheckbox } from './Checkbox'
 import { IElement } from './Element'
 import { IRange } from './Range'
@@ -19,6 +20,17 @@ export interface IControlCheckbox {
   max?: number
   valueSets: IValueSet[]
   checkbox?: ICheckbox
+}
+
+export interface IControlHighlightRule {
+  keyword: string
+  alpha?: number
+  backgroundColor?: string
+}
+
+export interface IControlHighlight {
+  ruleList: IControlHighlightRule[]
+  conceptId: string
 }
 
 export interface IControlRule {
@@ -95,6 +107,7 @@ export interface IGetControlValueOption {
 export type IGetControlValueResult = (Omit<IControl, 'value'> & {
   value: string | null
   innerText: string | null
+  zone: EditorZone
 })[]
 
 export interface ISetControlValueOption {
@@ -106,3 +119,5 @@ export interface ISetControlExtensionOption {
   conceptId: string
   extension: unknown
 }
+
+export type ISetControlHighlightOption = IControlHighlight[]

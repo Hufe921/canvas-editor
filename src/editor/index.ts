@@ -72,7 +72,9 @@ import { IPageBreak } from './interface/PageBreak'
 import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
 import { IRange } from './interface/Range'
-import { splitText } from './utils'
+import { deepClone, splitText } from './utils'
+import { IZoneOption } from './interface/Zone'
+import { defaultZoneOption } from './dataset/constant/Zone'
 
 export default class Editor {
   public command: Command
@@ -132,11 +134,15 @@ export default class Editor {
       ...defaultPageBreakOption,
       ...options.pageBreak
     }
+    const zoneOptions: Required<IZoneOption> = {
+      ...defaultZoneOption,
+      ...options.zone
+    }
 
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
       defaultType: 'TEXT',
-      defaultFont: 'Yahei',
+      defaultFont: 'Microsoft YaHei',
       defaultSize: 16,
       minSize: 5,
       maxSize: 72,
@@ -187,9 +193,11 @@ export default class Editor {
       title: titleOptions,
       placeholder: placeholderOptions,
       group: groupOptions,
-      pageBreak: pageBreakOptions
+      pageBreak: pageBreakOptions,
+      zone: zoneOptions
     }
     // 数据处理
+    data = deepClone(data)
     let headerElementList: IElement[] = []
     let mainElementList: IElement[] = []
     let footerElementList: IElement[] = []

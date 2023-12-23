@@ -18,6 +18,7 @@ import { IPageNumber } from './PageNumber'
 import { IPlaceholder } from './Placeholder'
 import { ITitleOption } from './Title'
 import { IWatermark } from './Watermark'
+import { IZoneOption } from './Zone'
 
 export interface IEditorData {
   header?: IElement[]
@@ -79,6 +80,7 @@ export interface IEditorOption {
   placeholder?: IPlaceholder
   group?: IGroup
   pageBreak?: IPageBreak
+  zone?: IZoneOption
 }
 
 export interface IEditorResult {

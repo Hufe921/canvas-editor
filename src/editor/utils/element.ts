@@ -57,10 +57,11 @@ export function formatElementList(
     ...options
   }
   const startElement = elementList[0]
+  // 非首字符零宽节点文本元素则补偿
   if (
     isHandleFirstElement &&
-    startElement?.value !== ZERO &&
-    startElement?.value !== '\n'
+    ((startElement?.type && startElement.type !== ElementType.TEXT) ||
+      (startElement?.value !== ZERO && startElement?.value !== '\n'))
   ) {
     elementList.unshift({
       value: ZERO

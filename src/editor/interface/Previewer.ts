@@ -5,6 +5,7 @@ export interface IPreviewerCreateResult {
   resizerHandleList: HTMLDivElement[]
   resizerImageContainer: HTMLDivElement
   resizerImage: HTMLImageElement
+  resizerSize: HTMLSpanElement
 }
 
 export interface IPreviewerDrawOption {
