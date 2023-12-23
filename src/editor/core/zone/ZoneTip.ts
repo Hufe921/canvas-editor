@@ -3,10 +3,10 @@ import { EditorZone } from '../../dataset/enum/Editor'
 import { throttle } from '../../utils'
 import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
-import { Position } from '../position/Position'
+import { Zone } from './Zone'
 
 export class ZoneTip {
-  private position: Position
+  private zone: Zone
   private i18n: I18n
   private container: HTMLDivElement
   private pageContainer: HTMLDivElement
@@ -16,8 +16,8 @@ export class ZoneTip {
   private tipContent: HTMLSpanElement
   private currentMoveZone: EditorZone | undefined
 
-  constructor(draw: Draw) {
-    this.position = draw.getPosition()
+  constructor(draw: Draw, zone: Zone) {
+    this.zone = zone
     this.i18n = draw.getI18n()
     this.container = draw.getContainer()
     this.pageContainer = draw.getPageContainer()
@@ -36,22 +36,19 @@ export class ZoneTip {
       'mousemove',
       throttle((evt: MouseEvent) => {
         if (this.isDisableMouseMove) return
-        const pageNo = Number((<HTMLCanvasElement>evt.target).dataset.index)
-        if (Number.isNaN(pageNo)) {
-          this._updateZoneTip(false)
-        } else {
-          const positionInfo = this.position.getPositionByXY({
-            x: evt.offsetX,
-            y: evt.offsetY,
-            pageNo
-          })
-          this.currentMoveZone = positionInfo.zone
+        if (evt.target instanceof HTMLCanvasElement) {
+          const mousemoveZone = this.zone.getZoneByY(evt.offsetY)
+          this.currentMoveZone = mousemoveZone
+          // 激活区域是正文，移动区域是页眉、页脚时绘制
           this._updateZoneTip(
-            positionInfo.zone === EditorZone.HEADER ||
-              positionInfo.zone === EditorZone.FOOTER,
+            this.zone.getZone() === EditorZone.MAIN &&
+              (mousemoveZone === EditorZone.HEADER ||
+                mousemoveZone === EditorZone.FOOTER),
             evt.x,
             evt.y
           )
+        } else {
+          this._updateZoneTip(false)
         }
       }, 250)
     )
