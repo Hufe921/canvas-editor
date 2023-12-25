@@ -57,8 +57,10 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     }
   }
   // 设置选中区域
+  const startIndex = index - upCount - 1
+  if (!~startIndex) return
   const rangeManager = draw.getRange()
-  rangeManager.setRange(index - upCount - 1, index + downCount)
+  rangeManager.setRange(startIndex, index + downCount)
   // 刷新文档
   draw.render({
     isSubmitHistory: false,
