@@ -7,9 +7,13 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow } from '../../../interface/Row'
+import { getUUID } from '../../../utils'
+import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
 
 export class ListParticle {
+  private draw: Draw
+  private range: RangeManager
   private options: DeepRequired<IEditorOption>
 
   // 非递增样式直接返回默认值
@@ -18,7 +22,78 @@ export class ListParticle {
   private readonly LIST_GAP = 10
 
   constructor(draw: Draw) {
+    this.draw = draw
+    this.range = draw.getRange()
     this.options = draw.getOptions()
+  }
+
+  public setList(listType: ListType | null, listStyle?: ListStyle) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    // 需要改变的元素列表
+    const changeElementList = this.range.getRangeParagraphElementList()
+    if (!changeElementList || !changeElementList.length) return
+    // 如果包含列表则设置为取消列表
+    const isUnsetList = changeElementList.find(
+      el => el.listType === listType && el.listStyle === listStyle
+    )
+    if (isUnsetList || !listType) {
+      this.unsetList()
+      return
+    }
+    // 设置值
+    const listId = getUUID()
+    changeElementList.forEach(el => {
+      el.listId = listId
+      el.listType = listType
+      el.listStyle = listStyle
+    })
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public unsetList() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    // 需要改变的元素列表
+    const changeElementList = this.range
+      .getRangeParagraphElementList()
+      ?.filter(el => el.listId)
+    if (!changeElementList || !changeElementList.length) return
+    // 如果列表最后字符不是换行符则需插入换行符
+    const elementList = this.draw.getElementList()
+    const endElement = elementList[endIndex]
+    if (endElement.listId) {
+      let start = endIndex + 1
+      while (start < elementList.length) {
+        const element = elementList[start]
+        if (element.value === ZERO && !element.listWrap) break
+        if (element.listId !== endElement.listId) {
+          this.draw.spliceElementList(elementList, start, 0, {
+            value: ZERO
+          })
+          break
+        }
+        start++
+      }
+    }
+    // 取消设置
+    changeElementList.forEach(el => {
+      delete el.listId
+      delete el.listType
+      delete el.listStyle
+      delete el.listWrap
+    })
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
   }
 
   public computeListStyle(

@@ -1,12 +1,13 @@
-import { EditorMode, EditorZone } from '../../..'
-import { ZERO } from '../../../dataset/constant/Common'
-import { ElementType } from '../../../dataset/enum/Element'
-import { KeyMap } from '../../../dataset/enum/KeyMap'
-import { MoveDirection } from '../../../dataset/enum/Observer'
-import { IElement, IElementPosition } from '../../../interface/Element'
-import { formatElementContext } from '../../../utils/element'
-import { isMod } from '../../../utils/hotkey'
-import { CanvasEvent } from '../CanvasEvent'
+import { ZERO } from '../../../../dataset/constant/Common'
+import { EditorMode, EditorZone } from '../../../../dataset/enum/Editor'
+import { ElementType } from '../../../../dataset/enum/Element'
+import { KeyMap } from '../../../../dataset/enum/KeyMap'
+import { MoveDirection } from '../../../../dataset/enum/Observer'
+import { IElement, IElementPosition } from '../../../../interface/Element'
+import { formatElementContext } from '../../../../utils/element'
+import { isMod } from '../../../../utils/hotkey'
+import { CanvasEvent } from '../../CanvasEvent'
+import { enter } from './enter'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   if (host.isComposing) return
@@ -85,46 +86,7 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     rangeManager.setRange(curIndex, curIndex)
     draw.render({ curIndex })
   } else if (evt.key === KeyMap.Enter) {
-    if (isReadonly || control.isPartRangeInControlOutside()) return
-    const enterText: IElement = {
-      value: ZERO
-    }
-    const startElement = elementList[startIndex]
-    const endElement = elementList[endIndex]
-    // 列表块内换行
-    if (evt.shiftKey && startElement.listId) {
-      enterText.listWrap = true
-    }
-    // 标题结尾处回车无需格式化
-    if (
-      !(
-        endElement.titleId &&
-        endElement.titleId !== elementList[endIndex + 1]?.titleId
-      )
-    ) {
-      formatElementContext(elementList, [enterText], startIndex)
-    }
-    let curIndex: number
-    if (activeControl && !control.isRangInPostfix()) {
-      curIndex = control.setValue([enterText])
-    } else {
-      if (isCollapsed) {
-        draw.spliceElementList(elementList, index + 1, 0, enterText)
-      } else {
-        draw.spliceElementList(
-          elementList,
-          startIndex + 1,
-          endIndex - startIndex,
-          enterText
-        )
-      }
-      curIndex = index + 1
-    }
-    if (~curIndex) {
-      rangeManager.setRange(curIndex, curIndex)
-      draw.render({ curIndex })
-    }
-    evt.preventDefault()
+    enter(evt, host)
   } else if (evt.key === KeyMap.Left) {
     if (isReadonly) return
     if (index > 0) {
