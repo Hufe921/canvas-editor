@@ -232,13 +232,19 @@ export class RangeManager {
   public getIsSelectAll() {
     const elementList = this.draw.getElementList()
     const { startIndex, endIndex } = this.range
-    return startIndex === 0 && elementList.length - 1 === endIndex
+    return (
+      startIndex === 0 &&
+      elementList.length - 1 === endIndex &&
+      !this.position.getPositionContext().isTable
+    )
   }
 
   public getIsPointInRange(x: number, y: number): boolean {
     const { startIndex, endIndex } = this.range
     const positionList = this.position.getPositionList()
     for (let p = startIndex + 1; p <= endIndex; p++) {
+      const position = positionList[p]
+      if (!position) break
       const {
         coordinate: { leftTop, rightBottom }
       } = positionList[p]
