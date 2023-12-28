@@ -1928,6 +1928,8 @@ export class CommandAdapt {
       startPageNo,
       endPageNo,
       rangeRects,
+      startIndex,
+      endIndex,
       zone
     })
   }
