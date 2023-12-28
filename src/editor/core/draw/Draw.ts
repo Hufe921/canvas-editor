@@ -1407,6 +1407,7 @@ export class Draw {
       }
       listId = element.listId
       if (
+        element.type === ElementType.SEPARATOR ||
         element.type === ElementType.TABLE ||
         preElement?.type === ElementType.TABLE ||
         preElement?.type === ElementType.BLOCK ||
