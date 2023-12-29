@@ -1,13 +1,31 @@
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
+import { IElement } from '../../../interface/Element'
 import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
 export class CheckboxParticle {
+  private draw: Draw
   private options: DeepRequired<IEditorOption>
 
   constructor(draw: Draw) {
+    this.draw = draw
     this.options = draw.getOptions()
+  }
+
+  public setSelect(element: IElement) {
+    const { checkbox } = element
+    if (checkbox) {
+      checkbox.value = !checkbox.value
+    } else {
+      element.checkbox = {
+        value: true
+      }
+    }
+    this.draw.render({
+      isCompute: false,
+      isSetCursor: false
+    })
   }
 
   public render(

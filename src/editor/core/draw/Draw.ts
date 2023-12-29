@@ -703,6 +703,10 @@ export class Draw {
     return this.listParticle
   }
 
+  public getCheckboxParticle(): CheckboxParticle {
+    return this.checkboxParticle
+  }
+
   public getControl(): Control {
     return this.control
   }
