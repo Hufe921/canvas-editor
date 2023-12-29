@@ -1,3 +1,21 @@
+## [0.9.61](https://github.com/Hufe921/canvas-editor/compare/v0.9.60...v0.9.61) (2023-12-29)
+
+
+### Bug Fixes
+
+* checkbox cannot be selected #382 ([3fb8435](https://github.com/Hufe921/canvas-editor/commit/3fb843570680d1607834b47c5ad86781ea4f5f14)), closes [#382](https://github.com/Hufe921/canvas-editor/issues/382)
+* double-click to expand selection boundary error ([0bd4c5c](https://github.com/Hufe921/canvas-editor/commit/0bd4c5cc51eb400e985d77911c37fd02bf574f07))
+* elements in the table cannot be selected #378 ([1477bd0](https://github.com/Hufe921/canvas-editor/commit/1477bd0e3f2685753ec66f868d5664ce5c4c85c2)), closes [#378](https://github.com/Hufe921/canvas-editor/issues/378)
+* line break error before separator element #379 ([bdb981d](https://github.com/Hufe921/canvas-editor/commit/bdb981d242821d80d3d45f8569badaaa6f3a8a1d)), closes [#379](https://github.com/Hufe921/canvas-editor/issues/379)
+* three click selection paragraph boundary error ([56ea7d8](https://github.com/Hufe921/canvas-editor/commit/56ea7d8bb13d6f57e24e15550a81f6e2c947f653))
+
+
+### Features
+
+* enter to delete list #376 ([f542739](https://github.com/Hufe921/canvas-editor/commit/f542739d3eb1be273e1f77c3a908dab329f8c619)), closes [#376](https://github.com/Hufe921/canvas-editor/issues/376)
+
+
+
 ## [0.9.60](https://github.com/Hufe921/canvas-editor/compare/v0.9.59...v0.9.60) (2023-12-23)
 
 
