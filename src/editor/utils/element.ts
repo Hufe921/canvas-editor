@@ -645,6 +645,8 @@ export function formatElementContext(
   const copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
   const { isBreakWhenWrap = false } = options || {}
+  // 是否已经换行
+  let isBreakWarped = false
   for (let e = 0; e < formatElementList.length; e++) {
     const targetElement = formatElementList[e]
     if (
@@ -652,10 +654,15 @@ export function formatElementContext(
       !copyElement.listId &&
       /^\n/.test(targetElement.value)
     ) {
-      break
+      isBreakWarped = true
     }
-    // 定位元素非列表，无需处理粘贴列表的上下文
-    if (!copyElement.listId && targetElement.type === ElementType.LIST) {
+    // 1. 即使换行停止也要处理表格上下文信息
+    // 2. 定位元素非列表，无需处理粘贴列表的上下文，仅处理表格上下文信息
+    if (
+      isBreakWarped ||
+      (!copyElement.listId && targetElement.type === ElementType.LIST)
+    ) {
+      cloneProperty<IElement>(TABLE_CONTEXT_ATTR, copyElement, targetElement)
       targetElement.valueList?.forEach(valueItem => {
         cloneProperty<IElement>(TABLE_CONTEXT_ATTR, copyElement, valueItem)
       })

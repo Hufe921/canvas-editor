@@ -154,9 +154,12 @@ export class RangeManager {
       if (!rowArray.includes(rowNo)) {
         rowArray.unshift(rowNo)
       }
+      const element = elementList[start]
+      const preElement = elementList[start - 1]
       if (
-        positionList[start]?.value === ZERO ||
-        elementList[start].titleId !== elementList[start - 1]?.titleId
+        (element.value === ZERO && !element.listWrap) ||
+        element.listId !== preElement?.listId ||
+        element.titleId !== preElement?.titleId
       ) {
         break
       }
@@ -181,9 +184,12 @@ export class RangeManager {
     // 向下查找
     let end = endIndex
     while (end < positionList.length) {
+      const element = elementList[end]
+      const nextElement = elementList[end + 1]
       if (
-        positionList[end].value === ZERO ||
-        elementList[end].titleId !== elementList[end + 1]?.titleId
+        (element.value === ZERO && !element.listWrap) ||
+        element.listId !== nextElement?.listId ||
+        element.titleId !== nextElement?.titleId
       ) {
         break
       }
@@ -226,13 +232,19 @@ export class RangeManager {
   public getIsSelectAll() {
     const elementList = this.draw.getElementList()
     const { startIndex, endIndex } = this.range
-    return startIndex === 0 && elementList.length - 1 === endIndex
+    return (
+      startIndex === 0 &&
+      elementList.length - 1 === endIndex &&
+      !this.position.getPositionContext().isTable
+    )
   }
 
   public getIsPointInRange(x: number, y: number): boolean {
     const { startIndex, endIndex } = this.range
     const positionList = this.position.getPositionList()
     for (let p = startIndex + 1; p <= endIndex; p++) {
+      const position = positionList[p]
+      if (!position) break
       const {
         coordinate: { leftTop, rightBottom }
       } = positionList[p]

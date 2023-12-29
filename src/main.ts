@@ -817,6 +817,9 @@ function initEditorInstance(
     instance.command.executeInsertElementList([
       {
         type: ElementType.CHECKBOX,
+        checkbox: {
+          value: false
+        },
         value: ''
       }
     ])

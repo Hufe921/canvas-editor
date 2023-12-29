@@ -703,6 +703,10 @@ export class Draw {
     return this.listParticle
   }
 
+  public getCheckboxParticle(): CheckboxParticle {
+    return this.checkboxParticle
+  }
+
   public getControl(): Control {
     return this.control
   }
@@ -1407,6 +1411,7 @@ export class Draw {
       }
       listId = element.listId
       if (
+        element.type === ElementType.SEPARATOR ||
         element.type === ElementType.TABLE ||
         preElement?.type === ElementType.TABLE ||
         preElement?.type === ElementType.BLOCK ||
