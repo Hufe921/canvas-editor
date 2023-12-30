@@ -68,18 +68,23 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     const isSetCheckbox = isDirectHitCheckbox && !isReadonly
     if (isSetCheckbox) {
       const { checkbox, control } = curElement
-      const codes = control?.code?.split(',') || []
-      if (checkbox?.value) {
-        const codeIndex = codes.findIndex(c => c === checkbox.code)
-        codes.splice(codeIndex, 1)
+      // 复选框不在控件内独立控制
+      if (!control) {
+        draw.getCheckboxParticle().setSelect(curElement)
       } else {
-        if (checkbox?.code) {
-          codes.push(checkbox.code)
+        const codes = control?.code?.split(',') || []
+        if (checkbox?.value) {
+          const codeIndex = codes.findIndex(c => c === checkbox.code)
+          codes.splice(codeIndex, 1)
+        } else {
+          if (checkbox?.code) {
+            codes.push(checkbox.code)
+          }
         }
-      }
-      const activeControl = draw.getControl().getActiveControl()
-      if (activeControl instanceof CheckboxControl) {
-        activeControl.setSelect(codes)
+        const activeControl = draw.getControl().getActiveControl()
+        if (activeControl instanceof CheckboxControl) {
+          activeControl.setSelect(codes)
+        }
       }
     } else {
       draw.render({

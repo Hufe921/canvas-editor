@@ -749,6 +749,9 @@ window.onload = function () {
     instance.command.executeInsertElementList([
       {
         type: ElementType.CHECKBOX,
+        checkbox: {
+          value: false
+        },
         value: ''
       }
     ])
