@@ -1,0 +1,85 @@
+{
+    "contextmenu": {
+      "global": {
+        "cut": "Cortar",
+        "copy": "Copiar",
+        "paste": "Pegar",
+        "selectAll": "Seleccionar todo",
+        "print": "Imprimir"
+      },
+      "control": {
+        "delete": "Eliminar control"
+      },
+      "hyperlink": {
+        "delete": "Eliminar hipervínculo",
+        "cancel": "Cancelar hipervínculo",
+        "edit": "Editar hipervínculo"
+      },
+      "image": {
+        "change": "Cambiar imagen",
+        "saveAs": "Guardar como imagen",
+        "textWrap": "Ajuste de texto",
+        "textWrapType": {
+          "embed": "Empotrar",
+          "upDown": "Arriba abajo"
+        }
+      },
+      "table": {
+        "insertRowCol": "Insertar fila columna",
+        "insertTopRow": "Insertar arriba 1 fila",
+        "insertBottomRow": "Insertar abajo 1 fila",
+        "insertLeftCol": "Insertar izquierda 1 columna",
+        "insertRightCol": "Insertar derecha 1 columna",
+        "deleteRowCol": "Eliminar fila columna",
+        "deleteRow": "Eliminar 1 fila",
+        "deleteCol": "Eliminar 1 columna",
+        "deleteTable": "Eliminar table",
+        "mergeCell": "Unir celda",
+        "mergeCancelCell": "Cancelar unión celda",
+        "verticalAlign": "Aliniar verticalmente",
+        "verticalAlignTop": "Arriba",
+        "verticalAlignMiddle": "Medio",
+        "verticalAlignBottom": "Abajo",
+        "border": "Borde de tabla",
+        "borderAll": "Todo",
+        "borderEmpty": "Vacío",
+        "borderExternal": "Externo",
+        "borderTd": "Borde de celda",
+        "borderTdBottom": "Abajo",
+        "borderTdForward": "adelante",
+        "borderTdBack": "atrás"
+      }
+    },
+    "datePicker": {
+      "now": "Ahora",
+      "confirm": "Confirmar",
+      "return": "Volver",
+      "timeSelect": "Seleccionar tiempo",
+      "weeks": {
+        "sun": "Dom",
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mie",
+        "thu": "Jue",
+        "fri": "Vie",
+        "sat": "Sab"
+      },
+      "year": "Año",
+      "month": "Mes",
+      "hour": "Hora",
+      "minute": "Minuto",
+      "second": "Segundo"
+    },
+    "frame": {
+      "header": "Encabezado",
+      "footer": "Pie de página"
+    },
+    "pageBreak": {
+      "displayName": "Salto de Página"
+    },
+    "zone": {
+      "headerTip": "Doble click para editar el encabezado",
+      "footerTip": "Doble click para editar el pie de página"
+    }
+  }
+  
