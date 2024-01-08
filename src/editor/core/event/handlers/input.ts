@@ -41,8 +41,8 @@ export function input(data: string, host: CanvasEvent) {
     }
     const nextElement = elementList[endIndex + 1]
     if (
+      !copyElement.type ||
       copyElement.type === TEXT ||
-      (!copyElement.type && copyElement.value !== ZERO) ||
       (copyElement.type === HYPERLINK && nextElement?.type === HYPERLINK) ||
       (copyElement.type === DATE && nextElement?.type === DATE) ||
       (copyElement.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT) ||

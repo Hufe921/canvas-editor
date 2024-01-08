@@ -1327,7 +1327,7 @@ export class Draw {
         }
         metrics.boundingBoxAscent =
           (element.value === ZERO
-            ? defaultSize
+            ? element.size || defaultSize
             : fontMetrics.actualBoundingBoxAscent) * scale
         metrics.boundingBoxDescent =
           fontMetrics.actualBoundingBoxDescent * scale

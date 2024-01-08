@@ -1,6 +1,10 @@
 import { ZERO } from '../../../../dataset/constant/Common'
+import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
 import { IElement } from '../../../../interface/Element'
-import { formatElementContext } from '../../../../utils/element'
+import {
+  formatElementContext,
+  getAnchorElement
+} from '../../../../utils/element'
 import { CanvasEvent } from '../../CanvasEvent'
 
 export function enter(evt: KeyboardEvent, host: CanvasEvent) {
@@ -39,6 +43,16 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     )
   ) {
     formatElementContext(elementList, [enterText], startIndex)
+  }
+  // 复制样式属性
+  const copyElement = getAnchorElement(elementList, endIndex)
+  if (copyElement) {
+    EDITOR_ELEMENT_STYLE_ATTR.forEach(attr => {
+      const value = copyElement[attr] as never
+      if (value !== undefined) {
+        enterText[attr] = value
+      }
+    })
   }
   // 控件或文档插入换行元素
   const activeControl = control.getActiveControl()
