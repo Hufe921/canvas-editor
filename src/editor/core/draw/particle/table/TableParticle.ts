@@ -189,13 +189,29 @@ export class TableParticle {
         ctx.translate(0.5, 0.5)
         // 绘制线条
         ctx.beginPath()
+        // 单元格边框
+        if (td.borderType === TdBorder.TOP) {
+          ctx.moveTo(x - width, y)
+          ctx.lineTo(x, y)
+          ctx.stroke()
+        }
+        if (td.borderType === TdBorder.RIGHT) {
+          ctx.moveTo(x, y)
+          ctx.lineTo(x, y + height)
+          ctx.stroke()
+        }
         if (td.borderType === TdBorder.BOTTOM) {
           ctx.moveTo(x, y + height)
           ctx.lineTo(x - width, y + height)
           ctx.stroke()
         }
+        if (td.borderType === TdBorder.LEFT) {
+          ctx.moveTo(x - width, y)
+          ctx.lineTo(x - width, y + height)
+          ctx.stroke()
+        }
+        // 表格线
         if (!isEmptyBorderType && !isExternalBorderType) {
-          ctx.moveTo(x, y + height)
           ctx.moveTo(x, y)
           ctx.lineTo(x, y + height)
           ctx.lineTo(x - width, y + height)

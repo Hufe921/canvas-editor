@@ -45,7 +45,10 @@
       "borderEmpty": "无框线",
       "borderExternal": "外侧框线",
       "borderTd": "单元格边框",
+      "borderTdTop": "上边框",
+      "borderTdRight": "右边框",
       "borderTdBottom": "下边框",
+      "borderTdLeft": "左边框",
       "borderTdForward": "正斜线",
       "borderTdBack": "反斜线"
     }

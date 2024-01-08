@@ -28,6 +28,13 @@
 - All borders
 - Borderless
 - Outer border
+- Td borders
+  - Top border
+  - Right border
+  - Bottom border
+  - Left border
+  - Forward border
+  - Back border
 - Vertical alignment
 - Top alignment
 - Center vertically

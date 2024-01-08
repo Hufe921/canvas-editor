@@ -5,7 +5,10 @@ export enum TableBorder {
 }
 
 export enum TdBorder {
-  BOTTOM = 'bottom'
+  TOP = 'top',
+  RIGHT = 'right',
+  BOTTOM = 'bottom',
+  LEFT = 'left'
 }
 
 export enum TdSlash {

@@ -14,7 +14,10 @@ const {
     BORDER_EMPTY,
     BORDER_EXTERNAL,
     BORDER_TD,
+    BORDER_TD_TOP,
+    BORDER_TD_LEFT,
     BORDER_TD_BOTTOM,
+    BORDER_TD_RIGHT,
     BORDER_TD_BACK,
     BORDER_TD_FORWARD,
     VERTICAL_ALIGN,
@@ -81,12 +84,39 @@ export const tableMenus: IRegisterContextMenu[] = [
         when: () => true,
         childMenus: [
           {
+            key: BORDER_TD_TOP,
+            i18nPath: 'contextmenu.table.borderTdTop',
+            icon: 'border-td-top',
+            when: () => true,
+            callback: (command: Command) => {
+              command.executeTableTdBorderType(TdBorder.TOP)
+            }
+          },
+          {
+            key: BORDER_TD_RIGHT,
+            i18nPath: 'contextmenu.table.borderTdRight',
+            icon: 'border-td-right',
+            when: () => true,
+            callback: (command: Command) => {
+              command.executeTableTdBorderType(TdBorder.RIGHT)
+            }
+          },
+          {
             key: BORDER_TD_BOTTOM,
             i18nPath: 'contextmenu.table.borderTdBottom',
             icon: 'border-td-bottom',
             when: () => true,
             callback: (command: Command) => {
               command.executeTableTdBorderType(TdBorder.BOTTOM)
+            }
+          },
+          {
+            key: BORDER_TD_LEFT,
+            i18nPath: 'contextmenu.table.borderTdLeft',
+            icon: 'border-td-left',
+            when: () => true,
+            callback: (command: Command) => {
+              command.executeTableTdBorderType(TdBorder.LEFT)
             }
           },
           {
