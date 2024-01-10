@@ -27,7 +27,6 @@ interface IEditorOption {
   height?: number // Paper height. default: 1123
   scale?: number // scaling. default: 1
   pageGap?: number // Paper spacing. default: 20
-  backgroundColor?: string // Paper background color. default: #FFFFFF
   underlineColor?: string // Underline color. default: #000000
   strikeoutColor?: string // Strikeout color. default: #FF0000
   rangeColor?: string // Range color. default: #AECBFA
@@ -68,6 +67,7 @@ interface IEditorOption {
   group?: IGroup // Group option. {opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
   pageBreak?: IPageBreak // PageBreak option。{font?:string; fontSize?:number; lineDash?:number[];}
   zone?: IZoneOption // Zone option。{tipDisabled?:boolean;}
+  background?: IBackgroundOption // Background option. {color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat;}。default: {color: '#FFFFFF'}
 }
 ```
 

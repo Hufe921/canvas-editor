@@ -75,6 +75,9 @@ import { IRange } from './interface/Range'
 import { deepClone, splitText } from './utils'
 import { IZoneOption } from './interface/Zone'
 import { defaultZoneOption } from './dataset/constant/Zone'
+import { IBackgroundOption } from './interface/Background'
+import { defaultBackground } from './dataset/constant/Background'
+import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 
 export default class Editor {
   public command: Command
@@ -138,6 +141,10 @@ export default class Editor {
       ...defaultZoneOption,
       ...options.zone
     }
+    const backgroundOptions: Required<IBackgroundOption> = {
+      ...defaultBackground,
+      ...options.background
+    }
 
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
@@ -153,7 +160,6 @@ export default class Editor {
       height: 1123,
       scale: 1,
       pageGap: 20,
-      backgroundColor: '#FFFFFF',
       underlineColor: '#000000',
       strikeoutColor: '#FF0000',
       rangeAlpha: 0.6,
@@ -194,7 +200,8 @@ export default class Editor {
       placeholder: placeholderOptions,
       group: groupOptions,
       pageBreak: pageBreakOptions,
-      zone: zoneOptions
+      zone: zoneOptions,
+      background: backgroundOptions
     }
     // 数据处理
     data = deepClone(data)
@@ -292,7 +299,9 @@ export {
   ListType,
   ListStyle,
   WordBreak,
-  ControlIndentation
+  ControlIndentation,
+  BackgroundRepeat,
+  BackgroundSize
 }
 
 // 对外类型

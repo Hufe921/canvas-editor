@@ -5,6 +5,7 @@ import {
   PaperDirection,
   WordBreak
 } from '../dataset/enum/Editor'
+import { IBackgroundOption } from './Background'
 import { ICheckboxOption } from './Checkbox'
 import { IPadding } from './Common'
 import { IControlOption } from './Control'
@@ -40,7 +41,6 @@ export interface IEditorOption {
   height?: number
   scale?: number
   pageGap?: number
-  backgroundColor?: string
   underlineColor?: string
   strikeoutColor?: string
   rangeColor?: string
@@ -81,6 +81,7 @@ export interface IEditorOption {
   group?: IGroup
   pageBreak?: IPageBreak
   zone?: IZoneOption
+  background?: IBackgroundOption
 }
 
 export interface IEditorResult {

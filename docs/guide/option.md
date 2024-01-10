@@ -27,7 +27,6 @@ interface IEditorOption {
   height?: number // 纸张高度。默认：1123
   scale?: number // 缩放比例。默认：1
   pageGap?: number // 纸张间隔。默认：20
-  backgroundColor?: string // 纸张背景色。默认：#FFFFFF
   underlineColor?: string // 下划线颜色。默认：#000000
   strikeoutColor?: string // 删除线颜色。默认：#FF0000
   rangeColor?: string // 选区颜色。默认：#AECBFA
@@ -68,6 +67,7 @@ interface IEditorOption {
   group?: IGroup // 成组配置。{opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
   pageBreak?: IPageBreak // 分页符配置。{font?:string; fontSize?:number; lineDash?:number[];}
   zone?: IZoneOption // 编辑器区域配置。{tipDisabled?:boolean;}
+  background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat;}。默认：{color: '#FFFFFF'}
 }
 ```
 
