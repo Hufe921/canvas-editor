@@ -149,6 +149,7 @@ export default class Editor {
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
       defaultType: 'TEXT',
+      defaultColor: '#000000',
       defaultFont: 'Microsoft YaHei',
       defaultSize: 16,
       minSize: 5,

@@ -16,6 +16,7 @@ new Editor(container, IEditorData | IElement[], {
 interface IEditorOption {
   mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control), Print (Visual aids are not displayed, Unwritten content control). default: Edit
   defaultType?: string // Default element type. default: TEXT
+  defaultColor?: string // Default color. default: #000000
   defaultFont?: string // Default font. default: Microsoft YaHei
   defaultSize?: number // Default font size. default: 16
   minSize?: number // Min font size。default: 5

@@ -30,6 +30,7 @@ export interface IEditorData {
 export interface IEditorOption {
   mode?: EditorMode
   defaultType?: string
+  defaultColor?: string
   defaultFont?: string
   defaultSize?: number
   minSize?: number

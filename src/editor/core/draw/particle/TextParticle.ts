@@ -1,5 +1,6 @@
-import { ElementType, IElement } from '../../..'
+import { ElementType, IEditorOption, IElement } from '../../..'
 import { PUNCTUATION_LIST } from '../../../dataset/constant/Common'
+import { DeepRequired } from '../../../interface/Common'
 import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
@@ -10,6 +11,8 @@ export interface IMeasureWordResult {
 
 export class TextParticle {
   private draw: Draw
+  private options: DeepRequired<IEditorOption>
+
   private ctx: CanvasRenderingContext2D
   private curX: number
   private curY: number
@@ -20,6 +23,7 @@ export class TextParticle {
 
   constructor(draw: Draw) {
     this.draw = draw
+    this.options = draw.getOptions()
     this.ctx = draw.getCtx()
     this.curX = -1
     this.curY = -1
@@ -129,9 +133,7 @@ export class TextParticle {
     if (!this.text || !~this.curX || !~this.curX) return
     this.ctx.save()
     this.ctx.font = this.curStyle
-    if (this.curColor) {
-      this.ctx.fillStyle = this.curColor
-    }
+    this.ctx.fillStyle = this.curColor || this.options.defaultColor
     this.ctx.fillText(this.text, this.curX, this.curY)
     this.ctx.restore()
   }
