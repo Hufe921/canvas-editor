@@ -16,6 +16,7 @@ new Editor(container, IEditorData | IElement[], {
 interface IEditorOption {
   mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）。默认：编辑
   defaultType?: string // 默认元素类型。默认：TEXT
+  defaultColor?: string // 默认字体颜色。默认：#000000
   defaultFont?: string // 默认字体。默认：Microsoft YaHei
   defaultSize?: number // 默认字号。默认：16
   minSize?: number // 最小字号。默认：5
@@ -27,7 +28,6 @@ interface IEditorOption {
   height?: number // 纸张高度。默认：1123
   scale?: number // 缩放比例。默认：1
   pageGap?: number // 纸张间隔。默认：20
-  backgroundColor?: string // 纸张背景色。默认：#FFFFFF
   underlineColor?: string // 下划线颜色。默认：#000000
   strikeoutColor?: string // 删除线颜色。默认：#FF0000
   rangeColor?: string // 选区颜色。默认：#AECBFA
@@ -68,6 +68,7 @@ interface IEditorOption {
   group?: IGroup // 成组配置。{opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
   pageBreak?: IPageBreak // 分页符配置。{font?:string; fontSize?:number; lineDash?:number[];}
   zone?: IZoneOption // 编辑器区域配置。{tipDisabled?:boolean;}
+  background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat;}。默认：{color: '#FFFFFF'}
 }
 ```
 

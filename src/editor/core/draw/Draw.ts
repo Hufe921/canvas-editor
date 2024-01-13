@@ -1327,7 +1327,7 @@ export class Draw {
         }
         metrics.boundingBoxAscent =
           (element.value === ZERO
-            ? defaultSize
+            ? element.size || defaultSize
             : fontMetrics.actualBoundingBoxAscent) * scale
         metrics.boundingBoxDescent =
           fontMetrics.actualBoundingBoxDescent * scale
@@ -1645,6 +1645,10 @@ export class Draw {
           this._drawRichText(ctx)
           this.blockParticle.render(pageNo, element, x, y)
         } else {
+          // 如果当前元素设置左偏移，则上一元素立即绘制
+          if (element.left) {
+            this.textParticle.complete()
+          }
           this.textParticle.record(ctx, element, x, y + offsetY)
           // 如果设置字宽、字间距需单独绘制
           if (element.width || element.letterSpacing) {

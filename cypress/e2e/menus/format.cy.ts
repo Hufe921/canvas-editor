@@ -31,9 +31,9 @@ describe('菜单-清除格式', () => {
         .then(() => {
           const data = editor.command.getValue().data.main
 
-          expect(data[0].italic).to.eq(false)
+          expect(data[0].italic).to.eq(undefined)
 
-          expect(data[0].bold).to.eq(false)
+          expect(data[0].bold).to.eq(undefined)
         })
     })
   })

@@ -27,17 +27,31 @@ export class ZoneTip {
     this.tipContent = tipContent
     this.isDisableMouseMove = true
     this.currentMoveZone = EditorZone.MAIN
-
-    this._watchMouseMoveZoneChange()
+    // 监听区域
+    const watchZones: EditorZone[] = []
+    const { header, footer } = draw.getOptions()
+    if (!header.disabled) {
+      watchZones.push(EditorZone.HEADER)
+    }
+    if (!footer.disabled) {
+      watchZones.push(EditorZone.FOOTER)
+    }
+    if (watchZones.length) {
+      this._watchMouseMoveZoneChange(watchZones)
+    }
   }
 
-  private _watchMouseMoveZoneChange() {
+  private _watchMouseMoveZoneChange(watchZones: EditorZone[]) {
     this.pageContainer.addEventListener(
       'mousemove',
       throttle((evt: MouseEvent) => {
         if (this.isDisableMouseMove) return
         if (evt.target instanceof HTMLCanvasElement) {
           const mousemoveZone = this.zone.getZoneByY(evt.offsetY)
+          if (!watchZones.includes(mousemoveZone)) {
+            this._updateZoneTip(false)
+            return
+          }
           this.currentMoveZone = mousemoveZone
           // 激活区域是正文，移动区域是页眉、页脚时绘制
           this._updateZoneTip(

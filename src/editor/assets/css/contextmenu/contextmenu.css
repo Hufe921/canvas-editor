@@ -163,8 +163,20 @@
   background-image: url(../../../assets/images/table-border-td.svg);
 }
 
+.ce-contextmenu-border-td-top {
+  background-image: url(../../../assets/images/table-border-td-top.svg);
+}
+
+.ce-contextmenu-border-td-left {
+  background-image: url(../../../assets/images/table-border-td-left.svg);
+}
+
 .ce-contextmenu-border-td-bottom {
   background-image: url(../../../assets/images/table-border-td-bottom.svg);
+}
+
+.ce-contextmenu-border-td-right {
+  background-image: url(../../../assets/images/table-border-td-right.svg);
 }
 
 .ce-contextmenu-border-td-forward {

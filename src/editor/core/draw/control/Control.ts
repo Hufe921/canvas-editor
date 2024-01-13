@@ -97,8 +97,15 @@ export class Control {
           }
         }
       }
-      if (!element.controlId || element.control?.minWidth) {
-        return true
+      if (!element.controlId) return true
+      if (element.control?.minWidth) {
+        if (
+          element.controlComponent === ControlComponent.PREFIX ||
+          element.controlComponent === ControlComponent.POSTFIX
+        ) {
+          element.value = ''
+          return true
+        }
       }
       return (
         element.controlComponent !== ControlComponent.PREFIX &&
