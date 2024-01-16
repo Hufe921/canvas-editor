@@ -110,7 +110,8 @@ export function formatElementList(
       // 格式化元素
       const valueList = el.valueList || []
       formatElementList(valueList, {
-        ...options
+        ...options,
+        isHandleFirstElement: true
       })
       // 追加节点
       if (valueList.length) {
