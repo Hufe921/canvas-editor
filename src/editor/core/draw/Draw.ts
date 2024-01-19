@@ -1071,7 +1071,7 @@ export class Draw {
         ascent: 0,
         elementList: [],
         startIndex: 0,
-        rowFlex: elementList?.[1]?.rowFlex
+        rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
       })
     }
     // 列表位置
@@ -1449,7 +1449,7 @@ export class Draw {
           startIndex: i,
           elementList: [rowElement],
           ascent,
-          rowFlex: elementList[i + 1]?.rowFlex,
+          rowFlex: elementList[i]?.rowFlex || elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         }
         // 控件缩进

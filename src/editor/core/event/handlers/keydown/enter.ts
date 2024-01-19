@@ -1,5 +1,8 @@
 import { ZERO } from '../../../../dataset/constant/Common'
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
+import {
+  EDITOR_ELEMENT_STYLE_ATTR,
+  EDITOR_ROW_ATTR
+} from '../../../../dataset/constant/Element'
 import { IElement } from '../../../../interface/Element'
 import {
   formatElementContext,
@@ -47,7 +50,8 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   // 复制样式属性
   const copyElement = getAnchorElement(elementList, endIndex)
   if (copyElement) {
-    EDITOR_ELEMENT_STYLE_ATTR.forEach(attr => {
+    const copyAttr = [...EDITOR_ELEMENT_STYLE_ATTR, ...EDITOR_ROW_ATTR]
+    copyAttr.forEach(attr => {
       const value = copyElement[attr] as never
       if (value !== undefined) {
         enterText[attr] = value
