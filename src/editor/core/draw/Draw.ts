@@ -1833,7 +1833,7 @@ export class Draw {
     // 控件高亮
     this.control.renderHighlightList(ctx, pageNo)
     // 渲染元素
-    const index = rowList[0].startIndex
+    const index = rowList[0]?.startIndex
     this.drawRow(ctx, {
       elementList,
       positionList,
