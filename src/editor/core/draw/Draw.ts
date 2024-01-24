@@ -551,9 +551,8 @@ export class Draw {
 
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
-    const isPartRangeInControlOutside =
-      this.control.isPartRangeInControlOutside()
-    if (isPartRangeInControlOutside) return
+    const isRangeCanInput = this.control.isRangeCanInput()
+    if (!isRangeCanInput) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     formatElementList(payload, {
@@ -562,7 +561,12 @@ export class Draw {
     })
     let curIndex = -1
     // 判断是否在控件内
-    const activeControl = this.control.getActiveControl()
+    let activeControl = this.control.getActiveControl()
+    // 光标在控件内如果当前没有被激活，需要手动激活
+    if (!activeControl && this.control.isRangeWithinControl()) {
+      this.control.initControl()
+      activeControl = this.control.getActiveControl()
+    }
     if (activeControl && !this.control.isRangInPostfix()) {
       curIndex = activeControl.setValue(payload, undefined, {
         isIgnoreDisabledRule: true

@@ -197,8 +197,13 @@ export function formatElementList(
       }
       i--
     } else if (el.type === ElementType.CONTROL) {
+      // 兼容控件内容类型错误
+      if (!el.control) {
+        i++
+        continue
+      }
       const { prefix, postfix, value, placeholder, code, type, valueSets } =
-        el.control!
+        el.control
       const {
         editorOptions: { control: controlOption, checkbox: checkboxOption }
       } = options

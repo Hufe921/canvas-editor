@@ -158,6 +158,26 @@ export class Control {
     return false
   }
 
+  // 判断是否在控件可输入的地方
+  public isRangeCanInput(): boolean {
+    const { startIndex, endIndex } = this.getRange()
+    if (!~startIndex && !~endIndex) return false
+    if (startIndex === endIndex) return true
+    const elementList = this.getElementList()
+    const startElement = elementList[startIndex]
+    const endElement = elementList[endIndex]
+    // 选区前后不是控件 || 选区前不在控件内&&选区后是后缀 || 选区前是控件&&选区后在控件内
+    return (
+      (!startElement.controlId && !endElement.controlId) ||
+      ((!startElement.controlId ||
+        startElement.controlComponent === ControlComponent.POSTFIX) &&
+        endElement.controlComponent === ControlComponent.POSTFIX) ||
+      (!!startElement.controlId &&
+        endElement.controlId === startElement.controlId &&
+        endElement.controlComponent !== ControlComponent.POSTFIX)
+    )
+  }
+
   public isDisabledControl(): boolean {
     return !!this.activeControl?.getElement().control?.disabled
   }
