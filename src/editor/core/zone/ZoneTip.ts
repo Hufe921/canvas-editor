@@ -46,6 +46,7 @@ export class ZoneTip {
       'mousemove',
       throttle((evt: MouseEvent) => {
         if (this.isDisableMouseMove) return
+        if (!evt.offsetY) return
         if (evt.target instanceof HTMLCanvasElement) {
           const mousemoveZone = this.zone.getZoneByY(evt.offsetY)
           if (!watchZones.includes(mousemoveZone)) {
