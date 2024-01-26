@@ -1718,29 +1718,18 @@ export class CommandAdapt {
     const isDisabled =
       this.draw.isReadonly() || this.control.isDisabledControl()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
-    if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const elementList = this.draw.getElementList()
     const { value, width, height } = payload
-    const element: IElement = {
-      value,
-      width,
-      height,
-      id: getUUID(),
-      type: ElementType.IMAGE
-    }
-    const curIndex = startIndex + 1
-    formatElementContext(elementList, [element], startIndex)
-    this.draw.spliceElementList(
-      elementList,
-      curIndex,
-      startIndex === endIndex ? 0 : endIndex - startIndex,
-      element
-    )
-    this.range.setRange(curIndex, curIndex)
-    this.draw.render({ curIndex })
+    this.draw.insertElementList([
+      {
+        value,
+        width,
+        height,
+        id: getUUID(),
+        type: ElementType.IMAGE
+      }
+    ])
   }
 
   public search(payload: string | null) {

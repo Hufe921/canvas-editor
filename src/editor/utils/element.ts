@@ -110,7 +110,8 @@ export function formatElementList(
       // 格式化元素
       const valueList = el.valueList || []
       formatElementList(valueList, {
-        ...options
+        ...options,
+        isHandleFirstElement: true
       })
       // 追加节点
       if (valueList.length) {
@@ -196,8 +197,13 @@ export function formatElementList(
       }
       i--
     } else if (el.type === ElementType.CONTROL) {
+      // 兼容控件内容类型错误
+      if (!el.control) {
+        i++
+        continue
+      }
       const { prefix, postfix, value, placeholder, code, type, valueSets } =
-        el.control!
+        el.control
       const {
         editorOptions: { control: controlOption, checkbox: checkboxOption }
       } = options

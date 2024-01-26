@@ -1,3 +1,19 @@
+## [0.9.63](https://github.com/Hufe921/canvas-editor/compare/v0.9.62...v0.9.63) (2024-01-19)
+
+
+### Bug Fixes
+
+* copy row properties on input #415 ([55a43e6](https://github.com/Hufe921/canvas-editor/commit/55a43e61bf6aded9f50644e86d3a1c276ee7a53a)), closes [#415](https://github.com/Hufe921/canvas-editor/issues/415)
+* format list element boundary error ([094af57](https://github.com/Hufe921/canvas-editor/commit/094af57302a7db0c83cb3dd8a5eb9bbe5581b8f8))
+* image render error within the control #406 ([d175f92](https://github.com/Hufe921/canvas-editor/commit/d175f920e8887cc3b1f5132e8ac7443b0d556204)), closes [#406](https://github.com/Hufe921/canvas-editor/issues/406)
+
+
+### Features
+
+* keep aspect ratio when drag image #414 ([e8684da](https://github.com/Hufe921/canvas-editor/commit/e8684daffd40a8efda0342809846451afa0027a2)), closes [#414](https://github.com/Hufe921/canvas-editor/issues/414)
+
+
+
 ## [0.9.62](https://github.com/Hufe921/canvas-editor/compare/v0.9.61...v0.9.62) (2024-01-12)
 
 

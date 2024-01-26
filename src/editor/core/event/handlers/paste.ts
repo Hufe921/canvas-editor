@@ -3,42 +3,40 @@ import { VIRTUAL_ELEMENT_TYPE } from '../../../dataset/constant/Element'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { IPasteOption } from '../../../interface/Event'
+import { getClipboardData, removeClipboardData } from '../../../utils/clipboard'
 import {
   formatElementContext,
   getElementListByHTML
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
-export function pastHTML(host: CanvasEvent, htmlText: string) {
+export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
   const draw = host.getDraw()
   const isReadonly = draw.isReadonly()
   if (isReadonly) return
   const rangeManager = draw.getRange()
   const { startIndex } = rangeManager.getRange()
-  const elementList = draw.getElementList()
-  const pasteElementList = getElementListByHTML(htmlText, {
-    innerWidth: draw.getOriginalInnerWidth()
-  })
+  const originalElementList = draw.getElementList()
   // 全选粘贴无需格式化上下文
   if (~startIndex && !rangeManager.getIsSelectAll()) {
     // 如果是复制到虚拟元素里，则粘贴列表的虚拟元素需扁平化处理，避免产生新的虚拟元素
-    const anchorElement = elementList[startIndex]
+    const anchorElement = originalElementList[startIndex]
     if (anchorElement?.titleId || anchorElement?.listId) {
       let start = 0
-      while (start < pasteElementList.length) {
-        const pasteElement = pasteElementList[start]
+      while (start < elementList.length) {
+        const pasteElement = elementList[start]
         if (anchorElement.titleId && /^\n/.test(pasteElement.value)) {
           break
         }
         if (VIRTUAL_ELEMENT_TYPE.includes(pasteElement.type!)) {
-          pasteElementList.splice(start, 1)
+          elementList.splice(start, 1)
           if (pasteElement.valueList) {
             for (let v = 0; v < pasteElement.valueList.length; v++) {
               const element = pasteElement.valueList[v]
               if (element.value === ZERO || element.value === '\n') {
                 continue
               }
-              pasteElementList.splice(start, 0, element)
+              elementList.splice(start, 0, element)
               start++
             }
           }
@@ -47,11 +45,21 @@ export function pastHTML(host: CanvasEvent, htmlText: string) {
         start++
       }
     }
-    formatElementContext(elementList, pasteElementList, startIndex, {
+    formatElementContext(originalElementList, elementList, startIndex, {
       isBreakWhenWrap: true
     })
   }
-  draw.insertElementList(pasteElementList)
+  draw.insertElementList(elementList)
+}
+
+export function pasteHTML(host: CanvasEvent, htmlText: string) {
+  const draw = host.getDraw()
+  const isReadonly = draw.isReadonly()
+  if (isReadonly) return
+  const elementList = getElementListByHTML(htmlText, {
+    innerWidth: draw.getOriginalInnerWidth()
+  })
+  pasteElement(host, elementList)
 }
 
 export function pasteImage(host: CanvasEvent, file: File | Blob) {
@@ -96,6 +104,14 @@ export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
     paste(evt)
     return
   }
+  // 优先读取编辑器内部粘贴板数据
+  const clipboardText = clipboardData.getData('text')
+  const editorClipboardData = getClipboardData()
+  if (clipboardText === editorClipboardData?.text) {
+    pasteElement(host, editorClipboardData.elementList)
+    return
+  }
+  removeClipboardData()
   // 从粘贴板提取数据
   let isHTML = false
   for (let i = 0; i < clipboardData.items.length; i++) {
@@ -116,7 +132,7 @@ export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
       }
       if (item.type === 'text/html' && isHTML) {
         item.getAsString(htmlText => {
-          pastHTML(host, htmlText)
+          pasteHTML(host, htmlText)
         })
         break
       }
@@ -166,7 +182,7 @@ export async function pasteByApi(host: CanvasEvent, options?: IPasteOption) {
         const htmlTextBlob = await item.getType('text/html')
         const htmlText = await htmlTextBlob.text()
         if (htmlText) {
-          pastHTML(host, htmlText)
+          pasteHTML(host, htmlText)
         }
       } else if (item.types.some(type => type.startsWith('image/'))) {
         const type = item.types.find(type => type.startsWith('image/'))!

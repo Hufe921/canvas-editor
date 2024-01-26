@@ -551,9 +551,8 @@ export class Draw {
 
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
-    const isPartRangeInControlOutside =
-      this.control.isPartRangeInControlOutside()
-    if (isPartRangeInControlOutside) return
+    const isRangeCanInput = this.control.isRangeCanInput()
+    if (!isRangeCanInput) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     formatElementList(payload, {
@@ -562,7 +561,12 @@ export class Draw {
     })
     let curIndex = -1
     // 判断是否在控件内
-    const activeControl = this.control.getActiveControl()
+    let activeControl = this.control.getActiveControl()
+    // 光标在控件内如果当前没有被激活，需要手动激活
+    if (!activeControl && this.control.isRangeWithinControl()) {
+      this.control.initControl()
+      activeControl = this.control.getActiveControl()
+    }
     if (activeControl && !this.control.isRangInPostfix()) {
       curIndex = activeControl.setValue(payload, undefined, {
         isIgnoreDisabledRule: true
@@ -1071,7 +1075,7 @@ export class Draw {
         ascent: 0,
         elementList: [],
         startIndex: 0,
-        rowFlex: elementList?.[1]?.rowFlex
+        rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
       })
     }
     // 列表位置
@@ -1449,7 +1453,7 @@ export class Draw {
           startIndex: i,
           elementList: [rowElement],
           ascent,
-          rowFlex: elementList[i + 1]?.rowFlex,
+          rowFlex: elementList[i]?.rowFlex || elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         }
         // 控件缩进
@@ -1833,7 +1837,7 @@ export class Draw {
     // 控件高亮
     this.control.renderHighlightList(ctx, pageNo)
     // 渲染元素
-    const index = rowList[0].startIndex
+    const index = rowList[0]?.startIndex
     this.drawRow(ctx, {
       elementList,
       positionList,
