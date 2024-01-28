@@ -1,3 +1,20 @@
+## [0.9.64](https://github.com/Hufe921/canvas-editor/compare/v0.9.63...v0.9.64) (2024-01-28)
+
+
+### Bug Fixes
+
+* error inserting image within control #422 ([ea4ac33](https://github.com/Hufe921/canvas-editor/commit/ea4ac339c7de962845f639a1c5ac24d8e3640485)), closes [#422](https://github.com/Hufe921/canvas-editor/issues/422)
+* render error when row element is empty #420 ([8999f28](https://github.com/Hufe921/canvas-editor/commit/8999f283bb87d92fe58b1aa8330bf4d9d75b9064)), closes [#420](https://github.com/Hufe921/canvas-editor/issues/420)
+* zone tip position error in firefox browser #423 ([3cf911c](https://github.com/Hufe921/canvas-editor/commit/3cf911c501a0c0af85d994d5b50c657c6cd77692)), closes [#423](https://github.com/Hufe921/canvas-editor/issues/423)
+
+
+### Features
+
+* add executeSetControlProperties api #391 ([3ffb6b9](https://github.com/Hufe921/canvas-editor/commit/3ffb6b94b57a0d0fe81cc778a26d4e2a234e24ab)), closes [#391](https://github.com/Hufe921/canvas-editor/issues/391)
+* copy and paste original elements #397 (#426) ([2fc16de](https://github.com/Hufe921/canvas-editor/commit/2fc16de4e15578cdd181c4186b4cf978924b5207)), closes [#397](https://github.com/Hufe921/canvas-editor/issues/397) [#426](https://github.com/Hufe921/canvas-editor/issues/426)
+
+
+
 ## [0.9.63](https://github.com/Hufe921/canvas-editor/compare/v0.9.62...v0.9.63) (2024-01-19)
 
 
