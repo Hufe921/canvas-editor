@@ -892,6 +892,16 @@ Usage:
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```
 
+## executeSetControlProperties
+
+Feature: Set control properties
+
+Usage:
+
+```javascript
+instance.command.executeSetControlProperties(payload: ISetControlProperties)
+```
+
 ## executeSetControlHighlight
 
 Feature: Set control highlight (by keyword)

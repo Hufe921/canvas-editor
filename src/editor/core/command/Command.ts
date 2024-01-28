@@ -88,6 +88,7 @@ export class Command {
   public executeSetZone: CommandAdapt['setZone']
   public executeSetControlValue: CommandAdapt['setControlValue']
   public executeSetControlExtension: CommandAdapt['setControlExtension']
+  public executeSetControlProperties: CommandAdapt['setControlProperties']
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
@@ -222,6 +223,7 @@ export class Command {
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
     this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
+    this.executeSetControlProperties = adapt.setControlProperties.bind(adapt)
     this.executeSetControlHighlight = adapt.setControlHighlight.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
   }

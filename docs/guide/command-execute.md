@@ -892,6 +892,16 @@ instance.command.executeSetControlValue(payload: ISetControlValueOption)
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```
 
+## executeSetControlProperties
+
+功能：设置控件属性
+
+用法：
+
+```javascript
+instance.command.executeSetControlProperties(payload: ISetControlProperties)
+```
+
 ## executeSetControlHighlight
 
 功能：设置控件高亮（根据关键词）

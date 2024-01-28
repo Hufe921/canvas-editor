@@ -24,6 +24,7 @@ import {
   IGetControlValueResult,
   ISetControlExtensionOption,
   ISetControlHighlightOption,
+  ISetControlProperties,
   ISetControlValueOption
 } from '../../interface/Control'
 import {
@@ -2286,6 +2287,12 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.draw.getControl().setExtensionByConceptId(payload)
+  }
+
+  public setControlProperties(payload: ISetControlProperties) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.draw.getControl().setPropertiesByConceptId(payload)
   }
 
   public setControlHighlight(payload: ISetControlHighlightOption) {
