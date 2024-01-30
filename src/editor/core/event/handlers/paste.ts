@@ -157,10 +157,18 @@ export async function pasteByApi(host: CanvasEvent, options?: IPasteOption) {
     paste()
     return
   }
+  // 优先读取编辑器内部粘贴板数据
+  const clipboardText = await navigator.clipboard.readText()
+  const editorClipboardData = getClipboardData()
+  if (clipboardText === editorClipboardData?.text) {
+    pasteElement(host, editorClipboardData.elementList)
+    return
+  }
+  removeClipboardData()
+  // 从内存粘贴板获取数据
   if (options?.isPlainText) {
-    const text = await navigator.clipboard.readText()
-    if (text) {
-      host.input(text)
+    if (clipboardText) {
+      host.input(clipboardText)
     }
   } else {
     const clipboardData = await navigator.clipboard.read()
