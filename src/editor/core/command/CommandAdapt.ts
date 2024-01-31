@@ -1961,6 +1961,10 @@ export class CommandAdapt {
     return this.workerManager.getWordCount()
   }
 
+  public getRange(): IRange {
+    return deepClone(this.range.getRange())
+  }
+
   public getRangeText(): string {
     return this.range.toString()
   }
