@@ -25,7 +25,7 @@ export function printImageBase64(
     container.append(image)
   })
   const style = document.createElement('style')
-  const stylesheet = `*{margin:0;padding:0;}`
+  const stylesheet = `*{margin:0;padding:0;}@page{margin:0;}`
   style.append(document.createTextNode(stylesheet))
   setTimeout(() => {
     doc.write(`${style.outerHTML}${container.innerHTML}`)
