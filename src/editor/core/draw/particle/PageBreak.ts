@@ -27,7 +27,7 @@ export class PageBreakParticle {
     const displayName = this.i18n.t('pageBreak.displayName')
     const { scale, defaultRowMargin } = this.options
     const size = fontSize * scale
-    const elementWidth = element.width!
+    const elementWidth = element.width! * scale
     const offsetY =
       this.draw.getDefaultBasicRowMarginHeight() * defaultRowMargin
     ctx.save()

@@ -1116,11 +1116,12 @@ export class Draw {
             surplusWidth > 0
               ? surplusWidth
               : Math.min(elementWidth, availableWidth)
-          element.width = adaptiveWidth
-          element.height = (elementHeight * adaptiveWidth) / elementWidth
-          metrics.width = element.width
-          metrics.height = element.height
-          metrics.boundingBoxDescent = element.height
+          const adaptiveHeight = (elementHeight * adaptiveWidth) / elementWidth
+          element.width = adaptiveWidth / scale
+          element.height = adaptiveHeight / scale
+          metrics.width = adaptiveWidth
+          metrics.height = adaptiveHeight
+          metrics.boundingBoxDescent = adaptiveHeight
         } else {
           metrics.width = elementWidth
           metrics.height = elementHeight
@@ -1280,13 +1281,13 @@ export class Draw {
           }
         }
       } else if (element.type === ElementType.SEPARATOR) {
-        element.width = availableWidth
+        element.width = availableWidth / scale
         metrics.width = availableWidth
         metrics.height = defaultSize
         metrics.boundingBoxAscent = -rowMargin
         metrics.boundingBoxDescent = -rowMargin
       } else if (element.type === ElementType.PAGE_BREAK) {
-        element.width = availableWidth
+        element.width = availableWidth / scale
         metrics.width = availableWidth
         metrics.height = defaultSize
       } else if (
@@ -1294,9 +1295,9 @@ export class Draw {
         element.controlComponent === ControlComponent.CHECKBOX
       ) {
         const { width, height, gap } = this.options.checkbox
-        const elementWidth = (width + gap * 2) * scale
+        const elementWidth = width + gap * 2
         element.width = elementWidth
-        metrics.width = elementWidth
+        metrics.width = elementWidth * scale
         metrics.height = height * scale
       } else if (element.type === ElementType.TAB) {
         metrics.width = defaultTabWidth * scale
