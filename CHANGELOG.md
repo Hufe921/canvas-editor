@@ -1,3 +1,20 @@
+## [0.9.65](https://github.com/Hufe921/canvas-editor/compare/v0.9.64...v0.9.65) (2024-02-06)
+
+
+### Bug Fixes
+
+* cursor position error when scaling the page #434 ([e03feb2](https://github.com/Hufe921/canvas-editor/commit/e03feb210282779ecebb7af3d9a3801392b66979)), closes [#434](https://github.com/Hufe921/canvas-editor/issues/434)
+* insert image render error when scaling the page #433 ([acb0d3f](https://github.com/Hufe921/canvas-editor/commit/acb0d3fc47953c822b2daa5b1b437780a2c0f67e)), closes [#433](https://github.com/Hufe921/canvas-editor/issues/433)
+
+
+### Features
+
+* add getRange api #429 ([2a6a41c](https://github.com/Hufe921/canvas-editor/commit/2a6a41c8c9ebe8188de08d43f10db89c77016950)), closes [#429](https://github.com/Hufe921/canvas-editor/issues/429)
+* paste original elements by api ([7ab103e](https://github.com/Hufe921/canvas-editor/commit/7ab103edd9c3dbfa3c94b31167fc68487656a4d0))
+* set margin style when printing #431 ([4015707](https://github.com/Hufe921/canvas-editor/commit/4015707025689648be2d3082dfbcbe2e597b55d1)), closes [#431](https://github.com/Hufe921/canvas-editor/issues/431)
+
+
+
 ## [0.9.64](https://github.com/Hufe921/canvas-editor/compare/v0.9.63...v0.9.64) (2024-01-28)
 
 
