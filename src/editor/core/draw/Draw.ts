@@ -843,9 +843,11 @@ export class Draw {
       p.style.marginBottom = `${this.getPageGap()}px`
       this._initPageContext(this.ctxList[i])
     })
+    const cursorPosition = this.position.getCursorPosition()
     this.render({
       isSubmitHistory: false,
-      isSetCursor: false
+      isSetCursor: !!cursorPosition,
+      curIndex: cursorPosition?.index
     })
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
