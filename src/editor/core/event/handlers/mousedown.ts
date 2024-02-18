@@ -5,6 +5,17 @@ import { isMod } from '../../../utils/hotkey'
 import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
 import { CanvasEvent } from '../CanvasEvent'
 
+export function setRangeCache(host: CanvasEvent) {
+  const draw = host.getDraw()
+  const position = draw.getPosition()
+  const rangeManager = draw.getRange()
+  // 缓存选区上下文信息
+  host.isAllowDrag = true
+  host.cacheRange = deepClone(rangeManager.getRange())
+  host.cacheElementList = draw.getElementList()
+  host.cachePositionList = position.getPositionList()
+}
+
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   if (evt.button === MouseEventButton.RIGHT) return
   const draw = host.getDraw()
@@ -20,10 +31,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
         evt.offsetY
       )
       if (isPointInRange) {
-        host.isAllowDrag = true
-        host.cacheRange = deepClone(range)
-        host.cacheElementList = draw.getElementList()
-        host.cachePositionList = position.getPositionList()
+        setRangeCache(host)
         return
       }
     }
@@ -119,6 +127,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     draw.getCursor().drawCursor({
       isShow: false
     })
+    // 点击图片允许拖拽调整位置
+    setRangeCache(host)
   }
   // 表格工具组件
   const tableTool = draw.getTableTool()

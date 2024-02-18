@@ -6,12 +6,17 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
   const draw = host.getDraw()
   const LETTER_REG = draw.getLetterReg()
   const position = draw.getPosition()
+  const positionContext = position.getPositionByXY({
+    x: evt.offsetX,
+    y: evt.offsetY
+  })
+  // 图片预览
+  if (positionContext.isImage && positionContext.isDirectHit) {
+    draw.getPreviewer().render()
+    return
+  }
   // 切换区域
   if (draw.getIsPagingMode()) {
-    const positionContext = position.getPositionByXY({
-      x: evt.offsetX,
-      y: evt.offsetY
-    })
     if (!~positionContext.index && positionContext.zone) {
       draw.getZone().setZone(positionContext.zone)
       return

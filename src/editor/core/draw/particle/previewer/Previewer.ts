@@ -59,8 +59,6 @@ export class Previewer {
     this.mousedownX = 0
     this.mousedownY = 0
     this.curHandleIndex = 0 // 默认右下角
-    // 图片预览
-    resizerSelection.ondblclick = this._dblclick.bind(this)
     this.previewerContainer = null
     this.previewerImage = null
   }
@@ -242,11 +240,6 @@ export class Previewer {
     evt.preventDefault()
   }
 
-  private _dblclick() {
-    this._drawPreviewer()
-    document.body.style.overflow = 'hidden'
-  }
-
   private _drawPreviewer() {
     const previewerContainer = document.createElement('div')
     previewerContainer.classList.add(`${EDITOR_PREFIX}-image-previewer`)
@@ -396,6 +389,11 @@ export class Previewer {
 
   public _updateResizerSizeView(width: number, height: number) {
     this.resizerSize.innerText = `${Math.round(width)} × ${Math.round(height)}`
+  }
+
+  public render() {
+    this._drawPreviewer()
+    document.body.style.overflow = 'hidden'
   }
 
   public drawResizer(

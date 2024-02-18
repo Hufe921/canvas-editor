@@ -2063,4 +2063,15 @@ export class Draw {
     this.scrollObserver.removeEvent()
     this.selectionObserver.removeEvent()
   }
+
+  public clearSideEffect() {
+    // 预览工具组件
+    this.getPreviewer().clearResizer()
+    // 表格工具组件
+    this.getTableTool().dispose()
+    // 超链接弹窗
+    this.getHyperlinkParticle().clearHyperlinkPopup()
+    // 日期控件
+    this.getDateParticle().clearDatePicker()
+  }
 }
