@@ -22,6 +22,8 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
       return
     }
   }
+  // 复选框双击时是切换选择状态，禁用扩选
+  if (positionContext.isCheckbox && positionContext.isDirectHit) return
   // 自动扩选文字
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return
