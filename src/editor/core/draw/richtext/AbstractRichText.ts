@@ -28,7 +28,8 @@ export abstract class AbstractRichText {
     color?: string
   ) {
     const isFirstRecord = !this.fillRect.width
-    if (!isFirstRecord && this.fillColor && this.fillColor !== color) {
+    // 颜色不同时立即绘制
+    if (!isFirstRecord && this.fillColor !== color) {
       this.render(ctx)
       this.clearFillInfo()
       // 重新记录
