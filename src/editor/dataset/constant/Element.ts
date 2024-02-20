@@ -70,7 +70,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
   'verticalAlign',
   'backgroundColor',
-  'borderType'
+  'borderTypes'
 ]
 
 export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [

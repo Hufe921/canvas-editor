@@ -21,7 +21,7 @@ export interface ITd {
   positionList?: IElementPosition[]
   verticalAlign?: VerticalAlign
   backgroundColor?: string
-  borderType?: TdBorder
+  borderTypes?: TdBorder[]
   slashType?: TdSlash
   mainHeight?: number // 内容 + 内边距高度
   realHeight?: number // 真实高度（包含跨列）
