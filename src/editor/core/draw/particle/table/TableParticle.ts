@@ -129,11 +129,12 @@ export class TableParticle {
     const x = Math.round(td.x! * scale + startX)
     const y = Math.round(td.y! * scale + startY)
     // 正斜线 /
-    if (td.slashType === TdSlash.FORWARD) {
+    if (td.slashTypes?.includes(TdSlash.FORWARD)) {
       ctx.moveTo(x + width, y)
       ctx.lineTo(x, y + height)
-    } else {
-      // 反斜线 \
+    }
+    // 反斜线 \
+    if (td.slashTypes?.includes(TdSlash.BACK)) {
       ctx.moveTo(x, y)
       ctx.lineTo(x + width, y + height)
     }
@@ -175,7 +176,7 @@ export class TableParticle {
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
         // 单元格内斜线
-        if (td.slashType) {
+        if (td.slashTypes?.length) {
           this._drawSlash(ctx, td, startX, startY)
         }
         // 没有设置单元格边框 && 没有设置表格边框则忽略

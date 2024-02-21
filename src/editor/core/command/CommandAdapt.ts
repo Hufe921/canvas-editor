@@ -1416,7 +1416,9 @@ export class CommandAdapt {
     if (!rowCol) return
     const tdList = rowCol.flat()
     // 存在则设置边框类型，否则取消设置
-    const isSetBorderType = tdList.some(td => !td.borderTypes?.includes(payload))
+    const isSetBorderType = tdList.some(
+      td => !td.borderTypes?.includes(payload)
+    )
     tdList.forEach(td => {
       if (!td.borderTypes) {
         td.borderTypes = []
@@ -1449,12 +1451,26 @@ export class CommandAdapt {
     if (!rowCol) return
     const tdList = rowCol.flat()
     // 存在则设置单元格斜线类型，否则取消设置
-    const isSetTdSlashType = tdList.some(td => td.slashType !== payload)
+    const isSetTdSlashType = tdList.some(
+      td => !td.slashTypes?.includes(payload)
+    )
     tdList.forEach(td => {
+      if (!td.slashTypes) {
+        td.slashTypes = []
+      }
+      const slashTypeIndex = td.slashTypes.findIndex(type => type === payload)
       if (isSetTdSlashType) {
-        td.slashType = payload
+        if (!~slashTypeIndex) {
+          td.slashTypes.push(payload)
+        }
       } else {
-        delete td.slashType
+        if (~slashTypeIndex) {
+          td.slashTypes.splice(slashTypeIndex, 1)
+        }
+      }
+      // 不存在斜线设置时删除字段
+      if (!td.slashTypes.length) {
+        delete td.slashTypes
       }
     })
     const { endIndex } = this.range.getRange()
