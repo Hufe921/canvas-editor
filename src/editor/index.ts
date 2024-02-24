@@ -6,6 +6,7 @@ import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
+import { ImageDisplay } from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
@@ -27,11 +28,7 @@ import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
 import { defaultHeaderOption } from './dataset/constant/Header'
 import { defaultWatermarkOption } from './dataset/constant/Watermark'
-import {
-  ControlIndentation,
-  ControlType,
-  ImageDisplay
-} from './dataset/enum/Control'
+import { ControlIndentation, ControlType } from './dataset/enum/Control'
 import { defaultControlOption } from './dataset/constant/Control'
 import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'

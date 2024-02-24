@@ -54,6 +54,7 @@
   height: 20px;
   white-space: nowrap;
   position: absolute;
+  z-index: 9;
   top: -30px;
   left: 0;
   opacity: .9;

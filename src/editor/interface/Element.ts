@@ -1,4 +1,5 @@
-import { ControlComponent, ImageDisplay } from '../dataset/enum/Control'
+import { ImageDisplay } from '../dataset/enum/Common'
+import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
 import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
@@ -100,6 +101,10 @@ export interface IDateElement {
 
 export interface IImageElement {
   imgDisplay?: ImageDisplay
+  imgFloatPosition?: {
+    x: number
+    y: number
+  }
 }
 
 export interface IBlockElement {

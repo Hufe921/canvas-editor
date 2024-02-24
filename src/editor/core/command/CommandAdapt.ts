@@ -2,7 +2,8 @@ import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
 import { titleSizeMapping } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
-import { ControlComponent, ImageDisplay } from '../../dataset/enum/Control'
+import { ImageDisplay } from '../../dataset/enum/Common'
+import { ControlComponent } from '../../dataset/enum/Control'
 import {
   EditorContext,
   EditorMode,
@@ -1944,6 +1945,22 @@ export class CommandAdapt {
   public changeImageDisplay(element: IElement, display: ImageDisplay) {
     if (element.imgDisplay === display) return
     element.imgDisplay = display
+    if (
+      display === ImageDisplay.FLOAT_TOP ||
+      display === ImageDisplay.FLOAT_BOTTOM
+    ) {
+      const positionList = this.position.getPositionList()
+      const { startIndex } = this.range.getRange()
+      const {
+        coordinate: { leftTop }
+      } = positionList[startIndex]
+      element.imgFloatPosition = {
+        x: leftTop[0],
+        y: leftTop[1]
+      }
+    } else {
+      delete element.imgFloatPosition
+    }
     this.draw.getPreviewer().clearResizer()
     this.draw.render({
       isSetCursor: false

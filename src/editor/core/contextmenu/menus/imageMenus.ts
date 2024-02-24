@@ -1,5 +1,5 @@
 import { INTERNAL_CONTEXT_MENU_KEY } from '../../../dataset/constant/ContextMenu'
-import { ImageDisplay } from '../../../dataset/enum/Control'
+import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import {
   IContextMenuContext,
@@ -7,7 +7,15 @@ import {
 } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
 const {
-  IMAGE: { CHANGE, SAVE_AS, TEXT_WRAP, TEXT_WRAP_EMBED, TEXT_WRAP_UP_DOWN }
+  IMAGE: {
+    CHANGE,
+    SAVE_AS,
+    TEXT_WRAP,
+    TEXT_WRAP_EMBED,
+    TEXT_WRAP_UP_DOWN,
+    TEXT_WRAP_FLOAT_TOP,
+    TEXT_WRAP_FLOAT_BOTTOM
+  }
 } = INTERNAL_CONTEXT_MENU_KEY
 
 export const imageMenus: IRegisterContextMenu[] = [
@@ -84,6 +92,28 @@ export const imageMenus: IRegisterContextMenu[] = [
           command.executeChangeImageDisplay(
             context.startElement!,
             ImageDisplay.INLINE
+          )
+        }
+      },
+      {
+        key: TEXT_WRAP_FLOAT_TOP,
+        i18nPath: 'contextmenu.image.textWrapType.floatTop',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageDisplay(
+            context.startElement!,
+            ImageDisplay.FLOAT_TOP
+          )
+        }
+      },
+      {
+        key: TEXT_WRAP_FLOAT_BOTTOM,
+        i18nPath: 'contextmenu.image.textWrapType.floatBottom',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageDisplay(
+            context.startElement!,
+            ImageDisplay.FLOAT_BOTTOM
           )
         }
       }

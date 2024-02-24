@@ -21,7 +21,9 @@
       "textWrap": "文字环绕",
       "textWrapType": {
         "embed": "嵌入型",
-        "upDown": "上下型环绕"
+        "upDown": "上下型环绕",
+        "floatTop": "浮于文字上方",
+        "floatBottom": "衬于文字下方"
       }
     },
     "table": {

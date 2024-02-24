@@ -63,6 +63,32 @@ export class Previewer {
     this.previewerImage = null
   }
 
+  private _getElementPosition(
+    element: IElement,
+    position: IElementPosition | null = null
+  ): { x: number; y: number } {
+    let x = 0
+    let y = 0
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
+    const preY = this.draw.getPageNo() * (height + pageGap)
+    // 优先使用浮动位置
+    if (element.imgFloatPosition) {
+      x = element.imgFloatPosition.x!
+      y = element.imgFloatPosition.y + preY
+    } else if (position) {
+      const {
+        coordinate: {
+          leftTop: [left, top]
+        },
+        ascent
+      } = position
+      x = left
+      y = top + preY + ascent
+    }
+    return { x, y }
+  }
+
   private _createResizerDom(): IPreviewerCreateResult {
     // 拖拽边框
     const resizerSelection = document.createElement('div')
@@ -114,10 +140,8 @@ export class Previewer {
 
   private _mousedown(evt: MouseEvent) {
     this.canvas = this.draw.getPage()
-    if (!this.curPosition || !this.curElement) return
+    if (!this.curElement) return
     const { scale } = this.options
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     this.mousedownX = evt.x
     this.mousedownY = evt.y
     const target = evt.target as HTMLDivElement
@@ -129,15 +153,13 @@ export class Previewer {
     // 拖拽图片镜像
     this.resizerImage.src = this.curElementSrc
     this.resizerImageContainer.style.display = 'block'
-    const {
-      coordinate: {
-        leftTop: [left, top]
-      },
-      ascent
-    } = this.curPosition
-    const prePageHeight = this.draw.getPageNo() * (height + pageGap)
-    this.resizerImageContainer.style.left = `${left}px`
-    this.resizerImageContainer.style.top = `${top + prePageHeight + ascent}px`
+    // 优先使用浮动位置信息
+    const { x: resizerLeft, y: resizerTop } = this._getElementPosition(
+      this.curElement,
+      this.curPosition
+    )
+    this.resizerImageContainer.style.left = `${resizerLeft}px`
+    this.resizerImageContainer.style.top = `${resizerTop}px`
     this.resizerImage.style.width = `${this.curElement.width! * scale}px`
     this.resizerImage.style.height = `${this.curElement.height! * scale}px`
     // 追加全局事件
@@ -147,7 +169,7 @@ export class Previewer {
       'mouseup',
       () => {
         // 改变尺寸
-        if (this.curElement && this.curPosition) {
+        if (this.curElement) {
           this.curElement.width = this.width
           this.curElement.height = this.height
           this.draw.render({ isSetCursor: false })
@@ -398,27 +420,22 @@ export class Previewer {
 
   public drawResizer(
     element: IElement,
-    position: IElementPosition,
+    position: IElementPosition | null = null,
     options: IPreviewerDrawOption = {}
   ) {
     this.previewerDrawOption = options
     const { scale } = this.options
-    const {
-      coordinate: {
-        leftTop: [left, top]
-      },
-      ascent
-    } = position
     const elementWidth = element.width! * scale
     const elementHeight = element.height! * scale
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = this.draw.getPageNo() * (height + pageGap)
     // 尺寸预览
     this._updateResizerSizeView(elementWidth, elementHeight)
-    // 边框
-    this.resizerSelection.style.left = `${left}px`
-    this.resizerSelection.style.top = `${top + preY + ascent}px`
+    // 优先使用浮动位置信息
+    const { x: resizerLeft, y: resizerTop } = this._getElementPosition(
+      element,
+      position
+    )
+    this.resizerSelection.style.left = `${resizerLeft}px`
+    this.resizerSelection.style.top = `${resizerTop}px`
     // 更新预览包围框尺寸
     this._updateResizerRect(elementWidth, elementHeight)
     this.resizerSelection.style.display = 'block'

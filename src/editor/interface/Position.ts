@@ -1,4 +1,4 @@
-import { IElement } from '..'
+import { IElement, ImageDisplay } from '..'
 import { EditorZone } from '../dataset/enum/Editor'
 import { IElementPosition } from './Element'
 import { IRow } from './Row'
@@ -6,6 +6,8 @@ import { ITd } from './table/Td'
 
 export interface ICurrentPosition {
   index: number
+  x?: number
+  y?: number
   isCheckbox?: boolean
   isControl?: boolean
   isImage?: boolean
@@ -30,6 +32,10 @@ export interface IGetPositionByXYPayload {
   tablePosition?: IElementPosition
   elementList?: IElement[]
   positionList?: IElementPosition[]
+}
+
+export type IGetFloatPositionByXYPayload = IGetPositionByXYPayload & {
+  imgDisplay: ImageDisplay
 }
 
 export interface IPositionContext {
@@ -58,10 +64,26 @@ export interface IComputePageRowPositionPayload {
   startX: number
   startY: number
   innerWidth: number
+  isTable?: boolean
+  index?: number
+  tdIndex?: number
+  trIndex?: number
+  tdValueIndex?: number
 }
 
 export interface IComputePageRowPositionResult {
   x: number
   y: number
   index: number
+}
+
+export interface IFloatPosition {
+  pageNo: number
+  element: IElement
+  position: IElementPosition
+  isTable?: boolean
+  index?: number
+  tdIndex?: number
+  trIndex?: number
+  tdValueIndex?: number
 }
