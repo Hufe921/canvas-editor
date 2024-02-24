@@ -1,9 +1,12 @@
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../dataset/constant/Element'
+import {
+  CONTROL_CONTEXT_ATTR,
+  EDITOR_ELEMENT_STYLE_ATTR
+} from '../../../dataset/constant/Element'
 import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
-import { deepClone, getUUID } from '../../../utils'
+import { deepClone, getUUID, omitObject } from '../../../utils'
 import { formatElementContext, formatElementList } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -134,11 +137,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const editorOptions = draw.getOptions()
     const elementList = draw.getElementList()
     const replaceElementList = dragElementList.map(el => {
-      if (
-        !el.type ||
-        el.type === ElementType.TEXT ||
-        el.control?.type === ControlType.TEXT
-      ) {
+      if (!el.type || el.type === ElementType.TEXT) {
         const newElement: IElement = {
           value: el.value
         }
@@ -150,7 +149,8 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         })
         return newElement
       } else {
-        const newElement = deepClone(el)
+        // 移除控件上下文属性
+        const newElement = omitObject(deepClone(el), CONTROL_CONTEXT_ATTR)
         formatElementList([newElement], {
           isHandleFirstElement: false,
           editorOptions

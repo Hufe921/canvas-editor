@@ -90,6 +90,12 @@ export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
   'listStyle'
 ]
 
+export const CONTROL_CONTEXT_ATTR: Array<keyof IElement> = [
+  'control',
+  'controlId',
+  'controlComponent'
+]
+
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
   ...TABLE_CONTEXT_ATTR,
   ...TITLE_CONTEXT_ATTR,
