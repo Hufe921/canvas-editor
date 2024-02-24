@@ -72,7 +72,10 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       if (isCacheRangeCollapsed) {
         // 图片移动
         const dragElement = cacheElementList[cacheEndIndex]
-        if (dragElement.type === ElementType.IMAGE) {
+        if (
+          dragElement.type === ElementType.IMAGE ||
+          dragElement.type === ElementType.LATEX
+        ) {
           moveImgPosition(dragElement, evt, host)
           if (
             dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
@@ -258,7 +261,10 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     if (isCacheRangeCollapsed) {
       const elementList = draw.getElementList()
       const dragElement = elementList[rangeEndIndex]
-      if (dragElement.type === ElementType.IMAGE) {
+      if (
+        dragElement.type === ElementType.IMAGE ||
+        dragElement.type === ElementType.LATEX
+      ) {
         moveImgPosition(dragElement, evt, host)
         imgElement = dragElement
       }
