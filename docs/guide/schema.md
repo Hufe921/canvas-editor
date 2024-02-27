@@ -41,6 +41,9 @@ interface IElement {
   };
   rowMargin?: number;
   letterSpacing?: number;
+  textDecoration?: {
+    style?: TextDecorationStyle;
+  };
   // 组信息-可用于批注等其他成组使用场景
   groupIds?: string[];
   // 表格

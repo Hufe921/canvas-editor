@@ -10,7 +10,8 @@ export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
   'size',
   'italic',
   'underline',
-  'strikeout'
+  'strikeout',
+  'textDecoration'
 ]
 
 export const EDITOR_ROW_ATTR: Array<keyof IElement> = ['rowFlex', 'rowMargin']
@@ -32,7 +33,8 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'dateFormat',
   'groupIds',
   'rowFlex',
-  'rowMargin'
+  'rowMargin',
+  'textDecoration'
 ]
 
 export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
@@ -66,7 +68,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'groupIds',
   'conceptId',
   'imgDisplay',
-  'imgFloatPosition'
+  'imgFloatPosition',
+  'textDecoration'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [

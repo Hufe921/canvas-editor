@@ -285,3 +285,13 @@ export function isArrayEqual(arr1: unknown[], arr2: unknown[]): boolean {
   }
   return !arr1.some(item => !arr2.includes(item))
 }
+
+export function isObjectEqual(obj1: unknown, obj2: unknown): boolean {
+  if (!isObject(obj1) || !isObject(obj2)) return false
+  const obj1Keys = Object.keys(obj1)
+  const obj2Keys = Object.keys(obj2)
+  if (obj1Keys.length !== obj2Keys.length) {
+    return false
+  }
+  return !obj1Keys.some(key => obj2[key] !== obj1[key])
+}

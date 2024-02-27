@@ -244,7 +244,7 @@ Feature: Underline
 Usage:
 
 ```javascript
-instance.command.executeUnderline()
+instance.command.executeUnderline(textDecoration?: ITextDecoration)
 ```
 
 ## executeStrikeout

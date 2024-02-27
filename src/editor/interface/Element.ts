@@ -8,6 +8,7 @@ import { TableBorder } from '../dataset/enum/table/Table'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
 import { IControl } from './Control'
+import { ITextDecoration } from './Text'
 import { IColgroup } from './table/Colgroup'
 import { ITr } from './table/Tr'
 
@@ -31,6 +32,7 @@ export interface IElementStyle {
   rowFlex?: RowFlex
   rowMargin?: number
   letterSpacing?: number
+  textDecoration?: ITextDecoration
 }
 
 export interface IElementGroup {

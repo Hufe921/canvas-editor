@@ -75,6 +75,7 @@ import { defaultZoneOption } from './dataset/constant/Zone'
 import { IBackgroundOption } from './interface/Background'
 import { defaultBackground } from './dataset/constant/Background'
 import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
+import { TextDecorationStyle } from './dataset/enum/Text'
 
 export default class Editor {
   public command: Command
@@ -299,7 +300,8 @@ export {
   WordBreak,
   ControlIndentation,
   BackgroundRepeat,
-  BackgroundSize
+  BackgroundSize,
+  TextDecorationStyle
 }
 
 // 对外类型

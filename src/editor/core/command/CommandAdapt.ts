@@ -51,8 +51,9 @@ import { IRange, RangeContext, RangeRect } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
+import { ITextDecoration } from '../../interface/Text'
 import { IWatermark } from '../../interface/Watermark'
-import { deepClone, downloadFile, getUUID } from '../../utils'
+import { deepClone, downloadFile, getUUID, isObjectEqual } from '../../utils'
 import {
   createDomFromElementList,
   formatElementContext,
@@ -486,15 +487,29 @@ export class CommandAdapt {
     }
   }
 
-  public underline() {
+  public underline(textDecoration?: ITextDecoration) {
     const isDisabled =
       this.draw.isReadonly() || this.control.isDisabledControl()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
-      const noUnderlineIndex = selection.findIndex(s => !s.underline)
+      // 没有设置下划线、当前与之前有一个设置不存在、文本装饰不一致时重设下划线
+      const isSetUnderline = selection.some(
+        s =>
+          !s.underline ||
+          (!textDecoration && s.textDecoration) ||
+          (textDecoration && !s.textDecoration) ||
+          (textDecoration &&
+            s.textDecoration &&
+            !isObjectEqual(s.textDecoration, textDecoration))
+      )
       selection.forEach(el => {
-        el.underline = !!~noUnderlineIndex
+        el.underline = isSetUnderline
+        if (isSetUnderline && textDecoration) {
+          el.textDecoration = textDecoration
+        } else {
+          delete el.textDecoration
+        }
       })
       this.draw.render({
         isSetCursor: false,

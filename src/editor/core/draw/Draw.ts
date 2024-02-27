@@ -1716,7 +1716,8 @@ export class Draw {
             y + curRow.height - rowMargin + offsetY,
             metrics.width + offsetX,
             0,
-            color
+            color,
+            element.textDecoration?.style
           )
         } else if (preElement?.underline || preElement?.control?.underline) {
           this.underline.render(ctx)

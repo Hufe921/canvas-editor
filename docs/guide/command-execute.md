@@ -244,7 +244,7 @@ instance.command.executeItalic()
 用法：
 
 ```javascript
-instance.command.executeUnderline()
+instance.command.executeUnderline(textDecoration?: ITextDecoration)
 ```
 
 ## executeStrikeout
