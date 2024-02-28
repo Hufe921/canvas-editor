@@ -214,8 +214,51 @@ ul {
   background-image: url('./assets/images/italic.svg');
 }
 
-.menu-item__underline i {
+.menu-item .menu-item__underline {
+  width: 30px;
+  position: relative;
+}
+
+.menu-item__underline>i {
+  flex-shrink: 0;
   background-image: url('./assets/images/underline.svg');
+}
+
+.menu-item__underline .select {
+  width: 100%;
+  height: 100%;
+}
+
+.menu-item .menu-item__underline .options {
+  width: 128px;
+}
+
+.menu-item .menu-item__underline li {
+  padding: 1px 5px;
+}
+
+.menu-item__underline li i {
+  pointer-events: none;
+}
+
+.menu-item__underline li[data-decoration-style="solid"] {
+  background-image: url('./assets/images/line-single.svg');
+}
+
+.menu-item__underline li[data-decoration-style="double"] {
+  background-image: url('./assets/images/line-double.svg')
+}
+
+.menu-item__underline li[data-decoration-style="dashed"] {
+  background-image: url('./assets/images/line-dash-small-gap.svg');
+}
+
+.menu-item__underline li[data-decoration-style="dotted"] {
+  background-image: url('./assets/images/line-dot.svg');
+}
+
+.menu-item__underline li[data-decoration-style="wavy"] {
+  background-image: url('./assets/images/line-wavy.svg');
 }
 
 .menu-item__strikeout i {
