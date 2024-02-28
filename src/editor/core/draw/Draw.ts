@@ -3,6 +3,7 @@ import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
+  IDrawFloatPayload,
   IDrawOption,
   IDrawPagePayload,
   IDrawRowPayload,
@@ -66,8 +67,7 @@ import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
 import {
   ControlComponent,
-  ControlIndentation,
-  ImageDisplay
+  ControlIndentation
 } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
@@ -87,6 +87,7 @@ import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
+import { ImageDisplay } from '../../dataset/enum/Common'
 
 export class Draw {
   private container: HTMLDivElement
@@ -843,9 +844,11 @@ export class Draw {
       p.style.marginBottom = `${this.getPageGap()}px`
       this._initPageContext(this.ctxList[i])
     })
+    const cursorPosition = this.position.getCursorPosition()
     this.render({
       isSubmitHistory: false,
-      isSetCursor: false
+      isSetCursor: !!cursorPosition,
+      curIndex: cursorPosition?.index
     })
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
@@ -1104,27 +1107,39 @@ export class Draw {
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
       ) {
-        const elementWidth = element.width! * scale
-        const elementHeight = element.height! * scale
-        // 图片超出尺寸后自适应
-        const curRowWidth =
-          element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
-        if (curRowWidth + elementWidth > availableWidth) {
-          // 计算剩余大小
-          const surplusWidth = availableWidth - curRowWidth
-          const adaptiveWidth =
-            surplusWidth > 0
-              ? surplusWidth
-              : Math.min(elementWidth, availableWidth)
-          element.width = adaptiveWidth
-          element.height = (elementHeight * adaptiveWidth) / elementWidth
-          metrics.width = element.width
-          metrics.height = element.height
-          metrics.boundingBoxDescent = element.height
+        // 浮动图片无需计算数据
+        if (
+          element.imgDisplay === ImageDisplay.FLOAT_TOP ||
+          element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
+        ) {
+          metrics.width = 0
+          metrics.height = 0
+          metrics.boundingBoxDescent = 0
         } else {
-          metrics.width = elementWidth
-          metrics.height = elementHeight
-          metrics.boundingBoxDescent = elementHeight
+          const elementWidth = element.width! * scale
+          const elementHeight = element.height! * scale
+          // 图片超出尺寸后自适应
+          const curRowWidth =
+            element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
+          if (curRowWidth + elementWidth > availableWidth) {
+            // 计算剩余大小
+            const surplusWidth = availableWidth - curRowWidth
+            const adaptiveWidth =
+              surplusWidth > 0
+                ? surplusWidth
+                : Math.min(elementWidth, availableWidth)
+            const adaptiveHeight =
+              (elementHeight * adaptiveWidth) / elementWidth
+            element.width = adaptiveWidth / scale
+            element.height = adaptiveHeight / scale
+            metrics.width = adaptiveWidth
+            metrics.height = adaptiveHeight
+            metrics.boundingBoxDescent = adaptiveHeight
+          } else {
+            metrics.width = elementWidth
+            metrics.height = elementHeight
+            metrics.boundingBoxDescent = elementHeight
+          }
         }
         metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
@@ -1280,13 +1295,13 @@ export class Draw {
           }
         }
       } else if (element.type === ElementType.SEPARATOR) {
-        element.width = availableWidth
+        element.width = availableWidth / scale
         metrics.width = availableWidth
         metrics.height = defaultSize
         metrics.boundingBoxAscent = -rowMargin
         metrics.boundingBoxDescent = -rowMargin
       } else if (element.type === ElementType.PAGE_BREAK) {
-        element.width = availableWidth
+        element.width = availableWidth / scale
         metrics.width = availableWidth
         metrics.height = defaultSize
       } else if (
@@ -1294,9 +1309,9 @@ export class Draw {
         element.controlComponent === ControlComponent.CHECKBOX
       ) {
         const { width, height, gap } = this.options.checkbox
-        const elementWidth = (width + gap * 2) * scale
+        const elementWidth = width + gap * 2
         element.width = elementWidth
-        metrics.width = elementWidth
+        metrics.width = elementWidth * scale
         metrics.height = height * scale
       } else if (element.type === ElementType.TAB) {
         metrics.width = defaultTabWidth * scale
@@ -1604,7 +1619,13 @@ export class Draw {
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
           this._drawRichText(ctx)
-          this.imageParticle.render(ctx, element, x, y + offsetY)
+          // 浮动图片单独绘制
+          if (
+            element.imgDisplay !== ImageDisplay.FLOAT_TOP &&
+            element.imgDisplay !== ImageDisplay.FLOAT_BOTTOM
+          ) {
+            this.imageParticle.render(ctx, element, x, y + offsetY)
+          }
         } else if (element.type === ElementType.LATEX) {
           this._drawRichText(ctx)
           this.laTexParticle.render(ctx, element, x, y + offsetY)
@@ -1695,7 +1716,8 @@ export class Draw {
             y + curRow.height - rowMargin + offsetY,
             metrics.width + offsetX,
             0,
-            color
+            color,
+            element.textDecoration?.style
           )
         } else if (preElement?.underline || preElement?.control?.underline) {
           this.underline.render(ctx)
@@ -1813,6 +1835,31 @@ export class Draw {
     }
   }
 
+  private _drawFloat(
+    ctx: CanvasRenderingContext2D,
+    payload: IDrawFloatPayload
+  ) {
+    const floatPositionList = this.position.getFloatPositionList()
+    const { imgDisplay, pageNo } = payload
+    for (let e = 0; e < floatPositionList.length; e++) {
+      const floatPosition = floatPositionList[e]
+      const element = floatPosition.element
+      if (
+        pageNo === floatPosition.pageNo &&
+        element.imgDisplay === imgDisplay &&
+        element.type === ElementType.IMAGE
+      ) {
+        const imgFloatPosition = element.imgFloatPosition!
+        this.imageParticle.render(
+          ctx,
+          element,
+          imgFloatPosition.x,
+          imgFloatPosition.y
+        )
+      }
+    }
+  }
+
   private _clearPage(pageNo: number) {
     const ctx = this.ctxList[pageNo]
     const pageDom = this.pageList[pageNo]
@@ -1834,6 +1881,11 @@ export class Draw {
     if (this.mode !== EditorMode.PRINT) {
       this.margin.render(ctx, pageNo)
     }
+    // 渲染衬于文字下方元素
+    this._drawFloat(ctx, {
+      pageNo,
+      imgDisplay: ImageDisplay.FLOAT_BOTTOM
+    })
     // 控件高亮
     this.control.renderHighlightList(ctx, pageNo)
     // 渲染元素
@@ -1861,6 +1913,11 @@ export class Draw {
         this.footer.render(ctx, pageNo)
       }
     }
+    // 渲染浮于文字上方元素
+    this._drawFloat(ctx, {
+      pageNo,
+      imgDisplay: ImageDisplay.FLOAT_TOP
+    })
     // 搜索匹配绘制
     if (this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
@@ -2059,5 +2116,16 @@ export class Draw {
     this.globalEvent.removeEvent()
     this.scrollObserver.removeEvent()
     this.selectionObserver.removeEvent()
+  }
+
+  public clearSideEffect() {
+    // 预览工具组件
+    this.getPreviewer().clearResizer()
+    // 表格工具组件
+    this.getTableTool().dispose()
+    // 超链接弹窗
+    this.getHyperlinkParticle().clearHyperlinkPopup()
+    // 日期控件
+    this.getDateParticle().clearDatePicker()
   }
 }

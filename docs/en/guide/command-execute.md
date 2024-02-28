@@ -244,7 +244,7 @@ Feature: Underline
 Usage:
 
 ```javascript
-instance.command.executeUnderline()
+instance.command.executeUnderline(textDecoration?: ITextDecoration)
 ```
 
 ## executeStrikeout
@@ -890,6 +890,16 @@ Usage:
 
 ```javascript
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
+```
+
+## executeSetControlProperties
+
+Feature: Set control properties
+
+Usage:
+
+```javascript
+instance.command.executeSetControlProperties(payload: ISetControlProperties)
 ```
 
 ## executeSetControlHighlight

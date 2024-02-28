@@ -2,7 +2,22 @@ import { ICatalog, ICatalogItem } from '../../../interface/Catalog'
 import { IElement } from '../../../interface/Element'
 
 enum ElementType {
-  TITLE = 'title'
+  TEXT = 'text',
+  IMAGE = 'image',
+  TABLE = 'table',
+  HYPERLINK = 'hyperlink',
+  SUPERSCRIPT = 'superscript',
+  SUBSCRIPT = 'subscript',
+  SEPARATOR = 'separator',
+  PAGE_BREAK = 'pageBreak',
+  CONTROL = 'control',
+  CHECKBOX = 'checkbox',
+  LATEX = 'latex',
+  TAB = 'tab',
+  DATE = 'date',
+  BLOCK = 'block',
+  TITLE = 'title',
+  LIST = 'list'
 }
 
 enum TitleLevel {
@@ -23,7 +38,20 @@ const titleOrderNumberMapping: Record<TitleLevel, number> = {
   [TitleLevel.SIXTH]: 6
 }
 
+const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
+  ElementType.TEXT,
+  ElementType.HYPERLINK,
+  ElementType.SUBSCRIPT,
+  ElementType.SUPERSCRIPT,
+  ElementType.CONTROL,
+  ElementType.DATE
+]
+
 const ZERO = '\u200B'
+
+function isTextLikeElement(element: IElement): boolean {
+  return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
+}
 
 function getCatalog(elementList: IElement[]): ICatalog | null {
   // 筛选标题
@@ -51,7 +79,8 @@ function getCatalog(elementList: IElement[]): ICatalog | null {
         t++
       }
       titleElement.value = valueList
-        .map(s => s.value)
+        .filter(el => isTextLikeElement(el))
+        .map(el => el.value)
         .join('')
         .replace(new RegExp(ZERO, 'g'), '')
       titleElementList.push(titleElement)

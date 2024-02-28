@@ -12,11 +12,6 @@ export enum ControlComponent {
   CHECKBOX = 'checkbox'
 }
 
-export enum ImageDisplay {
-  INLINE = 'inline',
-  BLOCK = 'block'
-}
-
 // 控件内容缩进方式
 export enum ControlIndentation {
   ROW_START = 'rowStart', // 从行起始位置缩进

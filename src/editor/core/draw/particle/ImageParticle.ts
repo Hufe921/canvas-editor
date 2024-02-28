@@ -1,3 +1,5 @@
+import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
+import { ImageDisplay } from '../../../dataset/enum/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
@@ -7,11 +9,62 @@ export class ImageParticle {
   private draw: Draw
   protected options: Required<IEditorOption>
   protected imageCache: Map<string, HTMLImageElement>
+  private container: HTMLDivElement
+  private floatImageContainer: HTMLDivElement | null
+  private floatImage: HTMLImageElement | null
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
+    this.container = draw.getContainer()
     this.imageCache = new Map()
+    this.floatImageContainer = null
+    this.floatImage = null
+  }
+
+  public createFloatImage(element: IElement) {
+    const { scale } = this.options
+    // 复用浮动元素
+    let floatImageContainer = this.floatImageContainer
+    let floatImage = this.floatImage
+    if (!floatImageContainer) {
+      floatImageContainer = document.createElement('div')
+      floatImageContainer.classList.add(`${EDITOR_PREFIX}-float-image`)
+      this.container.append(floatImageContainer)
+      this.floatImageContainer = floatImageContainer
+    }
+    if (!floatImage) {
+      floatImage = document.createElement('img')
+      floatImageContainer.append(floatImage)
+      this.floatImage = floatImage
+    }
+    floatImageContainer.style.display = 'none'
+    floatImage.style.width = `${element.width! * scale}px`
+    floatImage.style.height = `${element.height! * scale}px`
+    // 浮动图片初始信息
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
+    const preY = this.draw.getPageNo() * (height + pageGap)
+    const imgFloatPosition = element.imgFloatPosition!
+    floatImageContainer.style.left = `${imgFloatPosition.x}px`
+    floatImageContainer.style.top = `${preY + imgFloatPosition.y}px`
+    floatImage.src = element.value
+  }
+
+  public dragFloatImage(movementX: number, movementY: number) {
+    if (!this.floatImageContainer) return
+    this.floatImageContainer.style.display = 'block'
+    // 之前的坐标加移动长度
+    const x = parseFloat(this.floatImageContainer.style.left) + movementX
+    const y = parseFloat(this.floatImageContainer.style.top) + movementY
+    this.floatImageContainer.style.left = `${x}px`
+    this.floatImageContainer.style.top = `${y}px`
+  }
+
+  public destroyFloatImage() {
+    if (this.floatImageContainer) {
+      this.floatImageContainer.style.display = 'none'
+    }
   }
 
   protected addImageObserver(promise: Promise<unknown>) {
@@ -58,9 +111,18 @@ export class ImageParticle {
         img.setAttribute('crossOrigin', 'Anonymous')
         img.src = element.value
         img.onload = () => {
-          ctx.drawImage(img, x, y, width, height)
           this.imageCache.set(element.id!, img)
           resolve(element)
+          // 衬于文字下方图片需要重新首先绘制
+          if (element.imgDisplay === ImageDisplay.FLOAT_BOTTOM) {
+            this.draw.render({
+              isCompute: false,
+              isSetCursor: false,
+              isSubmitHistory: false
+            })
+          } else {
+            ctx.drawImage(img, x, y, width, height)
+          }
         }
         img.onerror = error => {
           const fallbackImage = this.getFallbackImage(width, height)

@@ -1,6 +1,7 @@
 .ce-resizer-selection {
   position: absolute;
   border: 1px solid;
+  pointer-events: none;
 }
 
 .ce-resizer-selection .resizer-handle {
@@ -12,6 +13,7 @@
   border-radius: 5px;
   border: 2px solid #ffffff;
   box-sizing: border-box;
+  pointer-events: initial;
 }
 
 .ce-resizer-selection .handle-0 {
@@ -52,6 +54,7 @@
   height: 20px;
   white-space: nowrap;
   position: absolute;
+  z-index: 9;
   top: -30px;
   left: 0;
   opacity: .9;

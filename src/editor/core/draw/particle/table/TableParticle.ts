@@ -129,11 +129,12 @@ export class TableParticle {
     const x = Math.round(td.x! * scale + startX)
     const y = Math.round(td.y! * scale + startY)
     // 正斜线 /
-    if (td.slashType === TdSlash.FORWARD) {
+    if (td.slashTypes?.includes(TdSlash.FORWARD)) {
       ctx.moveTo(x + width, y)
       ctx.lineTo(x, y + height)
-    } else {
-      // 反斜线 \
+    }
+    // 反斜线 \
+    if (td.slashTypes?.includes(TdSlash.BACK)) {
       ctx.moveTo(x, y)
       ctx.lineTo(x + width, y + height)
     }
@@ -175,11 +176,14 @@ export class TableParticle {
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
         // 单元格内斜线
-        if (td.slashType) {
+        if (td.slashTypes?.length) {
           this._drawSlash(ctx, td, startX, startY)
         }
         // 没有设置单元格边框 && 没有设置表格边框则忽略
-        if (!td.borderType && (isEmptyBorderType || isExternalBorderType)) {
+        if (
+          !td.borderTypes?.length &&
+          (isEmptyBorderType || isExternalBorderType)
+        ) {
           continue
         }
         const width = td.width! * scale
@@ -190,22 +194,22 @@ export class TableParticle {
         // 绘制线条
         ctx.beginPath()
         // 单元格边框
-        if (td.borderType === TdBorder.TOP) {
+        if (td.borderTypes?.includes(TdBorder.TOP)) {
           ctx.moveTo(x - width, y)
           ctx.lineTo(x, y)
           ctx.stroke()
         }
-        if (td.borderType === TdBorder.RIGHT) {
+        if (td.borderTypes?.includes(TdBorder.RIGHT)) {
           ctx.moveTo(x, y)
           ctx.lineTo(x, y + height)
           ctx.stroke()
         }
-        if (td.borderType === TdBorder.BOTTOM) {
+        if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
           ctx.moveTo(x, y + height)
           ctx.lineTo(x - width, y + height)
           ctx.stroke()
         }
-        if (td.borderType === TdBorder.LEFT) {
+        if (td.borderTypes?.includes(TdBorder.LEFT)) {
           ctx.moveTo(x - width, y)
           ctx.lineTo(x - width, y + height)
           ctx.stroke()

@@ -19,8 +19,10 @@
 - Change the picture
 - Save as picture
 - Text wrapping
-- Embedded type
-- Upper and lower surrounding
+  - Embedded
+  - Upper and lower surrounding
+  - Float above text
+  - Float below text
 
 ## Table
 

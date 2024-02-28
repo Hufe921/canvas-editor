@@ -1,8 +1,12 @@
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../dataset/constant/Element'
+import {
+  CONTROL_CONTEXT_ATTR,
+  EDITOR_ELEMENT_STYLE_ATTR
+} from '../../../dataset/constant/Element'
+import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
-import { deepClone, getUUID } from '../../../utils'
+import { deepClone, getUUID, omitObject } from '../../../utils'
 import { formatElementContext, formatElementList } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -18,6 +22,28 @@ function getElementIndexByDragId(dragId: string, elementList: IElement[]) {
   return (<IDragElement[]>elementList).findIndex(el => el.dragId === dragId)
 }
 
+// 移动悬浮图片位置
+function moveImgPosition(
+  element: IElement,
+  evt: MouseEvent,
+  host: CanvasEvent
+) {
+  const draw = host.getDraw()
+  if (
+    element.imgDisplay === ImageDisplay.FLOAT_TOP ||
+    element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
+  ) {
+    const moveX = evt.offsetX - host.mouseDownStartPosition!.x!
+    const moveY = evt.offsetY - host.mouseDownStartPosition!.y!
+    const imgFloatPosition = element.imgFloatPosition!
+    element.imgFloatPosition = {
+      x: imgFloatPosition.x + moveX,
+      y: imgFloatPosition.y + moveY
+    }
+  }
+  draw.getImageParticle().destroyFloatImage()
+}
+
 export function mouseup(evt: MouseEvent, host: CanvasEvent) {
   // 判断是否允许拖放
   if (host.isAllowDrop) {
@@ -30,31 +56,62 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const cacheElementList = host.cacheElementList!
     const cachePositionList = host.cachePositionList!
     const range = rangeManager.getRange()
+    // 缓存选区的信息
+    const isCacheRangeCollapsed = cacheRange.startIndex === cacheRange.endIndex
+    // 选区闭合时，起始位置向前移动一位进行扩选
+    const cacheStartIndex = isCacheRangeCollapsed
+      ? cacheRange.startIndex - 1
+      : cacheRange.startIndex
+    const cacheEndIndex = cacheRange.endIndex
     // 是否需要拖拽-位置发生改变
     if (
-      range.startIndex >= cacheRange.startIndex &&
-      range.endIndex <= cacheRange.endIndex
+      range.startIndex >= cacheStartIndex &&
+      range.endIndex <= cacheEndIndex
     ) {
+      // 清除渲染副作用
+      draw.clearSideEffect()
+      // 浮动元素拖拽需要提交历史
+      let isSubmitHistory = false
+      if (isCacheRangeCollapsed) {
+        // 图片移动
+        const dragElement = cacheElementList[cacheEndIndex]
+        if (
+          dragElement.type === ElementType.IMAGE ||
+          dragElement.type === ElementType.LATEX
+        ) {
+          moveImgPosition(dragElement, evt, host)
+          if (
+            dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
+            dragElement.imgDisplay === ImageDisplay.FLOAT_BOTTOM
+          ) {
+            draw.getPreviewer().drawResizer(dragElement)
+            isSubmitHistory = true
+          } else {
+            const cachePosition = cachePositionList[cacheEndIndex]
+            draw.getPreviewer().drawResizer(dragElement, cachePosition)
+          }
+        }
+      }
       rangeManager.replaceRange({
         ...cacheRange
       })
       draw.render({
         isSetCursor: false,
         isCompute: false,
-        isSubmitHistory: false
+        isSubmitHistory
       })
       return
     }
     // 是否是不可拖拽的控件结构元素
     const dragElementList = cacheElementList.slice(
-      cacheRange.startIndex + 1,
-      cacheRange.endIndex + 1
+      cacheStartIndex + 1,
+      cacheEndIndex + 1
     )
     const isContainControl = dragElementList.find(element => element.controlId)
     if (isContainControl) {
       // 仅允许 (最前/后元素不是控件 || 在控件前后 || 文本控件且是值) 拖拽
-      const cacheStartElement = cacheElementList[cacheRange.startIndex + 1]
-      const cacheEndElement = cacheElementList[cacheRange.endIndex]
+      const cacheStartElement = cacheElementList[cacheStartIndex + 1]
+      const cacheEndElement = cacheElementList[cacheEndIndex]
       const isAllowDragControl =
         ((!cacheStartElement.controlId ||
           cacheStartElement.controlComponent === ControlComponent.PREFIX) &&
@@ -80,11 +137,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const editorOptions = draw.getOptions()
     const elementList = draw.getElementList()
     const replaceElementList = dragElementList.map(el => {
-      if (
-        !el.type ||
-        el.type === ElementType.TEXT ||
-        el.control?.type === ControlType.TEXT
-      ) {
+      if (!el.type || el.type === ElementType.TEXT) {
         const newElement: IElement = {
           value: el.value
         }
@@ -96,7 +149,8 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         })
         return newElement
       } else {
-        const newElement = deepClone(el)
+        // 移除控件上下文属性
+        const newElement = omitObject(deepClone(el), CONTROL_CONTEXT_ATTR)
         formatElementList([newElement], {
           isHandleFirstElement: false,
           editorOptions
@@ -106,10 +160,8 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     })
     formatElementContext(elementList, replaceElementList, range.startIndex)
     // 缓存拖拽选区开始结束id
-    const cacheRangeStartId = createDragId(
-      cacheElementList[cacheRange.startIndex]
-    )
-    const cacheRangeEndId = createDragId(cacheElementList[cacheRange.endIndex])
+    const cacheRangeStartId = createDragId(cacheElementList[cacheStartIndex])
+    const cacheRangeEndId = createDragId(cacheElementList[cacheEndIndex])
     // 设置拖拽值
     const replaceLength = replaceElementList.length
     let rangeStart = range.startIndex
@@ -168,9 +220,9 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     }
     // 重设上下文
     const startElement = elementList[range.startIndex]
-    const cacheStartElement = cacheElementList[cacheRange.startIndex]
+    const cacheStartElement = cacheElementList[cacheStartIndex]
     const startPosition = positionList[range.startIndex]
-    const cacheStartPosition = cachePositionList[cacheRange.startIndex]
+    const cacheStartPosition = cachePositionList[cacheStartIndex]
     const positionContext = position.getPositionContext()
     let positionContextIndex = positionContext.index
     if (positionContextIndex) {
@@ -194,7 +246,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const rangeStartIndex = getElementIndexByDragId(rangeStartId, elementList)
     const rangeEndIndex = getElementIndexByDragId(rangeEndId, elementList)
     rangeManager.setRange(
-      rangeStartIndex,
+      isCacheRangeCollapsed ? rangeEndIndex : rangeStartIndex,
       rangeEndIndex,
       range.tableId,
       range.startTdIndex,
@@ -202,10 +254,38 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       range.startTrIndex,
       range.endTrIndex
     )
+    // 清除渲染副作用
+    draw.clearSideEffect()
+    // 移动图片
+    let imgElement: IElement | null = null
+    if (isCacheRangeCollapsed) {
+      const elementList = draw.getElementList()
+      const dragElement = elementList[rangeEndIndex]
+      if (
+        dragElement.type === ElementType.IMAGE ||
+        dragElement.type === ElementType.LATEX
+      ) {
+        moveImgPosition(dragElement, evt, host)
+        imgElement = dragElement
+      }
+    }
     // 重新渲染
     draw.render({
       isSetCursor: false
     })
+    // 拖拽后渲染图片工具
+    if (imgElement) {
+      if (
+        imgElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
+        imgElement.imgDisplay === ImageDisplay.FLOAT_BOTTOM
+      ) {
+        draw.getPreviewer().drawResizer(imgElement)
+      } else {
+        const dragPositionList = position.getPositionList()
+        const dragPosition = dragPositionList[rangeEndIndex]
+        draw.getPreviewer().drawResizer(imgElement, dragPosition)
+      }
+    }
   } else if (host.isAllowDrag) {
     // 如果是允许拖拽不允许拖放则光标重置
     host.mousedown(evt)

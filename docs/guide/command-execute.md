@@ -244,7 +244,7 @@ instance.command.executeItalic()
 用法：
 
 ```javascript
-instance.command.executeUnderline()
+instance.command.executeUnderline(textDecoration?: ITextDecoration)
 ```
 
 ## executeStrikeout
@@ -890,6 +890,16 @@ instance.command.executeSetControlValue(payload: ISetControlValueOption)
 
 ```javascript
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
+```
+
+## executeSetControlProperties
+
+功能：设置控件属性
+
+用法：
+
+```javascript
+instance.command.executeSetControlProperties(payload: ISetControlProperties)
 ```
 
 ## executeSetControlHighlight

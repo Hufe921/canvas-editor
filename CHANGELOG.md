@@ -1,3 +1,57 @@
+## [0.9.66](https://github.com/Hufe921/canvas-editor/compare/v0.9.65...v0.9.66) (2024-02-24)
+
+
+### Bug Fixes
+
+* disable automatic selection when double clicking the checkbox ([72a22b5](https://github.com/Hufe921/canvas-editor/commit/72a22b5e619ea0308af8d2c06d9afb5d2c8e81f2))
+* get catalog text filtering element types ([36477d2](https://github.com/Hufe921/canvas-editor/commit/36477d23a3caf234a1165a784ebf7d0451fefa01))
+* latex element preview rendering boundary error ([6f0ab64](https://github.com/Hufe921/canvas-editor/commit/6f0ab649cd49c6f0272da9d12b1ac9ab8b6a262e))
+* richtext elements boundary render error ([956035b](https://github.com/Hufe921/canvas-editor/commit/956035b0e308db5129ea461fae868343723cede7))
+
+
+### Features
+
+* dragging image element to adjust position #404 ([9428148](https://github.com/Hufe921/canvas-editor/commit/9428148f42fdd1828af69de9e9a3be30c6191796)), closes [#404](https://github.com/Hufe921/canvas-editor/issues/404)
+* image element floating #363 ([b357a57](https://github.com/Hufe921/canvas-editor/commit/b357a57dfd15e20abdc275e2be148977cb73889c)), closes [#363](https://github.com/Hufe921/canvas-editor/issues/363)
+* table td with multiple border types #435 ([1d4987e](https://github.com/Hufe921/canvas-editor/commit/1d4987ea670ffbd254d040cf93019c1d3b5f0765)), closes [#435](https://github.com/Hufe921/canvas-editor/issues/435)
+* table td with multiple slash types #436 ([5b52bb8](https://github.com/Hufe921/canvas-editor/commit/5b52bb8794b96a9f9460fe65cf4c2467e8790299)), closes [#436](https://github.com/Hufe921/canvas-editor/issues/436)
+
+
+
+## [0.9.65](https://github.com/Hufe921/canvas-editor/compare/v0.9.64...v0.9.65) (2024-02-06)
+
+
+### Bug Fixes
+
+* cursor position error when scaling the page #434 ([e03feb2](https://github.com/Hufe921/canvas-editor/commit/e03feb210282779ecebb7af3d9a3801392b66979)), closes [#434](https://github.com/Hufe921/canvas-editor/issues/434)
+* insert image render error when scaling the page #433 ([acb0d3f](https://github.com/Hufe921/canvas-editor/commit/acb0d3fc47953c822b2daa5b1b437780a2c0f67e)), closes [#433](https://github.com/Hufe921/canvas-editor/issues/433)
+
+
+### Features
+
+* add getRange api #429 ([2a6a41c](https://github.com/Hufe921/canvas-editor/commit/2a6a41c8c9ebe8188de08d43f10db89c77016950)), closes [#429](https://github.com/Hufe921/canvas-editor/issues/429)
+* paste original elements by api ([7ab103e](https://github.com/Hufe921/canvas-editor/commit/7ab103edd9c3dbfa3c94b31167fc68487656a4d0))
+* set margin style when printing #431 ([4015707](https://github.com/Hufe921/canvas-editor/commit/4015707025689648be2d3082dfbcbe2e597b55d1)), closes [#431](https://github.com/Hufe921/canvas-editor/issues/431)
+
+
+
+## [0.9.64](https://github.com/Hufe921/canvas-editor/compare/v0.9.63...v0.9.64) (2024-01-28)
+
+
+### Bug Fixes
+
+* error inserting image within control #422 ([ea4ac33](https://github.com/Hufe921/canvas-editor/commit/ea4ac339c7de962845f639a1c5ac24d8e3640485)), closes [#422](https://github.com/Hufe921/canvas-editor/issues/422)
+* render error when row element is empty #420 ([8999f28](https://github.com/Hufe921/canvas-editor/commit/8999f283bb87d92fe58b1aa8330bf4d9d75b9064)), closes [#420](https://github.com/Hufe921/canvas-editor/issues/420)
+* zone tip position error in firefox browser #423 ([3cf911c](https://github.com/Hufe921/canvas-editor/commit/3cf911c501a0c0af85d994d5b50c657c6cd77692)), closes [#423](https://github.com/Hufe921/canvas-editor/issues/423)
+
+
+### Features
+
+* add executeSetControlProperties api #391 ([3ffb6b9](https://github.com/Hufe921/canvas-editor/commit/3ffb6b94b57a0d0fe81cc778a26d4e2a234e24ab)), closes [#391](https://github.com/Hufe921/canvas-editor/issues/391)
+* copy and paste original elements #397 (#426) ([2fc16de](https://github.com/Hufe921/canvas-editor/commit/2fc16de4e15578cdd181c4186b4cf978924b5207)), closes [#397](https://github.com/Hufe921/canvas-editor/issues/397) [#426](https://github.com/Hufe921/canvas-editor/issues/426)
+
+
+
 ## [0.9.63](https://github.com/Hufe921/canvas-editor/compare/v0.9.62...v0.9.63) (2024-01-19)
 
 

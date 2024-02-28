@@ -6,17 +6,24 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
   const draw = host.getDraw()
   const LETTER_REG = draw.getLetterReg()
   const position = draw.getPosition()
+  const positionContext = position.getPositionByXY({
+    x: evt.offsetX,
+    y: evt.offsetY
+  })
+  // 图片预览
+  if (positionContext.isImage && positionContext.isDirectHit) {
+    draw.getPreviewer().render()
+    return
+  }
   // 切换区域
   if (draw.getIsPagingMode()) {
-    const positionContext = position.getPositionByXY({
-      x: evt.offsetX,
-      y: evt.offsetY
-    })
     if (!~positionContext.index && positionContext.zone) {
       draw.getZone().setZone(positionContext.zone)
       return
     }
   }
+  // 复选框双击时是切换选择状态，禁用扩选
+  if (positionContext.isCheckbox && positionContext.isDirectHit) return
   // 自动扩选文字
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return

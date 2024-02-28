@@ -121,3 +121,8 @@ export interface ISetControlExtensionOption {
 }
 
 export type ISetControlHighlightOption = IControlHighlight[]
+
+export type ISetControlProperties = {
+  conceptId: string
+  properties: Partial<Omit<IControl, 'value'>>
+}

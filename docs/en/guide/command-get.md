@@ -57,6 +57,16 @@ Usage:
 const wordCount = await instance.command.getWordCount()
 ```
 
+## getRange
+
+Feature: Get range
+
+Usage:
+
+```javascript
+const range = instance.command.getRange()
+```
+
 ## getRangeText
 
 Feature: Get range text

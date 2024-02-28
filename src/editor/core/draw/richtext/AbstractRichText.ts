@@ -1,8 +1,10 @@
+import { TextDecorationStyle } from '../../../dataset/enum/Text'
 import { IElementFillRect } from '../../../interface/Element'
 
 export abstract class AbstractRichText {
-  public fillRect: IElementFillRect
-  public fillColor?: string
+  protected fillRect: IElementFillRect
+  protected fillColor?: string
+  protected fillDecorationStyle?: TextDecorationStyle
 
   constructor() {
     this.fillRect = this.clearFillInfo()
@@ -10,6 +12,7 @@ export abstract class AbstractRichText {
 
   public clearFillInfo() {
     this.fillColor = undefined
+    this.fillDecorationStyle = undefined
     this.fillRect = {
       x: 0,
       y: 0,
@@ -25,14 +28,19 @@ export abstract class AbstractRichText {
     y: number,
     width: number,
     height?: number,
-    color?: string
+    color?: string,
+    decorationStyle?: TextDecorationStyle
   ) {
     const isFirstRecord = !this.fillRect.width
-    if (!isFirstRecord && this.fillColor && this.fillColor !== color) {
+    // 颜色不同时立即绘制
+    if (
+      !isFirstRecord &&
+      (this.fillColor !== color || this.fillDecorationStyle !== decorationStyle)
+    ) {
       this.render(ctx)
       this.clearFillInfo()
       // 重新记录
-      this.recordFillInfo(ctx, x, y, width, height, color)
+      this.recordFillInfo(ctx, x, y, width, height, color, decorationStyle)
       return
     }
     if (isFirstRecord) {
@@ -44,6 +52,7 @@ export abstract class AbstractRichText {
     }
     this.fillRect.width += width
     this.fillColor = color
+    this.fillDecorationStyle = decorationStyle
   }
 
   public abstract render(ctx: CanvasRenderingContext2D): void
