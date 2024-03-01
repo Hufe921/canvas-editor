@@ -24,9 +24,9 @@ export class TextControl implements IControlInstance {
     return this.element
   }
 
-  public getValue(): IElement[] {
-    const elementList = this.control.getElementList()
-    const { startIndex } = this.control.getRange()
+  public getValue(context: IControlContext = {}): IElement[] {
+    const elementList = context.elementList || this.control.getElementList()
+    const { startIndex } = context.range || this.control.getRange()
     const startElement = elementList[startIndex]
     const data: IElement[] = []
     // 向左查找
@@ -120,7 +120,7 @@ export class TextControl implements IControlInstance {
     this.control
       .getDraw()
       .spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
-    const value = this.getValue()
+    const value = this.getValue(context)
     if (!value.length) {
       this.control.addPlaceholder(startIndex)
     }
