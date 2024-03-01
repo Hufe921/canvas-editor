@@ -1,3 +1,25 @@
+## [0.9.67](https://github.com/Hufe921/canvas-editor/compare/v0.9.66...v0.9.67) (2024-03-01)
+
+
+### Bug Fixes
+
+* dragging image boundary error within the control ([52590f6](https://github.com/Hufe921/canvas-editor/commit/52590f6d92746e30aaf92efe85b0486ddd3cb467))
+* text control clear value range context error #439 (#443) ([c299290](https://github.com/Hufe921/canvas-editor/commit/c2992909b6c7ff94d6685007d09fa9611b5e6d8d)), closes [#439](https://github.com/Hufe921/canvas-editor/issues/439) [#443](https://github.com/Hufe921/canvas-editor/issues/443)
+
+
+### Chores
+
+* add underline decoration type demo ([aa12296](https://github.com/Hufe921/canvas-editor/commit/aa12296ef67aa66e46d6615e91833199746c8bae))
+* update FUNDING.yml ([dc2804c](https://github.com/Hufe921/canvas-editor/commit/dc2804c492b1d5d745ec58276e4ff8bc1ed825b3))
+
+
+### Features
+
+* add text decoration property ([f1570f2](https://github.com/Hufe921/canvas-editor/commit/f1570f2180086c1d4f9bf92e06edf5baecbd436c))
+* add textDecoration property to the rangeStyleChange event ([a7fa847](https://github.com/Hufe921/canvas-editor/commit/a7fa847b198010cc5c7b8af9c860a04fe1c4250d))
+
+
+
 ## [0.9.66](https://github.com/Hufe921/canvas-editor/compare/v0.9.65...v0.9.66) (2024-02-24)
 
 

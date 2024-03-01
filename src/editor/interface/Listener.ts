@@ -9,6 +9,7 @@ import {
 import { RowFlex } from '../dataset/enum/Row'
 import { IControl } from './Control'
 import { IEditorResult } from './Editor'
+import { ITextDecoration } from './Text'
 
 export interface IRangeStyle {
   type: ElementType | null
@@ -30,6 +31,7 @@ export interface IRangeStyle {
   listType: ListType | null
   listStyle: ListStyle | null
   groupIds: string[] | null
+  textDecoration: ITextDecoration | null
 }
 
 export type IRangeStyleChange = (payload: IRangeStyle) => void
