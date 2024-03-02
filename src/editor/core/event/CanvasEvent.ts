@@ -1,6 +1,6 @@
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { IElement, IElementPosition } from '../../interface/Element'
-import { ICurrentPosition } from '../../interface/Position'
+import { ICurrentPosition, IPositionContext } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
@@ -37,6 +37,7 @@ export class CanvasEvent {
   public cacheRange: IRange | null
   public cacheElementList: IElement[] | null
   public cachePositionList: IElementPosition[] | null
+  public cachePositionContext: IPositionContext | null
   public mouseDownStartPosition: ICurrentPosition | null
 
   private draw: Draw
@@ -60,6 +61,7 @@ export class CanvasEvent {
     this.cacheRange = null
     this.cacheElementList = null
     this.cachePositionList = null
+    this.cachePositionContext = null
     this.mouseDownStartPosition = null
   }
 

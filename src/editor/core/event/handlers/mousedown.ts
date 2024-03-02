@@ -15,6 +15,7 @@ export function setRangeCache(host: CanvasEvent) {
   host.cacheRange = deepClone(rangeManager.getRange())
   host.cacheElementList = draw.getElementList()
   host.cachePositionList = position.getPositionList()
+  host.cachePositionContext = position.getPositionContext()
 }
 
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
