@@ -60,9 +60,7 @@ function pickText(elementList: IElement[]): string {
         e++
       }
       text += pickText(valueList)
-    }
-    // 文本追加
-    if (!element.type || element.type === ElementType.TEXT) {
+    } else if (!element.type || element.type === ElementType.TEXT) {
       text += element.value
     }
     e++
