@@ -1920,7 +1920,7 @@ export class CommandAdapt {
   }
 
   public async print() {
-    const { scale, printPixelRatio } = this.options
+    const { scale, printPixelRatio, paperDirection } = this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
@@ -1930,7 +1930,11 @@ export class CommandAdapt {
       pixelRatio: printPixelRatio,
       mode: EditorMode.PRINT
     })
-    printImageBase64(base64List, width, height)
+    printImageBase64(base64List, {
+      width,
+      height,
+      direction: paperDirection
+    })
     if (scale !== 1) {
       this.draw.setPageScale(scale)
     }
