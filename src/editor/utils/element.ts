@@ -1,4 +1,11 @@
-import { cloneProperty, deepClone, getUUID, isArrayEqual, splitText } from '.'
+import {
+  cloneProperty,
+  deepClone,
+  deepCloneOmitKeys,
+  getUUID,
+  isArrayEqual,
+  splitText
+} from '.'
 import {
   ElementType,
   IEditorOption,
@@ -28,6 +35,7 @@ import {
 } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
 import { DeepRequired } from '../interface/Common'
+import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 
@@ -1168,4 +1176,11 @@ export function getTextFromElementList(elementList: IElement[]) {
     return text
   }
   return buildText(zipElementList(elementList))
+}
+
+export function getSlimCloneElementList(elementList: IElement[]) {
+  return deepCloneOmitKeys<IElement[], IRowElement>(elementList, [
+    'metrics',
+    'style'
+  ])
 }

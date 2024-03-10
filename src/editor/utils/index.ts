@@ -31,6 +31,23 @@ export function throttle(func: Function, delay: number) {
   }
 }
 
+export function deepCloneOmitKeys<T, K>(obj: T, omitKeys: (keyof K)[]): T {
+  if (!obj || typeof obj !== 'object') {
+    return obj
+  }
+  let newObj: any = {}
+  if (Array.isArray(obj)) {
+    newObj = obj.map(item => deepCloneOmitKeys(item, omitKeys))
+  } else {
+    // prettier-ignore
+    (Object.keys(obj) as (keyof K)[]).forEach(key => {
+      if (omitKeys.includes(key)) return
+      return (newObj[key] = deepCloneOmitKeys((obj[key as unknown as keyof T] ), omitKeys))
+    })
+  }
+  return newObj
+}
+
 export function deepClone<T>(obj: T): T {
   if (!obj || typeof obj !== 'object') {
     return obj
@@ -39,8 +56,8 @@ export function deepClone<T>(obj: T): T {
   if (Array.isArray(obj)) {
     newObj = obj.map(item => deepClone(item))
   } else {
-    Object.keys(obj as any).forEach(key => {
-      // @ts-ignore
+    // prettier-ignore
+    (Object.keys(obj) as (keyof T)[]).forEach(key => {
       return (newObj[key] = deepClone(obj[key]))
     })
   }

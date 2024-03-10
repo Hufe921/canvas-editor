@@ -62,7 +62,7 @@ import {
   WordBreak
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
-import { zipElementList } from '../../utils/element'
+import { getSlimCloneElementList, zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
 import {
@@ -2059,23 +2059,26 @@ export class Draw {
     }
     // 历史记录用于undo、redo
     if (isSubmitHistory) {
-      const self = this
-      const oldElementList = deepClone(this.elementList)
-      const oldHeaderElementList = deepClone(this.header.getElementList())
-      const oldFooterElementList = deepClone(this.footer.getElementList())
-      const { startIndex, endIndex } = this.range.getRange()
+      const oldElementList = getSlimCloneElementList(this.elementList)
+      const oldHeaderElementList = getSlimCloneElementList(
+        this.header.getElementList()
+      )
+      const oldFooterElementList = getSlimCloneElementList(
+        this.footer.getElementList()
+      )
+      const oldRange = deepClone(this.range.getRange())
       const pageNo = this.pageNo
       const oldPositionContext = deepClone(positionContext)
       const zone = this.zone.getZone()
-      this.historyManager.execute(function () {
-        self.zone.setZone(zone)
-        self.setPageNo(pageNo)
-        self.position.setPositionContext(deepClone(oldPositionContext))
-        self.header.setElementList(deepClone(oldHeaderElementList))
-        self.footer.setElementList(deepClone(oldFooterElementList))
-        self.elementList = deepClone(oldElementList)
-        self.range.setRange(startIndex, endIndex)
-        self.render({
+      this.historyManager.execute(() => {
+        this.zone.setZone(zone)
+        this.setPageNo(pageNo)
+        this.position.setPositionContext(deepClone(oldPositionContext))
+        this.header.setElementList(deepClone(oldHeaderElementList))
+        this.footer.setElementList(deepClone(oldFooterElementList))
+        this.elementList = deepClone(oldElementList)
+        this.range.replaceRange(deepClone(oldRange))
+        this.render({
           curIndex,
           isSubmitHistory: false,
           isSourceHistory: true
