@@ -1,3 +1,23 @@
+## [0.9.68](https://github.com/Hufe921/canvas-editor/compare/v0.9.67...v0.9.68) (2024-03-10)
+
+
+### Bug Fixes
+
+* dragging element boundary error ([a2d8dd5](https://github.com/Hufe921/canvas-editor/commit/a2d8dd55b36a09b42fae377e06bf667dced3857e))
+* hyperlink word count statistics #449 ([180bd08](https://github.com/Hufe921/canvas-editor/commit/180bd088397159e32dc70da4eefd507721ced432)), closes [#449](https://github.com/Hufe921/canvas-editor/issues/449)
+
+
+### Features
+
+* set print layout format when printing #448 ([c6534f7](https://github.com/Hufe921/canvas-editor/commit/c6534f766d8640cbea4e441541065d25e0dd8b82)), closes [#448](https://github.com/Hufe921/canvas-editor/issues/448)
+
+
+### Performance Improvements
+
+* history stack memory ([5044c31](https://github.com/Hufe921/canvas-editor/commit/5044c319211322c0ab2a2db461b029f34b292939))
+
+
+
 ## [0.9.67](https://github.com/Hufe921/canvas-editor/compare/v0.9.66...v0.9.67) (2024-03-01)
 
 
