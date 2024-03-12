@@ -248,6 +248,11 @@ export class CommandAdapt {
   }
 
   public painter(options: IPainterOption) {
+    // 如果单击且已经有样式设置则取消设置
+    if (!options.isDblclick && this.draw.getPainterStyle()) {
+      this.canvasEvent.clearPainterStyle()
+      return
+    }
     const selection = this.range.getSelection()
     if (!selection) return
     const painterStyle: IElementStyle = {}
