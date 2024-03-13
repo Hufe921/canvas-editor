@@ -1,6 +1,5 @@
 import { ElementType } from '../../../../dataset/enum/Element'
 import { IElement, IElementPosition } from '../../../../interface/Element'
-import { IRowElement } from '../../../../interface/Row'
 import { formatElementContext } from '../../../../utils/element'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
@@ -129,20 +128,5 @@ export class DateParticle {
       position,
       startTop
     })
-  }
-
-  public render(
-    ctx: CanvasRenderingContext2D,
-    element: IRowElement,
-    x: number,
-    y: number
-  ) {
-    ctx.save()
-    ctx.font = element.style
-    if (element.color) {
-      ctx.fillStyle = element.color
-    }
-    ctx.fillText(element.value, x, y)
-    ctx.restore()
   }
 }
