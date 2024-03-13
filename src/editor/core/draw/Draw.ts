@@ -1639,6 +1639,21 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this._drawRichText(ctx)
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.DATE) {
+          const next = curRow.elementList[j + 1]
+          // 释放之前的
+          if (
+            !preElement ||
+            (!!preElement && preElement.type !== ElementType.DATE)
+          ) {
+            this._drawRichText(ctx)
+          }
+
+          this.textParticle.record(ctx, element, x, y + offsetY)
+          if (!next) {
+            // 手动触发渲染
+            this.textParticle.complete()
+          }
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this._drawRichText(ctx)
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
