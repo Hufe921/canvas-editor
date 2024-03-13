@@ -34,6 +34,7 @@ describe('菜单-格式刷', () => {
 
       cy.get('.menu-item__painter')
         .click()
+        .wait(300)
         .then(() => {
           editor.command.executeSetRange(textLength, 2 * textLength)
 
