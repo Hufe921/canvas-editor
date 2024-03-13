@@ -616,14 +616,18 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
-  public color(payload: string) {
+  public color(payload: string | null) {
     const isDisabled =
       this.draw.isReadonly() || this.control.isDisabledControl()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
       selection.forEach(el => {
-        el.color = payload
+        if (payload) {
+          el.color = payload
+        } else {
+          delete el.color
+        }
       })
       this.draw.render({
         isSetCursor: false,
@@ -634,20 +638,28 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
-        enterElement.color = payload
+        if (payload) {
+          enterElement.color = payload
+        } else {
+          delete enterElement.color
+        }
         this.draw.render({ curIndex: endIndex, isCompute: false })
       }
     }
   }
 
-  public highlight(payload: string) {
+  public highlight(payload: string | null) {
     const isDisabled =
       this.draw.isReadonly() || this.control.isDisabledControl()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
       selection.forEach(el => {
-        el.highlight = payload
+        if (payload) {
+          el.highlight = payload
+        } else {
+          delete el.highlight
+        }
       })
       this.draw.render({
         isSetCursor: false,
@@ -658,7 +670,11 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
-        enterElement.highlight = payload
+        if (payload) {
+          enterElement.highlight = payload
+        } else {
+          delete enterElement.highlight
+        }
         this.draw.render({ curIndex: endIndex, isCompute: false })
       }
     }

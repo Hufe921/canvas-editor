@@ -284,7 +284,7 @@ Feature: Font color
 Usage:
 
 ```javascript
-instance.command.executeColor()
+instance.command.executeColor(color: string | null)
 ```
 
 ## executeHighlight
@@ -294,7 +294,7 @@ Feature: Highlight
 Usage:
 
 ```javascript
-instance.command.executeHighlight()
+instance.command.executeHighlight(color: string | null)
 ```
 
 ## executeTitle
