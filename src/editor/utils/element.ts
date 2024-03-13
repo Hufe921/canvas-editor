@@ -780,16 +780,33 @@ export function createDomFromElementList(
       // 构造表格
       if (element.type === ElementType.TABLE) {
         const tableDom: HTMLTableElement = document.createElement('table')
+        tableDom.setAttribute('cellSpacing', '0')
+        tableDom.setAttribute('cellpadding', '0')
+        tableDom.setAttribute('border', '0')
+        tableDom.style.borderTop = tableDom.style.borderLeft = '1px solid'
+        tableDom.style.width = `${element.width}px`
+        // colgroup
+        const colgroupDom = document.createElement('colgroup')
+        for (let c = 0; c < element.colgroup!.length; c++) {
+          const colgroup = element.colgroup![c]
+          const colDom = document.createElement('col')
+          colDom.setAttribute('width', `${colgroup.width}`)
+          colgroupDom.append(colDom)
+        }
+        tableDom.append(colgroupDom)
+        // tr
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const trDom = document.createElement('tr')
           const tr = trList[t]
+          trDom.style.height = `${tr.height}px`
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
-            tdDom.style.border = '1px solid'
+            tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
             const td = tr.tdList[d]
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
+            tdDom.style.verticalAlign = td.verticalAlign || 'top'
             const childDom = buildDom(zipElementList(td.value!))
             tdDom.innerHTML = childDom.innerHTML
             if (td.backgroundColor) {
