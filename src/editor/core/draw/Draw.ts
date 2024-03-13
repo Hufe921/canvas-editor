@@ -1640,10 +1640,12 @@ export class Draw {
           this._drawRichText(ctx)
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
-          const before = curRow.elementList[j - 1]
           const next = curRow.elementList[j + 1]
           // 释放之前的
-          if (!before || (!!before && before.type !== 'date')) {
+          if (
+            !preElement ||
+            (!!preElement && preElement.type !== ElementType.DATE)
+          ) {
             this._drawRichText(ctx)
           }
 
