@@ -1640,8 +1640,16 @@ export class Draw {
           this._drawRichText(ctx)
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
-          this._drawRichText(ctx)
-          this.dateParticle.render(ctx, element, x, y + offsetY)
+          const nextElement = curRow.elementList[j + 1]
+          // 释放之前的
+          if (!preElement || preElement.dateId !== element.dateId) {
+            this._drawRichText(ctx)
+          }
+          this.textParticle.record(ctx, element, x, y + offsetY)
+          if (!nextElement || nextElement.dateId !== element.dateId) {
+            // 手动触发渲染
+            this._drawRichText(ctx)
+          }
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this._drawRichText(ctx)
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
