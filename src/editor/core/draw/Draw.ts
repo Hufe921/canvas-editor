@@ -1642,20 +1642,13 @@ export class Draw {
         } else if (element.type === ElementType.DATE) {
           const nextElement = curRow.elementList[j + 1]
           // 释放之前的
-          if (
-            !preElement ||
-            (!!preElement && preElement.type !== ElementType.DATE)
-          ) {
+          if (!preElement || preElement.dateId !== element.dateId) {
             this._drawRichText(ctx)
           }
-
           this.textParticle.record(ctx, element, x, y + offsetY)
-          if (
-            !nextElement ||
-            (!!nextElement && nextElement.type !== ElementType.DATE)
-          ) {
+          if (!nextElement || nextElement.dateId !== element.dateId) {
             // 手动触发渲染
-            this.textParticle.complete()
+            this._drawRichText(ctx)
           }
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this._drawRichText(ctx)
