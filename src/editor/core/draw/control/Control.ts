@@ -752,4 +752,22 @@ export class Control {
       isSetCursor: false
     })
   }
+
+  public getList(): IElement[] {
+    const data = [
+      this.draw.getHeader().getElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooter().getElementList()
+    ]
+    const controlElementList: IElement[] = []
+    for (const elementList of data) {
+      for (let e = 0; e < elementList.length; e++) {
+        const element = elementList[e]
+        if (element.controlId) {
+          controlElementList.push(element)
+        }
+      }
+    }
+    return zipElementList(controlElementList)
+  }
 }

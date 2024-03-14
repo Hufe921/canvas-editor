@@ -212,6 +212,16 @@ const {
 } = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```
 
+## getControlList
+
+功能：获取所有控件
+
+用法：
+
+```javascript
+const controlList = await instance.command.getControlList()
+```
+
 ## getContainer
 
 功能：获取编辑器容器

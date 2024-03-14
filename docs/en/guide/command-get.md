@@ -212,6 +212,16 @@ const {
 } = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```
 
+## getControlList
+
+Feature: Get control list
+
+Usage:
+
+```javascript
+const controlList = await instance.command.getControlList()
+```
+
 ## getContainer
 
 Feature: Get editor container

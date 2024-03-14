@@ -108,6 +108,7 @@ export class Command {
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
   public getControlValue: CommandAdapt['getControlValue']
+  public getControlList: CommandAdapt['getControlList']
   public getContainer: CommandAdapt['getContainer']
 
   constructor(adapt: CommandAdapt) {
@@ -228,5 +229,6 @@ export class Command {
     this.executeSetControlProperties = adapt.setControlProperties.bind(adapt)
     this.executeSetControlHighlight = adapt.setControlHighlight.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
+    this.getControlList = adapt.getControlList.bind(adapt)
   }
 }

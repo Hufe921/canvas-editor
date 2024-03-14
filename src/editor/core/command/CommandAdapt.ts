@@ -2388,6 +2388,10 @@ export class CommandAdapt {
     this.draw.getControl().setHighlightList(payload)
   }
 
+  public getControlList(): IElement[] {
+    return this.draw.getControl().getList()
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
