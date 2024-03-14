@@ -109,6 +109,7 @@ export class Command {
   public getGroupIds: CommandAdapt['getGroupIds']
   public getControlValue: CommandAdapt['getControlValue']
   public getContainer: CommandAdapt['getContainer']
+  public getContainHyperlink: CommandAdapt['getContainHyperlink']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -222,6 +223,7 @@ export class Command {
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
     this.getContainer = adapt.getContainer.bind(adapt)
+    this.getContainHyperlink = adapt.getContainHyperlink.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
     this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)

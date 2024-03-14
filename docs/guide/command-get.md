@@ -5,7 +5,9 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = new Editor(container, <IElement[]>
+data, options
+)
 const value = instance.command.commandName()
 ```
 
@@ -21,10 +23,12 @@ const {
   width: number;
   height: number;
   margins: IMargin;
-  header?: IHeader;
-  watermark?: IWatermark;
-  data: IEditorData;
-} = instance.command.getValue(options?: IGetValueOption)
+  header
+? : IHeader;
+watermark ? : IWatermark;
+data: IEditorData;
+}
+= instance.command.getValue(options ? : IGetValueOption)
 ```
 
 ## getImage
@@ -34,7 +38,7 @@ const {
 用法：
 
 ```javascript
-const base64StringList = await instance.command.getImage(option?: IGetImageOption)
+const base64StringList = await instance.command.getImage(option ? : IGetImageOption)
 ```
 
 ## getOptions
@@ -207,9 +211,15 @@ const groupIds = await instance.command.getGroupIds()
 
 ```javascript
 const {
-  value: string | null
-  innerText: string | null
-} = await instance.command.getControlValue(payload: IGetControlValueOption)
+  value: string
+|
+null
+innerText: string | null
+}
+= await instance.command.getControlValue(payload
+:
+IGetControlValueOption
+)
 ```
 
 ## getContainer
@@ -220,4 +230,14 @@ const {
 
 ```javascript
 const container = await instance.command.getContainer()
+```
+
+## getContainHyperlink
+
+功能：判断选中内容是否含有超链接
+
+用法：
+
+```javascript
+const containHyperlink = instance.command.getContainHyperlink()
 ```

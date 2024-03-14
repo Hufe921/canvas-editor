@@ -2416,4 +2416,9 @@ export class CommandAdapt {
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
+
+  public getContainHyperlink(): boolean {
+    const hyperRange = this.getHyperlinkRange()
+    return !!hyperRange
+  }
 }
