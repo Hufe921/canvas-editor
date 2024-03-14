@@ -1596,31 +1596,55 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return null
     const elementList = this.draw.getElementList()
-    const startElement = elementList[startIndex]
-    if (startElement.type !== ElementType.HYPERLINK) return null
-    // 向左查找
-    let preIndex = startIndex
-    while (preIndex > 0) {
-      const preElement = elementList[preIndex]
-      if (preElement.hyperlinkId !== startElement.hyperlinkId) {
-        leftIndex = preIndex + 1
+    //计算选中部分超链接文本的真实左侧索引
+    for (let i = startIndex + 1; i < endIndex + 1; i++) {
+      const lastElement = elementList[i - 1]
+      const currentElement = elementList[i]
+      const nextElement = elementList[i + 1]
+      if (currentElement.type === ElementType.HYPERLINK && currentElement.hyperlinkId !== lastElement.hyperlinkId) {
+        leftIndex = i
+        break
+      } else if (nextElement.type === ElementType.HYPERLINK) {
+        leftIndex = i + 1
         break
       }
-      preIndex--
     }
-    // 向右查找
-    let nextIndex = startIndex + 1
-    while (nextIndex < elementList.length) {
-      const nextElement = elementList[nextIndex]
-      if (nextElement.hyperlinkId !== startElement.hyperlinkId) {
-        rightIndex = nextIndex - 1
+    //此时leftIndex没有值，说明选中内容的起始位置之前的部分，可能还有属于同一个超链接的内容
+    if (!leftIndex) {
+      let index_i = startIndex - 1
+      //直至获取到同一个超链接索引的最左侧索引位置为止
+      while (index_i > 0) {
+        if (elementList[startIndex + 1].hyperlinkId !== elementList[index_i].hyperlinkId) {
+          leftIndex = index_i
+          break
+        }
+        index_i--
+      }
+    }
+    //计算选中部分超链接文本的真实右侧索引
+    for (let j = endIndex; j > startIndex; j--) {
+      const lastElement = elementList[j - 1]
+      const currentElement = elementList[j]
+      const nextElement = elementList[j + 1]
+      if (currentElement.type === ElementType.HYPERLINK && currentElement.hyperlinkId !== nextElement.hyperlinkId) {
+        rightIndex = j
+        break
+      } else if (lastElement.type === ElementType.HYPERLINK) {
+        rightIndex = j - 1
         break
       }
-      nextIndex++
     }
-    // 控件在最后
-    if (nextIndex === elementList.length) {
-      rightIndex = nextIndex - 1
+    //此时rightIndex没有值，说明选中内容的终止位置之后的部分，可能还有属于同一个超链接的内容
+    if (!rightIndex) {
+      let index_j = endIndex + 2
+      //直至获取到同一个超链接索引的最右侧索引位置为止
+      while (index_j < elementList.length) {
+        if (elementList[endIndex].hyperlinkId !== elementList[index_j].hyperlinkId) {
+          rightIndex = index_j
+          break
+        }
+        index_j++
+      }
     }
     if (!~leftIndex || !~rightIndex) return null
     return [leftIndex, rightIndex]
@@ -1664,6 +1688,7 @@ export class CommandAdapt {
       delete element.url
       delete element.hyperlinkId
       delete element.underline
+      delete element.color
     }
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
@@ -2305,8 +2330,8 @@ export class CommandAdapt {
     const getElementList = (htmlText?: string) =>
       htmlText !== undefined
         ? getElementListByHTML(htmlText, {
-            innerWidth
-          })
+          innerWidth
+        })
         : undefined
     this.setValue({
       header: getElementList(header),
