@@ -488,6 +488,23 @@ export function zipElementList(payload: IElement[]): IElement[] {
       listElement.valueList = zipElementList(valueList)
       element = listElement
     } else if (element.type === ElementType.TABLE) {
+      // 分页表格先进行合并
+      if (element.pagingId) {
+        let tableIndex = e + 1
+        let combineCount = 0
+        while (tableIndex < elementList.length) {
+          const nextElement = elementList[tableIndex]
+          if (nextElement.pagingId === element.pagingId) {
+            element.height! += nextElement.height!
+            element.trList!.push(...nextElement.trList!)
+            tableIndex++
+            combineCount++
+          } else {
+            break
+          }
+        }
+        e += combineCount
+      }
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
