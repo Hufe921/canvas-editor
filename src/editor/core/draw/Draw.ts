@@ -1145,6 +1145,25 @@ export class Draw {
       } else if (element.type === ElementType.TABLE) {
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]
+        // 表格分页处理进度：https://github.com/Hufe921/canvas-editor/issues/41
+        // 查看后续表格是否属于同一个源表格-存在即合并
+        if (element.pagingId) {
+          let tableIndex = i + 1
+          let combineCount = 0
+          while (tableIndex < elementList.length) {
+            const nextElement = elementList[tableIndex]
+            if (nextElement.pagingId === element.pagingId) {
+              element.trList!.push(...nextElement.trList!)
+              tableIndex++
+              combineCount++
+            } else {
+              break
+            }
+          }
+          if (combineCount) {
+            elementList.splice(i + 1, combineCount)
+          }
+        }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
@@ -1248,6 +1267,7 @@ export class Draw {
           let deleteStart = 0
           let deleteCount = 0
           let preTrHeight = 0
+          // 大于一行时再拆分避免循环
           if (trList.length > 1) {
             for (let r = 0; r < trList.length; r++) {
               const tr = trList[r]
@@ -1274,23 +1294,42 @@ export class Draw {
               (pre, cur) => pre + cur.height,
               0
             )
+            const pagingId = getUUID()
+            element.pagingId = pagingId
             element.height -= cloneTrHeight
             metrics.height -= cloneTrHeight
             metrics.boundingBoxDescent -= cloneTrHeight
             // 追加拆分表格
             const cloneElement = deepClone(element)
+            cloneElement.pagingId = pagingId
             cloneElement.trList = cloneTrList
             cloneElement.id = getUUID()
             this.spliceElementList(elementList, i + 1, 0, cloneElement)
             // 换页的是当前行则改变上下文
             const positionContext = this.position.getPositionContext()
-            if (
-              positionContext.isTable &&
-              positionContext.trIndex === deleteStart
-            ) {
-              positionContext.index! += 1
-              positionContext.trIndex = 0
-              this.position.setPositionContext(positionContext)
+            if (positionContext.isTable) {
+              // 查找光标所在表格索引（根据trId搜索）
+              let newPositionContextIndex = -1
+              let newPositionContextTrIndex = -1
+              let tableIndex = i
+              while (tableIndex < elementList.length) {
+                const curElement = elementList[tableIndex]
+                if (curElement.pagingId !== pagingId) break
+                const trIndex = curElement.trList!.findIndex(
+                  r => r.id === positionContext.trId
+                )
+                if (~trIndex) {
+                  newPositionContextIndex = tableIndex
+                  newPositionContextTrIndex = trIndex
+                  break
+                }
+                tableIndex++
+              }
+              if (~newPositionContextIndex) {
+                positionContext.index = newPositionContextIndex
+                positionContext.trIndex = newPositionContextTrIndex
+                this.position.setPositionContext(positionContext)
+              }
             }
           }
         }
