@@ -51,6 +51,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     if (draw.isReadonly()) return
     const position = draw.getPosition()
     const positionList = position.getPositionList()
+    const positionContext = position.getPositionContext()
     const rangeManager = draw.getRange()
     const cacheRange = host.cacheRange!
     const cacheElementList = host.cacheElementList!
@@ -66,7 +67,8 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     // 是否需要拖拽-位置发生改变
     if (
       range.startIndex >= cacheStartIndex &&
-      range.endIndex <= cacheEndIndex
+      range.endIndex <= cacheEndIndex &&
+      host.cachePositionContext?.tdId === positionContext.tdId
     ) {
       // 清除渲染副作用
       draw.clearSideEffect()
@@ -159,7 +161,9 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       }
     })
     formatElementContext(elementList, replaceElementList, range.startIndex)
-    // 缓存拖拽选区开始结束id
+    // 缓存拖拽选区开始元素、位置、开始结束id
+    const cacheStartElement = cacheElementList[cacheStartIndex]
+    const cacheStartPosition = cachePositionList[cacheStartIndex]
     const cacheRangeStartId = createDragId(cacheElementList[cacheStartIndex])
     const cacheRangeEndId = createDragId(cacheElementList[cacheEndIndex])
     // 设置拖拽值
@@ -220,10 +224,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     }
     // 重设上下文
     const startElement = elementList[range.startIndex]
-    const cacheStartElement = cacheElementList[cacheStartIndex]
     const startPosition = positionList[range.startIndex]
-    const cacheStartPosition = cachePositionList[cacheStartIndex]
-    const positionContext = position.getPositionContext()
     let positionContextIndex = positionContext.index
     if (positionContextIndex) {
       if (startElement.tableId && !cacheStartElement.tableId) {

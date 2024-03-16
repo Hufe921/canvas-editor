@@ -248,6 +248,11 @@ export class CommandAdapt {
   }
 
   public painter(options: IPainterOption) {
+    // 如果单击且已经有样式设置则取消设置
+    if (!options.isDblclick && this.draw.getPainterStyle()) {
+      this.canvasEvent.clearPainterStyle()
+      return
+    }
     const selection = this.range.getSelection()
     if (!selection) return
     const painterStyle: IElementStyle = {}
@@ -611,14 +616,18 @@ export class CommandAdapt {
     this.draw.render({ isSetCursor: false })
   }
 
-  public color(payload: string) {
+  public color(payload: string | null) {
     const isDisabled =
       this.draw.isReadonly() || this.control.isDisabledControl()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
       selection.forEach(el => {
-        el.color = payload
+        if (payload) {
+          el.color = payload
+        } else {
+          delete el.color
+        }
       })
       this.draw.render({
         isSetCursor: false,
@@ -629,20 +638,28 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
-        enterElement.color = payload
+        if (payload) {
+          enterElement.color = payload
+        } else {
+          delete enterElement.color
+        }
         this.draw.render({ curIndex: endIndex, isCompute: false })
       }
     }
   }
 
-  public highlight(payload: string) {
+  public highlight(payload: string | null) {
     const isDisabled =
       this.draw.isReadonly() || this.control.isDisabledControl()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
       selection.forEach(el => {
-        el.highlight = payload
+        if (payload) {
+          el.highlight = payload
+        } else {
+          delete el.highlight
+        }
       })
       this.draw.render({
         isSetCursor: false,
@@ -653,7 +670,11 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
-        enterElement.highlight = payload
+        if (payload) {
+          enterElement.highlight = payload
+        } else {
+          delete enterElement.highlight
+        }
         this.draw.render({ curIndex: endIndex, isCompute: false })
       }
     }
@@ -1920,7 +1941,7 @@ export class CommandAdapt {
   }
 
   public async print() {
-    const { scale, printPixelRatio } = this.options
+    const { scale, printPixelRatio, paperDirection } = this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
@@ -1930,7 +1951,11 @@ export class CommandAdapt {
       pixelRatio: printPixelRatio,
       mode: EditorMode.PRINT
     })
-    printImageBase64(base64List, width, height)
+    printImageBase64(base64List, {
+      width,
+      height,
+      direction: paperDirection
+    })
     if (scale !== 1) {
       this.draw.setPageScale(scale)
     }
@@ -2361,6 +2386,10 @@ export class CommandAdapt {
 
   public setControlHighlight(payload: ISetControlHighlightOption) {
     this.draw.getControl().setHighlightList(payload)
+  }
+
+  public getControlList(): IElement[] {
+    return this.draw.getControl().getList()
   }
 
   public getContainer(): HTMLDivElement {

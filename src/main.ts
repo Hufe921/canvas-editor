@@ -164,14 +164,28 @@ function initEditorInstance(
   const painterDom = document.querySelector<HTMLDivElement>(
     '.menu-item__painter'
   )!
+
+  let isFirstClick = true
+  let painterTimeout: number
   painterDom.onclick = function () {
-    console.log('painter')
-    instance.command.executePainter({
-      isDblclick: false
-    })
+    if (isFirstClick) {
+      isFirstClick = false
+      painterTimeout = window.setTimeout(() => {
+        console.log('painter-click')
+        isFirstClick = true
+        instance.command.executePainter({
+          isDblclick: false
+        })
+      }, 200)
+    } else {
+      window.clearTimeout(painterTimeout)
+    }
   }
+
   painterDom.ondblclick = function () {
-    console.log('painter')
+    console.log('painter-dblclick')
+    isFirstClick = true
+    window.clearTimeout(painterTimeout)
     instance.command.executePainter({
       isDblclick: true
     })

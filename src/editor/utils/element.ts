@@ -1,4 +1,11 @@
-import { cloneProperty, deepClone, getUUID, isArrayEqual, splitText } from '.'
+import {
+  cloneProperty,
+  deepClone,
+  deepCloneOmitKeys,
+  getUUID,
+  isArrayEqual,
+  splitText
+} from '.'
 import {
   ElementType,
   IEditorOption,
@@ -28,6 +35,7 @@ import {
 } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
 import { DeepRequired } from '../interface/Common'
+import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 
@@ -480,6 +488,23 @@ export function zipElementList(payload: IElement[]): IElement[] {
       listElement.valueList = zipElementList(valueList)
       element = listElement
     } else if (element.type === ElementType.TABLE) {
+      // 分页表格先进行合并
+      if (element.pagingId) {
+        let tableIndex = e + 1
+        let combineCount = 0
+        while (tableIndex < elementList.length) {
+          const nextElement = elementList[tableIndex]
+          if (nextElement.pagingId === element.pagingId) {
+            element.height! += nextElement.height!
+            element.trList!.push(...nextElement.trList!)
+            tableIndex++
+            combineCount++
+          } else {
+            break
+          }
+        }
+        e += combineCount
+      }
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
@@ -772,16 +797,33 @@ export function createDomFromElementList(
       // 构造表格
       if (element.type === ElementType.TABLE) {
         const tableDom: HTMLTableElement = document.createElement('table')
+        tableDom.setAttribute('cellSpacing', '0')
+        tableDom.setAttribute('cellpadding', '0')
+        tableDom.setAttribute('border', '0')
+        tableDom.style.borderTop = tableDom.style.borderLeft = '1px solid'
+        tableDom.style.width = `${element.width}px`
+        // colgroup
+        const colgroupDom = document.createElement('colgroup')
+        for (let c = 0; c < element.colgroup!.length; c++) {
+          const colgroup = element.colgroup![c]
+          const colDom = document.createElement('col')
+          colDom.setAttribute('width', `${colgroup.width}`)
+          colgroupDom.append(colDom)
+        }
+        tableDom.append(colgroupDom)
+        // tr
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const trDom = document.createElement('tr')
           const tr = trList[t]
+          trDom.style.height = `${tr.height}px`
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
-            tdDom.style.border = '1px solid'
+            tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
             const td = tr.tdList[d]
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
+            tdDom.style.verticalAlign = td.verticalAlign || 'top'
             const childDom = buildDom(zipElementList(td.value!))
             tdDom.innerHTML = childDom.innerHTML
             if (td.backgroundColor) {
@@ -1168,4 +1210,11 @@ export function getTextFromElementList(elementList: IElement[]) {
     return text
   }
   return buildText(zipElementList(elementList))
+}
+
+export function getSlimCloneElementList(elementList: IElement[]) {
+  return deepCloneOmitKeys<IElement[], IRowElement>(elementList, [
+    'metrics',
+    'style'
+  ])
 }

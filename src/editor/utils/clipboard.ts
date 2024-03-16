@@ -50,6 +50,11 @@ export function writeClipboardItem(
     // add new range
     const selection = window.getSelection()
     const range = document.createRange()
+    // 增加尾行换行字符避免dom复制缺失
+    const br = document.createElement('span')
+    br.innerText = '\n'
+    fakeElement.append(br)
+    // 扩选选区并执行复制
     range.selectNodeContents(fakeElement)
     selection?.removeAllRanges()
     selection?.addRange(range)

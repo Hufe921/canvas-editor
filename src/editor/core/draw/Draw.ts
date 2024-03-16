@@ -62,7 +62,7 @@ import {
   WordBreak
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
-import { zipElementList } from '../../utils/element'
+import { getSlimCloneElementList, zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
 import {
@@ -1145,6 +1145,25 @@ export class Draw {
       } else if (element.type === ElementType.TABLE) {
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]
+        // 表格分页处理进度：https://github.com/Hufe921/canvas-editor/issues/41
+        // 查看后续表格是否属于同一个源表格-存在即合并
+        if (element.pagingId) {
+          let tableIndex = i + 1
+          let combineCount = 0
+          while (tableIndex < elementList.length) {
+            const nextElement = elementList[tableIndex]
+            if (nextElement.pagingId === element.pagingId) {
+              element.trList!.push(...nextElement.trList!)
+              tableIndex++
+              combineCount++
+            } else {
+              break
+            }
+          }
+          if (combineCount) {
+            elementList.splice(i + 1, combineCount)
+          }
+        }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
@@ -1248,6 +1267,7 @@ export class Draw {
           let deleteStart = 0
           let deleteCount = 0
           let preTrHeight = 0
+          // 大于一行时再拆分避免循环
           if (trList.length > 1) {
             for (let r = 0; r < trList.length; r++) {
               const tr = trList[r]
@@ -1274,23 +1294,42 @@ export class Draw {
               (pre, cur) => pre + cur.height,
               0
             )
+            const pagingId = getUUID()
+            element.pagingId = pagingId
             element.height -= cloneTrHeight
             metrics.height -= cloneTrHeight
             metrics.boundingBoxDescent -= cloneTrHeight
             // 追加拆分表格
             const cloneElement = deepClone(element)
+            cloneElement.pagingId = pagingId
             cloneElement.trList = cloneTrList
             cloneElement.id = getUUID()
             this.spliceElementList(elementList, i + 1, 0, cloneElement)
             // 换页的是当前行则改变上下文
             const positionContext = this.position.getPositionContext()
-            if (
-              positionContext.isTable &&
-              positionContext.trIndex === deleteStart
-            ) {
-              positionContext.index! += 1
-              positionContext.trIndex = 0
-              this.position.setPositionContext(positionContext)
+            if (positionContext.isTable) {
+              // 查找光标所在表格索引（根据trId搜索）
+              let newPositionContextIndex = -1
+              let newPositionContextTrIndex = -1
+              let tableIndex = i
+              while (tableIndex < elementList.length) {
+                const curElement = elementList[tableIndex]
+                if (curElement.pagingId !== pagingId) break
+                const trIndex = curElement.trList!.findIndex(
+                  r => r.id === positionContext.trId
+                )
+                if (~trIndex) {
+                  newPositionContextIndex = tableIndex
+                  newPositionContextTrIndex = trIndex
+                  break
+                }
+                tableIndex++
+              }
+              if (~newPositionContextIndex) {
+                positionContext.index = newPositionContextIndex
+                positionContext.trIndex = newPositionContextTrIndex
+                this.position.setPositionContext(positionContext)
+              }
             }
           }
         }
@@ -1640,8 +1679,16 @@ export class Draw {
           this._drawRichText(ctx)
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
-          this._drawRichText(ctx)
-          this.dateParticle.render(ctx, element, x, y + offsetY)
+          const nextElement = curRow.elementList[j + 1]
+          // 释放之前的
+          if (!preElement || preElement.dateId !== element.dateId) {
+            this._drawRichText(ctx)
+          }
+          this.textParticle.record(ctx, element, x, y + offsetY)
+          if (!nextElement || nextElement.dateId !== element.dateId) {
+            // 手动触发渲染
+            this._drawRichText(ctx)
+          }
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this._drawRichText(ctx)
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
@@ -2059,23 +2106,26 @@ export class Draw {
     }
     // 历史记录用于undo、redo
     if (isSubmitHistory) {
-      const self = this
-      const oldElementList = deepClone(this.elementList)
-      const oldHeaderElementList = deepClone(this.header.getElementList())
-      const oldFooterElementList = deepClone(this.footer.getElementList())
-      const { startIndex, endIndex } = this.range.getRange()
+      const oldElementList = getSlimCloneElementList(this.elementList)
+      const oldHeaderElementList = getSlimCloneElementList(
+        this.header.getElementList()
+      )
+      const oldFooterElementList = getSlimCloneElementList(
+        this.footer.getElementList()
+      )
+      const oldRange = deepClone(this.range.getRange())
       const pageNo = this.pageNo
       const oldPositionContext = deepClone(positionContext)
       const zone = this.zone.getZone()
-      this.historyManager.execute(function () {
-        self.zone.setZone(zone)
-        self.setPageNo(pageNo)
-        self.position.setPositionContext(deepClone(oldPositionContext))
-        self.header.setElementList(deepClone(oldHeaderElementList))
-        self.footer.setElementList(deepClone(oldFooterElementList))
-        self.elementList = deepClone(oldElementList)
-        self.range.setRange(startIndex, endIndex)
-        self.render({
+      this.historyManager.execute(() => {
+        this.zone.setZone(zone)
+        this.setPageNo(pageNo)
+        this.position.setPositionContext(deepClone(oldPositionContext))
+        this.header.setElementList(deepClone(oldHeaderElementList))
+        this.footer.setElementList(deepClone(oldFooterElementList))
+        this.elementList = deepClone(oldElementList)
+        this.range.replaceRange(deepClone(oldRange))
+        this.render({
           curIndex,
           isSubmitHistory: false,
           isSourceHistory: true
