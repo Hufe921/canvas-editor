@@ -1,3 +1,31 @@
+## [0.9.69](https://github.com/Hufe921/canvas-editor/compare/v0.9.68...v0.9.69) (2024-03-15)
+
+
+### Bug Fixes
+
+* adjust the style of converting table element to html #458 ([0003686](https://github.com/Hufe921/canvas-editor/commit/000368636cba3547e3b280e1960e72198b41cb01)), closes [#458](https://github.com/Hufe921/canvas-editor/issues/458)
+* copy html boundary error #470 ([4e46afa](https://github.com/Hufe921/canvas-editor/commit/4e46afab687c696360a96f45dd3cd97551f951ec)), closes [#470](https://github.com/Hufe921/canvas-editor/issues/470)
+
+
+### Features
+
+* add getControlList api #455 ([0523fc2](https://github.com/Hufe921/canvas-editor/commit/0523fc257ae6f2c9b2511e912a4272c6b962d41e)), closes [#455](https://github.com/Hufe921/canvas-editor/issues/455)
+* add parameter for clearing font color and highlight color #461 ([73f9cfd](https://github.com/Hufe921/canvas-editor/commit/73f9cfdf88afcfab4376bf3c4011b171c0669d2f)), closes [#461](https://github.com/Hufe921/canvas-editor/issues/461)
+* cancel painter style setting #453 ([51427c7](https://github.com/Hufe921/canvas-editor/commit/51427c7dc462ea5a33ae6a92836d1e7ded7cf43d)), closes [#453](https://github.com/Hufe921/canvas-editor/issues/453)
+* table element can be merged after paging #41 ([33a2dd8](https://github.com/Hufe921/canvas-editor/commit/33a2dd8faa7a46bc9290b744dad93a761ed6e1cf)), closes [#41](https://github.com/Hufe921/canvas-editor/issues/41)
+
+
+### Refactor
+
+* date element renderer #460 ([788f96a](https://github.com/Hufe921/canvas-editor/commit/788f96aa89766cecf0e835fd0ffe64140bb94e87)), closes [#460](https://github.com/Hufe921/canvas-editor/issues/460)
+
+
+### Tests
+
+* update painter test case (#459) ([a058c59](https://github.com/Hufe921/canvas-editor/commit/a058c5956cc2c26b347e5528d8164e2e1eff1225)), closes [#459](https://github.com/Hufe921/canvas-editor/issues/459)
+
+
+
 ## [0.9.68](https://github.com/Hufe921/canvas-editor/compare/v0.9.67...v0.9.68) (2024-03-10)
 
 
