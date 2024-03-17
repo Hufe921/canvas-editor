@@ -2054,6 +2054,28 @@ export class CommandAdapt {
     return this.range.toString()
   }
 
+  public getRangeHyperlinkNum(): number {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return -1
+    if (startIndex === endIndex) return 1
+    const elementList = this.draw.getElementList()
+    const hyperlinkArray = []
+    for (let i = startIndex + 1; i < endIndex + 1; i++) {
+      const lastElement = elementList[i - 1]
+      const currentElement = elementList[i]
+      if (i === startIndex + 1) {
+        if (ElementType.HYPERLINK === currentElement.type) {
+          hyperlinkArray.push(currentElement.hyperlinkId)
+        }
+      } else {
+        if (ElementType.HYPERLINK === currentElement.type && lastElement.hyperlinkId !== currentElement.hyperlinkId) {
+          hyperlinkArray.push(currentElement.hyperlinkId)
+        }
+      }
+    }
+    return hyperlinkArray.length
+  }
+
   public getRangeContext(): RangeContext | null {
     const range = this.range.getRange()
     const { startIndex, endIndex } = range
@@ -2305,8 +2327,8 @@ export class CommandAdapt {
     const getElementList = (htmlText?: string) =>
       htmlText !== undefined
         ? getElementListByHTML(htmlText, {
-            innerWidth
-          })
+          innerWidth
+        })
         : undefined
     this.setValue({
       header: getElementList(header),

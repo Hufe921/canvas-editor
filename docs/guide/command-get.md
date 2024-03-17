@@ -77,6 +77,16 @@ const range = instance.command.getRange()
 const rangeText = instance.command.getRangeText()
 ```
 
+## getRangeHyperlinkNum
+
+功能：获取选区内的超链接数量
+
+用法：
+
+```javascript
+const hyperlinkNum = instance.command.getRangeHyperlinkNum()
+```
+
 ## getRangeContext
 
 功能：获取选区上下文
