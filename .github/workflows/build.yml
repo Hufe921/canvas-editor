@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
     paths:
+      - '.github/workflows/build.yml'
       - 'src/**'
       - 'index.html'
       - 'package.json'
@@ -33,7 +34,7 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         rmRemote: true
     - name: Executing remote ssh commands
-      uses: appleboy/ssh-action@master
+      uses: appleboy/ssh-action@v1.0.3
       with:
         host: ${{ secrets.HOST }}
         username: ${{ secrets.USERNAME }}
