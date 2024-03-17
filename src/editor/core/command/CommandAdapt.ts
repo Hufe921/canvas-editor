@@ -1590,39 +1590,96 @@ export class CommandAdapt {
     this.draw.render({ curIndex })
   }
 
-  public getHyperlinkRange(): [number, number] | null {
+  public getHyperlinkRange(payload: number): [number, number] | null {
+    //选中内容左边界超链接的左索引
     let leftIndex = -1
+    //选中内容右边界超链接的右索引
     let rightIndex = -1
+    //选中范围的始末索引
     const { startIndex, endIndex } = this.range.getRange()
-    if (!~startIndex && !~endIndex) return null
+    if ((!~startIndex && !~endIndex) || payload < 1 || payload == null) return null
     const elementList = this.draw.getElementList()
-    const startElement = elementList[startIndex]
-    if (startElement.type !== ElementType.HYPERLINK) return null
-    // 向左查找
-    let preIndex = startIndex
-    while (preIndex > 0) {
-      const preElement = elementList[preIndex]
-      if (preElement.hyperlinkId !== startElement.hyperlinkId) {
-        leftIndex = preIndex + 1
-        break
+    //先向左遍历获取超链接范围的真实左索引,需要防止选中内容之前的部分没有超链接内容时,一直遍历到文档头部的无效遍历
+    if (ElementType.HYPERLINK === elementList[startIndex].type || ElementType.HYPERLINK === elementList[startIndex + 1].type) {
+      for (let i = startIndex + 1; i > 0; i--) {
+        const lastElement = elementList[i - 1]
+        const currentElement = elementList[i]
+        if (lastElement.hyperlinkId !== currentElement.hyperlinkId) {
+          leftIndex = i //本来是需要-1的，但是由于range.getRange计算startIndex错误，比实际小1，因此这里抵消
+          break
+        }
       }
-      preIndex--
     }
-    // 向右查找
-    let nextIndex = startIndex + 1
-    while (nextIndex < elementList.length) {
-      const nextElement = elementList[nextIndex]
-      if (nextElement.hyperlinkId !== startElement.hyperlinkId) {
-        rightIndex = nextIndex - 1
-        break
+    //再向右遍历获取超链接范围的真实左索引
+    if (leftIndex === -1) {
+      for (let j = startIndex + 1; j < endIndex; j++) {
+        const currentElement = elementList[j]
+        const nextElement = elementList[j + 1]
+        if (currentElement.hyperlinkId !== nextElement.hyperlinkId) {
+          leftIndex = j
+          break
+        }
       }
-      nextIndex++
     }
-    // 控件在最后
-    if (nextIndex === elementList.length) {
-      rightIndex = nextIndex - 1
+    //向右遍历获取超链接范围的真实右索引,需要防止选中内容之后的部分没有超链接内容时,一直遍历到文档尾部的无效遍历
+    if (ElementType.HYPERLINK === elementList[endIndex + 1].type || ElementType.HYPERLINK === elementList[endIndex].type) {
+      for (let k = endIndex; k < elementList.length - 2; k++) {
+        const currentElement = elementList[k]
+        const nextElement = elementList[k + 1]
+        if (currentElement.hyperlinkId !== nextElement.hyperlinkId) {
+          rightIndex = k
+          break
+        }
+      }
     }
-    if (!~leftIndex || !~rightIndex) return null
+    //再向左遍历获取超链接范围的真实右索引
+    if (rightIndex === -1) {
+      for (let l = endIndex; l > startIndex + 1; l--) {
+        const lastElement = elementList[l - 1]
+        const currentElement = elementList[l]
+        if (lastElement.hyperlinkId !== currentElement.hyperlinkId) {
+          rightIndex = l - 1
+          break
+        }
+      }
+    }
+    //单个超链接只需要取选中内容左索引和超链接范围最左侧索引的最小值，选中内容右索引和超链接范围最右侧索引的最大值
+    if (payload === 1) {
+      leftIndex = Math.min(leftIndex, startIndex + 1)
+      rightIndex = Math.max(rightIndex, endIndex)
+    } else if (payload == 2) {//最特殊的2个连续的超链接的情况,选中的内容为超链接1的尾部和超链接2的头部,不确定用户真实想选中的范围,干脆都选中
+      leftIndex = Math.min(leftIndex, startIndex + 1)
+      rightIndex = Math.max(endIndex, rightIndex)
+    } else {//含有3个及以上超链接时，判断选中内容两端的超链接边界索引（左边超链接的左索引和右边超链接的右索引）和选中内容的边界索引位置关系
+      if (startIndex + 1 < leftIndex && endIndex < rightIndex) {//选中左边所有完整的超链接
+        let index_i = endIndex
+        while (elementList[index_i - 1].hyperlinkId === elementList[index_i].hyperlinkId) {
+          index_i--
+        }
+        rightIndex = index_i - 1
+      } else if (leftIndex < startIndex + 1 && rightIndex < endIndex) {//选中右边所有完整的超链接
+        let index_j = startIndex + 1
+        while (elementList[index_j].hyperlinkId === elementList[index_j + 1].hyperlinkId) {
+          index_j++
+        }
+        leftIndex = index_j + 1
+      } else if (leftIndex < startIndex + 1 && endIndex < rightIndex) {//选中边界两侧超链接中间的部分
+        let index_k = startIndex + 1
+        let index_l = endIndex
+        while (elementList[index_k].hyperlinkId === elementList[index_k + 1].hyperlinkId) {
+          index_k++
+        }
+        leftIndex = index_k + 1
+        while (elementList[index_l - 1].hyperlinkId === elementList[index_l].hyperlinkId) {
+          index_l--
+        }
+        rightIndex = index_l - 1
+      } else {//选中所有的超链接
+        leftIndex = Math.max(startIndex + 1, leftIndex)
+        rightIndex = Math.min(rightIndex, endIndex)
+      }
+    }
+    //至此已经包含所有的情况，不可能出现leftIndex或rightIndex仍然为-1的情况，返回需要选中的超链接范围
     return [leftIndex, rightIndex]
   }
 
@@ -1630,10 +1687,12 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     // 获取超链接索引
-    const hyperRange = this.getHyperlinkRange()
-    if (!hyperRange) return
+    const hyperlinkNum = this.getRangeHyperlinkNum()
+    if (hyperlinkNum !== 1) return
+    const hyperlinkRange = this.getHyperlinkRange(1)
+    if (!hyperlinkRange) return
     const elementList = this.draw.getElementList()
-    const [leftIndex, rightIndex] = hyperRange
+    const [leftIndex, rightIndex] = hyperlinkRange
     // 删除元素
     this.draw.spliceElementList(
       elementList,
@@ -1653,10 +1712,10 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     // 获取超链接索引
-    const hyperRange = this.getHyperlinkRange()
-    if (!hyperRange) return
+    const hyperlinkRange = this.getHyperlinkRange(this.getRangeHyperlinkNum())
+    if (!hyperlinkRange) return
     const elementList = this.draw.getElementList()
-    const [leftIndex, rightIndex] = hyperRange
+    const [leftIndex, rightIndex] = hyperlinkRange
     // 删除属性
     for (let i = leftIndex; i <= rightIndex; i++) {
       const element = elementList[i]
@@ -1664,6 +1723,7 @@ export class CommandAdapt {
       delete element.url
       delete element.hyperlinkId
       delete element.underline
+      delete element.color
     }
     this.draw.getHyperlinkParticle().clearHyperlinkPopup()
     // 重置画布
@@ -1678,10 +1738,12 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     // 获取超链接索引
-    const hyperRange = this.getHyperlinkRange()
-    if (!hyperRange) return
+    const hyperlinkNum = this.getRangeHyperlinkNum()
+    if (hyperlinkNum !== 1) return
+    const hyperlinkRange = this.getHyperlinkRange(1)
+    if (!hyperlinkRange) return
     const elementList = this.draw.getElementList()
-    const [leftIndex, rightIndex] = hyperRange
+    const [leftIndex, rightIndex] = hyperlinkRange
     // 替换url
     for (let i = leftIndex; i <= rightIndex; i++) {
       const element = elementList[i]
