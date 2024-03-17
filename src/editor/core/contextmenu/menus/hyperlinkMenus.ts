@@ -5,6 +5,7 @@ import {
   IRegisterContextMenu
 } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
+
 const {
   HYPERLINK: { DELETE, CANCEL, EDIT }
 } = INTERNAL_CONTEXT_MENU_KEY
@@ -16,7 +17,8 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
     when: payload => {
       return (
         !payload.isReadonly &&
-        payload.startElement?.type === ElementType.HYPERLINK
+        payload.startElement?.type === ElementType.HYPERLINK &&
+        payload.startElement?.hyperlinkId === payload.endElement?.hyperlinkId
       )
     },
     callback: (command: Command) => {
@@ -29,7 +31,8 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
     when: payload => {
       return (
         !payload.isReadonly &&
-        payload.startElement?.type === ElementType.HYPERLINK
+        payload.startElement?.type === ElementType.HYPERLINK &&
+        payload.startElement?.hyperlinkId === payload.endElement?.hyperlinkId
       )
     },
     callback: (command: Command) => {
@@ -42,7 +45,8 @@ export const hyperlinkMenus: IRegisterContextMenu[] = [
     when: payload => {
       return (
         !payload.isReadonly &&
-        payload.startElement?.type === ElementType.HYPERLINK
+        payload.startElement?.type === ElementType.HYPERLINK &&
+        payload.startElement?.hyperlinkId === payload.endElement?.hyperlinkId
       )
     },
     callback: (command: Command, context: IContextMenuContext) => {
