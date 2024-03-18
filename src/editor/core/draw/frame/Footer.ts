@@ -75,7 +75,8 @@ export class Footer {
       startIndex: 0,
       startX,
       startY,
-      innerWidth
+      innerWidth,
+      zone: EditorZone.FOOTER
     })
   }
 

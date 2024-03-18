@@ -1903,7 +1903,9 @@ export class Draw {
       const floatPosition = floatPositionList[e]
       const element = floatPosition.element
       if (
-        pageNo === floatPosition.pageNo &&
+        (pageNo === floatPosition.pageNo ||
+          floatPosition.zone === EditorZone.HEADER ||
+          floatPosition.zone == EditorZone.FOOTER) &&
         element.imgDisplay === imgDisplay &&
         element.type === ElementType.IMAGE
       ) {
@@ -2044,6 +2046,8 @@ export class Draw {
     const isPagingMode = this.getIsPagingMode()
     // 计算文档信息
     if (isCompute) {
+      // 清空浮动元素位置信息
+      this.position.setFloatPositionList([])
       if (isPagingMode) {
         // 页眉信息
         if (!header.disabled) {

@@ -69,6 +69,7 @@ export interface IComputePageRowPositionPayload {
   tdIndex?: number
   trIndex?: number
   tdValueIndex?: number
+  zone?: EditorZone
 }
 
 export interface IComputePageRowPositionResult {
@@ -86,4 +87,5 @@ export interface IFloatPosition {
   tdIndex?: number
   trIndex?: number
   tdValueIndex?: number
+  zone?: EditorZone
 }

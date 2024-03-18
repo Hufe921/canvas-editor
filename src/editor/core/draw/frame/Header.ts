@@ -72,7 +72,8 @@ export class Header {
       startIndex: 0,
       startX,
       startY,
-      innerWidth
+      innerWidth,
+      zone: EditorZone.HEADER
     })
   }
 
