@@ -19,6 +19,10 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
   if (draw.getIsPagingMode()) {
     if (!~positionContext.index && positionContext.zone) {
       draw.getZone().setZone(positionContext.zone)
+      draw.clearSideEffect()
+      position.setPositionContext({
+        isTable: false
+      })
       return
     }
   }
