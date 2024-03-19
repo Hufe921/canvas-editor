@@ -1154,6 +1154,7 @@ export class Draw {
             const nextElement = elementList[tableIndex]
             if (nextElement.pagingId === element.pagingId) {
               element.trList!.push(...nextElement.trList!)
+              element.height! += nextElement.height!
               tableIndex++
               combineCount++
             } else {
@@ -1259,8 +1260,16 @@ export class Draw {
             curPagePreHeight += row.height
           }
         }
-        // 表格高度超过页面高度
+        // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度
         const rowMarginHeight = rowMargin * 2 * scale
+        if (
+          curPagePreHeight + element.trList![0].height! + rowMarginHeight >
+          height
+        ) {
+          // 无可拆分行则切换至新页
+          curPagePreHeight = marginHeight
+        }
+        // 表格高度超过页面高度开始截断行
         if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
           const trList = element.trList!
           // 计算需要移除的行数
@@ -1294,7 +1303,7 @@ export class Draw {
               (pre, cur) => pre + cur.height,
               0
             )
-            const pagingId = getUUID()
+            const pagingId = element.pagingId || getUUID()
             element.pagingId = pagingId
             element.height -= cloneTrHeight
             metrics.height -= cloneTrHeight
@@ -1305,31 +1314,33 @@ export class Draw {
             cloneElement.trList = cloneTrList
             cloneElement.id = getUUID()
             this.spliceElementList(elementList, i + 1, 0, cloneElement)
-            // 换页的是当前行则改变上下文
-            const positionContext = this.position.getPositionContext()
-            if (positionContext.isTable) {
-              // 查找光标所在表格索引（根据trId搜索）
-              let newPositionContextIndex = -1
-              let newPositionContextTrIndex = -1
-              let tableIndex = i
-              while (tableIndex < elementList.length) {
-                const curElement = elementList[tableIndex]
-                if (curElement.pagingId !== pagingId) break
-                const trIndex = curElement.trList!.findIndex(
-                  r => r.id === positionContext.trId
-                )
-                if (~trIndex) {
-                  newPositionContextIndex = tableIndex
-                  newPositionContextTrIndex = trIndex
-                  break
-                }
-                tableIndex++
+          }
+        }
+        // 表格经过分页处理-需要处理上下文
+        if (element.pagingId) {
+          const positionContext = this.position.getPositionContext()
+          if (positionContext.isTable) {
+            // 查找光标所在表格索引（根据trId搜索）
+            let newPositionContextIndex = -1
+            let newPositionContextTrIndex = -1
+            let tableIndex = i
+            while (tableIndex < elementList.length) {
+              const curElement = elementList[tableIndex]
+              if (curElement.pagingId !== element.pagingId) break
+              const trIndex = curElement.trList!.findIndex(
+                r => r.id === positionContext.trId
+              )
+              if (~trIndex) {
+                newPositionContextIndex = tableIndex
+                newPositionContextTrIndex = trIndex
+                break
               }
-              if (~newPositionContextIndex) {
-                positionContext.index = newPositionContextIndex
-                positionContext.trIndex = newPositionContextTrIndex
-                this.position.setPositionContext(positionContext)
-              }
+              tableIndex++
+            }
+            if (~newPositionContextIndex) {
+              positionContext.index = newPositionContextIndex
+              positionContext.trIndex = newPositionContextTrIndex
+              this.position.setPositionContext(positionContext)
             }
           }
         }
@@ -1892,7 +1903,9 @@ export class Draw {
       const floatPosition = floatPositionList[e]
       const element = floatPosition.element
       if (
-        pageNo === floatPosition.pageNo &&
+        (pageNo === floatPosition.pageNo ||
+          floatPosition.zone === EditorZone.HEADER ||
+          floatPosition.zone == EditorZone.FOOTER) &&
         element.imgDisplay === imgDisplay &&
         element.type === ElementType.IMAGE
       ) {
@@ -2033,6 +2046,8 @@ export class Draw {
     const isPagingMode = this.getIsPagingMode()
     // 计算文档信息
     if (isCompute) {
+      // 清空浮动元素位置信息
+      this.position.setFloatPositionList([])
       if (isPagingMode) {
         // 页眉信息
         if (!header.disabled) {

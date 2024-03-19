@@ -12,7 +12,9 @@ import {
   IElement,
   ListStyle,
   ListType,
-  RowFlex
+  RowFlex,
+  TableBorder,
+  TdBorder
 } from '..'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
@@ -800,7 +802,14 @@ export function createDomFromElementList(
         tableDom.setAttribute('cellSpacing', '0')
         tableDom.setAttribute('cellpadding', '0')
         tableDom.setAttribute('border', '0')
-        tableDom.style.borderTop = tableDom.style.borderLeft = '1px solid'
+        const borderStyle = '1px solid #000000'
+        // 表格边框
+        if (!element.borderType || element.borderType === TableBorder.ALL) {
+          tableDom.style.borderTop = borderStyle
+          tableDom.style.borderLeft = borderStyle
+        } else if (element.borderType === TableBorder.EXTERNAL) {
+          tableDom.style.border = borderStyle
+        }
         tableDom.style.width = `${element.width}px`
         // colgroup
         const colgroupDom = document.createElement('colgroup')
@@ -819,11 +828,26 @@ export function createDomFromElementList(
           trDom.style.height = `${tr.height}px`
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
-            tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
+            if (!element.borderType || element.borderType === TableBorder.ALL) {
+              tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
+            }
             const td = tr.tdList[d]
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
             tdDom.style.verticalAlign = td.verticalAlign || 'top'
+            // 单元格边框
+            if (td.borderTypes?.includes(TdBorder.TOP)) {
+              tdDom.style.borderTop = borderStyle
+            }
+            if (td.borderTypes?.includes(TdBorder.RIGHT)) {
+              tdDom.style.borderRight = borderStyle
+            }
+            if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
+              tdDom.style.borderBottom = borderStyle
+            }
+            if (td.borderTypes?.includes(TdBorder.LEFT)) {
+              tdDom.style.borderLeft = borderStyle
+            }
             const childDom = buildDom(zipElementList(td.value!))
             tdDom.innerHTML = childDom.innerHTML
             if (td.backgroundColor) {

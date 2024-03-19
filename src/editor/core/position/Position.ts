@@ -96,6 +96,10 @@ export class Position {
     this.positionList = payload
   }
 
+  public setFloatPositionList(payload: IFloatPosition[]) {
+    this.floatPositionList = payload
+  }
+
   public computePageRowPosition(
     payload: IComputePageRowPositionPayload
   ): IComputePageRowPositionResult {
@@ -107,7 +111,8 @@ export class Position {
       startY,
       startRowIndex,
       startIndex,
-      innerWidth
+      innerWidth,
+      zone
     } = payload
     const { scale, tdPadding } = this.options
     let x = startX
@@ -177,7 +182,8 @@ export class Position {
             index: payload.index,
             tdIndex: payload.tdIndex,
             trIndex: payload.trIndex,
-            tdValueIndex: index
+            tdValueIndex: index,
+            zone
           })
         }
         positionList.push(positionItem)
@@ -205,7 +211,8 @@ export class Position {
                 isTable: true,
                 index: index - 1,
                 tdIndex: d,
-                trIndex: t
+                trIndex: t,
+                zone
               })
               // 垂直对齐方式
               if (
@@ -252,7 +259,6 @@ export class Position {
   public computePositionList() {
     // 置空原位置信息
     this.positionList = []
-    this.floatPositionList = []
     // 按每页行计算
     const innerWidth = this.draw.getInnerWidth()
     const pageRowList = this.draw.getPageRowList()
@@ -550,6 +556,7 @@ export class Position {
     payload: IGetFloatPositionByXYPayload
   ): ICurrentPosition | void {
     const { x, y } = payload
+    const currentZone = this.draw.getZone().getZone()
     for (let f = 0; f < this.floatPositionList.length; f++) {
       const {
         position,
@@ -558,11 +565,13 @@ export class Position {
         index,
         trIndex,
         tdIndex,
-        tdValueIndex
+        tdValueIndex,
+        zone: floatElementZone
       } = this.floatPositionList[f]
       if (
         element.type === ElementType.IMAGE &&
-        element.imgDisplay === payload.imgDisplay
+        element.imgDisplay === payload.imgDisplay &&
+        (!floatElementZone || floatElementZone === currentZone)
       ) {
         const imgFloatPosition = element.imgFloatPosition!
         if (
