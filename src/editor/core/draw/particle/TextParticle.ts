@@ -11,25 +11,17 @@ export interface IMeasureWordResult {
 }
 
 export class TextParticle {
+  private textArr: { value: string; X: number, Y: number, style: string, color?: string }[]
   private draw: Draw
   private options: DeepRequired<IEditorOption>
-
   private ctx: CanvasRenderingContext2D
-  private curX: number
-  private curY: number
-  private text: string
-  private curStyle: string
-  private curColor?: string
   public cacheMeasureText: Map<string, TextMetrics>
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
     this.ctx = draw.getCtx()
-    this.curX = -1
-    this.curY = -1
-    this.text = ''
-    this.curStyle = ''
+    this.textArr = []
     this.cacheMeasureText = new Map()
   }
 
@@ -98,7 +90,7 @@ export class TextParticle {
 
   public complete() {
     this._render()
-    this.text = ''
+    this.textArr = []
   }
 
   public record(
@@ -109,33 +101,45 @@ export class TextParticle {
   ) {
     this.ctx = ctx
     // 主动完成的重设起始点
-    if (!this.text) {
-      this._setCurXY(x, y)
+    if (!this.textArr.length) {
+      this.textArr.push({
+        value: '',
+        X:x,
+        Y:y,
+        style: '',
+        color:''
+      })
     }
+    let lastTextDes =  this.textArr[this.textArr.length-1]
     // 样式发生改变
     if (
-      (this.curStyle && element.style !== this.curStyle) ||
-      element.color !== this.curColor
+      (lastTextDes.style && element.style !== lastTextDes.style) ||
+      element.color !== lastTextDes.color
     ) {
-      this.complete()
-      this._setCurXY(x, y)
+      lastTextDes = {
+        value: '',
+        X:x,
+        Y:y,
+        style: '',
+        color:''
+      }
+      this.textArr.push(lastTextDes)
     }
-    this.text += element.value
-    this.curStyle = element.style
-    this.curColor = element.color
+    lastTextDes.value += element.value
+    lastTextDes.style = element.style
+    lastTextDes.color = element.color
   }
 
-  private _setCurXY(x: number, y: number) {
-    this.curX = x
-    this.curY = y
-  }
 
   private _render() {
-    if (!this.text || !~this.curX || !~this.curX) return
-    this.ctx.save()
-    this.ctx.font = this.curStyle
-    this.ctx.fillStyle = this.curColor || this.options.defaultColor
-    this.ctx.fillText(this.text, this.curX, this.curY)
-    this.ctx.restore()
+    if (!this.textArr.length ) return
+    for(const item of this.textArr){
+      if(!item.value || !~item.X || !~item.Y) continue
+      this.ctx.save()
+      this.ctx.font = item.style
+      this.ctx.fillStyle = item.color || this.options.defaultColor
+      this.ctx.fillText(item.value, item.X, item.Y)
+      this.ctx.restore()
+    }
   }
 }
