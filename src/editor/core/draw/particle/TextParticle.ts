@@ -133,13 +133,13 @@ export class TextParticle {
 
   private _render() {
     if (!this.textArr.length ) return
+    this.ctx.save()
     for(const item of this.textArr){
       if(!item.value || !~item.X || !~item.Y) continue
-      this.ctx.save()
       this.ctx.font = item.style
       this.ctx.fillStyle = item.color || this.options.defaultColor
       this.ctx.fillText(item.value, item.X, item.Y)
-      this.ctx.restore()
     }
+    this.ctx.restore()
   }
 }
