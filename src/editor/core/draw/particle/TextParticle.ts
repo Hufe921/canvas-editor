@@ -11,7 +11,7 @@ export interface IMeasureWordResult {
 }
 
 export class TextParticle {
-  private textArr: { value: string; X: number, Y: number, style: string, color: string }[]
+  private textArr: { value: string; X: number, Y: number, style: string, color?: string }[]
   private draw: Draw
   private options: DeepRequired<IEditorOption>
   private ctx: CanvasRenderingContext2D
