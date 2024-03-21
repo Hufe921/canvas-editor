@@ -33,9 +33,16 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
       curIndex = control.keydown(evt)
     } else {
       // 判断是否允许删除
-      if (isCollapsed && elementList[index].value === ZERO && index === 0) {
-        evt.preventDefault()
-        return
+      if (isCollapsed && index === 0) {
+        const firstElement = elementList[index]
+        if (firstElement.value === ZERO) {
+          // 取消首字符列表设置
+          if (firstElement.listId) {
+            draw.getListParticle().unsetList()
+          }
+          evt.preventDefault()
+          return
+        }
       }
       //  清空当前行对齐方式
       const startElement = elementList[startIndex]
