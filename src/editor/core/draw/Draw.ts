@@ -581,6 +581,18 @@ export class Draw {
       }
       this.spliceElementList(elementList, start, 0, ...payload)
       curIndex = startIndex + payload.length
+      // 列表前如有换行符则删除-因为列表内已存在
+      const preElement = elementList[start - 1]
+      if (
+        payload[0].listId &&
+        preElement &&
+        !preElement.listId &&
+        preElement?.value === ZERO &&
+        (!preElement.type || preElement.type === ElementType.TEXT)
+      ) {
+        elementList.splice(startIndex, 1)
+        curIndex -= 1
+      }
     }
     if (~curIndex) {
       this.range.setRange(curIndex, curIndex)

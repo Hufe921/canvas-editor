@@ -174,6 +174,13 @@ export class Position {
             positionItem.metrics = prePosition.metrics
             positionItem.coordinate = prePosition.coordinate
           }
+          // 兼容浮动元素初始坐标为空的情况-默认使用左上坐标
+          if (!element.imgFloatPosition) {
+            element.imgFloatPosition = {
+              x,
+              y
+            }
+          }
           this.floatPositionList.push({
             pageNo,
             element,

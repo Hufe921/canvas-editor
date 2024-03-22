@@ -1,3 +1,36 @@
+## [0.9.70](https://github.com/Hufe921/canvas-editor/compare/v0.9.69...v0.9.70) (2024-03-22)
+
+
+### Bug Fixes
+
+* clear draw side effects when set zone ([169864f](https://github.com/Hufe921/canvas-editor/commit/169864f040924aded054a6ca174ab0e074cb6984))
+* header and footer floating image error #473 ([f14b863](https://github.com/Hufe921/canvas-editor/commit/f14b8635c25ccf176f3dfd23afc082a37b89aca6)), closes [#473](https://github.com/Hufe921/canvas-editor/issues/473)
+* paste list element boundary error #487 ([3796cab](https://github.com/Hufe921/canvas-editor/commit/3796cabb377247541b39b24a9f25c5db9c856d64)), closes [#487](https://github.com/Hufe921/canvas-editor/issues/487)
+* table border style lost when exporting HTML #480 ([b6758a6](https://github.com/Hufe921/canvas-editor/commit/b6758a63e651690c9a7797cbd7dfbfabf6aa51e6)), closes [#480](https://github.com/Hufe921/canvas-editor/issues/480)
+
+
+### Chores
+
+* update build.yml ([056648d](https://github.com/Hufe921/canvas-editor/commit/056648dd5ccf6bbf62f845ca66ee05a00cbc9d86))
+
+
+### Features
+
+* move between table cells using left and right keys #465 ([83f37ed](https://github.com/Hufe921/canvas-editor/commit/83f37edbca80ca5df5349c9c24639528107846ef)), closes [#465](https://github.com/Hufe921/canvas-editor/issues/465)
+* table element paging across multiple pages #41 ([01b1104](https://github.com/Hufe921/canvas-editor/commit/01b1104de47fcdbb61d8e81e25047c2560d8b086)), closes [#41](https://github.com/Hufe921/canvas-editor/issues/41)
+
+
+### Performance Improvements
+
+* floating image initial position #484 ([9d2ee3a](https://github.com/Hufe921/canvas-editor/commit/9d2ee3a6407052b18e9556a020197509ef1ae5b3)), closes [#484](https://github.com/Hufe921/canvas-editor/issues/484)
+
+
+### Refactor
+
+* keydown event code structure ([0ff6c2f](https://github.com/Hufe921/canvas-editor/commit/0ff6c2fd1f8c1e58973f557a4621cb36cb8d26c4))
+
+
+
 ## [0.9.69](https://github.com/Hufe921/canvas-editor/compare/v0.9.68...v0.9.69) (2024-03-15)
 
 
