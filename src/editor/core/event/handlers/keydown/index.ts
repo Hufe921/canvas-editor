@@ -8,6 +8,8 @@ import { formatElementContext } from '../../../../utils/element'
 import { isMod } from '../../../../utils/hotkey'
 import { CanvasEvent } from '../../CanvasEvent'
 import { enter } from './enter'
+import { left } from './left'
+import { right } from './right'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   if (host.isComposing) return
@@ -95,119 +97,9 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Enter) {
     enter(evt, host)
   } else if (evt.key === KeyMap.Left) {
-    if (isReadonly) return
-    if (index > 0) {
-      const cursorPosition = position.getCursorPosition()
-      // 单词整体移动
-      let moveCount = 1
-      if (isMod(evt)) {
-        const LETTER_REG = draw.getLetterReg()
-        // 起始位置
-        const moveStartIndex =
-          evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
-            ? endIndex
-            : startIndex
-        if (LETTER_REG.test(elementList[moveStartIndex]?.value)) {
-          let i = moveStartIndex - 1
-          while (i > 0) {
-            const element = elementList[i]
-            if (!LETTER_REG.test(element.value)) {
-              break
-            }
-            moveCount++
-            i--
-          }
-        }
-      }
-      const curIndex = startIndex - moveCount
-      // shift则缩放选区
-      let anchorStartIndex = curIndex
-      let anchorEndIndex = curIndex
-      if (evt.shiftKey && cursorPosition) {
-        if (startIndex !== endIndex) {
-          if (startIndex === cursorPosition.index) {
-            // 减小选区
-            anchorStartIndex = startIndex
-            anchorEndIndex = endIndex - moveCount
-          } else {
-            anchorStartIndex = curIndex
-            anchorEndIndex = endIndex
-          }
-        } else {
-          anchorEndIndex = endIndex
-        }
-      }
-      if (!~anchorStartIndex || !~anchorEndIndex) return
-      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
-      const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
-      draw.render({
-        curIndex: isAnchorCollapsed ? anchorStartIndex : undefined,
-        isSetCursor: isAnchorCollapsed,
-        isSubmitHistory: false,
-        isCompute: false
-      })
-      evt.preventDefault()
-    }
+    left(evt, host)
   } else if (evt.key === KeyMap.Right) {
-    if (isReadonly) return
-    if (index < positionList.length) {
-      const cursorPosition = position.getCursorPosition()
-      let moveCount = 1
-      // 单词整体移动
-      if (isMod(evt)) {
-        const LETTER_REG = draw.getLetterReg()
-        // 起始位置
-        const moveStartIndex =
-          evt.shiftKey && !isCollapsed && startIndex === cursorPosition?.index
-            ? endIndex
-            : startIndex
-        if (LETTER_REG.test(elementList[moveStartIndex + 1]?.value)) {
-          let i = moveStartIndex + 2
-          while (i < elementList.length) {
-            const element = elementList[i]
-            if (!LETTER_REG.test(element.value)) {
-              break
-            }
-            moveCount++
-            i++
-          }
-        }
-      }
-      const curIndex = endIndex + moveCount
-      // shift则缩放选区
-      let anchorStartIndex = curIndex
-      let anchorEndIndex = curIndex
-      if (evt.shiftKey && cursorPosition) {
-        if (startIndex !== endIndex) {
-          if (startIndex === cursorPosition.index) {
-            // 增大选区
-            anchorStartIndex = startIndex
-            anchorEndIndex = curIndex
-          } else {
-            anchorStartIndex = startIndex + moveCount
-            anchorEndIndex = endIndex
-          }
-        } else {
-          anchorStartIndex = startIndex
-        }
-      }
-      const maxElementListIndex = elementList.length - 1
-      if (
-        anchorStartIndex > maxElementListIndex ||
-        anchorEndIndex > maxElementListIndex
-      ) {
-        return
-      }
-      rangeManager.setRange(anchorStartIndex, anchorEndIndex)
-      const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
-      draw.render({
-        curIndex: isAnchorCollapsed ? anchorStartIndex : undefined,
-        isSetCursor: isAnchorCollapsed,
-        isSubmitHistory: false,
-        isCompute: false
-      })
-      evt.preventDefault()
-    }
+    right(evt, host)
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     if (isReadonly) return
     let anchorPosition: IElementPosition = cursorPosition
