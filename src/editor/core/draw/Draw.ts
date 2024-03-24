@@ -741,7 +741,7 @@ export class Draw {
   }
 
   public getRowCount(): number {
-    return this.rowList.length
+    return this.getRowList().length
   }
 
   public async getDataURL(payload: IGetImageOption = {}): Promise<string[]> {
