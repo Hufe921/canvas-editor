@@ -656,8 +656,23 @@ export class Draw {
           startIndex++
         }
       }
+      // 元素删除（不可删除控件忽略）
+      if (!this.control.getActiveControl()) {
+        let deleteIndex = endIndex - 1
+        while (deleteIndex >= start) {
+          if (elementList[deleteIndex].control?.deletable !== false) {
+            elementList.splice(deleteIndex, 1)
+          }
+          deleteIndex--
+        }
+      } else {
+        elementList.splice(start, deleteCount)
+      }
     }
-    elementList.splice(start, deleteCount, ...items)
+    // 循环添加，避免使用解构影响性能
+    for (let i = 0; i < items.length; i++) {
+      elementList.splice(start + i, 0, items[i])
+    }
   }
 
   public getCanvasEvent(): CanvasEvent {
