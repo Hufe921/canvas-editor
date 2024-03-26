@@ -1,5 +1,5 @@
 import { version } from '../../../../package.json'
-import { ZERO } from '../../dataset/constant/Common'
+import { PUNCTUATION_LIST, ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
@@ -1616,14 +1616,52 @@ export class Draw {
     return pageRowList
   }
 
-  private _drawRichText(ctx: CanvasRenderingContext2D) {
-    this.underline.render(ctx)
-    this.strikeout.render(ctx)
-    this.highlight.render(ctx)
-    this.textParticle.complete()
+  private _drawHighlight(
+    ctx: CanvasRenderingContext2D,
+    payload: IDrawRowPayload
+  ) {
+    const { rowList, positionList } = payload
+    for (let i = 0; i < rowList.length; i++) {
+      const curRow = rowList[i]
+      for (let j = 0; j < curRow.elementList.length; j++) {
+        const element = curRow.elementList[j]
+        const preElement = curRow.elementList[j - 1]
+        if (element.highlight) {
+          // 高亮元素相连需立即绘制，并记录下一元素坐标
+          if (
+            preElement &&
+            preElement.highlight &&
+            preElement.highlight !== element.highlight
+          ) {
+            this.highlight.render(ctx)
+          }
+          // 当前元素位置信息记录
+          const {
+            coordinate: {
+              leftTop: [x, y]
+            }
+          } = positionList[curRow.startIndex + j]
+          this.highlight.recordFillInfo(
+            ctx,
+            x,
+            y,
+            element.metrics.width,
+            curRow.height,
+            element.highlight
+          )
+        } else if (preElement?.highlight) {
+          // 之前是高亮元素，当前不是需立即绘制
+          this.highlight.render(ctx)
+        }
+      }
+      this.highlight.render(ctx)
+    }
   }
 
   public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
+    // 优先绘制高亮元素
+    this._drawHighlight(ctx, payload)
+    // 绘制元素、下划线、删除线、选区
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
     const isPrintMode = this.mode === EditorMode.PRINT
@@ -1657,30 +1695,9 @@ export class Draw {
           }
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
-        // 元素高亮记录
-        if (element.highlight) {
-          // 高亮元素相连需立即绘制，并记录下一元素坐标
-          if (
-            preElement &&
-            preElement.highlight &&
-            preElement.highlight !== element.highlight
-          ) {
-            this.highlight.render(ctx)
-          }
-          this.highlight.recordFillInfo(
-            ctx,
-            x,
-            y,
-            metrics.width,
-            curRow.height,
-            element.highlight
-          )
-        } else if (preElement?.highlight) {
-          this.highlight.render(ctx)
-        }
         // 元素绘制
         if (element.type === ElementType.IMAGE) {
-          this._drawRichText(ctx)
+          this.textParticle.complete()
           // 浮动图片单独绘制
           if (
             element.imgDisplay !== ImageDisplay.FLOAT_TOP &&
@@ -1689,7 +1706,7 @@ export class Draw {
             this.imageParticle.render(ctx, element, x, y + offsetY)
           }
         } else if (element.type === ElementType.LATEX) {
-          this._drawRichText(ctx)
+          this.textParticle.complete()
           this.laTexParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TABLE) {
           if (isCrossRowCol) {
@@ -1699,24 +1716,26 @@ export class Draw {
           }
           this.tableParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.HYPERLINK) {
-          this._drawRichText(ctx)
+          this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
           const nextElement = curRow.elementList[j + 1]
           // 释放之前的
           if (!preElement || preElement.dateId !== element.dateId) {
-            this._drawRichText(ctx)
+            this.textParticle.complete()
           }
           this.textParticle.record(ctx, element, x, y + offsetY)
           if (!nextElement || nextElement.dateId !== element.dateId) {
             // 手动触发渲染
-            this._drawRichText(ctx)
+            this.textParticle.complete()
           }
         } else if (element.type === ElementType.SUPERSCRIPT) {
-          this._drawRichText(ctx)
+          this.underline.render(ctx)
+          this.textParticle.complete()
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUBSCRIPT) {
-          this._drawRichText(ctx)
+          this.underline.render(ctx)
+          this.textParticle.complete()
           this.subscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
@@ -1728,16 +1747,16 @@ export class Draw {
           element.type === ElementType.CHECKBOX ||
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
-          this._drawRichText(ctx)
+          this.textParticle.complete()
           this.checkboxParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TAB) {
-          this._drawRichText(ctx)
+          this.textParticle.complete()
         } else if (element.rowFlex === RowFlex.ALIGNMENT) {
           // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本
           this.textParticle.record(ctx, element, x, y + offsetY)
-          this._drawRichText(ctx)
+          this.textParticle.complete()
         } else if (element.type === ElementType.BLOCK) {
-          this._drawRichText(ctx)
+          this.textParticle.complete()
           this.blockParticle.render(pageNo, element, x, y)
         } else {
           // 如果当前元素设置左偏移，则上一元素立即绘制
@@ -1745,8 +1764,12 @@ export class Draw {
             this.textParticle.complete()
           }
           this.textParticle.record(ctx, element, x, y + offsetY)
-          // 如果设置字宽、字间距需单独绘制
-          if (element.width || element.letterSpacing) {
+          // 如果设置字宽、字间距、标点符号（避免浏览器排版缩小间距）需单独绘制
+          if (
+            element.width ||
+            element.letterSpacing ||
+            PUNCTUATION_LIST.includes(element.value)
+          ) {
             this.textParticle.complete()
           }
         }
@@ -1879,8 +1902,10 @@ export class Draw {
           positionList[curRow.startIndex]
         )
       }
-      // 绘制富文本及文字
-      this._drawRichText(ctx)
+      // 绘制文字、下划线、删除线
+      this.textParticle.complete()
+      this.underline.render(ctx)
+      this.strikeout.render(ctx)
       // 绘制批注样式
       this.group.render(ctx)
       // 绘制选区
