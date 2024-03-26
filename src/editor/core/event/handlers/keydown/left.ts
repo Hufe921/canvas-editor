@@ -82,7 +82,7 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
       if (startIndex === 0) {
         const originalElementList = draw.getOriginalElementList()
         const trList = originalElementList[positionContext.index!].trList!
-        for (let r = 0; r < trList.length; r++) {
+        outer: for (let r = 0; r < trList.length; r++) {
           const tr = trList[r]
           if (tr.id !== element.trId) continue
           const tdList = tr.tdList
@@ -112,15 +112,15 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
                 index: positionContext.index,
                 trIndex: preTrIndex,
                 tdIndex: preTdIndex,
-                tdId: preTr.id,
-                trId: preTd.id,
+                tdId: preTd.id,
+                trId: preTr.id,
                 tableId: element.id
               })
               anchorStartIndex = preTd.value.length - 1
               anchorEndIndex = anchorStartIndex
               draw.getTableTool().render()
             }
-            break
+            break outer
           }
         }
       }
