@@ -8,19 +8,15 @@ import { CanvasEvent } from '../CanvasEvent'
 
 export function input(data: string, host: CanvasEvent) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
+  if (draw.isReadonly()) return
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!data || !cursorPosition) return
   const isComposing = host.isComposing
   // 正在合成文本进行非输入操作
   if (isComposing && host.compositionInfo?.value === data) return
-  const control = draw.getControl()
-  if (control.isPartRangeInControlOutside()) {
-    // 忽略选区部分在控件的输入
-    return
-  }
+  const rangeManager = draw.getRange()
+  if (!rangeManager.getIsCanInput()) return
   // 移除合成输入
   removeComposingInput(host)
   if (!isComposing) {
@@ -29,7 +25,6 @@ export function input(data: string, host: CanvasEvent) {
   }
   const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
   const text = data.replaceAll(`\n`, ZERO)
-  const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
   // 格式化元素
   const elementList = draw.getElementList()
@@ -63,8 +58,9 @@ export function input(data: string, host: CanvasEvent) {
     return newElement
   })
   // 控件-移除placeholder
+  const control = draw.getControl()
   let curIndex: number
-  if (control.getActiveControl() && !control.isRangInPostfix()) {
+  if (control.getActiveControl() && control.getIsRangeWithinControl()) {
     curIndex = control.setValue(inputData)
   } else {
     const start = startIndex + 1

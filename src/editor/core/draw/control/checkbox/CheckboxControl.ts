@@ -73,7 +73,7 @@ export class CheckboxControl implements IControlInstance {
     options: IControlRuleOption = {}
   ) {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.isDisabledControl()) {
+    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
       return
     }
     const { control } = this.element
@@ -117,7 +117,7 @@ export class CheckboxControl implements IControlInstance {
   }
 
   public keydown(evt: KeyboardEvent): number | null {
-    if (this.control.isDisabledControl()) {
+    if (this.control.getIsDisabledControl()) {
       return null
     }
     const range = this.control.getRange()

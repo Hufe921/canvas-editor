@@ -81,7 +81,7 @@ export class SelectControl implements IControlInstance {
   }
 
   public keydown(evt: KeyboardEvent): number | null {
-    if (this.control.isDisabledControl()) {
+    if (this.control.getIsDisabledControl()) {
       return null
     }
     const elementList = this.control.getElementList()
@@ -134,7 +134,7 @@ export class SelectControl implements IControlInstance {
   }
 
   public cut(): number {
-    if (this.control.isDisabledControl()) {
+    if (this.control.getIsDisabledControl()) {
       return -1
     }
     this.control.shrinkBoundary()
@@ -151,7 +151,7 @@ export class SelectControl implements IControlInstance {
     options: IControlRuleOption = {}
   ): number {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.isDisabledControl()) {
+    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
@@ -201,7 +201,7 @@ export class SelectControl implements IControlInstance {
     options: IControlRuleOption = {}
   ) {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.isDisabledControl()) {
+    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
       return
     }
     const control = this.element.control!
@@ -291,7 +291,7 @@ export class SelectControl implements IControlInstance {
   }
 
   public awake() {
-    if (this.isPopup || this.control.isDisabledControl()) return
+    if (this.isPopup || this.control.getIsDisabledControl()) return
     const { startIndex } = this.control.getRange()
     const elementList = this.control.getElementList()
     if (elementList[startIndex + 1]?.controlId !== this.element.controlId) {

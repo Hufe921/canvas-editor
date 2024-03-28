@@ -2,17 +2,15 @@ import { CanvasEvent } from '../../CanvasEvent'
 
 export function del(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
-  // 控件整体性验证
-  const control = draw.getControl()
-  const activeControl = control.getActiveControl()
-  if (control.isPartRangeInControlOutside()) return
+  if (draw.isReadonly()) return
+  // 可输入性验证
   const rangeManager = draw.getRange()
+  if (!rangeManager.getIsCanInput()) return
   const { startIndex, endIndex } = rangeManager.getRange()
   const elementList = draw.getElementList()
+  const control = draw.getControl()
   let curIndex: number | null
-  if (activeControl) {
+  if (control.getActiveControl() && control.getIsRangeWithinControl()) {
     // 光标在控件内
     curIndex = control.keydown(evt)
   } else if (elementList[endIndex + 1]?.controlId) {

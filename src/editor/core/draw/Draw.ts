@@ -290,7 +290,7 @@ export class Draw {
       case EditorMode.PRINT:
         return true
       case EditorMode.FORM:
-        return !this.control.isRangeWithinControl()
+        return !this.control.getIsRangeWithinControl()
       default:
         return false
     }
@@ -551,9 +551,7 @@ export class Draw {
   }
 
   public insertElementList(payload: IElement[]) {
-    if (!payload.length) return
-    const isRangeCanInput = this.control.isRangeCanInput()
-    if (!isRangeCanInput) return
+    if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     formatElementList(payload, {
@@ -564,11 +562,11 @@ export class Draw {
     // 判断是否在控件内
     let activeControl = this.control.getActiveControl()
     // 光标在控件内如果当前没有被激活，需要手动激活
-    if (!activeControl && this.control.isRangeWithinControl()) {
+    if (!activeControl && this.control.getIsRangeWithinControl()) {
       this.control.initControl()
       activeControl = this.control.getActiveControl()
     }
-    if (activeControl && !this.control.isRangInPostfix()) {
+    if (activeControl && this.control.getIsRangeWithinControl()) {
       curIndex = activeControl.setValue(payload, undefined, {
         isIgnoreDisabledRule: true
       })
