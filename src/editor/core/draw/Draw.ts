@@ -1,5 +1,5 @@
 import { version } from '../../../../package.json'
-import { PUNCTUATION_LIST, ZERO } from '../../dataset/constant/Common'
+import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
@@ -88,6 +88,7 @@ import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
 import { ImageDisplay } from '../../dataset/enum/Common'
+import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 
 export class Draw {
   private container: HTMLDivElement
@@ -1781,7 +1782,7 @@ export class Draw {
           if (
             element.width ||
             element.letterSpacing ||
-            PUNCTUATION_LIST.includes(element.value)
+            PUNCTUATION_REG.test(element.value)
           ) {
             this.textParticle.complete()
           }

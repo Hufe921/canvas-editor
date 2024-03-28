@@ -10,3 +10,6 @@ export const UNICODE_SYMBOL_REG = new RegExp(
   `${EMOJI_REG.source}|${SURROGATE_PAIR_REG.source}`,
   'g'
 )
+
+export const PUNCTUATION_REG =
+  /[、，。？！；：……「」“”‘’*（）【】〔〕〖〗〘〙〚〛《》———﹝﹞–—\\/·.,!?;:`~<>()[\]{}'"|]/
