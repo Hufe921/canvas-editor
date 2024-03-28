@@ -12,9 +12,7 @@ import {
   IElement,
   ListStyle,
   ListType,
-  RowFlex,
-  TableBorder,
-  TdBorder
+  RowFlex
 } from '..'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
@@ -215,7 +213,7 @@ export function formatElementList(
       const { prefix, postfix, value, placeholder, code, type, valueSets } =
         el.control
       const {
-        editorOptions: { control: controlOption, checkbox: checkboxOption }
+        editorOptions: { control: controlOption, checkbox: checkboxOption, radio: radioOption }
       } = options
       const controlId = getUUID()
       // 移除父节点
@@ -243,6 +241,7 @@ export function formatElementList(
       if (
         (value && value.length) ||
         type === ControlType.CHECKBOX ||
+        type === ControlType.RADIO ||
         (type === ControlType.SELECT && code && (!value || !value.length))
       ) {
         let valueList: IElement[] = value || []
@@ -291,7 +290,55 @@ export function formatElementList(
               }
             }
           }
-        } else {
+        }
+        else if (type === ControlType.RADIO) {
+          // 单选组件
+          const codeList = code ? code.split(',') : []
+          if (Array.isArray(valueSets) && valueSets.length) {
+            // 拆分valueList优先使用其属性
+            const valueStyleList = valueList.reduce(
+              (pre, cur) =>
+                pre.concat(
+                  cur.value.split('').map(v => ({ ...cur, value: v }))
+                ),
+              [] as IElement[]
+            )
+            let valueStyleIndex = 0
+            for (let v = 0; v < valueSets.length; v++) {
+              const valueSet = valueSets[v]
+              // radio组件
+              elementList.splice(i, 0, {
+                controlId,
+                value: '',
+                type: el.type,
+                control: el.control,
+                controlComponent: ControlComponent.RADIO,
+                radio: {
+                  code: valueSet.code,
+                  value: codeList.includes(valueSet.code)
+                }
+              })
+              i++
+              // 文本
+              const valueStrList = splitText(valueSet.value)
+              for (let e = 0; e < valueStrList.length; e++) {
+                const value = valueStrList[e]
+                const isLastLetter = e === valueStrList.length - 1
+                elementList.splice(i, 0, {
+                  ...valueStyleList[valueStyleIndex],
+                  controlId,
+                  value: value === '\n' ? ZERO : value,
+                  letterSpacing: isLastLetter ? radioOption.gap : 0,
+                  control: el.control,
+                  controlComponent: ControlComponent.VALUE
+                })
+                valueStyleIndex++
+                i++
+              }
+            }
+          }
+        }
+        else {
           if (!value || !value.length) {
             if (Array.isArray(valueSets) && valueSets.length) {
               const valueSet = valueSets.find(v => v.code === code)
@@ -802,14 +849,7 @@ export function createDomFromElementList(
         tableDom.setAttribute('cellSpacing', '0')
         tableDom.setAttribute('cellpadding', '0')
         tableDom.setAttribute('border', '0')
-        const borderStyle = '1px solid #000000'
-        // 表格边框
-        if (!element.borderType || element.borderType === TableBorder.ALL) {
-          tableDom.style.borderTop = borderStyle
-          tableDom.style.borderLeft = borderStyle
-        } else if (element.borderType === TableBorder.EXTERNAL) {
-          tableDom.style.border = borderStyle
-        }
+        tableDom.style.borderTop = tableDom.style.borderLeft = '1px solid'
         tableDom.style.width = `${element.width}px`
         // colgroup
         const colgroupDom = document.createElement('colgroup')
@@ -828,26 +868,11 @@ export function createDomFromElementList(
           trDom.style.height = `${tr.height}px`
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
-            if (!element.borderType || element.borderType === TableBorder.ALL) {
-              tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
-            }
+            tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
             const td = tr.tdList[d]
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
             tdDom.style.verticalAlign = td.verticalAlign || 'top'
-            // 单元格边框
-            if (td.borderTypes?.includes(TdBorder.TOP)) {
-              tdDom.style.borderTop = borderStyle
-            }
-            if (td.borderTypes?.includes(TdBorder.RIGHT)) {
-              tdDom.style.borderRight = borderStyle
-            }
-            if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
-              tdDom.style.borderBottom = borderStyle
-            }
-            if (td.borderTypes?.includes(TdBorder.LEFT)) {
-              tdDom.style.borderLeft = borderStyle
-            }
             const childDom = buildDom(zipElementList(td.value!))
             tdDom.innerHTML = childDom.innerHTML
             if (td.backgroundColor) {
@@ -907,6 +932,13 @@ export function createDomFromElementList(
           checkbox.setAttribute('checked', 'true')
         }
         clipboardDom.append(checkbox)
+      } else if (element.type === ElementType.RADIO) {
+        const radio = document.createElement('input')
+        radio.type = 'radio'
+        if (element.radio?.value) {
+          radio.setAttribute('checked', 'true')
+        }
+        clipboardDom.append(radio)
       } else if (element.type === ElementType.TAB) {
         const tab = document.createElement('span')
         tab.innerHTML = `${NON_BREAKING_SPACE}${NON_BREAKING_SPACE}`
@@ -1148,7 +1180,19 @@ export function getElementListByHTML(
               value: (<HTMLInputElement>node).checked
             }
           })
-        } else {
+        } else if (
+          node.nodeName === 'INPUT' &&
+          (<HTMLInputElement>node).type === ControlComponent.RADIO
+        ) {
+          elementList.push({
+            type: ElementType.RADIO,
+            value: '',
+            radio: {
+              value: (<HTMLInputElement>node).checked
+            }
+          })
+        }
+        else {
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
             const display = window.getComputedStyle(node as Element).display
@@ -1209,12 +1253,13 @@ export function getTextFromElementList(elementList: IElement[]) {
         const listElementListMap = splitListElement(zipList)
         listElementListMap.forEach((listElementList, listIndex) => {
           const isLast = listElementListMap.size - 1 === listIndex
-          text += `\n${listIndex + 1}.${buildText(listElementList)}${
-            isLast ? `\n` : ``
-          }`
+          text += `\n${listIndex + 1}.${buildText(listElementList)}${isLast ? `\n` : ``
+            }`
         })
       } else if (element.type === ElementType.CHECKBOX) {
         text += element.checkbox?.value ? `☑` : `□`
+      } else if (element.type === ElementType.RADIO) {
+        text += element.radio?.value ? `•` : `○`
       } else if (
         !element.type ||
         element.type === ElementType.LATEX ||

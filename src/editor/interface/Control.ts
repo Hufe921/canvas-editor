@@ -2,6 +2,7 @@ import { ControlType, ControlIndentation } from '../dataset/enum/Control'
 import { EditorZone } from '../dataset/enum/Editor'
 import { ICheckbox } from './Checkbox'
 import { IElement } from './Element'
+import { IRadio } from './Radio'
 import { IRange } from './Range'
 
 export interface IValueSet {
@@ -20,6 +21,14 @@ export interface IControlCheckbox {
   max?: number
   valueSets: IValueSet[]
   checkbox?: ICheckbox
+}
+
+export interface IControlRadio {
+  code: string | null
+  min?: number
+  max?: number
+  valueSets: IValueSet[]
+  radio?: IRadio
 }
 
 export interface IControlHighlightRule {
@@ -54,7 +63,8 @@ export interface IControlBasic {
 export type IControl = IControlBasic &
   IControlRule &
   Partial<IControlSelect> &
-  Partial<IControlCheckbox>
+  Partial<IControlCheckbox> &
+  Partial<IControlRadio>
 
 export interface IControlOption {
   placeholderColor?: string

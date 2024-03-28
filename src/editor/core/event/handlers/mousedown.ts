@@ -4,6 +4,7 @@ import { MouseEventButton } from '../../../dataset/enum/Event'
 import { deepClone } from '../../../utils'
 import { isMod } from '../../../utils/hotkey'
 import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
+import { RadioControl } from '../../draw/control/radio/RadioControl'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function setRangeCache(host: CanvasEvent) {
@@ -54,6 +55,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     index,
     isDirectHit,
     isCheckbox,
+    isRadio,
     isImage,
     isTable,
     tdValueIndex,
@@ -73,11 +75,14 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   // 绘制
   const isDirectHitImage = !!(isDirectHit && isImage)
   const isDirectHitCheckbox = !!(isDirectHit && isCheckbox)
+  const isDirectHitRadio = !!(isDirectHit && isRadio)
   if (~index) {
     rangeManager.setRange(curIndex, curIndex)
     position.setCursorPosition(positionList[curIndex])
     // 复选框
     const isSetCheckbox = isDirectHitCheckbox && !isReadonly
+    // 单选框
+    const isSetRadio = isDirectHitRadio && !isReadonly
     if (isSetCheckbox) {
       const { checkbox, control } = curElement
       // 复选框不在控件内独立控制
@@ -98,7 +103,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
           activeControl.setSelect(codes)
         }
       }
-    } else {
+    }
+    else {
       draw.render({
         curIndex,
         isCompute: false,
@@ -106,6 +112,40 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
         isSetCursor: !isDirectHitImage && !isDirectHitCheckbox
       })
     }
+    if (isSetRadio) {
+      const { radio, control } = curElement
+      // 单选框不在控件内独立控制
+      if (!control) {
+        draw.getRadioParticle().setSelect(curElement)
+      }
+      else {
+        const codes = control?.code?.split(',') || []
+        if (radio?.value) {
+          const codeIndex = codes.findIndex(c => c === radio.code)
+          codes.splice(codeIndex, 1)
+
+        } else {
+          if (radio?.code) {
+            codes.push(radio.code)
+          }
+        }
+        const activeControl = draw.getControl().getActiveControl()
+        if (activeControl instanceof RadioControl) {
+
+          activeControl.setSelect(codes)
+
+        }
+      }
+    }
+    else {
+      draw.render({
+        curIndex,
+        isCompute: false,
+        isSubmitHistory: false,
+        isSetCursor: !isDirectHitImage && !isDirectHitRadio
+      })
+    }
+
     // 首字需定位到行首，非上一行最后一个字后
     if (hitLineStartIndex) {
       host.getDraw().getCursor().drawCursor({
@@ -122,9 +162,9 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       positionList[curIndex],
       curElement.type === ElementType.LATEX
         ? {
-            mime: 'svg',
-            srcKey: 'laTexSVG'
-          }
+          mime: 'svg',
+          srcKey: 'laTexSVG'
+        }
         : {}
     )
     // 光标事件代理丢失，重新定位
