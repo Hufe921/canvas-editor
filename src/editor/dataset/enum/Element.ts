@@ -9,6 +9,7 @@ export enum ElementType {
   PAGE_BREAK = 'pageBreak',
   CONTROL = 'control',
   CHECKBOX = 'checkbox',
+  RADIO = 'radio',
   LATEX = 'latex',
   TAB = 'tab',
   DATE = 'date',

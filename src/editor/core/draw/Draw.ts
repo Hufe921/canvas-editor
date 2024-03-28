@@ -64,6 +64,7 @@ import {
 import { Control } from './control/Control'
 import { getSlimCloneElementList, zipElementList } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
+import { RadioParticle } from './particle/RadioParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
 import {
   ControlComponent,
@@ -137,6 +138,7 @@ export class Draw {
   private superscriptParticle: SuperscriptParticle
   private subscriptParticle: SubscriptParticle
   private checkboxParticle: CheckboxParticle
+  private radioParticle: RadioParticle
   private blockParticle: BlockParticle
   private listParticle: ListParticle
   private control: Control
@@ -210,6 +212,7 @@ export class Draw {
     this.superscriptParticle = new SuperscriptParticle()
     this.subscriptParticle = new SubscriptParticle()
     this.checkboxParticle = new CheckboxParticle(this)
+    this.radioParticle = new RadioParticle(this)
     this.blockParticle = new BlockParticle(this)
     this.listParticle = new ListParticle(this)
     this.control = new Control(this)
@@ -738,6 +741,10 @@ export class Draw {
     return this.checkboxParticle
   }
 
+  public getRadioParticle(): RadioParticle {
+    return this.radioParticle
+  }
+
   public getControl(): Control {
     return this.control
   }
@@ -1085,7 +1092,7 @@ export class Draw {
     const size = el.actualSize || el.size || defaultSize
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${
       size * scale
-    }px ${font}`
+      }px ${font}`
   }
 
   public computeRowList(innerWidth: number, elementList: IElement[]) {
@@ -1381,6 +1388,16 @@ export class Draw {
         metrics.width = availableWidth
         metrics.height = defaultSize
       } else if (
+        element.type === ElementType.RADIO ||
+        element.controlComponent === ControlComponent.RADIO
+      ) {
+        const { width, height, gap } = this.options.radio
+        const elementWidth = width + gap * 2
+        element.width = elementWidth
+        metrics.width = elementWidth * scale
+        metrics.height = height * scale
+      }
+      else if (
         element.type === ElementType.CHECKBOX ||
         element.controlComponent === ControlComponent.CHECKBOX
       ) {
@@ -1435,7 +1452,7 @@ export class Draw {
       const ascent =
         (element.imgDisplay !== ImageDisplay.INLINE &&
           element.type === ElementType.IMAGE) ||
-        element.type === ElementType.LATEX
+          element.type === ElementType.LATEX
           ? metrics.height + rowMargin
           : metrics.boundingBoxAscent + rowMargin
       const height =
@@ -1763,7 +1780,14 @@ export class Draw {
         ) {
           this.textParticle.complete()
           this.checkboxParticle.render(ctx, element, x, y + offsetY)
-        } else if (element.type === ElementType.TAB) {
+        } else if (
+          element.type === ElementType.RADIO ||
+          element.controlComponent === ControlComponent.RADIO
+        ) {
+          this.textParticle.complete()
+          this.radioParticle.render(ctx, element, x, y + offsetY)
+        }
+        else if (element.type === ElementType.TAB) {
           this.textParticle.complete()
         } else if (element.rowFlex === RowFlex.ALIGNMENT) {
           // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本

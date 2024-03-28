@@ -391,6 +391,10 @@ export class Position {
                     tdValueElement.type === ElementType.CHECKBOX ||
                     tdValueElement.controlComponent ===
                       ControlComponent.CHECKBOX,
+                  isRadio:
+                    tdValueElement.type === ElementType.RADIO ||
+                    tdValueElement.controlComponent ===
+                      ControlComponent.RADIO,
                   isControl: !!tdValueElement.controlId,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
@@ -426,6 +430,18 @@ export class Position {
             index: curPositionIndex,
             isDirectHit: true,
             isCheckbox: true
+          }
+        }
+
+        if (
+          element.type === ElementType.RADIO ||
+          element.controlComponent === ControlComponent.RADIO
+        )
+        {
+          return {
+            index: curPositionIndex,
+            isDirectHit: true,
+            isRadio: true
           }
         }
         let hitLineStartIndex: number | undefined
@@ -639,6 +655,7 @@ export class Position {
     const {
       index,
       isCheckbox,
+      isRadio,
       isControl,
       isTable,
       trIndex,
@@ -651,6 +668,7 @@ export class Position {
     this.setPositionContext({
       isTable: isTable || false,
       isCheckbox: isCheckbox || false,
+      isRadio: isRadio || false,
       isControl: isControl || false,
       index,
       trIndex,

@@ -311,7 +311,6 @@ export class RangeManager {
         endElement.controlComponent !== ControlComponent.POSTFIX)
     )
   }
-
   public setRange(
     startIndex: number,
     endIndex: number,
