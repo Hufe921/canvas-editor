@@ -1,3 +1,20 @@
+## [0.9.71](https://github.com/Hufe921/canvas-editor/compare/v0.9.70...v0.9.71) (2024-03-29)
+
+
+### Bug Fixes
+
+* adjust the order of rich text rendering ([7458a9f](https://github.com/Hufe921/canvas-editor/commit/7458a9fd2036819a5646d7cf5563f03d1e7ce48b))
+* cannot deletable elements boundary error #491 ([291ea26](https://github.com/Hufe921/canvas-editor/commit/291ea26b06c39b6649dbc6fff2fdb75748756556)), closes [#491](https://github.com/Hufe921/canvas-editor/issues/491)
+* control front and back operation boundary error ([1bb7a58](https://github.com/Hufe921/canvas-editor/commit/1bb7a58f5eaee8d09fadecbd1ee8717dd2763086))
+* punctuation symbols rendered separately ([d91b47c](https://github.com/Hufe921/canvas-editor/commit/d91b47cee540f562647e0d84ec04191a65945123))
+
+
+### Features
+
+* move between table cells using up and down keys #465 ([2de1ba7](https://github.com/Hufe921/canvas-editor/commit/2de1ba7b62cc04307abeaec78b61516db41a71aa)), closes [#465](https://github.com/Hufe921/canvas-editor/issues/465)
+
+
+
 ## [0.9.70](https://github.com/Hufe921/canvas-editor/compare/v0.9.69...v0.9.70) (2024-03-22)
 
 
