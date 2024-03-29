@@ -116,16 +116,26 @@ export class Control {
     })
   }
 
-  // 判断选区部分在控件边界外
-  public isPartRangeInControlOutside(): boolean {
+  // 是否属于控件可以捕获事件的选区
+  public getIsRangeCanCaptureEvent(): boolean {
+    if (!this.activeControl) return false
     const { startIndex, endIndex } = this.getRange()
     if (!~startIndex && !~endIndex) return false
     const elementList = this.getElementList()
     const startElement = elementList[startIndex]
+    // 闭合光标在后缀处
+    if (
+      startIndex === endIndex &&
+      startElement.controlComponent === ControlComponent.POSTFIX
+    ) {
+      return true
+    }
+    // 在控件内
     const endElement = elementList[endIndex]
     if (
       startElement.controlId &&
-      startElement.controlId !== endElement.controlId
+      startElement.controlId === endElement.controlId &&
+      endElement.controlComponent !== ControlComponent.POSTFIX
     ) {
       return true
     }
@@ -133,7 +143,7 @@ export class Control {
   }
 
   // 判断选区是否在后缀处
-  public isRangInPostfix(): boolean {
+  public getIsRangeInPostfix(): boolean {
     if (!this.activeControl) return false
     const { startIndex, endIndex } = this.getRange()
     if (startIndex !== endIndex) return false
@@ -143,7 +153,7 @@ export class Control {
   }
 
   // 判断选区是否在控件内
-  public isRangeWithinControl(): boolean {
+  public getIsRangeWithinControl(): boolean {
     const { startIndex, endIndex } = this.getRange()
     if (!~startIndex && !~endIndex) return false
     const elementList = this.getElementList()
@@ -159,27 +169,7 @@ export class Control {
     return false
   }
 
-  // 判断是否在控件可输入的地方
-  public isRangeCanInput(): boolean {
-    const { startIndex, endIndex } = this.getRange()
-    if (!~startIndex && !~endIndex) return false
-    if (startIndex === endIndex) return true
-    const elementList = this.getElementList()
-    const startElement = elementList[startIndex]
-    const endElement = elementList[endIndex]
-    // 选区前后不是控件 || 选区前不在控件内&&选区后是后缀 || 选区前是控件&&选区后在控件内
-    return (
-      (!startElement.controlId && !endElement.controlId) ||
-      ((!startElement.controlId ||
-        startElement.controlComponent === ControlComponent.POSTFIX) &&
-        endElement.controlComponent === ControlComponent.POSTFIX) ||
-      (!!startElement.controlId &&
-        endElement.controlId === startElement.controlId &&
-        endElement.controlComponent !== ControlComponent.POSTFIX)
-    )
-  }
-
-  public isDisabledControl(): boolean {
+  public getIsDisabledControl(): boolean {
     return !!this.activeControl?.getElement().control?.disabled
   }
 

@@ -6,12 +6,8 @@ export function cut(host: CanvasEvent) {
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
   if (!~startIndex && !~startIndex) return
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
-  const control = draw.getControl()
-  const isPartRangeInControlOutside = control.isPartRangeInControlOutside()
-  if (isPartRangeInControlOutside) return
-  const activeControl = control.getActiveControl()
+  if (draw.isReadonly() || !rangeManager.getIsCanInput()) return
+
   const elementList = draw.getElementList()
   let start = startIndex
   let end = endIndex
@@ -37,8 +33,9 @@ export function cut(host: CanvasEvent) {
   const options = draw.getOptions()
   // 写入粘贴板
   writeElementList(elementList.slice(start + 1, end + 1), options)
+  const control = draw.getControl()
   let curIndex: number
-  if (activeControl) {
+  if (control.getActiveControl() && control.getIsRangeWithinControl()) {
     curIndex = control.cut()
   } else {
     draw.spliceElementList(elementList, start + 1, end - start)

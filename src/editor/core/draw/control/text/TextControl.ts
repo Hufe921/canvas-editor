@@ -68,7 +68,7 @@ export class TextControl implements IControlInstance {
     options: IControlRuleOption = {}
   ): number {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.isDisabledControl()) {
+    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
@@ -111,7 +111,7 @@ export class TextControl implements IControlInstance {
     options: IControlRuleOption = {}
   ): number {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.isDisabledControl()) {
+    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
@@ -128,7 +128,7 @@ export class TextControl implements IControlInstance {
   }
 
   public keydown(evt: KeyboardEvent): number | null {
-    if (this.control.isDisabledControl()) {
+    if (this.control.getIsDisabledControl()) {
       return null
     }
     const elementList = this.control.getElementList()
@@ -209,7 +209,7 @@ export class TextControl implements IControlInstance {
   }
 
   public cut(): number {
-    if (this.control.isDisabledControl()) {
+    if (this.control.getIsDisabledControl()) {
       return -1
     }
     this.control.shrinkBoundary()

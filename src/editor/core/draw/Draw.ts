@@ -1,5 +1,5 @@
 import { version } from '../../../../package.json'
-import { PUNCTUATION_LIST, ZERO } from '../../dataset/constant/Common'
+import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
@@ -88,6 +88,7 @@ import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
 import { ImageDisplay } from '../../dataset/enum/Common'
+import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 
 export class Draw {
   private container: HTMLDivElement
@@ -290,7 +291,7 @@ export class Draw {
       case EditorMode.PRINT:
         return true
       case EditorMode.FORM:
-        return !this.control.isRangeWithinControl()
+        return !this.control.getIsRangeWithinControl()
       default:
         return false
     }
@@ -551,9 +552,7 @@ export class Draw {
   }
 
   public insertElementList(payload: IElement[]) {
-    if (!payload.length) return
-    const isRangeCanInput = this.control.isRangeCanInput()
-    if (!isRangeCanInput) return
+    if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     formatElementList(payload, {
@@ -564,11 +563,11 @@ export class Draw {
     // 判断是否在控件内
     let activeControl = this.control.getActiveControl()
     // 光标在控件内如果当前没有被激活，需要手动激活
-    if (!activeControl && this.control.isRangeWithinControl()) {
+    if (!activeControl && this.control.getIsRangeWithinControl()) {
       this.control.initControl()
       activeControl = this.control.getActiveControl()
     }
-    if (activeControl && !this.control.isRangInPostfix()) {
+    if (activeControl && this.control.getIsRangeWithinControl()) {
       curIndex = activeControl.setValue(payload, undefined, {
         isIgnoreDisabledRule: true
       })
@@ -1783,7 +1782,7 @@ export class Draw {
           if (
             element.width ||
             element.letterSpacing ||
-            PUNCTUATION_LIST.includes(element.value)
+            PUNCTUATION_REG.test(element.value)
           ) {
             this.textParticle.complete()
           }

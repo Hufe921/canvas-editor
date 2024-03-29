@@ -12,10 +12,9 @@ import { CanvasEvent } from '../../CanvasEvent'
 
 export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  const control = draw.getControl()
-  if (isReadonly || control.isPartRangeInControlOutside()) return
+  if (draw.isReadonly()) return
   const rangeManager = draw.getRange()
+  if (!rangeManager.getIsCanInput()) return
   const { startIndex, endIndex } = rangeManager.getRange()
   const isCollapsed = rangeManager.getIsCollapsed()
   const elementList = draw.getElementList()
@@ -59,9 +58,10 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     })
   }
   // 控件或文档插入换行元素
+  const control = draw.getControl()
   const activeControl = control.getActiveControl()
   let curIndex: number
-  if (activeControl && !control.isRangInPostfix()) {
+  if (activeControl && control.getIsRangeWithinControl()) {
     curIndex = control.setValue([enterText])
   } else {
     const position = draw.getPosition()
