@@ -1852,22 +1852,22 @@ export class Draw {
           startIndex <= index &&
           index <= endIndex
         ) {
-          // 从行尾开始-绘制最小宽度
-          if (startIndex === index) {
-            const nextElement = elementList[startIndex + 1]
-            if (nextElement && nextElement.value === ZERO) {
-              rangeRecord.x = x + metrics.width
-              rangeRecord.y = y
-              rangeRecord.height = curRow.height
-              rangeRecord.width += this.options.rangeMinWidth
-            }
-          } else {
-            const positionContext = this.position.getPositionContext()
-            // 表格需限定上下文
-            if (
-              (!positionContext.isTable && !element.tdId) ||
-              positionContext.tdId === element.tdId
-            ) {
+          const positionContext = this.position.getPositionContext()
+          // 表格需限定上下文
+          if (
+            (!positionContext.isTable && !element.tdId) ||
+            positionContext.tdId === element.tdId
+          ) {
+            // 从行尾开始-绘制最小宽度
+            if (startIndex === index) {
+              const nextElement = elementList[startIndex + 1]
+              if (nextElement && nextElement.value === ZERO) {
+                rangeRecord.x = x + metrics.width
+                rangeRecord.y = y
+                rangeRecord.height = curRow.height
+                rangeRecord.width += this.options.rangeMinWidth
+              }
+            } else {
               let rangeWidth = metrics.width
               // 最小选区宽度
               if (rangeWidth === 0 && curRow.elementList.length === 1) {
