@@ -2125,6 +2125,8 @@ export class CommandAdapt {
     }
     // 区域信息
     const zone = this.draw.getZone().getZone()
+    // 表格信息
+    const isTable = this.position.getPositionContext().isTable
     return deepClone({
       isCollapsed,
       startElement,
@@ -2132,7 +2134,8 @@ export class CommandAdapt {
       startPageNo,
       endPageNo,
       rangeRects,
-      zone
+      zone,
+      isTable
     })
   }
 

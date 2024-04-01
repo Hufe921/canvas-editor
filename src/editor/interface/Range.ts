@@ -27,4 +27,5 @@ export type RangeContext = {
   endPageNo: number
   rangeRects: RangeRect[]
   zone: EditorZone
+  isTable: boolean
 }
