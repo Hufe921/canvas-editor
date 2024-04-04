@@ -40,3 +40,5 @@ export const LETTER_CLASS = {
   SWEDISH: 'A-Za-zÅåÄäÖö',
   GREEK: 'ΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩω'
 }
+
+export const METRICS_BASIS_TEXT = '日'
