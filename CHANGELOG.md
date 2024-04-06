@@ -1,3 +1,20 @@
+## [0.9.72](https://github.com/Hufe921/canvas-editor/compare/v0.9.71...v0.9.72) (2024-04-06)
+
+
+### Bug Fixes
+
+* cannot page when merge cells across columns in the same row #41 ([5851e61](https://github.com/Hufe921/canvas-editor/commit/5851e61cfcbb14fa199b507dc429917075659161)), closes [#41](https://github.com/Hufe921/canvas-editor/issues/41)
+* format text class elements boundary error ([95b337d](https://github.com/Hufe921/canvas-editor/commit/95b337de05df74a07d086dbec6c6c52ab95ba43a))
+* strikeout style rendering position #498 ([46e153d](https://github.com/Hufe921/canvas-editor/commit/46e153d588e78302e26827461a06682bbccd75aa)), closes [#498](https://github.com/Hufe921/canvas-editor/issues/498)
+* table range drawing boundary error ([1df98b9](https://github.com/Hufe921/canvas-editor/commit/1df98b9359f3ec4184a7045cfcea93e156ef7f9f))
+
+
+### Features
+
+* add isTable property to the RangeContext interface ([9ad991a](https://github.com/Hufe921/canvas-editor/commit/9ad991a3934fc284bb829d2652a739cfbec80eee))
+
+
+
 ## [0.9.71](https://github.com/Hufe921/canvas-editor/compare/v0.9.70...v0.9.71) (2024-03-29)
 
 

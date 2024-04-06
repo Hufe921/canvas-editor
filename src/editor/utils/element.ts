@@ -358,7 +358,7 @@ export function formatElementList(
       }
       i--
     } else if (
-      (!el.type || el.type === ElementType.TEXT) &&
+      (!el.type || TEXTLIKE_ELEMENT_TYPE.includes(el.type)) &&
       el.value.length > 1
     ) {
       elementList.splice(i, 1)
@@ -754,6 +754,9 @@ export function convertElementToDom(
   if (element.underline) {
     dom.style.textDecoration = 'underline'
   }
+  if (element.strikeout) {
+    dom.style.textDecoration += ' line-through'
+  }
   dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
 }
@@ -981,8 +984,12 @@ export function convertTextNodeToElement(
     element.highlight = style.backgroundColor
   }
   // 下划线
-  if (style.textDecorationLine === 'underline') {
+  if (style.textDecorationLine.includes('underline')) {
     element.underline = true
+  }
+  // 删除线
+  if (style.textDecorationLine.includes('line-through')) {
+    element.strikeout = true
   }
   return element
 }

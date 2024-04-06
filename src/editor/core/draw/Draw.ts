@@ -80,7 +80,10 @@ import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
-import { INLINE_ELEMENT_TYPE } from '../../dataset/constant/Element'
+import {
+  INLINE_ELEMENT_TYPE,
+  TEXTLIKE_ELEMENT_TYPE
+} from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
 import { Placeholder } from './frame/Placeholder'
 import { EventBus } from '../event/eventbus/EventBus'
@@ -1079,13 +1082,17 @@ export class Draw {
     ctx.direction = 'ltr'
   }
 
-  private _getFont(el: IElement, scale = 1): string {
+  public getElementFont(el: IElement, scale = 1): string {
     const { defaultSize, defaultFont } = this.options
     const font = el.font || defaultFont
     const size = el.actualSize || el.size || defaultSize
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${
       size * scale
     }px ${font}`
+  }
+
+  public getElementSize(el: IElement) {
+    return el.actualSize || el.size || this.options.defaultSize
   }
 
   public computeRowList(innerWidth: number, elementList: IElement[]) {
@@ -1311,8 +1318,12 @@ export class Draw {
                 curPagePreHeight + rowMarginHeight + preTrHeight + trHeight >
                 height
               ) {
-                // 是否跨列
-                if (element.colgroup?.length !== tr.tdList.length) {
+                // 当前行存在跨行中断-暂时忽略分页
+                const rowColCount = tr.tdList.reduce(
+                  (pre, cur) => pre + cur.colspan,
+                  0
+                )
+                if (element.colgroup?.length !== rowColCount) {
                   deleteCount = 0
                 }
                 break
@@ -1414,7 +1425,7 @@ export class Draw {
           element.actualSize = Math.ceil(size * 0.6)
         }
         metrics.height = (element.actualSize || size) * scale
-        ctx.font = this._getFont(element)
+        ctx.font = this.getElementFont(element)
         const fontMetrics = this.textParticle.measureText(ctx, element)
         metrics.width = fontMetrics.width * scale
         if (element.letterSpacing) {
@@ -1445,7 +1456,7 @@ export class Draw {
         rowMargin
       const rowElement: IRowElement = Object.assign(element, {
         metrics,
-        style: this._getFont(element, scale)
+        style: this.getElementFont(element, scale)
       })
       // 暂时只考虑非换行场景：控件开始时统计宽度，结束时消费宽度及还原
       if (rowElement.control?.minWidth) {
@@ -1831,12 +1842,34 @@ export class Draw {
         }
         // 删除线记录
         if (element.strikeout) {
-          this.strikeout.recordFillInfo(
-            ctx,
-            x,
-            y + curRow.height / 2,
-            metrics.width
-          )
+          // 仅文本类元素支持删除线
+          if (!element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)) {
+            // 字体大小不同时需立即绘制
+            if (
+              preElement &&
+              this.getElementSize(preElement) !== this.getElementSize(element)
+            ) {
+              this.strikeout.render(ctx)
+            }
+            // 基线文字测量信息
+            const standardMetrics = this.textParticle.measureBasisWord(
+              ctx,
+              this.getElementFont(element)
+            )
+            // 文字渲染位置 + 基线文字下偏移量 - 一半文字高度
+            let adjustY =
+              y +
+              offsetY +
+              standardMetrics.actualBoundingBoxDescent * scale -
+              metrics.height / 2
+            // 上下标位置调整
+            if (element.type === ElementType.SUBSCRIPT) {
+              adjustY += this.subscriptParticle.getOffsetY(element)
+            } else if (element.type === ElementType.SUPERSCRIPT) {
+              adjustY += this.superscriptParticle.getOffsetY(element)
+            }
+            this.strikeout.recordFillInfo(ctx, x, adjustY, metrics.width)
+          }
         } else if (preElement?.strikeout) {
           this.strikeout.render(ctx)
         }
@@ -1852,22 +1885,22 @@ export class Draw {
           startIndex <= index &&
           index <= endIndex
         ) {
-          // 从行尾开始-绘制最小宽度
-          if (startIndex === index) {
-            const nextElement = elementList[startIndex + 1]
-            if (nextElement && nextElement.value === ZERO) {
-              rangeRecord.x = x + metrics.width
-              rangeRecord.y = y
-              rangeRecord.height = curRow.height
-              rangeRecord.width += this.options.rangeMinWidth
-            }
-          } else {
-            const positionContext = this.position.getPositionContext()
-            // 表格需限定上下文
-            if (
-              (!positionContext.isTable && !element.tdId) ||
-              positionContext.tdId === element.tdId
-            ) {
+          const positionContext = this.position.getPositionContext()
+          // 表格需限定上下文
+          if (
+            (!positionContext.isTable && !element.tdId) ||
+            positionContext.tdId === element.tdId
+          ) {
+            // 从行尾开始-绘制最小宽度
+            if (startIndex === index) {
+              const nextElement = elementList[startIndex + 1]
+              if (nextElement && nextElement.value === ZERO) {
+                rangeRecord.x = x + metrics.width
+                rangeRecord.y = y
+                rangeRecord.height = curRow.height
+                rangeRecord.width += this.options.rangeMinWidth
+              }
+            } else {
               let rangeWidth = metrics.width
               // 最小选区宽度
               if (rangeWidth === 0 && curRow.elementList.length === 1) {
