@@ -1318,8 +1318,12 @@ export class Draw {
                 curPagePreHeight + rowMarginHeight + preTrHeight + trHeight >
                 height
               ) {
-                // 是否跨列
-                if (element.colgroup?.length !== tr.tdList.length) {
+                // 当前行存在跨行中断-暂时忽略分页
+                const rowColCount = tr.tdList.reduce(
+                  (pre, cur) => pre + cur.colspan,
+                  0
+                )
+                if (element.colgroup?.length !== rowColCount) {
                   deleteCount = 0
                 }
                 break
