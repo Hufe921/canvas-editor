@@ -1,3 +1,5 @@
+import { ZERO } from './Common'
+
 export const NUMBER_REG = /[0-9]/
 export const NUMBER_LIKE_REG = /[0-9.]/
 export const CHINESE_REG = /[\u4e00-\u9fa5]/
@@ -13,3 +15,5 @@ export const UNICODE_SYMBOL_REG = new RegExp(
 
 export const PUNCTUATION_REG =
   /[、，。？！；：……「」“”‘’*（）【】〔〕〖〗〘〙〚〛《》———﹝﹞–—\\/·.,!?;:`~<>()[\]{}'"|]/
+
+export const START_LINE_BREAK_REG = new RegExp(`^[${ZERO}\n]`)
