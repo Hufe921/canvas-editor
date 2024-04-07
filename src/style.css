@@ -367,6 +367,10 @@ ul {
   margin-left: 18px;
 }
 
+.menu-item__list .options>ul>li[data-list-style='checkbox'] li::marker {
+  font-size: 11px;
+}
+
 .menu-item__image i {
   background-image: url('./assets/images/image.svg');
 }
