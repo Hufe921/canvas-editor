@@ -389,6 +389,7 @@ export class Position {
                 return {
                   index,
                   isCheckbox:
+                    tablePosition.isCheckbox ||
                     tdValueElement.type === ElementType.CHECKBOX ||
                     tdValueElement.controlComponent ===
                       ControlComponent.CHECKBOX,
