@@ -30,6 +30,7 @@ import {
   listStyleCSSMapping,
   listTypeElementMapping
 } from '../dataset/constant/List'
+import { START_LINE_BREAK_REG } from '../dataset/constant/Regular'
 import {
   titleNodeNameMapping,
   titleOrderNumberMapping,
@@ -71,7 +72,7 @@ export function formatElementList(
   if (
     isHandleFirstElement &&
     ((startElement?.type && startElement.type !== ElementType.TEXT) ||
-      (startElement?.value !== ZERO && startElement?.value !== '\n'))
+      !START_LINE_BREAK_REG.test(startElement?.value))
   ) {
     elementList.unshift({
       value: ZERO
@@ -431,10 +432,11 @@ export function zipElementList(payload: IElement[]): IElement[] {
   let e = 0
   while (e < elementList.length) {
     let element = elementList[e]
-    // 上下文首字符（占位符）
+    // 上下文首字符（占位符）-列表首字符要保留避免是复选框
     if (
       e === 0 &&
       element.value === ZERO &&
+      !element.listId &&
       (!element.type || element.type === ElementType.TEXT)
     ) {
       e++
@@ -444,51 +446,55 @@ export function zipElementList(payload: IElement[]): IElement[] {
     if (element.titleId && element.level) {
       // 标题处理
       const titleId = element.titleId
-      const level = element.level
-      const titleElement: IElement = {
-        type: ElementType.TITLE,
-        value: '',
-        level
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const titleE = elementList[e]
-        if (titleId !== titleE.titleId) {
-          e--
-          break
+      if (titleId) {
+        const level = element.level
+        const titleElement: IElement = {
+          type: ElementType.TITLE,
+          value: '',
+          level
         }
-        delete titleE.level
-        valueList.push(titleE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const titleE = elementList[e]
+          if (titleId !== titleE.titleId) {
+            e--
+            break
+          }
+          delete titleE.level
+          valueList.push(titleE)
+          e++
+        }
+        titleElement.valueList = zipElementList(valueList)
+        element = titleElement
       }
-      titleElement.valueList = zipElementList(valueList)
-      element = titleElement
     } else if (element.listId && element.listType) {
       // 列表处理
       const listId = element.listId
-      const listType = element.listType
-      const listStyle = element.listStyle
-      const listElement: IElement = {
-        type: ElementType.LIST,
-        value: '',
-        listId,
-        listType,
-        listStyle
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const listE = elementList[e]
-        if (listId !== listE.listId) {
-          e--
-          break
+      if (listId) {
+        const listType = element.listType
+        const listStyle = element.listStyle
+        const listElement: IElement = {
+          type: ElementType.LIST,
+          value: '',
+          listId,
+          listType,
+          listStyle
         }
-        delete listE.listType
-        delete listE.listStyle
-        valueList.push(listE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const listE = elementList[e]
+          if (listId !== listE.listId) {
+            e--
+            break
+          }
+          delete listE.listType
+          delete listE.listStyle
+          valueList.push(listE)
+          e++
+        }
+        listElement.valueList = zipElementList(valueList)
+        element = listElement
       }
-      listElement.valueList = zipElementList(valueList)
-      element = listElement
     } else if (element.type === ElementType.TABLE) {
       // 分页表格先进行合并
       if (element.pagingId) {
@@ -532,71 +538,77 @@ export function zipElementList(payload: IElement[]): IElement[] {
     } else if (element.type === ElementType.HYPERLINK) {
       // 超链接处理
       const hyperlinkId = element.hyperlinkId
-      const hyperlinkElement: IElement = {
-        type: ElementType.HYPERLINK,
-        value: '',
-        url: element.url
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const hyperlinkE = elementList[e]
-        if (hyperlinkId !== hyperlinkE.hyperlinkId) {
-          e--
-          break
+      if (hyperlinkId) {
+        const hyperlinkElement: IElement = {
+          type: ElementType.HYPERLINK,
+          value: '',
+          url: element.url
         }
-        delete hyperlinkE.type
-        delete hyperlinkE.url
-        valueList.push(hyperlinkE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const hyperlinkE = elementList[e]
+          if (hyperlinkId !== hyperlinkE.hyperlinkId) {
+            e--
+            break
+          }
+          delete hyperlinkE.type
+          delete hyperlinkE.url
+          valueList.push(hyperlinkE)
+          e++
+        }
+        hyperlinkElement.valueList = zipElementList(valueList)
+        element = hyperlinkElement
       }
-      hyperlinkElement.valueList = zipElementList(valueList)
-      element = hyperlinkElement
     } else if (element.type === ElementType.DATE) {
       const dateId = element.dateId
-      const dateElement: IElement = {
-        type: ElementType.DATE,
-        value: '',
-        dateFormat: element.dateFormat
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const dateE = elementList[e]
-        if (dateId !== dateE.dateId) {
-          e--
-          break
+      if (dateId) {
+        const dateElement: IElement = {
+          type: ElementType.DATE,
+          value: '',
+          dateFormat: element.dateFormat
         }
-        delete dateE.type
-        delete dateE.dateFormat
-        valueList.push(dateE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const dateE = elementList[e]
+          if (dateId !== dateE.dateId) {
+            e--
+            break
+          }
+          delete dateE.type
+          delete dateE.dateFormat
+          valueList.push(dateE)
+          e++
+        }
+        dateElement.valueList = zipElementList(valueList)
+        element = dateElement
       }
-      dateElement.valueList = zipElementList(valueList)
-      element = dateElement
     } else if (element.controlId) {
       // 控件处理
       const controlId = element.controlId
-      const control = element.control!
-      const controlElement: IElement = {
-        type: ElementType.CONTROL,
-        value: '',
-        control
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const controlE = elementList[e]
-        if (controlId !== controlE.controlId) {
-          e--
-          break
+      if (controlId) {
+        const control = element.control!
+        const controlElement: IElement = {
+          type: ElementType.CONTROL,
+          value: '',
+          control
         }
-        if (controlE.controlComponent === ControlComponent.VALUE) {
-          delete controlE.control
-          delete controlE.controlId
-          valueList.push(controlE)
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const controlE = elementList[e]
+          if (controlId !== controlE.controlId) {
+            e--
+            break
+          }
+          if (controlE.controlComponent === ControlComponent.VALUE) {
+            delete controlE.control
+            delete controlE.controlId
+            valueList.push(controlE)
+          }
+          e++
         }
-        e++
+        controlElement.control!.value = zipElementList(valueList)
+        element = controlElement
       }
-      controlElement.control!.value = zipElementList(valueList)
-      element = controlElement
     }
     // 组合元素
     const pickElement = pickElementAttr(element)
@@ -768,6 +780,11 @@ export function splitListElement(
   const listElementListMap: Map<number, IElement[]> = new Map()
   for (let e = 0; e < elementList.length; e++) {
     const element = elementList[e]
+    // 移除列表首行换行字符-如果是复选框直接忽略
+    if (e === 0) {
+      if (element.checkbox) continue
+      element.value = element.value.replace(START_LINE_BREAK_REG, '')
+    }
     if (element.listWrap) {
       const listElementList = listElementListMap.get(curListIndex) || []
       listElementList.push(element)
