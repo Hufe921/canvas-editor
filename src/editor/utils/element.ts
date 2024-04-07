@@ -68,9 +68,10 @@ export function formatElementList(
     ...options
   }
   const startElement = elementList[0]
-  // 非首字符零宽节点文本元素则补偿
+  // 非首字符零宽节点文本元素则补偿-列表元素内部会补偿此处忽略
   if (
     isHandleFirstElement &&
+    startElement?.type !== ElementType.LIST &&
     ((startElement?.type && startElement.type !== ElementType.TEXT) ||
       !START_LINE_BREAK_REG.test(startElement?.value))
   ) {
