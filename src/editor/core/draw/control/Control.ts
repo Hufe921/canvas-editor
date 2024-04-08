@@ -197,8 +197,8 @@ export class Control {
     return this.range.getRange()
   }
 
-  public shrinkBoundary() {
-    this.range.shrinkBoundary()
+  public shrinkBoundary(context: IControlContext = {}) {
+    this.range.shrinkBoundary(context)
   }
 
   public getActiveControl(): IControlInstance | null {

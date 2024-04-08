@@ -74,7 +74,7 @@ export class TextControl implements IControlInstance {
     const elementList = context.elementList || this.control.getElementList()
     const range = context.range || this.control.getRange()
     // 收缩边界到Value内
-    this.control.shrinkBoundary()
+    this.control.shrinkBoundary(context)
     const { startIndex, endIndex } = range
     const draw = this.control.getDraw()
     // 移除选区元素

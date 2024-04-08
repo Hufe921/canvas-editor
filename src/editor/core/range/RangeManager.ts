@@ -3,6 +3,7 @@ import { ZERO } from '../../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { EditorContext } from '../../dataset/enum/Editor'
+import { IControlContext } from '../../interface/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { EventBusMap } from '../../interface/EventBus'
@@ -480,9 +481,9 @@ export class RangeManager {
     }
   }
 
-  public shrinkBoundary() {
-    const elementList = this.draw.getElementList()
-    const range = this.getRange()
+  public shrinkBoundary(context: IControlContext = {}) {
+    const elementList = context.elementList || this.draw.getElementList()
+    const range = context.range || this.getRange()
     const { startIndex, endIndex } = range
     if (!~startIndex && !~endIndex) return
     const startElement = elementList[startIndex]
