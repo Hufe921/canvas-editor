@@ -28,7 +28,8 @@ import {
 } from '../dataset/constant/Element'
 import {
   listStyleCSSMapping,
-  listTypeElementMapping
+  listTypeElementMapping,
+  ulStyleMapping
 } from '../dataset/constant/List'
 import { START_LINE_BREAK_REG } from '../dataset/constant/Regular'
 import {
@@ -37,6 +38,7 @@ import {
   titleSizeMapping
 } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
+import { UlStyle } from '../dataset/enum/List'
 import { DeepRequired } from '../interface/Common'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
@@ -1234,11 +1236,17 @@ export function getTextFromElementList(elementList: IElement[]) {
         // 按照换行符拆分
         const zipList = zipElementList(element.valueList!)
         const listElementListMap = splitListElement(zipList)
+        // 无序列表前缀
+        let ulListStyleText = ''
+        if (element.listType === ListType.UL) {
+          ulListStyleText =
+            ulStyleMapping[<UlStyle>(<unknown>element.listStyle)]
+        }
         listElementListMap.forEach((listElementList, listIndex) => {
           const isLast = listElementListMap.size - 1 === listIndex
-          text += `\n${listIndex + 1}.${buildText(listElementList)}${
-            isLast ? `\n` : ``
-          }`
+          text += `\n${ulListStyleText || `${listIndex + 1}.`}${buildText(
+            listElementList
+          )}${isLast ? `\n` : ``}`
         })
       } else if (element.type === ElementType.CHECKBOX) {
         text += element.checkbox?.value ? `☑` : `□`
