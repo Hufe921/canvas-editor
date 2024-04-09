@@ -1224,6 +1224,8 @@ export function getTextFromElementList(elementList: IElement[]) {
             text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
           }
         }
+      } else if (element.type === ElementType.TAB) {
+        text += `\t`
       } else if (element.type === ElementType.HYPERLINK) {
         text += element.valueList!.map(v => v.value).join('')
       } else if (element.type === ElementType.TITLE) {
