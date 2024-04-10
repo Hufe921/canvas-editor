@@ -8,7 +8,12 @@ import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { EventBusMap } from '../../interface/EventBus'
 import { IRangeStyle } from '../../interface/Listener'
-import { IRange, RangeRowArray, RangeRowMap } from '../../interface/Range'
+import {
+  IRange,
+  IRangeParagraphInfo,
+  RangeRowArray,
+  RangeRowMap
+} from '../../interface/Range'
 import { getAnchorElement } from '../../utils/element'
 import { Draw } from '../draw/Draw'
 import { EventBus } from '../event/eventbus/EventBus'
@@ -208,10 +213,12 @@ export class RangeManager {
     return rangeRow
   }
 
-  // 获取选区段落元素列表
-  public getRangeParagraphElementList(): IElement[] | null {
+  // 获取选区段落信息
+  public getRangeParagraphInfo(): IRangeParagraphInfo | null {
     const { startIndex, endIndex } = this.range
     if (!~startIndex && !~endIndex) return null
+    /// 起始元素位置
+    let startPositionIndex = -1
     // 需要改变的元素列表
     const rangeElementList: IElement[] = []
     // 选区行信息
@@ -224,10 +231,22 @@ export class RangeManager {
       const rowArray = rangeRow.get(position.pageNo)
       if (!rowArray) continue
       if (rowArray.includes(position.rowNo)) {
+        if (!~startPositionIndex) {
+          startPositionIndex = position.index
+        }
         rangeElementList.push(elementList[p])
       }
     }
-    return rangeElementList
+    if (!rangeElementList.length) return null
+    return {
+      elementList: rangeElementList,
+      startIndex: startPositionIndex
+    }
+  }
+
+  // 获取选区段落元素列表
+  public getRangeParagraphElementList(): IElement[] | null {
+    return this.getRangeParagraphInfo()?.elementList || null
   }
 
   public getIsSelectAll() {
