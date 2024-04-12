@@ -1,3 +1,28 @@
+## [0.9.73](https://github.com/Hufe921/canvas-editor/compare/v0.9.72...v0.9.73) (2024-04-12)
+
+
+### Bug Fixes
+
+* add context param to the shrinkBoundary function #503 ([6f690a8](https://github.com/Hufe921/canvas-editor/commit/6f690a805ff385ce4e6ed3959285ceeb730567bf)), closes [#503](https://github.com/Hufe921/canvas-editor/issues/503)
+* checkbox list cannot be selected within the table ([632f8f5](https://github.com/Hufe921/canvas-editor/commit/632f8f5af8d626d28a306c212419565bf216c997))
+* disable table pagination in continuous page mode ([d0500ac](https://github.com/Hufe921/canvas-editor/commit/d0500ac58345b689bd3f331342e7c08ca1684094))
+* format list elements boundary error ([21807a6](https://github.com/Hufe921/canvas-editor/commit/21807a6f7e7b73adf0696ea848fb0b7ebdbf14ea))
+
+
+### Chores
+
+* upgrade typescript version ([7e5a1ac](https://github.com/Hufe921/canvas-editor/commit/7e5a1ac04c1866ceb6b27131d7b2cf7f5fa46fe4))
+
+
+### Features
+
+* add checkbox list #385 ([a546262](https://github.com/Hufe921/canvas-editor/commit/a546262b9d7e94011565198e0f18e7671b5439b0)), closes [#385](https://github.com/Hufe921/canvas-editor/issues/385)
+* double click the selected text through the segmenter #510 ([3f8399d](https://github.com/Hufe921/canvas-editor/commit/3f8399de6299331c07e3d7c3c8d16dee64528d4a)), closes [#510](https://github.com/Hufe921/canvas-editor/issues/510)
+* the getText method add list style conversion ([f80e004](https://github.com/Hufe921/canvas-editor/commit/f80e004917d53cbb3868c940c26d94f85d0d8615))
+* the getText method add tab conversion #507 ([762f10c](https://github.com/Hufe921/canvas-editor/commit/762f10c37729a2d51dd3a79e6f3b8c9e3134926b)), closes [#507](https://github.com/Hufe921/canvas-editor/issues/507)
+
+
+
 ## [0.9.72](https://github.com/Hufe921/canvas-editor/compare/v0.9.71...v0.9.72) (2024-04-06)
 
 
