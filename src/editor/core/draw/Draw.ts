@@ -3,6 +3,7 @@ import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
+  IComputeRowListPayload,
   IDrawFloatPayload,
   IDrawOption,
   IDrawPagePayload,
@@ -1095,7 +1096,8 @@ export class Draw {
     return el.actualSize || el.size || this.options.defaultSize
   }
 
-  public computeRowList(innerWidth: number, elementList: IElement[]) {
+  public computeRowList(payload: IComputeRowListPayload) {
+    const { innerWidth, elementList, isPagingMode = false } = payload
     const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth } =
       this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -1206,10 +1208,11 @@ export class Draw {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const rowList = this.computeRowList(
-              (td.width! - tdPaddingWidth) * scale,
-              td.value
-            )
+            const rowList = this.computeRowList({
+              innerWidth: (td.width! - tdPaddingWidth) * scale,
+              elementList: td.value,
+              isPagingMode
+            })
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
@@ -1279,105 +1282,107 @@ export class Draw {
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = -rowMargin
         // 表格分页处理(拆分表格)
-        const height = this.getHeight()
-        const marginHeight = this.getMainOuterHeight()
-        let curPagePreHeight = marginHeight
-        for (let r = 0; r < rowList.length; r++) {
-          const row = rowList[r]
+        if (isPagingMode) {
+          const height = this.getHeight()
+          const marginHeight = this.getMainOuterHeight()
+          let curPagePreHeight = marginHeight
+          for (let r = 0; r < rowList.length; r++) {
+            const row = rowList[r]
+            if (
+              row.height + curPagePreHeight > height ||
+              rowList[r - 1]?.isPageBreak
+            ) {
+              curPagePreHeight = marginHeight + row.height
+            } else {
+              curPagePreHeight += row.height
+            }
+          }
+          // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度
+          const rowMarginHeight = rowMargin * 2 * scale
           if (
-            row.height + curPagePreHeight > height ||
-            rowList[r - 1]?.isPageBreak
+            curPagePreHeight + element.trList![0].height! + rowMarginHeight >
+            height
           ) {
-            curPagePreHeight = marginHeight + row.height
-          } else {
-            curPagePreHeight += row.height
+            // 无可拆分行则切换至新页
+            curPagePreHeight = marginHeight
           }
-        }
-        // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度
-        const rowMarginHeight = rowMargin * 2 * scale
-        if (
-          curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-          height
-        ) {
-          // 无可拆分行则切换至新页
-          curPagePreHeight = marginHeight
-        }
-        // 表格高度超过页面高度开始截断行
-        if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
-          const trList = element.trList!
-          // 计算需要移除的行数
-          let deleteStart = 0
-          let deleteCount = 0
-          let preTrHeight = 0
-          // 大于一行时再拆分避免循环
-          if (trList.length > 1) {
-            for (let r = 0; r < trList.length; r++) {
-              const tr = trList[r]
-              const trHeight = tr.height * scale
-              if (
-                curPagePreHeight + rowMarginHeight + preTrHeight + trHeight >
-                height
-              ) {
-                // 当前行存在跨行中断-暂时忽略分页
-                const rowColCount = tr.tdList.reduce(
-                  (pre, cur) => pre + cur.colspan,
-                  0
-                )
-                if (element.colgroup?.length !== rowColCount) {
-                  deleteCount = 0
+          // 表格高度超过页面高度开始截断行
+          if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
+            const trList = element.trList!
+            // 计算需要移除的行数
+            let deleteStart = 0
+            let deleteCount = 0
+            let preTrHeight = 0
+            // 大于一行时再拆分避免循环
+            if (trList.length > 1) {
+              for (let r = 0; r < trList.length; r++) {
+                const tr = trList[r]
+                const trHeight = tr.height * scale
+                if (
+                  curPagePreHeight + rowMarginHeight + preTrHeight + trHeight >
+                  height
+                ) {
+                  // 当前行存在跨行中断-暂时忽略分页
+                  const rowColCount = tr.tdList.reduce(
+                    (pre, cur) => pre + cur.colspan,
+                    0
+                  )
+                  if (element.colgroup?.length !== rowColCount) {
+                    deleteCount = 0
+                  }
+                  break
+                } else {
+                  deleteStart = r + 1
+                  deleteCount = trList.length - deleteStart
+                  preTrHeight += trHeight
                 }
-                break
-              } else {
-                deleteStart = r + 1
-                deleteCount = trList.length - deleteStart
-                preTrHeight += trHeight
               }
             }
-          }
-          if (deleteCount) {
-            const cloneTrList = trList.splice(deleteStart, deleteCount)
-            const cloneTrHeight = cloneTrList.reduce(
-              (pre, cur) => pre + cur.height,
-              0
-            )
-            const pagingId = element.pagingId || getUUID()
-            element.pagingId = pagingId
-            element.height -= cloneTrHeight
-            metrics.height -= cloneTrHeight
-            metrics.boundingBoxDescent -= cloneTrHeight
-            // 追加拆分表格
-            const cloneElement = deepClone(element)
-            cloneElement.pagingId = pagingId
-            cloneElement.trList = cloneTrList
-            cloneElement.id = getUUID()
-            this.spliceElementList(elementList, i + 1, 0, cloneElement)
-          }
-        }
-        // 表格经过分页处理-需要处理上下文
-        if (element.pagingId) {
-          const positionContext = this.position.getPositionContext()
-          if (positionContext.isTable) {
-            // 查找光标所在表格索引（根据trId搜索）
-            let newPositionContextIndex = -1
-            let newPositionContextTrIndex = -1
-            let tableIndex = i
-            while (tableIndex < elementList.length) {
-              const curElement = elementList[tableIndex]
-              if (curElement.pagingId !== element.pagingId) break
-              const trIndex = curElement.trList!.findIndex(
-                r => r.id === positionContext.trId
+            if (deleteCount) {
+              const cloneTrList = trList.splice(deleteStart, deleteCount)
+              const cloneTrHeight = cloneTrList.reduce(
+                (pre, cur) => pre + cur.height,
+                0
               )
-              if (~trIndex) {
-                newPositionContextIndex = tableIndex
-                newPositionContextTrIndex = trIndex
-                break
-              }
-              tableIndex++
+              const pagingId = element.pagingId || getUUID()
+              element.pagingId = pagingId
+              element.height -= cloneTrHeight
+              metrics.height -= cloneTrHeight
+              metrics.boundingBoxDescent -= cloneTrHeight
+              // 追加拆分表格
+              const cloneElement = deepClone(element)
+              cloneElement.pagingId = pagingId
+              cloneElement.trList = cloneTrList
+              cloneElement.id = getUUID()
+              this.spliceElementList(elementList, i + 1, 0, cloneElement)
             }
-            if (~newPositionContextIndex) {
-              positionContext.index = newPositionContextIndex
-              positionContext.trIndex = newPositionContextTrIndex
-              this.position.setPositionContext(positionContext)
+          }
+          // 表格经过分页处理-需要处理上下文
+          if (element.pagingId) {
+            const positionContext = this.position.getPositionContext()
+            if (positionContext.isTable) {
+              // 查找光标所在表格索引（根据trId搜索）
+              let newPositionContextIndex = -1
+              let newPositionContextTrIndex = -1
+              let tableIndex = i
+              while (tableIndex < elementList.length) {
+                const curElement = elementList[tableIndex]
+                if (curElement.pagingId !== element.pagingId) break
+                const trIndex = curElement.trList!.findIndex(
+                  r => r.id === positionContext.trId
+                )
+                if (~trIndex) {
+                  newPositionContextIndex = tableIndex
+                  newPositionContextTrIndex = trIndex
+                  break
+                }
+                tableIndex++
+              }
+              if (~newPositionContextIndex) {
+                positionContext.index = newPositionContextIndex
+                positionContext.trIndex = newPositionContextTrIndex
+                this.position.setPositionContext(positionContext)
+              }
             }
           }
         }
@@ -2143,7 +2148,11 @@ export class Draw {
         }
       }
       // 行信息
-      this.rowList = this.computeRowList(innerWidth, this.elementList)
+      this.rowList = this.computeRowList({
+        isPagingMode,
+        innerWidth,
+        elementList: this.elementList
+      })
       // 页面信息
       this.pageRowList = this._computePageList()
       // 位置信息

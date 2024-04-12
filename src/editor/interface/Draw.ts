@@ -61,3 +61,9 @@ export interface IGetImageOption {
   pixelRatio?: number
   mode?: EditorMode
 }
+
+export interface IComputeRowListPayload {
+  innerWidth: number
+  elementList: IElement[]
+  isPagingMode?: boolean
+}
