@@ -84,6 +84,7 @@ interface IElement {
     postfix?: string;
     minWidth?: number;
     underline?: boolean;
+    border?: boolean;
     extension?: unknown;
     indentation?: ControlIndentation;
     deletable?: boolean;

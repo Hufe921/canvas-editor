@@ -47,6 +47,7 @@ export interface IControlBasic {
   postfix?: string
   minWidth?: number
   underline?: boolean
+  border?: boolean
   extension?: unknown
   indentation?: ControlIndentation
 }
@@ -61,6 +62,8 @@ export interface IControlOption {
   bracketColor?: string
   prefix?: string
   postfix?: string
+  borderWidth?: number
+  borderColor?: string
 }
 
 export interface IControlInitOption {

@@ -1096,6 +1096,14 @@ export class Draw {
     return el.actualSize || el.size || this.options.defaultSize
   }
 
+  public getElementRowMargin(el: IElement) {
+    const { defaultBasicRowMarginHeight, defaultRowMargin, scale } =
+      this.options
+    return (
+      defaultBasicRowMarginHeight * (el.rowMargin || defaultRowMargin) * scale
+    )
+  }
+
   public computeRowList(payload: IComputeRowListPayload) {
     const { innerWidth, elementList, isPagingMode = false } = payload
     const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth } =
@@ -1695,13 +1703,7 @@ export class Draw {
     const { rowList, pageNo, elementList, positionList, startIndex, zone } =
       payload
     const isPrintMode = this.mode === EditorMode.PRINT
-    const {
-      scale,
-      tdPadding,
-      defaultBasicRowMarginHeight,
-      defaultRowMargin,
-      group
-    } = this.options
+    const { scale, tdPadding, group } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -1803,6 +1805,26 @@ export class Draw {
             this.textParticle.complete()
           }
         }
+        // 边框绘制（目前仅支持控件）
+        if (element.control?.border) {
+          // 不同控件边框立刻绘制
+          if (
+            preElement?.control?.border &&
+            preElement.controlId !== element.controlId
+          ) {
+            this.control.drawBorder(ctx)
+          }
+          // 当前元素位置信息记录
+          const rowMargin = this.getElementRowMargin(element)
+          this.control.recordBorderInfo(
+            x,
+            y + rowMargin,
+            element.metrics.width,
+            curRow.height - 2 * rowMargin
+          )
+        } else if (preElement?.control?.border) {
+          this.control.drawBorder(ctx)
+        }
         // 下划线记录
         if (element.underline || element.control?.underline) {
           // 上下标元素下划线单独绘制
@@ -1815,10 +1837,7 @@ export class Draw {
             this.underline.render(ctx)
           }
           // 行间距
-          const rowMargin =
-            defaultBasicRowMarginHeight *
-            (element.rowMargin || defaultRowMargin) *
-            scale
+          const rowMargin = this.getElementRowMargin(element)
           // 元素向左偏移量
           const offsetX = element.left || 0
           // 上下标元素y轴偏移值
@@ -1954,8 +1973,9 @@ export class Draw {
           positionList[curRow.startIndex]
         )
       }
-      // 绘制文字、下划线、删除线
+      // 绘制文字、边框、下划线、删除线
       this.textParticle.complete()
+      this.control.drawBorder(ctx)
       this.underline.render(ctx)
       this.strikeout.render(ctx)
       // 绘制批注样式

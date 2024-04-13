@@ -33,6 +33,7 @@ import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
 import { CheckboxControl } from './checkbox/CheckboxControl'
 import { ControlSearch } from './interactive/ControlSearch'
+import { ControlBorder } from './richtext/Border'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 
@@ -41,6 +42,7 @@ interface IMoveCursorResult {
   newElement: IElement
 }
 export class Control {
+  private controlBorder: ControlBorder
   private draw: Draw
   private range: RangeManager
   private listener: Listener
@@ -51,6 +53,8 @@ export class Control {
   private activeControl: IControlInstance | null
 
   constructor(draw: Draw) {
+    this.controlBorder = new ControlBorder(draw)
+
     this.draw = draw
     this.range = draw.getRange()
     this.listener = draw.getListener()
@@ -759,5 +763,13 @@ export class Control {
       }
     }
     return zipElementList(controlElementList)
+  }
+
+  public recordBorderInfo(x: number, y: number, width: number, height: number) {
+    this.controlBorder.recordBorderInfo(x, y, width, height)
+  }
+
+  public drawBorder(ctx: CanvasRenderingContext2D) {
+    this.controlBorder.render(ctx)
   }
 }
