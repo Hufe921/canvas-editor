@@ -101,6 +101,13 @@ interface IElement {
       code?: string;
       disabled?: boolean;
     };
+    font?: string;
+    size?: number;
+    bold?: boolean;
+    color?: string;
+    highlight?: string;
+    italic?: boolean;
+    strikeout?: boolean;
   };
   controlComponent?: {
     PREFIX = 'prefix',

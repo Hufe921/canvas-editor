@@ -52,10 +52,21 @@ export interface IControlBasic {
   indentation?: ControlIndentation
 }
 
+export interface IControlStyle {
+  font?: string
+  size?: number
+  bold?: boolean
+  color?: string
+  highlight?: string
+  italic?: boolean
+  strikeout?: boolean
+}
+
 export type IControl = IControlBasic &
   IControlRule &
   Partial<IControlSelect> &
-  Partial<IControlCheckbox>
+  Partial<IControlCheckbox> &
+  Partial<IControlStyle>
 
 export interface IControlOption {
   placeholderColor?: string
