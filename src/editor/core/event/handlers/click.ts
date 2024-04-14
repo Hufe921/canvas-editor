@@ -1,38 +1,63 @@
 import { ZERO } from '../../../dataset/constant/Common'
+import { TEXTLIKE_ELEMENT_TYPE } from '../../../dataset/constant/Element'
 import { NUMBER_LIKE_REG } from '../../../dataset/constant/Regular'
+import { ControlComponent } from '../../../dataset/enum/Control'
+import { IRange } from '../../../interface/Range'
 import { CanvasEvent } from '../CanvasEvent'
 
-function dblclick(host: CanvasEvent, evt: MouseEvent) {
+// 通过分词器获取单词所在选区
+function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
+  if (!Intl.Segmenter) return null
   const draw = host.getDraw()
-  const LETTER_REG = draw.getLetterReg()
-  const position = draw.getPosition()
-  const positionContext = position.getPositionByXY({
-    x: evt.offsetX,
-    y: evt.offsetY
-  })
-  // 图片预览
-  if (positionContext.isImage && positionContext.isDirectHit) {
-    draw.getPreviewer().render()
-    return
-  }
-  // 切换区域
-  if (draw.getIsPagingMode()) {
-    if (!~positionContext.index && positionContext.zone) {
-      draw.getZone().setZone(positionContext.zone)
-      draw.clearSideEffect()
-      position.setPositionContext({
-        isTable: false
-      })
-      return
+  const cursorPosition = draw.getPosition().getCursorPosition()
+  if (!cursorPosition) return null
+  const rangeManager = draw.getRange()
+  const paragraphInfo = rangeManager.getRangeParagraphInfo()
+  if (!paragraphInfo) return null
+  // 组装段落文本
+  const paragraphText =
+    paragraphInfo?.elementList
+      ?.map(e =>
+        !e.type ||
+        (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
+          e.controlComponent !== ControlComponent.CHECKBOX)
+          ? e.value
+          : ZERO
+      )
+      .join('') || ''
+  if (!paragraphText) return null
+  // 光标所在位置
+  const cursorStartIndex = cursorPosition.index
+  // 段落首字符相对文档起始位置
+  const offset = paragraphInfo.startIndex
+  const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' })
+  const segments = segmenter.segment(paragraphText)
+  // 新的光标位置
+  let startIndex = -1
+  let endIndex = -1
+  for (const { segment, index, isWordLike } of segments) {
+    const realSegmentStartIndex = index + offset
+    if (
+      isWordLike &&
+      cursorStartIndex >= realSegmentStartIndex &&
+      cursorStartIndex < realSegmentStartIndex + segment.length
+    ) {
+      startIndex = realSegmentStartIndex - 1
+      endIndex = startIndex + segment.length
+      break
     }
   }
-  // 复选框双击时是切换选择状态，禁用扩选
-  if (positionContext.isCheckbox && positionContext.isDirectHit) return
-  // 自动扩选文字
-  const cursorPosition = position.getCursorPosition()
-  if (!cursorPosition) return
+  return ~startIndex && ~endIndex ? { startIndex, endIndex } : null
+}
+
+// 通过光标位置获取单词所在选区
+function getWordRangeByCursor(host: CanvasEvent): IRange | null {
+  const draw = host.getDraw()
+  const cursorPosition = draw.getPosition().getCursorPosition()
+  if (!cursorPosition) return null
   const { value, index } = cursorPosition
   // 判断是否是数字或英文
+  const LETTER_REG = draw.getLetterReg()
   let upCount = 0
   let downCount = 0
   const isNumber = NUMBER_LIKE_REG.test(value)
@@ -67,11 +92,46 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
       }
     }
   }
-  // 设置选中区域
+  // 新的光标位置
   const startIndex = index - upCount - 1
-  if (startIndex < 0) return
+  if (startIndex < 0) return null
+  return {
+    startIndex,
+    endIndex: index + downCount
+  }
+}
+
+function dblclick(host: CanvasEvent, evt: MouseEvent) {
+  const draw = host.getDraw()
+  const position = draw.getPosition()
+  const positionContext = position.getPositionByXY({
+    x: evt.offsetX,
+    y: evt.offsetY
+  })
+  // 图片预览
+  if (positionContext.isImage && positionContext.isDirectHit) {
+    draw.getPreviewer().render()
+    return
+  }
+  // 切换区域
+  if (draw.getIsPagingMode()) {
+    if (!~positionContext.index && positionContext.zone) {
+      draw.getZone().setZone(positionContext.zone)
+      draw.clearSideEffect()
+      position.setPositionContext({
+        isTable: false
+      })
+      return
+    }
+  }
+  // 复选框双击时是切换选择状态，禁用扩选
+  if (positionContext.isCheckbox && positionContext.isDirectHit) return
+  // 自动扩选文字-分词处理，优先使用分词器否则降级使用光标所在位置
   const rangeManager = draw.getRange()
-  rangeManager.setRange(startIndex, index + downCount)
+  const segmenterRange =
+    getWordRangeBySegmenter(host) || getWordRangeByCursor(host)
+  if (!segmenterRange) return
+  rangeManager.setRange(segmenterRange.startIndex, segmenterRange.endIndex)
   // 刷新文档
   draw.render({
     isSubmitHistory: false,

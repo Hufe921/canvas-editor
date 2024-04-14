@@ -47,20 +47,34 @@ export interface IControlBasic {
   postfix?: string
   minWidth?: number
   underline?: boolean
+  border?: boolean
   extension?: unknown
   indentation?: ControlIndentation
+}
+
+export interface IControlStyle {
+  font?: string
+  size?: number
+  bold?: boolean
+  color?: string
+  highlight?: string
+  italic?: boolean
+  strikeout?: boolean
 }
 
 export type IControl = IControlBasic &
   IControlRule &
   Partial<IControlSelect> &
-  Partial<IControlCheckbox>
+  Partial<IControlCheckbox> &
+  Partial<IControlStyle>
 
 export interface IControlOption {
   placeholderColor?: string
   bracketColor?: string
   prefix?: string
   postfix?: string
+  borderWidth?: number
+  borderColor?: string
 }
 
 export interface IControlInitOption {

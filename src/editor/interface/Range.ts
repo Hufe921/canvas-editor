@@ -29,3 +29,8 @@ export type RangeContext = {
   zone: EditorZone
   isTable: boolean
 }
+
+export interface IRangeParagraphInfo {
+  elementList: IElement[]
+  startIndex: number
+}

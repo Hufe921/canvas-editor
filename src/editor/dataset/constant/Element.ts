@@ -1,6 +1,7 @@
 import { ElementType } from '../enum/Element'
 import { IElement } from '../../interface/Element'
 import { ITd } from '../../interface/table/Td'
+import { IControlStyle } from '../../interface/Control'
 
 export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
   'bold',
@@ -97,6 +98,16 @@ export const CONTROL_CONTEXT_ATTR: Array<keyof IElement> = [
   'control',
   'controlId',
   'controlComponent'
+]
+
+export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
+  'font',
+  'size',
+  'bold',
+  'color',
+  'highlight',
+  'italic',
+  'strikeout'
 ]
 
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [

@@ -2,7 +2,10 @@ import {
   EDITOR_COMPONENT,
   EDITOR_PREFIX
 } from '../../../../dataset/constant/Editor'
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
+import {
+  CONTROL_STYLE_ATTR,
+  EDITOR_ELEMENT_STYLE_ATTR
+} from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { ElementType } from '../../../../dataset/enum/Element'
@@ -211,11 +214,12 @@ export class SelectControl implements IControlInstance {
     const valueSet = valueSets.find(v => v.code === code)
     if (!valueSet) return
     const elementList = context.elementList || this.control.getElementList()
-    // 样式赋值元素-默认值的第一个字符样式
-    const styleElement = pickObject(
-      this.getValue(context)[0],
-      EDITOR_ELEMENT_STYLE_ATTR
-    )
+    const range = context.range || this.control.getRange()
+    // 样式赋值元素-默认值的第一个字符样式，否则取默认样式
+    const valueElement = this.getValue(context)[0]
+    const styleElement = valueElement
+      ? pickObject(valueElement, EDITOR_ELEMENT_STYLE_ATTR)
+      : pickObject(elementList[range.startIndex], CONTROL_STYLE_ATTR)
     // 清空选项
     const prefixIndex = this.clearSelect(context)
     if (!~prefixIndex) return

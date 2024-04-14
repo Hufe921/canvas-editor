@@ -38,7 +38,10 @@ export class Placeholder {
 
   private _computeRowList() {
     const innerWidth = this.draw.getInnerWidth()
-    this.rowList = this.draw.computeRowList(innerWidth, this.elementList)
+    this.rowList = this.draw.computeRowList({
+      innerWidth,
+      elementList: this.elementList
+    })
   }
 
   private _computePositionList() {

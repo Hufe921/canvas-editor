@@ -4,6 +4,7 @@ import {
   deepCloneOmitKeys,
   getUUID,
   isArrayEqual,
+  pickObject,
   splitText
 } from '.'
 import {
@@ -19,6 +20,7 @@ import {
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import {
+  CONTROL_STYLE_ATTR,
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   INLINE_NODE_NAME,
@@ -28,7 +30,8 @@ import {
 } from '../dataset/constant/Element'
 import {
   listStyleCSSMapping,
-  listTypeElementMapping
+  listTypeElementMapping,
+  ulStyleMapping
 } from '../dataset/constant/List'
 import { START_LINE_BREAK_REG } from '../dataset/constant/Regular'
 import {
@@ -37,7 +40,9 @@ import {
   titleSizeMapping
 } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
+import { UlStyle } from '../dataset/enum/List'
 import { DeepRequired } from '../interface/Common'
+import { IControlSelect } from '../interface/Control'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
@@ -222,22 +227,29 @@ export function formatElementList(
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
+      // 控件设置的默认样式（以前缀为基准）
+      const controlDefaultStyle = pickObject(
+        <IElement>(<unknown>el.control),
+        CONTROL_STYLE_ATTR
+      )
       // 前后缀个性化设置
-      const thePrePostfixArgs: Pick<IElement, 'color'> = {}
-      if (editorOptions && editorOptions.control) {
-        thePrePostfixArgs.color = editorOptions.control.bracketColor
+      const thePrePostfixArg: Omit<IElement, 'value'> = {
+        ...controlDefaultStyle
+      }
+      if (!thePrePostfixArg.color) {
+        thePrePostfixArg.color = editorOptions.control.bracketColor
       }
       // 前缀
       const prefixStrList = splitText(prefix || controlOption.prefix)
       for (let p = 0; p < prefixStrList.length; p++) {
         const value = prefixStrList[p]
         elementList.splice(i, 0, {
+          ...thePrePostfixArg,
           controlId,
           value,
           type: el.type,
           control: el.control,
-          controlComponent: ControlComponent.PREFIX,
-          ...thePrePostfixArgs
+          controlComponent: ControlComponent.PREFIX
         })
         i++
       }
@@ -281,6 +293,7 @@ export function formatElementList(
                 const value = valueStrList[e]
                 const isLastLetter = e === valueStrList.length - 1
                 elementList.splice(i, 0, {
+                  ...controlDefaultStyle,
                   ...valueStyleList[valueStyleIndex],
                   controlId,
                   value: value === '\n' ? ZERO : value,
@@ -314,6 +327,7 @@ export function formatElementList(
             const element = valueList[v]
             const value = element.value
             elementList.splice(i, 0, {
+              ...controlDefaultStyle,
               ...element,
               controlId,
               value: value === '\n' ? ZERO : value,
@@ -326,20 +340,22 @@ export function formatElementList(
         }
       } else if (placeholder) {
         // placeholder
-        const thePlaceholderArgs: Pick<IElement, 'color'> = {}
-        if (editorOptions && editorOptions.control) {
+        const thePlaceholderArgs: Omit<IElement, 'value'> = {
+          ...controlDefaultStyle
+        }
+        if (editorOptions?.control?.placeholderColor) {
           thePlaceholderArgs.color = editorOptions.control.placeholderColor
         }
         const placeholderStrList = splitText(placeholder)
         for (let p = 0; p < placeholderStrList.length; p++) {
           const value = placeholderStrList[p]
           elementList.splice(i, 0, {
+            ...thePlaceholderArgs,
             controlId,
             value: value === '\n' ? ZERO : value,
             type: el.type,
             control: el.control,
-            controlComponent: ControlComponent.PLACEHOLDER,
-            ...thePlaceholderArgs
+            controlComponent: ControlComponent.PLACEHOLDER
           })
           i++
         }
@@ -349,12 +365,12 @@ export function formatElementList(
       for (let p = 0; p < postfixStrList.length; p++) {
         const value = postfixStrList[p]
         elementList.splice(i, 0, {
+          ...thePrePostfixArg,
           controlId,
           value,
           type: el.type,
           control: el.control,
-          controlComponent: ControlComponent.POSTFIX,
-          ...thePrePostfixArgs
+          controlComponent: ControlComponent.POSTFIX
         })
         i++
       }
@@ -587,7 +603,14 @@ export function zipElementList(payload: IElement[]): IElement[] {
       // 控件处理
       const controlId = element.controlId
       if (controlId) {
-        const control = element.control!
+        // 以前缀为基准更新控件默认样式
+        const controlDefaultStyle = <IControlSelect>(
+          (<unknown>pickObject(element, CONTROL_STYLE_ATTR))
+        )
+        const control = {
+          ...element.control!,
+          ...controlDefaultStyle
+        }
         const controlElement: IElement = {
           type: ElementType.CONTROL,
           value: '',
@@ -1224,6 +1247,8 @@ export function getTextFromElementList(elementList: IElement[]) {
             text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
           }
         }
+      } else if (element.type === ElementType.TAB) {
+        text += `\t`
       } else if (element.type === ElementType.HYPERLINK) {
         text += element.valueList!.map(v => v.value).join('')
       } else if (element.type === ElementType.TITLE) {
@@ -1232,11 +1257,17 @@ export function getTextFromElementList(elementList: IElement[]) {
         // 按照换行符拆分
         const zipList = zipElementList(element.valueList!)
         const listElementListMap = splitListElement(zipList)
+        // 无序列表前缀
+        let ulListStyleText = ''
+        if (element.listType === ListType.UL) {
+          ulListStyleText =
+            ulStyleMapping[<UlStyle>(<unknown>element.listStyle)]
+        }
         listElementListMap.forEach((listElementList, listIndex) => {
           const isLast = listElementListMap.size - 1 === listIndex
-          text += `\n${listIndex + 1}.${buildText(listElementList)}${
-            isLast ? `\n` : ``
-          }`
+          text += `\n${ulListStyleText || `${listIndex + 1}.`}${buildText(
+            listElementList
+          )}${isLast ? `\n` : ``}`
         })
       } else if (element.type === ElementType.CHECKBOX) {
         text += element.checkbox?.value ? `☑` : `□`
