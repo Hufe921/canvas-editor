@@ -1,4 +1,5 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
+import { ControlComponent } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -92,6 +93,17 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
       [start, end] = [end, start]
     }
     if (start === end) return
+    // 背景文本禁止选区
+    const elementList = draw.getElementList()
+    const startElement = elementList[start + 1]
+    const endElement = elementList[end]
+    if (
+      startElement?.controlComponent === ControlComponent.PLACEHOLDER &&
+      endElement?.controlComponent === ControlComponent.PLACEHOLDER &&
+      startElement.controlId === endElement.controlId
+    ) {
+      return
+    }
     rangeManager.setRange(start, end)
   }
   // 绘制
