@@ -1,7 +1,7 @@
 import { ZERO } from '../../../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../../../dataset/constant/Element'
 import { NUMBER_LIKE_REG } from '../../../dataset/constant/Regular'
-import { ControlComponent } from '../../../dataset/enum/Control'
+import { ElementType } from '../../../dataset/enum/Element'
 import { IRange } from '../../../interface/Range'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -19,8 +19,8 @@ function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
     paragraphInfo?.elementList
       ?.map(e =>
         !e.type ||
-        (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
-          e.controlComponent !== ControlComponent.CHECKBOX)
+        (e.type !== ElementType.CONTROL &&
+          TEXTLIKE_ELEMENT_TYPE.includes(e.type))
           ? e.value
           : ZERO
       )
