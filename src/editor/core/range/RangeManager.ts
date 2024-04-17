@@ -429,6 +429,8 @@ export class RangeManager {
     const redo = this.historyManager.isCanRedo()
     // 组信息
     const groupIds = curElement.groupIds || null
+    // 扩展字段
+    const extension = curElement.extension ?? null
     const rangeStyle: IRangeStyle = {
       type,
       undo,
@@ -449,7 +451,8 @@ export class RangeManager {
       listType,
       listStyle,
       groupIds,
-      textDecoration
+      textDecoration,
+      extension
     }
     if (rangeStyleChangeListener) {
       rangeStyleChangeListener(rangeStyle)
@@ -490,7 +493,8 @@ export class RangeManager {
       listType: null,
       listStyle: null,
       groupIds: null,
-      textDecoration: null
+      textDecoration: null,
+      extension: null
     }
     if (rangeStyleChangeListener) {
       rangeStyleChangeListener(rangeStyle)

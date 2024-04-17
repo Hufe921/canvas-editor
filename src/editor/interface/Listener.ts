@@ -32,6 +32,7 @@ export interface IRangeStyle {
   listStyle: ListStyle | null
   groupIds: string[] | null
   textDecoration: ITextDecoration | null
+  extension?: unknown | null
 }
 
 export type IRangeStyleChange = (payload: IRangeStyle) => void

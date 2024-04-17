@@ -22,6 +22,7 @@ interface IElement {
   };
   value: string;
   valueList?: IElement[]; // Use of composite elements (hyperlinks, titles, lists, and so on).
+  extension?: unknown;
   // style
   font?: string;
   size?: number;
