@@ -21,7 +21,7 @@ describe('菜单-内容块', () => {
 
       cy.get('.dialog-option__item [name="height"]').type('300')
 
-      cy.get('.dialog-option__item [name="value"]').type(url)
+      cy.get('.dialog-option__item [name="src"]').type(url)
 
       cy.get('.dialog-menu button')
         .eq(1)
