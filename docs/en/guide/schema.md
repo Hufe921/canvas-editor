@@ -139,7 +139,8 @@ interface IElement {
       VIDEO = 'video'
     };
     iframeBlock?: {
-      src: string;
+      src?: string;
+      srcdoc?: string;
     };
     videoBlock?: {
       src: string;

@@ -900,32 +900,43 @@ window.onload = function () {
           placeholder: '请输入高度'
         },
         {
-          type: 'textarea',
+          type: 'input',
           label: '地址',
-          height: 100,
-          name: 'value',
-          required: true,
+          name: 'src',
+          required: false,
           placeholder: '请输入地址'
+        },
+        {
+          type: 'textarea',
+          label: 'HTML',
+          height: 100,
+          name: 'srcdoc',
+          required: false,
+          placeholder: '请输入HTML代码（仅网址类型有效）'
         }
       ],
       onConfirm: payload => {
         const type = payload.find(p => p.name === 'type')?.value
         if (!type) return
-        const value = payload.find(p => p.name === 'value')?.value
-        if (!value) return
         const width = payload.find(p => p.name === 'width')?.value
         const height = payload.find(p => p.name === 'height')?.value
         if (!height) return
+        // 地址或HTML代码至少存在一项
+        const src = payload.find(p => p.name === 'src')?.value
+        const srcdoc = payload.find(p => p.name === 'srcdoc')?.value
         const block: IBlock = {
           type: <BlockType>type
         }
         if (block.type === BlockType.IFRAME) {
+          if (!src && !srcdoc) return
           block.iframeBlock = {
-            src: value
+            src,
+            srcdoc
           }
         } else if (block.type === BlockType.VIDEO) {
+          if (!src) return
           block.videoBlock = {
-            src: value
+            src
           }
         }
         const blockElement: IElement = {

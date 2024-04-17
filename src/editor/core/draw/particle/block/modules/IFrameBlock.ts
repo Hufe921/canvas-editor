@@ -20,7 +20,11 @@ export class IFrameBlock {
     iframe.style.border = 'none'
     iframe.style.width = '100%'
     iframe.style.height = '100%'
-    iframe.src = block.iframeBlock?.src || ''
+    if (block.iframeBlock?.src) {
+      iframe.src = block.iframeBlock.src
+    } else if (block.iframeBlock?.srcdoc) {
+      iframe.srcdoc = block.iframeBlock.srcdoc
+    }
     blockItemContainer.append(iframe)
   }
 }
