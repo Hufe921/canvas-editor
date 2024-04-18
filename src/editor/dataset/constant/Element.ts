@@ -105,7 +105,6 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
   'font',
   'size',
   'bold',
-  'color',
   'highlight',
   'italic',
   'strikeout'
