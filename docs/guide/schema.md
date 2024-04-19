@@ -22,6 +22,7 @@ interface IElement {
   };
   value: string;
   valueList?: IElement[]; // 复合元素（超链接、标题、列表等）使用
+  extension?: unknown;
   // 样式
   font?: string;
   size?: number;
@@ -138,7 +139,8 @@ interface IElement {
       VIDEO = 'video'
     };
     iframeBlock?: {
-      src: string;
+      src?: string;
+      srcdoc?: string;
     };
     videoBlock?: {
       src: string;

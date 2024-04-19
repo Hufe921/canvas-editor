@@ -56,7 +56,6 @@ export interface IControlStyle {
   font?: string
   size?: number
   bold?: boolean
-  color?: string
   highlight?: string
   italic?: boolean
   strikeout?: boolean

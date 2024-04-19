@@ -70,7 +70,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'conceptId',
   'imgDisplay',
   'imgFloatPosition',
-  'textDecoration'
+  'textDecoration',
+  'extension'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
@@ -104,7 +105,6 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
   'font',
   'size',
   'bold',
-  'color',
   'highlight',
   'italic',
   'strikeout'

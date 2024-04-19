@@ -1,3 +1,29 @@
+## [0.9.74](https://github.com/Hufe921/canvas-editor/compare/v0.9.73...v0.9.74) (2024-04-19)
+
+
+### Bug Fixes
+
+* control component disabling segmenter ([868a791](https://github.com/Hufe921/canvas-editor/commit/868a79148d8e68ba1b34ddd8d37941e3e26988d7))
+* delete default control color property #513 ([224ead0](https://github.com/Hufe921/canvas-editor/commit/224ead0dff28f333e04bfb7c7ba4068d32670e52)), closes [#513](https://github.com/Hufe921/canvas-editor/issues/513)
+* disable control placeholder selection #511 ([2985d6b](https://github.com/Hufe921/canvas-editor/commit/2985d6b62ee5311a5f8350282f313e9faca95204)), closes [#511](https://github.com/Hufe921/canvas-editor/issues/511)
+
+
+### Features
+
+* add control border #388 ([de06f6c](https://github.com/Hufe921/canvas-editor/commit/de06f6cc9b2d3f37033647cf159bb9c09a432c1b)), closes [#388](https://github.com/Hufe921/canvas-editor/issues/388)
+* add extension property ([5027d73](https://github.com/Hufe921/canvas-editor/commit/5027d730c4522d496ef933830df026960077e660))
+* add security rules to IFrameBlock element ([cdbd1ff](https://github.com/Hufe921/canvas-editor/commit/cdbd1ff4ded52a588d837c3b2cb04fe6168ed51f))
+* add srcdoc property to IFrameBlock element #454 ([6696992](https://github.com/Hufe921/canvas-editor/commit/66969925ac5193b5a2b0e227df247052cf79364f)), closes [#454](https://github.com/Hufe921/canvas-editor/issues/454)
+* control default style #340 ([eee2236](https://github.com/Hufe921/canvas-editor/commit/eee22363d3a0de8333a6b6f8815ef178fbfc3c8d)), closes [#340](https://github.com/Hufe921/canvas-editor/issues/340)
+* record the first cursor position #517 ([0878506](https://github.com/Hufe921/canvas-editor/commit/087850606224290bc6e1992711416ac0acbfa45b)), closes [#517](https://github.com/Hufe921/canvas-editor/issues/517)
+
+
+### Tests
+
+* update block test case ([6d358d1](https://github.com/Hufe921/canvas-editor/commit/6d358d16dc2eb1af309c554c369f30a805451acc))
+
+
+
 ## [0.9.73](https://github.com/Hufe921/canvas-editor/compare/v0.9.72...v0.9.73) (2024-04-12)
 
 

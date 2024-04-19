@@ -234,10 +234,8 @@ export function formatElementList(
       )
       // 前后缀个性化设置
       const thePrePostfixArg: Omit<IElement, 'value'> = {
-        ...controlDefaultStyle
-      }
-      if (!thePrePostfixArg.color) {
-        thePrePostfixArg.color = editorOptions.control.bracketColor
+        ...controlDefaultStyle,
+        color: editorOptions.control.bracketColor
       }
       // 前缀
       const prefixStrList = splitText(prefix || controlOption.prefix)
@@ -341,10 +339,8 @@ export function formatElementList(
       } else if (placeholder) {
         // placeholder
         const thePlaceholderArgs: Omit<IElement, 'value'> = {
-          ...controlDefaultStyle
-        }
-        if (editorOptions?.control?.placeholderColor) {
-          thePlaceholderArgs.color = editorOptions.control.placeholderColor
+          ...controlDefaultStyle,
+          color: editorOptions.control.placeholderColor
         }
         const placeholderStrList = splitText(placeholder)
         for (let p = 0; p < placeholderStrList.length; p++) {
