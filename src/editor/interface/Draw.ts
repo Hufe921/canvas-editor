@@ -11,6 +11,7 @@ export interface IDrawOption {
   isLazy?: boolean
   isInit?: boolean
   isSourceHistory?: boolean
+  isFirstRender?: boolean
 }
 
 export interface IForceUpdateOption {

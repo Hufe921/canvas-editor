@@ -246,7 +246,8 @@ export class Draw {
 
     this.render({
       isInit: true,
-      isSetCursor: false
+      isSetCursor: false,
+      isFirstRender: true
     })
   }
 
@@ -1013,7 +1014,8 @@ export class Draw {
     // 渲染&计算&清空历史记录
     this.historyManager.recovery()
     this.render({
-      isSetCursor: false
+      isSetCursor: false,
+      isFirstRender: true
     })
   }
 
@@ -2148,7 +2150,8 @@ export class Draw {
       isCompute = true,
       isLazy = true,
       isInit = false,
-      isSourceHistory = false
+      isSourceHistory = false,
+      isFirstRender = false
     } = payload || {}
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
@@ -2232,8 +2235,11 @@ export class Draw {
       }
       this.cursor.drawCursor()
     }
-    // 历史记录用于undo、redo
-    if (isSubmitHistory) {
+    // 历史记录用于undo、redo（非首次渲染内容变更 || 第一次存在光标时）
+    if (
+      (isSubmitHistory && !isFirstRender) ||
+      (curIndex !== undefined && this.historyManager.isStackEmpty())
+    ) {
       const oldElementList = getSlimCloneElementList(this.elementList)
       const oldHeaderElementList = getSlimCloneElementList(
         this.header.getElementList()
