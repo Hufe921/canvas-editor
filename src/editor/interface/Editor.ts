@@ -13,6 +13,7 @@ import { ICursorOption } from './Cursor'
 import { IFooter } from './Footer'
 import { IGroup } from './Group'
 import { IHeader } from './Header'
+import { ILineBreakOption } from './LineBreak'
 import { IMargin } from './Margin'
 import { IPageBreak } from './PageBreak'
 import { IPageNumber } from './PageNumber'
@@ -83,6 +84,7 @@ export interface IEditorOption {
   pageBreak?: IPageBreak
   zone?: IZoneOption
   background?: IBackgroundOption
+  lineBreak?: ILineBreakOption
 }
 
 export interface IEditorResult {

@@ -93,6 +93,7 @@ import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
+import { LineBreakParticle } from './particle/LineBreakParticle'
 
 export class Draw {
   private container: HTMLDivElement
@@ -143,6 +144,7 @@ export class Draw {
   private checkboxParticle: CheckboxParticle
   private blockParticle: BlockParticle
   private listParticle: ListParticle
+  private lineBreakParticle: LineBreakParticle
   private control: Control
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
@@ -216,6 +218,7 @@ export class Draw {
     this.checkboxParticle = new CheckboxParticle(this)
     this.blockParticle = new BlockParticle(this)
     this.listParticle = new ListParticle(this)
+    this.lineBreakParticle = new LineBreakParticle(this)
     this.control = new Control(this)
 
     this.scrollObserver = new ScrollObserver(this)
@@ -508,6 +511,10 @@ export class Draw {
 
   public getRange(): RangeManager {
     return this.range
+  }
+
+  public getLineBreakParticle(): LineBreakParticle {
+    return this.lineBreakParticle
   }
 
   public getHeaderElementList(): IElement[] {
@@ -1531,7 +1538,8 @@ export class Draw {
         }
       }
       listId = element.listId
-      if (
+      // 是否强制换行
+      const isForceBreak =
         element.type === ElementType.SEPARATOR ||
         element.type === ElementType.TABLE ||
         preElement?.type === ElementType.TABLE ||
@@ -1539,10 +1547,13 @@ export class Draw {
         element.type === ElementType.BLOCK ||
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
-        curRowWidth > availableWidth ||
-        (i !== 0 && element.value === ZERO) ||
-        preElement?.listId !== element.listId
-      ) {
+        preElement?.listId !== element.listId ||
+        (i !== 0 && element.value === ZERO)
+      // 是否宽度不足导致换行
+      const isWidthNotEnough = curRowWidth > availableWidth
+      if (isForceBreak || isWidthNotEnough) {
+        // 换行原因：宽度不足
+        curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
         // 减小行元素前第一行空行行高
         if (
           curRow.startIndex === 0 &&
@@ -1702,10 +1713,17 @@ export class Draw {
     // 优先绘制高亮元素
     this._drawHighlight(ctx, payload)
     // 绘制元素、下划线、删除线、选区
-    const { rowList, pageNo, elementList, positionList, startIndex, zone } =
-      payload
+    const { scale, tdPadding, group, lineBreak } = this.options
+    const {
+      rowList,
+      pageNo,
+      elementList,
+      positionList,
+      startIndex,
+      zone,
+      isDrawLineBreak = !lineBreak.disabled
+    } = payload
     const isPrintMode = this.mode === EditorMode.PRINT
-    const { scale, tdPadding, group } = this.options
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -1806,6 +1824,14 @@ export class Draw {
           ) {
             this.textParticle.complete()
           }
+        }
+        // 换行符绘制
+        if (
+          isDrawLineBreak &&
+          !curRow.isWidthNotEnough &&
+          j === curRow.elementList.length - 1
+        ) {
+          this.lineBreakParticle.render(ctx, element, x, y + curRow.height / 2)
         }
         // 边框绘制（目前仅支持控件）
         if (element.control?.border) {
@@ -1961,7 +1987,8 @@ export class Draw {
                 pageNo,
                 startIndex: 0,
                 innerWidth: (td.width! - tdPaddingWidth) * scale,
-                zone
+                zone,
+                isDrawLineBreak
               })
             }
           }

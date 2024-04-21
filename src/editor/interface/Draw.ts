@@ -32,6 +32,7 @@ export interface IDrawRowPayload {
   startIndex: number
   innerWidth: number
   zone?: EditorZone
+  isDrawLineBreak?: boolean
 }
 
 export interface IDrawFloatPayload {
