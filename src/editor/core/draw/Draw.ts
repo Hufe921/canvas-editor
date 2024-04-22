@@ -1519,8 +1519,11 @@ export class Draw {
               elementList,
               i
             )
-            curRowWidth += width
-            nextElement = endElement
+            // 单词宽度大于行可用宽度，无需折行
+            if (width <= availableWidth) {
+              curRowWidth += width
+              nextElement = endElement
+            }
           }
           // 标点符号
           curRowWidth += this.textParticle.measurePunctuationWidth(
