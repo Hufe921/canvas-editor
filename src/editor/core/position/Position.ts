@@ -121,10 +121,11 @@ export class Position {
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       // 计算行偏移量（行居中、居右）
+      const curRowWidth = curRow.width + (curRow.offsetX || 0)
       if (curRow.rowFlex === RowFlex.CENTER) {
-        x += (innerWidth - curRow.width) / 2
+        x += (innerWidth - curRowWidth) / 2
       } else if (curRow.rowFlex === RowFlex.RIGHT) {
-        x += innerWidth - curRow.width
+        x += innerWidth - curRowWidth
       }
       // 当前行X轴偏移量
       x += curRow.offsetX || 0
