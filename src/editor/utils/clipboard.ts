@@ -79,3 +79,15 @@ export function writeElementList(
   if (!text && !html && !elementList.length) return
   writeClipboardItem(text, html, zipElementList(elementList))
 }
+
+export function getIsClipboardContainFile(clipboardData: DataTransfer) {
+  let isFile = false
+  for (let i = 0; i < clipboardData.items.length; i++) {
+    const item = clipboardData.items[i]
+    if (item.kind === 'file') {
+      isFile = true
+      break
+    }
+  }
+  return isFile
+}

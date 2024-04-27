@@ -3,7 +3,11 @@ import { VIRTUAL_ELEMENT_TYPE } from '../../../dataset/constant/Element'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { IPasteOption } from '../../../interface/Event'
-import { getClipboardData, removeClipboardData } from '../../../utils/clipboard'
+import {
+  getClipboardData,
+  getIsClipboardContainFile,
+  removeClipboardData
+} from '../../../utils/clipboard'
 import {
   formatElementContext,
   getElementListByHTML
@@ -104,12 +108,14 @@ export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
     paste(evt)
     return
   }
-  // 优先读取编辑器内部粘贴板数据
-  const clipboardText = clipboardData.getData('text')
-  const editorClipboardData = getClipboardData()
-  if (clipboardText === editorClipboardData?.text) {
-    pasteElement(host, editorClipboardData.elementList)
-    return
+  // 优先读取编辑器内部粘贴板数据（粘贴板不包含文件时）
+  if (!getIsClipboardContainFile(clipboardData)) {
+    const clipboardText = clipboardData.getData('text')
+    const editorClipboardData = getClipboardData()
+    if (clipboardText === editorClipboardData?.text) {
+      pasteElement(host, editorClipboardData.elementList)
+      return
+    }
   }
   removeClipboardData()
   // 从粘贴板提取数据
