@@ -1,3 +1,25 @@
+## [0.9.75](https://github.com/Hufe921/canvas-editor/compare/v0.9.74...v0.9.75) (2024-04-27)
+
+
+### Bug Fixes
+
+* control element rendering boundary error in table #527 ([f41cea2](https://github.com/Hufe921/canvas-editor/commit/f41cea244309e98ca880c74aaa4e0f3a2811ad66)), closes [#527](https://github.com/Hufe921/canvas-editor/issues/527)
+* list position error when setting row flex #523 ([3fdd4de](https://github.com/Hufe921/canvas-editor/commit/3fdd4dedf434a45ded0c7114cf1cd0c8a1e94a18)), closes [#523](https://github.com/Hufe921/canvas-editor/issues/523)
+* search for duplicate keyword boundary error #528 ([d4c6cd2](https://github.com/Hufe921/canvas-editor/commit/d4c6cd25f639ea5d933e2c4a2d006c96e3138219)), closes [#528](https://github.com/Hufe921/canvas-editor/issues/528)
+* word break boundary error #521 ([4d1a0b6](https://github.com/Hufe921/canvas-editor/commit/4d1a0b69f876eada2d0c5d866bd25464d2587a79)), closes [#521](https://github.com/Hufe921/canvas-editor/issues/521)
+
+
+### Chores
+
+* add editor option settings in the demo ([07956ca](https://github.com/Hufe921/canvas-editor/commit/07956caec20eea75c994e968429028ebcfb174f4))
+
+
+### Features
+
+* draw line break marker #520 ([4c2b8fc](https://github.com/Hufe921/canvas-editor/commit/4c2b8fc20af98533796d5c4fec0d8d0c3d876116)), closes [#520](https://github.com/Hufe921/canvas-editor/issues/520)
+
+
+
 ## [0.9.74](https://github.com/Hufe921/canvas-editor/compare/v0.9.73...v0.9.74) (2024-04-19)
 
 
