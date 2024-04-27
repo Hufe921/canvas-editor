@@ -227,6 +227,8 @@ export function formatElementList(
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
+      // 控件上下文提取（压缩后的控件上下文无法提取）
+      const controlContext = pickObject(el, EDITOR_ELEMENT_CONTEXT_ATTR)
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
         <IElement>(<unknown>el.control),
@@ -242,6 +244,7 @@ export function formatElementList(
       for (let p = 0; p < prefixStrList.length; p++) {
         const value = prefixStrList[p]
         elementList.splice(i, 0, {
+          ...controlContext,
           ...thePrePostfixArg,
           controlId,
           value,
@@ -274,6 +277,7 @@ export function formatElementList(
               const valueSet = valueSets[v]
               // checkbox组件
               elementList.splice(i, 0, {
+                ...controlContext,
                 controlId,
                 value: '',
                 type: el.type,
@@ -291,6 +295,7 @@ export function formatElementList(
                 const value = valueStrList[e]
                 const isLastLetter = e === valueStrList.length - 1
                 elementList.splice(i, 0, {
+                  ...controlContext,
                   ...controlDefaultStyle,
                   ...valueStyleList[valueStyleIndex],
                   controlId,
@@ -325,6 +330,7 @@ export function formatElementList(
             const element = valueList[v]
             const value = element.value
             elementList.splice(i, 0, {
+              ...controlContext,
               ...controlDefaultStyle,
               ...element,
               controlId,
@@ -346,6 +352,7 @@ export function formatElementList(
         for (let p = 0; p < placeholderStrList.length; p++) {
           const value = placeholderStrList[p]
           elementList.splice(i, 0, {
+            ...controlContext,
             ...thePlaceholderArgs,
             controlId,
             value: value === '\n' ? ZERO : value,
@@ -361,6 +368,7 @@ export function formatElementList(
       for (let p = 0; p < postfixStrList.length; p++) {
         const value = postfixStrList[p]
         elementList.splice(i, 0, {
+          ...controlContext,
           ...thePrePostfixArg,
           controlId,
           value,

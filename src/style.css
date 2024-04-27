@@ -983,6 +983,10 @@ ul {
   cursor: pointer;
 }
 
+.footer .editor-option i {
+  background-image: url('./assets/images/option.svg');
+}
+
 .footer .page-scale-minus i {
   background-image: url('./assets/images/page-scale-minus.svg');
 }

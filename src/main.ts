@@ -1103,7 +1103,36 @@ function initEditorInstance(
     instance.command.executePrint()
   }
 
-  // 6. 目录显隐 | 页面模式 | 纸张缩放 | 纸张大小 | 纸张方向 | 页边距 | 全屏
+  // 6. 目录显隐 | 页面模式 | 纸张缩放 | 纸张大小 | 纸张方向 | 页边距 | 全屏 | 设置
+  const editorOptionDom =
+    document.querySelector<HTMLDivElement>('.editor-option')!
+  editorOptionDom.onclick = function () {
+    const options = instance.command.getOptions()
+    new Dialog({
+      title: '编辑器配置',
+      data: [
+        {
+          type: 'textarea',
+          name: 'option',
+          width: 350,
+          height: 300,
+          required: true,
+          value: JSON.stringify(options, null, 2),
+          placeholder: '请输入编辑器配置'
+        }
+      ],
+      onConfirm: payload => {
+        const newOptionValue = payload.find(p => p.name === 'option')?.value
+        if (!newOptionValue) return
+        const newOption = JSON.parse(newOptionValue)
+        Object.keys(newOption).forEach(key => {
+          Reflect.set(options, key, newOption[key])
+        })
+        instance.command.executeForceUpdate()
+      }
+    })
+  }
+
   async function updateCatalog() {
     const catalog = await instance.command.getCatalog()
     const catalogMainDom =

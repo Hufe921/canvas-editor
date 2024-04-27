@@ -1787,7 +1787,7 @@ export class CommandAdapt {
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const { value, width, height } = payload
-    this.draw.insertElementList([
+    this.insertElementList([
       {
         value,
         width,
