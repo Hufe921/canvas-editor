@@ -61,11 +61,10 @@ export class CheckboxParticle {
       // 勾选对号
       ctx.beginPath()
       ctx.strokeStyle = fontStyle
-      ctx.lineWidth = lineWidth * 2
-      ctx.moveTo(left + 2 * scale, top + 7 * scale)
-      ctx.lineTo(left + 7 * scale, top + 11 * scale)
-      ctx.moveTo(left + 6.5 * scale, top + 11 * scale)
-      ctx.lineTo(left + 12 * scale, top + 3 * scale)
+      ctx.lineWidth = lineWidth * 2 * scale
+      ctx.moveTo(left + 2 * scale, top + height / 2)
+      ctx.lineTo(left + width / 2, top + height - 3 * scale)
+      ctx.lineTo(left + width - 2 * scale, top + 3 * scale)
       ctx.stroke()
     } else {
       ctx.lineWidth = lineWidth

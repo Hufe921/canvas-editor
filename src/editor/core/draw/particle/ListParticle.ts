@@ -133,13 +133,16 @@ export class ListParticle {
     ctx: CanvasRenderingContext2D,
     listElementList: IElement[]
   ): number {
-    const { scale } = this.options
+    const { scale, checkbox } = this.options
     const startElement = listElementList[0]
     // 非递增样式返回固定值
     if (
       startElement.listStyle &&
       startElement.listStyle !== ListStyle.DECIMAL
     ) {
+      if (startElement.listStyle === ListStyle.CHECKBOX) {
+        return (checkbox.width + this.LIST_GAP) * scale
+      }
       return this.UN_COUNT_STYLE_WIDTH * scale
     }
     // 计算列表数量
