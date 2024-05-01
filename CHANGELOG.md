@@ -1,3 +1,110 @@
+## [0.9.75](https://github.com/Hufe921/canvas-editor/compare/v0.9.74...v0.9.75) (2024-04-27)
+
+
+### Bug Fixes
+
+* control element rendering boundary error in table #527 ([f41cea2](https://github.com/Hufe921/canvas-editor/commit/f41cea244309e98ca880c74aaa4e0f3a2811ad66)), closes [#527](https://github.com/Hufe921/canvas-editor/issues/527)
+* list position error when setting row flex #523 ([3fdd4de](https://github.com/Hufe921/canvas-editor/commit/3fdd4dedf434a45ded0c7114cf1cd0c8a1e94a18)), closes [#523](https://github.com/Hufe921/canvas-editor/issues/523)
+* search for duplicate keyword boundary error #528 ([d4c6cd2](https://github.com/Hufe921/canvas-editor/commit/d4c6cd25f639ea5d933e2c4a2d006c96e3138219)), closes [#528](https://github.com/Hufe921/canvas-editor/issues/528)
+* word break boundary error #521 ([4d1a0b6](https://github.com/Hufe921/canvas-editor/commit/4d1a0b69f876eada2d0c5d866bd25464d2587a79)), closes [#521](https://github.com/Hufe921/canvas-editor/issues/521)
+
+
+### Chores
+
+* add editor option settings in the demo ([07956ca](https://github.com/Hufe921/canvas-editor/commit/07956caec20eea75c994e968429028ebcfb174f4))
+
+
+### Features
+
+* draw line break marker #520 ([4c2b8fc](https://github.com/Hufe921/canvas-editor/commit/4c2b8fc20af98533796d5c4fec0d8d0c3d876116)), closes [#520](https://github.com/Hufe921/canvas-editor/issues/520)
+
+
+
+## [0.9.74](https://github.com/Hufe921/canvas-editor/compare/v0.9.73...v0.9.74) (2024-04-19)
+
+
+### Bug Fixes
+
+* control component disabling segmenter ([868a791](https://github.com/Hufe921/canvas-editor/commit/868a79148d8e68ba1b34ddd8d37941e3e26988d7))
+* delete default control color property #513 ([224ead0](https://github.com/Hufe921/canvas-editor/commit/224ead0dff28f333e04bfb7c7ba4068d32670e52)), closes [#513](https://github.com/Hufe921/canvas-editor/issues/513)
+* disable control placeholder selection #511 ([2985d6b](https://github.com/Hufe921/canvas-editor/commit/2985d6b62ee5311a5f8350282f313e9faca95204)), closes [#511](https://github.com/Hufe921/canvas-editor/issues/511)
+
+
+### Features
+
+* add control border #388 ([de06f6c](https://github.com/Hufe921/canvas-editor/commit/de06f6cc9b2d3f37033647cf159bb9c09a432c1b)), closes [#388](https://github.com/Hufe921/canvas-editor/issues/388)
+* add extension property ([5027d73](https://github.com/Hufe921/canvas-editor/commit/5027d730c4522d496ef933830df026960077e660))
+* add security rules to IFrameBlock element ([cdbd1ff](https://github.com/Hufe921/canvas-editor/commit/cdbd1ff4ded52a588d837c3b2cb04fe6168ed51f))
+* add srcdoc property to IFrameBlock element #454 ([6696992](https://github.com/Hufe921/canvas-editor/commit/66969925ac5193b5a2b0e227df247052cf79364f)), closes [#454](https://github.com/Hufe921/canvas-editor/issues/454)
+* control default style #340 ([eee2236](https://github.com/Hufe921/canvas-editor/commit/eee22363d3a0de8333a6b6f8815ef178fbfc3c8d)), closes [#340](https://github.com/Hufe921/canvas-editor/issues/340)
+* record the first cursor position #517 ([0878506](https://github.com/Hufe921/canvas-editor/commit/087850606224290bc6e1992711416ac0acbfa45b)), closes [#517](https://github.com/Hufe921/canvas-editor/issues/517)
+
+
+### Tests
+
+* update block test case ([6d358d1](https://github.com/Hufe921/canvas-editor/commit/6d358d16dc2eb1af309c554c369f30a805451acc))
+
+
+
+## [0.9.73](https://github.com/Hufe921/canvas-editor/compare/v0.9.72...v0.9.73) (2024-04-12)
+
+
+### Bug Fixes
+
+* add context param to the shrinkBoundary function #503 ([6f690a8](https://github.com/Hufe921/canvas-editor/commit/6f690a805ff385ce4e6ed3959285ceeb730567bf)), closes [#503](https://github.com/Hufe921/canvas-editor/issues/503)
+* checkbox list cannot be selected within the table ([632f8f5](https://github.com/Hufe921/canvas-editor/commit/632f8f5af8d626d28a306c212419565bf216c997))
+* disable table pagination in continuous page mode ([d0500ac](https://github.com/Hufe921/canvas-editor/commit/d0500ac58345b689bd3f331342e7c08ca1684094))
+* format list elements boundary error ([21807a6](https://github.com/Hufe921/canvas-editor/commit/21807a6f7e7b73adf0696ea848fb0b7ebdbf14ea))
+
+
+### Chores
+
+* upgrade typescript version ([7e5a1ac](https://github.com/Hufe921/canvas-editor/commit/7e5a1ac04c1866ceb6b27131d7b2cf7f5fa46fe4))
+
+
+### Features
+
+* add checkbox list #385 ([a546262](https://github.com/Hufe921/canvas-editor/commit/a546262b9d7e94011565198e0f18e7671b5439b0)), closes [#385](https://github.com/Hufe921/canvas-editor/issues/385)
+* double click the selected text through the segmenter #510 ([3f8399d](https://github.com/Hufe921/canvas-editor/commit/3f8399de6299331c07e3d7c3c8d16dee64528d4a)), closes [#510](https://github.com/Hufe921/canvas-editor/issues/510)
+* the getText method add list style conversion ([f80e004](https://github.com/Hufe921/canvas-editor/commit/f80e004917d53cbb3868c940c26d94f85d0d8615))
+* the getText method add tab conversion #507 ([762f10c](https://github.com/Hufe921/canvas-editor/commit/762f10c37729a2d51dd3a79e6f3b8c9e3134926b)), closes [#507](https://github.com/Hufe921/canvas-editor/issues/507)
+
+
+
+## [0.9.72](https://github.com/Hufe921/canvas-editor/compare/v0.9.71...v0.9.72) (2024-04-06)
+
+
+### Bug Fixes
+
+* cannot page when merge cells across columns in the same row #41 ([5851e61](https://github.com/Hufe921/canvas-editor/commit/5851e61cfcbb14fa199b507dc429917075659161)), closes [#41](https://github.com/Hufe921/canvas-editor/issues/41)
+* format text class elements boundary error ([95b337d](https://github.com/Hufe921/canvas-editor/commit/95b337de05df74a07d086dbec6c6c52ab95ba43a))
+* strikeout style rendering position #498 ([46e153d](https://github.com/Hufe921/canvas-editor/commit/46e153d588e78302e26827461a06682bbccd75aa)), closes [#498](https://github.com/Hufe921/canvas-editor/issues/498)
+* table range drawing boundary error ([1df98b9](https://github.com/Hufe921/canvas-editor/commit/1df98b9359f3ec4184a7045cfcea93e156ef7f9f))
+
+
+### Features
+
+* add isTable property to the RangeContext interface ([9ad991a](https://github.com/Hufe921/canvas-editor/commit/9ad991a3934fc284bb829d2652a739cfbec80eee))
+
+
+
+## [0.9.71](https://github.com/Hufe921/canvas-editor/compare/v0.9.70...v0.9.71) (2024-03-29)
+
+
+### Bug Fixes
+
+* adjust the order of rich text rendering ([7458a9f](https://github.com/Hufe921/canvas-editor/commit/7458a9fd2036819a5646d7cf5563f03d1e7ce48b))
+* cannot deletable elements boundary error #491 ([291ea26](https://github.com/Hufe921/canvas-editor/commit/291ea26b06c39b6649dbc6fff2fdb75748756556)), closes [#491](https://github.com/Hufe921/canvas-editor/issues/491)
+* control front and back operation boundary error ([1bb7a58](https://github.com/Hufe921/canvas-editor/commit/1bb7a58f5eaee8d09fadecbd1ee8717dd2763086))
+* punctuation symbols rendered separately ([d91b47c](https://github.com/Hufe921/canvas-editor/commit/d91b47cee540f562647e0d84ec04191a65945123))
+
+
+### Features
+
+* move between table cells using up and down keys #465 ([2de1ba7](https://github.com/Hufe921/canvas-editor/commit/2de1ba7b62cc04307abeaec78b61516db41a71aa)), closes [#465](https://github.com/Hufe921/canvas-editor/issues/465)
+
+
+
 ## [0.9.70](https://github.com/Hufe921/canvas-editor/compare/v0.9.69...v0.9.70) (2024-03-22)
 
 

@@ -37,25 +37,26 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   if (evt.shiftKey && startElement.listId) {
     enterText.listWrap = true
   }
-  // 标题结尾处回车无需格式化
+  // 标题结尾处回车无需格式化及样式复制
   if (
     !(
       endElement.titleId &&
       endElement.titleId !== elementList[endIndex + 1]?.titleId
     )
   ) {
+    // 格式化上下文
     formatElementContext(elementList, [enterText], startIndex)
-  }
-  // 复制样式属性
-  const copyElement = getAnchorElement(elementList, endIndex)
-  if (copyElement) {
-    const copyAttr = [...EDITOR_ELEMENT_STYLE_ATTR, ...EDITOR_ROW_ATTR]
-    copyAttr.forEach(attr => {
-      const value = copyElement[attr] as never
-      if (value !== undefined) {
-        enterText[attr] = value
-      }
-    })
+    // 复制样式属性
+    const copyElement = getAnchorElement(elementList, endIndex)
+    if (copyElement) {
+      const copyAttr = [...EDITOR_ELEMENT_STYLE_ATTR, ...EDITOR_ROW_ATTR]
+      copyAttr.forEach(attr => {
+        const value = copyElement[attr] as never
+        if (value !== undefined) {
+          enterText[attr] = value
+        }
+      })
+    }
   }
   // 控件或文档插入换行元素
   const control = draw.getControl()

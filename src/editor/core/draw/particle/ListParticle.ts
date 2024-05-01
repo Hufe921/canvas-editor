@@ -6,7 +6,7 @@ import { ListStyle, ListType, UlStyle } from '../../../dataset/enum/List'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
-import { IRow } from '../../../interface/Row'
+import { IRow, IRowElement } from '../../../interface/Row'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -133,13 +133,16 @@ export class ListParticle {
     ctx: CanvasRenderingContext2D,
     listElementList: IElement[]
   ): number {
-    const { scale } = this.options
+    const { scale, checkbox } = this.options
     const startElement = listElementList[0]
     // 非递增样式返回固定值
     if (
       startElement.listStyle &&
       startElement.listStyle !== ListStyle.DECIMAL
     ) {
+      if (startElement.listStyle === ListStyle.CHECKBOX) {
+        return (checkbox.width + this.LIST_GAP) * scale
+      }
       return this.UN_COUNT_STYLE_WIDTH * scale
     }
     // 计算列表数量
@@ -174,15 +177,7 @@ export class ListParticle {
       if (element?.type !== ElementType.TAB) break
       tabWidth += defaultTabWidth * scale
     }
-    let text = ''
-    if (startElement.listType === ListType.UL) {
-      text =
-        ulStyleMapping[<UlStyle>(<unknown>startElement.listStyle)] ||
-        ulStyleMapping[UlStyle.DISC]
-    } else {
-      text = `${listIndex! + 1}${KeyMap.PERIOD}`
-    }
-    if (!text) return
+    // 列表样式渲染
     const {
       coordinate: {
         leftTop: [startX, startY]
@@ -190,9 +185,37 @@ export class ListParticle {
     } = position
     const x = startX - offsetX! + tabWidth
     const y = startY + ascent
-    ctx.save()
-    ctx.font = `${defaultSize * scale}px ${defaultFont}`
-    ctx.fillText(text, x, y)
-    ctx.restore()
+    // 复选框样式特殊处理
+    if (startElement.listStyle === ListStyle.CHECKBOX) {
+      const { width, height, gap } = this.options.checkbox
+      const checkboxRowElement: IRowElement = {
+        ...startElement,
+        checkbox: {
+          value: !!startElement.checkbox?.value
+        },
+        metrics: {
+          ...startElement.metrics,
+          width: (width + gap * 2) * scale,
+          height: height * scale
+        }
+      }
+      this.draw
+        .getCheckboxParticle()
+        .render(ctx, checkboxRowElement, x - gap * scale, y)
+    } else {
+      let text = ''
+      if (startElement.listType === ListType.UL) {
+        text =
+          ulStyleMapping[<UlStyle>(<unknown>startElement.listStyle)] ||
+          ulStyleMapping[UlStyle.DISC]
+      } else {
+        text = `${listIndex! + 1}${KeyMap.PERIOD}`
+      }
+      if (!text) return
+      ctx.save()
+      ctx.font = `${defaultSize * scale}px ${defaultFont}`
+      ctx.fillText(text, x, y)
+      ctx.restore()
+    }
   }
 }

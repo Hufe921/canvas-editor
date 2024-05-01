@@ -5,6 +5,7 @@ import { IRow } from '../../../interface/Row'
 import { formatElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
+import { LineBreakParticle } from '../particle/LineBreakParticle'
 
 export class Placeholder {
   private draw: Draw
@@ -38,14 +39,22 @@ export class Placeholder {
 
   private _computeRowList() {
     const innerWidth = this.draw.getInnerWidth()
-    this.rowList = this.draw.computeRowList(innerWidth, this.elementList)
+    this.rowList = this.draw.computeRowList({
+      innerWidth,
+      elementList: this.elementList
+    })
   }
 
   private _computePositionList() {
+    const { lineBreak, scale } = this.options
     const headerExtraHeight = this.draw.getHeader().getExtraHeight()
     const innerWidth = this.draw.getInnerWidth()
     const margins = this.draw.getMargins()
-    const startX = margins[3]
+    let startX = margins[3]
+    // 换行符绘制开启时，移动起始位置
+    if (!lineBreak.disabled) {
+      startX += (LineBreakParticle.WIDTH + LineBreakParticle.GAP) * scale
+    }
     const startY = margins[0] + headerExtraHeight
     this.position.computePageRowPosition({
       positionList: this.positionList,
@@ -89,7 +98,8 @@ export class Placeholder {
       rowList: this.rowList,
       pageNo: 0,
       startIndex: 0,
-      innerWidth
+      innerWidth,
+      isDrawLineBreak: false
     })
     ctx.restore()
   }

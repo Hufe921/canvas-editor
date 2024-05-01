@@ -2,7 +2,7 @@
   "name": "@hufe921/canvas-editor",
   "author": "Hufe",
   "license": "MIT",
-  "version": "0.9.70",
+  "version": "0.9.75",
   "description": "rich text editor by canvas/svg",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
@@ -30,7 +30,7 @@
     "emr"
   ],
   "engines": {
-    "node": ">=12.0.0"
+    "node": ">=16.9.1"
   },
   "type": "module",
   "scripts": {
@@ -50,15 +50,15 @@
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "^10.0.1",
-    "@types/node": "^16.11.12",
+    "@types/node": "16.18.96",
     "@types/prismjs": "^1.26.0",
-    "@typescript-eslint/eslint-plugin": "4.33.0",
-    "@typescript-eslint/parser": "4.33.0",
+    "@typescript-eslint/eslint-plugin": "5.62.0",
+    "@typescript-eslint/parser": "5.62.0",
     "cypress": "13.6.0",
     "cypress-file-upload": "^5.0.8",
     "eslint": "7.32.0",
     "simple-git-hooks": "^2.8.1",
-    "typescript": "^4.3.2",
+    "typescript": "4.9.5",
     "vite": "^2.4.2",
     "vite-plugin-css-injected-by-js": "^2.1.1",
     "vitepress": "1.0.0-beta.6",

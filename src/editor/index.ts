@@ -78,6 +78,8 @@ import { IBackgroundOption } from './interface/Background'
 import { defaultBackground } from './dataset/constant/Background'
 import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
+import { ILineBreakOption } from './interface/LineBreak'
+import { defaultLineBreak } from './dataset/constant/LineBreak'
 
 export default class Editor {
   public command: Command
@@ -149,6 +151,10 @@ export default class Editor {
       ...defaultBackground,
       ...options.background
     }
+    const lineBreakOptions: Required<ILineBreakOption> = {
+      ...defaultLineBreak,
+      ...options.lineBreak
+    }
 
     const editorOptions: DeepRequired<IEditorOption> = {
       mode: EditorMode.EDIT,
@@ -207,7 +213,8 @@ export default class Editor {
       group: groupOptions,
       pageBreak: pageBreakOptions,
       zone: zoneOptions,
-      background: backgroundOptions
+      background: backgroundOptions,
+      lineBreak: lineBreakOptions
     }
     // 数据处理
     data = deepClone(data)

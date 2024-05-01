@@ -35,7 +35,7 @@ export class RadioParticle {
     y: number
   ) {
     const {
-      radio: { gap, lineWidth, fillStyle, fontStyle },
+      radio: { gap, lineWidth, fillStyle },
       scale
     } = this.options
     const { metrics, radio } = element

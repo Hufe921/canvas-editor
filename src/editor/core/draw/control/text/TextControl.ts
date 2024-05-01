@@ -1,4 +1,7 @@
-import { TEXTLIKE_ELEMENT_TYPE } from '../../../../dataset/constant/Element'
+import {
+  CONTROL_STYLE_ATTR,
+  TEXTLIKE_ELEMENT_TYPE
+} from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import {
@@ -74,7 +77,7 @@ export class TextControl implements IControlInstance {
     const elementList = context.elementList || this.control.getElementList()
     const range = context.range || this.control.getRange()
     // 收缩边界到Value内
-    this.control.shrinkBoundary()
+    this.control.shrinkBoundary(context)
     const { startIndex, endIndex } = range
     const draw = this.control.getDraw()
     // 移除选区元素
@@ -90,7 +93,11 @@ export class TextControl implements IControlInstance {
       (startElement.type &&
         !TEXTLIKE_ELEMENT_TYPE.includes(startElement.type)) ||
       startElement.controlComponent === ControlComponent.PREFIX
-        ? pickObject(startElement, ['control', 'controlId'])
+        ? pickObject(startElement, [
+            'control',
+            'controlId',
+            ...CONTROL_STYLE_ATTR
+          ])
         : omitObject(startElement, ['type'])
     // 插入起始位置
     const start = range.startIndex + 1

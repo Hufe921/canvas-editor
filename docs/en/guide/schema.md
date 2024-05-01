@@ -22,6 +22,7 @@ interface IElement {
   };
   value: string;
   valueList?: IElement[]; // Use of composite elements (hyperlinks, titles, lists, and so on).
+  extension?: unknown;
   // style
   font?: string;
   size?: number;
@@ -84,6 +85,7 @@ interface IElement {
     postfix?: string;
     minWidth?: number;
     underline?: boolean;
+    border?: boolean;
     extension?: unknown;
     indentation?: ControlIndentation;
     deletable?: boolean;
@@ -100,6 +102,13 @@ interface IElement {
       code?: string;
       disabled?: boolean;
     };
+    font?: string;
+    size?: number;
+    bold?: boolean;
+    color?: string;
+    highlight?: string;
+    italic?: boolean;
+    strikeout?: boolean;
   };
   controlComponent?: {
     PREFIX = 'prefix',
@@ -130,7 +139,8 @@ interface IElement {
       VIDEO = 'video'
     };
     iframeBlock?: {
-      src: string;
+      src?: string;
+      srcdoc?: string;
     };
     videoBlock?: {
       src: string;

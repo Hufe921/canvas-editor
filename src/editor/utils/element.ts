@@ -4,6 +4,7 @@ import {
   deepCloneOmitKeys,
   getUUID,
   isArrayEqual,
+  pickObject,
   splitText
 } from '.'
 import {
@@ -17,6 +18,7 @@ import {
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import {
+  CONTROL_STYLE_ATTR,
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   INLINE_NODE_NAME,
@@ -26,15 +28,19 @@ import {
 } from '../dataset/constant/Element'
 import {
   listStyleCSSMapping,
-  listTypeElementMapping
+  listTypeElementMapping,
+  ulStyleMapping
 } from '../dataset/constant/List'
+import { START_LINE_BREAK_REG } from '../dataset/constant/Regular'
 import {
   titleNodeNameMapping,
   titleOrderNumberMapping,
   titleSizeMapping
 } from '../dataset/constant/Title'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
+import { UlStyle } from '../dataset/enum/List'
 import { DeepRequired } from '../interface/Common'
+import { IControlSelect } from '../interface/Control'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
@@ -65,11 +71,12 @@ export function formatElementList(
     ...options
   }
   const startElement = elementList[0]
-  // 非首字符零宽节点文本元素则补偿
+  // 非首字符零宽节点文本元素则补偿-列表元素内部会补偿此处忽略
   if (
     isHandleFirstElement &&
+    startElement?.type !== ElementType.LIST &&
     ((startElement?.type && startElement.type !== ElementType.TEXT) ||
-      (startElement?.value !== ZERO && startElement?.value !== '\n'))
+      !START_LINE_BREAK_REG.test(startElement?.value))
   ) {
     elementList.unshift({
       value: ZERO
@@ -218,22 +225,30 @@ export function formatElementList(
       const controlId = getUUID()
       // 移除父节点
       elementList.splice(i, 1)
+      // 控件上下文提取（压缩后的控件上下文无法提取）
+      const controlContext = pickObject(el, EDITOR_ELEMENT_CONTEXT_ATTR)
+      // 控件设置的默认样式（以前缀为基准）
+      const controlDefaultStyle = pickObject(
+        <IElement>(<unknown>el.control),
+        CONTROL_STYLE_ATTR
+      )
       // 前后缀个性化设置
-      const thePrePostfixArgs: Pick<IElement, 'color'> = {}
-      if (editorOptions && editorOptions.control) {
-        thePrePostfixArgs.color = editorOptions.control.bracketColor
+      const thePrePostfixArg: Omit<IElement, 'value'> = {
+        ...controlDefaultStyle,
+        color: editorOptions.control.bracketColor
       }
       // 前缀
       const prefixStrList = splitText(prefix || controlOption.prefix)
       for (let p = 0; p < prefixStrList.length; p++) {
         const value = prefixStrList[p]
         elementList.splice(i, 0, {
+          ...controlContext,
+          ...thePrePostfixArg,
           controlId,
           value,
           type: el.type,
           control: el.control,
-          controlComponent: ControlComponent.PREFIX,
-          ...thePrePostfixArgs
+          controlComponent: ControlComponent.PREFIX
         })
         i++
       }
@@ -261,6 +276,7 @@ export function formatElementList(
               const valueSet = valueSets[v]
               // checkbox组件
               elementList.splice(i, 0, {
+                ...controlContext,
                 controlId,
                 value: '',
                 type: el.type,
@@ -278,6 +294,8 @@ export function formatElementList(
                 const value = valueStrList[e]
                 const isLastLetter = e === valueStrList.length - 1
                 elementList.splice(i, 0, {
+                  ...controlContext,
+                  ...controlDefaultStyle,
                   ...valueStyleList[valueStyleIndex],
                   controlId,
                   value: value === '\n' ? ZERO : value,
@@ -359,6 +377,8 @@ export function formatElementList(
             const element = valueList[v]
             const value = element.value
             elementList.splice(i, 0, {
+              ...controlContext,
+              ...controlDefaultStyle,
               ...element,
               controlId,
               value: value === '\n' ? ZERO : value,
@@ -371,20 +391,21 @@ export function formatElementList(
         }
       } else if (placeholder) {
         // placeholder
-        const thePlaceholderArgs: Pick<IElement, 'color'> = {}
-        if (editorOptions && editorOptions.control) {
-          thePlaceholderArgs.color = editorOptions.control.placeholderColor
+        const thePlaceholderArgs: Omit<IElement, 'value'> = {
+          ...controlDefaultStyle,
+          color: editorOptions.control.placeholderColor
         }
         const placeholderStrList = splitText(placeholder)
         for (let p = 0; p < placeholderStrList.length; p++) {
           const value = placeholderStrList[p]
           elementList.splice(i, 0, {
+            ...controlContext,
+            ...thePlaceholderArgs,
             controlId,
             value: value === '\n' ? ZERO : value,
             type: el.type,
             control: el.control,
-            controlComponent: ControlComponent.PLACEHOLDER,
-            ...thePlaceholderArgs
+            controlComponent: ControlComponent.PLACEHOLDER
           })
           i++
         }
@@ -394,18 +415,19 @@ export function formatElementList(
       for (let p = 0; p < postfixStrList.length; p++) {
         const value = postfixStrList[p]
         elementList.splice(i, 0, {
+          ...controlContext,
+          ...thePrePostfixArg,
           controlId,
           value,
           type: el.type,
           control: el.control,
-          controlComponent: ControlComponent.POSTFIX,
-          ...thePrePostfixArgs
+          controlComponent: ControlComponent.POSTFIX
         })
         i++
       }
       i--
     } else if (
-      (!el.type || el.type === ElementType.TEXT) &&
+      (!el.type || TEXTLIKE_ELEMENT_TYPE.includes(el.type)) &&
       el.value.length > 1
     ) {
       elementList.splice(i, 1)
@@ -478,10 +500,11 @@ export function zipElementList(payload: IElement[]): IElement[] {
   let e = 0
   while (e < elementList.length) {
     let element = elementList[e]
-    // 上下文首字符（占位符）
+    // 上下文首字符（占位符）-列表首字符要保留避免是复选框
     if (
       e === 0 &&
       element.value === ZERO &&
+      !element.listId &&
       (!element.type || element.type === ElementType.TEXT)
     ) {
       e++
@@ -491,51 +514,55 @@ export function zipElementList(payload: IElement[]): IElement[] {
     if (element.titleId && element.level) {
       // 标题处理
       const titleId = element.titleId
-      const level = element.level
-      const titleElement: IElement = {
-        type: ElementType.TITLE,
-        value: '',
-        level
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const titleE = elementList[e]
-        if (titleId !== titleE.titleId) {
-          e--
-          break
+      if (titleId) {
+        const level = element.level
+        const titleElement: IElement = {
+          type: ElementType.TITLE,
+          value: '',
+          level
         }
-        delete titleE.level
-        valueList.push(titleE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const titleE = elementList[e]
+          if (titleId !== titleE.titleId) {
+            e--
+            break
+          }
+          delete titleE.level
+          valueList.push(titleE)
+          e++
+        }
+        titleElement.valueList = zipElementList(valueList)
+        element = titleElement
       }
-      titleElement.valueList = zipElementList(valueList)
-      element = titleElement
     } else if (element.listId && element.listType) {
       // 列表处理
       const listId = element.listId
-      const listType = element.listType
-      const listStyle = element.listStyle
-      const listElement: IElement = {
-        type: ElementType.LIST,
-        value: '',
-        listId,
-        listType,
-        listStyle
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const listE = elementList[e]
-        if (listId !== listE.listId) {
-          e--
-          break
+      if (listId) {
+        const listType = element.listType
+        const listStyle = element.listStyle
+        const listElement: IElement = {
+          type: ElementType.LIST,
+          value: '',
+          listId,
+          listType,
+          listStyle
         }
-        delete listE.listType
-        delete listE.listStyle
-        valueList.push(listE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const listE = elementList[e]
+          if (listId !== listE.listId) {
+            e--
+            break
+          }
+          delete listE.listType
+          delete listE.listStyle
+          valueList.push(listE)
+          e++
+        }
+        listElement.valueList = zipElementList(valueList)
+        element = listElement
       }
-      listElement.valueList = zipElementList(valueList)
-      element = listElement
     } else if (element.type === ElementType.TABLE) {
       // 分页表格先进行合并
       if (element.pagingId) {
@@ -579,71 +606,84 @@ export function zipElementList(payload: IElement[]): IElement[] {
     } else if (element.type === ElementType.HYPERLINK) {
       // 超链接处理
       const hyperlinkId = element.hyperlinkId
-      const hyperlinkElement: IElement = {
-        type: ElementType.HYPERLINK,
-        value: '',
-        url: element.url
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const hyperlinkE = elementList[e]
-        if (hyperlinkId !== hyperlinkE.hyperlinkId) {
-          e--
-          break
+      if (hyperlinkId) {
+        const hyperlinkElement: IElement = {
+          type: ElementType.HYPERLINK,
+          value: '',
+          url: element.url
         }
-        delete hyperlinkE.type
-        delete hyperlinkE.url
-        valueList.push(hyperlinkE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const hyperlinkE = elementList[e]
+          if (hyperlinkId !== hyperlinkE.hyperlinkId) {
+            e--
+            break
+          }
+          delete hyperlinkE.type
+          delete hyperlinkE.url
+          valueList.push(hyperlinkE)
+          e++
+        }
+        hyperlinkElement.valueList = zipElementList(valueList)
+        element = hyperlinkElement
       }
-      hyperlinkElement.valueList = zipElementList(valueList)
-      element = hyperlinkElement
     } else if (element.type === ElementType.DATE) {
       const dateId = element.dateId
-      const dateElement: IElement = {
-        type: ElementType.DATE,
-        value: '',
-        dateFormat: element.dateFormat
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const dateE = elementList[e]
-        if (dateId !== dateE.dateId) {
-          e--
-          break
+      if (dateId) {
+        const dateElement: IElement = {
+          type: ElementType.DATE,
+          value: '',
+          dateFormat: element.dateFormat
         }
-        delete dateE.type
-        delete dateE.dateFormat
-        valueList.push(dateE)
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const dateE = elementList[e]
+          if (dateId !== dateE.dateId) {
+            e--
+            break
+          }
+          delete dateE.type
+          delete dateE.dateFormat
+          valueList.push(dateE)
+          e++
+        }
+        dateElement.valueList = zipElementList(valueList)
+        element = dateElement
       }
-      dateElement.valueList = zipElementList(valueList)
-      element = dateElement
     } else if (element.controlId) {
       // 控件处理
       const controlId = element.controlId
-      const control = element.control!
-      const controlElement: IElement = {
-        type: ElementType.CONTROL,
-        value: '',
-        control
-      }
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const controlE = elementList[e]
-        if (controlId !== controlE.controlId) {
-          e--
-          break
+      if (controlId) {
+        // 以前缀为基准更新控件默认样式
+        const controlDefaultStyle = <IControlSelect>(
+          (<unknown>pickObject(element, CONTROL_STYLE_ATTR))
+        )
+        const control = {
+          ...element.control!,
+          ...controlDefaultStyle
         }
-        if (controlE.controlComponent === ControlComponent.VALUE) {
-          delete controlE.control
-          delete controlE.controlId
-          valueList.push(controlE)
+        const controlElement: IElement = {
+          type: ElementType.CONTROL,
+          value: '',
+          control
         }
-        e++
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const controlE = elementList[e]
+          if (controlId !== controlE.controlId) {
+            e--
+            break
+          }
+          if (controlE.controlComponent === ControlComponent.VALUE) {
+            delete controlE.control
+            delete controlE.controlId
+            valueList.push(controlE)
+          }
+          e++
+        }
+        controlElement.control!.value = zipElementList(valueList)
+        element = controlElement
       }
-      controlElement.control!.value = zipElementList(valueList)
-      element = controlElement
     }
     // 组合元素
     const pickElement = pickElementAttr(element)
@@ -801,6 +841,9 @@ export function convertElementToDom(
   if (element.underline) {
     dom.style.textDecoration = 'underline'
   }
+  if (element.strikeout) {
+    dom.style.textDecoration += ' line-through'
+  }
   dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
 }
@@ -812,6 +855,11 @@ export function splitListElement(
   const listElementListMap: Map<number, IElement[]> = new Map()
   for (let e = 0; e < elementList.length; e++) {
     const element = elementList[e]
+    // 移除列表首行换行字符-如果是复选框直接忽略
+    if (e === 0) {
+      if (element.checkbox) continue
+      element.value = element.value.replace(START_LINE_BREAK_REG, '')
+    }
     if (element.listWrap) {
       const listElementList = listElementListMap.get(curListIndex) || []
       listElementList.push(element)
@@ -1013,8 +1061,12 @@ export function convertTextNodeToElement(
     element.highlight = style.backgroundColor
   }
   // 下划线
-  if (style.textDecorationLine === 'underline') {
+  if (style.textDecorationLine.includes('underline')) {
     element.underline = true
+  }
+  // 删除线
+  if (style.textDecorationLine.includes('line-through')) {
+    element.strikeout = true
   }
   return element
 }
@@ -1243,6 +1295,8 @@ export function getTextFromElementList(elementList: IElement[]) {
             text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
           }
         }
+      } else if (element.type === ElementType.TAB) {
+        text += `\t`
       } else if (element.type === ElementType.HYPERLINK) {
         text += element.valueList!.map(v => v.value).join('')
       } else if (element.type === ElementType.TITLE) {
@@ -1251,10 +1305,17 @@ export function getTextFromElementList(elementList: IElement[]) {
         // 按照换行符拆分
         const zipList = zipElementList(element.valueList!)
         const listElementListMap = splitListElement(zipList)
+        // 无序列表前缀
+        let ulListStyleText = ''
+        if (element.listType === ListType.UL) {
+          ulListStyleText =
+            ulStyleMapping[<UlStyle>(<unknown>element.listStyle)]
+        }
         listElementListMap.forEach((listElementList, listIndex) => {
           const isLast = listElementListMap.size - 1 === listIndex
-          text += `\n${listIndex + 1}.${buildText(listElementList)}${isLast ? `\n` : ``
-            }`
+          text += `\n${ulListStyleText || `${listIndex + 1}.`}${buildText(
+            listElementList
+          )}${isLast ? `\n` : ``}`
         })
       } else if (element.type === ElementType.CHECKBOX) {
         text += element.checkbox?.value ? `☑` : `□`

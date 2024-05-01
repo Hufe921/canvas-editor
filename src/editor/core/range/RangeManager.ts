@@ -3,11 +3,17 @@ import { ZERO } from '../../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { EditorContext } from '../../dataset/enum/Editor'
+import { IControlContext } from '../../interface/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { EventBusMap } from '../../interface/EventBus'
 import { IRangeStyle } from '../../interface/Listener'
-import { IRange, RangeRowArray, RangeRowMap } from '../../interface/Range'
+import {
+  IRange,
+  IRangeParagraphInfo,
+  RangeRowArray,
+  RangeRowMap
+} from '../../interface/Range'
 import { getAnchorElement } from '../../utils/element'
 import { Draw } from '../draw/Draw'
 import { EventBus } from '../event/eventbus/EventBus'
@@ -207,10 +213,12 @@ export class RangeManager {
     return rangeRow
   }
 
-  // 获取选区段落元素列表
-  public getRangeParagraphElementList(): IElement[] | null {
+  // 获取选区段落信息
+  public getRangeParagraphInfo(): IRangeParagraphInfo | null {
     const { startIndex, endIndex } = this.range
     if (!~startIndex && !~endIndex) return null
+    /// 起始元素位置
+    let startPositionIndex = -1
     // 需要改变的元素列表
     const rangeElementList: IElement[] = []
     // 选区行信息
@@ -223,10 +231,22 @@ export class RangeManager {
       const rowArray = rangeRow.get(position.pageNo)
       if (!rowArray) continue
       if (rowArray.includes(position.rowNo)) {
+        if (!~startPositionIndex) {
+          startPositionIndex = position.index
+        }
         rangeElementList.push(elementList[p])
       }
     }
-    return rangeElementList
+    if (!rangeElementList.length) return null
+    return {
+      elementList: rangeElementList,
+      startIndex: startPositionIndex
+    }
+  }
+
+  // 获取选区段落元素列表
+  public getRangeParagraphElementList(): IElement[] | null {
+    return this.getRangeParagraphInfo()?.elementList || null
   }
 
   public getIsSelectAll() {
@@ -408,6 +428,8 @@ export class RangeManager {
     const redo = this.historyManager.isCanRedo()
     // 组信息
     const groupIds = curElement.groupIds || null
+    // 扩展字段
+    const extension = curElement.extension ?? null
     const rangeStyle: IRangeStyle = {
       type,
       undo,
@@ -428,7 +450,8 @@ export class RangeManager {
       listType,
       listStyle,
       groupIds,
-      textDecoration
+      textDecoration,
+      extension
     }
     if (rangeStyleChangeListener) {
       rangeStyleChangeListener(rangeStyle)
@@ -469,7 +492,8 @@ export class RangeManager {
       listType: null,
       listStyle: null,
       groupIds: null,
-      textDecoration: null
+      textDecoration: null,
+      extension: null
     }
     if (rangeStyleChangeListener) {
       rangeStyleChangeListener(rangeStyle)
@@ -479,9 +503,9 @@ export class RangeManager {
     }
   }
 
-  public shrinkBoundary() {
-    const elementList = this.draw.getElementList()
-    const range = this.getRange()
+  public shrinkBoundary(context: IControlContext = {}) {
+    const elementList = context.elementList || this.draw.getElementList()
+    const range = context.range || this.getRange()
     const { startIndex, endIndex } = range
     if (!~startIndex && !~endIndex) return
     const startElement = elementList[startIndex]

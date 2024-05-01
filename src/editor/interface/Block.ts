@@ -1,7 +1,8 @@
 import { BlockType } from '../dataset/enum/Block'
 
 export interface IIFrameBlock {
-  src: string
+  src?: string
+  srcdoc?: string
 }
 
 export interface IVideoBlock {

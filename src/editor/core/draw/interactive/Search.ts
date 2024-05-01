@@ -222,7 +222,7 @@ export class Search {
       let index = text.indexOf(payload)
       while (index !== -1) {
         matchStartIndexList.push(index)
-        index = text.indexOf(payload, index + 1)
+        index = text.indexOf(payload, index + payload.length)
       }
       for (let m = 0; m < matchStartIndexList.length; m++) {
         const startIndex = matchStartIndexList[m]

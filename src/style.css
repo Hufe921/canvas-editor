@@ -367,6 +367,10 @@ ul {
   margin-left: 18px;
 }
 
+.menu-item__list .options>ul>li[data-list-style='checkbox'] li::marker {
+  font-size: 11px;
+}
+
 .menu-item__image i {
   background-image: url('./assets/images/image.svg');
 }
@@ -979,6 +983,10 @@ ul {
   height: 16px;
   display: inline-block;
   cursor: pointer;
+}
+
+.footer .editor-option i {
+  background-image: url('./assets/images/option.svg');
 }
 
 .footer .page-scale-minus i {

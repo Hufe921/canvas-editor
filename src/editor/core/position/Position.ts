@@ -1,4 +1,4 @@
-import { ElementType, RowFlex, VerticalAlign } from '../..'
+import { ElementType, ListStyle, RowFlex, VerticalAlign } from '../..'
 import { ZERO } from '../../dataset/constant/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import {
@@ -121,10 +121,11 @@ export class Position {
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       // 计算行偏移量（行居中、居右）
+      const curRowWidth = curRow.width + (curRow.offsetX || 0)
       if (curRow.rowFlex === RowFlex.CENTER) {
-        x += (innerWidth - curRow.width) / 2
+        x += (innerWidth - curRowWidth) / 2
       } else if (curRow.rowFlex === RowFlex.RIGHT) {
-        x += innerWidth - curRow.width
+        x += innerWidth - curRowWidth
       }
       // 当前行X轴偏移量
       x += curRow.offsetX || 0
@@ -358,6 +359,7 @@ export class Position {
         coordinate: { leftTop, rightTop, leftBottom }
       } = positionList[j]
       if (positionNo !== pageNo) continue
+      if (pageNo > positionNo) break
       // 命中元素
       if (
         leftTop[0] - left <= x &&
@@ -388,6 +390,7 @@ export class Position {
                 return {
                   index,
                   isCheckbox:
+                    tablePosition.isCheckbox ||
                     tdValueElement.type === ElementType.CHECKBOX ||
                     tdValueElement.controlComponent ===
                       ControlComponent.CHECKBOX,
@@ -498,17 +501,15 @@ export class Position {
     for (let j = 0; j < lastLetterList.length; j++) {
       const {
         index,
-        pageNo,
+        rowNo,
         coordinate: { leftTop, leftBottom }
       } = lastLetterList[j]
-      if (positionNo !== pageNo) continue
       if (y > leftTop[1] && y <= leftBottom[1]) {
-        const isHead = x < this.options.margins[3]
+        const headIndex = positionList.findIndex(
+          p => p.pageNo === positionNo && p.rowNo === rowNo
+        )
         // 是否在头部
-        if (isHead) {
-          const headIndex = positionList.findIndex(
-            p => p.pageNo === positionNo && p.rowNo === lastLetterList[j].rowNo
-          )
+        if (x < this.options.margins[3]) {
           // 头部元素为空元素时无需选中
           if (~headIndex) {
             if (positionList[headIndex].value === ZERO) {
@@ -521,6 +522,17 @@ export class Position {
             curPositionIndex = index
           }
         } else {
+          // 是否是复选框列表
+          if (
+            elementList[headIndex].listStyle === ListStyle.CHECKBOX &&
+            x < leftTop[0]
+          ) {
+            return {
+              index: headIndex,
+              isDirectHit: true,
+              isCheckbox: true
+            }
+          }
           curPositionIndex = index
         }
         isLastArea = true
