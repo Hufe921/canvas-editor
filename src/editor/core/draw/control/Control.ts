@@ -32,7 +32,7 @@ import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
 import { CheckboxControl } from './checkbox/CheckboxControl'
-import { RadioControl} from './radio/RadioControl'
+import { RadioControl } from './radio/RadioControl'
 import { ControlSearch } from './interactive/ControlSearch'
 import { ControlBorder } from './richtext/Border'
 import { SelectControl } from './select/SelectControl'
@@ -173,7 +173,6 @@ export class Control {
     }
     return false
   }
-
 
   public getIsDisabledControl(): boolean {
     return !!this.activeControl?.getElement().control?.disabled
@@ -526,7 +525,8 @@ export class Control {
           })
         } else if (
           type === ControlType.SELECT ||
-          type === ControlType.CHECKBOX
+          type === ControlType.CHECKBOX ||
+          type === ControlType.RADIO
         ) {
           const innerText = code
             ?.split(',')
@@ -634,9 +634,8 @@ export class Control {
           const codes = value?.split(',') || []
           checkbox.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.RADIO) {
-
           const radio = new RadioControl(element, this)
-          const codes = value?.split(',') || []
+          const codes = value ? [value] : []
           radio.setSelect(codes, controlContext, controlRule)
         }
         // 修改后控件结束索引

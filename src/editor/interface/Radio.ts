@@ -10,5 +10,5 @@ export interface IRadioOption {
   gap?: number
   lineWidth?: number
   fillStyle?: string
-  fontStyle?: string
+  strokeStyle?: string
 }

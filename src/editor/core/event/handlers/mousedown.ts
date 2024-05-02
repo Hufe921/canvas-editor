@@ -103,49 +103,27 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
           activeControl.setSelect(codes)
         }
       }
-    }
-    else {
-      draw.render({
-        curIndex,
-        isCompute: false,
-        isSubmitHistory: false,
-        isSetCursor: !isDirectHitImage && !isDirectHitCheckbox
-      })
-    }
-    if (isSetRadio) {
-      const { radio, control } = curElement
+    } else if (isSetRadio) {
+      const { control, radio } = curElement
       // 单选框不在控件内独立控制
       if (!control) {
         draw.getRadioParticle().setSelect(curElement)
-      }
-      else {
-        const codes = control?.code?.split(',') || []
-        if (radio?.value) {
-          const codeIndex = codes.findIndex(c => c === radio.code)
-          codes.splice(codeIndex, 1)
-
-        } else {
-          if (radio?.code) {
-            codes.push(radio.code)
-          }
-        }
+      } else {
+        const codes = radio?.code ? [radio.code] : []
         const activeControl = draw.getControl().getActiveControl()
         if (activeControl instanceof RadioControl) {
-
           activeControl.setSelect(codes)
-
         }
       }
-    }
-    else {
+    } else {
       draw.render({
         curIndex,
         isCompute: false,
         isSubmitHistory: false,
-        isSetCursor: !isDirectHitImage && !isDirectHitRadio
+        isSetCursor:
+          !isDirectHitImage && !isDirectHitCheckbox && !isDirectHitRadio
       })
     }
-
     // 首字需定位到行首，非上一行最后一个字后
     if (hitLineStartIndex) {
       host.getDraw().getCursor().drawCursor({
@@ -162,9 +140,9 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       positionList[curIndex],
       curElement.type === ElementType.LATEX
         ? {
-          mime: 'svg',
-          srcKey: 'laTexSVG'
-        }
+            mime: 'svg',
+            srcKey: 'laTexSVG'
+          }
         : {}
     )
     // 光标事件代理丢失，重新定位

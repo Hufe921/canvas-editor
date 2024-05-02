@@ -1106,7 +1106,7 @@ export class Draw {
     const size = el.actualSize || el.size || defaultSize
     return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${
       size * scale
-      }px ${font}`
+    }px ${font}`
   }
 
   public getElementSize(el: IElement) {
@@ -1430,8 +1430,7 @@ export class Draw {
         element.width = elementWidth
         metrics.width = elementWidth * scale
         metrics.height = height * scale
-      }
-      else if (
+      } else if (
         element.type === ElementType.CHECKBOX ||
         element.controlComponent === ControlComponent.CHECKBOX
       ) {
@@ -1486,7 +1485,7 @@ export class Draw {
       const ascent =
         (element.imgDisplay !== ImageDisplay.INLINE &&
           element.type === ElementType.IMAGE) ||
-          element.type === ElementType.LATEX
+        element.type === ElementType.LATEX
           ? metrics.height + rowMargin
           : metrics.boundingBoxAscent + rowMargin
       const height =
@@ -1828,8 +1827,7 @@ export class Draw {
         ) {
           this.textParticle.complete()
           this.radioParticle.render(ctx, element, x, y + offsetY)
-        }
-        else if (element.type === ElementType.TAB) {
+        } else if (element.type === ElementType.TAB) {
           this.textParticle.complete()
         } else if (element.rowFlex === RowFlex.ALIGNMENT) {
           // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本

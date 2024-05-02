@@ -6,5 +6,5 @@ export const defaultRadioOption: Readonly<Required<IRadioOption>> = {
   gap: 5,
   lineWidth: 1,
   fillStyle: '#5175f4',
-  fontStyle: '#ffffff'
+  strokeStyle: '#000000'
 }

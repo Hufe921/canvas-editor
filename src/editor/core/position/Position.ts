@@ -396,8 +396,7 @@ export class Position {
                       ControlComponent.CHECKBOX,
                   isRadio:
                     tdValueElement.type === ElementType.RADIO ||
-                    tdValueElement.controlComponent ===
-                      ControlComponent.RADIO,
+                    tdValueElement.controlComponent === ControlComponent.RADIO,
                   isControl: !!tdValueElement.controlId,
                   isImage: tablePosition.isImage,
                   isDirectHit: tablePosition.isDirectHit,
@@ -435,12 +434,10 @@ export class Position {
             isCheckbox: true
           }
         }
-
         if (
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
-        )
-        {
+        ) {
           return {
             index: curPositionIndex,
             isDirectHit: true,

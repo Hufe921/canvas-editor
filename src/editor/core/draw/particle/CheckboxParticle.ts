@@ -35,7 +35,7 @@ export class CheckboxParticle {
     y: number
   ) {
     const {
-      checkbox: { gap, lineWidth, fillStyle, fontStyle },
+      checkbox: { gap, lineWidth, fillStyle, strokeStyle },
       scale
     } = this.options
     const { metrics, checkbox } = element
@@ -60,7 +60,7 @@ export class CheckboxParticle {
       ctx.fillRect(left, top, width, height)
       // 勾选对号
       ctx.beginPath()
-      ctx.strokeStyle = fontStyle
+      ctx.strokeStyle = strokeStyle
       ctx.lineWidth = lineWidth * 2 * scale
       ctx.moveTo(left + 2 * scale, top + height / 2)
       ctx.lineTo(left + width / 2, top + height - 3 * scale)

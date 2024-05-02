@@ -35,7 +35,7 @@ export class RadioParticle {
     y: number
   ) {
     const {
-      radio: { gap, lineWidth, fillStyle },
+      radio: { gap, lineWidth, fillStyle, strokeStyle },
       scale
     } = this.options
     const { metrics, radio } = element
@@ -47,22 +47,17 @@ export class RadioParticle {
     ctx.save()
     ctx.beginPath()
     ctx.translate(0.5, 0.5)
-    // 绘制选中状态
+    // 边框
+    ctx.strokeStyle = radio?.value ? fillStyle : strokeStyle
+    ctx.lineWidth = lineWidth
+    ctx.arc(left + width / 2, top + height / 2, width / 2, 0, Math.PI * 2)
+    ctx.stroke()
+    // 填充选中色
     if (radio?.value) {
-      // 边框
-      ctx.lineWidth = lineWidth
-      ctx.strokeStyle = fillStyle
-      ctx.arc(left + width / 2, top + height / 2, width / 2, 0, Math.PI * 2)
-      ctx.stroke()
-      // 填充选中色
       ctx.beginPath()
       ctx.fillStyle = fillStyle
       ctx.arc(left + width / 2, top + height / 2, width / 3, 0, Math.PI * 2)
       ctx.fill()
-    } else {
-      ctx.lineWidth = lineWidth
-      ctx.arc(left + width / 2, top + height / 2, width / 2, 0, Math.PI * 2)
-      ctx.stroke()
     }
     ctx.closePath()
     ctx.restore()

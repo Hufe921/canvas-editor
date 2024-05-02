@@ -25,8 +25,6 @@ export interface IControlCheckbox {
 
 export interface IControlRadio {
   code: string | null
-  min?: number
-  max?: number
   valueSets: IValueSet[]
   radio?: IRadio
 }
