@@ -15,6 +15,7 @@ interface IElement {
     PAGE_BREAK = 'pageBreak',
     CONTROL = 'control',
     CHECKBOX = 'checkbox',
+    RADIO = 'radio',
     LATEX = 'latex',
     TAB = 'tab',
     DATE = 'date',
@@ -76,7 +77,8 @@ interface IElement {
     type: {
       TEXT = 'text',
       SELECT = 'select',
-      CHECKBOX = 'checkbox'
+      CHECKBOX = 'checkbox',
+      RADIO = 'radio'
     };
     value: IElement[] | null;
     placeholder?: string;
@@ -100,6 +102,13 @@ interface IElement {
     checkbox?: {
       value: boolean | null;
       code?: string;
+      min?: number;
+      max?: number;
+      disabled?: boolean;
+    };
+    radio?: {
+      value: boolean | null;
+      code?: string;
       disabled?: boolean;
     };
     font?: string;
@@ -115,10 +124,17 @@ interface IElement {
     POSTFIX = 'postfix',
     PLACEHOLDER = 'placeholder',
     VALUE = 'value',
-    CHECKBOX = 'checkbox'
+    CHECKBOX = 'checkbox',
+    RADIO = 'radio'
   };
   // checkbox
   checkbox?: {
+    value: boolean | null;
+    code?: string;
+    disabled?: boolean;
+  };
+  // radio
+  radio?: {
     value: boolean | null;
     code?: string;
     disabled?: boolean;

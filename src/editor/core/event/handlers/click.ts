@@ -124,8 +124,13 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
       return
     }
   }
-  // 复选框双击时是切换选择状态，禁用扩选
-  if (positionContext.isCheckbox && positionContext.isDirectHit) return
+  // 复选/单选框双击时是切换选择状态，禁用扩选
+  if (
+    (positionContext.isCheckbox || positionContext.isRadio) &&
+    positionContext.isDirectHit
+  ) {
+    return
+  }
   // 自动扩选文字-分词处理，优先使用分词器否则降级使用光标所在位置
   const rangeManager = draw.getRange()
   const segmenterRange =

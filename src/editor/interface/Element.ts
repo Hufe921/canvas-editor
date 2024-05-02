@@ -8,6 +8,7 @@ import { TableBorder } from '../dataset/enum/table/Table'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
 import { IControl } from './Control'
+import { IRadio } from './Radio'
 import { ITextDecoration } from './Text'
 import { IColgroup } from './table/Colgroup'
 import { ITr } from './table/Tr'
@@ -94,6 +95,10 @@ export interface ICheckboxElement {
   checkbox?: ICheckbox
 }
 
+export interface IRadioElement {
+  radio?: IRadio
+}
+
 export interface ILaTexElement {
   laTexSVG?: string
 }
@@ -124,6 +129,7 @@ export type IElement = IElementBasic &
   ISeparator &
   IControlElement &
   ICheckboxElement &
+  IRadioElement &
   ILaTexElement &
   IDateElement &
   IImageElement &

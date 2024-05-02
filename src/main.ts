@@ -768,6 +768,44 @@ window.onload = function () {
           }
         })
         break
+      case ControlType.RADIO:
+        new Dialog({
+          title: '单选框控件',
+          data: [
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'code',
+              placeholder: '请输入默认值'
+            },
+            {
+              type: 'textarea',
+              label: '值集',
+              name: 'valueSets',
+              required: true,
+              height: 100,
+              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            }
+          ],
+          onConfirm: payload => {
+            const valueSets = payload.find(p => p.name === 'valueSets')?.value
+            if (!valueSets) return
+            const code = payload.find(p => p.name === 'code')?.value
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  code,
+                  value: null,
+                  valueSets: JSON.parse(valueSets)
+                }
+              }
+            ])
+          }
+        })
+        break
       default:
         break
     }
@@ -781,6 +819,20 @@ window.onload = function () {
     instance.command.executeInsertElementList([
       {
         type: ElementType.CHECKBOX,
+        checkbox: {
+          value: false
+        },
+        value: ''
+      }
+    ])
+  }
+
+  const radioDom = document.querySelector<HTMLDivElement>('.menu-item__radio')!
+  radioDom.onclick = function () {
+    console.log('radio')
+    instance.command.executeInsertElementList([
+      {
+        type: ElementType.RADIO,
         checkbox: {
           value: false
         },
