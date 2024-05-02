@@ -103,6 +103,7 @@ export function formatElementList(
         const titleOptions = editorOptions.title
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
+          value.title = el.title
           if (el.level) {
             value.titleId = titleId
             value.level = el.level
@@ -523,6 +524,7 @@ export function zipElementList(payload: IElement[]): IElement[] {
         const level = element.level
         const titleElement: IElement = {
           type: ElementType.TITLE,
+          title: element.title,
           value: '',
           level
         }
@@ -534,6 +536,7 @@ export function zipElementList(payload: IElement[]): IElement[] {
             break
           }
           delete titleE.level
+          delete titleE.title
           valueList.push(titleE)
           e++
         }

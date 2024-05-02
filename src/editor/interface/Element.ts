@@ -10,6 +10,7 @@ import { ICheckbox } from './Checkbox'
 import { IControl } from './Control'
 import { IRadio } from './Radio'
 import { ITextDecoration } from './Text'
+import { ITitle } from './Title'
 import { IColgroup } from './table/Colgroup'
 import { ITr } from './table/Tr'
 
@@ -45,6 +46,7 @@ export interface ITitleElement {
   valueList?: IElement[]
   level?: TitleLevel
   titleId?: string
+  title?: ITitle
 }
 
 export interface IListElement {

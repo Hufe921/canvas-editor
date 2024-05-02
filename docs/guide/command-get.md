@@ -209,7 +209,8 @@ const groupIds = await instance.command.getGroupIds()
 const {
   value: string | null
   innerText: string | null
-} = await instance.command.getControlValue(payload: IGetControlValueOption)
+  zone: EditorZone
+}[] = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```
 
 ## getControlList
@@ -230,4 +231,18 @@ const controlList = await instance.command.getControlList()
 
 ```javascript
 const container = await instance.command.getContainer()
+```
+
+## getTitleValue
+
+功能：获取标题值
+
+用法：
+
+```javascript
+const {
+  value: string | null
+  elementList: IElement[]
+  zone: EditorZone
+}[] = await instance.command.getTitleValue(payload: IGetTitleValueOption)
 ```

@@ -164,6 +164,7 @@ interface IElement {
   };
   // 标题
   level?: TitleLevel;
+  title?: ITitle;
   // 列表
   listType?: ListType;
   listStyle?: ListStyle;

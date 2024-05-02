@@ -1,6 +1,9 @@
 import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
 import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
-import { titleSizeMapping } from '../../dataset/constant/Title'
+import {
+  titleOrderNumberMapping,
+  titleSizeMapping
+} from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
@@ -52,6 +55,10 @@ import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
 import { ITr } from '../../interface/table/Tr'
 import { ITextDecoration } from '../../interface/Text'
+import {
+  IGetTitleValueOption,
+  IGetTitleValueResult
+} from '../../interface/Title'
 import { IWatermark } from '../../interface/Watermark'
 import { deepClone, downloadFile, getUUID, isObjectEqual } from '../../utils'
 import {
@@ -2397,5 +2404,71 @@ export class CommandAdapt {
 
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
+  }
+
+  public getTitleValue(
+    payload: IGetTitleValueOption
+  ): IGetTitleValueResult | null {
+    const { conceptId } = payload
+    const result: IGetTitleValueResult = []
+    const getValue = (elementList: IElement[], zone: EditorZone) => {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              getValue(td.value, zone)
+            }
+          }
+        }
+        if (element?.title?.conceptId !== conceptId) continue
+        // 先查找到标题，后循环至同级或上级标题处停止
+        const valueList: IElement[] = []
+        let j = i
+        while (j < elementList.length) {
+          const nextElement = elementList[j]
+          j++
+          if (element.titleId === nextElement.titleId) continue
+          if (
+            nextElement.level &&
+            titleOrderNumberMapping[nextElement.level] <=
+              titleOrderNumberMapping[element.level!]
+          ) {
+            break
+          }
+          valueList.push(nextElement)
+        }
+        result.push({
+          ...element.title!,
+          value: getTextFromElementList(valueList),
+          elementList: zipElementList(valueList),
+          zone
+        })
+        i = j
+      }
+    }
+    const data = [
+      {
+        zone: EditorZone.HEADER,
+        elementList: this.draw.getHeaderElementList()
+      },
+      {
+        zone: EditorZone.MAIN,
+        elementList: this.draw.getOriginalMainElementList()
+      },
+      {
+        zone: EditorZone.FOOTER,
+        elementList: this.draw.getFooterElementList()
+      }
+    ]
+    for (const { zone, elementList } of data) {
+      getValue(elementList, zone)
+    }
+    return result
   }
 }
