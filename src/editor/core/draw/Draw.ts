@@ -1412,11 +1412,14 @@ export class Draw {
           }
         }
       } else if (element.type === ElementType.SEPARATOR) {
+        const {
+          separator: { lineWidth }
+        } = this.options
         element.width = availableWidth / scale
         metrics.width = availableWidth
-        metrics.height = defaultSize
+        metrics.height = lineWidth * scale
         metrics.boundingBoxAscent = -rowMargin
-        metrics.boundingBoxDescent = -rowMargin
+        metrics.boundingBoxDescent = -rowMargin + metrics.height
       } else if (element.type === ElementType.PAGE_BREAK) {
         element.width = availableWidth / scale
         metrics.width = availableWidth

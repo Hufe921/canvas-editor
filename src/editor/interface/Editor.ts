@@ -22,6 +22,7 @@ import { IPlaceholder } from './Placeholder'
 import { ITitleOption } from './Title'
 import { IWatermark } from './Watermark'
 import { IZoneOption } from './Zone'
+import { ISeparatorOption } from './Separator'
 
 export interface IEditorData {
   header?: IElement[]
@@ -87,6 +88,7 @@ export interface IEditorOption {
   zone?: IZoneOption
   background?: IBackgroundOption
   lineBreak?: ILineBreakOption
+  separator?: ISeparatorOption
 }
 
 export interface IEditorResult {

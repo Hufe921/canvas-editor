@@ -71,6 +71,7 @@ interface IEditorOption {
   zone?: IZoneOption // Zone option。{tipDisabled?:boolean;}
   background?: IBackgroundOption // Background option. {color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat;}。default: {color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // LineBreak option. {disabled?:boolean; color?:string; lineWidth?:number;}
+  separator?: ISeparatorOption // Separator option. {lineWidth?:number; strokeStyle?:string;}
 }
 ```
 

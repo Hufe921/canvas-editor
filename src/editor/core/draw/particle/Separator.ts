@@ -16,18 +16,20 @@ export class SeparatorParticle {
     y: number
   ) {
     ctx.save()
-    const { scale } = this.options
-    ctx.lineWidth = scale
-    if (element.color) {
-      ctx.strokeStyle = element.color
-    }
-    if (element.dashArray && element.dashArray.length) {
+    const {
+      scale,
+      separator: { lineWidth, strokeStyle }
+    } = this.options
+    ctx.lineWidth = lineWidth * scale
+    ctx.strokeStyle = element.color || strokeStyle
+    if (element.dashArray?.length) {
       ctx.setLineDash(element.dashArray)
     }
-    ctx.translate(0, 0.5) // 从1处渲染，避免线宽度等于3
+    const offsetY = Math.round(y) // 四舍五入避免绘制模糊
+    ctx.translate(0, ctx.lineWidth / 2)
     ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + element.width! * scale, y)
+    ctx.moveTo(x, offsetY)
+    ctx.lineTo(x + element.width! * scale, offsetY)
     ctx.stroke()
     ctx.restore()
   }
