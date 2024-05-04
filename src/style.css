@@ -339,6 +339,10 @@ ul {
   background-image: url('./assets/images/alignment.svg');
 }
 
+.menu-item__justify i {
+  background-image: url('./assets/images/justify.svg');
+}
+
 .menu-item__row-margin {
   position: relative;
 }
@@ -538,6 +542,10 @@ ul {
 
 .menu-item__checkbox i {
   background-image: url('./assets/images/checkbox.svg');
+}
+
+.menu-item__radio i {
+  background-image: url('./assets/images/radio.svg');
 }
 
 .menu-item__latex i {

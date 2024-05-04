@@ -231,3 +231,17 @@ Usage:
 ```javascript
 const container = await instance.command.getContainer()
 ```
+
+## getTitleValue
+
+Feature: Get title value
+
+Usage:
+
+```javascript
+const {
+  value: string | null
+  elementList: IElement[]
+  zone: EditorZone
+}[] = await instance.command.getTitleValue(payload: IGetTitleValueOption)
+```

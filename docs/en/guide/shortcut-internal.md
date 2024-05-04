@@ -132,6 +132,10 @@ Feature: Line right
 
 Feature: Both sides are aligned
 
+## Ctrl/Cmd + Shift + J
+
+Feature: Line justify
+
 ## Ctrl + Shift + X
 
 Feature: Strikethrough

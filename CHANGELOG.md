@@ -1,3 +1,27 @@
+## [0.9.76](https://github.com/Hufe921/canvas-editor/compare/v0.9.75...v0.9.76) (2024-05-04)
+
+
+### Bug Fixes
+
+* checkbox custom size rendering error #529 ([5a5fd64](https://github.com/Hufe921/canvas-editor/commit/5a5fd64176de288c7d0e02ab4cbbc2607dc3df20)), closes [#529](https://github.com/Hufe921/canvas-editor/issues/529)
+* copy style after title line break #531 ([2e14035](https://github.com/Hufe921/canvas-editor/commit/2e1403507f593d6c827f6be6d0cb75c5a1615e62)), closes [#531](https://github.com/Hufe921/canvas-editor/issues/531)
+* paste elements boundary error ([34d59bb](https://github.com/Hufe921/canvas-editor/commit/34d59bbb589b9bb38c74f00b66b734b6342dd440))
+
+
+### Chores
+
+* update radio menu icon ([0ae67ec](https://github.com/Hufe921/canvas-editor/commit/0ae67ec602df9c224ad134bff63b51f66d71aff7))
+
+
+### Features
+
+* add getTitleValue api #536 ([15f52c5](https://github.com/Hufe921/canvas-editor/commit/15f52c5e43a733657e6079c7112bb9df3a8d5aa6)), closes [#536](https://github.com/Hufe921/canvas-editor/issues/536)
+* add justify-all property to row flex #535 ([a1293af](https://github.com/Hufe921/canvas-editor/commit/a1293aff228595cafe2c730d9fb5dbdb1241c3d8)), closes [#535](https://github.com/Hufe921/canvas-editor/issues/535)
+* add radio element #494 ([c6d9cff](https://github.com/Hufe921/canvas-editor/commit/c6d9cffc275ab4114a1c9a3ce931dc0843cb5585)), closes [#494](https://github.com/Hufe921/canvas-editor/issues/494)
+* add separator option #530 ([7416a88](https://github.com/Hufe921/canvas-editor/commit/7416a881515a443a5736a673cd12732d44d65264)), closes [#530](https://github.com/Hufe921/canvas-editor/issues/530)
+
+
+
 ## [0.9.75](https://github.com/Hufe921/canvas-editor/compare/v0.9.74...v0.9.75) (2024-04-27)
 
 

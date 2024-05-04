@@ -32,7 +32,9 @@ import { ControlIndentation, ControlType } from './dataset/enum/Control'
 import { defaultControlOption } from './dataset/constant/Control'
 import { IControlOption } from './interface/Control'
 import { ICheckboxOption } from './interface/Checkbox'
+import { IRadioOption } from './interface/Radio'
 import { defaultCheckboxOption } from './dataset/constant/Checkbox'
+import { defaultRadioOption } from './dataset/constant/Radio'
 import { DeepRequired } from './interface/Common'
 import { INavigateInfo } from './core/draw/interactive/Search'
 import { Shortcut } from './core/shortcut/Shortcut'
@@ -78,6 +80,8 @@ import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
 import { ILineBreakOption } from './interface/LineBreak'
 import { defaultLineBreak } from './dataset/constant/LineBreak'
+import { ISeparatorOption } from './interface/Separator'
+import { defaultSeparatorOption } from './dataset/constant/Separator'
 
 export default class Editor {
   public command: Command
@@ -117,6 +121,10 @@ export default class Editor {
       ...defaultCheckboxOption,
       ...options.checkbox
     }
+    const radioOptions: Required<IRadioOption> = {
+      ...defaultRadioOption,
+      ...options.radio
+    }
     const cursorOptions: Required<ICursorOption> = {
       ...defaultCursorOption,
       ...options.cursor
@@ -148,6 +156,10 @@ export default class Editor {
     const lineBreakOptions: Required<ILineBreakOption> = {
       ...defaultLineBreak,
       ...options.lineBreak
+    }
+    const separatorOptions: Required<ISeparatorOption> = {
+      ...defaultSeparatorOption,
+      ...options.separator
     }
 
     const editorOptions: DeepRequired<IEditorOption> = {
@@ -200,6 +212,7 @@ export default class Editor {
       watermark: waterMarkOptions,
       control: controlOptions,
       checkbox: checkboxOptions,
+      radio: radioOptions,
       cursor: cursorOptions,
       title: titleOptions,
       placeholder: placeholderOptions,
@@ -207,7 +220,8 @@ export default class Editor {
       pageBreak: pageBreakOptions,
       zone: zoneOptions,
       background: backgroundOptions,
-      lineBreak: lineBreakOptions
+      lineBreak: lineBreakOptions,
+      separator: separatorOptions
     }
     // 数据处理
     data = deepClone(data)

@@ -60,9 +60,11 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'valueList',
   'control',
   'checkbox',
+  'radio',
   'dateFormat',
   'block',
   'level',
+  'title',
   'listType',
   'listStyle',
   'listWrap',
@@ -87,7 +89,11 @@ export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [
   'tableId'
 ]
 
-export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = ['level', 'titleId']
+export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = [
+  'level',
+  'titleId',
+  'title'
+]
 
 export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
   'listId',

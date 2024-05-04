@@ -1,7 +1,8 @@
 export enum ControlType {
   TEXT = 'text',
   SELECT = 'select',
-  CHECKBOX = 'checkbox'
+  CHECKBOX = 'checkbox',
+  RADIO = 'radio'
 }
 
 export enum ControlComponent {
@@ -9,7 +10,8 @@ export enum ControlComponent {
   POSTFIX = 'postfix',
   PLACEHOLDER = 'placeholder',
   VALUE = 'value',
-  CHECKBOX = 'checkbox'
+  CHECKBOX = 'checkbox',
+  RADIO = 'radio'
 }
 
 // 控件内容缩进方式

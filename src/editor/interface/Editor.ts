@@ -7,6 +7,7 @@ import {
 } from '../dataset/enum/Editor'
 import { IBackgroundOption } from './Background'
 import { ICheckboxOption } from './Checkbox'
+import { IRadioOption } from './Radio'
 import { IPadding } from './Common'
 import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
@@ -21,6 +22,7 @@ import { IPlaceholder } from './Placeholder'
 import { ITitleOption } from './Title'
 import { IWatermark } from './Watermark'
 import { IZoneOption } from './Zone'
+import { ISeparatorOption } from './Separator'
 
 export interface IEditorData {
   header?: IElement[]
@@ -77,6 +79,7 @@ export interface IEditorOption {
   watermark?: IWatermark
   control?: IControlOption
   checkbox?: ICheckboxOption
+  radio?: IRadioOption
   cursor?: ICursorOption
   title?: ITitleOption
   placeholder?: IPlaceholder
@@ -85,6 +88,7 @@ export interface IEditorOption {
   zone?: IZoneOption
   background?: IBackgroundOption
   lineBreak?: ILineBreakOption
+  separator?: ISeparatorOption
 }
 
 export interface IEditorResult {

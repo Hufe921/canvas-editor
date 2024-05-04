@@ -9,8 +9,8 @@ import { IElement } from '../../../../interface/Element'
 import { Control } from '../Control'
 
 export class CheckboxControl implements IControlInstance {
-  private element: IElement
-  private control: Control
+  protected element: IElement
+  protected control: Control
 
   constructor(element: IElement, control: Control) {
     this.element = element

@@ -103,6 +103,7 @@ export function formatElementList(
         const titleOptions = editorOptions.title
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
+          value.title = el.title
           if (el.level) {
             value.titleId = titleId
             value.level = el.level
@@ -222,7 +223,11 @@ export function formatElementList(
       const { prefix, postfix, value, placeholder, code, type, valueSets } =
         el.control
       const {
-        editorOptions: { control: controlOption, checkbox: checkboxOption }
+        editorOptions: {
+          control: controlOption,
+          checkbox: checkboxOption,
+          radio: radioOption
+        }
       } = options
       const controlId = getUUID()
       // 移除父节点
@@ -258,6 +263,7 @@ export function formatElementList(
       if (
         (value && value.length) ||
         type === ControlType.CHECKBOX ||
+        type === ControlType.RADIO ||
         (type === ControlType.SELECT && code && (!value || !value.length))
       ) {
         let valueList: IElement[] = value || []
@@ -301,6 +307,53 @@ export function formatElementList(
                   controlId,
                   value: value === '\n' ? ZERO : value,
                   letterSpacing: isLastLetter ? checkboxOption.gap : 0,
+                  control: el.control,
+                  controlComponent: ControlComponent.VALUE
+                })
+                valueStyleIndex++
+                i++
+              }
+            }
+          }
+        } else if (type === ControlType.RADIO) {
+          if (Array.isArray(valueSets) && valueSets.length) {
+            // 拆分valueList优先使用其属性
+            const valueStyleList = valueList.reduce(
+              (pre, cur) =>
+                pre.concat(
+                  cur.value.split('').map(v => ({ ...cur, value: v }))
+                ),
+              [] as IElement[]
+            )
+            let valueStyleIndex = 0
+            for (let v = 0; v < valueSets.length; v++) {
+              const valueSet = valueSets[v]
+              // radio组件
+              elementList.splice(i, 0, {
+                ...controlContext,
+                controlId,
+                value: '',
+                type: el.type,
+                control: el.control,
+                controlComponent: ControlComponent.RADIO,
+                radio: {
+                  code: valueSet.code,
+                  value: code === valueSet.code
+                }
+              })
+              i++
+              // 文本
+              const valueStrList = splitText(valueSet.value)
+              for (let e = 0; e < valueStrList.length; e++) {
+                const value = valueStrList[e]
+                const isLastLetter = e === valueStrList.length - 1
+                elementList.splice(i, 0, {
+                  ...controlContext,
+                  ...controlDefaultStyle,
+                  ...valueStyleList[valueStyleIndex],
+                  controlId,
+                  value: value === '\n' ? ZERO : value,
+                  letterSpacing: isLastLetter ? radioOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
                 })
@@ -471,6 +524,7 @@ export function zipElementList(payload: IElement[]): IElement[] {
         const level = element.level
         const titleElement: IElement = {
           type: ElementType.TITLE,
+          title: element.title,
           value: '',
           level
         }
@@ -482,6 +536,7 @@ export function zipElementList(payload: IElement[]): IElement[] {
             break
           }
           delete titleE.level
+          delete titleE.title
           valueList.push(titleE)
           e++
         }
@@ -681,6 +736,8 @@ export function getElementRowFlex(node: HTMLElement) {
       return RowFlex.RIGHT
     case 'justify':
       return RowFlex.ALIGNMENT
+    case 'justify-all':
+      return RowFlex.JUSTIFY
     default:
       return RowFlex.LEFT
   }
@@ -955,6 +1012,13 @@ export function createDomFromElementList(
           checkbox.setAttribute('checked', 'true')
         }
         clipboardDom.append(checkbox)
+      } else if (element.type === ElementType.RADIO) {
+        const radio = document.createElement('input')
+        radio.type = 'radio'
+        if (element.radio?.value) {
+          radio.setAttribute('checked', 'true')
+        }
+        clipboardDom.append(radio)
       } else if (element.type === ElementType.TAB) {
         const tab = document.createElement('span')
         tab.innerHTML = `${NON_BREAKING_SPACE}${NON_BREAKING_SPACE}`
@@ -1200,6 +1264,17 @@ export function getElementListByHTML(
               value: (<HTMLInputElement>node).checked
             }
           })
+        } else if (
+          node.nodeName === 'INPUT' &&
+          (<HTMLInputElement>node).type === ControlComponent.RADIO
+        ) {
+          elementList.push({
+            type: ElementType.RADIO,
+            value: '',
+            radio: {
+              value: (<HTMLInputElement>node).checked
+            }
+          })
         } else {
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
@@ -1275,6 +1350,8 @@ export function getTextFromElementList(elementList: IElement[]) {
         })
       } else if (element.type === ElementType.CHECKBOX) {
         text += element.checkbox?.value ? `☑` : `□`
+      } else if (element.type === ElementType.RADIO) {
+        text += element.radio?.value ? `☉` : `○`
       } else if (
         !element.type ||
         element.type === ElementType.LATEX ||

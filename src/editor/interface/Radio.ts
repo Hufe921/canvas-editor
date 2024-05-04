@@ -1,10 +1,10 @@
-export interface ICheckbox {
+export interface IRadio {
   value: boolean | null
   code?: string
   disabled?: boolean
 }
 
-export interface ICheckboxOption {
+export interface IRadioOption {
   width?: number
   height?: number
   gap?: number

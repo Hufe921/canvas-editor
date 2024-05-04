@@ -4,7 +4,7 @@ import { IElement } from '../../../interface/Element'
 import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
-export class CheckboxParticle {
+export class RadioParticle {
   private draw: Draw
   private options: DeepRequired<IEditorOption>
 
@@ -14,11 +14,11 @@ export class CheckboxParticle {
   }
 
   public setSelect(element: IElement) {
-    const { checkbox } = element
-    if (checkbox) {
-      checkbox.value = !checkbox.value
+    const { radio } = element
+    if (radio) {
+      radio.value = !radio.value
     } else {
-      element.checkbox = {
+      element.radio = {
         value: true
       }
     }
@@ -35,10 +35,10 @@ export class CheckboxParticle {
     y: number
   ) {
     const {
-      checkbox: { gap, lineWidth, fillStyle, strokeStyle },
+      radio: { gap, lineWidth, fillStyle, strokeStyle },
       scale
     } = this.options
-    const { metrics, checkbox } = element
+    const { metrics, radio } = element
     // left top 四舍五入避免1像素问题
     const left = Math.round(x + gap * scale)
     const top = Math.round(y - metrics.height + lineWidth)
@@ -47,29 +47,17 @@ export class CheckboxParticle {
     ctx.save()
     ctx.beginPath()
     ctx.translate(0.5, 0.5)
-    // 绘制勾选状态
-    if (checkbox?.value) {
-      // 边框
-      ctx.lineWidth = lineWidth
-      ctx.strokeStyle = fillStyle
-      ctx.rect(left, top, width, height)
-      ctx.stroke()
-      // 背景色
+    // 边框
+    ctx.strokeStyle = radio?.value ? fillStyle : strokeStyle
+    ctx.lineWidth = lineWidth
+    ctx.arc(left + width / 2, top + height / 2, width / 2, 0, Math.PI * 2)
+    ctx.stroke()
+    // 填充选中色
+    if (radio?.value) {
       ctx.beginPath()
       ctx.fillStyle = fillStyle
-      ctx.fillRect(left, top, width, height)
-      // 勾选对号
-      ctx.beginPath()
-      ctx.strokeStyle = strokeStyle
-      ctx.lineWidth = lineWidth * 2 * scale
-      ctx.moveTo(left + 2 * scale, top + height / 2)
-      ctx.lineTo(left + width / 2, top + height - 3 * scale)
-      ctx.lineTo(left + width - 2 * scale, top + 3 * scale)
-      ctx.stroke()
-    } else {
-      ctx.lineWidth = lineWidth
-      ctx.rect(left, top, width, height)
-      ctx.stroke()
+      ctx.arc(left + width / 2, top + height / 2, width / 3, 0, Math.PI * 2)
+      ctx.fill()
     }
     ctx.closePath()
     ctx.restore()

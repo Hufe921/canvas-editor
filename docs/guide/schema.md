@@ -15,6 +15,7 @@ interface IElement {
     PAGE_BREAK = 'pageBreak',
     CONTROL = 'control',
     CHECKBOX = 'checkbox',
+    RADIO = 'radio',
     LATEX = 'latex',
     TAB = 'tab',
     DATE = 'date',
@@ -38,7 +39,8 @@ interface IElement {
     LEFT = 'left',
     CENTER = 'center',
     RIGHT = 'right',
-    ALIGNMENT = 'alignment'
+    ALIGNMENT = 'alignment',
+    JUSTIFY = 'justify'
   };
   rowMargin?: number;
   letterSpacing?: number;
@@ -76,7 +78,8 @@ interface IElement {
     type: {
       TEXT = 'text',
       SELECT = 'select',
-      CHECKBOX = 'checkbox'
+      CHECKBOX = 'checkbox',
+      RADIO = 'radio'
     };
     value: IElement[] | null;
     placeholder?: string;
@@ -100,6 +103,13 @@ interface IElement {
     checkbox?: {
       value: boolean | null;
       code?: string;
+      min?: number;
+      max?: number;
+      disabled?: boolean;
+    };
+    radio?: {
+      value: boolean | null;
+      code?: string;
       disabled?: boolean;
     };
     font?: string;
@@ -115,10 +125,17 @@ interface IElement {
     POSTFIX = 'postfix',
     PLACEHOLDER = 'placeholder',
     VALUE = 'value',
-    CHECKBOX = 'checkbox'
+    CHECKBOX = 'checkbox',
+    RADIO = 'radio'
   };
   // 复选框
   checkbox?: {
+    value: boolean | null;
+    code?: string;
+    disabled?: boolean;
+  };
+  // 单选框
+  radio?: {
     value: boolean | null;
     code?: string;
     disabled?: boolean;
@@ -148,6 +165,7 @@ interface IElement {
   };
   // 标题
   level?: TitleLevel;
+  title?: ITitle;
   // 列表
   listType?: ListType;
   listStyle?: ListStyle;

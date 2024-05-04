@@ -381,6 +381,15 @@ function initEditorInstance(
     instance.command.executeRowFlex(RowFlex.ALIGNMENT)
   }
 
+  const justifyDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__justify'
+  )!
+  justifyDom.title = `分散对齐(${isApple ? '⌘' : 'Ctrl'}+Shift+J)`
+  justifyDom.onclick = function () {
+    console.log('justify')
+    instance.command.executeRowFlex(RowFlex.JUSTIFY)
+  }
+
   const rowMarginDom = document.querySelector<HTMLDivElement>(
     '.menu-item__row-margin'
   )!
@@ -836,6 +845,44 @@ function initEditorInstance(
           }
         })
         break
+      case ControlType.RADIO:
+        new Dialog({
+          title: '单选框控件',
+          data: [
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'code',
+              placeholder: '请输入默认值'
+            },
+            {
+              type: 'textarea',
+              label: '值集',
+              name: 'valueSets',
+              required: true,
+              height: 100,
+              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            }
+          ],
+          onConfirm: payload => {
+            const valueSets = payload.find(p => p.name === 'valueSets')?.value
+            if (!valueSets) return
+            const code = payload.find(p => p.name === 'code')?.value
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  code,
+                  value: null,
+                  valueSets: JSON.parse(valueSets)
+                }
+              }
+            ])
+          }
+        })
+        break
       default:
         break
     }
@@ -849,6 +896,20 @@ function initEditorInstance(
     instance.command.executeInsertElementList([
       {
         type: ElementType.CHECKBOX,
+        checkbox: {
+          value: false
+        },
+        value: ''
+      }
+    ])
+  }
+
+  const radioDom = document.querySelector<HTMLDivElement>('.menu-item__radio')!
+  radioDom.onclick = function () {
+    console.log('radio')
+    instance.command.executeInsertElementList([
+      {
+        type: ElementType.RADIO,
         checkbox: {
           value: false
         },
@@ -1519,12 +1580,15 @@ function initEditorInstance(
     centerDom.classList.remove('active')
     rightDom.classList.remove('active')
     alignmentDom.classList.remove('active')
+    justifyDom.classList.remove('active')
     if (payload.rowFlex && payload.rowFlex === 'right') {
       rightDom.classList.add('active')
     } else if (payload.rowFlex && payload.rowFlex === 'center') {
       centerDom.classList.add('active')
     } else if (payload.rowFlex && payload.rowFlex === 'alignment') {
       alignmentDom.classList.add('active')
+    } else if (payload.rowFlex && payload.rowFlex === 'justify') {
+      justifyDom.classList.add('active')
     } else {
       leftDom.classList.add('active')
     }
