@@ -736,6 +736,8 @@ export function getElementRowFlex(node: HTMLElement) {
       return RowFlex.RIGHT
     case 'justify':
       return RowFlex.ALIGNMENT
+    case 'justify-all':
+      return RowFlex.JUSTIFY
     default:
       return RowFlex.LEFT
   }

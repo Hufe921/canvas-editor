@@ -132,6 +132,10 @@
 
 功能：两端对齐
 
+## Ctrl/Cmd + Shift + J
+
+功能：分散对齐
+
 ## Ctrl + Shift + X
 
 功能：删除线

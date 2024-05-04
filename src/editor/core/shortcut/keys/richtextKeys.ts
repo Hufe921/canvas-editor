@@ -90,5 +90,13 @@ export const richtextKeys: IRegisterShortcut[] = [
     callback: (command: Command) => {
       command.executeRowFlex(RowFlex.ALIGNMENT)
     }
+  },
+  {
+    key: KeyMap.J,
+    mod: true,
+    shift: true,
+    callback: (command: Command) => {
+      command.executeRowFlex(RowFlex.JUSTIFY)
+    }
   }
 ]

@@ -39,7 +39,8 @@ interface IElement {
     LEFT = 'left',
     CENTER = 'center',
     RIGHT = 'right',
-    ALIGNMENT = 'alignment'
+    ALIGNMENT = 'alignment',
+    JUSTIFY = 'justify'
   };
   rowMargin?: number;
   letterSpacing?: number;

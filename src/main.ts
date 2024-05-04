@@ -313,6 +313,15 @@ window.onload = function () {
     instance.command.executeRowFlex(RowFlex.ALIGNMENT)
   }
 
+  const justifyDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__justify'
+  )!
+  justifyDom.title = `分散对齐(${isApple ? '⌘' : 'Ctrl'}+Shift+J)`
+  justifyDom.onclick = function () {
+    console.log('justify')
+    instance.command.executeRowFlex(RowFlex.JUSTIFY)
+  }
+
   const rowMarginDom = document.querySelector<HTMLDivElement>(
     '.menu-item__row-margin'
   )!
@@ -1503,12 +1512,15 @@ window.onload = function () {
     centerDom.classList.remove('active')
     rightDom.classList.remove('active')
     alignmentDom.classList.remove('active')
+    justifyDom.classList.remove('active')
     if (payload.rowFlex && payload.rowFlex === 'right') {
       rightDom.classList.add('active')
     } else if (payload.rowFlex && payload.rowFlex === 'center') {
       centerDom.classList.add('active')
     } else if (payload.rowFlex && payload.rowFlex === 'alignment') {
       alignmentDom.classList.add('active')
+    } else if (payload.rowFlex && payload.rowFlex === 'justify') {
+      justifyDom.classList.add('active')
     } else {
       leftDom.classList.add('active')
     }
