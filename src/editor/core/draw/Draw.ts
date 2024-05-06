@@ -1123,7 +1123,7 @@ export class Draw {
 
   public computeRowList(payload: IComputeRowListPayload) {
     const { innerWidth, elementList, isPagingMode = false } = payload
-    const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth } =
+    const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth, isSplitTableTh } =
       this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
@@ -1213,7 +1213,9 @@ export class Draw {
           while (tableIndex < elementList.length) {
             const nextElement = elementList[tableIndex]
             if (nextElement.pagingId === element.pagingId) {
-              element.trList!.push(...nextElement.trList!)
+              const nexTrList = isSplitTableTh ?
+                nextElement.trList?.filter(tr => tr.trType !== 'th') : nextElement.trList
+              nexTrList && element.trList!.push(...nexTrList)
               element.height! += nextElement.height!
               tableIndex++
               combineCount++
@@ -1326,7 +1328,7 @@ export class Draw {
           const rowMarginHeight = rowMargin * 2 * scale
           if (
             curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-            height
+            height || element.trList![0].trType === 'th'
           ) {
             // 无可拆分行则切换至新页
             curPagePreHeight = marginHeight
@@ -1377,6 +1379,12 @@ export class Draw {
               // 追加拆分表格
               const cloneElement = deepClone(element)
               cloneElement.pagingId = pagingId
+              if (isSplitTableTh) {
+                const cloneTr = deepClone(trList[0])
+                cloneTr.id = getUUID()
+                cloneTr.trType = 'th'
+                cloneTrList.unshift(cloneTr)
+              }
               cloneElement.trList = cloneTrList
               cloneElement.id = getUUID()
               this.spliceElementList(elementList, i + 1, 0, cloneElement)

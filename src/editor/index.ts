@@ -205,6 +205,8 @@ export default class Editor {
       letterClass: [LETTER_CLASS.ENGLISH],
       contextMenuDisableKeys: [],
       scrollContainerSelector: '',
+      // 表格拆分是否拆分表头
+      isSplitTableTh: false,
       ...options,
       header: headerOptions,
       footer: footerOptions,

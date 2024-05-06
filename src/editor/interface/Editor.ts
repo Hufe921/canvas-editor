@@ -89,6 +89,7 @@ export interface IEditorOption {
   background?: IBackgroundOption
   lineBreak?: ILineBreakOption
   separator?: ISeparatorOption
+  isSplitTableTh?: boolean
 }
 
 export interface IEditorResult {

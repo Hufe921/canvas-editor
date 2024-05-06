@@ -40,7 +40,8 @@ export default defineConfig(({ mode }) => {
   return {
     base: `/${name}/`,
     server: {
-      host: '0.0.0.0'
+      host: '0.0.0.0',
+      port: 5002
     }
   }
 })
