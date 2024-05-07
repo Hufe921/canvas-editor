@@ -5,5 +5,5 @@ export interface ITr {
   height: number
   tdList: ITd[]
   minHeight?: number,
-  trType?: 'th'
+  type?: string
 }

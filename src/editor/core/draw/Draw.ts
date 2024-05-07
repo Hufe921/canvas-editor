@@ -95,6 +95,7 @@ import { Override } from '../override/Override'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
+import { TrType } from '../../dataset/enum/table/Tr'
 
 export class Draw {
   private container: HTMLDivElement
@@ -1213,8 +1214,9 @@ export class Draw {
           while (tableIndex < elementList.length) {
             const nextElement = elementList[tableIndex]
             if (nextElement.pagingId === element.pagingId) {
+              // 合并表格去掉表头
               const nexTrList = isSplitTableTh ?
-                nextElement.trList?.filter(tr => tr.trType !== 'th') : nextElement.trList
+                nextElement.trList?.filter(tr => tr.type !== TrType.TYPE) : nextElement.trList
               nexTrList && element.trList!.push(...nexTrList)
               element.height! += nextElement.height!
               tableIndex++
@@ -1324,11 +1326,11 @@ export class Draw {
               curPagePreHeight += row.height
             }
           }
-          // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度
+          // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
           const rowMarginHeight = rowMargin * 2 * scale
           if (
             curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-            height || element.trList![0].trType === 'th'
+            height || element.trList![0].type === TrType.TYPE
           ) {
             // 无可拆分行则切换至新页
             curPagePreHeight = marginHeight
@@ -1379,10 +1381,11 @@ export class Draw {
               // 追加拆分表格
               const cloneElement = deepClone(element)
               cloneElement.pagingId = pagingId
+              // 根据配置处理表头拆分
               if (isSplitTableTh) {
                 const cloneTr = deepClone(trList[0])
                 cloneTr.id = getUUID()
-                cloneTr.trType = 'th'
+                cloneTr.type = TrType.TYPE
                 cloneTrList.unshift(cloneTr)
               }
               cloneElement.trList = cloneTrList

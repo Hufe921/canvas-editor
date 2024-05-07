@@ -72,6 +72,7 @@ interface IEditorOption {
   background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat;}。默认：{color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
+  isSplitTableTh?: boolean // 是否拆分表头单元格。默认:false
 }
 ```
 
