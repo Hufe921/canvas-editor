@@ -473,7 +473,6 @@ export const options: IEditorOption = {
     data: 'CANVAS-EDITOR',
     size: 120
   },
-  isSplitTableTh: true,
   pageNumber: {
     format: '第{pageNo}页/共{pageCount}页'
   },
