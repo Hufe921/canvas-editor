@@ -83,6 +83,7 @@ import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
 import {
+  IMAGE_ELEMENT_TYPE,
   INLINE_ELEMENT_TYPE,
   TEXTLIKE_ELEMENT_TYPE
 } from '../../dataset/constant/Element'
@@ -2278,26 +2279,9 @@ export class Draw {
     } else {
       this._immediateRender()
     }
-    const positionContext = this.position.getPositionContext()
     // 光标重绘
     if (isSetCursor) {
-      const positionList = this.position.getPositionList()
-      if (positionContext.isTable) {
-        const { index, trIndex, tdIndex } = positionContext
-        const elementList = this.getOriginalElementList()
-        const tablePositionList =
-          elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
-        if (curIndex === undefined && tablePositionList) {
-          curIndex = tablePositionList.length - 1
-        }
-        const tablePosition = tablePositionList?.[curIndex!]
-        this.position.setCursorPosition(tablePosition || null)
-      } else {
-        this.position.setCursorPosition(
-          curIndex !== undefined ? positionList[curIndex] : null
-        )
-      }
-      this.cursor.drawCursor()
+      curIndex = this.setCursor(curIndex)
     }
     // 历史记录用于undo、redo（非首次渲染内容变更 || 第一次存在光标时）
     if (
@@ -2309,7 +2293,11 @@ export class Draw {
     // 信息变动回调
     nextTick(() => {
       // 表格工具重新渲染
-      if (isCompute && !this.isReadonly() && positionContext.isTable) {
+      if (
+        isCompute &&
+        !this.isReadonly() &&
+        this.position.getPositionContext().isTable
+      ) {
         this.tableTool.render()
       }
       // 页眉指示器重新渲染
@@ -2333,6 +2321,45 @@ export class Draw {
         }
       }
     })
+  }
+
+  public setCursor(curIndex: number | undefined) {
+    const positionContext = this.position.getPositionContext()
+    const positionList = this.position.getPositionList()
+    if (positionContext.isTable) {
+      const { index, trIndex, tdIndex } = positionContext
+      const elementList = this.getOriginalElementList()
+      const tablePositionList =
+        elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
+      if (curIndex === undefined && tablePositionList) {
+        curIndex = tablePositionList.length - 1
+      }
+      const tablePosition = tablePositionList?.[curIndex!]
+      this.position.setCursorPosition(tablePosition || null)
+    } else {
+      this.position.setCursorPosition(
+        curIndex !== undefined ? positionList[curIndex] : null
+      )
+    }
+    // 定位到图片元素并且位置发生变化
+    let isShowCursor = true
+    if (
+      curIndex !== undefined &&
+      positionContext.isImage &&
+      positionContext.isDirectHit
+    ) {
+      const elementList = this.getElementList()
+      const element = elementList[curIndex]
+      if (IMAGE_ELEMENT_TYPE.includes(element.type!)) {
+        isShowCursor = false
+        const position = this.position.getCursorPosition()
+        this.previewer.updateResizer(element, position)
+      }
+    }
+    this.cursor.drawCursor({
+      isShow: isShowCursor
+    })
+    return curIndex
   }
 
   public submitHistory(curIndex: number | undefined) {
