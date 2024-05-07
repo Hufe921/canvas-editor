@@ -2304,31 +2304,7 @@ export class Draw {
       (isSubmitHistory && !isFirstRender) ||
       (curIndex !== undefined && this.historyManager.isStackEmpty())
     ) {
-      const oldElementList = getSlimCloneElementList(this.elementList)
-      const oldHeaderElementList = getSlimCloneElementList(
-        this.header.getElementList()
-      )
-      const oldFooterElementList = getSlimCloneElementList(
-        this.footer.getElementList()
-      )
-      const oldRange = deepClone(this.range.getRange())
-      const pageNo = this.pageNo
-      const oldPositionContext = deepClone(positionContext)
-      const zone = this.zone.getZone()
-      this.historyManager.execute(() => {
-        this.zone.setZone(zone)
-        this.setPageNo(pageNo)
-        this.position.setPositionContext(deepClone(oldPositionContext))
-        this.header.setElementList(deepClone(oldHeaderElementList))
-        this.footer.setElementList(deepClone(oldFooterElementList))
-        this.elementList = deepClone(oldElementList)
-        this.range.replaceRange(deepClone(oldRange))
-        this.render({
-          curIndex,
-          isSubmitHistory: false,
-          isSourceHistory: true
-        })
-      })
+      this.submitHistory(curIndex)
     }
     // 信息变动回调
     nextTick(() => {
@@ -2356,6 +2332,35 @@ export class Draw {
           this.eventBus.emit('contentChange')
         }
       }
+    })
+  }
+
+  public submitHistory(curIndex: number | undefined) {
+    const positionContext = this.position.getPositionContext()
+    const oldElementList = getSlimCloneElementList(this.elementList)
+    const oldHeaderElementList = getSlimCloneElementList(
+      this.header.getElementList()
+    )
+    const oldFooterElementList = getSlimCloneElementList(
+      this.footer.getElementList()
+    )
+    const oldRange = deepClone(this.range.getRange())
+    const pageNo = this.pageNo
+    const oldPositionContext = deepClone(positionContext)
+    const zone = this.zone.getZone()
+    this.historyManager.execute(() => {
+      this.zone.setZone(zone)
+      this.setPageNo(pageNo)
+      this.position.setPositionContext(deepClone(oldPositionContext))
+      this.header.setElementList(deepClone(oldHeaderElementList))
+      this.footer.setElementList(deepClone(oldFooterElementList))
+      this.elementList = deepClone(oldElementList)
+      this.range.replaceRange(deepClone(oldRange))
+      this.render({
+        curIndex,
+        isSubmitHistory: false,
+        isSourceHistory: true
+      })
     })
   }
 

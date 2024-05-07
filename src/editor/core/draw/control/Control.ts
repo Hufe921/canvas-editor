@@ -420,11 +420,18 @@ export class Control {
       startElement.controlComponent === ControlComponent.PLACEHOLDER ||
       nextElement.controlComponent === ControlComponent.PLACEHOLDER
     ) {
+      let isHasSubmitHistory = false
       let index = startIndex
       while (index < elementList.length) {
         const curElement = elementList[index]
         if (curElement.controlId !== startElement.controlId) break
         if (curElement.controlComponent === ControlComponent.PLACEHOLDER) {
+          // 删除占位符时替换前一个历史记录
+          if (!isHasSubmitHistory) {
+            isHasSubmitHistory = true
+            this.draw.getHistoryManager().popUndo()
+            this.draw.submitHistory(startIndex)
+          }
           this.draw.spliceElementList(elementList, index, 1)
         } else {
           index++
