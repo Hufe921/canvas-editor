@@ -1932,7 +1932,12 @@ export class Draw {
             // 字体大小不同时需立即绘制
             if (
               preElement &&
-              this.getElementSize(preElement) !== this.getElementSize(element)
+              ((preElement.type === ElementType.SUBSCRIPT &&
+                element.type !== ElementType.SUBSCRIPT) ||
+                (preElement.type === ElementType.SUPERSCRIPT &&
+                  element.type !== ElementType.SUPERSCRIPT) ||
+                this.getElementSize(preElement) !==
+                  this.getElementSize(element))
             ) {
               this.strikeout.render(ctx)
             }
