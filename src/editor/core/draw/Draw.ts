@@ -1811,7 +1811,6 @@ export class Draw {
             this.textParticle.complete()
           }
         } else if (element.type === ElementType.SUPERSCRIPT) {
-          this.underline.render(ctx)
           this.textParticle.complete()
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUBSCRIPT) {
@@ -1893,12 +1892,10 @@ export class Draw {
         }
         // 下划线记录
         if (element.underline || element.control?.underline) {
-          // 上下标元素下划线单独绘制
+          // 下标元素下划线单独绘制
           if (
-            (preElement?.type === ElementType.SUPERSCRIPT &&
-              element.type !== ElementType.SUPERSCRIPT) ||
-            (preElement?.type === ElementType.SUBSCRIPT &&
-              element.type !== ElementType.SUBSCRIPT)
+            preElement?.type === ElementType.SUBSCRIPT &&
+            element.type !== ElementType.SUBSCRIPT
           ) {
             this.underline.render(ctx)
           }
@@ -1906,12 +1903,10 @@ export class Draw {
           const rowMargin = this.getElementRowMargin(element)
           // 元素向左偏移量
           const offsetX = element.left || 0
-          // 上下标元素y轴偏移值
+          // 下标元素y轴偏移值
           let offsetY = 0
           if (element.type === ElementType.SUBSCRIPT) {
             offsetY = this.subscriptParticle.getOffsetY(element)
-          } else if (element.type === ElementType.SUPERSCRIPT) {
-            offsetY = this.superscriptParticle.getOffsetY(element)
           }
           // 占位符不参与颜色计算
           const color =
