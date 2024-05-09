@@ -771,6 +771,7 @@ export class CommandAdapt {
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
+    const { defaultTrMinHeight } = this.options.table
     const elementList = this.draw.getElementList()
     let offsetX = 0
     if (elementList[startIndex]?.listId) {
@@ -794,7 +795,7 @@ export class CommandAdapt {
     for (let r = 0; r < row; r++) {
       const tdList: ITd[] = []
       const tr: ITr = {
-        height: this.options.defaultTrMinHeight,
+        height: defaultTrMinHeight,
         tdList
       }
       for (let c = 0; c < col; c++) {
@@ -992,7 +993,7 @@ export class CommandAdapt {
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.options.defaultColMinWidth
+      width: this.options.table.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
@@ -1051,7 +1052,7 @@ export class CommandAdapt {
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.options.defaultColMinWidth
+      width: this.options.table.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()

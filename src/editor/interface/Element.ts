@@ -69,6 +69,7 @@ export interface ITableElement {
   tableId?: string
   conceptId?: string
   pagingId?: string // 用于区分拆分的表格同属一个源表格
+  pagingIndex?: number // 拆分的表格索引
 }
 
 export type ITable = ITableAttr & ITableElement

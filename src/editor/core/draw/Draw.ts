@@ -95,7 +95,6 @@ import { Override } from '../override/Override'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
-import { TrType } from '../../dataset/enum/table/Tr'
 
 export class Draw {
   private container: HTMLDivElement
@@ -398,7 +397,10 @@ export class Draw {
   }
 
   public getTdPadding(): IPadding {
-    const { tdPadding, scale } = this.options
+    const {
+      table: { tdPadding },
+      scale
+    } = this.options
     return <IPadding>tdPadding.map(m => m * scale)
   }
 
@@ -1124,8 +1126,13 @@ export class Draw {
 
   public computeRowList(payload: IComputeRowListPayload) {
     const { innerWidth, elementList, isPagingMode = false } = payload
-    const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth, isSplitTableTh } =
-      this.options
+    const {
+      defaultSize,
+      defaultRowMargin,
+      scale,
+      table: { tdPadding },
+      defaultTabWidth
+    } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
@@ -1214,10 +1221,10 @@ export class Draw {
           while (tableIndex < elementList.length) {
             const nextElement = elementList[tableIndex]
             if (nextElement.pagingId === element.pagingId) {
-              // 合并表格去掉表头
-              const nexTrList = isSplitTableTh ?
-                nextElement.trList?.filter(tr => tr.type !== TrType.TYPE) : nextElement.trList
-              nexTrList && element.trList!.push(...nexTrList)
+              const nexTrList = nextElement.trList!.filter(
+                tr => !tr.pagingRepeat
+              )
+              element.trList!.push(...nexTrList)
               element.height! += nextElement.height!
               tableIndex++
               combineCount++
@@ -1229,6 +1236,7 @@ export class Draw {
             elementList.splice(i + 1, combineCount)
           }
         }
+        element.pagingIndex = element.pagingIndex ?? 0
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
@@ -1330,7 +1338,8 @@ export class Draw {
           const rowMarginHeight = rowMargin * 2 * scale
           if (
             curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-            height || element.trList![0].type === TrType.TYPE
+              height ||
+            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
             // 无可拆分行则切换至新页
             curPagePreHeight = marginHeight
@@ -1381,12 +1390,13 @@ export class Draw {
               // 追加拆分表格
               const cloneElement = deepClone(element)
               cloneElement.pagingId = pagingId
-              // 根据配置处理表头拆分
-              if (isSplitTableTh) {
-                const cloneTr = deepClone(trList[0])
-                cloneTr.id = getUUID()
-                cloneTr.type = TrType.TYPE
-                cloneTrList.unshift(cloneTr)
+              cloneElement.pagingIndex = element.pagingIndex! + 1
+              // 处理分页重复表头
+              const repeatTrList = trList.filter(tr => tr.pagingRepeat)
+              if (repeatTrList.length) {
+                const cloneRepeatTrList = deepClone(repeatTrList)
+                cloneRepeatTrList.forEach(tr => (tr.id = getUUID()))
+                cloneTrList.unshift(...cloneRepeatTrList)
               }
               cloneElement.trList = cloneTrList
               cloneElement.id = getUUID()
@@ -1752,7 +1762,12 @@ export class Draw {
     // 优先绘制高亮元素
     this._drawHighlight(ctx, payload)
     // 绘制元素、下划线、删除线、选区
-    const { scale, tdPadding, group, lineBreak } = this.options
+    const {
+      scale,
+      table: { tdPadding },
+      group,
+      lineBreak
+    } = this.options
     const {
       rowList,
       pageNo,

@@ -43,10 +43,8 @@ interface IEditorOption {
   marginIndicatorColor?: string // 页边距指示器颜色。默认：#BABABA
   margins?: IMargin // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode // 纸张模式：连页、分页。默认：分页
-  tdPadding?: IPadding // 单元格内边距。默认：[0, 5, 5, 5]
-  defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
-  defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
   defaultHyperlinkColor?: string // 默认超链接颜色。默认：#0000FF
+  table?: ITableOption // 表格配置。{tdPadding?:IPadding; defaultTrMinHeight?:number; defaultColMinWidth?:number}
   header?: IHeader // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
   footer?: IFooter // 页脚信息。{bottom?:number; maxHeightRadio?:MaxHeightRatio;}
   pageNumber?: IPageNumber // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
@@ -72,7 +70,16 @@ interface IEditorOption {
   background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat;}。默认：{color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
-  isSplitTableTh?: boolean // 是否拆分表头单元格。默认:false
+}
+```
+
+## 表格配置
+
+```typescript
+interface ITableOption {
+  tdPadding?: IPadding // 单元格内边距。默认：[0, 5, 5, 5]
+  defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
+  defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
 }
 ```
 

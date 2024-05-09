@@ -82,6 +82,8 @@ import { ILineBreakOption } from './interface/LineBreak'
 import { defaultLineBreak } from './dataset/constant/LineBreak'
 import { ISeparatorOption } from './interface/Separator'
 import { defaultSeparatorOption } from './dataset/constant/Separator'
+import { ITableOption } from './interface/table/Table'
+import { defaultTableOption } from './dataset/constant/Table'
 
 export default class Editor {
   public command: Command
@@ -97,6 +99,10 @@ export default class Editor {
     data: IEditorData | IElement[],
     options: IEditorOption = {}
   ) {
+    const tableOptions: Required<ITableOption> = {
+      ...defaultTableOption,
+      ...options.table
+    }
     const headerOptions: Required<IHeader> = {
       ...defaultHeaderOption,
       ...options.header
@@ -192,9 +198,6 @@ export default class Editor {
       marginIndicatorColor: '#BABABA',
       margins: [100, 120, 100, 120],
       pageMode: PageMode.PAGING,
-      tdPadding: [0, 5, 5, 5],
-      defaultTrMinHeight: 42,
-      defaultColMinWidth: 40,
       defaultHyperlinkColor: '#0000FF',
       paperDirection: PaperDirection.VERTICAL,
       inactiveAlpha: 0.6,
@@ -205,9 +208,8 @@ export default class Editor {
       letterClass: [LETTER_CLASS.ENGLISH],
       contextMenuDisableKeys: [],
       scrollContainerSelector: '',
-      // 表格拆分是否拆分表头
-      isSplitTableTh: false,
       ...options,
+      table: tableOptions,
       header: headerOptions,
       footer: footerOptions,
       pageNumber: pageNumberOptions,
