@@ -8,7 +8,6 @@ import {
 import { IBackgroundOption } from './Background'
 import { ICheckboxOption } from './Checkbox'
 import { IRadioOption } from './Radio'
-import { IPadding } from './Common'
 import { IControlOption } from './Control'
 import { ICursorOption } from './Cursor'
 import { IFooter } from './Footer'
@@ -23,6 +22,7 @@ import { ITitleOption } from './Title'
 import { IWatermark } from './Watermark'
 import { IZoneOption } from './Zone'
 import { ISeparatorOption } from './Separator'
+import { ITableOption } from './table/Table'
 
 export interface IEditorData {
   header?: IElement[]
@@ -60,9 +60,6 @@ export interface IEditorOption {
   marginIndicatorColor?: string
   margins?: IMargin
   pageMode?: PageMode
-  tdPadding?: IPadding
-  defaultTrMinHeight?: number
-  defaultColMinWidth?: number
   defaultHyperlinkColor?: string
   paperDirection?: PaperDirection
   inactiveAlpha?: number
@@ -73,6 +70,7 @@ export interface IEditorOption {
   contextMenuDisableKeys?: string[]
   scrollContainerSelector?: string
   wordBreak?: WordBreak
+  table?: ITableOption
   header?: IHeader
   footer?: IFooter
   pageNumber?: IPageNumber

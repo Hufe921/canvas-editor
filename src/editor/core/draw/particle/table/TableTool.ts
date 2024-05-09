@@ -1,6 +1,7 @@
 import { IElement } from '../../../..'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
+import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { Position } from '../../../position/Position'
 import { Draw } from '../../Draw'
@@ -22,7 +23,7 @@ export class TableTool {
 
   private draw: Draw
   private canvas: HTMLCanvasElement
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
   private position: Position
   private container: HTMLDivElement
   private toolRowContainer: HTMLDivElement | null
@@ -255,7 +256,7 @@ export class TableTool {
           const trList = element.trList!
           const tr = trList[index] || trList[index - 1]
           // 最大移动高度-向上移动超出最小高度限定，则减少移动量
-          const { defaultTrMinHeight } = this.options
+          const { defaultTrMinHeight } = this.options.table
           if (dy < 0 && tr.height + dy < defaultTrMinHeight) {
             dy = defaultTrMinHeight - tr.height
           }

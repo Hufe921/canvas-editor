@@ -43,10 +43,8 @@ interface IEditorOption {
   marginIndicatorColor?: string // The margin indicator color. default: #BABABA
   margins?: IMargin // Page margins. default: [100, 120, 100, 120]
   pageMode?: PageMode // Paper mode: Linkage, Pagination. default: Pagination
-  tdPadding?: IPadding // Cell padding. default: [0, 5, 5, 5]
-  defaultTrMinHeight?: number // Default table row minimum height. default: 42
-  defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise scaled down). default: 40
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF
+  table?: ITableOption // table configuration {tdPadding?:IPadding; defaultTrMinHeight?:number; defaultColMinWidth?:number}
   header?: IHeader // Header information.{top?:number; maxHeightRadio?:MaxHeightRatio;}
   footer?: IFooter // Footer information. {bottom?:number; maxHeightRadio?:MaxHeightRatio;}
   pageNumber?: IPageNumber // Page number information. {bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
@@ -72,6 +70,16 @@ interface IEditorOption {
   background?: IBackgroundOption // Background option. {color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat;}。default: {color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // LineBreak option. {disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // Separator option. {lineWidth?:number; strokeStyle?:string;}
+}
+```
+
+## Table Configuration
+
+```typescript
+interface ITableOption {
+  tdPadding?: IPadding // Cell padding. default: [0, 5, 5, 5]
+  defaultTrMinHeight?: number // Default table row minimum height. default: 42
+  defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise
 }
 ```
 

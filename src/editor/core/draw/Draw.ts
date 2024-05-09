@@ -398,7 +398,10 @@ export class Draw {
   }
 
   public getTdPadding(): IPadding {
-    const { tdPadding, scale } = this.options
+    const {
+      table: { tdPadding },
+      scale
+    } = this.options
     return <IPadding>tdPadding.map(m => m * scale)
   }
 
@@ -1124,8 +1127,13 @@ export class Draw {
 
   public computeRowList(payload: IComputeRowListPayload) {
     const { innerWidth, elementList, isPagingMode = false } = payload
-    const { defaultSize, defaultRowMargin, scale, tdPadding, defaultTabWidth } =
-      this.options
+    const {
+      defaultSize,
+      defaultRowMargin,
+      scale,
+      table: { tdPadding },
+      defaultTabWidth
+    } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
@@ -1214,7 +1222,10 @@ export class Draw {
           while (tableIndex < elementList.length) {
             const nextElement = elementList[tableIndex]
             if (nextElement.pagingId === element.pagingId) {
-              element.trList!.push(...nextElement.trList!)
+              const nexTrList = nextElement.trList!.filter(
+                tr => !tr.pagingRepeat
+              )
+              element.trList!.push(...nexTrList)
               element.height! += nextElement.height!
               tableIndex++
               combineCount++
@@ -1226,6 +1237,7 @@ export class Draw {
             elementList.splice(i + 1, combineCount)
           }
         }
+        element.pagingIndex = element.pagingIndex ?? 0
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
@@ -1323,11 +1335,12 @@ export class Draw {
               curPagePreHeight += row.height
             }
           }
-          // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度
+          // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
           const rowMarginHeight = rowMargin * 2 * scale
           if (
             curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-            height
+              height ||
+            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
             // 无可拆分行则切换至新页
             curPagePreHeight = marginHeight
@@ -1378,6 +1391,14 @@ export class Draw {
               // 追加拆分表格
               const cloneElement = deepClone(element)
               cloneElement.pagingId = pagingId
+              cloneElement.pagingIndex = element.pagingIndex! + 1
+              // 处理分页重复表头
+              const repeatTrList = trList.filter(tr => tr.pagingRepeat)
+              if (repeatTrList.length) {
+                const cloneRepeatTrList = deepClone(repeatTrList)
+                cloneRepeatTrList.forEach(tr => (tr.id = getUUID()))
+                cloneTrList.unshift(...cloneRepeatTrList)
+              }
               cloneElement.trList = cloneTrList
               cloneElement.id = getUUID()
               this.spliceElementList(elementList, i + 1, 0, cloneElement)
@@ -1742,7 +1763,12 @@ export class Draw {
     // 优先绘制高亮元素
     this._drawHighlight(ctx, payload)
     // 绘制元素、下划线、删除线、选区
-    const { scale, tdPadding, group, lineBreak } = this.options
+    const {
+      scale,
+      table: { tdPadding },
+      group,
+      lineBreak
+    } = this.options
     const {
       rowList,
       pageNo,

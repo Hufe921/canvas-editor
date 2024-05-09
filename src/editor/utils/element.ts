@@ -148,15 +148,13 @@ export function formatElementList(
       const tableId = getUUID()
       el.id = tableId
       if (el.trList) {
+        const { defaultTrMinHeight } = editorOptions.table
         for (let t = 0; t < el.trList.length; t++) {
           const tr = el.trList[t]
           const trId = getUUID()
           tr.id = trId
-          if (
-            !tr.minHeight ||
-            tr.minHeight < editorOptions.defaultTrMinHeight
-          ) {
-            tr.minHeight = editorOptions.defaultTrMinHeight
+          if (!tr.minHeight || tr.minHeight < defaultTrMinHeight) {
+            tr.minHeight = defaultTrMinHeight
           }
           if (tr.height < tr.minHeight) {
             tr.height = tr.minHeight
