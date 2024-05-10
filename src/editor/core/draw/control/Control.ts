@@ -432,7 +432,7 @@ export class Control {
             this.draw.getHistoryManager().popUndo()
             this.draw.submitHistory(startIndex)
           }
-          this.draw.spliceElementList(elementList, index, 1)
+          elementList.splice(index, 1)
         } else {
           index++
         }
