@@ -423,7 +423,19 @@ export class Previewer {
     position: IElementPosition | null = null,
     options: IPreviewerDrawOption = {}
   ) {
+    // 缓存配置
     this.previewerDrawOption = options
+    this.curElementSrc = element[options.srcKey || 'value'] || ''
+    // 更新渲染尺寸及位置
+    this.updateResizer(element, position)
+    // 监听事件
+    document.addEventListener('keydown', this._keydown)
+  }
+
+  public updateResizer(
+    element: IElement,
+    position: IElementPosition | null = null
+  ) {
     const { scale } = this.options
     const elementWidth = element.width! * scale
     const elementHeight = element.height! * scale
@@ -439,12 +451,11 @@ export class Previewer {
     // 更新预览包围框尺寸
     this._updateResizerRect(elementWidth, elementHeight)
     this.resizerSelection.style.display = 'block'
+    // 缓存基础信息
     this.curElement = element
-    this.curElementSrc = element[options.srcKey || 'value'] || ''
     this.curPosition = position
-    this.width = this.curElement.width! * scale
-    this.height = this.curElement.height! * scale
-    document.addEventListener('keydown', this._keydown)
+    this.width = elementWidth
+    this.height = elementHeight
   }
 
   public clearResizer() {

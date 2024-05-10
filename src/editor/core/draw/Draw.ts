@@ -83,6 +83,7 @@ import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
 import {
+  IMAGE_ELEMENT_TYPE,
   INLINE_ELEMENT_TYPE,
   TEXTLIKE_ELEMENT_TYPE
 } from '../../dataset/constant/Element'
@@ -1836,7 +1837,6 @@ export class Draw {
             this.textParticle.complete()
           }
         } else if (element.type === ElementType.SUPERSCRIPT) {
-          this.underline.render(ctx)
           this.textParticle.complete()
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUBSCRIPT) {
@@ -1918,12 +1918,10 @@ export class Draw {
         }
         // 下划线记录
         if (element.underline || element.control?.underline) {
-          // 上下标元素下划线单独绘制
+          // 下标元素下划线单独绘制
           if (
-            (preElement?.type === ElementType.SUPERSCRIPT &&
-              element.type !== ElementType.SUPERSCRIPT) ||
-            (preElement?.type === ElementType.SUBSCRIPT &&
-              element.type !== ElementType.SUBSCRIPT)
+            preElement?.type === ElementType.SUBSCRIPT &&
+            element.type !== ElementType.SUBSCRIPT
           ) {
             this.underline.render(ctx)
           }
@@ -1931,12 +1929,10 @@ export class Draw {
           const rowMargin = this.getElementRowMargin(element)
           // 元素向左偏移量
           const offsetX = element.left || 0
-          // 上下标元素y轴偏移值
+          // 下标元素y轴偏移值
           let offsetY = 0
           if (element.type === ElementType.SUBSCRIPT) {
             offsetY = this.subscriptParticle.getOffsetY(element)
-          } else if (element.type === ElementType.SUPERSCRIPT) {
-            offsetY = this.superscriptParticle.getOffsetY(element)
           }
           // 占位符不参与颜色计算
           const color =
@@ -1962,7 +1958,12 @@ export class Draw {
             // 字体大小不同时需立即绘制
             if (
               preElement &&
-              this.getElementSize(preElement) !== this.getElementSize(element)
+              ((preElement.type === ElementType.SUBSCRIPT &&
+                element.type !== ElementType.SUBSCRIPT) ||
+                (preElement.type === ElementType.SUPERSCRIPT &&
+                  element.type !== ElementType.SUPERSCRIPT) ||
+                this.getElementSize(preElement) !==
+                  this.getElementSize(element))
             ) {
               this.strikeout.render(ctx)
             }
@@ -2304,62 +2305,25 @@ export class Draw {
     } else {
       this._immediateRender()
     }
-    const positionContext = this.position.getPositionContext()
     // 光标重绘
     if (isSetCursor) {
-      const positionList = this.position.getPositionList()
-      if (positionContext.isTable) {
-        const { index, trIndex, tdIndex } = positionContext
-        const elementList = this.getOriginalElementList()
-        const tablePositionList =
-          elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
-        if (curIndex === undefined && tablePositionList) {
-          curIndex = tablePositionList.length - 1
-        }
-        const tablePosition = tablePositionList?.[curIndex!]
-        this.position.setCursorPosition(tablePosition || null)
-      } else {
-        this.position.setCursorPosition(
-          curIndex !== undefined ? positionList[curIndex] : null
-        )
-      }
-      this.cursor.drawCursor()
+      curIndex = this.setCursor(curIndex)
     }
     // 历史记录用于undo、redo（非首次渲染内容变更 || 第一次存在光标时）
     if (
       (isSubmitHistory && !isFirstRender) ||
       (curIndex !== undefined && this.historyManager.isStackEmpty())
     ) {
-      const oldElementList = getSlimCloneElementList(this.elementList)
-      const oldHeaderElementList = getSlimCloneElementList(
-        this.header.getElementList()
-      )
-      const oldFooterElementList = getSlimCloneElementList(
-        this.footer.getElementList()
-      )
-      const oldRange = deepClone(this.range.getRange())
-      const pageNo = this.pageNo
-      const oldPositionContext = deepClone(positionContext)
-      const zone = this.zone.getZone()
-      this.historyManager.execute(() => {
-        this.zone.setZone(zone)
-        this.setPageNo(pageNo)
-        this.position.setPositionContext(deepClone(oldPositionContext))
-        this.header.setElementList(deepClone(oldHeaderElementList))
-        this.footer.setElementList(deepClone(oldFooterElementList))
-        this.elementList = deepClone(oldElementList)
-        this.range.replaceRange(deepClone(oldRange))
-        this.render({
-          curIndex,
-          isSubmitHistory: false,
-          isSourceHistory: true
-        })
-      })
+      this.submitHistory(curIndex)
     }
     // 信息变动回调
     nextTick(() => {
       // 表格工具重新渲染
-      if (isCompute && !this.isReadonly() && positionContext.isTable) {
+      if (
+        isCompute &&
+        !this.isReadonly() &&
+        this.position.getPositionContext().isTable
+      ) {
         this.tableTool.render()
       }
       // 页眉指示器重新渲染
@@ -2382,6 +2346,74 @@ export class Draw {
           this.eventBus.emit('contentChange')
         }
       }
+    })
+  }
+
+  public setCursor(curIndex: number | undefined) {
+    const positionContext = this.position.getPositionContext()
+    const positionList = this.position.getPositionList()
+    if (positionContext.isTable) {
+      const { index, trIndex, tdIndex } = positionContext
+      const elementList = this.getOriginalElementList()
+      const tablePositionList =
+        elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
+      if (curIndex === undefined && tablePositionList) {
+        curIndex = tablePositionList.length - 1
+      }
+      const tablePosition = tablePositionList?.[curIndex!]
+      this.position.setCursorPosition(tablePosition || null)
+    } else {
+      this.position.setCursorPosition(
+        curIndex !== undefined ? positionList[curIndex] : null
+      )
+    }
+    // 定位到图片元素并且位置发生变化
+    let isShowCursor = true
+    if (
+      curIndex !== undefined &&
+      positionContext.isImage &&
+      positionContext.isDirectHit
+    ) {
+      const elementList = this.getElementList()
+      const element = elementList[curIndex]
+      if (IMAGE_ELEMENT_TYPE.includes(element.type!)) {
+        isShowCursor = false
+        const position = this.position.getCursorPosition()
+        this.previewer.updateResizer(element, position)
+      }
+    }
+    this.cursor.drawCursor({
+      isShow: isShowCursor
+    })
+    return curIndex
+  }
+
+  public submitHistory(curIndex: number | undefined) {
+    const positionContext = this.position.getPositionContext()
+    const oldElementList = getSlimCloneElementList(this.elementList)
+    const oldHeaderElementList = getSlimCloneElementList(
+      this.header.getElementList()
+    )
+    const oldFooterElementList = getSlimCloneElementList(
+      this.footer.getElementList()
+    )
+    const oldRange = deepClone(this.range.getRange())
+    const pageNo = this.pageNo
+    const oldPositionContext = deepClone(positionContext)
+    const zone = this.zone.getZone()
+    this.historyManager.execute(() => {
+      this.zone.setZone(zone)
+      this.setPageNo(pageNo)
+      this.position.setPositionContext(deepClone(oldPositionContext))
+      this.header.setElementList(deepClone(oldHeaderElementList))
+      this.footer.setElementList(deepClone(oldFooterElementList))
+      this.elementList = deepClone(oldElementList)
+      this.range.replaceRange(deepClone(oldRange))
+      this.render({
+        curIndex,
+        isSubmitHistory: false,
+        isSourceHistory: true
+      })
     })
   }
 

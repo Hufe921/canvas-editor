@@ -131,6 +131,11 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.DATE
 ]
 
+export const IMAGE_ELEMENT_TYPE: ElementType[] = [
+  ElementType.IMAGE,
+  ElementType.LATEX
+]
+
 export const INLINE_ELEMENT_TYPE: ElementType[] = [
   ElementType.BLOCK,
   ElementType.PAGE_BREAK,

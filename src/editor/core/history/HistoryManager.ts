@@ -54,4 +54,8 @@ export class HistoryManager {
     this.undoStack = []
     this.redoStack = []
   }
+
+  public popUndo() {
+    return this.undoStack.pop()
+  }
 }

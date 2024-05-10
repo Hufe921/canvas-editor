@@ -44,6 +44,8 @@ export interface IPositionContext {
   isCheckbox?: boolean
   isRadio?: boolean
   isControl?: boolean
+  isImage?: boolean
+  isDirectHit?: boolean
   index?: number
   trIndex?: number
   tdIndex?: number
