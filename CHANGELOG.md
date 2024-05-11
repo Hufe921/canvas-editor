@@ -1,3 +1,26 @@
+## [0.9.77](https://github.com/Hufe921/canvas-editor/compare/v0.9.76...v0.9.77) (2024-05-11)
+
+
+### Bug Fixes
+
+* delete control placeholder boundary error #553 ([73e47f5](https://github.com/Hufe921/canvas-editor/commit/73e47f56b54dfc2e8dbbe1e167b1cf868684b38c)), closes [#553](https://github.com/Hufe921/canvas-editor/issues/553)
+* image resizer position boundary error #538 ([9f37995](https://github.com/Hufe921/canvas-editor/commit/9f37995a23e5655ee9011e19ce7b7aed1f9298eb)), closes [#538](https://github.com/Hufe921/canvas-editor/issues/538)
+* move cursor boundary error with up and down keys #556 ([d58b28c](https://github.com/Hufe921/canvas-editor/commit/d58b28c1dbe47a7a4970b4333c0846fafbf511db)), closes [#556](https://github.com/Hufe921/canvas-editor/issues/556)
+* subscript and superscript strikeout rendering ([62c94fc](https://github.com/Hufe921/canvas-editor/commit/62c94fce59c206b87dc68d0ed9d74f036cde956f))
+* subscript underline rendering position #537 ([745a098](https://github.com/Hufe921/canvas-editor/commit/745a098a707893cc7ae8ba812ab11f826b961d55)), closes [#537](https://github.com/Hufe921/canvas-editor/issues/537)
+
+
+### Features
+
+* table header appears repeatedly when paging #541 ([c86e546](https://github.com/Hufe921/canvas-editor/commit/c86e5468e666c64c087a430af8a9a8307b837f0f)), closes [#541](https://github.com/Hufe921/canvas-editor/issues/541)
+
+
+### Performance Improvements
+
+* control operation history boundary #540 ([24c5b74](https://github.com/Hufe921/canvas-editor/commit/24c5b74bf2196ce3a1c76d0cf5626cd249a2a5fd)), closes [#540](https://github.com/Hufe921/canvas-editor/issues/540)
+
+
+
 ## [0.9.76](https://github.com/Hufe921/canvas-editor/compare/v0.9.75...v0.9.76) (2024-05-04)
 
 
