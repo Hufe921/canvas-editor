@@ -14,12 +14,13 @@ interface IGetNextPositionIndexPayload {
 // 根据当前位置索引查找上下行最接近的索引位置
 function getNextPositionIndex(payload: IGetNextPositionIndexPayload) {
   const { positionList, index, isUp, rowNo, cursorX } = payload
-  let nextIndex = 0
+  let nextIndex = -1
   // 查找下一行位置列表
   const probablePosition: IElementPosition[] = []
   if (isUp) {
     let p = index - 1
-    while (p > 0) {
+    // 等于0的时候上一行是第一行
+    while (p >= 0) {
       const position = positionList[p]
       p--
       if (position.rowNo === rowNo) continue
@@ -215,7 +216,7 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
       isUp,
       cursorX: curRightX
     })
-    if (!nextIndex) return
+    if (nextIndex < 0) return
     // shift则缩放选区
     anchorStartIndex = nextIndex
     anchorEndIndex = nextIndex
