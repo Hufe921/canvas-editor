@@ -215,7 +215,8 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
       isUp,
       cursorX: curRightX
     })
-    if (!nextIndex) return
+    // 这个判断好像意义不大，在上面的rowIndex已经判断过了
+    if (nextIndex !== 0 && !nextIndex) return
     // shift则缩放选区
     anchorStartIndex = nextIndex
     anchorEndIndex = nextIndex
