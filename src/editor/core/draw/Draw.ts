@@ -63,7 +63,11 @@ import {
   WordBreak
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
-import { getSlimCloneElementList, zipElementList } from '../../utils/element'
+import {
+  getIsInlineElement,
+  getSlimCloneElementList,
+  zipElementList
+} from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { RadioParticle } from './particle/RadioParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
@@ -84,7 +88,6 @@ import { Zone } from '../zone/Zone'
 import { Footer } from './frame/Footer'
 import {
   IMAGE_ELEMENT_TYPE,
-  INLINE_ELEMENT_TYPE,
   TEXTLIKE_ELEMENT_TYPE
 } from '../../dataset/constant/Element'
 import { ListParticle } from './particle/ListParticle'
@@ -1599,14 +1602,6 @@ export class Draw {
       if (isForceBreak || isWidthNotEnough) {
         // 换行原因：宽度不足
         curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
-        // 减小行元素前第一行空行行高
-        if (
-          curRow.startIndex === 0 &&
-          curRow.elementList.length === 1 &&
-          INLINE_ELEMENT_TYPE.includes(element.type!)
-        ) {
-          curRow.height = defaultBasicRowMarginHeight
-        }
         // 两端对齐、分散对齐
         if (
           preElement?.rowFlex === RowFlex.JUSTIFY ||
@@ -1665,7 +1660,11 @@ export class Draw {
         rowList.push(row)
       } else {
         curRow.width += metrics.width
-        if (curRow.height < height) {
+        // 减小行元素前第一行空行行高
+        if (i === 0 && getIsInlineElement(elementList[1])) {
+          curRow.height = defaultBasicRowMarginHeight
+          curRow.ascent = defaultBasicRowMarginHeight
+        } else if (curRow.height < height) {
           curRow.height = height
           curRow.ascent = ascent
         }

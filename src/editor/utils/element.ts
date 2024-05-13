@@ -11,6 +11,7 @@ import {
   ElementType,
   IEditorOption,
   IElement,
+  ImageDisplay,
   ListStyle,
   ListType,
   RowFlex,
@@ -23,6 +24,7 @@ import {
   CONTROL_STYLE_ATTR,
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
+  INLINE_ELEMENT_TYPE,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -1376,4 +1378,12 @@ export function getSlimCloneElementList(elementList: IElement[]) {
     'metrics',
     'style'
   ])
+}
+
+export function getIsInlineElement(element?: IElement) {
+  return (
+    !!element?.type &&
+    (INLINE_ELEMENT_TYPE.includes(element.type) ||
+      element.imgDisplay === ImageDisplay.INLINE)
+  )
 }
