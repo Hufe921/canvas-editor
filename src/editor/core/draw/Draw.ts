@@ -1891,6 +1891,8 @@ export class Draw {
         // 换行符绘制
         if (
           isDrawLineBreak &&
+          !isPrintMode &&
+          this.mode !== EditorMode.CLEAN &&
           !curRow.isWidthNotEnough &&
           j === curRow.elementList.length - 1
         ) {
