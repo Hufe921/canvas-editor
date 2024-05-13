@@ -1126,7 +1126,7 @@ export class Draw {
   }
 
   public computeRowList(payload: IComputeRowListPayload) {
-    const { innerWidth, elementList, isPagingMode = false } = payload
+    const { innerWidth, elementList, isPagingMode = false, isPageStart = false } = payload
     const {
       defaultSize,
       defaultRowMargin,
@@ -1599,14 +1599,15 @@ export class Draw {
       if (isForceBreak || isWidthNotEnough) {
         // 换行原因：宽度不足
         curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
+        // 这一行是否还有其他作用，如果只是为了设置第一行空行高度可以删除
         // 减小行元素前第一行空行行高
-        if (
-          curRow.startIndex === 0 &&
-          curRow.elementList.length === 1 &&
-          INLINE_ELEMENT_TYPE.includes(element.type!)
-        ) {
-          curRow.height = defaultBasicRowMarginHeight
-        }
+        // if (
+        //   curRow.startIndex === 0 &&
+        //   curRow.elementList.length === 1 &&
+        //   INLINE_ELEMENT_TYPE.includes(element.type!)
+        // ) {
+        //   curRow.height = defaultBasicRowMarginHeight
+        // }
         // 两端对齐、分散对齐
         if (
           preElement?.rowFlex === RowFlex.JUSTIFY ||
@@ -1666,7 +1667,8 @@ export class Draw {
       } else {
         curRow.width += metrics.width
         if (curRow.height < height) {
-          curRow.height = height
+          // 元素前第一行空行行高设置固定
+          curRow.height = isPageStart && i === 0 ? defaultBasicRowMarginHeight : height
           curRow.ascent = ascent
         }
         curRow.elementList.push(rowElement)
@@ -2265,7 +2267,8 @@ export class Draw {
       this.rowList = this.computeRowList({
         isPagingMode,
         innerWidth,
-        elementList: this.elementList
+        elementList: this.elementList,
+        isPageStart: true
       })
       // 页面信息
       this.pageRowList = this._computePageList()

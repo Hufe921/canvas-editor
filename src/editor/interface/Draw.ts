@@ -67,5 +67,6 @@ export interface IGetImageOption {
 export interface IComputeRowListPayload {
   innerWidth: number
   elementList: IElement[]
-  isPagingMode?: boolean
+  isPagingMode?: boolean,
+  isPageStart?: boolean
 }
