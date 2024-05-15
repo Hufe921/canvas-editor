@@ -285,25 +285,28 @@ export class TableTool {
               dx = nextColWidth - this.MIN_TD_WIDTH
             }
             const moveColWidth = curColWidth + dx
-            // 开始移动
-            let moveTableWidth = 0
-            for (let c = 0; c < colgroup.length; c++) {
-              const group = colgroup[c]
-              // 下一列减去偏移量
-              if (c === index + 1) {
-                moveTableWidth -= dx
+            // 开始移动，只有表格的最后一列线才会改变表格的宽度，其他场景不用计算表格超出
+            if (index === colgroup.length - 1) {
+              let moveTableWidth = 0
+              for (let c = 0; c < colgroup.length; c++) {
+                const group = colgroup[c]
+                // 下一列减去偏移量
+                if (c === index + 1) {
+                  moveTableWidth -= dx
+                }
+                // 当前列加上偏移量
+                if (c === index) {
+                  moveTableWidth += moveColWidth
+                }
+                if (c !== index) {
+                  moveTableWidth += group.width
+                }
               }
-              // 当前列加上偏移量
-              if (c === index) {
-                moveTableWidth += moveColWidth
+              // 消除小数影响计算错误问题，目前innerWidth都是整数，简单取整计算
+              if (Math.round(moveTableWidth) > innerWidth) {
+                const tableWidth = element.width!
+                dx = innerWidth - tableWidth
               }
-              if (c !== index) {
-                moveTableWidth += group.width
-              }
-            }
-            if (moveTableWidth > innerWidth) {
-              const tableWidth = element.width!
-              dx = innerWidth - tableWidth
             }
             if (dx) {
               // 当前列增加，后列减少
