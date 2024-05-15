@@ -1382,8 +1382,8 @@ export function getSlimCloneElementList(elementList: IElement[]) {
 
 export function getIsInlineElement(element?: IElement) {
   return (
-    !!element?.type &&
+    (element && !element?.type) || (!!element?.type &&
     (INLINE_ELEMENT_TYPE.includes(element.type) ||
-      element.imgDisplay === ImageDisplay.INLINE)
+      element.imgDisplay === ImageDisplay.INLINE))
   )
 }
