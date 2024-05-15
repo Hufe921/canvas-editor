@@ -172,12 +172,10 @@ export class Previewer {
         if (this.curElement) {
           this.curElement.width = this.width
           this.curElement.height = this.height
-          this.draw.render({ isSetCursor: false })
-          this.drawResizer(
-            this.curElement,
-            this.curPosition,
-            this.previewerDrawOption
-          )
+          this.draw.render({
+            isSetCursor: true,
+            curIndex: this.curPosition?.index
+          })
         }
         // 还原副作用
         this.resizerImageContainer.style.display = 'none'
