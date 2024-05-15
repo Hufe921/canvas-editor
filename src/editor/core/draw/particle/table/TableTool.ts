@@ -302,8 +302,7 @@ export class TableTool {
                   moveTableWidth += group.width
                 }
               }
-              // 消除小数影响计算错误问题，目前innerWidth都是整数，简单取整计算
-              if (Math.round(moveTableWidth) > innerWidth) {
+              if (moveTableWidth > innerWidth) {
                 const tableWidth = element.width!
                 dx = innerWidth - tableWidth
               }
