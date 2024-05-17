@@ -911,3 +911,13 @@ Usage:
 ```javascript
 instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
 ```
+
+## executeUpdateOptions
+
+Feature: Update options
+
+Usage:
+
+```javascript
+instance.command.executeUpdateOptions(payload: IUpdateOption)
+```

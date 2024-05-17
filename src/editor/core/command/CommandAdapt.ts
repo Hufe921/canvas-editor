@@ -45,7 +45,8 @@ import {
   IEditorHTML,
   IEditorOption,
   IEditorResult,
-  IEditorText
+  IEditorText,
+  IUpdateOption
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IPasteOption } from '../../interface/Event'
@@ -71,6 +72,7 @@ import {
   getTextFromElementList,
   zipElementList
 } from '../../utils/element'
+import { mergeOption } from '../../utils/option'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -2397,6 +2399,14 @@ export class CommandAdapt {
 
   public setControlHighlight(payload: ISetControlHighlightOption) {
     this.draw.getControl().setHighlightList(payload)
+  }
+
+  public updateOptions(payload: IUpdateOption) {
+    const newOption = mergeOption(payload)
+    Object.entries(newOption).forEach(([key, value]) => {
+      Reflect.set(this.options, key, value)
+    })
+    this.forceUpdate()
   }
 
   public getControlList(): IElement[] {
