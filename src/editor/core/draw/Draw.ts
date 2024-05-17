@@ -1599,27 +1599,8 @@ export class Draw {
         (i !== 0 && element.value === ZERO)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
+      // 新行数据处理
       if (isForceBreak || isWidthNotEnough) {
-        // 换行原因：宽度不足
-        curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
-        // 两端对齐、分散对齐
-        if (
-          preElement?.rowFlex === RowFlex.JUSTIFY ||
-          (preElement?.rowFlex === RowFlex.ALIGNMENT && isWidthNotEnough)
-        ) {
-          // 忽略换行符及尾部元素间隔设置
-          const rowElementList =
-            curRow.elementList[0]?.value === ZERO
-              ? curRow.elementList.slice(1)
-              : curRow.elementList
-          const gap =
-            (availableWidth - curRow.width) / (rowElementList.length - 1)
-          for (let e = 0; e < rowElementList.length - 1; e++) {
-            const el = rowElementList[e]
-            el.metrics.width += gap
-          }
-          curRow.width = availableWidth
-        }
         const row: IRow = {
           width: metrics.width,
           height,
@@ -1669,6 +1650,29 @@ export class Draw {
           curRow.ascent = ascent
         }
         curRow.elementList.push(rowElement)
+      }
+      // 行结束时逻辑
+      if (isForceBreak || isWidthNotEnough || i === elementList.length - 1) {
+        // 换行原因：宽度不足
+        curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
+        // 两端对齐、分散对齐
+        if (
+          preElement?.rowFlex === RowFlex.JUSTIFY ||
+          (preElement?.rowFlex === RowFlex.ALIGNMENT && isWidthNotEnough)
+        ) {
+          // 忽略换行符及尾部元素间隔设置
+          const rowElementList =
+            curRow.elementList[0]?.value === ZERO
+              ? curRow.elementList.slice(1)
+              : curRow.elementList
+          const gap =
+            (availableWidth - curRow.width) / (rowElementList.length - 1)
+          for (let e = 0; e < rowElementList.length - 1; e++) {
+            const el = rowElementList[e]
+            el.metrics.width += gap
+          }
+          curRow.width = availableWidth
+        }
       }
     }
     return rowList
