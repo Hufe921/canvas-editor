@@ -146,10 +146,19 @@ export class GlobalEvent {
   }
 
   private _handleVisibilityChange = () => {
-    if (document.visibilityState) {
-      const isCollapsed = this.range.getIsCollapsed()
-      this.cursor?.drawCursor({
-        isShow: isCollapsed
+    if (document.visibilityState === 'visible') {
+      // 页面可见时重新渲染激活页面
+      const range = this.range.getRange()
+      const isSetCursor =
+        !!~range.startIndex &&
+        !!~range.endIndex &&
+        range.startIndex === range.endIndex
+      this.range.replaceRange(range)
+      this.draw.render({
+        isSetCursor,
+        isCompute: false,
+        isSubmitHistory: false,
+        curIndex: range.startIndex
       })
     }
   }
