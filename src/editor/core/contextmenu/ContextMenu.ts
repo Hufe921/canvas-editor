@@ -3,11 +3,13 @@ import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { EditorComponent } from '../../dataset/enum/Editor'
 import { DeepRequired } from '../../interface/Common'
 import { IEditorOption } from '../../interface/Editor'
+import { IElement } from '../../interface/Element'
 import {
   IContextMenuContext,
   IRegisterContextMenu
 } from '../../interface/contextmenu/ContextMenu'
 import { findParent } from '../../utils'
+import { zipElementList } from '../../utils/element'
 import { Command } from '../command/Command'
 import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
@@ -150,10 +152,18 @@ export class ContextMenu {
     // 是否存在选区
     const editorHasSelection = editorTextFocus && startIndex !== endIndex
     // 是否在表格内
-    const positionContext = this.position.getPositionContext()
-    const isInTable = positionContext.isTable
+    const { isTable, trIndex, tdIndex, index } =
+      this.position.getPositionContext()
+    let tableElement: IElement | null = null
+    if (isTable) {
+      const originalElementList = this.draw.getOriginalElementList()
+      const originTableElement = originalElementList[index!] || null
+      if (originTableElement) {
+        tableElement = zipElementList([originTableElement])[0]
+      }
+    }
     // 是否存在跨行/列
-    const isCrossRowCol = isInTable && !!crossRowCol
+    const isCrossRowCol = isTable && !!crossRowCol
     // 当前元素
     const elementList = this.draw.getElementList()
     const startElement = elementList[startIndex] || null
@@ -166,9 +176,12 @@ export class ContextMenu {
       isReadonly,
       editorHasSelection,
       editorTextFocus,
-      isInTable,
       isCrossRowCol,
-      zone
+      zone,
+      isInTable: isTable,
+      trIndex: trIndex ?? null,
+      tdIndex: tdIndex ?? null,
+      tableElement
     }
   }
 

@@ -2136,8 +2136,17 @@ export class CommandAdapt {
     // 区域信息
     const zone = this.draw.getZone().getZone()
     // 表格信息
-    const isTable = this.position.getPositionContext().isTable
-    return deepClone({
+    const { isTable, trIndex, tdIndex, index } =
+      this.position.getPositionContext()
+    let tableElement: IElement | null = null
+    if (isTable) {
+      const originalElementList = this.draw.getOriginalElementList()
+      const originTableElement = originalElementList[index!] || null
+      if (originTableElement) {
+        tableElement = zipElementList([originTableElement])[0]
+      }
+    }
+    return deepClone<RangeContext>({
       isCollapsed,
       startElement,
       endElement,
@@ -2145,7 +2154,10 @@ export class CommandAdapt {
       endPageNo,
       rangeRects,
       zone,
-      isTable
+      isTable,
+      trIndex: trIndex ?? null,
+      tdIndex: tdIndex ?? null,
+      tableElement
     })
   }
 

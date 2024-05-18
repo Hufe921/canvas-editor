@@ -30,3 +30,15 @@ instance.register.contextMenuList([
 ```javascript
 const contextMenuList = await instance.register.getContextMenuList()
 ```
+
+备注：
+
+```javascript
+// 修改内部右键菜单示例
+contextmenuList.forEach(menu => {
+  // 通过菜单key找到菜单项后进行属性修改
+  if (menu.key === INTERNAL_CONTEXT_MENU_KEY.GLOBAL.PASTE) {
+    menu.when = () => false
+  }
+})
+```
