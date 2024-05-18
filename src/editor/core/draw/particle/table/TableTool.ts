@@ -1,6 +1,7 @@
 import { IElement } from '../../../..'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
+import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { Position } from '../../../position/Position'
 import { Draw } from '../../Draw'
@@ -22,7 +23,7 @@ export class TableTool {
 
   private draw: Draw
   private canvas: HTMLCanvasElement
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
   private position: Position
   private container: HTMLDivElement
   private toolRowContainer: HTMLDivElement | null
@@ -255,7 +256,7 @@ export class TableTool {
           const trList = element.trList!
           const tr = trList[index] || trList[index - 1]
           // 最大移动高度-向上移动超出最小高度限定，则减少移动量
-          const { defaultTrMinHeight } = this.options
+          const { defaultTrMinHeight } = this.options.table
           if (dy < 0 && tr.height + dy < defaultTrMinHeight) {
             dy = defaultTrMinHeight - tr.height
           }
@@ -284,25 +285,27 @@ export class TableTool {
               dx = nextColWidth - this.MIN_TD_WIDTH
             }
             const moveColWidth = curColWidth + dx
-            // 开始移动
-            let moveTableWidth = 0
-            for (let c = 0; c < colgroup.length; c++) {
-              const group = colgroup[c]
-              // 下一列减去偏移量
-              if (c === index + 1) {
-                moveTableWidth -= dx
+            // 开始移动，只有表格的最后一列线才会改变表格的宽度，其他场景不用计算表格超出
+            if (index === colgroup.length - 1) {
+              let moveTableWidth = 0
+              for (let c = 0; c < colgroup.length; c++) {
+                const group = colgroup[c]
+                // 下一列减去偏移量
+                if (c === index + 1) {
+                  moveTableWidth -= dx
+                }
+                // 当前列加上偏移量
+                if (c === index) {
+                  moveTableWidth += moveColWidth
+                }
+                if (c !== index) {
+                  moveTableWidth += group.width
+                }
               }
-              // 当前列加上偏移量
-              if (c === index) {
-                moveTableWidth += moveColWidth
+              if (moveTableWidth > innerWidth) {
+                const tableWidth = element.width!
+                dx = innerWidth - tableWidth
               }
-              if (c !== index) {
-                moveTableWidth += group.width
-              }
-            }
-            if (moveTableWidth > innerWidth) {
-              const tableWidth = element.width!
-              dx = innerWidth - tableWidth
             }
             if (dx) {
               // 当前列增加，后列减少

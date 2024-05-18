@@ -19,6 +19,7 @@ import { Draw } from '../draw/Draw'
 import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
 import { deepClone } from '../../utils'
 import { ImageDisplay } from '../../dataset/enum/Common'
+import { DeepRequired } from '../../interface/Common'
 
 export class Position {
   private cursorPosition: IElementPosition | null
@@ -27,7 +28,7 @@ export class Position {
   private floatPositionList: IFloatPosition[]
 
   private draw: Draw
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
 
   constructor(draw: Draw) {
     this.positionList = []
@@ -114,7 +115,10 @@ export class Position {
       innerWidth,
       zone
     } = payload
-    const { scale, tdPadding } = this.options
+    const {
+      scale,
+      table: { tdPadding }
+    } = this.options
     let x = startX
     let y = startY
     let index = startIndex
@@ -666,6 +670,8 @@ export class Position {
       isCheckbox,
       isRadio,
       isControl,
+      isImage,
+      isDirectHit,
       isTable,
       trIndex,
       tdIndex,
@@ -679,6 +685,8 @@ export class Position {
       isCheckbox: isCheckbox || false,
       isRadio: isRadio || false,
       isControl: isControl || false,
+      isImage: isImage || false,
+      isDirectHit: isDirectHit || false,
       index,
       trIndex,
       tdIndex,

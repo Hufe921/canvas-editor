@@ -11,6 +11,9 @@ export interface IContextMenuContext {
   isInTable: boolean
   isCrossRowCol: boolean
   zone: EditorZone
+  trIndex: number | null
+  tdIndex: number | null
+  tableElement: IElement | null
 }
 
 export interface IRegisterContextMenu {

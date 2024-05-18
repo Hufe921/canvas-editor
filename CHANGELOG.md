@@ -1,3 +1,47 @@
+## [0.9.78](https://github.com/Hufe921/canvas-editor/compare/v0.9.77...v0.9.78) (2024-05-18)
+
+
+### Bug Fixes
+
+* disable line break drawing in print and clean mode ([fc55e55](https://github.com/Hufe921/canvas-editor/commit/fc55e557dad94754be56a174eee54a1a76d86a56))
+* drag image resizer position error #567 ([1e669a6](https://github.com/Hufe921/canvas-editor/commit/1e669a6f03b9011c68366348313bfd79d154633d)), closes [#567](https://github.com/Hufe921/canvas-editor/issues/567)
+* dragging to adjust td width boundary error #569 ([2738d3a](https://github.com/Hufe921/canvas-editor/commit/2738d3ae4cef76aa9a7d85ab1ab2d925ba0df5f8)), closes [#569](https://github.com/Hufe921/canvas-editor/issues/569)
+* first row height boundary error #563 ([6ada65e](https://github.com/Hufe921/canvas-editor/commit/6ada65e7680b8ca71657bc643f0eb807d9b78f5f)), closes [#563](https://github.com/Hufe921/canvas-editor/issues/563)
+* justify row flex boundary error #577 ([d49ed5e](https://github.com/Hufe921/canvas-editor/commit/d49ed5ea4337dc03b534b97c774b77769f1b04bc)), closes [#577](https://github.com/Hufe921/canvas-editor/issues/577)
+* re render when the page is visible #578 ([24aa33a](https://github.com/Hufe921/canvas-editor/commit/24aa33a4f16282812caa16d5666bbd7f57517c7c)), closes [#578](https://github.com/Hufe921/canvas-editor/issues/578)
+* wake up pop-up controls #580 ([28f6bdb](https://github.com/Hufe921/canvas-editor/commit/28f6bdbb4114f0f8b693b7688ae0b175368d491c)), closes [#580](https://github.com/Hufe921/canvas-editor/issues/580)
+
+
+### Features
+
+* add executeUpdateOptions api #571 ([3175bad](https://github.com/Hufe921/canvas-editor/commit/3175bad5e70e9ac2143a1101c9e3e674cc793b69)), closes [#571](https://github.com/Hufe921/canvas-editor/issues/571)
+* add table context to contextmenu and getRangeContext api #576 ([149c95f](https://github.com/Hufe921/canvas-editor/commit/149c95f9522a9832bcf91ec259fd40f146ff80c3)), closes [#576](https://github.com/Hufe921/canvas-editor/issues/576)
+
+
+
+## [0.9.77](https://github.com/Hufe921/canvas-editor/compare/v0.9.76...v0.9.77) (2024-05-11)
+
+
+### Bug Fixes
+
+* delete control placeholder boundary error #553 ([73e47f5](https://github.com/Hufe921/canvas-editor/commit/73e47f56b54dfc2e8dbbe1e167b1cf868684b38c)), closes [#553](https://github.com/Hufe921/canvas-editor/issues/553)
+* image resizer position boundary error #538 ([9f37995](https://github.com/Hufe921/canvas-editor/commit/9f37995a23e5655ee9011e19ce7b7aed1f9298eb)), closes [#538](https://github.com/Hufe921/canvas-editor/issues/538)
+* move cursor boundary error with up and down keys #556 ([d58b28c](https://github.com/Hufe921/canvas-editor/commit/d58b28c1dbe47a7a4970b4333c0846fafbf511db)), closes [#556](https://github.com/Hufe921/canvas-editor/issues/556)
+* subscript and superscript strikeout rendering ([62c94fc](https://github.com/Hufe921/canvas-editor/commit/62c94fce59c206b87dc68d0ed9d74f036cde956f))
+* subscript underline rendering position #537 ([745a098](https://github.com/Hufe921/canvas-editor/commit/745a098a707893cc7ae8ba812ab11f826b961d55)), closes [#537](https://github.com/Hufe921/canvas-editor/issues/537)
+
+
+### Features
+
+* table header appears repeatedly when paging #541 ([c86e546](https://github.com/Hufe921/canvas-editor/commit/c86e5468e666c64c087a430af8a9a8307b837f0f)), closes [#541](https://github.com/Hufe921/canvas-editor/issues/541)
+
+
+### Performance Improvements
+
+* control operation history boundary #540 ([24c5b74](https://github.com/Hufe921/canvas-editor/commit/24c5b74bf2196ce3a1c76d0cf5626cd249a2a5fd)), closes [#540](https://github.com/Hufe921/canvas-editor/issues/540)
+
+
+
 ## [0.9.76](https://github.com/Hufe921/canvas-editor/compare/v0.9.75...v0.9.76) (2024-05-04)
 
 

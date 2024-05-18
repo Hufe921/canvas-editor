@@ -11,6 +11,7 @@ import {
   ElementType,
   IEditorOption,
   IElement,
+  ImageDisplay,
   ListStyle,
   ListType,
   RowFlex,
@@ -23,6 +24,7 @@ import {
   CONTROL_STYLE_ATTR,
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
+  INLINE_ELEMENT_TYPE,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -148,15 +150,13 @@ export function formatElementList(
       const tableId = getUUID()
       el.id = tableId
       if (el.trList) {
+        const { defaultTrMinHeight } = editorOptions.table
         for (let t = 0; t < el.trList.length; t++) {
           const tr = el.trList[t]
           const trId = getUUID()
           tr.id = trId
-          if (
-            !tr.minHeight ||
-            tr.minHeight < editorOptions.defaultTrMinHeight
-          ) {
-            tr.minHeight = editorOptions.defaultTrMinHeight
+          if (!tr.minHeight || tr.minHeight < defaultTrMinHeight) {
+            tr.minHeight = defaultTrMinHeight
           }
           if (tr.height < tr.minHeight) {
             tr.height = tr.minHeight
@@ -1378,4 +1378,12 @@ export function getSlimCloneElementList(elementList: IElement[]) {
     'metrics',
     'style'
   ])
+}
+
+export function getIsInlineElement(element?: IElement) {
+  return (
+    !!element?.type &&
+    (INLINE_ELEMENT_TYPE.includes(element.type) ||
+      element.imgDisplay === ImageDisplay.INLINE)
+  )
 }

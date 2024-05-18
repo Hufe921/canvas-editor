@@ -12,6 +12,7 @@ import {
   IControlRuleOption,
   IGetControlValueOption,
   IGetControlValueResult,
+  IRepaintControlOption,
   ISetControlExtensionOption,
   ISetControlProperties,
   ISetControlValueOption
@@ -284,17 +285,38 @@ export class Control {
     }
   }
 
-  public repaintControl(curIndex?: number) {
+  public repaintControl(options: IRepaintControlOption = {}) {
+    const { curIndex, isCompute = true, isSubmitHistory = true } = options
+    // 重新渲染
     if (curIndex === undefined) {
       this.range.clearRange()
       this.draw.render({
+        isCompute,
+        isSubmitHistory,
         isSetCursor: false
       })
     } else {
       this.range.setRange(curIndex, curIndex)
       this.draw.render({
-        curIndex
+        curIndex,
+        isCompute,
+        isSubmitHistory
       })
+    }
+  }
+
+  public reAwakeControl() {
+    if (!this.activeControl) return
+    const elementList = this.getElementList()
+    const range = this.getRange()
+    const element = elementList[range.startIndex]
+    this.activeControl.setElement(element)
+    if (
+      this.activeControl instanceof SelectControl &&
+      this.activeControl.getIsPopup()
+    ) {
+      this.activeControl.destroy()
+      this.activeControl.awake()
     }
   }
 
@@ -420,12 +442,19 @@ export class Control {
       startElement.controlComponent === ControlComponent.PLACEHOLDER ||
       nextElement.controlComponent === ControlComponent.PLACEHOLDER
     ) {
+      let isHasSubmitHistory = false
       let index = startIndex
       while (index < elementList.length) {
         const curElement = elementList[index]
         if (curElement.controlId !== startElement.controlId) break
         if (curElement.controlComponent === ControlComponent.PLACEHOLDER) {
-          this.draw.spliceElementList(elementList, index, 1)
+          // 删除占位符时替换前一个历史记录
+          if (!isHasSubmitHistory) {
+            isHasSubmitHistory = true
+            this.draw.getHistoryManager().popUndo()
+            this.draw.submitHistory(startIndex)
+          }
+          elementList.splice(index, 1)
         } else {
           index++
         }

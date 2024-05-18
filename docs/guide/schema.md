@@ -56,6 +56,7 @@ interface IElement {
   }[];
   trList?: {
     height: number;
+    pagingRepeat?: boolean;
     tdList: {
       colspan: number;
       rowspan: number;

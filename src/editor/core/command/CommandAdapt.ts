@@ -45,7 +45,8 @@ import {
   IEditorHTML,
   IEditorOption,
   IEditorResult,
-  IEditorText
+  IEditorText,
+  IUpdateOption
 } from '../../interface/Editor'
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IPasteOption } from '../../interface/Event'
@@ -71,6 +72,7 @@ import {
   getTextFromElementList,
   zipElementList
 } from '../../utils/element'
+import { mergeOption } from '../../utils/option'
 import { printImageBase64 } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -771,6 +773,7 @@ export class CommandAdapt {
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
+    const { defaultTrMinHeight } = this.options.table
     const elementList = this.draw.getElementList()
     let offsetX = 0
     if (elementList[startIndex]?.listId) {
@@ -794,7 +797,7 @@ export class CommandAdapt {
     for (let r = 0; r < row; r++) {
       const tdList: ITd[] = []
       const tr: ITr = {
-        height: this.options.defaultTrMinHeight,
+        height: defaultTrMinHeight,
         tdList
       }
       for (let c = 0; c < col; c++) {
@@ -992,7 +995,7 @@ export class CommandAdapt {
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.options.defaultColMinWidth
+      width: this.options.table.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
@@ -1051,7 +1054,7 @@ export class CommandAdapt {
     // 重新计算宽度
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.options.defaultColMinWidth
+      width: this.options.table.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
@@ -2133,8 +2136,17 @@ export class CommandAdapt {
     // 区域信息
     const zone = this.draw.getZone().getZone()
     // 表格信息
-    const isTable = this.position.getPositionContext().isTable
-    return deepClone({
+    const { isTable, trIndex, tdIndex, index } =
+      this.position.getPositionContext()
+    let tableElement: IElement | null = null
+    if (isTable) {
+      const originalElementList = this.draw.getOriginalElementList()
+      const originTableElement = originalElementList[index!] || null
+      if (originTableElement) {
+        tableElement = zipElementList([originTableElement])[0]
+      }
+    }
+    return deepClone<RangeContext>({
       isCollapsed,
       startElement,
       endElement,
@@ -2142,7 +2154,10 @@ export class CommandAdapt {
       endPageNo,
       rangeRects,
       zone,
-      isTable
+      isTable,
+      trIndex: trIndex ?? null,
+      tdIndex: tdIndex ?? null,
+      tableElement
     })
   }
 
@@ -2396,6 +2411,14 @@ export class CommandAdapt {
 
   public setControlHighlight(payload: ISetControlHighlightOption) {
     this.draw.getControl().setHighlightList(payload)
+  }
+
+  public updateOptions(payload: IUpdateOption) {
+    const newOption = mergeOption(payload)
+    Object.entries(newOption).forEach(([key, value]) => {
+      Reflect.set(this.options, key, value)
+    })
+    this.forceUpdate()
   }
 
   public getControlList(): IElement[] {

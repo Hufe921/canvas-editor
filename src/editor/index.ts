@@ -24,64 +24,33 @@ import {
   WordBreak
 } from './dataset/enum/Editor'
 import { EDITOR_COMPONENT } from './dataset/constant/Editor'
-import { IHeader } from './interface/Header'
 import { IWatermark } from './interface/Watermark'
-import { defaultHeaderOption } from './dataset/constant/Header'
-import { defaultWatermarkOption } from './dataset/constant/Watermark'
 import { ControlIndentation, ControlType } from './dataset/enum/Control'
-import { defaultControlOption } from './dataset/constant/Control'
-import { IControlOption } from './interface/Control'
-import { ICheckboxOption } from './interface/Checkbox'
-import { IRadioOption } from './interface/Radio'
-import { defaultCheckboxOption } from './dataset/constant/Checkbox'
-import { defaultRadioOption } from './dataset/constant/Radio'
-import { DeepRequired } from './interface/Common'
 import { INavigateInfo } from './core/draw/interactive/Search'
 import { Shortcut } from './core/shortcut/Shortcut'
 import { KeyMap } from './dataset/enum/KeyMap'
 import { BlockType } from './dataset/enum/Block'
 import { IBlock } from './interface/Block'
 import { ILang } from './interface/i18n/I18n'
-import { ICursorOption } from './interface/Cursor'
-import { defaultCursorOption } from './dataset/constant/Cursor'
-import { IPageNumber } from './interface/PageNumber'
-import { defaultPageNumberOption } from './dataset/constant/PageNumber'
 import { VerticalAlign } from './dataset/enum/VerticalAlign'
 import { TableBorder, TdBorder, TdSlash } from './dataset/enum/table/Table'
-import { IFooter } from './interface/Footer'
-import { defaultFooterOption } from './dataset/constant/Footer'
 import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
-import { ITitleOption } from './interface/Title'
-import { defaultTitleOption } from './dataset/constant/Title'
 import { TitleLevel } from './dataset/enum/Title'
 import { ListStyle, ListType } from './dataset/enum/List'
 import { ICatalog, ICatalogItem } from './interface/Catalog'
-import { IPlaceholder } from './interface/Placeholder'
-import { defaultPlaceholderOption } from './dataset/constant/Placeholder'
 import { Plugin } from './core/plugin/Plugin'
 import { UsePlugin } from './interface/Plugin'
 import { EventBus } from './core/event/eventbus/EventBus'
 import { EventBusMap } from './interface/EventBus'
-import { IGroup } from './interface/Group'
-import { defaultGroupOption } from './dataset/constant/Group'
 import { IRangeStyle } from './interface/Listener'
 import { Override } from './core/override/Override'
-import { defaultPageBreakOption } from './dataset/constant/PageBreak'
-import { IPageBreak } from './interface/PageBreak'
 import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
 import { IRange } from './interface/Range'
 import { deepClone, splitText } from './utils'
-import { IZoneOption } from './interface/Zone'
-import { defaultZoneOption } from './dataset/constant/Zone'
-import { IBackgroundOption } from './interface/Background'
-import { defaultBackground } from './dataset/constant/Background'
 import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
-import { ILineBreakOption } from './interface/LineBreak'
-import { defaultLineBreak } from './dataset/constant/LineBreak'
-import { ISeparatorOption } from './interface/Separator'
-import { defaultSeparatorOption } from './dataset/constant/Separator'
+import { mergeOption } from './utils/option'
 
 export default class Editor {
   public command: Command
@@ -97,132 +66,8 @@ export default class Editor {
     data: IEditorData | IElement[],
     options: IEditorOption = {}
   ) {
-    const headerOptions: Required<IHeader> = {
-      ...defaultHeaderOption,
-      ...options.header
-    }
-    const footerOptions: Required<IFooter> = {
-      ...defaultFooterOption,
-      ...options.footer
-    }
-    const pageNumberOptions: Required<IPageNumber> = {
-      ...defaultPageNumberOption,
-      ...options.pageNumber
-    }
-    const waterMarkOptions: Required<IWatermark> = {
-      ...defaultWatermarkOption,
-      ...options.watermark
-    }
-    const controlOptions: Required<IControlOption> = {
-      ...defaultControlOption,
-      ...options.control
-    }
-    const checkboxOptions: Required<ICheckboxOption> = {
-      ...defaultCheckboxOption,
-      ...options.checkbox
-    }
-    const radioOptions: Required<IRadioOption> = {
-      ...defaultRadioOption,
-      ...options.radio
-    }
-    const cursorOptions: Required<ICursorOption> = {
-      ...defaultCursorOption,
-      ...options.cursor
-    }
-    const titleOptions: Required<ITitleOption> = {
-      ...defaultTitleOption,
-      ...options.title
-    }
-    const placeholderOptions: Required<IPlaceholder> = {
-      ...defaultPlaceholderOption,
-      ...options.placeholder
-    }
-    const groupOptions: Required<IGroup> = {
-      ...defaultGroupOption,
-      ...options.group
-    }
-    const pageBreakOptions: Required<IPageBreak> = {
-      ...defaultPageBreakOption,
-      ...options.pageBreak
-    }
-    const zoneOptions: Required<IZoneOption> = {
-      ...defaultZoneOption,
-      ...options.zone
-    }
-    const backgroundOptions: Required<IBackgroundOption> = {
-      ...defaultBackground,
-      ...options.background
-    }
-    const lineBreakOptions: Required<ILineBreakOption> = {
-      ...defaultLineBreak,
-      ...options.lineBreak
-    }
-    const separatorOptions: Required<ISeparatorOption> = {
-      ...defaultSeparatorOption,
-      ...options.separator
-    }
-
-    const editorOptions: DeepRequired<IEditorOption> = {
-      mode: EditorMode.EDIT,
-      defaultType: 'TEXT',
-      defaultColor: '#000000',
-      defaultFont: 'Microsoft YaHei',
-      defaultSize: 16,
-      minSize: 5,
-      maxSize: 72,
-      defaultRowMargin: 1,
-      defaultBasicRowMarginHeight: 8,
-      defaultTabWidth: 32,
-      width: 794,
-      height: 1123,
-      scale: 1,
-      pageGap: 20,
-      underlineColor: '#000000',
-      strikeoutColor: '#FF0000',
-      rangeAlpha: 0.6,
-      rangeColor: '#AECBFA',
-      rangeMinWidth: 5,
-      searchMatchAlpha: 0.6,
-      searchMatchColor: '#FFFF00',
-      searchNavigateMatchColor: '#AAD280',
-      highlightAlpha: 0.6,
-      resizerColor: '#4182D9',
-      resizerSize: 5,
-      marginIndicatorSize: 35,
-      marginIndicatorColor: '#BABABA',
-      margins: [100, 120, 100, 120],
-      pageMode: PageMode.PAGING,
-      tdPadding: [0, 5, 5, 5],
-      defaultTrMinHeight: 42,
-      defaultColMinWidth: 40,
-      defaultHyperlinkColor: '#0000FF',
-      paperDirection: PaperDirection.VERTICAL,
-      inactiveAlpha: 0.6,
-      historyMaxRecordCount: 100,
-      wordBreak: WordBreak.BREAK_WORD,
-      printPixelRatio: 3,
-      maskMargin: [0, 0, 0, 0],
-      letterClass: [LETTER_CLASS.ENGLISH],
-      contextMenuDisableKeys: [],
-      scrollContainerSelector: '',
-      ...options,
-      header: headerOptions,
-      footer: footerOptions,
-      pageNumber: pageNumberOptions,
-      watermark: waterMarkOptions,
-      control: controlOptions,
-      checkbox: checkboxOptions,
-      radio: radioOptions,
-      cursor: cursorOptions,
-      title: titleOptions,
-      placeholder: placeholderOptions,
-      group: groupOptions,
-      pageBreak: pageBreakOptions,
-      zone: zoneOptions,
-      background: backgroundOptions,
-      lineBreak: lineBreakOptions,
-      separator: separatorOptions
-    }
+    // 合并配置
+    const editorOptions = mergeOption(options)
     // 数据处理
     data = deepClone(data)
     let headerElementList: IElement[] = []

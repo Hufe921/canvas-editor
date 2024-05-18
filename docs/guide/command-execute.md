@@ -911,3 +911,13 @@ instance.command.executeSetControlProperties(payload: ISetControlProperties)
 ```javascript
 instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
 ```
+
+## executeUpdateOptions
+
+功能：修改配置
+
+用法：
+
+```javascript
+instance.command.executeUpdateOptions(payload: IUpdateOption)
+```

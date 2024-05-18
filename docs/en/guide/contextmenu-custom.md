@@ -30,3 +30,15 @@ Usage:
 ```javascript
 const contextMenuList = await instance.register.getContextMenuList()
 ```
+
+Remark:
+
+```javascript
+// Example of modifying internal contextmenu
+contextmenuList.forEach(menu => {
+  // Find the menu item through the menu key and modify its properties
+  if (menu.key === INTERNAL_CONTEXT_MENU_KEY.GLOBAL.PASTE) {
+    menu.when = () => false
+  }
+})
+```

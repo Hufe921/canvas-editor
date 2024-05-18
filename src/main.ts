@@ -1186,10 +1186,7 @@ function initEditorInstance(
         const newOptionValue = payload.find(p => p.name === 'option')?.value
         if (!newOptionValue) return
         const newOption = JSON.parse(newOptionValue)
-        Object.keys(newOption).forEach(key => {
-          Reflect.set(options, key, newOption[key])
-        })
-        instance.command.executeForceUpdate()
+        instance.command.executeUpdateOptions(newOption)
       }
     })
   }
