@@ -2323,6 +2323,10 @@ export class Draw {
     }
     // 信息变动回调
     nextTick(() => {
+      // 重新唤起弹窗类控件
+      if (isCompute && this.control.getActiveControl()) {
+        this.control.reAwakeControl()
+      }
       // 表格工具重新渲染
       if (
         isCompute &&

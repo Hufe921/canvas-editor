@@ -33,8 +33,16 @@ export class SelectControl implements IControlInstance {
     this.selectDom = null
   }
 
+  public setElement(element: IElement) {
+    this.element = element
+  }
+
   public getElement(): IElement {
     return this.element
+  }
+
+  public getIsPopup(): boolean {
+    return this.isPopup
   }
 
   public getCode(): string | null {
@@ -153,8 +161,9 @@ export class SelectControl implements IControlInstance {
     context: IControlContext = {},
     options: IControlRuleOption = {}
   ): number {
+    const { isIgnoreDisabledRule = false, isAddPlaceholder = true } = options
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
+    if (!isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
@@ -193,7 +202,9 @@ export class SelectControl implements IControlInstance {
     const draw = this.control.getDraw()
     draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
     // 增加占位符
-    this.control.addPlaceholder(preIndex, context)
+    if (isAddPlaceholder) {
+      this.control.addPlaceholder(preIndex, context)
+    }
     this.element.control!.code = null
     return preIndex
   }
@@ -207,23 +218,39 @@ export class SelectControl implements IControlInstance {
     if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
       return
     }
+    const elementList = context.elementList || this.control.getElementList()
+    const range = context.range || this.control.getRange()
     const control = this.element.control!
+    const oldCode = control.code
+    // 选项相同时无需重复渲染
+    if (code === oldCode) {
+      this.control.repaintControl({
+        curIndex: range.startIndex,
+        isCompute: false,
+        isSubmitHistory: false
+      })
+      this.destroy()
+      return
+    }
     const valueSets = control.valueSets
     if (!Array.isArray(valueSets) || !valueSets.length) return
     // 转换code
     const valueSet = valueSets.find(v => v.code === code)
     if (!valueSet) return
-    const elementList = context.elementList || this.control.getElementList()
-    const range = context.range || this.control.getRange()
     // 样式赋值元素-默认值的第一个字符样式，否则取默认样式
     const valueElement = this.getValue(context)[0]
     const styleElement = valueElement
       ? pickObject(valueElement, EDITOR_ELEMENT_STYLE_ATTR)
       : pickObject(elementList[range.startIndex], CONTROL_STYLE_ATTR)
     // 清空选项
-    const prefixIndex = this.clearSelect(context)
+    const prefixIndex = this.clearSelect(context, {
+      isAddPlaceholder: false
+    })
     if (!~prefixIndex) return
-    this.control.removePlaceholder(prefixIndex, context)
+    // 当前无值时清空占位符
+    if (!oldCode) {
+      this.control.removePlaceholder(prefixIndex, context)
+    }
     // 属性赋值元素-默认为前缀属性
     const propertyElement = omitObject(
       elementList[prefixIndex],
@@ -244,11 +271,13 @@ export class SelectControl implements IControlInstance {
       draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     // 设置状态
-    this.element.control!.code = code
+    control.code = code
     // 重新渲染控件
     if (!context.range) {
       const newIndex = start + data.length - 1
-      this.control.repaintControl(newIndex)
+      this.control.repaintControl({
+        curIndex: newIndex
+      })
       this.destroy()
     }
   }

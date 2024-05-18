@@ -23,6 +23,10 @@ export class TextControl implements IControlInstance {
     this.control = control
   }
 
+  public setElement(element: IElement) {
+    this.element = element
+  }
+
   public getElement(): IElement {
     return this.element
   }
