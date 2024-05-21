@@ -144,7 +144,10 @@ export class Cursor {
       cursorTop + cursorHeight - defaultOffsetHeight
     }px`
     // 模拟光标显示
-    if (!isShow) return
+    if (!isShow) {
+      this.recoveryCursor()
+      return
+    }
     const isReadonly = this.draw.isReadonly()
     this.cursorDom.style.width = `${width * scale}px`
     this.cursorDom.style.backgroundColor = color

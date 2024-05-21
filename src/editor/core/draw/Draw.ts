@@ -868,10 +868,19 @@ export class Draw {
       this.footer.recovery()
       this.zone.setZone(EditorZone.MAIN)
     }
+    const { startIndex } = this.range.getRange()
+    const isCollapsed = this.range.getIsCollapsed()
     this.render({
-      isSubmitHistory: false,
-      isSetCursor: false
+      isSetCursor: true,
+      curIndex: startIndex,
+      isSubmitHistory: false
     })
+    // 重新定位避免事件监听丢失
+    if (!isCollapsed) {
+      this.cursor.drawCursor({
+        isShow: false
+      })
+    }
     // 回调
     setTimeout(() => {
       if (this.listener.pageModeChange) {
