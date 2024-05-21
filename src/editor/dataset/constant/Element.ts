@@ -33,7 +33,6 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'dateId',
   'dateFormat',
   'groupIds',
-  'rowFlex',
   'rowMargin',
   'textDecoration'
 ]
