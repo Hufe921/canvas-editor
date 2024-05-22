@@ -1,4 +1,7 @@
+import { ControlComponent } from '../../../../dataset/enum/Control'
+import { EditorMode } from '../../../../dataset/enum/Editor'
 import { ElementType } from '../../../../dataset/enum/Element'
+import { MoveDirection } from '../../../../dataset/enum/Observer'
 import { isMod } from '../../../../utils/hotkey'
 import { CanvasEvent } from '../../CanvasEvent'
 
@@ -17,6 +20,18 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   const { startIndex, endIndex } = rangeManager.getRange()
   const isCollapsed = rangeManager.getIsCollapsed()
   let elementList = draw.getElementList()
+  // 表单模式下控件移动
+  const control = draw.getControl()
+  if (
+    draw.getMode() === EditorMode.FORM &&
+    control.getActiveControl() &&
+    elementList[index + 1]?.controlComponent === ControlComponent.POSTFIX
+  ) {
+    control.initNextControl({
+      direction: MoveDirection.DOWN
+    })
+    return
+  }
   // 单词整体移动
   let moveCount = 1
   if (isMod(evt)) {

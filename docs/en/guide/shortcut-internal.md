@@ -70,7 +70,11 @@ Feature: Exit format brush
 
 ## Tab
 
-Feature: Increase indent
+Feature: Increase indent/Move next control
+
+## Shift + Tab
+
+Feature: Move previous control
 
 ## Ctrl/Cmd + Z
 
