@@ -650,6 +650,7 @@ export class Control {
             editorOptions: this.options
           })
           const text = new TextControl(element, this)
+          this.activeControl = text
           if (value) {
             text.setValue(formatValue, controlContext, controlRule)
           } else {
@@ -657,6 +658,7 @@ export class Control {
           }
         } else if (type === ControlType.SELECT) {
           const select = new SelectControl(element, this)
+          this.activeControl = select
           if (value) {
             select.setSelect(value, controlContext, controlRule)
           } else {
@@ -664,13 +666,17 @@ export class Control {
           }
         } else if (type === ControlType.CHECKBOX) {
           const checkbox = new CheckboxControl(element, this)
+          this.activeControl = checkbox
           const codes = value?.split(',') || []
           checkbox.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.RADIO) {
           const radio = new RadioControl(element, this)
+          this.activeControl = radio
           const codes = value ? [value] : []
           radio.setSelect(codes, controlContext, controlRule)
         }
+        // 模拟控件激活后销毁
+        this.activeControl = null
         // 修改后控件结束索引
         let newEndIndex = i
         while (newEndIndex < elementList.length) {
@@ -681,6 +687,8 @@ export class Control {
         i = newEndIndex
       }
     }
+    // 销毁旧控件
+    this.destroyControl()
     // 页眉、内容区、页脚同时处理
     const data = [
       this.draw.getHeaderElementList(),
