@@ -2131,7 +2131,12 @@ export class Draw {
   private _clearPage(pageNo: number) {
     const ctx = this.ctxList[pageNo]
     const pageDom = this.pageList[pageNo]
-    ctx.clearRect(0, 0, pageDom.width, pageDom.height)
+    ctx.clearRect(
+      0,
+      0,
+      Math.max(pageDom.width, this.getWidth()),
+      Math.max(pageDom.height, this.getHeight())
+    )
     this.blockParticle.clear()
   }
 
