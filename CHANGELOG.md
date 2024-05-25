@@ -1,3 +1,29 @@
+## [0.9.79](https://github.com/Hufe921/canvas-editor/compare/v0.9.78...v0.9.79) (2024-05-25)
+
+
+### Bug Fixes
+
+* control setting row flex data error #586 ([8f36d1f](https://github.com/Hufe921/canvas-editor/commit/8f36d1fb4f161bd125d0c8a8ac72590df2d2aefe)), closes [#586](https://github.com/Hufe921/canvas-editor/issues/586)
+* drawing size error when browser scale page #594 ([7fa58f8](https://github.com/Hufe921/canvas-editor/commit/7fa58f8290bd368dc70fc5c568bea7c2b7385bd1)), closes [#594](https://github.com/Hufe921/canvas-editor/issues/594)
+* export HTML block elements row flex error #598 ([4cd18c8](https://github.com/Hufe921/canvas-editor/commit/4cd18c8c65b6954bf2029b165e2749640feb15c3)), closes [#598](https://github.com/Hufe921/canvas-editor/issues/598)
+* resizer position error when crossing pages #591 ([f4dd90b](https://github.com/Hufe921/canvas-editor/commit/f4dd90bbc517af8a89d707973e49032fbf320232)), closes [#591](https://github.com/Hufe921/canvas-editor/issues/591)
+* set non deletable control value boundary error #595 ([bcf311f](https://github.com/Hufe921/canvas-editor/commit/bcf311ff19557764eb82294c211d2e0e22c55ff1)), closes [#595](https://github.com/Hufe921/canvas-editor/issues/595)
+* update cursor status after setting page mode #588 ([28596c8](https://github.com/Hufe921/canvas-editor/commit/28596c889f1b1d49dfd246d7f7f6c4046483c8eb)), closes [#588](https://github.com/Hufe921/canvas-editor/issues/588)
+
+
+### Features
+
+* add externalId property to element #552 ([6525522](https://github.com/Hufe921/canvas-editor/commit/65255229c548c2646b70d1de8b25f89a5b6b46f7)), closes [#552](https://github.com/Hufe921/canvas-editor/issues/552)
+* move between controls using shortcut keys #548 ([c6c2f98](https://github.com/Hufe921/canvas-editor/commit/c6c2f981497224cc95dbdd50ee9552683bc1df6f)), closes [#548](https://github.com/Hufe921/canvas-editor/issues/548)
+* split text support multiple languages #593 ([1cb07af](https://github.com/Hufe921/canvas-editor/commit/1cb07af75ec4cff03f4562ea917175d91d55852e)), closes [#593](https://github.com/Hufe921/canvas-editor/issues/593)
+
+
+### Performance Improvements
+
+* adaptive size when the image is larger than the page width #599 ([b8323c0](https://github.com/Hufe921/canvas-editor/commit/b8323c0d8af01750e954ab49b7fe462844096d5a)), closes [#599](https://github.com/Hufe921/canvas-editor/issues/599)
+
+
+
 ## [0.9.78](https://github.com/Hufe921/canvas-editor/compare/v0.9.77...v0.9.78) (2024-05-18)
 
 

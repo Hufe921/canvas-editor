@@ -33,7 +33,6 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'dateId',
   'dateFormat',
   'groupIds',
-  'rowFlex',
   'rowMargin',
   'textDecoration'
 ]
@@ -73,7 +72,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'imgDisplay',
   'imgFloatPosition',
   'textDecoration',
-  'extension'
+  'extension',
+  'externalId'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
@@ -119,7 +119,8 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
   ...TABLE_CONTEXT_ATTR,
   ...TITLE_CONTEXT_ATTR,
-  ...LIST_CONTEXT_ATTR
+  ...LIST_CONTEXT_ATTR,
+  ...EDITOR_ROW_ATTR
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
@@ -136,7 +137,7 @@ export const IMAGE_ELEMENT_TYPE: ElementType[] = [
   ElementType.LATEX
 ]
 
-export const INLINE_ELEMENT_TYPE: ElementType[] = [
+export const BLOCK_ELEMENT_TYPE: ElementType[] = [
   ElementType.BLOCK,
   ElementType.PAGE_BREAK,
   ElementType.SEPARATOR,

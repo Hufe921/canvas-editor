@@ -1796,14 +1796,15 @@ export class CommandAdapt {
     if (isDisabled) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const { value, width, height } = payload
+    const { value, width, height, imgDisplay } = payload
     this.insertElementList([
       {
         value,
         width,
         height,
         id: getUUID(),
-        type: ElementType.IMAGE
+        type: ElementType.IMAGE,
+        imgDisplay
       }
     ])
   }
@@ -1995,12 +1996,12 @@ export class CommandAdapt {
   public changeImageDisplay(element: IElement, display: ImageDisplay) {
     if (element.imgDisplay === display) return
     element.imgDisplay = display
+    const { startIndex, endIndex } = this.range.getRange()
     if (
       display === ImageDisplay.FLOAT_TOP ||
       display === ImageDisplay.FLOAT_BOTTOM
     ) {
       const positionList = this.position.getPositionList()
-      const { startIndex } = this.range.getRange()
       const {
         coordinate: { leftTop }
       } = positionList[startIndex]
@@ -2013,7 +2014,8 @@ export class CommandAdapt {
     }
     this.draw.getPreviewer().clearResizer()
     this.draw.render({
-      isSetCursor: false
+      isSetCursor: true,
+      curIndex: endIndex
     })
   }
 

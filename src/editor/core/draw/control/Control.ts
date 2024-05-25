@@ -12,6 +12,8 @@ import {
   IControlRuleOption,
   IGetControlValueOption,
   IGetControlValueResult,
+  IInitNextControlOption,
+  INextControlContext,
   IRepaintControlOption,
   ISetControlExtensionOption,
   ISetControlProperties,
@@ -38,6 +40,7 @@ import { ControlSearch } from './interactive/ControlSearch'
 import { ControlBorder } from './richtext/Border'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
+import { MoveDirection } from '../../../dataset/enum/Observer'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -196,7 +199,8 @@ export class Control {
   public getPreY(): number {
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
-    return this.draw.getPageNo() * (height + pageGap)
+    const pageNo = this.getPosition()?.pageNo ?? this.draw.getPageNo()
+    return pageNo * (height + pageGap)
   }
 
   public getRange(): IRange {
@@ -646,6 +650,7 @@ export class Control {
             editorOptions: this.options
           })
           const text = new TextControl(element, this)
+          this.activeControl = text
           if (value) {
             text.setValue(formatValue, controlContext, controlRule)
           } else {
@@ -653,6 +658,7 @@ export class Control {
           }
         } else if (type === ControlType.SELECT) {
           const select = new SelectControl(element, this)
+          this.activeControl = select
           if (value) {
             select.setSelect(value, controlContext, controlRule)
           } else {
@@ -660,13 +666,17 @@ export class Control {
           }
         } else if (type === ControlType.CHECKBOX) {
           const checkbox = new CheckboxControl(element, this)
+          this.activeControl = checkbox
           const codes = value?.split(',') || []
           checkbox.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.RADIO) {
           const radio = new RadioControl(element, this)
+          this.activeControl = radio
           const codes = value ? [value] : []
           radio.setSelect(codes, controlContext, controlRule)
         }
+        // 模拟控件激活后销毁
+        this.activeControl = null
         // 修改后控件结束索引
         let newEndIndex = i
         while (newEndIndex < elementList.length) {
@@ -677,6 +687,8 @@ export class Control {
         i = newEndIndex
       }
     }
+    // 销毁旧控件
+    this.destroyControl()
     // 页眉、内容区、页脚同时处理
     const data = [
       this.draw.getHeaderElementList(),
@@ -808,5 +820,264 @@ export class Control {
 
   public drawBorder(ctx: CanvasRenderingContext2D) {
     this.controlBorder.render(ctx)
+  }
+
+  public getPreControlContext(): INextControlContext | null {
+    if (!this.activeControl) return null
+    const position = this.draw.getPosition()
+    const positionContext = position.getPositionContext()
+    if (!positionContext) return null
+    const controlElement = this.activeControl.getElement()
+    // 获取上一个控件上下文本信息
+    function getPreContext(
+      elementList: IElement[],
+      start: number
+    ): INextControlContext | null {
+      for (let e = start; e > 0; e--) {
+        const element = elementList[e]
+        // 表格元素
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList || []
+          for (let r = trList.length - 1; r >= 0; r--) {
+            const tr = trList[r]
+            const tdList = tr.tdList
+            for (let d = tdList.length - 1; d >= 0; d--) {
+              const td = tdList[d]
+              const context = getPreContext(td.value, td.value.length - 1)
+              if (context) {
+                return {
+                  positionContext: {
+                    isTable: true,
+                    index: e,
+                    trIndex: r,
+                    tdIndex: d,
+                    tdId: td.id,
+                    trId: tr.id,
+                    tableId: element.id
+                  },
+                  nextIndex: context.nextIndex
+                }
+              }
+            }
+          }
+        }
+        if (
+          !element.controlId ||
+          element.controlId === controlElement.controlId
+        ) {
+          continue
+        }
+        // 找到尾部第一个非占位符元素
+        let nextIndex = e
+        while (nextIndex > 0) {
+          const nextElement = elementList[nextIndex]
+          if (
+            nextElement.controlComponent === ControlComponent.VALUE ||
+            nextElement.controlComponent === ControlComponent.PREFIX
+          ) {
+            break
+          }
+          nextIndex--
+        }
+        return {
+          positionContext: {
+            isTable: false
+          },
+          nextIndex
+        }
+      }
+      return null
+    }
+    // 当前上下文控件信息
+    const { startIndex } = this.range.getRange()
+    const elementList = this.getElementList()
+    const context = getPreContext(elementList, startIndex)
+    if (context) {
+      return {
+        positionContext: positionContext.isTable
+          ? positionContext
+          : context.positionContext,
+        nextIndex: context.nextIndex
+      }
+    }
+    // 控件在单元内时继续循环
+    if (controlElement.tableId) {
+      const originalElementList = this.draw.getOriginalElementList()
+      const { index, trIndex, tdIndex } = positionContext
+      const trList = originalElementList[index!].trList!
+      for (let r = trIndex!; r >= 0; r--) {
+        const tr = trList[r]
+        const tdList = tr.tdList
+        for (let d = tdList.length - 1; d >= 0; d--) {
+          if (trIndex === r && d >= tdIndex!) continue
+          const td = tdList[d]
+          const context = getPreContext(td.value, td.value.length - 1)
+          if (context) {
+            return {
+              positionContext: {
+                isTable: true,
+                index: positionContext.index,
+                trIndex: r,
+                tdIndex: d,
+                tdId: td.id,
+                trId: tr.id,
+                tableId: controlElement.tableId
+              },
+              nextIndex: context.nextIndex
+            }
+          }
+        }
+      }
+      // 跳出表格继续循环
+      const context = getPreContext(originalElementList, index! - 1)
+      if (context) {
+        return {
+          positionContext: {
+            isTable: false
+          },
+          nextIndex: context.nextIndex
+        }
+      }
+    }
+    return null
+  }
+
+  public getNextControlContext(): INextControlContext | null {
+    if (!this.activeControl) return null
+    const position = this.draw.getPosition()
+    const positionContext = position.getPositionContext()
+    if (!positionContext) return null
+    const controlElement = this.activeControl.getElement()
+    // 获取下一个控件上下文本信息
+    function getNextContext(
+      elementList: IElement[],
+      start: number
+    ): INextControlContext | null {
+      for (let e = start; e < elementList.length; e++) {
+        const element = elementList[e]
+        // 表格元素
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList || []
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            const tdList = tr.tdList
+            for (let d = 0; d < tdList.length; d++) {
+              const td = tdList[d]
+              const context = getNextContext(td.value!, 0)
+              if (context) {
+                return {
+                  positionContext: {
+                    isTable: true,
+                    index: e,
+                    trIndex: r,
+                    tdIndex: d,
+                    tdId: td.id,
+                    trId: tr.id,
+                    tableId: element.id
+                  },
+                  nextIndex: context.nextIndex
+                }
+              }
+            }
+          }
+        }
+        if (
+          !element.controlId ||
+          element.controlId === controlElement.controlId
+        ) {
+          continue
+        }
+        return {
+          positionContext: {
+            isTable: false
+          },
+          nextIndex: e
+        }
+      }
+      return null
+    }
+    // 当前上下文控件信息
+    const { endIndex } = this.range.getRange()
+    const elementList = this.getElementList()
+    const context = getNextContext(elementList, endIndex)
+    if (context) {
+      return {
+        positionContext: positionContext.isTable
+          ? positionContext
+          : context.positionContext,
+        nextIndex: context.nextIndex
+      }
+    }
+    // 控件在单元内时继续循环
+    if (controlElement.tableId) {
+      const originalElementList = this.draw.getOriginalElementList()
+      const { index, trIndex, tdIndex } = positionContext
+      const trList = originalElementList[index!].trList!
+      for (let r = trIndex!; r < trList.length; r++) {
+        const tr = trList[r]
+        const tdList = tr.tdList
+        for (let d = 0; d < tdList.length; d++) {
+          if (trIndex === r && d <= tdIndex!) continue
+          const td = tdList[d]
+          const context = getNextContext(td.value, 0)
+          if (context) {
+            return {
+              positionContext: {
+                isTable: true,
+                index: positionContext.index,
+                trIndex: r,
+                tdIndex: d,
+                tdId: td.id,
+                trId: tr.id,
+                tableId: controlElement.tableId
+              },
+              nextIndex: context.nextIndex
+            }
+          }
+        }
+      }
+      // 跳出表格继续循环
+      const context = getNextContext(originalElementList, index! + 1)
+      if (context) {
+        return {
+          positionContext: {
+            isTable: false
+          },
+          nextIndex: context.nextIndex
+        }
+      }
+    }
+    return null
+  }
+
+  public initNextControl(option: IInitNextControlOption = {}) {
+    const { direction = MoveDirection.DOWN } = option
+    let context: INextControlContext | null = null
+    if (direction === MoveDirection.UP) {
+      context = this.getPreControlContext()
+    } else {
+      context = this.getNextControlContext()
+    }
+    if (!context) return
+    const { nextIndex, positionContext } = context
+    const position = this.draw.getPosition()
+    // 设置上下文
+    position.setPositionContext(positionContext)
+    this.draw.getRange().replaceRange({
+      startIndex: nextIndex,
+      endIndex: nextIndex
+    })
+    // 重新渲染并定位
+    this.draw.render({
+      curIndex: nextIndex,
+      isCompute: false,
+      isSetCursor: true,
+      isSubmitHistory: false
+    })
+    const positionList = position.getPositionList()
+    this.draw.getCursor().moveCursorToVisible({
+      cursorPosition: positionList[nextIndex],
+      direction
+    })
   }
 }

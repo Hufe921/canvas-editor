@@ -1,8 +1,10 @@
 import { ControlType, ControlIndentation } from '../dataset/enum/Control'
 import { EditorZone } from '../dataset/enum/Editor'
+import { MoveDirection } from '../dataset/enum/Observer'
 import { ICheckbox } from './Checkbox'
 import { IDrawOption } from './Draw'
 import { IElement } from './Element'
+import { IPositionContext } from './Position'
 import { IRadio } from './Radio'
 import { IRange } from './Range'
 
@@ -151,3 +153,12 @@ export type IRepaintControlOption = Pick<
   IDrawOption,
   'curIndex' | 'isCompute' | 'isSubmitHistory'
 >
+
+export interface INextControlContext {
+  positionContext: IPositionContext
+  nextIndex: number
+}
+
+export interface IInitNextControlOption {
+  direction?: MoveDirection
+}

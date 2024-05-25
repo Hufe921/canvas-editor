@@ -24,6 +24,7 @@ interface IElement {
   value: string;
   valueList?: IElement[]; // Use of composite elements (hyperlinks, titles, lists, and so on).
   extension?: unknown;
+  externalId?: string;
   // style
   font?: string;
   size?: number;

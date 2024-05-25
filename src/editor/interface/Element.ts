@@ -19,6 +19,7 @@ export interface IElementBasic {
   type?: ElementType
   value: string
   extension?: unknown
+  externalId?: string
 }
 
 export interface IElementStyle {

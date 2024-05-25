@@ -64,7 +64,7 @@ import {
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import {
-  getIsInlineElement,
+  getIsBlockElement,
   getSlimCloneElementList,
   zipElementList
 } from '../../utils/element'
@@ -868,10 +868,19 @@ export class Draw {
       this.footer.recovery()
       this.zone.setZone(EditorZone.MAIN)
     }
+    const { startIndex } = this.range.getRange()
+    const isCollapsed = this.range.getIsCollapsed()
     this.render({
-      isSubmitHistory: false,
-      isSetCursor: false
+      isSetCursor: true,
+      curIndex: startIndex,
+      isSubmitHistory: false
     })
+    // 重新定位避免事件监听丢失
+    if (!isCollapsed) {
+      this.cursor.drawCursor({
+        isShow: false
+      })
+    }
     // 回调
     setTimeout(() => {
       if (this.listener.pageModeChange) {
@@ -1190,21 +1199,13 @@ export class Draw {
         } else {
           const elementWidth = element.width! * scale
           const elementHeight = element.height! * scale
-          // 图片超出尺寸后自适应
-          const curRowWidth =
-            element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
-          if (curRowWidth + elementWidth > availableWidth) {
-            // 计算剩余大小
-            const surplusWidth = availableWidth - curRowWidth
-            const adaptiveWidth =
-              surplusWidth > 0
-                ? surplusWidth
-                : Math.min(elementWidth, availableWidth)
+          // 图片超出尺寸后自适应（图片大小大于可用宽度时）
+          if (elementWidth > availableWidth) {
             const adaptiveHeight =
-              (elementHeight * adaptiveWidth) / elementWidth
-            element.width = adaptiveWidth / scale
+              (elementHeight * availableWidth) / elementWidth
+            element.width = availableWidth / scale
             element.height = adaptiveHeight / scale
-            metrics.width = adaptiveWidth
+            metrics.width = availableWidth
             metrics.height = adaptiveHeight
             metrics.boundingBoxDescent = adaptiveHeight
           } else {
@@ -1641,8 +1642,8 @@ export class Draw {
         rowList.push(row)
       } else {
         curRow.width += metrics.width
-        // 减小行元素前第一行空行行高
-        if (i === 0 && getIsInlineElement(elementList[1])) {
+        // 减小块元素前第一行空行行高
+        if (i === 0 && getIsBlockElement(elementList[1])) {
           curRow.height = defaultBasicRowMarginHeight
           curRow.ascent = defaultBasicRowMarginHeight
         } else if (curRow.height < height) {
@@ -2130,7 +2131,12 @@ export class Draw {
   private _clearPage(pageNo: number) {
     const ctx = this.ctxList[pageNo]
     const pageDom = this.pageList[pageNo]
-    ctx.clearRect(0, 0, pageDom.width, pageDom.height)
+    ctx.clearRect(
+      0,
+      0,
+      Math.max(pageDom.width, this.getWidth()),
+      Math.max(pageDom.height, this.getHeight())
+    )
     this.blockParticle.clear()
   }
 
