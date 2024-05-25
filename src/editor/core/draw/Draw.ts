@@ -1199,21 +1199,13 @@ export class Draw {
         } else {
           const elementWidth = element.width! * scale
           const elementHeight = element.height! * scale
-          // 图片超出尺寸后自适应
-          const curRowWidth =
-            element.imgDisplay === ImageDisplay.INLINE ? 0 : curRow.width
-          if (curRowWidth + elementWidth > availableWidth) {
-            // 计算剩余大小
-            const surplusWidth = availableWidth - curRowWidth
-            const adaptiveWidth =
-              surplusWidth > 0
-                ? surplusWidth
-                : Math.min(elementWidth, availableWidth)
+          // 图片超出尺寸后自适应（图片大小大于可用宽度时）
+          if (elementWidth > availableWidth) {
             const adaptiveHeight =
-              (elementHeight * adaptiveWidth) / elementWidth
-            element.width = adaptiveWidth / scale
+              (elementHeight * availableWidth) / elementWidth
+            element.width = availableWidth / scale
             element.height = adaptiveHeight / scale
-            metrics.width = adaptiveWidth
+            metrics.width = availableWidth
             metrics.height = adaptiveHeight
             metrics.boundingBoxDescent = adaptiveHeight
           } else {

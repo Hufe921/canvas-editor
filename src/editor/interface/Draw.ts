@@ -22,6 +22,7 @@ export interface IDrawImagePayload {
   width: number
   height: number
   value: string
+  imgDisplay?: ImageDisplay
 }
 
 export interface IDrawRowPayload {
