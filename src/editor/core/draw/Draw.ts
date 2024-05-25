@@ -64,7 +64,7 @@ import {
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import {
-  getIsInlineElement,
+  getIsBlockElement,
   getSlimCloneElementList,
   zipElementList
 } from '../../utils/element'
@@ -1642,8 +1642,8 @@ export class Draw {
         rowList.push(row)
       } else {
         curRow.width += metrics.width
-        // 减小行元素前第一行空行行高
-        if (i === 0 && getIsInlineElement(elementList[1])) {
+        // 减小块元素前第一行空行行高
+        if (i === 0 && getIsBlockElement(elementList[1])) {
           curRow.height = defaultBasicRowMarginHeight
           curRow.ascent = defaultBasicRowMarginHeight
         } else if (curRow.height < height) {

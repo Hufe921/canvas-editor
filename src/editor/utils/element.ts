@@ -21,11 +21,11 @@ import {
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import {
+  BLOCK_ELEMENT_TYPE,
   CONTROL_STYLE_ATTR,
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
-  INLINE_ELEMENT_TYPE,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -234,10 +234,7 @@ export function formatElementList(
       // 移除父节点
       elementList.splice(i, 1)
       // 控件上下文提取（压缩后的控件上下文无法提取）
-      const controlContext = pickObject(el, [
-        ...EDITOR_ELEMENT_CONTEXT_ATTR,
-        ...EDITOR_ROW_ATTR
-      ])
+      const controlContext = pickObject(el, EDITOR_ELEMENT_CONTEXT_ATTR)
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
         <IElement>(<unknown>el.control),
@@ -752,6 +749,22 @@ export function convertRowFlexToTextAlign(rowFlex: RowFlex) {
   return rowFlex === RowFlex.ALIGNMENT ? 'justify' : rowFlex
 }
 
+export function convertRowFlexToJustifyContent(rowFlex: RowFlex) {
+  switch (rowFlex) {
+    case RowFlex.LEFT:
+      return 'flex-start'
+    case RowFlex.CENTER:
+      return 'center'
+    case RowFlex.RIGHT:
+      return 'flex-end'
+    case RowFlex.ALIGNMENT:
+    case RowFlex.JUSTIFY:
+      return 'space-between'
+    default:
+      return 'flex-start'
+  }
+}
+
 export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
@@ -797,14 +810,15 @@ export function formatElementContext(
       isBreakWarped = true
     }
     // 1. 即使换行停止也要处理表格上下文信息
-    // 2. 定位元素非列表，无需处理粘贴列表的上下文，仅处理表格上下文信息
+    // 2. 定位元素非列表，无需处理粘贴列表的上下文，仅处理表格及行上下文信息
     if (
       isBreakWarped ||
       (!copyElement.listId && targetElement.type === ElementType.LIST)
     ) {
-      cloneProperty<IElement>(TABLE_CONTEXT_ATTR, copyElement, targetElement)
+      const cloneAttr = [...TABLE_CONTEXT_ATTR, ...EDITOR_ROW_ATTR]
+      cloneProperty<IElement>(cloneAttr, copyElement, targetElement)
       targetElement.valueList?.forEach(valueItem => {
-        cloneProperty<IElement>(TABLE_CONTEXT_ATTR, copyElement, valueItem)
+        cloneProperty<IElement>(cloneAttr, copyElement, valueItem)
       })
       continue
     }
@@ -914,8 +928,12 @@ export function groupElementListByRowFlex(
   for (let e = 1; e < elementList.length; e++) {
     const element = elementList[e]
     const rowFlex = element.rowFlex || null
-    // 行布局相同时追加数据，否则新增分组
-    if (currentRowFlex === rowFlex) {
+    // 行布局相同&非块元素时追加数据，否则新增分组
+    if (
+      currentRowFlex === rowFlex &&
+      !getIsBlockElement(element) &&
+      !getIsBlockElement(elementList[e - 1])
+    ) {
       const lastElementListGroup =
         elementListGroupList[elementListGroupList.length - 1]
       lastElementListGroup.data.push(element)
@@ -1099,14 +1117,23 @@ export function createDomFromElementList(
   for (let g = 0; g < groupElementList.length; g++) {
     const elementGroupRowFlex = groupElementList[g]
     // 行布局样式设置
-    const rowFlexDom = document.createElement('div')
     const isDefaultRowFlex =
       !elementGroupRowFlex.rowFlex ||
       elementGroupRowFlex.rowFlex === RowFlex.LEFT
+    // 块元素使用flex否则使用text-align
+    const rowFlexDom = document.createElement('div')
     if (!isDefaultRowFlex) {
-      rowFlexDom.style.textAlign = convertRowFlexToTextAlign(
-        elementGroupRowFlex.rowFlex!
-      )
+      const firstElement = elementGroupRowFlex.data[0]
+      if (getIsBlockElement(firstElement)) {
+        rowFlexDom.style.display = 'flex'
+        rowFlexDom.style.justifyContent = convertRowFlexToJustifyContent(
+          firstElement.rowFlex!
+        )
+      } else {
+        rowFlexDom.style.textAlign = convertRowFlexToTextAlign(
+          elementGroupRowFlex.rowFlex!
+        )
+      }
     }
     // 布局内容
     rowFlexDom.innerHTML = buildDom(elementGroupRowFlex.data).innerHTML
@@ -1444,10 +1471,10 @@ export function getSlimCloneElementList(elementList: IElement[]) {
   ])
 }
 
-export function getIsInlineElement(element?: IElement) {
+export function getIsBlockElement(element?: IElement) {
   return (
     !!element?.type &&
-    (INLINE_ELEMENT_TYPE.includes(element.type) ||
+    (BLOCK_ELEMENT_TYPE.includes(element.type) ||
       element.imgDisplay === ImageDisplay.INLINE)
   )
 }
