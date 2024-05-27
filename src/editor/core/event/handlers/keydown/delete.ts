@@ -26,6 +26,7 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
     if (!isCollapsed) {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
+      if (!elementList[index + 1]) return
       draw.spliceElementList(elementList, index + 1, 1)
     }
     curIndex = isCollapsed ? index : startIndex

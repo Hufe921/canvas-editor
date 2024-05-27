@@ -682,7 +682,7 @@ export class Draw {
       if (!this.control.getActiveControl()) {
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
-          if (elementList[deleteIndex].control?.deletable !== false) {
+          if (elementList[deleteIndex]?.control?.deletable !== false) {
             elementList.splice(deleteIndex, 1)
           }
           deleteIndex--
