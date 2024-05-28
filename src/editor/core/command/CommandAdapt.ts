@@ -1,5 +1,10 @@
 import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
+import {
+  EDITOR_ELEMENT_STYLE_ATTR,
+  EDITOR_ROW_ATTR,
+  LIST_CONTEXT_ATTR,
+  TABLE_CONTEXT_ATTR
+} from '../../dataset/constant/Element'
 import {
   titleOrderNumberMapping,
   titleSizeMapping
@@ -61,7 +66,13 @@ import {
   IGetTitleValueResult
 } from '../../interface/Title'
 import { IWatermark } from '../../interface/Watermark'
-import { deepClone, downloadFile, getUUID, isObjectEqual } from '../../utils'
+import {
+  cloneProperty,
+  deepClone,
+  downloadFile,
+  getUUID,
+  isObjectEqual
+} from '../../utils'
 import {
   createDomFromElementList,
   formatElementContext,
@@ -70,7 +81,8 @@ import {
   pickElementAttr,
   getElementListByHTML,
   getTextFromElementList,
-  zipElementList
+  zipElementList,
+  getAnchorElement
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
 import { printImageBase64 } from '../../utils/print'
@@ -716,6 +728,7 @@ export class CommandAdapt {
       } else {
         if (el.titleId) {
           delete el.titleId
+          delete el.title
           delete el.level
           delete el.size
           delete el.bold
@@ -2495,5 +2508,26 @@ export class CommandAdapt {
       getValue(elementList, zone)
     }
     return result
+  }
+
+  public insertTitle(payload: IElement) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const cloneElement = deepClone(payload)
+    // 格式化上下文信息
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const copyElement = getAnchorElement(elementList, startIndex)
+    if (!copyElement) return
+    const cloneAttr = [
+      ...TABLE_CONTEXT_ATTR,
+      ...EDITOR_ROW_ATTR,
+      ...LIST_CONTEXT_ATTR
+    ]
+    cloneElement.valueList?.forEach(valueItem => {
+      cloneProperty<IElement>(cloneAttr, copyElement, valueItem)
+    })
+    // 插入标题
+    this.draw.insertElementList([cloneElement])
   }
 }

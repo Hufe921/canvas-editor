@@ -921,3 +921,13 @@ instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
 ```javascript
 instance.command.executeUpdateOptions(payload: IUpdateOption)
 ```
+
+## executeInsertTitle
+
+功能：插入标题
+
+用法：
+
+```javascript
+instance.command.executeInsertTitle(payload: IElement)
+```

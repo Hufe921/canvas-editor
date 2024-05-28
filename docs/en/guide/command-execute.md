@@ -921,3 +921,13 @@ Usage:
 ```javascript
 instance.command.executeUpdateOptions(payload: IUpdateOption)
 ```
+
+## executeInsertTitle
+
+Feature: Insert title
+
+Usage:
+
+```javascript
+instance.command.executeInsertTitle(payload: IElement)
+```
