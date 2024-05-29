@@ -22,14 +22,25 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
     const cursorPosition = position.getCursorPosition()
     if (!cursorPosition) return
     const { index } = cursorPosition
-    const isCollapsed = rangeManager.getIsCollapsed()
-    if (!isCollapsed) {
-      draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+    // 命中图片直接删除
+    const positionContext = position.getPositionContext()
+    if (positionContext.isDirectHit && positionContext.isImage) {
+      draw.spliceElementList(elementList, index, 1)
+      curIndex = index - 1
     } else {
-      if (!elementList[index + 1]) return
-      draw.spliceElementList(elementList, index + 1, 1)
+      const isCollapsed = rangeManager.getIsCollapsed()
+      if (!isCollapsed) {
+        draw.spliceElementList(
+          elementList,
+          startIndex + 1,
+          endIndex - startIndex
+        )
+      } else {
+        if (!elementList[index + 1]) return
+        draw.spliceElementList(elementList, index + 1, 1)
+      }
+      curIndex = isCollapsed ? index : startIndex
     }
-    curIndex = isCollapsed ? index : startIndex
   }
   if (curIndex === null) return
   draw.getGlobalEvent().setCanvasEventAbility()
