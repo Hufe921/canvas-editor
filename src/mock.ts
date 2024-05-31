@@ -385,13 +385,18 @@ elementList.push(
       value: '签署日期：'
     },
     {
+      type: ElementType.CONTROL,
       value: '',
-      valueList: [
-        {
-          value: `2022-08-10 17:30:01`
-        }
-      ],
-      type: ElementType.DATE
+      control: {
+        conceptId: '5',
+        type: ControlType.DATE,
+        value: [
+          {
+            value: `2022-08-10 17:30:01`
+          }
+        ],
+        placeholder: '签署日期'
+      }
     },
     {
       value: '\n'

@@ -40,6 +40,7 @@ import { ControlSearch } from './interactive/ControlSearch'
 import { ControlBorder } from './richtext/Border'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
+import { DateControl } from './date/DateControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
 
 interface IMoveCursorResult {
@@ -223,9 +224,16 @@ export class Control {
     const element = elementList[range.startIndex]
     // 判断控件是否已经激活
     if (this.activeControl) {
-      // 列举控件唤醒下拉弹窗
-      if (this.activeControl instanceof SelectControl) {
-        this.activeControl.awake()
+      // 弹窗类控件唤醒弹窗，后缀处移除弹窗
+      if (
+        this.activeControl instanceof SelectControl ||
+        this.activeControl instanceof DateControl
+      ) {
+        if (element.controlComponent === ControlComponent.POSTFIX) {
+          this.activeControl.destroy()
+        } else {
+          this.activeControl.awake()
+        }
       }
       const controlElement = this.activeControl.getElement()
       if (element.controlId === controlElement.controlId) return
@@ -244,6 +252,10 @@ export class Control {
       this.activeControl = new CheckboxControl(element, this)
     } else if (control.type === ControlType.RADIO) {
       this.activeControl = new RadioControl(element, this)
+    } else if (control.type === ControlType.DATE) {
+      const dateControl = new DateControl(element, this)
+      this.activeControl = dateControl
+      dateControl.awake()
     }
     // 激活控件回调
     nextTick(() => {
@@ -269,7 +281,10 @@ export class Control {
 
   public destroyControl() {
     if (this.activeControl) {
-      if (this.activeControl instanceof SelectControl) {
+      if (
+        this.activeControl instanceof SelectControl ||
+        this.activeControl instanceof DateControl
+      ) {
         this.activeControl.destroy()
       }
       this.activeControl = null
@@ -316,7 +331,8 @@ export class Control {
     const element = elementList[range.startIndex]
     this.activeControl.setElement(element)
     if (
-      this.activeControl instanceof SelectControl &&
+      (this.activeControl instanceof DateControl ||
+        this.activeControl instanceof SelectControl) &&
       this.activeControl.getIsPopup()
     ) {
       this.activeControl.destroy()
@@ -542,14 +558,14 @@ export class Control {
           const nextElement = elementList[j]
           if (nextElement.controlId !== element.controlId) break
           if (
-            type === ControlType.TEXT &&
+            (type === ControlType.TEXT || type === ControlType.DATE) &&
             nextElement.controlComponent === ControlComponent.VALUE
           ) {
             textControlValue += nextElement.value
           }
           j++
         }
-        if (type === ControlType.TEXT) {
+        if (type === ControlType.TEXT || type === ControlType.DATE) {
           result.push({
             ...element.control,
             zone,
@@ -674,6 +690,14 @@ export class Control {
           this.activeControl = radio
           const codes = value ? [value] : []
           radio.setSelect(codes, controlContext, controlRule)
+        } else if (type === ControlType.DATE) {
+          const date = new DateControl(element, this)
+          this.activeControl = date
+          if (value) {
+            date.setSelect(value, controlContext, controlRule)
+          } else {
+            date.clearSelect(controlContext, controlRule)
+          }
         }
         // 模拟控件激活后销毁
         this.activeControl = null
