@@ -1,3 +1,28 @@
+## [0.9.80](https://github.com/Hufe921/canvas-editor/compare/v0.9.79...v0.9.80) (2024-05-31)
+
+
+### Bug Fixes
+
+* boundary error when deleting elements backwards #606 ([5006264](https://github.com/Hufe921/canvas-editor/commit/500626498f6c5088d3b998f615c25e8873021d8a)), closes [#606](https://github.com/Hufe921/canvas-editor/issues/606)
+* cursor position outside the margin of the page #609 ([d16b0f4](https://github.com/Hufe921/canvas-editor/commit/d16b0f46facc7155e74cd06bf019725c5cac2a82)), closes [#609](https://github.com/Hufe921/canvas-editor/issues/609)
+* error using tab key at control postfix ([bb1ee59](https://github.com/Hufe921/canvas-editor/commit/bb1ee5910e7caa0b54ea721038571210950eb59c))
+* get controls within the table #628 ([2af0847](https://github.com/Hufe921/canvas-editor/commit/2af0847f555af5491640b7a8a650ec57fb309a2c)), closes [#628](https://github.com/Hufe921/canvas-editor/issues/628)
+* not copy control postfix style #631 ([523183f](https://github.com/Hufe921/canvas-editor/commit/523183f1751be898f5f9e0f84e31b73be46a9430)), closes [#631](https://github.com/Hufe921/canvas-editor/issues/631)
+
+
+### Chores
+
+* add date control demo ([b08dba0](https://github.com/Hufe921/canvas-editor/commit/b08dba0e967485a8875db993344f7a87571ee080))
+
+
+### Features
+
+* add date control #601 ([3989199](https://github.com/Hufe921/canvas-editor/commit/398919938f947aea96008a55af059bf5ae4dc768)), closes [#601](https://github.com/Hufe921/canvas-editor/issues/601)
+* add executeInsertTitle api #604 ([2659d6b](https://github.com/Hufe921/canvas-editor/commit/2659d6bde7b2ce7f221f93e5fcb4d4bef0f83d54)), closes [#604](https://github.com/Hufe921/canvas-editor/issues/604)
+* delete image using the delete key #614 ([d54a701](https://github.com/Hufe921/canvas-editor/commit/d54a701adb435c617ff7877561fc4f265673a409)), closes [#614](https://github.com/Hufe921/canvas-editor/issues/614)
+
+
+
 ## [0.9.79](https://github.com/Hufe921/canvas-editor/compare/v0.9.78...v0.9.79) (2024-05-25)
 
 
