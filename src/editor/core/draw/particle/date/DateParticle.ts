@@ -13,31 +13,8 @@ export class DateParticle {
   constructor(draw: Draw) {
     this.draw = draw
     this.range = draw.getRange()
-    const i18n = draw.getI18n()
-    const t = i18n.t.bind(i18n)
-    this.datePicker = new DatePicker({
-      mountDom: draw.getContainer(),
-      onSubmit: this._setValue.bind(this),
-      getLang: () => ({
-        now: t('datePicker.now'),
-        confirm: t('datePicker.confirm'),
-        return: t('datePicker.return'),
-        timeSelect: t('datePicker.timeSelect'),
-        weeks: {
-          sun: t('datePicker.weeks.sun'),
-          mon: t('datePicker.weeks.mon'),
-          tue: t('datePicker.weeks.tue'),
-          wed: t('datePicker.weeks.wed'),
-          thu: t('datePicker.weeks.thu'),
-          fri: t('datePicker.weeks.fri'),
-          sat: t('datePicker.weeks.sat')
-        },
-        year: t('datePicker.year'),
-        month: t('datePicker.month'),
-        hour: t('datePicker.hour'),
-        minute: t('datePicker.minute'),
-        second: t('datePicker.second')
-      })
+    this.datePicker = new DatePicker(draw, {
+      onSubmit: this._setValue.bind(this)
     })
   }
 
@@ -111,9 +88,6 @@ export class DateParticle {
   }
 
   public renderDatePicker(element: IElement, position: IElementPosition) {
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const startTop = this.draw.getPageNo() * (height + pageGap)
     const elementList = this.draw.getElementList()
     const range = this.getDateElementRange()
     const value = range
@@ -124,9 +98,8 @@ export class DateParticle {
       : ''
     this.datePicker.render({
       value,
-      element,
       position,
-      startTop
+      dateFormat: element.dateFormat
     })
   }
 }

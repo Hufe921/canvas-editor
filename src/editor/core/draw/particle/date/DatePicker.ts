@@ -1,6 +1,10 @@
-import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
-import { IElement, IElementPosition } from '../../../../interface/Element'
-import { datePicker } from '../../../i18n/lang/zh-CN.json'
+import {
+  EDITOR_COMPONENT,
+  EDITOR_PREFIX
+} from '../../../../dataset/constant/Editor'
+import { EditorComponent } from '../../../../dataset/enum/Editor'
+import { IElementPosition } from '../../../../interface/Element'
+import { Draw } from '../../Draw'
 
 export interface IDatePickerLang {
   now: string
@@ -24,9 +28,7 @@ export interface IDatePickerLang {
 }
 
 export interface IDatePickerOption {
-  mountDom?: HTMLElement
   onSubmit?: (date: string) => any
-  getLang?: () => IDatePickerLang
 }
 
 interface IDatePickerDom {
@@ -56,12 +58,12 @@ interface IDatePickerDom {
 
 interface IRenderOption {
   value: string
-  element: IElement
   position: IElementPosition
-  startTop?: number
+  dateFormat?: string
 }
 
 export class DatePicker {
+  private draw: Draw
   private options: IDatePickerOption
   private now: Date
   private dom: IDatePickerDom
@@ -70,12 +72,10 @@ export class DatePicker {
   private pickDate: Date | null
   private lang: IDatePickerLang
 
-  constructor(options: IDatePickerOption = {}) {
-    this.options = {
-      mountDom: document.body,
-      ...options
-    }
-    this.lang = datePicker
+  constructor(draw: Draw, options: IDatePickerOption = {}) {
+    this.draw = draw
+    this.options = options
+    this.lang = this._getLang()
     this.now = new Date()
     this.dom = this._createDom()
     this.renderOptions = null
@@ -87,6 +87,7 @@ export class DatePicker {
   private _createDom(): IDatePickerDom {
     const datePickerContainer = document.createElement('div')
     datePickerContainer.classList.add(`${EDITOR_PREFIX}-date-container`)
+    datePickerContainer.setAttribute(EDITOR_COMPONENT, EditorComponent.POPUP)
     // title-切换年月、年月显示
     const dateWrap = document.createElement('div')
     dateWrap.classList.add(`${EDITOR_PREFIX}-date-wrap`)
@@ -181,7 +182,7 @@ export class DatePicker {
     datePickerContainer.append(dateWrap)
     datePickerContainer.append(timeWrap)
     datePickerContainer.append(datePickerMenu)
-    this.options.mountDom!.append(datePickerContainer)
+    this.draw.getContainer().append(datePickerContainer)
     return {
       container: datePickerContainer,
       dateWrap,
@@ -266,13 +267,17 @@ export class DatePicker {
         coordinate: {
           leftTop: [left, top]
         },
-        lineHeight
-      },
-      startTop
+        lineHeight,
+        pageNo
+      }
     } = this.renderOptions
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
+    const currentPageNo = pageNo ?? this.draw.getPageNo()
+    const preY = currentPageNo * (height + pageGap)
     // 位置
     this.dom.container.style.left = `${left}px`
-    this.dom.container.style.top = `${top + (startTop || 0) + lineHeight}px`
+    this.dom.container.style.top = `${top + preY + lineHeight}px`
   }
 
   public isInvalidDate(value: Date): boolean {
@@ -290,7 +295,32 @@ export class DatePicker {
     this.pickDate = new Date(this.now)
   }
 
-  private _setLang() {
+  private _getLang() {
+    const i18n = this.draw.getI18n()
+    const t = i18n.t.bind(i18n)
+    return {
+      now: t('datePicker.now'),
+      confirm: t('datePicker.confirm'),
+      return: t('datePicker.return'),
+      timeSelect: t('datePicker.timeSelect'),
+      weeks: {
+        sun: t('datePicker.weeks.sun'),
+        mon: t('datePicker.weeks.mon'),
+        tue: t('datePicker.weeks.tue'),
+        wed: t('datePicker.weeks.wed'),
+        thu: t('datePicker.weeks.thu'),
+        fri: t('datePicker.weeks.fri'),
+        sat: t('datePicker.weeks.sat')
+      },
+      year: t('datePicker.year'),
+      month: t('datePicker.month'),
+      hour: t('datePicker.hour'),
+      minute: t('datePicker.minute'),
+      second: t('datePicker.second')
+    }
+  }
+
+  private _setLangChange() {
     this.dom.menu.time.innerText = this.lang.timeSelect
     this.dom.menu.now.innerText = this.lang.now
     this.dom.menu.submit.innerText = this.lang.confirm
@@ -505,7 +535,7 @@ export class DatePicker {
 
   private _submit() {
     if (this.options.onSubmit && this.pickDate) {
-      const format = this.renderOptions?.element.dateFormat
+      const format = this.renderOptions?.dateFormat
       const pickDateString = this.formatDate(this.pickDate, format)
       this.options.onSubmit(pickDateString)
     }
@@ -538,10 +568,8 @@ export class DatePicker {
 
   public render(option: IRenderOption) {
     this.renderOptions = option
-    if (this.options.getLang) {
-      this.lang = this.options.getLang()
-      this._setLang()
-    }
+    this.lang = this._getLang()
+    this._setLangChange()
     this._setValue()
     this._update()
     this._setPosition()
@@ -552,5 +580,9 @@ export class DatePicker {
 
   public dispose() {
     this._toggleVisible(false)
+  }
+
+  public destroy() {
+    this.dom.container.remove()
   }
 }
