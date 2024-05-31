@@ -92,7 +92,7 @@ export const richtextKeys: IRegisterShortcut[] = [
     }
   },
   {
-    key: KeyMap.J,
+    key: KeyMap.J_UPPERCASE,
     mod: true,
     shift: true,
     callback: (command: Command) => {

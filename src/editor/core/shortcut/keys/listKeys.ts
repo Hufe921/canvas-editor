@@ -4,7 +4,7 @@ import { IRegisterShortcut } from '../../../interface/shortcut/Shortcut'
 
 export const listKeys: IRegisterShortcut[] = [
   {
-    key: KeyMap.I,
+    key: KeyMap.I_UPPERCASE,
     shift: true,
     mod: true,
     callback: (command: Command) => {
@@ -12,7 +12,7 @@ export const listKeys: IRegisterShortcut[] = [
     }
   },
   {
-    key: KeyMap.U,
+    key: KeyMap.U_UPPERCASE,
     shift: true,
     mod: true,
     callback: (command: Command) => {
