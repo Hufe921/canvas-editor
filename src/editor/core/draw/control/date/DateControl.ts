@@ -327,13 +327,10 @@ export class DateControl implements IControlInstance {
     this.datePicker = new DatePicker(this.draw, {
       onSubmit: this._setDate.bind(this)
     })
-    const range = this.getValueRange()
-    const value = range
-      ? elementList
-          .slice(range[0] + 1, range[1] + 1)
-          .map(el => el.value)
-          .join('')
-      : ''
+    const value =
+      this.getValue()
+        .map(el => el.value)
+        .join('') || ''
     const dateFormat = this.element.control?.dateFormat
     this.datePicker.render({
       value,

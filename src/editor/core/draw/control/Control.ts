@@ -821,19 +821,33 @@ export class Control {
   }
 
   public getList(): IElement[] {
+    const controlElementList: IElement[] = []
+    function getControlElementList(elementList: IElement[]) {
+      for (let e = 0; e < elementList.length; e++) {
+        const element = elementList[e]
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              const tdElement = td.value
+              getControlElementList(tdElement)
+            }
+          }
+        }
+        if (element.controlId) {
+          controlElementList.push(element)
+        }
+      }
+    }
     const data = [
       this.draw.getHeader().getElementList(),
       this.draw.getOriginalMainElementList(),
       this.draw.getFooter().getElementList()
     ]
-    const controlElementList: IElement[] = []
     for (const elementList of data) {
-      for (let e = 0; e < elementList.length; e++) {
-        const element = elementList[e]
-        if (element.controlId) {
-          controlElementList.push(element)
-        }
-      }
+      getControlElementList(elementList)
     }
     return zipElementList(controlElementList)
   }
