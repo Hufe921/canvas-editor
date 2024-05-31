@@ -815,6 +815,70 @@ window.onload = function () {
           }
         })
         break
+      case ControlType.DATE:
+        new Dialog({
+          title: '日期控件',
+          data: [
+            {
+              type: 'text',
+              label: '占位符',
+              name: 'placeholder',
+              required: true,
+              placeholder: '请输入占位符'
+            },
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'value',
+              placeholder: '请输入默认值'
+            },
+            {
+              type: 'select',
+              label: '日期格式',
+              name: 'dateFormat',
+              value: 'yyyy-MM-dd hh:mm:ss',
+              required: true,
+              options: [
+                {
+                  label: 'yyyy-MM-dd hh:mm:ss',
+                  value: 'yyyy-MM-dd hh:mm:ss'
+                },
+                {
+                  label: 'yyyy-MM-dd',
+                  value: 'yyyy-MM-dd'
+                }
+              ]
+            }
+          ],
+          onConfirm: payload => {
+            const placeholder = payload.find(
+              p => p.name === 'placeholder'
+            )?.value
+            if (!placeholder) return
+            const value = payload.find(p => p.name === 'value')?.value || ''
+            const dateFormat =
+              payload.find(p => p.name === 'dateFormat')?.value || ''
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  dateFormat,
+                  value: value
+                    ? [
+                        {
+                          value
+                        }
+                      ]
+                    : null,
+                  placeholder
+                }
+              }
+            ])
+          }
+        })
+        break
       default:
         break
     }
@@ -1667,6 +1731,7 @@ window.onload = function () {
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
+    console.log(instance.command.getControlList())
   }
 
   // 9. 右键菜单注册
