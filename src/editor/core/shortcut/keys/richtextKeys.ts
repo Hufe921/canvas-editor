@@ -5,7 +5,7 @@ import { isApple } from '../../../utils/ua'
 
 export const richtextKeys: IRegisterShortcut[] = [
   {
-    key: KeyMap.X_UPPERCASE,
+    key: KeyMap.X,
     ctrl: true,
     shift: true,
     callback: (command: Command) => {
