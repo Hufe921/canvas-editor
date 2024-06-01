@@ -117,6 +117,7 @@ interface IPageNumber {
   disabled?: boolean // 是否禁用
   startPageNo?: number // 起始页码。默认：1
   fromPageNo?: number // 从第几页开始出现页码。默认：0
+  maxPageNo?: number | null // 最大页码（从0开始）。默认：null
 }
 ```
 

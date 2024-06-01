@@ -1681,7 +1681,10 @@ export class Draw {
 
   private _computePageList(): IRow[][] {
     const pageRowList: IRow[][] = [[]]
-    const { pageMode } = this.options
+    const {
+      pageMode,
+      pageNumber: { maxPageNo }
+    } = this.options
     const height = this.getHeight()
     const marginHeight = this.getMainOuterHeight()
     let pageHeight = marginHeight
@@ -1709,6 +1712,10 @@ export class Draw {
           row.height + pageHeight > height ||
           this.rowList[i - 1]?.isPageBreak
         ) {
+          if (Number.isInteger(maxPageNo) && pageNo >= maxPageNo!) {
+            this.elementList = this.elementList.slice(0, row.startIndex)
+            break
+          }
           pageHeight = marginHeight + row.height
           pageRowList.push([row])
           pageNo++

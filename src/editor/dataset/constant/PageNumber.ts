@@ -17,5 +17,6 @@ export const defaultPageNumberOption: Readonly<Required<IPageNumber>> = {
   numberType: NumberType.ARABIC,
   disabled: false,
   startPageNo: 1,
-  fromPageNo: 0
+  fromPageNo: 0,
+  maxPageNo: null
 }
