@@ -1235,7 +1235,10 @@ export function getElementListByHTML(
           }
         } else if (/H[1-6]/.test(node.nodeName)) {
           const hElement = node as HTMLTitleElement
-          const valueList = getElementListByHTML(hElement.innerHTML, options)
+          const valueList = getElementListByHTML(
+            replaceHTMLElementTag(hElement, 'div').outerHTML,
+            options
+          )
           elementList.push({
             value: '',
             type: ElementType.TITLE,
@@ -1477,4 +1480,17 @@ export function getIsBlockElement(element?: IElement) {
     (BLOCK_ELEMENT_TYPE.includes(element.type) ||
       element.imgDisplay === ImageDisplay.INLINE)
   )
+}
+
+export function replaceHTMLElementTag(
+  oldDom: HTMLElement,
+  tagName: keyof HTMLElementTagNameMap
+): HTMLElement {
+  const newDom = document.createElement(tagName)
+  for (let i = 0; i < oldDom.attributes.length; i++) {
+    const attr = oldDom.attributes[i]
+    newDom.setAttribute(attr.name, attr.value)
+  }
+  newDom.innerHTML = oldDom.innerHTML
+  return newDom
 }

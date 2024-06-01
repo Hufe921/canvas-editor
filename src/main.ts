@@ -1731,7 +1731,6 @@ window.onload = function () {
 
   instance.listener.saved = function (payload) {
     console.log('elementList: ', payload)
-    console.log(instance.command.getControlList())
   }
 
   // 9. 右键菜单注册
