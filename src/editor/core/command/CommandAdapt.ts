@@ -2085,6 +2085,10 @@ export class CommandAdapt {
     if (!~startIndex && !~endIndex) return null
     // 选区信息
     const isCollapsed = startIndex === endIndex
+    const selectionText = this.range.toString()
+    const selectionElementList = zipElementList(
+      this.range.getSelectionElementList() || []
+    )
     // 元素信息
     const elementList = this.draw.getElementList()
     const startElement = pickElementAttr(
@@ -2172,7 +2176,9 @@ export class CommandAdapt {
       isTable,
       trIndex: trIndex ?? null,
       tdIndex: tdIndex ?? null,
-      tableElement
+      tableElement,
+      selectionText,
+      selectionElementList
     })
   }
 
