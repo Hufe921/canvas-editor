@@ -6,6 +6,7 @@ import { I18n } from '../i18n/I18n'
 import { Zone } from './Zone'
 
 export class ZoneTip {
+  private draw: Draw
   private zone: Zone
   private i18n: I18n
   private container: HTMLDivElement
@@ -17,6 +18,7 @@ export class ZoneTip {
   private currentMoveZone: EditorZone | undefined
 
   constructor(draw: Draw, zone: Zone) {
+    this.draw = draw
     this.zone = zone
     this.i18n = draw.getI18n()
     this.container = draw.getContainer()
@@ -45,7 +47,7 @@ export class ZoneTip {
     this.pageContainer.addEventListener(
       'mousemove',
       throttle((evt: MouseEvent) => {
-        if (this.isDisableMouseMove) return
+        if (this.isDisableMouseMove || !this.draw.getIsPagingMode()) return
         if (!evt.offsetY) return
         if (evt.target instanceof HTMLCanvasElement) {
           const mousemoveZone = this.zone.getZoneByY(evt.offsetY)
