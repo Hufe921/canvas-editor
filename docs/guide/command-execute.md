@@ -912,6 +912,16 @@ instance.command.executeSetControlProperties(payload: ISetControlProperties)
 instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
 ```
 
+## executeLocationControl
+
+功能：定位并激活控件
+
+用法：
+
+```javascript
+instance.command.executeLocationControl(controlId: string)
+```
+
 ## executeUpdateOptions
 
 功能：修改配置

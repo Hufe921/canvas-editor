@@ -849,7 +849,9 @@ export class Control {
     for (const elementList of data) {
       getControlElementList(elementList)
     }
-    return zipElementList(controlElementList)
+    return zipElementList(controlElementList, {
+      extraPickAttrs: ['controlId']
+    })
   }
 
   public recordBorderInfo(x: number, y: number, width: number, height: number) {
