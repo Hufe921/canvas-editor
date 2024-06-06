@@ -10,17 +10,20 @@ The official only provides the editor core layer npm package, the menu bar or ot
 
 ## Features
 
-- Rich text operations (Undo, Redo, Font, Size, Bold, Italic, Superscript, Alignment, Title, List, ...)
-- Insert elements (Table, Image, Link, Code Block, Page Break, Math Formula, Date Picker, content Block, ...)
+- Rich text operations (Undo, Redo, Font, Size, Bold, Italic, Underline, Strikeout, Superscript, Alignment, Title, List, ...)
+- Insert elements (Table, Image, Link, Code Block, Page Break, Math Formula, Date Picker, Block, ...)
 - Print (Based on canvas to picture, pdf drawing)
-- Controls (Radio, Text, Checkbox)
+- Controls (Select, Text, Date, Radio, Checkbox)
 - Right-click menu (Internal, Custom)
 - Shortcut keys (Internal, Custom)
-- Text, Element, Control drag and drop
+- Drag and Drop(Text, Element, Control)
 - Header, Footer, Page Number
 - Page Margin
 - Watermark
 - Pagination
+- Comment
+- Catalog
+- [Plugin](https://github.com/Hufe921/canvas-editor-plugin)
 
 ## TODO
 
