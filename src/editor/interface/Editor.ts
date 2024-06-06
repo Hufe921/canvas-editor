@@ -91,11 +91,8 @@ export interface IEditorOption {
 
 export interface IEditorResult {
   version: string
-  width: number
-  height: number
-  margins: IMargin
-  watermark?: IWatermark
   data: IEditorData
+  options: IEditorOption
 }
 
 export interface IEditorHTML {

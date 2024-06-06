@@ -998,9 +998,6 @@ export class Draw {
   }
 
   public getValue(options: IGetValueOption = {}): IEditorResult {
-    // 配置
-    const { width, height, margins, watermark } = this.options
-    // 数据
     const { pageNo } = options
     let mainElementList = this.elementList
     if (
@@ -1019,11 +1016,8 @@ export class Draw {
     }
     return {
       version,
-      width,
-      height,
-      margins,
-      watermark: watermark.data ? watermark : undefined,
-      data
+      data,
+      options: deepClone(this.options)
     }
   }
 
