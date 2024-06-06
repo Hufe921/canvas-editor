@@ -912,6 +912,16 @@ Usage:
 instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
 ```
 
+## executeLocationControl
+
+Feature: Positioning and activating control
+
+Usage:
+
+```javascript
+instance.command.executeLocationControl(controlId: string)
+```
+
 ## executeUpdateOptions
 
 Feature: Update options
@@ -920,4 +930,14 @@ Usage:
 
 ```javascript
 instance.command.executeUpdateOptions(payload: IUpdateOption)
+```
+
+## executeInsertTitle
+
+Feature: Insert title
+
+Usage:
+
+```javascript
+instance.command.executeInsertTitle(payload: IElement)
 ```

@@ -75,8 +75,7 @@ async function init() {
   id = idParam ? Number(idParam) : articleList[0].id
   const article = await getArticleDetail(id)
   name = article.name
-  let options: Partial<Omit<IEditorResult, 'data'>> = {}
-
+  let value: Partial<Omit<IResult, 'data'>> = {}
   let data: IEditorData = {
     main: []
   }
@@ -94,11 +93,14 @@ async function init() {
     if (!Array.isArray(rest.comment)) {
       rest.comment = []
     }
-    options = rest
+    value = rest
   } catch (error) {
     alert('数据格式错误')
   }
-  initEditorInstance(data, options)
+  initEditorInstance(
+    data,
+    value.options ? { ...value.options, comment: value.comment } : value
+  )
 }
 
 function initEditorInstance(
@@ -124,8 +126,7 @@ function initEditorInstance(
       footer: data.footer
     },
     {
-      margins: options.margins || [100, 120, 100, 120],
-      watermark: options.watermark,
+      ...options,
       maskMargin: [60, 0, 30, 0] // 菜单栏高度60，底部工具栏30为遮盖层
     }
   )
@@ -877,6 +878,70 @@ function initEditorInstance(
                   code,
                   value: null,
                   valueSets: JSON.parse(valueSets)
+                }
+              }
+            ])
+          }
+        })
+        break
+      case ControlType.DATE:
+        new Dialog({
+          title: '日期控件',
+          data: [
+            {
+              type: 'text',
+              label: '占位符',
+              name: 'placeholder',
+              required: true,
+              placeholder: '请输入占位符'
+            },
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'value',
+              placeholder: '请输入默认值'
+            },
+            {
+              type: 'select',
+              label: '日期格式',
+              name: 'dateFormat',
+              value: 'yyyy-MM-dd hh:mm:ss',
+              required: true,
+              options: [
+                {
+                  label: 'yyyy-MM-dd hh:mm:ss',
+                  value: 'yyyy-MM-dd hh:mm:ss'
+                },
+                {
+                  label: 'yyyy-MM-dd',
+                  value: 'yyyy-MM-dd'
+                }
+              ]
+            }
+          ],
+          onConfirm: payload => {
+            const placeholder = payload.find(
+              p => p.name === 'placeholder'
+            )?.value
+            if (!placeholder) return
+            const value = payload.find(p => p.name === 'value')?.value || ''
+            const dateFormat =
+              payload.find(p => p.name === 'dateFormat')?.value || ''
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  dateFormat,
+                  value: value
+                    ? [
+                        {
+                          value
+                        }
+                      ]
+                    : null,
+                  placeholder
                 }
               }
             ])

@@ -31,6 +31,8 @@ export type RangeContext = {
   trIndex: number | null
   tdIndex: number | null
   tableElement: IElement | null
+  selectionText: string | null
+  selectionElementList: IElement[]
 }
 
 export interface IRangeParagraphInfo {

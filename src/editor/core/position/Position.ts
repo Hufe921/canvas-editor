@@ -543,7 +543,8 @@ export class Position {
     if (!isLastArea) {
       // 页眉底部距离页面顶部距离
       const header = this.draw.getHeader()
-      const headerBottomY = header.getHeaderTop() + header.getHeight()
+      const headerHeight = header.getHeight()
+      const headerBottomY = header.getHeaderTop() + headerHeight
       // 页脚上部距离页面顶部距离
       const footer = this.draw.getFooter()
       const pageHeight = this.draw.getHeight()
@@ -571,6 +572,51 @@ export class Position {
           return {
             index: -1,
             zone: EditorZone.MAIN
+          }
+        }
+      }
+      // 正文上-循环首行
+      const margins = this.draw.getMargins()
+      if (y <= margins[1]) {
+        for (let p = 0; p < positionList.length; p++) {
+          const position = positionList[p]
+          if (position.pageNo !== positionNo || position.rowNo !== 0) continue
+          const { leftTop, rightTop } = position.coordinate
+          // 小于左页边距 || 命中文字 || 首行最后元素
+          if (
+            x <= margins[3] ||
+            (x >= leftTop[0] && x <= rightTop[0]) ||
+            positionList[p + 1]?.rowNo !== 0
+          ) {
+            return {
+              index: position.index
+            }
+          }
+        }
+      } else {
+        // 正文下-循环尾行
+        const lastLetter = lastLetterList[lastLetterList.length - 1]
+        if (lastLetter) {
+          const lastRowNo = lastLetter.rowNo
+          for (let p = 0; p < positionList.length; p++) {
+            const position = positionList[p]
+            if (
+              position.pageNo !== positionNo ||
+              position.rowNo !== lastRowNo
+            ) {
+              continue
+            }
+            const { leftTop, rightTop } = position.coordinate
+            // 小于左页边距 || 命中文字 || 尾行最后元素
+            if (
+              x <= margins[3] ||
+              (x >= leftTop[0] && x <= rightTop[0]) ||
+              positionList[p + 1]?.rowNo !== lastRowNo
+            ) {
+              return {
+                index: position.index
+              }
+            }
           }
         }
       }

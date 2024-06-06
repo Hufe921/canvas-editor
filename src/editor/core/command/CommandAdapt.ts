@@ -1,5 +1,10 @@
 import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../dataset/constant/Element'
+import {
+  EDITOR_ELEMENT_STYLE_ATTR,
+  EDITOR_ROW_ATTR,
+  LIST_CONTEXT_ATTR,
+  TABLE_CONTEXT_ATTR
+} from '../../dataset/constant/Element'
 import {
   titleOrderNumberMapping,
   titleSizeMapping
@@ -51,6 +56,7 @@ import {
 import { IElement, IElementStyle } from '../../interface/Element'
 import { IPasteOption } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
+import { ILocationPosition } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
 import { IColgroup } from '../../interface/table/Colgroup'
 import { ITd } from '../../interface/table/Td'
@@ -61,7 +67,13 @@ import {
   IGetTitleValueResult
 } from '../../interface/Title'
 import { IWatermark } from '../../interface/Watermark'
-import { deepClone, downloadFile, getUUID, isObjectEqual } from '../../utils'
+import {
+  cloneProperty,
+  deepClone,
+  downloadFile,
+  getUUID,
+  isObjectEqual
+} from '../../utils'
 import {
   createDomFromElementList,
   formatElementContext,
@@ -70,7 +82,8 @@ import {
   pickElementAttr,
   getElementListByHTML,
   getTextFromElementList,
-  zipElementList
+  zipElementList,
+  getAnchorElement
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
 import { printImageBase64 } from '../../utils/print'
@@ -716,6 +729,7 @@ export class CommandAdapt {
       } else {
         if (el.titleId) {
           delete el.titleId
+          delete el.title
           delete el.level
           delete el.size
           delete el.bold
@@ -2072,6 +2086,10 @@ export class CommandAdapt {
     if (!~startIndex && !~endIndex) return null
     // 选区信息
     const isCollapsed = startIndex === endIndex
+    const selectionText = this.range.toString()
+    const selectionElementList = zipElementList(
+      this.range.getSelectionElementList() || []
+    )
     // 元素信息
     const elementList = this.draw.getElementList()
     const startElement = pickElementAttr(
@@ -2159,7 +2177,9 @@ export class CommandAdapt {
       isTable,
       trIndex: trIndex ?? null,
       tdIndex: tdIndex ?? null,
-      tableElement
+      tableElement,
+      selectionText,
+      selectionElementList
     })
   }
 
@@ -2427,6 +2447,85 @@ export class CommandAdapt {
     return this.draw.getControl().getList()
   }
 
+  public locationControl(controlId: string) {
+    function location(
+      elementList: IElement[],
+      zone: EditorZone
+    ): ILocationPosition | null {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              const locationContext = location(td.value, zone)
+              if (locationContext) {
+                return {
+                  ...locationContext,
+                  positionContext: {
+                    isTable: true,
+                    index: i - 1,
+                    trIndex: r,
+                    tdIndex: d,
+                    tdId: element.tdId,
+                    trId: element.trId,
+                    tableId: element.tableId
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (element?.controlId !== controlId) continue
+        const curIndex = i - 1
+        return {
+          zone,
+          range: {
+            startIndex: curIndex,
+            endIndex: curIndex
+          },
+          positionContext: {
+            isTable: false
+          }
+        }
+      }
+      return null
+    }
+    const data = [
+      {
+        zone: EditorZone.HEADER,
+        elementList: this.draw.getHeaderElementList()
+      },
+      {
+        zone: EditorZone.MAIN,
+        elementList: this.draw.getOriginalMainElementList()
+      },
+      {
+        zone: EditorZone.FOOTER,
+        elementList: this.draw.getFooterElementList()
+      }
+    ]
+    for (const context of data) {
+      const locationContext = location(context.elementList, context.zone)
+      if (locationContext) {
+        // 设置区域、上下文、光标信息
+        this.setZone(locationContext.zone)
+        this.position.setPositionContext(locationContext.positionContext)
+        this.range.replaceRange(locationContext.range)
+        this.draw.render({
+          curIndex: locationContext.range.startIndex,
+          isCompute: false,
+          isSubmitHistory: false
+        })
+        break
+      }
+    }
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
@@ -2495,5 +2594,26 @@ export class CommandAdapt {
       getValue(elementList, zone)
     }
     return result
+  }
+
+  public insertTitle(payload: IElement) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const cloneElement = deepClone(payload)
+    // 格式化上下文信息
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const copyElement = getAnchorElement(elementList, startIndex)
+    if (!copyElement) return
+    const cloneAttr = [
+      ...TABLE_CONTEXT_ATTR,
+      ...EDITOR_ROW_ATTR,
+      ...LIST_CONTEXT_ATTR
+    ]
+    cloneElement.valueList?.forEach(valueItem => {
+      cloneProperty<IElement>(cloneAttr, copyElement, valueItem)
+    })
+    // 插入标题
+    this.draw.insertElementList([cloneElement])
   }
 }

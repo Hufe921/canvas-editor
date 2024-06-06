@@ -82,6 +82,7 @@ interface IElement {
       SELECT = 'select',
       CHECKBOX = 'checkbox',
       RADIO = 'radio'
+      DATE = 'date'
     };
     value: IElement[] | null;
     placeholder?: string;
@@ -102,18 +103,7 @@ interface IElement {
       value: string;
       code: string;
     }[];
-    checkbox?: {
-      value: boolean | null;
-      code?: string;
-      min?: number;
-      max?: number;
-      disabled?: boolean;
-    };
-    radio?: {
-      value: boolean | null;
-      code?: string;
-      disabled?: boolean;
-    };
+    dateFormat?: string;
     font?: string;
     size?: number;
     bold?: boolean;
@@ -133,14 +123,10 @@ interface IElement {
   // 复选框
   checkbox?: {
     value: boolean | null;
-    code?: string;
-    disabled?: boolean;
   };
   // 单选框
   radio?: {
     value: boolean | null;
-    code?: string;
-    disabled?: boolean;
   };
   // LaTeX
   laTexSVG?: string;

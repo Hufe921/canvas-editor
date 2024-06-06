@@ -12,7 +12,7 @@ export function tab(evt: KeyboardEvent, host: CanvasEvent) {
   // 在控件上下文时，tab键控制控件之间移动
   const control = draw.getControl()
   const activeControl = control.getActiveControl()
-  if (activeControl) {
+  if (activeControl && control.getIsRangeWithinControl()) {
     control.initNextControl({
       direction: evt.shiftKey ? MoveDirection.UP : MoveDirection.DOWN
     })

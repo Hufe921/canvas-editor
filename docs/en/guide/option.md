@@ -117,6 +117,7 @@ interface IPageNumber {
   disabled?: boolean // Whether to disable
   startPageNo?: number // Start page number.default: 1
   fromPageNo?: number // Page numbers appear from page number.default: 0
+  maxPageNo?: number | null // Max page number（starting from 0）.default: null
 }
 ```
 

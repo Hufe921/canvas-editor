@@ -17,13 +17,9 @@ Usage:
 
 ```javascript
 const {
-  version: string;
-  width: number;
-  height: number;
-  margins: IMargin;
-  header?: IHeader;
-  watermark?: IWatermark;
-  data: IEditorData;
+  version: string
+  data: IEditorData
+  options: IEditorOption
 } = instance.command.getValue(options?: IGetValueOption)
 ```
 

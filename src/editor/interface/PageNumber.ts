@@ -12,4 +12,5 @@ export interface IPageNumber {
   disabled?: boolean
   startPageNo?: number
   fromPageNo?: number
+  maxPageNo?: number | null
 }

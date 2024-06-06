@@ -67,7 +67,7 @@ export class Shortcut {
             evt.metaKey === !!shortCut.meta) &&
         evt.shiftKey === !!shortCut.shift &&
         evt.altKey === !!shortCut.alt &&
-        evt.key === shortCut.key
+        evt.key.toLowerCase() === shortCut.key.toLowerCase()
       ) {
         if (!shortCut.disable) {
           shortCut?.callback?.(this.command)

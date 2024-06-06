@@ -1,4 +1,4 @@
-import { IElement, ImageDisplay } from '..'
+import { IElement, ImageDisplay, IRange } from '..'
 import { EditorZone } from '../dataset/enum/Editor'
 import { IElementPosition } from './Element'
 import { IRow } from './Row'
@@ -92,4 +92,10 @@ export interface IFloatPosition {
   trIndex?: number
   tdValueIndex?: number
   zone?: EditorZone
+}
+
+export interface ILocationPosition {
+  zone: EditorZone
+  range: IRange
+  positionContext: IPositionContext
 }
