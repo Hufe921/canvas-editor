@@ -1,3 +1,32 @@
+## [0.9.81](https://github.com/Hufe921/canvas-editor/compare/v0.9.80...v0.9.81) (2024-06-07)
+
+
+### Bug Fixes
+
+* disable zone tip in continuous page mode #638 ([bf322df](https://github.com/Hufe921/canvas-editor/commit/bf322dfea334ee242a452c44fdb613a1937d963b)), closes [#638](https://github.com/Hufe921/canvas-editor/issues/638)
+* some shortcut keys with shift are invalid #629 ([aca9d34](https://github.com/Hufe921/canvas-editor/commit/aca9d34a46004f2da207f7127f69430e4e59ab25)), closes [#629](https://github.com/Hufe921/canvas-editor/issues/629)
+
+
+### Documentation
+
+* update start.md ([55bbe22](https://github.com/Hufe921/canvas-editor/commit/55bbe22578320319d9ab38b26ebbe8687b21f1c1))
+
+
+### Features
+
+* add executeLocationControl api #592 ([53701fc](https://github.com/Hufe921/canvas-editor/commit/53701fc46c347595722801e8bca40647cda74bcb)), closes [#592](https://github.com/Hufe921/canvas-editor/issues/592)
+* add maximum page number option #617 ([afce688](https://github.com/Hufe921/canvas-editor/commit/afce6882493c198595a0575640dd313c8cbdb14f)), closes [#617](https://github.com/Hufe921/canvas-editor/issues/617)
+* add options to the getValue api ([65acd58](https://github.com/Hufe921/canvas-editor/commit/65acd580d6813bd15b8ee079b16ae8d5f9e77767))
+* add selection info to rangeContext ([2df03ed](https://github.com/Hufe921/canvas-editor/commit/2df03ed3867cf8edf5fb656c017986af6725780c))
+* set title style through executeSetHtml api #626 ([ac795b0](https://github.com/Hufe921/canvas-editor/commit/ac795b0bc45f99e92a5292a676414e1d7347cb7e)), closes [#626](https://github.com/Hufe921/canvas-editor/issues/626)
+
+
+### Tests
+
+* update watermark test case ([c75482a](https://github.com/Hufe921/canvas-editor/commit/c75482a4f6f18da010963500e790780a63c061c4))
+
+
+
 ## [0.9.80](https://github.com/Hufe921/canvas-editor/compare/v0.9.79...v0.9.80) (2024-05-31)
 
 
