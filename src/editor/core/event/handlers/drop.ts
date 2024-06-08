@@ -2,6 +2,13 @@ import { CanvasEvent } from '../CanvasEvent'
 import { pasteImage } from './paste'
 
 export function drop(evt: DragEvent, host: CanvasEvent) {
+  const draw = host.getDraw()
+  // 自定义拖放事件
+  const { drop } = draw.getOverride()
+  if (drop) {
+    drop(evt)
+    return
+  }
   evt.preventDefault()
   const data = evt.dataTransfer?.getData('text')
   if (data) {
