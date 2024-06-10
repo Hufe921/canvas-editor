@@ -179,6 +179,23 @@ export class Control {
     return false
   }
 
+  // 是否元素包含完整控件元素
+  public getIsElementListContainFullControl(elementList: IElement[]): boolean {
+    if (!elementList.some(element => element.controlId)) return false
+    let prefixCount = 0
+    let postfixCount = 0
+    for (let e = 0; e < elementList.length; e++) {
+      const element = elementList[e]
+      if (element.controlComponent === ControlComponent.PREFIX) {
+        prefixCount++
+      } else if (element.controlComponent === ControlComponent.POSTFIX) {
+        postfixCount++
+      }
+    }
+    if (!prefixCount || !postfixCount) return false
+    return prefixCount === postfixCount
+  }
+
   public getIsDisabledControl(): boolean {
     return !!this.activeControl?.getElement().control?.disabled
   }
