@@ -292,8 +292,7 @@ export class TableParticle {
   public computeRowColInfo(element: IElement) {
     const { colgroup, trList } = element
     if (!colgroup || !trList) return
-    let x = 0
-    let y = 0
+    let preX = 0
     for (let t = 0; t < trList.length; t++) {
       const tr = trList[t]
       // 表格最后一行
@@ -320,7 +319,7 @@ export class TableParticle {
               for (let preC = 0; preC < c; preC++) {
                 preColWidth += colgroup[preC].width
               }
-              x = preColWidth
+              preX = preColWidth
               break
             }
           }
@@ -360,18 +359,32 @@ export class TableParticle {
         td.isLastColTd = isLastColTd
         td.isLastTd = isLastTd
         // 修改当前格clientBox
-        td.x = x
-        td.y = y
+        td.x = preX
+        // 之前行相同列的高度
+        let preY = 0
+        for (let preR = 0; preR < t; preR++) {
+          const preTdList = trList[preR].tdList
+          for (let preD = 0; preD < preTdList.length; preD++) {
+            const td = preTdList[preD]
+            if (
+              colIndex >= td.colIndex! &&
+              colIndex < td.colIndex! + td.colspan
+            ) {
+              preY += td.height!
+              break
+            }
+          }
+        }
+        td.y = preY
         td.width = width
         td.height = height
         td.rowIndex = t
         td.colIndex = colIndex
         // 当前列x轴累加
-        x += width
+        preX += width
         // 一行中的最后td
         if (isLastRowTd && !isLastTd) {
-          x = 0
-          y += rowMinHeight
+          preX = 0
         }
       }
     }

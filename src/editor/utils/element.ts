@@ -1350,9 +1350,7 @@ export function getElementListByHTML(
               }
               tr.tdList.push(td)
             })
-            if (tr.tdList.length) {
-              element.trList!.push(tr)
-            }
+            element.trList!.push(tr)
           })
           if (element.trList!.length) {
             // 列选项数据
