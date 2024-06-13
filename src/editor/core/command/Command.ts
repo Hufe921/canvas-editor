@@ -76,6 +76,7 @@ export class Command {
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeAppendElementList: CommandAdapt['appendElementList']
+  public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeSetValue: CommandAdapt['setValue']
   public executeRemoveControl: CommandAdapt['removeControl']
   public executeSetLocale: CommandAdapt['setLocale']
@@ -198,6 +199,7 @@ export class Command {
     // 通用
     this.executeInsertElementList = adapt.insertElementList.bind(adapt)
     this.executeAppendElementList = adapt.appendElementList.bind(adapt)
+    this.executeUpdateElementById = adapt.updateElementById.bind(adapt)
     this.executeSetValue = adapt.setValue.bind(adapt)
     this.executeRemoveControl = adapt.removeControl.bind(adapt)
     this.executeSetLocale = adapt.setLocale.bind(adapt)

@@ -772,6 +772,16 @@ Usage:
 instance.command.executeAppendElementList(elementList: IElement[], options?: IAppendElementListOption)
 ```
 
+## executeUpdateElementById
+
+Feature: Update element by id
+
+Usage:
+
+```javascript
+instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
+```
+
 ## executeSetValue
 
 Feature: Set the editor data

@@ -772,6 +772,16 @@ instance.command.executeInsertElementList(elementList: IElement[])
 instance.command.executeAppendElementList(elementList: IElement[], options?: IAppendElementListOption)
 ```
 
+## executeUpdateElementById
+
+功能：根据 id 修改元素属性
+
+用法：
+
+```javascript
+instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
+```
+
 ## executeSetValue
 
 功能：设置编辑器数据

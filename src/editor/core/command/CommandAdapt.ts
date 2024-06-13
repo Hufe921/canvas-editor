@@ -53,7 +53,11 @@ import {
   IEditorText,
   IUpdateOption
 } from '../../interface/Editor'
-import { IElement, IElementStyle } from '../../interface/Element'
+import {
+  IElement,
+  IElementStyle,
+  IUpdateElementByIdOption
+} from '../../interface/Element'
 import { IPasteOption } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
@@ -2093,9 +2097,14 @@ export class CommandAdapt {
     // 元素信息
     const elementList = this.draw.getElementList()
     const startElement = pickElementAttr(
-      elementList[isCollapsed ? startIndex : startIndex + 1]
+      elementList[isCollapsed ? startIndex : startIndex + 1],
+      {
+        extraPickAttrs: ['id']
+      }
     )
-    const endElement = pickElementAttr(elementList[endIndex])
+    const endElement = pickElementAttr(elementList[endIndex], {
+      extraPickAttrs: ['id']
+    })
     // 页码信息
     const positionList = this.position.getPositionList()
     const startPageNo = positionList[startIndex].pageNo
@@ -2260,6 +2269,42 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     this.draw.appendElementList(deepClone(elementList), options)
+  }
+
+  public updateElementById(payload: IUpdateElementByIdOption) {
+    function getElementIndexById(elementList: IElement[]): number {
+      for (let e = 0; e < elementList.length; e++) {
+        const element = elementList[e]
+        if (element.id === payload.id) {
+          return e
+        }
+      }
+      return -1
+    }
+    // 优先正文再页眉页脚
+    const getElementListFnList = [
+      this.draw.getOriginalMainElementList,
+      this.draw.getHeaderElementList,
+      this.draw.getFooterElementList
+    ]
+    for (const getElementList of getElementListFnList) {
+      const elementList = getElementList.call(this.draw)
+      const elementIndex = getElementIndexById(elementList)
+      if (~elementIndex) {
+        elementList[elementIndex] = {
+          ...elementList[elementIndex],
+          ...payload.properties
+        }
+        formatElementList([elementList[elementIndex]], {
+          isHandleFirstElement: false,
+          editorOptions: this.options
+        })
+        this.draw.render({
+          isSetCursor: false
+        })
+        break
+      }
+    }
   }
 
   public setValue(payload: Partial<IEditorData>) {
