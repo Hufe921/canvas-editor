@@ -136,14 +136,25 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       }
     }
     // 格式化元素
-    const editorOptions = draw.getOptions()
+    const control = draw.getControl()
     const elementList = draw.getElementList()
+    // 是否排除控件属性（1.不包含控件 2.新位置在控件内 3.选区不包含完整控件）
+    const isOmitControlAttr =
+      !isContainControl ||
+      !!elementList[range.startIndex].controlId ||
+      !control.getIsElementListContainFullControl(dragElementList)
+    const editorOptions = draw.getOptions()
+    // 元素属性复制（1.文本提取样式及相关上下文 2.非文本排除相关上下文）
     const replaceElementList = dragElementList.map(el => {
       if (!el.type || el.type === ElementType.TEXT) {
         const newElement: IElement = {
           value: el.value
         }
-        EDITOR_ELEMENT_STYLE_ATTR.forEach(attr => {
+        const copyAttr = EDITOR_ELEMENT_STYLE_ATTR
+        if (!isOmitControlAttr) {
+          copyAttr.push(...CONTROL_CONTEXT_ATTR)
+        }
+        copyAttr.forEach(attr => {
           const value = el[attr] as never
           if (value !== undefined) {
             newElement[attr] = value
@@ -151,8 +162,10 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         })
         return newElement
       } else {
-        // 移除控件上下文属性
-        const newElement = omitObject(deepClone(el), CONTROL_CONTEXT_ATTR)
+        let newElement = deepClone(el)
+        if (isOmitControlAttr) {
+          newElement = omitObject(newElement, CONTROL_CONTEXT_ATTR)
+        }
         formatElementList([newElement], {
           isHandleFirstElement: false,
           editorOptions
@@ -170,7 +183,6 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const replaceLength = replaceElementList.length
     let rangeStart = range.startIndex
     let rangeEnd = rangeStart + replaceLength
-    const control = draw.getControl()
     const activeControl = control.getActiveControl()
     if (
       activeControl &&

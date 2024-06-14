@@ -28,3 +28,13 @@ instance.override.paste = (evt?: ClipboardEvent) => void
 ```javascript
 instance.override.copy = () => void
 ```
+
+## drop
+
+功能：重写拖放方法
+
+用法：
+
+```javascript
+instance.override.drop = (evt: DragEvent) => void
+```

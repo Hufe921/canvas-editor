@@ -28,3 +28,13 @@ Usage:
 ```javascript
 instance.override.copy = () => void
 ```
+
+## drop
+
+Feature: Override internal drop function
+
+Usage:
+
+```javascript
+instance.override.drop = (evt: DragEvent) => void
+```

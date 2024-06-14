@@ -30,7 +30,9 @@ describe('菜单-水印', () => {
         .then(() => {
           const payload = editor.command.getValue()
 
-          const { watermark } = payload
+          const {
+            options: { watermark }
+          } = payload
 
           expect(watermark?.data).to.eq(text)
 
@@ -49,11 +51,13 @@ describe('菜单-水印', () => {
         .then(() => {
           const payload = editor.command.getValue()
 
-          const { watermark } = payload
+          const {
+            options: { watermark }
+          } = payload
 
-          expect(watermark?.data).to.eq(undefined)
+          expect(watermark?.data).to.eq('')
 
-          expect(watermark?.size).to.eq(undefined)
+          expect(watermark?.size).to.eq(200)
         })
     })
   })
