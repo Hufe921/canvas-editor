@@ -1,3 +1,19 @@
+## [0.9.82](https://github.com/Hufe921/canvas-editor/compare/v0.9.81...v0.9.82) (2024-06-14)
+
+
+### Bug Fixes
+
+* table cell merge boundary error #645 ([f7da332](https://github.com/Hufe921/canvas-editor/commit/f7da33235419aadb2aea024d3cba4444d6d719fd)), closes [#645](https://github.com/Hufe921/canvas-editor/issues/645)
+
+
+### Features
+
+* add executeUpdateElementById api #648 ([5c896bf](https://github.com/Hufe921/canvas-editor/commit/5c896bf95814c6ef2956221763e7df560b3fe98a)), closes [#648](https://github.com/Hufe921/canvas-editor/issues/648)
+* add override internal drop function api #643 ([ec7e076](https://github.com/Hufe921/canvas-editor/commit/ec7e0760c113711fdafc13374ea521605308f867)), closes [#643](https://github.com/Hufe921/canvas-editor/issues/643)
+* move control position by dragging #456 ([cdb0788](https://github.com/Hufe921/canvas-editor/commit/cdb0788dfcecadb70e680eb40a31551e0e096401)), closes [#456](https://github.com/Hufe921/canvas-editor/issues/456)
+
+
+
 ## [0.9.81](https://github.com/Hufe921/canvas-editor/compare/v0.9.80...v0.9.81) (2024-06-07)
 
 
