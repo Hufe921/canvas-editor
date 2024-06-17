@@ -249,6 +249,14 @@ export class RangeManager {
     return this.getRangeParagraphInfo()?.elementList || null
   }
 
+  // 获取选区表格
+  public getRangeTableElement(): IElement | null {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return null
+    const originalElementList = this.draw.getOriginalElementList()
+    return originalElementList[positionContext.index!]
+  }
+
   public getIsSelectAll() {
     const elementList = this.draw.getElementList()
     const { startIndex, endIndex } = this.range
