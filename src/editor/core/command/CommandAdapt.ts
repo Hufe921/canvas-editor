@@ -323,13 +323,9 @@ export class CommandAdapt {
     }
     if (!changeElementList.length) return
     changeElementList.forEach(el => {
-      delete el.size
-      delete el.font
-      delete el.color
-      delete el.bold
-      delete el.italic
-      delete el.underline
-      delete el.strikeout
+      EDITOR_ELEMENT_STYLE_ATTR.forEach(attr => {
+        delete el[attr]
+      })
     })
     this.draw.render(renderOption)
   }
