@@ -61,6 +61,7 @@ interface IElement {
     tdList: {
       colspan: number;
       rowspan: number;
+      conceptId?: string;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
       borderTypes?: TdBorder[];

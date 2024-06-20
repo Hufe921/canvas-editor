@@ -4,6 +4,7 @@ import { IElement, IElementPosition } from '../Element'
 import { IRow } from '../Row'
 
 export interface ITd {
+  conceptId?: string
   id?: string
   x?: number
   y?: number
