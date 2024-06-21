@@ -55,10 +55,11 @@ import {
 } from '../../interface/Editor'
 import {
   IElement,
+  IElementPosition,
   IElementStyle,
   IUpdateElementByIdOption
 } from '../../interface/Element'
-import { IPasteOption } from '../../interface/Event'
+import { IPasteOption, IPositionContextByEvent } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
@@ -102,6 +103,7 @@ import { I18n } from '../i18n/I18n'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
+import { Zone } from '../zone/Zone'
 
 export class CommandAdapt {
   private draw: Draw
@@ -115,6 +117,7 @@ export class CommandAdapt {
   private workerManager: WorkerManager
   private searchManager: Search
   private i18n: I18n
+  private zone: Zone
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -128,6 +131,7 @@ export class CommandAdapt {
     this.workerManager = draw.getWorkerManager()
     this.searchManager = draw.getSearch()
     this.i18n = draw.getI18n()
+    this.zone = draw.getZone()
   }
 
   public mode(payload: EditorMode) {
@@ -2635,6 +2639,65 @@ export class CommandAdapt {
       getValue(elementList, zone)
     }
     return result
+  }
+
+  public getPositionContextByEvent(
+    evt: MouseEvent
+  ): IPositionContextByEvent | null {
+    const pageIndex = (<HTMLElement>evt.target)?.dataset.index
+    if (!pageIndex) return null
+    const pageNo = Number(pageIndex)
+    const positionContext = this.position.getPositionByXY({
+      x: evt.offsetX,
+      y: evt.offsetY,
+      pageNo
+    })
+    const {
+      isDirectHit,
+      isTable,
+      index,
+      trIndex,
+      tdIndex,
+      tdValueIndex,
+      zone
+    } = positionContext
+    // 非直接命中或选区不一致时返回空值
+    if (!isDirectHit || (zone && zone !== this.zone.getZone())) return null
+    // 命中元素信息
+    let element: IElement | null = null
+    const elementList = this.draw.getOriginalElementList()
+    let position: IElementPosition | null = null
+    const positionList = this.position.getOriginalPositionList()
+    if (isTable) {
+      const td = elementList[index!].trList?.[trIndex!].tdList[tdIndex!]
+      element = td?.value[tdValueIndex!] || null
+      position = td?.positionList?.[tdValueIndex!] || null
+    } else {
+      element = elementList[index] || null
+      position = positionList[index] || null
+    }
+    // 元素包围信息
+    let rangeRect: RangeRect | null = null
+    if (position) {
+      const {
+        pageNo,
+        coordinate: { leftTop, rightTop },
+        lineHeight
+      } = position
+      const height = this.draw.getOriginalHeight()
+      const pageGap = this.draw.getOriginalPageGap()
+      rangeRect = {
+        x: leftTop[0],
+        y: leftTop[1] + pageNo * (height + pageGap),
+        width: rightTop[0] - leftTop[0],
+        height: lineHeight
+      }
+    }
+    return {
+      pageNo,
+      element,
+      rangeRect
+    }
   }
 
   public insertTitle(payload: IElement) {

@@ -383,6 +383,7 @@ export class Position {
                 x,
                 y,
                 td,
+                pageNo: curPageNo,
                 tablePosition: positionList[j],
                 isTable: true,
                 elementList: td.value,
@@ -460,6 +461,7 @@ export class Position {
           }
         }
         return {
+          isDirectHit: true,
           hitLineStartIndex,
           index: curPositionIndex,
           isControl: !!element.controlId

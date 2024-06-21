@@ -43,9 +43,10 @@ export class CursorAgent {
     this.canvasEvent.keydown(evt)
   }
 
-  private _input(evt: InputEvent) {
-    if (!evt.data) return
-    this.canvasEvent.input(evt.data)
+  private _input(evt: Event) {
+    const data = (<InputEvent>evt).data
+    if (!data) return
+    this.canvasEvent.input(data)
   }
 
   private _paste(evt: ClipboardEvent) {

@@ -54,3 +54,5 @@ export type IControlChange = (payload: IControl | null) => void
 export type IPageModeChange = (payload: PageMode) => void
 
 export type IZoneChange = (payload: EditorZone) => void
+
+export type IMouseEventChange = (evt: MouseEvent) => void

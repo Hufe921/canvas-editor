@@ -99,6 +99,7 @@ import { Override } from '../override/Override'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
+import { MouseObserver } from '../observer/MouseObserver'
 
 export class Draw {
   private container: HTMLDivElement
@@ -231,6 +232,7 @@ export class Draw {
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
     this.imageObserver = new ImageObserver()
+    new MouseObserver(this)
 
     this.canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, this.canvasEvent)
