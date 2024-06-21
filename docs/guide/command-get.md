@@ -242,3 +242,29 @@ const {
   zone: EditorZone
 }[] = await instance.command.getTitleValue(payload: IGetTitleValueOption)
 ```
+
+## getPositionContextByEvent
+
+功能：获取位置上下文信息通过鼠标事件
+
+用法：
+
+```javascript
+const {
+  pageNo: number
+  element: IElement | null
+  rangeRect: RangeRect | null
+}[] = await instance.command.getPositionContextByEvent(evt: MouseEvent)
+```
+
+示例：
+
+```javascript
+instance.eventBus.on(
+  'mousemove',
+  debounce(evt => {
+    const positionContext = instance.command.getPositionContextByEvent(evt)
+    console.log(positionContext)
+  }, 200)
+)``
+```

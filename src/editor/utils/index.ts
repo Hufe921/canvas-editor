@@ -1,8 +1,11 @@
 import { UNICODE_SYMBOL_REG } from '../dataset/constant/Regular'
 
-export function debounce(func: Function, delay: number) {
+export function debounce<T extends unknown[]>(
+  func: (...arg: T) => unknown,
+  delay: number
+) {
   let timer: number
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, ...args: T) {
     if (timer) {
       window.clearTimeout(timer)
     }
@@ -12,10 +15,13 @@ export function debounce(func: Function, delay: number) {
   }
 }
 
-export function throttle(func: Function, delay: number) {
+export function throttle<T extends unknown[]>(
+  func: (...arg: T) => unknown,
+  delay: number
+) {
   let lastExecTime = 0
   let timer: number
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, ...args: T) {
     const currentTime = Date.now()
     if (currentTime - lastExecTime >= delay) {
       window.clearTimeout(timer)
