@@ -1,3 +1,20 @@
+## [0.9.83](https://github.com/Hufe921/canvas-editor/compare/v0.9.82...v0.9.83) (2024-06-21)
+
+
+### Bug Fixes
+
+* executeSetControlProperties api invalid in table #653 ([fdcf639](https://github.com/Hufe921/canvas-editor/commit/fdcf6397e1ce62ef1ed18a526a0642c3f120df3b)), closes [#653](https://github.com/Hufe921/canvas-editor/issues/653)
+
+
+### Features
+
+* add clear format attributes ([e21533a](https://github.com/Hufe921/canvas-editor/commit/e21533a3d1cfeecde562aaa6c52ee306e5063a01))
+* add conceptId attribute to table td #654 ([959a062](https://github.com/Hufe921/canvas-editor/commit/959a062f830042b78af498e2d6cbc4e5f82fa3d4)), closes [#654](https://github.com/Hufe921/canvas-editor/issues/654)
+* add mouse event listener #603 ([a2978bd](https://github.com/Hufe921/canvas-editor/commit/a2978bd1f507e9417b995bbb0b7ff756dbe5d2c4)), closes [#603](https://github.com/Hufe921/canvas-editor/issues/603)
+* copy table structure and data #516 ([76c20a6](https://github.com/Hufe921/canvas-editor/commit/76c20a6b44914396ae7dd69a7c97db1b179937c2)), closes [#516](https://github.com/Hufe921/canvas-editor/issues/516)
+
+
+
 ## [0.9.82](https://github.com/Hufe921/canvas-editor/compare/v0.9.81...v0.9.82) (2024-06-14)
 
 
