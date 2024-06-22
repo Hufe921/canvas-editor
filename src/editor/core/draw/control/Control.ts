@@ -42,6 +42,7 @@ import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 import { DateControl } from './date/DateControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
+import { CONTROL_STYLE_ATTR } from '../../../dataset/constant/Element'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -815,6 +816,13 @@ export class Control {
           ...properties,
           value: element.control.value
         }
+        // 控件默认样式
+        CONTROL_STYLE_ATTR.forEach(key => {
+          const controlStyleProperty = properties[key]
+          if (controlStyleProperty) {
+            Reflect.set(element, key, controlStyleProperty)
+          }
+        })
         // 修改后控件结束索引
         let newEndIndex = i
         while (newEndIndex < elementList.length) {
