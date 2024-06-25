@@ -1355,9 +1355,15 @@ export class CommandAdapt {
         d++
       }
     }
-    // 重新渲染
-    const curIndex = startTd.value.length - 1
+    // 设置上下文信息
+    this.position.setPositionContext({
+      ...positionContext,
+      trIndex: anchorTd.trIndex,
+      tdIndex: anchorTd.tdIndex
+    })
+    const curIndex = anchorTd.value.length - 1
     this.range.setRange(curIndex, curIndex)
+    // 重新渲染
     this.draw.render()
     this.tableTool.render()
   }

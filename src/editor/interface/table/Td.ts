@@ -13,6 +13,8 @@ export interface ITd {
   colspan: number
   rowspan: number
   value: IElement[]
+  trIndex?: number
+  tdIndex?: number
   isLastRowTd?: boolean
   isLastColTd?: boolean
   isLastTd?: boolean
