@@ -326,3 +326,7 @@ export function isObjectEqual(obj1: unknown, obj2: unknown): boolean {
   }
   return !obj1Keys.some(key => obj2[key] !== obj1[key])
 }
+
+export function isPromiseFunction(fn: Function): boolean {
+  return fn?.constructor?.name === 'AsyncFunction'
+}
