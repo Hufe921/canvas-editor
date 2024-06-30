@@ -1,3 +1,19 @@
+## [0.9.84](https://github.com/Hufe921/canvas-editor/compare/v0.9.83...v0.9.84) (2024-06-30)
+
+
+### Bug Fixes
+
+* merge table cell boundary error #661 ([146ac75](https://github.com/Hufe921/canvas-editor/commit/146ac75a002338f13c96900a2849062c29018606)), closes [#661](https://github.com/Hufe921/canvas-editor/issues/661)
+* set default style for control using executeSetControlProperties #658 ([7b5079c](https://github.com/Hufe921/canvas-editor/commit/7b5079c9b638730f7ea609239b3cb91b915d4650)), closes [#658](https://github.com/Hufe921/canvas-editor/issues/658)
+
+
+### Features
+
+* optimization of table operations in form mode #662 ([b740637](https://github.com/Hufe921/canvas-editor/commit/b74063741f413d5bf6f90c748761f64141405ca7)), closes [#662](https://github.com/Hufe921/canvas-editor/issues/662)
+* override method with default interception behavior #663 ([9a4b4f9](https://github.com/Hufe921/canvas-editor/commit/9a4b4f9a4a70a344740212507e250d9bdea5dd32)), closes [#663](https://github.com/Hufe921/canvas-editor/issues/663)
+
+
+
 ## [0.9.83](https://github.com/Hufe921/canvas-editor/compare/v0.9.82...v0.9.83) (2024-06-21)
 
 
