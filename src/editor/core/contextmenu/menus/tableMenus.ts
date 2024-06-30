@@ -1,4 +1,5 @@
 import { INTERNAL_CONTEXT_MENU_KEY } from '../../../dataset/constant/ContextMenu'
+import { EditorMode } from '../../../dataset/enum/Editor'
 import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
 import {
   TableBorder,
@@ -47,7 +48,11 @@ export const tableMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.table.border',
     icon: 'border-all',
     when: payload => {
-      return !payload.isReadonly && payload.isInTable
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
     },
     childMenus: [
       {
@@ -146,7 +151,11 @@ export const tableMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.table.verticalAlign',
     icon: 'vertical-align',
     when: payload => {
-      return !payload.isReadonly && payload.isInTable
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
     },
     childMenus: [
       {
@@ -183,7 +192,11 @@ export const tableMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.table.insertRowCol',
     icon: 'insert-row-col',
     when: payload => {
-      return !payload.isReadonly && payload.isInTable
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
     },
     childMenus: [
       {
@@ -229,7 +242,11 @@ export const tableMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.table.deleteRowCol',
     icon: 'delete-row-col',
     when: payload => {
-      return !payload.isReadonly && payload.isInTable
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
     },
     childMenus: [
       {
@@ -266,7 +283,11 @@ export const tableMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.table.mergeCell',
     icon: 'merge-cell',
     when: payload => {
-      return !payload.isReadonly && payload.isCrossRowCol
+      return (
+        !payload.isReadonly &&
+        payload.isCrossRowCol &&
+        payload.options.mode !== EditorMode.FORM
+      )
     },
     callback: (command: Command) => {
       command.executeMergeTableCell()
@@ -277,7 +298,11 @@ export const tableMenus: IRegisterContextMenu[] = [
     i18nPath: 'contextmenu.table.mergeCancelCell',
     icon: 'merge-cancel-cell',
     when: payload => {
-      return !payload.isReadonly && payload.isInTable
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
     },
     callback: (command: Command) => {
       command.executeCancelMergeTableCell()

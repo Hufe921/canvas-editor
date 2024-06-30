@@ -241,3 +241,29 @@ const {
   zone: EditorZone
 }[] = await instance.command.getTitleValue(payload: IGetTitleValueOption)
 ```
+
+## getPositionContextByEvent
+
+Feature: Get position context by mouse event
+
+Usage:
+
+```javascript
+const {
+  pageNo: number
+  element: IElement | null
+  rangeRect: RangeRect | null
+}[] = await instance.command.getPositionContextByEvent(evt: MouseEvent)
+```
+
+demo:
+
+```javascript
+instance.eventBus.on(
+  'mousemove',
+  debounce(evt => {
+    const positionContext = instance.command.getPositionContextByEvent(evt)
+    console.log(positionContext)
+  }, 200)
+)``
+```

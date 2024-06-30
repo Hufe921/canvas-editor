@@ -119,3 +119,33 @@ Usage:
 ```javascript
 instance.eventBus.on('zoneChange', (payload: EditorZone) => void)
 ```
+
+## mousemove
+
+Feature: Editor mousemove event
+
+Usage:
+
+```javascript
+instance.eventBus.on('mousemove', (evt: MouseEvent) => void)
+```
+
+## mouseenter
+
+Feature: Editor mouseenter event
+
+Usage:
+
+```javascript
+instance.eventBus.on('mouseenter', (evt: MouseEvent) => void)
+```
+
+## mouseleave
+
+Feature: Editor mouseleave event
+
+Usage:
+
+```javascript
+instance.eventBus.on('mouseleave', (evt: MouseEvent) => void)
+```

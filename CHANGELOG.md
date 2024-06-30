@@ -1,3 +1,36 @@
+## [0.9.84](https://github.com/Hufe921/canvas-editor/compare/v0.9.83...v0.9.84) (2024-06-30)
+
+
+### Bug Fixes
+
+* merge table cell boundary error #661 ([146ac75](https://github.com/Hufe921/canvas-editor/commit/146ac75a002338f13c96900a2849062c29018606)), closes [#661](https://github.com/Hufe921/canvas-editor/issues/661)
+* set default style for control using executeSetControlProperties #658 ([7b5079c](https://github.com/Hufe921/canvas-editor/commit/7b5079c9b638730f7ea609239b3cb91b915d4650)), closes [#658](https://github.com/Hufe921/canvas-editor/issues/658)
+
+
+### Features
+
+* optimization of table operations in form mode #662 ([b740637](https://github.com/Hufe921/canvas-editor/commit/b74063741f413d5bf6f90c748761f64141405ca7)), closes [#662](https://github.com/Hufe921/canvas-editor/issues/662)
+* override method with default interception behavior #663 ([9a4b4f9](https://github.com/Hufe921/canvas-editor/commit/9a4b4f9a4a70a344740212507e250d9bdea5dd32)), closes [#663](https://github.com/Hufe921/canvas-editor/issues/663)
+
+
+
+## [0.9.83](https://github.com/Hufe921/canvas-editor/compare/v0.9.82...v0.9.83) (2024-06-21)
+
+
+### Bug Fixes
+
+* executeSetControlProperties api invalid in table #653 ([fdcf639](https://github.com/Hufe921/canvas-editor/commit/fdcf6397e1ce62ef1ed18a526a0642c3f120df3b)), closes [#653](https://github.com/Hufe921/canvas-editor/issues/653)
+
+
+### Features
+
+* add clear format attributes ([e21533a](https://github.com/Hufe921/canvas-editor/commit/e21533a3d1cfeecde562aaa6c52ee306e5063a01))
+* add conceptId attribute to table td #654 ([959a062](https://github.com/Hufe921/canvas-editor/commit/959a062f830042b78af498e2d6cbc4e5f82fa3d4)), closes [#654](https://github.com/Hufe921/canvas-editor/issues/654)
+* add mouse event listener #603 ([a2978bd](https://github.com/Hufe921/canvas-editor/commit/a2978bd1f507e9417b995bbb0b7ff756dbe5d2c4)), closes [#603](https://github.com/Hufe921/canvas-editor/issues/603)
+* copy table structure and data #516 ([76c20a6](https://github.com/Hufe921/canvas-editor/commit/76c20a6b44914396ae7dd69a7c97db1b179937c2)), closes [#516](https://github.com/Hufe921/canvas-editor/issues/516)
+
+
+
 ## [0.9.82](https://github.com/Hufe921/canvas-editor/compare/v0.9.81...v0.9.82) (2024-06-14)
 
 

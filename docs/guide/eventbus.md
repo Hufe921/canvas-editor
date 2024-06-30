@@ -119,3 +119,33 @@ instance.eventBus.on('saved', (payload: IEditorResult) => void)
 ```javascript
 instance.eventBus.on('zoneChange', (payload: EditorZone) => void)
 ```
+
+## mousemove
+
+功能：编辑器 mousemove 事件监听
+
+用法：
+
+```javascript
+instance.eventBus.on('mousemove', (evt: MouseEvent) => void)
+```
+
+## mouseenter
+
+功能：编辑器 mouseenter 事件监听
+
+用法：
+
+```javascript
+instance.eventBus.on('mouseenter', (evt: MouseEvent) => void)
+```
+
+## mouseleave
+
+功能：编辑器 mouseleave 事件监听
+
+用法：
+
+```javascript
+instance.eventBus.on('mouseleave', (evt: MouseEvent) => void)
+```

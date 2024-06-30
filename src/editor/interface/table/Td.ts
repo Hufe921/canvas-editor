@@ -4,6 +4,7 @@ import { IElement, IElementPosition } from '../Element'
 import { IRow } from '../Row'
 
 export interface ITd {
+  conceptId?: string
   id?: string
   x?: number
   y?: number
@@ -12,6 +13,8 @@ export interface ITd {
   colspan: number
   rowspan: number
   value: IElement[]
+  trIndex?: number
+  tdIndex?: number
   isLastRowTd?: boolean
   isLastColTd?: boolean
   isLastTd?: boolean

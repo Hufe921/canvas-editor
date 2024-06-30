@@ -42,6 +42,7 @@ import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 import { DateControl } from './date/DateControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
+import { CONTROL_STYLE_ATTR } from '../../../dataset/constant/Element'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -793,17 +794,21 @@ export class Control {
     if (isReadonly) return
     const { conceptId, properties } = payload
     let isExistUpdate = false
-    const pageComponentData: IEditorData = {
-      header: this.draw.getHeaderElementList(),
-      main: this.draw.getOriginalMainElementList(),
-      footer: this.draw.getFooterElementList()
-    }
-    for (const key in pageComponentData) {
-      const elementList = pageComponentData[<keyof IEditorData>key]!
+    function setProperties(elementList: IElement[]) {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              setProperties(td.value)
+            }
+          }
+        }
         if (element?.control?.conceptId !== conceptId) continue
         isExistUpdate = true
         element.control = {
@@ -811,6 +816,13 @@ export class Control {
           ...properties,
           value: element.control.value
         }
+        // 控件默认样式
+        CONTROL_STYLE_ATTR.forEach(key => {
+          const controlStyleProperty = properties[key]
+          if (controlStyleProperty) {
+            Reflect.set(element, key, controlStyleProperty)
+          }
+        })
         // 修改后控件结束索引
         let newEndIndex = i
         while (newEndIndex < elementList.length) {
@@ -820,6 +832,16 @@ export class Control {
         }
         i = newEndIndex
       }
+    }
+    // 页眉页脚正文启动搜索
+    const pageComponentData: IEditorData = {
+      header: this.draw.getHeaderElementList(),
+      main: this.draw.getOriginalMainElementList(),
+      footer: this.draw.getFooterElementList()
+    }
+    for (const key in pageComponentData) {
+      const elementList = pageComponentData[<keyof IEditorData>key]!
+      setProperties(elementList)
     }
     if (!isExistUpdate) return
     // 强制更新

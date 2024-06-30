@@ -380,6 +380,8 @@ export class TableParticle {
         td.height = height
         td.rowIndex = t
         td.colIndex = colIndex
+        td.trIndex = t
+        td.tdIndex = d
         // 当前列x轴累加
         preX += width
         // 一行中的最后td

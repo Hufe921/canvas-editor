@@ -10,9 +10,12 @@ export function queryParams(key: string): string | null {
   return null
 }
 
-export function debounce(func: Function, delay: number) {
+export function debounce<T extends unknown[]>(
+  func: (...arg: T) => unknown,
+  delay: number
+) {
   let timer: number
-  return function (this: any, ...args: any[]) {
+  return function (this: unknown, ...args: T) {
     if (timer) {
       window.clearTimeout(timer)
     }

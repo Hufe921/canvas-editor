@@ -170,7 +170,7 @@ export class Previewer {
       'mouseup',
       () => {
         // 改变尺寸
-        if (this.curElement) {
+        if (this.curElement && !this.previewerDrawOption.dragDisable) {
           this.curElement.width = this.width
           this.curElement.height = this.height
           this.draw.render({
@@ -192,7 +192,7 @@ export class Previewer {
   }
 
   private _mousemove(evt: MouseEvent) {
-    if (!this.curElement) return
+    if (!this.curElement || this.previewerDrawOption.dragDisable) return
     const { scale } = this.options
     let dx = 0
     let dy = 0

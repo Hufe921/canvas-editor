@@ -1,6 +1,8 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
+import { EditorMode } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { MouseEventButton } from '../../../dataset/enum/Event'
+import { IPreviewerDrawOption } from '../../../interface/Previewer'
 import { deepClone } from '../../../utils'
 import { isMod } from '../../../utils/hotkey'
 import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
@@ -135,15 +137,20 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const previewer = draw.getPreviewer()
   previewer.clearResizer()
   if (isDirectHitImage) {
+    const previewerDrawOption: IPreviewerDrawOption = {
+      // 只读或控件外表单模式禁用拖拽
+      dragDisable:
+        isReadonly ||
+        (!curElement.controlId && draw.getMode() === EditorMode.FORM)
+    }
+    if (curElement.type === ElementType.LATEX) {
+      previewerDrawOption.mime = 'svg'
+      previewerDrawOption.srcKey = 'laTexSVG'
+    }
     previewer.drawResizer(
       curElement,
       positionList[curIndex],
-      curElement.type === ElementType.LATEX
-        ? {
-            mime: 'svg',
-            srcKey: 'laTexSVG'
-          }
-        : {}
+      previewerDrawOption
     )
     // 光标事件代理丢失，重新定位
     draw.getCursor().drawCursor({
@@ -162,7 +169,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   // 表格工具组件
   const tableTool = draw.getTableTool()
   tableTool.dispose()
-  if (isTable && !isReadonly) {
+  if (isTable && !isReadonly && draw.getMode() !== EditorMode.FORM) {
     tableTool.render()
   }
   // 超链接

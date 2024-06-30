@@ -181,7 +181,8 @@ export class ContextMenu {
       isInTable: isTable,
       trIndex: trIndex ?? null,
       tdIndex: tdIndex ?? null,
-      tableElement
+      tableElement,
+      options: this.options
     }
   }
 
