@@ -11,4 +11,5 @@ export interface IPreviewerCreateResult {
 export interface IPreviewerDrawOption {
   mime?: 'png' | 'jpg' | 'jpeg' | 'svg'
   srcKey?: keyof Pick<IElement, 'value' | 'laTexSVG'>
+  dragDisable?: boolean
 }

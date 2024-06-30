@@ -295,6 +295,7 @@ export class Draw {
       this.setEditorData(this.printModeData)
       this.printModeData = null
     }
+    this.clearSideEffect()
     this.range.clearRange()
     this.mode = payload
     this.render({

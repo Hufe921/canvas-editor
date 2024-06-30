@@ -1,4 +1,5 @@
 import { INTERNAL_CONTEXT_MENU_KEY } from '../../../dataset/constant/ContextMenu'
+import { EditorMode } from '../../../dataset/enum/Editor'
 import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu'
 import { Command } from '../../command/Command'
 const {
@@ -13,7 +14,8 @@ export const controlMenus: IRegisterContextMenu[] = [
       return (
         !payload.isReadonly &&
         !payload.editorHasSelection &&
-        !!payload.startElement?.controlId
+        !!payload.startElement?.controlId &&
+        payload.options.mode !== EditorMode.FORM
       )
     },
     callback: (command: Command) => {
