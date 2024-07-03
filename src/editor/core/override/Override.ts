@@ -4,16 +4,8 @@ export interface IOverrideResult {
 
 export class Override {
   public paste:
-    | ((
-        evt?: ClipboardEvent
-      ) => void | Promise<void> | IOverrideResult | Promise<IOverrideResult>)
+    | ((evt?: ClipboardEvent) => unknown | IOverrideResult)
     | undefined
-  public copy:
-    | (() => void | Promise<void> | IOverrideResult | Promise<IOverrideResult>)
-    | undefined
-  public drop:
-    | ((
-        evt: DragEvent
-      ) => void | Promise<void> | IOverrideResult | Promise<IOverrideResult>)
-    | undefined
+  public copy: (() => unknown | IOverrideResult) | undefined
+  public drop: ((evt: DragEvent) => unknown | IOverrideResult) | undefined
 }

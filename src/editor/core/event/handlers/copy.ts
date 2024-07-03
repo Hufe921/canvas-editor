@@ -1,18 +1,17 @@
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { ITr } from '../../../interface/table/Tr'
-import { isPromiseFunction } from '../../../utils'
 import { writeElementList } from '../../../utils/clipboard'
 import { zipElementList } from '../../../utils/element'
 import { IOverrideResult } from '../../override/Override'
 import { CanvasEvent } from '../CanvasEvent'
 
-export async function copy(host: CanvasEvent) {
+export function copy(host: CanvasEvent) {
   const draw = host.getDraw()
   // 自定义粘贴事件
   const { copy } = draw.getOverride()
   if (copy) {
-    const overrideResult = isPromiseFunction(copy) ? await copy() : copy()
+    const overrideResult = copy()
     // 默认阻止默认事件
     if ((<IOverrideResult>overrideResult)?.preventDefault !== false) return
   }

@@ -7,7 +7,7 @@ import Editor from "@hufe921/canvas-editor"
 
 const instance = new Editor(container, <IElement[]>data, options)
 
-instance.override.overrideFunction = () => void | Promise<void> | IOverrideResult | Promise<IOverrideResult>
+instance.override.overrideFunction = () => unknown | IOverrideResult
 ```
 
 ```typescript
@@ -23,7 +23,7 @@ interface IOverrideResult {
 用法：
 
 ```javascript
-instance.override.paste = (evt?: ClipboardEvent) => void | Promise<void> | IOverrideResult | Promise<IOverrideResult>
+instance.override.paste = (evt?: ClipboardEvent) => unknown | IOverrideResult
 ```
 
 ## copy
@@ -33,7 +33,7 @@ instance.override.paste = (evt?: ClipboardEvent) => void | Promise<void> | IOver
 用法：
 
 ```javascript
-instance.override.copy = () => void | Promise<void> | IOverrideResult | Promise<IOverrideResult>
+instance.override.copy = () => unknown | IOverrideResult
 ```
 
 ## drop
@@ -43,5 +43,5 @@ instance.override.copy = () => void | Promise<void> | IOverrideResult | Promise<
 用法：
 
 ```javascript
-instance.override.drop = (evt: DragEvent) => void | Promise<void> | IOverrideResult | Promise<IOverrideResult>
+instance.override.drop = (evt: DragEvent) => unknown | IOverrideResult
 ```

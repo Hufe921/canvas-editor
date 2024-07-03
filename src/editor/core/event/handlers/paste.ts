@@ -13,7 +13,6 @@ import {
   getElementListByHTML
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
-import { isPromiseFunction } from '../../../utils'
 import { IOverrideResult } from '../../override/Override'
 
 export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
@@ -98,7 +97,7 @@ export function pasteImage(host: CanvasEvent, file: File | Blob) {
   }
 }
 
-export async function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
+export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
   const draw = host.getDraw()
   const isReadonly = draw.isReadonly()
   if (isReadonly) return
@@ -107,9 +106,7 @@ export async function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
   // 自定义粘贴事件
   const { paste } = draw.getOverride()
   if (paste) {
-    const overrideResult = isPromiseFunction(paste)
-      ? await paste(evt)
-      : paste(evt)
+    const overrideResult = paste(evt)
     // 默认阻止默认事件
     if ((<IOverrideResult>overrideResult)?.preventDefault !== false) return
   }
@@ -165,7 +162,7 @@ export async function pasteByApi(host: CanvasEvent, options?: IPasteOption) {
   // 自定义粘贴事件
   const { paste } = draw.getOverride()
   if (paste) {
-    const overrideResult = isPromiseFunction(paste) ? await paste() : paste()
+    const overrideResult = paste()
     // 默认阻止默认事件
     if ((<IOverrideResult>overrideResult)?.preventDefault !== false) return
   }
