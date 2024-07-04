@@ -39,6 +39,7 @@ import {
   EditorMode,
   PageMode,
   PaperDirection,
+  RenderMode,
   WordBreak
 } from '../dataset/enum/Editor'
 
@@ -144,6 +145,7 @@ export function mergeOption(
     marginIndicatorColor: '#BABABA',
     margins: [100, 120, 100, 120],
     pageMode: PageMode.PAGING,
+    renderMode: RenderMode.SPEED,
     defaultHyperlinkColor: '#0000FF',
     paperDirection: PaperDirection.VERTICAL,
     inactiveAlpha: 0.6,
