@@ -1350,11 +1350,16 @@ export class Draw {
           if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
             const trList = element.trList!
             // 计算需要移除的行数
-            let deleteStart = 0
-            let deleteCount = 0
-            let preTrHeight = 0
+            let deleteStart = 0 //拆分开始行
+            let deleteCount = 0 //拆分行数
+            let preTrHeight = 0 //前面tr的高度
+            const colInfoCache = new Map()
             // 大于一行时再拆分避免循环
             if (trList.length > 1) {
+              // 拆分后剩余高度
+              // 思路（改变tr的结构）： 得到第几行开始删除，删除的第一行添加rowspan: rowspan - 前面的tr的row,
+              // 何时加临时td？：开始分页的head的上一级判断最大的colspan，记录最大colspan在td的index
+              // 在分页的第一行的index位置添加临时td
               for (let r = 0; r < trList.length; r++) {
                 const tr = trList[r]
                 const trHeight = tr.height * scale
@@ -1363,18 +1368,64 @@ export class Draw {
                   height
                 ) {
                   // 当前行存在跨行中断-暂时忽略分页
-                  const rowColCount = tr.tdList.reduce(
-                    (pre, cur) => pre + cur.colspan,
-                    0
-                  )
-                  if (element.colgroup?.length !== rowColCount) {
-                    deleteCount = 0
-                  }
+                  colInfoCache.forEach((item, key) => {
+                    const mdRowIndex = parseInt(key.split('-')[1], 10) // 3
+                    const mdColIndex = parseInt(key.split('-')[0], 10) // 0
+                    
+                    // 确保 mdRowIndex 和 mdColIndex 是有效的索引
+                    if (!trList[mdRowIndex] || !trList[mdRowIndex].tdList[mdColIndex]) {
+                      console.error(`Invalid index: mdRowIndex=${mdRowIndex}, mdColIndex=${mdColIndex}`)
+                      return
+                    }
+                    // 更新 rowspan
+                    const cell = trList[mdRowIndex].tdList[mdColIndex]
+                    const newRowspan = cell.rowspan - (item.row - item.count)
+                    if (!isNaN(newRowspan)) {
+                      cell.rowspan = newRowspan
+                    } else {
+                      console.error(`Invalid rowspan calculation: ${cell.rowspan} - (${item.row} - ${item.count})`)
+                    }
+                  
+                    // temp之后的数组元素向后移一个位置
+                    for (let i = tr.tdList.length - 1; i >= item.col; i--) {
+                      tr.tdList[i + 1] = tr.tdList[i]
+                    }
+                    tr.tdList[mdColIndex] = {
+                      ...cell,
+                      id: getUUID(),
+                      rowspan: item.row - item.count
+                    }
+                  })
+                  
+                  //  const rowColCount = tr.tdList.reduce(
+                  //   (pre, cur) => pre + cur.colspan,
+                  //   0
+                  // )
+                  // if (element.colgroup?.length !== rowColCount) {
+                  //   deleteCount = 0
+                  // }
+                  
                   break
                 } else {
                   deleteStart = r + 1
                   deleteCount = trList.length - deleteStart
                   preTrHeight += trHeight
+                  // debugger
+                  tr.tdList.forEach((td, index) => {
+                    if (td.rowspan > 1) {
+                      colInfoCache.set(`${index}-${r}`, {
+                        col: index,
+                        row: td.rowspan,
+                        count: 0
+                      })
+                    }
+                  })
+                  colInfoCache.forEach((item, index) => {
+                    ++item.count
+                    if (item.count >= item.row) {
+                      colInfoCache.delete(index)
+                    }
+                  })
                 }
               }
             }
