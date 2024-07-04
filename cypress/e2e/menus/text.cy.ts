@@ -33,7 +33,7 @@ describe('菜单-文本处理', () => {
         .then(() => {
           const data = editor.command.getValue().data.main
 
-          expect(data[0].font).to.eq('宋体')
+          expect(data[0].font).to.eq('华文宋体')
         })
     })
   })
