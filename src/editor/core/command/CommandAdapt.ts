@@ -2484,6 +2484,9 @@ export class CommandAdapt {
 
   public setControlHighlight(payload: ISetControlHighlightOption) {
     this.draw.getControl().setHighlightList(payload)
+    this.draw.render({
+      isSubmitHistory: false
+    })
   }
 
   public updateOptions(payload: IUpdateOption) {
