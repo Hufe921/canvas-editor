@@ -15,28 +15,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
-      with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm i yarn -g
-    - run: yarn
-    - run: yarn run build
-    - run: mv dist canvas-editor
-    - name: Copy folder content recursively to remote
-      uses: garygrossgarten/github-action-scp@release
-      with:
-        local: canvas-editor
-        remote: ${{ secrets.PATH }}
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        rmRemote: true
-    - name: Executing remote ssh commands
-      uses: appleboy/ssh-action@v1.0.3
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        script: sed -i 's/<\/body>/${{ secrets.SCRIPT }}<\/body>/g' ${{ secrets.PATH }}/index.html
+      - uses: actions/checkout@v2
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm i yarn -g
+      - run: yarn
+      - run: yarn run build
+      - run: mv dist canvas-editor
+      - name: Copy folder content recursively to remote
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          source: canvas-editor
+          target: ${{ secrets.PATH }}
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          overwrite: true
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          script: sed -i 's/<\/body>/${{ secrets.SCRIPT }}<\/body>/g' ${{ secrets.PATH }}/canvas-editor/index.html
