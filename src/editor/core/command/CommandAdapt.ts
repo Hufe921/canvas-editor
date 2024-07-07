@@ -2263,7 +2263,9 @@ export class CommandAdapt {
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
-    formatElementContext(elementList, cloneElementList, startIndex)
+    formatElementContext(elementList, cloneElementList, startIndex, {
+      isBreakWhenWrap: true
+    })
     this.draw.insertElementList(cloneElementList)
   }
 
