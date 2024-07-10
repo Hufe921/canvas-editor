@@ -133,7 +133,7 @@ export class TextControl implements IControlInstance {
       .spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     const value = this.getValue(context)
     if (!value.length) {
-      this.control.addPlaceholder(startIndex)
+      this.control.addPlaceholder(startIndex, context)
     }
     return startIndex
   }
