@@ -23,7 +23,13 @@ import { IEditorData, IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import { deepClone, nextTick, omitObject, splitText } from '../../../utils'
+import {
+  deepClone,
+  nextTick,
+  omitObject,
+  pickObject,
+  splitText
+} from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
@@ -510,9 +516,12 @@ export class Control {
     const control = startElement.control!
     if (!control.placeholder) return
     const placeholderStrList = splitText(control.placeholder)
+    // 优先使用默认控件样式
+    const anchorElementStyleAttr = pickObject(startElement, CONTROL_STYLE_ATTR)
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]
       const newElement: IElement = {
+        ...anchorElementStyleAttr,
         value,
         controlId: startElement.controlId,
         type: ElementType.CONTROL,
