@@ -38,6 +38,10 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   if (evt.shiftKey && startElement.listId) {
     enterText.listWrap = true
   }
+  // 格式化上下文
+  formatElementContext(elementList, [enterText], startIndex, {
+    isBreakWhenWrap: true
+  })
   // 标题结尾处回车无需格式化及样式复制
   if (
     !(
@@ -45,8 +49,6 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
       endElement.titleId !== elementList[endIndex + 1]?.titleId
     )
   ) {
-    // 格式化上下文
-    formatElementContext(elementList, [enterText], startIndex)
     // 复制样式属性
     const copyElement = getAnchorElement(elementList, endIndex)
     if (copyElement) {

@@ -1,3 +1,30 @@
+## [0.9.85](https://github.com/Hufe921/canvas-editor/compare/v0.9.84...v0.9.85) (2024-07-07)
+
+
+### Bug Fixes
+
+* custom override method removes support for asynchronous #672 ([0e705d6](https://github.com/Hufe921/canvas-editor/commit/0e705d6a0bdb0922efd5c47edd8ca9eba9964199)), closes [#672](https://github.com/Hufe921/canvas-editor/issues/672)
+* set control highlight and re render #678 ([24df9d3](https://github.com/Hufe921/canvas-editor/commit/24df9d3b006a8daf795ada677bfd0159e3ccc3f5)), closes [#678](https://github.com/Hufe921/canvas-editor/issues/678)
+
+
+### Chores
+
+* update build.yml ([a40441d](https://github.com/Hufe921/canvas-editor/commit/a40441dc3994a41ae29c341a542be6e0e7dada2e))
+
+
+### Features
+
+* add render mode #667 ([affd191](https://github.com/Hufe921/canvas-editor/commit/affd1911552a73a2b63a13f2c423121637830b99)), closes [#667](https://github.com/Hufe921/canvas-editor/issues/667)
+* add title deletable property #670 ([b3d8413](https://github.com/Hufe921/canvas-editor/commit/b3d8413b35050eac626af1c57beaaf1b8d692a0e)), closes [#670](https://github.com/Hufe921/canvas-editor/issues/670)
+* insert element boundary optimization #669 ([de44bd6](https://github.com/Hufe921/canvas-editor/commit/de44bd68ab01e5ffa8d6a8dc5d566b0cdb8d08e6)), closes [#669](https://github.com/Hufe921/canvas-editor/issues/669)
+
+
+### Tests
+
+* update text test case ([c24da73](https://github.com/Hufe921/canvas-editor/commit/c24da737b15200775a7d4a5edf4e2224f6ec5429))
+
+
+
 ## [0.9.84](https://github.com/Hufe921/canvas-editor/compare/v0.9.83...v0.9.84) (2024-06-30)
 
 

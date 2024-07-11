@@ -2263,7 +2263,9 @@ export class CommandAdapt {
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
-    formatElementContext(elementList, cloneElementList, startIndex)
+    formatElementContext(elementList, cloneElementList, startIndex, {
+      isBreakWhenWrap: true
+    })
     this.draw.insertElementList(cloneElementList)
   }
 
@@ -2484,6 +2486,9 @@ export class CommandAdapt {
 
   public setControlHighlight(payload: ISetControlHighlightOption) {
     this.draw.getControl().setHighlightList(payload)
+    this.draw.render({
+      isSubmitHistory: false
+    })
   }
 
   public updateOptions(payload: IUpdateOption) {
@@ -2575,6 +2580,25 @@ export class CommandAdapt {
         break
       }
     }
+  }
+
+  public insertControl(payload: IElement) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const cloneElement = deepClone(payload)
+    // 格式化上下文信息
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const copyElement = getAnchorElement(elementList, startIndex)
+    if (!copyElement) return
+    const cloneAttr = [
+      ...TABLE_CONTEXT_ATTR,
+      ...EDITOR_ROW_ATTR,
+      ...LIST_CONTEXT_ATTR
+    ]
+    cloneProperty<IElement>(cloneAttr, copyElement, cloneElement)
+    // 插入控件
+    this.draw.insertElementList([cloneElement])
   }
 
   public getContainer(): HTMLDivElement {

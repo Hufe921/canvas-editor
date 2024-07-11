@@ -1,4 +1,4 @@
-import { ElementType, IEditorOption, IElement } from '../../..'
+import { ElementType, IEditorOption, IElement, RenderMode } from '../../..'
 import {
   PUNCTUATION_LIST,
   METRICS_BASIS_TEXT
@@ -124,6 +124,15 @@ export class TextParticle {
     y: number
   ) {
     this.ctx = ctx
+    // 兼容模式立即绘制
+    if (this.options.renderMode === RenderMode.COMPATIBILITY) {
+      this._setCurXY(x, y)
+      this.text = element.value
+      this.curStyle = element.style
+      this.curColor = element.color
+      this.complete()
+      return
+    }
     // 主动完成的重设起始点
     if (!this.text) {
       this._setCurXY(x, y)

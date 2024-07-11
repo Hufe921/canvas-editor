@@ -23,7 +23,7 @@ import { IEditorData, IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import { deepClone, nextTick, splitText } from '../../../utils'
+import { deepClone, nextTick, omitObject, splitText } from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
@@ -42,7 +42,11 @@ import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 import { DateControl } from './date/DateControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
-import { CONTROL_STYLE_ATTR } from '../../../dataset/constant/Element'
+import {
+  CONTROL_STYLE_ATTR,
+  LIST_CONTEXT_ATTR,
+  TITLE_CONTEXT_ATTR
+} from '../../../dataset/constant/Element'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -876,7 +880,12 @@ export class Control {
           }
         }
         if (element.controlId) {
-          controlElementList.push(element)
+          // 移除控件所在标题及列表上下文信息
+          const controlElement = omitObject(element, [
+            ...TITLE_CONTEXT_ATTR,
+            ...LIST_CONTEXT_ATTR
+          ])
+          controlElementList.push(controlElement)
         }
       }
     }
