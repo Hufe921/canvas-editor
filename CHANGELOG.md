@@ -1,3 +1,21 @@
+## [0.9.86](https://github.com/Hufe921/canvas-editor/compare/v0.9.85...v0.9.86) (2024-07-13)
+
+
+### Bug Fixes
+
+* add control placeholder boundary error #686 ([fac5c5c](https://github.com/Hufe921/canvas-editor/commit/fac5c5c045a30cb5e0c46ef027c83f21e07bcaa8)), closes [#686](https://github.com/Hufe921/canvas-editor/issues/686)
+* add control placeholder using default style #691 ([eb3ea5e](https://github.com/Hufe921/canvas-editor/commit/eb3ea5ed55cdedea0e281d45177c8661f674a280)), closes [#691](https://github.com/Hufe921/canvas-editor/issues/691)
+* delete table col boundary error #688 ([3f0a49f](https://github.com/Hufe921/canvas-editor/commit/3f0a49f56be7060d328a63c994f571b0a35a3521)), closes [#688](https://github.com/Hufe921/canvas-editor/issues/688)
+* refocus when cursor is not focused #685 ([0ac8ae7](https://github.com/Hufe921/canvas-editor/commit/0ac8ae7c4b0b47ee84a9c0f8c37ffde612849957)), closes [#685](https://github.com/Hufe921/canvas-editor/issues/685)
+* remove title and list properties from getControlList return value #683 ([b024050](https://github.com/Hufe921/canvas-editor/commit/b024050b3ef7f787079a74b062e5d83085be1a5f)), closes [#683](https://github.com/Hufe921/canvas-editor/issues/683)
+
+
+### Features
+
+* add executeInsertControl api ([e5b3d05](https://github.com/Hufe921/canvas-editor/commit/e5b3d05991a26dc186cdf63962ca3c7b50a32572))
+
+
+
 ## [0.9.85](https://github.com/Hufe921/canvas-editor/compare/v0.9.84...v0.9.85) (2024-07-07)
 
 
