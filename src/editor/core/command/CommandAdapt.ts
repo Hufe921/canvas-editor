@@ -1179,35 +1179,21 @@ export class CommandAdapt {
       this.deleteTable()
       return
     }
-    // 跨列处理
+    // 缩小colspan或删除与当前列重叠的单元格
     for (let t = 0; t < curTrList.length; t++) {
       const tr = curTrList[t]
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
-        if (td.colspan > 1) {
-          const tdColIndex = td.colIndex!
-          // 交叉减去一列
-          if (
-            tdColIndex <= curColIndex &&
-            tdColIndex + td.colspan - 1 >= curColIndex
-          ) {
-            td.colspan -= 1
+        if (
+          td.colIndex! <= curColIndex &&
+          td.colIndex! + td.colspan > curColIndex
+        ) {
+          if (td.colspan > 1) {
+            td.colspan--
+          } else {
+            tr.tdList.splice(d, 1)
           }
         }
-      }
-    }
-    // 删除当前列
-    for (let t = 0; t < curTrList.length; t++) {
-      const tr = curTrList[t]
-      let start = -1
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        if (td.colIndex === curColIndex) {
-          start = d
-        }
-      }
-      if (~start) {
-        tr.tdList.splice(start, 1)
       }
     }
     element.colgroup?.splice(curColIndex, 1)
@@ -2263,7 +2249,9 @@ export class CommandAdapt {
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
-    formatElementContext(elementList, cloneElementList, startIndex)
+    formatElementContext(elementList, cloneElementList, startIndex, {
+      isBreakWhenWrap: true
+    })
     this.draw.insertElementList(cloneElementList)
   }
 
@@ -2484,6 +2472,9 @@ export class CommandAdapt {
 
   public setControlHighlight(payload: ISetControlHighlightOption) {
     this.draw.getControl().setHighlightList(payload)
+    this.draw.render({
+      isSubmitHistory: false
+    })
   }
 
   public updateOptions(payload: IUpdateOption) {
@@ -2575,6 +2566,25 @@ export class CommandAdapt {
         break
       }
     }
+  }
+
+  public insertControl(payload: IElement) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const cloneElement = deepClone(payload)
+    // 格式化上下文信息
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const copyElement = getAnchorElement(elementList, startIndex)
+    if (!copyElement) return
+    const cloneAttr = [
+      ...TABLE_CONTEXT_ATTR,
+      ...EDITOR_ROW_ATTR,
+      ...LIST_CONTEXT_ATTR
+    ]
+    cloneProperty<IElement>(cloneAttr, copyElement, cloneElement)
+    // 插入控件
+    this.draw.insertElementList([cloneElement])
   }
 
   public getContainer(): HTMLDivElement {

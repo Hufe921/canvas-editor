@@ -932,6 +932,16 @@ instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
 instance.command.executeLocationControl(controlId: string)
 ```
 
+## executeInsertControl
+
+功能：插入控件
+
+用法：
+
+```javascript
+instance.command.executeInsertControl(payload: IElement)
+```
+
 ## executeUpdateOptions
 
 功能：修改配置

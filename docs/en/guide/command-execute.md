@@ -932,6 +932,16 @@ Usage:
 instance.command.executeLocationControl(controlId: string)
 ```
 
+## executeInsertControl
+
+Feature: Insert control
+
+Usage:
+
+```javascript
+instance.command.executeInsertControl(payload: IElement)
+```
+
 ## executeUpdateOptions
 
 Feature: Update options

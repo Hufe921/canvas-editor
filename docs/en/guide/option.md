@@ -43,6 +43,7 @@ interface IEditorOption {
   marginIndicatorColor?: string // The margin indicator color. default: #BABABA
   margins?: IMargin // Page margins. default: [100, 120, 100, 120]
   pageMode?: PageMode // Paper mode: Linkage, Pagination. default: Pagination
+  renderMode?: RenderMode // Render mode: speed(multi words combination rendering), compatibility(word by word rendering:avoid environmental differences such as browse,fonts...). default: speed
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF
   table?: ITableOption // table configuration {tdPadding?:IPadding; defaultTrMinHeight?:number; defaultColMinWidth?:number}
   header?: IHeader // Header information.{top?:number; maxHeightRadio?:MaxHeightRatio;}

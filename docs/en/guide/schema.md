@@ -154,7 +154,10 @@ interface IElement {
   };
   // title
   level?: TitleLevel;
-  title?: ITitle;
+  title?: {
+    conceptId?: string;
+    deletable?: boolean;
+  };
   // list
   listType?: ListType;
   listStyle?: ListStyle;

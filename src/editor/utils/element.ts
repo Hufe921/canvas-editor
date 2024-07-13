@@ -826,7 +826,7 @@ export function formatElementContext(
     if (
       isBreakWhenWrap &&
       !copyElement.listId &&
-      /^\n/.test(targetElement.value)
+      START_LINE_BREAK_REG.test(targetElement.value)
     ) {
       isBreakWarped = true
     }

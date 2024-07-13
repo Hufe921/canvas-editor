@@ -12,7 +12,11 @@ export interface ITitleSizeOption {
 
 export type ITitleOption = ITitleSizeOption & {}
 
-export interface ITitle {
+export interface ITitleRule {
+  deletable?: boolean
+}
+
+export type ITitle = ITitleRule & {
   conceptId?: string
 }
 
