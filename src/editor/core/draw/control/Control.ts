@@ -647,8 +647,6 @@ export class Control {
   }
 
   public setValueByConceptId(payload: ISetControlValueOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     let isExistSet = false
     const { conceptId, value } = payload
     // 设置值
@@ -761,8 +759,6 @@ export class Control {
   }
 
   public setExtensionByConceptId(payload: ISetControlExtensionOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const { conceptId, extension } = payload
     const setExtension = (elementList: IElement[]) => {
       let i = 0
@@ -803,8 +799,6 @@ export class Control {
   }
 
   public setPropertiesByConceptId(payload: ISetControlProperties) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const { conceptId, properties } = payload
     let isExistUpdate = false
     function setProperties(elementList: IElement[]) {
