@@ -2453,20 +2453,14 @@ export class CommandAdapt {
   }
 
   public setControlValue(payload: ISetControlValueOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.draw.getControl().setValueByConceptId(payload)
   }
 
   public setControlExtension(payload: ISetControlExtensionOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.draw.getControl().setExtensionByConceptId(payload)
   }
 
   public setControlProperties(payload: ISetControlProperties) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.draw.getControl().setPropertiesByConceptId(payload)
   }
 
