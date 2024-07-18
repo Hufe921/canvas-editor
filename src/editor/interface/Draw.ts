@@ -54,6 +54,7 @@ export interface IPainterOption {
 
 export interface IGetValueOption {
   pageNo?: number
+  extraPickAttrs?: Array<keyof IElement>
 }
 
 export interface IAppendElementListOption {
