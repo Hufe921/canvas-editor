@@ -23,7 +23,13 @@ import { IEditorData, IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import { deepClone, nextTick, omitObject, splitText } from '../../../utils'
+import {
+  deepClone,
+  nextTick,
+  omitObject,
+  pickObject,
+  splitText
+} from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
@@ -510,9 +516,12 @@ export class Control {
     const control = startElement.control!
     if (!control.placeholder) return
     const placeholderStrList = splitText(control.placeholder)
+    // 优先使用默认控件样式
+    const anchorElementStyleAttr = pickObject(startElement, CONTROL_STYLE_ATTR)
     for (let p = 0; p < placeholderStrList.length; p++) {
       const value = placeholderStrList[p]
       const newElement: IElement = {
+        ...anchorElementStyleAttr,
         value,
         controlId: startElement.controlId,
         type: ElementType.CONTROL,
@@ -638,8 +647,6 @@ export class Control {
   }
 
   public setValueByConceptId(payload: ISetControlValueOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     let isExistSet = false
     const { conceptId, value } = payload
     // 设置值
@@ -752,8 +759,6 @@ export class Control {
   }
 
   public setExtensionByConceptId(payload: ISetControlExtensionOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const { conceptId, extension } = payload
     const setExtension = (elementList: IElement[]) => {
       let i = 0
@@ -794,8 +799,6 @@ export class Control {
   }
 
   public setPropertiesByConceptId(payload: ISetControlProperties) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const { conceptId, properties } = payload
     let isExistUpdate = false
     function setProperties(elementList: IElement[]) {

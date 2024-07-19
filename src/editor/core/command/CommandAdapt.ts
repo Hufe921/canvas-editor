@@ -1179,35 +1179,21 @@ export class CommandAdapt {
       this.deleteTable()
       return
     }
-    // 跨列处理
+    // 缩小colspan或删除与当前列重叠的单元格
     for (let t = 0; t < curTrList.length; t++) {
       const tr = curTrList[t]
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
-        if (td.colspan > 1) {
-          const tdColIndex = td.colIndex!
-          // 交叉减去一列
-          if (
-            tdColIndex <= curColIndex &&
-            tdColIndex + td.colspan - 1 >= curColIndex
-          ) {
-            td.colspan -= 1
+        if (
+          td.colIndex! <= curColIndex &&
+          td.colIndex! + td.colspan > curColIndex
+        ) {
+          if (td.colspan > 1) {
+            td.colspan--
+          } else {
+            tr.tdList.splice(d, 1)
           }
         }
-      }
-    }
-    // 删除当前列
-    for (let t = 0; t < curTrList.length; t++) {
-      const tr = curTrList[t]
-      let start = -1
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        if (td.colIndex === curColIndex) {
-          start = d
-        }
-      }
-      if (~start) {
-        tr.tdList.splice(start, 1)
       }
     }
     element.colgroup?.splice(curColIndex, 1)
@@ -2467,20 +2453,14 @@ export class CommandAdapt {
   }
 
   public setControlValue(payload: ISetControlValueOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.draw.getControl().setValueByConceptId(payload)
   }
 
   public setControlExtension(payload: ISetControlExtensionOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.draw.getControl().setExtensionByConceptId(payload)
   }
 
   public setControlProperties(payload: ISetControlProperties) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.draw.getControl().setPropertiesByConceptId(payload)
   }
 
