@@ -1413,9 +1413,7 @@ export class Draw {
                         }
                       }
                     }
-                    for (let i = tr.tdList.length - 1; i >= item.col; i--) {
-                      tr.tdList[i + 1] = tr.tdList[i]
-                    }
+                    tr.tdList.splice(item.col, 0, tr.tdList[tr.tdList.length - 1])
                     const tempRow = item.row - item.count
                     tr.tdList[mdColIndex] = {
                       ...cell,
@@ -1424,7 +1422,7 @@ export class Draw {
                       height: height - initHeight,
                       realHeight: height - initRealHeight,
                       realMinHeight: height - initRealMinHeight,
-                      tempFlag: true,
+                      temporaryFlag: true,
                       parentTr: `${mdColIndex}-${mdRowIndex}`,
                       value: cell.value.map(item => ({ ...item, value: '' }))
                     }
@@ -1438,9 +1436,10 @@ export class Draw {
                   deleteStart = r + 1
                   deleteCount = trList.length - deleteStart
                   preTrHeight += trHeight
+                  // 重新记录临时的td
                   for (let i = 0; i < trList.length; i++) {
                     for (let j = trList[i]?.tdList.length - 1; j >= 0; j--) {
-                      if (trList[i]?.tdList[j]?.tempFlag) {
+                      if (trList[i]?.tdList[j]?.temporaryFlag) {
                         const tempTd = trList[i].tdList[j]
                         if (tempTd.parentTr) {
                           const mdRowIndex = parseInt(

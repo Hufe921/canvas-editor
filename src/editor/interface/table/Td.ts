@@ -29,6 +29,6 @@ export interface ITd {
   mainHeight?: number // 内容 + 内边距高度
   realHeight?: number // 真实高度（包含跨列）
   realMinHeight?: number // 真实最小高度（包含跨列）
-  tempFlag?: boolean,
-  parentTr?: string
+  temporaryFlag?: boolean,  // 临时单元格标识
+  parentTr?: string  // 记录临时单元格的父级tr，用于合并单元格
 }
