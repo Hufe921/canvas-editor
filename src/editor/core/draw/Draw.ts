@@ -1573,8 +1573,9 @@ export class Draw {
               i
             )
             // 单词宽度大于行可用宽度，无需折行
-            if (width <= availableWidth) {
-              curRowWidth += width
+            const wordWidth = width * scale
+            if (wordWidth <= availableWidth) {
+              curRowWidth += wordWidth
               nextElement = endElement
             }
           }
