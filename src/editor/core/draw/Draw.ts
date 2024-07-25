@@ -1580,10 +1580,11 @@ export class Draw {
             }
           }
           // 标点符号
-          curRowWidth += this.textParticle.measurePunctuationWidth(
+          const punctuationWidth = this.textParticle.measurePunctuationWidth(
             ctx,
             nextElement
           )
+          curRowWidth += punctuationWidth * scale
         }
       }
       // 列表信息
