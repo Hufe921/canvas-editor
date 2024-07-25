@@ -285,6 +285,7 @@ export function formatElementList(
               // checkbox组件
               elementList.splice(i, 0, {
                 ...controlContext,
+                ...controlDefaultStyle,
                 controlId,
                 value: '',
                 type: el.type,
@@ -332,6 +333,7 @@ export function formatElementList(
               // radio组件
               elementList.splice(i, 0, {
                 ...controlContext,
+                ...controlDefaultStyle,
                 controlId,
                 value: '',
                 type: el.type,
