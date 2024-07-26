@@ -1,3 +1,25 @@
+## [0.9.87](https://github.com/Hufe921/canvas-editor/compare/v0.9.86...v0.9.87) (2024-07-26)
+
+
+### Bug Fixes
+
+* format of checkbox and radio control value ([72686fd](https://github.com/Hufe921/canvas-editor/commit/72686fda1bf12353699fd57273493d8a9b4caee4))
+* highlight checkbox and radio control #707 ([d939aa3](https://github.com/Hufe921/canvas-editor/commit/d939aa35ba7b19e5d1b5c4121fb873b2c579cc55)), closes [#707](https://github.com/Hufe921/canvas-editor/issues/707)
+* set control highlight limit component type ([e14fbd6](https://github.com/Hufe921/canvas-editor/commit/e14fbd622d1076cba5f34bd4fa29530af4f70261))
+* update punctuation width when scaling the page #712 ([83cb479](https://github.com/Hufe921/canvas-editor/commit/83cb47913195c43cde2b3ae344ff1d89a223e6a6)), closes [#712](https://github.com/Hufe921/canvas-editor/issues/712)
+* word breaking when scaling the page #666 ([2bd1f34](https://github.com/Hufe921/canvas-editor/commit/2bd1f34c15196968f69d4711613f1c81f1dade68)), closes [#666](https://github.com/Hufe921/canvas-editor/issues/666)
+
+
+### Features
+
+* add custom field to getValue api #699 ([67c63f8](https://github.com/Hufe921/canvas-editor/commit/67c63f856f2c0e3e8c0644e39694357639c18d7e)), closes [#699](https://github.com/Hufe921/canvas-editor/issues/699)
+* delete cell contents when selecting rows and columns #706 ([ccd0627](https://github.com/Hufe921/canvas-editor/commit/ccd0627a6fad975acb43e9f16dda3fa13972c908)), closes [#706](https://github.com/Hufe921/canvas-editor/issues/706)
+* optimize text selection at the beginning of a line #695 ([97ac2da](https://github.com/Hufe921/canvas-editor/commit/97ac2daaf8f0688b181cb8baea9ba74ae1664361)), closes [#695](https://github.com/Hufe921/canvas-editor/issues/695)
+* set control properties in read-only mode #679 ([26a3468](https://github.com/Hufe921/canvas-editor/commit/26a3468f66d67bf8249cdc1a679c740d7cf1a9c9)), closes [#679](https://github.com/Hufe921/canvas-editor/issues/679)
+* set the container scrollbar to automatically scroll #711 ([b226566](https://github.com/Hufe921/canvas-editor/commit/b226566e2bf6f1b4bc3ae11577c7a96ae3cbf2d0)), closes [#711](https://github.com/Hufe921/canvas-editor/issues/711)
+
+
+
 ## [0.9.86](https://github.com/Hufe921/canvas-editor/compare/v0.9.85...v0.9.86) (2024-07-13)
 
 

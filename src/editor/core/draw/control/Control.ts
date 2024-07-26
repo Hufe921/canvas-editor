@@ -712,7 +712,7 @@ export class Control {
         } else if (type === ControlType.CHECKBOX) {
           const checkbox = new CheckboxControl(element, this)
           this.activeControl = checkbox
-          const codes = value?.split(',') || []
+          const codes = value ? value.split(',') : []
           checkbox.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.RADIO) {
           const radio = new RadioControl(element, this)
