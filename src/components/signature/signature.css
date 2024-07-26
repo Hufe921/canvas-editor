@@ -126,3 +126,7 @@
   background: #5b9cf3;
   border-color: #5b9cf3;
 }
+
+.overflow-hidden {
+  overflow: hidden!important;
+}
