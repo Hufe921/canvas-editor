@@ -1,3 +1,5 @@
+import { ZERO } from '../../../../dataset/constant/Common'
+import { ControlComponent } from '../../../../dataset/enum/Control'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { DeepRequired } from '../../../../interface/Common'
 import {
@@ -85,7 +87,13 @@ export class ControlSearch {
         }
         i = newEndIndex
         // 高亮信息
-        const controlElementList = elementList.slice(startIndex, newEndIndex)
+        const controlElementList = elementList
+          .slice(startIndex, newEndIndex)
+          .map(element =>
+            element.controlComponent === ControlComponent.VALUE
+              ? element
+              : { value: ZERO }
+          )
         const highlight = this.highlightList[highlightIndex]
         const { ruleList } = highlight
         for (let r = 0; r < ruleList.length; r++) {

@@ -7,9 +7,30 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   // 可输入性验证
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
+  const { startIndex, endIndex, isCrossRowCol } = rangeManager.getRange()
   const control = draw.getControl()
   let curIndex: number | null
-  if (control.getActiveControl() && control.getIsRangeCanCaptureEvent()) {
+  if (isCrossRowCol) {
+    // 表格跨行列选中时清空单元格内容
+    const rowCol = draw.getTableParticle().getRangeRowCol()
+    if (!rowCol) return
+    let isDeleted = false
+    for (let r = 0; r < rowCol.length; r++) {
+      const row = rowCol[r]
+      for (let c = 0; c < row.length; c++) {
+        const col = row[c]
+        if (col.value.length > 1) {
+          draw.spliceElementList(col.value, 1, col.value.length - 1)
+          isDeleted = true
+        }
+      }
+    }
+    // 删除成功后定位
+    curIndex = isDeleted ? 0 : null
+  } else if (
+    control.getActiveControl() &&
+    control.getIsRangeCanCaptureEvent()
+  ) {
     // 光标在控件内
     curIndex = control.keydown(evt)
   } else {
@@ -18,7 +39,6 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     const cursorPosition = position.getCursorPosition()
     if (!cursorPosition) return
     const { index } = cursorPosition
-    const { startIndex, endIndex } = rangeManager.getRange()
     const isCollapsed = rangeManager.getIsCollapsed()
     const elementList = draw.getElementList()
     // 判断是否允许删除
@@ -51,8 +71,17 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     }
     curIndex = isCollapsed ? index - 1 : startIndex
   }
-  if (curIndex === null) return
   draw.getGlobalEvent().setCanvasEventAbility()
-  rangeManager.setRange(curIndex, curIndex)
-  draw.render({ curIndex })
+  if (curIndex === null) {
+    rangeManager.setRange(startIndex, startIndex)
+    draw.render({
+      curIndex: startIndex,
+      isSubmitHistory: false
+    })
+  } else {
+    rangeManager.setRange(curIndex, curIndex)
+    draw.render({
+      curIndex
+    })
+  }
 }

@@ -647,8 +647,6 @@ export class Control {
   }
 
   public setValueByConceptId(payload: ISetControlValueOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     let isExistSet = false
     const { conceptId, value } = payload
     // 设置值
@@ -714,7 +712,7 @@ export class Control {
         } else if (type === ControlType.CHECKBOX) {
           const checkbox = new CheckboxControl(element, this)
           this.activeControl = checkbox
-          const codes = value?.split(',') || []
+          const codes = value ? value.split(',') : []
           checkbox.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.RADIO) {
           const radio = new RadioControl(element, this)
@@ -761,8 +759,6 @@ export class Control {
   }
 
   public setExtensionByConceptId(payload: ISetControlExtensionOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const { conceptId, extension } = payload
     const setExtension = (elementList: IElement[]) => {
       let i = 0
@@ -803,8 +799,6 @@ export class Control {
   }
 
   public setPropertiesByConceptId(payload: ISetControlProperties) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const { conceptId, properties } = payload
     let isExistUpdate = false
     function setProperties(elementList: IElement[]) {

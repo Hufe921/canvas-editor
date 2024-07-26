@@ -511,11 +511,17 @@ export class Position {
         const headIndex = positionList.findIndex(
           p => p.pageNo === positionNo && p.rowNo === rowNo
         )
+        const headElement = elementList[headIndex]
+        const headPosition = positionList[headIndex]
         // 是否在头部
-        if (x < this.options.margins[3]) {
+        const headStartX =
+          headElement.listStyle === ListStyle.CHECKBOX
+            ? this.options.margins[3]
+            : headPosition.coordinate.leftTop[0]
+        if (x < headStartX) {
           // 头部元素为空元素时无需选中
           if (~headIndex) {
-            if (positionList[headIndex].value === ZERO) {
+            if (headPosition.value === ZERO) {
               curPositionIndex = headIndex
             } else {
               curPositionIndex = headIndex - 1
@@ -526,10 +532,7 @@ export class Position {
           }
         } else {
           // 是否是复选框列表
-          if (
-            elementList[headIndex].listStyle === ListStyle.CHECKBOX &&
-            x < leftTop[0]
-          ) {
+          if (headElement.listStyle === ListStyle.CHECKBOX && x < leftTop[0]) {
             return {
               index: headIndex,
               isDirectHit: true,

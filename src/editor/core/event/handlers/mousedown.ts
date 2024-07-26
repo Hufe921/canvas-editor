@@ -91,7 +91,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       if (!control) {
         draw.getCheckboxParticle().setSelect(curElement)
       } else {
-        const codes = control?.code?.split(',') || []
+        const codes = control?.code ? control.code.split(',') : []
         if (checkbox?.value) {
           const codeIndex = codes.findIndex(c => c === checkbox.code)
           codes.splice(codeIndex, 1)
