@@ -56,9 +56,9 @@ export class Signature {
     this._bindEvent()
     this._clearUndoFn()
     // this is necessary so that the screen does not move when moving - it is removed when closing the modal
-    document.querySelector<HTMLElement>('html')!.classList.add('overflow-hidden')
-    document.querySelector<HTMLElement>('body')!.classList.add('overflow-hidden')
-    document.querySelector<HTMLDivElement>('.signature-container')!.classList.add('overflow-hidden')
+    document.documentElement.classList.add('overflow-hidden')
+    document.body.classList.add('overflow-hidden')
+    this.container.classList.add('overflow-hidden')
   }
 
   private _render() {
@@ -309,32 +309,32 @@ export class Signature {
     }
   }
 
-  private registerTouchmove(e: TouchEvent) {
-    this.registerTouchEvent(e, 'mousemove')
+  private registerTouchmove(evt: TouchEvent) {
+    this.registerTouchEvent(evt, 'mousemove')
   }
-  
-  private registerTouchstart(e: TouchEvent) {
-    this.registerTouchEvent(e, 'mousedown')
+
+  private registerTouchstart(evt: TouchEvent) {
+    this.registerTouchEvent(evt, 'mousedown')
   }
 
   private registerTouchend() {
-    const me = new MouseEvent('mouseup', {});
-    this.canvas.dispatchEvent(me);
+    const me = new MouseEvent('mouseup', {})
+    this.canvas.dispatchEvent(me)
   }
 
-  private registerTouchEvent(e: TouchEvent, eventName: string) {
-    const touch = e.touches[0];
+  private registerTouchEvent(evt: TouchEvent, eventName: string) {
+    const touch = evt.touches[0]
     const me = new MouseEvent(eventName, {
       clientX: touch.clientX,
       clientY: touch.clientY
-    });
-    this.canvas.dispatchEvent(me);
+    })
+    this.canvas.dispatchEvent(me)
   }
 
   private _dispose() {
     this.mask.remove()
     this.container.remove()
-    document.querySelector<HTMLElement>('html')!.classList.remove('overflow-hidden')
-    document.querySelector<HTMLElement>('body')!.classList.remove('overflow-hidden')
+    document.documentElement.classList.remove('overflow-hidden')
+    document.body.classList.remove('overflow-hidden')
   }
 }
