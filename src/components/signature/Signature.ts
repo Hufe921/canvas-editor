@@ -55,6 +55,10 @@ export class Signature {
     this.ctx.lineCap = 'round'
     this._bindEvent()
     this._clearUndoFn()
+    // this is necessary so that the screen does not move when moving - it is removed when closing the modal
+    document.documentElement.classList.add('overflow-hidden')
+    document.body.classList.add('overflow-hidden')
+    this.container.classList.add('overflow-hidden')
   }
 
   private _render() {
@@ -166,6 +170,9 @@ export class Signature {
     this.canvas.onmousedown = this._startDraw.bind(this)
     this.canvas.onmousemove = this._draw.bind(this)
     this.container.onmouseup = this._stopDraw.bind(this)
+    this.container.ontouchmove = this.registerTouchmove.bind(this)
+    this.container.ontouchstart = this.registerTouchstart.bind(this)
+    this.container.ontouchend = this.registerTouchend.bind(this)
   }
 
   private _undo() {
@@ -302,8 +309,32 @@ export class Signature {
     }
   }
 
+  private registerTouchmove(evt: TouchEvent) {
+    this.registerTouchEvent(evt, 'mousemove')
+  }
+
+  private registerTouchstart(evt: TouchEvent) {
+    this.registerTouchEvent(evt, 'mousedown')
+  }
+
+  private registerTouchend() {
+    const me = new MouseEvent('mouseup', {})
+    this.canvas.dispatchEvent(me)
+  }
+
+  private registerTouchEvent(evt: TouchEvent, eventName: string) {
+    const touch = evt.touches[0]
+    const me = new MouseEvent(eventName, {
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    })
+    this.canvas.dispatchEvent(me)
+  }
+
   private _dispose() {
     this.mask.remove()
     this.container.remove()
+    document.documentElement.classList.remove('overflow-hidden')
+    document.body.classList.remove('overflow-hidden')
   }
 }
