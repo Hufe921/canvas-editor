@@ -643,6 +643,7 @@ export class Position {
     payload: IGetFloatPositionByXYPayload
   ): ICurrentPosition | void {
     const { x, y } = payload
+    const currentPageNo = this.draw.getPageNo()
     const currentZone = this.draw.getZone().getZone()
     for (let f = 0; f < this.floatPositionList.length; f++) {
       const {
@@ -653,7 +654,8 @@ export class Position {
         trIndex,
         tdIndex,
         tdValueIndex,
-        zone: floatElementZone
+        zone: floatElementZone,
+        pageNo
       } = this.floatPositionList[f]
       if (
         element.type === ElementType.IMAGE &&
@@ -665,7 +667,8 @@ export class Position {
           x >= imgFloatPosition.x &&
           x <= imgFloatPosition.x + element.width! &&
           y >= imgFloatPosition.y &&
-          y <= imgFloatPosition.y + element.height!
+          y <= imgFloatPosition.y + element.height! &&
+          +currentPageNo === +pageNo
         ) {
           if (isTable) {
             return {
