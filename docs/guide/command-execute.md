@@ -789,7 +789,7 @@ instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
 用法：
 
 ```javascript
-instance.command.executeSetValue(payload: Partial<IEditorData>)
+instance.command.executeSetValue(payload: Partial<IEditorData>, options?: ISetValueOption)
 ```
 
 ## executeRemoveControl
