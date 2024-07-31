@@ -15,7 +15,8 @@ import {
 import {
   IEditorData,
   IEditorOption,
-  IEditorResult
+  IEditorResult,
+  ISetValueOption
 } from '../../interface/Editor'
 import {
   IElement,
@@ -1034,9 +1035,10 @@ export class Draw {
     }
   }
 
-  public setValue(payload: Partial<IEditorData>) {
+  public setValue(payload: Partial<IEditorData>, options?: ISetValueOption) {
     const { header, main, footer } = deepClone(payload)
     if (!header && !main && !footer) return
+    const { isSetCursor = false } = options || {}
     const pageComponentData = [header, main, footer]
     pageComponentData.forEach(data => {
       if (!data) return
@@ -1051,8 +1053,17 @@ export class Draw {
     })
     // 渲染&计算&清空历史记录
     this.historyManager.recovery()
+    const curIndex = isSetCursor
+      ? main?.length
+        ? main.length - 1
+        : 0
+      : undefined
+    if (curIndex !== undefined) {
+      this.range.setRange(curIndex, curIndex)
+    }
     this.render({
-      isSetCursor: false,
+      curIndex,
+      isSetCursor,
       isFirstRender: true
     })
   }

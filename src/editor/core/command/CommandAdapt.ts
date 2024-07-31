@@ -51,6 +51,7 @@ import {
   IEditorOption,
   IEditorResult,
   IEditorText,
+  ISetValueOption,
   IUpdateOption
 } from '../../interface/Editor'
 import {
@@ -2301,8 +2302,8 @@ export class CommandAdapt {
     }
   }
 
-  public setValue(payload: Partial<IEditorData>) {
-    this.draw.setValue(payload)
+  public setValue(payload: Partial<IEditorData>, options?: ISetValueOption) {
+    this.draw.setValue(payload, options)
   }
 
   public removeControl() {

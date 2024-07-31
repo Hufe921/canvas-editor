@@ -52,6 +52,12 @@ body:
     validations:
       required: true
   - type: textarea
+    id: editor-value
+    attributes:
+      label: Editor Value
+      description: Output of `instance.command.getValue()`
+      render: json
+  - type: textarea
     id: system-info
     attributes:
       label: System Info
