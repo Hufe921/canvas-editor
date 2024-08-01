@@ -106,6 +106,8 @@ export class CanvasEvent {
   public applyPainterStyle() {
     const painterStyle = this.draw.getPainterStyle()
     if (!painterStyle) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const selection = this.range.getSelection()
     if (!selection) return
     const painterStyleKeys = Object.keys(painterStyle)

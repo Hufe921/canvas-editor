@@ -157,6 +157,7 @@ interface IElement {
   title?: {
     conceptId?: string;
     deletable?: boolean;
+    disabled?: boolean;
   };
   // 列表
   listType?: ListType;

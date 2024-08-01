@@ -48,7 +48,10 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
   // 判断是否允许拖放
   if (host.isAllowDrop) {
     const draw = host.getDraw()
-    if (draw.isReadonly()) return
+    if (draw.isReadonly() || draw.isDisabled()) {
+      host.mousedown(evt)
+      return
+    }
     const position = draw.getPosition()
     const positionList = position.getPositionList()
     const positionContext = position.getPositionContext()

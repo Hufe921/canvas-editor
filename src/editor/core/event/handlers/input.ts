@@ -8,7 +8,7 @@ import { CanvasEvent } from '../CanvasEvent'
 
 export function input(data: string, host: CanvasEvent) {
   const draw = host.getDraw()
-  if (draw.isReadonly()) return
+  if (draw.isReadonly() || draw.isDisabled()) return
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!data || !cursorPosition) return
@@ -34,26 +34,28 @@ export function input(data: string, host: CanvasEvent) {
     const newElement: IElement = {
       value
     }
-    const nextElement = elementList[endIndex + 1]
-    if (
-      !copyElement.type ||
-      copyElement.type === TEXT ||
-      (copyElement.type === HYPERLINK && nextElement?.type === HYPERLINK) ||
-      (copyElement.type === DATE && nextElement?.type === DATE) ||
-      (copyElement.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT) ||
-      (copyElement.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
-    ) {
-      EDITOR_ELEMENT_COPY_ATTR.forEach(attr => {
-        // 在分组外无需复制分组信息
-        if (attr === 'groupIds' && !nextElement?.groupIds) return
-        const value = copyElement[attr] as never
-        if (value !== undefined) {
-          newElement[attr] = value
-        }
-      })
-    }
-    if (isComposing) {
-      newElement.underline = true
+    if (!copyElement.title?.disabled && !copyElement.control?.disabled) {
+      const nextElement = elementList[endIndex + 1]
+      if (
+        !copyElement.type ||
+        copyElement.type === TEXT ||
+        (copyElement.type === HYPERLINK && nextElement?.type === HYPERLINK) ||
+        (copyElement.type === DATE && nextElement?.type === DATE) ||
+        (copyElement.type === SUBSCRIPT && nextElement?.type === SUBSCRIPT) ||
+        (copyElement.type === SUPERSCRIPT && nextElement?.type === SUPERSCRIPT)
+      ) {
+        EDITOR_ELEMENT_COPY_ATTR.forEach(attr => {
+          // 在分组外无需复制分组信息
+          if (attr === 'groupIds' && !nextElement?.groupIds) return
+          const value = copyElement[attr] as never
+          if (value !== undefined) {
+            newElement[attr] = value
+          }
+        })
+      }
+      if (isComposing) {
+        newElement.underline = true
+      }
     }
     return newElement
   })

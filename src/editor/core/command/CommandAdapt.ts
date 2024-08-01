@@ -300,15 +300,13 @@ export class CommandAdapt {
   }
 
   public applyPainterStyle() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     this.canvasEvent.applyPainterStyle()
   }
 
   public format() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     // 选区设置或设置换行处样式
@@ -336,8 +334,7 @@ export class CommandAdapt {
   }
 
   public font(payload: string) {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
@@ -359,8 +356,7 @@ export class CommandAdapt {
   public size(payload: number) {
     const { minSize, maxSize, defaultSize } = this.options
     if (payload < minSize || payload > maxSize) return
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     // 选区设置或设置换行处样式
     let renderOption: IDrawOption = {}
@@ -396,8 +392,7 @@ export class CommandAdapt {
   }
 
   public sizeAdd() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getTextLikeSelectionElementList()
     // 选区设置或设置换行处样式
@@ -436,8 +431,7 @@ export class CommandAdapt {
   }
 
   public sizeMinus() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getTextLikeSelectionElementList()
     // 选区设置或设置换行处样式
@@ -476,8 +470,7 @@ export class CommandAdapt {
   }
 
   public bold() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
@@ -498,8 +491,7 @@ export class CommandAdapt {
   }
 
   public italic() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
@@ -520,8 +512,7 @@ export class CommandAdapt {
   }
 
   public underline(textDecoration?: ITextDecoration) {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
@@ -559,8 +550,7 @@ export class CommandAdapt {
   }
 
   public strikeout() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
@@ -584,8 +574,7 @@ export class CommandAdapt {
   }
 
   public superscript() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
@@ -614,8 +603,7 @@ export class CommandAdapt {
   }
 
   public subscript() {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (!selection) return
@@ -644,8 +632,7 @@ export class CommandAdapt {
   }
 
   public color(payload: string | null) {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
@@ -676,8 +663,7 @@ export class CommandAdapt {
   }
 
   public highlight(payload: string | null) {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const selection = this.range.getSelectionElementList()
     if (selection?.length) {
@@ -1802,8 +1788,7 @@ export class CommandAdapt {
   }
 
   public image(payload: IDrawImagePayload) {
-    const isDisabled =
-      this.draw.isReadonly() || this.control.getIsDisabledControl()
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return

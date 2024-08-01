@@ -317,6 +317,23 @@ export class Draw {
     }
   }
 
+  public isDisabled() {
+    const { startIndex, endIndex } = this.range.getRange()
+    const elementList = this.getElementList()
+    if (startIndex === endIndex) {
+      const startElement = elementList[startIndex]
+      const nextElement = elementList[startIndex + 1]
+      return !!(
+        (startElement?.title?.disabled && nextElement?.title?.disabled) ||
+        (startElement?.control?.disabled && nextElement?.control?.disabled)
+      )
+    }
+    const selectionElementList = elementList.slice(startIndex + 1, endIndex + 1)
+    return selectionElementList.some(
+      element => element.title?.disabled || element.control?.disabled
+    )
+  }
+
   public getOriginalWidth(): number {
     const { paperDirection, width, height } = this.options
     return paperDirection === PaperDirection.VERTICAL ? width : height

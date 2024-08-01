@@ -17,8 +17,7 @@ import { IOverrideResult } from '../../override/Override'
 
 export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
+  if (draw.isReadonly() || draw.isDisabled()) return
   const rangeManager = draw.getRange()
   const { startIndex } = rangeManager.getRange()
   const originalElementList = draw.getElementList()
@@ -59,8 +58,7 @@ export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
 
 export function pasteHTML(host: CanvasEvent, htmlText: string) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
+  if (draw.isReadonly() || draw.isDisabled()) return
   const elementList = getElementListByHTML(htmlText, {
     innerWidth: draw.getOriginalInnerWidth()
   })
@@ -69,8 +67,7 @@ export function pasteHTML(host: CanvasEvent, htmlText: string) {
 
 export function pasteImage(host: CanvasEvent, file: File | Blob) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
+  if (draw.isReadonly() || draw.isDisabled()) return
   const rangeManager = draw.getRange()
   const { startIndex } = rangeManager.getRange()
   const elementList = draw.getElementList()
@@ -99,8 +96,7 @@ export function pasteImage(host: CanvasEvent, file: File | Blob) {
 
 export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
+  if (draw.isReadonly() || draw.isDisabled()) return
   const clipboardData = evt.clipboardData
   if (!clipboardData) return
   // 自定义粘贴事件
@@ -157,8 +153,7 @@ export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
 
 export async function pasteByApi(host: CanvasEvent, options?: IPasteOption) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
-  if (isReadonly) return
+  if (draw.isReadonly() || draw.isDisabled()) return
   // 自定义粘贴事件
   const { paste } = draw.getOverride()
   if (paste) {
