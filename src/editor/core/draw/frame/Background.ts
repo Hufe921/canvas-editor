@@ -99,14 +99,19 @@ export class Background {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
-    const { background } = this.options
-    if (background.image) {
+    const {
+      background: { image, color, applyPageNumbers }
+    } = this.options
+    if (
+      image &&
+      (!applyPageNumbers?.length || applyPageNumbers.includes(pageNo))
+    ) {
       const { width, height } = this.options
       this._renderBackgroundImage(ctx, width, height)
     } else {
       const width = this.draw.getCanvasWidth(pageNo)
       const height = this.draw.getCanvasHeight(pageNo)
-      this._renderBackgroundColor(ctx, background.color, width, height)
+      this._renderBackgroundColor(ctx, color, width, height)
     }
   }
 }
