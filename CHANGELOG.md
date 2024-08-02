@@ -1,3 +1,25 @@
+## [0.9.88](https://github.com/Hufe921/canvas-editor/compare/v0.9.87...v0.9.88) (2024-08-02)
+
+
+### Bug Fixes
+
+* float image position boundary error #716 ([f5113f5](https://github.com/Hufe921/canvas-editor/commit/f5113f539c5b224fdb9af8cde8e61f632dc7e49f)), closes [#716](https://github.com/Hufe921/canvas-editor/issues/716)
+
+
+### Chores
+
+* add touch support to signature component ([c3ef290](https://github.com/Hufe921/canvas-editor/commit/c3ef2907ae31be21cd3bc61a5600ad381230034f))
+* update issue template ([eea301e](https://github.com/Hufe921/canvas-editor/commit/eea301eb11fdc3d5870da2408abccf4d96d8532f))
+
+
+### Features
+
+* add applyPageNumbers attribute to background option #729 ([8d112a8](https://github.com/Hufe921/canvas-editor/commit/8d112a8518656edd14201cb9bd16a417752fcdf9)), closes [#729](https://github.com/Hufe921/canvas-editor/issues/729)
+* add cursor setting option to executeSetValue api #715 ([3235e5a](https://github.com/Hufe921/canvas-editor/commit/3235e5ae386bd1f48f5f64427e1eb0ed3782838d)), closes [#715](https://github.com/Hufe921/canvas-editor/issues/715)
+* add title disabled property #680 ([87a8dbe](https://github.com/Hufe921/canvas-editor/commit/87a8dbea1596bcdee28edbb58b02fbe2a36e6c58)), closes [#680](https://github.com/Hufe921/canvas-editor/issues/680)
+
+
+
 ## [0.9.87](https://github.com/Hufe921/canvas-editor/compare/v0.9.86...v0.9.87) (2024-07-26)
 
 
