@@ -208,7 +208,16 @@ export class Control {
   }
 
   public getIsDisabledControl(): boolean {
-    return !!this.activeControl?.getElement().control?.disabled
+    if (!this.activeControl) return false
+    const { startIndex, endIndex } = this.range.getRange()
+    if (startIndex === endIndex) {
+      const elementList = this.getElementList()
+      const startElement = elementList[startIndex]
+      if (startElement.controlComponent === ControlComponent.POSTFIX) {
+        return false
+      }
+    }
+    return !!this.activeControl.getElement()?.control?.disabled
   }
 
   public getContainer(): HTMLDivElement {

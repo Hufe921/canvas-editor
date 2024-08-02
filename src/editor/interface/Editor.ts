@@ -117,3 +117,7 @@ export type IUpdateOption = Omit<
   | 'historyMaxRecordCount'
   | 'scrollContainerSelector'
 >
+
+export interface ISetValueOption {
+  isSetCursor?: boolean
+}

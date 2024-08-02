@@ -4,6 +4,7 @@ import {
   deepCloneOmitKeys,
   getUUID,
   isArrayEqual,
+  omitObject,
   pickObject,
   splitText
 } from '.'
@@ -29,7 +30,8 @@ import {
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
-  TEXTLIKE_ELEMENT_TYPE
+  TEXTLIKE_ELEMENT_TYPE,
+  TITLE_CONTEXT_ATTR
 } from '../dataset/constant/Element'
 import {
   listStyleCSSMapping,
@@ -818,8 +820,12 @@ export function formatElementContext(
   anchorIndex: number,
   options?: IFormatElementContextOption
 ) {
-  const copyElement = getAnchorElement(sourceElementList, anchorIndex)
+  let copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
+  // 标题元素禁用时不复制标题属性
+  if (copyElement.title?.disabled) {
+    copyElement = omitObject(copyElement, TITLE_CONTEXT_ATTR)
+  }
   const { isBreakWhenWrap = false } = options || {}
   // 是否已经换行
   let isBreakWarped = false
@@ -839,9 +845,9 @@ export function formatElementContext(
       (!copyElement.listId && targetElement.type === ElementType.LIST)
     ) {
       const cloneAttr = [...TABLE_CONTEXT_ATTR, ...EDITOR_ROW_ATTR]
-      cloneProperty<IElement>(cloneAttr, copyElement, targetElement)
+      cloneProperty<IElement>(cloneAttr, copyElement!, targetElement)
       targetElement.valueList?.forEach(valueItem => {
-        cloneProperty<IElement>(cloneAttr, copyElement, valueItem)
+        cloneProperty<IElement>(cloneAttr, copyElement!, valueItem)
       })
       continue
     }

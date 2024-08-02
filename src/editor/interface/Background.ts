@@ -5,4 +5,5 @@ export interface IBackgroundOption {
   image?: string
   size?: BackgroundSize
   repeat?: BackgroundRepeat
+  applyPageNumbers?: number[]
 }

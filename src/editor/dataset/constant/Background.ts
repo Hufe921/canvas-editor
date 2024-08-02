@@ -5,5 +5,6 @@ export const defaultBackground: Readonly<Required<IBackgroundOption>> = {
   color: '#FFFFFF',
   image: '',
   size: BackgroundSize.COVER,
-  repeat: BackgroundRepeat.NO_REPEAT
+  repeat: BackgroundRepeat.NO_REPEAT,
+  applyPageNumbers: []
 }

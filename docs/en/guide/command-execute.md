@@ -789,7 +789,7 @@ Feature: Set the editor data
 Usage:
 
 ```javascript
-instance.command.executeSetValue(payload: Partial<IEditorData>)
+instance.command.executeSetValue(payload: Partial<IEditorData>, options?: ISetValueOption)
 ```
 
 ## executeRemoveControl

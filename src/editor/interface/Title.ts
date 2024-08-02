@@ -14,6 +14,7 @@ export type ITitleOption = ITitleSizeOption & {}
 
 export interface ITitleRule {
   deletable?: boolean
+  disabled?: boolean
 }
 
 export type ITitle = ITitleRule & {
