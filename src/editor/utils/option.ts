@@ -16,6 +16,7 @@ import { defaultTableOption } from '../dataset/constant/Table'
 import { defaultTitleOption } from '../dataset/constant/Title'
 import { defaultWatermarkOption } from '../dataset/constant/Watermark'
 import { defaultZoneOption } from '../dataset/constant/Zone'
+import { defaultLineNumberOption } from '../dataset/constant/LineNumber'
 import { IBackgroundOption } from '../interface/Background'
 import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
@@ -35,6 +36,7 @@ import { ITableOption } from '../interface/table/Table'
 import { ITitleOption } from '../interface/Title'
 import { IWatermark } from '../interface/Watermark'
 import { IZoneOption } from '../interface/Zone'
+import { ILineNumberOption } from '../interface/LineNumber'
 import {
   EditorMode,
   PageMode,
@@ -114,6 +116,10 @@ export function mergeOption(
     ...defaultSeparatorOption,
     ...options.separator
   }
+  const lineNumberOptions: Required<ILineNumberOption> = {
+    ...defaultLineNumberOption,
+    ...options.lineNumber
+  }
 
   return {
     mode: EditorMode.EDIT,
@@ -173,6 +179,7 @@ export function mergeOption(
     zone: zoneOptions,
     background: backgroundOptions,
     lineBreak: lineBreakOptions,
-    separator: separatorOptions
+    separator: separatorOptions,
+    lineNumber: lineNumberOptions
   }
 }

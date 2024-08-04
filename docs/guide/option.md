@@ -71,6 +71,7 @@ interface IEditorOption {
   background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。默认：{color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
+  lineNumber?: ILineNumberOption // 行号配置。{size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
 }
 ```
 
@@ -143,5 +144,18 @@ interface IPlaceholder {
   opacity?: number // 透明度。默认：1
   size?: number // 字体大小。默认：16
   font?: string // 字体。默认：Microsoft YaHei
+}
+```
+
+## 行号配置
+
+```typescript
+interface ILineNumberOption {
+  size?: number // 字体大小。默认：12
+  font?: string // 字体。默认：Microsoft YaHei
+  color?: string // 颜色。默认：#000000
+  disabled?: boolean // 是否禁用。默认：true
+  right?: number // 距离正文距离。默认：20
+  type?: LineNumberType // 编号类型（每页重新编号、连续编号）。默认：连续编号
 }
 ```

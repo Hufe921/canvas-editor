@@ -52,6 +52,7 @@ import { deepClone, splitText } from './utils'
 import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
+import { LineNumberType } from './dataset/enum/LineNumber'
 
 export default class Editor {
   public command: Command
@@ -169,7 +170,8 @@ export {
   ControlIndentation,
   BackgroundRepeat,
   BackgroundSize,
-  TextDecorationStyle
+  TextDecorationStyle,
+  LineNumberType
 }
 
 // 对外类型

@@ -101,6 +101,7 @@ import { ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
 import { MouseObserver } from '../observer/MouseObserver'
+import { LineNumber } from './frame/LineNumber'
 
 export class Draw {
   private container: HTMLDivElement
@@ -138,6 +139,7 @@ export class Draw {
   private tableParticle: TableParticle
   private tableTool: TableTool
   private pageNumber: PageNumber
+  private lineNumber: LineNumber
   private waterMark: Watermark
   private placeholder: Placeholder
   private header: Header
@@ -213,6 +215,7 @@ export class Draw {
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
     this.pageNumber = new PageNumber(this)
+    this.lineNumber = new LineNumber(this)
     this.waterMark = new Watermark(this)
     this.placeholder = new Placeholder(this)
     this.header = new Header(this, data.header)
@@ -547,6 +550,10 @@ export class Draw {
 
   public getLineBreakParticle(): LineBreakParticle {
     return this.lineBreakParticle
+  }
+
+  public getTextParticle(): TextParticle {
+    return this.textParticle
   }
 
   public getHeaderElementList(): IElement[] {
@@ -1194,6 +1201,7 @@ export class Draw {
         ascent: 0,
         elementList: [],
         startIndex: 0,
+        rowIndex: 0,
         rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
       })
     }
@@ -1645,6 +1653,7 @@ export class Draw {
           startIndex: i,
           elementList: [rowElement],
           ascent,
+          rowIndex: curRow.rowIndex + 1,
           rowFlex: elementList[i]?.rowFlex || elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         }
@@ -2186,7 +2195,8 @@ export class Draw {
 
   private _drawPage(payload: IDrawPagePayload) {
     const { elementList, positionList, rowList, pageNo } = payload
-    const { inactiveAlpha, pageMode, header, footer, pageNumber } = this.options
+    const { inactiveAlpha, pageMode, header, footer, pageNumber, lineNumber } =
+      this.options
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2246,6 +2256,10 @@ export class Draw {
     // 绘制空白占位符
     if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
       this.placeholder.render(ctx)
+    }
+    // 渲染行数
+    if (!lineNumber.disabled) {
+      this.lineNumber.render(ctx, pageNo)
     }
   }
 
