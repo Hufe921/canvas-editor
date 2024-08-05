@@ -159,7 +159,9 @@ export class ContextMenu {
       const originalElementList = this.draw.getOriginalElementList()
       const originTableElement = originalElementList[index!] || null
       if (originTableElement) {
-        tableElement = zipElementList([originTableElement])[0]
+        tableElement = zipElementList([originTableElement], {
+          extraPickAttrs: ['id']
+        })[0]
       }
     }
     // 是否存在跨行/列
