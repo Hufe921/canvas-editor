@@ -40,7 +40,8 @@ export interface IControlHighlightRule {
 
 export interface IControlHighlight {
   ruleList: IControlHighlightRule[]
-  conceptId: string
+  id?: string
+  conceptId?: string
 }
 
 export interface IControlRule {
@@ -124,7 +125,8 @@ export interface IControlRuleOption {
 }
 
 export interface IGetControlValueOption {
-  conceptId: string
+  id?: string
+  conceptId?: string
 }
 
 export type IGetControlValueResult = (Omit<IControl, 'value'> & {
@@ -134,19 +136,22 @@ export type IGetControlValueResult = (Omit<IControl, 'value'> & {
 })[]
 
 export interface ISetControlValueOption {
-  conceptId: string
+  id?: string
+  conceptId?: string
   value: string
 }
 
 export interface ISetControlExtensionOption {
-  conceptId: string
+  id?: string
+  conceptId?: string
   extension: unknown
 }
 
 export type ISetControlHighlightOption = IControlHighlight[]
 
 export type ISetControlProperties = {
-  conceptId: string
+  id?: string
+  conceptId?: string
   properties: Partial<Omit<IControl, 'value'>>
 }
 

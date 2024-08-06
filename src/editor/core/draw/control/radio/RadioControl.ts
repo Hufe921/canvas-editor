@@ -12,7 +12,10 @@ export class RadioControl extends CheckboxControl {
     options: IControlRuleOption = {}
   ) {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
+    if (
+      !options.isIgnoreDisabledRule &&
+      this.control.getIsDisabledControl(context)
+    ) {
       return
     }
     const { control } = this.element
