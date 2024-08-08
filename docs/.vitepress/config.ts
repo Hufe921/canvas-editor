@@ -21,6 +21,10 @@ export default defineConfig({
       {
         text: 'Demo',
         link: 'https://hufe.club/canvas-editor'
+      },
+      {
+        text: '官方插件',
+        link: '/guide/plugin-internal.html'
       }
     ],
     sidebar: [
@@ -71,7 +75,10 @@ export default defineConfig({
       },
       {
         text: '插件',
-        items: [{ text: '自定义插件', link: '/guide/plugin' }]
+        items: [
+          { text: '自定义插件', link: '/guide/plugin-custom' },
+          { text: '官方插件', link: '/guide/plugin-internal' }
+        ]
       }
     ],
     socialLinks: [
@@ -104,6 +111,10 @@ export default defineConfig({
           {
             text: 'Demo',
             link: 'https://hufe.club/canvas-editor'
+          },
+          {
+            text: 'Official plugin',
+            link: '/en/guide/plugin-internal.html'
           }
         ],
         sidebar: [
@@ -154,7 +165,10 @@ export default defineConfig({
           },
           {
             text: 'Plugin',
-            items: [{ text: 'plugin', link: '/en/guide/plugin' }]
+            items: [
+              { text: 'custom', link: '/en/guide/plugin-custom' },
+              { text: 'official', link: '/en/guide/plugin-internal' }
+            ]
           }
         ]
       }
