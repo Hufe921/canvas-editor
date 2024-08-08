@@ -44,6 +44,8 @@ import {
   RenderMode,
   WordBreak
 } from '../dataset/enum/Editor'
+import {ITrackStyleOption} from '../interface/Track'
+import {defaultTrackStyleOptions} from '../dataset/constant/Track'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -120,6 +122,10 @@ export function mergeOption(
     ...defaultLineNumberOption,
     ...options.lineNumber
   }
+  const trackStyleOptions: Required<ITrackStyleOption> = {
+    ...defaultTrackStyleOptions,
+    ...options.trackStyle
+  }
 
   return {
     mode: EditorMode.EDIT,
@@ -180,6 +186,7 @@ export function mergeOption(
     background: backgroundOptions,
     lineBreak: lineBreakOptions,
     separator: separatorOptions,
-    lineNumber: lineNumberOptions
+    lineNumber: lineNumberOptions,
+    trackStyle: trackStyleOptions
   }
 }

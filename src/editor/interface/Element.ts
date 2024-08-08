@@ -13,6 +13,9 @@ import { ITextDecoration } from './Text'
 import { ITitle } from './Title'
 import { IColgroup } from './table/Colgroup'
 import { ITr } from './table/Tr'
+import {ITrack} from './Track'
+import {TrackType} from '../dataset/enum/Track'
+
 
 export interface IElementBasic {
   id?: string
@@ -124,6 +127,12 @@ export interface IBlockElement {
   block?: IBlock
 }
 
+export interface ITrackElement  {
+  track?: ITrack
+  trackId?: string
+  trackType?: TrackType
+}
+
 export type IElement = IElementBasic &
   IElementStyle &
   IElementGroup &
@@ -139,7 +148,8 @@ export type IElement = IElementBasic &
   IImageElement &
   IBlockElement &
   ITitleElement &
-  IListElement
+  IListElement &
+  ITrackElement
 
 export interface IElementMetrics {
   width: number
@@ -179,3 +189,4 @@ export interface IUpdateElementByIdOption {
   id: string
   properties: Omit<Partial<IElement>, 'id'>
 }
+

@@ -200,6 +200,13 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       hyperlinkParticle.drawHyperlinkPopup(curElement, positionList[curIndex])
     }
   }
+
+  // 痕迹信息
+  const trackParticle = draw.getTrackParticle()
+  trackParticle.clearTrackPopup()
+  if (curElement.type === ElementType.TRACK) {
+      trackParticle.showTrackInfo(curElement, positionList[curIndex])
+  }
   // 日期控件
   const dateParticle = draw.getDateParticle()
   dateParticle.clearDatePicker()

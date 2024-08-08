@@ -1,6 +1,6 @@
-import { version } from '../../../../package.json'
-import { ZERO } from '../../dataset/constant/Common'
-import { RowFlex } from '../../dataset/enum/Row'
+import {version} from '../../../../package.json'
+import {ZERO} from '../../dataset/constant/Common'
+import {RowFlex} from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
   IComputeRowListPayload,
@@ -12,96 +12,69 @@ import {
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
-import {
-  IEditorData,
-  IEditorOption,
-  IEditorResult,
-  ISetValueOption
-} from '../../interface/Editor'
-import {
-  IElement,
-  IElementMetrics,
-  IElementFillRect,
-  IElementStyle
-} from '../../interface/Element'
-import { IRow, IRowElement } from '../../interface/Row'
-import { deepClone, getUUID, nextTick } from '../../utils'
-import { Cursor } from '../cursor/Cursor'
-import { CanvasEvent } from '../event/CanvasEvent'
-import { GlobalEvent } from '../event/GlobalEvent'
-import { HistoryManager } from '../history/HistoryManager'
-import { Listener } from '../listener/Listener'
-import { Position } from '../position/Position'
-import { RangeManager } from '../range/RangeManager'
-import { Background } from './frame/Background'
-import { Highlight } from './richtext/Highlight'
-import { Margin } from './frame/Margin'
-import { Search } from './interactive/Search'
-import { Strikeout } from './richtext/Strikeout'
-import { Underline } from './richtext/Underline'
-import { ElementType } from '../../dataset/enum/Element'
-import { ImageParticle } from './particle/ImageParticle'
-import { LaTexParticle } from './particle/latex/LaTexParticle'
-import { TextParticle } from './particle/TextParticle'
-import { PageNumber } from './frame/PageNumber'
-import { ScrollObserver } from '../observer/ScrollObserver'
-import { SelectionObserver } from '../observer/SelectionObserver'
-import { TableParticle } from './particle/table/TableParticle'
-import { TableTool } from './particle/table/TableTool'
-import { HyperlinkParticle } from './particle/HyperlinkParticle'
-import { Header } from './frame/Header'
-import { SuperscriptParticle } from './particle/Superscript'
-import { SubscriptParticle } from './particle/Subscript'
-import { SeparatorParticle } from './particle/Separator'
-import { PageBreakParticle } from './particle/PageBreak'
-import { Watermark } from './frame/Watermark'
-import {
-  EditorComponent,
-  EditorMode,
-  EditorZone,
-  PageMode,
-  PaperDirection,
-  WordBreak
-} from '../../dataset/enum/Editor'
-import { Control } from './control/Control'
-import {
-  getIsBlockElement,
-  getSlimCloneElementList,
-  zipElementList
-} from '../../utils/element'
-import { CheckboxParticle } from './particle/CheckboxParticle'
-import { RadioParticle } from './particle/RadioParticle'
-import { DeepRequired, IPadding } from '../../interface/Common'
-import {
-  ControlComponent,
-  ControlIndentation
-} from '../../dataset/enum/Control'
-import { formatElementList } from '../../utils/element'
-import { WorkerManager } from '../worker/WorkerManager'
-import { Previewer } from './particle/previewer/Previewer'
-import { DateParticle } from './particle/date/DateParticle'
-import { IMargin } from '../../interface/Margin'
-import { BlockParticle } from './particle/block/BlockParticle'
-import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
-import { I18n } from '../i18n/I18n'
-import { ImageObserver } from '../observer/ImageObserver'
-import { Zone } from '../zone/Zone'
-import { Footer } from './frame/Footer'
-import {
-  IMAGE_ELEMENT_TYPE,
-  TEXTLIKE_ELEMENT_TYPE
-} from '../../dataset/constant/Element'
-import { ListParticle } from './particle/ListParticle'
-import { Placeholder } from './frame/Placeholder'
-import { EventBus } from '../event/eventbus/EventBus'
-import { EventBusMap } from '../../interface/EventBus'
-import { Group } from './interactive/Group'
-import { Override } from '../override/Override'
-import { ImageDisplay } from '../../dataset/enum/Common'
-import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
-import { LineBreakParticle } from './particle/LineBreakParticle'
-import { MouseObserver } from '../observer/MouseObserver'
-import { LineNumber } from './frame/LineNumber'
+import {IEditorData, IEditorOption, IEditorResult, ISetValueOption} from '../../interface/Editor'
+import {IElement, IElementFillRect, IElementMetrics, IElementStyle} from '../../interface/Element'
+import {IRow, IRowElement} from '../../interface/Row'
+import {deepClone, getUUID, nextTick} from '../../utils'
+import {Cursor} from '../cursor/Cursor'
+import {CanvasEvent} from '../event/CanvasEvent'
+import {GlobalEvent} from '../event/GlobalEvent'
+import {HistoryManager} from '../history/HistoryManager'
+import {Listener} from '../listener/Listener'
+import {Position} from '../position/Position'
+import {RangeManager} from '../range/RangeManager'
+import {Background} from './frame/Background'
+import {Highlight} from './richtext/Highlight'
+import {Margin} from './frame/Margin'
+import {Search} from './interactive/Search'
+import {Strikeout} from './richtext/Strikeout'
+import {Underline} from './richtext/Underline'
+import {ElementType} from '../../dataset/enum/Element'
+import {ImageParticle} from './particle/ImageParticle'
+import {LaTexParticle} from './particle/latex/LaTexParticle'
+import {TextParticle} from './particle/TextParticle'
+import {PageNumber} from './frame/PageNumber'
+import {ScrollObserver} from '../observer/ScrollObserver'
+import {SelectionObserver} from '../observer/SelectionObserver'
+import {TableParticle} from './particle/table/TableParticle'
+import {TableTool} from './particle/table/TableTool'
+import {HyperlinkParticle} from './particle/HyperlinkParticle'
+import {Header} from './frame/Header'
+import {SuperscriptParticle} from './particle/Superscript'
+import {SubscriptParticle} from './particle/Subscript'
+import {SeparatorParticle} from './particle/Separator'
+import {PageBreakParticle} from './particle/PageBreak'
+import {Watermark} from './frame/Watermark'
+import {EditorComponent, EditorMode, EditorZone, PageMode, PaperDirection, WordBreak} from '../../dataset/enum/Editor'
+import {Control} from './control/Control'
+import {formatElementList, getIsBlockElement, getSlimCloneElementList, zipElementList} from '../../utils/element'
+import {CheckboxParticle} from './particle/CheckboxParticle'
+import {RadioParticle} from './particle/RadioParticle'
+import {DeepRequired, IPadding} from '../../interface/Common'
+import {ControlComponent, ControlIndentation} from '../../dataset/enum/Control'
+import {WorkerManager} from '../worker/WorkerManager'
+import {Previewer} from './particle/previewer/Previewer'
+import {DateParticle} from './particle/date/DateParticle'
+import {IMargin} from '../../interface/Margin'
+import {BlockParticle} from './particle/block/BlockParticle'
+import {EDITOR_COMPONENT, EDITOR_PREFIX} from '../../dataset/constant/Editor'
+import {I18n} from '../i18n/I18n'
+import {ImageObserver} from '../observer/ImageObserver'
+import {Zone} from '../zone/Zone'
+import {Footer} from './frame/Footer'
+import {IMAGE_ELEMENT_TYPE, TEXTLIKE_ELEMENT_TYPE} from '../../dataset/constant/Element'
+import {ListParticle} from './particle/ListParticle'
+import {Placeholder} from './frame/Placeholder'
+import {EventBus} from '../event/eventbus/EventBus'
+import {EventBusMap} from '../../interface/EventBus'
+import {Group} from './interactive/Group'
+import {Override} from '../override/Override'
+import {ImageDisplay} from '../../dataset/enum/Common'
+import {PUNCTUATION_REG} from '../../dataset/constant/Regular'
+import {LineBreakParticle} from './particle/LineBreakParticle'
+import {MouseObserver} from '../observer/MouseObserver'
+import {LineNumber} from './frame/LineNumber'
+import {TrackParticle} from './particle/TrackParticle'
 
 export class Draw {
   private container: HTMLDivElement
@@ -155,6 +128,7 @@ export class Draw {
   private blockParticle: BlockParticle
   private listParticle: ListParticle
   private lineBreakParticle: LineBreakParticle
+  private trackParticle:TrackParticle
   private control: Control
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
@@ -231,6 +205,7 @@ export class Draw {
     this.blockParticle = new BlockParticle(this)
     this.listParticle = new ListParticle(this)
     this.lineBreakParticle = new LineBreakParticle(this)
+    this.trackParticle = new TrackParticle(this)
     this.control = new Control(this)
 
     this.scrollObserver = new ScrollObserver(this)
@@ -795,6 +770,10 @@ export class Draw {
 
   public getRadioParticle(): RadioParticle {
     return this.radioParticle
+  }
+
+  public getTrackParticle(): TrackParticle {
+    return this.trackParticle
   }
 
   public getControl(): Control {
@@ -1882,6 +1861,9 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.TRACK) {
+          this.textParticle.complete()
+          this.trackParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
           const nextElement = curRow.elementList[j + 1]
           // 释放之前的

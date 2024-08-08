@@ -25,6 +25,7 @@ import { IZoneOption } from './Zone'
 import { ISeparatorOption } from './Separator'
 import { ITableOption } from './table/Table'
 import { ILineNumberOption } from './LineNumber'
+import { ITrackStyleOption} from './Track'
 
 export interface IEditorData {
   header?: IElement[]
@@ -91,6 +92,7 @@ export interface IEditorOption {
   lineBreak?: ILineBreakOption
   separator?: ISeparatorOption
   lineNumber?: ILineNumberOption
+  trackStyle?: ITrackStyleOption
 }
 
 export interface IEditorResult {
