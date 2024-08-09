@@ -2105,13 +2105,13 @@ export class Draw {
             let coordinateY = y + curRow.height - rowMargin + 1
             const width = metrics.width + offsetX
             const height = curRow.height
-            if(element.type === ElementType.IMAGE) {
+            if(element.type === ElementType.IMAGE ||  element.type === ElementType.LATEX) {
               coordinateY = y + element.height!
             }
             this.track.recordInsertRectInfo(element, coordinateX, coordinateY, width, height)
           } else if(element.trackType === TrackType.DELETE) {
             let adjustY = y + offsetY + standardMetrics.actualBoundingBoxDescent * scale - metrics.height / 2
-            if(element.type === ElementType.IMAGE) {
+            if(element.type === ElementType.IMAGE || element.type === ElementType.LATEX || element.type === ElementType.TABLE) {
               adjustY = y + (element.height! / 2) + offsetY
             }
             this.track.recordDeleteRectInfo(element, x, adjustY, metrics.width, curRow.height)

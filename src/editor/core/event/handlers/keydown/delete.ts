@@ -50,7 +50,11 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
     // 命中图片直接删除
     const positionContext = position.getPositionContext()
     if (positionContext.isDirectHit && positionContext.isImage) {
-      draw.spliceElementList(elementList, index, 1)
+      if(!isReviewMode) {
+        draw.spliceElementList(elementList, index, 1)
+      } else {
+        draw.addReviewInformation([elementList[index]], TrackType.DELETE)
+      }
       curIndex = index - 1
     } else {
       const isCollapsed = rangeManager.getIsCollapsed()

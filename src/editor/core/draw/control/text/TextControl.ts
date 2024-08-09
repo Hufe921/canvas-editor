@@ -13,6 +13,8 @@ import { IElement } from '../../../../interface/Element'
 import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
+import {EditorMode} from '../../../../dataset/enum/Editor'
+import {TrackType} from '../../../../dataset/enum/Track'
 
 export class TextControl implements IControlInstance {
   private element: IElement
@@ -156,10 +158,28 @@ export class TextControl implements IControlInstance {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     const draw = this.control.getDraw()
+    const isReviewMode = draw.getMode() === EditorMode.REVIEW
     // backspace
     if (evt.key === KeyMap.Backspace) {
-      // 移除选区元素
-      if (startIndex !== endIndex) {
+      // 审阅模式
+      if(isReviewMode) {
+        if(startIndex === endIndex) {
+          if (
+            startElement.controlComponent === ControlComponent.PREFIX ||
+            endElement.controlComponent === ControlComponent.POSTFIX ||
+            startElement.controlComponent === ControlComponent.PLACEHOLDER
+          ) {
+            // 前缀、后缀、占位符
+            return this.control.removeControl(startIndex)
+          }
+          draw.addReviewInformation([startElement], TrackType.DELETE)
+          return startIndex - 1
+        } else {
+          const deleteArray = elementList.slice(startIndex+1, endIndex+1)
+          draw.addReviewInformation(deleteArray, TrackType.DELETE)
+          return startIndex
+        }
+      } else if (!isReviewMode && startIndex !== endIndex) {
         draw.spliceElementList(
           elementList,
           startIndex + 1,
@@ -170,7 +190,7 @@ export class TextControl implements IControlInstance {
           this.control.addPlaceholder(startIndex)
         }
         return startIndex
-      } else {
+      } else if(!isReviewMode && startIndex === endIndex){
         if (
           startElement.controlComponent === ControlComponent.PREFIX ||
           endElement.controlComponent === ControlComponent.POSTFIX ||
@@ -189,8 +209,30 @@ export class TextControl implements IControlInstance {
         }
       }
     } else if (evt.key === KeyMap.Delete) {
+      // 审阅模式
+      if(isReviewMode) {
+        const endNextElement = elementList[endIndex + 1]
+        if(startIndex === endIndex) {
+          if (
+            (startElement.controlComponent === ControlComponent.PREFIX &&
+              endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
+            endNextElement.controlComponent === ControlComponent.POSTFIX ||
+            startElement.controlComponent === ControlComponent.PLACEHOLDER
+          ) {
+            // 前缀、后缀、占位符
+            return this.control.removeControl(startIndex)
+          } else {
+            draw.addReviewInformation([endNextElement], TrackType.DELETE)
+            return endIndex + 1
+          }
+        } else {
+          const deleteArray = elementList.slice(startIndex+1, endIndex+1)
+          draw.addReviewInformation(deleteArray, TrackType.DELETE)
+          return endIndex
+        }
+      }
       // 移除选区元素
-      if (startIndex !== endIndex) {
+      else if (!isReviewMode && startIndex !== endIndex) {
         draw.spliceElementList(
           elementList,
           startIndex + 1,
@@ -201,7 +243,7 @@ export class TextControl implements IControlInstance {
           this.control.addPlaceholder(startIndex)
         }
         return startIndex
-      } else {
+      } if(!isReviewMode && startIndex === endIndex){
         const endNextElement = elementList[endIndex + 1]
         if (
           (startElement.controlComponent === ControlComponent.PREFIX &&
