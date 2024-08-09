@@ -163,7 +163,7 @@ export class SelectControl implements IControlInstance {
   ): number {
     const { isIgnoreDisabledRule = false, isAddPlaceholder = true } = options
     // 校验是否可以设置
-    if (!isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
+    if (!isIgnoreDisabledRule && this.control.getIsDisabledControl(context)) {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
@@ -215,7 +215,10 @@ export class SelectControl implements IControlInstance {
     options: IControlRuleOption = {}
   ) {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
+    if (
+      !options.isIgnoreDisabledRule &&
+      this.control.getIsDisabledControl(context)
+    ) {
       return
     }
     const elementList = context.elementList || this.control.getElementList()

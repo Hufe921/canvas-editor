@@ -1,8 +1,7 @@
 # Custom Plugin
 
 ::: tip
-1. Currently, only methods can be added and modified to the editor instance, and more functions will be extended in the future
-2. Official maintenance plugin: https://github.com/Hufe921/canvas-editor-plugin
+Official plugin: https://github.com/Hufe921/canvas-editor-plugin
 :::
 
 ## Write a Plugin
@@ -14,6 +13,8 @@ export function myPlugin(editor: Editor, options?: Option) {
 
   // 2. add，see more：src/plugins/markdown
   editor.command.addFunction = () => {}
+
+  // 3. listener, eventbus, shortcut, contextmenu, override...
 }
 ```
 

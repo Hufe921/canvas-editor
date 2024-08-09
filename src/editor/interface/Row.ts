@@ -19,4 +19,5 @@ export interface IRow {
   offsetX?: number
   elementList: IRowElement[]
   isWidthNotEnough?: boolean
+  rowIndex: number
 }

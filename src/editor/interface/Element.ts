@@ -177,5 +177,5 @@ export interface IElementFillRect {
 
 export interface IUpdateElementByIdOption {
   id: string
-  properties: Omit<IElement, 'id'>
+  properties: Omit<Partial<IElement>, 'id'>
 }

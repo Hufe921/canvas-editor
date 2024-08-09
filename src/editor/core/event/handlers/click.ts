@@ -195,7 +195,10 @@ function threeClick(host: CanvasEvent) {
   }
   if (newStartIndex < 0) return
   let newEndIndex = index + downCount + 1
-  if (elementList[newEndIndex]?.value === ZERO) {
+  if (
+    elementList[newEndIndex]?.value === ZERO ||
+    newEndIndex > elementList.length - 1
+  ) {
     newEndIndex -= 1
   }
   rangeManager.setRange(newStartIndex, newEndIndex)

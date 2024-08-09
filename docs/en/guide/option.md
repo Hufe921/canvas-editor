@@ -71,6 +71,7 @@ interface IEditorOption {
   background?: IBackgroundOption // Background option. {color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。default: {color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // LineBreak option. {disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // Separator option. {lineWidth?:number; strokeStyle?:string;}
+  lineNumber?: ILineNumberOption // LineNumber option. {size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
 }
 ```
 
@@ -109,11 +110,11 @@ interface IFooter {
 ```typescript
 interface IPageNumber {
   bottom?: number // The size from the bottom of the page.default: 60
-  size?: number // font size.default: 12
-  font?: string // font.default: Microsoft YaHei
-  color?: string // font color.default: #000000
-  rowFlex?: RowFlex // Line alignment.default: CENTER
-  format?: string // Page number format.default: {pageNo}。example：{pageNo}/{pageCount}
+  size?: number // font size. default: 12
+  font?: string // font. default: Microsoft YaHei
+  color?: string // font color. default: #000000
+  rowFlex?: RowFlex // Line alignment. default: CENTER
+  format?: string // Page number format. default: {pageNo}。example：{pageNo}/{pageCount}
   numberType?: NumberType // The numeric type. default: ARABIC
   disabled?: boolean // Whether to disable
   startPageNo?: number // Start page number.default: 1
@@ -127,10 +128,10 @@ interface IPageNumber {
 ```typescript
 interface IWatermark {
   data: string // text.
-  color?: string // color.default: #AEB5C0
-  opacity?: number // transparency.default: 0.3
-  size?: number // font size.default: 200
-  font?: string // font.default: Microsoft YaHei
+  color?: string // color. default: #AEB5C0
+  opacity?: number // transparency. default: 0.3
+  size?: number // font size. default: 200
+  font?: string // font. default: Microsoft YaHei
 }
 ```
 
@@ -139,9 +140,22 @@ interface IWatermark {
 ```typescript
 interface IPlaceholder {
   data: string // text.
-  color?: string // color.default: #DCDFE6
-  opacity?: number // transparency.default: 1
-  size?: number // font size.default: 16
-  font?: string // font.default: Microsoft YaHei
+  color?: string // color. default: #DCDFE6
+  opacity?: number // transparency. default: 1
+  size?: number // font size. default: 16
+  font?: string // font. default: Microsoft YaHei
+}
+```
+
+## LineNumber Configuration
+
+```typescript
+interface ILineNumberOption {
+  size?: number // font size. default: 12
+  font?: string // font. default: Microsoft YaHei
+  color?: string // color. default: #000000
+  disabled?: boolean // Whether to disable. default: false
+  right?: number // Distance from the main text. default: 20
+  type?: LineNumberType // Number type (renumber each page, consecutive numbering). default: continuity
 }
 ```

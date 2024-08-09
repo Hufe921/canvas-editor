@@ -2435,19 +2435,19 @@ export class CommandAdapt {
   public getControlValue(
     payload: IGetControlValueOption
   ): IGetControlValueResult | null {
-    return this.draw.getControl().getValueByConceptId(payload)
+    return this.draw.getControl().getValueById(payload)
   }
 
   public setControlValue(payload: ISetControlValueOption) {
-    this.draw.getControl().setValueByConceptId(payload)
+    this.draw.getControl().setValueById(payload)
   }
 
   public setControlExtension(payload: ISetControlExtensionOption) {
-    this.draw.getControl().setExtensionByConceptId(payload)
+    this.draw.getControl().setExtensionById(payload)
   }
 
   public setControlProperties(payload: ISetControlProperties) {
-    this.draw.getControl().setPropertiesByConceptId(payload)
+    this.draw.getControl().setPropertiesById(payload)
   }
 
   public setControlHighlight(payload: ISetControlHighlightOption) {

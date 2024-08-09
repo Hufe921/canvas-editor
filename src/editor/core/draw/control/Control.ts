@@ -207,11 +207,11 @@ export class Control {
     return prefixCount === postfixCount
   }
 
-  public getIsDisabledControl(): boolean {
+  public getIsDisabledControl(context: IControlContext = {}): boolean {
     if (!this.activeControl) return false
-    const { startIndex, endIndex } = this.range.getRange()
-    if (startIndex === endIndex) {
-      const elementList = this.getElementList()
+    const { startIndex, endIndex } = context.range || this.range.getRange()
+    if (startIndex === endIndex && ~startIndex && ~endIndex) {
+      const elementList = context.elementList || this.getElementList()
       const startElement = elementList[startIndex]
       if (startElement.controlComponent === ControlComponent.POSTFIX) {
         return false
@@ -569,11 +569,10 @@ export class Control {
     return this.activeControl.cut()
   }
 
-  public getValueByConceptId(
-    payload: IGetControlValueOption
-  ): IGetControlValueResult {
-    const { conceptId } = payload
+  public getValueById(payload: IGetControlValueOption): IGetControlValueResult {
+    const { id, conceptId } = payload
     const result: IGetControlValueResult = []
+    if (!id && !conceptId) return result
     const getValue = (elementList: IElement[], zone: EditorZone) => {
       let i = 0
       while (i < elementList.length) {
@@ -590,8 +589,14 @@ export class Control {
             }
           }
         }
-        if (element?.control?.conceptId !== conceptId) continue
-        const { type, code, valueSets } = element.control!
+        if (
+          !element.control ||
+          (id && element.controlId !== id) ||
+          (conceptId && element.control.conceptId !== conceptId)
+        ) {
+          continue
+        }
+        const { type, code, valueSets } = element.control
         let j = i
         let textControlValue = ''
         while (j < elementList.length) {
@@ -655,9 +660,10 @@ export class Control {
     return result
   }
 
-  public setValueByConceptId(payload: ISetControlValueOption) {
+  public setValueById(payload: ISetControlValueOption) {
     let isExistSet = false
-    const { conceptId, value } = payload
+    const { id, conceptId, value } = payload
+    if (!id && !conceptId) return
     // 设置值
     const setValue = (elementList: IElement[]) => {
       let i = 0
@@ -675,7 +681,13 @@ export class Control {
             }
           }
         }
-        if (element?.control?.conceptId !== conceptId) continue
+        if (
+          !element.control ||
+          (id && element.controlId !== id) ||
+          (conceptId && element.control.conceptId !== conceptId)
+        ) {
+          continue
+        }
         isExistSet = true
         const { type } = element.control!
         // 当前控件结束索引
@@ -767,8 +779,9 @@ export class Control {
     }
   }
 
-  public setExtensionByConceptId(payload: ISetControlExtensionOption) {
-    const { conceptId, extension } = payload
+  public setExtensionById(payload: ISetControlExtensionOption) {
+    const { id, conceptId, extension } = payload
+    if (!id && !conceptId) return
     const setExtension = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
@@ -785,7 +798,13 @@ export class Control {
             }
           }
         }
-        if (element?.control?.conceptId !== conceptId) continue
+        if (
+          !element.control ||
+          (id && element.controlId !== id) ||
+          (conceptId && element.control.conceptId !== conceptId)
+        ) {
+          continue
+        }
         element.control.extension = extension
         // 修改后控件结束索引
         let newEndIndex = i
@@ -807,8 +826,9 @@ export class Control {
     }
   }
 
-  public setPropertiesByConceptId(payload: ISetControlProperties) {
-    const { conceptId, properties } = payload
+  public setPropertiesById(payload: ISetControlProperties) {
+    const { id, conceptId, properties } = payload
+    if (!id && !conceptId) return
     let isExistUpdate = false
     function setProperties(elementList: IElement[]) {
       let i = 0
@@ -825,7 +845,13 @@ export class Control {
             }
           }
         }
-        if (element?.control?.conceptId !== conceptId) continue
+        if (
+          !element.control ||
+          (id && element.controlId !== id) ||
+          (conceptId && element.control.conceptId !== conceptId)
+        ) {
+          continue
+        }
         isExistUpdate = true
         element.control = {
           ...element.control,

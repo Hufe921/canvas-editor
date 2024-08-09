@@ -48,6 +48,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     draw.setPageNo(Number(pageIndex))
   }
   host.isAllowSelection = true
+  // 缓存旧上下文信息
+  const oldPositionContext = deepClone(position.getPositionContext())
   const positionResult = position.adjustPositionContext({
     x: evt.offsetX,
     y: evt.offsetY
@@ -79,7 +81,23 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const isDirectHitCheckbox = !!(isDirectHit && isCheckbox)
   const isDirectHitRadio = !!(isDirectHit && isRadio)
   if (~index) {
-    rangeManager.setRange(curIndex, curIndex)
+    let startIndex = curIndex
+    let endIndex = curIndex
+    // shift激活时进行选区处理
+    if (evt.shiftKey) {
+      const { startIndex: oldStartIndex } = rangeManager.getRange()
+      if (~oldStartIndex) {
+        const newPositionContext = position.getPositionContext()
+        if (newPositionContext.tdId === oldPositionContext.tdId) {
+          if (curIndex > oldStartIndex) {
+            startIndex = oldStartIndex
+          } else {
+            endIndex = oldStartIndex
+          }
+        }
+      }
+    }
+    rangeManager.setRange(startIndex, endIndex)
     position.setCursorPosition(positionList[curIndex])
     // 复选框
     const isSetCheckbox = isDirectHitCheckbox && !isReadonly

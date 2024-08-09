@@ -71,10 +71,13 @@ export class ControlSearch {
             }
           }
         }
-        const controlConceptId = element?.control?.conceptId
-        if (!controlConceptId) continue
+        const currentControl = element?.control
+        if (!currentControl) continue
         const highlightIndex = this.highlightList.findIndex(
-          highlight => highlight.conceptId === controlConceptId
+          highlight =>
+            highlight.id === element.controlId ||
+            (currentControl.conceptId &&
+              currentControl.conceptId === highlight.conceptId)
         )
         if (!~highlightIndex) continue
         // 搜索后控件结束索引

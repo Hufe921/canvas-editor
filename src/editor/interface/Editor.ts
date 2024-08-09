@@ -24,6 +24,7 @@ import { IWatermark } from './Watermark'
 import { IZoneOption } from './Zone'
 import { ISeparatorOption } from './Separator'
 import { ITableOption } from './table/Table'
+import { ILineNumberOption } from './LineNumber'
 
 export interface IEditorData {
   header?: IElement[]
@@ -89,6 +90,7 @@ export interface IEditorOption {
   background?: IBackgroundOption
   lineBreak?: ILineBreakOption
   separator?: ISeparatorOption
+  lineNumber?: ILineNumberOption
 }
 
 export interface IEditorResult {

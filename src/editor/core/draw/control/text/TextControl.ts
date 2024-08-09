@@ -75,7 +75,10 @@ export class TextControl implements IControlInstance {
     options: IControlRuleOption = {}
   ): number {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
+    if (
+      !options.isIgnoreDisabledRule &&
+      this.control.getIsDisabledControl(context)
+    ) {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
@@ -122,7 +125,10 @@ export class TextControl implements IControlInstance {
     options: IControlRuleOption = {}
   ): number {
     // 校验是否可以设置
-    if (!options.isIgnoreDisabledRule && this.control.getIsDisabledControl()) {
+    if (
+      !options.isIgnoreDisabledRule &&
+      this.control.getIsDisabledControl(context)
+    ) {
       return -1
     }
     const elementList = context.elementList || this.control.getElementList()
