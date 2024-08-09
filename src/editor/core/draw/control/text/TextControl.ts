@@ -89,13 +89,20 @@ export class TextControl implements IControlInstance {
     this.control.shrinkBoundary(context)
     const { startIndex, endIndex } = range
     const draw = this.control.getDraw()
+    const isReviewMode = draw.getMode() === EditorMode.REVIEW
     // 移除选区元素
-    if (startIndex !== endIndex) {
+    if(isReviewMode) {
+      if(startIndex !== endIndex) {
+        const deleteArray = elementList.slice(startIndex + 1, endIndex + 1)
+        draw.addReviewInformation(deleteArray, TrackType.DELETE)
+      }
+    } else if (startIndex !== endIndex) {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
       // 移除空白占位符
       this.control.removePlaceholder(startIndex, context)
     }
+
     // 非文本类元素或前缀过渡掉样式属性
     const startElement = elementList[startIndex]
     const anchorElement =
@@ -116,8 +123,17 @@ export class TextControl implements IControlInstance {
         ...data[i],
         controlComponent: ControlComponent.VALUE
       }
+
       formatElementContext(elementList, [newElement], startIndex)
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      if(isReviewMode){
+        draw.addReviewInformation([newElement],TrackType.INSERT)
+        draw.spliceElementList(elementList, endIndex + 1 + i, 0, newElement)
+      } else {
+        draw.spliceElementList(elementList, start + i, 0, newElement)
+      }
+    }
+    if(isReviewMode) {
+      return endIndex + data.length
     }
     return start + data.length - 1
   }
