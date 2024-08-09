@@ -19,7 +19,8 @@ export enum EditorMode {
   CLEAN = 'clean', // 清洁模式（隐藏辅助元素）
   READONLY = 'readonly', // 只读模式（文档不可编辑）
   FORM = 'form', // 表单模式（仅控件内可编辑）
-  PRINT = 'print' // 打印模式（文档不可编辑、隐藏辅助元素、选区、未书写控件及边框）
+  PRINT = 'print', // 打印模式（文档不可编辑、隐藏辅助元素、选区、未书写控件及边框）
+  REVIEW = 'review' // 审阅模式（文档可编辑，辅助元素存在，输入记录输入人信息和时间信息）
 }
 
 export enum EditorZone {

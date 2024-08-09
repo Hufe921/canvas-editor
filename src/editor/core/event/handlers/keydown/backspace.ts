@@ -1,9 +1,13 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
+import {EditorMode} from '../../../../dataset/enum/Editor'
+import {TrackType} from '../../../../dataset/enum/Track'
 
 export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   if (draw.isReadonly()) return
+  // 审阅模式
+  const isReviewMode = draw.getMode() === EditorMode.REVIEW
   // 可输入性验证
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
@@ -19,9 +23,13 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       const row = rowCol[r]
       for (let c = 0; c < row.length; c++) {
         const col = row[c]
-        if (col.value.length > 1) {
+        if (col.value.length > 1 && !isReviewMode) {
           draw.spliceElementList(col.value, 1, col.value.length - 1)
           isDeleted = true
+        } else if(col.value.length > 1 && isReviewMode) {
+          // 审阅模式删除表格跨行列内容
+          const deleteArray = col.value.slice(1, col.value.length)
+          draw.addReviewInformation(deleteArray, TrackType.DELETE)
         }
       }
     }
@@ -64,7 +72,15 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
         delete element.rowFlex
       })
     }
-    if (!isCollapsed) {
+    // 审阅模式删除！
+    if(isReviewMode && !isCollapsed) {
+      const deleteArray = elementList.slice(startIndex+1, endIndex+1)
+      draw.addReviewInformation(deleteArray, TrackType.DELETE)
+    } else if(isReviewMode && isCollapsed){
+      const element = elementList[index]
+      draw.addReviewInformation([element], TrackType.DELETE)
+    }
+    else if (!isCollapsed) {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
       draw.spliceElementList(elementList, index, 1)

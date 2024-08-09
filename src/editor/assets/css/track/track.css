@@ -20,7 +20,4 @@
   text-overflow: ellipsis;
   cursor: pointer;
   text-decoration: none;
-  border-bottom-width: 1px;
-  border-bottom-style: solid;
-  color: #0000ff;
 }

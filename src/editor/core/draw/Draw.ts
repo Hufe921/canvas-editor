@@ -15,7 +15,7 @@ import {
 import {IEditorData, IEditorOption, IEditorResult, ISetValueOption} from '../../interface/Editor'
 import {IElement, IElementFillRect, IElementMetrics, IElementStyle} from '../../interface/Element'
 import {IRow, IRowElement} from '../../interface/Row'
-import {deepClone, getUUID, nextTick} from '../../utils'
+import {deepClone, getCurrentTimeString, getUUID, nextTick} from '../../utils'
 import {Cursor} from '../cursor/Cursor'
 import {CanvasEvent} from '../event/CanvasEvent'
 import {GlobalEvent} from '../event/GlobalEvent'
@@ -75,6 +75,7 @@ import {LineBreakParticle} from './particle/LineBreakParticle'
 import {MouseObserver} from '../observer/MouseObserver'
 import {LineNumber} from './frame/LineNumber'
 import {TrackParticle} from './particle/TrackParticle'
+import {TrackType} from '../../dataset/enum/Track'
 
 export class Draw {
   private container: HTMLDivElement
@@ -310,6 +311,22 @@ export class Draw {
     return selectionElementList.some(
       element => element.title?.disabled || element.control?.disabled
     )
+  }
+  // 添加痕迹信息
+  public addReviewInformation(elementList: IElement[], type: TrackType) {
+    if(this.mode !== EditorMode.REVIEW) return
+    elementList.map(element =>{
+      element.type = ElementType.TRACK
+      element.trackId = getUUID()
+      element.trackType = type
+      element.track = {
+        author: 'john',
+        date: getCurrentTimeString()
+      }
+      element.valueList = [{
+        value: element.value
+      }]
+    })
   }
 
   public getOriginalWidth(): number {

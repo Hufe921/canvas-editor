@@ -14,6 +14,7 @@ import {
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 import { IOverrideResult } from '../../override/Override'
+import {TrackType} from '../../../dataset/enum/Track'
 
 export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
   const draw = host.getDraw()
@@ -53,6 +54,7 @@ export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
       isBreakWhenWrap: true
     })
   }
+  draw.addReviewInformation(elementList,TrackType.INSERT)
   draw.insertElementList(elementList)
 }
 
