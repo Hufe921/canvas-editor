@@ -144,7 +144,6 @@ export function formatElementList(
           value.trackId = el?.trackId || trackId
           value.trackType = el.trackType
           value.track = el.track
-          value.type = el.type
           elementList.splice(i, 0, value)
           i++
         }

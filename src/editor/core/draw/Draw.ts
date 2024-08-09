@@ -74,8 +74,8 @@ import {PUNCTUATION_REG} from '../../dataset/constant/Regular'
 import {LineBreakParticle} from './particle/LineBreakParticle'
 import {MouseObserver} from '../observer/MouseObserver'
 import {LineNumber} from './frame/LineNumber'
-import {TrackParticle} from './particle/TrackParticle'
 import {TrackType} from '../../dataset/enum/Track'
+import {Track} from './interactive/Track'
 
 export class Draw {
   private container: HTMLDivElement
@@ -102,6 +102,7 @@ export class Draw {
   private background: Background
   private search: Search
   private group: Group
+  private track: Track
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -129,7 +130,6 @@ export class Draw {
   private blockParticle: BlockParticle
   private listParticle: ListParticle
   private lineBreakParticle: LineBreakParticle
-  private trackParticle:TrackParticle
   private control: Control
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
@@ -180,6 +180,7 @@ export class Draw {
     this.background = new Background(this)
     this.search = new Search(this)
     this.group = new Group(this)
+    this.track = new Track(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -206,7 +207,6 @@ export class Draw {
     this.blockParticle = new BlockParticle(this)
     this.listParticle = new ListParticle(this)
     this.lineBreakParticle = new LineBreakParticle(this)
-    this.trackParticle = new TrackParticle(this)
     this.control = new Control(this)
 
     this.scrollObserver = new ScrollObserver(this)
@@ -316,7 +316,6 @@ export class Draw {
   public addReviewInformation(elementList: IElement[], type: TrackType) {
     if(this.mode !== EditorMode.REVIEW) return
     elementList.map(element =>{
-      element.type = ElementType.TRACK
       element.trackId = getUUID()
       element.trackType = type
       element.track = {
@@ -789,8 +788,8 @@ export class Draw {
     return this.radioParticle
   }
 
-  public getTrackParticle(): TrackParticle {
-    return this.trackParticle
+  public getTrack(): Track {
+    return this.track
   }
 
   public getControl(): Control {
@@ -1878,9 +1877,6 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
-        } else if (element.type === ElementType.TRACK) {
-          this.textParticle.complete()
-          this.trackParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
           const nextElement = curRow.elementList[j + 1]
           // 释放之前的
@@ -2094,6 +2090,34 @@ export class Draw {
         if (!group.disabled && element.groupIds) {
           this.group.recordFillInfo(element, x, y, metrics.width, curRow.height)
         }
+        // todo : 留痕信息记录
+        if(element.trackId) {
+          // 基线文字测量信息
+          const standardMetrics = this.textParticle.measureBasisWord(
+            ctx,
+            this.getElementFont(element)
+          )
+          const rowMargin = this.getElementRowMargin(element)
+
+          if(element.trackType === TrackType.INSERT) {
+            const offsetX = element.left || 0
+            const coordinateX = x - offsetX
+            let coordinateY = y + curRow.height - rowMargin + 1
+            const width = metrics.width + offsetX
+            const height = curRow.height
+            if(element.type === ElementType.IMAGE) {
+              coordinateY = y + element.height!
+            }
+            this.track.recordInsertRectInfo(element, coordinateX, coordinateY, width, height)
+          } else if(element.trackType === TrackType.DELETE) {
+            let adjustY = y + offsetY + standardMetrics.actualBoundingBoxDescent * scale - metrics.height / 2
+            if(element.type === ElementType.IMAGE) {
+              adjustY = y + (element.height! / 2) + offsetY
+            }
+            this.track.recordDeleteRectInfo(element, x, adjustY, metrics.width, curRow.height)
+
+          }
+        }
         index++
         // 绘制表格内元素
         if (element.type === ElementType.TABLE) {
@@ -2131,6 +2155,7 @@ export class Draw {
       this.strikeout.render(ctx)
       // 绘制批注样式
       this.group.render(ctx)
+      this.track.render(ctx)
       // 绘制选区
       if (!isPrintMode) {
         if (rangeRecord.width && rangeRecord.height) {
