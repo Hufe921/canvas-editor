@@ -1,3 +1,25 @@
+## [0.9.89](https://github.com/Hufe921/canvas-editor/compare/v0.9.88...v0.9.89) (2024-08-09)
+
+
+### Bug Fixes
+
+* three click selection paragraph boundary error #742 ([9dd192f](https://github.com/Hufe921/canvas-editor/commit/9dd192ffd26f9f271efa06c81b6bd5e32557d872)), closes [#742](https://github.com/Hufe921/canvas-editor/issues/742)
+
+
+### Documentation
+
+* update plugin markdown ([c2d3e94](https://github.com/Hufe921/canvas-editor/commit/c2d3e941b19a6bc766b0bfa8dac7911578170b6c))
+
+
+### Features
+
+* add id property to contextMenu context #737 ([997ecc0](https://github.com/Hufe921/canvas-editor/commit/997ecc03e89afeaaf6b903f9f253c5c5090b3f78)), closes [#737](https://github.com/Hufe921/canvas-editor/issues/737)
+* add line number option #734 ([d89218a](https://github.com/Hufe921/canvas-editor/commit/d89218a916fce5a7b7b6bf27fa4663ecc4d15cf6)), closes [#734](https://github.com/Hufe921/canvas-editor/issues/734)
+* control related apis support the control id property ([dd1b53e](https://github.com/Hufe921/canvas-editor/commit/dd1b53ee6297bc72b0064c09522b597118919c50))
+* set range using the shift shortcut key #728 ([8878fd7](https://github.com/Hufe921/canvas-editor/commit/8878fd7734ae0a566f16ca2db14e64ded5a05f38)), closes [#728](https://github.com/Hufe921/canvas-editor/issues/728)
+
+
+
 ## [0.9.88](https://github.com/Hufe921/canvas-editor/compare/v0.9.87...v0.9.88) (2024-08-02)
 
 
