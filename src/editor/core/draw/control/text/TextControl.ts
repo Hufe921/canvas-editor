@@ -95,6 +95,8 @@ export class TextControl implements IControlInstance {
       if(startIndex !== endIndex) {
         const deleteArray = elementList.slice(startIndex + 1, endIndex + 1)
         draw.addReviewInformation(deleteArray, TrackType.DELETE)
+      } else {
+        this.control.removePlaceholder(startIndex, context)
       }
     } else if (startIndex !== endIndex) {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)

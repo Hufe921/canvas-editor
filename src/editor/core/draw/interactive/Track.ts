@@ -125,8 +125,6 @@ export class Track {
       ctx.moveTo(x, y)
       ctx.lineTo(x+width, y)
       ctx.stroke()
-      ctx.restore()
-
     })
     this.deleteRectMap.forEach((fillRect) => {
       const { x, y, width } = fillRect
@@ -136,8 +134,8 @@ export class Track {
       ctx.moveTo(x, adjustY)
       ctx.lineTo(x + width, adjustY)
       ctx.stroke()
-      ctx.restore()
     })
+    ctx.restore()
     this.clearFillInfo()
   }
 }
