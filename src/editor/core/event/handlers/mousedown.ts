@@ -204,7 +204,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   // 痕迹信息
   const trackParticle = draw.getTrack()
   trackParticle.clearTrackPopup()
-  if (curElement.trackId) {
+  if (curElement.trackId && !curElement.hide) {
       trackParticle.showTrackInfo(curElement, positionList[curIndex])
   }
   // 日期控件

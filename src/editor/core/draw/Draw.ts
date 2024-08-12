@@ -327,6 +327,33 @@ export class Draw {
       }]
     })
   }
+  // 隐藏、显示痕迹
+  public hideReview() {
+    this.elementList.map(el => {
+      if(el.trackId && el.trackType === TrackType.DELETE) {
+        el.hide = true
+      }
+    })
+  }
+  public showReview() {
+    this.elementList.map(el => {
+      if(el.trackId && el.trackType === TrackType.DELETE && el.hide) {
+        delete el.hide
+      }
+    })
+  }
+  public getReviews() {
+    const len = this.elementList.length
+    const map = new Map()
+    for(let i = 0; i < len; i++) {
+      const element = this.elementList[i]
+      const trackId = element.trackId
+      if(trackId) {
+        map.get(trackId) ? map.get(trackId).push(element) : map.set(trackId, [element])
+      }
+    }
+    return map
+  }
 
   public getOriginalWidth(): number {
     const { paperDirection, width, height } = this.options
@@ -1222,7 +1249,11 @@ export class Draw {
         (element.listId && listStyleMap.get(element.listId)) ||
         0
       const availableWidth = innerWidth - offsetX
-      if (
+      if(element.hide) {
+        metrics.width = 0
+        metrics.height = 0
+        metrics.boundingBoxDescent = 0
+      } else if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
       ) {
@@ -1855,7 +1886,9 @@ export class Draw {
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
-        if (element.type === ElementType.IMAGE) {
+        if(element.hide) {
+          this.textParticle.complete()
+        } else if (element.type === ElementType.IMAGE) {
           this.textParticle.complete()
           // 浮动图片单独绘制
           if (
@@ -2115,7 +2148,6 @@ export class Draw {
               adjustY = y + (element.height! / 2) + offsetY
             }
             this.track.recordDeleteRectInfo(element, x, adjustY, metrics.width, curRow.height)
-
           }
         }
         index++
@@ -2409,6 +2441,9 @@ export class Draw {
     ) {
       this.submitHistory(curIndex)
     }
+    // 审阅记录获取
+    this.getReviews()
+
     // 信息变动回调
     nextTick(() => {
       // 重新唤起弹窗类控件

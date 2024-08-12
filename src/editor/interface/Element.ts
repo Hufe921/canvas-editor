@@ -131,6 +131,7 @@ export interface ITrackElement  {
   track?: ITrack
   trackId?: string
   trackType?: TrackType
+  hide?: boolean // 隐藏痕迹
 }
 
 export type IElement = IElementBasic &

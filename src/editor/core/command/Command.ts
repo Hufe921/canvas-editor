@@ -117,6 +117,7 @@ export class Command {
   public getContainer: CommandAdapt['getContainer']
   public getTitleValue: CommandAdapt['getTitleValue']
   public getPositionContextByEvent: CommandAdapt['getPositionContextByEvent']
+  public execHideTracks: CommandAdapt['hideTracks']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -244,5 +245,7 @@ export class Command {
     this.getControlList = adapt.getControlList.bind(adapt)
     this.executeLocationControl = adapt.locationControl.bind(adapt)
     this.executeInsertControl = adapt.insertControl.bind(adapt)
+    // 审核
+    this.execHideTracks = adapt.hideTracks.bind(adapt)
   }
 }
