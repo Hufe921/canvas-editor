@@ -2503,15 +2503,19 @@ export class CommandAdapt {
           }
         }
         if (element?.controlId !== controlId) continue
-        const curIndex = i - 1
-        return {
-          zone,
-          range: {
-            startIndex: curIndex,
-            endIndex: curIndex
-          },
-          positionContext: {
-            isTable: false
+        if (
+          element.controlComponent === 'placeholder' ||
+          element.controlComponent === 'postfix'
+        ) {
+          return {
+            zone,
+            range: {
+              startIndex: i - 2,
+              endIndex: i - 2
+            },
+            positionContext: {
+              isTable: false
+            }
           }
         }
       }
