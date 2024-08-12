@@ -236,7 +236,10 @@ export function formatElementList(
       // 移除父节点
       elementList.splice(i, 1)
       // 控件上下文提取（压缩后的控件上下文无法提取）
-      const controlContext = pickObject(el, EDITOR_ELEMENT_CONTEXT_ATTR)
+      const controlContext = pickObject(el, [
+        ...EDITOR_ELEMENT_CONTEXT_ATTR,
+        ...EDITOR_ROW_ATTR
+      ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
         <IElement>(<unknown>el.control),
@@ -858,11 +861,12 @@ export function formatElementContext(
         anchorIndex
       )
     }
-    cloneProperty<IElement>(
-      EDITOR_ELEMENT_CONTEXT_ATTR,
-      copyElement,
-      targetElement
-    )
+    // 非块类元素，需处理行属性
+    const cloneAttr = [...EDITOR_ELEMENT_CONTEXT_ATTR]
+    if (!getIsBlockElement(targetElement)) {
+      cloneAttr.push(...EDITOR_ROW_ATTR)
+    }
+    cloneProperty<IElement>(cloneAttr, copyElement, targetElement)
   }
 }
 
