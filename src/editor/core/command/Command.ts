@@ -2,7 +2,8 @@ import { CommandAdapt } from './CommandAdapt'
 
 // 通过CommandAdapt中转避免直接暴露编辑器上下文
 export class Command {
-  public executeMode: CommandAdapt['mode']
+  public executeMode: CommandAdapt['setMode']
+  public getMode: CommandAdapt['getMode']
   public executeCut: CommandAdapt['cut']
   public executeCopy: CommandAdapt['copy']
   public executePaste: CommandAdapt['paste']
@@ -120,7 +121,7 @@ export class Command {
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
-    this.executeMode = adapt.mode.bind(adapt)
+    this.executeMode = adapt.setMode.bind(adapt)
     this.executeCut = adapt.cut.bind(adapt)
     this.executeCopy = adapt.copy.bind(adapt)
     this.executePaste = adapt.paste.bind(adapt)
@@ -215,6 +216,7 @@ export class Command {
     this.executeUpdateOptions = adapt.updateOptions.bind(adapt)
     this.executeInsertTitle = adapt.insertTitle.bind(adapt)
     // 获取
+    this.getMode = adapt.getMode.bind(adapt)
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)

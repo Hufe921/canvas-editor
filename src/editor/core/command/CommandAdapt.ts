@@ -135,8 +135,11 @@ export class CommandAdapt {
     this.zone = draw.getZone()
   }
 
-  public mode(payload: EditorMode) {
+  public setMode(payload: EditorMode) {
     this.draw.setMode(payload)
+  }
+  public getMode():EditorMode {
+    return this.draw.getMode()
   }
 
   public cut() {
