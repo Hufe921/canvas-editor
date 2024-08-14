@@ -2143,6 +2143,14 @@ export class Draw {
         }
         // todo : 留痕信息记录
         if(element.trackId) {
+          // 如果前后类型不一致
+          if(preElement?.trackId && preElement?.trackType && element?.trackType && element.trackType !== preElement.trackType) {
+            if(!this.hideTrack) {
+              this.track.render(ctx)
+            } else {
+              this.track.clearFillInfo()
+            }
+          }
           // 基线文字测量信息
           const standardMetrics = this.textParticle.measureBasisWord(
             ctx,
@@ -2166,6 +2174,12 @@ export class Draw {
               adjustY = y + (element.height! / 2) + offsetY
             }
             this.track.recordDeleteRectInfo(element, x, adjustY, metrics.width, curRow.height)
+          }
+        } else if(preElement?.trackId) {
+          if(!this.hideTrack) {
+            this.track.render(ctx)
+          } else {
+            this.track.clearFillInfo()
           }
         }
         index++
