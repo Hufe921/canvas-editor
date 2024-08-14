@@ -146,6 +146,7 @@ export class Draw {
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
   private printModeData: Required<IEditorData> | null
+  private hideTrack: boolean
 
   constructor(
     rootContainer: HTMLElement,
@@ -235,6 +236,7 @@ export class Draw {
     this.intersectionPageNo = 0
     this.lazyRenderIntersectionObserver = null
     this.printModeData = null
+    this.hideTrack = false
 
     this.render({
       isInit: true,
@@ -329,17 +331,29 @@ export class Draw {
   }
   // 隐藏、显示痕迹
   public hideReview() {
+    this.hideTrack = true
     this.elementList.map(el => {
       if(el.trackId && el.trackType === TrackType.DELETE) {
         el.hide = true
       }
     })
+    this.clearSideEffect()
+    this.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
   }
   public showReview() {
+    this.hideTrack = false
     this.elementList.map(el => {
       if(el.trackId && el.trackType === TrackType.DELETE && el.hide) {
         delete el.hide
       }
+    })
+    this.clearSideEffect()
+    this.render({
+      isSetCursor: false,
+      isSubmitHistory: false
     })
   }
   public getReviews() {
@@ -353,6 +367,10 @@ export class Draw {
       }
     }
     return map
+  }
+
+  public getHideTrackMode(): boolean {
+    return this.hideTrack
   }
 
   public getOriginalWidth(): number {
@@ -2187,7 +2205,11 @@ export class Draw {
       this.strikeout.render(ctx)
       // 绘制批注样式
       this.group.render(ctx)
-      this.track.render(ctx)
+      if(!this.hideTrack) {
+        this.track.render(ctx)
+      } else {
+        this.track.clearFillInfo()
+      }
       // 绘制选区
       if (!isPrintMode) {
         if (rangeRecord.width && rangeRecord.height) {
@@ -2565,5 +2587,7 @@ export class Draw {
     this.getHyperlinkParticle().clearHyperlinkPopup()
     // 日期控件
     this.getDateParticle().clearDatePicker()
+    // 痕迹显示
+    this.getTrack().clearTrackPopup()
   }
 }
