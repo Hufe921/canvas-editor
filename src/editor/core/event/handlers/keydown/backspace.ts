@@ -28,8 +28,15 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
           isDeleted = true
         } else if(col.value.length > 1 && isReviewMode) {
           // 审阅模式删除表格跨行列内容
-          const deleteArray = col.value.slice(1, col.value.length)
-          draw.addReviewInformation(deleteArray, TrackType.DELETE)
+          for(let i = 1; i < col.value.length; i++) {
+            const element = col.value[i]
+            if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+              draw.spliceElementList(col.value, i, 1)
+              i--
+            } else  {
+              draw.addReviewInformation([element], TrackType.DELETE)
+            }
+          }
         }
       }
     }
@@ -75,10 +82,22 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     // 审阅模式删除！
     if(isReviewMode && !isCollapsed) {
       const deleteArray = elementList.slice(startIndex+1, endIndex+1)
-      draw.addReviewInformation(deleteArray, TrackType.DELETE)
+      const len = deleteArray.length
+      for(let i = 0; i < len; i++){
+        const element = deleteArray[i]
+        if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+          draw.spliceElementList(elementList, startIndex+1, 1)
+        } else  {
+          draw.addReviewInformation([element], TrackType.DELETE)
+        }
+      }
     } else if(isReviewMode && isCollapsed){
       const element = elementList[index]
-      draw.addReviewInformation([element], TrackType.DELETE)
+      if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+        draw.spliceElementList(elementList, index, 1)
+      } else  {
+        draw.addReviewInformation([element], TrackType.DELETE)
+      }
     }
     else if (!isCollapsed) {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)

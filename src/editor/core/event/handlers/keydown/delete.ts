@@ -28,8 +28,18 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
           isDeleted = true
         } else if(col.value.length > 1 && isReviewMode){
           // 审阅模式删除表格跨行列内容
-          const deleteArray = col.value.slice(1, col.value.length)
-          draw.addReviewInformation(deleteArray, TrackType.DELETE)
+          // const deleteArray = col.value.slice(1, col.value.length)
+          // draw.addReviewInformation(deleteArray, TrackType.DELETE)
+
+          for(let i = 1; i < col.value.length; i++) {
+            const element = col.value[i]
+            if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+              draw.spliceElementList(col.value, i, 1)
+              i--
+            } else  {
+              draw.addReviewInformation([element], TrackType.DELETE)
+            }
+          }
         }
       }
     }
@@ -53,19 +63,39 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
       if(!isReviewMode) {
         draw.spliceElementList(elementList, index, 1)
       } else {
-        draw.addReviewInformation([elementList[index]], TrackType.DELETE)
+        const element = elementList[index]
+        if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+          draw.spliceElementList(elementList, index, 1)
+        } else  {
+          draw.addReviewInformation([element], TrackType.DELETE)
+        }
       }
       curIndex = index - 1
     } else {
       const isCollapsed = rangeManager.getIsCollapsed()
+      let reviewCounter = 0
       // 审阅模式删除！
       if(isReviewMode && !isCollapsed) {
         const deleteArray = elementList.slice(startIndex+1, endIndex+1)
-        draw.addReviewInformation(deleteArray, TrackType.DELETE)
+        const len = deleteArray.length
+        for(let i = 0; i < len; i++){
+          const element = deleteArray[i]
+          if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+            draw.spliceElementList(elementList, startIndex+1, 1)
+            reviewCounter++
+          } else  {
+            draw.addReviewInformation([element], TrackType.DELETE)
+          }
+        }
       } else if(isReviewMode && isCollapsed){
         if (!elementList[index + 1]) return
         const element = elementList[index+1]
-        draw.addReviewInformation([element], TrackType.DELETE)
+        if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+          draw.spliceElementList(elementList, index+1, 1)
+          reviewCounter++
+        } else  {
+          draw.addReviewInformation([element], TrackType.DELETE)
+        }
       }
       else if (!isCollapsed) {
         draw.spliceElementList(
@@ -79,8 +109,10 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
       }
       if(!isReviewMode) {
         curIndex = isCollapsed ? index : startIndex
+      } else if(isCollapsed && reviewCounter){
+        curIndex = index
       } else {
-        curIndex = isCollapsed ? index + 1 : endIndex
+        curIndex = isCollapsed ? index + 1 : endIndex - reviewCounter
       }
     }
   }
