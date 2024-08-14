@@ -6,5 +6,6 @@ export const defaultCheckboxOption: Readonly<Required<ICheckboxOption>> = {
   gap: 5,
   lineWidth: 1,
   fillStyle: '#5175f4',
-  strokeStyle: '#ffffff'
+  strokeStyle: '#ffffff',
+  center: false
 }

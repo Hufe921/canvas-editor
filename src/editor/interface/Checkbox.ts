@@ -11,4 +11,5 @@ export interface ICheckboxOption {
   lineWidth?: number
   fillStyle?: string
   strokeStyle?: string
+  center?: boolean
 }

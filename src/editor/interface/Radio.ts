@@ -11,4 +11,5 @@ export interface IRadioOption {
   lineWidth?: number
   fillStyle?: string
   strokeStyle?: string
+  center?: boolean
 }
