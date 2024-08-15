@@ -107,7 +107,7 @@ export class TextControl implements IControlInstance {
 
     // 非文本类元素或前缀过渡掉样式属性
     const startElement = elementList[startIndex]
-    const anchorElement =
+    let anchorElement =
       (startElement.type &&
         !TEXTLIKE_ELEMENT_TYPE.includes(startElement.type)) ||
       startElement.controlComponent === ControlComponent.PREFIX
@@ -117,6 +117,10 @@ export class TextControl implements IControlInstance {
             ...CONTROL_STYLE_ATTR
           ])
         : omitObject(startElement, ['type'])
+    //todo: review->edit 去除track
+    if(startElement.trackId && !isReviewMode){
+      anchorElement = omitObject(anchorElement,['track','trackId','trackType'])
+    }
     // 插入起始位置
     const start = range.startIndex + 1
     for (let i = 0; i < data.length; i++) {
@@ -177,6 +181,7 @@ export class TextControl implements IControlInstance {
     const endElement = elementList[endIndex]
     const draw = this.control.getDraw()
     const isReviewMode = draw.getMode() === EditorMode.REVIEW
+    // const currentUser = draw.getOptions().user.name
     // backspace
     if (evt.key === KeyMap.Backspace) {
       // 审阅模式
@@ -190,6 +195,12 @@ export class TextControl implements IControlInstance {
             // 前缀、后缀、占位符
             return this.control.removeControl(startIndex)
           }
+
+          // if(startElement.trackType === TrackType.INSERT && startElement.track?.author === currentUser){
+          //   draw.spliceElementList(elementList, startIndex, 1)
+          // } else {
+          //   draw.addReviewInformation([startElement], TrackType.DELETE)
+          // }
           draw.addReviewInformation([startElement], TrackType.DELETE)
           return startIndex - 1
         } else {
