@@ -8,6 +8,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   if (draw.isReadonly()) return
   // 审阅模式
   const isReviewMode = draw.getMode() === EditorMode.REVIEW
+  const currentUser = draw.getOptions().user.name
   // 可输入性验证
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
@@ -30,7 +31,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
           // 审阅模式删除表格跨行列内容
           for(let i = 1; i < col.value.length; i++) {
             const element = col.value[i]
-            if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+            if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
               draw.spliceElementList(col.value, i, 1)
               i--
             } else  {
@@ -85,7 +86,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       const len = deleteArray.length
       for(let i = 0; i < len; i++){
         const element = deleteArray[i]
-        if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+        if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
           draw.spliceElementList(elementList, startIndex+1, 1)
         } else  {
           draw.addReviewInformation([element], TrackType.DELETE)
@@ -93,7 +94,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       }
     } else if(isReviewMode && isCollapsed){
       const element = elementList[index]
-      if(element.trackType === TrackType.INSERT && element.track?.author === 'john'){
+      if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
         draw.spliceElementList(elementList, index, 1)
       } else  {
         draw.addReviewInformation([element], TrackType.DELETE)
