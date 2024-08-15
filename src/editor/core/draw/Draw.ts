@@ -321,7 +321,7 @@ export class Draw {
       element.trackId = getUUID()
       element.trackType = type
       element.track = {
-        author: 'john',
+        author: this.options.user.name,
         date: getCurrentTimeString()
       }
       element.valueList = [{

@@ -46,6 +46,8 @@ import {
 } from '../dataset/enum/Editor'
 import {ITrackStyleOption} from '../interface/Track'
 import {defaultTrackStyleOptions} from '../dataset/constant/Track'
+import {IUser} from '../interface/User'
+import {defaultUserOptions} from '../dataset/constant/User'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -126,6 +128,10 @@ export function mergeOption(
     ...defaultTrackStyleOptions,
     ...options.trackStyle
   }
+  const user: Required<IUser> = {
+    ...defaultUserOptions,
+    ...options.user
+  }
 
   return {
     mode: EditorMode.EDIT,
@@ -187,6 +193,7 @@ export function mergeOption(
     lineBreak: lineBreakOptions,
     separator: separatorOptions,
     lineNumber: lineNumberOptions,
-    trackStyle: trackStyleOptions
+    trackStyle: trackStyleOptions,
+    user: user
   }
 }
