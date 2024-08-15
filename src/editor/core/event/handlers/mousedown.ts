@@ -2,12 +2,15 @@ import { ImageDisplay } from '../../../dataset/enum/Common'
 import { EditorMode } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { MouseEventButton } from '../../../dataset/enum/Event'
+import { ControlComponent } from '../../../dataset/enum/Control'
+import { ControlType } from '../../../dataset/enum/Control'
 import { IPreviewerDrawOption } from '../../../interface/Previewer'
 import { deepClone } from '../../../utils'
 import { isMod } from '../../../utils/hotkey'
 import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
 import { RadioControl } from '../../draw/control/radio/RadioControl'
 import { CanvasEvent } from '../CanvasEvent'
+import { IElement } from '../../../interface/Element'
 
 export function setRangeCache(host: CanvasEvent) {
   const draw = host.getDraw()
@@ -103,37 +106,65 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     const isSetCheckbox = isDirectHitCheckbox && !isReadonly
     // 单选框
     const isSetRadio = isDirectHitRadio && !isReadonly
+    // 控件内命中复选框
+    const hitCheckboxControl = (element: IElement) => {
+      const { checkbox, control } = element
+      const codes = control?.code ? control.code.split(',') : []
+      if (checkbox?.value) {
+        const codeIndex = codes.findIndex(c => c === checkbox.code)
+        codes.splice(codeIndex, 1)
+      } else {
+        if (checkbox?.code) {
+          codes.push(checkbox.code)
+        }
+      }
+      const activeControl = draw.getControl().getActiveControl()
+      if (activeControl instanceof CheckboxControl) {
+        activeControl.setSelect(codes)
+      }
+    }
+    // 控件内命中单选框
+    const hitRadioControl = (element: IElement) => {
+      const { radio } = element
+      const codes = radio?.code ? [radio.code] : []
+      const activeControl = draw.getControl().getActiveControl()
+      if (activeControl instanceof RadioControl) {
+        activeControl.setSelect(codes)
+      }
+    }
     if (isSetCheckbox) {
-      const { checkbox, control } = curElement
+      const { control } = curElement
       // 复选框不在控件内独立控制
       if (!control) {
         draw.getCheckboxParticle().setSelect(curElement)
       } else {
-        const codes = control?.code ? control.code.split(',') : []
-        if (checkbox?.value) {
-          const codeIndex = codes.findIndex(c => c === checkbox.code)
-          codes.splice(codeIndex, 1)
-        } else {
-          if (checkbox?.code) {
-            codes.push(checkbox.code)
-          }
-        }
-        const activeControl = draw.getControl().getActiveControl()
-        if (activeControl instanceof CheckboxControl) {
-          activeControl.setSelect(codes)
-        }
+        hitCheckboxControl(curElement)
       }
     } else if (isSetRadio) {
-      const { control, radio } = curElement
+      const { control } = curElement
       // 单选框不在控件内独立控制
       if (!control) {
         draw.getRadioParticle().setSelect(curElement)
       } else {
-        const codes = radio?.code ? [radio.code] : []
-        const activeControl = draw.getControl().getActiveControl()
-        if (activeControl instanceof RadioControl) {
-          activeControl.setSelect(codes)
+        hitRadioControl(curElement)
+      }
+    } else if (
+      curElement.controlComponent === ControlComponent.VALUE &&
+      (curElement.control?.type === ControlType.CHECKBOX ||
+        curElement.control?.type === ControlType.RADIO)
+    ) {
+      // 向左查找
+      let preIndex = curIndex
+      while (preIndex > 0) {
+        const preElement = elementList[preIndex]
+        if (preElement.controlComponent === ControlComponent.CHECKBOX) {
+          hitCheckboxControl(preElement)
+          break
+        } else if (preElement.controlComponent === ControlComponent.RADIO) {
+          hitRadioControl(preElement)
+          break
         }
+        preIndex--
       }
     } else {
       draw.render({
