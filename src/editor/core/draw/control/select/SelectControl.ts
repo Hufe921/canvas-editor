@@ -227,9 +227,20 @@ export class SelectControl implements IControlInstance {
     // 删除元素
     const draw = this.control.getDraw()
     const isReviewMode = draw.getMode() === EditorMode.REVIEW
+    const currentUser = draw.getOptions().user.name
     if(isReviewMode) {
       const deleteArray = elementList.slice(leftIndex +1 , rightIndex +1 )
-      draw.addReviewInformation(deleteArray, TrackType.DELETE)
+      const len = deleteArray.length
+      let startNum = leftIndex + 1
+      for(let i = 0; i < len; i++) {
+          const element = deleteArray[i]
+          if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+            draw.spliceElementList(elementList, startNum + i, 1)
+            startNum--
+          } else {
+            draw.addReviewInformation([element], TrackType.DELETE)
+          }
+      }
       return leftIndex
     } else {
       draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)

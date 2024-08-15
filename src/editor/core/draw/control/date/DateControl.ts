@@ -163,10 +163,22 @@ export class DateControl implements IControlInstance {
     // 删除元素
     const draw = this.control.getDraw()
     const isReviewMode = draw.getMode() === EditorMode.REVIEW
+    const currentUser = draw.getOptions().user.name
     if(isReviewMode) {
       const deleteArray = elementList.slice(leftIndex +1 , rightIndex +1 )
-      draw.addReviewInformation(deleteArray, TrackType.DELETE)
+      const len = deleteArray.length
+      let startNum = leftIndex + 1
+      for(let i = 0; i < len; i++) {
+        const element = deleteArray[i]
+        if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+          draw.spliceElementList(elementList, startNum + i, 1)
+          startNum--
+        } else {
+          draw.addReviewInformation([element], TrackType.DELETE)
+        }
+      }
       return leftIndex
+
     } else {
       draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
       // 增加占位符
@@ -247,6 +259,7 @@ export class DateControl implements IControlInstance {
     const endElement = elementList[endIndex]
     const draw = this.control.getDraw()
     const isReviewMode = draw.getMode() === EditorMode.REVIEW
+    const currentUser = draw.getOptions().user.name
 
     // backspace
     if (evt.key === KeyMap.Backspace) {
@@ -261,11 +274,25 @@ export class DateControl implements IControlInstance {
             // 前缀、后缀、占位符
             return this.control.removeControl(startIndex)
           }
-          draw.addReviewInformation([startElement], TrackType.DELETE)
+          if(startElement.trackType === TrackType.INSERT && startElement.track?.author === currentUser){
+            draw.spliceElementList(elementList, startIndex, 1)
+          } else {
+            draw.addReviewInformation([startElement], TrackType.DELETE)
+          }
           return startIndex - 1
         } else {
           const deleteArray = elementList.slice(startIndex+1, endIndex+1)
-          draw.addReviewInformation(deleteArray, TrackType.DELETE)
+          const len = deleteArray.length
+          let startNum = startIndex + 1
+          for(let i = 0; i < len; i++) {
+            const element = deleteArray[i]
+            if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+              draw.spliceElementList(elementList, startNum + i, 1)
+              startNum--
+            } else {
+              draw.addReviewInformation([element], TrackType.DELETE)
+            }
+          }
           return startIndex
         }
       } else if (!isReviewMode && startIndex !== endIndex) {
@@ -311,12 +338,27 @@ export class DateControl implements IControlInstance {
             // 前缀、后缀、占位符
             return this.control.removeControl(startIndex)
           } else {
-            draw.addReviewInformation([endNextElement], TrackType.DELETE)
-            return endIndex + 1
+            if(endNextElement.trackType === TrackType.INSERT && endNextElement.track?.author === currentUser){
+              draw.spliceElementList(elementList, endIndex+1, 1)
+              return endIndex
+            } else {
+              draw.addReviewInformation([endNextElement], TrackType.DELETE)
+              return endIndex + 1
+            }
           }
         } else {
           const deleteArray = elementList.slice(startIndex+1, endIndex+1)
-          draw.addReviewInformation(deleteArray, TrackType.DELETE)
+          const len = deleteArray.length
+          let startNum = startIndex + 1
+          for(let i = 0; i < len; i++) {
+            const element = deleteArray[i]
+            if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+              draw.spliceElementList(elementList, startNum + i, 1)
+              startNum--
+            } else {
+              draw.addReviewInformation([element], TrackType.DELETE)
+            }
+          }
           return endIndex
         }
       }
