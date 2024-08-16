@@ -302,6 +302,7 @@ export class Draw {
     this.clearSideEffect()
     this.range.clearRange()
     this.mode = payload
+    this.options.mode = payload
     this.render({
       isSetCursor: false,
       isSubmitHistory: false
