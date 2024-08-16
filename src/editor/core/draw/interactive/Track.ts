@@ -4,6 +4,10 @@ import {IElement, IElementFillRect, IElementPosition} from '../../../interface/E
 import { Draw } from '../Draw'
 import {EDITOR_PREFIX} from '../../../dataset/constant/Editor'
 import {trackTypeStr} from '../../../dataset/constant/Track'
+import {ElementType} from '../../../dataset/enum/Element'
+import {omitObject} from '../../../utils'
+import {LIST_CONTEXT_ATTR, TITLE_CONTEXT_ATTR} from '../../../dataset/constant/Element'
+import {zipElementList} from '../../../utils/element'
 
 export class Track {
   private draw: Draw
@@ -24,6 +28,42 @@ export class Track {
     const { tackPopupContainer, trackInfoContainer } = this.createTrackContainer()
     this.trackPopupElement = tackPopupContainer
     this.trackInformationElement = trackInfoContainer
+  }
+  public getList(): IElement[] {
+    const trackElementList: IElement[] = []
+    function getTrackElementList(elementList: IElement[]) {
+      for (let e = 0; e < elementList.length; e++) {
+        const element = elementList[e]
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              const tdElement = td.value
+              getTrackElementList(tdElement)
+            }
+          }
+        }
+        if (element.trackId) {
+          // 移除控件所在标题及列表上下文信息
+          const controlElement = omitObject(element, [
+            ...TITLE_CONTEXT_ATTR,
+            ...LIST_CONTEXT_ATTR
+          ])
+          trackElementList.push(controlElement)
+        }
+      }
+    }
+    const data = [
+      this.draw.getHeader().getElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooter().getElementList()
+    ]
+    for (const elementList of data) {
+      getTrackElementList(elementList)
+    }
+    return zipElementList(trackElementList)
   }
 
   private createTrackContainer() {

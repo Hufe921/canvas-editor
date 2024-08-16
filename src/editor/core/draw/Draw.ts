@@ -317,8 +317,9 @@ export class Draw {
   // 添加痕迹信息
   public addReviewInformation(elementList: IElement[], type: TrackType) {
     if(this.mode !== EditorMode.REVIEW) return
+    const trackId = getUUID()
     elementList.map(element =>{
-      element.trackId = getUUID()
+      element.trackId = trackId
       element.trackType = type
       element.track = {
         author: this.options.user.name,

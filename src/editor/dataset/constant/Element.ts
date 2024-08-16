@@ -73,7 +73,9 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'imgFloatPosition',
   'textDecoration',
   'extension',
-  'externalId'
+  'externalId',
+  'track',
+  'trackType'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [

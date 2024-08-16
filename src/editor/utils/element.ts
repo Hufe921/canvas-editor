@@ -742,6 +742,37 @@ export function zipElementList(
         controlElement.control!.value = zipElementList(valueList, options)
         element = pickElementAttr(controlElement, { extraPickAttrs })
       }
+    } else if(element.trackId) {
+      const trackId = element.trackId
+      const trackType = element.trackType
+      if (trackId && trackType) {
+        // 以前缀为基准合并track_info
+        const elementTrack = element.track
+        const trackElement: IElement = {
+          ...pickObject(element, EDITOR_ROW_ATTR),
+          type: ElementType.TRACK,
+          value: '',
+          trackId,
+          trackType,
+          track: elementTrack,
+        }
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const trackE = elementList[e]
+          if (trackE.trackId !== trackId) {
+            e--
+            break
+          } else {
+            delete trackE.trackId
+            delete trackE.trackType
+            delete trackE.track
+            valueList.push(trackE)
+          }
+          e++
+        }
+        trackElement.valueList = zipElementList(valueList, options)
+        element = trackElement
+      }
     }
     // 组合元素
     const pickElement = pickElementAttr(element, { extraPickAttrs })
