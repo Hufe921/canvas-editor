@@ -1948,12 +1948,11 @@ export class CommandAdapt {
   }
 
   public async print() {
-    const { scale, printPixelRatio, paperDirection } = this.options
+    const { scale, printPixelRatio, paperDirection, width, height } =
+      this.options
     if (scale !== 1) {
       this.draw.setPageScale(1)
     }
-    const width = this.draw.getOriginalWidth()
-    const height = this.draw.getOriginalHeight()
     const base64List = await this.draw.getDataURL({
       pixelRatio: printPixelRatio,
       mode: EditorMode.PRINT
