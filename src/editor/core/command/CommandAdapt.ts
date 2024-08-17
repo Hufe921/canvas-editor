@@ -10,7 +10,7 @@ import {
   titleSizeMapping
 } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
-import { ImageDisplay } from '../../dataset/enum/Common'
+import { ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import {
   EditorContext,
@@ -31,6 +31,7 @@ import { DeepRequired } from '../../interface/Common'
 import {
   IGetControlValueOption,
   IGetControlValueResult,
+  ILocationControlOption,
   ISetControlExtensionOption,
   ISetControlHighlightOption,
   ISetControlProperties,
@@ -2469,7 +2470,8 @@ export class CommandAdapt {
     return this.draw.getControl().getList()
   }
 
-  public locationControl(controlId: string) {
+  public locationControl(controlId: string, options?: ILocationControlOption) {
+    const isLocationAfter = options?.position === LocationPosition.AFTER
     function location(
       elementList: IElement[],
       zone: EditorZone
@@ -2503,19 +2505,24 @@ export class CommandAdapt {
           }
         }
         if (element?.controlId !== controlId) continue
-        if (
-          element.controlComponent === 'placeholder' ||
-          element.controlComponent === 'postfix'
-        ) {
-          return {
-            zone,
-            range: {
-              startIndex: i - 2,
-              endIndex: i - 2
-            },
-            positionContext: {
-              isTable: false
-            }
+        let curIndex = i - 1
+        if (isLocationAfter) {
+          curIndex -= 1
+          if (
+            element.controlComponent !== ControlComponent.PLACEHOLDER &&
+            element.controlComponent !== ControlComponent.POSTFIX
+          ) {
+            continue
+          }
+        }
+        return {
+          zone,
+          range: {
+            startIndex: curIndex,
+            endIndex: curIndex
+          },
+          positionContext: {
+            isTable: false
           }
         }
       }

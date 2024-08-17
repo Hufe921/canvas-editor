@@ -1,3 +1,4 @@
+import { LocationPosition } from '../dataset/enum/Common'
 import { ControlType, ControlIndentation } from '../dataset/enum/Control'
 import { EditorZone } from '../dataset/enum/Editor'
 import { MoveDirection } from '../dataset/enum/Observer'
@@ -167,4 +168,8 @@ export interface INextControlContext {
 
 export interface IInitNextControlOption {
   direction?: MoveDirection
+}
+
+export interface ILocationControlOption {
+  position: LocationPosition
 }
