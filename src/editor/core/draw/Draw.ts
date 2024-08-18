@@ -2183,6 +2183,7 @@ export class Draw {
     ctx: CanvasRenderingContext2D,
     payload: IDrawFloatPayload
   ) {
+    const { scale } = this.options
     const floatPositionList = this.position.getFloatPositionList()
     const { imgDisplay, pageNo } = payload
     for (let e = 0; e < floatPositionList.length; e++) {
@@ -2199,8 +2200,8 @@ export class Draw {
         this.imageParticle.render(
           ctx,
           element,
-          imgFloatPosition.x,
-          imgFloatPosition.y
+          imgFloatPosition.x * scale,
+          imgFloatPosition.y * scale
         )
       }
     }
