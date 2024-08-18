@@ -1,4 +1,5 @@
 import { IRadioOption } from '../../interface/Radio'
+import { VerticalAlign } from '../enum/VerticalAlign'
 
 export const defaultRadioOption: Readonly<Required<IRadioOption>> = {
   width: 14,
@@ -7,5 +8,5 @@ export const defaultRadioOption: Readonly<Required<IRadioOption>> = {
   lineWidth: 1,
   fillStyle: '#5175f4',
   strokeStyle: '#000000',
-  center: false
+  verticalAlign: VerticalAlign.BOTTOM
 }

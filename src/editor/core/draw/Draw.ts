@@ -1,5 +1,5 @@
 import { version } from '../../../../package.json'
-import { ZERO, NBSP } from '../../dataset/constant/Common'
+import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
@@ -1911,56 +1911,26 @@ export class Draw {
           element.type === ElementType.CHECKBOX ||
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
-          let offset = 0
-          const { center } = this.options.checkbox
-          if (center) {
-            let nextIndex = j + 1
-            let nextElement = curRow.elementList[nextIndex]
-            while (nextIndex < curRow.elementList.length) {
-              nextElement = curRow.elementList[nextIndex]
-              if (nextElement.value !== ZERO && nextElement.value !== NBSP) {
-                break
-              }
-              nextIndex++
-            }
-            if (nextElement) {
-              const textHeight =
-                nextElement.metrics.boundingBoxAscent +
-                nextElement.metrics.boundingBoxDescent
-              if (textHeight > metrics.height) {
-                offset = (textHeight - metrics.height) / 2
-              }
-            }
-          }
           this.textParticle.complete()
-          this.checkboxParticle.render(ctx, element, x, y + offsetY - offset)
+          this.checkboxParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
         ) {
-          let offset = 0
-          const { center } = this.options.radio
-          if (center) {
-            let nextIndex = j + 1
-            let nextElement = curRow.elementList[nextIndex]
-            while (nextIndex < curRow.elementList.length) {
-              nextElement = curRow.elementList[nextIndex]
-              if (nextElement.value !== ZERO && nextElement.value !== NBSP) {
-                break
-              }
-              nextIndex++
-            }
-            if (nextElement) {
-              const textHeight =
-                nextElement.metrics.boundingBoxAscent +
-                nextElement.metrics.boundingBoxDescent
-              if (textHeight > metrics.height) {
-                offset = (textHeight - metrics.height) / 2
-              }
-            }
-          }
           this.textParticle.complete()
-          this.radioParticle.render(ctx, element, x, y + offsetY - offset)
+          this.radioParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (element.type === ElementType.TAB) {
           this.textParticle.complete()
         } else if (
