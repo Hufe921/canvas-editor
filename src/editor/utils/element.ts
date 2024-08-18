@@ -599,13 +599,85 @@ export function zipElementList(
     } else if (element.type === ElementType.TABLE) {
       // 分页表格先进行合并
       if (element.pagingId) {
+        // 为当前表格构建一个虚拟表格
+        const virtualTable = Array.from(
+          { length: element.trList!.length },
+          () => new Array(element.colgroup!.length)
+        ) as Array<Array<ITd | undefined | null>>
+        element.trList!.forEach((tr, trIndex) => {
+          let tdIndex = 0
+          while (virtualTable[trIndex][tdIndex] === null) {
+            tdIndex++
+          }
+          tr.tdList.forEach(td => {
+            virtualTable[trIndex][tdIndex] = td
+            for (let i = 1; i < td.rowspan; i++) {
+              virtualTable[trIndex + i][tdIndex] = null
+            }
+            tdIndex += td.colspan
+          })
+        })
         let tableIndex = e + 1
         let combineCount = 0
         while (tableIndex < elementList.length) {
           const nextElement = elementList[tableIndex]
           if (nextElement.pagingId === element.pagingId) {
-            element.height! += nextElement.height!
-            element.trList!.push(...nextElement.trList!)
+            const nexTrList = nextElement.trList!.filter(
+              tr => !tr.pagingRepeat
+            )
+            // 判断后续表格第一行是拆分出来的还是从原表格挪到下一页的
+            const isNextTrSplit =
+              element.trList![element.trList!.length - 1].id ===
+              nexTrList[0].pagingOriginId
+            // 遍历后续表格首行中的单元格，在虚拟表格中找到其对应单元格
+            let tdIndex = 0
+            const mergedTds: ITd[] = []
+            nexTrList[0].tdList.forEach(td => {
+              let targetTd
+              // 如果虚拟表格最后一行对应位置有单元格，则其就为目标单元格，否则向上查找
+              if (virtualTable[virtualTable.length - 1][tdIndex]) {
+                targetTd = virtualTable[virtualTable.length - 1][tdIndex]
+              } else {
+                for (let i = virtualTable.length - 2; i >= 0; i--) {
+                  if (virtualTable[i][tdIndex]) {
+                    targetTd = virtualTable[i][tdIndex]
+                    break
+                  }
+                }
+              }
+              if (targetTd) {
+                if (targetTd.id === td.pagingOriginId) {
+                  targetTd.value.push(...td.value)
+                  if (isNextTrSplit) {
+                    targetTd.rowspan = targetTd.rowspan + td.rowspan - 1
+                  } else {
+                    targetTd.rowspan = targetTd.rowspan + td.rowspan
+                    mergedTds.push(td)
+                  }
+                }
+                tdIndex += targetTd.colspan
+              }
+            })
+            nexTrList[0].tdList = nexTrList[0].tdList.filter(td => {
+              const isNotMerged = mergedTds.every(
+                mergedTd => mergedTd.id !== td.id
+              )
+              delete td.pagingOriginId
+              return isNotMerged
+            })
+            // 更新行高，逐行合并
+            while (nexTrList.length > 0) {
+              const lastTr = element.trList![element.trList!.length - 1]
+              const nextTr = nexTrList.shift()!
+              if (lastTr.id === nextTr.pagingOriginId) {
+                lastTr.height += nextTr.pagingOriginHeight || 0
+              } else {
+                nextTr.height = nextTr.pagingOriginHeight || nextTr.height
+                element.trList!.push(nextTr)
+              }
+              delete nextTr.pagingOriginHeight
+              delete nextTr.pagingOriginId
+            }
             tableIndex++
             combineCount++
           } else {
