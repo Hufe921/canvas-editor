@@ -390,6 +390,18 @@ export class Draw {
     return width - margins[1] - margins[3]
   }
 
+  public getContextInnerWidth(): number {
+    const positionContext = this.position.getPositionContext()
+    if (positionContext.isTable) {
+      const { index, trIndex, tdIndex } = positionContext
+      const elementList = this.getOriginalElementList()
+      const td = elementList[index!].trList![trIndex!].tdList[tdIndex!]
+      const tdPadding = this.getTdPadding()
+      return td!.width! - tdPadding[1] - tdPadding[3]
+    }
+    return this.getOriginalInnerWidth()
+  }
+
   public getMargins(): IMargin {
     return <IMargin>this.getOriginalMargins().map(m => m * this.options.scale)
   }

@@ -789,7 +789,7 @@ export class CommandAdapt {
       const row = rowList[rowIndex]
       offsetX = row?.offsetX || 0
     }
-    const innerWidth = this.draw.getOriginalInnerWidth() - offsetX
+    const innerWidth = this.draw.getContextInnerWidth() - offsetX
     // colgroup
     const colgroup: IColgroup[] = []
     const colWidth = innerWidth / col
