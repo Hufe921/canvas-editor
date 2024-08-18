@@ -1912,13 +1912,25 @@ export class Draw {
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
           this.textParticle.complete()
-          this.checkboxParticle.render(ctx, element, x, y + offsetY)
+          this.checkboxParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
         ) {
           this.textParticle.complete()
-          this.radioParticle.render(ctx, element, x, y + offsetY)
+          this.radioParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (element.type === ElementType.TAB) {
           this.textParticle.complete()
         } else if (
