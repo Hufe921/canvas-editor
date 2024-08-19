@@ -100,7 +100,7 @@ export class Track {
     this.trackPopupElement.style.display = 'none'
   }
 
-  public clearFillInfo() {
+  public clearRectInfo() {
     this.insertRectMap.clear()
     this.deleteRectMap.clear()
   }
@@ -176,6 +176,6 @@ export class Track {
       ctx.stroke()
     })
     ctx.restore()
-    this.clearFillInfo()
+    this.clearRectInfo()
   }
 }

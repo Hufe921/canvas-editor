@@ -325,9 +325,6 @@ export class Draw {
         author: this.options.user.name,
         date: getCurrentTimeString()
       }
-      element.valueList = [{
-        value: element.value
-      }]
     })
   }
   // 隐藏、显示痕迹
@@ -2149,7 +2146,7 @@ export class Draw {
             if(!this.hideTrack) {
               this.track.render(ctx)
             } else {
-              this.track.clearFillInfo()
+              this.track.clearRectInfo()
             }
           }
           // 基线文字测量信息
@@ -2180,7 +2177,7 @@ export class Draw {
           if(!this.hideTrack) {
             this.track.render(ctx)
           } else {
-            this.track.clearFillInfo()
+            this.track.clearRectInfo()
           }
         }
         index++
@@ -2223,7 +2220,7 @@ export class Draw {
       if(!this.hideTrack) {
         this.track.render(ctx)
       } else {
-        this.track.clearFillInfo()
+        this.track.clearRectInfo()
       }
       // 绘制选区
       if (!isPrintMode) {

@@ -759,7 +759,8 @@ export function zipElementList(
         const valueList: IElement[] = []
         while (e < elementList.length) {
           const trackE = elementList[e]
-          if (trackE.trackId !== trackId) {
+          const fromSameAuthor = trackE.trackType === trackType && trackE?.track?.author === elementTrack?.author
+          if (!fromSameAuthor) {
             e--
             break
           } else {

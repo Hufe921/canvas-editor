@@ -88,7 +88,7 @@ export class DateControl implements IControlInstance {
     const [startIndex, endIndex] = range
     for (let i = startIndex; i <= endIndex; i++) {
       const element = elementList[i]
-      if (element.controlComponent === ControlComponent.VALUE) {
+      if (element.controlComponent === ControlComponent.VALUE && element.trackType !== TrackType.DELETE) {
         data.push(element)
       }
     }

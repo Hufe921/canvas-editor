@@ -159,7 +159,6 @@ export class TextParticle {
     if (!this.text || !~this.curX || !~this.curX) return
     this.ctx.save()
     this.ctx.font = this.curStyle
-    this.ctx.fontKerning = 'none'
     this.ctx.fillStyle = this.curColor || this.options.defaultColor
     this.ctx.fillText(this.text, this.curX, this.curY)
     this.ctx.restore()
