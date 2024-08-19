@@ -2159,12 +2159,9 @@ export class Draw {
           if(element.trackType === TrackType.INSERT) {
             const offsetX = element.left || 0
             const coordinateX = x - offsetX
-            let coordinateY = y + curRow.height - rowMargin + 1
+            const coordinateY = y + curRow.height - rowMargin + 1
             const width = metrics.width + offsetX
             const height = curRow.height
-            if(element.type === ElementType.IMAGE ||  element.type === ElementType.LATEX) {
-              coordinateY = y + element.height!
-            }
             this.track.recordInsertRectInfo(element, coordinateX, coordinateY, width, height)
           } else if(element.trackType === TrackType.DELETE) {
             let adjustY = y + offsetY + standardMetrics.actualBoundingBoxDescent * scale - metrics.height / 2
