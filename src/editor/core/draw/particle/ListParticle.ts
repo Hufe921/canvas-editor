@@ -199,9 +199,16 @@ export class ListParticle {
           height: height * scale
         }
       }
-      this.draw
-        .getCheckboxParticle()
-        .render(ctx, checkboxRowElement, x - gap * scale, y)
+      this.draw.getCheckboxParticle().render({
+        ctx,
+        x: x - gap * scale,
+        y,
+        index: 0,
+        row: {
+          ...row,
+          elementList: [checkboxRowElement, ...row.elementList]
+        }
+      })
     } else {
       let text = ''
       if (startElement.listType === ListType.UL) {
