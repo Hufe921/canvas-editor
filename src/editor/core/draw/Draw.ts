@@ -328,6 +328,7 @@ export class Draw {
         author: this.options.user.name,
         date: getCurrentTimeString()
       }
+      if(this.hideTrack && type === TrackType.DELETE) element.hide = true
     }
   }
   // 隐藏、显示痕迹
@@ -360,18 +361,6 @@ export class Draw {
       isSetCursor: false,
       isSubmitHistory: false
     })
-  }
-  public getReviews() {
-    const len = this.elementList.length
-    const map = new Map()
-    for(let i = 0; i < len; i++) {
-      const element = this.elementList[i]
-      const trackId = element.trackId
-      if(trackId) {
-        map.get(trackId) ? map.get(trackId).push(element) : map.set(trackId, [element])
-      }
-    }
-    return map
   }
 
   public getHideTrackMode(): boolean {
@@ -1288,6 +1277,7 @@ export class Draw {
         metrics.width = 0
         metrics.height = 0
         metrics.boundingBoxDescent = 0
+        metrics.boundingBoxAscent = 0
       } else if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
@@ -1708,6 +1698,13 @@ export class Draw {
       const isWidthNotEnough = curRowWidth > availableWidth
       // 新行数据处理
       if (isForceBreak || isWidthNotEnough) {
+        // 整行宽度为0 隐藏行不保留高度
+        if(curRow.width === 0) {
+          const emptyPara = curRow.elementList.length === 1 && curRow.elementList[0].value === ZERO
+          if(!emptyPara) {
+            curRow.height = 0
+          }
+        }
         const row: IRow = {
           width: metrics.width,
           height,
@@ -2504,8 +2501,6 @@ export class Draw {
     ) {
       this.submitHistory(curIndex)
     }
-    // 审阅记录获取
-    this.getReviews()
 
     // 信息变动回调
     nextTick(() => {
