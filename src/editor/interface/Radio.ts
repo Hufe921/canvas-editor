@@ -1,3 +1,5 @@
+import { VerticalAlign } from '../dataset/enum/VerticalAlign'
+
 export interface IRadio {
   value: boolean | null
   code?: string
@@ -11,4 +13,5 @@ export interface IRadioOption {
   lineWidth?: number
   fillStyle?: string
   strokeStyle?: string
+  verticalAlign?: VerticalAlign
 }

@@ -69,16 +69,16 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
         return
       }
     }
-    //  清空当前行对齐方式
+    //  替换当前行对齐方式
     const startElement = elementList[startIndex]
     if (isCollapsed && startElement.rowFlex && startElement.value === ZERO) {
-      const rowList = draw.getRowList()
-      const positionList = position.getPositionList()
-      const rowNo = positionList[startIndex].rowNo
-      const rowFlexElementList = rowList[rowNo].elementList
-      rowFlexElementList.forEach(element => {
-        delete element.rowFlex
-      })
+      const rowFlexElementList = rangeManager.getRangeRowElementList()
+      if (rowFlexElementList) {
+        const preElement = elementList[startIndex - 1]
+        rowFlexElementList.forEach(element => {
+          element.rowFlex = preElement?.rowFlex
+        })
+      }
     }
     // 审阅模式删除！
     if(isReviewMode && !isCollapsed) {

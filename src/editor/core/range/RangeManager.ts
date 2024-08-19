@@ -171,8 +171,9 @@ export class RangeManager {
       }
       start--
     }
+    const isCollapsed = startIndex === endIndex
     // 中间选择
-    if (startIndex !== endIndex) {
+    if (!isCollapsed) {
       let middle = startIndex + 1
       while (middle < endIndex) {
         const { pageNo, rowNo } = positionList[middle]
@@ -189,6 +190,10 @@ export class RangeManager {
     }
     // 向下查找
     let end = endIndex
+    // 闭合选区&&首字符为换行符时继续向下查找
+    if (isCollapsed && elementList[startIndex].value === ZERO) {
+      end += 1
+    }
     while (end < positionList.length) {
       const element = elementList[end]
       const nextElement = elementList[end + 1]
