@@ -319,23 +319,27 @@ export class Draw {
   public addReviewInformation(elementList: IElement[], type: TrackType) {
     if(this.mode !== EditorMode.REVIEW) return
     const trackId = getUUID()
-    elementList.map(element =>{
+    const len = elementList.length
+    for(let  i = 0; i < len; i++){
+      const element = elementList[i]
       element.trackId = trackId
       element.trackType = type
       element.track = {
         author: this.options.user.name,
         date: getCurrentTimeString()
       }
-    })
+    }
   }
   // 隐藏、显示痕迹
   public hideReview() {
     this.hideTrack = true
-    this.elementList.map(el => {
+    const len = this.elementList.length
+    for(let i = 0; i < len; i++){
+      const el = this.elementList[i]
       if(el.trackId && el.trackType === TrackType.DELETE) {
         el.hide = true
       }
-    })
+    }
     this.clearSideEffect()
     this.render({
       isSetCursor: false,
@@ -344,11 +348,13 @@ export class Draw {
   }
   public showReview() {
     this.hideTrack = false
-    this.elementList.map(el => {
+    const len = this.elementList.length
+    for(let i = 0; i < len; i++){
+      const el = this.elementList[i]
       if(el.trackId && el.trackType === TrackType.DELETE && el.hide) {
         delete el.hide
       }
-    })
+    }
     this.clearSideEffect()
     this.render({
       isSetCursor: false,
