@@ -390,6 +390,18 @@ export class Draw {
     return width - margins[1] - margins[3]
   }
 
+  public getContextInnerWidth(): number {
+    const positionContext = this.position.getPositionContext()
+    if (positionContext.isTable) {
+      const { index, trIndex, tdIndex } = positionContext
+      const elementList = this.getOriginalElementList()
+      const td = elementList[index!].trList![trIndex!].tdList[tdIndex!]
+      const tdPadding = this.getTdPadding()
+      return td!.width! - tdPadding[1] - tdPadding[3]
+    }
+    return this.getOriginalInnerWidth()
+  }
+
   public getMargins(): IMargin {
     return <IMargin>this.getOriginalMargins().map(m => m * this.options.scale)
   }
@@ -1912,13 +1924,25 @@ export class Draw {
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
           this.textParticle.complete()
-          this.checkboxParticle.render(ctx, element, x, y + offsetY)
+          this.checkboxParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
         ) {
           this.textParticle.complete()
-          this.radioParticle.render(ctx, element, x, y + offsetY)
+          this.radioParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (element.type === ElementType.TAB) {
           this.textParticle.complete()
         } else if (
@@ -2159,6 +2183,7 @@ export class Draw {
     ctx: CanvasRenderingContext2D,
     payload: IDrawFloatPayload
   ) {
+    const { scale } = this.options
     const floatPositionList = this.position.getFloatPositionList()
     const { imgDisplay, pageNo } = payload
     for (let e = 0; e < floatPositionList.length; e++) {
@@ -2175,8 +2200,8 @@ export class Draw {
         this.imageParticle.render(
           ctx,
           element,
-          imgFloatPosition.x,
-          imgFloatPosition.y
+          imgFloatPosition.x * scale,
+          imgFloatPosition.y * scale
         )
       }
     }

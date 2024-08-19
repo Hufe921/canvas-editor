@@ -15,3 +15,8 @@ export enum ImageDisplay {
   FLOAT_TOP = 'float-top',
   FLOAT_BOTTOM = 'float-bottom'
 }
+
+export enum LocationPosition {
+  BEFORE = 'before',
+  AFTER = 'after'
+}
