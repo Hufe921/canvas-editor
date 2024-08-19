@@ -1273,10 +1273,10 @@ export class Draw {
           ) as Array<Array<ITd | undefined | null>>
           element.trList!.forEach((tr, trIndex) => {
             let tdIndex = 0
-            while (virtualTable[trIndex][tdIndex] === null) {
-              tdIndex++
-            }
             tr.tdList.forEach(td => {
+              while (virtualTable[trIndex][tdIndex] === null) {
+                tdIndex++
+              }
               virtualTable[trIndex][tdIndex] = td
               for (let i = 1; i < td.rowspan; i++) {
                 virtualTable[trIndex + i][tdIndex] = null
