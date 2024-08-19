@@ -1634,7 +1634,6 @@ export class Draw {
                   newTr.minHeight!
                 )
               } else {
-                newTr.id = getUUID()
                 // 记录被挪到下一页的行的原始高度
                 newTr.pagingOriginHeight = newTr.height
               }
