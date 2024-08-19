@@ -11,6 +11,7 @@ import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
 import { RadioControl } from '../../draw/control/radio/RadioControl'
 import { CanvasEvent } from '../CanvasEvent'
 import { IElement } from '../../../interface/Element'
+import { Draw } from '../../draw/Draw'
 
 export function setRangeCache(host: CanvasEvent) {
   const draw = host.getDraw()
@@ -22,6 +23,42 @@ export function setRangeCache(host: CanvasEvent) {
   host.cacheElementList = draw.getElementList()
   host.cachePositionList = position.getPositionList()
   host.cachePositionContext = position.getPositionContext()
+}
+
+export function hitCheckbox(element: IElement, draw: Draw) {
+  const { checkbox, control } = element
+  // 复选框不在控件内独立控制
+  if (!control) {
+    draw.getCheckboxParticle().setSelect(element)
+  } else {
+    const codes = control?.code ? control.code.split(',') : []
+    if (checkbox?.value) {
+      const codeIndex = codes.findIndex(c => c === checkbox.code)
+      codes.splice(codeIndex, 1)
+    } else {
+      if (checkbox?.code) {
+        codes.push(checkbox.code)
+      }
+    }
+    const activeControl = draw.getControl().getActiveControl()
+    if (activeControl instanceof CheckboxControl) {
+      activeControl.setSelect(codes)
+    }
+  }
+}
+
+export function hitRadio(element: IElement, draw: Draw) {
+  const { radio, control } = element
+  // 单选框不在控件内独立控制
+  if (!control) {
+    draw.getRadioParticle().setSelect(element)
+  } else {
+    const codes = radio?.code ? [radio.code] : []
+    const activeControl = draw.getControl().getActiveControl()
+    if (activeControl instanceof RadioControl) {
+      activeControl.setSelect(codes)
+    }
+  }
 }
 
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
@@ -103,51 +140,10 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     rangeManager.setRange(startIndex, endIndex)
     position.setCursorPosition(positionList[curIndex])
     // 复选框
-    const isSetCheckbox = isDirectHitCheckbox && !isReadonly
-    // 单选框
-    const isSetRadio = isDirectHitRadio && !isReadonly
-    // 控件内命中复选框
-    const hitCheckboxControl = (element: IElement) => {
-      const { checkbox, control } = element
-      const codes = control?.code ? control.code.split(',') : []
-      if (checkbox?.value) {
-        const codeIndex = codes.findIndex(c => c === checkbox.code)
-        codes.splice(codeIndex, 1)
-      } else {
-        if (checkbox?.code) {
-          codes.push(checkbox.code)
-        }
-      }
-      const activeControl = draw.getControl().getActiveControl()
-      if (activeControl instanceof CheckboxControl) {
-        activeControl.setSelect(codes)
-      }
-    }
-    // 控件内命中单选框
-    const hitRadioControl = (element: IElement) => {
-      const { radio } = element
-      const codes = radio?.code ? [radio.code] : []
-      const activeControl = draw.getControl().getActiveControl()
-      if (activeControl instanceof RadioControl) {
-        activeControl.setSelect(codes)
-      }
-    }
-    if (isSetCheckbox) {
-      const { control } = curElement
-      // 复选框不在控件内独立控制
-      if (!control) {
-        draw.getCheckboxParticle().setSelect(curElement)
-      } else {
-        hitCheckboxControl(curElement)
-      }
-    } else if (isSetRadio) {
-      const { control } = curElement
-      // 单选框不在控件内独立控制
-      if (!control) {
-        draw.getRadioParticle().setSelect(curElement)
-      } else {
-        hitRadioControl(curElement)
-      }
+    if (isDirectHitCheckbox && !isReadonly) {
+      hitCheckbox(curElement, draw)
+    } else if (isDirectHitRadio && !isReadonly) {
+      hitRadio(curElement, draw)
     } else if (
       curElement.controlComponent === ControlComponent.VALUE &&
       (curElement.control?.type === ControlType.CHECKBOX ||
@@ -158,10 +154,10 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       while (preIndex > 0) {
         const preElement = elementList[preIndex]
         if (preElement.controlComponent === ControlComponent.CHECKBOX) {
-          hitCheckboxControl(preElement)
+          hitCheckbox(preElement, draw)
           break
         } else if (preElement.controlComponent === ControlComponent.RADIO) {
-          hitRadioControl(preElement)
+          hitRadio(preElement, draw)
           break
         }
         preIndex--
