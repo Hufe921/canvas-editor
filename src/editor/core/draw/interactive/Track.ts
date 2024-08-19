@@ -25,8 +25,8 @@ export class Track {
     this.insertRectMap = new Map()
     this.deleteRectMap = new Map()
     this.container = draw.getContainer()
-    const { tackPopupContainer, trackInfoContainer } = this.createTrackContainer()
-    this.trackPopupElement = tackPopupContainer
+    const { trackPopupContainer, trackInfoContainer } = this.createTrackContainer()
+    this.trackPopupElement = trackPopupContainer
     this.trackInformationElement = trackInfoContainer
   }
   public getList(): IElement[] {
@@ -67,12 +67,12 @@ export class Track {
   }
 
   private createTrackContainer() {
-    const tackPopupContainer = document.createElement('div')
-    tackPopupContainer.classList.add(`${EDITOR_PREFIX}-track-popup`)
+    const trackPopupContainer = document.createElement('div')
+    trackPopupContainer.classList.add(`${EDITOR_PREFIX}-track-popup`)
     const trackInfoContainer = document.createElement('div')
-    tackPopupContainer.append(trackInfoContainer)
-    this.container.append(tackPopupContainer)
-    return { tackPopupContainer, trackInfoContainer }
+    trackPopupContainer.append(trackInfoContainer)
+    this.container.append(trackPopupContainer)
+    return { trackPopupContainer, trackInfoContainer }
   }
 
   public showTrackInfo(element: IElement, position: IElementPosition) {
@@ -88,9 +88,9 @@ export class Track {
     // 位置
     this.trackPopupElement.style.display = 'block'
     this.trackPopupElement.style.left = `${left}px`
-    this.trackPopupElement.style.top = `${top + preY + lineHeight}px`
+    this.trackPopupElement.style.top = `${top + preY - lineHeight}px`
     // 标签
-    const trackInformation = element.track?.author + '于' + element.track?.date + trackTypeStr[element.trackType!]
+    const trackInformation = element.track?.author + '(' + element.track?.date + ')' + trackTypeStr[element.trackType!]
     const textNode = document.createTextNode(trackInformation)
     this.trackInformationElement.append(textNode)
   }
