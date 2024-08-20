@@ -451,7 +451,7 @@ export function formatElementList(
       }
       el = elementList[i]
     }
-    if (el.value === '\n') {
+    if (el.value === '\n' || el.value == '\r\n') {
       el.value = ZERO
     }
     if (el.type === ElementType.IMAGE || el.type === ElementType.BLOCK) {
