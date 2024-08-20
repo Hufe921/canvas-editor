@@ -452,6 +452,12 @@ export function formatElementList(
       el = elementList[i]
     }
     if (el.value === '\n' || el.value == '\r\n') {
+      // 补偿元素
+      if (i === 0) {
+        elementList.unshift({
+          value: ZERO
+        })
+      }
       el.value = ZERO
     }
     if (el.type === ElementType.IMAGE || el.type === ElementType.BLOCK) {
