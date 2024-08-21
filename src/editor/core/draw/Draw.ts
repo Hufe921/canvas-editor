@@ -1428,12 +1428,11 @@ export class Draw {
         const emptyMainHeight = (height - marginHeight - rowMargin * 2) / scale
         trList.forEach(tr => {
           if (tr.minHeight && tr.minHeight > emptyMainHeight) {
-            const reduceHeight = tr.minHeight - emptyMainHeight
-            tr.height -= reduceHeight
-            tr.minHeight -= reduceHeight
+            tr.height = emptyMainHeight
+            tr.minHeight = emptyMainHeight
             tr.tdList.forEach(td => {
-              td.realMinHeight && (td.realMinHeight -= reduceHeight)
-              td.realHeight && (td.realHeight -= reduceHeight)
+              td.realHeight = emptyMainHeight
+              td.realMinHeight = emptyMainHeight
             })
           }
         })
