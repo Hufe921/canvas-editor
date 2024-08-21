@@ -1263,6 +1263,9 @@ export class Draw {
       } else if (element.type === ElementType.TABLE) {
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]
+        const height = this.getHeight()
+        const marginHeight = this.getMainOuterHeight()
+        const emptyMainHeight = (height - marginHeight - rowMargin * 2) / scale
         // 表格分页处理进度：https://github.com/Hufe921/canvas-editor/issues/41
         // 查看后续表格是否属于同一个源表格-存在即合并
         if (element.pagingId) {
@@ -1360,6 +1363,10 @@ export class Draw {
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
+          // 检查行的minHeight，最大只能为页面主内容区域高度
+          if (tr.minHeight && tr.minHeight > emptyMainHeight) {
+            tr.minHeight = emptyMainHeight
+          }
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const rowList = this.computeRowList({
@@ -1422,20 +1429,6 @@ export class Draw {
             })
           }
         }
-        // 检查行的minHeight，最大只能为页面主内容区域高度
-        const height = this.getHeight()
-        const marginHeight = this.getMainOuterHeight()
-        const emptyMainHeight = (height - marginHeight - rowMargin * 2) / scale
-        trList.forEach(tr => {
-          if (tr.minHeight && tr.minHeight > emptyMainHeight) {
-            tr.height = emptyMainHeight
-            tr.minHeight = emptyMainHeight
-            tr.tdList.forEach(td => {
-              td.realHeight = emptyMainHeight
-              td.realMinHeight = emptyMainHeight
-            })
-          }
-        })
         // 需要重新计算表格内值
         this.tableParticle.computeRowColInfo(element)
         // 计算出表格高度
