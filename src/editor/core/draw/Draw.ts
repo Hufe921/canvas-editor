@@ -1422,6 +1422,21 @@ export class Draw {
             })
           }
         }
+        // 检查行的minHeight，最大只能为页面主内容区域高度
+        const height = this.getHeight()
+        const marginHeight = this.getMainOuterHeight()
+        const emptyMainHeight = (height - marginHeight - rowMargin * 2) / scale
+        trList.forEach(tr => {
+          if (tr.minHeight && tr.minHeight > emptyMainHeight) {
+            const reduceHeight = tr.minHeight - emptyMainHeight
+            tr.height -= reduceHeight
+            tr.minHeight -= reduceHeight
+            tr.tdList.forEach(td => {
+              td.realMinHeight && (td.realMinHeight -= reduceHeight)
+              td.realHeight && (td.realHeight -= reduceHeight)
+            })
+          }
+        })
         // 需要重新计算表格内值
         this.tableParticle.computeRowColInfo(element)
         // 计算出表格高度
@@ -1437,8 +1452,6 @@ export class Draw {
         metrics.boundingBoxAscent = -rowMargin
         // 表格分页处理(拆分表格)
         if (isPagingMode) {
-          const height = this.getHeight()
-          const marginHeight = this.getMainOuterHeight()
           let curPagePreHeight = marginHeight
           for (let r = 0; r < rowList.length; r++) {
             const row = rowList[r]
