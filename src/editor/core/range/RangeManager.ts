@@ -430,7 +430,7 @@ export class RangeManager {
     const color = curElement.color || null
     const highlight = curElement.highlight || null
     const rowFlex = curElement.rowFlex || null
-    const rowMargin = curElement.rowMargin || this.options.defaultRowMargin
+    const rowMargin = curElement.rowMargin ?? this.options.defaultRowMargin
     const dashArray = curElement.dashArray || []
     const level = curElement.level || null
     const listType = curElement.listType || null

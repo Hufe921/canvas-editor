@@ -1188,7 +1188,7 @@ export class Draw {
     const { defaultBasicRowMarginHeight, defaultRowMargin, scale } =
       this.options
     return (
-      defaultBasicRowMarginHeight * (el.rowMargin || defaultRowMargin) * scale
+      defaultBasicRowMarginHeight * (el.rowMargin ?? defaultRowMargin) * scale
     )
   }
 
@@ -1227,7 +1227,7 @@ export class Draw {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
       const rowMargin =
-        defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
+        defaultBasicRowMarginHeight * (element.rowMargin ?? defaultRowMargin)
       const metrics: IElementMetrics = {
         width: 0,
         height: 0,
