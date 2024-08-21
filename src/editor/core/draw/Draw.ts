@@ -1080,7 +1080,8 @@ export class Draw {
     pageComponentData.forEach(data => {
       if (!data) return
       formatElementList(data, {
-        editorOptions: this.options
+        editorOptions: this.options,
+        isForceCompensation: true
       })
     })
     this.setEditorData({
