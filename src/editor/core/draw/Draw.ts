@@ -1704,8 +1704,8 @@ export class Draw {
         curRow.width += metrics.width
         // 减小块元素前第一行空行行高
         if (i === 0 && getIsBlockElement(elementList[1])) {
-          curRow.height = defaultBasicRowMarginHeight
-          curRow.ascent = defaultBasicRowMarginHeight
+          curRow.height = rowMargin
+          curRow.ascent = rowMargin
         } else if (curRow.height < height) {
           curRow.height = height
           curRow.ascent = ascent
