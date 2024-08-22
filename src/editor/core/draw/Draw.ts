@@ -1504,7 +1504,7 @@ export class Draw {
               >
               // 判断目标行是否可截断
               const allowSplitTr =
-                splitTrPreHeight > trList[splitTrIndex].minHeight! * scale && // 最小行高区间内不可截断
+                splitTrPreHeight >= trList[splitTrIndex].minHeight! * scale && // 最小行高区间内不可截断
                 trList[splitTrIndex].tdList.every(
                   // 如果截断线穿过该行所有单元格中第一个排版行，此时该行也不可截断
                   td => td.rowList![0].height < splitTrPreHeight
