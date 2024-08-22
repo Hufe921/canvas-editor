@@ -2255,7 +2255,7 @@ export class Draw {
     })
     if (this.getIsPagingMode()) {
       // 绘制页眉
-      if (!header.disabled) {
+      if (!header.disabled  && !header.disabledPages.includes(pageNo)) {
         this.header.render(ctx, pageNo)
       }
       // 绘制页码
