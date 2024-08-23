@@ -1496,13 +1496,17 @@ export class Draw {
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const {
-          separator: { lineWidth }
+          separator: { lineWidth, countHeight }
         } = this.options
         element.width = availableWidth / scale
         metrics.width = availableWidth
         metrics.height = lineWidth * scale
         metrics.boundingBoxAscent = -rowMargin
-        metrics.boundingBoxDescent = -rowMargin + metrics.height
+        if(countHeight) {
+          metrics.boundingBoxDescent = -rowMargin + metrics.height
+        } else {
+          metrics.boundingBoxDescent = -rowMargin
+        }
       } else if (element.type === ElementType.PAGE_BREAK) {
         element.width = availableWidth / scale
         metrics.width = availableWidth
