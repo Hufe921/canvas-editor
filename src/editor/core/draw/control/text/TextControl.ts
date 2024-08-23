@@ -13,6 +13,8 @@ import { IElement } from '../../../../interface/Element'
 import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
+import {EditorMode} from '../../../../dataset/enum/Editor'
+import {TrackType} from '../../../../dataset/enum/Track'
 
 export class TextControl implements IControlInstance {
   private element: IElement
@@ -87,16 +89,25 @@ export class TextControl implements IControlInstance {
     this.control.shrinkBoundary(context)
     const { startIndex, endIndex } = range
     const draw = this.control.getDraw()
+    const isReviewMode = draw.getMode() === EditorMode.REVIEW
     // 移除选区元素
-    if (startIndex !== endIndex) {
+    if(isReviewMode) {
+      if(startIndex !== endIndex) {
+        const deleteArray = elementList.slice(startIndex + 1, endIndex + 1)
+        draw.addReviewInformation(deleteArray, TrackType.DELETE)
+      } else {
+        this.control.removePlaceholder(startIndex, context)
+      }
+    } else if (startIndex !== endIndex) {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
       // 移除空白占位符
       this.control.removePlaceholder(startIndex, context)
     }
+
     // 非文本类元素或前缀过渡掉样式属性
     const startElement = elementList[startIndex]
-    const anchorElement =
+    let anchorElement =
       (startElement.type &&
         !TEXTLIKE_ELEMENT_TYPE.includes(startElement.type)) ||
       startElement.controlComponent === ControlComponent.PREFIX
@@ -106,6 +117,10 @@ export class TextControl implements IControlInstance {
             ...CONTROL_STYLE_ATTR
           ])
         : omitObject(startElement, ['type'])
+    // review->edit 去除痕迹有关属性
+    if(startElement.trackId && !isReviewMode){
+      anchorElement = omitObject(anchorElement,['track','trackId','trackType'])
+    }
     // 插入起始位置
     const start = range.startIndex + 1
     for (let i = 0; i < data.length; i++) {
@@ -114,8 +129,17 @@ export class TextControl implements IControlInstance {
         ...data[i],
         controlComponent: ControlComponent.VALUE
       }
+
       formatElementContext(elementList, [newElement], startIndex)
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      if(isReviewMode){
+        draw.addReviewInformation([newElement],TrackType.INSERT)
+        draw.spliceElementList(elementList, endIndex + 1 + i, 0, newElement)
+      } else {
+        draw.spliceElementList(elementList, start + i, 0, newElement)
+      }
+    }
+    if(isReviewMode) {
+      return endIndex + data.length
     }
     return start + data.length - 1
   }
@@ -156,10 +180,44 @@ export class TextControl implements IControlInstance {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     const draw = this.control.getDraw()
+    const isReviewMode = draw.getMode() === EditorMode.REVIEW
+    const currentUser = draw.getOptions().user.name
     // backspace
     if (evt.key === KeyMap.Backspace) {
-      // 移除选区元素
-      if (startIndex !== endIndex) {
+      // 审阅模式
+      if(isReviewMode) {
+        if(startIndex === endIndex) {
+          if (
+            startElement.controlComponent === ControlComponent.PREFIX ||
+            endElement.controlComponent === ControlComponent.POSTFIX ||
+            startElement.controlComponent === ControlComponent.PLACEHOLDER
+          ) {
+            // 前缀、后缀、占位符
+            return this.control.removeControl(startIndex)
+          }
+
+          if(startElement.trackType === TrackType.INSERT && startElement.track?.author === currentUser){
+            draw.spliceElementList(elementList, startIndex, 1)
+          } else {
+            draw.addReviewInformation([startElement], TrackType.DELETE)
+          }
+          return startIndex - 1
+        } else {
+          const deleteArray = elementList.slice(startIndex+1, endIndex+1)
+          const len = deleteArray.length
+          let startNum = startIndex + 1
+          for(let i = 0; i < len; i++) {
+            const element = deleteArray[i]
+            if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+              draw.spliceElementList(elementList, startNum + i, 1)
+              startNum--
+            } else {
+              draw.addReviewInformation([element], TrackType.DELETE)
+            }
+          }
+          return startIndex
+        }
+      } else if (!isReviewMode && startIndex !== endIndex) {
         draw.spliceElementList(
           elementList,
           startIndex + 1,
@@ -170,7 +228,7 @@ export class TextControl implements IControlInstance {
           this.control.addPlaceholder(startIndex)
         }
         return startIndex
-      } else {
+      } else if(!isReviewMode && startIndex === endIndex){
         if (
           startElement.controlComponent === ControlComponent.PREFIX ||
           endElement.controlComponent === ControlComponent.POSTFIX ||
@@ -189,8 +247,46 @@ export class TextControl implements IControlInstance {
         }
       }
     } else if (evt.key === KeyMap.Delete) {
+      // 审阅模式
+      if(isReviewMode) {
+        const endNextElement = elementList[endIndex + 1]
+        if(startIndex === endIndex) {
+          if (
+            (startElement.controlComponent === ControlComponent.PREFIX &&
+              endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
+            endNextElement.controlComponent === ControlComponent.POSTFIX ||
+            startElement.controlComponent === ControlComponent.PLACEHOLDER
+          ) {
+            // 前缀、后缀、占位符
+            return this.control.removeControl(startIndex)
+          } else {
+
+            if(endNextElement.trackType === TrackType.INSERT && endNextElement.track?.author === currentUser){
+              draw.spliceElementList(elementList, endIndex+1, 1)
+              return endIndex
+            } else {
+              draw.addReviewInformation([endNextElement], TrackType.DELETE)
+              return endIndex + 1
+            }
+          }
+        } else {
+          const deleteArray = elementList.slice(startIndex+1, endIndex+1)
+          const len = deleteArray.length
+          let startNum = startIndex + 1
+          for(let i = 0; i < len; i++) {
+            const element = deleteArray[i]
+            if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+              draw.spliceElementList(elementList, startNum + i, 1)
+              startNum--
+            } else {
+              draw.addReviewInformation([element], TrackType.DELETE)
+            }
+          }
+          return endIndex
+        }
+      }
       // 移除选区元素
-      if (startIndex !== endIndex) {
+      else if (!isReviewMode && startIndex !== endIndex) {
         draw.spliceElementList(
           elementList,
           startIndex + 1,
@@ -201,7 +297,7 @@ export class TextControl implements IControlInstance {
           this.control.addPlaceholder(startIndex)
         }
         return startIndex
-      } else {
+      } if(!isReviewMode && startIndex === endIndex){
         const endNextElement = elementList[endIndex + 1]
         if (
           (startElement.controlComponent === ControlComponent.PREFIX &&

@@ -7,6 +7,7 @@
 @import './contextmenu/contextmenu.css';
 @import './hyperlink/hyperlink.css';
 @import './zone/zone.css';
+@import './track/track.css';
 
 .ce-inputarea {
   width: 100px;

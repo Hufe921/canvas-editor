@@ -114,7 +114,8 @@ export class ImageParticle {
           this.imageCache.set(element.id!, img)
           resolve(element)
           // 衬于文字下方图片需要重新首先绘制
-          if (element.imgDisplay === ImageDisplay.FLOAT_BOTTOM) {
+          // 审阅模式下删除图片置于删除线下方
+          if (element.imgDisplay === ImageDisplay.FLOAT_BOTTOM || element.trackId) {
             this.draw.render({
               isCompute: false,
               isSetCursor: false,

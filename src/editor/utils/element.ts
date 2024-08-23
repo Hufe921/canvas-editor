@@ -131,7 +131,29 @@ export function formatElementList(
         }
       }
       i--
-    } else if (el.type === ElementType.LIST) {
+    } else if (el.type === ElementType.TRACK) {
+      // 移除父节点
+      elementList.splice(i, 1)
+      // 格式化元素
+      const valueList = el.valueList || []
+      formatElementList(valueList, {
+        ...options,
+        isHandleFirstElement: false
+      })
+      // 追加节点
+      if (valueList.length) {
+        const trackId =  getUUID()
+        for (let v = 0; v < valueList.length; v++) {
+          const value = valueList[v]
+          value.trackId = el?.trackId || trackId
+          value.trackType = el.trackType
+          value.track = el.track
+          elementList.splice(i, 0, value)
+          i++
+        }
+      }
+      i--
+    }  else if (el.type === ElementType.LIST) {
       // 移除父节点
       elementList.splice(i, 1)
       // 格式化元素
@@ -376,7 +398,11 @@ export function formatElementList(
               }
             }
           }
-        } else {
+        }
+        // else if() {
+        //
+        // }
+        else {
           if (!value || !value.length) {
             if (Array.isArray(valueSets) && valueSets.length) {
               const valueSet = valueSets.find(v => v.code === code)
@@ -725,6 +751,38 @@ export function zipElementList(
         }
         controlElement.control!.value = zipElementList(valueList, options)
         element = pickElementAttr(controlElement, { extraPickAttrs })
+      }
+    } else if(element.trackId) {
+      const trackId = element.trackId
+      const trackType = element.trackType
+      if (trackId && trackType) {
+        // 以前缀为基准合并track_info
+        const elementTrack = element.track
+        const trackElement: IElement = {
+          ...pickObject(element, EDITOR_ROW_ATTR),
+          type: ElementType.TRACK,
+          value: '',
+          trackId,
+          trackType,
+          track: elementTrack,
+        }
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const trackE = elementList[e]
+          const fromSameAuthor = trackE.trackType === trackType && trackE?.track?.author === elementTrack?.author
+          if (!fromSameAuthor) {
+            e--
+            break
+          } else {
+            delete trackE.trackId
+            delete trackE.trackType
+            delete trackE.track
+            valueList.push(trackE)
+          }
+          e++
+        }
+        trackElement.valueList = zipElementList(valueList, options)
+        element = trackElement
       }
     }
     // 组合元素

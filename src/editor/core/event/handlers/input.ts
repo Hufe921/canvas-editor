@@ -1,10 +1,12 @@
-import { ZERO } from '../../../dataset/constant/Common'
-import { EDITOR_ELEMENT_COPY_ATTR } from '../../../dataset/constant/Element'
-import { ElementType } from '../../../dataset/enum/Element'
-import { IElement } from '../../../interface/Element'
-import { splitText } from '../../../utils'
-import { formatElementContext, getAnchorElement } from '../../../utils/element'
-import { CanvasEvent } from '../CanvasEvent'
+import {ZERO} from '../../../dataset/constant/Common'
+import {EDITOR_ELEMENT_COPY_ATTR} from '../../../dataset/constant/Element'
+import {ElementType} from '../../../dataset/enum/Element'
+import {IElement} from '../../../interface/Element'
+import {splitText} from '../../../utils'
+import {formatElementContext, getAnchorElement} from '../../../utils/element'
+import {CanvasEvent} from '../CanvasEvent'
+import {TrackType} from '../../../dataset/enum/Track'
+import {EditorMode} from '../../../dataset/enum/Editor'
 
 export function input(data: string, host: CanvasEvent) {
   const draw = host.getDraw()
@@ -17,6 +19,9 @@ export function input(data: string, host: CanvasEvent) {
   if (isComposing && host.compositionInfo?.value === data) return
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
+  // 审阅模式
+  const isReviewMode = draw.getMode() === EditorMode.REVIEW
+
   // 移除合成输入
   removeComposingInput(host)
   if (!isComposing) {
@@ -59,6 +64,10 @@ export function input(data: string, host: CanvasEvent) {
     }
     return newElement
   })
+  //  留痕模式开启时所有输入元素添加痕迹信息
+  if(isReviewMode) {
+    draw.addReviewInformation(inputData, TrackType.INSERT)
+  }
   // 控件-移除placeholder
   const control = draw.getControl()
   let curIndex: number
@@ -66,12 +75,21 @@ export function input(data: string, host: CanvasEvent) {
     curIndex = control.setValue(inputData)
   } else {
     const start = startIndex + 1
-    if (startIndex !== endIndex) {
+    if (startIndex !== endIndex && !isReviewMode) {
       draw.spliceElementList(elementList, start, endIndex - startIndex)
+    } else if(startIndex !== endIndex && isReviewMode) {
+      // 审阅模式对双击选中内容不删除 添加痕迹信息
+      const deleteArray = elementList.slice(start, endIndex + 1)
+      draw.addReviewInformation(deleteArray, TrackType.DELETE)
     }
     formatElementContext(elementList, inputData, startIndex)
-    draw.spliceElementList(elementList, start, 0, ...inputData)
-    curIndex = startIndex + inputData.length
+    if(isReviewMode){
+      draw.spliceElementList(elementList, endIndex + 1, 0, ...inputData)
+      curIndex = endIndex  + inputData.length
+    } else {
+      draw.spliceElementList(elementList, start, 0, ...inputData)
+      curIndex = startIndex + inputData.length
+    }
   }
   if (~curIndex) {
     rangeManager.setRange(curIndex, curIndex)

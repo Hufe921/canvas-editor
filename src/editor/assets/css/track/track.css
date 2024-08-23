@@ -1,0 +1,23 @@
+.ce-track-popup {
+  background: #fff;
+  box-shadow: 0 2px 12px 0 rgb(98 107 132 / 20%);
+  border-radius: 2px;
+  color: #3d4757;
+  padding: 8px 16px;
+  position: absolute;
+  z-index: 1;
+  text-align: center;
+  display: none;
+}
+
+.ce-track-popup div {
+  min-width: 100px;
+  max-width: 300px;
+  font-size: 12px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  text-decoration: none;
+}

@@ -1412,6 +1412,10 @@ window.onload = function () {
     {
       mode: EditorMode.PRINT,
       name: '打印模式'
+    },
+    {
+      mode: EditorMode.REVIEW,
+      name: '审阅模式'
     }
   ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!

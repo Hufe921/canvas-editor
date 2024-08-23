@@ -2726,4 +2726,18 @@ export class CommandAdapt {
     // 插入标题
     this.draw.insertElementList([cloneElement])
   }
+
+  public hideTracks (hide:boolean) {
+
+    if(hide) {
+      this.draw.hideReview()
+    } else {
+      this.draw.showReview()
+    }
+      this.draw.render({
+        isSetCursor: false,
+        isSubmitHistory: false
+      })
+
+  }
 }

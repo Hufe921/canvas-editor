@@ -1,7 +1,7 @@
-import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
-import { EditorZone } from '../../../dataset/enum/Editor'
-import { ElementType } from '../../../dataset/enum/Element'
-import { DeepRequired } from '../../../interface/Common'
+import {ControlComponent, ControlType} from '../../../dataset/enum/Control'
+import {EditorMode, EditorZone} from '../../../dataset/enum/Editor'
+import {ElementType} from '../../../dataset/enum/Element'
+import {DeepRequired} from '../../../interface/Common'
 import {
   IControl,
   IControlContext,
@@ -19,40 +19,26 @@ import {
   ISetControlProperties,
   ISetControlValueOption
 } from '../../../interface/Control'
-import { IEditorData, IEditorOption } from '../../../interface/Editor'
-import { IElement, IElementPosition } from '../../../interface/Element'
-import { EventBusMap } from '../../../interface/EventBus'
-import { IRange } from '../../../interface/Range'
-import {
-  deepClone,
-  nextTick,
-  omitObject,
-  pickObject,
-  splitText
-} from '../../../utils'
-import {
-  formatElementContext,
-  formatElementList,
-  pickElementAttr,
-  zipElementList
-} from '../../../utils/element'
-import { EventBus } from '../../event/eventbus/EventBus'
-import { Listener } from '../../listener/Listener'
-import { RangeManager } from '../../range/RangeManager'
-import { Draw } from '../Draw'
-import { CheckboxControl } from './checkbox/CheckboxControl'
-import { RadioControl } from './radio/RadioControl'
-import { ControlSearch } from './interactive/ControlSearch'
-import { ControlBorder } from './richtext/Border'
-import { SelectControl } from './select/SelectControl'
-import { TextControl } from './text/TextControl'
-import { DateControl } from './date/DateControl'
-import { MoveDirection } from '../../../dataset/enum/Observer'
-import {
-  CONTROL_STYLE_ATTR,
-  LIST_CONTEXT_ATTR,
-  TITLE_CONTEXT_ATTR
-} from '../../../dataset/constant/Element'
+import {IEditorData, IEditorOption} from '../../../interface/Editor'
+import {IElement, IElementPosition} from '../../../interface/Element'
+import {EventBusMap} from '../../../interface/EventBus'
+import {IRange} from '../../../interface/Range'
+import {deepClone, nextTick, omitObject, pickObject, splitText} from '../../../utils'
+import {formatElementContext, formatElementList, pickElementAttr, zipElementList} from '../../../utils/element'
+import {EventBus} from '../../event/eventbus/EventBus'
+import {Listener} from '../../listener/Listener'
+import {RangeManager} from '../../range/RangeManager'
+import {Draw} from '../Draw'
+import {CheckboxControl} from './checkbox/CheckboxControl'
+import {RadioControl} from './radio/RadioControl'
+import {ControlSearch} from './interactive/ControlSearch'
+import {ControlBorder} from './richtext/Border'
+import {SelectControl} from './select/SelectControl'
+import {TextControl} from './text/TextControl'
+import {DateControl} from './date/DateControl'
+import {MoveDirection} from '../../../dataset/enum/Observer'
+import {CONTROL_STYLE_ATTR, LIST_CONTEXT_ATTR, TITLE_CONTEXT_ATTR} from '../../../dataset/constant/Element'
+import {TrackType} from '../../../dataset/enum/Track'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -454,6 +440,7 @@ export class Control {
     const startElement = elementList[startIndex]
     const { deletable = true } = startElement.control!
     if (!deletable) return null
+    const isReviewMode = this.draw.getMode() === EditorMode.REVIEW
     let leftIndex = -1
     let rightIndex = -1
     // 向左查找
@@ -483,11 +470,17 @@ export class Control {
     if (!~leftIndex && !~rightIndex) return startIndex
     leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
-    this.draw.spliceElementList(
-      elementList,
-      leftIndex + 1,
-      rightIndex - leftIndex
-    )
+    if(isReviewMode) {
+      const deleteArray = elementList.slice(leftIndex +1 , rightIndex +1 )
+      this.draw.addReviewInformation(deleteArray, TrackType.DELETE)
+    } else {
+      this.draw.spliceElementList(
+        elementList,
+        leftIndex + 1,
+        rightIndex - leftIndex
+      )
+    }
+
     return leftIndex
   }
 

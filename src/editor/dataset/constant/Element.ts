@@ -1,7 +1,7 @@
-import { ElementType } from '../enum/Element'
-import { IElement } from '../../interface/Element'
-import { ITd } from '../../interface/table/Td'
-import { IControlStyle } from '../../interface/Control'
+import {ElementType} from '../enum/Element'
+import {IElement} from '../../interface/Element'
+import {ITd} from '../../interface/table/Td'
+import {IControlStyle} from '../../interface/Control'
 
 export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
   'bold',
@@ -73,7 +73,9 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'imgFloatPosition',
   'textDecoration',
   'extension',
-  'externalId'
+  'externalId',
+  'track',
+  'trackType'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
@@ -129,7 +131,8 @@ export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
   ElementType.SUBSCRIPT,
   ElementType.SUPERSCRIPT,
   ElementType.CONTROL,
-  ElementType.DATE
+  ElementType.DATE,
+  ElementType.TRACK
 ]
 
 export const IMAGE_ELEMENT_TYPE: ElementType[] = [

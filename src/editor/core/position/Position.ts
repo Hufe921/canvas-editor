@@ -136,6 +136,25 @@ export class Position {
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y
+      // 计算不隐藏的元素边界位置
+      const len = curRow.elementList.length
+      let renderedLeftIndex = 0
+      let renderedRightIndex = len - 1
+
+      for(let j = 0; j < len; j++) {
+        const element  = curRow.elementList[j]
+        if(!element.hide) {
+          renderedLeftIndex = j
+          break
+        }
+      }
+      for(let j = len - 1; j > 0; j--) {
+        const element  = curRow.elementList[j]
+        if(!element.hide) {
+          renderedRightIndex = j
+          break
+        }
+      }
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
@@ -159,8 +178,8 @@ export class Position {
           left: element.left || 0,
           ascent: offsetY,
           lineHeight: curRow.height,
-          isFirstLetter: j === 0,
-          isLastLetter: j === curRow.elementList.length - 1,
+          isFirstLetter: j === renderedLeftIndex,
+          isLastLetter: j === renderedRightIndex,
           coordinate: {
             leftTop: [x, y],
             leftBottom: [x, y + curRow.height],
@@ -509,7 +528,7 @@ export class Position {
       } = lastLetterList[j]
       if (y > leftTop[1] && y <= leftBottom[1]) {
         const headIndex = positionList.findIndex(
-          p => p.pageNo === positionNo && p.rowNo === rowNo
+          p => p.pageNo === positionNo && p.rowNo === rowNo && p.isFirstLetter
         )
         const headElement = elementList[headIndex]
         const headPosition = positionList[headIndex]

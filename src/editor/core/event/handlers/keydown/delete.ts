@@ -1,8 +1,13 @@
 import { CanvasEvent } from '../../CanvasEvent'
+import {EditorMode} from '../../../../dataset/enum/Editor'
+import {TrackType} from '../../../../dataset/enum/Track'
 
 export function del(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   if (draw.isReadonly()) return
+  // 审阅模式
+  const isReviewMode = draw.getMode() === EditorMode.REVIEW
+  const currentUser = draw.getOptions().user.name
   // 可输入性验证
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
@@ -19,9 +24,23 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
       const row = rowCol[r]
       for (let c = 0; c < row.length; c++) {
         const col = row[c]
-        if (col.value.length > 1) {
+        if (col.value.length > 1 && !isReviewMode) {
           draw.spliceElementList(col.value, 1, col.value.length - 1)
           isDeleted = true
+        } else if(col.value.length > 1 && isReviewMode){
+          // 审阅模式删除表格跨行列内容
+          // const deleteArray = col.value.slice(1, col.value.length)
+          // draw.addReviewInformation(deleteArray, TrackType.DELETE)
+
+          for(let i = 1; i < col.value.length; i++) {
+            const element = col.value[i]
+            if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+              draw.spliceElementList(col.value, i, 1)
+              i--
+            } else  {
+              draw.addReviewInformation([element], TrackType.DELETE)
+            }
+          }
         }
       }
     }
@@ -42,11 +61,44 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
     // 命中图片直接删除
     const positionContext = position.getPositionContext()
     if (positionContext.isDirectHit && positionContext.isImage) {
-      draw.spliceElementList(elementList, index, 1)
+      if(!isReviewMode) {
+        draw.spliceElementList(elementList, index, 1)
+      } else {
+        const element = elementList[index]
+        if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+          draw.spliceElementList(elementList, index, 1)
+        } else  {
+          draw.addReviewInformation([element], TrackType.DELETE)
+        }
+      }
       curIndex = index - 1
     } else {
       const isCollapsed = rangeManager.getIsCollapsed()
-      if (!isCollapsed) {
+      let reviewCounter = 0
+      // 审阅模式删除！
+      if(isReviewMode && !isCollapsed) {
+        const deleteArray = elementList.slice(startIndex+1, endIndex+1)
+        const len = deleteArray.length
+        for(let i = 0; i < len; i++){
+          const element = deleteArray[i]
+          if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+            draw.spliceElementList(elementList, startIndex+1, 1)
+            reviewCounter++
+          } else  {
+            draw.addReviewInformation([element], TrackType.DELETE)
+          }
+        }
+      } else if(isReviewMode && isCollapsed){
+        if (!elementList[index + 1]) return
+        const element = elementList[index+1]
+        if(element.trackType === TrackType.INSERT && element.track?.author === currentUser){
+          draw.spliceElementList(elementList, index+1, 1)
+          reviewCounter++
+        } else  {
+          draw.addReviewInformation([element], TrackType.DELETE)
+        }
+      }
+      else if (!isCollapsed) {
         draw.spliceElementList(
           elementList,
           startIndex + 1,
@@ -56,7 +108,13 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
         if (!elementList[index + 1]) return
         draw.spliceElementList(elementList, index + 1, 1)
       }
-      curIndex = isCollapsed ? index : startIndex
+      if(!isReviewMode) {
+        curIndex = isCollapsed ? index : startIndex
+      } else if(isCollapsed && reviewCounter){
+        curIndex = index
+      } else {
+        curIndex = isCollapsed ? index + 1 : endIndex - reviewCounter
+      }
     }
   }
   draw.getGlobalEvent().setCanvasEventAbility()

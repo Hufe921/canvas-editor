@@ -1,12 +1,14 @@
 import { writeElementList } from '../../../utils/clipboard'
 import { CanvasEvent } from '../CanvasEvent'
+import {EditorMode} from '../../../dataset/enum/Editor'
 
 export function cut(host: CanvasEvent) {
   const draw = host.getDraw()
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
   if (!~startIndex && !~startIndex) return
-  if (draw.isReadonly() || !rangeManager.getIsCanInput()) return
+  // 审阅模式禁止剪切
+  if (draw.isReadonly() || !rangeManager.getIsCanInput() || draw.getMode() === EditorMode.REVIEW) return
 
   const elementList = draw.getElementList()
   let start = startIndex

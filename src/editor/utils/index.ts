@@ -326,3 +326,10 @@ export function isObjectEqual(obj1: unknown, obj2: unknown): boolean {
   }
   return !obj1Keys.some(key => obj2[key] !== obj1[key])
 }
+
+export function getCurrentTimeString():string {
+  const date = new Date()
+  const dateString = date.toLocaleDateString().replaceAll('/','-')
+  const timeString = date.toLocaleTimeString()
+  return dateString + ' ' + timeString
+}
