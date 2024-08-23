@@ -810,7 +810,7 @@ export class CommandAdapt {
         tdList.push({
           colspan: 1,
           rowspan: 1,
-          value: [{ value: ZERO, size: 16 }]
+          value: []
         })
       }
       trList.push(tr)
