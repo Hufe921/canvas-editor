@@ -176,7 +176,7 @@ export function formatElementList(
             formatElementList(td.value, {
               ...options,
               isHandleFirstElement: true,
-              isForceCompensation: false
+              isForceCompensation: true
             })
             for (let v = 0; v < td.value.length; v++) {
               const value = td.value[v]
