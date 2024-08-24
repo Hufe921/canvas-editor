@@ -102,6 +102,7 @@ import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
 import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
+import { PageBorder } from './frame/PageBorder'
 
 export class Draw {
   private container: HTMLDivElement
@@ -156,6 +157,7 @@ export class Draw {
   private listParticle: ListParticle
   private lineBreakParticle: LineBreakParticle
   private control: Control
+  private pageBorder: PageBorder
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
   private selectionObserver: SelectionObserver
@@ -232,6 +234,7 @@ export class Draw {
     this.listParticle = new ListParticle(this)
     this.lineBreakParticle = new LineBreakParticle(this)
     this.control = new Control(this)
+    this.pageBorder = new PageBorder(this)
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -2222,8 +2225,15 @@ export class Draw {
 
   private _drawPage(payload: IDrawPagePayload) {
     const { elementList, positionList, rowList, pageNo } = payload
-    const { inactiveAlpha, pageMode, header, footer, pageNumber, lineNumber } =
-      this.options
+    const {
+      inactiveAlpha,
+      pageMode,
+      header,
+      footer,
+      pageNumber,
+      lineNumber,
+      pageBorder
+    } = this.options
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2287,6 +2297,10 @@ export class Draw {
     // 渲染行数
     if (!lineNumber.disabled) {
       this.lineNumber.render(ctx, pageNo)
+    }
+    // 绘制页面边框
+    if (!pageBorder.disabled) {
+      this.pageBorder.render(ctx)
     }
   }
 

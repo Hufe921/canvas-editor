@@ -72,6 +72,7 @@ interface IEditorOption {
   lineBreak?: ILineBreakOption // LineBreak option. {disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // Separator option. {lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // LineNumber option. {size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
+  pageBorder?: IPageBorderOption // PageBorder option. {color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
 }
 ```
 
@@ -157,5 +158,16 @@ interface ILineNumberOption {
   disabled?: boolean // Whether to disable. default: false
   right?: number // Distance from the main text. default: 20
   type?: LineNumberType // Number type (renumber each page, consecutive numbering). default: continuity
+}
+```
+
+## PageBorder Configuration
+
+```typescript
+interface IPageBorderOption {
+  color?: string // color. default: #000000
+  lineWidth?: number // line width. default: 1
+  padding?: IPadding // padding. default: [0, 0, 0, 0]
+  disabled?: boolean //  Whether to disable. default: true
 }
 ```

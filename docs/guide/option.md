@@ -72,6 +72,7 @@ interface IEditorOption {
   lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // 行号配置。{size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
+  pageBorder?: IPageBorderOption // 页面边框配置。{color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
 }
 ```
 
@@ -157,5 +158,16 @@ interface ILineNumberOption {
   disabled?: boolean // 是否禁用。默认：true
   right?: number // 距离正文距离。默认：20
   type?: LineNumberType // 编号类型（每页重新编号、连续编号）。默认：连续编号
+}
+```
+
+## 页面边框配置
+
+```typescript
+interface IPageBorderOption {
+  color?: string // 颜色。默认：#000000
+  lineWidth?: number // 宽度。默认：1
+  padding?: IPadding // 距离正文内边距。默认：[0, 5, 0, 5]
+  disabled?: boolean // 是否禁用。默认：true
 }
 ```
