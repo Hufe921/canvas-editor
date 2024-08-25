@@ -929,7 +929,7 @@ Feature: Positioning and activating control
 Usage:
 
 ```javascript
-instance.command.executeLocationControl(controlId: string)
+instance.command.executeLocationControl(controlId: string, options?: ILocationControlOption)
 ```
 
 ## executeInsertControl

@@ -25,6 +25,7 @@ import { IZoneOption } from './Zone'
 import { ISeparatorOption } from './Separator'
 import { ITableOption } from './table/Table'
 import { ILineNumberOption } from './LineNumber'
+import { IPageBorderOption } from './PageBorder'
 
 export interface IEditorData {
   header?: IElement[]
@@ -91,6 +92,7 @@ export interface IEditorOption {
   lineBreak?: ILineBreakOption
   separator?: ISeparatorOption
   lineNumber?: ILineNumberOption
+  pageBorder?: IPageBorderOption
 }
 
 export interface IEditorResult {

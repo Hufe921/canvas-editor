@@ -60,8 +60,8 @@ interface IEditorOption {
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
   watermark?: IWatermark // Watermark{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string;}
-  checkbox?: ICheckboxOption // Checkbox {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string;}
-  radio?: IRadioOption // Radio {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string;}
+  checkbox?: ICheckboxOption // Checkbox {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
+  radio?: IRadioOption // Radio {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
   cursor?: ICursorOption // Cursor style. {width?: number; color?: string; dragWidth?: number; dragColor?: string;}
   title?: ITitleOption // Title configuration.{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
   placeholder?: IPlaceholder // Placeholder text
@@ -72,6 +72,7 @@ interface IEditorOption {
   lineBreak?: ILineBreakOption // LineBreak option. {disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // Separator option. {lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // LineNumber option. {size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
+  pageBorder?: IPageBorderOption // PageBorder option. {color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
 }
 ```
 
@@ -157,5 +158,16 @@ interface ILineNumberOption {
   disabled?: boolean // Whether to disable. default: false
   right?: number // Distance from the main text. default: 20
   type?: LineNumberType // Number type (renumber each page, consecutive numbering). default: continuity
+}
+```
+
+## PageBorder Configuration
+
+```typescript
+interface IPageBorderOption {
+  color?: string // color. default: #000000
+  lineWidth?: number // line width. default: 1
+  padding?: IPadding // padding. default: [0, 0, 0, 0]
+  disabled?: boolean //  Whether to disable. default: true
 }
 ```

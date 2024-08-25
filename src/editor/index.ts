@@ -6,7 +6,7 @@ import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
-import { ImageDisplay } from './dataset/enum/Common'
+import { ImageDisplay, LocationPosition } from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
@@ -89,7 +89,8 @@ export default class Editor {
     ]
     pageComponentData.forEach(elementList => {
       formatElementList(elementList, {
-        editorOptions
+        editorOptions,
+        isForceCompensation: true
       })
     })
     // 监听
@@ -171,7 +172,8 @@ export {
   BackgroundRepeat,
   BackgroundSize,
   TextDecorationStyle,
-  LineNumberType
+  LineNumberType,
+  LocationPosition
 }
 
 // 对外类型

@@ -929,7 +929,7 @@ instance.command.executeSetControlHighlight(payload: ISetControlHighlightOption)
 用法：
 
 ```javascript
-instance.command.executeLocationControl(controlId: string)
+instance.command.executeLocationControl(controlId: string, options?: ILocationControlOption)
 ```
 
 ## executeInsertControl

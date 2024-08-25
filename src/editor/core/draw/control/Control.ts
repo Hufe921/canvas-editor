@@ -892,7 +892,8 @@ export class Control {
       const elementList = zipElementList(pageComponentData[pageComponentKey]!)
       pageComponentData[pageComponentKey] = elementList
       formatElementList(elementList, {
-        editorOptions: this.options
+        editorOptions: this.options,
+        isForceCompensation: true
       })
     }
     this.draw.setEditorData(pageComponentData)
