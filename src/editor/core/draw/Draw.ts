@@ -1363,9 +1363,13 @@ export class Draw {
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
-          // 检查行的minHeight，最大只能为页面主内容区域高度
+          // 行的minHeight最大只能为页面主内容区域高度（如果表格前第一行是空行，由于此时表格不能换页，因此需减掉空行的高度）
           if (tr.minHeight && tr.minHeight > emptyMainHeight) {
-            tr.minHeight = emptyMainHeight
+            if (i === 1 && elementList[0].value === ZERO) {
+              tr.minHeight = emptyMainHeight - rowList[0].height
+            } else {
+              tr.minHeight = emptyMainHeight
+            }
           }
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
