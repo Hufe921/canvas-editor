@@ -679,7 +679,7 @@ Feature: Change how image rows are displayed
 Usage:
 
 ```javascript
-instance.command.executeSaveAsImageElement(element: IElement, display: ImageDisplay)
+instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
 ```
 
 ## executePageMode

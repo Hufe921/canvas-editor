@@ -679,7 +679,7 @@ instance.command.executeSaveAsImageElement()
 用法：
 
 ```javascript
-instance.command.executeSaveAsImageElement(element: IElement, display: ImageDisplay)
+instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
 ```
 
 ## executePageMode
