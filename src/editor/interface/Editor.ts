@@ -1,4 +1,4 @@
-import { IElement } from '..'
+import { IElement, LocationPosition } from '..'
 import {
   EditorMode,
   PageMode,
@@ -124,4 +124,8 @@ export type IUpdateOption = Omit<
 
 export interface ISetValueOption {
   isSetCursor?: boolean
+}
+
+export interface IFocusOption {
+  position?: LocationPosition
 }

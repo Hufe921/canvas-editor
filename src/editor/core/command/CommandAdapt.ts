@@ -22,6 +22,7 @@ import {
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
+import { MoveDirection } from '../../dataset/enum/Observer'
 import { RowFlex } from '../../dataset/enum/Row'
 import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
@@ -52,6 +53,7 @@ import {
   IEditorOption,
   IEditorResult,
   IEditorText,
+  IFocusOption,
   ISetValueOption,
   IUpdateOption
 } from '../../interface/Editor'
@@ -2725,5 +2727,24 @@ export class CommandAdapt {
     })
     // 插入标题
     this.draw.insertElementList([cloneElement])
+  }
+
+  public focus(payload?: IFocusOption) {
+    const { position = LocationPosition.AFTER } = payload || {}
+    const curIndex =
+      position === LocationPosition.BEFORE
+        ? 0
+        : this.draw.getOriginalMainElementList().length - 1
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({
+      curIndex,
+      isCompute: false,
+      isSubmitHistory: false
+    })
+    const positionList = this.draw.getPosition().getPositionList()
+    this.draw.getCursor().moveCursorToVisible({
+      cursorPosition: positionList[curIndex],
+      direction: MoveDirection.DOWN
+    })
   }
 }

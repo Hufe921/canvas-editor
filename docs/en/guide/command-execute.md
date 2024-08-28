@@ -961,3 +961,13 @@ Usage:
 ```javascript
 instance.command.executeInsertTitle(payload: IElement)
 ```
+
+## executeFocus
+
+Feature: focus
+
+Usage:
+
+```javascript
+instance.command.executeFocus(payload?: IFocusOption)
+```

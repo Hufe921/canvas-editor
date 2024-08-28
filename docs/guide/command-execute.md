@@ -961,3 +961,13 @@ instance.command.executeUpdateOptions(payload: IUpdateOption)
 ```javascript
 instance.command.executeInsertTitle(payload: IElement)
 ```
+
+## executeFocus
+
+功能：光标聚焦
+
+用法：
+
+```javascript
+instance.command.executeFocus(payload?: IFocusOption)
+```
