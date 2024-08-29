@@ -58,7 +58,7 @@ export class Header {
     this.rowList = this.draw.computeRowList({
       innerWidth,
       elementList: this.elementList
-    })
+    }).rowList
   }
 
   private _computePositionList() {

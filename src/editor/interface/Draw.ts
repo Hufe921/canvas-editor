@@ -70,4 +70,5 @@ export interface IComputeRowListPayload {
   innerWidth: number
   elementList: IElement[]
   isPagingMode?: boolean
+  curIndex?: number
 }

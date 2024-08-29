@@ -1190,6 +1190,7 @@ export class Draw {
       table: { tdPadding },
       defaultTabWidth
     } = this.options
+    let curIndex = payload.curIndex
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
@@ -1381,7 +1382,7 @@ export class Draw {
           }
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const rowList = this.computeRowList({
+            const { rowList } = this.computeRowList({
               innerWidth: (td.width! - tdPaddingWidth) * scale,
               elementList: td.value,
               isPagingMode
@@ -1471,7 +1472,9 @@ export class Draw {
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
           const rowMarginHeight = rowMargin * 2
           if (
-            curPagePreHeight + element.trList![0].height! + rowMarginHeight >
+            curPagePreHeight +
+              element.trList![0].height! * scale +
+              rowMarginHeight >
               height ||
             (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
@@ -1748,32 +1751,43 @@ export class Draw {
               this.spliceElementList(elementList, i + 1, 0, cloneElement)
             }
           }
-          // 表格经过分页处理-需要处理上下文
-          // FIXME: 分页后上下文有误
+          // 表格经过分页处理-需要处理上下文和选区
           if (element.pagingId) {
             const positionContext = this.position.getPositionContext()
-            if (positionContext.isTable) {
-              // 查找光标所在表格索引（根据trId搜索）
-              let newPositionContextIndex = -1
-              let newPositionContextTrIndex = -1
-              let tableIndex = i
-              while (tableIndex < elementList.length) {
-                const curElement = elementList[tableIndex]
-                if (curElement.pagingId !== element.pagingId) break
-                const trIndex = curElement.trList!.findIndex(
-                  r => r.id === positionContext.trId
+            if (
+              positionContext.isTable &&
+              positionContext.tableId === element.id
+            ) {
+              const trIndex = element.trList!.findIndex(
+                r =>
+                  r.pagingOriginId === positionContext.trId ||
+                  r.id === positionContext.trId
+              )
+              if (~trIndex) {
+                const tr = element.trList![trIndex]
+                const tdIndex = tr.tdList!.findIndex(
+                  d =>
+                    d.pagingOriginId === positionContext.tdId ||
+                    d.id === positionContext.tdId
                 )
-                if (~trIndex) {
-                  newPositionContextIndex = tableIndex
-                  newPositionContextTrIndex = trIndex
-                  break
+                if (~tdIndex) {
+                  const td = tr.tdList![tdIndex]
+                  if (curIndex !== undefined && curIndex > -1) {
+                    if (td.value[curIndex]) {
+                      positionContext.index = i
+                      positionContext.trIndex = trIndex
+                      positionContext.tdIndex = tdIndex
+                      positionContext.trId = tr.id
+                      positionContext.tdId = td.id
+                      this.range.setRange(curIndex, curIndex)
+                    } else {
+                      positionContext.tableId = elementList[i + 1].id
+                      curIndex -= td.value.length
+                    }
+                  }
                 }
-                tableIndex++
-              }
-              if (~newPositionContextIndex) {
-                positionContext.index = newPositionContextIndex
-                positionContext.trIndex = newPositionContextTrIndex
-                this.position.setPositionContext(positionContext)
+              } else {
+                positionContext.tableId = elementList[i + 1].id
               }
             }
           }
@@ -2020,7 +2034,7 @@ export class Draw {
         }
       }
     }
-    return rowList
+    return { rowList, curIndex }
   }
 
   private _computePageList(): IRow[][] {
@@ -2629,11 +2643,14 @@ export class Draw {
         }
       }
       // 行信息
-      this.rowList = this.computeRowList({
+      const { rowList, curIndex: newIndex } = this.computeRowList({
         isPagingMode,
         innerWidth,
-        elementList: this.elementList
+        elementList: this.elementList,
+        curIndex
       })
+      this.rowList = rowList
+      curIndex = newIndex
       // 页面信息
       this.pageRowList = this._computePageList()
       // 位置信息
