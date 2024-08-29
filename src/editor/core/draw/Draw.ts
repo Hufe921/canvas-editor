@@ -1339,6 +1339,14 @@ export class Draw {
                 const nextTr = nexTrList.shift()!
                 if (lastTr.id === nextTr.pagingOriginId) {
                   lastTr.height += nextTr.pagingOriginHeight || 0
+                  // 更新id关联
+                  lastTr.tdList.forEach(td => {
+                    td.value.forEach(v => {
+                      v.tdId = td.id
+                      v.trId = lastTr.id
+                      v.tableId = element.id
+                    })
+                  })
                 } else {
                   nextTr.height = nextTr.pagingOriginHeight || nextTr.height
                   element.trList!.push(nextTr)
@@ -1547,7 +1555,8 @@ export class Draw {
                   // 如果tr可拆分，根据截断位置，将td中的内容拆分到新行中
                   // 如果tr不可拆分，但当前位置td是跨行单元格，同样需要拆分
                   if (allowSplitTr || splitTd.rowspan > 1) {
-                    cloneTr[tdIndex]!.pagingOriginId = splitTd.id
+                    cloneTr[tdIndex]!.pagingOriginId =
+                      splitTd.pagingOriginId || splitTd.id
                     cloneTr[tdIndex]!.id = getUUID()
                     // 计算当前td在截断线之前的高度（默认为被截断行在截断线之前的高度，若td跨行，则加上其他行高度）
                     let splitTdPreHeight = splitTrPreHeight
@@ -1629,7 +1638,7 @@ export class Draw {
               const newTr = deepClone(trList[splitTrIndex])
               newTr.tdList = cloneTr.filter(td => td !== undefined) as ITd[]
               if (allowSplitTr) {
-                newTr.pagingOriginId = newTr.id
+                newTr.pagingOriginId = newTr.pagingOriginId || newTr.id
                 newTr.id = getUUID()
                 trList[splitTrIndex].height -= splitTrReduceHeight
                 trList[splitTrIndex].tdList.forEach(td => {
@@ -1714,9 +1723,20 @@ export class Draw {
               metrics.height -= totalOriginHeight * scale
               metrics.boundingBoxDescent -= totalOriginHeight * scale
               const cloneElement = deepClone(element)
+              cloneElement.id = getUUID()
               cloneElement.pagingId = pagingId
               cloneElement.pagingIndex = element.pagingIndex! + 1
               this.tableParticle.computeRowColInfo(element)
+              // 更新拆分出来的新表格中的id关联信息
+              cloneTrList.forEach(tr => {
+                tr.tdList.forEach(td => {
+                  td.value.forEach(v => {
+                    v.tdId = td.id
+                    v.trId = tr.id
+                    v.tableId = cloneElement.id
+                  })
+                })
+              })
               // 处理分页重复表头
               const repeatTrList = trList.filter(tr => tr.pagingRepeat)
               if (repeatTrList.length) {
@@ -1725,7 +1745,6 @@ export class Draw {
                 cloneTrList.unshift(...cloneRepeatTrList)
               }
               cloneElement.trList = cloneTrList
-              cloneElement.id = getUUID()
               this.spliceElementList(elementList, i + 1, 0, cloneElement)
             }
           }
