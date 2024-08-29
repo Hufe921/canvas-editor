@@ -40,7 +40,8 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   }
   // 格式化上下文
   formatElementContext(elementList, [enterText], startIndex, {
-    isBreakWhenWrap: true
+    isBreakWhenWrap: true,
+    editorOptions: draw.getOptions()
   })
   // 标题结尾处回车无需格式化及样式复制
   if (

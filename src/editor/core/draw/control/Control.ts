@@ -208,7 +208,7 @@ export class Control {
   }
 
   public getIsDisabledControl(context: IControlContext = {}): boolean {
-    if (!this.activeControl) return false
+    if (this.draw.isDesignMode() || !this.activeControl) return false
     const { startIndex, endIndex } = context.range || this.range.getRange()
     if (startIndex === endIndex && ~startIndex && ~endIndex) {
       const elementList = context.elementList || this.getElementList()
@@ -452,8 +452,11 @@ export class Control {
   ): number | null {
     const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
-    const { deletable = true } = startElement.control!
-    if (!deletable) return null
+    // 设计模式不验证删除权限
+    if (!this.draw.isDesignMode()) {
+      const { deletable = true } = startElement.control!
+      if (!deletable) return null
+    }
     let leftIndex = -1
     let rightIndex = -1
     // 向左查找
@@ -538,7 +541,9 @@ export class Control {
         controlComponent: ControlComponent.PLACEHOLDER,
         color: this.controlOptions.placeholderColor
       }
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], startIndex, {
+        editorOptions: this.options
+      })
       this.draw.spliceElementList(
         elementList,
         startIndex + p + 1,

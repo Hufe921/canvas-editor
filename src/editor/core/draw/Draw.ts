@@ -314,6 +314,8 @@ export class Draw {
 
   public isReadonly() {
     switch (this.mode) {
+      case EditorMode.DESIGN:
+        return false
       case EditorMode.READONLY:
       case EditorMode.PRINT:
         return true
@@ -325,6 +327,7 @@ export class Draw {
   }
 
   public isDisabled() {
+    if (this.mode === EditorMode.DESIGN) return false
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.getElementList()
     if (startIndex === endIndex) {
@@ -339,6 +342,10 @@ export class Draw {
     return selectionElementList.some(
       element => element.title?.disabled || element.control?.disabled
     )
+  }
+
+  public isDesignMode() {
+    return this.mode === EditorMode.DESIGN
   }
 
   public getOriginalWidth(): number {
@@ -698,6 +705,7 @@ export class Draw {
     deleteCount: number,
     ...items: IElement[]
   ) {
+    const isDesignMode = this.isDesignMode()
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -728,8 +736,9 @@ export class Draw {
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
           if (
-            deleteElement?.control?.deletable !== false &&
-            deleteElement?.title?.deletable !== false
+            isDesignMode ||
+            (deleteElement?.control?.deletable !== false &&
+              deleteElement?.title?.deletable !== false)
           ) {
             elementList.splice(deleteIndex, 1)
           }

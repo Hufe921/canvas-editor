@@ -827,7 +827,9 @@ export class CommandAdapt {
     formatElementList([element], {
       editorOptions: this.options
     })
-    formatElementContext(elementList, [element], startIndex)
+    formatElementContext(elementList, [element], startIndex, {
+      editorOptions: this.options
+    })
     const curIndex = startIndex + 1
     this.draw.spliceElementList(
       elementList,
@@ -1588,7 +1590,9 @@ export class CommandAdapt {
     }))
     if (!newElementList) return
     const start = startIndex + 1
-    formatElementContext(elementList, newElementList, startIndex)
+    formatElementContext(elementList, newElementList, startIndex, {
+      editorOptions: this.options
+    })
     this.draw.spliceElementList(
       elementList,
       start,
@@ -1733,7 +1737,9 @@ export class CommandAdapt {
         dashArray: payload
       }
       // 从行头增加分割线
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], startIndex, {
+        editorOptions: this.options
+      })
       if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
         this.draw.spliceElementList(elementList, startIndex, 1, newElement)
         curIndex = startIndex - 1
@@ -2238,7 +2244,8 @@ export class CommandAdapt {
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     formatElementContext(elementList, cloneElementList, startIndex, {
-      isBreakWhenWrap: true
+      isBreakWhenWrap: true,
+      editorOptions: this.options
     })
     this.draw.insertElementList(cloneElementList)
   }
