@@ -342,7 +342,12 @@ export class Control {
   }
 
   public repaintControl(options: IRepaintControlOption = {}) {
-    const { curIndex, isCompute = true, isSubmitHistory = true } = options
+    const {
+      curIndex,
+      isCompute = true,
+      isSubmitHistory = true,
+      isSetCursor = true
+    } = options
     // 重新渲染
     if (curIndex === undefined) {
       this.range.clearRange()
@@ -356,6 +361,7 @@ export class Control {
       this.draw.render({
         curIndex,
         isCompute,
+        isSetCursor,
         isSubmitHistory
       })
     }

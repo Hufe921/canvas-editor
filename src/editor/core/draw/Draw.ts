@@ -1804,13 +1804,23 @@ export class Draw {
     ctx: CanvasRenderingContext2D,
     payload: IDrawRowPayload
   ) {
+    const {
+      control: { activeBackgroundColor }
+    } = this.options
     const { rowList, positionList } = payload
+    const activeControlElement = this.control.getActiveControl()?.getElement()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const preElement = curRow.elementList[j - 1]
-        if (element.highlight) {
+        if (
+          element.highlight ||
+          (activeBackgroundColor &&
+            activeControlElement &&
+            element.controlId === activeControlElement.controlId &&
+            !this.control.getIsRangeInPostfix())
+        ) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (
             preElement &&
@@ -1825,13 +1835,15 @@ export class Draw {
               leftTop: [x, y]
             }
           } = positionList[curRow.startIndex + j]
+          // 元素向左偏移量
+          const offsetX = element.left || 0
           this.highlight.recordFillInfo(
             ctx,
-            x,
+            x - offsetX,
             y,
-            element.metrics.width,
+            element.metrics.width + offsetX,
             curRow.height,
-            element.highlight
+            element.highlight || activeBackgroundColor
           )
         } else if (preElement?.highlight) {
           // 之前是高亮元素，当前不是需立即绘制
