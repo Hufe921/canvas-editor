@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）。默认：编辑
+  mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）、设计模式（不可删除、只读等配置不控制）。默认：编辑
   defaultType?: string // 默认元素类型。默认：TEXT
   defaultColor?: string // 默认字体颜色。默认：#000000
   defaultFont?: string // 默认字体。默认：Microsoft YaHei
@@ -60,8 +60,8 @@ interface IEditorOption {
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
   watermark?: IWatermark // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string;}
   control?: IControlOption // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string;}
-  checkbox?: ICheckboxOption // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string;}
-  radio?: IRadioOption // 单选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string;}
+  checkbox?: ICheckboxOption // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
+  radio?: IRadioOption // 单选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
   cursor?: ICursorOption // 光标样式。{width?: number; color?: string; dragWidth?: number; dragColor?: string;}
   title?: ITitleOption // 标题配置。{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
   placeholder?: IPlaceholder // 编辑器空白占位文本
@@ -72,6 +72,7 @@ interface IEditorOption {
   lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // 行号配置。{size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
+  pageBorder?: IPageBorderOption // 页面边框配置。{color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
 }
 ```
 
@@ -157,5 +158,16 @@ interface ILineNumberOption {
   disabled?: boolean // 是否禁用。默认：true
   right?: number // 距离正文距离。默认：20
   type?: LineNumberType // 编号类型（每页重新编号、连续编号）。默认：连续编号
+}
+```
+
+## 页面边框配置
+
+```typescript
+interface IPageBorderOption {
+  color?: string // 颜色。默认：#000000
+  lineWidth?: number // 宽度。默认：1
+  padding?: IPadding // 距离正文内边距。默认：[0, 5, 0, 5]
+  disabled?: boolean // 是否禁用。默认：true
 }
 ```

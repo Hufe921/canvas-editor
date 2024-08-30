@@ -103,6 +103,7 @@ import { LineBreakParticle } from './particle/LineBreakParticle'
 import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
 import { ITd } from '../../interface/table/Td'
+import { PageBorder } from './frame/PageBorder'
 
 export class Draw {
   private container: HTMLDivElement
@@ -157,6 +158,7 @@ export class Draw {
   private listParticle: ListParticle
   private lineBreakParticle: LineBreakParticle
   private control: Control
+  private pageBorder: PageBorder
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
   private selectionObserver: SelectionObserver
@@ -233,6 +235,7 @@ export class Draw {
     this.listParticle = new ListParticle(this)
     this.lineBreakParticle = new LineBreakParticle(this)
     this.control = new Control(this)
+    this.pageBorder = new PageBorder(this)
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -312,6 +315,8 @@ export class Draw {
 
   public isReadonly() {
     switch (this.mode) {
+      case EditorMode.DESIGN:
+        return false
       case EditorMode.READONLY:
       case EditorMode.PRINT:
         return true
@@ -323,6 +328,7 @@ export class Draw {
   }
 
   public isDisabled() {
+    if (this.mode === EditorMode.DESIGN) return false
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.getElementList()
     if (startIndex === endIndex) {
@@ -337,6 +343,10 @@ export class Draw {
     return selectionElementList.some(
       element => element.title?.disabled || element.control?.disabled
     )
+  }
+
+  public isDesignMode() {
+    return this.mode === EditorMode.DESIGN
   }
 
   public getOriginalWidth(): number {
@@ -389,6 +399,18 @@ export class Draw {
     const width = this.getOriginalWidth()
     const margins = this.getOriginalMargins()
     return width - margins[1] - margins[3]
+  }
+
+  public getContextInnerWidth(): number {
+    const positionContext = this.position.getPositionContext()
+    if (positionContext.isTable) {
+      const { index, trIndex, tdIndex } = positionContext
+      const elementList = this.getOriginalElementList()
+      const td = elementList[index!].trList![trIndex!].tdList[tdIndex!]
+      const tdPadding = this.getTdPadding()
+      return td!.width! - tdPadding[1] - tdPadding[3]
+    }
+    return this.getOriginalInnerWidth()
   }
 
   public getMargins(): IMargin {
@@ -684,6 +706,7 @@ export class Draw {
     deleteCount: number,
     ...items: IElement[]
   ) {
+    const isDesignMode = this.isDesignMode()
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -714,8 +737,9 @@ export class Draw {
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
           if (
-            deleteElement?.control?.deletable !== false &&
-            deleteElement?.title?.deletable !== false
+            isDesignMode ||
+            (deleteElement?.control?.deletable !== false &&
+              deleteElement?.title?.deletable !== false)
           ) {
             elementList.splice(deleteIndex, 1)
           }
@@ -1069,7 +1093,8 @@ export class Draw {
     pageComponentData.forEach(data => {
       if (!data) return
       formatElementList(data, {
-        editorOptions: this.options
+        editorOptions: this.options,
+        isForceCompensation: true
       })
     })
     this.setEditorData({
@@ -1177,7 +1202,7 @@ export class Draw {
     const { defaultBasicRowMarginHeight, defaultRowMargin, scale } =
       this.options
     return (
-      defaultBasicRowMarginHeight * (el.rowMargin || defaultRowMargin) * scale
+      defaultBasicRowMarginHeight * (el.rowMargin ?? defaultRowMargin) * scale
     )
   }
 
@@ -1217,7 +1242,7 @@ export class Draw {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
       const rowMargin =
-        defaultBasicRowMarginHeight * (element.rowMargin || defaultRowMargin)
+        defaultBasicRowMarginHeight * (element.rowMargin ?? defaultRowMargin)
       const metrics: IElementMetrics = {
         width: 0,
         height: 0,
@@ -2223,13 +2248,25 @@ export class Draw {
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
           this.textParticle.complete()
-          this.checkboxParticle.render(ctx, element, x, y + offsetY)
+          this.checkboxParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
         ) {
           this.textParticle.complete()
-          this.radioParticle.render(ctx, element, x, y + offsetY)
+          this.radioParticle.render({
+            ctx,
+            x,
+            y: y + offsetY,
+            index: j,
+            row: curRow
+          })
         } else if (element.type === ElementType.TAB) {
           this.textParticle.complete()
         } else if (
@@ -2470,6 +2507,7 @@ export class Draw {
     ctx: CanvasRenderingContext2D,
     payload: IDrawFloatPayload
   ) {
+    const { scale } = this.options
     const floatPositionList = this.position.getFloatPositionList()
     const { imgDisplay, pageNo } = payload
     for (let e = 0; e < floatPositionList.length; e++) {
@@ -2486,8 +2524,8 @@ export class Draw {
         this.imageParticle.render(
           ctx,
           element,
-          imgFloatPosition.x,
-          imgFloatPosition.y
+          imgFloatPosition.x * scale,
+          imgFloatPosition.y * scale
         )
       }
     }
@@ -2507,8 +2545,15 @@ export class Draw {
 
   private _drawPage(payload: IDrawPagePayload) {
     const { elementList, positionList, rowList, pageNo } = payload
-    const { inactiveAlpha, pageMode, header, footer, pageNumber, lineNumber } =
-      this.options
+    const {
+      inactiveAlpha,
+      pageMode,
+      header,
+      footer,
+      pageNumber,
+      lineNumber,
+      pageBorder
+    } = this.options
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2572,6 +2617,10 @@ export class Draw {
     // 渲染行数
     if (!lineNumber.disabled) {
       this.lineNumber.render(ctx, pageNo)
+    }
+    // 绘制页面边框
+    if (!pageBorder.disabled) {
+      this.pageBorder.render(ctx)
     }
   }
 

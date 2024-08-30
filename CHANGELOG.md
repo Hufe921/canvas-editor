@@ -1,3 +1,41 @@
+## [0.9.91](https://github.com/Hufe921/canvas-editor/compare/v0.9.90...v0.9.91) (2024-08-25)
+
+
+### Bug Fixes
+
+* format different types of line breaks #769 ([f65ff87](https://github.com/Hufe921/canvas-editor/commit/f65ff87e44728322417d235d2347ceca25cc6667)), closes [#769](https://github.com/Hufe921/canvas-editor/issues/769)
+* format initial data boundary error #771 #784 ([f62a315](https://github.com/Hufe921/canvas-editor/commit/f62a315a7bd04e49e9e17bc7737ccd1f0e751d69)), closes [#771](https://github.com/Hufe921/canvas-editor/issues/771) [#784](https://github.com/Hufe921/canvas-editor/issues/784)
+* set row margin boundary error ([5285170](https://github.com/Hufe921/canvas-editor/commit/528517094373b5fa9ca2145bb259889db865a588))
+
+
+### Features
+
+* add page border ([3f6bdf6](https://github.com/Hufe921/canvas-editor/commit/3f6bdf6fcb583ab370cb5abe3eafebf6100f415e))
+* hit checkbox/radio control when click on label #651 ([31b76b6](https://github.com/Hufe921/canvas-editor/commit/31b76b6fb6640ea75383569cb16ad1b5a2ccf25f)), closes [#651](https://github.com/Hufe921/canvas-editor/issues/651)
+
+
+
+## [0.9.90](https://github.com/Hufe921/canvas-editor/compare/v0.9.89...v0.9.90) (2024-08-18)
+
+
+### Bug Fixes
+
+* float image position when scaling the page #766 ([c249b9e](https://github.com/Hufe921/canvas-editor/commit/c249b9eec215fe573b325d1430212f5f01c32099)), closes [#766](https://github.com/Hufe921/canvas-editor/issues/766)
+* get range paragraph info boundary error #758 ([4653fe7](https://github.com/Hufe921/canvas-editor/commit/4653fe7427f4a9ec40700f6a86ff284d1d46088a)), closes [#758](https://github.com/Hufe921/canvas-editor/issues/758)
+* insert block element row flex error #754 ([136b1ff](https://github.com/Hufe921/canvas-editor/commit/136b1ffa55b7b0b78bf3d114400489e1bbab4f17)), closes [#754](https://github.com/Hufe921/canvas-editor/issues/754)
+* paper printing size setting #760 ([7a6dd75](https://github.com/Hufe921/canvas-editor/commit/7a6dd753e59bde4cb581ac215b038dd1cd08c96f)), closes [#760](https://github.com/Hufe921/canvas-editor/issues/760)
+* set editor mode option error #755 ([500cec3](https://github.com/Hufe921/canvas-editor/commit/500cec3e0b63e012f6572dcedb071befa114956e)), closes [#755](https://github.com/Hufe921/canvas-editor/issues/755)
+* set row flex boundary error when deleting element ([2f272de](https://github.com/Hufe921/canvas-editor/commit/2f272dee58169607783e4cfd1347534f49db0834))
+
+
+### Features
+
+* add location property to executeLocationControl api #753 ([d1a1aaa](https://github.com/Hufe921/canvas-editor/commit/d1a1aaa6ae08d8395df1df664d47bfe4fe821869)), closes [#753](https://github.com/Hufe921/canvas-editor/issues/753)
+* add radio and checkbox vertical align setting ([c375466](https://github.com/Hufe921/canvas-editor/commit/c3754663cee25003a7021a6079dd46e2a3a0abd8))
+* get context content width ([187498e](https://github.com/Hufe921/canvas-editor/commit/187498ed3dfba4386375d812d41b31c057ac3af8))
+
+
+
 ## [0.9.89](https://github.com/Hufe921/canvas-editor/compare/v0.9.88...v0.9.89) (2024-08-09)
 
 

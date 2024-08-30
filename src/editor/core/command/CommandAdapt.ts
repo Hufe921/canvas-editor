@@ -22,6 +22,7 @@ import {
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
+import { MoveDirection } from '../../dataset/enum/Observer'
 import { RowFlex } from '../../dataset/enum/Row'
 import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
@@ -52,6 +53,7 @@ import {
   IEditorOption,
   IEditorResult,
   IEditorText,
+  IFocusOption,
   ISetValueOption,
   IUpdateOption
 } from '../../interface/Editor'
@@ -789,7 +791,7 @@ export class CommandAdapt {
       const row = rowList[rowIndex]
       offsetX = row?.offsetX || 0
     }
-    const innerWidth = this.draw.getOriginalInnerWidth() - offsetX
+    const innerWidth = this.draw.getContextInnerWidth() - offsetX
     // colgroup
     const colgroup: IColgroup[] = []
     const colWidth = innerWidth / col
@@ -810,7 +812,7 @@ export class CommandAdapt {
         tdList.push({
           colspan: 1,
           rowspan: 1,
-          value: [{ value: ZERO, size: 16 }]
+          value: []
         })
       }
       trList.push(tr)
@@ -825,7 +827,9 @@ export class CommandAdapt {
     formatElementList([element], {
       editorOptions: this.options
     })
-    formatElementContext(elementList, [element], startIndex)
+    formatElementContext(elementList, [element], startIndex, {
+      editorOptions: this.options
+    })
     const curIndex = startIndex + 1
     this.draw.spliceElementList(
       elementList,
@@ -1586,7 +1590,9 @@ export class CommandAdapt {
     }))
     if (!newElementList) return
     const start = startIndex + 1
-    formatElementContext(elementList, newElementList, startIndex)
+    formatElementContext(elementList, newElementList, startIndex, {
+      editorOptions: this.options
+    })
     this.draw.spliceElementList(
       elementList,
       start,
@@ -1731,7 +1737,9 @@ export class CommandAdapt {
         dashArray: payload
       }
       // 从行头增加分割线
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], startIndex, {
+        editorOptions: this.options
+      })
       if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
         this.draw.spliceElementList(elementList, startIndex, 1, newElement)
         curIndex = startIndex - 1
@@ -2236,7 +2244,8 @@ export class CommandAdapt {
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     formatElementContext(elementList, cloneElementList, startIndex, {
-      isBreakWhenWrap: true
+      isBreakWhenWrap: true,
+      editorOptions: this.options
     })
     this.draw.insertElementList(cloneElementList)
   }
@@ -2725,5 +2734,24 @@ export class CommandAdapt {
     })
     // 插入标题
     this.draw.insertElementList([cloneElement])
+  }
+
+  public focus(payload?: IFocusOption) {
+    const { position = LocationPosition.AFTER } = payload || {}
+    const curIndex =
+      position === LocationPosition.BEFORE
+        ? 0
+        : this.draw.getOriginalMainElementList().length - 1
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({
+      curIndex,
+      isCompute: false,
+      isSubmitHistory: false
+    })
+    const positionList = this.draw.getPosition().getPositionList()
+    this.draw.getCursor().moveCursorToVisible({
+      cursorPosition: positionList[curIndex],
+      direction: MoveDirection.DOWN
+    })
   }
 }

@@ -84,7 +84,8 @@ export class Placeholder {
       }
     ]
     formatElementList(this.elementList, {
-      editorOptions: this.options
+      editorOptions: this.options,
+      isForceCompensation: true
     })
     // 计算
     this._compute()

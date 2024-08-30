@@ -176,7 +176,9 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         return newElement
       }
     })
-    formatElementContext(elementList, replaceElementList, range.startIndex)
+    formatElementContext(elementList, replaceElementList, range.startIndex, {
+      editorOptions: draw.getOptions()
+    })
     // 缓存拖拽选区开始元素、位置、开始结束id
     const cacheStartElement = cacheElementList[cacheStartIndex]
     const cacheStartPosition = cachePositionList[cacheStartIndex]

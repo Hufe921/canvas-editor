@@ -9,6 +9,7 @@ import {
   splitText
 } from '.'
 import {
+  EditorMode,
   ElementType,
   IEditorOption,
   IElement,
@@ -65,7 +66,8 @@ export function unzipElementList(elementList: IElement[]): IElement[] {
 }
 
 interface IFormatElementListOption {
-  isHandleFirstElement?: boolean
+  isHandleFirstElement?: boolean // 根据上下文确定首字符处理逻辑（处理首字符补偿）
+  isForceCompensation?: boolean // 强制补偿字符
   editorOptions: DeepRequired<IEditorOption>
 }
 
@@ -73,17 +75,19 @@ export function formatElementList(
   elementList: IElement[],
   options: IFormatElementListOption
 ) {
-  const { isHandleFirstElement, editorOptions } = <IFormatElementListOption>{
-    isHandleFirstElement: true,
-    ...options
-  }
+  const {
+    isHandleFirstElement = true,
+    isForceCompensation = false,
+    editorOptions
+  } = options
   const startElement = elementList[0]
   // 非首字符零宽节点文本元素则补偿-列表元素内部会补偿此处忽略
   if (
-    isHandleFirstElement &&
-    startElement?.type !== ElementType.LIST &&
-    ((startElement?.type && startElement.type !== ElementType.TEXT) ||
-      !START_LINE_BREAK_REG.test(startElement?.value))
+    isForceCompensation ||
+    (isHandleFirstElement &&
+      startElement?.type !== ElementType.LIST &&
+      ((startElement?.type && startElement.type !== ElementType.TEXT) ||
+        !START_LINE_BREAK_REG.test(startElement?.value)))
   ) {
     elementList.unshift({
       value: ZERO
@@ -100,7 +104,8 @@ export function formatElementList(
       const valueList = el.valueList || []
       formatElementList(valueList, {
         ...options,
-        isHandleFirstElement: false
+        isHandleFirstElement: false,
+        isForceCompensation: false
       })
       // 追加节点
       if (valueList.length) {
@@ -134,7 +139,8 @@ export function formatElementList(
       const valueList = el.valueList || []
       formatElementList(valueList, {
         ...options,
-        isHandleFirstElement: true
+        isHandleFirstElement: true,
+        isForceCompensation: false
       })
       // 追加节点
       if (valueList.length) {
@@ -170,7 +176,8 @@ export function formatElementList(
             td.id = tdId
             formatElementList(td.value, {
               ...options,
-              isHandleFirstElement: true
+              isHandleFirstElement: true,
+              isForceCompensation: true
             })
             for (let v = 0; v < td.value.length; v++) {
               const value = td.value[v]
@@ -385,7 +392,8 @@ export function formatElementList(
           }
           formatElementList(valueList, {
             ...options,
-            isHandleFirstElement: false
+            isHandleFirstElement: false,
+            isForceCompensation: false
           })
           for (let v = 0; v < valueList.length; v++) {
             const element = valueList[v]
@@ -451,7 +459,7 @@ export function formatElementList(
       }
       el = elementList[i]
     }
-    if (el.value === '\n') {
+    if (el.value === '\n' || el.value == '\r\n') {
       el.value = ZERO
     }
     if (el.type === ElementType.IMAGE || el.type === ElementType.BLOCK) {
@@ -886,7 +894,8 @@ export function getAnchorElement(
 }
 
 export interface IFormatElementContextOption {
-  isBreakWhenWrap: boolean
+  isBreakWhenWrap?: boolean
+  editorOptions?: DeepRequired<IEditorOption>
 }
 
 export function formatElementContext(
@@ -897,11 +906,12 @@ export function formatElementContext(
 ) {
   let copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
-  // 标题元素禁用时不复制标题属性
-  if (copyElement.title?.disabled) {
+  const { isBreakWhenWrap = false, editorOptions } = options || {}
+  const { mode } = editorOptions || {}
+  // 非设计模式时：标题元素禁用时不复制标题属性
+  if (mode !== EditorMode.DESIGN && copyElement.title?.disabled) {
     copyElement = omitObject(copyElement, TITLE_CONTEXT_ATTR)
   }
-  const { isBreakWhenWrap = false } = options || {}
   // 是否已经换行
   let isBreakWarped = false
   for (let e = 0; e < formatElementList.length; e++) {
@@ -930,7 +940,8 @@ export function formatElementContext(
       formatElementContext(
         sourceElementList,
         targetElement.valueList,
-        anchorIndex
+        anchorIndex,
+        options
       )
     }
     // 非块类元素，需处理行属性

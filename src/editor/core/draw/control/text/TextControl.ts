@@ -4,11 +4,13 @@ import {
 } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
+import { DeepRequired } from '../../../../interface/Common'
 import {
   IControlContext,
   IControlInstance,
   IControlRuleOption
 } from '../../../../interface/Control'
+import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
 import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
@@ -17,8 +19,10 @@ import { Control } from '../Control'
 export class TextControl implements IControlInstance {
   private element: IElement
   private control: Control
+  private options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
+    this.options = control.getDraw().getOptions()
     this.element = element
     this.control = control
   }
@@ -114,7 +118,9 @@ export class TextControl implements IControlInstance {
         ...data[i],
         controlComponent: ControlComponent.VALUE
       }
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], startIndex, {
+        editorOptions: this.options
+      })
       draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     return start + data.length - 1

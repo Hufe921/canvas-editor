@@ -25,7 +25,9 @@ export function tab(evt: KeyboardEvent, host: CanvasEvent) {
     const rangeManager = draw.getRange()
     const { startIndex } = rangeManager.getRange()
     const elementList = draw.getElementList()
-    formatElementContext(elementList, [tabElement], startIndex)
+    formatElementContext(elementList, [tabElement], startIndex, {
+      editorOptions: draw.getOptions()
+    })
     draw.insertElementList([tabElement])
   }
 }
