@@ -82,7 +82,8 @@ export function input(data: string, host: CanvasEvent) {
   }
   if (isComposing) {
     host.compositionInfo = {
-      elementList,
+      // 当在跨页表格中输入中文时，由于render方法会先合并然后再次拆分表格，因此需重新获取elementList
+      elementList: draw.getElementList(),
       value: text,
       startIndex: curIndex - inputData.length,
       endIndex: curIndex
