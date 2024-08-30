@@ -81,7 +81,9 @@ export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
   'verticalAlign',
   'backgroundColor',
   'borderTypes',
-  'slashTypes'
+  'slashTypes',
+  'extension',
+  'externalId'
 ]
 
 export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [
