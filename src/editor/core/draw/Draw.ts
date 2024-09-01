@@ -1422,11 +1422,16 @@ export class Draw {
           if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
             const trList = element.trList!
             // 计算需要移除的行数
-            let deleteStart = 0
-            let deleteCount = 0
-            let preTrHeight = 0
+            let deleteStart = 0 //拆分开始行
+            let deleteCount = 0 //拆分行数
+            let preTrHeight = 0 //前面tr的高度
+            const colInfoCache = new Map() //缓存需要加临时td的信息
             // 大于一行时再拆分避免循环
             if (trList.length > 1) {
+              // 拆分后剩余高度
+              // 思路（改变tr的结构）： 得到第几行开始删除，删除的第一行添加rowspan: rowspan - 前面的tr的row,
+              // 添加临时td？：开始分页的head的上一级判断最大的colspan，记录最大colspan在td的index
+              // 在分页的第一行的index位置添加临时td
               for (let r = 0; r < trList.length; r++) {
                 const tr = trList[r]
                 const trHeight = tr.height * scale
@@ -1434,19 +1439,123 @@ export class Draw {
                   curPagePreHeight + rowMarginHeight + preTrHeight + trHeight >
                   height
                 ) {
-                  // 当前行存在跨行中断-暂时忽略分页
-                  const rowColCount = tr.tdList.reduce(
-                    (pre, cur) => pre + cur.colspan,
-                    0
-                  )
-                  if (element.colgroup?.length !== rowColCount) {
-                    deleteCount = 0
-                  }
+                  // 开始计算添加临时td
+                  colInfoCache.forEach((item, key) => {
+                    const mdRowIndex = parseInt(key.split('-')[1], 10)
+                    const mdColIndex = parseInt(key.split('-')[0], 10)
+
+                    // 确保 mdRowIndex 和 mdColIndex 是有效的索引
+                    if (
+                      !trList[mdRowIndex] ||
+                      !trList[mdRowIndex].tdList[mdColIndex]
+                    ) {
+                      console.error(
+                        `Invalid index: mdRowIndex=${mdRowIndex}, mdColIndex=${mdColIndex}`
+                      )
+                      return
+                    }
+                    // 计算要被分割的rowspan
+                    const cell = trList[mdRowIndex].tdList[mdColIndex]
+                    const newRowspan = cell.rowspan - (item.row - item.count)
+                    cell.rowspan = newRowspan
+                    let initHeight = 0
+                    let initRealHeight = 0
+                    let initRealMinHeight = 0
+                    for (let i = mdRowIndex; i < newRowspan; i++) {
+                      if (trList[i]?.tdList[mdColIndex]?.height) {
+                        const td = trList[i]?.tdList[mdColIndex]
+                        if (td && td.height) {
+                          initHeight += td.height
+                        } else if (td && td.realHeight) {
+                          initRealHeight += td.realHeight
+                        } else if (td && td.realMinHeight) {
+                          initRealMinHeight += td.realMinHeight
+                        } else {
+                          console.error('td.height is undefined')
+                        }
+                      }
+                    }
+                    tr.tdList.splice(item.col, 0, tr.tdList[tr.tdList.length - 1])
+                    const tempRow = item.row - item.count
+                    tr.tdList[mdColIndex] = {
+                      ...cell,
+                      id: getUUID(),
+                      rowspan: tempRow,
+                      height: height - initHeight,
+                      realHeight: height - initRealHeight,
+                      realMinHeight: height - initRealMinHeight,
+                      temporaryFlag: true,
+                      parentTr: `${mdColIndex}-${mdRowIndex}`,
+                      value: cell.value.map(item => ({ ...item, value: '' }))
+                    }
+                    cell.height = initHeight
+                    cell.realHeight = initRealHeight
+                    cell.realMinHeight = initRealMinHeight
+                    this.tableParticle.computeRowColInfo(element)
+                  })
                   break
                 } else {
                   deleteStart = r + 1
                   deleteCount = trList.length - deleteStart
                   preTrHeight += trHeight
+                  // 重新记录临时的td
+                  for (let i = 0; i < trList.length; i++) {
+                    for (let j = trList[i]?.tdList.length - 1; j >= 0; j--) {
+                      if (trList[i]?.tdList[j]?.temporaryFlag) {
+                        const tempTd = trList[i].tdList[j]
+                        if (tempTd.parentTr) {
+                          const mdRowIndex = parseInt(
+                            tempTd?.parentTr.split('-')[1],
+                            10
+                          )
+                          const mdColIndex = parseInt(
+                            tempTd?.parentTr.split('-')[0],
+                            10
+                          )
+                          const cell = trList[mdRowIndex].tdList[mdColIndex]
+                          cell.rowspan += trList[i]?.tdList[j].rowspan
+                          let initHeight = 0
+                          let initRealHeight = 0
+                          let initRealMinHeight = 0
+                          for (let i = mdRowIndex; i < tempTd.rowspan; i++) {
+                            if (trList[i]?.tdList[mdColIndex]?.height) {
+                              const td = trList[i]?.tdList[mdColIndex]
+                              if (td && td.height) {
+                                initHeight += td.height
+                              } else if (td && td.realHeight) {
+                                initRealHeight += td.realHeight
+                              } else if (td && td.realMinHeight) {
+                                initRealMinHeight += td.realMinHeight
+                              } else {
+                                console.error('td.height is undefined')
+                              }
+                            }
+                          }
+                          cell.height = initHeight
+                          cell.realHeight = initRealHeight
+                          cell.realMinHeight = initRealMinHeight
+                          trList[i]?.tdList.splice(j, 1)
+                        }
+                      }
+                    }
+                  }
+                  // 找到要分页的位置，存入Map
+                  tr.tdList.forEach((td, index) => {
+                    if (td.rowspan > 1) {
+                      colInfoCache.set(`${index}-${r}`, {
+                        col: index,
+                        row: td.rowspan,
+                        count: 0
+                      })
+                    }
+                  })
+                  // 计算分页是否需要添加临时td
+                  colInfoCache.forEach((item, index) => {
+                    ++item.count
+                    if (item.count >= item.row) {
+                      colInfoCache.delete(index)
+                    }
+                  })
                 }
               }
             }
