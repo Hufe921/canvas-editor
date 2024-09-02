@@ -104,7 +104,6 @@ import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
 import { ITd } from '../../interface/table/Td'
 import { PageBorder } from './frame/PageBorder'
-import { ITd } from '../../interface/table/Td'
 
 export class Draw {
   private container: HTMLDivElement
@@ -1652,8 +1651,7 @@ export class Draw {
                       }
                     } else {
                       // 执行到这里表示当前td虽然被截断，但是内容高度未达到截断线位置
-                      // FIXME: 此时拆分出来的单元格为空，value中不应有元素，否则会影响单元格可编辑性以及单元格尺寸
-                      cloneTr[tdIndex]!.value = [{ value: ZERO }]
+                      cloneTr[tdIndex]!.value = []
                       if (allowSplitTr && splitTd.rowspan === 1) {
                         splitTrReduceHeight = Math.min(
                           splitTd.height! - splitTdPreHeight / scale,
