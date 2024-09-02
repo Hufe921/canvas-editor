@@ -88,6 +88,7 @@ export interface IControlOption {
   postfix?: string
   borderWidth?: number
   borderColor?: string
+  activeBackgroundColor?: string
 }
 
 export interface IControlInitOption {
@@ -158,7 +159,7 @@ export type ISetControlProperties = {
 
 export type IRepaintControlOption = Pick<
   IDrawOption,
-  'curIndex' | 'isCompute' | 'isSubmitHistory'
+  'curIndex' | 'isCompute' | 'isSubmitHistory' | 'isSetCursor'
 >
 
 export interface INextControlContext {

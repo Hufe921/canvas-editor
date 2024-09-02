@@ -143,8 +143,8 @@ export class CommandAdapt {
   }
 
   public cut() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     this.canvasEvent.cut()
   }
 
@@ -153,8 +153,8 @@ export class CommandAdapt {
   }
 
   public paste(payload?: IPasteOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     pasteByApi(this.canvasEvent, payload)
   }
 
@@ -163,8 +163,8 @@ export class CommandAdapt {
   }
 
   public backspace() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const elementList = this.draw.getElementList()
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
@@ -697,8 +697,8 @@ export class CommandAdapt {
   }
 
   public title(payload: TitleLevel | null) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -775,8 +775,8 @@ export class CommandAdapt {
   }
 
   public insertTable(row: number, col: number) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -1573,8 +1573,8 @@ export class CommandAdapt {
   }
 
   public hyperlink(payload: IElement) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -1641,8 +1641,8 @@ export class CommandAdapt {
   }
 
   public deleteHyperlink() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1664,8 +1664,8 @@ export class CommandAdapt {
   }
 
   public cancelHyperlink() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1689,8 +1689,8 @@ export class CommandAdapt {
   }
 
   public editHyperlink(payload: string) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1711,8 +1711,8 @@ export class CommandAdapt {
   }
 
   public separator(payload: number[]) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -1753,8 +1753,8 @@ export class CommandAdapt {
   }
 
   public pageBreak() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     this.insertElementList([
@@ -2237,8 +2237,8 @@ export class CommandAdapt {
 
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const cloneElementList = deepClone(payload)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
@@ -2568,8 +2568,8 @@ export class CommandAdapt {
   }
 
   public insertControl(payload: IElement) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const cloneElement = deepClone(payload)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
@@ -2716,8 +2716,8 @@ export class CommandAdapt {
   }
 
   public insertTitle(payload: IElement) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const cloneElement = deepClone(payload)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()

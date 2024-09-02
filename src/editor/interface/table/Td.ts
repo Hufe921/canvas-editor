@@ -6,6 +6,8 @@ import { IRow } from '../Row'
 export interface ITd {
   conceptId?: string
   id?: string
+  extension?: unknown
+  externalId?: string
   x?: number
   y?: number
   width?: number
@@ -30,4 +32,6 @@ export interface ITd {
   realHeight?: number // 真实高度（包含跨列）
   realMinHeight?: number // 真实最小高度（包含跨列）
   pagingOriginId?: string // 被拆分到下一页的单元格的原始id
+  disabled?: boolean // 内容不可编辑
+  deletable?: boolean // 内容不可删除
 }

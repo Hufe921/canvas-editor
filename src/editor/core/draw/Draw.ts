@@ -104,6 +104,7 @@ import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
 import { ITd } from '../../interface/table/Td'
 import { PageBorder } from './frame/PageBorder'
+import { ITd } from '../../interface/table/Td'
 
 export class Draw {
   private container: HTMLDivElement
@@ -331,6 +332,8 @@ export class Draw {
     if (this.mode === EditorMode.DESIGN) return false
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.getElementList()
+    // 优先判断表格单元格
+    if (this.getTd()?.disabled) return true
     if (startIndex === endIndex) {
       const startElement = elementList[startIndex]
       const nextElement = elementList[startIndex + 1]
@@ -626,6 +629,16 @@ export class Draw {
     return this.footer.getElementList()
   }
 
+  public getTd(): ITd | null {
+    const positionContext = this.position.getPositionContext()
+    const { index, trIndex, tdIndex, isTable } = positionContext
+    if (isTable) {
+      const elementList = this.getOriginalElementList()
+      return elementList[index!].trList![trIndex!].tdList[tdIndex!]
+    }
+    return null
+  }
+
   public insertElementList(payload: IElement[]) {
     if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -733,12 +746,14 @@ export class Draw {
       }
       // 元素删除（不可删除控件忽略）
       if (!this.control.getActiveControl()) {
+        const tdDeletable = this.getTd()?.deletable
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
           if (
             isDesignMode ||
-            (deleteElement?.control?.deletable !== false &&
+            (tdDeletable !== false &&
+              deleteElement?.control?.deletable !== false &&
               deleteElement?.title?.deletable !== false)
           ) {
             elementList.splice(deleteIndex, 1)
@@ -2115,13 +2130,23 @@ export class Draw {
     ctx: CanvasRenderingContext2D,
     payload: IDrawRowPayload
   ) {
+    const {
+      control: { activeBackgroundColor }
+    } = this.options
     const { rowList, positionList } = payload
+    const activeControlElement = this.control.getActiveControl()?.getElement()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const preElement = curRow.elementList[j - 1]
-        if (element.highlight) {
+        if (
+          element.highlight ||
+          (activeBackgroundColor &&
+            activeControlElement &&
+            element.controlId === activeControlElement.controlId &&
+            !this.control.getIsRangeInPostfix())
+        ) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (
             preElement &&
@@ -2136,13 +2161,15 @@ export class Draw {
               leftTop: [x, y]
             }
           } = positionList[curRow.startIndex + j]
+          // 元素向左偏移量
+          const offsetX = element.left || 0
           this.highlight.recordFillInfo(
             ctx,
-            x,
+            x - offsetX,
             y,
-            element.metrics.width,
+            element.metrics.width + offsetX,
             curRow.height,
-            element.highlight
+            element.highlight || activeBackgroundColor
           )
         } else if (preElement?.highlight) {
           // 之前是高亮元素，当前不是需立即绘制
