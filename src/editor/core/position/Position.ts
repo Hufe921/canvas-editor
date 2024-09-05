@@ -20,6 +20,8 @@ import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
 import { deepClone } from '../../utils'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { DeepRequired } from '../../interface/Common'
+import { EventBus } from '../event/eventbus/EventBus'
+import { EventBusMap } from '../../interface/EventBus'
 
 export class Position {
   private cursorPosition: IElementPosition | null
@@ -28,6 +30,7 @@ export class Position {
   private floatPositionList: IFloatPosition[]
 
   private draw: Draw
+  private eventBus: EventBus<EventBusMap>
   private options: DeepRequired<IEditorOption>
 
   constructor(draw: Draw) {
@@ -40,6 +43,7 @@ export class Position {
     }
 
     this.draw = draw
+    this.eventBus = draw.getEventBus()
     this.options = draw.getOptions()
   }
 
@@ -329,6 +333,10 @@ export class Position {
   }
 
   public setPositionContext(payload: IPositionContext) {
+    this.eventBus.emit('positionContextChange', {
+      value: payload,
+      oldValue: this.positionContext
+    })
     this.positionContext = payload
   }
 
