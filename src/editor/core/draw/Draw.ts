@@ -1303,6 +1303,7 @@ export class Draw {
         }
         metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
+        const positionContext = this.position.getPositionContext()
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         const height = this.getHeight()
@@ -1311,6 +1312,48 @@ export class Draw {
         // 表格分页处理进度：https://github.com/Hufe921/canvas-editor/issues/41
         // 查看后续表格是否属于同一个源表格-存在即合并
         if (element.pagingId) {
+          // TODO: 优化：一旦修正了上下文，后续表格无需再做上下文相关判断
+          if (positionContext.isTable) {
+            // 如果位置上下文在当前表格或其拆分出的子表格中，则修正上下文（仅修正了tdId和tableId，后续拆分表格时会以此进行二次修正）
+            const preTables: IElement[] = []
+            for (let index = i; index < elementList.length; index++) {
+              const table = elementList[index]
+              if (table.pagingId !== element.pagingId) {
+                break
+              } else {
+                let positionContextFixed = false
+                table.trList?.forEach(tr =>
+                  tr.tdList.forEach(td => {
+                    if (td.id === positionContext.tdId) {
+                      positionContext.tdId = td.pagingOriginId || td.id
+                      positionContext.tableId = element.id
+                      if (curIndex !== undefined && curIndex > -1) {
+                        while (preTables.length > 0) {
+                          const preTable = preTables.pop()
+                          preTable?.trList?.forEach(preTr =>
+                            preTr.tdList.forEach(preTd => {
+                              if (
+                                preTd.pagingOriginId === td.pagingOriginId ||
+                                preTd.id === td.pagingOriginId
+                              ) {
+                                curIndex! += preTd.value.length
+                              }
+                            })
+                          )
+                        }
+                      }
+                      positionContextFixed = true
+                    }
+                  })
+                )
+                if (positionContextFixed) {
+                  break
+                } else {
+                  preTables.push(table)
+                }
+              }
+            }
+          }
           // 为当前表格构建一个虚拟表格
           const virtualTable = Array.from(
             { length: element.trList!.length },
@@ -1794,19 +1837,18 @@ export class Draw {
           }
           // 表格经过分页处理-需要处理上下文和选区
           if (element.pagingId) {
-            const positionContext = this.position.getPositionContext()
             if (
               positionContext.isTable &&
               positionContext.tableId === element.id
             ) {
-              const trIndex = element.trList!.findIndex(
-                r =>
-                  r.pagingOriginId === positionContext.trId ||
-                  r.id === positionContext.trId
-              )
-              if (~trIndex) {
+              let positionContextFixed = false
+              for (
+                let trIndex = 0;
+                trIndex < element.trList!.length;
+                trIndex++
+              ) {
                 const tr = element.trList![trIndex]
-                const tdIndex = tr.tdList!.findIndex(
+                const tdIndex = tr.tdList.findIndex(
                   d =>
                     d.pagingOriginId === positionContext.tdId ||
                     d.id === positionContext.tdId
@@ -1821,14 +1863,20 @@ export class Draw {
                       positionContext.trId = tr.id
                       positionContext.tdId = td.id
                       this.range.setRange(curIndex, curIndex)
+                      positionContextFixed = true
+                      break
                     } else {
-                      positionContext.tableId = elementList[i + 1].id
                       curIndex -= td.value.length
                     }
+                  } else if (td.id === positionContext.tdId) {
+                    positionContextFixed = true
                   }
                 }
-              } else {
+              }
+              if (!positionContextFixed) {
                 positionContext.tableId = elementList[i + 1].id
+              } else {
+                this.position.setPositionContext(positionContext)
               }
             }
           }
