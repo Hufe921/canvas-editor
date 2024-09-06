@@ -22,6 +22,7 @@ import {
 import { ElementType } from '../../dataset/enum/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
+import { MoveDirection } from '../../dataset/enum/Observer'
 import { RowFlex } from '../../dataset/enum/Row'
 import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
@@ -52,6 +53,7 @@ import {
   IEditorOption,
   IEditorResult,
   IEditorText,
+  IFocusOption,
   ISetValueOption,
   IUpdateOption
 } from '../../interface/Editor'
@@ -141,8 +143,8 @@ export class CommandAdapt {
   }
 
   public cut() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     this.canvasEvent.cut()
   }
 
@@ -151,8 +153,8 @@ export class CommandAdapt {
   }
 
   public paste(payload?: IPasteOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     pasteByApi(this.canvasEvent, payload)
   }
 
@@ -161,8 +163,8 @@ export class CommandAdapt {
   }
 
   public backspace() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const elementList = this.draw.getElementList()
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
@@ -695,8 +697,8 @@ export class CommandAdapt {
   }
 
   public title(payload: TitleLevel | null) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
     const elementList = this.draw.getElementList()
@@ -773,8 +775,8 @@ export class CommandAdapt {
   }
 
   public insertTable(row: number, col: number) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -825,7 +827,9 @@ export class CommandAdapt {
     formatElementList([element], {
       editorOptions: this.options
     })
-    formatElementContext(elementList, [element], startIndex)
+    formatElementContext(elementList, [element], startIndex, {
+      editorOptions: this.options
+    })
     const curIndex = startIndex + 1
     this.draw.spliceElementList(
       elementList,
@@ -1569,8 +1573,8 @@ export class CommandAdapt {
   }
 
   public hyperlink(payload: IElement) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -1586,7 +1590,9 @@ export class CommandAdapt {
     }))
     if (!newElementList) return
     const start = startIndex + 1
-    formatElementContext(elementList, newElementList, startIndex)
+    formatElementContext(elementList, newElementList, startIndex, {
+      editorOptions: this.options
+    })
     this.draw.spliceElementList(
       elementList,
       start,
@@ -1635,8 +1641,8 @@ export class CommandAdapt {
   }
 
   public deleteHyperlink() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1658,8 +1664,8 @@ export class CommandAdapt {
   }
 
   public cancelHyperlink() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1683,8 +1689,8 @@ export class CommandAdapt {
   }
 
   public editHyperlink(payload: string) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     // 获取超链接索引
     const hyperRange = this.getHyperlinkRange()
     if (!hyperRange) return
@@ -1705,8 +1711,8 @@ export class CommandAdapt {
   }
 
   public separator(payload: number[]) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -1731,7 +1737,9 @@ export class CommandAdapt {
         dashArray: payload
       }
       // 从行头增加分割线
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], startIndex, {
+        editorOptions: this.options
+      })
       if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
         this.draw.spliceElementList(elementList, startIndex, 1, newElement)
         curIndex = startIndex - 1
@@ -1745,8 +1753,8 @@ export class CommandAdapt {
   }
 
   public pageBreak() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     this.insertElementList([
@@ -2229,14 +2237,15 @@ export class CommandAdapt {
 
   public insertElementList(payload: IElement[]) {
     if (!payload.length) return
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const cloneElementList = deepClone(payload)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     formatElementContext(elementList, cloneElementList, startIndex, {
-      isBreakWhenWrap: true
+      isBreakWhenWrap: true,
+      editorOptions: this.options
     })
     this.draw.insertElementList(cloneElementList)
   }
@@ -2559,8 +2568,8 @@ export class CommandAdapt {
   }
 
   public insertControl(payload: IElement) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const cloneElement = deepClone(payload)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
@@ -2707,8 +2716,8 @@ export class CommandAdapt {
   }
 
   public insertTitle(payload: IElement) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
+    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
+    if (isDisabled) return
     const cloneElement = deepClone(payload)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
@@ -2725,5 +2734,24 @@ export class CommandAdapt {
     })
     // 插入标题
     this.draw.insertElementList([cloneElement])
+  }
+
+  public focus(payload?: IFocusOption) {
+    const { position = LocationPosition.AFTER } = payload || {}
+    const curIndex =
+      position === LocationPosition.BEFORE
+        ? 0
+        : this.draw.getOriginalMainElementList().length - 1
+    this.range.setRange(curIndex, curIndex)
+    this.draw.render({
+      curIndex,
+      isCompute: false,
+      isSubmitHistory: false
+    })
+    const positionList = this.draw.getPosition().getPositionList()
+    this.draw.getCursor().moveCursorToVisible({
+      cursorPosition: positionList[curIndex],
+      direction: MoveDirection.DOWN
+    })
   }
 }

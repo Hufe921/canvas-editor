@@ -95,6 +95,7 @@ export class Command {
   public executeInsertControl: CommandAdapt['insertControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
   public executeInsertTitle: CommandAdapt['insertTitle']
+  public executeFocus: CommandAdapt['focus']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -214,6 +215,7 @@ export class Command {
     this.executeSetZone = adapt.setZone.bind(adapt)
     this.executeUpdateOptions = adapt.updateOptions.bind(adapt)
     this.executeInsertTitle = adapt.insertTitle.bind(adapt)
+    this.executeFocus = adapt.focus.bind(adapt)
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)

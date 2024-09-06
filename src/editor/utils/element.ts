@@ -9,6 +9,7 @@ import {
   splitText
 } from '.'
 import {
+  EditorMode,
   ElementType,
   IEditorOption,
   IElement,
@@ -821,7 +822,8 @@ export function getAnchorElement(
 }
 
 export interface IFormatElementContextOption {
-  isBreakWhenWrap: boolean
+  isBreakWhenWrap?: boolean
+  editorOptions?: DeepRequired<IEditorOption>
 }
 
 export function formatElementContext(
@@ -832,11 +834,12 @@ export function formatElementContext(
 ) {
   let copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
-  // 标题元素禁用时不复制标题属性
-  if (copyElement.title?.disabled) {
+  const { isBreakWhenWrap = false, editorOptions } = options || {}
+  const { mode } = editorOptions || {}
+  // 非设计模式时：标题元素禁用时不复制标题属性
+  if (mode !== EditorMode.DESIGN && copyElement.title?.disabled) {
     copyElement = omitObject(copyElement, TITLE_CONTEXT_ATTR)
   }
-  const { isBreakWhenWrap = false } = options || {}
   // 是否已经换行
   let isBreakWarped = false
   for (let e = 0; e < formatElementList.length; e++) {
@@ -865,7 +868,8 @@ export function formatElementContext(
       formatElementContext(
         sourceElementList,
         targetElement.valueList,
-        anchorIndex
+        anchorIndex,
+        options
       )
     }
     // 非块类元素，需处理行属性

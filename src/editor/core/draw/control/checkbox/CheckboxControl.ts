@@ -120,7 +120,10 @@ export class CheckboxControl implements IControlInstance {
       nextIndex++
     }
     control!.code = codes.join(',')
-    this.control.repaintControl()
+    this.control.repaintControl({
+      curIndex: startIndex,
+      isSetCursor: false
+    })
   }
 
   public keydown(evt: KeyboardEvent): number | null {

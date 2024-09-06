@@ -1,3 +1,28 @@
+## [0.9.92](https://github.com/Hufe921/canvas-editor/compare/v0.9.91...v0.9.92) (2024-09-06)
+
+
+### Bug Fixes
+
+* update resizer size when scaling the page ([2351855](https://github.com/Hufe921/canvas-editor/commit/2351855e83c87da3b0999799102e6e051b456295))
+
+
+### Documentation
+
+* update command markdown #792 ([3c598ba](https://github.com/Hufe921/canvas-editor/commit/3c598bae1a4fb10d74fd330e46f95aa386edc956)), closes [#792](https://github.com/Hufe921/canvas-editor/issues/792)
+* update plugin markdown #789 ([91c68e8](https://github.com/Hufe921/canvas-editor/commit/91c68e8dcd117e3189bbb9385fca4c42b2074c23)), closes [#789](https://github.com/Hufe921/canvas-editor/issues/789)
+
+
+### Features
+
+* add deletable and disabled attributes for table td #724 ([753510b](https://github.com/Hufe921/canvas-editor/commit/753510bac4f763ab2f034657d9efd7d9760f9d4a)), closes [#724](https://github.com/Hufe921/canvas-editor/issues/724)
+* add design mode #795 ([55a58cd](https://github.com/Hufe921/canvas-editor/commit/55a58cdfb20ba7b642400314a9ea0d207e2e7dc4)), closes [#795](https://github.com/Hufe921/canvas-editor/issues/795)
+* add executeFocus api #796 ([3c17631](https://github.com/Hufe921/canvas-editor/commit/3c176318e079d8f793367df552c1a3c6a6294840)), closes [#796](https://github.com/Hufe921/canvas-editor/issues/796)
+* add extension property to Td and Tr element #799 ([0074781](https://github.com/Hufe921/canvas-editor/commit/0074781ef3753cdf9baf4cae77325de5d7b2e9df)), closes [#799](https://github.com/Hufe921/canvas-editor/issues/799)
+* add position context change actuator #733 ([66c73e1](https://github.com/Hufe921/canvas-editor/commit/66c73e174c54106cdf35e6d40382bb4a7ceeae43)), closes [#733](https://github.com/Hufe921/canvas-editor/issues/733)
+* highlight the background when the control is activated #740 ([b426b13](https://github.com/Hufe921/canvas-editor/commit/b426b13ec6ffbb5aebe6d008ddc3ccc8b5efaa05)), closes [#740](https://github.com/Hufe921/canvas-editor/issues/740)
+
+
+
 ## [0.9.91](https://github.com/Hufe921/canvas-editor/compare/v0.9.90...v0.9.91) (2024-08-25)
 
 

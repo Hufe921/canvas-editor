@@ -55,6 +55,9 @@ export class RadioControl extends CheckboxControl {
       nextIndex++
     }
     control!.code = codes.join(',')
-    this.control.repaintControl()
+    this.control.repaintControl({
+      curIndex: startIndex,
+      isSetCursor: false
+    })
   }
 }

@@ -9,6 +9,7 @@ import {
 import { RowFlex } from '../dataset/enum/Row'
 import { IControl } from './Control'
 import { IEditorResult } from './Editor'
+import { IPositionContext } from './Position'
 import { ITextDecoration } from './Text'
 
 export interface IRangeStyle {
@@ -56,3 +57,11 @@ export type IPageModeChange = (payload: PageMode) => void
 export type IZoneChange = (payload: EditorZone) => void
 
 export type IMouseEventChange = (evt: MouseEvent) => void
+
+export interface IPositionContextChangePayload {
+  value: IPositionContext
+  oldValue: IPositionContext
+}
+export type IPositionContextChange = (
+  payload: IPositionContextChangePayload
+) => void
