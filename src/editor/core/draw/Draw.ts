@@ -1880,6 +1880,35 @@ export class Draw {
               }
             }
           }
+        } else {
+          // 连页模式下，修正位置上下文和选区（因为先前合并表格时只修正了部分上下文）
+          if (
+            element.pagingId &&
+            positionContext.isTable &&
+            positionContext.tableId === element.id
+          ) {
+            outer: for (
+              let trIndex = 0;
+              trIndex < element.trList!.length;
+              trIndex++
+            ) {
+              const tr = element.trList![trIndex]
+              for (let tdIndex = 0; tdIndex < tr.tdList.length; tdIndex++) {
+                const td = tr.tdList[tdIndex]
+                if (td.id === positionContext.tdId) {
+                  positionContext.index = i
+                  positionContext.tdIndex = tdIndex
+                  positionContext.trId = tr.id
+                  positionContext.trIndex = trIndex
+                  this.position.setPositionContext(positionContext)
+                  if (curIndex !== undefined && curIndex > -1) {
+                    this.range.setRange(curIndex, curIndex)
+                  }
+                  break outer
+                }
+              }
+            }
+          }
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const {
