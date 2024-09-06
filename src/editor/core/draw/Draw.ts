@@ -104,6 +104,7 @@ import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
 import { ITd } from '../../interface/table/Td'
 import { PageBorder } from './frame/PageBorder'
+import { Actuator } from '../actuator/Actuator'
 
 export class Draw {
   private container: HTMLDivElement
@@ -249,6 +250,7 @@ export class Draw {
     this.globalEvent.register()
 
     this.workerManager = new WorkerManager(this)
+    new Actuator(this)
 
     const { letterClass } = options
     this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
