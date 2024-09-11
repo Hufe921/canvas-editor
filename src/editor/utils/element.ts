@@ -1536,3 +1536,26 @@ export function replaceHTMLElementTag(
   newDom.innerHTML = oldDom.innerHTML
   return newDom
 }
+
+export function pickSurroundElementList(elementList: IElement[]) {
+  const surroundElementList = []
+  for (let e = 0; e < elementList.length; e++) {
+    const element = elementList[e]
+    if (element.imgDisplay === ImageDisplay.SURROUND) {
+      surroundElementList.push(element)
+    }
+  }
+  return surroundElementList
+}
+
+export function deleteSurroundElementList(
+  elementList: IElement[],
+  pageNo: number
+) {
+  for (let s = elementList.length - 1; s >= 0; s--) {
+    const surroundElement = elementList[s]
+    if (surroundElement.imgFloatPosition?.pageNo === pageNo) {
+      elementList.splice(s, 1)
+    }
+  }
+}

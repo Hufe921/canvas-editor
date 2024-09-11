@@ -1,4 +1,5 @@
 import { UNICODE_SYMBOL_REG } from '../dataset/constant/Regular'
+import { IElementFillRect } from '../interface/Element'
 
 export function debounce<T extends unknown[]>(
   func: (...arg: T) => unknown,
@@ -325,4 +326,27 @@ export function isObjectEqual(obj1: unknown, obj2: unknown): boolean {
     return false
   }
   return !obj1Keys.some(key => obj2[key] !== obj1[key])
+}
+
+export function isRectIntersect(
+  rect1: IElementFillRect,
+  rect2: IElementFillRect
+): boolean {
+  const rect1Left = rect1.x
+  const rect1Right = rect1.x + rect1.width
+  const rect1Top = rect1.y
+  const rect1Bottom = rect1.y + rect1.height
+  const rect2Left = rect2.x
+  const rect2Right = rect2.x + rect2.width
+  const rect2Top = rect2.y
+  const rect2Bottom = rect2.y + rect2.height
+  if (
+    rect1Left > rect2Right ||
+    rect1Right < rect2Left ||
+    rect1Top > rect2Bottom ||
+    rect1Bottom < rect2Top
+  ) {
+    return false
+  }
+  return true
 }

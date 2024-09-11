@@ -22,6 +22,7 @@
       "textWrapType": {
         "embed": "Embed",
         "upDown": "Up down",
+        "surround": "Surround",
         "floatTop": "Float above text",
         "floatBottom": "Float below text"
       }

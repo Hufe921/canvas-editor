@@ -2002,14 +2002,17 @@ export class CommandAdapt {
     element.imgDisplay = display
     const { startIndex, endIndex } = this.range.getRange()
     if (
+      display === ImageDisplay.SURROUND ||
       display === ImageDisplay.FLOAT_TOP ||
       display === ImageDisplay.FLOAT_BOTTOM
     ) {
       const positionList = this.position.getPositionList()
       const {
+        pageNo,
         coordinate: { leftTop }
       } = positionList[startIndex]
       element.imgFloatPosition = {
+        pageNo,
         x: leftTop[0],
         y: leftTop[1]
       }
