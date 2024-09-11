@@ -144,6 +144,11 @@ interface IElement {
     INLINE = 'inline',
     BLOCK = 'block'
   }
+  imgFloatPosition?: {
+    x: number;
+    y: number;
+    pageNo?: number;
+  }
   // 内容块
   block?: {
     type: {

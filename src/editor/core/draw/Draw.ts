@@ -65,8 +65,10 @@ import {
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import {
+  deleteSurroundElementList,
   getIsBlockElement,
   getSlimCloneElementList,
+  pickSurroundElementList,
   zipElementList
 } from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
@@ -1223,7 +1225,17 @@ export class Draw {
   }
 
   public computeRowList(payload: IComputeRowListPayload) {
-    const { innerWidth, elementList, isPagingMode = false } = payload
+    const {
+      innerWidth,
+      elementList,
+      isPagingMode = false,
+      isFromTable = false,
+      startX = 0,
+      startY = 0,
+      pageHeight = 0,
+      mainOuterHeight = 0,
+      surroundElementList = []
+    } = payload
     const {
       defaultSize,
       defaultRowMargin,
@@ -1248,6 +1260,10 @@ export class Draw {
         rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
       })
     }
+    // 起始位置及页码计算
+    let x = startX
+    let y = startY
+    let pageNo = 0
     // 列表位置
     let listId: string | undefined
     let listIndex = 0
@@ -1270,12 +1286,15 @@ export class Draw {
         (element.listId && listStyleMap.get(element.listId)) ||
         0
       const availableWidth = innerWidth - offsetX
+      // 增加起始位置坐标偏移量
+      x += curRow.elementList.length === 1 ? offsetX : 0
       if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
       ) {
         // 浮动图片无需计算数据
         if (
+          element.imgDisplay === ImageDisplay.SURROUND ||
           element.imgDisplay === ImageDisplay.FLOAT_TOP ||
           element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
         ) {
@@ -1339,6 +1358,7 @@ export class Draw {
             const rowList = this.computeRowList({
               innerWidth: (td.width! - tdPaddingWidth) * scale,
               elementList: td.value,
+              isFromTable: true,
               isPagingMode
             })
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
@@ -1610,6 +1630,7 @@ export class Draw {
         rowMargin
       const rowElement: IRowElement = Object.assign(element, {
         metrics,
+        left: 0,
         style: this.getElementFont(element, scale)
       })
       // 暂时只考虑非换行场景：控件开始时统计宽度，结束时消费宽度及还原
@@ -1627,8 +1648,6 @@ export class Draw {
             const left = Math.min(rowRemainingWidth, extraWidth) * scale
             rowElement.left = left
             curRow.width += left
-          } else {
-            rowElement.left = 0
           }
           controlRealWidth = 0
         }
@@ -1675,6 +1694,23 @@ export class Draw {
         }
       }
       listId = element.listId
+      // 计算四周环绕导致的元素偏移量
+      const surroundPosition = this.position.setSurroundPosition({
+        pageNo,
+        rowElement,
+        row: curRow,
+        rowElementRect: {
+          x,
+          y,
+          height,
+          width: metrics.width
+        },
+        availableWidth,
+        surroundElementList
+      })
+      x = surroundPosition.x
+      curRowWidth += surroundPosition.rowIncreaseWidth
+      x += metrics.width
       // 是否强制换行
       const isForceBreak =
         element.type === ElementType.SEPARATOR ||
@@ -1688,8 +1724,9 @@ export class Draw {
         (i !== 0 && element.value === ZERO)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
+      const isWrap = isForceBreak || isWidthNotEnough
       // 新行数据处理
-      if (isForceBreak || isWidthNotEnough) {
+      if (isWrap) {
         const row: IRow = {
           width: metrics.width,
           height,
@@ -1742,13 +1779,14 @@ export class Draw {
         curRow.elementList.push(rowElement)
       }
       // 行结束时逻辑
-      if (isForceBreak || isWidthNotEnough || i === elementList.length - 1) {
+      if (isWrap || i === elementList.length - 1) {
         // 换行原因：宽度不足
         curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
         // 两端对齐、分散对齐
         if (
-          preElement?.rowFlex === RowFlex.JUSTIFY ||
-          (preElement?.rowFlex === RowFlex.ALIGNMENT && isWidthNotEnough)
+          !curRow.isSurround &&
+          (preElement?.rowFlex === RowFlex.JUSTIFY ||
+            (preElement?.rowFlex === RowFlex.ALIGNMENT && isWidthNotEnough))
         ) {
           // 忽略换行符及尾部元素间隔设置
           const rowElementList =
@@ -1763,6 +1801,41 @@ export class Draw {
           }
           curRow.width = availableWidth
         }
+      }
+      // 重新计算坐标、页码、下一行首行元素环绕交叉
+      if (isWrap) {
+        x = startX
+        y += curRow.height
+        if (
+          isPagingMode &&
+          !isFromTable &&
+          pageHeight &&
+          (y - startY + mainOuterHeight + height > pageHeight ||
+            element.type === ElementType.PAGE_BREAK)
+        ) {
+          y = startY
+          // 删除多余四周环绕型元素
+          deleteSurroundElementList(surroundElementList, pageNo)
+          pageNo += 1
+        }
+        // 计算下一行第一个元素是否存在环绕交叉
+        rowElement.left = 0
+        const nextRow = rowList[rowList.length - 1]
+        const surroundPosition = this.position.setSurroundPosition({
+          pageNo,
+          rowElement,
+          row: nextRow,
+          rowElementRect: {
+            x,
+            y,
+            height,
+            width: metrics.width
+          },
+          availableWidth,
+          surroundElementList
+        })
+        x = surroundPosition.x
+        x += metrics.width
       }
     }
     return rowList
@@ -1919,6 +1992,7 @@ export class Draw {
           this.textParticle.complete()
           // 浮动图片单独绘制
           if (
+            element.imgDisplay !== ImageDisplay.SURROUND &&
             element.imgDisplay !== ImageDisplay.FLOAT_TOP &&
             element.imgDisplay !== ImageDisplay.FLOAT_BOTTOM
           ) {
@@ -2227,7 +2301,7 @@ export class Draw {
   ) {
     const { scale } = this.options
     const floatPositionList = this.position.getFloatPositionList()
-    const { imgDisplay, pageNo } = payload
+    const { imgDisplays, pageNo } = payload
     for (let e = 0; e < floatPositionList.length; e++) {
       const floatPosition = floatPositionList[e]
       const element = floatPosition.element
@@ -2235,7 +2309,8 @@ export class Draw {
         (pageNo === floatPosition.pageNo ||
           floatPosition.zone === EditorZone.HEADER ||
           floatPosition.zone == EditorZone.FOOTER) &&
-        element.imgDisplay === imgDisplay &&
+        element.imgDisplay &&
+        imgDisplays.includes(element.imgDisplay) &&
         element.type === ElementType.IMAGE
       ) {
         const imgFloatPosition = element.imgFloatPosition!
@@ -2286,7 +2361,7 @@ export class Draw {
     // 渲染衬于文字下方元素
     this._drawFloat(ctx, {
       pageNo,
-      imgDisplay: ImageDisplay.FLOAT_BOTTOM
+      imgDisplays: [ImageDisplay.FLOAT_BOTTOM]
     })
     // 控件高亮
     this.control.renderHighlightList(ctx, pageNo)
@@ -2318,7 +2393,7 @@ export class Draw {
     // 渲染浮于文字上方元素
     this._drawFloat(ctx, {
       pageNo,
-      imgDisplay: ImageDisplay.FLOAT_TOP
+      imgDisplays: [ImageDisplay.FLOAT_TOP, ImageDisplay.SURROUND]
     })
     // 搜索匹配绘制
     if (this.search.getSearchKeyword()) {
@@ -2410,9 +2485,21 @@ export class Draw {
         }
       }
       // 行信息
+      const margins = this.getMargins()
+      const pageHeight = this.getHeight()
+      const extraHeight = this.header.getExtraHeight()
+      const mainOuterHeight = this.getMainOuterHeight()
+      const startX = margins[3]
+      const startY = margins[0] + extraHeight
+      const surroundElementList = pickSurroundElementList(this.elementList)
       this.rowList = this.computeRowList({
+        startX,
+        startY,
+        pageHeight,
+        mainOuterHeight,
         isPagingMode,
         innerWidth,
+        surroundElementList,
         elementList: this.elementList
       })
       // 页面信息
