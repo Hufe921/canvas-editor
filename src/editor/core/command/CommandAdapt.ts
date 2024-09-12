@@ -2287,7 +2287,7 @@ export class CommandAdapt {
           ...elementList[elementIndex],
           ...payload.properties
         }
-        formatElementList([elementList[elementIndex]], {
+        formatElementList(zipElementList([elementList[elementIndex]]), {
           isHandleFirstElement: false,
           editorOptions: this.options
         })
