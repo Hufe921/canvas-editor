@@ -107,6 +107,7 @@ import { LineNumber } from './frame/LineNumber'
 import { PageBorder } from './frame/PageBorder'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
+import { TableOperate } from './particle/table/TableOperate'
 
 export class Draw {
   private container: HTMLDivElement
@@ -143,6 +144,7 @@ export class Draw {
   private textParticle: TextParticle
   private tableParticle: TableParticle
   private tableTool: TableTool
+  private tableOperate: TableOperate
   private pageNumber: PageNumber
   private lineNumber: LineNumber
   private waterMark: Watermark
@@ -220,6 +222,7 @@ export class Draw {
     this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
+    this.tableOperate = new TableOperate(this)
     this.pageNumber = new PageNumber(this)
     this.lineNumber = new LineNumber(this)
     this.waterMark = new Watermark(this)
@@ -807,6 +810,10 @@ export class Draw {
 
   public getTableTool(): TableTool {
     return this.tableTool
+  }
+
+  public getTableOperate(): TableOperate {
+    return this.tableOperate
   }
 
   public getTableParticle(): TableParticle {
