@@ -13,6 +13,7 @@ const {
     TEXT_WRAP,
     TEXT_WRAP_EMBED,
     TEXT_WRAP_UP_DOWN,
+    TEXT_WRAP_SURROUND,
     TEXT_WRAP_FLOAT_TOP,
     TEXT_WRAP_FLOAT_BOTTOM
   }
@@ -92,6 +93,17 @@ export const imageMenus: IRegisterContextMenu[] = [
           command.executeChangeImageDisplay(
             context.startElement!,
             ImageDisplay.INLINE
+          )
+        }
+      },
+      {
+        key: TEXT_WRAP_SURROUND,
+        i18nPath: 'contextmenu.image.textWrapType.surround',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageDisplay(
+            context.startElement!,
+            ImageDisplay.SURROUND
           )
         }
       },

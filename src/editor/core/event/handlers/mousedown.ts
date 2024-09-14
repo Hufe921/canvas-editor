@@ -205,6 +205,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     setRangeCache(host)
     // 浮动元素创建镜像图片
     if (
+      curElement.imgDisplay === ImageDisplay.SURROUND ||
       curElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
       curElement.imgDisplay === ImageDisplay.FLOAT_BOTTOM
     ) {

@@ -117,6 +117,7 @@ export interface IImageElement {
   imgFloatPosition?: {
     x: number
     y: number
+    pageNo?: number
   }
 }
 
