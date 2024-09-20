@@ -18,6 +18,13 @@ export class TableTool {
   private readonly MIN_TD_WIDTH = 20
   // 行列工具相对表格偏移值
   private readonly ROW_COL_OFFSET = 18
+  // 快速添加行列工具宽度
+  private readonly ROW_COL_QUICK_WIDTH = 16
+  // 快速添加行列工具偏移值
+  private readonly ROW_COL_QUICK_OFFSET = 5
+  // 快速添加行列工具相对表格位置
+  private readonly ROW_COL_QUICK_POSITION =
+    this.ROW_COL_OFFSET + (this.ROW_COL_OFFSET - this.ROW_COL_QUICK_WIDTH) / 2
   // 边框工具宽/高度
   private readonly BORDER_VALUE = 4
 
@@ -27,6 +34,8 @@ export class TableTool {
   private position: Position
   private container: HTMLDivElement
   private toolRowContainer: HTMLDivElement | null
+  private toolRowAddBtn: HTMLDivElement | null
+  private toolColAddBtn: HTMLDivElement | null
   private toolColContainer: HTMLDivElement | null
   private toolBorderContainer: HTMLDivElement | null
   private anchorLine: HTMLDivElement | null
@@ -41,6 +50,8 @@ export class TableTool {
     this.container = draw.getContainer()
     // x、y轴
     this.toolRowContainer = null
+    this.toolRowAddBtn = null
+    this.toolColAddBtn = null
     this.toolColContainer = null
     this.toolBorderContainer = null
     this.anchorLine = null
@@ -50,9 +61,13 @@ export class TableTool {
 
   public dispose() {
     this.toolRowContainer?.remove()
+    this.toolRowAddBtn?.remove()
+    this.toolColAddBtn?.remove()
     this.toolColContainer?.remove()
     this.toolBorderContainer?.remove()
     this.toolRowContainer = null
+    this.toolRowAddBtn = null
+    this.toolColAddBtn = null
     this.toolColContainer = null
     this.toolBorderContainer = null
   }
@@ -81,6 +96,8 @@ export class TableTool {
     const td = element.trList![trIndex!].tdList[tdIndex!]
     const rowIndex = td.rowIndex
     const colIndex = td.colIndex
+    const tableHeight = element.height! * scale
+    const tableWidth = element.width! * scale
     // 渲染行工具
     const rowHeightList = trList!.map(tr => tr.height)
     const rowContainer = document.createElement('div')
@@ -113,7 +130,26 @@ export class TableTool {
     rowContainer.style.top = `${tableY}px`
     this.container.append(rowContainer)
     this.toolRowContainer = rowContainer
-
+    // 添加行按钮
+    const rowAddBtn = document.createElement('div')
+    rowAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
+    rowAddBtn.style.height = `${tableHeight * scale}`
+    rowAddBtn.style.left = `${tableX}px`
+    rowAddBtn.style.top = `${tableY + tableHeight}px`
+    rowAddBtn.style.transform = `translate(-${
+      this.ROW_COL_QUICK_POSITION * scale
+    }px, ${this.ROW_COL_QUICK_OFFSET * scale}px)`
+    rowAddBtn.onclick = () => {
+      this.position.setPositionContext({
+        index,
+        isTable: true,
+        trIndex: trList!.length - 1,
+        tdIndex: 0
+      })
+      this.draw.getTableOperate().insertTableBottomRow()
+    }
+    this.container.append(rowAddBtn)
+    this.toolRowAddBtn = rowAddBtn
     // 渲染列工具
     const colWidthList = colgroup!.map(col => col.width)
     const colContainer = document.createElement('div')
@@ -146,10 +182,27 @@ export class TableTool {
     colContainer.style.top = `${tableY}px`
     this.container.append(colContainer)
     this.toolColContainer = colContainer
-
+    // 添加列按钮
+    const colAddBtn = document.createElement('div')
+    colAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
+    colAddBtn.style.height = `${tableHeight * scale}`
+    colAddBtn.style.left = `${tableX + tableWidth}px`
+    colAddBtn.style.top = `${tableY}px`
+    colAddBtn.style.transform = `translate(${
+      this.ROW_COL_QUICK_OFFSET * scale
+    }px, -${this.ROW_COL_QUICK_POSITION * scale}px)`
+    colAddBtn.onclick = () => {
+      this.position.setPositionContext({
+        index,
+        isTable: true,
+        trIndex: 0,
+        tdIndex: trList![0].tdList.length - 1 || 0
+      })
+      this.draw.getTableOperate().insertTableRightCol()
+    }
+    this.container.append(colAddBtn)
+    this.toolColAddBtn = colAddBtn
     // 渲染单元格边框拖拽工具
-    const tableHeight = element.height! * scale
-    const tableWidth = element.width! * scale
     const borderContainer = document.createElement('div')
     borderContainer.classList.add(`${EDITOR_PREFIX}-table-tool__border`)
     borderContainer.style.height = `${tableHeight}px`

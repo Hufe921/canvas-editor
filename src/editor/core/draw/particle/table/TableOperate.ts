@@ -222,7 +222,6 @@ export class TableOperate {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    this.tableTool.render()
   }
 
   public insertTableLeftCol() {
@@ -336,7 +335,6 @@ export class TableOperate {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    this.tableTool.render()
   }
 
   public deleteTableRow() {

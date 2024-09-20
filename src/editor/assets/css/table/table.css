@@ -25,6 +25,24 @@
   display: none;
 }
 
+.ce-table-tool__quick__add {
+  width: 16px;
+  height: 16px;
+  position: absolute;
+  border-radius: 50%;
+  background-color: #E2E6ED;
+  cursor: pointer;
+}
+
+.ce-table-tool__quick__add::after {
+  content: '+';
+  color: #ffffff;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -55%);
+}
+
 .ce-table-tool__col {
   position: absolute;
   height: 12px;
