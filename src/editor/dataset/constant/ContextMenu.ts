@@ -24,6 +24,7 @@ export const INTERNAL_CONTEXT_MENU_KEY = {
     TEXT_WRAP: 'imageTextWrap',
     TEXT_WRAP_EMBED: 'imageTextWrapEmbed',
     TEXT_WRAP_UP_DOWN: 'imageTextWrapUpDown',
+    TEXT_WRAP_SURROUND: 'imageTextWrapSurround',
     TEXT_WRAP_FLOAT_TOP: 'imageTextWrapFloatTop',
     TEXT_WRAP_FLOAT_BOTTOM: 'imageTextWrapFloatBottom'
   },

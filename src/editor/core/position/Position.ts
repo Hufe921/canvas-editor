@@ -6,7 +6,8 @@ import {
   IComputePageRowPositionResult,
   IComputeRowPositionPayload,
   IFloatPosition,
-  IGetFloatPositionByXYPayload
+  IGetFloatPositionByXYPayload,
+  ISetSurroundPositionPayload
 } from '../../interface/Position'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement, IElementPosition } from '../../interface/Element'
@@ -17,11 +18,12 @@ import {
 } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
 import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
-import { deepClone } from '../../utils'
+import { deepClone, isRectIntersect } from '../../utils'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { DeepRequired } from '../../interface/Common'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
+import { getIsBlockElement } from '../../utils/element'
 
 export class Position {
   private cursorPosition: IElementPosition | null
@@ -128,12 +130,15 @@ export class Position {
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 计算行偏移量（行居中、居右）
-      const curRowWidth = curRow.width + (curRow.offsetX || 0)
-      if (curRow.rowFlex === RowFlex.CENTER) {
-        x += (innerWidth - curRowWidth) / 2
-      } else if (curRow.rowFlex === RowFlex.RIGHT) {
-        x += innerWidth - curRowWidth
+      // 行存在环绕的可能性均不设置行布局
+      if (!curRow.isSurround) {
+        // 计算行偏移量（行居中、居右）
+        const curRowWidth = curRow.width + (curRow.offsetX || 0)
+        if (curRow.rowFlex === RowFlex.CENTER) {
+          x += (innerWidth - curRowWidth) / 2
+        } else if (curRow.rowFlex === RowFlex.RIGHT) {
+          x += innerWidth - curRowWidth
+        }
       }
       // 当前行X轴偏移量
       x += curRow.offsetX || 0
@@ -174,6 +179,7 @@ export class Position {
         }
         // 缓存浮动元素信息
         if (
+          element.imgDisplay === ImageDisplay.SURROUND ||
           element.imgDisplay === ImageDisplay.FLOAT_TOP ||
           element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
         ) {
@@ -187,7 +193,8 @@ export class Position {
           if (!element.imgFloatPosition) {
             element.imgFloatPosition = {
               x,
-              y
+              y,
+              pageNo
             }
           }
           this.floatPositionList.push({
@@ -357,7 +364,7 @@ export class Position {
     if (!isTable) {
       const floatTopPosition = this.getFloatPositionByXY({
         ...payload,
-        imgDisplay: ImageDisplay.FLOAT_TOP
+        imgDisplays: [ImageDisplay.FLOAT_TOP, ImageDisplay.SURROUND]
       })
       if (floatTopPosition) return floatTopPosition
     }
@@ -480,7 +487,7 @@ export class Position {
     if (!isTable) {
       const floatBottomPosition = this.getFloatPositionByXY({
         ...payload,
-        imgDisplay: ImageDisplay.FLOAT_BOTTOM
+        imgDisplays: [ImageDisplay.FLOAT_BOTTOM]
       })
       if (floatBottomPosition) return floatBottomPosition
     }
@@ -668,7 +675,8 @@ export class Position {
       if (
         currentPageNo === pageNo &&
         element.type === ElementType.IMAGE &&
-        element.imgDisplay === payload.imgDisplay &&
+        element.imgDisplay &&
+        payload.imgDisplays.includes(element.imgDisplay) &&
         (!floatElementZone || floatElementZone === currentZone)
       ) {
         const imgFloatPosition = element.imgFloatPosition!
@@ -757,5 +765,53 @@ export class Position {
       tableId
     })
     return positionResult
+  }
+
+  public setSurroundPosition(payload: ISetSurroundPositionPayload) {
+    const {
+      pageNo,
+      row,
+      rowElement,
+      rowElementRect,
+      surroundElementList,
+      availableWidth
+    } = payload
+    let x = rowElementRect.x
+    let rowIncreaseWidth = 0
+    if (
+      surroundElementList.length &&
+      !getIsBlockElement(rowElement) &&
+      !rowElement.control?.minWidth
+    ) {
+      for (let s = 0; s < surroundElementList.length; s++) {
+        const surroundElement = surroundElementList[s]
+        const floatPosition = surroundElement.imgFloatPosition!
+        if (floatPosition.pageNo !== pageNo) continue
+        const surroundRect = {
+          ...floatPosition,
+          width: surroundElement.width!,
+          height: surroundElement.height!
+        }
+        if (isRectIntersect(rowElementRect, surroundRect)) {
+          row.isSurround = true
+          // 需向左移动距离：浮动元素宽度 + 浮动元素左上坐标 - 元素左上坐标
+          const translateX =
+            surroundRect.width + surroundRect.x - rowElementRect.x
+          rowElement.left = translateX
+          // 增加行宽
+          row.width += translateX
+          rowIncreaseWidth += translateX
+          // 下个元素起始位置：浮动元素右坐标 - 元素宽度
+          x = surroundRect.x + surroundRect.width
+          // 检测宽度是否足够，不够则移动到下一行，并还原状态
+          if (row.width + rowElement.metrics.width > availableWidth) {
+            rowElement.left = 0
+            row.width -= rowIncreaseWidth
+            break
+          }
+        }
+      }
+    }
+    return { x, rowIncreaseWidth }
   }
 }

@@ -30,6 +30,7 @@ function moveImgPosition(
 ) {
   const draw = host.getDraw()
   if (
+    element.imgDisplay === ImageDisplay.SURROUND ||
     element.imgDisplay === ImageDisplay.FLOAT_TOP ||
     element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
   ) {
@@ -38,7 +39,8 @@ function moveImgPosition(
     const imgFloatPosition = element.imgFloatPosition!
     element.imgFloatPosition = {
       x: imgFloatPosition.x + moveX,
-      y: imgFloatPosition.y + moveY
+      y: imgFloatPosition.y + moveY,
+      pageNo: draw.getPageNo()
     }
   }
   draw.getImageParticle().destroyFloatImage()
@@ -77,6 +79,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       draw.clearSideEffect()
       // 浮动元素拖拽需要提交历史
       let isSubmitHistory = false
+      let isCompute = false
       if (isCacheRangeCollapsed) {
         // 图片移动
         const dragElement = cacheElementList[cacheEndIndex]
@@ -86,6 +89,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         ) {
           moveImgPosition(dragElement, evt, host)
           if (
+            dragElement.imgDisplay === ImageDisplay.SURROUND ||
             dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
             dragElement.imgDisplay === ImageDisplay.FLOAT_BOTTOM
           ) {
@@ -95,15 +99,17 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
             const cachePosition = cachePositionList[cacheEndIndex]
             draw.getPreviewer().drawResizer(dragElement, cachePosition)
           }
+          // 四周环绕型元素需计算
+          isCompute = dragElement.imgDisplay === ImageDisplay.SURROUND
         }
       }
       rangeManager.replaceRange({
         ...cacheRange
       })
       draw.render({
-        isSetCursor: false,
-        isCompute: false,
-        isSubmitHistory
+        isCompute,
+        isSubmitHistory,
+        isSetCursor: false
       })
       return
     }
@@ -294,6 +300,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     // 拖拽后渲染图片工具
     if (imgElement) {
       if (
+        imgElement.imgDisplay === ImageDisplay.SURROUND ||
         imgElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
         imgElement.imgDisplay === ImageDisplay.FLOAT_BOTTOM
       ) {

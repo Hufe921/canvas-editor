@@ -31,7 +31,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
       const dragElement = host.cacheElementList![cacheStartIndex]
       if (
         dragElement?.type === ElementType.IMAGE &&
-        (dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
+        (dragElement.imgDisplay === ImageDisplay.SURROUND ||
+          dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
           dragElement.imgDisplay === ImageDisplay.FLOAT_BOTTOM)
       ) {
         draw.getPreviewer().clearResizer()

@@ -1,3 +1,32 @@
+## [0.9.93](https://github.com/Hufe921/canvas-editor/compare/v0.9.92...v0.9.93) (2024-09-20)
+
+
+### Bug Fixes
+
+* executeUpdateElementById api format data error #806 ([1f88dca](https://github.com/Hufe921/canvas-editor/commit/1f88dcafae035be1130f0956c51c21fa60c3759e)), closes [#806](https://github.com/Hufe921/canvas-editor/issues/806)
+* image floating position boundary error ([a833f85](https://github.com/Hufe921/canvas-editor/commit/a833f85ade8ec7d0d7cc2a27f79f34ef747a9987))
+
+
+### Chores
+
+* change the style of the hollow block list #809 ([9880deb](https://github.com/Hufe921/canvas-editor/commit/9880deb116e0b135556592b124dc95861fc2b0b6)), closes [#809](https://github.com/Hufe921/canvas-editor/issues/809)
+
+
+### Documentation
+
+* update plugin markdown ([e5711b4](https://github.com/Hufe921/canvas-editor/commit/e5711b40189d93a887280a88e5604ee9429ae20e))
+
+
+### Features
+
+* add image surround display #554 ([a9f80a4](https://github.com/Hufe921/canvas-editor/commit/a9f80a448f42b09de6ac5f36aac8cd2d01dfae38)), closes [#554](https://github.com/Hufe921/canvas-editor/issues/554)
+* add the pageNo property to the getCatalog api ([1e48893](https://github.com/Hufe921/canvas-editor/commit/1e48893e92ee16eb3de463910d6ccebe83aefce0))
+* add title attributes to range context #738 ([1e8a923](https://github.com/Hufe921/canvas-editor/commit/1e8a923da4fe1c4bb6470cf9623818c9c6c66a5f)), closes [#738](https://github.com/Hufe921/canvas-editor/issues/738)
+* quick add table row and col tool ([641acda](https://github.com/Hufe921/canvas-editor/commit/641acdabf26ae99c2239e1ffebdb59b6e4a78f75))
+* separate table operation api ([ee2312e](https://github.com/Hufe921/canvas-editor/commit/ee2312e9071473bb296d4515bab60254937e2414))
+
+
+
 ## [0.9.92](https://github.com/Hufe921/canvas-editor/compare/v0.9.91...v0.9.92) (2024-09-06)
 
 

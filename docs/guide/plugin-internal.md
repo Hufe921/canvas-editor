@@ -2,6 +2,8 @@
 
 ::: tip
 官方维护插件仓库：https://github.com/Hufe921/canvas-editor-plugin
+
+官方维护插件演示地址：https://hufe.club/canvas-editor-plugin
 :::
 
 ## 条形码
@@ -106,4 +108,18 @@ command.executeLoadDiagram({
   data?: string
   onDestroy?: (message?: any) => void
 })
+```
+
+## 大小写转换
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import casePlugin from '@hufe921/canvas-editor-plugin-case'
+
+const instance = new Editor()
+instance.use(casePlugin)
+
+command.executeUpperCase()
+
+command.executeLowerCase()
 ```
