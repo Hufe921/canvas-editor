@@ -1339,39 +1339,54 @@ export class Draw {
         // 查看后续表格是否属于同一个源表格-存在即合并
         if (element.pagingId) {
           // TODO: 优化：一旦修正了上下文，后续表格无需再做上下文相关判断
+          // 位置上下文中的信息是表格拆分后记录的，这里需要将其先修正为表格合并后的上下文，后续拆分表格时基于此再次修正位置上下文
           if (positionContext.isTable) {
-            // 如果位置上下文在当前表格或其拆分出的子表格中，则修正上下文（仅修正了tdId和tableId，后续拆分表格时会以此进行二次修正）
+            // 如果位置上下文在当前表格或其拆分出的子表格中，则修正上下文（仅修正了tdId和tableId，后续拆分表格时会基于此进行二次修正）
             const preTables: IElement[] = []
-            for (let index = i; index < elementList.length; index++) {
+            outer: for (let index = i; index < elementList.length; index++) {
               const table = elementList[index]
               if (table.pagingId !== element.pagingId) {
                 break
               } else {
                 let positionContextFixed = false
-                table.trList?.forEach(tr =>
-                  tr.tdList.forEach(td => {
+                for (let r = 0; r < table.trList!.length; r++) {
+                  for (let d = 0; d < table.trList![r].tdList.length; d++) {
+                    const td = table.trList![r].tdList[d]
+                    // 此时位置上下文中的tdId是拆分后的tdId，将其修正为原始td的id
                     if (td.id === positionContext.tdId) {
                       positionContext.tdId = td.pagingOriginId || td.id
                       positionContext.tableId = element.id
-                      if (curIndex !== undefined && curIndex > -1) {
+                      if (
+                        td.pagingOriginId && // 位置上下文指向的td是跨页拆分出来的时才需要修正curIndex
+                        curIndex !== undefined &&
+                        curIndex > -1
+                      ) {
+                        // 找到同源表格中与位置上下文td同源的单元格，根据其内容长度修正curIndex
                         while (preTables.length > 0) {
                           const preTable = preTables.pop()
-                          preTable?.trList?.forEach(preTr =>
-                            preTr.tdList.forEach(preTd => {
+                          preTable!.trList!.forEach(preTr => {
+                            for (
+                              let preTdIndex = 0;
+                              preTdIndex < preTr.tdList.length;
+                              preTdIndex++
+                            ) {
+                              const preTd = preTr.tdList[preTdIndex]
                               if (
                                 preTd.pagingOriginId === td.pagingOriginId ||
                                 preTd.id === td.pagingOriginId
                               ) {
                                 curIndex! += preTd.value.length
+                                break
                               }
-                            })
-                          )
+                            }
+                          })
                         }
                       }
                       positionContextFixed = true
+                      break outer
                     }
-                  })
-                )
+                  }
+                }
                 if (positionContextFixed) {
                   break
                 } else {
@@ -1668,8 +1683,11 @@ export class Draw {
                 if (splitTd) {
                   cloneTr[tdIndex] = deepClone(splitTd)
                   // 如果tr可拆分，根据截断位置，将td中的内容拆分到新行中
-                  // 如果tr不可拆分，但当前位置td是跨行单元格，同样需要拆分
-                  if (allowSplitTr || splitTd.rowspan > 1) {
+                  // 如果tr不可拆分，但目标td不在当前行且是跨行单元格，同样需要拆分td内容
+                  if (
+                    allowSplitTr ||
+                    (splitTd.rowspan > 1 && !hasTdAtCurIndex)
+                  ) {
                     cloneTr[tdIndex]!.pagingOriginId =
                       splitTd.pagingOriginId || splitTd.id
                     cloneTr[tdIndex]!.id = getUUID()

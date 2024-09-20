@@ -100,11 +100,28 @@ export class TableOperate {
   public insertTableTopRow() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index, trIndex, tableId } = positionContext
+    let { index, trIndex, tableId } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
-    const curTrList = element.trList!
-    const curTr = curTrList[trIndex!]
+    let element = originalElementList[index!]
+    let curTrList = element.trList!
+    let curTr = curTrList[trIndex!]
+    // 如果位置上下文指向的行是跨页拆分出来的，找到此行在之前页中对应的真实起始行信息
+    if (curTr.pagingOriginId) {
+      outer: for (let i = index! - 1; i >= 0; i--) {
+        const preTrList = originalElementList[i].trList!
+        for (let r = preTrList.length - 1; r >= 0; r--) {
+          if (!preTrList[r].pagingOriginId) {
+            element = originalElementList[i]
+            curTrList = element.trList!
+            curTr = preTrList[r]
+            index = i
+            trIndex = r
+            tableId = element.id
+            break outer
+          }
+        }
+      }
+    }
     // 之前跨行的增加跨行数
     if (curTr.tdList.length < element.colgroup!.length) {
       const curTrNo = curTr.tdList[0].rowIndex!
@@ -127,30 +144,42 @@ export class TableOperate {
     }
     for (let t = 0; t < curTr.tdList.length; t++) {
       const curTd = curTr.tdList[t]
-      const newTdId = getUUID()
-      newTr.tdList.push({
-        id: newTdId,
-        rowspan: 1,
-        colspan: curTd.colspan,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: newTrId,
-            tdId: newTdId
-          }
-        ]
-      })
+      // 如果当前单元格是跨页拆分出来的，将其挪到新行中，并增加跨行数
+      if (curTd.pagingOriginId) {
+        newTr.tdList.push({
+          ...curTd,
+          rowspan: curTd.rowspan + 1,
+          value: curTd.value.map(v => ({ ...v, trId: newTrId }))
+        })
+      } else {
+        const newTdId = getUUID()
+        newTr.tdList.push({
+          id: newTdId,
+          rowspan: 1,
+          colspan: curTd.colspan,
+          value: [
+            {
+              value: ZERO,
+              size: 16,
+              tableId,
+              trId: newTrId,
+              tdId: newTdId
+            }
+          ]
+        })
+      }
     }
+    // 移除被挪到新行中的跨页拆分单元格
+    curTr.tdList = curTr.tdList.filter(td => !td.pagingOriginId)
     curTrList.splice(trIndex!, 0, newTr)
     // 重新设置上下文
+    const tdIndex = newTr.tdList.findIndex(td => !td.pagingOriginId)
     this.position.setPositionContext({
       isTable: true,
       index,
       trIndex,
-      tdIndex: 0,
-      tdId: newTr.tdList[0].id,
+      tdIndex,
+      tdId: newTr.tdList[tdIndex].id,
       trId: newTr.id,
       tableId
     })
