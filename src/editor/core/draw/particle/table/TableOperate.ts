@@ -192,13 +192,42 @@ export class TableOperate {
   public insertTableBottomRow() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index, trIndex, tableId } = positionContext
+    let { index, trIndex, tableId } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
     const element = originalElementList[index!]
-    const curTrList = element.trList!
-    const curTr = curTrList[trIndex!]
-    const anchorTr =
-      curTrList.length - 1 === trIndex ? curTr : curTrList[trIndex! + 1]
+    let curTrList = element.trList!
+    let curTr = curTrList[trIndex!]
+    let nextElementIndex = index! + 1
+    let nextElement = originalElementList[nextElementIndex]
+    let anchorTr =
+      curTrList.length - 1 === trIndex
+        ? nextElement &&
+          nextElement.pagingId &&
+          nextElement.pagingId === element.pagingId
+          ? nextElement.trList![0] // 如果当前行是表格最后一行，且下一页的表格是由当前表格拆分出来的，此时修正锚定行为后续表格首行
+          : curTr
+        : curTrList[trIndex! + 1]
+    // 如果位置上下文指向的行是最后一行，且经历过跨页拆分，此时需找到由此行拆分出来的最后一行的信息
+    while (
+      curTrList.length - 1 === trIndex &&
+      element.pagingId &&
+      nextElement &&
+      nextElement.pagingId &&
+      nextElement.pagingId === element.pagingId &&
+      nextElement.trList![0].pagingOriginId &&
+      [curTr.id, curTr.pagingOriginId].includes(
+        nextElement.trList![0].pagingOriginId
+      )
+    ) {
+      curTrList = nextElement.trList!
+      trIndex = 0
+      curTr = nextElement.trList![trIndex]
+      index = nextElementIndex
+      tableId = nextElement.id
+      anchorTr =
+        curTrList.length - 1 === trIndex ? curTr : curTrList[trIndex! + 1]
+      nextElement = originalElementList[++nextElementIndex]
+    }
     // 之前/当前行跨行的增加跨行数
     if (anchorTr.tdList.length < element.colgroup!.length) {
       const curTrNo = anchorTr.tdList[0].rowIndex!
@@ -219,23 +248,47 @@ export class TableOperate {
       id: newTrId,
       tdList: []
     }
+    // 判断锚定行是否是跨页拆分时整行挪到下一页的
+    const isAnchorTrMovedToNextPage =
+      !anchorTr.pagingOriginId && curTrList.every(tr => tr.id !== anchorTr.id)
     for (let t = 0; t < anchorTr.tdList.length; t++) {
       const curTd = anchorTr.tdList[t]
-      const newTdId = getUUID()
-      newTr.tdList.push({
-        id: newTdId,
-        rowspan: 1,
-        colspan: curTd.colspan,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: newTrId,
-            tdId: newTdId
+      // 如果锚定行是整行挪到下一页的，那么其中有pagingOriginId的单元格就是跨行单元格，此时找到其原始单元格，增加跨行数
+      if (isAnchorTrMovedToNextPage && curTd.pagingOriginId) {
+        outer: for (let i = index!; i >= 0; i--) {
+          const element = originalElementList[i]
+          if (element.trList) {
+            for (let r = element.trList.length - 1; r >= 0; r--) {
+              const tr = element.trList[r]
+              for (let d = tr.tdList.length - 1; d >= 0; d--) {
+                const td = tr.tdList[d]
+                if (td.id === curTd.pagingOriginId) {
+                  td.rowspan += 1
+                  break outer
+                }
+              }
+            }
+          } else {
+            break
           }
-        ]
-      })
+        }
+      } else {
+        const newTdId = getUUID()
+        newTr.tdList.push({
+          id: newTdId,
+          rowspan: 1,
+          colspan: curTd.colspan,
+          value: [
+            {
+              value: ZERO,
+              size: 16,
+              tableId,
+              trId: newTrId,
+              tdId: newTdId
+            }
+          ]
+        })
+      }
     }
     curTrList.splice(trIndex! + 1, 0, newTr)
     // 重新设置上下文
