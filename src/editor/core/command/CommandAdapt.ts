@@ -1828,13 +1828,17 @@ export class CommandAdapt {
         }
         if (element?.controlId !== controlId) continue
         let curIndex = i - 1
-        if (isLocationAfter) {
-          curIndex -= 1
-          if (
-            element.controlComponent !== ControlComponent.PLACEHOLDER &&
-            element.controlComponent !== ControlComponent.POSTFIX
-          ) {
-            continue
+        if (options?.position) {
+          if (isLocationAfter) {
+            curIndex = elementList.length - 1
+            if (
+              element.controlComponent !== ControlComponent.PLACEHOLDER &&
+              element.controlComponent !== ControlComponent.POSTFIX
+            ) {
+              continue
+            }
+          } else {
+            curIndex -= 1
           }
         }
         return {
