@@ -16,6 +16,7 @@ import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 import { TableParticle } from './TableParticle'
 import { TableTool } from './TableTool'
+import { IPositionContext } from '../../../../interface/Position'
 
 export class TableOperate {
   private draw: Draw
@@ -98,30 +99,21 @@ export class TableOperate {
   }
 
   public insertTableTopRow() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
-    let { index, trIndex, tableId } = positionContext
+    const originalPositionContext = this.position.getPositionContext()
+    if (!originalPositionContext.isTable) return
+    const { index: originalIndex } = originalPositionContext
     const originalElementList = this.draw.getOriginalElementList()
-    let element = originalElementList[index!]
-    let curTrList = element.trList!
-    let curTr = curTrList[trIndex!]
-    // 如果位置上下文指向的行是跨页拆分出来的，找到此行在之前页中对应的真实起始行信息
-    if (curTr.pagingOriginId) {
-      outer: for (let i = index! - 1; i >= 0; i--) {
-        const preTrList = originalElementList[i].trList!
-        for (let r = preTrList.length - 1; r >= 0; r--) {
-          if (!preTrList[r].pagingOriginId) {
-            element = originalElementList[i]
-            curTrList = element.trList!
-            curTr = preTrList[r]
-            index = i
-            trIndex = r
-            tableId = element.id
-            break outer
-          }
-        }
-      }
-    }
+    const originalElement = originalElementList[originalIndex!]
+    // 插入新行前先合并跨页表格
+    const { element, index, positionContext } =
+      this.tableParticle.mergeSplittedTable({
+        element: originalElement,
+        index: originalIndex!,
+        elementList: originalElementList
+      })
+    const { trIndex, tableId } = positionContext!
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]
     // 之前跨行的增加跨行数
     if (curTr.tdList.length < element.colgroup!.length) {
       const curTrNo = curTr.tdList[0].rowIndex!
@@ -144,90 +136,56 @@ export class TableOperate {
     }
     for (let t = 0; t < curTr.tdList.length; t++) {
       const curTd = curTr.tdList[t]
-      // 如果当前单元格是跨页拆分出来的，将其挪到新行中，并增加跨行数
-      if (curTd.pagingOriginId) {
-        newTr.tdList.push({
-          ...curTd,
-          rowspan: curTd.rowspan + 1,
-          value: curTd.value.map(v => ({ ...v, trId: newTrId }))
-        })
-      } else {
-        const newTdId = getUUID()
-        newTr.tdList.push({
-          id: newTdId,
-          rowspan: 1,
-          colspan: curTd.colspan,
-          value: [
-            {
-              value: ZERO,
-              size: 16,
-              tableId,
-              trId: newTrId,
-              tdId: newTdId
-            }
-          ]
-        })
-      }
+      const newTdId = getUUID()
+      newTr.tdList.push({
+        id: newTdId,
+        rowspan: 1,
+        colspan: curTd.colspan,
+        value: [
+          {
+            value: ZERO,
+            size: 16,
+            tableId,
+            trId: newTrId,
+            tdId: newTdId
+          }
+        ]
+      })
     }
-    // 移除被挪到新行中的跨页拆分单元格
-    curTr.tdList = curTr.tdList.filter(td => !td.pagingOriginId)
     curTrList.splice(trIndex!, 0, newTr)
     // 重新设置上下文
-    const tdIndex = newTr.tdList.findIndex(td => !td.pagingOriginId)
     this.position.setPositionContext({
       isTable: true,
       index,
       trIndex,
-      tdIndex,
-      tdId: newTr.tdList[tdIndex].id,
+      tdIndex: 0,
+      tdId: newTr.tdList[0].id,
       trId: newTr.id,
       tableId
     })
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    this.tableTool.render()
   }
 
   public insertTableBottomRow() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
-    let { index, trIndex, tableId } = positionContext
+    const originalPositionContext = this.position.getPositionContext()
+    if (!originalPositionContext.isTable) return
+    const { index: originalIndex } = originalPositionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
-    let curTrList = element.trList!
-    let curTr = curTrList[trIndex!]
-    let nextElementIndex = index! + 1
-    let nextElement = originalElementList[nextElementIndex]
-    let anchorTr =
-      curTrList.length - 1 === trIndex
-        ? nextElement &&
-          nextElement.pagingId &&
-          nextElement.pagingId === element.pagingId
-          ? nextElement.trList![0] // 如果当前行是表格最后一行，且下一页的表格是由当前表格拆分出来的，此时修正锚定行为后续表格首行
-          : curTr
-        : curTrList[trIndex! + 1]
-    // 如果位置上下文指向的行是最后一行，且经历过跨页拆分，此时需找到由此行拆分出来的最后一行的信息
-    while (
-      curTrList.length - 1 === trIndex &&
-      element.pagingId &&
-      nextElement &&
-      nextElement.pagingId &&
-      nextElement.pagingId === element.pagingId &&
-      nextElement.trList![0].pagingOriginId &&
-      [curTr.id, curTr.pagingOriginId].includes(
-        nextElement.trList![0].pagingOriginId
-      )
-    ) {
-      curTrList = nextElement.trList!
-      trIndex = 0
-      curTr = nextElement.trList![trIndex]
-      index = nextElementIndex
-      tableId = nextElement.id
-      anchorTr =
-        curTrList.length - 1 === trIndex ? curTr : curTrList[trIndex! + 1]
-      nextElement = originalElementList[++nextElementIndex]
-    }
+    const originalElement = originalElementList[originalIndex!]
+    // 插入新行前先合并跨页表格
+    const { element, index, positionContext } =
+      this.tableParticle.mergeSplittedTable({
+        element: originalElement,
+        index: originalIndex!,
+        elementList: originalElementList
+      })
+    const { trIndex, tableId } = positionContext!
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]
+    const anchorTr =
+      curTrList.length - 1 === trIndex ? curTr : curTrList[trIndex! + 1]
     // 之前/当前行跨行的增加跨行数
     if (anchorTr.tdList.length < element.colgroup!.length) {
       const curTrNo = anchorTr.tdList[0].rowIndex!
@@ -248,47 +206,23 @@ export class TableOperate {
       id: newTrId,
       tdList: []
     }
-    // 判断锚定行是否是跨页拆分时整行挪到下一页的
-    const isAnchorTrMovedToNextPage =
-      !anchorTr.pagingOriginId && curTrList.every(tr => tr.id !== anchorTr.id)
     for (let t = 0; t < anchorTr.tdList.length; t++) {
       const curTd = anchorTr.tdList[t]
-      // 如果锚定行是整行挪到下一页的，那么其中有pagingOriginId的单元格就是跨行单元格，此时找到其原始单元格，增加跨行数
-      if (isAnchorTrMovedToNextPage && curTd.pagingOriginId) {
-        outer: for (let i = index!; i >= 0; i--) {
-          const element = originalElementList[i]
-          if (element.trList) {
-            for (let r = element.trList.length - 1; r >= 0; r--) {
-              const tr = element.trList[r]
-              for (let d = tr.tdList.length - 1; d >= 0; d--) {
-                const td = tr.tdList[d]
-                if (td.id === curTd.pagingOriginId) {
-                  td.rowspan += 1
-                  break outer
-                }
-              }
-            }
-          } else {
-            break
+      const newTdId = getUUID()
+      newTr.tdList.push({
+        id: newTdId,
+        rowspan: 1,
+        colspan: curTd.colspan,
+        value: [
+          {
+            value: ZERO,
+            size: 16,
+            tableId,
+            trId: newTrId,
+            tdId: newTdId
           }
-        }
-      } else {
-        const newTdId = getUUID()
-        newTr.tdList.push({
-          id: newTdId,
-          rowspan: 1,
-          colspan: curTd.colspan,
-          value: [
-            {
-              value: ZERO,
-              size: 16,
-              tableId,
-              trId: newTrId,
-              tdId: newTdId
-            }
-          ]
-        })
-      }
+        ]
+      })
     }
     curTrList.splice(trIndex! + 1, 0, newTr)
     // 重新设置上下文
@@ -304,39 +238,67 @@ export class TableOperate {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    this.tableTool.render()
   }
 
   public insertTableLeftCol() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
-    const { index, tdIndex, tableId } = positionContext
+    const originalPositionContext = this.position.getPositionContext()
+    if (!originalPositionContext.isTable) return
+    const { index: originalIndex } = originalPositionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
+    const originalElement = originalElementList[originalIndex!]
+    // 插入新列前先合并跨页表格
+    const { element, positionContext } = this.tableParticle.mergeSplittedTable({
+      element: originalElement,
+      index: originalIndex!,
+      elementList: originalElementList
+    })
+    const { trIndex, tdIndex, tableId } = positionContext
     const curTrList = element.trList!
-    const curTdIndex = tdIndex!
-    // 增加列
-    for (let t = 0; t < curTrList.length; t++) {
-      const tr = curTrList[t]
-      const tdId = getUUID()
-      tr.tdList.splice(curTdIndex, 0, {
-        id: tdId,
-        rowspan: 1,
-        colspan: 1,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: tr.id,
-            tdId
+    const curTdColIndex = curTrList[trIndex!].tdList[tdIndex!].colIndex!
+    let newPositionContext: IPositionContext | null = null
+    // 逐行添加单元格
+    curTrList.forEach((tr, trIndex) => {
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        if (
+          // 之前跨列的增加跨列数
+          td.colIndex! < curTdColIndex &&
+          td.colIndex! + td.colspan > curTdColIndex
+        ) {
+          td.colspan += 1
+          break
+        } else if (td.colIndex! >= curTdColIndex) {
+          const tdId = getUUID()
+          tr.tdList.splice(d, 0, {
+            id: tdId,
+            rowspan: 1,
+            colspan: 1,
+            value: [
+              {
+                value: ZERO,
+                size: 16,
+                tableId,
+                trId: tr.id,
+                tdId
+              }
+            ]
+          })
+          if (!newPositionContext) {
+            newPositionContext = {
+              ...positionContext,
+              tdIndex: d,
+              tdId,
+              trIndex,
+              trId: tr.id
+            }
           }
-        ]
-      })
-    }
+          break
+        }
+      }
+    })
     // 重新计算宽度
     const colgroup = element.colgroup!
-    colgroup.splice(curTdIndex, 0, {
+    colgroup.splice(curTdColIndex, 0, {
       width: this.options.table.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
@@ -349,51 +311,74 @@ export class TableOperate {
       }
     }
     // 重新设置上下文
-    this.position.setPositionContext({
-      isTable: true,
-      index,
-      trIndex: 0,
-      tdIndex: curTdIndex,
-      tdId: curTrList[0].tdList[curTdIndex].id,
-      trId: curTrList[0].id,
-      tableId
-    })
+    newPositionContext && this.position.setPositionContext(newPositionContext)
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    this.tableTool.render()
   }
 
   public insertTableRightCol() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
-    const { index, tdIndex, tableId } = positionContext
+    const originalPositionContext = this.position.getPositionContext()
+    if (!originalPositionContext.isTable) return
+    const { index: originalIndex } = originalPositionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
+    const originalElement = originalElementList[originalIndex!]
+    // 插入新列前先合并跨页表格
+    const { element, positionContext } = this.tableParticle.mergeSplittedTable({
+      element: originalElement,
+      index: originalIndex!,
+      elementList: originalElementList
+    })
+    const { trIndex, tdIndex, tableId } = positionContext
     const curTrList = element.trList!
-    const curTdIndex = tdIndex! + 1
-    // 增加列
-    for (let t = 0; t < curTrList.length; t++) {
-      const tr = curTrList[t]
-      const tdId = getUUID()
-      tr.tdList.splice(curTdIndex, 0, {
-        id: tdId,
-        rowspan: 1,
-        colspan: 1,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: tr.id,
-            tdId
+    const curTd = curTrList[trIndex!].tdList[tdIndex!]
+    const newColIndex = curTd.colIndex! + curTd.colspan
+    let newPositionContext: IPositionContext | null = null
+    // 逐行添加单元格
+    curTrList.forEach((tr, trIndex) => {
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td = tr.tdList[d]
+        if (
+          // 之前跨列的增加跨列数
+          td.colIndex! < newColIndex &&
+          td.colIndex! + td.colspan > newColIndex
+        ) {
+          td.colspan += 1
+          break
+        } else if (td.colIndex! + td.colspan >= newColIndex) {
+          const tdId = getUUID()
+          const newTdIndex =
+            td.colIndex! + td.colspan === newColIndex ? d + 1 : d
+          tr.tdList.splice(newTdIndex, 0, {
+            id: tdId,
+            rowspan: 1,
+            colspan: 1,
+            value: [
+              {
+                value: ZERO,
+                size: 16,
+                tableId,
+                trId: tr.id,
+                tdId
+              }
+            ]
+          })
+          if (!newPositionContext) {
+            newPositionContext = {
+              ...positionContext,
+              tdIndex: newTdIndex,
+              tdId,
+              trIndex,
+              trId: tr.id
+            }
           }
-        ]
-      })
-    }
+          break
+        }
+      }
+    })
     // 重新计算宽度
     const colgroup = element.colgroup!
-    colgroup.splice(curTdIndex, 0, {
+    colgroup.splice(newColIndex, 0, {
       width: this.options.table.defaultColMinWidth
     })
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
@@ -406,27 +391,25 @@ export class TableOperate {
       }
     }
     // 重新设置上下文
-    this.position.setPositionContext({
-      isTable: true,
-      index,
-      trIndex: 0,
-      tdIndex: curTdIndex,
-      tdId: curTrList[0].tdList[curTdIndex].id,
-      trId: curTrList[0].id,
-      tableId
-    })
+    newPositionContext && this.position.setPositionContext(newPositionContext)
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({ curIndex: 0 })
-    this.tableTool.render()
   }
 
   public deleteTableRow() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
-    const { index, trIndex, tdIndex } = positionContext
+    const originalPositionContext = this.position.getPositionContext()
+    if (!originalPositionContext.isTable) return
+    const { index: originalIndex } = originalPositionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
+    const originalElement = originalElementList[originalIndex!]
+    // 删除表格行前先合并跨页表格
+    const { element, positionContext } = this.tableParticle.mergeSplittedTable({
+      index: originalIndex!,
+      element: originalElement,
+      elementList: originalElementList
+    })
+    const { trIndex, tdIndex } = positionContext
     const trList = element.trList!
     const curTr = trList[trIndex!]
     const curTdRowIndex = curTr.tdList[tdIndex!].rowIndex!
@@ -450,9 +433,14 @@ export class TableOperate {
     for (let d = 0; d < curTr.tdList.length; d++) {
       const td = curTr.tdList[d]
       if (td.rowspan > 1) {
+        // 根据列索引，找到被删除的行中的跨行单元格在下一行的对应位置，补上单元格
         const tdId = getUUID()
         const nextTr = trList[trIndex! + 1]
-        nextTr.tdList.splice(d, 0, {
+        const nextTdArray: ITd[] = new Array(element.colgroup!.length)
+        nextTr.tdList.forEach(nextTd => {
+          nextTdArray[nextTd.colIndex!] = nextTd
+        })
+        nextTdArray[td.colIndex!] = {
           id: tdId,
           rowspan: td.rowspan - 1,
           colspan: td.colspan,
@@ -465,7 +453,8 @@ export class TableOperate {
               tdId
             }
           ]
-        })
+        }
+        nextTr.tdList = nextTdArray.filter(item => item !== undefined)
       }
     }
     // 删除当前行
@@ -483,11 +472,18 @@ export class TableOperate {
   }
 
   public deleteTableCol() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
-    const { index, tdIndex, trIndex } = positionContext
+    const originalPositionContext = this.position.getPositionContext()
+    if (!originalPositionContext.isTable) return
+    const { index: originalIndex } = originalPositionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
+    const originalElement = originalElementList[originalIndex!]
+    // 删除表格列前先合并跨页表格
+    const { element, positionContext } = this.tableParticle.mergeSplittedTable({
+      element: originalElement,
+      index: originalIndex!,
+      elementList: originalElementList
+    })
+    const { trIndex, tdIndex } = positionContext
     const curTrList = element.trList!
     const curTd = curTrList[trIndex!].tdList[tdIndex!]
     const curColIndex = curTd.colIndex!
@@ -528,9 +524,15 @@ export class TableOperate {
   }
 
   public deleteTable() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
+    const originalPositionContext = this.position.getPositionContext()
+    if (!originalPositionContext.isTable) return
     const originalElementList = this.draw.getOriginalElementList()
+    // 删除表格前先合并跨页表格
+    const { positionContext } = this.tableParticle.mergeSplittedTable({
+      element: originalElementList[originalPositionContext.index!],
+      index: originalPositionContext.index!,
+      elementList: originalElementList
+    })
     originalElementList.splice(positionContext.index!, 1)
     const curIndex = positionContext.index! - 1
     this.position.setPositionContext({

@@ -17,6 +17,14 @@ interface IDrawTableBorderOption {
   isDrawFullBorder?: boolean
 }
 
+interface IMergeSplittedTablePayload {
+  elementList: IElement[]
+  element: IElement
+  index: number
+  curIndex?: number
+  mergeForward?: boolean
+}
+
 export class TableParticle {
   private draw: Draw
   private range: RangeManager
@@ -456,5 +464,188 @@ export class TableParticle {
   ) {
     this._drawBackgroundColor(ctx, element, startX, startY)
     this._drawBorder(ctx, element, startX, startY)
+  }
+
+  public mergeSplittedTable(payload: IMergeSplittedTablePayload) {
+    let { element, index: i, curIndex } = payload
+    const { elementList, mergeForward = false } = payload
+    const position = this.draw.getPosition()
+    const positionContext = position.getPositionContext()
+    if (element.pagingId) {
+      // 如果当前表格是拆分出来的，找到起始表格
+      if (!mergeForward && element.pagingIndex! > 0) {
+        i = i - element.pagingIndex!
+        element = elementList[i]
+      }
+      let positionContextChanged = false
+      // 位置上下文中的信息是表格拆分后记录的，这里需要将其先修正为表格合并后的上下文。渲染前排版拆分表格时将基于此再次修正位置上下文。
+      if (positionContext.isTable) {
+        // 如果位置上下文在当前表格或其拆分出的子表格中，则修正位置上下文（这里未调用setPositionContext是为了避免触发位置上下文改变的事件）
+        const preTables: IElement[] = []
+        outer: for (let index = i; index < elementList.length; index++) {
+          const table = elementList[index]
+          if (table.pagingId !== element.pagingId) {
+            break
+          } else if (positionContext.tableId === table.id) {
+            for (let r = 0; r < table.trList!.length; r++) {
+              for (let d = 0; d < table.trList![r].tdList.length; d++) {
+                const td = table.trList![r].tdList[d]
+                // 此时位置上下文中的tdId是拆分后的tdId，将其修正为原始td的id
+                // 由于后续合并表格可能导致单元格索引、行索引等变化，因此这里只修正了部分位置上下文
+                if (td.id === positionContext.tdId) {
+                  positionContext.tdId = td.pagingOriginId || td.id
+                  positionContext.tableId = element.id
+                  positionContext.index = i
+                  positionContextChanged = true
+                  if (
+                    td.pagingOriginId && // 位置上下文指向的td是跨页拆分出来的时才需要修正curIndex
+                    curIndex !== undefined &&
+                    curIndex > -1
+                  ) {
+                    // 找到同源表格中与位置上下文td同源的单元格，根据其内容长度修正curIndex
+                    while (preTables.length > 0) {
+                      const preTable = preTables.pop()
+                      preTable!.trList!.forEach(preTr => {
+                        for (
+                          let preTdIndex = 0;
+                          preTdIndex < preTr.tdList.length;
+                          preTdIndex++
+                        ) {
+                          const preTd = preTr.tdList[preTdIndex]
+                          if (
+                            preTd.pagingOriginId === td.pagingOriginId ||
+                            preTd.id === td.pagingOriginId
+                          ) {
+                            curIndex! += preTd.value.length
+                            break
+                          }
+                        }
+                      })
+                    }
+                  }
+                  break outer
+                }
+              }
+            }
+          } else {
+            preTables.push(table)
+          }
+        }
+      }
+      // 为当前表格构建一个虚拟表格
+      const virtualTable = Array.from(
+        { length: element.trList!.length },
+        () => new Array(element.colgroup!.length)
+      ) as Array<Array<ITd | undefined | null>>
+      element.trList!.forEach((tr, trIndex) => {
+        let tdIndex = 0
+        tr.tdList.forEach(td => {
+          while (virtualTable[trIndex][tdIndex] === null) {
+            tdIndex++
+          }
+          virtualTable[trIndex][tdIndex] = td
+          for (let i = 1; i < td.rowspan; i++) {
+            virtualTable[trIndex + i][tdIndex] = null
+          }
+          tdIndex += td.colspan
+        })
+      })
+      // 处理后续表格的合并
+      let tableIndex = i + 1
+      let combineCount = 0
+      while (tableIndex < elementList.length) {
+        const nextElement = elementList[tableIndex]
+        if (nextElement.pagingId === element.pagingId) {
+          const nexTrList = nextElement.trList!.filter(tr => !tr.pagingRepeat)
+          // 判断后续表格第一行是拆分出来的还是从原表格挪到下一页的
+          const isNextTrSplit =
+            element.trList![element.trList!.length - 1].id ===
+            nexTrList[0].pagingOriginId
+          // 遍历后续表格首行中的单元格，在虚拟表格中找到其对应单元格
+          let tdIndex = 0
+          const mergedTds: ITd[] = []
+          nexTrList[0].tdList.forEach(td => {
+            let targetTd
+            // 如果虚拟表格最后一行对应位置有单元格，则其就为目标单元格，否则向上查找
+            if (virtualTable[virtualTable.length - 1][tdIndex]) {
+              targetTd = virtualTable[virtualTable.length - 1][tdIndex]
+            } else {
+              for (let i = virtualTable.length - 2; i >= 0; i--) {
+                if (virtualTable[i][tdIndex]) {
+                  targetTd = virtualTable[i][tdIndex]
+                  break
+                }
+              }
+            }
+            if (targetTd) {
+              if (targetTd.id === td.pagingOriginId) {
+                targetTd.value.push(...td.value)
+                if (isNextTrSplit) {
+                  targetTd.rowspan = targetTd.rowspan + td.rowspan - 1
+                } else {
+                  targetTd.rowspan = targetTd.rowspan + td.rowspan
+                  mergedTds.push(td)
+                }
+              }
+              tdIndex += targetTd.colspan
+            }
+          })
+          nexTrList[0].tdList = nexTrList[0].tdList.filter(td => {
+            const isNotMerged = mergedTds.every(
+              mergedTd => mergedTd.id !== td.id
+            )
+            delete td.pagingOriginId
+            return isNotMerged
+          })
+          // 更新行高，逐行合并
+          while (nexTrList.length > 0) {
+            const lastTr = element.trList![element.trList!.length - 1]
+            const nextTr = nexTrList.shift()!
+            if (lastTr.id === nextTr.pagingOriginId) {
+              lastTr.height += nextTr.pagingOriginHeight || 0
+              // 更新合并内容的id关联关系
+              lastTr.tdList.forEach(td => {
+                td.value.forEach(v => {
+                  v.tdId = td.id
+                  v.trId = lastTr.id
+                  v.tableId = element.id
+                })
+              })
+            } else {
+              nextTr.height = nextTr.pagingOriginHeight || nextTr.height
+              element.trList!.push(nextTr)
+            }
+            delete nextTr.pagingOriginHeight
+            delete nextTr.pagingOriginId
+          }
+          tableIndex++
+          combineCount++
+        } else {
+          break
+        }
+      }
+      if (combineCount) {
+        elementList.splice(i + 1, combineCount)
+      }
+      // 合并表格后继续修正位置上下文
+      if (positionContextChanged) {
+        outer: for (let r = 0; r < element.trList!.length; r++) {
+          const tr = element.trList![r]
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            if (td.id === positionContext.tdId) {
+              positionContext.tdIndex = d
+              positionContext.trIndex = r
+              positionContext.trId = tr.id
+              break outer
+            }
+          }
+        }
+      }
+      element.pagingIndex = element.pagingIndex ?? 0
+      // 计算表格行列（单元格行列索引、高宽、单元格相对于表格的坐标等信息）
+      this.computeRowColInfo(element)
+    }
+    return { curIndex, element, index: i, positionContext }
   }
 }

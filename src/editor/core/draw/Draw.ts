@@ -1329,7 +1329,6 @@ export class Draw {
         }
         metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
-        const positionContext = this.position.getPositionContext()
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         const height = this.getHeight()
@@ -1337,162 +1336,15 @@ export class Draw {
         const emptyMainHeight = (height - marginHeight - rowMargin * 2) / scale
         // 表格分页处理进度：https://github.com/Hufe921/canvas-editor/issues/41
         // 查看后续表格是否属于同一个源表格-存在即合并
-        if (element.pagingId) {
-          // TODO: 优化：一旦修正了上下文，后续表格无需再做上下文相关判断
-          // 位置上下文中的信息是表格拆分后记录的，这里需要将其先修正为表格合并后的上下文，后续拆分表格时基于此再次修正位置上下文
-          if (positionContext.isTable) {
-            // 如果位置上下文在当前表格或其拆分出的子表格中，则修正上下文（仅修正了tdId和tableId，后续拆分表格时会基于此进行二次修正）
-            const preTables: IElement[] = []
-            outer: for (let index = i; index < elementList.length; index++) {
-              const table = elementList[index]
-              if (table.pagingId !== element.pagingId) {
-                break
-              } else {
-                let positionContextFixed = false
-                for (let r = 0; r < table.trList!.length; r++) {
-                  for (let d = 0; d < table.trList![r].tdList.length; d++) {
-                    const td = table.trList![r].tdList[d]
-                    // 此时位置上下文中的tdId是拆分后的tdId，将其修正为原始td的id
-                    if (td.id === positionContext.tdId) {
-                      positionContext.tdId = td.pagingOriginId || td.id
-                      positionContext.tableId = element.id
-                      if (
-                        td.pagingOriginId && // 位置上下文指向的td是跨页拆分出来的时才需要修正curIndex
-                        curIndex !== undefined &&
-                        curIndex > -1
-                      ) {
-                        // 找到同源表格中与位置上下文td同源的单元格，根据其内容长度修正curIndex
-                        while (preTables.length > 0) {
-                          const preTable = preTables.pop()
-                          preTable!.trList!.forEach(preTr => {
-                            for (
-                              let preTdIndex = 0;
-                              preTdIndex < preTr.tdList.length;
-                              preTdIndex++
-                            ) {
-                              const preTd = preTr.tdList[preTdIndex]
-                              if (
-                                preTd.pagingOriginId === td.pagingOriginId ||
-                                preTd.id === td.pagingOriginId
-                              ) {
-                                curIndex! += preTd.value.length
-                                break
-                              }
-                            }
-                          })
-                        }
-                      }
-                      positionContextFixed = true
-                      break outer
-                    }
-                  }
-                }
-                if (positionContextFixed) {
-                  break
-                } else {
-                  preTables.push(table)
-                }
-              }
-            }
-          }
-          // 为当前表格构建一个虚拟表格
-          const virtualTable = Array.from(
-            { length: element.trList!.length },
-            () => new Array(element.colgroup!.length)
-          ) as Array<Array<ITd | undefined | null>>
-          element.trList!.forEach((tr, trIndex) => {
-            let tdIndex = 0
-            tr.tdList.forEach(td => {
-              while (virtualTable[trIndex][tdIndex] === null) {
-                tdIndex++
-              }
-              virtualTable[trIndex][tdIndex] = td
-              for (let i = 1; i < td.rowspan; i++) {
-                virtualTable[trIndex + i][tdIndex] = null
-              }
-              tdIndex += td.colspan
-            })
+        const { curIndex: newIndex, positionContext } =
+          this.tableParticle.mergeSplittedTable({
+            element,
+            elementList,
+            index: i,
+            curIndex,
+            mergeForward: true
           })
-          let tableIndex = i + 1
-          let combineCount = 0
-          while (tableIndex < elementList.length) {
-            const nextElement = elementList[tableIndex]
-            if (nextElement.pagingId === element.pagingId) {
-              const nexTrList = nextElement.trList!.filter(
-                tr => !tr.pagingRepeat
-              )
-              // 判断后续表格第一行是拆分出来的还是从原表格挪到下一页的
-              const isNextTrSplit =
-                element.trList![element.trList!.length - 1].id ===
-                nexTrList[0].pagingOriginId
-              let tdIndex = 0
-              const mergedTds: ITd[] = []
-              nexTrList[0].tdList.forEach(td => {
-                let targetTd
-                // 如果虚拟表格最后一行对应位置有单元格，则其就为目标单元格，否则向上查找
-                if (virtualTable[virtualTable.length - 1][tdIndex]) {
-                  targetTd = virtualTable[virtualTable.length - 1][tdIndex]
-                } else {
-                  for (let i = virtualTable.length - 2; i >= 0; i--) {
-                    if (virtualTable[i][tdIndex]) {
-                      targetTd = virtualTable[i][tdIndex]
-                      break
-                    }
-                  }
-                }
-                if (targetTd) {
-                  if (targetTd.id === td.pagingOriginId) {
-                    targetTd.value.push(...td.value)
-                    if (isNextTrSplit) {
-                      targetTd.rowspan = targetTd.rowspan + td.rowspan - 1
-                    } else {
-                      targetTd.rowspan = targetTd.rowspan + td.rowspan
-                      mergedTds.push(td)
-                    }
-                  }
-                  tdIndex += targetTd.colspan
-                }
-              })
-              nexTrList[0].tdList = nexTrList[0].tdList.filter(td => {
-                const isNotMerged = mergedTds.every(
-                  mergedTd => mergedTd.id !== td.id
-                )
-                delete td.pagingOriginId
-                return isNotMerged
-              })
-              while (nexTrList.length > 0) {
-                const lastTr = element.trList![element.trList!.length - 1]
-                const nextTr = nexTrList.shift()!
-                if (lastTr.id === nextTr.pagingOriginId) {
-                  lastTr.height += nextTr.pagingOriginHeight || 0
-                  // 更新id关联
-                  lastTr.tdList.forEach(td => {
-                    td.value.forEach(v => {
-                      v.tdId = td.id
-                      v.trId = lastTr.id
-                      v.tableId = element.id
-                    })
-                  })
-                } else {
-                  nextTr.height = nextTr.pagingOriginHeight || nextTr.height
-                  element.trList!.push(nextTr)
-                }
-                delete nextTr.pagingOriginHeight
-                delete nextTr.pagingOriginId
-              }
-              tableIndex++
-              combineCount++
-            } else {
-              break
-            }
-          }
-          if (combineCount) {
-            elementList.splice(i + 1, combineCount)
-          }
-        }
-        element.pagingIndex = element.pagingIndex ?? 0
-        // 计算表格行列
-        this.tableParticle.computeRowColInfo(element)
+        curIndex = newIndex
         // 计算表格内元素信息
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
@@ -1598,13 +1450,14 @@ export class Draw {
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
           const rowMarginHeight = rowMargin * 2
           if (
+            // 如果当前页已占用的高度 + 表格第一行高度 + 上下行间距 > 纸张高度
             curPagePreHeight +
               element.trList![0].height! * scale +
               rowMarginHeight >
               height ||
-            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
+            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat) // 或者当前表格是被拆分出来的拼接子表格（非第一个），且子表格第一行是标题行
           ) {
-            // 无可拆分行则切换至新页
+            // 切换至新页
             curPagePreHeight = marginHeight
           }
           // 表格高度超过页面高度开始截断行
@@ -1683,7 +1536,7 @@ export class Draw {
                 if (splitTd) {
                   cloneTr[tdIndex] = deepClone(splitTd)
                   // 如果tr可拆分，根据截断位置，将td中的内容拆分到新行中
-                  // 如果tr不可拆分，但目标td不在当前行且是跨行单元格，同样需要拆分td内容
+                  // 如果tr不可拆分，但要拆分的td不在当前行且是跨行单元格，同样需要拆分
                   if (
                     allowSplitTr ||
                     (splitTd.rowspan > 1 && !hasTdAtCurIndex)
@@ -1766,12 +1619,13 @@ export class Draw {
                   }
                 }
               })
-              // 构造新行
+              // 构造新行，更新拆分行的行高
               const newTr = deepClone(trList[splitTrIndex])
               newTr.tdList = cloneTr.filter(td => td !== undefined) as ITd[]
               if (allowSplitTr) {
                 newTr.pagingOriginId = newTr.pagingOriginId || newTr.id
                 newTr.id = getUUID()
+                // 更新被拆分的行和其中单元格的高度
                 trList[splitTrIndex].height -= splitTrReduceHeight
                 trList[splitTrIndex].tdList.forEach(td => {
                   td.realHeight! -= splitTrReduceHeight
@@ -1779,6 +1633,7 @@ export class Draw {
                 })
                 // 记录拆分出来的新行的原始高度
                 newTr.pagingOriginHeight = splitTrReduceHeight
+                // 更新新行高度
                 newTr.height = Math.max(
                   splitTrReduceHeight + tdPaddingHeight,
                   newTr.minHeight!
