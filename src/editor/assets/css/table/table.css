@@ -54,6 +54,7 @@
 .ce-table-tool__select:hover {
   background-color: #E2E6ED;
 }
+
 .ce-table-tool__select::after {
   content: ':::';
   color: #AAAAAB;
