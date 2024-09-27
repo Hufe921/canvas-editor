@@ -1213,7 +1213,8 @@ export function convertTextNodeToElement(
     color: style.color,
     bold: Number(style.fontWeight) > 500,
     italic: style.fontStyle.includes('italic'),
-    size: Math.floor(parseFloat(style.fontSize))
+    size: Math.floor(parseFloat(style.fontSize)),
+    font: style.fontFamily
   }
   // 元素类型-默认文本
   if (anchorNode.nodeName === 'SUB' || style.verticalAlign === 'sub') {
