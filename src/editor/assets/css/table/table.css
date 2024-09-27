@@ -43,6 +43,27 @@
   transform: translate(-50%, -55%);
 }
 
+.ce-table-tool__select {
+  width: 16px;
+  height: 18px;
+  position: absolute;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.ce-table-tool__select:hover {
+  background-color: #E2E6ED;
+}
+
+.ce-table-tool__select::after {
+  content: ':::';
+  color: #AAAAAB;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-75%, -50%) rotate(-90deg);
+}
+
 .ce-table-tool__col {
   position: absolute;
   height: 12px;

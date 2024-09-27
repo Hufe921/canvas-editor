@@ -217,7 +217,7 @@ export class TableOperate {
       tdIndex: 0,
       tdId: newTr.tdList[0].id,
       trId: newTr.id,
-      tableId
+      tableId: element.id
     })
     this.range.setRange(0, 0)
     // 重新渲染
@@ -330,7 +330,7 @@ export class TableOperate {
       tdIndex: curTdIndex,
       tdId: curTrList[0].tdList[curTdIndex].id,
       trId: curTrList[0].id,
-      tableId
+      tableId: element.id
     })
     this.range.setRange(0, 0)
     // 重新渲染
