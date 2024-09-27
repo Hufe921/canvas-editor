@@ -206,6 +206,7 @@ const {
   value: string | null
   innerText: string | null
   zone: EditorZone
+  elementList?: IElement[]
 }[] = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```
 
