@@ -3,5 +3,7 @@ export interface IWatermark {
   color?: string
   opacity?: number
   size?: number
-  font?: string
+  font?: string,
+  repeat?: boolean,
+  gap?: number[]
 }
