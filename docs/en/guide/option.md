@@ -1,6 +1,6 @@
 # Configuration
 
-## How to Use ?
+## How to Use?
 
 ```javascript
 import Editor from "@hufe921/canvas-editor"
