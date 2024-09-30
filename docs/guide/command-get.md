@@ -53,6 +53,16 @@ const editorOption = await instance.command.getOptions()
 const wordCount = await instance.command.getWordCount()
 ```
 
+## getCursorPosition
+
+功能: 获取光标位置坐标
+
+用法:
+
+```javascript
+const range = instance.command.getCursorPosition()
+```
+
 ## getRange
 
 功能：获取选区

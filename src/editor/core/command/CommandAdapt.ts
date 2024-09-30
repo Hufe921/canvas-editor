@@ -1360,6 +1360,10 @@ export class CommandAdapt {
     return this.workerManager.getWordCount()
   }
 
+  public getCursorPosition(): IElementPosition | null {
+    return this.position.getCursorPosition()
+  }
+
   public getRange(): IRange {
     return deepClone(this.range.getRange())
   }
