@@ -93,6 +93,7 @@ interface IHeader {
   top?: number // 距离页面顶部大小。默认：30
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
+  editable?: boolean // 禁止编辑标题内容
 }
 ```
 
@@ -103,6 +104,7 @@ interface IFooter {
   bottom?: number // 距离页面底部大小。默认：30
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
+  editable?: boolean // 禁止编辑页脚内容
 }
 ```
 

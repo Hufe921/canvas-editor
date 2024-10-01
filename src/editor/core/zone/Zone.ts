@@ -48,6 +48,13 @@ export class Zone {
   }
 
   public setZone(payload: EditorZone) {
+    const { header, footer } = this.options
+    if (
+      (!header.editable && payload === EditorZone.HEADER) ||
+      (!footer.editable && payload === EditorZone.FOOTER)
+    ) {
+      return
+    }
     if (this.currentZone === payload) return
     this.currentZone = payload
     this.draw.getRange().clearRange()

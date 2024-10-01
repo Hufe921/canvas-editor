@@ -4,4 +4,5 @@ export interface IFooter {
   bottom?: number
   maxHeightRadio?: MaxHeightRatio
   disabled?: boolean
+  editable?: boolean
 }
