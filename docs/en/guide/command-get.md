@@ -53,6 +53,16 @@ Usage:
 const wordCount = await instance.command.getWordCount()
 ```
 
+## getCursorPosition
+
+Feature: Get cursor position with coordinates
+
+Usage:
+
+```javascript
+const range = instance.command.getCursorPosition()
+```
+
 ## getRange
 
 Feature: Get range
