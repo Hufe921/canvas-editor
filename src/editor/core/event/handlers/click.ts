@@ -108,7 +108,6 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     x: evt.offsetX,
     y: evt.offsetY
   })
-
   // 图片预览
   if (positionContext.isImage && positionContext.isDirectHit) {
     draw.getPreviewer().render()
