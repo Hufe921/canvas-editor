@@ -135,6 +135,8 @@ interface IWatermark {
   opacity?: number // transparency. default: 0.3
   size?: number // font size. default: 200
   font?: string // font. default: Microsoft YaHei
+  repeat?: boolean // repeat watermark. default: false
+  gap?: [horizontal: number, vertical: number] // watermark spacing. default: [10,10]
 }
 ```
 
