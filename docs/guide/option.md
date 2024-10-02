@@ -133,8 +133,8 @@ interface IWatermark {
   opacity?: number // 透明度。默认：0.3
   size?: number // 字体大小。默认：200
   font?: string // 字体。默认：Microsoft YaHei
-  repeat?: boolean //重复水印。默认：false
-  gap?: array //水印间距。默认：[10,10]
+  repeat?: boolean // 重复水印。默认：false
+  gap?: [horizontal: number, vertical: number] // 水印间距。默认：[10,10]
 }
 ```
 
