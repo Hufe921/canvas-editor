@@ -22,3 +22,14 @@ export interface IRow {
   rowIndex: number
   isSurround?: boolean
 }
+
+
+export interface IRowRef {
+  listIndex: number
+  level: number
+  originalIndex: number
+  parents: number[]
+  children: number[]
+  subChildren: number[]
+  majorSubLevel: number
+}
