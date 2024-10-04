@@ -1,6 +1,5 @@
 import { ZERO } from '../../../dataset/constant/Common'
 import { ulStyleMapping, ulStyleIndexMapping } from '../../../dataset/constant/List'
-import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
 import { ListStyle, ListType, UlStyle } from '../../../dataset/enum/List'
 import { DeepRequired } from '../../../interface/Common'
@@ -140,7 +139,7 @@ export class ListParticle {
     const startElement = elementList[0]
     if (startElement.value !== ZERO || startElement.listWrap) return
     // tab width
-    const tabWidth = this.getTabWidth(elementList)
+    const tabWidth = this.draw.getTabWidth(elementList)
     const { defaultTabWidth, scale, defaultFont, defaultSize } = this.options
     // 列表样式渲染
     const {
@@ -377,7 +376,7 @@ export class ListParticle {
 
   private calculateListsIndex(rowList: IRow[], defaultTabWidth: number): IRowRef[] {
     const rows: IRowRef[] = rowList.slice(1).map((row, index) => ({
-      level: this.getTabWidth(row.elementList) / defaultTabWidth,
+      level: this.draw.getTabWidth(row.elementList) / defaultTabWidth,
       originalIndex: index,
       children: [],
       subChildren: [],
@@ -389,17 +388,5 @@ export class ListParticle {
     this.generateChildrenAndParents(rows)
     this.generateListIndexes(rows)
     return rows
-  }
-
-  public getTabWidth(elementList: IRowElement[]) {
-    let tabWidth = 0
-    const { defaultTabWidth, scale } = this.options
-    for (let i = 1; i < elementList.length; i++) {
-      const element = elementList[i]
-      if (element?.type !== ElementType.TAB) break
-      tabWidth += defaultTabWidth * scale
-    }
-
-    return tabWidth
   }
 }

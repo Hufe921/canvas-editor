@@ -1080,6 +1080,18 @@ export class Draw {
     })
   }
 
+  public getTabWidth(elementList: IRowElement[]) {
+    let tabWidth = 0
+    const { defaultTabWidth, scale } = this.options
+    for (let i = 1; i < elementList.length; i++) {
+      const element = elementList[i]
+      if (element?.type !== ElementType.TAB) break
+      tabWidth += defaultTabWidth * scale
+    }
+
+    return tabWidth
+  }
+
   public getValue(options: IGetValueOption = {}): IEditorResult {
     const { pageNo, extraPickAttrs } = options
     let mainElementList = this.elementList
@@ -1457,7 +1469,7 @@ export class Draw {
           const rowMarginHeight = rowMargin * 2 * scale
           if (
             curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-              height ||
+            height ||
             (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
             // 无可拆分行则切换至新页
@@ -2168,11 +2180,11 @@ export class Draw {
             if (
               preElement &&
               ((preElement.type === ElementType.SUBSCRIPT &&
-                element.type !== ElementType.SUBSCRIPT) ||
+                  element.type !== ElementType.SUBSCRIPT) ||
                 (preElement.type === ElementType.SUPERSCRIPT &&
                   element.type !== ElementType.SUPERSCRIPT) ||
                 this.getElementSize(preElement) !==
-                  this.getElementSize(element))
+                this.getElementSize(element))
             ) {
               this.strikeout.render(ctx)
             }
