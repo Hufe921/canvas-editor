@@ -1263,6 +1263,7 @@ export class Draw {
         ascent: 0,
         elementList: [],
         startIndex: 0,
+        endIndex: 0,
         rowIndex: 0,
         rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
       })
@@ -1738,6 +1739,7 @@ export class Draw {
           width: metrics.width,
           height,
           startIndex: i,
+          endIndex: i,
           elementList: [rowElement],
           ascent,
           rowIndex: curRow.rowIndex + 1,

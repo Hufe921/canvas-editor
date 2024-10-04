@@ -4,7 +4,10 @@ import {
   EDITOR_ROW_ATTR
 } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
+import { ElementType } from '../../../../dataset/enum/Element'
+import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
+import { IRowElement } from '../../../../interface/Row'
 import {
   formatElementContext,
   getAnchorElement
@@ -19,6 +22,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   const { startIndex, endIndex } = rangeManager.getRange()
   const isCollapsed = rangeManager.getIsCollapsed()
   const elementList = draw.getElementList()
+  const rowList = draw.getRowList()
   const startElement = elementList[startIndex]
   const endElement = elementList[endIndex]
   // 最后一个列表项行首回车取消列表设置
@@ -66,32 +70,76 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
       })
     }
   }
-  // 控件或文档插入换行元素
-  const control = draw.getControl()
-  const activeControl = control.getActiveControl()
-  let curIndex: number
-  if (activeControl && control.getIsRangeWithinControl()) {
-    curIndex = control.setValue([enterText])
+  rowList.forEach(el => el.endIndex = (el.startIndex + (el.elementList.length - 1)))
+  const currentRow = rowList.find(el => {
+    return startIndex >= el.startIndex && endIndex <= el.endIndex
+  })
+  const nextRow = rowList[currentRow?.rowIndex! + 1]
+  const countTabCurRow = getTabWidth((currentRow?.elementList || []), draw.getOptions())
+  const countTabNextRow = getTabWidth((nextRow?.elementList || []), draw.getOptions())
+  const { defaultTabWidth } = draw.getOptions()
+
+  let tabsToInsertCount = 0
+  // If the cursor position is at the end of the line or any position above the beginning of the line
+  if (startIndex === currentRow?.endIndex || (currentRow && startIndex > currentRow?.startIndex)) {
+    // if the current line has more tabs than the next line, take the tabs from the current line
+    // if not, get the tabs from the next line
+    tabsToInsertCount = countTabCurRow > countTabNextRow ? (countTabCurRow / defaultTabWidth) : (countTabNextRow / defaultTabWidth)
   } else {
-    const position = draw.getPosition()
-    const cursorPosition = position.getCursorPosition()
-    if (!cursorPosition) return
-    const { index } = cursorPosition
-    if (isCollapsed) {
-      draw.spliceElementList(elementList, index + 1, 0, enterText)
-    } else {
-      draw.spliceElementList(
-        elementList,
-        startIndex + 1,
-        endIndex - startIndex,
-        enterText
-      )
+    // if it is at the beginning
+    tabsToInsertCount = countTabCurRow / defaultTabWidth
+  }
+
+  // Create the TAB elements that will be inserted in the new line
+  const tabsToInsert = Array(tabsToInsertCount).fill({
+    value: '',
+    type: ElementType.TAB,
+    listId: enterText.listId,
+    listStyle: enterText.listStyle,
+    listType: enterText.listType,
+  })
+
+  // Insert the new element and calculated tabs on the new line
+  if (isCollapsed) {
+    draw.spliceElementList(elementList, startIndex + 1, 0, enterText);
+    if (tabsToInsert.length > 0) {
+      draw.spliceElementList(elementList, startIndex + 2, 0, ...tabsToInsert)
     }
-    curIndex = index + 1
+  } else {
+    draw.spliceElementList(
+      elementList,
+      startIndex + 1,
+      endIndex - startIndex,
+      enterText
+    );
+    if (tabsToInsert.length > 0) {
+      draw.spliceElementList(elementList, startIndex + 2, 0, ...tabsToInsert)
+    }
+  }
+
+  // Check if it is on the last line and adjust the index accordingly
+  let curIndex;
+  if (startIndex === elementList.length - 2) {
+    // If it is the last line, move the cursor to the new line directly
+    curIndex = startIndex + 1
+  } else {
+    curIndex = startIndex + tabsToInsertCount + 1
   }
   if (~curIndex) {
     rangeManager.setRange(curIndex, curIndex)
-    draw.render({ curIndex })
+    draw.render({ curIndex });
   }
   evt.preventDefault()
+}
+
+function getTabWidth(elementList: IRowElement[], options: IEditorOption) {
+  let tabWidth = 0
+  const { defaultTabWidth, scale } = options
+  for (let i = 1; i < elementList.length; i++) {
+    const element = elementList[i]
+    if (element?.type !== ElementType.TAB) break
+    tabWidth += (defaultTabWidth || 32) * (scale || 1)
+  }
+
+  return tabWidth
 }

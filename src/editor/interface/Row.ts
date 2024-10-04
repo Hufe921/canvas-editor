@@ -13,6 +13,7 @@ export interface IRow {
   ascent: number
   rowFlex?: RowFlex
   startIndex: number
+  endIndex: number
   isPageBreak?: boolean
   isList?: boolean
   listIndex?: number
