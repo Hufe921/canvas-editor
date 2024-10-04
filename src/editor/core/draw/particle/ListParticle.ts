@@ -293,12 +293,16 @@ export class ListParticle {
     return children
   }
 
-
   private generateChildrenAndParents(rows: IRowRef[]): void {
+    const getLevelMax = ((rows: IRowRef[]) => {
+      return rows.reduce((accum, row) => {
+        return accum > row.level ? accum : row.level
+      }, 0)
+    })
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i]
       row.children = this.findChildren(rows, i, 1)
-      row.subChildren = this.findChildren(rows, i, 5)
+      row.subChildren = this.findChildren(rows, i, getLevelMax(rows))
 
       if (row.children.length < row.subChildren.length) {
         this.setParentsForSubChildren(row, rows)
