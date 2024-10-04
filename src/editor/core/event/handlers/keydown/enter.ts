@@ -80,17 +80,17 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   const { defaultTabWidth } = draw.getOptions()
 
   let tabsToInsertCount = 0
-  // Se a posição do cursor estiver no final da linha ou em qualquer posição acima do começo da linha
+  // If the cursor position is at the end of the line or any position above the beginning of the line
   if (startIndex === currentRow?.endIndex || (currentRow && startIndex > currentRow?.startIndex)) {
-    // se a linha atual tiver mais tabs que a próxima linha pega as tabs da linha atual
-    // se não pega as tabs da próxima linha
+    // if the current line has more tabs than the next line, take the tabs from the current line
+    // if not, get the tabs from the next line
     tabsToInsertCount = countTabCurRow > countTabNextRow ? (countTabCurRow / defaultTabWidth) : (countTabNextRow / defaultTabWidth)
   } else {
-    // caso esteja no começo
+    // if it is at the beginning
     tabsToInsertCount = countTabCurRow / defaultTabWidth
   }
 
-  // Criar os elementos TABs que serão inseridos na nova linha
+  // Create the TAB elements that will be inserted in the new line
   const tabsToInsert = Array(tabsToInsertCount).fill({
     value: '',
     type: ElementType.TAB,
@@ -99,7 +99,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     listType: enterText.listType,
   })
 
-  // Inserir o novo elemento e os tabs calculados na nova linha
+  // Insert the new element and calculated tabs on the new line
   if (isCollapsed) {
     draw.spliceElementList(elementList, startIndex + 1, 0, enterText);
     if (tabsToInsert.length > 0) {
@@ -117,13 +117,12 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     }
   }
 
-  // Verifica se está na última linha e ajusta o índice corretamente
+  // Check if it is on the last line and adjust the index accordingly
   let curIndex;
   if (startIndex === elementList.length - 2) {
-    // Se for a última linha, move o cursor para a nova linha diretamente
+    // If it is the last line, move the cursor to the new line directly
     curIndex = startIndex + 1
   } else {
-    // Caso contrário, segue a lógica original
     curIndex = startIndex + tabsToInsertCount + 1
   }
   if (~curIndex) {
