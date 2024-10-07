@@ -27,6 +27,8 @@ export class TableTool {
     this.ROW_COL_OFFSET + (this.ROW_COL_OFFSET - this.ROW_COL_QUICK_WIDTH) / 2
   // 边框工具宽/高度
   private readonly BORDER_VALUE = 4
+  // 快速选择工具偏移值
+  private readonly TABLE_SELECT_OFFSET = 20
 
   private draw: Draw
   private canvas: HTMLCanvasElement
@@ -36,6 +38,7 @@ export class TableTool {
   private toolRowContainer: HTMLDivElement | null
   private toolRowAddBtn: HTMLDivElement | null
   private toolColAddBtn: HTMLDivElement | null
+  private toolTableSelectBtn: HTMLDivElement | null
   private toolColContainer: HTMLDivElement | null
   private toolBorderContainer: HTMLDivElement | null
   private anchorLine: HTMLDivElement | null
@@ -52,6 +55,7 @@ export class TableTool {
     this.toolRowContainer = null
     this.toolRowAddBtn = null
     this.toolColAddBtn = null
+    this.toolTableSelectBtn = null
     this.toolColContainer = null
     this.toolBorderContainer = null
     this.anchorLine = null
@@ -63,11 +67,13 @@ export class TableTool {
     this.toolRowContainer?.remove()
     this.toolRowAddBtn?.remove()
     this.toolColAddBtn?.remove()
+    this.toolTableSelectBtn?.remove()
     this.toolColContainer?.remove()
     this.toolBorderContainer?.remove()
     this.toolRowContainer = null
     this.toolRowAddBtn = null
     this.toolColAddBtn = null
+    this.toolTableSelectBtn = null
     this.toolColContainer = null
     this.toolBorderContainer = null
   }
@@ -98,6 +104,20 @@ export class TableTool {
     const colIndex = td.colIndex
     const tableHeight = element.height! * scale
     const tableWidth = element.width! * scale
+    // 表格选择工具
+    const tableSelectBtn = document.createElement('div')
+    tableSelectBtn.classList.add(`${EDITOR_PREFIX}-table-tool__select`)
+    tableSelectBtn.style.height = `${tableHeight * scale}`
+    tableSelectBtn.style.left = `${tableX}px`
+    tableSelectBtn.style.top = `${tableY}px`
+    tableSelectBtn.style.transform = `translate(-${
+      this.TABLE_SELECT_OFFSET * scale
+    }px, ${-this.TABLE_SELECT_OFFSET * scale}px)`
+    tableSelectBtn.onclick = () => {
+      this.draw.getTableOperate().tableSelectAll()
+    }
+    this.container.append(tableSelectBtn)
+    this.toolTableSelectBtn = tableSelectBtn
     // 渲染行工具
     const rowHeightList = trList!.map(tr => tr.height)
     const rowContainer = document.createElement('div')

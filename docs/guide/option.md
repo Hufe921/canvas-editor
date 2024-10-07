@@ -93,6 +93,7 @@ interface IHeader {
   top?: number // 距离页面顶部大小。默认：30
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
+  editable?: boolean // 禁止编辑标题内容
 }
 ```
 
@@ -103,6 +104,7 @@ interface IFooter {
   bottom?: number // 距离页面底部大小。默认：30
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
+  editable?: boolean // 禁止编辑页脚内容
 }
 ```
 
@@ -133,6 +135,8 @@ interface IWatermark {
   opacity?: number // 透明度。默认：0.3
   size?: number // 字体大小。默认：200
   font?: string // 字体。默认：Microsoft YaHei
+  repeat?: boolean // 重复水印。默认：false
+  gap?: [horizontal: number, vertical: number] // 水印间距。默认：[10,10]
 }
 ```
 

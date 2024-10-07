@@ -49,6 +49,7 @@ import { TextControl } from './text/TextControl'
 import { DateControl } from './date/DateControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
 import {
+  CONTROL_CONTEXT_ATTR,
   CONTROL_STYLE_ATTR,
   LIST_CONTEXT_ATTR,
   TITLE_CONTEXT_ATTR
@@ -610,6 +611,7 @@ export class Control {
         const { type, code, valueSets } = element.control
         let j = i
         let textControlValue = ''
+        const textControlElementList = []
         while (j < elementList.length) {
           const nextElement = elementList[j]
           if (nextElement.controlId !== element.controlId) break
@@ -618,6 +620,9 @@ export class Control {
             nextElement.controlComponent === ControlComponent.VALUE
           ) {
             textControlValue += nextElement.value
+            textControlElementList.push(
+              omitObject(nextElement, CONTROL_CONTEXT_ATTR)
+            )
           }
           j++
         }
@@ -626,7 +631,8 @@ export class Control {
             ...element.control,
             zone,
             value: textControlValue || null,
-            innerText: textControlValue || null
+            innerText: textControlValue || null,
+            elementList: zipElementList(textControlElementList)
           })
         } else if (
           type === ControlType.SELECT ||
@@ -721,7 +727,7 @@ export class Control {
           isIgnoreDisabledRule: true
         }
         if (type === ControlType.TEXT) {
-          const formatValue = [{ value }]
+          const formatValue = Array.isArray(value) ? value : [{ value }]
           formatElementList(formatValue, {
             isHandleFirstElement: false,
             editorOptions: this.options
@@ -734,6 +740,7 @@ export class Control {
             text.clearValue(controlContext, controlRule)
           }
         } else if (type === ControlType.SELECT) {
+          if (Array.isArray(value)) continue
           const select = new SelectControl(element, this)
           this.activeControl = select
           if (value) {
@@ -742,16 +749,19 @@ export class Control {
             select.clearSelect(controlContext, controlRule)
           }
         } else if (type === ControlType.CHECKBOX) {
+          if (Array.isArray(value)) continue
           const checkbox = new CheckboxControl(element, this)
           this.activeControl = checkbox
           const codes = value ? value.split(',') : []
           checkbox.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.RADIO) {
+          if (Array.isArray(value)) continue
           const radio = new RadioControl(element, this)
           this.activeControl = radio
           const codes = value ? [value] : []
           radio.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.DATE) {
+          if (Array.isArray(value)) continue
           const date = new DateControl(element, this)
           this.activeControl = date
           if (value) {

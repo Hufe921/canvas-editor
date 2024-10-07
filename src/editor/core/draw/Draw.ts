@@ -2477,6 +2477,8 @@ export class Draw {
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
     const isPagingMode = this.getIsPagingMode()
+    // 缓存当前页数信息
+    const oldPageSize = this.pageRowList.length
     // 计算文档信息
     if (isCompute) {
       // 清空浮动元素位置信息
@@ -2576,12 +2578,14 @@ export class Draw {
       if (isCompute && !this.zone.isMainActive()) {
         this.zone.drawZoneIndicator()
       }
-      // 页面尺寸改变
-      if (this.listener.pageSizeChange) {
-        this.listener.pageSizeChange(this.pageRowList.length)
-      }
-      if (this.eventBus.isSubscribe('pageSizeChange')) {
-        this.eventBus.emit('pageSizeChange', this.pageRowList.length)
+      // 页数改变
+      if (oldPageSize !== this.pageRowList.length) {
+        if (this.listener.pageSizeChange) {
+          this.listener.pageSizeChange(this.pageRowList.length)
+        }
+        if (this.eventBus.isSubscribe('pageSizeChange')) {
+          this.eventBus.emit('pageSizeChange', this.pageRowList.length)
+        }
       }
       // 文档内容改变
       if ((isSubmitHistory || isSourceHistory) && !isInit) {

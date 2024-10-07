@@ -2,7 +2,7 @@
   "name": "@hufe921/canvas-editor",
   "author": "Hufe",
   "license": "MIT",
-  "version": "0.9.93",
+  "version": "0.9.94",
   "description": "rich text editor by canvas/svg",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",

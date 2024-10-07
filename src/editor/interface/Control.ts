@@ -135,12 +135,13 @@ export type IGetControlValueResult = (Omit<IControl, 'value'> & {
   value: string | null
   innerText: string | null
   zone: EditorZone
+  elementList?: IElement[]
 })[]
 
 export interface ISetControlValueOption {
   id?: string
   conceptId?: string
-  value: string
+  value: string | IElement[]
 }
 
 export interface ISetControlExtensionOption {
