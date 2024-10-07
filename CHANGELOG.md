@@ -1,3 +1,27 @@
+## [0.9.94](https://github.com/Hufe921/canvas-editor/compare/v0.9.93...v0.9.94) (2024-10-07)
+
+
+### Bug Fixes
+
+* pageSizeChange event listener inaccurate #817 ([0308089](https://github.com/Hufe921/canvas-editor/commit/03080896f594afb3044d401fa736bcaabc8153c4)), closes [#817](https://github.com/Hufe921/canvas-editor/issues/817)
+
+
+### Documentation
+
+* update command markdown ([b2978b2](https://github.com/Hufe921/canvas-editor/commit/b2978b27c279945ea77d2e00f7233e0351975ed9))
+
+
+### Features
+
+* add get cursor position api ([3052337](https://github.com/Hufe921/canvas-editor/commit/30523378a8d5f0fac18bd06a2a3fdd259a758be3))
+* add header and footer editable option ([aa667a6](https://github.com/Hufe921/canvas-editor/commit/aa667a6b8d8f12b5df207111b45f17d1e1fc0e8d))
+* add repeat attribute to watermark #665 ([c6e0176](https://github.com/Hufe921/canvas-editor/commit/c6e017631cda9f85301a0f97816f41c1b042a42e)), closes [#665](https://github.com/Hufe921/canvas-editor/issues/665)
+* export createDomFromElementList function #819 ([f7b6f42](https://github.com/Hufe921/canvas-editor/commit/f7b6f42c7f4a7daa9e1bad398255b4ca6078103a)), closes [#819](https://github.com/Hufe921/canvas-editor/issues/819)
+* quick add table select tool ([6a05052](https://github.com/Hufe921/canvas-editor/commit/6a05052d9e97b35297fbd29f128faca0a486a6a7))
+* the control api support set and get element list #816 ([9482f85](https://github.com/Hufe921/canvas-editor/commit/9482f85f0e860e0449402fdbb80ca80a3bcd800c)), closes [#816](https://github.com/Hufe921/canvas-editor/issues/816)
+
+
+
 ## [0.9.93](https://github.com/Hufe921/canvas-editor/compare/v0.9.92...v0.9.93) (2024-09-20)
 
 
