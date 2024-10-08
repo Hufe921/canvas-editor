@@ -527,6 +527,14 @@ export class Draw {
     return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].rowList!
   }
 
+  public getTableRowListByElement(sourceElementList: IElement[], element: IElement): IRow[] {
+    const { tableId, trId, tdId } = element
+    const tableElement = sourceElementList.find((el) => el.id === tableId)
+    const trElement = tableElement?.trList?.find((el) => el.id === trId)
+    const tdElement = trElement?.tdList?.find((el) => el.id === tdId)
+    return tdElement?.rowList || []
+  }
+
   public getOriginalRowList() {
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
@@ -1170,9 +1178,17 @@ export class Draw {
   }
 
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
-    const container = document.createElement('div')
+    const container = this.createDivContainer()
     rootContainer.append(container)
     return container
+  }
+
+  private createDivContainer() {
+    return document.createElement('div')
+  }
+
+  private createPageCanvas() {
+    return document.createElement('canvas')
   }
 
   private _formatContainer() {
@@ -1183,7 +1199,7 @@ export class Draw {
   }
 
   private _createPageContainer(): HTMLDivElement {
-    const pageContainer = document.createElement('div')
+    const pageContainer = this.createDivContainer()
     pageContainer.classList.add(`${EDITOR_PREFIX}-page-container`)
     this.container.append(pageContainer)
     return pageContainer
@@ -1192,7 +1208,7 @@ export class Draw {
   private _createPage(pageNo: number) {
     const width = this.getWidth()
     const height = this.getHeight()
-    const canvas = document.createElement('canvas')
+    const canvas = this.createPageCanvas()
     canvas.style.width = `${width}px`
     canvas.style.height = `${height}px`
     canvas.style.display = 'block'
@@ -1263,7 +1279,7 @@ export class Draw {
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
-    const canvas = document.createElement('canvas')
+    const canvas = this.createPageCanvas()
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     // 计算列表偏移宽度
     const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
@@ -2436,6 +2452,7 @@ export class Draw {
     if (!pageBorder.disabled) {
       this.pageBorder.render(ctx)
     }
+
   }
 
   private _disconnectLazyRender() {

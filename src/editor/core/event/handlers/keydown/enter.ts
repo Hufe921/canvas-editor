@@ -87,12 +87,14 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     }
 
     // Create the TAB elements that will be inserted in the new line
+    const firstElementCurRow = currentRow.elementList[0]
     tabsToInsert = Array(tabsToInsertCount).fill({
+      ...firstElementCurRow,
       value: '',
       type: ElementType.TAB,
       listId: enterText.listId,
       listStyle: enterText.listStyle,
-      listType: enterText.listType
+      listType: enterText.listType,
     })
   }
 
