@@ -52,6 +52,7 @@ import { IControlSelect } from '../interface/Control'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
+import { mergeOption } from './option'
 
 export function unzipElementList(elementList: IElement[]): IElement[] {
   const result: IElement[] = []
@@ -1071,8 +1072,9 @@ export function groupElementListByRowFlex(
 
 export function createDomFromElementList(
   elementList: IElement[],
-  options: DeepRequired<IEditorOption>
+  options?: IEditorOption
 ) {
+  const editorOptions = mergeOption(options)
   function buildDom(payload: IElement[]): HTMLDivElement {
     const clipboardDom = document.createElement('div')
     for (let e = 0; e < payload.length; e++) {
@@ -1216,7 +1218,7 @@ export function createDomFromElementList(
           text = element.value
         }
         if (!text) continue
-        const dom = convertElementToDom(element, options)
+        const dom = convertElementToDom(element, editorOptions)
         // 前一个元素是标题，移除首行换行符
         if (payload[e - 1]?.type === ElementType.TITLE) {
           text = text.replace(/^\n/, '')

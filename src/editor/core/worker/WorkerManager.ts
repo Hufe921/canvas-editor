@@ -43,7 +43,11 @@ export class WorkerManager {
       }
 
       const elementList = this.draw.getOriginalMainElementList()
-      this.catalogWorker.postMessage(elementList)
+      const positionList = this.draw.getPosition().getOriginalMainPositionList()
+      this.catalogWorker.postMessage({
+        elementList,
+        positionList
+      })
     })
   }
 

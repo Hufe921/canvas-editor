@@ -1360,6 +1360,10 @@ export class CommandAdapt {
     return this.workerManager.getWordCount()
   }
 
+  public getCursorPosition(): IElementPosition | null {
+    return this.position.getCursorPosition()
+  }
+
   public getRange(): IRange {
     return deepClone(this.range.getRange())
   }
@@ -1459,6 +1463,20 @@ export class CommandAdapt {
         tableElement = zipElementList([originTableElement])[0]
       }
     }
+    // 标题信息
+    let titleId: string | null = null
+    let titleStartPageNo: number | null = null
+    let start = startIndex - 1
+    while (start > 0) {
+      const curElement = elementList[start]
+      const preElement = elementList[start - 1]
+      if (curElement.titleId && curElement.titleId !== preElement?.titleId) {
+        titleId = curElement.titleId
+        titleStartPageNo = positionList[start].pageNo
+        break
+      }
+      start--
+    }
     return deepClone<RangeContext>({
       isCollapsed,
       startElement,
@@ -1472,7 +1490,9 @@ export class CommandAdapt {
       tdIndex: tdIndex ?? null,
       tableElement,
       selectionText,
-      selectionElementList
+      selectionElementList,
+      titleId,
+      titleStartPageNo
     })
   }
 
