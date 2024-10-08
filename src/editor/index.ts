@@ -49,7 +49,12 @@ import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
 import { IRange } from './interface/Range'
 import { deepClone, splitText } from './utils'
-import { createDomFromElementList } from './utils/element'
+import {
+  createDomFromElementList,
+  getElementListByHTML,
+  getTextFromElementList,
+  type IGetElementListByHTMLOption
+} from './utils/element'
 import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
@@ -138,7 +143,12 @@ export default class Editor {
 }
 
 // 对外方法
-export { splitText, createDomFromElementList }
+export {
+  splitText,
+  createDomFromElementList,
+  getElementListByHTML,
+  getTextFromElementList
+}
 
 // 对外常量
 export { EDITOR_COMPONENT, LETTER_CLASS, INTERNAL_CONTEXT_MENU_KEY }
@@ -174,7 +184,8 @@ export {
   BackgroundSize,
   TextDecorationStyle,
   LineNumberType,
-  LocationPosition
+  LocationPosition,
+  IGetElementListByHTMLOption
 }
 
 // 对外类型
