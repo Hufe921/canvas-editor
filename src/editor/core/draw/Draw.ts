@@ -1345,6 +1345,8 @@ export class Draw {
             mergeForward: true
           })
         curIndex = newIndex
+        // 计算更新单元格行列索引等信息
+        this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
         const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
