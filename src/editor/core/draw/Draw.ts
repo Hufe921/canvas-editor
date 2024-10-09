@@ -1178,17 +1178,9 @@ export class Draw {
   }
 
   private _wrapContainer(rootContainer: HTMLElement): HTMLDivElement {
-    const container = this.createDivContainer()
+    const container = document.createElement('div')
     rootContainer.append(container)
     return container
-  }
-
-  private createDivContainer() {
-    return document.createElement('div')
-  }
-
-  private createPageCanvas() {
-    return document.createElement('canvas')
   }
 
   private _formatContainer() {
@@ -1199,7 +1191,7 @@ export class Draw {
   }
 
   private _createPageContainer(): HTMLDivElement {
-    const pageContainer = this.createDivContainer()
+    const pageContainer = document.createElement('div')
     pageContainer.classList.add(`${EDITOR_PREFIX}-page-container`)
     this.container.append(pageContainer)
     return pageContainer
@@ -1208,7 +1200,7 @@ export class Draw {
   private _createPage(pageNo: number) {
     const width = this.getWidth()
     const height = this.getHeight()
-    const canvas = this.createPageCanvas()
+    const canvas = document.createElement('canvas')
     canvas.style.width = `${width}px`
     canvas.style.height = `${height}px`
     canvas.style.display = 'block'
@@ -1279,7 +1271,7 @@ export class Draw {
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
-    const canvas = this.createPageCanvas()
+    const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
     // 计算列表偏移宽度
     const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
@@ -2452,7 +2444,6 @@ export class Draw {
     if (!pageBorder.disabled) {
       this.pageBorder.render(ctx)
     }
-
   }
 
   private _disconnectLazyRender() {
