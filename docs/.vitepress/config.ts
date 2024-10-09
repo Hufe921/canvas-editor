@@ -71,7 +71,10 @@ export default defineConfig({
       },
       {
         text: 'API',
-        items: [{ text: '全局API', link: '/guide/api' }]
+        items: [
+          { text: '实例API', link: '/guide/api-instance' },
+          { text: '通用API', link: '/guide/api-common' }
+        ]
       },
       {
         text: '插件',
@@ -161,7 +164,10 @@ export default defineConfig({
           },
           {
             text: 'Api',
-            items: [{ text: 'api', link: '/en/guide/api' }]
+            items: [
+              { text: 'instance', link: '/en/guide/api-instance' },
+              { text: 'common', link: '/en/guide/api-common' }
+            ]
           },
           {
             text: 'Plugin',
