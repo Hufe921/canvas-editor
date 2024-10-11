@@ -128,6 +128,8 @@ export class Position {
     let x = startX
     let y = startY
     let index = startIndex
+    const ctx = this.draw.getCtx()
+    ctx.save()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       // 行存在环绕的可能性均不设置行布局
@@ -145,6 +147,38 @@ export class Position {
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y
+      let sameText = ''
+      let xList: number[] = [] // 存储每个元素的x轴偏移量
+      let baseLeft = x
+      for (let j = 0; j < curRow.elementList.length; j++) {
+        let element = curRow.elementList[j]
+        const preElement = curRow.elementList[j - 1]
+        const metrics = element.metrics
+        ctx.font = preElement && preElement.style
+        let preTextWidth = ctx.measureText(sameText).width
+        // 图片处理 style，value 以免影响后续逻辑
+        if (element.type === ElementType.IMAGE) {
+          element = JSON.parse(JSON.stringify(element))
+          element.style = ''
+          element.value = ''
+        }
+        let moveX = baseLeft + preTextWidth
+        // 偏移量
+        if (element.left) {
+          moveX += element.left
+        }
+        xList.push(moveX)
+        if (element.style === (preElement && preElement.style)) {
+          sameText += element.value
+        } else {
+          sameText = element.value
+          baseLeft = moveX
+        }
+        // 单选框，复选框，图片
+        if (!element.value) {
+          baseLeft += metrics.width
+        }
+      }
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
@@ -171,10 +205,10 @@ export class Position {
           isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
           coordinate: {
-            leftTop: [x, y],
-            leftBottom: [x, y + curRow.height],
-            rightTop: [x + metrics.width, y],
-            rightBottom: [x + metrics.width, y + curRow.height]
+            leftTop: [xList[j], y],
+            leftBottom: [xList[j], y + curRow.height],
+            rightTop: [xList[j] + metrics.width, y],
+            rightBottom: [xList[j] + metrics.width, y + curRow.height]
           }
         }
         // 缓存浮动元素信息
@@ -276,6 +310,7 @@ export class Position {
       x = startX
       y += curRow.height
     }
+    ctx.restore()
     return { x, y, index }
   }
 
