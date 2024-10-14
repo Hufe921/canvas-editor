@@ -101,6 +101,7 @@ interface IElement {
     border?: boolean;
     extension?: unknown;
     indentation?: ControlIndentation;
+    rowFlex?: RowFlex
     deletable?: boolean;
     disabled?: boolean;
     code: string | null;
