@@ -2,10 +2,12 @@ import { LocationPosition } from '../dataset/enum/Common'
 import { ControlType, ControlIndentation } from '../dataset/enum/Control'
 import { EditorZone } from '../dataset/enum/Editor'
 import { MoveDirection } from '../dataset/enum/Observer'
+import { RowFlex } from '../dataset/enum/Row'
 import { IDrawOption } from './Draw'
 import { IElement } from './Element'
 import { IPositionContext } from './Position'
 import { IRange } from './Range'
+import { IRow, IRowElement } from './Row'
 
 export interface IValueSet {
   value: string
@@ -62,6 +64,7 @@ export interface IControlBasic {
   border?: boolean
   extension?: unknown
   indentation?: ControlIndentation
+  rowFlex?: RowFlex
 }
 
 export interface IControlStyle {
@@ -174,4 +177,11 @@ export interface IInitNextControlOption {
 
 export interface ILocationControlOption {
   position: LocationPosition
+}
+
+export interface ISetControlRowFlexOption {
+  row: IRow
+  rowElement: IRowElement
+  availableWidth: number
+  controlRealWidth: number
 }

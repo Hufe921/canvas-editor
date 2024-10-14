@@ -1457,6 +1457,10 @@ export class Draw {
         metrics.height = elementHeight
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = -rowMargin
+        // 后一个元素也是表格则移除行间距
+        if (elementList[i + 1]?.type === ElementType.TABLE) {
+          metrics.boundingBoxAscent -= rowMargin
+        }
         // 表格分页处理(拆分表格)
         if (isPagingMode) {
           const height = this.getHeight()
@@ -1667,16 +1671,13 @@ export class Draw {
           controlRealWidth += metrics.width
         }
         if (rowElement.controlComponent === ControlComponent.POSTFIX) {
-          const extraWidth = rowElement.control.minWidth - controlRealWidth
-          // 消费超出实际最小宽度的长度
-          if (extraWidth > 0) {
-            // 超出行宽时截断
-            const rowRemainingWidth =
-              availableWidth - curRow.width - metrics.width
-            const left = Math.min(rowRemainingWidth, extraWidth) * scale
-            rowElement.left = left
-            curRow.width += left
-          }
+          // 设置最小宽度控件属性（字符偏移量）
+          this.control.setMinWidthControlInfo({
+            row: curRow,
+            rowElement,
+            availableWidth,
+            controlRealWidth
+          })
           controlRealWidth = 0
         }
       }
@@ -2164,10 +2165,9 @@ export class Draw {
             offsetY = this.subscriptParticle.getOffsetY(element)
           }
           // 占位符不参与颜色计算
-          const color =
-            element.controlComponent === ControlComponent.PLACEHOLDER
-              ? undefined
-              : element.color
+          const color = element.control?.underline
+            ? this.options.underlineColor
+            : element.color
           this.underline.recordFillInfo(
             ctx,
             x - offsetX,
