@@ -381,7 +381,18 @@ export class Draw {
     const len = this.elementList.length
     for(let i = 0; i < len; i++){
       const el = this.elementList[i]
-      if(el.trackId && el.trackType === TrackType.DELETE) {
+      if(el.type === ElementType.TABLE) {
+        const trList = el.trList!
+        trList.forEach(tr => {
+          tr.tdList.forEach(td => {
+            td.value.forEach((el, index) => {
+              if (el.trackId && el.trackType === TrackType.DELETE) {
+                td.value[index].hide = true
+              }
+            })
+          })
+        })
+      } else if(el.trackId && el.trackType === TrackType.DELETE) {
         el.hide = true
       }
     }
