@@ -501,7 +501,6 @@ window.onload = function () {
     separatorDom.querySelector<HTMLDivElement>('.options')!
   separatorDom.onclick = function () {
     console.log('separator1')
-    // separatorOptionDom.classList.toggle('visible')
     separatorOptionDom.classList.add('visible')
   }
   const separatorConfirmDom =separatorDom.querySelector<HTMLDivElement>('.confirm')!
@@ -521,7 +520,6 @@ window.onload = function () {
         payload = separatorDash
       }
     }
-    // instance.command.executeSeparator(payload)
   }
   // 分割线提交
   separatorConfirmDom.onclick = function (event) {
