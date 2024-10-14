@@ -166,7 +166,7 @@ export class ListParticle {
     row: IRow,
     position: IElementPosition
   ) {
-    const { elementList, offsetX, listIndex, ascent } = row
+    const { elementList, offsetX, listIndex, ascent, height } = row
     const startElement = elementList[0]
     if (startElement.value !== ZERO || startElement.listWrap) return
     // tab width
@@ -218,7 +218,7 @@ export class ListParticle {
       } else {
         text = `${listIndex! + 1}${KeyMap.PERIOD}`
       }
-      if (!text) return
+      if (!text || height === 0) return
       ctx.save()
       ctx.font = `${defaultSize * scale}px ${defaultFont}`
       ctx.fillText(text, x, y)
