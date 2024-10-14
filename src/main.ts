@@ -514,8 +514,6 @@ window.onload = function () {
     .forEach(li => li.classList.remove('active'))
     const li = evt.target as HTMLLIElement
     li.classList.add('active')
-    // const liSibling=siblingElems(li)
-    // liSibling.forEach(s => s.classList.remove('active'))
     const separatorDash = li.dataset.separator?.split(',').map(Number)
     if (separatorDash) {
       const isSingleLine = separatorDash.every(d => d === 0)
