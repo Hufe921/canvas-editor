@@ -1436,6 +1436,10 @@ export class Draw {
         metrics.height = elementHeight
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = -rowMargin
+        // 后一个元素也是表格则移除行间距
+        if (elementList[i + 1]?.type === ElementType.TABLE) {
+          metrics.boundingBoxAscent -= rowMargin
+        }
         // 表格分页处理(拆分表格)
         if (isPagingMode) {
           const height = this.getHeight()
