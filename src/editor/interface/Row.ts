@@ -20,4 +20,5 @@ export interface IRow {
   elementList: IRowElement[]
   isWidthNotEnough?: boolean
   rowIndex: number
+  isSurround?: boolean
 }

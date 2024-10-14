@@ -2,6 +2,8 @@
 
 ::: tip
 Official plugin: https://github.com/Hufe921/canvas-editor-plugin
+
+Official plugin demo: https://hufe.club/canvas-editor-plugin
 :::
 
 ## Barcode1d
@@ -106,4 +108,18 @@ command.executeLoadDiagram({
   data?: string
   onDestroy?: (message?: any) => void
 })
+```
+
+## Convert uppercase and lowercase
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import casePlugin from '@hufe921/canvas-editor-plugin-case'
+
+const instance = new Editor()
+instance.use(casePlugin)
+
+command.executeUpperCase()
+
+command.executeLowerCase()
 ```

@@ -19,8 +19,9 @@
 - Change the picture
 - Save as picture
 - Text wrapping
-  - Embedded
-  - Upper and lower surrounding
+  - Embed
+  - Up down
+  - Surround
   - Float above text
   - Float below text
 

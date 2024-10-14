@@ -1,10 +1,10 @@
-import {ZERO} from '../../../dataset/constant/Common'
-import {EDITOR_ELEMENT_COPY_ATTR} from '../../../dataset/constant/Element'
-import {ElementType} from '../../../dataset/enum/Element'
-import {IElement} from '../../../interface/Element'
-import {splitText} from '../../../utils'
-import {formatElementContext, getAnchorElement} from '../../../utils/element'
-import {CanvasEvent} from '../CanvasEvent'
+import { ZERO } from '../../../dataset/constant/Common'
+import { EDITOR_ELEMENT_COPY_ATTR } from '../../../dataset/constant/Element'
+import { ElementType } from '../../../dataset/enum/Element'
+import { IElement } from '../../../interface/Element'
+import { splitText } from '../../../utils'
+import { formatElementContext, getAnchorElement } from '../../../utils/element'
+import { CanvasEvent } from '../CanvasEvent'
 import {TrackType} from '../../../dataset/enum/Track'
 import {EditorMode} from '../../../dataset/enum/Editor'
 
@@ -35,11 +35,15 @@ export function input(data: string, host: CanvasEvent) {
   const elementList = draw.getElementList()
   const copyElement = getAnchorElement(elementList, endIndex)
   if (!copyElement) return
+  const isDesignMode = draw.isDesignMode()
   const inputData: IElement[] = splitText(text).map(value => {
     const newElement: IElement = {
       value
     }
-    if (!copyElement.title?.disabled && !copyElement.control?.disabled) {
+    if (
+      isDesignMode ||
+      (!copyElement.title?.disabled && !copyElement.control?.disabled)
+    ) {
       const nextElement = elementList[endIndex + 1]
       if (
         !copyElement.type ||
@@ -82,7 +86,9 @@ export function input(data: string, host: CanvasEvent) {
       const deleteArray = elementList.slice(start, endIndex + 1)
       draw.addReviewInformation(deleteArray, TrackType.DELETE)
     }
-    formatElementContext(elementList, inputData, startIndex)
+    formatElementContext(elementList, inputData, startIndex, {
+      editorOptions: draw.getOptions()
+    })
     if(isReviewMode){
       draw.spliceElementList(elementList, endIndex + 1, 0, ...inputData)
       curIndex = endIndex  + inputData.length

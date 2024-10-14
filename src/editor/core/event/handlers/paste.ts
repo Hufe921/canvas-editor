@@ -51,7 +51,8 @@ export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
       }
     }
     formatElementContext(originalElementList, elementList, startIndex, {
-      isBreakWhenWrap: true
+      isBreakWhenWrap: true,
+      editorOptions: draw.getOptions()
     })
   }
   draw.addReviewInformation(elementList,TrackType.INSERT)
@@ -89,7 +90,9 @@ export function pasteImage(host: CanvasEvent, file: File | Blob) {
         height: image.height
       }
       if (~startIndex) {
-        formatElementContext(elementList, [imageElement], startIndex)
+        formatElementContext(elementList, [imageElement], startIndex, {
+          editorOptions: draw.getOptions()
+        })
       }
       draw.insertElementList([imageElement])
     }

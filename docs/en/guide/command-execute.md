@@ -679,7 +679,7 @@ Feature: Change how image rows are displayed
 Usage:
 
 ```javascript
-instance.command.executeSaveAsImageElement(element: IElement, display: ImageDisplay)
+instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
 ```
 
 ## executePageMode
@@ -960,4 +960,14 @@ Usage:
 
 ```javascript
 instance.command.executeInsertTitle(payload: IElement)
+```
+
+## executeFocus
+
+Feature: focus
+
+Usage:
+
+```javascript
+instance.command.executeFocus(payload?: IFocusOption)
 ```

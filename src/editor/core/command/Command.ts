@@ -95,6 +95,7 @@ export class Command {
   public executeInsertControl: CommandAdapt['insertControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
   public executeInsertTitle: CommandAdapt['insertTitle']
+  public executeFocus: CommandAdapt['focus']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -102,6 +103,7 @@ export class Command {
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
   public getWordCount: CommandAdapt['getWordCount']
+  public getCursorPosition: CommandAdapt['getCursorPosition']
   public getRange: CommandAdapt['getRange']
   public getRangeText: CommandAdapt['getRangeText']
   public getRangeContext: CommandAdapt['getRangeContext']
@@ -215,6 +217,7 @@ export class Command {
     this.executeSetZone = adapt.setZone.bind(adapt)
     this.executeUpdateOptions = adapt.updateOptions.bind(adapt)
     this.executeInsertTitle = adapt.insertTitle.bind(adapt)
+    this.executeFocus = adapt.focus.bind(adapt)
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
@@ -222,6 +225,7 @@ export class Command {
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
+    this.getCursorPosition = adapt.getCursorPosition.bind(adapt)
     this.getRange = adapt.getRange.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)

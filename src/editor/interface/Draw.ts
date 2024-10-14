@@ -38,7 +38,7 @@ export interface IDrawRowPayload {
 
 export interface IDrawFloatPayload {
   pageNo: number
-  imgDisplay: ImageDisplay
+  imgDisplays: ImageDisplay[]
 }
 
 export interface IDrawPagePayload {
@@ -69,5 +69,11 @@ export interface IGetImageOption {
 export interface IComputeRowListPayload {
   innerWidth: number
   elementList: IElement[]
+  startX?: number
+  startY?: number
+  isFromTable?: boolean
   isPagingMode?: boolean
+  pageHeight?: number
+  mainOuterHeight?: number
+  surroundElementList?: IElement[]
 }

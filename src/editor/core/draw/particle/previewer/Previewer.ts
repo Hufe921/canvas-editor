@@ -91,11 +91,13 @@ export class Previewer {
   }
 
   private _createResizerDom(): IPreviewerCreateResult {
+    const { scale } = this.options
     // 拖拽边框
     const resizerSelection = document.createElement('div')
     resizerSelection.classList.add(`${EDITOR_PREFIX}-resizer-selection`)
     resizerSelection.style.display = 'none'
     resizerSelection.style.borderColor = this.options.resizerColor
+    resizerSelection.style.borderWidth = `${scale}px`
     // 拖拽点
     const resizerHandleList: HTMLDivElement[] = []
     for (let i = 0; i < 8; i++) {
@@ -353,6 +355,7 @@ export class Previewer {
     }
     previewerContainer.onwheel = evt => {
       evt.preventDefault()
+      evt.stopPropagation()
       if (evt.deltaY < 0) {
         // 放大
         scaleSize += 0.1
@@ -386,7 +389,7 @@ export class Previewer {
   }
 
   public _updateResizerRect(width: number, height: number) {
-    const handleSize = this.options.resizerSize
+    const { resizerSize: handleSize, scale } = this.options
     this.resizerSelection.style.width = `${width}px`
     this.resizerSelection.style.height = `${height}px`
     // handle
@@ -403,6 +406,7 @@ export class Previewer {
           : i === 3 || i === 7
           ? height / 2 - handleSize
           : height - handleSize
+      this.resizerHandleList[i].style.transform = `scale(${scale})`
       this.resizerHandleList[i].style.left = `${left}px`
       this.resizerHandleList[i].style.top = `${top}px`
     }
@@ -447,6 +451,7 @@ export class Previewer {
     )
     this.resizerSelection.style.left = `${resizerLeft}px`
     this.resizerSelection.style.top = `${resizerTop}px`
+    this.resizerSelection.style.borderWidth = `${scale}px`
     // 更新预览包围框尺寸
     this._updateResizerRect(elementWidth, elementHeight)
     this.resizerSelection.style.display = 'block'

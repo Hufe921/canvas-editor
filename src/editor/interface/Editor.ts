@@ -1,4 +1,4 @@
-import { IElement } from '..'
+import { IElement, LocationPosition } from '..'
 import {
   EditorMode,
   PageMode,
@@ -25,6 +25,7 @@ import { IZoneOption } from './Zone'
 import { ISeparatorOption } from './Separator'
 import { ITableOption } from './table/Table'
 import { ILineNumberOption } from './LineNumber'
+import { IPageBorderOption } from './PageBorder'
 import { ITrackStyleOption} from './Track'
 import { IUser } from './User'
 
@@ -93,6 +94,7 @@ export interface IEditorOption {
   lineBreak?: ILineBreakOption
   separator?: ISeparatorOption
   lineNumber?: ILineNumberOption
+  pageBorder?: IPageBorderOption
   trackStyle?: ITrackStyleOption
   user?: IUser
 }
@@ -126,4 +128,8 @@ export type IUpdateOption = Omit<
 
 export interface ISetValueOption {
   isSetCursor?: boolean
+}
+
+export interface IFocusOption {
+  position?: LocationPosition
 }

@@ -4,4 +4,6 @@ export interface IWatermark {
   opacity?: number
   size?: number
   font?: string
+  repeat?: boolean
+  gap?: [horizontal: number, vertical: number]
 }

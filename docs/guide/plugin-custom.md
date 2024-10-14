@@ -21,5 +21,5 @@ export function myPlugin(editor: Editor, options?: Option) {
 ## 使用插件
 
 ```javascript
-instance.add(myPlugin, options?: Option)
+instance.use(myPlugin, options?: Option)
 ```

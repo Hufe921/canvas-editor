@@ -53,6 +53,16 @@ Usage:
 const wordCount = await instance.command.getWordCount()
 ```
 
+## getCursorPosition
+
+Feature: Get cursor position with coordinates
+
+Usage:
+
+```javascript
+const range = instance.command.getCursorPosition()
+```
+
 ## getRange
 
 Feature: Get range
@@ -205,6 +215,8 @@ Usage:
 const {
   value: string | null
   innerText: string | null
+  zone: EditorZone
+  elementList?: IElement[]
 } = await instance.command.getControlValue(payload: IGetControlValueOption)
 ```
 

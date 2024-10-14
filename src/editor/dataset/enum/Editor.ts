@@ -20,6 +20,7 @@ export enum EditorMode {
   READONLY = 'readonly', // 只读模式（文档不可编辑）
   FORM = 'form', // 表单模式（仅控件内可编辑）
   PRINT = 'print', // 打印模式（文档不可编辑、隐藏辅助元素、选区、未书写控件及边框）
+  DESIGN = 'design', // 设计模式（不可删除、只读等配置不控制）
   REVIEW = 'review' // 审阅模式（文档可编辑，辅助元素存在，输入记录输入人信息和时间信息）
 }
 

@@ -1,3 +1,98 @@
+## [0.9.94](https://github.com/Hufe921/canvas-editor/compare/v0.9.93...v0.9.94) (2024-10-07)
+
+
+### Bug Fixes
+
+* pageSizeChange event listener inaccurate #817 ([0308089](https://github.com/Hufe921/canvas-editor/commit/03080896f594afb3044d401fa736bcaabc8153c4)), closes [#817](https://github.com/Hufe921/canvas-editor/issues/817)
+
+
+### Documentation
+
+* update command markdown ([b2978b2](https://github.com/Hufe921/canvas-editor/commit/b2978b27c279945ea77d2e00f7233e0351975ed9))
+
+
+### Features
+
+* add get cursor position api ([3052337](https://github.com/Hufe921/canvas-editor/commit/30523378a8d5f0fac18bd06a2a3fdd259a758be3))
+* add header and footer editable option ([aa667a6](https://github.com/Hufe921/canvas-editor/commit/aa667a6b8d8f12b5df207111b45f17d1e1fc0e8d))
+* add repeat attribute to watermark #665 ([c6e0176](https://github.com/Hufe921/canvas-editor/commit/c6e017631cda9f85301a0f97816f41c1b042a42e)), closes [#665](https://github.com/Hufe921/canvas-editor/issues/665)
+* export createDomFromElementList function #819 ([f7b6f42](https://github.com/Hufe921/canvas-editor/commit/f7b6f42c7f4a7daa9e1bad398255b4ca6078103a)), closes [#819](https://github.com/Hufe921/canvas-editor/issues/819)
+* quick add table select tool ([6a05052](https://github.com/Hufe921/canvas-editor/commit/6a05052d9e97b35297fbd29f128faca0a486a6a7))
+* the control api support set and get element list #816 ([9482f85](https://github.com/Hufe921/canvas-editor/commit/9482f85f0e860e0449402fdbb80ca80a3bcd800c)), closes [#816](https://github.com/Hufe921/canvas-editor/issues/816)
+
+
+
+## [0.9.93](https://github.com/Hufe921/canvas-editor/compare/v0.9.92...v0.9.93) (2024-09-20)
+
+
+### Bug Fixes
+
+* executeUpdateElementById api format data error #806 ([1f88dca](https://github.com/Hufe921/canvas-editor/commit/1f88dcafae035be1130f0956c51c21fa60c3759e)), closes [#806](https://github.com/Hufe921/canvas-editor/issues/806)
+* image floating position boundary error ([a833f85](https://github.com/Hufe921/canvas-editor/commit/a833f85ade8ec7d0d7cc2a27f79f34ef747a9987))
+
+
+### Chores
+
+* change the style of the hollow block list #809 ([9880deb](https://github.com/Hufe921/canvas-editor/commit/9880deb116e0b135556592b124dc95861fc2b0b6)), closes [#809](https://github.com/Hufe921/canvas-editor/issues/809)
+
+
+### Documentation
+
+* update plugin markdown ([e5711b4](https://github.com/Hufe921/canvas-editor/commit/e5711b40189d93a887280a88e5604ee9429ae20e))
+
+
+### Features
+
+* add image surround display #554 ([a9f80a4](https://github.com/Hufe921/canvas-editor/commit/a9f80a448f42b09de6ac5f36aac8cd2d01dfae38)), closes [#554](https://github.com/Hufe921/canvas-editor/issues/554)
+* add the pageNo property to the getCatalog api ([1e48893](https://github.com/Hufe921/canvas-editor/commit/1e48893e92ee16eb3de463910d6ccebe83aefce0))
+* add title attributes to range context #738 ([1e8a923](https://github.com/Hufe921/canvas-editor/commit/1e8a923da4fe1c4bb6470cf9623818c9c6c66a5f)), closes [#738](https://github.com/Hufe921/canvas-editor/issues/738)
+* quick add table row and col tool ([641acda](https://github.com/Hufe921/canvas-editor/commit/641acdabf26ae99c2239e1ffebdb59b6e4a78f75))
+* separate table operation api ([ee2312e](https://github.com/Hufe921/canvas-editor/commit/ee2312e9071473bb296d4515bab60254937e2414))
+
+
+
+## [0.9.92](https://github.com/Hufe921/canvas-editor/compare/v0.9.91...v0.9.92) (2024-09-06)
+
+
+### Bug Fixes
+
+* update resizer size when scaling the page ([2351855](https://github.com/Hufe921/canvas-editor/commit/2351855e83c87da3b0999799102e6e051b456295))
+
+
+### Documentation
+
+* update command markdown #792 ([3c598ba](https://github.com/Hufe921/canvas-editor/commit/3c598bae1a4fb10d74fd330e46f95aa386edc956)), closes [#792](https://github.com/Hufe921/canvas-editor/issues/792)
+* update plugin markdown #789 ([91c68e8](https://github.com/Hufe921/canvas-editor/commit/91c68e8dcd117e3189bbb9385fca4c42b2074c23)), closes [#789](https://github.com/Hufe921/canvas-editor/issues/789)
+
+
+### Features
+
+* add deletable and disabled attributes for table td #724 ([753510b](https://github.com/Hufe921/canvas-editor/commit/753510bac4f763ab2f034657d9efd7d9760f9d4a)), closes [#724](https://github.com/Hufe921/canvas-editor/issues/724)
+* add design mode #795 ([55a58cd](https://github.com/Hufe921/canvas-editor/commit/55a58cdfb20ba7b642400314a9ea0d207e2e7dc4)), closes [#795](https://github.com/Hufe921/canvas-editor/issues/795)
+* add executeFocus api #796 ([3c17631](https://github.com/Hufe921/canvas-editor/commit/3c176318e079d8f793367df552c1a3c6a6294840)), closes [#796](https://github.com/Hufe921/canvas-editor/issues/796)
+* add extension property to Td and Tr element #799 ([0074781](https://github.com/Hufe921/canvas-editor/commit/0074781ef3753cdf9baf4cae77325de5d7b2e9df)), closes [#799](https://github.com/Hufe921/canvas-editor/issues/799)
+* add position context change actuator #733 ([66c73e1](https://github.com/Hufe921/canvas-editor/commit/66c73e174c54106cdf35e6d40382bb4a7ceeae43)), closes [#733](https://github.com/Hufe921/canvas-editor/issues/733)
+* highlight the background when the control is activated #740 ([b426b13](https://github.com/Hufe921/canvas-editor/commit/b426b13ec6ffbb5aebe6d008ddc3ccc8b5efaa05)), closes [#740](https://github.com/Hufe921/canvas-editor/issues/740)
+
+
+
+## [0.9.91](https://github.com/Hufe921/canvas-editor/compare/v0.9.90...v0.9.91) (2024-08-25)
+
+
+### Bug Fixes
+
+* format different types of line breaks #769 ([f65ff87](https://github.com/Hufe921/canvas-editor/commit/f65ff87e44728322417d235d2347ceca25cc6667)), closes [#769](https://github.com/Hufe921/canvas-editor/issues/769)
+* format initial data boundary error #771 #784 ([f62a315](https://github.com/Hufe921/canvas-editor/commit/f62a315a7bd04e49e9e17bc7737ccd1f0e751d69)), closes [#771](https://github.com/Hufe921/canvas-editor/issues/771) [#784](https://github.com/Hufe921/canvas-editor/issues/784)
+* set row margin boundary error ([5285170](https://github.com/Hufe921/canvas-editor/commit/528517094373b5fa9ca2145bb259889db865a588))
+
+
+### Features
+
+* add page border ([3f6bdf6](https://github.com/Hufe921/canvas-editor/commit/3f6bdf6fcb583ab370cb5abe3eafebf6100f415e))
+* hit checkbox/radio control when click on label #651 ([31b76b6](https://github.com/Hufe921/canvas-editor/commit/31b76b6fb6640ea75383569cb16ad1b5a2ccf25f)), closes [#651](https://github.com/Hufe921/canvas-editor/issues/651)
+
+
+
 ## [0.9.90](https://github.com/Hufe921/canvas-editor/compare/v0.9.89...v0.9.90) (2024-08-18)
 
 

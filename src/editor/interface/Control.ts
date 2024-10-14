@@ -88,6 +88,7 @@ export interface IControlOption {
   postfix?: string
   borderWidth?: number
   borderColor?: string
+  activeBackgroundColor?: string
 }
 
 export interface IControlInitOption {
@@ -134,12 +135,13 @@ export type IGetControlValueResult = (Omit<IControl, 'value'> & {
   value: string | null
   innerText: string | null
   zone: EditorZone
+  elementList?: IElement[]
 })[]
 
 export interface ISetControlValueOption {
   id?: string
   conceptId?: string
-  value: string
+  value: string | IElement[]
 }
 
 export interface ISetControlExtensionOption {
@@ -158,7 +160,7 @@ export type ISetControlProperties = {
 
 export type IRepaintControlOption = Pick<
   IDrawOption,
-  'curIndex' | 'isCompute' | 'isSubmitHistory'
+  'curIndex' | 'isCompute' | 'isSubmitHistory' | 'isSetCursor'
 >
 
 export interface INextControlContext {

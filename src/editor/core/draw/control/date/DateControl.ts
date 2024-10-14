@@ -6,11 +6,13 @@ import {
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
+import { DeepRequired } from '../../../../interface/Common'
 import {
   IControlContext,
   IControlInstance,
   IControlRuleOption
 } from '../../../../interface/Control'
+import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
 import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
@@ -26,10 +28,12 @@ export class DateControl implements IControlInstance {
   private control: Control
   private isPopup: boolean
   private datePicker: DatePicker | null
+  private options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()
     this.draw = draw
+    this.options = draw.getOptions()
     this.element = element
     this.control = control
     this.isPopup = false
@@ -140,7 +144,9 @@ export class DateControl implements IControlInstance {
         ...data[i],
         controlComponent: ControlComponent.VALUE
       }
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], startIndex, {
+        editorOptions: this.options
+      })
       draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     return start + data.length - 1
@@ -230,10 +236,13 @@ export class DateControl implements IControlInstance {
         value: date[i],
         controlComponent: ControlComponent.VALUE
       }
-      formatElementContext(elementList, [newElement], prefixIndex)
+      formatElementContext(elementList, [newElement], prefixIndex, {
+        editorOptions: this.options
+      })
       if(isReviewMode){
         draw.addReviewInformation([newElement],TrackType.INSERT)
       }
+
       draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     // 重新渲染控件

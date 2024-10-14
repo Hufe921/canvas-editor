@@ -37,6 +37,8 @@ import { ITitleOption } from '../interface/Title'
 import { IWatermark } from '../interface/Watermark'
 import { IZoneOption } from '../interface/Zone'
 import { ILineNumberOption } from '../interface/LineNumber'
+import { IPageBorderOption } from '../interface/PageBorder'
+import { defaultPageBorderOption } from '../dataset/constant/PageBorder'
 import {
   EditorMode,
   PageMode,
@@ -124,6 +126,10 @@ export function mergeOption(
     ...defaultLineNumberOption,
     ...options.lineNumber
   }
+  const pageBorderOptions: Required<IPageBorderOption> = {
+    ...defaultPageBorderOption,
+    ...options.pageBorder
+  }
   const trackStyleOptions: Required<ITrackStyleOption> = {
     ...defaultTrackStyleOptions,
     ...options.trackStyle
@@ -193,6 +199,7 @@ export function mergeOption(
     lineBreak: lineBreakOptions,
     separator: separatorOptions,
     lineNumber: lineNumberOptions,
+    pageBorder: pageBorderOptions,
     trackStyle: trackStyleOptions,
     user: user
   }

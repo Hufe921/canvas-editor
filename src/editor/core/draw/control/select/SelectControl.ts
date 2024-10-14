@@ -10,11 +10,13 @@ import { ControlComponent } from '../../../../dataset/enum/Control'
 import {EditorComponent, EditorMode} from '../../../../dataset/enum/Editor'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
+import { DeepRequired } from '../../../../interface/Common'
 import {
   IControlContext,
   IControlInstance,
   IControlRuleOption
 } from '../../../../interface/Control'
+import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
 import { omitObject, pickObject, splitText } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
@@ -26,8 +28,10 @@ export class SelectControl implements IControlInstance {
   private control: Control
   private isPopup: boolean
   private selectDom: HTMLDivElement | null
+  private options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
+    this.options = control.getDraw().getOptions()
     this.element = element
     this.control = control
     this.isPopup = false
@@ -317,12 +321,13 @@ export class SelectControl implements IControlInstance {
         value: data[i],
         controlComponent: ControlComponent.VALUE
       }
-      formatElementContext(elementList, [newElement], prefixIndex)
+      formatElementContext(elementList, [newElement], prefixIndex, {
+        editorOptions: this.options
+      })
       if(isReviewMode){
         draw.addReviewInformation([newElement],TrackType.INSERT)
       }
       draw.spliceElementList(elementList, start + i, 0, newElement)
-
     }
     // 设置状态
     control.code = code

@@ -58,6 +58,8 @@ interface IElement {
   trList?: {
     height: number;
     pagingRepeat?: boolean;
+    extension?: unknown;
+    externalId?: string;
     tdList: {
       colspan: number;
       rowspan: number;
@@ -67,6 +69,10 @@ interface IElement {
       borderTypes?: TdBorder[];
       slashTypes?: TdSlash[];
       value: IElement[];
+      extension?: unknown;
+      externalId?: string;
+      disabled?: boolean;
+      deletable?: boolean;
     }[];
   }[];
   borderType?: TableBorder;
@@ -137,6 +143,11 @@ interface IElement {
   imgDisplay?: {
     INLINE = 'inline',
     BLOCK = 'block'
+  }
+  imgFloatPosition?: {
+    x: number;
+    y: number;
+    pageNo?: number;
   }
   // block
   block?: {
