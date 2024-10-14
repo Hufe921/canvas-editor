@@ -573,7 +573,22 @@ export class Position {
               isCheckbox: true
             }
           }
-          curPositionIndex = index
+          // 对表格隐藏元素定位进行处理
+          if(isTable) {
+            const tableTd = payload.td!
+            const len = tableTd.value.length
+            let defaultIndex = 0
+            for(let j = len - 1; j >= 0; j--) {
+              const element  = tableTd.value[j]
+              if(!element.hide) {
+                defaultIndex = j
+                break
+              }
+            }
+            curPositionIndex = defaultIndex
+          } else {
+            curPositionIndex = index
+          }
         }
         isLastArea = true
         break
