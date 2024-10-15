@@ -65,6 +65,7 @@ export interface IControlBasic {
   extension?: unknown
   indentation?: ControlIndentation
   rowFlex?: RowFlex
+  color?: string
 }
 
 export interface IControlStyle {

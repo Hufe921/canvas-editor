@@ -256,7 +256,7 @@ export function formatElementList(
       // 前后缀个性化设置
       const thePrePostfixArg: Omit<IElement, 'value'> = {
         ...controlDefaultStyle,
-        color: editorOptions.control.bracketColor
+        color:el.color??editorOptions.control.bracketColor
       }
       // 前缀
       const prefixStrList = splitText(prefix || controlOption.prefix)
@@ -416,7 +416,7 @@ export function formatElementList(
         // placeholder
         const thePlaceholderArgs: Omit<IElement, 'value'> = {
           ...controlDefaultStyle,
-          color: editorOptions.control.placeholderColor
+          color:el.color?? editorOptions.control.placeholderColor
         }
         const placeholderStrList = splitText(placeholder)
         for (let p = 0; p < placeholderStrList.length; p++) {
@@ -707,6 +707,7 @@ export function zipElementList(
         const controlElement: IElement = {
           ...pickObject(element, EDITOR_ROW_ATTR),
           type: ElementType.CONTROL,
+          color: element.color,
           value: '',
           control,
           controlId

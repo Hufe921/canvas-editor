@@ -107,6 +107,7 @@ export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
 export const CONTROL_CONTEXT_ATTR: Array<keyof IElement> = [
   'control',
   'controlId',
+  'color',
   'controlComponent'
 ]
 
