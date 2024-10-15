@@ -527,16 +527,21 @@ export class Draw {
     return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].rowList!
   }
 
-  public getTableRowListByElement(sourceElementList: IElement[], element: IElement): IRow[] {
-    const { tableId, trId, tdId } = element
-    const tableElement = sourceElementList.find((el) => el.id === tableId)
-    const trElement = tableElement?.trList?.find((el) => el.id === trId)
-    const tdElement = trElement?.tdList?.find((el) => el.id === tdId)
-    return tdElement?.rowList || []
+  public getRowListByTableElement(sourceElementList: IElement[], element: IElement): IRow[] {
+    const { tableId } = element
+    if (tableId) {
+      const { trId, tdId } = element
+      const tableElement = sourceElementList.find((el) => el.id === tableId)
+      const trElement = tableElement?.trList?.find((el) => el.id === trId)
+      const tdElement = trElement?.tdList?.find((el) => el.id === tdId)
+      return tdElement?.rowList || []
+    } else {
+      return this.getOriginalRowList(true)
+    }
   }
 
-  public getOriginalRowList(getAll?: boolean) {
-    if (getAll) {
+  public getOriginalRowList(getAllZones?: boolean) {
+    if (getAllZones) {
       return [
         ...this.rowList,
         ...this.header.getRowList(),
@@ -631,7 +636,14 @@ export class Draw {
       : this.elementList
   }
 
-  public getOriginalElementList() {
+  public getOriginalElementList(getAllZones?: boolean) {
+    if (getAllZones) {
+      return [
+        ...this.elementList,
+        ...this.getHeaderElementList(),
+        ...this.getFooterElementList()
+      ]
+    }
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
       return this.getHeaderElementList()
@@ -2299,8 +2311,7 @@ export class Draw {
         this.listParticle.drawListStyle(
           ctx,
           curRow,
-          positionList[curRow.startIndex],
-          zone
+          positionList[curRow.startIndex]
         )
       }
       // 绘制文字、边框、下划线、删除线

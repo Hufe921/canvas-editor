@@ -9,7 +9,6 @@ import { IRow, IRowElement, IRowRef } from '../../../interface/Row'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
-import { EditorZone } from '../../../dataset/enum/Editor'
 
 const UN_COUNT_STYLE_WIDTH = 20
 const MEASURE_BASE_TEXT = '0'
@@ -132,8 +131,7 @@ export class ListParticle {
   public drawListStyle(
     ctx: CanvasRenderingContext2D,
     row: IRow,
-    position: IElementPosition,
-    zone?: EditorZone
+    position: IElementPosition
   ) {
     const { elementList, offsetX, ascent } = row
     const { listIndex } = row
@@ -178,16 +176,7 @@ export class ListParticle {
     } else {
       let text = ''
       let subCount = ''
-      let originalRowList
-      if (zone === EditorZone.HEADER) {
-        originalRowList = this.draw.getHeader().getRowList()
-      } else if (zone === EditorZone.FOOTER) {
-        originalRowList = this.draw.getFooter().getRowList()
-      } else {
-        originalRowList = startElement.tableId
-          ? this.draw.getTableRowListByElement(this.draw.getOriginalElementList(), startElement)
-          : this.draw.getOriginalRowList(true)
-      }
+      const originalRowList = this.draw.getRowListByTableElement(this.draw.getOriginalElementList(true), startElement)
       const rowListOfList = originalRowList.filter((iRow) => {
         if (iRow.elementList.length > 0) {
           return iRow.elementList[0].listId === row.elementList[0].listId
