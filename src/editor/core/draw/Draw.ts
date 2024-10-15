@@ -535,7 +535,14 @@ export class Draw {
     return tdElement?.rowList || []
   }
 
-  public getOriginalRowList() {
+  public getOriginalRowList(getAll?: boolean) {
+    if (getAll) {
+      return [
+        ...this.rowList,
+        ...this.header.getRowList(),
+        ...this.footer.getRowList()
+      ]
+    }
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
       return this.header.getRowList()
@@ -2292,7 +2299,8 @@ export class Draw {
         this.listParticle.drawListStyle(
           ctx,
           curRow,
-          positionList[curRow.startIndex]
+          positionList[curRow.startIndex],
+          zone
         )
       }
       // 绘制文字、边框、下划线、删除线
