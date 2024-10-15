@@ -43,6 +43,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'size',
   'bold',
   'color',
+  'lineWidth',
   'italic',
   'highlight',
   'underline',
