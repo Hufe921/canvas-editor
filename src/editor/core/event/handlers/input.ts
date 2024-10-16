@@ -30,11 +30,15 @@ export function input(data: string, host: CanvasEvent) {
   const elementList = draw.getElementList()
   const copyElement = getAnchorElement(elementList, endIndex)
   if (!copyElement) return
+  const isDesignMode = draw.isDesignMode()
   const inputData: IElement[] = splitText(text).map(value => {
     const newElement: IElement = {
       value
     }
-    if (!copyElement.title?.disabled && !copyElement.control?.disabled) {
+    if (
+      isDesignMode ||
+      (!copyElement.title?.disabled && !copyElement.control?.disabled)
+    ) {
       const nextElement = elementList[endIndex + 1]
       if (
         !copyElement.type ||
@@ -69,7 +73,9 @@ export function input(data: string, host: CanvasEvent) {
     if (startIndex !== endIndex) {
       draw.spliceElementList(elementList, start, endIndex - startIndex)
     }
-    formatElementContext(elementList, inputData, startIndex)
+    formatElementContext(elementList, inputData, startIndex, {
+      editorOptions: draw.getOptions()
+    })
     draw.spliceElementList(elementList, start, 0, ...inputData)
     curIndex = startIndex + inputData.length
   }

@@ -1,4 +1,4 @@
-# Global API
+# Instance API
 
 ## How to Use
 

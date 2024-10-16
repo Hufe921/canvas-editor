@@ -1,6 +1,6 @@
 # Configuration
 
-## How to Use ?
+## How to Use?
 
 ```javascript
 import Editor from "@hufe921/canvas-editor"
@@ -14,7 +14,7 @@ new Editor(container, IEditorData | IElement[], {
 
 ```typescript
 interface IEditorOption {
-  mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control), Print (Visual aids are not displayed, Unwritten content control). default: Edit
+  mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control), Print (Visual aids are not displayed, Unwritten content control), Design (Do not handle configurations such as non deletable and read-only). default: Edit
   defaultType?: string // Default element type. default: TEXT
   defaultColor?: string // Default color. default: #000000
   defaultFont?: string // Default font. default: Microsoft YaHei
@@ -54,12 +54,12 @@ interface IEditorOption {
   historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100
   printPixelRatio?: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
   maskMargin?: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
-  letterClass? string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
+  letterClass?: string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
   contextMenuDisableKeys?: string[] // Disable context menu keys. default: []
   scrollContainerSelector?: string // scroll container selector. default: document
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
   watermark?: IWatermark // Watermark{data:string; color?:string; opacity?:number; size?:number; font?:string;}
-  control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string;}
+  control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string; activeBackgroundColor?: string;}
   checkbox?: ICheckboxOption // Checkbox {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
   radio?: IRadioOption // Radio {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
   cursor?: ICursorOption // Cursor style. {width?: number; color?: string; dragWidth?: number; dragColor?: string;}
@@ -72,6 +72,7 @@ interface IEditorOption {
   lineBreak?: ILineBreakOption // LineBreak option. {disabled?:boolean; color?:string; lineWidth?:number;}
   separator?: ISeparatorOption // Separator option. {lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // LineNumber option. {size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
+  pageBorder?: IPageBorderOption // PageBorder option. {color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
 }
 ```
 
@@ -92,6 +93,7 @@ interface IHeader {
   top?: number // Size from the top of the page.default: 30
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
+  editable?: boolean // Disable the header content from being edited
 }
 ```
 
@@ -102,6 +104,7 @@ interface IFooter {
   bottom?: number // The size from the bottom of the page.default: 30
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
+  editable?: boolean // Disable the footer content from being edited
 }
 ```
 
@@ -132,6 +135,8 @@ interface IWatermark {
   opacity?: number // transparency. default: 0.3
   size?: number // font size. default: 200
   font?: string // font. default: Microsoft YaHei
+  repeat?: boolean // repeat watermark. default: false
+  gap?: [horizontal: number, vertical: number] // watermark spacing. default: [10,10]
 }
 ```
 
@@ -157,5 +162,16 @@ interface ILineNumberOption {
   disabled?: boolean // Whether to disable. default: false
   right?: number // Distance from the main text. default: 20
   type?: LineNumberType // Number type (renumber each page, consecutive numbering). default: continuity
+}
+```
+
+## PageBorder Configuration
+
+```typescript
+interface IPageBorderOption {
+  color?: string // color. default: #000000
+  lineWidth?: number // line width. default: 1
+  padding?: IPadding // padding. default: [0, 0, 0, 0]
+  disabled?: boolean //  Whether to disable. default: true
 }
 ```

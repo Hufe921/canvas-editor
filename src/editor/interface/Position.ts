@@ -1,7 +1,7 @@
 import { IElement, ImageDisplay, IRange } from '..'
 import { EditorZone } from '../dataset/enum/Editor'
-import { IElementPosition } from './Element'
-import { IRow } from './Row'
+import { IElementFillRect, IElementPosition } from './Element'
+import { IRow, IRowElement } from './Row'
 import { ITd } from './table/Td'
 
 export interface ICurrentPosition {
@@ -36,7 +36,7 @@ export interface IGetPositionByXYPayload {
 }
 
 export type IGetFloatPositionByXYPayload = IGetPositionByXYPayload & {
-  imgDisplay: ImageDisplay
+  imgDisplays: ImageDisplay[]
 }
 
 export interface IPositionContext {
@@ -98,4 +98,13 @@ export interface ILocationPosition {
   zone: EditorZone
   range: IRange
   positionContext: IPositionContext
+}
+
+export interface ISetSurroundPositionPayload {
+  row: IRow
+  rowElement: IRowElement
+  rowElementRect: IElementFillRect
+  pageNo: number
+  availableWidth: number
+  surroundElementList: IElement[]
 }

@@ -149,3 +149,13 @@ instance.eventBus.on('mouseenter', (evt: MouseEvent) => void)
 ```javascript
 instance.eventBus.on('mouseleave', (evt: MouseEvent) => void)
 ```
+
+## positionContextChange
+
+功能：上下文内容发生改变
+
+用法：
+
+```javascript
+instance.eventBus.on('positionContextChange', (payload: IPositionContextChangePayload) => void)
+```

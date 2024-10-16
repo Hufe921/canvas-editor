@@ -33,6 +33,8 @@ export type RangeContext = {
   tableElement: IElement | null
   selectionText: string | null
   selectionElementList: IElement[]
+  titleId: string | null
+  titleStartPageNo: number | null
 }
 
 export interface IRangeParagraphInfo {

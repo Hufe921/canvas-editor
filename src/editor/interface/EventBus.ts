@@ -6,6 +6,7 @@ import {
   IPageModeChange,
   IPageScaleChange,
   IPageSizeChange,
+  IPositionContextChange,
   IRangeStyleChange,
   ISaved,
   IVisiblePageNoListChange,
@@ -26,4 +27,5 @@ export interface EventBusMap {
   mousemove: IMouseEventChange
   mouseleave: IMouseEventChange
   mouseenter: IMouseEventChange
+  positionContextChange: IPositionContextChange
 }

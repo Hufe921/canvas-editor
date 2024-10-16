@@ -149,3 +149,13 @@ Usage:
 ```javascript
 instance.eventBus.on('mouseleave', (evt: MouseEvent) => void)
 ```
+
+## positionContextChange
+
+Feature: The position context change
+
+Usage:
+
+```javascript
+instance.eventBus.on('positionContextChange', (payload: IPositionContextChangePayload) => void)
+```

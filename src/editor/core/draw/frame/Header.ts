@@ -4,6 +4,7 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow } from '../../../interface/Row'
+import { pickSurroundElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
@@ -55,9 +56,14 @@ export class Header {
 
   private _computeRowList() {
     const innerWidth = this.draw.getInnerWidth()
+    const margins = this.draw.getMargins()
+    const surroundElementList = pickSurroundElementList(this.elementList)
     this.rowList = this.draw.computeRowList({
+      startX: margins[3],
+      startY: this.getHeaderTop(),
       innerWidth,
-      elementList: this.elementList
+      elementList: this.elementList,
+      surroundElementList
     })
   }
 

@@ -17,6 +17,7 @@ import {
   IRepaintControlOption,
   ISetControlExtensionOption,
   ISetControlProperties,
+  ISetControlRowFlexOption,
   ISetControlValueOption
 } from '../../../interface/Control'
 import { IEditorData, IEditorOption } from '../../../interface/Editor'
@@ -49,10 +50,13 @@ import { TextControl } from './text/TextControl'
 import { DateControl } from './date/DateControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
 import {
+  CONTROL_CONTEXT_ATTR,
   CONTROL_STYLE_ATTR,
   LIST_CONTEXT_ATTR,
   TITLE_CONTEXT_ATTR
 } from '../../../dataset/constant/Element'
+import { IRowElement } from '../../../interface/Row'
+import { RowFlex } from '../../../dataset/enum/Row'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -208,7 +212,7 @@ export class Control {
   }
 
   public getIsDisabledControl(context: IControlContext = {}): boolean {
-    if (!this.activeControl) return false
+    if (this.draw.isDesignMode() || !this.activeControl) return false
     const { startIndex, endIndex } = context.range || this.range.getRange()
     if (startIndex === endIndex && ~startIndex && ~endIndex) {
       const elementList = context.elementList || this.getElementList()
@@ -342,7 +346,12 @@ export class Control {
   }
 
   public repaintControl(options: IRepaintControlOption = {}) {
-    const { curIndex, isCompute = true, isSubmitHistory = true } = options
+    const {
+      curIndex,
+      isCompute = true,
+      isSubmitHistory = true,
+      isSetCursor = true
+    } = options
     // 重新渲染
     if (curIndex === undefined) {
       this.range.clearRange()
@@ -356,6 +365,7 @@ export class Control {
       this.draw.render({
         curIndex,
         isCompute,
+        isSetCursor,
         isSubmitHistory
       })
     }
@@ -452,8 +462,11 @@ export class Control {
   ): number | null {
     const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
-    const { deletable = true } = startElement.control!
-    if (!deletable) return null
+    // 设计模式不验证删除权限
+    if (!this.draw.isDesignMode()) {
+      const { deletable = true } = startElement.control!
+      if (!deletable) return null
+    }
     let leftIndex = -1
     let rightIndex = -1
     // 向左查找
@@ -538,7 +551,9 @@ export class Control {
         controlComponent: ControlComponent.PLACEHOLDER,
         color: this.controlOptions.placeholderColor
       }
-      formatElementContext(elementList, [newElement], startIndex)
+      formatElementContext(elementList, [newElement], startIndex, {
+        editorOptions: this.options
+      })
       this.draw.spliceElementList(
         elementList,
         startIndex + p + 1,
@@ -599,6 +614,7 @@ export class Control {
         const { type, code, valueSets } = element.control
         let j = i
         let textControlValue = ''
+        const textControlElementList = []
         while (j < elementList.length) {
           const nextElement = elementList[j]
           if (nextElement.controlId !== element.controlId) break
@@ -607,6 +623,9 @@ export class Control {
             nextElement.controlComponent === ControlComponent.VALUE
           ) {
             textControlValue += nextElement.value
+            textControlElementList.push(
+              omitObject(nextElement, CONTROL_CONTEXT_ATTR)
+            )
           }
           j++
         }
@@ -615,7 +634,8 @@ export class Control {
             ...element.control,
             zone,
             value: textControlValue || null,
-            innerText: textControlValue || null
+            innerText: textControlValue || null,
+            elementList: zipElementList(textControlElementList)
           })
         } else if (
           type === ControlType.SELECT ||
@@ -710,7 +730,7 @@ export class Control {
           isIgnoreDisabledRule: true
         }
         if (type === ControlType.TEXT) {
-          const formatValue = [{ value }]
+          const formatValue = Array.isArray(value) ? value : [{ value }]
           formatElementList(formatValue, {
             isHandleFirstElement: false,
             editorOptions: this.options
@@ -723,6 +743,7 @@ export class Control {
             text.clearValue(controlContext, controlRule)
           }
         } else if (type === ControlType.SELECT) {
+          if (Array.isArray(value)) continue
           const select = new SelectControl(element, this)
           this.activeControl = select
           if (value) {
@@ -731,16 +752,19 @@ export class Control {
             select.clearSelect(controlContext, controlRule)
           }
         } else if (type === ControlType.CHECKBOX) {
+          if (Array.isArray(value)) continue
           const checkbox = new CheckboxControl(element, this)
           this.activeControl = checkbox
           const codes = value ? value.split(',') : []
           checkbox.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.RADIO) {
+          if (Array.isArray(value)) continue
           const radio = new RadioControl(element, this)
           this.activeControl = radio
           const codes = value ? [value] : []
           radio.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.DATE) {
+          if (Array.isArray(value)) continue
           const date = new DateControl(element, this)
           this.activeControl = date
           if (value) {
@@ -892,7 +916,8 @@ export class Control {
       const elementList = zipElementList(pageComponentData[pageComponentKey]!)
       pageComponentData[pageComponentKey] = elementList
       formatElementList(elementList, {
-        editorOptions: this.options
+        editorOptions: this.options,
+        isForceCompensation: true
       })
     }
     this.draw.setEditorData(pageComponentData)
@@ -1205,5 +1230,61 @@ export class Control {
       cursorPosition: positionList[nextIndex],
       direction
     })
+  }
+
+  public setMinWidthControlInfo(option: ISetControlRowFlexOption) {
+    const { row, rowElement, controlRealWidth, availableWidth } = option
+    if (!rowElement.control?.minWidth) return
+    const { scale } = this.options
+    const controlMinWidth = rowElement.control.minWidth * scale
+    // 设置首字符偏移量：如果控件内设置对齐方式&&存在设置最小宽度
+    let controlFirstElement: IRowElement | null = null
+    if (
+      rowElement.control?.minWidth &&
+      (rowElement.control?.rowFlex === RowFlex.CENTER ||
+        rowElement.control?.rowFlex === RowFlex.RIGHT)
+    ) {
+      // 计算当前控件内容宽度是否超出最小宽度设置
+      let controlContentWidth = rowElement.metrics.width
+      let controlElementIndex = row.elementList.length - 1
+      while (controlElementIndex >= 0) {
+        const controlRowElement = row.elementList[controlElementIndex]
+        controlContentWidth += controlRowElement.metrics.width
+        // 找到首字符结束循环
+        if (
+          row.elementList[controlElementIndex - 1]?.controlComponent ===
+          ControlComponent.PREFIX
+        ) {
+          controlFirstElement = controlRowElement
+          break
+        }
+        controlElementIndex--
+      }
+      // 计算首字符偏移量
+      if (controlFirstElement) {
+        if (controlContentWidth < controlMinWidth) {
+          if (rowElement.control.rowFlex === RowFlex.CENTER) {
+            controlFirstElement.left =
+              (controlMinWidth - controlContentWidth) / 2
+          } else if (rowElement.control.rowFlex === RowFlex.RIGHT) {
+            // 最小宽度 - 实际宽度 - 后缀元素宽度
+            controlFirstElement.left =
+              controlMinWidth - controlContentWidth - rowElement.metrics.width
+          }
+        }
+      }
+    }
+    // 设置后缀偏移量：消费小于实际最小宽度
+    const extraWidth = controlMinWidth - controlRealWidth
+    if (extraWidth > 0) {
+      const controlFirstElementLeft = controlFirstElement?.left || 0
+      // 超出行宽时截断
+      const rowRemainingWidth =
+        availableWidth - row.width - rowElement.metrics.width
+      const left = Math.min(rowRemainingWidth, extraWidth)
+      // 后缀偏移量需减去首字符的偏移量，避免重复偏移
+      rowElement.left = left - controlFirstElementLeft
+      row.width += left - controlFirstElementLeft
+    }
   }
 }

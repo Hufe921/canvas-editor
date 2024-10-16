@@ -1,5 +1,6 @@
 import { ElementType, IElement, TableBorder } from '../../../..'
 import { TdBorder, TdSlash } from '../../../../dataset/enum/table/Table'
+import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
@@ -19,7 +20,7 @@ interface IDrawTableBorderOption {
 export class TableParticle {
   private draw: Draw
   private range: RangeManager
-  private options: Required<IEditorOption>
+  private options: DeepRequired<IEditorOption>
 
   constructor(draw: Draw) {
     this.draw = draw

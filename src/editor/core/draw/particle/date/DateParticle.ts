@@ -1,4 +1,6 @@
 import { ElementType } from '../../../../dataset/enum/Element'
+import { DeepRequired } from '../../../../interface/Common'
+import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 import { formatElementContext } from '../../../../utils/element'
 import { RangeManager } from '../../../range/RangeManager'
@@ -9,9 +11,11 @@ export class DateParticle {
   private draw: Draw
   private range: RangeManager
   private datePicker: DatePicker
+  private options: DeepRequired<IEditorOption>
 
   constructor(draw: Draw) {
     this.draw = draw
+    this.options = draw.getOptions()
     this.range = draw.getRange()
     this.datePicker = new DatePicker(draw, {
       onSubmit: this._setValue.bind(this)
@@ -43,7 +47,9 @@ export class DateParticle {
         }
       ]
     }
-    formatElementContext(elementList, [dateElement], leftIndex)
+    formatElementContext(elementList, [dateElement], leftIndex, {
+      editorOptions: this.options
+    })
     this.draw.insertElementList([dateElement])
   }
 
@@ -57,7 +63,7 @@ export class DateParticle {
     if (startElement.type !== ElementType.DATE) return null
     // 向左查找
     let preIndex = startIndex
-    while (preIndex > 0) {
+    while (preIndex >= 0) {
       const preElement = elementList[preIndex]
       if (preElement.dateId !== startElement.dateId) {
         leftIndex = preIndex
