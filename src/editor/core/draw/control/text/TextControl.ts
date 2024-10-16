@@ -191,6 +191,7 @@ export class TextControl implements IControlInstance {
           if (!value.length) {
             this.control.addPlaceholder(startIndex - 1)
           }
+          if(startElement.control!.deletable === false) return startIndex
           return startIndex - 1
         }
       }

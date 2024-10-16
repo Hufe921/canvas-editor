@@ -108,6 +108,7 @@ import { PageBorder } from './frame/PageBorder'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
+import {TextControl} from './control/text/TextControl'
 
 export class Draw {
   private container: HTMLDivElement
@@ -751,7 +752,8 @@ export class Draw {
         }
       }
       // 元素删除（不可删除控件忽略）
-      if (!this.control.getActiveControl()) {
+      const activeControl = this.control.getActiveControl()
+      if (!activeControl) {
         const tdDeletable = this.getTd()?.deletable
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
@@ -767,6 +769,12 @@ export class Draw {
           deleteIndex--
         }
       } else {
+        // 文本控件在不可删除属性下阻止内部删除：
+        const startEl = elementList[start]
+        const control = startEl.control!
+        if(activeControl instanceof TextControl && control.deletable === false) {
+          return
+        }
         elementList.splice(start, deleteCount)
       }
     }
