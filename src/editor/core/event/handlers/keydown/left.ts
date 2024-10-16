@@ -129,7 +129,7 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
                 tdIndex: preTdIndex,
                 tdId: preTd.id,
                 trId: preTr.id,
-                tableId: element.id
+                tableId: element.tableId
               })
               anchorStartIndex = preTd.value.length - 1
               anchorEndIndex = anchorStartIndex
