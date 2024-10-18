@@ -76,4 +76,5 @@ export interface IComputeRowListPayload {
   pageHeight?: number
   mainOuterHeight?: number
   surroundElementList?: IElement[]
+  curIndex?: number
 }
