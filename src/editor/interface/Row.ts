@@ -5,6 +5,7 @@ export type IRowElement = IElement & {
   metrics: IElementMetrics
   style: string
   left?: number
+  lineWidth?: number
 }
 
 export interface IRow {
