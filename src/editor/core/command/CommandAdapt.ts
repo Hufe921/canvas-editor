@@ -67,6 +67,7 @@ import { IPasteOption, IPositionContextByEvent } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
+import { ISearchResultContext } from '../../interface/Search'
 import { ITextDecoration } from '../../interface/Text'
 import {
   IGetTitleValueOption,
@@ -1064,12 +1065,14 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const options = this.draw.getOptions()
-    const { color, size, opacity, font } = defaultWatermarkOption
+    const { color, size, opacity, font, gap } = defaultWatermarkOption
     options.watermark.data = payload.data
     options.watermark.color = payload.color || color
     options.watermark.size = payload.size || size
     options.watermark.opacity = payload.opacity || opacity
     options.watermark.font = payload.font || font
+    options.watermark.repeat = !!payload.repeat
+    options.watermark.gap = payload.gap || gap
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false,
@@ -1508,6 +1511,37 @@ export class CommandAdapt {
 
   public getKeywordRangeList(payload: string): IRange[] {
     return this.range.getKeywordRangeList(payload)
+  }
+
+  public getKeywordContext(payload: string): ISearchResultContext[] | null {
+    const rangeList = this.getKeywordRangeList(payload)
+    if (!rangeList.length) return null
+    const searchResultContextList: ISearchResultContext[] = []
+    const positionList = this.position.getOriginalMainPositionList()
+    const elementList = this.draw.getOriginalMainElementList()
+    for (let r = 0; r < rangeList.length; r++) {
+      const range = rangeList[r]
+      const { startIndex, endIndex, tableId, startTrIndex, startTdIndex } =
+        range
+      let keywordPositionList: IElementPosition[] = positionList
+      if (range.tableId) {
+        const tableElement = elementList.find(el => el.id === tableId)
+        if (tableElement) {
+          keywordPositionList =
+            tableElement.trList?.[startTrIndex!]?.tdList?.[startTdIndex!]
+              ?.positionList || []
+        }
+      }
+      // 获取关键词始末位置
+      const startPosition = deepClone(keywordPositionList[startIndex])
+      const endPosition = deepClone(keywordPositionList[endIndex])
+      searchResultContextList.push({
+        range,
+        startPosition,
+        endPosition
+      })
+    }
+    return searchResultContextList
   }
 
   public pageMode(payload: PageMode) {

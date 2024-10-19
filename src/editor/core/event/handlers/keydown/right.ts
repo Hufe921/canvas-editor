@@ -130,7 +130,7 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
                 tdIndex: nextTdIndex,
                 tdId: preTd.id,
                 trId: preTr.id,
-                tableId: element.id
+                tableId: element.tableId
               })
               anchorStartIndex = 0
               anchorEndIndex = anchorStartIndex

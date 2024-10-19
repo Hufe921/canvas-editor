@@ -1,3 +1,32 @@
+## [0.9.95](https://github.com/Hufe921/canvas-editor/compare/v0.9.94...v0.9.95) (2024-10-19)
+
+
+### Bug Fixes
+
+* date element update data boundary error #835 ([7f69fd9](https://github.com/Hufe921/canvas-editor/commit/7f69fd9ca2ea474167b10b0e122b745cffed2ab8)), closes [#835](https://github.com/Hufe921/canvas-editor/issues/835)
+* previewer wheel event stop propagation ([ddf0806](https://github.com/Hufe921/canvas-editor/commit/ddf0806e3751c12c56523b987dc1031a85b17b69))
+* set table context error when using directional keys ([b210ce3](https://github.com/Hufe921/canvas-editor/commit/b210ce39b1a440d8fecf7d222c5398b2025d3d68))
+
+
+### Chores
+
+* update watermark option ([d14e720](https://github.com/Hufe921/canvas-editor/commit/d14e72001784202db5eeb7d9bb5ca76cce3cea3c))
+
+
+### Documentation
+
+* update api markdown ([8c0f660](https://github.com/Hufe921/canvas-editor/commit/8c0f660bce8b2a579041af073e04de89913aa1a2))
+
+
+### Features
+
+* add getKeywordContext api #846 ([abbb62d](https://github.com/Hufe921/canvas-editor/commit/abbb62df3bf45e64c67a7da3f7bbe666f4eb1328)), closes [#846](https://github.com/Hufe921/canvas-editor/issues/846)
+* control element support set row flex #839 ([3f265c8](https://github.com/Hufe921/canvas-editor/commit/3f265c835b8f63bcc07b41596ab4dce886e99629)), closes [#839](https://github.com/Hufe921/canvas-editor/issues/839)
+* export getElementListByHTML and getTextFromElementList api ([590c97d](https://github.com/Hufe921/canvas-editor/commit/590c97db225931d6bb4e117736a71be83cbb117e))
+* remove row spacing from continuous tables #842 ([a4d8633](https://github.com/Hufe921/canvas-editor/commit/a4d863320bc8f9b2efa0390c09d58566faa62be9)), closes [#842](https://github.com/Hufe921/canvas-editor/issues/842)
+
+
+
 ## [0.9.94](https://github.com/Hufe921/canvas-editor/compare/v0.9.93...v0.9.94) (2024-10-07)
 
 

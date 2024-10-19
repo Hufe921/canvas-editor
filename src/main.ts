@@ -630,6 +630,44 @@ function initEditorInstance(
             name: 'size',
             required: true,
             value: '120'
+          },
+          {
+            type: 'number',
+            label: '透明度',
+            name: 'opacity',
+            required: true,
+            value: '0.3'
+          },
+          {
+            type: 'select',
+            label: '重复',
+            name: 'repeat',
+            value: '0',
+            required: false,
+            options: [
+              {
+                label: '不重复',
+                value: '0'
+              },
+              {
+                label: '重复',
+                value: '1'
+              }
+            ]
+          },
+          {
+            type: 'number',
+            label: '水平间隔',
+            name: 'horizontalGap',
+            required: false,
+            value: '10'
+          },
+          {
+            type: 'number',
+            label: '垂直间隔',
+            name: 'verticalGap',
+            required: false,
+            value: '10'
           }
         ],
         onConfirm: payload => {
@@ -639,10 +677,20 @@ function initEditorInstance(
             pre[cur.name] = cur.value
             return pre
           }, <any>{})
+          const repeat = watermark.repeat === '1'
           instance.command.executeAddWatermark({
             data: watermark.data,
             color: watermark.color,
-            size: Number(watermark.size)
+            size: Number(watermark.size),
+            opacity: Number(watermark.opacity),
+            repeat,
+            gap:
+              repeat && watermark.horizontalGap && watermark.verticalGap
+                ? [
+                    Number(watermark.horizontalGap),
+                    Number(watermark.verticalGap)
+                  ]
+                : undefined
           })
         }
       })

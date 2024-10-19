@@ -355,6 +355,7 @@ export class Previewer {
     }
     previewerContainer.onwheel = evt => {
       evt.preventDefault()
+      evt.stopPropagation()
       if (evt.deltaY < 0) {
         // 放大
         scaleSize += 0.1

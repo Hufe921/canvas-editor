@@ -305,7 +305,7 @@ export class RangeManager {
       } else {
         const { type, groupId, tableId, index, tdIndex, trIndex } = searchMatch
         const range: IRange = {
-          startIndex: index - 1,
+          startIndex: index,
           endIndex: index
         }
         if (type === EditorContext.TABLE) {

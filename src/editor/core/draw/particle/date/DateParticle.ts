@@ -63,7 +63,7 @@ export class DateParticle {
     if (startElement.type !== ElementType.DATE) return null
     // 向左查找
     let preIndex = startIndex
-    while (preIndex > 0) {
+    while (preIndex >= 0) {
       const preElement = elementList[preIndex]
       if (preElement.dateId !== startElement.dateId) {
         leftIndex = preIndex
