@@ -9,6 +9,8 @@
 .ce-table-tool__row .ce-table-tool__row__item {
   width: 100%;
   position: relative;
+  cursor: pointer;
+  transition: all .3s;
 }
 
 .ce-table-tool__row .ce-table-tool__row__item::after {
@@ -19,6 +21,10 @@
   width: 8px;
   height: 1px;
   background-color: #C0C6CF;
+}
+
+.ce-table-tool__row .ce-table-tool__row__item:hover {
+  background-color: #dadce0;
 }
 
 .ce-table-tool__row .ce-table-tool__row__item:last-child:after {
@@ -76,6 +82,8 @@
 .ce-table-tool__col .ce-table-tool__col__item {
   height: 100%;
   position: relative;
+  cursor: pointer;
+  transition: all .3s;
 }
 
 .ce-table-tool__col .ce-table-tool__col__item::after {
@@ -87,6 +95,10 @@
   height: 8px;
   z-index: 1;
   background-color: #C0C6CF;
+}
+
+.ce-table-tool__col .ce-table-tool__col__item:hover {
+  background-color: #dadce0;
 }
 
 .ce-table-tool__col .ce-table-tool__col__item:first-child:after {

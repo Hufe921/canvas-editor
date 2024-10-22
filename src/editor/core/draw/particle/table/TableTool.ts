@@ -4,6 +4,7 @@ import { TableOrder } from '../../../../dataset/enum/table/TableTool'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { Position } from '../../../position/Position'
+import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 
 interface IAnchorMouseDown {
@@ -34,6 +35,7 @@ export class TableTool {
   private canvas: HTMLCanvasElement
   private options: DeepRequired<IEditorOption>
   private position: Position
+  private range: RangeManager
   private container: HTMLDivElement
   private toolRowContainer: HTMLDivElement | null
   private toolRowAddBtn: HTMLDivElement | null
@@ -50,6 +52,7 @@ export class TableTool {
     this.canvas = draw.getPage()
     this.options = draw.getOptions()
     this.position = draw.getPosition()
+    this.range = draw.getRange()
     this.container = draw.getContainer()
     // x、y轴
     this.toolRowContainer = null
@@ -113,6 +116,7 @@ export class TableTool {
     tableSelectBtn.style.transform = `translate(-${
       this.TABLE_SELECT_OFFSET * scale
     }px, ${-this.TABLE_SELECT_OFFSET * scale}px)`
+    // 快捷全选
     tableSelectBtn.onclick = () => {
       this.draw.getTableOperate().tableSelectAll()
     }
@@ -132,8 +136,39 @@ export class TableTool {
       if (r === rowIndex) {
         rowItem.classList.add('active')
       }
+      // 快捷行选择
+      rowItem.onclick = () => {
+        const tdList = this.draw
+          .getTableParticle()
+          .getTdListByRowIndex(trList!, r)
+        const firstTd = tdList[0]
+        const lastTd = tdList[tdList.length - 1]
+        this.position.setPositionContext({
+          index,
+          isTable: true,
+          trIndex: firstTd.trIndex,
+          tdIndex: firstTd.tdIndex,
+          tableId: element.id
+        })
+        this.range.setRange(
+          0,
+          0,
+          element.id,
+          firstTd.tdIndex,
+          lastTd.tdIndex,
+          firstTd.trIndex,
+          lastTd.trIndex
+        )
+        this.draw.render({
+          curIndex: 0,
+          isCompute: false,
+          isSubmitHistory: false
+        })
+        this._setAnchorActive(rowContainer, r)
+      }
       const rowItemAnchor = document.createElement('div')
       rowItemAnchor.classList.add(`${EDITOR_PREFIX}-table-tool__anchor`)
+      // 行高度拖拽开始
       rowItemAnchor.onmousedown = evt => {
         this._mousedown({
           evt,
@@ -159,12 +194,14 @@ export class TableTool {
     rowAddBtn.style.transform = `translate(-${
       this.ROW_COL_QUICK_POSITION * scale
     }px, ${this.ROW_COL_QUICK_OFFSET * scale}px)`
+    // 快捷添加行
     rowAddBtn.onclick = () => {
       this.position.setPositionContext({
         index,
         isTable: true,
         trIndex: trList!.length - 1,
-        tdIndex: 0
+        tdIndex: 0,
+        tableId: element.id
       })
       this.draw.getTableOperate().insertTableBottomRow()
     }
@@ -184,8 +221,39 @@ export class TableTool {
       if (c === colIndex) {
         colItem.classList.add('active')
       }
+      // 快捷列选择
+      colItem.onclick = () => {
+        const tdList = this.draw
+          .getTableParticle()
+          .getTdListByColIndex(trList!, c)
+        const firstTd = tdList[0]
+        const lastTd = tdList[tdList.length - 1]
+        this.position.setPositionContext({
+          index,
+          isTable: true,
+          trIndex: firstTd.trIndex,
+          tdIndex: firstTd.tdIndex,
+          tableId: element.id
+        })
+        this.range.setRange(
+          0,
+          0,
+          element.id,
+          firstTd.tdIndex,
+          lastTd.tdIndex,
+          firstTd.trIndex,
+          lastTd.trIndex
+        )
+        this.draw.render({
+          curIndex: 0,
+          isCompute: false,
+          isSubmitHistory: false
+        })
+        this._setAnchorActive(colContainer, c)
+      }
       const colItemAnchor = document.createElement('div')
       colItemAnchor.classList.add(`${EDITOR_PREFIX}-table-tool__anchor`)
+      // 列高度拖拽开始
       colItemAnchor.onmousedown = evt => {
         this._mousedown({
           evt,
@@ -211,12 +279,14 @@ export class TableTool {
     colAddBtn.style.transform = `translate(${
       this.ROW_COL_QUICK_OFFSET * scale
     }px, -${this.ROW_COL_QUICK_POSITION * scale}px)`
+    // 快捷添加列
     colAddBtn.onclick = () => {
       this.position.setPositionContext({
         index,
         isTable: true,
         trIndex: 0,
-        tdIndex: trList![0].tdList.length - 1 || 0
+        tdIndex: trList![0].tdList.length - 1 || 0,
+        tableId: element.id
       })
       this.draw.getTableOperate().insertTableRightCol()
     }
@@ -241,6 +311,7 @@ export class TableTool {
           (td.y! + td.height!) * scale - this.BORDER_VALUE / 2
         }px`
         rowBorder.style.left = `${td.x! * scale}px`
+        // 行宽度拖拽开始
         rowBorder.onmousedown = evt => {
           this._mousedown({
             evt,
@@ -258,6 +329,7 @@ export class TableTool {
         colBorder.style.left = `${
           (td.x! + td.width!) * scale - this.BORDER_VALUE / 2
         }px`
+        // 列高度拖拽开始
         colBorder.onmousedown = evt => {
           this._mousedown({
             evt,
@@ -271,6 +343,18 @@ export class TableTool {
     }
     this.container.append(borderContainer)
     this.toolBorderContainer = borderContainer
+  }
+
+  private _setAnchorActive(container: HTMLDivElement, index: number) {
+    const children = container.children
+    for (let c = 0; c < children.length; c++) {
+      const child = children[c]
+      if (c === index) {
+        child.classList.add('active')
+      } else {
+        child.classList.remove('active')
+      }
+    }
   }
 
   private _mousedown(payload: IAnchorMouseDown) {

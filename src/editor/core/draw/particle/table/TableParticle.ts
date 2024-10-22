@@ -290,6 +290,22 @@ export class TableParticle {
     return data
   }
 
+  public getTdListByRowIndex(trList: ITr[], rowIndex: number) {
+    const data: ITd[] = []
+    for (let r = 0; r < trList.length; r++) {
+      const tdList = trList[r].tdList
+      for (let d = 0; d < tdList.length; d++) {
+        const td = tdList[d]
+        const min = td.rowIndex!
+        const max = min + td.rowspan - 1
+        if (rowIndex >= min && rowIndex <= max) {
+          data.push(td)
+        }
+      }
+    }
+    return data
+  }
+
   public computeRowColInfo(element: IElement) {
     const { colgroup, trList } = element
     if (!colgroup || !trList) return
