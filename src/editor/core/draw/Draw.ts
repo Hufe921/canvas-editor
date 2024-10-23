@@ -527,7 +527,27 @@ export class Draw {
     return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].rowList!
   }
 
-  public getOriginalRowList() {
+  public getRowListByTableElement(sourceElementList: IElement[], element: IElement): IRow[] {
+    const { tableId } = element
+    if (tableId) {
+      const { trId, tdId } = element
+      const tableElement = sourceElementList.find((el) => el.id === tableId)
+      const trElement = tableElement?.trList?.find((el) => el.id === trId)
+      const tdElement = trElement?.tdList?.find((el) => el.id === tdId)
+      return tdElement?.rowList || []
+    } else {
+      return this.getOriginalRowList(true)
+    }
+  }
+
+  public getOriginalRowList(getAllZones?: boolean) {
+    if (getAllZones) {
+      return [
+        ...this.rowList,
+        ...this.header.getRowList(),
+        ...this.footer.getRowList()
+      ]
+    }
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
       return this.header.getRowList()
@@ -616,7 +636,14 @@ export class Draw {
       : this.elementList
   }
 
-  public getOriginalElementList() {
+  public getOriginalElementList(getAllZones?: boolean) {
+    if (getAllZones) {
+      return [
+        ...this.elementList,
+        ...this.getHeaderElementList(),
+        ...this.getFooterElementList()
+      ]
+    }
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
       return this.getHeaderElementList()
@@ -1080,6 +1107,18 @@ export class Draw {
     })
   }
 
+  public getTabWidth(elementList: IRowElement[]) {
+    let tabWidth = 0
+    const { defaultTabWidth, scale } = this.options
+    for (let i = 1; i < elementList.length; i++) {
+      const element = elementList[i]
+      if (element?.type !== ElementType.TAB) break
+      tabWidth += defaultTabWidth * scale
+    }
+
+    return tabWidth
+  }
+
   public getValue(options: IGetValueOption = {}): IEditorResult {
     const { pageNo, extraPickAttrs } = options
     let mainElementList = this.elementList
@@ -1263,6 +1302,7 @@ export class Draw {
         ascent: 0,
         elementList: [],
         startIndex: 0,
+        endIndex: 0,
         rowIndex: 0,
         rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
       })
@@ -1460,7 +1500,7 @@ export class Draw {
           const rowMarginHeight = rowMargin * 2 * scale
           if (
             curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-              height ||
+            height ||
             (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
             // 无可拆分行则切换至新页
@@ -1739,6 +1779,7 @@ export class Draw {
           width: metrics.width,
           height,
           startIndex: i,
+          endIndex: i,
           elementList: [rowElement],
           ascent,
           rowIndex: curRow.rowIndex + 1,
@@ -2166,11 +2207,11 @@ export class Draw {
             if (
               preElement &&
               ((preElement.type === ElementType.SUBSCRIPT &&
-                element.type !== ElementType.SUBSCRIPT) ||
+                  element.type !== ElementType.SUBSCRIPT) ||
                 (preElement.type === ElementType.SUPERSCRIPT &&
                   element.type !== ElementType.SUPERSCRIPT) ||
                 this.getElementSize(preElement) !==
-                  this.getElementSize(element))
+                this.getElementSize(element))
             ) {
               this.strikeout.render(ctx)
             }
