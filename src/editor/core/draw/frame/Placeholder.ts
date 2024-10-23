@@ -42,7 +42,7 @@ export class Placeholder {
     this.rowList = this.draw.computeRowList({
       innerWidth,
       elementList: this.elementList
-    })
+    }).rowList
   }
 
   private _computePositionList() {

@@ -64,7 +64,7 @@ export class Header {
       innerWidth,
       elementList: this.elementList,
       surroundElementList
-    })
+    }).rowList
   }
 
   private _computePositionList() {

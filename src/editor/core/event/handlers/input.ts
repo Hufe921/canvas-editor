@@ -22,6 +22,10 @@ export function input(data: string, host: CanvasEvent) {
   if (!isComposing) {
     const cursor = draw.getCursor()
     cursor.clearAgentDomValue()
+  } else if (position.getPositionContext().isTable) {
+    // TODO: 后续支持表格中合成输入时显示合成字符
+    // 在表格中合成输入时，跳过后续对合成字符的处理，避免在表格中以composing状态跨页导致的问题
+    return
   }
   const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
   const text = data.replaceAll(`\n`, ZERO)
