@@ -224,6 +224,29 @@ export class TableOperate {
     this.draw.render({ curIndex: 0 })
   }
 
+  public adjustColWidth(element: IElement) {
+    if (element.type !== ElementType.TABLE) return
+    const { defaultColMinWidth } = this.options.table
+    const colgroup = element.colgroup!
+    const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
+    const width = this.draw.getOriginalInnerWidth()
+    if (colgroupWidth > width) {
+      // 过滤大于最小宽度的列（可能减少宽度的列）
+      const greaterMinWidthCol = colgroup.filter(
+        col => col.width > defaultColMinWidth
+      )
+      // 均分多余宽度
+      const adjustWidth = (colgroupWidth - width) / greaterMinWidthCol.length
+      for (let g = 0; g < colgroup.length; g++) {
+        const group = colgroup[g]
+        // 小于最小宽度的列不处理
+        if (group.width - adjustWidth >= defaultColMinWidth) {
+          group.width -= adjustWidth
+        }
+      }
+    }
+  }
+
   public insertTableLeftCol() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
@@ -252,19 +275,12 @@ export class TableOperate {
       })
     }
     // 重新计算宽度
+    const { defaultColMinWidth } = this.options.table
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.options.table.defaultColMinWidth
+      width: defaultColMinWidth
     })
-    const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
-    const width = this.draw.getOriginalInnerWidth()
-    if (colgroupWidth > width) {
-      const adjustWidth = (colgroupWidth - width) / colgroup.length
-      for (let g = 0; g < colgroup.length; g++) {
-        const group = colgroup[g]
-        group.width -= adjustWidth
-      }
-    }
+    this.adjustColWidth(element)
     // 重新设置上下文
     this.position.setPositionContext({
       isTable: true,
@@ -309,19 +325,12 @@ export class TableOperate {
       })
     }
     // 重新计算宽度
+    const { defaultColMinWidth } = this.options.table
     const colgroup = element.colgroup!
     colgroup.splice(curTdIndex, 0, {
-      width: this.options.table.defaultColMinWidth
+      width: defaultColMinWidth
     })
-    const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
-    const width = this.draw.getOriginalInnerWidth()
-    if (colgroupWidth > width) {
-      const adjustWidth = (colgroupWidth - width) / colgroup.length
-      for (let g = 0; g < colgroup.length; g++) {
-        const group = colgroup[g]
-        group.width -= adjustWidth
-      }
-    }
+    this.adjustColWidth(element)
     // 重新设置上下文
     this.position.setPositionContext({
       isTable: true,
