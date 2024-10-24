@@ -20,6 +20,7 @@ export interface IElementBasic {
   value: string
   extension?: unknown
   externalId?: string
+  lineWidth?: number
 }
 
 export interface IElementStyle {
