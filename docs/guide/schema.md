@@ -104,6 +104,7 @@ interface IElement {
     rowFlex?: RowFlex
     deletable?: boolean;
     disabled?: boolean;
+    pasteDisabled?: boolean;
     code: string | null;
     min?: number;
     max?: number;

@@ -50,6 +50,7 @@ export interface IControlHighlight {
 export interface IControlRule {
   deletable?: boolean
   disabled?: boolean
+  pasteDisabled?: boolean
 }
 
 export interface IControlBasic {

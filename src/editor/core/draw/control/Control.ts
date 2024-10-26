@@ -224,6 +224,19 @@ export class Control {
     return !!this.activeControl.getElement()?.control?.disabled
   }
 
+  public getIsDisabledPasteControl(context: IControlContext = {}): boolean {
+    if (this.draw.isDesignMode() || !this.activeControl) return false
+    const { startIndex, endIndex } = context.range || this.range.getRange()
+    if (startIndex === endIndex && ~startIndex && ~endIndex) {
+      const elementList = context.elementList || this.getElementList()
+      const startElement = elementList[startIndex]
+      if (startElement.controlComponent === ControlComponent.POSTFIX) {
+        return false
+      }
+    }
+    return !!this.activeControl.getElement()?.control?.pasteDisabled
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
