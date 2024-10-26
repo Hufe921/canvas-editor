@@ -61,6 +61,7 @@ import {
   IElement,
   IElementPosition,
   IElementStyle,
+  IGetElementByIdOption,
   IUpdateElementByIdOption
 } from '../../interface/Element'
 import { IPasteOption, IPositionContextByEvent } from '../../interface/Event'
@@ -1613,10 +1614,15 @@ export class CommandAdapt {
   }
 
   public updateElementById(payload: IUpdateElementByIdOption) {
+    const { id, conceptId } = payload
+    if (!id && !conceptId) return
     function getElementIndexById(elementList: IElement[]): number {
       for (let e = 0; e < elementList.length; e++) {
         const element = elementList[e]
-        if (element.id === payload.id) {
+        if (
+          (id && element.id === id) ||
+          (conceptId && element.conceptId === conceptId)
+        ) {
           return e
         }
       }
@@ -1646,6 +1652,37 @@ export class CommandAdapt {
         break
       }
     }
+  }
+
+  public getElementById(payload: IGetElementByIdOption): IElement[] {
+    const { id, conceptId } = payload
+    const result: IElement[] = []
+    if (!id && !conceptId) return result
+    const getElement = (elementList: IElement[]) => {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (
+          (id && element.controlId !== id) ||
+          (conceptId && element.conceptId !== conceptId)
+        ) {
+          continue
+        }
+        result.push(element)
+      }
+    }
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      getElement(elementList)
+    }
+    return zipElementList(result, {
+      extraPickAttrs: ['id']
+    })
   }
 
   public setValue(payload: Partial<IEditorData>, options?: ISetValueOption) {

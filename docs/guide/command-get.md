@@ -289,3 +289,13 @@ instance.eventBus.on(
   }, 200)
 )``
 ```
+
+## getElementById
+
+功能：根据 id 获取元素
+
+用法：
+
+```javascript
+const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
+```

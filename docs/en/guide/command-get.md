@@ -289,3 +289,13 @@ instance.eventBus.on(
   }, 200)
 )``
 ```
+
+## getElementById
+
+Feature: Get element list by id
+
+Usage:
+
+```javascript
+const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
+```

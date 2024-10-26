@@ -120,6 +120,7 @@ export class Command {
   public getContainer: CommandAdapt['getContainer']
   public getTitleValue: CommandAdapt['getTitleValue']
   public getPositionContextByEvent: CommandAdapt['getPositionContextByEvent']
+  public getElementById: CommandAdapt['getElementById']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
@@ -241,6 +242,7 @@ export class Command {
     this.getContainer = adapt.getContainer.bind(adapt)
     this.getTitleValue = adapt.getTitleValue.bind(adapt)
     this.getPositionContextByEvent = adapt.getPositionContextByEvent.bind(adapt)
+    this.getElementById = adapt.getElementById.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
     this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
