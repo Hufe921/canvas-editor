@@ -46,6 +46,7 @@
       "border": "表格边框",
       "borderAll": "所有框线",
       "borderEmpty": "无框线",
+      "borderDash": "虚框线",
       "borderExternal": "外侧框线",
       "borderTd": "单元格边框",
       "borderTdTop": "上边框",

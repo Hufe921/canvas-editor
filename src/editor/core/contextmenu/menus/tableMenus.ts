@@ -13,6 +13,7 @@ const {
     BORDER,
     BORDER_ALL,
     BORDER_EMPTY,
+    BORDER_DASH,
     BORDER_EXTERNAL,
     BORDER_TD,
     BORDER_TD_TOP,
@@ -71,6 +72,15 @@ export const tableMenus: IRegisterContextMenu[] = [
         when: () => true,
         callback: (command: Command) => {
           command.executeTableBorderType(TableBorder.EMPTY)
+        }
+      },
+      {
+        key: BORDER_DASH,
+        i18nPath: 'contextmenu.table.borderDash',
+        icon: 'border-dash',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableBorderType(TableBorder.DASH)
         }
       },
       {

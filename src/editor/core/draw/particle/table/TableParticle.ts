@@ -159,6 +159,10 @@ export class TableParticle {
     // 仅外边框
     const isExternalBorderType = borderType === TableBorder.EXTERNAL
     ctx.save()
+    // 虚线
+    if (borderType === TableBorder.DASH) {
+      ctx.setLineDash([3, 3])
+    }
     ctx.lineWidth = scale
     // 渲染边框
     if (!isEmptyBorderType) {

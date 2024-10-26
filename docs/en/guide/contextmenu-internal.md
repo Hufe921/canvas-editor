@@ -30,6 +30,7 @@
 - Table borders
 - All borders
 - Borderless
+- Dashed border
 - Outer border
 - Td borders
   - Top border
