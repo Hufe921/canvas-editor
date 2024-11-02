@@ -1,6 +1,5 @@
 import { FORMAT_PLACEHOLDER } from '../../../dataset/constant/PageNumber'
 import { NumberType } from '../../../dataset/enum/Common'
-import { PageMode } from '../../../dataset/enum/Editor'
 import { RowFlex } from '../../../dataset/enum/Row'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
@@ -19,7 +18,6 @@ export class PageNumber {
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     const {
       scale,
-      pageMode,
       pageNumber: {
         size,
         font,
@@ -54,10 +52,7 @@ export class PageNumber {
     }
     const width = this.draw.getWidth()
     // 计算y位置
-    const height =
-      pageMode === PageMode.CONTINUITY
-        ? this.draw.getCanvasHeight(pageNo)
-        : this.draw.getHeight()
+    const height = this.draw.getHeight()
     const pageNumberBottom = this.draw.getPageNumberBottom()
     const y = height - pageNumberBottom
     ctx.save()
