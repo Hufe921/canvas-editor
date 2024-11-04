@@ -1458,9 +1458,9 @@ export class Draw {
           }
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
           const rowMarginHeight = rowMargin * 2 * scale
+          const firstTrHeight = element.trList![0].height! * scale
           if (
-            curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-              height ||
+            curPagePreHeight + firstTrHeight + rowMarginHeight > height ||
             (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
             // 无可拆分行则切换至新页
@@ -1504,11 +1504,12 @@ export class Draw {
                 (pre, cur) => pre + cur.height,
                 0
               )
+              const cloneTrRealHeight = cloneTrHeight * scale
               const pagingId = element.pagingId || getUUID()
               element.pagingId = pagingId
               element.height -= cloneTrHeight
-              metrics.height -= cloneTrHeight
-              metrics.boundingBoxDescent -= cloneTrHeight
+              metrics.height -= cloneTrRealHeight
+              metrics.boundingBoxDescent -= cloneTrRealHeight
               // 追加拆分表格
               const cloneElement = deepClone(element)
               cloneElement.pagingId = pagingId
