@@ -2553,6 +2553,9 @@ export class Draw {
     // 光标重绘
     if (isSetCursor) {
       curIndex = this.setCursor(curIndex)
+    } else if (this.range.getIsSelection()) {
+      // 存在选区时仅定位避免事件无法捕获
+      this.cursor.focus()
     }
     // 历史记录用于undo、redo（非首次渲染内容变更 || 第一次存在光标时）
     if (

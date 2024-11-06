@@ -90,6 +90,15 @@ export class Cursor {
     }
   }
 
+  public focus() {
+    const agentCursorDom = this.cursorAgent.getAgentCursorDom()
+    // 光标不聚焦时重新定位
+    if (document.activeElement !== agentCursorDom) {
+      agentCursorDom.focus()
+      agentCursorDom.setSelectionRange(0, 0)
+    }
+  }
+
   public drawCursor(payload?: IDrawCursorOption) {
     let cursorPosition = this.position.getCursorPosition()
     if (!cursorPosition) return
@@ -129,11 +138,7 @@ export class Cursor {
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     if (isFocus) {
       setTimeout(() => {
-        // 光标不聚焦时重新定位
-        if (document.activeElement !== agentCursorDom) {
-          agentCursorDom.focus()
-          agentCursorDom.setSelectionRange(0, 0)
-        }
+        this.focus()
       })
     }
     // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
