@@ -17,7 +17,13 @@ import { IOverrideResult } from '../../override/Override'
 
 export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
   const draw = host.getDraw()
-  if (draw.isReadonly() || draw.isDisabled()) return
+  if (
+    draw.isReadonly() ||
+    draw.isDisabled() ||
+    draw.getControl().getIsDisabledPasteControl()
+  ) {
+    return
+  }
   const rangeManager = draw.getRange()
   const { startIndex } = rangeManager.getRange()
   const originalElementList = draw.getElementList()

@@ -113,6 +113,16 @@ Usage:
 const rangeList = instance.command.getKeywordRangeList()
 ```
 
+## getKeywordContext
+
+Feature: Get context list by keyword
+
+Usage:
+
+```javascript
+const keywordContextList = instance.command.getKeywordContext(payload: string)
+```
+
 ## getRangeParagraph
 
 Feature: Get range paragraph element list
@@ -278,4 +288,14 @@ instance.eventBus.on(
     console.log(positionContext)
   }, 200)
 )``
+```
+
+## getElementById
+
+Feature: Get element list by id
+
+Usage:
+
+```javascript
+const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
 ```

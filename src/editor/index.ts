@@ -24,7 +24,7 @@ import {
   WordBreak,
   RenderMode
 } from './dataset/enum/Editor'
-import { EDITOR_COMPONENT } from './dataset/constant/Editor'
+import { EDITOR_CLIPBOARD, EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IWatermark } from './interface/Watermark'
 import { ControlIndentation, ControlType } from './dataset/enum/Control'
 import { INavigateInfo } from './core/draw/interactive/Search'
@@ -151,7 +151,12 @@ export {
 }
 
 // 对外常量
-export { EDITOR_COMPONENT, LETTER_CLASS, INTERNAL_CONTEXT_MENU_KEY }
+export {
+  EDITOR_COMPONENT,
+  LETTER_CLASS,
+  INTERNAL_CONTEXT_MENU_KEY,
+  EDITOR_CLIPBOARD
+}
 
 // 对外枚举
 export {

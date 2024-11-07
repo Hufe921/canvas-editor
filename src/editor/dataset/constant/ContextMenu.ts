@@ -32,6 +32,7 @@ export const INTERNAL_CONTEXT_MENU_KEY = {
     BORDER: 'border',
     BORDER_ALL: 'tableBorderAll',
     BORDER_EMPTY: 'tableBorderEmpty',
+    BORDER_DASH: 'tableBorderDash',
     BORDER_EXTERNAL: 'tableBorderExternal',
     BORDER_TD: 'tableBorderTd',
     BORDER_TD_TOP: 'tableBorderTdTop',

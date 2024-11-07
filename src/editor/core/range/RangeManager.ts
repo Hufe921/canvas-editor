@@ -56,6 +56,12 @@ export class RangeManager {
     return startIndex === endIndex
   }
 
+  public getIsSelection(): boolean {
+    const { startIndex, endIndex } = this.range
+    if (!~startIndex && !~endIndex) return false
+    return startIndex !== endIndex
+  }
+
   public getSelection(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null
@@ -305,7 +311,7 @@ export class RangeManager {
       } else {
         const { type, groupId, tableId, index, tdIndex, trIndex } = searchMatch
         const range: IRange = {
-          startIndex: index - 1,
+          startIndex: index,
           endIndex: index
         }
         if (type === EditorContext.TABLE) {

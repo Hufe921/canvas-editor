@@ -61,12 +61,14 @@ import {
   IElement,
   IElementPosition,
   IElementStyle,
+  IGetElementByIdOption,
   IUpdateElementByIdOption
 } from '../../interface/Element'
 import { IPasteOption, IPositionContextByEvent } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
+import { ISearchResultContext } from '../../interface/Search'
 import { ITextDecoration } from '../../interface/Text'
 import {
   IGetTitleValueOption,
@@ -1064,12 +1066,14 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const options = this.draw.getOptions()
-    const { color, size, opacity, font } = defaultWatermarkOption
+    const { color, size, opacity, font, gap } = defaultWatermarkOption
     options.watermark.data = payload.data
     options.watermark.color = payload.color || color
     options.watermark.size = payload.size || size
     options.watermark.opacity = payload.opacity || opacity
     options.watermark.font = payload.font || font
+    options.watermark.repeat = !!payload.repeat
+    options.watermark.gap = payload.gap || gap
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false,
@@ -1510,6 +1514,37 @@ export class CommandAdapt {
     return this.range.getKeywordRangeList(payload)
   }
 
+  public getKeywordContext(payload: string): ISearchResultContext[] | null {
+    const rangeList = this.getKeywordRangeList(payload)
+    if (!rangeList.length) return null
+    const searchResultContextList: ISearchResultContext[] = []
+    const positionList = this.position.getOriginalMainPositionList()
+    const elementList = this.draw.getOriginalMainElementList()
+    for (let r = 0; r < rangeList.length; r++) {
+      const range = rangeList[r]
+      const { startIndex, endIndex, tableId, startTrIndex, startTdIndex } =
+        range
+      let keywordPositionList: IElementPosition[] = positionList
+      if (range.tableId) {
+        const tableElement = elementList.find(el => el.id === tableId)
+        if (tableElement) {
+          keywordPositionList =
+            tableElement.trList?.[startTrIndex!]?.tdList?.[startTdIndex!]
+              ?.positionList || []
+        }
+      }
+      // 获取关键词始末位置
+      const startPosition = deepClone(keywordPositionList[startIndex])
+      const endPosition = deepClone(keywordPositionList[endIndex])
+      searchResultContextList.push({
+        range,
+        startPosition,
+        endPosition
+      })
+    }
+    return searchResultContextList
+  }
+
   public pageMode(payload: PageMode) {
     this.draw.setPageMode(payload)
   }
@@ -1579,10 +1614,15 @@ export class CommandAdapt {
   }
 
   public updateElementById(payload: IUpdateElementByIdOption) {
+    const { id, conceptId } = payload
+    if (!id && !conceptId) return
     function getElementIndexById(elementList: IElement[]): number {
       for (let e = 0; e < elementList.length; e++) {
         const element = elementList[e]
-        if (element.id === payload.id) {
+        if (
+          (id && element.id === id) ||
+          (conceptId && element.conceptId === conceptId)
+        ) {
           return e
         }
       }
@@ -1612,6 +1652,37 @@ export class CommandAdapt {
         break
       }
     }
+  }
+
+  public getElementById(payload: IGetElementByIdOption): IElement[] {
+    const { id, conceptId } = payload
+    const result: IElement[] = []
+    if (!id && !conceptId) return result
+    const getElement = (elementList: IElement[]) => {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (
+          (id && element.controlId !== id) ||
+          (conceptId && element.conceptId !== conceptId)
+        ) {
+          continue
+        }
+        result.push(element)
+      }
+    }
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      getElement(elementList)
+    }
+    return zipElementList(result, {
+      extraPickAttrs: ['id']
+    })
   }
 
   public setValue(payload: Partial<IEditorData>, options?: ISetValueOption) {

@@ -159,6 +159,10 @@ export class TableParticle {
     // 仅外边框
     const isExternalBorderType = borderType === TableBorder.EXTERNAL
     ctx.save()
+    // 虚线
+    if (borderType === TableBorder.DASH) {
+      ctx.setLineDash([3, 3])
+    }
     ctx.lineWidth = scale
     // 渲染边框
     if (!isEmptyBorderType) {
@@ -283,6 +287,22 @@ export class TableParticle {
         const min = td.colIndex!
         const max = min + td.colspan - 1
         if (colIndex >= min && colIndex <= max) {
+          data.push(td)
+        }
+      }
+    }
+    return data
+  }
+
+  public getTdListByRowIndex(trList: ITr[], rowIndex: number) {
+    const data: ITd[] = []
+    for (let r = 0; r < trList.length; r++) {
+      const tdList = trList[r].tdList
+      for (let d = 0; d < tdList.length; d++) {
+        const td = tdList[d]
+        const min = td.rowIndex!
+        const max = min + td.rowspan - 1
+        if (rowIndex >= min && rowIndex <= max) {
           data.push(td)
         }
       }

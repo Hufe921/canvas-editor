@@ -113,6 +113,16 @@ const rowElementList = instance.command.getRangeRow()
 const rangeList = instance.command.getKeywordRangeList()
 ```
 
+## getKeywordContext
+
+功能：获取关键词所在上下文本信息
+
+用法：
+
+```javascript
+const keywordContextList = instance.command.getKeywordContext(payload: string)
+```
+
 ## getRangeParagraph
 
 功能：获取选区所在段落元素列表
@@ -278,4 +288,14 @@ instance.eventBus.on(
     console.log(positionContext)
   }, 200)
 )``
+```
+
+## getElementById
+
+功能：根据 id 获取元素
+
+用法：
+
+```javascript
+const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
 ```
