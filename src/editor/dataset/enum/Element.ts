@@ -8,6 +8,7 @@ export enum ElementType {
   SEPARATOR = 'separator',
   PAGE_BREAK = 'pageBreak',
   CONTROL = 'control',
+  AREA = 'area',
   CHECKBOX = 'checkbox',
   RADIO = 'radio',
   LATEX = 'latex',

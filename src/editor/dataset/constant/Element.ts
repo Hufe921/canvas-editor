@@ -29,6 +29,7 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'strikeout',
   'rowFlex',
   'url',
+  'areaId',
   'hyperlinkId',
   'dateId',
   'dateFormat',
@@ -73,7 +74,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'imgFloatPosition',
   'textDecoration',
   'extension',
-  'externalId'
+  'externalId',
+  'areaId'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
@@ -119,10 +121,15 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
   'strikeout'
 ]
 
+export const AREA_CONTEXT_ATTR: Array<keyof IElement> = [
+  'areaId'
+]
+
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
   ...TABLE_CONTEXT_ATTR,
   ...TITLE_CONTEXT_ATTR,
-  ...LIST_CONTEXT_ATTR
+  ...LIST_CONTEXT_ATTR,
+  ...AREA_CONTEXT_ATTR
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [

@@ -75,6 +75,10 @@ export class Command {
   public executePaperDirection: CommandAdapt['paperDirection']
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
   public executeInsertElementList: CommandAdapt['insertElementList']
+  public executeInsertArea: CommandAdapt['insertArea']
+  public executeSetAreaStyle: CommandAdapt['setAreaStyle']
+  public executeSetAreaEditable: CommandAdapt['setAreaEditable']
+  public executeSetAreaFormMode: CommandAdapt['setAreaFormMode']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeSetValue: CommandAdapt['setValue']
@@ -100,6 +104,7 @@ export class Command {
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
   public getValue: CommandAdapt['getValue']
+  public getAreaValue: CommandAdapt['getAreaValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
   public getWordCount: CommandAdapt['getWordCount']
@@ -204,6 +209,10 @@ export class Command {
     this.executeSetPaperMargin = adapt.setPaperMargin.bind(adapt)
     // 通用
     this.executeInsertElementList = adapt.insertElementList.bind(adapt)
+    this.executeInsertArea = adapt.insertArea.bind(adapt)
+    this.executeSetAreaStyle = adapt.setAreaStyle.bind(adapt)
+    this.executeSetAreaEditable = adapt.setAreaEditable.bind(adapt)
+    this.executeSetAreaFormMode = adapt.setAreaFormMode.bind(adapt)
     this.executeAppendElementList = adapt.appendElementList.bind(adapt)
     this.executeUpdateElementById = adapt.updateElementById.bind(adapt)
     this.executeSetValue = adapt.setValue.bind(adapt)
@@ -223,6 +232,7 @@ export class Command {
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
+    this.getAreaValue = adapt.getAreaValue.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)

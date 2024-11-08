@@ -1,5 +1,6 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import {
+  AREA_CONTEXT_ATTR,
   EDITOR_ELEMENT_STYLE_ATTR,
   EDITOR_ROW_ATTR
 } from '../../../../dataset/constant/Element'
@@ -58,6 +59,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
       if (copyElement.controlComponent !== ControlComponent.POSTFIX) {
         copyAttr.push(...EDITOR_ELEMENT_STYLE_ATTR)
       }
+      copyAttr.push(...AREA_CONTEXT_ATTR)
       copyAttr.forEach(attr => {
         const value = copyElement[attr] as never
         if (value !== undefined) {

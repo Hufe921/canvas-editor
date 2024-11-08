@@ -2,6 +2,7 @@ import { ITd } from './Td'
 
 export interface ITr {
   id?: string
+  areaId?: string
   extension?: unknown
   externalId?: string
   height: number

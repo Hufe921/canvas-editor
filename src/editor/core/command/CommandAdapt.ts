@@ -10,7 +10,7 @@ import {
   titleSizeMapping
 } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
-import { ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
+import { AreaLocationPosition, ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import {
   EditorContext,
@@ -107,6 +107,7 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Zone } from '../zone/Zone'
+import { IAreaStyle, IGetAreaValueOption, IInsertAreaOption } from '../../interface/Area'
 
 export class CommandAdapt {
   private draw: Draw
@@ -269,14 +270,10 @@ export class CommandAdapt {
   }
 
   public undo() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.historyManager.undo()
   }
 
   public redo() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.historyManager.redo()
   }
 
@@ -1337,6 +1334,10 @@ export class CommandAdapt {
     return this.draw.getValue(options)
   }
 
+  public getAreaValue(option?: IGetAreaValueOption) {
+    return this.draw.getAreaValue(option)
+  }
+
   public getHTML(): IEditorHTML {
     const options = this.options
     const headerElementList = this.draw.getHeaderElementList()
@@ -2142,5 +2143,23 @@ export class CommandAdapt {
       cursorPosition: positionList[curIndex],
       direction: MoveDirection.DOWN
     })
+  }
+
+  public insertArea(payload: IElement[], options: IInsertAreaOption) {
+    const {position = AreaLocationPosition.END} = options || {}
+    this.focus({position: position === AreaLocationPosition.END ? LocationPosition.AFTER: LocationPosition.BEFORE})
+    return this.draw.getArea().insertArea(payload, options)
+  }
+
+  public setAreaStyle(areaId: string, style: IAreaStyle) {
+    this.draw.getArea().setAreaStyle(areaId, style)
+  }
+
+  public setAreaEditable(areaId: string, editable: boolean) {
+    this.draw.getArea().setAreaEditable(areaId, editable)
+  }
+
+  public setAreaFormMode(areaId: string, isForm: boolean) {
+    this.draw.getArea().setAreaFormMode(areaId, isForm)
   }
 }

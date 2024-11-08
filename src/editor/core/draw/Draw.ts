@@ -108,6 +108,8 @@ import { PageBorder } from './frame/PageBorder'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
+import { Area } from './interactive/Area'
+import { IGetAreaValueOption } from '../../interface/Area'
 
 export class Draw {
   private container: HTMLDivElement
@@ -134,6 +136,7 @@ export class Draw {
   private background: Background
   private search: Search
   private group: Group
+  private area: Area
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -213,6 +216,7 @@ export class Draw {
     this.background = new Background(this)
     this.search = new Search(this)
     this.group = new Group(this)
+    this.area = new Area(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -324,7 +328,18 @@ export class Draw {
     switch (this.mode) {
       case EditorMode.DESIGN:
         return false
-      case EditorMode.READONLY:
+      case EditorMode.READONLY: {
+        if (this.zone.getZone() === EditorZone.MAIN) {
+          const isEditing = this.area.isEditing()
+          if (isEditing) {
+            return false
+          }
+          if (this.control.getIsRangeWithinControl()) {
+            return !this.area.isFormMode()
+          }
+        }
+        return true
+      }
       case EditorMode.PRINT:
         return true
       case EditorMode.FORM:
@@ -565,6 +580,10 @@ export class Draw {
     return this.group
   }
 
+  public getArea(): Area {
+    return this.area
+  }
+
   public getHistoryManager(): HistoryManager {
     return this.historyManager
   }
@@ -645,7 +664,7 @@ export class Draw {
     return null
   }
 
-  public insertElementList(payload: IElement[]) {
+  public insertElementList(payload: IElement[], fixStart = true) {
     if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
@@ -668,7 +687,10 @@ export class Draw {
     } else {
       const elementList = this.getElementList()
       const isCollapsed = startIndex === endIndex
-      const start = startIndex + 1
+      let start = startIndex
+      if (fixStart) {
+        start++
+      }
       if (!isCollapsed) {
         this.spliceElementList(elementList, start, endIndex - startIndex)
       }
@@ -1107,6 +1129,24 @@ export class Draw {
       version,
       data,
       options: deepClone(this.options)
+    }
+  }
+
+  public getAreaValue(options: IGetAreaValueOption = {id: ''}) {
+    const elementList = this.getOriginalMainElementList().filter(v => v.areaId === options.id)
+    const result = this.area.getAreaOption(options.id) ?? {
+      version, options: deepClone(this.options), data: {
+        main: elementList
+      }
+    }
+    return {
+      version: result.version,
+      options: result.options,
+      data: {
+        header: result.data.header,
+        footer: result.data.footer,
+        main: zipElementList(elementList, {extraPickAttrs: options.extraPickAttrs}),
+      }
     }
   }
 
@@ -2362,6 +2402,8 @@ export class Draw {
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx, pageNo)
+    // 绘制 area 背景
+    this.area.render(ctx, pageNo)
     // 绘制页边距
     if (this.mode !== EditorMode.PRINT) {
       this.margin.render(ctx, pageNo)
@@ -2516,6 +2558,8 @@ export class Draw {
       this.pageRowList = this._computePageList()
       // 位置信息
       this.position.computePositionList()
+      // 计算 area 的位置信息
+      this.area.computeAreaPosition()
       // 搜索信息
       const searchKeyword = this.search.getSearchKeyword()
       if (searchKeyword) {
@@ -2655,6 +2699,7 @@ export class Draw {
     const pageNo = this.pageNo
     const oldPositionContext = deepClone(positionContext)
     const zone = this.zone.getZone()
+    const areaData = this.area.getData()
     this.historyManager.execute(() => {
       this.zone.setZone(zone)
       this.setPageNo(pageNo)
@@ -2663,6 +2708,7 @@ export class Draw {
       this.footer.setElementList(deepClone(oldFooterElementList))
       this.elementList = deepClone(oldElementList)
       this.range.replaceRange(deepClone(oldRange))
+      this.area.setData(areaData)
       this.render({
         curIndex,
         isSubmitHistory: false,
