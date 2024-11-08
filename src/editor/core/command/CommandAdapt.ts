@@ -10,7 +10,7 @@ import {
   titleSizeMapping
 } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
-import { ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
+import { AreaLocationPosition, ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import {
   EditorContext,
@@ -107,6 +107,7 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Zone } from '../zone/Zone'
+import { IInsertAreaOption } from '../../interface/Area'
 
 export class CommandAdapt {
   private draw: Draw
@@ -2142,5 +2143,11 @@ export class CommandAdapt {
       cursorPosition: positionList[curIndex],
       direction: MoveDirection.DOWN
     })
+  }
+
+  public insertArea(payload: IElement[], options: IInsertAreaOption) {
+    const {position = AreaLocationPosition.END} = options || {}
+    this.focus({position: position === AreaLocationPosition.END ? LocationPosition.AFTER: LocationPosition.BEFORE})
+    this.draw.getArea().insertArea(payload, options)
   }
 }

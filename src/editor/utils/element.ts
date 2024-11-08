@@ -86,9 +86,7 @@ export function formatElementList(
   if (
     isForceCompensation ||
     (isHandleFirstElement &&
-      startElement?.type !== ElementType.LIST &&
-      ((startElement?.type && startElement.type !== ElementType.TEXT) ||
-        !START_LINE_BREAK_REG.test(startElement?.value)))
+      needFillZeroElement(startElement))
   ) {
     elementList.unshift({
       value: ZERO
@@ -118,6 +116,9 @@ export function formatElementList(
           if (el.level) {
             value.titleId = titleId
             value.level = el.level
+          }
+          if (el.areaId) {
+            value.areaId = el.areaId
           }
           // 文本型元素设置字体及加粗
           if (isTextLikeElement(value)) {
@@ -151,6 +152,32 @@ export function formatElementList(
           value.listId = listId
           value.listType = el.listType
           value.listStyle = el.listStyle
+          if (el.areaId) {
+            value.areaId = el.areaId
+          }
+          elementList.splice(i, 0, value)
+          i++
+        }
+      }
+      i--
+    } else if (el.type === ElementType.AREA) {
+      elementList.splice(i, 1)
+      const valueList = el.valueList || []
+      if (valueList.length) {
+        const areaId = el.areaId || getUUID()
+        for (let v = 0; v < valueList.length; v++) {
+          const value = valueList[v]
+          value.areaId = areaId
+        }
+      }
+      formatElementList(valueList, {
+        ...options,
+        isHandleFirstElement: true,
+        isForceCompensation: false
+      })
+      if (valueList.length) {
+        for (let v = 0; v < valueList.length; v++) {
+          const value = valueList[v]
           elementList.splice(i, 0, value)
           i++
         }
@@ -165,6 +192,7 @@ export function formatElementList(
           const tr = el.trList[t]
           const trId = getUUID()
           tr.id = trId
+          if (el.areaId) tr.areaId = el.areaId
           if (!tr.minHeight || tr.minHeight < defaultTrMinHeight) {
             tr.minHeight = defaultTrMinHeight
           }
@@ -175,6 +203,7 @@ export function formatElementList(
             const td = tr.tdList[d]
             const tdId = getUUID()
             td.id = tdId
+            if (el.areaId) td.areaId = el.areaId
             formatElementList(td.value, {
               ...options,
               isHandleFirstElement: true,
@@ -185,6 +214,7 @@ export function formatElementList(
               value.tdId = tdId
               value.trId = trId
               value.tableId = tableId
+              if (el.areaId) value.areaId = el.areaId
             }
           }
         }
@@ -475,6 +505,11 @@ export function formatElementList(
     }
     i++
   }
+}
+
+export function needFillZeroElement(el: IElement): boolean {
+  return el?.type !== ElementType.LIST && ((el?.type && el.type !== ElementType.TEXT) ||
+    !START_LINE_BREAK_REG.test(el?.value))
 }
 
 export function isSameElementExceptValue(

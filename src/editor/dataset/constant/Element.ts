@@ -29,6 +29,7 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'strikeout',
   'rowFlex',
   'url',
+  'areaId',
   'hyperlinkId',
   'dateId',
   'dateFormat',
@@ -122,7 +123,8 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
   ...TABLE_CONTEXT_ATTR,
   ...TITLE_CONTEXT_ATTR,
-  ...LIST_CONTEXT_ATTR
+  ...LIST_CONTEXT_ATTR,
+  'areaId'
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [

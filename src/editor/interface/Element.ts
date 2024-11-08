@@ -125,6 +125,10 @@ export interface IBlockElement {
   block?: IBlock
 }
 
+export interface IAreaElement {
+  valueList?: IElement[]
+  areaId?: string
+}
 export type IElement = IElementBasic &
   IElementStyle &
   IElementGroup &
@@ -140,7 +144,8 @@ export type IElement = IElementBasic &
   IImageElement &
   IBlockElement &
   ITitleElement &
-  IListElement
+  IListElement &
+  IAreaElement
 
 export interface IElementMetrics {
   width: number

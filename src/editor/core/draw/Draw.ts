@@ -108,6 +108,7 @@ import { PageBorder } from './frame/PageBorder'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
+import { Area } from './interactive/Area'
 
 export class Draw {
   private container: HTMLDivElement
@@ -134,6 +135,7 @@ export class Draw {
   private background: Background
   private search: Search
   private group: Group
+  private area: Area
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -213,6 +215,7 @@ export class Draw {
     this.background = new Background(this)
     this.search = new Search(this)
     this.group = new Group(this)
+    this.area = new Area(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -563,6 +566,10 @@ export class Draw {
 
   public getGroup(): Group {
     return this.group
+  }
+
+  public getArea(): Area {
+    return this.area
   }
 
   public getHistoryManager(): HistoryManager {
@@ -2362,6 +2369,8 @@ export class Draw {
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx, pageNo)
+    // 绘制 area 背景
+    this.area.render(ctx, pageNo)
     // 绘制页边距
     if (this.mode !== EditorMode.PRINT) {
       this.margin.render(ctx, pageNo)
@@ -2516,6 +2525,8 @@ export class Draw {
       this.pageRowList = this._computePageList()
       // 位置信息
       this.position.computePositionList()
+      // 计算 area 的位置信息
+      this.area.computeAreaPosition()
       // 搜索信息
       const searchKeyword = this.search.getSearchKeyword()
       if (searchKeyword) {

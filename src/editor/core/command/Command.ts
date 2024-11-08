@@ -75,6 +75,7 @@ export class Command {
   public executePaperDirection: CommandAdapt['paperDirection']
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
   public executeInsertElementList: CommandAdapt['insertElementList']
+  public executeInsertArea: CommandAdapt['insertArea']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeSetValue: CommandAdapt['setValue']
@@ -204,6 +205,7 @@ export class Command {
     this.executeSetPaperMargin = adapt.setPaperMargin.bind(adapt)
     // 通用
     this.executeInsertElementList = adapt.insertElementList.bind(adapt)
+    this.executeInsertArea = adapt.insertArea.bind(adapt)
     this.executeAppendElementList = adapt.appendElementList.bind(adapt)
     this.executeUpdateElementById = adapt.updateElementById.bind(adapt)
     this.executeSetValue = adapt.setValue.bind(adapt)
