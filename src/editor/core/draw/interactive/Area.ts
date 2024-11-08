@@ -49,16 +49,16 @@ export class Area {
     const elementList = this.draw.getElementList()
     const startIndex = position === AreaLocationPosition.START ? 0 : this.draw.getOriginalMainElementList().length
 
+
+    const area: IElement[] = [{
+      type: ElementType.AREA, value: '', valueList: cloneElementList
+    }]
     if (position == AreaLocationPosition.START && needFillZeroElement(cloneElementList[cloneElementList.length - 1])) {
-      cloneElementList.push({
+      area.push({
         value: ZERO
       })
     }
-    const area = [{
-      type: ElementType.AREA, value: '', valueList: cloneElementList, areaId: ''
-    }]
     formatElementContext(elementList, area, startIndex, {
-      isBreakWhenWrap: true,
       editorOptions: this.options
     })
     const id = getUUID()
