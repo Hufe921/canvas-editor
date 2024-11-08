@@ -48,6 +48,7 @@
       "borderEmpty": "无框线",
       "borderDash": "虚框线",
       "borderExternal": "外侧框线",
+      "borderInternal": "内侧框线",
       "borderTd": "单元格边框",
       "borderTdTop": "上边框",
       "borderTdRight": "右边框",

@@ -163,6 +163,10 @@
   background-image: url(../../../assets/images/table-border-external.svg);
 }
 
+.ce-contextmenu-border-internal {
+  background-image: url(../../../assets/images/table-border-internal.svg);
+}
+
 .ce-contextmenu-border-td {
   background-image: url(../../../assets/images/table-border-td.svg);
 }

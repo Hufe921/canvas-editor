@@ -48,6 +48,7 @@
       "borderEmpty": "Empty",
       "borderDash": "Dash",
       "borderExternal": "External",
+      "borderInternal": "Internal",
       "borderTd": "Table cell border",
       "borderTdTop": "Top",
       "borderTdRight": "Right",
