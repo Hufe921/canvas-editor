@@ -27,6 +27,7 @@ enum ElementType {
   DATE = 'date',
   BLOCK = 'block',
   TITLE = 'title',
+  AREA = 'area',
   LIST = 'list'
 }
 
