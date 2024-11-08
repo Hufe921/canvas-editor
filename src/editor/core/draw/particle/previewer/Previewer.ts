@@ -390,6 +390,7 @@ export class Previewer {
 
   public _updateResizerRect(width: number, height: number) {
     const { resizerSize: handleSize, scale } = this.options
+    const isReadonly = this.draw.isReadonly()
     this.resizerSelection.style.width = `${width}px`
     this.resizerSelection.style.height = `${height}px`
     // handle
@@ -409,6 +410,7 @@ export class Previewer {
       this.resizerHandleList[i].style.transform = `scale(${scale})`
       this.resizerHandleList[i].style.left = `${left}px`
       this.resizerHandleList[i].style.top = `${top}px`
+      this.resizerHandleList[i].style.display = isReadonly ? 'none' : 'block'
     }
   }
 
