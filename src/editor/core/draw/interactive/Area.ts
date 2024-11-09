@@ -6,7 +6,7 @@ import { formatElementContext, needFillZeroElement } from '../../../utils/elemen
 import { AreaLocationPosition } from '../../../dataset/enum/Common'
 import { DeepRequired } from '../../../interface/Common'
 import { ElementType } from '../../../dataset/enum/Element'
-import { IAreaStyle, IInsertAreaOption } from '../../../interface/Area'
+import { IAreaData, IAreaStyle, IInsertAreaOption } from '../../../interface/Area'
 import { ZERO } from '../../../dataset/constant/Common'
 import { EditorMode } from '../../../dataset/enum/Editor'
 
@@ -27,13 +27,14 @@ export class Area {
   private options: DeepRequired<IEditorOption>
   private areaStyle = new Map<string, IAreaStyle>()
   private areaPosition = new Map<string, IAreaPositionInfo[]>()
+  private editingArea = new Set<string>()
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
   }
 
-  public insertArea(payload: InsertAreaData, options: IInsertAreaOption): void {
+  public insertArea(payload: InsertAreaData, options: IInsertAreaOption): string | undefined {
     let mainElements
     if (Array.isArray(payload)) {
       mainElements = payload
@@ -67,6 +68,7 @@ export class Area {
     }
     area[0].areaId = id
     this.draw.insertElementList(area)
+    return id
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
@@ -151,5 +153,82 @@ export class Area {
         newStyleMap.set(areaId, style)
       }
     }
+  }
+
+  public setAreaEditable(areaId: string, editable = true): void {
+    if (editable) {
+      this.editingArea.add(areaId)
+    } else {
+      this.editingArea.delete(areaId)
+    }
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
+  public setAreaStyle(areaId: string, style: IAreaStyle) {
+    if (!style) {
+      this.areaStyle.delete(areaId)
+    }
+    this.areaStyle.set(areaId, {
+      alpha: style.alpha, backgroundColor: style.backgroundColor, borderColor: style.borderColor
+    })
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
+  public getData(): IAreaData {
+    const style = new Map<string, IAreaStyle>()
+    const editingArea = new Set<string>()
+    const result = {
+      style, editingArea
+    }
+
+    if (this.areaStyle.size) {
+      this.areaStyle.forEach((value, key) => {
+        style.set(key, deepClone(value))
+      })
+    }
+    if (this.editingArea.size) {
+      this.editingArea.forEach(v => editingArea.add(v))
+    }
+
+    return result
+  }
+
+  public setData(data: IAreaData) {
+    console.log(data)
+    this.editingArea = new Set<string>()
+    this.areaStyle = new Map<string, IAreaStyle>()
+    if (!data) {
+      return
+    }
+    if (data.style && data.style.size) {
+      data.style.forEach((value, key) => {
+        this.areaStyle.set(key, deepClone(value))
+      })
+
+    }
+
+    if (data.editingArea && data.editingArea.size) {
+      data.editingArea.forEach(v => this.editingArea.add(v))
+    }
+  }
+
+  public isEditing(): boolean {
+    const { startIndex, endIndex } = this.draw.getRange().getRange()
+    if (!~startIndex && !~endIndex) return false
+    const elementList = this.draw.getOriginalMainElementList()
+    for (let i = startIndex; i <= endIndex; i++) {
+      const element = elementList[i]
+      if (!element.areaId) {
+        return false
+      }
+      if (!this.editingArea.has(element.areaId)) {
+        return false
+      }
+    }
+    return true
   }
 }

@@ -10,3 +10,8 @@ export interface IAreaStyle {
   borderColor?: string
   backgroundColor?: string
 }
+
+export interface IAreaData {
+  style: Map<string, IAreaStyle>
+  editingArea: Set<string>
+}

@@ -327,7 +327,12 @@ export class Draw {
     switch (this.mode) {
       case EditorMode.DESIGN:
         return false
-      case EditorMode.READONLY:
+      case EditorMode.READONLY: {
+        if (this.zone.getZone() === EditorZone.MAIN) {
+          return !this.area.isEditing()
+        }
+        return true
+      }
       case EditorMode.PRINT:
         return true
       case EditorMode.FORM:
@@ -2666,6 +2671,7 @@ export class Draw {
     const pageNo = this.pageNo
     const oldPositionContext = deepClone(positionContext)
     const zone = this.zone.getZone()
+    const areaData = this.area.getData()
     this.historyManager.execute(() => {
       this.zone.setZone(zone)
       this.setPageNo(pageNo)
@@ -2674,6 +2680,7 @@ export class Draw {
       this.footer.setElementList(deepClone(oldFooterElementList))
       this.elementList = deepClone(oldElementList)
       this.range.replaceRange(deepClone(oldRange))
+      this.area.setData(areaData)
       this.render({
         curIndex,
         isSubmitHistory: false,

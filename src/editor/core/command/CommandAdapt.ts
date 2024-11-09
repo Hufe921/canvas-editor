@@ -107,7 +107,7 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Zone } from '../zone/Zone'
-import { IInsertAreaOption } from '../../interface/Area'
+import { IAreaStyle, IInsertAreaOption } from '../../interface/Area'
 
 export class CommandAdapt {
   private draw: Draw
@@ -2148,6 +2148,14 @@ export class CommandAdapt {
   public insertArea(payload: IElement[], options: IInsertAreaOption) {
     const {position = AreaLocationPosition.END} = options || {}
     this.focus({position: position === AreaLocationPosition.END ? LocationPosition.AFTER: LocationPosition.BEFORE})
-    this.draw.getArea().insertArea(payload, options)
+    return this.draw.getArea().insertArea(payload, options)
+  }
+
+  public setAreaStyle(areaId: string, style: IAreaStyle) {
+    this.draw.getArea().setAreaStyle(areaId, style)
+  }
+
+  public setAreaEditable(areaId: string, editable: boolean) {
+    this.draw.getArea().setAreaEditable(areaId, editable)
   }
 }
