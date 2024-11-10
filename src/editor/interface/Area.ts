@@ -14,4 +14,5 @@ export interface IAreaStyle {
 export interface IAreaData {
   style: Map<string, IAreaStyle>
   editingArea: Set<string>
+  formArea: Set<string>
 }

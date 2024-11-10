@@ -270,14 +270,10 @@ export class CommandAdapt {
   }
 
   public undo() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.historyManager.undo()
   }
 
   public redo() {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.historyManager.redo()
   }
 
@@ -2157,5 +2153,9 @@ export class CommandAdapt {
 
   public setAreaEditable(areaId: string, editable: boolean) {
     this.draw.getArea().setAreaEditable(areaId, editable)
+  }
+
+  public setAreaFormMode(areaId: string, isForm: boolean) {
+    this.draw.getArea().setAreaFormMode(areaId, isForm)
   }
 }

@@ -26,6 +26,7 @@ export class Area {
   private areaStyle = new Map<string, IAreaStyle>()
   private areaPosition = new Map<string, IAreaPositionInfo[]>()
   private editingArea = new Set<string>()
+  private formArea = new Set<string>()
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -158,6 +159,17 @@ export class Area {
     })
   }
 
+  public setAreaFormMode(areaId: string, isForm = true): void {
+    if (isForm) {
+      this.formArea.add(areaId)
+    } else {
+      this.formArea.delete(areaId)
+    }
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
   public setAreaStyle(areaId: string, style: IAreaStyle) {
     if (!style) {
       this.areaStyle.delete(areaId)
@@ -173,8 +185,9 @@ export class Area {
   public getData(): IAreaData {
     const style = new Map<string, IAreaStyle>()
     const editingArea = new Set<string>()
+    const formArea = new Set<string>()
     const result = {
-      style, editingArea
+      style, editingArea, formArea
     }
 
     if (this.areaStyle.size) {
@@ -185,6 +198,9 @@ export class Area {
     if (this.editingArea.size) {
       this.editingArea.forEach(v => editingArea.add(v))
     }
+    if (this.formArea.size) {
+      this.formArea.forEach(v => formArea.add(v))
+    }
 
     return result
   }
@@ -193,6 +209,7 @@ export class Area {
     console.log(data)
     this.editingArea = new Set<string>()
     this.areaStyle = new Map<string, IAreaStyle>()
+    this.formArea = new Set<string>()
     if (!data) {
       return
     }
@@ -200,11 +217,14 @@ export class Area {
       data.style.forEach((value, key) => {
         this.areaStyle.set(key, deepClone(value))
       })
-
     }
 
     if (data.editingArea && data.editingArea.size) {
       data.editingArea.forEach(v => this.editingArea.add(v))
+    }
+
+    if (data.formArea && data.formArea.size) {
+      data.formArea.forEach(v => this.formArea.add(v))
     }
   }
 
@@ -218,6 +238,21 @@ export class Area {
         return false
       }
       if (!this.editingArea.has(element.areaId)) {
+        return false
+      }
+    }
+    return true
+  }
+  public isFormMode(): boolean {
+    const { startIndex, endIndex } = this.draw.getRange().getRange()
+    if (!~startIndex && !~endIndex) return false
+    const elementList = this.draw.getOriginalMainElementList()
+    for (let i = startIndex; i <= endIndex; i++) {
+      const element = elementList[i]
+      if (!element.areaId) {
+        return false
+      }
+      if (!this.formArea.has(element.areaId)) {
         return false
       }
     }

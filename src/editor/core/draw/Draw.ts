@@ -329,7 +329,13 @@ export class Draw {
         return false
       case EditorMode.READONLY: {
         if (this.zone.getZone() === EditorZone.MAIN) {
-          return !this.area.isEditing()
+          const isEditing = this.area.isEditing()
+          if (isEditing) {
+            return false
+          }
+          if (this.control.getIsRangeWithinControl()) {
+            return !this.area.isFormMode()
+          }
         }
         return true
       }
