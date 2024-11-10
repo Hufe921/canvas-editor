@@ -299,3 +299,13 @@ instance.eventBus.on(
 ```javascript
 const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
 ```
+## getAreaValue
+功能: 获取一个 area 的数据
+用法：
+```js
+const {
+  version: string,
+  data: IEditorData,
+  options: IEditorOption,
+} = instance.command.getAreaValue(payload: IGetAreaValueOption)
+```
