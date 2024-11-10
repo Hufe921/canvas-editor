@@ -27,6 +27,7 @@ export class Area {
   private areaPosition = new Map<string, IAreaPositionInfo[]>()
   private editingArea = new Set<string>()
   private formArea = new Set<string>()
+  private areaOptionMap = new Map<string, IEditorResult>()
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -34,12 +35,14 @@ export class Area {
 
   public insertArea(payload: InsertAreaData, options: IInsertAreaOption): string | undefined {
     let mainElements
+    let paramIsResult = false
     if (Array.isArray(payload)) {
       mainElements = payload
     } else if ((payload as IEditorData).main) {
       mainElements = (payload as IEditorData).main
     } else {
       mainElements = (payload as IEditorResult).data?.main
+      paramIsResult = true
     }
     if (!mainElements.length) return
     if (this.draw.isDisabled()) return
@@ -55,13 +58,20 @@ export class Area {
       })
     }
 
-    const id = getUUID()
+    const id = options.id ?? getUUID()
     if (options.style) {
       this.areaStyle.set(id, options.style)
     }
     area[0].areaId = id
+    if (paramIsResult){
+      this.areaOptionMap.set(id, payload as IEditorResult)
+    }
     this.draw.insertElementList(area, false)
     return id
+  }
+
+  public getAreaOption(id: string): IEditorResult | undefined {
+    return this.areaOptionMap.get(id)
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {

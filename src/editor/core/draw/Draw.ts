@@ -109,6 +109,7 @@ import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
+import { IGetAreaValueOption } from '../../interface/Area'
 
 export class Draw {
   private container: HTMLDivElement
@@ -1128,6 +1129,24 @@ export class Draw {
       version,
       data,
       options: deepClone(this.options)
+    }
+  }
+
+  public getAreaValue(options: IGetAreaValueOption = {id: ''}) {
+    const elementList = this.getOriginalMainElementList().filter(v => v.areaId === options.id)
+    const result = this.area.getAreaOption(options.id) ?? {
+      version, options: deepClone(this.options), data: {
+        main: elementList
+      }
+    }
+    return {
+      version: result.version,
+      options: result.options,
+      data: {
+        header: result.data.header,
+        footer: result.data.footer,
+        main: zipElementList(elementList, {extraPickAttrs: options.extraPickAttrs}),
+      }
     }
   }
 

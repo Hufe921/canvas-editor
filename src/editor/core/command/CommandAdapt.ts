@@ -107,7 +107,7 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Zone } from '../zone/Zone'
-import { IAreaStyle, IInsertAreaOption } from '../../interface/Area'
+import { IAreaStyle, IGetAreaValueOption, IInsertAreaOption } from '../../interface/Area'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1332,6 +1332,10 @@ export class CommandAdapt {
 
   public getValue(options?: IGetValueOption): IEditorResult {
     return this.draw.getValue(options)
+  }
+
+  public getAreaValue(option?: IGetAreaValueOption) {
+    return this.draw.getAreaValue(option)
   }
 
   public getHTML(): IEditorHTML {
