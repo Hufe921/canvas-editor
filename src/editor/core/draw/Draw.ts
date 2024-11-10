@@ -657,7 +657,7 @@ export class Draw {
     return null
   }
 
-  public insertElementList(payload: IElement[]) {
+  public insertElementList(payload: IElement[], fixStart = true) {
     if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
@@ -680,7 +680,10 @@ export class Draw {
     } else {
       const elementList = this.getElementList()
       const isCollapsed = startIndex === endIndex
-      const start = startIndex + 1
+      let start = startIndex
+      if (fixStart) {
+        start++
+      }
       if (!isCollapsed) {
         this.spliceElementList(elementList, start, endIndex - startIndex)
       }

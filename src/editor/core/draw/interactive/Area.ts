@@ -1,10 +1,9 @@
 import { Draw } from '../Draw'
-import { IEditorData, IEditorOption, IEditorResult } from '../../../interface/Editor'
+import { IEditorData, IEditorResult } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { deepClone, getUUID } from '../../../utils'
-import { formatElementContext, needFillZeroElement } from '../../../utils/element'
+import { needFillZeroElement } from '../../../utils/element'
 import { AreaLocationPosition } from '../../../dataset/enum/Common'
-import { DeepRequired } from '../../../interface/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IAreaData, IAreaStyle, IInsertAreaOption } from '../../../interface/Area'
 import { ZERO } from '../../../dataset/constant/Common'
@@ -24,14 +23,12 @@ interface IAreaPositionInfo {
 
 export class Area {
   private draw: Draw
-  private options: DeepRequired<IEditorOption>
   private areaStyle = new Map<string, IAreaStyle>()
   private areaPosition = new Map<string, IAreaPositionInfo[]>()
   private editingArea = new Set<string>()
 
   constructor(draw: Draw) {
     this.draw = draw
-    this.options = draw.getOptions()
   }
 
   public insertArea(payload: InsertAreaData, options: IInsertAreaOption): string | undefined {
@@ -47,9 +44,6 @@ export class Area {
     if (this.draw.isDisabled()) return
     const cloneElementList = deepClone(mainElements)
     const { position = AreaLocationPosition.END } = options
-    const elementList = this.draw.getElementList()
-    const startIndex = position === AreaLocationPosition.START ? 0 : this.draw.getOriginalMainElementList().length
-
 
     const area: IElement[] = [{
       type: ElementType.AREA, value: '', valueList: cloneElementList
@@ -59,15 +53,13 @@ export class Area {
         value: ZERO
       })
     }
-    formatElementContext(elementList, area, startIndex, {
-      editorOptions: this.options
-    })
+
     const id = getUUID()
     if (options.style) {
       this.areaStyle.set(id, options.style)
     }
     area[0].areaId = id
-    this.draw.insertElementList(area)
+    this.draw.insertElementList(area, false)
     return id
   }
 
