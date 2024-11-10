@@ -23,6 +23,7 @@ import {
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import {
+  AREA_CONTEXT_ATTR,
   BLOCK_ELEMENT_TYPE,
   CONTROL_STYLE_ATTR,
   EDITOR_ELEMENT_CONTEXT_ATTR,
@@ -893,7 +894,7 @@ export function formatElementContext(
       isBreakWarped ||
       (!copyElement.listId && targetElement.type === ElementType.LIST)
     ) {
-      const cloneAttr = [...TABLE_CONTEXT_ATTR, ...EDITOR_ROW_ATTR]
+      const cloneAttr = [...TABLE_CONTEXT_ATTR, ...EDITOR_ROW_ATTR, ...AREA_CONTEXT_ATTR]
       cloneProperty<IElement>(cloneAttr, copyElement!, targetElement)
       targetElement.valueList?.forEach(valueItem => {
         cloneProperty<IElement>(cloneAttr, copyElement!, valueItem)
@@ -914,6 +915,18 @@ export function formatElementContext(
       cloneAttr.push(...EDITOR_ROW_ATTR)
     }
     cloneProperty<IElement>(cloneAttr, copyElement, targetElement)
+    if (targetElement.type === ElementType.TABLE && targetElement.trList && targetElement.trList.length) {
+      for (let i = 0; i < targetElement.trList.length; i++) {
+        const tr = targetElement.trList[i]
+        tr.areaId = targetElement.areaId
+        if (tr.tdList && tr.tdList.length) {
+          for (let j = 0; j < tr.tdList.length; j++) {
+            const td = tr.tdList[j]
+            td.areaId = tr.areaId
+          }
+        }
+      }
+    }
   }
 }
 
