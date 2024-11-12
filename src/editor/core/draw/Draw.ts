@@ -1836,7 +1836,8 @@ export class Draw {
         if (
           !curRow.isSurround &&
           (preElement?.rowFlex === RowFlex.JUSTIFY ||
-            (preElement?.rowFlex === RowFlex.ALIGNMENT && isWidthNotEnough))
+            (preElement?.rowFlex === RowFlex.ALIGNMENT &&
+              curRow.isWidthNotEnough))
         ) {
           // 忽略换行符及尾部元素间隔设置
           const rowElementList =

@@ -57,6 +57,7 @@ import {
 } from '../../../dataset/constant/Element'
 import { IRowElement } from '../../../interface/Row'
 import { RowFlex } from '../../../dataset/enum/Row'
+import { ZERO } from '../../../dataset/constant/Common'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -557,7 +558,7 @@ export class Control {
       const value = placeholderStrList[p]
       const newElement: IElement = {
         ...anchorElementStyleAttr,
-        value,
+        value: value === '\n' ? ZERO : value,
         controlId: startElement.controlId,
         type: ElementType.CONTROL,
         control: startElement.control,

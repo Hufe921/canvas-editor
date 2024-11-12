@@ -32,6 +32,7 @@
 - Borderless
 - Dashed border
 - Outer border
+- Internal border
 - Td borders
   - Top border
   - Right border
