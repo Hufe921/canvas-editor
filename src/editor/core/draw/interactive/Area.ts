@@ -1,271 +1,182 @@
 import { Draw } from '../Draw'
-import { IEditorData, IEditorResult } from '../../../interface/Editor'
-import { IElement } from '../../../interface/Element'
 import { deepClone, getUUID } from '../../../utils'
-import { needFillZeroElement } from '../../../utils/element'
-import { AreaLocationPosition } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
-import { IAreaData, IAreaStyle, IInsertAreaOption } from '../../../interface/Area'
-import { ZERO } from '../../../dataset/constant/Common'
-import { EditorMode } from '../../../dataset/enum/Editor'
-
-type InsertAreaData = IEditorData | IEditorResult | IElement[]
-
-interface IAreaPosition {
-  start: number
-  end: number
-}
-
-interface IAreaPositionInfo {
-  position: IAreaPosition
-  pageIndex: number
-}
+import {
+  IAreaInfo,
+  IGetAreaValueOption,
+  IGetAreaValueResult,
+  IInsertAreaOption,
+  ISetAreaPropertiesOption
+} from '../../../interface/Area'
+import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
+import { LocationPosition } from '../../../dataset/enum/Common'
+import { RangeManager } from '../../range/RangeManager'
+import { Zone } from '../../zone/Zone'
+import { Position } from '../../position/Position'
+import { zipElementList } from '../../../utils/element'
+import { AreaMode } from '../../../dataset/enum/Area'
 
 export class Area {
   private draw: Draw
-  private areaStyle = new Map<string, IAreaStyle>()
-  private areaPosition = new Map<string, IAreaPositionInfo[]>()
-  private editingArea = new Set<string>()
-  private formArea = new Set<string>()
-  private areaOptionMap = new Map<string, IEditorResult>()
+  private zone: Zone
+  private range: RangeManager
+  private position: Position
+  private areaInfoMap = new Map<string, IAreaInfo>()
 
   constructor(draw: Draw) {
     this.draw = draw
+    this.zone = draw.getZone()
+    this.range = draw.getRange()
+    this.position = draw.getPosition()
   }
 
-  public insertArea(payload: InsertAreaData, options: IInsertAreaOption): string | undefined {
-    let mainElements
-    let paramIsResult = false
-    if (Array.isArray(payload)) {
-      mainElements = payload
-    } else if ((payload as IEditorData).main) {
-      mainElements = (payload as IEditorData).main
+  public getActiveAreaId(): string | null {
+    if (!this.areaInfoMap.size) return null
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    return element?.areaId || null
+  }
+
+  public getActiveAreaInfo(): IAreaInfo | null {
+    const activeAreaId = this.getActiveAreaId()
+    if (!activeAreaId) return null
+    return this.areaInfoMap.get(activeAreaId) || null
+  }
+
+  public isReadonly() {
+    const activeAreaInfo = this.getActiveAreaInfo()
+    if (!activeAreaInfo) return false
+    switch (activeAreaInfo.area.mode) {
+      case AreaMode.EDIT:
+        return false
+      case AreaMode.READONLY:
+        return true
+      case AreaMode.FORM:
+        return !this.draw.getControl().getIsRangeWithinControl()
+      default:
+        return false
+    }
+  }
+
+  public insertArea(payload: IInsertAreaOption): string | null {
+    // 切换至正文
+    if (this.zone.getZone() !== EditorZone.MAIN) {
+      this.zone.setZone(EditorZone.MAIN)
+    }
+    // 设置插入位置
+    const { id, value, area, position } = payload
+    if (position === LocationPosition.BEFORE) {
+      this.range.setRange(0, 0)
     } else {
-      mainElements = (payload as IEditorResult).data?.main
-      paramIsResult = true
+      const elementList = this.draw.getOriginalMainElementList()
+      const lastIndex = elementList.length - 1
+      this.range.setRange(lastIndex, lastIndex)
     }
-    if (!mainElements.length) return
-    if (this.draw.isDisabled()) return
-    const cloneElementList = deepClone(mainElements)
-    const { position = AreaLocationPosition.END } = options
-
-    const area: IElement[] = [{
-      type: ElementType.AREA, value: '', valueList: cloneElementList
-    }]
-    if (position == AreaLocationPosition.START && needFillZeroElement(cloneElementList[cloneElementList.length - 1])) {
-      area.push({
-        value: ZERO
-      })
-    }
-
-    const id = options.id ?? getUUID()
-    if (options.style) {
-      this.areaStyle.set(id, options.style)
-    }
-    area[0].areaId = id
-    if (paramIsResult){
-      this.areaOptionMap.set(id, payload as IEditorResult)
-    }
-    this.draw.insertElementList(area, false)
-    return id
-  }
-
-  public getAreaOption(id: string): IEditorResult | undefined {
-    return this.areaOptionMap.get(id)
+    const areaId = id || getUUID()
+    this.draw.insertElementList([
+      {
+        type: ElementType.AREA,
+        value: '',
+        areaId,
+        valueList: value,
+        area: deepClone(area)
+      }
+    ])
+    return areaId
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+    if (!this.areaInfoMap.size) return
     const mode = this.draw.getMode()
-    if (mode == EditorMode.CLEAN || mode === EditorMode.PRINT) return
-    const positionMap = new Map<string, IAreaPositionInfo>()
-    for (const [areaId, positionListElement] of this.areaPosition) {
-      for (let i = 0; i < positionListElement.length; i++) {
-        if (pageNo !== positionListElement[i].pageIndex) {
-          continue
-        }
-        positionMap.set(areaId, positionListElement[i])
-      }
-    }
-
-    if (positionMap.size === 0) return
+    if (mode === EditorMode.CLEAN || mode === EditorMode.PRINT) return
     ctx.save()
-    // 画背景
-    const width = this.draw.getOptions().width
-    for (const [areaId, position] of positionMap) {
-      const style = this.areaStyle.get(areaId)
-      if (position.position.start >= position.position.end) continue
-      if (!style || (!style.backgroundColor && !style.borderColor)) continue
-      ctx.globalAlpha = style.alpha ?? 0.1
-      if (style.backgroundColor) {
-        ctx.fillStyle = style.backgroundColor
-        ctx.fillRect(0, position.position.start, width, position.position.end - position.position.start)
+    const margins = this.draw.getMargins()
+    const width = this.draw.getInnerWidth()
+    for (const areaInfoItem of this.areaInfoMap) {
+      const { area, positionList } = areaInfoItem[1]
+      if (!area.backgroundColor && !area.borderColor) continue
+      const pagePositionList = positionList.filter(p => p.pageNo === pageNo)
+      if (!pagePositionList.length) continue
+      ctx.translate(0.5, 0.5)
+      const firstPosition = pagePositionList[0]
+      const lastPosition = pagePositionList[pagePositionList.length - 1]
+      // 起始位置
+      const x = margins[3]
+      const y = Math.ceil(firstPosition.coordinate.leftTop[1])
+      const height = Math.ceil(lastPosition.coordinate.rightBottom[1] - y)
+      // 背景色
+      if (area.backgroundColor) {
+        ctx.fillStyle = area.backgroundColor
+        ctx.fillRect(x, y, width, height)
       }
-      if (style.borderColor) {
-        ctx.globalAlpha = 0.5
-        ctx.strokeStyle = style.borderColor
-        ctx.beginPath()
-        ctx.roundRect(0, position.position.start, width, position.position.end - position.position.start, [5])
-        ctx.stroke()
+      // 边框
+      if (area.borderColor) {
+        ctx.strokeStyle = area.borderColor
+        ctx.strokeRect(x, y, width, height)
       }
     }
     ctx.restore()
   }
 
-  /**
-   * 计算每个 area 的位置，这个方法依赖 {@link Position#computePositionList()} 的计算
-   * 结果
-   */
-  public computeAreaPosition() {
-    const positionList = this.draw.getPosition().getOriginalMainPositionList()
+  public compute() {
+    this.areaInfoMap.clear()
     const elementList = this.draw.getOriginalMainElementList()
-    this.areaPosition.clear()
-    if (elementList.length === 0 || positionList.length === 0) return
-    for (let i = 0; i < elementList.length; i++) {
-      const element = elementList[i]
-      const position = positionList[i]
-      if (!position || !element.areaId) continue
-      let areaPositionList = this.areaPosition.get(element.areaId)
-      if (!areaPositionList) {
-        areaPositionList = []
-        this.areaPosition.set(element.areaId, areaPositionList)
-      }
-      let target = areaPositionList.find(value => value.pageIndex === position.pageNo)
-      if (!target) {
-        target = {
-          pageIndex: position.pageNo,
-          position: { start: position.coordinate.leftTop[1], end: position.coordinate.leftTop[1] }
+    const positionList = this.position.getOriginalMainPositionList()
+    for (let e = 0; e < elementList.length; e++) {
+      const element = elementList[e]
+      const areaId = element.areaId
+      if (areaId) {
+        const areaInfo = this.areaInfoMap.get(areaId)
+        if (!areaInfo) {
+          this.areaInfoMap.set(areaId, {
+            id: areaId,
+            area: element.area!,
+            elementList: [element],
+            positionList: [positionList[e]]
+          })
+        } else {
+          areaInfo.elementList.push(element)
+          areaInfo.positionList.push(positionList[e])
         }
-        areaPositionList.push(target)
-      }
-      if (target.position.start < position.coordinate.leftTop[1] &&
-        position.coordinate.leftTop[1] < target.position.end) {
-        continue
-      }
-      if (target.position.start >= position.coordinate.leftBottom[1]) {
-        target.position.start = position.coordinate.leftBottom[1]
-      }
-      if (target.position.end <= position.coordinate.leftBottom[1]) {
-        target.position.end = position.coordinate.leftBottom[1]
-      }
-    }
-    // 清理 style
-    const newStyleMap = new Map<string, IAreaStyle>()
-    for (const [areaId] of this.areaPosition) {
-      const style = this.areaStyle.get(areaId)
-      if (style) {
-        newStyleMap.set(areaId, style)
       }
     }
   }
 
-  public setAreaEditable(areaId: string, editable = true): void {
-    if (editable) {
-      this.editingArea.add(areaId)
-    } else {
-      this.editingArea.delete(areaId)
+  public getAreaValue(
+    options: IGetAreaValueOption = {}
+  ): IGetAreaValueResult | null {
+    const areaId = options.id || this.getActiveAreaId()
+    if (!areaId) return null
+    const areaInfo = this.areaInfoMap.get(areaId)
+    if (!areaInfo) return null
+    return {
+      area: areaInfo.area,
+      id: areaInfo.id,
+      value: zipElementList(areaInfo.elementList)
+    }
+  }
+
+  public setAreaProperties(payload: ISetAreaPropertiesOption) {
+    const areaId = payload.id || this.getActiveAreaId()
+    if (!areaId) return
+    const areaInfo = this.areaInfoMap.get(areaId)
+    if (!areaInfo) return
+    // 是否计算
+    const isCompute = false
+    // 修改属性
+    if (payload.properties.mode) {
+      areaInfo.area.mode = payload.properties.mode
+    }
+    if (payload.properties.borderColor) {
+      areaInfo.area.borderColor = payload.properties.borderColor
+    }
+    if (payload.properties.backgroundColor) {
+      areaInfo.area.backgroundColor = payload.properties.backgroundColor
     }
     this.draw.render({
+      isCompute,
       isSetCursor: false
     })
-  }
-
-  public setAreaFormMode(areaId: string, isForm = true): void {
-    if (isForm) {
-      this.formArea.add(areaId)
-    } else {
-      this.formArea.delete(areaId)
-    }
-    this.draw.render({
-      isSetCursor: false
-    })
-  }
-
-  public setAreaStyle(areaId: string, style: IAreaStyle) {
-    if (!style) {
-      this.areaStyle.delete(areaId)
-    }
-    this.areaStyle.set(areaId, {
-      alpha: style.alpha, backgroundColor: style.backgroundColor, borderColor: style.borderColor
-    })
-    this.draw.render({
-      isSetCursor: false
-    })
-  }
-
-  public getData(): IAreaData {
-    const style = new Map<string, IAreaStyle>()
-    const editingArea = new Set<string>()
-    const formArea = new Set<string>()
-    const result = {
-      style, editingArea, formArea
-    }
-
-    if (this.areaStyle.size) {
-      this.areaStyle.forEach((value, key) => {
-        style.set(key, deepClone(value))
-      })
-    }
-    if (this.editingArea.size) {
-      this.editingArea.forEach(v => editingArea.add(v))
-    }
-    if (this.formArea.size) {
-      this.formArea.forEach(v => formArea.add(v))
-    }
-
-    return result
-  }
-
-  public setData(data: IAreaData) {
-    console.log(data)
-    this.editingArea = new Set<string>()
-    this.areaStyle = new Map<string, IAreaStyle>()
-    this.formArea = new Set<string>()
-    if (!data) {
-      return
-    }
-    if (data.style && data.style.size) {
-      data.style.forEach((value, key) => {
-        this.areaStyle.set(key, deepClone(value))
-      })
-    }
-
-    if (data.editingArea && data.editingArea.size) {
-      data.editingArea.forEach(v => this.editingArea.add(v))
-    }
-
-    if (data.formArea && data.formArea.size) {
-      data.formArea.forEach(v => this.formArea.add(v))
-    }
-  }
-
-  public isEditing(): boolean {
-    const { startIndex, endIndex } = this.draw.getRange().getRange()
-    if (!~startIndex && !~endIndex) return false
-    const elementList = this.draw.getOriginalMainElementList()
-    for (let i = startIndex; i <= endIndex; i++) {
-      const element = elementList[i]
-      if (!element.areaId) {
-        return false
-      }
-      if (!this.editingArea.has(element.areaId)) {
-        return false
-      }
-    }
-    return true
-  }
-  public isFormMode(): boolean {
-    const { startIndex, endIndex } = this.draw.getRange().getRange()
-    if (!~startIndex && !~endIndex) return false
-    const elementList = this.draw.getOriginalMainElementList()
-    for (let i = startIndex; i <= endIndex; i++) {
-      const element = elementList[i]
-      if (!element.areaId) {
-        return false
-      }
-      if (!this.formArea.has(element.areaId)) {
-        return false
-      }
-    }
-    return true
   }
 }

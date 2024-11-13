@@ -109,7 +109,6 @@ import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
-import { IGetAreaValueOption } from '../../interface/Area'
 
 export class Draw {
   private container: HTMLDivElement
@@ -325,21 +324,13 @@ export class Draw {
   }
 
   public isReadonly() {
+    if (this.area.getActiveAreaId()) {
+      return this.area.isReadonly()
+    }
     switch (this.mode) {
       case EditorMode.DESIGN:
         return false
-      case EditorMode.READONLY: {
-        if (this.zone.getZone() === EditorZone.MAIN) {
-          const isEditing = this.area.isEditing()
-          if (isEditing) {
-            return false
-          }
-          if (this.control.getIsRangeWithinControl()) {
-            return !this.area.isFormMode()
-          }
-        }
-        return true
-      }
+      case EditorMode.READONLY:
       case EditorMode.PRINT:
         return true
       case EditorMode.FORM:
@@ -664,7 +655,7 @@ export class Draw {
     return null
   }
 
-  public insertElementList(payload: IElement[], fixStart = true) {
+  public insertElementList(payload: IElement[]) {
     if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
@@ -687,10 +678,7 @@ export class Draw {
     } else {
       const elementList = this.getElementList()
       const isCollapsed = startIndex === endIndex
-      let start = startIndex
-      if (fixStart) {
-        start++
-      }
+      const start = startIndex + 1
       if (!isCollapsed) {
         this.spliceElementList(elementList, start, endIndex - startIndex)
       }
@@ -1119,7 +1107,8 @@ export class Draw {
         extraPickAttrs
       }),
       main: zipElementList(mainElementList, {
-        extraPickAttrs
+        extraPickAttrs,
+        isClassifyArea: true
       }),
       footer: zipElementList(this.getFooterElementList(), {
         extraPickAttrs
@@ -1129,24 +1118,6 @@ export class Draw {
       version,
       data,
       options: deepClone(this.options)
-    }
-  }
-
-  public getAreaValue(options: IGetAreaValueOption = {id: ''}) {
-    const elementList = this.getOriginalMainElementList().filter(v => v.areaId === options.id)
-    const result = this.area.getAreaOption(options.id) ?? {
-      version, options: deepClone(this.options), data: {
-        main: elementList
-      }
-    }
-    return {
-      version: result.version,
-      options: result.options,
-      data: {
-        header: result.data.header,
-        footer: result.data.footer,
-        main: zipElementList(elementList, {extraPickAttrs: options.extraPickAttrs}),
-      }
     }
   }
 
@@ -1770,6 +1741,7 @@ export class Draw {
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
+        preElement?.areaId !== element.areaId ||
         (i !== 0 && element.value === ZERO)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
@@ -1818,7 +1790,10 @@ export class Draw {
       } else {
         curRow.width += metrics.width
         // 减小块元素前第一行空行行高
-        if (i === 0 && getIsBlockElement(elementList[1])) {
+        if (
+          i === 0 &&
+          (getIsBlockElement(elementList[1]) || !!elementList[1].areaId)
+        ) {
           curRow.height = defaultBasicRowMarginHeight
           curRow.ascent = defaultBasicRowMarginHeight
         } else if (curRow.height < height) {
@@ -2402,7 +2377,7 @@ export class Draw {
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx, pageNo)
-    // 绘制 area 背景
+    // 绘制区域
     this.area.render(ctx, pageNo)
     // 绘制页边距
     if (this.mode !== EditorMode.PRINT) {
@@ -2558,8 +2533,8 @@ export class Draw {
       this.pageRowList = this._computePageList()
       // 位置信息
       this.position.computePositionList()
-      // 计算 area 的位置信息
-      this.area.computeAreaPosition()
+      // 区域信息
+      this.area.compute()
       // 搜索信息
       const searchKeyword = this.search.getSearchKeyword()
       if (searchKeyword) {
@@ -2699,7 +2674,6 @@ export class Draw {
     const pageNo = this.pageNo
     const oldPositionContext = deepClone(positionContext)
     const zone = this.zone.getZone()
-    const areaData = this.area.getData()
     this.historyManager.execute(() => {
       this.zone.setZone(zone)
       this.setPageNo(pageNo)
@@ -2708,7 +2682,6 @@ export class Draw {
       this.footer.setElementList(deepClone(oldFooterElementList))
       this.elementList = deepClone(oldElementList)
       this.range.replaceRange(deepClone(oldRange))
-      this.area.setData(areaData)
       this.render({
         curIndex,
         isSubmitHistory: false,

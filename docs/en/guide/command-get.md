@@ -299,3 +299,17 @@ Usage:
 ```javascript
 const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
 ```
+
+## getAreaValue
+
+Feature: Get area value
+
+Usage:
+
+```javascript
+const {
+  id?: string
+  area: IArea
+  value: IElement[]
+} = instance.command.getAreaValue(options: IGetAreaValueOption)
+```

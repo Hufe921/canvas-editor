@@ -176,5 +176,8 @@ interface IElement {
   listType?: ListType;
   listStyle?: ListStyle;
   listWrap?: boolean;
+  // 区域
+  areaId?: string;
+  area?: IArea;
 }
 ```

@@ -121,9 +121,7 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
   'strikeout'
 ]
 
-export const AREA_CONTEXT_ATTR: Array<keyof IElement> = [
-  'areaId'
-]
+export const AREA_CONTEXT_ATTR: Array<keyof IElement> = ['areaId', 'area']
 
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
   ...TABLE_CONTEXT_ATTR,

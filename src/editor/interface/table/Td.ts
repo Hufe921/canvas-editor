@@ -6,7 +6,6 @@ import { IRow } from '../Row'
 export interface ITd {
   conceptId?: string
   id?: string
-  areaId?: string
   extension?: unknown
   externalId?: string
   x?: number

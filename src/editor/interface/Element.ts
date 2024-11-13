@@ -5,6 +5,7 @@ import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
 import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
+import { IArea } from './Area'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
 import { IControl } from './Control'
@@ -128,7 +129,9 @@ export interface IBlockElement {
 export interface IAreaElement {
   valueList?: IElement[]
   areaId?: string
+  area?: IArea
 }
+
 export type IElement = IElementBasic &
   IElementStyle &
   IElementGroup &

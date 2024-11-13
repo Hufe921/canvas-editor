@@ -973,25 +973,17 @@ instance.command.executeFocus(payload?: IFocusOption)
 ```
 
 ## executeInsertArea
-功能： 将一个文档的主体内容做为当前文档主体内容的一部分插入，可以单独控制其背景
+
+功能： 插入区域
 
 ```js
-const id = instance.command.executeInsertArea(payload: IElement[], options: IInsertAreaOption)
+const areaId = instance.command.executeInsertArea(payload: IInsertAreaOption)
 ```
 
-## executeSetAreaStyle
-功能：控制一个Area 的前景色及边框色
+## executeSetAreaProperties
+
+功能：设置区域属性
 
 ```js
-instance.command.executeSetAreaStyle(areaId: string, style: IAreaStyle)
-```
-## executeSetAreaEditable
-功能：设置一个 area 的内容是否可以编辑
-```js
-instance.command.executeSetAreaEditable(areaId: string, editable: boolean)
-```
-## executeSetAreaFormMode
-功能：设置一个 area 的控件是否可以编辑
-```js
-instance.command.executeSetAreaFormMode(areaId: string, isForm: boolean)
+instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
 ```

@@ -76,9 +76,7 @@ export class Command {
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeInsertArea: CommandAdapt['insertArea']
-  public executeSetAreaStyle: CommandAdapt['setAreaStyle']
-  public executeSetAreaEditable: CommandAdapt['setAreaEditable']
-  public executeSetAreaFormMode: CommandAdapt['setAreaFormMode']
+  public executeSetAreaProperties: CommandAdapt['setAreaProperties']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeSetValue: CommandAdapt['setValue']
@@ -207,12 +205,12 @@ export class Command {
     this.executePaperSize = adapt.paperSize.bind(adapt)
     this.executePaperDirection = adapt.paperDirection.bind(adapt)
     this.executeSetPaperMargin = adapt.setPaperMargin.bind(adapt)
+    // 区域
+    this.getAreaValue = adapt.getAreaValue.bind(adapt)
+    this.executeInsertArea = adapt.insertArea.bind(adapt)
+    this.executeSetAreaProperties = adapt.setAreaProperties.bind(adapt)
     // 通用
     this.executeInsertElementList = adapt.insertElementList.bind(adapt)
-    this.executeInsertArea = adapt.insertArea.bind(adapt)
-    this.executeSetAreaStyle = adapt.setAreaStyle.bind(adapt)
-    this.executeSetAreaEditable = adapt.setAreaEditable.bind(adapt)
-    this.executeSetAreaFormMode = adapt.setAreaFormMode.bind(adapt)
     this.executeAppendElementList = adapt.appendElementList.bind(adapt)
     this.executeUpdateElementById = adapt.updateElementById.bind(adapt)
     this.executeSetValue = adapt.setValue.bind(adapt)
@@ -232,7 +230,6 @@ export class Command {
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
-    this.getAreaValue = adapt.getAreaValue.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)

@@ -21,8 +21,3 @@ export enum LocationPosition {
   BEFORE = 'before',
   AFTER = 'after'
 }
-
-export enum AreaLocationPosition  {
-  START = 'start',
-  END = 'end'
-}
