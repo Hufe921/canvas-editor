@@ -1802,7 +1802,7 @@ export class Draw {
         // 减小块元素前第一行空行行高
         if (
           i === 0 &&
-          (getIsBlockElement(elementList[1]) || !!elementList[1].areaId)
+          (getIsBlockElement(elementList[1]) || !!elementList[1]?.areaId)
         ) {
           curRow.height = defaultBasicRowMarginHeight
           curRow.ascent = defaultBasicRowMarginHeight
