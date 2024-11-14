@@ -1305,8 +1305,9 @@ export class Draw {
         0
       const availableWidth = innerWidth - offsetX
       // 增加起始位置坐标偏移量
-      x += curRow.elementList.length === 1 ? offsetX : 0
-      y += curRow.offsetY || 0
+      const isStartElement = curRow.elementList.length === 1
+      x += isStartElement ? offsetX : 0
+      y += isStartElement ? curRow.offsetY || 0 : 0
       if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
@@ -1459,13 +1460,14 @@ export class Draw {
           let curPagePreHeight = marginHeight
           for (let r = 0; r < rowList.length; r++) {
             const row = rowList[r]
+            const rowOffsetY = row.offsetY || 0
             if (
-              row.height + curPagePreHeight > height ||
+              row.height + curPagePreHeight + rowOffsetY > height ||
               rowList[r - 1]?.isPageBreak
             ) {
-              curPagePreHeight = marginHeight + row.height
+              curPagePreHeight = marginHeight + row.height + rowOffsetY
             } else {
-              curPagePreHeight += row.height
+              curPagePreHeight += row.height + rowOffsetY
             }
           }
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
@@ -1789,7 +1791,9 @@ export class Draw {
         }
         // Y轴偏移量
         row.offsetY =
-          element.area?.top && element.areaId !== elementList[i - 1]?.areaId
+          !isFromTable &&
+          element.area?.top &&
+          element.areaId !== elementList[i - 1]?.areaId
             ? element.area.top * scale
             : 0
         rowList.push(row)
@@ -1884,7 +1888,10 @@ export class Draw {
     if (pageMode === PageMode.CONTINUITY) {
       pageRowList[0] = this.rowList
       // 重置高度
-      pageHeight += this.rowList.reduce((pre, cur) => pre + cur.height, 0)
+      pageHeight += this.rowList.reduce(
+        (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+        0
+      )
       const dpr = this.getPagePixelRatio()
       const pageDom = this.pageList[0]
       const pageDomHeight = Number(pageDom.style.height.replace('px', ''))
@@ -1900,19 +1907,20 @@ export class Draw {
     } else {
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]
+        const rowOffsetY = row.offsetY || 0
         if (
-          row.height + pageHeight > height ||
+          row.height + rowOffsetY + pageHeight > height ||
           this.rowList[i - 1]?.isPageBreak
         ) {
           if (Number.isInteger(maxPageNo) && pageNo >= maxPageNo!) {
             this.elementList = this.elementList.slice(0, row.startIndex)
             break
           }
-          pageHeight = marginHeight + row.height
+          pageHeight = marginHeight + row.height + rowOffsetY
           pageRowList.push([row])
           pageNo++
         } else {
-          pageHeight += row.height
+          pageHeight += row.height + rowOffsetY
           pageRowList[pageNo].push(row)
         }
       }

@@ -172,6 +172,21 @@ export function formatElementList(
           const value = valueList[v]
           value.areaId = el.areaId || areaId
           value.area = el.area
+          if (value.type === ElementType.TABLE) {
+            const trList = value.trList!
+            for (let r = 0; r < trList.length; r++) {
+              const tr = trList[r]
+              for (let d = 0; d < tr.tdList.length; d++) {
+                const td = tr.tdList[d]
+                const tdValueList = td.value
+                for (let t = 0; t < tdValueList.length; t++) {
+                  const tdValue = tdValueList[t]
+                  tdValue.areaId = el.areaId || areaId
+                  tdValue.area = el.area
+                }
+              }
+            }
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -629,6 +644,7 @@ export function zipElementList(
       }
     } else if (element.areaId && element.area) {
       const areaId = element.areaId
+      const area = element.area
       // 收集并压缩数据
       const valueList: IElement[] = []
       while (e < elementList.length) {
@@ -648,8 +664,8 @@ export function zipElementList(
         const areaElement: IElement = {
           type: ElementType.AREA,
           value: '',
-          areaId: element.areaId,
-          area: element.area
+          areaId,
+          area
         }
         areaElement.valueList = areaElementList
         element = areaElement
@@ -684,7 +700,10 @@ export function zipElementList(
             const zipTd: ITd = {
               colspan: td.colspan,
               rowspan: td.rowspan,
-              value: zipElementList(td.value, options)
+              value: zipElementList(td.value, {
+                ...options,
+                isClassifyArea: false
+              })
             }
             // 压缩单元格属性
             TABLE_TD_ZIP_ATTR.forEach(attr => {

@@ -133,6 +133,7 @@ export interface IControlRuleOption {
 export interface IGetControlValueOption {
   id?: string
   conceptId?: string
+  areaId?: string
 }
 
 export type IGetControlValueResult = (Omit<IControl, 'value'> & {
@@ -145,12 +146,14 @@ export type IGetControlValueResult = (Omit<IControl, 'value'> & {
 export interface ISetControlValueOption {
   id?: string
   conceptId?: string
+  areaId?: string
   value: string | IElement[]
 }
 
 export interface ISetControlExtensionOption {
   id?: string
   conceptId?: string
+  areaId?: string
   extension: unknown
 }
 
@@ -159,6 +162,7 @@ export type ISetControlHighlightOption = IControlHighlight[]
 export type ISetControlProperties = {
   id?: string
   conceptId?: string
+  areaId?: string
   properties: Partial<Omit<IControl, 'value'>>
 }
 

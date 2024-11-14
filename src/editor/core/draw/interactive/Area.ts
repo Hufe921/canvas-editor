@@ -1,5 +1,5 @@
 import { Draw } from '../Draw'
-import { deepClone, getUUID } from '../../../utils'
+import { deepClone, getUUID, isNonValue } from '../../../utils'
 import { ElementType } from '../../../dataset/enum/Element'
 import {
   IAreaInfo,
@@ -165,7 +165,7 @@ export class Area {
     const areaInfo = this.areaInfoMap.get(areaId)
     if (!areaInfo) return
     // 是否计算
-    const isCompute = false
+    let isCompute = false
     // 修改属性
     if (payload.properties.mode) {
       areaInfo.area.mode = payload.properties.mode
@@ -175,6 +175,10 @@ export class Area {
     }
     if (payload.properties.backgroundColor) {
       areaInfo.area.backgroundColor = payload.properties.backgroundColor
+    }
+    if (!isNonValue(payload.properties.top)) {
+      isCompute = true
+      areaInfo.area.top = payload.properties.top
     }
     this.draw.render({
       isCompute,
