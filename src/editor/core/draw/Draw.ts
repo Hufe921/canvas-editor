@@ -1306,6 +1306,7 @@ export class Draw {
       const availableWidth = innerWidth - offsetX
       // 增加起始位置坐标偏移量
       x += curRow.elementList.length === 1 ? offsetX : 0
+      y += curRow.offsetY || 0
       if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
@@ -1786,6 +1787,11 @@ export class Draw {
           row.offsetX = listStyleMap.get(element.listId!)
           row.listIndex = listIndex
         }
+        // Y轴偏移量
+        row.offsetY =
+          element.area?.top && element.areaId !== elementList[i - 1]?.areaId
+            ? element.area.top * scale
+            : 0
         rowList.push(row)
       } else {
         curRow.width += metrics.width

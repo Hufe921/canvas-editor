@@ -140,8 +140,9 @@ export class Position {
           x += innerWidth - curRowWidth
         }
       }
-      // 当前行X轴偏移量
+      // 当前行X/Y轴偏移量
       x += curRow.offsetX || 0
+      y += curRow.offsetY || 0
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y

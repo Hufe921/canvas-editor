@@ -3,6 +3,7 @@ import { LocationPosition } from '../dataset/enum/Common'
 import { IElement, IElementPosition } from './Element'
 
 export interface IAreaStyle {
+  top?: number
   borderColor?: string
   backgroundColor?: string
 }
