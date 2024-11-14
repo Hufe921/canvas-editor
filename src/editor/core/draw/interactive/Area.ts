@@ -153,6 +153,8 @@ export class Area {
     return {
       area: areaInfo.area,
       id: areaInfo.id,
+      startPageNo: areaInfo.positionList[0].pageNo,
+      endPageNo: areaInfo.positionList[areaInfo.positionList.length - 1].pageNo,
       value: zipElementList(areaInfo.elementList)
     }
   }

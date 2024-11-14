@@ -2,6 +2,10 @@ import { AreaMode } from '../dataset/enum/Area'
 import { LocationPosition } from '../dataset/enum/Common'
 import { IElement, IElementPosition } from './Element'
 
+export interface IAreaBasic {
+  extension?: unknown
+}
+
 export interface IAreaStyle {
   top?: number
   borderColor?: string
@@ -12,7 +16,7 @@ export interface IAreaRule {
   mode?: AreaMode
 }
 
-export type IArea = IAreaStyle & IAreaRule
+export type IArea = IAreaBasic & IAreaStyle & IAreaRule
 
 export interface IInsertAreaOption {
   id?: string
@@ -33,6 +37,8 @@ export interface IGetAreaValueOption {
 export interface IGetAreaValueResult {
   id?: string
   area: IArea
+  startPageNo: number
+  endPageNo: number
   value: IElement[]
 }
 

@@ -311,5 +311,7 @@ const {
   id?: string
   area: IArea
   value: IElement[]
+  startPageNo: number
+  endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
 ```

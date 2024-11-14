@@ -1344,7 +1344,7 @@ export class CommandAdapt {
   }
 
   public getAreaValue(
-    options: IGetAreaValueOption
+    options?: IGetAreaValueOption
   ): IGetAreaValueResult | null {
     return this.draw.getArea().getAreaValue(options)
   }
