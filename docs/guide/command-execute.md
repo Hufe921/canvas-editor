@@ -971,3 +971,19 @@ instance.command.executeInsertTitle(payload: IElement)
 ```javascript
 instance.command.executeFocus(payload?: IFocusOption)
 ```
+
+## executeInsertArea
+
+功能： 插入区域
+
+```js
+const areaId = instance.command.executeInsertArea(payload: IInsertAreaOption)
+```
+
+## executeSetAreaProperties
+
+功能：设置区域属性
+
+```js
+instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
+```

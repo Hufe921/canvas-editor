@@ -107,6 +107,12 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Zone } from '../zone/Zone'
+import {
+  IGetAreaValueOption,
+  IGetAreaValueResult,
+  IInsertAreaOption,
+  ISetAreaPropertiesOption
+} from '../../interface/Area'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1337,6 +1343,12 @@ export class CommandAdapt {
     return this.draw.getValue(options)
   }
 
+  public getAreaValue(
+    options?: IGetAreaValueOption
+  ): IGetAreaValueResult | null {
+    return this.draw.getArea().getAreaValue(options)
+  }
+
   public getHTML(): IEditorHTML {
     const options = this.options
     const headerElementList = this.draw.getHeaderElementList()
@@ -2142,5 +2154,13 @@ export class CommandAdapt {
       cursorPosition: positionList[curIndex],
       direction: MoveDirection.DOWN
     })
+  }
+
+  public insertArea(payload: IInsertAreaOption) {
+    return this.draw.getArea().insertArea(payload)
+  }
+
+  public setAreaProperties(payload: ISetAreaPropertiesOption) {
+    this.draw.getArea().setAreaProperties(payload)
   }
 }

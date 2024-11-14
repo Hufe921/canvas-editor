@@ -59,6 +59,7 @@ import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
+import { AreaMode } from './dataset/enum/Area'
 
 export default class Editor {
   public command: Command
@@ -190,7 +191,7 @@ export {
   TextDecorationStyle,
   LineNumberType,
   LocationPosition,
-  IGetElementListByHTMLOption
+  AreaMode
 }
 
 // 对外类型
@@ -208,5 +209,6 @@ export type {
   ICatalog,
   ICatalogItem,
   IRange,
-  IRangeStyle
+  IRangeStyle,
+  IGetElementListByHTMLOption
 }

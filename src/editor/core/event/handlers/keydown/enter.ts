@@ -1,5 +1,6 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import {
+  AREA_CONTEXT_ATTR,
   EDITOR_ELEMENT_STYLE_ATTR,
   EDITOR_ROW_ATTR
 } from '../../../../dataset/constant/Element'
@@ -53,7 +54,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     // 复制样式属性
     const copyElement = getAnchorElement(elementList, endIndex)
     if (copyElement) {
-      const copyAttr = [...EDITOR_ROW_ATTR]
+      const copyAttr = [...EDITOR_ROW_ATTR, ...AREA_CONTEXT_ATTR]
       // 不复制控件后缀样式
       if (copyElement.controlComponent !== ControlComponent.POSTFIX) {
         copyAttr.push(...EDITOR_ELEMENT_STYLE_ATTR)

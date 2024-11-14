@@ -599,7 +599,7 @@ export class Control {
   }
 
   public getValueById(payload: IGetControlValueOption): IGetControlValueResult {
-    const { id, conceptId } = payload
+    const { id, conceptId, areaId } = payload
     const result: IGetControlValueResult = []
     if (!id && !conceptId) return result
     const getValue = (elementList: IElement[], zone: EditorZone) => {
@@ -621,7 +621,8 @@ export class Control {
         if (
           !element.control ||
           (id && element.controlId !== id) ||
-          (conceptId && element.control.conceptId !== conceptId)
+          (conceptId && element.control.conceptId !== conceptId) ||
+          (areaId && element.areaId !== areaId)
         ) {
           continue
         }
@@ -696,7 +697,7 @@ export class Control {
 
   public setValueById(payload: ISetControlValueOption) {
     let isExistSet = false
-    const { id, conceptId, value } = payload
+    const { id, conceptId, areaId, value } = payload
     if (!id && !conceptId) return
     // 设置值
     const setValue = (elementList: IElement[]) => {
@@ -718,7 +719,8 @@ export class Control {
         if (
           !element.control ||
           (id && element.controlId !== id) ||
-          (conceptId && element.control.conceptId !== conceptId)
+          (conceptId && element.control.conceptId !== conceptId) ||
+          (areaId && element.areaId !== areaId)
         ) {
           continue
         }
@@ -818,7 +820,7 @@ export class Control {
   }
 
   public setExtensionById(payload: ISetControlExtensionOption) {
-    const { id, conceptId, extension } = payload
+    const { id, conceptId, areaId, extension } = payload
     if (!id && !conceptId) return
     const setExtension = (elementList: IElement[]) => {
       let i = 0
@@ -839,7 +841,8 @@ export class Control {
         if (
           !element.control ||
           (id && element.controlId !== id) ||
-          (conceptId && element.control.conceptId !== conceptId)
+          (conceptId && element.control.conceptId !== conceptId) ||
+          (areaId && element.areaId !== areaId)
         ) {
           continue
         }
@@ -865,7 +868,7 @@ export class Control {
   }
 
   public setPropertiesById(payload: ISetControlProperties) {
-    const { id, conceptId, properties } = payload
+    const { id, conceptId, areaId, properties } = payload
     if (!id && !conceptId) return
     let isExistUpdate = false
     function setProperties(elementList: IElement[]) {
@@ -886,7 +889,8 @@ export class Control {
         if (
           !element.control ||
           (id && element.controlId !== id) ||
-          (conceptId && element.control.conceptId !== conceptId)
+          (conceptId && element.control.conceptId !== conceptId) ||
+          (areaId && element.areaId !== areaId)
         ) {
           continue
         }
@@ -927,7 +931,9 @@ export class Control {
     // 强制更新
     for (const key in pageComponentData) {
       const pageComponentKey = <keyof IEditorData>key
-      const elementList = zipElementList(pageComponentData[pageComponentKey]!)
+      const elementList = zipElementList(pageComponentData[pageComponentKey]!, {
+        isClassifyArea: true
+      })
       pageComponentData[pageComponentKey] = elementList
       formatElementList(elementList, {
         editorOptions: this.options,
