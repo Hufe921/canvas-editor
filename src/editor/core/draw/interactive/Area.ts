@@ -64,6 +64,10 @@ export class Area {
     if (this.zone.getZone() !== EditorZone.MAIN) {
       this.zone.setZone(EditorZone.MAIN)
     }
+    // 跳出表格
+    this.draw.getPosition().setPositionContext({
+      isTable: false
+    })
     // 设置插入位置
     const { id, value, area, position } = payload
     if (position === LocationPosition.BEFORE) {
