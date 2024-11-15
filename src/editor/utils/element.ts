@@ -885,11 +885,12 @@ export function getAnchorElement(
   const anchorElement = elementList[anchorIndex]
   if (!anchorElement) return null
   const anchorNextElement = elementList[anchorIndex + 1]
-  // 非列表元素 && 当前元素是换行符 && 下一个元素不是换行符 则以下一个元素作为参考元素
+  // 非列表元素 && 当前元素是换行符 && 下一个元素不是换行符 && 区域相同 => 则以下一个元素作为参考元素
   return !anchorElement.listId &&
     anchorElement.value === ZERO &&
     anchorNextElement &&
-    anchorNextElement.value !== ZERO
+    anchorNextElement.value !== ZERO &&
+    anchorElement.areaId === anchorNextElement.areaId
     ? anchorNextElement
     : anchorElement
 }
