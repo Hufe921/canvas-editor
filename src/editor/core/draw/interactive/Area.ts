@@ -66,6 +66,7 @@ export class Area {
     }
     // 设置插入位置
     const { id, value, area, position } = payload
+    this.draw.getPosition().setPositionContext({isTable: false})
     if (position === LocationPosition.BEFORE) {
       this.range.setRange(0, 0)
     } else {

@@ -54,7 +54,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     // 复制样式属性
     const copyElement = getAnchorElement(elementList, endIndex)
     if (copyElement) {
-      const copyAttr = [...EDITOR_ROW_ATTR, ...AREA_CONTEXT_ATTR]
+      const copyAttr = [...EDITOR_ROW_ATTR]
       // 不复制控件后缀样式
       if (copyElement.controlComponent !== ControlComponent.POSTFIX) {
         copyAttr.push(...EDITOR_ELEMENT_STYLE_ATTR)
@@ -79,7 +79,19 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     if (!cursorPosition) return
     const { index } = cursorPosition
     if (isCollapsed) {
-      draw.spliceElementList(elementList, index + 1, 0, enterText)
+      let insertPosition = index + 1
+      if (evt.shiftKey && (endElement.areaId && endElement.areaId !== elementList[endIndex +1]?.areaId )){
+        AREA_CONTEXT_ATTR.forEach(attr => {
+          delete enterText[attr]
+        })
+      }
+      if (evt.shiftKey && (endElement.areaId && endElement.areaId !== elementList[endIndex - 1]?.areaId)){
+        insertPosition = index
+        AREA_CONTEXT_ATTR.forEach(attr => {
+          delete enterText[attr]
+        })
+      }
+      draw.spliceElementList(elementList, insertPosition, 0, enterText)
     } else {
       draw.spliceElementList(
         elementList,
