@@ -111,7 +111,7 @@ export function formatElementList(
       })
       // 追加节点
       if (valueList.length) {
-        const titleId = getUUID()
+        const titleId = el.titleId || getUUID()
         const titleOptions = editorOptions.title
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
@@ -276,7 +276,7 @@ export function formatElementList(
           radio: radioOption
         }
       } = options
-      const controlId = getUUID()
+      const controlId = el.controlId || getUUID()
       // 移除父节点
       elementList.splice(i, 1)
       // 控件上下文提取（压缩后的控件上下文无法提取）
@@ -596,6 +596,7 @@ export function zipElementList(
         const titleElement: IElement = {
           type: ElementType.TITLE,
           title: element.title,
+          titleId,
           value: '',
           level
         }
