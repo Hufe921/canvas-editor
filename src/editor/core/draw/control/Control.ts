@@ -1,15 +1,21 @@
-import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
+import {
+  ControlComponent,
+  ControlState,
+  ControlType
+} from '../../../dataset/enum/Control'
 import { EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { DeepRequired } from '../../../interface/Common'
 import {
   IControl,
+  IControlChangeResult,
   IControlContext,
   IControlHighlight,
   IControlInitOption,
   IControlInstance,
   IControlOption,
   IControlRuleOption,
+  IDestroyControlOption,
   IGetControlValueOption,
   IGetControlValueResult,
   IInitNextControlOption,
@@ -24,13 +30,7 @@ import { IEditorData, IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import {
-  deepClone,
-  nextTick,
-  omitObject,
-  pickObject,
-  splitText
-} from '../../../utils'
+import { deepClone, omitObject, pickObject, splitText } from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
@@ -313,50 +313,65 @@ export class Control {
       dateControl.awake()
     }
     // 激活控件回调
-    nextTick(() => {
-      const controlChangeListener = this.listener.controlChange
-      const isSubscribeControlChange =
-        this.eventBus.isSubscribe('controlChange')
-      if (!controlChangeListener && !isSubscribeControlChange) return
-      let payload: IControl
+    const isSubscribeControlChange = this.eventBus.isSubscribe('controlChange')
+    if (this.listener.controlChange || isSubscribeControlChange) {
+      let control: IControl
       const value = this.activeControl?.getValue()
-      if (value && value.length) {
-        payload = zipElementList(value)[0].control!
+      if (value?.length) {
+        control = zipElementList(value)[0].control!
       } else {
-        payload = pickElementAttr(deepClone(element)).control!
+        control = pickElementAttr(deepClone(element)).control!
       }
-      if (controlChangeListener) {
-        controlChangeListener(payload)
+      const payload: IControlChangeResult = {
+        control,
+        controlId: element.controlId!,
+        state: ControlState.ACTIVE
       }
+      this.listener.controlChange?.(payload)
       if (isSubscribeControlChange) {
         this.eventBus.emit('controlChange', payload)
       }
-    })
+    }
   }
 
-  public destroyControl() {
-    if (this.activeControl) {
-      if (
-        this.activeControl instanceof SelectControl ||
-        this.activeControl instanceof DateControl
-      ) {
-        this.activeControl.destroy()
-      }
-      this.activeControl = null
-      // 销毁控件回调
-      nextTick(() => {
-        const controlChangeListener = this.listener.controlChange
-        const isSubscribeControlChange =
-          this.eventBus.isSubscribe('controlChange')
-        if (!controlChangeListener && !isSubscribeControlChange) return
-        if (controlChangeListener) {
-          controlChangeListener(null)
-        }
-        if (isSubscribeControlChange) {
-          this.eventBus.emit('controlChange', null)
-        }
-      })
+  public destroyControl(options: IDestroyControlOption = {}) {
+    if (!this.activeControl) return
+    const { isEmitEvent = true } = options
+    if (
+      this.activeControl instanceof SelectControl ||
+      this.activeControl instanceof DateControl
+    ) {
+      this.activeControl.destroy()
     }
+    // 销毁控件回调
+    if (isEmitEvent) {
+      const isSubscribeControlChange =
+        this.eventBus.isSubscribe('controlChange')
+      if (this.listener.controlChange || isSubscribeControlChange) {
+        let control: IControl
+        const value = this.activeControl.getValue({
+          range: this.activeControl.activeRange,
+          elementList: this.activeControl.activeElementList
+        })
+        const activeElement = this.activeControl.getElement()
+        if (value?.length) {
+          control = zipElementList(value)[0].control!
+        } else {
+          control = pickElementAttr(deepClone(activeElement)).control!
+        }
+        const payload: IControlChangeResult = {
+          control,
+          controlId: activeElement.controlId!,
+          state: ControlState.INACTIVE
+        }
+        this.listener.controlChange?.(payload)
+        if (isSubscribeControlChange) {
+          this.eventBus.emit('controlChange', payload)
+        }
+      }
+    }
+    // 清空变量
+    this.activeControl = null
   }
 
   public repaintControl(options: IRepaintControlOption = {}) {
@@ -802,7 +817,9 @@ export class Control {
       }
     }
     // 销毁旧控件
-    this.destroyControl()
+    this.destroyControl({
+      isEmitEvent: false
+    })
     // 页眉、内容区、页脚同时处理
     const data = [
       this.draw.getHeaderElementList(),

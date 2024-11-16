@@ -87,7 +87,7 @@ Feature: The control where the current cursor is located changes
 Usage:
 
 ```javascript
-instance.eventBus.on('controlChange', (payload: IControl | null) => void)
+instance.eventBus.on('controlChange', (payload: IControlChangeResult) => void)
 ```
 
 ## pageModeChange

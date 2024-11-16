@@ -6,13 +6,20 @@ import {
   IControlRuleOption
 } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
+import { IRange } from '../../../../interface/Range'
+import { deepClone } from '../../../../utils'
 import { Control } from '../Control'
 
 export class CheckboxControl implements IControlInstance {
+  public activeRange: IRange
+  public activeElementList: IElement[]
   protected element: IElement
   protected control: Control
 
   constructor(element: IElement, control: Control) {
+    const draw = control.getDraw()
+    this.activeRange = deepClone(draw.getRange().getRange())
+    this.activeElementList = draw.getElementList()
     this.element = element
     this.control = control
   }

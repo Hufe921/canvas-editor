@@ -487,7 +487,7 @@ export function formatElementList(
       i--
     } else if (
       (!el.type || TEXTLIKE_ELEMENT_TYPE.includes(el.type)) &&
-      el.value.length > 1
+      el.value?.length > 1
     ) {
       elementList.splice(i, 1)
       const valueList = splitText(el.value)
