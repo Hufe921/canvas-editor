@@ -1,6 +1,8 @@
 # Event Listening(listener)
 
-> The listener can respond to only one method. eventBus is recommended for event listening
+::: warning
+The listener can only respond to one method, and no new listening methods will be added in the future. It is recommended to use eventBus for event listening.
+:::
 
 ## How to Use
 
@@ -78,7 +80,7 @@ Feature: The control where the current cursor is located changes
 Usage:
 
 ```javascript
-instance.listener.controlChange = (payload: IControl | null) => {}
+instance.listener.controlChange = (payload: IControlChangeResult) => {}
 ```
 
 ## pageModeChange

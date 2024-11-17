@@ -1,7 +1,9 @@
 export enum TableBorder {
   ALL = 'all',
   EMPTY = 'empty',
-  EXTERNAL = 'external'
+  EXTERNAL = 'external',
+  INTERNAL = 'internal',
+  DASH = 'dash'
 }
 
 export enum TdBorder {

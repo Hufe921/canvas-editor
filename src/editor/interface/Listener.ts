@@ -7,7 +7,7 @@ import {
   TitleLevel
 } from '..'
 import { RowFlex } from '../dataset/enum/Row'
-import { IControl } from './Control'
+import { IControlChangeResult } from './Control'
 import { IEditorResult } from './Editor'
 import { IPositionContext } from './Position'
 import { ITextDecoration } from './Text'
@@ -50,7 +50,7 @@ export type ISaved = (payload: IEditorResult) => void
 
 export type IContentChange = () => void
 
-export type IControlChange = (payload: IControl | null) => void
+export type IControlChange = (payload: IControlChangeResult) => void
 
 export type IPageModeChange = (payload: PageMode) => void
 
@@ -62,6 +62,7 @@ export interface IPositionContextChangePayload {
   value: IPositionContext
   oldValue: IPositionContext
 }
+
 export type IPositionContextChange = (
   payload: IPositionContextChangePayload
 ) => void

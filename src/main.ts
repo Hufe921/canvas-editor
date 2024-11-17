@@ -3,6 +3,7 @@ import prism from 'prismjs'
 import Editor, {
   BlockType,
   Command,
+  ControlState,
   ControlType,
   EditorMode,
   EditorZone,
@@ -1815,7 +1816,7 @@ function initEditorInstance(
       const menuDom = document.querySelector<HTMLDivElement>(
         `.menu-item__${menu}`
       )!
-      payload
+      payload.state === ControlState.ACTIVE
         ? menuDom.classList.add('disable')
         : menuDom.classList.remove('disable')
     })

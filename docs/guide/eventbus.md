@@ -87,7 +87,7 @@ instance.eventBus.on('contentChange', () => void)
 用法：
 
 ```javascript
-instance.eventBus.on('controlChange', (payload: IControl | null) => void)
+instance.eventBus.on('controlChange', (payload: IControlChangeResult) => void)
 ```
 
 ## pageModeChange

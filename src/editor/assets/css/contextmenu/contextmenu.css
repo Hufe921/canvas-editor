@@ -155,8 +155,16 @@
   background-image: url(../../../assets/images/table-border-empty.svg);
 }
 
+.ce-contextmenu-border-dash {
+  background-image: url(../../../assets/images/table-border-dash.svg);
+}
+
 .ce-contextmenu-border-external {
   background-image: url(../../../assets/images/table-border-external.svg);
+}
+
+.ce-contextmenu-border-internal {
+  background-image: url(../../../assets/images/table-border-internal.svg);
 }
 
 .ce-contextmenu-border-td {

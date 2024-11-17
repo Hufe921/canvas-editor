@@ -289,3 +289,28 @@ instance.eventBus.on(
   }, 200)
 )``
 ```
+
+## getElementById
+
+功能：根据 id 获取元素
+
+用法：
+
+```javascript
+const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
+```
+
+## getAreaValue
+
+功能: 获取区域数据
+用法：
+
+```js
+const {
+  id?: string
+  area: IArea
+  value: IElement[]
+  startPageNo: number
+  endPageNo: number
+} = instance.command.getAreaValue(options: IGetAreaValueOption)
+```

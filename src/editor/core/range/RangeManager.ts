@@ -56,6 +56,12 @@ export class RangeManager {
     return startIndex === endIndex
   }
 
+  public getIsSelection(): boolean {
+    const { startIndex, endIndex } = this.range
+    if (!~startIndex && !~endIndex) return false
+    return startIndex !== endIndex
+  }
+
   public getSelection(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null

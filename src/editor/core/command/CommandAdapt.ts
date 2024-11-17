@@ -61,6 +61,7 @@ import {
   IElement,
   IElementPosition,
   IElementStyle,
+  IGetElementByIdOption,
   IUpdateElementByIdOption
 } from '../../interface/Element'
 import { IPasteOption, IPositionContextByEvent } from '../../interface/Event'
@@ -106,6 +107,12 @@ import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Zone } from '../zone/Zone'
+import {
+  IGetAreaValueOption,
+  IGetAreaValueResult,
+  IInsertAreaOption,
+  ISetAreaPropertiesOption
+} from '../../interface/Area'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1336,6 +1343,12 @@ export class CommandAdapt {
     return this.draw.getValue(options)
   }
 
+  public getAreaValue(
+    options?: IGetAreaValueOption
+  ): IGetAreaValueResult | null {
+    return this.draw.getArea().getAreaValue(options)
+  }
+
   public getHTML(): IEditorHTML {
     const options = this.options
     const headerElementList = this.draw.getHeaderElementList()
@@ -1613,10 +1626,15 @@ export class CommandAdapt {
   }
 
   public updateElementById(payload: IUpdateElementByIdOption) {
+    const { id, conceptId } = payload
+    if (!id && !conceptId) return
     function getElementIndexById(elementList: IElement[]): number {
       for (let e = 0; e < elementList.length; e++) {
         const element = elementList[e]
-        if (element.id === payload.id) {
+        if (
+          (id && element.id === id) ||
+          (conceptId && element.conceptId === conceptId)
+        ) {
           return e
         }
       }
@@ -1646,6 +1664,37 @@ export class CommandAdapt {
         break
       }
     }
+  }
+
+  public getElementById(payload: IGetElementByIdOption): IElement[] {
+    const { id, conceptId } = payload
+    const result: IElement[] = []
+    if (!id && !conceptId) return result
+    const getElement = (elementList: IElement[]) => {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (
+          (id && element.controlId !== id) ||
+          (conceptId && element.conceptId !== conceptId)
+        ) {
+          continue
+        }
+        result.push(element)
+      }
+    }
+    const data = [
+      this.draw.getHeaderElementList(),
+      this.draw.getOriginalMainElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      getElement(elementList)
+    }
+    return zipElementList(result, {
+      extraPickAttrs: ['id']
+    })
   }
 
   public setValue(payload: Partial<IEditorData>, options?: ISetValueOption) {
@@ -2105,5 +2154,13 @@ export class CommandAdapt {
       cursorPosition: positionList[curIndex],
       direction: MoveDirection.DOWN
     })
+  }
+
+  public insertArea(payload: IInsertAreaOption) {
+    return this.draw.getArea().insertArea(payload)
+  }
+
+  public setAreaProperties(payload: ISetAreaPropertiesOption) {
+    this.draw.getArea().setAreaProperties(payload)
   }
 }

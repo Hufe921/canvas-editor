@@ -13,7 +13,9 @@ const {
     BORDER,
     BORDER_ALL,
     BORDER_EMPTY,
+    BORDER_DASH,
     BORDER_EXTERNAL,
+    BORDER_INTERNAL,
     BORDER_TD,
     BORDER_TD_TOP,
     BORDER_TD_LEFT,
@@ -74,12 +76,30 @@ export const tableMenus: IRegisterContextMenu[] = [
         }
       },
       {
+        key: BORDER_DASH,
+        i18nPath: 'contextmenu.table.borderDash',
+        icon: 'border-dash',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableBorderType(TableBorder.DASH)
+        }
+      },
+      {
         key: BORDER_EXTERNAL,
         i18nPath: 'contextmenu.table.borderExternal',
         icon: 'border-external',
         when: () => true,
         callback: (command: Command) => {
           command.executeTableBorderType(TableBorder.EXTERNAL)
+        }
+      },
+      {
+        key: BORDER_INTERNAL,
+        i18nPath: 'contextmenu.table.borderInternal',
+        icon: 'border-internal',
+        when: () => true,
+        callback: (command: Command) => {
+          command.executeTableBorderType(TableBorder.INTERNAL)
         }
       },
       {

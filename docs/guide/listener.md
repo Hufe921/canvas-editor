@@ -1,6 +1,8 @@
 # 事件监听(listener)
 
-> listener 只能响应一个方法，推荐使用 eventBus 进行事件监听
+::: warning
+listener 只能响应一个方法，后续不再添加新监听方法，推荐使用 eventBus 进行事件监听。
+:::
 
 ## 使用方式
 
@@ -78,7 +80,7 @@ instance.listener.contentChange = () => {}
 用法：
 
 ```javascript
-instance.listener.controlChange = (payload: IControl | null) => {}
+instance.listener.controlChange = (payload: IControlChangeResult) => {}
 ```
 
 ## pageModeChange

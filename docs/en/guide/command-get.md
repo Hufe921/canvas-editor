@@ -289,3 +289,29 @@ instance.eventBus.on(
   }, 200)
 )``
 ```
+
+## getElementById
+
+Feature: Get element list by id
+
+Usage:
+
+```javascript
+const elementList = await instance.command.getElementById(payload: IGetElementByIdOption)
+```
+
+## getAreaValue
+
+Feature: Get area value
+
+Usage:
+
+```javascript
+const {
+  id?: string
+  area: IArea
+  value: IElement[]
+  startPageNo: number
+  endPageNo: number
+} = instance.command.getAreaValue(options: IGetAreaValueOption)
+```

@@ -140,8 +140,9 @@ export class Position {
           x += innerWidth - curRowWidth
         }
       }
-      // 当前行X轴偏移量
+      // 当前行X/Y轴偏移量
       x += curRow.offsetX || 0
+      y += curRow.offsetY || 0
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y
@@ -597,7 +598,7 @@ export class Position {
       }
       // 正文上-循环首行
       const margins = this.draw.getMargins()
-      if (y <= margins[1]) {
+      if (y <= margins[0]) {
         for (let p = 0; p < positionList.length; p++) {
           const position = positionList[p]
           if (position.pageNo !== positionNo || position.rowNo !== 0) continue

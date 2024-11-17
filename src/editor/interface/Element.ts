@@ -5,6 +5,7 @@ import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
 import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
+import { IArea } from './Area'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
 import { IControl } from './Control'
@@ -125,6 +126,12 @@ export interface IBlockElement {
   block?: IBlock
 }
 
+export interface IAreaElement {
+  valueList?: IElement[]
+  areaId?: string
+  area?: IArea
+}
+
 export type IElement = IElementBasic &
   IElementStyle &
   IElementGroup &
@@ -140,7 +147,8 @@ export type IElement = IElementBasic &
   IImageElement &
   IBlockElement &
   ITitleElement &
-  IListElement
+  IListElement &
+  IAreaElement
 
 export interface IElementMetrics {
   width: number
@@ -177,6 +185,12 @@ export interface IElementFillRect {
 }
 
 export interface IUpdateElementByIdOption {
-  id: string
+  id?: string
+  conceptId?: string
   properties: Omit<Partial<IElement>, 'id'>
+}
+
+export interface IGetElementByIdOption {
+  id?: string
+  conceptId?: string
 }

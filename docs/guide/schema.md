@@ -104,6 +104,7 @@ interface IElement {
     rowFlex?: RowFlex
     deletable?: boolean;
     disabled?: boolean;
+    pasteDisabled?: boolean;
     code: string | null;
     min?: number;
     max?: number;
@@ -175,5 +176,14 @@ interface IElement {
   listType?: ListType;
   listStyle?: ListStyle;
   listWrap?: boolean;
+  // 区域
+  areaId?: string;
+  area?: {
+    extension?: unknown;
+    top?: number;
+    borderColor?: string;
+    backgroundColor?: string;
+    mode?: AreaMode;
+  };
 }
 ```
