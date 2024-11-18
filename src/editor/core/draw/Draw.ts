@@ -2385,6 +2385,7 @@ export class Draw {
       lineNumber,
       pageBorder
     } = this.options
+    const isPrintMode = this.mode === EditorMode.PRINT
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2393,9 +2394,11 @@ export class Draw {
     // 绘制背景
     this.background.render(ctx, pageNo)
     // 绘制区域
-    this.area.render(ctx, pageNo)
+    if (!isPrintMode) {
+      this.area.render(ctx, pageNo)
+    }
     // 绘制页边距
-    if (this.mode !== EditorMode.PRINT) {
+    if (!isPrintMode) {
       this.margin.render(ctx, pageNo)
     }
     // 渲染衬于文字下方元素
@@ -2404,7 +2407,9 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_BOTTOM]
     })
     // 控件高亮
-    this.control.renderHighlightList(ctx, pageNo)
+    if (!isPrintMode) {
+      this.control.renderHighlightList(ctx, pageNo)
+    }
     // 渲染元素
     const index = rowList[0]?.startIndex
     this.drawRow(ctx, {
@@ -2436,7 +2441,7 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_TOP, ImageDisplay.SURROUND]
     })
     // 搜索匹配绘制
-    if (this.search.getSearchKeyword()) {
+    if (!isPrintMode && this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
     }
     // 绘制水印
@@ -2550,13 +2555,15 @@ export class Draw {
       this.position.computePositionList()
       // 区域信息
       this.area.compute()
-      // 搜索信息
-      const searchKeyword = this.search.getSearchKeyword()
-      if (searchKeyword) {
-        this.search.compute(searchKeyword)
+      if (this.mode !== EditorMode.PRINT) {
+        // 搜索信息
+        const searchKeyword = this.search.getSearchKeyword()
+        if (searchKeyword) {
+          this.search.compute(searchKeyword)
+        }
+        // 控件关键词高亮
+        this.control.computeHighlightList()
       }
-      // 控件关键词高亮
-      this.control.computeHighlightList()
     }
     // 清除光标等副作用
     this.imageObserver.clearAll()

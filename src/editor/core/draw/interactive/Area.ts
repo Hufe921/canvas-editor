@@ -8,7 +8,7 @@ import {
   IInsertAreaOption,
   ISetAreaPropertiesOption
 } from '../../../interface/Area'
-import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
+import { EditorZone } from '../../../dataset/enum/Editor'
 import { LocationPosition } from '../../../dataset/enum/Common'
 import { RangeManager } from '../../range/RangeManager'
 import { Zone } from '../../zone/Zone'
@@ -92,8 +92,6 @@ export class Area {
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     if (!this.areaInfoMap.size) return
-    const mode = this.draw.getMode()
-    if (mode === EditorMode.CLEAN || mode === EditorMode.PRINT) return
     ctx.save()
     const margins = this.draw.getMargins()
     const width = this.draw.getInnerWidth()
