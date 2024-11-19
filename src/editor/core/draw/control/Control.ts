@@ -273,7 +273,6 @@ export class Control {
 
   public initControl() {
     const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     const elementList = this.getElementList()
     const range = this.getRange()
     const element = elementList[range.startIndex]
@@ -295,6 +294,7 @@ export class Control {
     }
     // 销毁旧激活控件
     this.destroyControl()
+    if (isReadonly) return
     // 激活控件
     const control = element.control!
     if (control.type === ControlType.TEXT) {
