@@ -7,10 +7,7 @@ import {
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { IElement } from '../../../../interface/Element'
 import { omitObject } from '../../../../utils'
-import {
-  formatElementContext,
-  getAnchorElement
-} from '../../../../utils/element'
+import { formatElementContext } from '../../../../utils/element'
 import { CanvasEvent } from '../../CanvasEvent'
 
 export function enter(evt: KeyboardEvent, host: CanvasEvent) {
@@ -61,7 +58,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     )
   ) {
     // 复制样式属性
-    const copyElement = getAnchorElement(elementList, endIndex)
+    const copyElement = rangeManager.getRangeAnchorStyle(elementList, endIndex)
     if (copyElement) {
       const copyAttr = [...EDITOR_ROW_ATTR]
       // 不复制控件后缀样式

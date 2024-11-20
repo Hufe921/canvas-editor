@@ -351,13 +351,23 @@ export class CommandAdapt {
       })
       this.draw.render({ isSetCursor: false })
     } else {
+      let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
         enterElement.font = payload
-        this.draw.render({ curIndex: endIndex, isCompute: false })
+      } else {
+        this.range.setDefaultStyle({
+          font: payload
+        })
+        isSubmitHistory = false
       }
+      this.draw.render({
+        isSubmitHistory,
+        curIndex: endIndex,
+        isCompute: false
+      })
     }
   }
 
@@ -380,6 +390,15 @@ export class CommandAdapt {
       if (enterElement?.value === ZERO) {
         changeElementList.push(enterElement)
         renderOption = { curIndex: endIndex }
+      } else {
+        this.range.setDefaultStyle({
+          size: payload
+        })
+        this.draw.render({
+          curIndex: endIndex,
+          isCompute: false,
+          isSubmitHistory: false
+        })
       }
     }
     if (!changeElementList.length) return
@@ -402,6 +421,7 @@ export class CommandAdapt {
   public sizeAdd() {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
+    const { defaultSize, maxSize } = this.options
     const selection = this.range.getTextLikeSelectionElementList()
     // 选区设置或设置换行处样式
     let renderOption: IDrawOption = {}
@@ -416,10 +436,20 @@ export class CommandAdapt {
       if (enterElement?.value === ZERO) {
         changeElementList.push(enterElement)
         renderOption = { curIndex: endIndex }
+      } else {
+        const style = this.range.getDefaultStyle()
+        const anchorSize = style?.size || enterElement.size || defaultSize
+        this.range.setDefaultStyle({
+          size: anchorSize + 2 > maxSize ? maxSize : anchorSize + 2
+        })
+        this.draw.render({
+          curIndex: endIndex,
+          isCompute: false,
+          isSubmitHistory: false
+        })
       }
     }
     if (!changeElementList.length) return
-    const { defaultSize, maxSize } = this.options
     let isExistUpdate = false
     changeElementList.forEach(el => {
       if (!el.size) {
@@ -441,6 +471,7 @@ export class CommandAdapt {
   public sizeMinus() {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
+    const { defaultSize, minSize } = this.options
     const selection = this.range.getTextLikeSelectionElementList()
     // 选区设置或设置换行处样式
     let renderOption: IDrawOption = {}
@@ -455,10 +486,20 @@ export class CommandAdapt {
       if (enterElement?.value === ZERO) {
         changeElementList.push(enterElement)
         renderOption = { curIndex: endIndex }
+      } else {
+        const style = this.range.getDefaultStyle()
+        const anchorSize = style?.size || enterElement.size || defaultSize
+        this.range.setDefaultStyle({
+          size: anchorSize - 2 < minSize ? minSize : anchorSize - 2
+        })
+        this.draw.render({
+          curIndex: endIndex,
+          isCompute: false,
+          isSubmitHistory: false
+        })
       }
     }
     if (!changeElementList.length) return
-    const { defaultSize, minSize } = this.options
     let isExistUpdate = false
     changeElementList.forEach(el => {
       if (!el.size) {
@@ -488,13 +529,23 @@ export class CommandAdapt {
       })
       this.draw.render({ isSetCursor: false })
     } else {
+      let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
         enterElement.bold = !enterElement.bold
-        this.draw.render({ curIndex: endIndex, isCompute: false })
+      } else {
+        this.range.setDefaultStyle({
+          bold: enterElement.bold ? false : !this.range.getDefaultStyle()?.bold
+        })
+        isSubmitHistory = false
       }
+      this.draw.render({
+        isSubmitHistory,
+        curIndex: endIndex,
+        isCompute: false
+      })
     }
   }
 
@@ -509,13 +560,25 @@ export class CommandAdapt {
       })
       this.draw.render({ isSetCursor: false })
     } else {
+      let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
         enterElement.italic = !enterElement.italic
-        this.draw.render({ curIndex: endIndex, isCompute: false })
+      } else {
+        this.range.setDefaultStyle({
+          italic: enterElement.italic
+            ? false
+            : !this.range.getDefaultStyle()?.italic
+        })
+        isSubmitHistory = false
       }
+      this.draw.render({
+        isSubmitHistory,
+        curIndex: endIndex,
+        isCompute: false
+      })
     }
   }
 
@@ -547,13 +610,25 @@ export class CommandAdapt {
         isCompute: false
       })
     } else {
+      let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
         enterElement.underline = !enterElement.underline
-        this.draw.render({ curIndex: endIndex, isCompute: false })
+      } else {
+        this.range.setDefaultStyle({
+          underline: enterElement?.underline
+            ? false
+            : !this.range.getDefaultStyle()?.underline
+        })
+        isSubmitHistory = false
       }
+      this.draw.render({
+        isSubmitHistory,
+        curIndex: endIndex,
+        isCompute: false
+      })
     }
   }
 
@@ -571,13 +646,25 @@ export class CommandAdapt {
         isCompute: false
       })
     } else {
+      let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
         enterElement.strikeout = !enterElement.strikeout
-        this.draw.render({ curIndex: endIndex, isCompute: false })
+      } else {
+        this.range.setDefaultStyle({
+          strikeout: enterElement.strikeout
+            ? false
+            : !this.range.getDefaultStyle()?.strikeout
+        })
+        isSubmitHistory = false
       }
+      this.draw.render({
+        isSubmitHistory,
+        curIndex: endIndex,
+        isCompute: false
+      })
     }
   }
 
@@ -656,6 +743,7 @@ export class CommandAdapt {
         isCompute: false
       })
     } else {
+      let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
@@ -665,8 +753,17 @@ export class CommandAdapt {
         } else {
           delete enterElement.color
         }
-        this.draw.render({ curIndex: endIndex, isCompute: false })
+      } else {
+        this.range.setDefaultStyle({
+          color: payload || undefined
+        })
+        isSubmitHistory = false
       }
+      this.draw.render({
+        isSubmitHistory,
+        curIndex: endIndex,
+        isCompute: false
+      })
     }
   }
 
@@ -687,6 +784,7 @@ export class CommandAdapt {
         isCompute: false
       })
     } else {
+      let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
@@ -696,8 +794,17 @@ export class CommandAdapt {
         } else {
           delete enterElement.highlight
         }
-        this.draw.render({ curIndex: endIndex, isCompute: false })
+      } else {
+        this.range.setDefaultStyle({
+          highlight: payload || undefined
+        })
+        isSubmitHistory = false
       }
+      this.draw.render({
+        isSubmitHistory,
+        curIndex: endIndex,
+        isCompute: false
+      })
     }
   }
 
