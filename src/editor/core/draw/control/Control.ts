@@ -73,6 +73,7 @@ export class Control {
   private options: DeepRequired<IEditorOption>
   private controlOptions: IControlOption
   private activeControl: IControlInstance | null
+  private activeControlValue: IElement[]
 
   constructor(draw: Draw) {
     this.controlBorder = new ControlBorder(draw)
@@ -86,6 +87,7 @@ export class Control {
     this.options = draw.getOptions()
     this.controlOptions = this.options.control
     this.activeControl = null
+    this.activeControlValue = []
   }
 
   // 搜索高亮匹配
@@ -289,7 +291,11 @@ export class Control {
         }
       }
       const controlElement = this.activeControl.getElement()
-      if (element.controlId === controlElement.controlId) return
+      if (element.controlId === controlElement.controlId) {
+        // 更新缓存控件数据
+        this.activeControlValue = this.activeControl.getValue()
+        return
+      }
     }
     // 销毁旧激活控件
     this.destroyControl()
@@ -312,15 +318,20 @@ export class Control {
       this.activeControl = dateControl
       dateControl.awake()
     }
+    // 缓存控件数据
+    if (this.activeControl) {
+      this.activeControlValue = this.activeControl.getValue()
+    }
     // 激活控件回调
     const isSubscribeControlChange = this.eventBus.isSubscribe('controlChange')
     if (this.listener.controlChange || isSubscribeControlChange) {
       let control: IControl
-      const value = this.activeControl?.getValue()
+      const value = this.activeControlValue
       if (value?.length) {
         control = zipElementList(value)[0].control!
       } else {
         control = pickElementAttr(deepClone(element)).control!
+        control.value = []
       }
       const payload: IControlChangeResult = {
         control,
@@ -349,15 +360,13 @@ export class Control {
         this.eventBus.isSubscribe('controlChange')
       if (this.listener.controlChange || isSubscribeControlChange) {
         let control: IControl
-        const value = this.activeControl.getValue({
-          range: this.activeControl.activeRange,
-          elementList: this.activeControl.activeElementList
-        })
+        const value = this.activeControlValue
         const activeElement = this.activeControl.getElement()
         if (value?.length) {
           control = zipElementList(value)[0].control!
         } else {
           control = pickElementAttr(deepClone(activeElement)).control!
+          control.value = []
         }
         const payload: IControlChangeResult = {
           control,
@@ -372,6 +381,7 @@ export class Control {
     }
     // 清空变量
     this.activeControl = null
+    this.activeControlValue = []
   }
 
   public repaintControl(options: IRepaintControlOption = {}) {

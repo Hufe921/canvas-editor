@@ -112,8 +112,6 @@ export interface IControlInitResult {
 }
 
 export interface IControlInstance {
-  activeRange: IRange
-  activeElementList: IElement[]
   setElement(element: IElement): void
   getElement(): IElement
   getValue(context?: IControlContext): IElement[]
