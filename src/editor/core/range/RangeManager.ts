@@ -10,6 +10,7 @@ import { EventBusMap } from '../../interface/EventBus'
 import { IRangeStyle } from '../../interface/Listener'
 import {
   IRange,
+  IRangeElementStyle,
   IRangeParagraphInfo,
   RangeRowArray,
   RangeRowMap
@@ -29,6 +30,7 @@ export class RangeManager {
   private eventBus: EventBus<EventBusMap>
   private position: Position
   private historyManager: HistoryManager
+  private defaultStyle: IRangeElementStyle | null
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -41,6 +43,7 @@ export class RangeManager {
       startIndex: -1,
       endIndex: -1
     }
+    this.defaultStyle = null
   }
 
   public getRange(): IRange {
@@ -49,6 +52,33 @@ export class RangeManager {
 
   public clearRange() {
     this.setRange(-1, -1)
+  }
+
+  public setDefaultStyle(style: IRangeElementStyle | null) {
+    if (!style) {
+      this.defaultStyle = null
+    } else {
+      this.defaultStyle = {
+        ...this.defaultStyle,
+        ...style
+      }
+    }
+  }
+
+  public getDefaultStyle(): IRangeElementStyle | null {
+    return this.defaultStyle
+  }
+
+  public getRangeAnchorStyle(
+    elementList: IElement[],
+    anchorIndex: number
+  ): IElement | null {
+    const anchorElement = getAnchorElement(elementList, anchorIndex)
+    if (!anchorElement) return null
+    return {
+      ...anchorElement,
+      ...this.defaultStyle
+    }
   }
 
   public getIsCollapsed(): boolean {
@@ -373,6 +403,7 @@ export class RangeManager {
       startTrIndex ||
       endTrIndex
     )
+    this.setDefaultStyle(null)
     this.range.zone = this.draw.getZone().getZone()
     // 激活控件
     const control = this.draw.getControl()
@@ -417,7 +448,7 @@ export class RangeManager {
       const index = ~endIndex ? endIndex : 0
       // 行首以第一个非换行符元素定位
       const elementList = this.draw.getElementList()
-      curElement = getAnchorElement(elementList, index)
+      curElement = this.getRangeAnchorStyle(elementList, index)
     }
     if (!curElement) return
     // 选取元素列表

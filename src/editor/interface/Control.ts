@@ -1,5 +1,9 @@
 import { LocationPosition } from '../dataset/enum/Common'
-import { ControlType, ControlIndentation } from '../dataset/enum/Control'
+import {
+  ControlType,
+  ControlIndentation,
+  ControlState
+} from '../dataset/enum/Control'
 import { EditorZone } from '../dataset/enum/Editor'
 import { MoveDirection } from '../dataset/enum/Observer'
 import { RowFlex } from '../dataset/enum/Row'
@@ -110,7 +114,7 @@ export interface IControlInitResult {
 export interface IControlInstance {
   setElement(element: IElement): void
   getElement(): IElement
-  getValue(): IElement[]
+  getValue(context?: IControlContext): IElement[]
   setValue(
     data: IElement[],
     context?: IControlContext,
@@ -133,6 +137,7 @@ export interface IControlRuleOption {
 export interface IGetControlValueOption {
   id?: string
   conceptId?: string
+  areaId?: string
 }
 
 export type IGetControlValueResult = (Omit<IControl, 'value'> & {
@@ -145,12 +150,14 @@ export type IGetControlValueResult = (Omit<IControl, 'value'> & {
 export interface ISetControlValueOption {
   id?: string
   conceptId?: string
+  areaId?: string
   value: string | IElement[]
 }
 
 export interface ISetControlExtensionOption {
   id?: string
   conceptId?: string
+  areaId?: string
   extension: unknown
 }
 
@@ -159,6 +166,7 @@ export type ISetControlHighlightOption = IControlHighlight[]
 export type ISetControlProperties = {
   id?: string
   conceptId?: string
+  areaId?: string
   properties: Partial<Omit<IControl, 'value'>>
 }
 
@@ -185,4 +193,14 @@ export interface ISetControlRowFlexOption {
   rowElement: IRowElement
   availableWidth: number
   controlRealWidth: number
+}
+
+export interface IControlChangeResult {
+  state: ControlState
+  control: IControl
+  controlId: string
+}
+
+export interface IDestroyControlOption {
+  isEmitEvent?: boolean
 }

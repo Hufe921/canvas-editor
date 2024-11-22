@@ -23,6 +23,7 @@ import {
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import {
+  AREA_CONTEXT_ATTR,
   BLOCK_ELEMENT_TYPE,
   CONTROL_STYLE_ATTR,
   EDITOR_ELEMENT_CONTEXT_ATTR,
@@ -110,7 +111,7 @@ export function formatElementList(
       })
       // 追加节点
       if (valueList.length) {
-        const titleId = getUUID()
+        const titleId = el.titleId || getUUID()
         const titleOptions = editorOptions.title
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
@@ -151,6 +152,41 @@ export function formatElementList(
           value.listId = listId
           value.listType = el.listType
           value.listStyle = el.listStyle
+          elementList.splice(i, 0, value)
+          i++
+        }
+      }
+      i--
+    } else if (el.type === ElementType.AREA) {
+      // 移除父节点
+      elementList.splice(i, 1)
+      // 格式化元素
+      const valueList = el?.valueList || []
+      formatElementList(valueList, {
+        ...options,
+        isHandleFirstElement: false
+      })
+      if (valueList.length) {
+        const areaId = getUUID()
+        for (let v = 0; v < valueList.length; v++) {
+          const value = valueList[v]
+          value.areaId = el.areaId || areaId
+          value.area = el.area
+          if (value.type === ElementType.TABLE) {
+            const trList = value.trList!
+            for (let r = 0; r < trList.length; r++) {
+              const tr = trList[r]
+              for (let d = 0; d < tr.tdList.length; d++) {
+                const td = tr.tdList[d]
+                const tdValueList = td.value
+                for (let t = 0; t < tdValueList.length; t++) {
+                  const tdValue = tdValueList[t]
+                  tdValue.areaId = el.areaId || areaId
+                  tdValue.area = el.area
+                }
+              }
+            }
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -240,7 +276,7 @@ export function formatElementList(
           radio: radioOption
         }
       } = options
-      const controlId = getUUID()
+      const controlId = el.controlId || getUUID()
       // 移除父节点
       elementList.splice(i, 1)
       // 控件上下文提取（压缩后的控件上下文无法提取）
@@ -451,7 +487,7 @@ export function formatElementList(
       i--
     } else if (
       (!el.type || TEXTLIKE_ELEMENT_TYPE.includes(el.type)) &&
-      el.value.length > 1
+      el.value?.length > 1
     ) {
       elementList.splice(i, 1)
       const valueList = splitText(el.value)
@@ -529,12 +565,13 @@ export function pickElementAttr(
 
 interface IZipElementListOption {
   extraPickAttrs?: Array<keyof IElement>
+  isClassifyArea?: boolean
 }
 export function zipElementList(
   payload: IElement[],
   options: IZipElementListOption = {}
 ): IElement[] {
-  const { extraPickAttrs } = options
+  const { extraPickAttrs, isClassifyArea = false } = options
   const elementList = deepClone(payload)
   const zipElementListData: IElement[] = []
   let e = 0
@@ -559,6 +596,7 @@ export function zipElementList(
         const titleElement: IElement = {
           type: ElementType.TITLE,
           title: element.title,
+          titleId,
           value: '',
           level
         }
@@ -605,6 +643,37 @@ export function zipElementList(
         listElement.valueList = zipElementList(valueList, options)
         element = listElement
       }
+    } else if (element.areaId && element.area) {
+      const areaId = element.areaId
+      const area = element.area
+      // 收集并压缩数据
+      const valueList: IElement[] = []
+      while (e < elementList.length) {
+        const areaE = elementList[e]
+        if (areaId !== areaE.areaId) {
+          e--
+          break
+        }
+        delete areaE.area
+        delete areaE.areaId
+        valueList.push(areaE)
+        e++
+      }
+      const areaElementList = zipElementList(valueList, options)
+      // 不归类区域元素
+      if (isClassifyArea) {
+        const areaElement: IElement = {
+          type: ElementType.AREA,
+          value: '',
+          areaId,
+          area
+        }
+        areaElement.valueList = areaElementList
+        element = areaElement
+      } else {
+        zipElementListData.splice(e, 0, ...areaElementList)
+        continue
+      }
     } else if (element.type === ElementType.TABLE) {
       // 分页表格先进行合并
       if (element.pagingId) {
@@ -632,7 +701,10 @@ export function zipElementList(
             const zipTd: ITd = {
               colspan: td.colspan,
               rowspan: td.rowspan,
-              value: zipElementList(td.value, options)
+              value: zipElementList(td.value, {
+                ...options,
+                isClassifyArea: false
+              })
             }
             // 压缩单元格属性
             TABLE_TD_ZIP_ATTR.forEach(attr => {
@@ -813,11 +885,12 @@ export function getAnchorElement(
   const anchorElement = elementList[anchorIndex]
   if (!anchorElement) return null
   const anchorNextElement = elementList[anchorIndex + 1]
-  // 非列表元素 && 当前元素是换行符 && 下一个元素不是换行符 则以下一个元素作为参考元素
+  // 非列表元素 && 当前元素是换行符 && 下一个元素不是换行符 && 区域相同 => 则以下一个元素作为参考元素
   return !anchorElement.listId &&
     anchorElement.value === ZERO &&
     anchorNextElement &&
-    anchorNextElement.value !== ZERO
+    anchorNextElement.value !== ZERO &&
+    anchorElement.areaId === anchorNextElement.areaId
     ? anchorNextElement
     : anchorElement
 }
@@ -858,7 +931,11 @@ export function formatElementContext(
       isBreakWarped ||
       (!copyElement.listId && targetElement.type === ElementType.LIST)
     ) {
-      const cloneAttr = [...TABLE_CONTEXT_ATTR, ...EDITOR_ROW_ATTR]
+      const cloneAttr = [
+        ...TABLE_CONTEXT_ATTR,
+        ...EDITOR_ROW_ATTR,
+        ...AREA_CONTEXT_ATTR
+      ]
       cloneProperty<IElement>(cloneAttr, copyElement!, targetElement)
       targetElement.valueList?.forEach(valueItem => {
         cloneProperty<IElement>(cloneAttr, copyElement!, valueItem)

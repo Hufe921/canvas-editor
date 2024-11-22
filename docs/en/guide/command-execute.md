@@ -971,3 +971,23 @@ Usage:
 ```javascript
 instance.command.executeFocus(payload?: IFocusOption)
 ```
+
+## executeInsertArea
+
+Feature: insert area element
+
+Usage:
+
+```javascript
+const areaId = instance.command.executeInsertArea(payload: IInsertAreaOption)
+```
+
+## executeSetAreaProperties
+
+Feature: set area properties
+
+Usage:
+
+```javascript
+instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
+```

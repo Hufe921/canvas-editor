@@ -1,15 +1,14 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import {
+  AREA_CONTEXT_ATTR,
   EDITOR_ELEMENT_STYLE_ATTR,
   EDITOR_ROW_ATTR
 } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { IElement } from '../../../../interface/Element'
-import {
-  formatElementContext,
-  getAnchorElement
-} from '../../../../utils/element'
+import { omitObject } from '../../../../utils'
+import { formatElementContext } from '../../../../utils/element'
 import { CanvasEvent } from '../../CanvasEvent'
 
 export function enter(evt: KeyboardEvent, host: CanvasEvent) {
@@ -35,7 +34,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     return
   }
   // 列表块内换行
-  const enterText: IElement = {
+  let enterText: IElement = {
     value: ZERO
   }
   if (evt.shiftKey && startElement.listId) {
@@ -46,10 +45,18 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     isBreakWhenWrap: true,
     editorOptions: draw.getOptions()
   })
+  // shift长按 && 最后位置回车无需复制区域上下文
+  if (
+    evt.shiftKey &&
+    endElement.areaId &&
+    endElement.areaId !== elementList[endIndex + 1]?.areaId
+  ) {
+    enterText = omitObject(enterText, AREA_CONTEXT_ATTR)
+  }
   // 标题结尾处回车无需格式化及样式复制
   if (!(endElement.titleId && endElement.titleId !== elementList[endIndex + 1]?.titleId)) {
     // 复制样式属性
-    const copyElement = getAnchorElement(elementList, endIndex)
+    const copyElement = rangeManager.getRangeAnchorStyle(elementList, endIndex)
     if (copyElement) {
       const copyAttr = [...EDITOR_ROW_ATTR]
       // 不复制控件后缀样式

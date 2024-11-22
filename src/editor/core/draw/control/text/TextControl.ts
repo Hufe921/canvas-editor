@@ -22,7 +22,8 @@ export class TextControl implements IControlInstance {
   private options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
-    this.options = control.getDraw().getOptions()
+    const draw = control.getDraw()
+    this.options = draw.getOptions()
     this.element = element
     this.control = control
   }

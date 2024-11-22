@@ -26,7 +26,11 @@ import {
 } from './dataset/enum/Editor'
 import { EDITOR_CLIPBOARD, EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IWatermark } from './interface/Watermark'
-import { ControlIndentation, ControlType } from './dataset/enum/Control'
+import {
+  ControlIndentation,
+  ControlState,
+  ControlType
+} from './dataset/enum/Control'
 import { INavigateInfo } from './core/draw/interactive/Search'
 import { Shortcut } from './core/shortcut/Shortcut'
 import { KeyMap } from './dataset/enum/KeyMap'
@@ -59,6 +63,7 @@ import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
+import { AreaMode } from './dataset/enum/Area'
 
 export default class Editor {
   public command: Command
@@ -190,7 +195,8 @@ export {
   TextDecorationStyle,
   LineNumberType,
   LocationPosition,
-  IGetElementListByHTMLOption
+  AreaMode,
+  ControlState
 }
 
 // 对外类型
@@ -208,5 +214,6 @@ export type {
   ICatalog,
   ICatalogItem,
   IRange,
-  IRangeStyle
+  IRangeStyle,
+  IGetElementListByHTMLOption
 }

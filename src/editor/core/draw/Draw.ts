@@ -108,6 +108,7 @@ import { PageBorder } from './frame/PageBorder'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
+import { Area } from './interactive/Area'
 
 export class Draw {
   private container: HTMLDivElement
@@ -134,6 +135,7 @@ export class Draw {
   private background: Background
   private search: Search
   private group: Group
+  private area: Area
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -213,6 +215,7 @@ export class Draw {
     this.background = new Background(this)
     this.search = new Search(this)
     this.group = new Group(this)
+    this.area = new Area(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -321,6 +324,9 @@ export class Draw {
   }
 
   public isReadonly() {
+    if (this.area.getActiveAreaId()) {
+      return this.area.isReadonly()
+    }
     switch (this.mode) {
       case EditorMode.DESIGN:
         return false
@@ -583,6 +589,10 @@ export class Draw {
 
   public getGroup(): Group {
     return this.group
+  }
+
+  public getArea(): Area {
+    return this.area
   }
 
   public getHistoryManager(): HistoryManager {
@@ -1136,7 +1146,8 @@ export class Draw {
         extraPickAttrs
       }),
       main: zipElementList(mainElementList, {
-        extraPickAttrs
+        extraPickAttrs,
+        isClassifyArea: true
       }),
       footer: zipElementList(this.getFooterElementList(), {
         extraPickAttrs
@@ -1334,7 +1345,9 @@ export class Draw {
         0
       const availableWidth = innerWidth - offsetX
       // 增加起始位置坐标偏移量
-      x += curRow.elementList.length === 1 ? offsetX : 0
+      const isStartElement = curRow.elementList.length === 1
+      x += isStartElement ? offsetX : 0
+      y += isStartElement ? curRow.offsetY || 0 : 0
       if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
@@ -1487,13 +1500,14 @@ export class Draw {
           let curPagePreHeight = marginHeight
           for (let r = 0; r < rowList.length; r++) {
             const row = rowList[r]
+            const rowOffsetY = row.offsetY || 0
             if (
-              row.height + curPagePreHeight > height ||
+              row.height + curPagePreHeight + rowOffsetY > height ||
               rowList[r - 1]?.isPageBreak
             ) {
-              curPagePreHeight = marginHeight + row.height
+              curPagePreHeight = marginHeight + row.height + rowOffsetY
             } else {
-              curPagePreHeight += row.height
+              curPagePreHeight += row.height + rowOffsetY
             }
           }
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
@@ -1770,6 +1784,7 @@ export class Draw {
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
+        preElement?.areaId !== element.areaId ||
         (i !== 0 && element.value === ZERO)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
@@ -1815,11 +1830,21 @@ export class Draw {
           row.offsetX = listStyleMap.get(element.listId!)
           row.listIndex = listIndex
         }
+        // Y轴偏移量
+        row.offsetY =
+          !isFromTable &&
+          element.area?.top &&
+          element.areaId !== elementList[i - 1]?.areaId
+            ? element.area.top * scale
+            : 0
         rowList.push(row)
       } else {
         curRow.width += metrics.width
         // 减小块元素前第一行空行行高
-        if (i === 0 && getIsBlockElement(elementList[1])) {
+        if (
+          i === 0 &&
+          (getIsBlockElement(elementList[1]) || !!elementList[1]?.areaId)
+        ) {
           curRow.height = defaultBasicRowMarginHeight
           curRow.ascent = defaultBasicRowMarginHeight
         } else if (curRow.height < height) {
@@ -1905,7 +1930,10 @@ export class Draw {
     if (pageMode === PageMode.CONTINUITY) {
       pageRowList[0] = this.rowList
       // 重置高度
-      pageHeight += this.rowList.reduce((pre, cur) => pre + cur.height, 0)
+      pageHeight += this.rowList.reduce(
+        (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+        0
+      )
       const dpr = this.getPagePixelRatio()
       const pageDom = this.pageList[0]
       const pageDomHeight = Number(pageDom.style.height.replace('px', ''))
@@ -1921,19 +1949,20 @@ export class Draw {
     } else {
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]
+        const rowOffsetY = row.offsetY || 0
         if (
-          row.height + pageHeight > height ||
+          row.height + rowOffsetY + pageHeight > height ||
           this.rowList[i - 1]?.isPageBreak
         ) {
           if (Number.isInteger(maxPageNo) && pageNo >= maxPageNo!) {
             this.elementList = this.elementList.slice(0, row.startIndex)
             break
           }
-          pageHeight = marginHeight + row.height
+          pageHeight = marginHeight + row.height + rowOffsetY
           pageRowList.push([row])
           pageNo++
         } else {
-          pageHeight += row.height
+          pageHeight += row.height + rowOffsetY
           pageRowList[pageNo].push(row)
         }
       }
@@ -2397,6 +2426,7 @@ export class Draw {
       lineNumber,
       pageBorder
     } = this.options
+    const isPrintMode = this.mode === EditorMode.PRINT
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2404,8 +2434,12 @@ export class Draw {
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx, pageNo)
+    // 绘制区域
+    if (!isPrintMode) {
+      this.area.render(ctx, pageNo)
+    }
     // 绘制页边距
-    if (this.mode !== EditorMode.PRINT) {
+    if (!isPrintMode) {
       this.margin.render(ctx, pageNo)
     }
     // 渲染衬于文字下方元素
@@ -2414,7 +2448,9 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_BOTTOM]
     })
     // 控件高亮
-    this.control.renderHighlightList(ctx, pageNo)
+    if (!isPrintMode) {
+      this.control.renderHighlightList(ctx, pageNo)
+    }
     // 渲染元素
     const index = rowList[0]?.startIndex
     this.drawRow(ctx, {
@@ -2446,7 +2482,7 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_TOP, ImageDisplay.SURROUND]
     })
     // 搜索匹配绘制
-    if (this.search.getSearchKeyword()) {
+    if (!isPrintMode && this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
     }
     // 绘制水印
@@ -2558,13 +2594,17 @@ export class Draw {
       this.pageRowList = this._computePageList()
       // 位置信息
       this.position.computePositionList()
-      // 搜索信息
-      const searchKeyword = this.search.getSearchKeyword()
-      if (searchKeyword) {
-        this.search.compute(searchKeyword)
+      // 区域信息
+      this.area.compute()
+      if (this.mode !== EditorMode.PRINT) {
+        // 搜索信息
+        const searchKeyword = this.search.getSearchKeyword()
+        if (searchKeyword) {
+          this.search.compute(searchKeyword)
+        }
+        // 控件关键词高亮
+        this.control.computeHighlightList()
       }
-      // 控件关键词高亮
-      this.control.computeHighlightList()
     }
     // 清除光标等副作用
     this.imageObserver.clearAll()

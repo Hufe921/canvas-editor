@@ -176,5 +176,14 @@ interface IElement {
   listType?: ListType;
   listStyle?: ListStyle;
   listWrap?: boolean;
+  // area
+  areaId?: string;
+  area?: {
+    extension?: unknown;
+    top?: number;
+    borderColor?: string;
+    backgroundColor?: string;
+    mode?: AreaMode;
+  };
 }
 ```
