@@ -273,6 +273,12 @@ export class Control {
     return this.activeControl
   }
 
+  public updateActiveControlValue() {
+    if (this.activeControl) {
+      this.activeControlValue = this.activeControl.getValue()
+    }
+  }
+
   public initControl() {
     const elementList = this.getElementList()
     const range = this.getRange()
@@ -293,7 +299,7 @@ export class Control {
       const controlElement = this.activeControl.getElement()
       if (element.controlId === controlElement.controlId) {
         // 更新缓存控件数据
-        this.activeControlValue = this.activeControl.getValue()
+        this.updateActiveControlValue()
         return
       }
     }
@@ -319,9 +325,7 @@ export class Control {
       dateControl.awake()
     }
     // 缓存控件数据
-    if (this.activeControl) {
-      this.activeControlValue = this.activeControl.getValue()
-    }
+    this.updateActiveControlValue()
     // 激活控件回调
     const isSubscribeControlChange = this.eventBus.isSubscribe('controlChange')
     if (this.listener.controlChange || isSubscribeControlChange) {
