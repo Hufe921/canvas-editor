@@ -164,7 +164,8 @@ export function formatElementList(
       const valueList = el?.valueList || []
       formatElementList(valueList, {
         ...options,
-        isHandleFirstElement: false
+        isHandleFirstElement: false,
+        isForceCompensation: false
       })
       if (valueList.length) {
         const areaId = getUUID()
