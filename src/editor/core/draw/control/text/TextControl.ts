@@ -12,14 +12,11 @@ import {
 } from '../../../../interface/Control'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
-import { IRange } from '../../../../interface/Range'
-import { deepClone, omitObject, pickObject } from '../../../../utils'
+import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class TextControl implements IControlInstance {
-  public activeRange: IRange
-  public activeElementList: IElement[]
   private element: IElement
   private control: Control
   private options: DeepRequired<IEditorOption>
@@ -27,8 +24,6 @@ export class TextControl implements IControlInstance {
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()
     this.options = draw.getOptions()
-    this.activeRange = deepClone(draw.getRange().getRange())
-    this.activeElementList = draw.getElementList()
     this.element = element
     this.control = control
   }

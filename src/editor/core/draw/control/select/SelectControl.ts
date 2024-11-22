@@ -18,14 +18,11 @@ import {
 } from '../../../../interface/Control'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
-import { IRange } from '../../../../interface/Range'
-import { deepClone, omitObject, pickObject, splitText } from '../../../../utils'
+import { omitObject, pickObject, splitText } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class SelectControl implements IControlInstance {
-  public activeRange: IRange
-  public activeElementList: IElement[]
   private element: IElement
   private control: Control
   private isPopup: boolean
@@ -35,8 +32,6 @@ export class SelectControl implements IControlInstance {
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()
     this.options = draw.getOptions()
-    this.activeRange = deepClone(draw.getRange().getRange())
-    this.activeElementList = draw.getElementList()
     this.element = element
     this.control = control
     this.isPopup = false

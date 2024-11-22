@@ -14,8 +14,7 @@ import {
 } from '../../../../interface/Control'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
-import { IRange } from '../../../../interface/Range'
-import { deepClone, omitObject, pickObject } from '../../../../utils'
+import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Draw } from '../../Draw'
 import { DatePicker } from '../../particle/date/DatePicker'
@@ -23,8 +22,6 @@ import { Control } from '../Control'
 
 export class DateControl implements IControlInstance {
   private draw: Draw
-  public activeRange: IRange
-  public activeElementList: IElement[]
   private element: IElement
   private control: Control
   private isPopup: boolean
@@ -35,8 +32,6 @@ export class DateControl implements IControlInstance {
     const draw = control.getDraw()
     this.draw = draw
     this.options = draw.getOptions()
-    this.activeRange = deepClone(draw.getRange().getRange())
-    this.activeElementList = draw.getElementList()
     this.element = element
     this.control = control
     this.isPopup = false
