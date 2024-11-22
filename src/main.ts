@@ -718,23 +718,21 @@ window.onload = function () {
             )?.value
             if (!placeholder) return
             const value = payload.find(p => p.name === 'value')?.value || ''
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  value: value
-                    ? [
-                        {
-                          value
-                        }
-                      ]
-                    : null,
-                  placeholder
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                value: value
+                  ? [
+                      {
+                        value
+                      }
+                    ]
+                  : null,
+                placeholder
               }
-            ])
+            })
           }
         })
         break
@@ -772,19 +770,17 @@ window.onload = function () {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  code,
-                  value: null,
-                  placeholder,
-                  valueSets: JSON.parse(valueSets)
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
+                placeholder,
+                valueSets: JSON.parse(valueSets)
               }
-            ])
+            })
           }
         })
         break
@@ -811,18 +807,16 @@ window.onload = function () {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  code,
-                  value: null,
-                  valueSets: JSON.parse(valueSets)
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
+                valueSets: JSON.parse(valueSets)
               }
-            ])
+            })
           }
         })
         break
@@ -849,18 +843,16 @@ window.onload = function () {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  code,
-                  value: null,
-                  valueSets: JSON.parse(valueSets)
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
+                valueSets: JSON.parse(valueSets)
               }
-            ])
+            })
           }
         })
         break
@@ -907,24 +899,22 @@ window.onload = function () {
             const value = payload.find(p => p.name === 'value')?.value || ''
             const dateFormat =
               payload.find(p => p.name === 'dateFormat')?.value || ''
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  dateFormat,
-                  value: value
-                    ? [
-                        {
-                          value
-                        }
-                      ]
-                    : null,
-                  placeholder
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                dateFormat,
+                value: value
+                  ? [
+                      {
+                        value
+                      }
+                    ]
+                  : null,
+                placeholder
               }
-            ])
+            })
           }
         })
         break
