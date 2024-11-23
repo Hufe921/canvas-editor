@@ -766,40 +766,55 @@ export function zipElementList(
         element = dateElement
       }
     } else if (element.controlId) {
-      // 控件处理
       const controlId = element.controlId
-      if (controlId) {
-        // 以前缀为基准更新控件默认样式
-        const controlDefaultStyle = <IControlSelect>(
-          (<unknown>pickObject(element, CONTROL_STYLE_ATTR))
-        )
-        const control = {
-          ...element.control!,
-          ...controlDefaultStyle
-        }
-        const controlElement: IElement = {
-          ...pickObject(element, EDITOR_ROW_ATTR),
-          type: ElementType.CONTROL,
-          value: '',
-          control,
-          controlId
-        }
+      // 控件包含前后缀则转换为控件
+      if (element.controlComponent === ControlComponent.PREFIX) {
         const valueList: IElement[] = []
-        while (e < elementList.length) {
-          const controlE = elementList[e]
-          if (controlId !== controlE.controlId) {
-            e--
-            break
-          }
+        let isFull = false
+        let start = e
+        while (start < elementList.length) {
+          const controlE = elementList[start]
+          if (controlId !== controlE.controlId) break
           if (controlE.controlComponent === ControlComponent.VALUE) {
             delete controlE.control
             delete controlE.controlId
             valueList.push(controlE)
           }
-          e++
+          if (controlE.controlComponent === ControlComponent.POSTFIX) {
+            isFull = true
+          }
+          start++
         }
-        controlElement.control!.value = zipElementList(valueList, options)
-        element = pickElementAttr(controlElement, { extraPickAttrs })
+        if (isFull) {
+          // 以前缀为基准更新控件默认样式
+          const controlDefaultStyle = <IControlSelect>(
+            (<unknown>pickObject(element, CONTROL_STYLE_ATTR))
+          )
+          const control = {
+            ...element.control!,
+            ...controlDefaultStyle
+          }
+          const controlElement: IElement = {
+            ...pickObject(element, EDITOR_ROW_ATTR),
+            type: ElementType.CONTROL,
+            value: '',
+            control,
+            controlId
+          }
+          controlElement.control!.value = zipElementList(valueList, options)
+          element = pickElementAttr(controlElement, { extraPickAttrs })
+          // 控件元素数量 - 1（当前元素）
+          e += start - e - 1
+        }
+      }
+      // 不完整的控件元素不转化为控件，如果不是文本则直接忽略
+      if (element.controlComponent) {
+        if (element.controlComponent !== ControlComponent.VALUE) {
+          e++
+          delete element.control
+          delete element.controlId
+          continue
+        }
       }
     }
     // 组合元素
