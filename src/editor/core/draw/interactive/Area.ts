@@ -46,7 +46,7 @@ export class Area {
 
   public isReadonly() {
     const activeAreaInfo = this.getActiveAreaInfo()
-    if (!activeAreaInfo) return false
+    if (!activeAreaInfo?.area) return false
     switch (activeAreaInfo.area.mode) {
       case AreaMode.EDIT:
         return false
@@ -97,7 +97,7 @@ export class Area {
     const width = this.draw.getInnerWidth()
     for (const areaInfoItem of this.areaInfoMap) {
       const { area, positionList } = areaInfoItem[1]
-      if (!area.backgroundColor && !area.borderColor) continue
+      if (!area?.backgroundColor && !area?.borderColor) continue
       const pagePositionList = positionList.filter(p => p.pageNo === pageNo)
       if (!pagePositionList.length) continue
       ctx.translate(0.5, 0.5)
@@ -166,6 +166,9 @@ export class Area {
     if (!areaId) return
     const areaInfo = this.areaInfoMap.get(areaId)
     if (!areaInfo) return
+    if (!areaInfo.area) {
+      areaInfo.area = {}
+    }
     // 是否计算
     let isCompute = false
     // 修改属性
