@@ -36,7 +36,7 @@ Feature: Copy
 Usage:
 
 ```javascript
-instance.command.executeCopy()
+instance.command.executeCopy(payload?: ICopyOption)
 ```
 
 ## executePaste

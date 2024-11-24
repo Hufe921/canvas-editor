@@ -64,7 +64,11 @@ import {
   IGetElementByIdOption,
   IUpdateElementByIdOption
 } from '../../interface/Element'
-import { IPasteOption, IPositionContextByEvent } from '../../interface/Event'
+import {
+  ICopyOption,
+  IPasteOption,
+  IPositionContextByEvent
+} from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
@@ -153,8 +157,8 @@ export class CommandAdapt {
     this.canvasEvent.cut()
   }
 
-  public copy() {
-    this.canvasEvent.copy()
+  public copy(payload?: ICopyOption) {
+    this.canvasEvent.copy(payload)
   }
 
   public paste(payload?: IPasteOption) {

@@ -36,7 +36,7 @@ instance.command.executeCut()
 用法：
 
 ```javascript
-instance.command.executeCopy()
+instance.command.executeCopy(payload?: ICopyOption)
 ```
 
 ## executePaste

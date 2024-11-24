@@ -19,6 +19,7 @@ import click from './handlers/click'
 import composition from './handlers/composition'
 import drag from './handlers/drag'
 import { isIOS } from '../../utils/ua'
+import { ICopyOption } from '../../interface/Event'
 
 export interface ICompositionInfo {
   elementList: IElement[]
@@ -178,8 +179,8 @@ export class CanvasEvent {
     cut(this)
   }
 
-  public copy() {
-    copy(this)
+  public copy(options?: ICopyOption) {
+    copy(this, options)
   }
 
   public compositionstart() {
