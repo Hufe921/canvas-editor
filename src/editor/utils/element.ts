@@ -268,8 +268,17 @@ export function formatElementList(
         i++
         continue
       }
-      const { prefix, postfix, value, placeholder, code, type, valueSets } =
-        el.control
+      const {
+        prefix,
+        postfix,
+        preText,
+        postText,
+        value,
+        placeholder,
+        code,
+        type,
+        valueSets
+      } = el.control
       const {
         editorOptions: {
           control: controlOption,
@@ -309,6 +318,23 @@ export function formatElementList(
           controlComponent: ControlComponent.PREFIX
         })
         i++
+      }
+      // 前文本
+      if (preText) {
+        const preTextStrList = splitText(preText)
+        for (let p = 0; p < preTextStrList.length; p++) {
+          const value = preTextStrList[p]
+          elementList.splice(i, 0, {
+            ...controlContext,
+            ...controlDefaultStyle,
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.PRE_TEXT
+          })
+          i++
+        }
       }
       // 值
       if (
@@ -466,6 +492,23 @@ export function formatElementList(
             type: el.type,
             control: el.control,
             controlComponent: ControlComponent.PLACEHOLDER
+          })
+          i++
+        }
+      }
+      // 后文本
+      if (postText) {
+        const postTextStrList = splitText(postText)
+        for (let p = 0; p < postTextStrList.length; p++) {
+          const value = postTextStrList[p]
+          elementList.splice(i, 0, {
+            ...controlContext,
+            ...controlDefaultStyle,
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.POST_TEXT
           })
           i++
         }
@@ -809,10 +852,14 @@ export function zipElementList(
       }
       // 不完整的控件元素不转化为控件，如果不是文本则直接忽略
       if (element.controlComponent) {
-        if (element.controlComponent !== ControlComponent.VALUE) {
+        delete element.control
+        delete element.controlId
+        if (
+          element.controlComponent !== ControlComponent.VALUE &&
+          element.controlComponent !== ControlComponent.PRE_TEXT &&
+          element.controlComponent !== ControlComponent.POST_TEXT
+        ) {
           e++
-          delete element.control
-          delete element.controlId
           continue
         }
       }
@@ -1590,7 +1637,12 @@ export function getTextFromElementList(elementList: IElement[]) {
       ) {
         let textLike = ''
         if (element.type === ElementType.CONTROL) {
-          textLike = element.control!.value?.[0]?.value || ''
+          const controlValue = element.control!.value?.[0]?.value || ''
+          textLike = controlValue
+            ? `${element.control?.preText || ''}${controlValue}${
+                element.control?.postText || ''
+              }`
+            : ''
         } else if (element.type === ElementType.DATE) {
           textLike = element.valueList?.map(v => v.value).join('') || ''
         } else {

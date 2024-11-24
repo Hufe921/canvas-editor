@@ -115,7 +115,7 @@ export class Control {
 
   // 过滤控件辅助元素（前后缀、背景提示）
   public filterAssistElement(elementList: IElement[]): IElement[] {
-    return elementList.filter(element => {
+    return elementList.filter((element, index) => {
       if (element.type === ElementType.TABLE) {
         const trList = element.trList!
         for (let r = 0; r < trList.length; r++) {
@@ -134,6 +134,42 @@ export class Control {
         ) {
           element.value = ''
           return true
+        }
+      } else {
+        // 控件存在值时无需过滤前后文本
+        if (
+          element.control?.preText &&
+          element.controlComponent === ControlComponent.PRE_TEXT
+        ) {
+          let isExistValue = false
+          let start = index + 1
+          while (start < elementList.length) {
+            const nextElement = elementList[start]
+            if (element.controlId !== nextElement.controlId) break
+            if (nextElement.controlComponent === ControlComponent.VALUE) {
+              isExistValue = true
+              break
+            }
+            start++
+          }
+          return isExistValue
+        }
+        if (
+          element.control?.postText &&
+          element.controlComponent === ControlComponent.POST_TEXT
+        ) {
+          let isExistValue = false
+          let start = index - 1
+          while (start < elementList.length) {
+            const preElement = elementList[start]
+            if (element.controlId !== preElement.controlId) break
+            if (preElement.controlComponent === ControlComponent.VALUE) {
+              isExistValue = true
+              break
+            }
+            start--
+          }
+          return isExistValue
         }
       }
       return (
@@ -460,14 +496,18 @@ export class Control {
         }
         startIndex++
       }
-    } else if (element.controlComponent === ControlComponent.PREFIX) {
-      // PREFIX-移动到最后一个前缀字符后
+    } else if (
+      element.controlComponent === ControlComponent.PREFIX ||
+      element.controlComponent === ControlComponent.PRE_TEXT
+    ) {
+      // PREFIX或前文本-移动到最后一个前缀字符后
       let startIndex = newIndex + 1
       while (startIndex < elementList.length) {
         const nextElement = elementList[startIndex]
         if (
           nextElement.controlId !== element.controlId ||
-          nextElement.controlComponent !== ControlComponent.PREFIX
+          (nextElement.controlComponent !== ControlComponent.PREFIX &&
+            nextElement.controlComponent !== ControlComponent.PRE_TEXT)
         ) {
           return {
             newIndex: startIndex - 1,
@@ -476,14 +516,19 @@ export class Control {
         }
         startIndex++
       }
-    } else if (element.controlComponent === ControlComponent.PLACEHOLDER) {
-      // PLACEHOLDER-移动到第一个前缀后
+    } else if (
+      element.controlComponent === ControlComponent.PLACEHOLDER ||
+      element.controlComponent === ControlComponent.POST_TEXT
+    ) {
+      // PLACEHOLDER或后文本-移动到第一个前缀或内容后
       let startIndex = newIndex - 1
       while (startIndex > 0) {
         const preElement = elementList[startIndex]
         if (
           preElement.controlId !== element.controlId ||
-          preElement.controlComponent === ControlComponent.PREFIX
+          preElement.controlComponent === ControlComponent.VALUE ||
+          preElement.controlComponent === ControlComponent.PREFIX ||
+          preElement.controlComponent === ControlComponent.PRE_TEXT
         ) {
           return {
             newIndex: startIndex,
@@ -1075,7 +1120,8 @@ export class Control {
           const nextElement = elementList[nextIndex]
           if (
             nextElement.controlComponent === ControlComponent.VALUE ||
-            nextElement.controlComponent === ControlComponent.PREFIX
+            nextElement.controlComponent === ControlComponent.PREFIX ||
+            nextElement.controlComponent === ControlComponent.PRE_TEXT
           ) {
             break
           }
@@ -1185,7 +1231,9 @@ export class Control {
         }
         if (
           !element.controlId ||
-          element.controlId === controlElement.controlId
+          element.controlId === controlElement.controlId ||
+          elementList[e + 1]?.controlComponent === ControlComponent.PREFIX ||
+          elementList[e + 1]?.controlComponent === ControlComponent.PRE_TEXT
         ) {
           continue
         }

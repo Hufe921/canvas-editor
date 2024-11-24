@@ -2026,7 +2026,17 @@ export class CommandAdapt {
           curIndex -= 1
           if (
             element.controlComponent !== ControlComponent.PLACEHOLDER &&
-            element.controlComponent !== ControlComponent.POSTFIX
+            element.controlComponent !== ControlComponent.POSTFIX &&
+            element.controlComponent !== ControlComponent.POST_TEXT
+          ) {
+            continue
+          }
+        } else {
+          if (
+            (element.controlComponent !== ControlComponent.PREFIX &&
+              element.controlComponent !== ControlComponent.PRE_TEXT) ||
+            elementList[i]?.controlComponent === ControlComponent.PREFIX ||
+            elementList[i]?.controlComponent === ControlComponent.PRE_TEXT
           ) {
             continue
           }

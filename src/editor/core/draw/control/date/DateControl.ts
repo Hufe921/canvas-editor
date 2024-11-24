@@ -60,7 +60,8 @@ export class DateControl implements IControlInstance {
       const preElement = elementList[preIndex]
       if (
         preElement.controlId !== startElement.controlId ||
-        preElement.controlComponent === ControlComponent.PREFIX
+        preElement.controlComponent === ControlComponent.PREFIX ||
+        preElement.controlComponent === ControlComponent.PRE_TEXT
       ) {
         break
       }
@@ -72,7 +73,8 @@ export class DateControl implements IControlInstance {
       const nextElement = elementList[nextIndex]
       if (
         nextElement.controlId !== startElement.controlId ||
-        nextElement.controlComponent === ControlComponent.POSTFIX
+        nextElement.controlComponent === ControlComponent.POSTFIX ||
+        nextElement.controlComponent === ControlComponent.POST_TEXT
       ) {
         break
       }
@@ -127,7 +129,8 @@ export class DateControl implements IControlInstance {
     const anchorElement =
       (startElement.type &&
         !TEXTLIKE_ELEMENT_TYPE.includes(startElement.type)) ||
-      startElement.controlComponent === ControlComponent.PREFIX
+      startElement.controlComponent === ControlComponent.PREFIX ||
+      startElement.controlComponent === ControlComponent.PRE_TEXT
         ? pickObject(startElement, [
             'control',
             'controlId',
@@ -257,7 +260,9 @@ export class DateControl implements IControlInstance {
       } else {
         if (
           startElement.controlComponent === ControlComponent.PREFIX ||
+          startElement.controlComponent === ControlComponent.PRE_TEXT ||
           endElement.controlComponent === ControlComponent.POSTFIX ||
+          endElement.controlComponent === ControlComponent.POST_TEXT ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
           // 前缀、后缀、占位符
@@ -288,9 +293,11 @@ export class DateControl implements IControlInstance {
       } else {
         const endNextElement = elementList[endIndex + 1]
         if (
-          (startElement.controlComponent === ControlComponent.PREFIX &&
+          ((startElement.controlComponent === ControlComponent.PREFIX ||
+            startElement.controlComponent === ControlComponent.PRE_TEXT) &&
             endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
           endNextElement.controlComponent === ControlComponent.POSTFIX ||
+          endNextElement.controlComponent === ControlComponent.POST_TEXT ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
           // 前缀、后缀、占位符

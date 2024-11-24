@@ -96,6 +96,8 @@ interface IElement {
     conceptId?: string;
     prefix?: string;
     postfix?: string;
+    preText?: string;
+    postText?: string;
     minWidth?: number;
     underline?: boolean;
     border?: boolean;

@@ -70,6 +70,8 @@ export interface IControlBasic {
   extension?: unknown
   indentation?: ControlIndentation
   rowFlex?: RowFlex
+  preText?: string
+  postText?: string
 }
 
 export interface IControlStyle {
