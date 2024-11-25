@@ -114,6 +114,8 @@ interface IElement {
       value: string;
       code: string;
     }[];
+    isMultiSelect?: boolean;
+    multiSelectDelimiter?: string;
     dateFormat?: string;
     font?: string;
     size?: number;

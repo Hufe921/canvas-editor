@@ -18,7 +18,13 @@ import {
 } from '../../../../interface/Control'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
-import { omitObject, pickObject, splitText } from '../../../../utils'
+import {
+  isArrayEqual,
+  isNonValue,
+  omitObject,
+  pickObject,
+  splitText
+} from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
@@ -28,6 +34,8 @@ export class SelectControl implements IControlInstance {
   private isPopup: boolean
   private selectDom: HTMLDivElement | null
   private options: DeepRequired<IEditorOption>
+  private VALUE_DELIMITER = ','
+  private DEFAULT_MULTI_SELECT_DELIMITER = ','
 
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()
@@ -50,8 +58,27 @@ export class SelectControl implements IControlInstance {
     return this.isPopup
   }
 
-  public getCode(): string | null {
-    return this.element.control?.code || null
+  public getCodes(): string[] {
+    return this.element?.control?.code
+      ? this.element.control.code.split(',')
+      : []
+  }
+
+  public getText(codes: string[]): string | null {
+    if (!this.element?.control) return null
+    const control = this.element.control
+    if (!control.valueSets?.length) return null
+    const multiSelectDelimiter =
+      control?.multiSelectDelimiter || this.DEFAULT_MULTI_SELECT_DELIMITER
+    const valueSets = control.valueSets
+    const valueList: string[] = []
+    codes.forEach(code => {
+      const valueSet = valueSets.find(v => v.code === code)
+      if (valueSet && !isNonValue(valueSet.value)) {
+        valueList.push(valueSet.value)
+      }
+    })
+    return valueList.join(multiSelectDelimiter) || null
   }
 
   public getValue(context: IControlContext = {}): IElement[] {
@@ -237,9 +264,16 @@ export class SelectControl implements IControlInstance {
     const elementList = context.elementList || this.control.getElementList()
     const range = context.range || this.control.getRange()
     const control = this.element.control!
+    const newCodes = code?.split(this.VALUE_DELIMITER) || []
+    // 缓存旧值
     const oldCode = control.code
+    const oldCodes = control.code?.split(this.VALUE_DELIMITER) || []
     // 选项相同时无需重复渲染
-    if (code === oldCode) {
+    const isMultiSelect = control.isMultiSelect
+    if (
+      (!isMultiSelect && code === oldCode) ||
+      (isMultiSelect && isArrayEqual(oldCodes, newCodes))
+    ) {
       this.control.repaintControl({
         curIndex: range.startIndex,
         isCompute: false,
@@ -250,9 +284,20 @@ export class SelectControl implements IControlInstance {
     }
     const valueSets = control.valueSets
     if (!Array.isArray(valueSets) || !valueSets.length) return
-    // 转换code
-    const valueSet = valueSets.find(v => v.code === code)
-    if (!valueSet) return
+    // 转换文本
+    const text = this.getText(newCodes)
+    if (!text) {
+      // 之前存在内容时清空文本
+      if (oldCode) {
+        const prefixIndex = this.clearSelect(context)
+        if (~prefixIndex) {
+          this.control.repaintControl({
+            curIndex: prefixIndex
+          })
+        }
+      }
+      return
+    }
     // 样式赋值元素-默认值的第一个字符样式，否则取默认样式
     const valueElement = this.getValue(context)[0]
     const styleElement = valueElement
@@ -273,7 +318,7 @@ export class SelectControl implements IControlInstance {
       EDITOR_ELEMENT_STYLE_ATTR
     )
     const start = prefixIndex + 1
-    const data = splitText(valueSet.value)
+    const data = splitText(text)
     const draw = this.control.getDraw()
     for (let i = 0; i < data.length; i++) {
       const newElement: IElement = {
@@ -296,7 +341,9 @@ export class SelectControl implements IControlInstance {
       this.control.repaintControl({
         curIndex: newIndex
       })
-      this.destroy()
+      if (!isMultiSelect) {
+        this.destroy()
+      }
     }
   }
 
@@ -314,12 +361,26 @@ export class SelectControl implements IControlInstance {
     for (let v = 0; v < valueSets.length; v++) {
       const valueSet = valueSets[v]
       const li = document.createElement('li')
-      const code = this.getCode()
-      if (code === valueSet.code) {
+      let codes = this.getCodes()
+      if (codes.includes(valueSet.code)) {
         li.classList.add('active')
       }
       li.onclick = () => {
-        this.setSelect(valueSet.code)
+        const codeIndex = codes.findIndex(code => code === valueSet.code)
+        if (control.isMultiSelect) {
+          if (~codeIndex) {
+            codes.splice(codeIndex, 1)
+          } else {
+            codes.push(valueSet.code)
+          }
+        } else {
+          if (~codeIndex) {
+            codes = []
+          } else {
+            codes = [valueSet.code]
+          }
+        }
+        this.setSelect(codes.join(this.VALUE_DELIMITER))
       }
       li.append(document.createTextNode(valueSet.value))
       ul.append(li)

@@ -21,6 +21,8 @@ export interface IValueSet {
 export interface IControlSelect {
   code: string | null
   valueSets: IValueSet[]
+  isMultiSelect?: boolean
+  multiSelectDelimiter?: string
 }
 
 export interface IControlCheckbox {
