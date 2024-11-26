@@ -692,6 +692,16 @@ Usage:
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageScale
+
+Feature: Set page scale
+
+Usage:
+
+```javascript
+instance.command.executePageScale(scale: number)
+```
+
 ## executePageScaleRecovery
 
 Feature: Restore the original zoom factor of the page

@@ -692,6 +692,16 @@ instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisp
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageScale
+
+功能：设置缩放比例
+
+用法：
+
+```javascript
+instance.command.executePageScale(scale: number)
+```
+
 ## executePageScaleRecovery
 
 功能：恢复页面原始缩放比例

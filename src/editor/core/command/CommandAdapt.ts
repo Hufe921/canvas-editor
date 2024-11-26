@@ -1672,6 +1672,11 @@ export class CommandAdapt {
     this.draw.setPageMode(payload)
   }
 
+  public pageScale(scale: number) {
+    if (scale === this.options.scale) return
+    this.draw.setPageScale(scale)
+  }
+
   public pageScaleRecovery() {
     const { scale } = this.options
     if (scale !== 1) {
