@@ -23,6 +23,9 @@ export interface IControlSelect {
   valueSets: IValueSet[]
   isMultiSelect?: boolean
   multiSelectDelimiter?: string
+  selectExclusiveOptions?: {
+    inputAble?: boolean
+  }
 }
 
 export interface IControlCheckbox {

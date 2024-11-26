@@ -124,6 +124,9 @@ interface IElement {
     highlight?: string;
     italic?: boolean;
     strikeout?: boolean;
+    selectExclusiveOptions?: {
+      inputAble?: boolean;
+    }
   };
   controlComponent?: {
     PREFIX = 'prefix',
