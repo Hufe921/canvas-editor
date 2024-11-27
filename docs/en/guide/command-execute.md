@@ -457,6 +457,16 @@ Usage:
 instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
+## executeTableBorderColor
+
+Feature: Table border color
+
+Usage:
+
+```javascript
+instance.command.executeTableBorderColor(payload: string)
+```
+
 ## executeTableTdBorderType
 
 Feature: Table td border type

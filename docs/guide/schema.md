@@ -76,6 +76,7 @@ interface IElement {
     }[];
   }[];
   borderType?: TableBorder;
+  borderColor?: string;
   // 超链接
   url?: string;
   // 上下标

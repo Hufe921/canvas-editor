@@ -4,4 +4,5 @@ export interface ITableOption {
   tdPadding?: IPadding
   defaultTrMinHeight?: number
   defaultColMinWidth?: number
+  defaultBorderColor?: string
 }

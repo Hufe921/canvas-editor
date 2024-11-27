@@ -457,6 +457,16 @@ instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
 instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
+## executeTableBorderColor
+
+功能：表格边框颜色
+
+用法：
+
+```javascript
+instance.command.executeTableBorderColor(payload: string)
+```
+
 ## executeTableTdBorderType
 
 功能：表格单元格边框类型

@@ -63,6 +63,7 @@ export interface ITableAttr {
   colgroup?: IColgroup[]
   trList?: ITr[]
   borderType?: TableBorder
+  borderColor?: string
 }
 
 export interface ITableElement {

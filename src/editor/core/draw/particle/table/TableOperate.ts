@@ -699,6 +699,27 @@ export class TableOperate {
     })
   }
 
+  public tableBorderColor(payload: string) {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    if (
+      (!element.borderColor &&
+        payload === this.options.table.defaultBorderColor) ||
+      element.borderColor === payload
+    ) {
+      return
+    }
+    element.borderColor = payload
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex,
+      isCompute: false
+    })
+  }
+
   public tableTdBorderType(payload: TdBorder) {
     const rowCol = this.tableParticle.getRangeRowCol()
     if (!rowCol) return

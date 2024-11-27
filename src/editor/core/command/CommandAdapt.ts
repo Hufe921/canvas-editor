@@ -964,6 +964,12 @@ export class CommandAdapt {
     this.tableOperate.tableBorderType(payload)
   }
 
+  public tableBorderColor(payload: string) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.tableBorderColor(payload)
+  }
+
   public tableTdBorderType(payload: TdBorder) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return

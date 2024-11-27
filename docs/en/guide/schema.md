@@ -76,6 +76,7 @@ interface IElement {
     }[];
   }[];
   borderType?: TableBorder;
+  borderColor?: string;
   // Hyperlinks
   url?: string;
   // Superscript and subscript

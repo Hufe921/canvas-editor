@@ -149,9 +149,12 @@ export class TableParticle {
     startX: number,
     startY: number
   ) {
-    const { colgroup, trList, borderType } = element
+    const { colgroup, trList, borderType, borderColor } = element
     if (!colgroup || !trList) return
-    const { scale } = this.options
+    const {
+      scale,
+      table: { defaultBorderColor }
+    } = this.options
     const tableWidth = element.width! * scale
     const tableHeight = element.height! * scale
     // 无边框
@@ -166,6 +169,7 @@ export class TableParticle {
       ctx.setLineDash([3, 3])
     }
     ctx.lineWidth = scale
+    ctx.strokeStyle = borderColor || defaultBorderColor
     // 渲染边框
     if (!isEmptyBorderType && !isInternalBorderType) {
       this._drawOuterBorder({
