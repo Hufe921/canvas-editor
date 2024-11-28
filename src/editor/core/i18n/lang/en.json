@@ -76,7 +76,21 @@
     "month": " ",
     "hour": "Hour",
     "minute": "Minute",
-    "second": "Second"
+    "second": "Second",
+    "months": {
+      "jan": "Jan",
+      "feb": "Feb",
+      "mar": "Mar",
+      "apr": "Apr",
+      "may": "May",
+      "jun": "Jun",
+      "jul": "Jul",
+      "aug": "Aug",
+      "sep": "Sep",
+      "oct": "Oct",
+      "nov": "Nov",
+      "dec": "Dec"
+    }
   },
   "frame": {
     "header": "Header",
