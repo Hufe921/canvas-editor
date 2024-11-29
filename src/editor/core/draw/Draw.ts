@@ -1258,7 +1258,7 @@ export class Draw {
       defaultSize,
       defaultRowMargin,
       scale,
-      table: { tdPadding },
+      table: { tdPadding, defaultTrMinHeight },
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -1367,10 +1367,15 @@ export class Draw {
           }
         }
         element.pagingIndex = element.pagingIndex ?? 0
+        const trList = element.trList!
+        // 计算前移除上一次的高度
+        for (let t = 0; t < trList.length; t++) {
+          const tr = trList[t]
+          tr.height = tr.minHeight || defaultTrMinHeight
+        }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
-        const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
@@ -1392,6 +1397,11 @@ export class Draw {
               changeTr.height += extraHeight
               changeTr.tdList.forEach(changeTd => {
                 changeTd.height! += extraHeight
+                if (!changeTd.realHeight) {
+                  changeTd.realHeight = changeTd.height!
+                } else {
+                  changeTd.realHeight! += extraHeight
+                }
               })
             }
             // 当前单元格最小高度及真实高度（包含跨列）
@@ -1433,6 +1443,7 @@ export class Draw {
             changeTr.height -= reduceHeight
             changeTr.tdList.forEach(changeTd => {
               changeTd.height! -= reduceHeight
+              changeTd.realHeight! -= reduceHeight
             })
           }
         }
