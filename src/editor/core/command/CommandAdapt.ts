@@ -2114,7 +2114,7 @@ export class CommandAdapt {
       ...TABLE_CONTEXT_ATTR,
       ...EDITOR_ROW_ATTR,
       ...LIST_CONTEXT_ATTR,
-      ...AREA_CONTEXT_ATTR,
+      ...AREA_CONTEXT_ATTR
     ]
     cloneProperty<IElement>(cloneAttr, copyElement, cloneElement)
     // 插入控件
@@ -2262,7 +2262,8 @@ export class CommandAdapt {
     const cloneAttr = [
       ...TABLE_CONTEXT_ATTR,
       ...EDITOR_ROW_ATTR,
-      ...LIST_CONTEXT_ATTR
+      ...LIST_CONTEXT_ATTR,
+      ...AREA_CONTEXT_ATTR
     ]
     cloneElement.valueList?.forEach(valueItem => {
       cloneProperty<IElement>(cloneAttr, copyElement, valueItem)
