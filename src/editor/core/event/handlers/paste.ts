@@ -14,7 +14,7 @@ import {
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 import { IOverrideResult } from '../../override/Override'
-import { normalizeLineEndings } from '../../../utils'
+import { normalizeLineBreak } from '../../../utils'
 
 export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
   const draw = host.getDraw()
@@ -120,9 +120,12 @@ export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
   if (!getIsClipboardContainFile(clipboardData)) {
     const clipboardText = clipboardData.getData('text')
     const editorClipboardData = getClipboardData()
-    const refactorClipboardText = normalizeLineEndings(clipboardText)
-    const refactorEditorClipboardText = normalizeLineEndings(editorClipboardData?.text)
-    if (editorClipboardData && refactorClipboardText === refactorEditorClipboardText) {
+    // 不同系统间默认换行符不同 windows:\r\n mac:\n
+    if (
+      editorClipboardData &&
+      normalizeLineBreak(clipboardText) ===
+        normalizeLineBreak(editorClipboardData.text)
+    ) {
       pasteElement(host, editorClipboardData.elementList)
       return
     }
