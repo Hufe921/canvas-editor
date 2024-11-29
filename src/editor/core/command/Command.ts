@@ -79,6 +79,7 @@ export class Command {
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeInsertArea: CommandAdapt['insertArea']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
+  public executeRemoveAreaById: CommandAdapt['removeAreaById']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeSetValue: CommandAdapt['setValue']
@@ -213,6 +214,7 @@ export class Command {
     this.getAreaValue = adapt.getAreaValue.bind(adapt)
     this.executeInsertArea = adapt.insertArea.bind(adapt)
     this.executeSetAreaProperties = adapt.setAreaProperties.bind(adapt)
+    this.executeRemoveAreaById = adapt.removeAreaById.bind(adapt)
     // 通用
     this.executeInsertElementList = adapt.insertElementList.bind(adapt)
     this.executeAppendElementList = adapt.appendElementList.bind(adapt)

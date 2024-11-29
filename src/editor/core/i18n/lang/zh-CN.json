@@ -56,6 +56,9 @@
       "borderTdLeft": "左边框",
       "borderTdForward": "正斜线",
       "borderTdBack": "反斜线"
+    },
+    "area": {
+      "delete": "删除区域"
     }
   },
   "datePicker": {

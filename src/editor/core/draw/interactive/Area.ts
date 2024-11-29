@@ -59,6 +59,37 @@ export class Area {
     }
   }
 
+  public removeAreaById(areaId: string):number|null {
+    if(!areaId || !this.areaInfoMap.get(areaId)) return null
+    const elementList = this.draw.getElementList()
+    const len = elementList.length
+    let leftIndex = -1
+    let rightIndex = -1
+    for (let i = 0; i < len; i++) {
+      const element = elementList[i]
+      if (element.areaId === areaId) {
+        leftIndex = i
+        break
+      }
+    }
+    for(let i = len - 1; i >= 0; i--){
+      const element = elementList[i]
+      if (element.areaId === areaId) {
+        rightIndex = i
+        break
+      }
+    }
+    if (!~leftIndex || !~rightIndex) return null
+
+    this.draw.spliceElementList(
+      elementList,
+      leftIndex,
+      rightIndex - leftIndex + 1
+    )
+    return leftIndex - 1
+  }
+
+
   public insertArea(payload: IInsertAreaOption): string | null {
     // 切换至正文
     if (this.zone.getZone() !== EditorZone.MAIN) {

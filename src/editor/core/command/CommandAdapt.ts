@@ -2295,4 +2295,11 @@ export class CommandAdapt {
   public setAreaProperties(payload: ISetAreaPropertiesOption) {
     this.draw.getArea().setAreaProperties(payload)
   }
+
+  public removeAreaById(areaId: string) {
+    const curIndex = this.draw.getArea().removeAreaById(areaId) || 0
+    this.draw.render({
+      curIndex
+    })
+  }
 }
