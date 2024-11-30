@@ -297,7 +297,15 @@ export class SelectControl implements IControlInstance {
     if (isAddPlaceholder) {
       this.control.addPlaceholder(preIndex, context)
     }
-    this.element.control!.code = null
+    this.control.setControlProperties(
+      {
+        code: null
+      },
+      {
+        elementList,
+        range: { startIndex: preIndex, endIndex: preIndex }
+      }
+    )
     return preIndex
   }
 
@@ -386,7 +394,15 @@ export class SelectControl implements IControlInstance {
       draw.spliceElementList(elementList, start + i, 0, newElement)
     }
     // 设置状态
-    control.code = code
+    this.control.setControlProperties(
+      {
+        code
+      },
+      {
+        elementList,
+        range: { startIndex: prefixIndex, endIndex: prefixIndex }
+      }
+    )
     // 重新渲染控件
     if (!context.range) {
       const newIndex = start + data.length - 1

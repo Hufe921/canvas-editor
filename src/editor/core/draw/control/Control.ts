@@ -658,6 +658,37 @@ export class Control {
     return this.activeControl.setValue(data)
   }
 
+  public setControlProperties(
+    properties: Partial<IControl>,
+    context: IControlContext = {}
+  ) {
+    const elementList = context.elementList || this.getElementList()
+    const { startIndex } = context.range || this.getRange()
+    const startElement = elementList[startIndex]
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (preElement.controlId !== startElement.controlId) break
+      preElement.control = {
+        ...preElement.control!,
+        ...properties
+      }
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (nextElement.controlId !== startElement.controlId) break
+      nextElement.control = {
+        ...nextElement.control!,
+        ...properties
+      }
+      nextIndex++
+    }
+  }
+
   public keydown(evt: KeyboardEvent): number | null {
     if (!this.activeControl) {
       throw new Error('active control is null')
@@ -922,7 +953,16 @@ export class Control {
         ) {
           continue
         }
-        element.control.extension = extension
+        // 设置值
+        this.setControlProperties(
+          {
+            extension
+          },
+          {
+            elementList,
+            range: { startIndex: i, endIndex: i }
+          }
+        )
         // 修改后控件结束索引
         let newEndIndex = i
         while (newEndIndex < elementList.length) {
@@ -947,7 +987,7 @@ export class Control {
     const { id, conceptId, areaId, properties } = payload
     if (!id && !conceptId) return
     let isExistUpdate = false
-    function setProperties(elementList: IElement[]) {
+    const setProperties = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
@@ -971,11 +1011,18 @@ export class Control {
           continue
         }
         isExistUpdate = true
-        element.control = {
-          ...element.control,
-          ...properties,
-          value: element.control.value
-        }
+        // 设置属性
+        this.setControlProperties(
+          {
+            ...element.control,
+            ...properties,
+            value: element.control.value
+          },
+          {
+            elementList,
+            range: { startIndex: i, endIndex: i }
+          }
+        )
         // 控件默认样式
         CONTROL_STYLE_ATTR.forEach(key => {
           const controlStyleProperty = properties[key]
