@@ -5,9 +5,10 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { IRow, IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 interface IRadioRenderOption {
-  ctx: CanvasRenderingContext2D
+  ctx: CERenderingContext
   x: number
   y: number
   row: IRow
@@ -78,22 +79,15 @@ export class RadioParticle {
     const top = Math.round(y - metrics.height + lineWidth)
     const width = metrics.width - gap * 2 * scale
     const height = metrics.height
-    ctx.save()
-    ctx.beginPath()
-    ctx.translate(0.5, 0.5)
     // 边框
-    ctx.strokeStyle = radio?.value ? fillStyle : strokeStyle
-    ctx.lineWidth = lineWidth
-    ctx.arc(left + width / 2, top + height / 2, width / 2, 0, Math.PI * 2)
-    ctx.stroke()
+    ctx.circle(left + width / 2, top + height / 2, width / 2, {
+      translate: [0.5, 0.5], color: radio?.value ? fillStyle : strokeStyle, lineWidth
+    })
     // 填充选中色
     if (radio?.value) {
-      ctx.beginPath()
-      ctx.fillStyle = fillStyle
-      ctx.arc(left + width / 2, top + height / 2, width / 3, 0, Math.PI * 2)
-      ctx.fill()
+      ctx.circle(left + width / 2, top + height / 2, width / 3, {
+        translate: [0.5, 0.5], fillColor: fillStyle
+      })
     }
-    ctx.closePath()
-    ctx.restore()
   }
 }

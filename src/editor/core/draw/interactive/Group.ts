@@ -8,6 +8,7 @@ import { IRange } from '../../../interface/Range'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class Group {
   private draw: Draw
@@ -171,7 +172,7 @@ export class Group {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: CERenderingContext) {
     if (!this.fillRectMap.size) return
     // 当前激活组信息
     const range = this.range.getRange()
@@ -180,19 +181,20 @@ export class Group {
     const {
       group: { backgroundColor, opacity, activeOpacity, activeBackgroundColor }
     } = this.options
-    ctx.save()
     this.fillRectMap.forEach((fillRect, groupId) => {
       const { x, y, width, height } = fillRect
+      let alpha, fillStyle
       if (anchorGroupIds?.includes(groupId)) {
-        ctx.globalAlpha = activeOpacity
-        ctx.fillStyle = activeBackgroundColor
+        alpha = activeOpacity
+        fillStyle = activeBackgroundColor
       } else {
-        ctx.globalAlpha = opacity
-        ctx.fillStyle = backgroundColor
+        alpha = opacity
+        fillStyle = backgroundColor
       }
-      ctx.fillRect(x, y, width, height)
+      ctx.fillRect(x, y, width, height, {
+        alpha, fillColor: fillStyle
+      })
     })
-    ctx.restore()
     this.clearFillInfo()
   }
 }

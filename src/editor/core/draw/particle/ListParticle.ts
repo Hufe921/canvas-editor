@@ -10,6 +10,7 @@ import { IRow, IRowElement } from '../../../interface/Row'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class ListParticle {
   private draw: Draw
@@ -162,7 +163,7 @@ export class ListParticle {
   }
 
   public drawListStyle(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     row: IRow,
     position: IElementPosition
   ) {
@@ -219,10 +220,10 @@ export class ListParticle {
         text = `${listIndex! + 1}${KeyMap.PERIOD}`
       }
       if (!text) return
-      ctx.save()
-      ctx.font = `${defaultSize * scale}px ${defaultFont}`
-      ctx.fillText(text, x, y)
-      ctx.restore()
+      ctx.text(text, x, y, {
+        size: defaultSize * scale,
+        font: defaultFont
+      })
     }
   }
 }

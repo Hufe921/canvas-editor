@@ -110,12 +110,14 @@ import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
 import { Badge } from './frame/Badge'
+import { CERenderingContext } from '../../interface/CERenderingContext'
+import { CanvasCERenderingContext } from '../../canvas/CanvasCERenderingContext'
 
 export class Draw {
   private container: HTMLDivElement
   private pageContainer: HTMLDivElement
   private pageList: HTMLCanvasElement[]
-  private ctxList: CanvasRenderingContext2D[]
+  private ctxList: CERenderingContext[]
   private pageNo: number
   private pagePixelRatio: number | null
   private mode: EditorMode
@@ -558,7 +560,7 @@ export class Draw {
     return this.pageRowList
   }
 
-  public getCtx(): CanvasRenderingContext2D {
+  public getCtx(): CERenderingContext {
     return this.ctxList[this.pageNo]
   }
 
@@ -596,6 +598,10 @@ export class Draw {
 
   public getRange(): RangeManager {
     return this.range
+  }
+
+  public getBackground(): Background {
+    return this.background
   }
 
   public getLineBreakParticle(): LineBreakParticle {
@@ -845,6 +851,16 @@ export class Draw {
     return this.footer
   }
 
+  public getWaterMark (): Watermark {
+    return this.waterMark
+  }
+  public getPageBorder (): PageBorder {
+    return this.pageBorder
+  }
+
+  public getPageNumber (): PageNumber {
+    return this.pageNumber
+  }
   public getHyperlinkParticle(): HyperlinkParticle {
     return this.hyperlinkParticle
   }
@@ -1213,19 +1229,16 @@ export class Draw {
     canvas.style.cursor = 'text'
     const ctx = canvas.getContext('2d')!
     // 初始化上下文配置
-    this._initPageContext(ctx)
+    const c = new CanvasCERenderingContext(ctx)
+    this._initPageContext(c)
     // 缓存上下文
     this.pageList.push(canvas)
-    this.ctxList.push(ctx)
+    this.ctxList.push(c)
   }
 
-  private _initPageContext(ctx: CanvasRenderingContext2D) {
+  private _initPageContext(ctx: CERenderingContext) {
     const dpr = this.getPagePixelRatio()
-    ctx.scale(dpr, dpr)
-    // 重置以下属性是因部分浏览器(chrome)会应用css样式
-    ctx.letterSpacing = '0px'
-    ctx.wordSpacing = '0px'
-    ctx.direction = 'ltr'
+    ctx.initPageContext(dpr, 'ltr')
   }
 
   public getElementFont(el: IElement, scale = 1): string {
@@ -1644,7 +1657,7 @@ export class Draw {
         }
         metrics.height = (element.actualSize || size) * scale
         ctx.font = this.getElementFont(element)
-        const fontMetrics = this.textParticle.measureText(ctx, element)
+        const fontMetrics = this.textParticle.measureText(new CanvasCERenderingContext(ctx), element)
         metrics.width = fontMetrics.width * scale
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing * scale
@@ -1707,7 +1720,7 @@ export class Draw {
           const word = `${preElement?.value || ''}${element.value}`
           if (this.WORD_LIKE_REG.test(word)) {
             const { width, endElement } = this.textParticle.measureWord(
-              ctx,
+              new CanvasCERenderingContext(ctx),
               elementList,
               i
             )
@@ -1720,7 +1733,7 @@ export class Draw {
           }
           // 标点符号
           const punctuationWidth = this.textParticle.measurePunctuationWidth(
-            ctx,
+            new CanvasCERenderingContext(ctx),
             nextElement
           )
           curRowWidth += punctuationWidth * scale
@@ -1952,7 +1965,7 @@ export class Draw {
   }
 
   private _drawHighlight(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     payload: IDrawRowPayload
   ) {
     const {
@@ -2005,7 +2018,7 @@ export class Draw {
     }
   }
 
-  public drawRow(ctx: CanvasRenderingContext2D, payload: IDrawRowPayload) {
+  public drawRow(ctx: CERenderingContext, payload: IDrawRowPayload) {
     // 优先绘制高亮元素
     this._drawHighlight(ctx, payload)
     // 绘制元素、下划线、删除线、选区
@@ -2356,40 +2369,18 @@ export class Draw {
   }
 
   private _drawFloat(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     payload: IDrawFloatPayload
   ) {
     const { scale } = this.options
     const floatPositionList = this.position.getFloatPositionList()
-    const { imgDisplays, pageNo } = payload
-    for (let e = 0; e < floatPositionList.length; e++) {
-      const floatPosition = floatPositionList[e]
-      const element = floatPosition.element
-      if (
-        (pageNo === floatPosition.pageNo ||
-          floatPosition.zone === EditorZone.HEADER ||
-          floatPosition.zone == EditorZone.FOOTER) &&
-        element.imgDisplay &&
-        imgDisplays.includes(element.imgDisplay) &&
-        element.type === ElementType.IMAGE
-      ) {
-        const imgFloatPosition = element.imgFloatPosition!
-        this.imageParticle.render(
-          ctx,
-          element,
-          imgFloatPosition.x * scale,
-          imgFloatPosition.y * scale
-        )
-      }
-    }
+    ImageParticle.drawFloat(ctx,payload,scale,floatPositionList,this.imageParticle)
   }
 
   private _clearPage(pageNo: number) {
     const ctx = this.ctxList[pageNo]
     const pageDom = this.pageList[pageNo]
-    ctx.clearRect(
-      0,
-      0,
+    ctx.cleanPage(
       Math.max(pageDom.width, this.getWidth()),
       Math.max(pageDom.height, this.getHeight())
     )
@@ -2411,7 +2402,7 @@ export class Draw {
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
-    ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
+    ctx.setGlobalAlpha(!this.zone.isMainActive() ? inactiveAlpha : 1)
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx, pageNo)

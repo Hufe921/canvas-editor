@@ -45,7 +45,7 @@ import {
   IDrawImagePayload,
   IDrawOption,
   IForceUpdateOption,
-  IGetImageOption,
+  IGetImageOption, IGetPdfOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -120,6 +120,7 @@ import {
   ISetAreaPropertiesOption
 } from '../../interface/Area'
 import { IAreaBadge, IBadge } from '../../interface/Badge'
+import { DrawPdf } from '../draw/DrawPdf'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1451,6 +1452,10 @@ export class CommandAdapt {
 
   public getImage(payload?: IGetImageOption): Promise<string[]> {
     return this.draw.getDataURL(payload)
+  }
+
+  public getPdf(option: IGetPdfOption): Promise<Blob> {
+    return new DrawPdf(this.draw, option).genPdf()
   }
 
   public getOptions(): DeepRequired<IEditorOption> {

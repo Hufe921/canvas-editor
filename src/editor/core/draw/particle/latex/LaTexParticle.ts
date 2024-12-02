@@ -1,6 +1,7 @@
 import { IElement } from '../../../../interface/Element'
 import { ImageParticle } from '../ImageParticle'
 import { LaTexSVG, LaTexUtils } from './utils/LaTexUtils'
+import { CERenderingContext } from '../../../../interface/CERenderingContext'
 
 export class LaTexParticle extends ImageParticle {
   public static convertLaTextToSVG(laTex: string): LaTexSVG {
@@ -13,7 +14,7 @@ export class LaTexParticle extends ImageParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement,
     x: number,
     y: number

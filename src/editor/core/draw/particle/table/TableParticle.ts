@@ -7,13 +7,15 @@ import { ITr } from '../../../../interface/table/Tr'
 import { deepClone } from '../../../../utils'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
+import { CERenderingContext, LineProperty } from '../../../../interface/CERenderingContext'
 
 interface IDrawTableBorderOption {
-  ctx: CanvasRenderingContext2D
+  ctx: CERenderingContext
   startX: number
   startY: number
   width: number
   height: number
+  lineProp: LineProperty
   isDrawFullBorder?: boolean
 }
 
@@ -102,49 +104,45 @@ export class TableParticle {
 
   private _drawOuterBorder(payload: IDrawTableBorderOption) {
     const { ctx, startX, startY, width, height, isDrawFullBorder } = payload
-    ctx.beginPath()
     const x = Math.round(startX)
     const y = Math.round(startY)
     ctx.translate(0.5, 0.5)
     if (isDrawFullBorder) {
-      ctx.rect(x, y, width, height)
+      ctx.fillRect(x, y, width, height, payload.lineProp)
     } else {
-      ctx.moveTo(x, y + height)
-      ctx.lineTo(x, y)
-      ctx.lineTo(x + width, y)
+      ctx.line(payload.lineProp)
+        .path(x,y+height, x,y )
+        .path(x,y, x + width,y )
+        .draw()
     }
-    ctx.stroke()
     ctx.translate(-0.5, -0.5)
   }
 
   private _drawSlash(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     td: ITd,
     startX: number,
     startY: number
   ) {
     const { scale } = this.options
-    ctx.save()
     const width = td.width! * scale
     const height = td.height! * scale
     const x = Math.round(td.x! * scale + startX)
     const y = Math.round(td.y! * scale + startY)
     // 正斜线 /
+    const drawer = ctx.line({})
     if (td.slashTypes?.includes(TdSlash.FORWARD)) {
-      ctx.moveTo(x + width, y)
-      ctx.lineTo(x, y + height)
+      drawer.path(x + width, y, x, y + height)
     }
     // 反斜线 \
     if (td.slashTypes?.includes(TdSlash.BACK)) {
-      ctx.moveTo(x, y)
-      ctx.lineTo(x + width, y + height)
+      drawer.path(x, y, x + width, y + height)
     }
-    ctx.stroke()
-    ctx.restore()
+    drawer.draw()
   }
 
   private _drawBorder(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement,
     startX: number,
     startY: number
@@ -163,13 +161,13 @@ export class TableParticle {
     const isExternalBorderType = borderType === TableBorder.EXTERNAL
     // 内边框
     const isInternalBorderType = borderType === TableBorder.INTERNAL
-    ctx.save()
+    const prop: LineProperty = {}
     // 虚线
     if (borderType === TableBorder.DASH) {
-      ctx.setLineDash([3, 3])
+      prop.lineDash = [3, 3]
     }
-    ctx.lineWidth = scale
-    ctx.strokeStyle = borderColor || defaultBorderColor
+    prop.color = borderColor || defaultBorderColor
+    prop.lineWidth = scale
     // 渲染边框
     if (!isEmptyBorderType && !isInternalBorderType) {
       this._drawOuterBorder({
@@ -178,6 +176,7 @@ export class TableParticle {
         startY,
         width: tableWidth,
         height: tableHeight,
+        lineProp: prop,
         isDrawFullBorder: isExternalBorderType
       })
     }
@@ -203,27 +202,19 @@ export class TableParticle {
         const y = Math.round(td.y! * scale + startY)
         ctx.translate(0.5, 0.5)
         // 绘制线条
-        ctx.beginPath()
+        const draw = ctx.line({})
         // 单元格边框
         if (td.borderTypes?.includes(TdBorder.TOP)) {
-          ctx.moveTo(x - width, y)
-          ctx.lineTo(x, y)
-          ctx.stroke()
+          draw.path(x - width, y, x, y)
         }
         if (td.borderTypes?.includes(TdBorder.RIGHT)) {
-          ctx.moveTo(x, y)
-          ctx.lineTo(x, y + height)
-          ctx.stroke()
+          draw.path(x, y, x, y + height)
         }
         if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
-          ctx.moveTo(x, y + height)
-          ctx.lineTo(x - width, y + height)
-          ctx.stroke()
+          draw.path(x, y+height, x - width, y + height)
         }
         if (td.borderTypes?.includes(TdBorder.LEFT)) {
-          ctx.moveTo(x - width, y)
-          ctx.lineTo(x - width, y + height)
-          ctx.stroke()
+          draw.path(x -width, y, x - width, y + height)
         }
         // 表格线
         if (!isEmptyBorderType && !isExternalBorderType) {
@@ -232,27 +223,24 @@ export class TableParticle {
             !isInternalBorderType ||
             td.colIndex! + td.colspan < colgroup.length
           ) {
-            ctx.moveTo(x, y)
-            ctx.lineTo(x, y + height)
+            draw.path(x, y, x, y + height)
           }
           // 下边框
           if (
             !isInternalBorderType ||
             td.rowIndex! + td.rowspan < trList.length
           ) {
-            ctx.moveTo(x, y + height)
-            ctx.lineTo(x - width, y + height)
+            draw.path(x, y + height, x - width, y + height)
           }
-          ctx.stroke()
+          draw.draw()
         }
         ctx.translate(-0.5, -0.5)
       }
     }
-    ctx.restore()
   }
 
   private _drawBackgroundColor(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement,
     startX: number,
     startY: number
@@ -265,14 +253,11 @@ export class TableParticle {
       for (let d = 0; d < tr.tdList.length; d++) {
         const td = tr.tdList[d]
         if (!td.backgroundColor) continue
-        ctx.save()
         const width = td.width! * scale
         const height = td.height! * scale
         const x = Math.round(td.x! * scale + startX)
         const y = Math.round(td.y! * scale + startY)
-        ctx.fillStyle = td.backgroundColor
-        ctx.fillRect(x, y, width, height)
-        ctx.restore()
+        ctx.fillRect(x, y, width, height, {color: td.backgroundColor})
       }
     }
   }
@@ -433,7 +418,7 @@ export class TableParticle {
   }
 
   public drawRange(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement,
     startX: number,
     startY: number
@@ -461,7 +446,6 @@ export class TableParticle {
     const endColIndex = endTd.colIndex! + (endTd.colspan - 1)
     const startRowIndex = startTd.rowIndex!
     const endRowIndex = endTd.rowIndex! + (endTd.rowspan - 1)
-    ctx.save()
     for (let t = 0; t < trList.length; t++) {
       const tr = trList[t]
       for (let d = 0; d < tr.tdList.length; d++) {
@@ -478,17 +462,16 @@ export class TableParticle {
           const y = td.y! * scale
           const width = td.width! * scale
           const height = td.height! * scale
-          ctx.globalAlpha = rangeAlpha
-          ctx.fillStyle = rangeColor
-          ctx.fillRect(x + startX, y + startY, width, height)
+          ctx.fillRect(x + startX, y + startY, width, height, {
+            alpha: rangeAlpha, fillColor: rangeColor
+          })
         }
       }
     }
-    ctx.restore()
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement,
     startX: number,
     startY: number

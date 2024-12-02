@@ -2,6 +2,7 @@ import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElementFillRect } from '../../../../interface/Element'
 import { Draw } from '../../Draw'
+import { CERenderingContext } from '../../../../interface/CERenderingContext'
 
 export class ControlBorder {
   protected borderRect: IElementFillRect
@@ -32,21 +33,16 @@ export class ControlBorder {
     this.borderRect.width += width
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: CERenderingContext) {
     if (!this.borderRect.width) return
     const {
       scale,
       control: { borderWidth, borderColor }
     } = this.options
     const { x, y, width, height } = this.borderRect
-    ctx.save()
-    ctx.translate(0, 1 * scale)
-    ctx.lineWidth = borderWidth * scale
-    ctx.strokeStyle = borderColor
-    ctx.beginPath()
-    ctx.rect(x, y, width, height)
-    ctx.stroke()
-    ctx.restore()
+    ctx.strokeRect(x, y, width, height, {
+      lineWidth: borderWidth * scale, color: borderColor, translate: [0, 1 * scale]
+    })
     this.clearBorderInfo()
   }
 }

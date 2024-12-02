@@ -1,4 +1,5 @@
 import { IRowElement } from '../../../interface/Row'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class SubscriptParticle {
   // 向下偏移字高的一半
@@ -7,17 +8,13 @@ export class SubscriptParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IRowElement,
     x: number,
     y: number
   ) {
-    ctx.save()
-    ctx.font = element.style
-    if (element.color) {
-      ctx.fillStyle = element.color
-    }
-    ctx.fillText(element.value, x, y + this.getOffsetY(element))
-    ctx.restore()
+    ctx.text(element.value, x, y + this.getOffsetY(element), {
+      font: element.style, color: element.color
+    })
   }
 }

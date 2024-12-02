@@ -7,6 +7,7 @@ import { DeepRequired } from '../../../interface/Common'
 import { IRowElement } from '../../../interface/Row'
 import { ITextMetrics } from '../../../interface/Text'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export interface IMeasureWordResult {
   width: number
@@ -17,7 +18,7 @@ export class TextParticle {
   private draw: Draw
   private options: DeepRequired<IEditorOption>
 
-  private ctx: CanvasRenderingContext2D
+  private ctx: CERenderingContext
   private curX: number
   private curY: number
   private text: string
@@ -37,20 +38,14 @@ export class TextParticle {
   }
 
   public measureBasisWord(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     font: string
   ): ITextMetrics {
-    ctx.save()
-    ctx.font = font
-    const textMetrics = this.measureText(ctx, {
-      value: METRICS_BASIS_TEXT
-    })
-    ctx.restore()
-    return textMetrics
+    return ctx.measureText(METRICS_BASIS_TEXT, {font})
   }
 
   public measureWord(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     elementList: IElement[],
     curIndex: number
   ): IMeasureWordResult {
@@ -77,7 +72,7 @@ export class TextParticle {
   }
 
   public measurePunctuationWidth(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement
   ): number {
     if (!element || !PUNCTUATION_LIST.includes(element.value)) return 0
@@ -85,7 +80,7 @@ export class TextParticle {
   }
 
   public measureText(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement
   ): ITextMetrics {
     // 优先使用自定义字宽设置
@@ -102,7 +97,7 @@ export class TextParticle {
         fontBoundingBoxDescent: textMetrics.fontBoundingBoxDescent
       }
     }
-    const id = `${element.value}${ctx.font}`
+    const id = `${element.value}${ctx.getFont()}`
     const cacheTextMetrics = this.cacheMeasureText.get(id)
     if (cacheTextMetrics) {
       return cacheTextMetrics
@@ -118,7 +113,7 @@ export class TextParticle {
   }
 
   public record(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IRowElement,
     x: number,
     y: number
@@ -157,10 +152,9 @@ export class TextParticle {
 
   private _render() {
     if (!this.text || !~this.curX || !~this.curX) return
-    this.ctx.save()
-    this.ctx.font = this.curStyle
-    this.ctx.fillStyle = this.curColor || this.options.defaultColor
-    this.ctx.fillText(this.text, this.curX, this.curY)
-    this.ctx.restore()
+    this.ctx.text(this.text, this.curX, this.curY, {
+      font: this.curStyle,
+      color: this.curColor || this.options.defaultColor,
+    })
   }
 }

@@ -5,9 +5,10 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { IRow, IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 interface ICheckboxRenderOption {
-  ctx: CanvasRenderingContext2D
+  ctx: CERenderingContext
   x: number
   y: number
   row: IRow
@@ -78,34 +79,27 @@ export class CheckboxParticle {
     const top = Math.round(y - metrics.height + lineWidth)
     const width = metrics.width - gap * 2 * scale
     const height = metrics.height
-    ctx.save()
-    ctx.beginPath()
-    ctx.translate(0.5, 0.5)
     // 绘制勾选状态
     if (checkbox?.value) {
       // 边框
-      ctx.lineWidth = lineWidth
-      ctx.strokeStyle = fillStyle
-      ctx.rect(left, top, width, height)
-      ctx.stroke()
+      ctx.strokeRect(left, top, width, height, {
+        translate: [0.5, 0.5], lineWidth, color: fillStyle
+      })
       // 背景色
-      ctx.beginPath()
-      ctx.fillStyle = fillStyle
-      ctx.fillRect(left, top, width, height)
+      ctx.fillRect(left, top, width, height, {
+        translate: [0.5, 0.5], fillColor: fillStyle, lineWidth
+      })
       // 勾选对号
-      ctx.beginPath()
-      ctx.strokeStyle = strokeStyle
-      ctx.lineWidth = lineWidth * 2 * scale
-      ctx.moveTo(left + 2 * scale, top + height / 2)
-      ctx.lineTo(left + width / 2, top + height - 3 * scale)
-      ctx.lineTo(left + width - 2 * scale, top + 3 * scale)
-      ctx.stroke()
+      ctx.line({
+        color: strokeStyle, lineWidth: lineWidth * 2 * scale, translate: [0.5,0.5]
+      })
+        .path(left + 2 * scale, top + height / 2, left + width / 2, top + height - 3 * scale)
+        .path(left + width - 2 * scale, top + 3 * scale)
+        .draw()
     } else {
-      ctx.lineWidth = lineWidth
-      ctx.rect(left, top, width, height)
-      ctx.stroke()
+      ctx.strokeRect(left, top, width, height, {
+        lineWidth, translate: [0.5, 0.5]
+      })
     }
-    ctx.closePath()
-    ctx.restore()
   }
 }
