@@ -819,7 +819,7 @@ instance.command.executeSetValue(payload: Partial<IEditorData>, options?: ISetVa
 用法：
 
 ```javascript
-instance.command.executeRemoveControl()
+instance.command.executeRemoveControl(payload?: IRemoveControlOption)
 ```
 
 ## executeSetLocale

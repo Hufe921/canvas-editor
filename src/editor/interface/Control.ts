@@ -211,3 +211,8 @@ export interface IControlChangeResult {
 export interface IDestroyControlOption {
   isEmitEvent?: boolean
 }
+
+export interface IRemoveControlOption {
+  id?: string
+  conceptId?: string
+}

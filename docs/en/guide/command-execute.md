@@ -819,7 +819,7 @@ Feature: Delete the control
 Usage:
 
 ```javascript
-instance.command.executeRemoveControl()
+instance.command.executeRemoveControl(payload?: IRemoveControlOption)
 ```
 
 ## executeSetLocale

@@ -34,6 +34,7 @@ import {
   IGetControlValueOption,
   IGetControlValueResult,
   ILocationControlOption,
+  IRemoveControlOption,
   ISetControlExtensionOption,
   ISetControlHighlightOption,
   ISetControlProperties,
@@ -1824,21 +1825,65 @@ export class CommandAdapt {
     this.draw.setValue(payload, options)
   }
 
-  public removeControl() {
-    const { startIndex, endIndex } = this.range.getRange()
-    if (startIndex !== endIndex) return
-    const elementList = this.draw.getElementList()
-    const element = elementList[startIndex]
-    if (!element.controlId) return
-    // 删除控件
-    const control = this.draw.getControl()
-    const newIndex = control.removeControl(startIndex)
-    if (newIndex === null) return
-    // 重新渲染
-    this.range.setRange(newIndex, newIndex)
-    this.draw.render({
-      curIndex: newIndex
-    })
+  public removeControl(payload?: IRemoveControlOption) {
+    if (payload?.id || payload?.conceptId) {
+      const { id, conceptId } = payload
+      let isExistRemove = false
+      const remove = (elementList: IElement[]) => {
+        let i = elementList.length - 1
+        while (i >= 0) {
+          const element = elementList[i]
+          if (element.type === ElementType.TABLE) {
+            const trList = element.trList!
+            for (let r = 0; r < trList.length; r++) {
+              const tr = trList[r]
+              for (let d = 0; d < tr.tdList.length; d++) {
+                const td = tr.tdList[d]
+                remove(td.value)
+              }
+            }
+          }
+          i--
+          if (
+            !element.control ||
+            (id && element.controlId !== id) ||
+            (conceptId && element.control.conceptId !== conceptId)
+          ) {
+            continue
+          }
+          isExistRemove = true
+          elementList.splice(i + 1, 1)
+        }
+      }
+      const data = [
+        this.draw.getHeaderElementList(),
+        this.draw.getOriginalMainElementList(),
+        this.draw.getFooterElementList()
+      ]
+      for (const elementList of data) {
+        remove(elementList)
+      }
+      if (isExistRemove) {
+        this.draw.render({
+          isSetCursor: false
+        })
+      }
+    } else {
+      const { startIndex, endIndex } = this.range.getRange()
+      if (startIndex !== endIndex) return
+      const elementList = this.draw.getElementList()
+      const element = elementList[startIndex]
+      if (!element.controlId) return
+      // 删除控件
+      const control = this.draw.getControl()
+      const newIndex = control.removeControl(startIndex)
+      if (newIndex === null) return
+      // 重新渲染
+      this.range.setRange(newIndex, newIndex)
+      this.draw.render({
+        curIndex: newIndex
+      })
+    }
   }
 
   public setLocale(payload: string) {
