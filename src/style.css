@@ -516,6 +516,19 @@ ul {
   background-image: url('./assets/images/line-dash-dot-dot.svg');
 }
 
+.menu-item__separator .more input{
+width: 100%;
+}
+.menu-item__separator .more div span{
+  width: 30px;
+}
+.menu-item__separator .more .dialog-menu{
+  margin-top: 20px;
+}
+.menu-item__separator .more .dialog-menu button:last-child{
+  margin-left: 8px;
+}
+
 .menu-item__watermark>i {
   background-image: url('./assets/images/watermark.svg');
 }

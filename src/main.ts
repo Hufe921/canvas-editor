@@ -501,12 +501,19 @@ window.onload = function () {
   const separatorOptionDom =
     separatorDom.querySelector<HTMLDivElement>('.options')!
   separatorDom.onclick = function () {
-    console.log('separator')
-    separatorOptionDom.classList.toggle('visible')
+    console.log('separator1')
+    separatorOptionDom.classList.add('visible')
   }
+  const separatorConfirmDom =separatorDom.querySelector<HTMLDivElement>('.confirm')!
+  const separatorCancelDom =separatorDom.querySelector<HTMLDivElement>('.cancel')!
+  let payload: number[] = []
   separatorOptionDom.onmousedown = function (evt) {
-    let payload: number[] = []
+
+    separatorOptionDom
+    .querySelectorAll('li')
+    .forEach(li => li.classList.remove('active'))
     const li = evt.target as HTMLLIElement
+    li.classList.add('active')
     const separatorDash = li.dataset.separator?.split(',').map(Number)
     if (separatorDash) {
       const isSingleLine = separatorDash.every(d => d === 0)
@@ -514,8 +521,40 @@ window.onload = function () {
         payload = separatorDash
       }
     }
-    instance.command.executeSeparator(payload)
   }
+  // 分割线提交
+  separatorConfirmDom.onclick = function (event) {
+    event.stopPropagation()
+    const colorDom = separatorDom.querySelector<HTMLInputElement>('#color')
+    const lineWidthDown = separatorDom.querySelector<HTMLInputElement>('#lineWidth')
+    const linewidth= Number(lineWidthDown?.value)
+    const color=colorDom?.value
+    instance.command.executeSeparator(payload,linewidth,color)
+    if (colorDom) {
+      colorDom.value = ''
+    }
+    if (lineWidthDown) {
+      lineWidthDown.value = '1'
+    }
+    console.log('separator2')
+    payload = []
+    separatorOptionDom.classList.remove('visible')
+  }
+  separatorCancelDom.onclick = function (event) {
+    event.stopPropagation()
+    const colorDom = separatorDom.querySelector<HTMLInputElement>('#color')
+    const lineWidthDown = separatorDom.querySelector<HTMLInputElement>('#lineWidth')
+    if (colorDom) {
+      colorDom.value = ''
+    }
+    if (lineWidthDown) {
+      lineWidthDown.value = '1'
+    }
+    console.log('separator3')
+    payload = []
+    separatorOptionDom.classList.remove('visible')
+  }
+
 
   const pageBreakDom = document.querySelector<HTMLDivElement>(
     '.menu-item__page-break'
@@ -1543,9 +1582,6 @@ window.onload = function () {
     payload.type === ElementType.SEPARATOR
       ? separatorDom.classList.add('active')
       : separatorDom.classList.remove('active')
-    separatorOptionDom
-      .querySelectorAll('li')
-      .forEach(li => li.classList.remove('active'))
     if (payload.type === ElementType.SEPARATOR) {
       const separator = payload.dashArray.join(',') || '0,0'
       const curSeparatorDom = separatorOptionDom.querySelector<HTMLLIElement>(
