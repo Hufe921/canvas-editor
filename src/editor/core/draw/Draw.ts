@@ -109,6 +109,7 @@ import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
+import { Badge } from './frame/Badge'
 
 export class Draw {
   private container: HTMLDivElement
@@ -133,6 +134,7 @@ export class Draw {
   private range: RangeManager
   private margin: Margin
   private background: Background
+  private badge: Badge
   private search: Search
   private group: Group
   private area: Area
@@ -213,6 +215,7 @@ export class Draw {
     this.range = new RangeManager(this)
     this.margin = new Margin(this)
     this.background = new Background(this)
+    this.badge = new Badge(this)
     this.search = new Search(this)
     this.group = new Group(this)
     this.area = new Area(this)
@@ -573,6 +576,10 @@ export class Draw {
 
   public getArea(): Area {
     return this.area
+  }
+
+  public getBadge(): Badge {
+    return this.badge
   }
 
   public getHistoryManager(): HistoryManager {
@@ -2471,6 +2478,8 @@ export class Draw {
     if (!pageBorder.disabled) {
       this.pageBorder.render(ctx)
     }
+    // 绘制签章
+    this.badge.render(ctx, pageNo)
   }
 
   private _disconnectLazyRender() {

@@ -772,6 +772,26 @@ instance.command.executePaperDirection(paperDirection: PaperDirection)
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
 ```
 
+## executeSetMainBadge
+
+功能：设置正文徽章
+
+用法：
+
+```javascript
+instance.command.executeSetMainBadge(payload: IBadge | null)
+```
+
+## executeSetAreaBadge
+
+功能：设置区域徽章
+
+用法：
+
+```javascript
+instance.command.executeSetAreaBadge(payload: IAreaBadge[])
+```
+
 ## executeInsertElementList
 
 功能：插入元素

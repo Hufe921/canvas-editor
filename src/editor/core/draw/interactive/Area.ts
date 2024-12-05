@@ -30,6 +30,10 @@ export class Area {
     this.position = draw.getPosition()
   }
 
+  public getAreaInfo(): Map<string, IAreaInfo> {
+    return this.areaInfoMap
+  }
+
   public getActiveAreaId(): string | null {
     if (!this.areaInfoMap.size) return null
     const { startIndex } = this.range.getRange()

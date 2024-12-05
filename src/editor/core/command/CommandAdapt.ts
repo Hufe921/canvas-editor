@@ -119,6 +119,7 @@ import {
   IInsertAreaOption,
   ISetAreaPropertiesOption
 } from '../../interface/Area'
+import { IAreaBadge, IBadge } from '../../interface/Badge'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1722,6 +1723,22 @@ export class CommandAdapt {
 
   public setPaperMargin(payload: IMargin) {
     return this.draw.setPaperMargin(payload)
+  }
+
+  public setMainBadge(payload: IBadge | null) {
+    this.draw.getBadge().setMainBadge(payload)
+    this.draw.render({
+      isCompute: false,
+      isSubmitHistory: false
+    })
+  }
+
+  public setAreaBadge(payload: IAreaBadge[]) {
+    this.draw.getBadge().setAreaBadgeMap(payload)
+    this.draw.render({
+      isCompute: false,
+      isSubmitHistory: false
+    })
   }
 
   public insertElementList(payload: IElement[]) {

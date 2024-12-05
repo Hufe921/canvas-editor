@@ -64,6 +64,7 @@ import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
 import { AreaMode } from './dataset/enum/Area'
+import { IBadge } from './interface/Badge'
 
 export default class Editor {
   public command: Command
@@ -215,5 +216,6 @@ export type {
   ICatalogItem,
   IRange,
   IRangeStyle,
+  IBadge,
   IGetElementListByHTMLOption
 }
