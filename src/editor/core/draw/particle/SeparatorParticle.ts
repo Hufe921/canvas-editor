@@ -2,6 +2,7 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
+
 export class SeparatorParticle {
   private options: DeepRequired<IEditorOption>
 
