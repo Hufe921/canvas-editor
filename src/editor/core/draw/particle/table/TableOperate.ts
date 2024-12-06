@@ -6,7 +6,7 @@ import { IEditorOption } from '../../../../interface/Editor'
 import { IColgroup } from '../../../../interface/table/Colgroup'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
-import { getUUID } from '../../../../utils'
+import { deepClone, getUUID } from '../../../../utils'
 import {
   formatElementContext,
   formatElementList
@@ -16,6 +16,7 @@ import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 import { TableParticle } from './TableParticle'
 import { TableTool } from './TableTool'
+import { IPositionContext } from '../../../../interface/Position'
 
 export class TableOperate {
   private draw: Draw
@@ -24,6 +25,7 @@ export class TableOperate {
   private tableTool: TableTool
   private tableParticle: TableParticle
   private options: DeepRequired<IEditorOption>
+  private syncCross: boolean
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -32,6 +34,7 @@ export class TableOperate {
     this.tableTool = draw.getTableTool()
     this.tableParticle = draw.getTableParticle()
     this.options = draw.getOptions()
+    this.syncCross = false
   }
 
   public insertTable(row: number, col: number) {
@@ -247,6 +250,51 @@ export class TableOperate {
     }
   }
 
+  public syncToCrossPageTable(
+    pagingId: string,
+    index: number,
+    tdIndex: number,
+    visitor: Function,
+    trIndex?: number | undefined
+  ) {
+    if (this.syncCross) return
+    this.syncCross = true
+    const originalElementList = this.draw.getOriginalElementList()
+    const len = originalElementList.length
+    const crossTableContext: IPositionContext[] = []
+    let i = index - 1
+    let j = index + 1
+    while (i >= 0 && originalElementList[i].pagingId === pagingId) {
+      const element = originalElementList[i]
+      crossTableContext.push({
+        isTable: true,
+        index: i,
+        tdIndex,
+        trIndex,
+        tableId: element.id
+      })
+      i--
+    }
+    while (j < len && originalElementList[j].pagingId === pagingId) {
+      const element = originalElementList[j]
+      crossTableContext.push({
+        isTable: true,
+        index: j,
+        tdIndex,
+        trIndex,
+        tableId: element.id
+      })
+      j++
+    }
+    if (crossTableContext.length) {
+      for (const tableContext of crossTableContext) {
+        this.position.setPositionContext(tableContext)
+        visitor(tableContext)
+      }
+    }
+    this.syncCross = false
+  }
+
   public insertTableLeftCol() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
@@ -281,6 +329,14 @@ export class TableOperate {
       width: defaultColMinWidth
     })
     this.adjustColWidth(element)
+    this.syncToCrossPageTable(
+      element.pagingId as string,
+      index as number,
+      tdIndex as number,
+      () => this.insertTableLeftCol()
+    )
+    // 如果当前处于相关跨页表格的处理时，不去渲染
+    if (this.syncCross) return
     // 重新设置上下文
     this.position.setPositionContext({
       isTable: true,
@@ -331,6 +387,13 @@ export class TableOperate {
       width: defaultColMinWidth
     })
     this.adjustColWidth(element)
+    this.syncToCrossPageTable(
+      element.pagingId as string,
+      index as number,
+      tdIndex as number,
+      () => this.insertTableRightCol()
+    )
+    if (this.syncCross) return
     // 重新设置上下文
     this.position.setPositionContext({
       isTable: true,
@@ -407,6 +470,17 @@ export class TableOperate {
     this.tableTool.dispose()
   }
 
+  public deleteTableByTableContext(tableContext: IPositionContext) {
+    const { tableId } = tableContext
+    const elementList = this.draw.getOriginalElementList()
+    const curTableIndex = elementList.findIndex(el => el.id === tableId)
+    if (curTableIndex !== -1) {
+      tableContext.index = curTableIndex
+      this.position.setPositionContext(tableContext)
+      this.deleteTable()
+    }
+  }
+
   public deleteTableCol() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
@@ -419,7 +493,17 @@ export class TableOperate {
     // 如果是最后一列，直接删除整个表格
     const moreTdTr = curTrList.find(tr => tr.tdList.length > 1)
     if (!moreTdTr) {
-      this.deleteTable()
+      const clonedPositionContext = deepClone(positionContext)
+      this.syncToCrossPageTable(
+        element.pagingId as string,
+        index as number,
+        tdIndex as number,
+        (tableContext: IPositionContext) => {
+          this.deleteTableByTableContext(tableContext)
+        },
+        trIndex as number
+      )
+      this.deleteTableByTableContext(clonedPositionContext)
       return
     }
     // 缩小colspan或删除与当前列重叠的单元格
@@ -440,6 +524,13 @@ export class TableOperate {
       }
     }
     element.colgroup?.splice(curColIndex, 1)
+    this.syncToCrossPageTable(
+      element.pagingId as string,
+      index as number,
+      tdIndex as number,
+      () => this.deleteTableCol(),
+      trIndex as number
+    )
     // 重新设置上下文
     this.position.setPositionContext({
       isTable: false
@@ -458,6 +549,7 @@ export class TableOperate {
     const originalElementList = this.draw.getOriginalElementList()
     originalElementList.splice(positionContext.index!, 1)
     const curIndex = positionContext.index! - 1
+    if (this.syncCross) return
     this.position.setPositionContext({
       isTable: false,
       index: curIndex
