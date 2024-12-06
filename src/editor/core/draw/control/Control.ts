@@ -309,9 +309,33 @@ export class Control {
     return this.activeControl
   }
 
+  public getControlElementList(context: IControlContext = {}): IElement[] {
+    const elementList = context.elementList || this.getElementList()
+    const { startIndex } = context.range || this.getRange()
+    const startElement = elementList[startIndex]
+    const data: IElement[] = []
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (preElement.controlId !== startElement.controlId) break
+      data.unshift(preElement)
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (nextElement.controlId !== startElement.controlId) break
+      data.push(nextElement)
+      nextIndex++
+    }
+    return data
+  }
+
   public updateActiveControlValue() {
     if (this.activeControl) {
-      this.activeControlValue = this.activeControl.getValue()
+      this.activeControlValue = this.getControlElementList()
     }
   }
 
