@@ -6,7 +6,11 @@ import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
-import { ImageDisplay, LocationPosition } from './dataset/enum/Common'
+import {
+  FlexDirection,
+  ImageDisplay,
+  LocationPosition
+} from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
@@ -197,7 +201,8 @@ export {
   LineNumberType,
   LocationPosition,
   AreaMode,
-  ControlState
+  ControlState,
+  FlexDirection
 }
 
 // 对外类型

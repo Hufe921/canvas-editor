@@ -99,7 +99,7 @@ import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
-import { ImageDisplay } from '../../dataset/enum/Common'
+import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
 import { MouseObserver } from '../observer/MouseObserver'
@@ -1763,6 +1763,10 @@ export class Draw {
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
         preElement?.areaId !== element.areaId ||
+        (element.control?.flexDirection === FlexDirection.COLUMN &&
+          (element.controlComponent === ControlComponent.CHECKBOX ||
+            element.controlComponent === ControlComponent.RADIO) &&
+          preElement?.controlComponent === ControlComponent.VALUE) ||
         (i !== 0 && element.value === ZERO)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth

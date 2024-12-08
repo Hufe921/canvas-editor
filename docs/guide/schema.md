@@ -111,6 +111,7 @@ interface IElement {
     code: string | null;
     min?: number;
     max?: number;
+    flexDirection: FlexDirection;
     valueSets: {
       value: string;
       code: string;
