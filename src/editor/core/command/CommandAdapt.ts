@@ -1916,7 +1916,7 @@ export class CommandAdapt {
   }
 
   public locationCatalog(titleId: string) {
-    const elementList = this.draw.getMainElementList()
+    const elementList = this.draw.getOriginalMainElementList()
     let newIndex = -1
     for (let e = 0; e < elementList.length; e++) {
       const element = elementList[e]
@@ -1929,6 +1929,9 @@ export class CommandAdapt {
       }
     }
     if (!~newIndex) return
+    this.position.setPositionContext({
+      isTable: false
+    })
     this.range.setRange(newIndex, newIndex)
     this.draw.render({
       curIndex: newIndex,
