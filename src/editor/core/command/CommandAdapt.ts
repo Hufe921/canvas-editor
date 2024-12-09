@@ -1916,6 +1916,9 @@ export class CommandAdapt {
   }
 
   public locationCatalog(titleId: string) {
+    this.position.setPositionContext({
+      isTable: false
+    })
     const elementList = this.draw.getMainElementList()
     let newIndex = -1
     for (let e = 0; e < elementList.length; e++) {
