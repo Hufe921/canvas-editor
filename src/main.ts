@@ -918,6 +918,48 @@ window.onload = function () {
           }
         })
         break
+      case ControlType.NUMBER:
+        new Dialog({
+          title: '数值控件',
+          data: [
+            {
+              type: 'text',
+              label: '占位符',
+              name: 'placeholder',
+              required: true,
+              placeholder: '请输入占位符'
+            },
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'value',
+              placeholder: '请输入默认值'
+            }
+          ],
+          onConfirm: payload => {
+            const placeholder = payload.find(
+              p => p.name === 'placeholder'
+            )?.value
+            if (!placeholder) return
+            const value = payload.find(p => p.name === 'value')?.value || ''
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                value: value
+                  ? [
+                      {
+                        value
+                      }
+                    ]
+                  : null,
+                placeholder
+              }
+            })
+          }
+        })
+        break
       default:
         break
     }

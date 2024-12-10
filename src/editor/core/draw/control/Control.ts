@@ -48,6 +48,7 @@ import { ControlBorder } from './richtext/Border'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
 import { DateControl } from './date/DateControl'
+import { NumberControl } from './number/NumberControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
 import {
   CONTROL_CONTEXT_ATTR,
@@ -383,6 +384,8 @@ export class Control {
       const dateControl = new DateControl(element, this)
       this.activeControl = dateControl
       dateControl.awake()
+    } else if (control.type === ControlType.NUMBER) {
+      this.activeControl = new NumberControl(element, this)
     }
     // 缓存控件数据
     this.updateActiveControlValue()
@@ -763,7 +766,9 @@ export class Control {
           const nextElement = elementList[j]
           if (nextElement.controlId !== element.controlId) break
           if (
-            (type === ControlType.TEXT || type === ControlType.DATE) &&
+            (type === ControlType.TEXT ||
+              type === ControlType.DATE ||
+              type === ControlType.NUMBER) &&
             nextElement.controlComponent === ControlComponent.VALUE
           ) {
             textControlValue += nextElement.value
@@ -773,7 +778,11 @@ export class Control {
           }
           j++
         }
-        if (type === ControlType.TEXT || type === ControlType.DATE) {
+        if (
+          type === ControlType.TEXT ||
+          type === ControlType.DATE ||
+          type === ControlType.NUMBER
+        ) {
           result.push({
             ...element.control,
             zone,
@@ -916,6 +925,19 @@ export class Control {
             date.setSelect(value, controlContext, controlRule)
           } else {
             date.clearSelect(controlContext, controlRule)
+          }
+        } else if (type === ControlType.NUMBER) {
+          const formatValue = Array.isArray(value) ? value : [{ value }]
+          formatElementList(formatValue, {
+            isHandleFirstElement: false,
+            editorOptions: this.options
+          })
+          const text = new NumberControl(element, this)
+          this.activeControl = text
+          if (value) {
+            text.setValue(formatValue, controlContext, controlRule)
+          } else {
+            text.clearValue(controlContext, controlRule)
           }
         }
         // 模拟控件激活后销毁

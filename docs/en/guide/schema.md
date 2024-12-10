@@ -90,7 +90,8 @@ interface IElement {
       SELECT = 'select',
       CHECKBOX = 'checkbox',
       RADIO = 'radio',
-      DATE = 'date'
+      DATE = 'date',
+      NUMBER = 'number'
     };
     value: IElement[] | null;
     placeholder?: string;
