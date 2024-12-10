@@ -18,6 +18,7 @@ import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Draw } from '../../Draw'
 import { DatePicker } from '../../particle/date/DatePicker'
+import { MonthPicker } from '../../particle/date/MonthPicker'
 import { Control } from '../Control'
 
 export class DateControl implements IControlInstance {
@@ -25,7 +26,7 @@ export class DateControl implements IControlInstance {
   private element: IElement
   private control: Control
   private isPopup: boolean
-  private datePicker: DatePicker | null
+  private datePicker: DatePicker | MonthPicker | null
   private options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
@@ -344,15 +345,21 @@ export class DateControl implements IControlInstance {
     if (elementList[startIndex + 1]?.controlId !== this.element.controlId) {
       return
     }
+    const dateFormat = this.element.control?.dateFormat
     // 渲染日期控件
-    this.datePicker = new DatePicker(this.draw, {
-      onSubmit: this._setDate.bind(this)
-    })
+    if(dateFormat === 'yyyy-MM') {
+      this.datePicker = new MonthPicker(this.draw, {
+        onSubmit: this._setDate.bind(this)
+      })
+    }else {
+      this.datePicker = new DatePicker(this.draw, {
+        onSubmit: this._setDate.bind(this)
+      })
+    }
     const value =
       this.getValue()
         .map(el => el.value)
         .join('') || ''
-    const dateFormat = this.element.control?.dateFormat
     this.datePicker.render({
       value,
       position,

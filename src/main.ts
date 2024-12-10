@@ -887,6 +887,10 @@ window.onload = function () {
                 {
                   label: 'yyyy-MM-dd',
                   value: 'yyyy-MM-dd'
+                },
+                {
+                  label: 'yyyy-MM',
+                  value: 'yyyy-MM'
                 }
               ]
             }
