@@ -1221,6 +1221,8 @@ window.onload = function () {
       const replaceValue = replaceInputDom.value
       if (searchValue && replaceValue && searchValue !== replaceValue) {
         instance.command.executeReplace(replaceValue)
+        instance.command.executeSearch(searchInputDom.value || null)
+        setSearchResult()
       }
     }
   searchCollapseDom.querySelector<HTMLDivElement>('.arrow-left')!.onclick =
