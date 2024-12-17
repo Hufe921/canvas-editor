@@ -194,13 +194,13 @@ export function formatElementList(
       }
       i--
     } else if (el.type === ElementType.TABLE) {
-      const tableId = getUUID()
+      const tableId = el.id || getUUID()
       el.id = tableId
       if (el.trList) {
         const { defaultTrMinHeight } = editorOptions.table
         for (let t = 0; t < el.trList.length; t++) {
           const tr = el.trList[t]
-          const trId = getUUID()
+          const trId = tr.id || getUUID()
           tr.id = trId
           if (!tr.minHeight || tr.minHeight < defaultTrMinHeight) {
             tr.minHeight = defaultTrMinHeight
@@ -210,7 +210,7 @@ export function formatElementList(
           }
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const tdId = getUUID()
+            const tdId = td.id || getUUID()
             td.id = tdId
             formatElementList(td.value, {
               ...options,
@@ -544,14 +544,14 @@ export function formatElementList(
       el.value = ZERO
     }
     if (el.type === ElementType.IMAGE || el.type === ElementType.BLOCK) {
-      el.id = getUUID()
+      el.id = el.id || getUUID()
     }
     if (el.type === ElementType.LATEX) {
       const { svg, width, height } = LaTexParticle.convertLaTextToSVG(el.value)
       el.width = el.width || width
       el.height = el.height || height
       el.laTexSVG = svg
-      el.id = getUUID()
+      el.id = el.id || getUUID()
     }
     i++
   }
