@@ -42,7 +42,8 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   cursor.drawCursor({
     width: dragWidth,
     color: dragColor,
-    isBlink: false
+    isBlink: false,
+    isFocus: false
   })
 }
 
