@@ -6,6 +6,7 @@ import { ICursorOption } from '../../interface/Cursor'
 import { IEditorOption } from '../../interface/Editor'
 import { IElementPosition } from '../../interface/Element'
 import { findScrollContainer } from '../../utils'
+import { isMobile } from '../../utils/ua'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { Position } from '../position/Position'
@@ -91,6 +92,8 @@ export class Cursor {
   }
 
   public focus() {
+    // 移动端只读模式禁用聚焦避免唤起输入法，web端允许聚焦避免事件无法捕获
+    if (isMobile && this.draw.isReadonly()) return
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     // 光标不聚焦时重新定位
     if (document.activeElement !== agentCursorDom) {
