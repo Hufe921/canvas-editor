@@ -1,3 +1,29 @@
+## [0.9.99](https://github.com/Hufe921/canvas-editor/compare/v0.9.98...v0.9.99) (2024-12-20)
+
+
+### Bug Fixes
+
+* locate catalog when the context is within the table ([012dc7d](https://github.com/Hufe921/canvas-editor/commit/012dc7debcce4366c8e094cbc2af1a7892227ad2))
+* optimize image caching method #933 ([8516931](https://github.com/Hufe921/canvas-editor/commit/85169313bd8f51feb9f442cb32b774dcbc580e96)), closes [#933](https://github.com/Hufe921/canvas-editor/issues/933)
+* verify control integrity boundary error #920 ([77a2550](https://github.com/Hufe921/canvas-editor/commit/77a25504bc40caaf20390944f286748bdf113e39)), closes [#920](https://github.com/Hufe921/canvas-editor/issues/920)
+
+
+### Chores
+
+* rename some particles ([b5d18d3](https://github.com/Hufe921/canvas-editor/commit/b5d18d3a59f89a701758af160fc889e49ba1f5c6))
+
+
+### Features
+
+* add badge option #918 ([190785a](https://github.com/Hufe921/canvas-editor/commit/190785ac69f6187d10abb070eab32a523e394b34)), closes [#918](https://github.com/Hufe921/canvas-editor/issues/918)
+* add control flex direction option #652 ([c599d56](https://github.com/Hufe921/canvas-editor/commit/c599d563b631f29a6bea6fe94624afa05c6879ef)), closes [#652](https://github.com/Hufe921/canvas-editor/issues/652)
+* add number control #925 ([aff4979](https://github.com/Hufe921/canvas-editor/commit/aff49797da3f7e966b9f692269468ccb792af309)), closes [#925](https://github.com/Hufe921/canvas-editor/issues/925)
+* delete control by id or conceptId #905 ([5d434bd](https://github.com/Hufe921/canvas-editor/commit/5d434bd7d3dce31f761a0e1f6c81dfa7a80bb03e)), closes [#905](https://github.com/Hufe921/canvas-editor/issues/905)
+* element id support customization ([c79be3a](https://github.com/Hufe921/canvas-editor/commit/c79be3ab72e9e1cda75e7af2b8b8d50e1ba2085a))
+* optimize cursor focus when dragging elements #926 ([3679cbd](https://github.com/Hufe921/canvas-editor/commit/3679cbd4205427a1337e023c318ea98be3c952f8)), closes [#926](https://github.com/Hufe921/canvas-editor/issues/926)
+
+
+
 ## [0.9.98](https://github.com/Hufe921/canvas-editor/compare/v0.9.97...v0.9.98) (2024-12-01)
 
 
