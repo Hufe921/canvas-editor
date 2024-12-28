@@ -1,12 +1,13 @@
 import { ElementType, IElement, TableBorder, VerticalAlign } from '../../../..'
 import { ZERO } from '../../../../dataset/constant/Common'
+import { TABLE_CONTEXT_ATTR } from '../../../../dataset/constant/Element'
 import { TdBorder, TdSlash } from '../../../../dataset/enum/table/Table'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IColgroup } from '../../../../interface/table/Colgroup'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
-import { getUUID } from '../../../../utils'
+import { cloneProperty, getUUID } from '../../../../utils'
 import {
   formatElementContext,
   formatElementList
@@ -546,14 +547,25 @@ export class TableOperate {
     // 合并单元格
     const mergeTdIdList: string[] = []
     const anchorTd = rowCol[0][0]
+    const anchorElement = anchorTd.value[0]
     for (let t = 0; t < rowCol.length; t++) {
       const tr = rowCol[t]
       for (let d = 0; d < tr.length; d++) {
         const td = tr[d]
         const isAnchorTd = t === 0 && d === 0
-        // 待删除单元id
+        // 缓存待删除单元id并合并单元格内容
         if (!isAnchorTd) {
           mergeTdIdList.push(td.id!)
+          // 复制表格属性后追加
+          for (let d = 0; d < td.value.length; d++) {
+            const tdElement = td.value[d]
+            cloneProperty<IElement>(
+              TABLE_CONTEXT_ATTR,
+              anchorElement,
+              tdElement
+            )
+            anchorTd.value.push(tdElement)
+          }
         }
         // 列合并
         if (t === 0 && d !== 0) {
