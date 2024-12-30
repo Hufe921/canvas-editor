@@ -1767,42 +1767,61 @@ export class CommandAdapt {
   public updateElementById(payload: IUpdateElementByIdOption) {
     const { id, conceptId } = payload
     if (!id && !conceptId) return
-    function getElementIndexById(elementList: IElement[]): number {
-      for (let e = 0; e < elementList.length; e++) {
-        const element = elementList[e]
+    const updateElementInfoList: {
+      elementList: IElement[]
+      index: number
+    }[] = []
+    function getElementInfoById(elementList: IElement[]) {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        i++
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              getElementInfoById(td.value)
+            }
+          }
+        }
         if (
-          (id && element.id === id) ||
+          (id && (element.id === id || element.controlId === id)) ||
           (conceptId && element.conceptId === conceptId)
         ) {
-          return e
+          updateElementInfoList.push({
+            elementList,
+            index: i - 1
+          })
         }
       }
-      return -1
     }
     // 优先正文再页眉页脚
-    const getElementListFnList = [
-      this.draw.getOriginalMainElementList,
-      this.draw.getHeaderElementList,
-      this.draw.getFooterElementList
+    const data = [
+      this.draw.getOriginalMainElementList(),
+      this.draw.getHeaderElementList(),
+      this.draw.getFooterElementList()
     ]
-    for (const getElementList of getElementListFnList) {
-      const elementList = getElementList.call(this.draw)
-      const elementIndex = getElementIndexById(elementList)
-      if (~elementIndex) {
-        elementList[elementIndex] = {
-          ...elementList[elementIndex],
-          ...payload.properties
-        }
-        formatElementList(zipElementList([elementList[elementIndex]]), {
-          isHandleFirstElement: false,
-          editorOptions: this.options
-        })
-        this.draw.render({
-          isSetCursor: false
-        })
-        break
-      }
+    for (const elementList of data) {
+      getElementInfoById(elementList)
     }
+    // 更新内容
+    if (!updateElementInfoList.length) return
+    for (let i = 0; i < updateElementInfoList.length; i++) {
+      const { elementList, index } = updateElementInfoList[i]
+      elementList[index] = {
+        ...elementList[index],
+        ...payload.properties
+      }
+      formatElementList(zipElementList([elementList[index]]), {
+        isHandleFirstElement: false,
+        editorOptions: this.options
+      })
+    }
+    this.draw.render({
+      isSetCursor: false
+    })
   }
 
   public getElementById(payload: IGetElementByIdOption): IElement[] {
@@ -1814,8 +1833,18 @@ export class CommandAdapt {
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              getElement(td.value)
+            }
+          }
+        }
         if (
-          (id && element.controlId !== id) ||
+          (id && element.controlId !== id && element.id !== id) ||
           (conceptId && element.conceptId !== conceptId)
         ) {
           continue
