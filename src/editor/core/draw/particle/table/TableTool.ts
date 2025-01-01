@@ -87,11 +87,13 @@ export class TableTool {
     if (!isTable) return
     // 销毁之前工具
     this.dispose()
-    // 渲染所需数据
-    const { scale } = this.options
     const elementList = this.draw.getOriginalElementList()
     const positionList = this.position.getOriginalPositionList()
     const element = elementList[index!]
+    // 表格工具配置禁用又非设计模式时不渲染
+    if (element.tableToolDisabled && !this.draw.isDesignMode()) return
+    // 渲染所需数据
+    const { scale } = this.options
     const position = positionList[index!]
     const { colgroup, trList } = element
     const {

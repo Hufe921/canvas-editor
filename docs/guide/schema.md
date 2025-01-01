@@ -77,6 +77,7 @@ interface IElement {
   }[];
   borderType?: TableBorder;
   borderColor?: string;
+  tableToolDisabled?: boolean;
   // 超链接
   url?: string;
   // 上下标
