@@ -2419,6 +2419,10 @@ export class Draw {
     if (!isPrintMode) {
       this.area.render(ctx, pageNo)
     }
+    // 绘制水印
+    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
+      this.waterMark.render(ctx)
+    }
     // 绘制页边距
     if (!isPrintMode) {
       this.margin.render(ctx, pageNo)
@@ -2465,10 +2469,6 @@ export class Draw {
     // 搜索匹配绘制
     if (!isPrintMode && this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
-    }
-    // 绘制水印
-    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
-      this.waterMark.render(ctx)
     }
     // 绘制空白占位符
     if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
