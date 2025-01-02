@@ -20,6 +20,7 @@ import { globalMenus } from './menus/globalMenus'
 import { hyperlinkMenus } from './menus/hyperlinkMenus'
 import { imageMenus } from './menus/imageMenus'
 import { tableMenus } from './menus/tableMenus'
+import { areaMenus } from './menus/areaMenus'
 
 interface IRenderPayload {
   contextMenuList: IRegisterContextMenu[]
@@ -56,7 +57,8 @@ export class ContextMenu {
       ...tableMenus,
       ...imageMenus,
       ...controlMenus,
-      ...hyperlinkMenus
+      ...hyperlinkMenus,
+      ...areaMenus
     ]
     this.contextMenuContainerList = []
     this.contextMenuRelationShip = new Map()
