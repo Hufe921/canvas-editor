@@ -1,3 +1,21 @@
+## [0.9.100](https://github.com/Hufe921/canvas-editor/compare/v0.9.99...v0.9.100) (2025-01-03)
+
+
+### Bug Fixes
+
+* get or update elements within a table by id #951 ([951de97](https://github.com/Hufe921/canvas-editor/commit/951de9794186cb6225e1f668f1021f6e7f04b1bc)), closes [#951](https://github.com/Hufe921/canvas-editor/issues/951)
+* set default style boundary error #942 ([2fd9d10](https://github.com/Hufe921/canvas-editor/commit/2fd9d10c10705df57fbc67455edb8da05df92d0a)), closes [#942](https://github.com/Hufe921/canvas-editor/issues/942)
+
+
+### Features
+
+* add table tool disabled option #954 ([a6eccc7](https://github.com/Hufe921/canvas-editor/commit/a6eccc7a78569e881d80c745f8a77455b91df0ad)), closes [#954](https://github.com/Hufe921/canvas-editor/issues/954)
+* adjust watermark rendering layer #948 ([0f53552](https://github.com/Hufe921/canvas-editor/commit/0f5355216c1c092ea59ecb737f447c0a0ff11558)), closes [#948](https://github.com/Hufe921/canvas-editor/issues/948)
+* optimize cursor focus in readonly mode #936 ([2e0ac96](https://github.com/Hufe921/canvas-editor/commit/2e0ac966e839a2dc9df911b04d24577c46d930e4)), closes [#936](https://github.com/Hufe921/canvas-editor/issues/936)
+* preserve cell content when merging cells #932 ([167bfa1](https://github.com/Hufe921/canvas-editor/commit/167bfa1e7c44a580f29c06bccd9bf5675e4d166f)), closes [#932](https://github.com/Hufe921/canvas-editor/issues/932)
+
+
+
 ## [0.9.99](https://github.com/Hufe921/canvas-editor/compare/v0.9.98...v0.9.99) (2024-12-20)
 
 
