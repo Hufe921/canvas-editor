@@ -6,20 +6,13 @@ import {
   IControlRuleOption
 } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
-import { IRange } from '../../../../interface/Range'
-import { deepClone } from '../../../../utils'
 import { Control } from '../Control'
 
 export class CheckboxControl implements IControlInstance {
-  public activeRange: IRange
-  public activeElementList: IElement[]
   protected element: IElement
   protected control: Control
 
   constructor(element: IElement, control: Control) {
-    const draw = control.getDraw()
-    this.activeRange = deepClone(draw.getRange().getRange())
-    this.activeElementList = draw.getElementList()
     this.element = element
     this.control = control
   }
@@ -47,7 +40,8 @@ export class CheckboxControl implements IControlInstance {
       const preElement = elementList[preIndex]
       if (
         preElement.controlId !== startElement.controlId ||
-        preElement.controlComponent === ControlComponent.PREFIX
+        preElement.controlComponent === ControlComponent.PREFIX ||
+        preElement.controlComponent === ControlComponent.PRE_TEXT
       ) {
         break
       }
@@ -62,7 +56,8 @@ export class CheckboxControl implements IControlInstance {
       const nextElement = elementList[nextIndex]
       if (
         nextElement.controlId !== startElement.controlId ||
-        nextElement.controlComponent === ControlComponent.POSTFIX
+        nextElement.controlComponent === ControlComponent.POSTFIX ||
+        nextElement.controlComponent === ControlComponent.POST_TEXT
       ) {
         break
       }
@@ -100,7 +95,8 @@ export class CheckboxControl implements IControlInstance {
       const preElement = elementList[preIndex]
       if (
         preElement.controlId !== startElement.controlId ||
-        preElement.controlComponent === ControlComponent.PREFIX
+        preElement.controlComponent === ControlComponent.PREFIX ||
+        preElement.controlComponent === ControlComponent.PRE_TEXT
       ) {
         break
       }
@@ -116,7 +112,8 @@ export class CheckboxControl implements IControlInstance {
       const nextElement = elementList[nextIndex]
       if (
         nextElement.controlId !== startElement.controlId ||
-        nextElement.controlComponent === ControlComponent.POSTFIX
+        nextElement.controlComponent === ControlComponent.POSTFIX ||
+        nextElement.controlComponent === ControlComponent.POST_TEXT
       ) {
         break
       }

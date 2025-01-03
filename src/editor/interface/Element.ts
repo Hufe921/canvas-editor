@@ -63,6 +63,11 @@ export interface ITableAttr {
   colgroup?: IColgroup[]
   trList?: ITr[]
   borderType?: TableBorder
+  borderColor?: string
+}
+
+export interface ITableRule {
+  tableToolDisabled?: boolean
 }
 
 export interface ITableElement {
@@ -74,7 +79,7 @@ export interface ITableElement {
   pagingIndex?: number // 拆分的表格索引
 }
 
-export type ITable = ITableAttr & ITableElement
+export type ITable = ITableAttr & ITableRule & ITableElement
 
 export interface IHyperlinkElement {
   valueList?: IElement[]

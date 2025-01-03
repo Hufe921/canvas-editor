@@ -46,6 +46,7 @@ export class Command {
   public executeCancelMergeTableCell: CommandAdapt['cancelMergeTableCell']
   public executeTableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
   public executeTableBorderType: CommandAdapt['tableBorderType']
+  public executeTableBorderColor: CommandAdapt['tableBorderColor']
   public executeTableTdBorderType: CommandAdapt['tableTdBorderType']
   public executeTableTdSlashType: CommandAdapt['tableTdSlashType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
@@ -68,12 +69,15 @@ export class Command {
   public executeSaveAsImageElement: CommandAdapt['saveAsImageElement']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
+  public executePageScale: CommandAdapt['pageScale']
   public executePageScaleRecovery: CommandAdapt['pageScaleRecovery']
   public executePageScaleMinus: CommandAdapt['pageScaleMinus']
   public executePageScaleAdd: CommandAdapt['pageScaleAdd']
   public executePaperSize: CommandAdapt['paperSize']
   public executePaperDirection: CommandAdapt['paperDirection']
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
+  public executeSetMainBadge: CommandAdapt['setMainBadge']
+  public executeSetAreaBadge: CommandAdapt['setAreaBadge']
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeInsertArea: CommandAdapt['insertArea']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
@@ -175,6 +179,7 @@ export class Command {
     this.executeCancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
     this.executeTableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
     this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
+    this.executeTableBorderColor = adapt.tableBorderColor.bind(adapt)
     this.executeTableTdBorderType = adapt.tableTdBorderType.bind(adapt)
     this.executeTableTdSlashType = adapt.tableTdSlashType.bind(adapt)
     this.executeTableTdBackgroundColor =
@@ -199,12 +204,16 @@ export class Command {
     this.executeChangeImageDisplay = adapt.changeImageDisplay.bind(adapt)
     // 页面模式、页面缩放、纸张大小、纸张方向、页边距
     this.executePageMode = adapt.pageMode.bind(adapt)
+    this.executePageScale = adapt.pageScale.bind(adapt)
     this.executePageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     this.executePageScaleMinus = adapt.pageScaleMinus.bind(adapt)
     this.executePageScaleAdd = adapt.pageScaleAdd.bind(adapt)
     this.executePaperSize = adapt.paperSize.bind(adapt)
     this.executePaperDirection = adapt.paperDirection.bind(adapt)
     this.executeSetPaperMargin = adapt.setPaperMargin.bind(adapt)
+    // 签章
+    this.executeSetMainBadge = adapt.setMainBadge.bind(adapt)
+    this.executeSetAreaBadge = adapt.setAreaBadge.bind(adapt)
     // 区域
     this.getAreaValue = adapt.getAreaValue.bind(adapt)
     this.executeInsertArea = adapt.insertArea.bind(adapt)

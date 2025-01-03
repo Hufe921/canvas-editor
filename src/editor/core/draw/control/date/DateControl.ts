@@ -14,8 +14,7 @@ import {
 } from '../../../../interface/Control'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
-import { IRange } from '../../../../interface/Range'
-import { deepClone, omitObject, pickObject } from '../../../../utils'
+import { omitObject, pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { Draw } from '../../Draw'
 import { DatePicker } from '../../particle/date/DatePicker'
@@ -23,8 +22,6 @@ import { Control } from '../Control'
 
 export class DateControl implements IControlInstance {
   private draw: Draw
-  public activeRange: IRange
-  public activeElementList: IElement[]
   private element: IElement
   private control: Control
   private isPopup: boolean
@@ -35,8 +32,6 @@ export class DateControl implements IControlInstance {
     const draw = control.getDraw()
     this.draw = draw
     this.options = draw.getOptions()
-    this.activeRange = deepClone(draw.getRange().getRange())
-    this.activeElementList = draw.getElementList()
     this.element = element
     this.control = control
     this.isPopup = false
@@ -65,7 +60,8 @@ export class DateControl implements IControlInstance {
       const preElement = elementList[preIndex]
       if (
         preElement.controlId !== startElement.controlId ||
-        preElement.controlComponent === ControlComponent.PREFIX
+        preElement.controlComponent === ControlComponent.PREFIX ||
+        preElement.controlComponent === ControlComponent.PRE_TEXT
       ) {
         break
       }
@@ -77,7 +73,8 @@ export class DateControl implements IControlInstance {
       const nextElement = elementList[nextIndex]
       if (
         nextElement.controlId !== startElement.controlId ||
-        nextElement.controlComponent === ControlComponent.POSTFIX
+        nextElement.controlComponent === ControlComponent.POSTFIX ||
+        nextElement.controlComponent === ControlComponent.POST_TEXT
       ) {
         break
       }
@@ -132,7 +129,8 @@ export class DateControl implements IControlInstance {
     const anchorElement =
       (startElement.type &&
         !TEXTLIKE_ELEMENT_TYPE.includes(startElement.type)) ||
-      startElement.controlComponent === ControlComponent.PREFIX
+      startElement.controlComponent === ControlComponent.PREFIX ||
+      startElement.controlComponent === ControlComponent.PRE_TEXT
         ? pickObject(startElement, [
             'control',
             'controlId',
@@ -262,7 +260,9 @@ export class DateControl implements IControlInstance {
       } else {
         if (
           startElement.controlComponent === ControlComponent.PREFIX ||
+          startElement.controlComponent === ControlComponent.PRE_TEXT ||
           endElement.controlComponent === ControlComponent.POSTFIX ||
+          endElement.controlComponent === ControlComponent.POST_TEXT ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
           // 前缀、后缀、占位符
@@ -293,9 +293,11 @@ export class DateControl implements IControlInstance {
       } else {
         const endNextElement = elementList[endIndex + 1]
         if (
-          (startElement.controlComponent === ControlComponent.PREFIX &&
+          ((startElement.controlComponent === ControlComponent.PREFIX ||
+            startElement.controlComponent === ControlComponent.PRE_TEXT) &&
             endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
           endNextElement.controlComponent === ControlComponent.POSTFIX ||
+          endNextElement.controlComponent === ControlComponent.POST_TEXT ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
           // 前缀、后缀、占位符

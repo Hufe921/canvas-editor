@@ -36,7 +36,7 @@ Feature: Copy
 Usage:
 
 ```javascript
-instance.command.executeCopy()
+instance.command.executeCopy(payload?: ICopyOption)
 ```
 
 ## executePaste
@@ -457,6 +457,16 @@ Usage:
 instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
+## executeTableBorderColor
+
+Feature: Table border color
+
+Usage:
+
+```javascript
+instance.command.executeTableBorderColor(payload: string)
+```
+
 ## executeTableTdBorderType
 
 Feature: Table td border type
@@ -692,6 +702,16 @@ Usage:
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageScale
+
+Feature: Set page scale
+
+Usage:
+
+```javascript
+instance.command.executePageScale(scale: number)
+```
+
 ## executePageScaleRecovery
 
 Feature: Restore the original zoom factor of the page
@@ -752,6 +772,26 @@ Usage:
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
 ```
 
+## executeSetMainBadge
+
+Feature: Set main badge
+
+Usage:
+
+```javascript
+instance.command.executeSetMainBadge(payload: IBadge | null)
+```
+
+## executeSetAreaBadge
+
+Feature: Set area badge
+
+Usage:
+
+```javascript
+instance.command.executeSetAreaBadge(payload: IAreaBadge[])
+```
+
 ## executeInsertElementList
 
 Feature: Insert an element
@@ -799,7 +839,7 @@ Feature: Delete the control
 Usage:
 
 ```javascript
-instance.command.executeRemoveControl()
+instance.command.executeRemoveControl(payload?: IRemoveControlOption)
 ```
 
 ## executeSetLocale

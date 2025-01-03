@@ -24,7 +24,8 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
   if (
     draw.getMode() === EditorMode.FORM &&
     control.getActiveControl() &&
-    elementList[index]?.controlComponent === ControlComponent.PREFIX
+    (elementList[index]?.controlComponent === ControlComponent.PREFIX ||
+      elementList[index]?.controlComponent === ControlComponent.PRE_TEXT)
   ) {
     control.initNextControl({
       direction: MoveDirection.UP

@@ -6,7 +6,11 @@ import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
-import { ImageDisplay, LocationPosition } from './dataset/enum/Common'
+import {
+  FlexDirection,
+  ImageDisplay,
+  LocationPosition
+} from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
@@ -64,6 +68,7 @@ import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
 import { AreaMode } from './dataset/enum/Area'
+import { IBadge } from './interface/Badge'
 
 export default class Editor {
   public command: Command
@@ -196,7 +201,8 @@ export {
   LineNumberType,
   LocationPosition,
   AreaMode,
-  ControlState
+  ControlState,
+  FlexDirection
 }
 
 // 对外类型
@@ -215,5 +221,6 @@ export type {
   ICatalogItem,
   IRange,
   IRangeStyle,
+  IBadge,
   IGetElementListByHTMLOption
 }

@@ -25,7 +25,8 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   if (
     draw.getMode() === EditorMode.FORM &&
     control.getActiveControl() &&
-    elementList[index + 1]?.controlComponent === ControlComponent.POSTFIX
+    (elementList[index + 1]?.controlComponent === ControlComponent.POSTFIX ||
+      elementList[index + 1]?.controlComponent === ControlComponent.POST_TEXT)
   ) {
     control.initNextControl({
       direction: MoveDirection.DOWN

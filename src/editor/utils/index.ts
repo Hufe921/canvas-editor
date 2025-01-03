@@ -354,3 +354,7 @@ export function isRectIntersect(
 export function isNonValue(value: unknown): boolean {
   return value === undefined || value === null
 }
+
+export function normalizeLineBreak(text: string): string {
+  return text.replace(/\r\n|\r/g, '\n')
+}

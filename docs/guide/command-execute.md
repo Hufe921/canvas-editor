@@ -36,7 +36,7 @@ instance.command.executeCut()
 用法：
 
 ```javascript
-instance.command.executeCopy()
+instance.command.executeCopy(payload?: ICopyOption)
 ```
 
 ## executePaste
@@ -457,6 +457,16 @@ instance.command.executeTableTdVerticalAlign(payload: VerticalAlign)
 instance.command.executeTableBorderType(payload: TableBorder)
 ```
 
+## executeTableBorderColor
+
+功能：表格边框颜色
+
+用法：
+
+```javascript
+instance.command.executeTableBorderColor(payload: string)
+```
+
 ## executeTableTdBorderType
 
 功能：表格单元格边框类型
@@ -692,6 +702,16 @@ instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisp
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageScale
+
+功能：设置缩放比例
+
+用法：
+
+```javascript
+instance.command.executePageScale(scale: number)
+```
+
 ## executePageScaleRecovery
 
 功能：恢复页面原始缩放比例
@@ -752,6 +772,26 @@ instance.command.executePaperDirection(paperDirection: PaperDirection)
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
 ```
 
+## executeSetMainBadge
+
+功能：设置正文徽章
+
+用法：
+
+```javascript
+instance.command.executeSetMainBadge(payload: IBadge | null)
+```
+
+## executeSetAreaBadge
+
+功能：设置区域徽章
+
+用法：
+
+```javascript
+instance.command.executeSetAreaBadge(payload: IAreaBadge[])
+```
+
 ## executeInsertElementList
 
 功能：插入元素
@@ -799,7 +839,7 @@ instance.command.executeSetValue(payload: Partial<IEditorData>, options?: ISetVa
 用法：
 
 ```javascript
-instance.command.executeRemoveControl()
+instance.command.executeRemoveControl(payload?: IRemoveControlOption)
 ```
 
 ## executeSetLocale

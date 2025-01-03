@@ -76,6 +76,8 @@ interface IElement {
     }[];
   }[];
   borderType?: TableBorder;
+  borderColor?: string;
+  tableToolDisabled?: boolean;
   // Hyperlinks
   url?: string;
   // Superscript and subscript
@@ -89,13 +91,16 @@ interface IElement {
       SELECT = 'select',
       CHECKBOX = 'checkbox',
       RADIO = 'radio',
-      DATE = 'date'
+      DATE = 'date',
+      NUMBER = 'number'
     };
     value: IElement[] | null;
     placeholder?: string;
     conceptId?: string;
     prefix?: string;
     postfix?: string;
+    preText?: string;
+    postText?: string;
     minWidth?: number;
     underline?: boolean;
     border?: boolean;
@@ -108,10 +113,13 @@ interface IElement {
     code: string | null;
     min?: number;
     max?: number;
+    flexDirection: FlexDirection;
     valueSets: {
       value: string;
       code: string;
     }[];
+    isMultiSelect?: boolean;
+    multiSelectDelimiter?: string;
     dateFormat?: string;
     font?: string;
     size?: number;
@@ -120,6 +128,9 @@ interface IElement {
     highlight?: string;
     italic?: boolean;
     strikeout?: boolean;
+    selectExclusiveOptions?: {
+      inputAble?: boolean;
+    }
   };
   controlComponent?: {
     PREFIX = 'prefix',

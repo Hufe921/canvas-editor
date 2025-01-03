@@ -1,4 +1,4 @@
-import { LocationPosition } from '../dataset/enum/Common'
+import { FlexDirection, LocationPosition } from '../dataset/enum/Common'
 import {
   ControlType,
   ControlIndentation,
@@ -21,17 +21,24 @@ export interface IValueSet {
 export interface IControlSelect {
   code: string | null
   valueSets: IValueSet[]
+  isMultiSelect?: boolean
+  multiSelectDelimiter?: string
+  selectExclusiveOptions?: {
+    inputAble?: boolean
+  }
 }
 
 export interface IControlCheckbox {
   code: string | null
   min?: number
   max?: number
+  flexDirection: FlexDirection
   valueSets: IValueSet[]
 }
 
 export interface IControlRadio {
   code: string | null
+  flexDirection: FlexDirection
   valueSets: IValueSet[]
 }
 
@@ -70,6 +77,8 @@ export interface IControlBasic {
   extension?: unknown
   indentation?: ControlIndentation
   rowFlex?: RowFlex
+  preText?: string
+  postText?: string
 }
 
 export interface IControlStyle {
@@ -112,8 +121,6 @@ export interface IControlInitResult {
 }
 
 export interface IControlInstance {
-  activeRange: IRange
-  activeElementList: IElement[]
   setElement(element: IElement): void
   getElement(): IElement
   getValue(context?: IControlContext): IElement[]
@@ -205,4 +212,9 @@ export interface IControlChangeResult {
 
 export interface IDestroyControlOption {
   isEmitEvent?: boolean
+}
+
+export interface IRemoveControlOption {
+  id?: string
+  conceptId?: string
 }

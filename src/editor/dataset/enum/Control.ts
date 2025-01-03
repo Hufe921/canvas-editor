@@ -3,12 +3,15 @@ export enum ControlType {
   SELECT = 'select',
   CHECKBOX = 'checkbox',
   RADIO = 'radio',
-  DATE = 'date'
+  DATE = 'date',
+  NUMBER = 'number'
 }
 
 export enum ControlComponent {
   PREFIX = 'prefix',
   POSTFIX = 'postfix',
+  PRE_TEXT = 'preText',
+  POST_TEXT = 'postText',
   PLACEHOLDER = 'placeholder',
   VALUE = 'value',
   CHECKBOX = 'checkbox',

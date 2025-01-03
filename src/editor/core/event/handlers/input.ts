@@ -1,9 +1,13 @@
 import { ZERO } from '../../../dataset/constant/Common'
-import { EDITOR_ELEMENT_COPY_ATTR } from '../../../dataset/constant/Element'
+import {
+  EDITOR_ELEMENT_COPY_ATTR,
+  EDITOR_ELEMENT_STYLE_ATTR
+} from '../../../dataset/constant/Element'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
+import { IRangeElementStyle } from '../../../interface/Range'
 import { splitText } from '../../../utils'
-import { formatElementContext, getAnchorElement } from '../../../utils/element'
+import { formatElementContext } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
 export function input(data: string, host: CanvasEvent) {
@@ -17,6 +21,9 @@ export function input(data: string, host: CanvasEvent) {
   if (isComposing && host.compositionInfo?.value === data) return
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
+  // 移除合成前，缓存设置的默认样式设置
+  const defaultStyle =
+    rangeManager.getDefaultStyle() || host.compositionInfo?.defaultStyle || null
   // 移除合成输入
   removeComposingInput(host)
   if (!isComposing) {
@@ -28,7 +35,7 @@ export function input(data: string, host: CanvasEvent) {
   const { startIndex, endIndex } = rangeManager.getRange()
   // 格式化元素
   const elementList = draw.getElementList()
-  const copyElement = getAnchorElement(elementList, endIndex)
+  const copyElement = rangeManager.getRangeAnchorStyle(elementList, endIndex)
   if (!copyElement) return
   const isDesignMode = draw.isDesignMode()
   const inputData: IElement[] = splitText(text).map(value => {
@@ -54,6 +61,15 @@ export function input(data: string, host: CanvasEvent) {
           const value = copyElement[attr] as never
           if (value !== undefined) {
             newElement[attr] = value
+          }
+        })
+      }
+      // 使用默认样式（组合输入法输入 || 无法匹配元素类型时逻辑）
+      if (defaultStyle) {
+        EDITOR_ELEMENT_STYLE_ATTR.forEach(attr => {
+          const value = defaultStyle[attr as keyof IRangeElementStyle]
+          if (value !== undefined) {
+            newElement[attr] = value as never
           }
         })
       }
@@ -91,7 +107,8 @@ export function input(data: string, host: CanvasEvent) {
       elementList,
       value: text,
       startIndex: curIndex - inputData.length,
-      endIndex: curIndex
+      endIndex: curIndex,
+      defaultStyle
     }
   }
 }

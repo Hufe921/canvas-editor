@@ -10,3 +10,7 @@ export interface IPositionContextByEvent {
   element: IElement | null
   rangeRect: RangeRect | null
 }
+
+export interface ICopyOption {
+  isPlainText: boolean
+}

@@ -10,6 +10,7 @@ import { EventBusMap } from '../../interface/EventBus'
 import { IRangeStyle } from '../../interface/Listener'
 import {
   IRange,
+  IRangeElementStyle,
   IRangeParagraphInfo,
   RangeRowArray,
   RangeRowMap
@@ -29,6 +30,7 @@ export class RangeManager {
   private eventBus: EventBus<EventBusMap>
   private position: Position
   private historyManager: HistoryManager
+  private defaultStyle: IRangeElementStyle | null
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -41,6 +43,7 @@ export class RangeManager {
       startIndex: -1,
       endIndex: -1
     }
+    this.defaultStyle = null
   }
 
   public getRange(): IRange {
@@ -49,6 +52,33 @@ export class RangeManager {
 
   public clearRange() {
     this.setRange(-1, -1)
+  }
+
+  public setDefaultStyle(style: IRangeElementStyle | null) {
+    if (!style) {
+      this.defaultStyle = null
+    } else {
+      this.defaultStyle = {
+        ...this.defaultStyle,
+        ...style
+      }
+    }
+  }
+
+  public getDefaultStyle(): IRangeElementStyle | null {
+    return this.defaultStyle
+  }
+
+  public getRangeAnchorStyle(
+    elementList: IElement[],
+    anchorIndex: number
+  ): IElement | null {
+    const anchorElement = getAnchorElement(elementList, anchorIndex)
+    if (!anchorElement) return null
+    return {
+      ...anchorElement,
+      ...this.defaultStyle
+    }
   }
 
   public getIsCollapsed(): boolean {
@@ -334,9 +364,16 @@ export class RangeManager {
   public getIsCanInput(): boolean {
     const { startIndex, endIndex } = this.getRange()
     if (!~startIndex && !~endIndex) return false
-    if (startIndex === endIndex) return true
     const elementList = this.draw.getElementList()
     const startElement = elementList[startIndex]
+    if (startIndex === endIndex) {
+      return (
+        (startElement.controlComponent !== ControlComponent.PRE_TEXT ||
+          elementList[startIndex + 1]?.controlComponent !==
+            ControlComponent.PRE_TEXT) &&
+        startElement.controlComponent !== ControlComponent.POST_TEXT
+      )
+    }
     const endElement = elementList[endIndex]
     // 选区前后不是控件 || 选区前不是控件或是后缀&&选区后不是控件或是后缀 || 选区在控件内
     return (
@@ -347,6 +384,8 @@ export class RangeManager {
           endElement.controlComponent === ControlComponent.POSTFIX)) ||
       (!!startElement.controlId &&
         endElement.controlId === startElement.controlId &&
+        endElement.controlComponent !== ControlComponent.PRE_TEXT &&
+        endElement.controlComponent !== ControlComponent.POST_TEXT &&
         endElement.controlComponent !== ControlComponent.POSTFIX)
     )
   }
@@ -373,6 +412,7 @@ export class RangeManager {
       startTrIndex ||
       endTrIndex
     )
+    this.setDefaultStyle(null)
     this.range.zone = this.draw.getZone().getZone()
     // 激活控件
     const control = this.draw.getControl()
@@ -417,7 +457,7 @@ export class RangeManager {
       const index = ~endIndex ? endIndex : 0
       // 行首以第一个非换行符元素定位
       const elementList = this.draw.getElementList()
-      curElement = getAnchorElement(elementList, index)
+      curElement = this.getRangeAnchorStyle(elementList, index)
     }
     if (!curElement) return
     // 选取元素列表
@@ -538,7 +578,8 @@ export class RangeManager {
           const preElement = elementList[index]
           if (
             preElement.controlId !== startElement.controlId ||
-            preElement.controlComponent === ControlComponent.PREFIX
+            preElement.controlComponent === ControlComponent.PREFIX ||
+            preElement.controlComponent === ControlComponent.PRE_TEXT
           ) {
             range.startIndex = index
             range.endIndex = index
@@ -558,7 +599,8 @@ export class RangeManager {
           const preElement = elementList[index]
           if (
             preElement.controlId !== endElement.controlId ||
-            preElement.controlComponent === ControlComponent.PREFIX
+            preElement.controlComponent === ControlComponent.PREFIX ||
+            preElement.controlComponent === ControlComponent.PRE_TEXT
           ) {
             range.startIndex = index
             range.endIndex = index

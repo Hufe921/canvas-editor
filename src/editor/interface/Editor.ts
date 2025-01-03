@@ -26,6 +26,7 @@ import { ISeparatorOption } from './Separator'
 import { ITableOption } from './table/Table'
 import { ILineNumberOption } from './LineNumber'
 import { IPageBorderOption } from './PageBorder'
+import { IBadgeOption } from './Badge'
 
 export interface IEditorData {
   header?: IElement[]
@@ -93,6 +94,7 @@ export interface IEditorOption {
   separator?: ISeparatorOption
   lineNumber?: ILineNumberOption
   pageBorder?: IPageBorderOption
+  badge?: IBadgeOption
 }
 
 export interface IEditorResult {

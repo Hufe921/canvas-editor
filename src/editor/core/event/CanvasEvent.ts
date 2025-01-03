@@ -5,7 +5,7 @@ import { Draw } from '../draw/Draw'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { threeClick } from '../../utils'
-import { IRange } from '../../interface/Range'
+import { IRange, IRangeElementStyle } from '../../interface/Range'
 import { mousedown } from './handlers/mousedown'
 import { mouseup } from './handlers/mouseup'
 import { mouseleave } from './handlers/mouseleave'
@@ -19,12 +19,14 @@ import click from './handlers/click'
 import composition from './handlers/composition'
 import drag from './handlers/drag'
 import { isIOS } from '../../utils/ua'
+import { ICopyOption } from '../../interface/Event'
 
 export interface ICompositionInfo {
   elementList: IElement[]
   startIndex: number
   endIndex: number
   value: string
+  defaultStyle: IRangeElementStyle | null
 }
 
 export class CanvasEvent {
@@ -178,8 +180,8 @@ export class CanvasEvent {
     cut(this)
   }
 
-  public copy() {
-    copy(this)
+  public copy(options?: ICopyOption) {
+    copy(this, options)
   }
 
   public compositionstart() {

@@ -1,12 +1,13 @@
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
+import { ICopyOption } from '../../../interface/Event'
 import { ITr } from '../../../interface/table/Tr'
 import { writeElementList } from '../../../utils/clipboard'
-import { zipElementList } from '../../../utils/element'
+import { getTextFromElementList, zipElementList } from '../../../utils/element'
 import { IOverrideResult } from '../../override/Override'
 import { CanvasEvent } from '../CanvasEvent'
 
-export function copy(host: CanvasEvent) {
+export function copy(host: CanvasEvent, options?: ICopyOption) {
   const draw = host.getDraw()
   // 自定义粘贴事件
   const { copy } = draw.getOverride()
@@ -58,6 +59,13 @@ export function copy(host: CanvasEvent) {
     copyElementList = rangeManager.getIsCollapsed()
       ? rangeManager.getRangeRowElementList()
       : rangeManager.getSelectionElementList()
+  }
+  if (options?.isPlainText && copyElementList?.length) {
+    copyElementList = [
+      {
+        value: getTextFromElementList(copyElementList)
+      }
+    ]
   }
   if (!copyElementList?.length) return
   writeElementList(copyElementList, draw.getOptions())

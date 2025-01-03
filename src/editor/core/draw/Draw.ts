@@ -50,10 +50,10 @@ import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
 import { Header } from './frame/Header'
-import { SuperscriptParticle } from './particle/Superscript'
-import { SubscriptParticle } from './particle/Subscript'
-import { SeparatorParticle } from './particle/Separator'
-import { PageBreakParticle } from './particle/PageBreak'
+import { SuperscriptParticle } from './particle/SuperscriptParticle'
+import { SubscriptParticle } from './particle/SubscriptParticle'
+import { SeparatorParticle } from './particle/SeparatorParticle'
+import { PageBreakParticle } from './particle/PageBreakParticle'
 import { Watermark } from './frame/Watermark'
 import {
   EditorComponent,
@@ -99,7 +99,7 @@ import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
-import { ImageDisplay } from '../../dataset/enum/Common'
+import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
 import { MouseObserver } from '../observer/MouseObserver'
@@ -109,6 +109,7 @@ import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
+import { Badge } from './frame/Badge'
 
 export class Draw {
   private container: HTMLDivElement
@@ -133,6 +134,7 @@ export class Draw {
   private range: RangeManager
   private margin: Margin
   private background: Background
+  private badge: Badge
   private search: Search
   private group: Group
   private area: Area
@@ -213,6 +215,7 @@ export class Draw {
     this.range = new RangeManager(this)
     this.margin = new Margin(this)
     this.background = new Background(this)
+    this.badge = new Badge(this)
     this.search = new Search(this)
     this.group = new Group(this)
     this.area = new Area(this)
@@ -573,6 +576,10 @@ export class Draw {
 
   public getArea(): Area {
     return this.area
+  }
+
+  public getBadge(): Badge {
+    return this.badge
   }
 
   public getHistoryManager(): HistoryManager {
@@ -1258,7 +1265,7 @@ export class Draw {
       defaultSize,
       defaultRowMargin,
       scale,
-      table: { tdPadding },
+      table: { tdPadding, defaultTrMinHeight },
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -1367,10 +1374,15 @@ export class Draw {
           }
         }
         element.pagingIndex = element.pagingIndex ?? 0
+        const trList = element.trList!
+        // 计算前移除上一次的高度
+        for (let t = 0; t < trList.length; t++) {
+          const tr = trList[t]
+          tr.height = tr.minHeight || defaultTrMinHeight
+        }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
-        const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
@@ -1392,6 +1404,11 @@ export class Draw {
               changeTr.height += extraHeight
               changeTr.tdList.forEach(changeTd => {
                 changeTd.height! += extraHeight
+                if (!changeTd.realHeight) {
+                  changeTd.realHeight = changeTd.height!
+                } else {
+                  changeTd.realHeight! += extraHeight
+                }
               })
             }
             // 当前单元格最小高度及真实高度（包含跨列）
@@ -1433,6 +1450,7 @@ export class Draw {
             changeTr.height -= reduceHeight
             changeTr.tdList.forEach(changeTd => {
               changeTd.height! -= reduceHeight
+              changeTd.realHeight! -= reduceHeight
             })
           }
         }
@@ -1745,6 +1763,10 @@ export class Draw {
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
         preElement?.areaId !== element.areaId ||
+        (element.control?.flexDirection === FlexDirection.COLUMN &&
+          (element.controlComponent === ControlComponent.CHECKBOX ||
+            element.controlComponent === ControlComponent.RADIO) &&
+          preElement?.controlComponent === ControlComponent.VALUE) ||
         (i !== 0 && element.value === ZERO)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
@@ -2385,6 +2407,7 @@ export class Draw {
       lineNumber,
       pageBorder
     } = this.options
+    const isPrintMode = this.mode === EditorMode.PRINT
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2393,9 +2416,15 @@ export class Draw {
     // 绘制背景
     this.background.render(ctx, pageNo)
     // 绘制区域
-    this.area.render(ctx, pageNo)
+    if (!isPrintMode) {
+      this.area.render(ctx, pageNo)
+    }
+    // 绘制水印
+    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
+      this.waterMark.render(ctx)
+    }
     // 绘制页边距
-    if (this.mode !== EditorMode.PRINT) {
+    if (!isPrintMode) {
       this.margin.render(ctx, pageNo)
     }
     // 渲染衬于文字下方元素
@@ -2404,7 +2433,9 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_BOTTOM]
     })
     // 控件高亮
-    this.control.renderHighlightList(ctx, pageNo)
+    if (!isPrintMode) {
+      this.control.renderHighlightList(ctx, pageNo)
+    }
     // 渲染元素
     const index = rowList[0]?.startIndex
     this.drawRow(ctx, {
@@ -2436,12 +2467,8 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_TOP, ImageDisplay.SURROUND]
     })
     // 搜索匹配绘制
-    if (this.search.getSearchKeyword()) {
+    if (!isPrintMode && this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
-    }
-    // 绘制水印
-    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
-      this.waterMark.render(ctx)
     }
     // 绘制空白占位符
     if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
@@ -2455,6 +2482,8 @@ export class Draw {
     if (!pageBorder.disabled) {
       this.pageBorder.render(ctx)
     }
+    // 绘制签章
+    this.badge.render(ctx, pageNo)
   }
 
   private _disconnectLazyRender() {
@@ -2550,13 +2579,15 @@ export class Draw {
       this.position.computePositionList()
       // 区域信息
       this.area.compute()
-      // 搜索信息
-      const searchKeyword = this.search.getSearchKeyword()
-      if (searchKeyword) {
-        this.search.compute(searchKeyword)
+      if (this.mode !== EditorMode.PRINT) {
+        // 搜索信息
+        const searchKeyword = this.search.getSearchKeyword()
+        if (searchKeyword) {
+          this.search.compute(searchKeyword)
+        }
+        // 控件关键词高亮
+        this.control.computeHighlightList()
       }
-      // 控件关键词高亮
-      this.control.computeHighlightList()
     }
     // 清除光标等副作用
     this.imageObserver.clearAll()

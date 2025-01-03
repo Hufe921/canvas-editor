@@ -164,7 +164,8 @@ export function formatElementList(
       const valueList = el?.valueList || []
       formatElementList(valueList, {
         ...options,
-        isHandleFirstElement: false
+        isHandleFirstElement: false,
+        isForceCompensation: false
       })
       if (valueList.length) {
         const areaId = getUUID()
@@ -193,13 +194,13 @@ export function formatElementList(
       }
       i--
     } else if (el.type === ElementType.TABLE) {
-      const tableId = getUUID()
+      const tableId = el.id || getUUID()
       el.id = tableId
       if (el.trList) {
         const { defaultTrMinHeight } = editorOptions.table
         for (let t = 0; t < el.trList.length; t++) {
           const tr = el.trList[t]
-          const trId = getUUID()
+          const trId = tr.id || getUUID()
           tr.id = trId
           if (!tr.minHeight || tr.minHeight < defaultTrMinHeight) {
             tr.minHeight = defaultTrMinHeight
@@ -209,7 +210,7 @@ export function formatElementList(
           }
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const tdId = getUUID()
+            const tdId = td.id || getUUID()
             td.id = tdId
             formatElementList(td.value, {
               ...options,
@@ -267,8 +268,17 @@ export function formatElementList(
         i++
         continue
       }
-      const { prefix, postfix, value, placeholder, code, type, valueSets } =
-        el.control
+      const {
+        prefix,
+        postfix,
+        preText,
+        postText,
+        value,
+        placeholder,
+        code,
+        type,
+        valueSets
+      } = el.control
       const {
         editorOptions: {
           control: controlOption,
@@ -308,6 +318,23 @@ export function formatElementList(
           controlComponent: ControlComponent.PREFIX
         })
         i++
+      }
+      // 前文本
+      if (preText) {
+        const preTextStrList = splitText(preText)
+        for (let p = 0; p < preTextStrList.length; p++) {
+          const value = preTextStrList[p]
+          elementList.splice(i, 0, {
+            ...controlContext,
+            ...controlDefaultStyle,
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.PRE_TEXT
+          })
+          i++
+        }
       }
       // 值
       if (
@@ -469,6 +496,23 @@ export function formatElementList(
           i++
         }
       }
+      // 后文本
+      if (postText) {
+        const postTextStrList = splitText(postText)
+        for (let p = 0; p < postTextStrList.length; p++) {
+          const value = postTextStrList[p]
+          elementList.splice(i, 0, {
+            ...controlContext,
+            ...controlDefaultStyle,
+            controlId,
+            value,
+            type: el.type,
+            control: el.control,
+            controlComponent: ControlComponent.POST_TEXT
+          })
+          i++
+        }
+      }
       // 后缀
       const postfixStrList = splitText(postfix || controlOption.postfix)
       for (let p = 0; p < postfixStrList.length; p++) {
@@ -500,14 +544,14 @@ export function formatElementList(
       el.value = ZERO
     }
     if (el.type === ElementType.IMAGE || el.type === ElementType.BLOCK) {
-      el.id = getUUID()
+      el.id = el.id || getUUID()
     }
     if (el.type === ElementType.LATEX) {
       const { svg, width, height } = LaTexParticle.convertLaTextToSVG(el.value)
       el.width = el.width || width
       el.height = el.height || height
       el.laTexSVG = svg
-      el.id = getUUID()
+      el.id = el.id || getUUID()
     }
     i++
   }
@@ -765,40 +809,59 @@ export function zipElementList(
         element = dateElement
       }
     } else if (element.controlId) {
-      // 控件处理
       const controlId = element.controlId
-      if (controlId) {
-        // 以前缀为基准更新控件默认样式
-        const controlDefaultStyle = <IControlSelect>(
-          (<unknown>pickObject(element, CONTROL_STYLE_ATTR))
-        )
-        const control = {
-          ...element.control!,
-          ...controlDefaultStyle
-        }
-        const controlElement: IElement = {
-          ...pickObject(element, EDITOR_ROW_ATTR),
-          type: ElementType.CONTROL,
-          value: '',
-          control,
-          controlId
-        }
+      // 控件包含前后缀则转换为控件
+      if (element.controlComponent === ControlComponent.PREFIX) {
         const valueList: IElement[] = []
-        while (e < elementList.length) {
-          const controlE = elementList[e]
-          if (controlId !== controlE.controlId) {
-            e--
-            break
-          }
+        let isFull = false
+        let start = e
+        while (start < elementList.length) {
+          const controlE = elementList[start]
+          if (controlId !== controlE.controlId) break
           if (controlE.controlComponent === ControlComponent.VALUE) {
             delete controlE.control
             delete controlE.controlId
             valueList.push(controlE)
           }
-          e++
+          if (controlE.controlComponent === ControlComponent.POSTFIX) {
+            isFull = true
+          }
+          start++
         }
-        controlElement.control!.value = zipElementList(valueList, options)
-        element = pickElementAttr(controlElement, { extraPickAttrs })
+        if (isFull) {
+          // 以前缀为基准更新控件默认样式
+          const controlDefaultStyle = <IControlSelect>(
+            (<unknown>pickObject(element, CONTROL_STYLE_ATTR))
+          )
+          const control = {
+            ...element.control!,
+            ...controlDefaultStyle
+          }
+          const controlElement: IElement = {
+            ...pickObject(element, EDITOR_ROW_ATTR),
+            type: ElementType.CONTROL,
+            value: '',
+            control,
+            controlId
+          }
+          controlElement.control!.value = zipElementList(valueList, options)
+          element = pickElementAttr(controlElement, { extraPickAttrs })
+          // 控件元素数量 - 1（当前元素）
+          e += start - e - 1
+        }
+      }
+      // 不完整的控件元素不转化为控件，如果不是文本则直接忽略
+      if (element.controlComponent) {
+        delete element.control
+        delete element.controlId
+        if (
+          element.controlComponent !== ControlComponent.VALUE &&
+          element.controlComponent !== ControlComponent.PRE_TEXT &&
+          element.controlComponent !== ControlComponent.POST_TEXT
+        ) {
+          e++
+          continue
+        }
       }
     }
     // 组合元素
@@ -1574,7 +1637,12 @@ export function getTextFromElementList(elementList: IElement[]) {
       ) {
         let textLike = ''
         if (element.type === ElementType.CONTROL) {
-          textLike = element.control!.value?.[0]?.value || ''
+          const controlValue = element.control!.value?.[0]?.value || ''
+          textLike = controlValue
+            ? `${element.control?.preText || ''}${controlValue}${
+                element.control?.postText || ''
+              }`
+            : ''
         } else if (element.type === ElementType.DATE) {
           textLike = element.valueList?.map(v => v.value).join('') || ''
         } else {

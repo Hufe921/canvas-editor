@@ -8,7 +8,7 @@ import {
   IInsertAreaOption,
   ISetAreaPropertiesOption
 } from '../../../interface/Area'
-import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
+import { EditorZone } from '../../../dataset/enum/Editor'
 import { LocationPosition } from '../../../dataset/enum/Common'
 import { RangeManager } from '../../range/RangeManager'
 import { Zone } from '../../zone/Zone'
@@ -30,6 +30,10 @@ export class Area {
     this.position = draw.getPosition()
   }
 
+  public getAreaInfo(): Map<string, IAreaInfo> {
+    return this.areaInfoMap
+  }
+
   public getActiveAreaId(): string | null {
     if (!this.areaInfoMap.size) return null
     const { startIndex } = this.range.getRange()
@@ -46,7 +50,7 @@ export class Area {
 
   public isReadonly() {
     const activeAreaInfo = this.getActiveAreaInfo()
-    if (!activeAreaInfo) return false
+    if (!activeAreaInfo?.area) return false
     switch (activeAreaInfo.area.mode) {
       case AreaMode.EDIT:
         return false
@@ -92,14 +96,12 @@ export class Area {
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     if (!this.areaInfoMap.size) return
-    const mode = this.draw.getMode()
-    if (mode === EditorMode.CLEAN || mode === EditorMode.PRINT) return
     ctx.save()
     const margins = this.draw.getMargins()
     const width = this.draw.getInnerWidth()
     for (const areaInfoItem of this.areaInfoMap) {
       const { area, positionList } = areaInfoItem[1]
-      if (!area.backgroundColor && !area.borderColor) continue
+      if (!area?.backgroundColor && !area?.borderColor) continue
       const pagePositionList = positionList.filter(p => p.pageNo === pageNo)
       if (!pagePositionList.length) continue
       ctx.translate(0.5, 0.5)
@@ -168,6 +170,9 @@ export class Area {
     if (!areaId) return
     const areaInfo = this.areaInfoMap.get(areaId)
     if (!areaInfo) return
+    if (!areaInfo.area) {
+      areaInfo.area = {}
+    }
     // 是否计算
     let isCompute = false
     // 修改属性

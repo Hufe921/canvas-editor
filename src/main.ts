@@ -787,23 +787,21 @@ function initEditorInstance(
             )?.value
             if (!placeholder) return
             const value = payload.find(p => p.name === 'value')?.value || ''
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  value: value
-                    ? [
-                        {
-                          value
-                        }
-                      ]
-                    : null,
-                  placeholder
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                value: value
+                  ? [
+                      {
+                        value
+                      }
+                    ]
+                  : null,
+                placeholder
               }
-            ])
+            })
           }
         })
         break
@@ -841,19 +839,17 @@ function initEditorInstance(
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  code,
-                  value: null,
-                  placeholder,
-                  valueSets: JSON.parse(valueSets)
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
+                placeholder,
+                valueSets: JSON.parse(valueSets)
               }
-            ])
+            })
           }
         })
         break
@@ -880,18 +876,16 @@ function initEditorInstance(
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  code,
-                  value: null,
-                  valueSets: JSON.parse(valueSets)
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
+                valueSets: JSON.parse(valueSets)
               }
-            ])
+            })
           }
         })
         break
@@ -918,18 +912,16 @@ function initEditorInstance(
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  code,
-                  value: null,
-                  valueSets: JSON.parse(valueSets)
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                code,
+                value: null,
+                valueSets: JSON.parse(valueSets)
               }
-            ])
+            })
           }
         })
         break
@@ -976,24 +968,64 @@ function initEditorInstance(
             const value = payload.find(p => p.name === 'value')?.value || ''
             const dateFormat =
               payload.find(p => p.name === 'dateFormat')?.value || ''
-            instance.command.executeInsertElementList([
-              {
-                type: ElementType.CONTROL,
-                value: '',
-                control: {
-                  type,
-                  dateFormat,
-                  value: value
-                    ? [
-                        {
-                          value
-                        }
-                      ]
-                    : null,
-                  placeholder
-                }
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                dateFormat,
+                value: value
+                  ? [
+                      {
+                        value
+                      }
+                    ]
+                  : null,
+                placeholder
               }
-            ])
+            })
+          }
+        })
+        break
+      case ControlType.NUMBER:
+        new Dialog({
+          title: '数值控件',
+          data: [
+            {
+              type: 'text',
+              label: '占位符',
+              name: 'placeholder',
+              required: true,
+              placeholder: '请输入占位符'
+            },
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'value',
+              placeholder: '请输入默认值'
+            }
+          ],
+          onConfirm: payload => {
+            const placeholder = payload.find(
+              p => p.name === 'placeholder'
+            )?.value
+            if (!placeholder) return
+            const value = payload.find(p => p.name === 'value')?.value || ''
+            instance.command.executeInsertControl({
+              type: ElementType.CONTROL,
+              value: '',
+              control: {
+                type,
+                value: value
+                  ? [
+                      {
+                        value
+                      }
+                    ]
+                  : null,
+                placeholder
+              }
+            })
           }
         })
         break
