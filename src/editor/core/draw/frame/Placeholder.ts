@@ -6,6 +6,7 @@ import { formatElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 import { LineBreakParticle } from '../particle/LineBreakParticle'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class Placeholder {
   private draw: Draw
@@ -68,7 +69,7 @@ export class Placeholder {
     })
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: CERenderingContext) {
     const {
       placeholder: { data, font, size, color, opacity }
     } = this.options
@@ -91,8 +92,8 @@ export class Placeholder {
     this._compute()
     const innerWidth = this.draw.getInnerWidth()
     // 绘制
-    ctx.save()
-    ctx.globalAlpha = opacity
+    const oriOpacity = ctx.getGlobalAlpha()
+    ctx.setGlobalAlpha(opacity)
     this.draw.drawRow(ctx, {
       elementList: this.elementList,
       positionList: this.positionList,
@@ -102,6 +103,7 @@ export class Placeholder {
       innerWidth,
       isDrawLineBreak: false
     })
-    ctx.restore()
+    // 方法内部的调用无法被还原
+    ctx.setGlobalAlpha(oriOpacity)
   }
 }

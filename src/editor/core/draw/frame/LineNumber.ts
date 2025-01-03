@@ -2,6 +2,7 @@ import { LineNumberType } from '../../../dataset/enum/LineNumber'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class LineNumber {
   private draw: Draw
@@ -12,7 +13,7 @@ export class LineNumber {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: CERenderingContext, pageNo: number) {
     const {
       scale,
       lineNumber: { color, size, font, right, type }
@@ -22,9 +23,6 @@ export class LineNumber {
     const positionList = this.draw.getPosition().getOriginalMainPositionList()
     const pageRowList = this.draw.getPageRowList()
     const rowList = pageRowList[pageNo]
-    ctx.save()
-    ctx.fillStyle = color
-    ctx.font = `${size * scale}px ${font}`
     for (let i = 0; i < rowList.length; i++) {
       const row = rowList[i]
       const {
@@ -36,8 +34,9 @@ export class LineNumber {
       })
       const x = margins[3] - (textMetrics.width + right) * scale
       const y = leftBottom[1] - textMetrics.actualBoundingBoxAscent * scale
-      ctx.fillText(`${seq}`, x, y)
+      ctx.text(`${seq}`, x, y, {
+        color, size: size * scale, font
+      })
     }
-    ctx.restore()
   }
 }
