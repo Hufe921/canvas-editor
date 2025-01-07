@@ -106,6 +106,7 @@ export class ImageParticle {
       const img = this.imageCache.get(element.value)!
       ctx.drawImage(img, x, y, width, height)
     } else {
+      const cacheRenderCount = this.draw.getRenderCount()
       const imageLoadPromise = new Promise((resolve, reject) => {
         const img = new Image()
         img.setAttribute('crossOrigin', 'Anonymous')
@@ -113,6 +114,8 @@ export class ImageParticle {
         img.onload = () => {
           this.imageCache.set(element.value, img)
           resolve(element)
+          // 因图片加载异步，图片加载后可能属于上一次渲染方法
+          if (cacheRenderCount !== this.draw.getRenderCount()) return
           // 衬于文字下方图片需要重新首先绘制
           if (element.imgDisplay === ImageDisplay.FLOAT_BOTTOM) {
             this.draw.render({
