@@ -835,7 +835,7 @@ export class Control {
 
   public setValueById(payload: ISetControlValueOption) {
     let isExistSet = false
-    const { id, conceptId, areaId, value } = payload
+    const { id, conceptId, areaId, value, isSubmitHistory = true } = payload
     if (!id && !conceptId) return
     // 设置值
     const setValue = (elementList: IElement[]) => {
@@ -966,7 +966,12 @@ export class Control {
       setValue(elementList)
     }
     if (isExistSet) {
+      // 不保存历史时需清空之前记录，避免还原
+      if (!isSubmitHistory) {
+        this.draw.getHistoryManager().recovery()
+      }
       this.draw.render({
+        isSubmitHistory,
         isSetCursor: false
       })
     }
@@ -1030,7 +1035,13 @@ export class Control {
   }
 
   public setPropertiesById(payload: ISetControlProperties) {
-    const { id, conceptId, areaId, properties } = payload
+    const {
+      id,
+      conceptId,
+      areaId,
+      properties,
+      isSubmitHistory = true
+    } = payload
     if (!id && !conceptId) return
     let isExistUpdate = false
     const setProperties = (elementList: IElement[]) => {
@@ -1110,7 +1121,12 @@ export class Control {
       })
     }
     this.draw.setEditorData(pageComponentData)
+    // 不保存历史时需清空之前记录，避免还原
+    if (!isSubmitHistory) {
+      this.draw.getHistoryManager().recovery()
+    }
     this.draw.render({
+      isSubmitHistory,
       isSetCursor: false
     })
   }
