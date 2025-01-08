@@ -225,7 +225,7 @@ export class Control {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     if (
-      startElement.controlId &&
+      startElement?.controlId &&
       startElement.controlId === endElement.controlId &&
       endElement.controlComponent !== ControlComponent.POSTFIX
     ) {
