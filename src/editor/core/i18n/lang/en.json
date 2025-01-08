@@ -56,6 +56,9 @@
       "borderTdLeft": "Left",
       "borderTdForward": "Forward",
       "borderTdBack": "Back"
+    },
+    "area": {
+      "delete": "delete area element"
     }
   },
   "datePicker": {
