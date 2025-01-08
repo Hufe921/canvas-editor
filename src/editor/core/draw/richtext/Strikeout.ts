@@ -1,6 +1,7 @@
 import { AbstractRichText } from './AbstractRichText'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class Strikeout extends AbstractRichText {
   private options: Required<IEditorOption>
@@ -10,19 +11,14 @@ export class Strikeout extends AbstractRichText {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: CERenderingContext) {
     if (!this.fillRect.width) return
     const { scale, strikeoutColor } = this.options
     const { x, y, width } = this.fillRect
-    ctx.save()
-    ctx.lineWidth = scale
-    ctx.strokeStyle = strikeoutColor
     const adjustY = y + 0.5 // 从1处渲染，避免线宽度等于3
-    ctx.beginPath()
-    ctx.moveTo(x, adjustY)
-    ctx.lineTo(x + width, adjustY)
-    ctx.stroke()
-    ctx.restore()
+    ctx.line({
+      lineWidth: scale, color: strikeoutColor
+    }).path(x, adjustY, x+width, adjustY).draw()
     this.clearFillInfo()
   }
 }

@@ -3,6 +3,7 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
 import { I18n } from '../../i18n/I18n'
 import { Draw } from '../Draw'
+import { CERenderingContext, FontProperty, LineProperty } from '../../../interface/CERenderingContext'
 
 export class PageBreakParticle {
   private draw: Draw
@@ -16,7 +17,7 @@ export class PageBreakParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IRowElement,
     x: number,
     y: number
@@ -30,25 +31,23 @@ export class PageBreakParticle {
     const elementWidth = element.width! * scale
     const offsetY =
       this.draw.getDefaultBasicRowMarginHeight() * defaultRowMargin
-    ctx.save()
-    ctx.font = `${size}px ${font}`
-    const textMeasure = ctx.measureText(displayName)
+    const textMeasure = ctx.measureText(displayName, {
+      font, size
+    })
     const halfX = (elementWidth - textMeasure.width) / 2
     // 线段
-    ctx.setLineDash(lineDash)
-    ctx.translate(0, 0.5 + offsetY)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + halfX, y)
-    ctx.moveTo(x + halfX + textMeasure.width, y)
-    ctx.lineTo(x + elementWidth, y)
-    ctx.stroke()
+    const lineProp: LineProperty = {
+      lineDash
+    }
+    ctx.line(lineProp)
+      .beforeDraw(c=>c.translate(0, 0.5 + offsetY))
+      .path(x,y, x + halfX, y)
+      .path(x + halfX + textMeasure.width, y,x + elementWidth, y)
+      .draw()
     // 文字
-    ctx.fillText(
-      displayName,
-      x + halfX,
-      y + textMeasure.actualBoundingBoxAscent - size / 2
-    )
-    ctx.restore()
+    const fontProp: FontProperty = {
+      font, size, translate: [0, 0.5 + offsetY]
+    }
+    ctx.text(displayName, x + halfX, y + textMeasure.actualBoundingBoxAscent - size / 2, fontProp)
   }
 }

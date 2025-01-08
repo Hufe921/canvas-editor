@@ -104,6 +104,7 @@ export class Command {
   public executeFocus: CommandAdapt['focus']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
+  public getPdf: CommandAdapt['getPdf']
   public getOptions: CommandAdapt['getOptions']
   public getValue: CommandAdapt['getValue']
   public getAreaValue: CommandAdapt['getAreaValue']
@@ -237,6 +238,7 @@ export class Command {
     this.executeFocus = adapt.focus.bind(adapt)
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
+    this.getPdf = adapt.getPdf.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)

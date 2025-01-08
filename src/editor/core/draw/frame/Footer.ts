@@ -6,6 +6,7 @@ import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow } from '../../../interface/Row'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class Footer {
   private draw: Draw
@@ -119,8 +120,8 @@ export class Footer {
     return extraHeight <= 0 ? 0 : extraHeight
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
-    ctx.globalAlpha = 1
+  public render(ctx: CERenderingContext, pageNo: number) {
+    ctx.setGlobalAlpha(1)
     const innerWidth = this.draw.getInnerWidth()
     const maxHeight = this.getMaxHeight()
     // 超出最大高度不渲染
