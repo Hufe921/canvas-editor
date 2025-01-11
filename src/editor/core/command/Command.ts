@@ -44,6 +44,8 @@ export class Command {
   public executeDeleteTable: CommandAdapt['deleteTable']
   public executeMergeTableCell: CommandAdapt['mergeTableCell']
   public executeCancelMergeTableCell: CommandAdapt['cancelMergeTableCell']
+  public executeSplitVerticalTableCell: CommandAdapt['splitVerticalTableCell']
+  public executeSplitHorizontalTableCell: CommandAdapt['splitHorizontalTableCell']
   public executeTableTdVerticalAlign: CommandAdapt['tableTdVerticalAlign']
   public executeTableBorderType: CommandAdapt['tableBorderType']
   public executeTableBorderColor: CommandAdapt['tableBorderColor']
@@ -177,6 +179,10 @@ export class Command {
     this.executeDeleteTable = adapt.deleteTable.bind(adapt)
     this.executeMergeTableCell = adapt.mergeTableCell.bind(adapt)
     this.executeCancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
+    this.executeSplitVerticalTableCell =
+      adapt.splitVerticalTableCell.bind(adapt)
+    this.executeSplitHorizontalTableCell =
+      adapt.splitHorizontalTableCell.bind(adapt)
     this.executeTableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
     this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
     this.executeTableBorderColor = adapt.tableBorderColor.bind(adapt)

@@ -668,6 +668,132 @@ export class TableOperate {
     this.tableTool.render()
   }
 
+  public splitVerticalTableCell() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    // 暂时忽略跨行列选择
+    const range = this.range.getRange()
+    if (range.isCrossRowCol) return
+    const { index, tdIndex, trIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]!
+    const curTd = curTr.tdList[tdIndex!]
+    // 增加列属性
+    element.colgroup!.splice(tdIndex! + 1, 0, {
+      width: this.options.table.defaultColMinWidth
+    })
+    // 同行增加td，非同行增加跨列数
+    for (let t = 0; t < curTrList.length; t++) {
+      const tr = curTrList[t]
+      let d = 0
+      while (d < tr.tdList.length) {
+        const td = tr.tdList[d]
+        // 非同行：存在交叉时增加跨列数
+        if (td.rowIndex !== curTd.rowIndex) {
+          if (
+            td.colIndex! <= curTd.colIndex! &&
+            td.colIndex! + td.colspan > curTd.colIndex!
+          ) {
+            td.colspan++
+          }
+        } else {
+          // 当前单元格：往右插入td
+          if (td.id === curTd.id) {
+            const tdId = getUUID()
+            curTr.tdList.splice(d + curTd.colspan, 0, {
+              id: tdId,
+              rowspan: curTd.rowspan,
+              colspan: 1,
+              value: [
+                {
+                  value: ZERO,
+                  size: 16,
+                  tableId: element.id,
+                  trId: tr.id,
+                  tdId
+                }
+              ]
+            })
+            d++
+          }
+        }
+        d++
+      }
+    }
+    // 重新渲染
+    this.draw.render()
+    this.tableTool.render()
+  }
+
+  public splitHorizontalTableCell() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    // 暂时忽略跨行列选择
+    const range = this.range.getRange()
+    if (range.isCrossRowCol) return
+    const { index, tdIndex, trIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    const curTrList = element.trList!
+    const curTr = curTrList[trIndex!]!
+    const curTd = curTr.tdList[tdIndex!]
+    // 追加的行跳出循环
+    let appendTrIndex = -1
+    // 交叉行增加rowspan，当前单元格往下追加一行tr
+    let t = 0
+    while (t < curTrList.length) {
+      if (t === appendTrIndex) {
+        t++
+        continue
+      }
+      const tr = curTrList[t]
+      let d = 0
+      while (d < tr.tdList.length) {
+        const td = tr.tdList[d]
+        if (td.id === curTd.id) {
+          const trId = getUUID()
+          const tdId = getUUID()
+          curTrList.splice(t + curTd.rowspan, 0, {
+            id: trId,
+            height: this.options.table.defaultTrMinHeight,
+            tdList: [
+              {
+                id: tdId,
+                rowspan: 1,
+                colspan: curTd.colspan,
+                value: [
+                  {
+                    value: ZERO,
+                    size: 16,
+                    tableId: element.id,
+                    trId,
+                    tdId
+                  }
+                ]
+              }
+            ]
+          })
+          appendTrIndex = t + curTd.rowspan
+        } else if (
+          td.rowIndex! >= curTd.rowIndex! &&
+          td.rowIndex! < curTd.rowIndex! + curTd.rowspan &&
+          td.rowIndex! + td.rowspan >= curTd.rowIndex! + curTd.rowspan
+        ) {
+          // 1. 循环td上方大于等于当前td上方 && 小于当前td的下方=>存在交叉
+          // 2. 循环td下方大于或等于当前td下方
+          td.rowspan++
+        }
+        d++
+      }
+      t++
+    }
+    // 重新渲染
+    this.draw.render()
+    this.tableTool.render()
+  }
+
   public tableTdVerticalAlign(payload: VerticalAlign) {
     const rowCol = this.tableParticle.getRangeRowCol()
     if (!rowCol) return

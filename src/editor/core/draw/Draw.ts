@@ -1385,6 +1385,7 @@ export class Draw {
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
           tr.height = tr.minHeight || defaultTrMinHeight
+          tr.minHeight = tr.height
         }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)

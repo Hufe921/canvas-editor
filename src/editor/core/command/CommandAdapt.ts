@@ -955,6 +955,18 @@ export class CommandAdapt {
     this.tableOperate.cancelMergeTableCell()
   }
 
+  public splitVerticalTableCell() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.splitVerticalTableCell()
+  }
+
+  public splitHorizontalTableCell() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.splitHorizontalTableCell()
+  }
+
   public tableTdVerticalAlign(payload: VerticalAlign) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
