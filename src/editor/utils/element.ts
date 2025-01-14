@@ -343,7 +343,7 @@ export function formatElementList(
         type === ControlType.RADIO ||
         (type === ControlType.SELECT && code && (!value || !value.length))
       ) {
-        let valueList: IElement[] = value || []
+        let valueList: IElement[] = value ? deepClone(value) : []
         if (type === ControlType.CHECKBOX) {
           const codeList = code ? code.split(',') : []
           if (Array.isArray(valueSets) && valueSets.length) {
