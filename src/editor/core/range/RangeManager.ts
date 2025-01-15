@@ -81,6 +81,26 @@ export class RangeManager {
     }
   }
 
+  public getIsRangeChange(
+    startIndex: number,
+    endIndex: number,
+    tableId?: string,
+    startTdIndex?: number,
+    endTdIndex?: number,
+    startTrIndex?: number,
+    endTrIndex?: number
+  ): boolean {
+    return (
+      this.range.startIndex !== startIndex ||
+      this.range.endIndex !== endIndex ||
+      this.range.tableId !== tableId ||
+      this.range.startTdIndex !== startTdIndex ||
+      this.range.endTdIndex !== endTdIndex ||
+      this.range.startTrIndex !== startTrIndex ||
+      this.range.endTrIndex !== endTrIndex
+    )
+  }
+
   public getIsCollapsed(): boolean {
     const { startIndex, endIndex } = this.range
     return startIndex === endIndex
@@ -399,20 +419,32 @@ export class RangeManager {
     startTrIndex?: number,
     endTrIndex?: number
   ) {
-    this.range.startIndex = startIndex
-    this.range.endIndex = endIndex
-    this.range.tableId = tableId
-    this.range.startTdIndex = startTdIndex
-    this.range.endTdIndex = endTdIndex
-    this.range.startTrIndex = startTrIndex
-    this.range.endTrIndex = endTrIndex
-    this.range.isCrossRowCol = !!(
-      startTdIndex ||
-      endTdIndex ||
-      startTrIndex ||
+    // 判断光标是否改变
+    const isChange = this.getIsRangeChange(
+      startIndex,
+      endIndex,
+      tableId,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
       endTrIndex
     )
-    this.setDefaultStyle(null)
+    if (isChange) {
+      this.range.startIndex = startIndex
+      this.range.endIndex = endIndex
+      this.range.tableId = tableId
+      this.range.startTdIndex = startTdIndex
+      this.range.endTdIndex = endTdIndex
+      this.range.startTrIndex = startTrIndex
+      this.range.endTrIndex = endTrIndex
+      this.range.isCrossRowCol = !!(
+        startTdIndex ||
+        endTdIndex ||
+        startTrIndex ||
+        endTrIndex
+      )
+      this.setDefaultStyle(null)
+    }
     this.range.zone = this.draw.getZone().getZone()
     // 激活控件
     const control = this.draw.getControl()
