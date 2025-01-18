@@ -669,7 +669,7 @@ instance.command.executeSearchNavigateNext()
 用法：
 
 ```javascript
-instance.command.executeReplace(newWord: string)
+instance.command.executeReplace(newWord: string, option?: IReplaceOption)
 ```
 
 ## executePrint

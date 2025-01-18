@@ -24,3 +24,7 @@ export interface ISearchResultContext {
   startPosition: IElementPosition
   endPosition: IElementPosition
 }
+
+export interface IReplaceOption {
+  index?: number
+}

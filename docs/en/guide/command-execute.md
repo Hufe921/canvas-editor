@@ -669,7 +669,7 @@ Feature: Search for replacement
 Usage:
 
 ```javascript
-instance.command.executeReplace(newWord: string)
+instance.command.executeReplace(newWord: string, option?: IReplaceOption)
 ```
 
 ## executePrint
