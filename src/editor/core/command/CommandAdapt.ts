@@ -74,7 +74,11 @@ import {
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
-import { ISearchResultContext } from '../../interface/Search'
+import {
+  IReplaceOption,
+  ISearchResult,
+  ISearchResultContext
+} from '../../interface/Search'
 import { ITextDecoration } from '../../interface/Text'
 import {
   IGetTitleValueOption,
@@ -86,6 +90,7 @@ import {
   deepClone,
   downloadFile,
   getUUID,
+  isNumber,
   isObjectEqual
 } from '../../utils'
 import {
@@ -955,6 +960,18 @@ export class CommandAdapt {
     this.tableOperate.cancelMergeTableCell()
   }
 
+  public splitVerticalTableCell() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.splitVerticalTableCell()
+  }
+
+  public splitHorizontalTableCell() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.splitHorizontalTableCell()
+  }
+
   public tableTdVerticalAlign(payload: VerticalAlign) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
@@ -1273,12 +1290,26 @@ export class CommandAdapt {
     return this.searchManager.getSearchNavigateInfo()
   }
 
-  public replace(payload: string) {
+  public replace(payload: string, option?: IReplaceOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     if (!payload || new RegExp(`${ZERO}`, 'g').test(payload)) return
-    const matchList = this.draw.getSearch().getSearchMatchList()
-    if (!matchList.length) return
+    let matchList = this.draw.getSearch().getSearchMatchList()
+    // 替换搜索项
+    const replaceIndex = option?.index
+    if (isNumber(replaceIndex)) {
+      const matchGroup: ISearchResult[][] = []
+      matchList.forEach(match => {
+        const last = matchGroup[matchGroup.length - 1]
+        if (!last || last[0].groupId !== match.groupId) {
+          matchGroup.push([match])
+        } else {
+          last.push(match)
+        }
+      })
+      matchList = matchGroup[replaceIndex]
+    }
+    if (!matchList?.length) return
     // 匹配index变化的差值
     let pageDiffCount = 0
     let tableDiffCount = 0

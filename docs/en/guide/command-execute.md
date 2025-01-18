@@ -437,6 +437,26 @@ Usage:
 instance.command.executeCancelMergeTableCell()
 ```
 
+## executeSplitVerticalTableCell
+
+Feature: Split table cell (vertical)
+
+Usage:
+
+```javascript
+instance.command.executeSplitVerticalTableCell()
+```
+
+## executeSplitHorizontalTableCell
+
+Feature: Split table cell (horizontal)
+
+Usage:
+
+```javascript
+instance.command.executeSplitHorizontalTableCell()
+```
+
 ## executeTableTdVerticalAlign
 
 Feature: Table cell vertical alignment
@@ -649,7 +669,7 @@ Feature: Search for replacement
 Usage:
 
 ```javascript
-instance.command.executeReplace(newWord: string)
+instance.command.executeReplace(newWord: string, option?: IReplaceOption)
 ```
 
 ## executePrint

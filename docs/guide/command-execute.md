@@ -437,6 +437,26 @@ instance.command.executeMergeTableCell()
 instance.command.executeCancelMergeTableCell()
 ```
 
+## executeSplitVerticalTableCell
+
+功能：分隔当前单元格（垂直方向）
+
+用法：
+
+```javascript
+instance.command.executeSplitVerticalTableCell()
+```
+
+## executeSplitHorizontalTableCell
+
+功能：分隔当前单元格（水平方向）
+
+用法：
+
+```javascript
+instance.command.executeSplitHorizontalTableCell()
+```
+
 ## executeTableTdVerticalAlign
 
 功能：表格单元格垂直对齐方式
@@ -649,7 +669,7 @@ instance.command.executeSearchNavigateNext()
 用法：
 
 ```javascript
-instance.command.executeReplace(newWord: string)
+instance.command.executeReplace(newWord: string, option?: IReplaceOption)
 ```
 
 ## executePrint

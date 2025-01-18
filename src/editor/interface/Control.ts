@@ -161,6 +161,7 @@ export interface ISetControlValueOption {
   conceptId?: string
   areaId?: string
   value: string | IElement[]
+  isSubmitHistory?: boolean
 }
 
 export interface ISetControlExtensionOption {
@@ -177,6 +178,7 @@ export type ISetControlProperties = {
   conceptId?: string
   areaId?: string
   properties: Partial<Omit<IControl, 'value'>>
+  isSubmitHistory?: boolean
 }
 
 export type IRepaintControlOption = Pick<

@@ -117,6 +117,7 @@ export class Draw {
   private pageList: HTMLCanvasElement[]
   private ctxList: CanvasRenderingContext2D[]
   private pageNo: number
+  private renderCount: number
   private pagePixelRatio: number | null
   private mode: EditorMode
   private options: DeepRequired<IEditorOption>
@@ -196,6 +197,7 @@ export class Draw {
     this.pageList = []
     this.ctxList = []
     this.pageNo = 0
+    this.renderCount = 0
     this.pagePixelRatio = null
     this.mode = options.mode
     this.options = options
@@ -516,6 +518,10 @@ export class Draw {
 
   public setPageNo(payload: number) {
     this.pageNo = payload
+  }
+
+  public getRenderCount(): number {
+    return this.renderCount
   }
 
   public getPage(pageNo = -1): HTMLCanvasElement {
@@ -1379,6 +1385,7 @@ export class Draw {
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
           tr.height = tr.minHeight || defaultTrMinHeight
+          tr.minHeight = tr.height
         }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
@@ -2526,6 +2533,7 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
+    this.renderCount++
     const { header, footer } = this.options
     const {
       isSubmitHistory = true,
