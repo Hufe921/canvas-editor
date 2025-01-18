@@ -1,3 +1,26 @@
+## [0.9.101](https://github.com/Hufe921/canvas-editor/compare/v0.9.100...v0.9.101) (2025-01-18)
+
+
+### Bug Fixes
+
+* image asynchronous rendering boundary error #959 ([344a6e0](https://github.com/Hufe921/canvas-editor/commit/344a6e038862a290c810ab55b66ae7fcceffecae)), closes [#959](https://github.com/Hufe921/canvas-editor/issues/959)
+* verify the range boundary error of control in the table #959 ([6d55698](https://github.com/Hufe921/canvas-editor/commit/6d55698987d7a4a119b0514560625db09884cd94)), closes [#959](https://github.com/Hufe921/canvas-editor/issues/959)
+
+
+### Features
+
+* add isSubmitHistory option to setControlValue api #960 ([9c0b67f](https://github.com/Hufe921/canvas-editor/commit/9c0b67f184ebb35cc74dcacc10e44efc39c2c95d)), closes [#960](https://github.com/Hufe921/canvas-editor/issues/960)
+* add option to executeReplace api #969 ([3fbaa3b](https://github.com/Hufe921/canvas-editor/commit/3fbaa3b7cc513336b8278221c639ea651e27155f)), closes [#969](https://github.com/Hufe921/canvas-editor/issues/969)
+* add split table cell api #826 ([04c7194](https://github.com/Hufe921/canvas-editor/commit/04c7194a94845d54456798509846fc2f9a86f807)), closes [#826](https://github.com/Hufe921/canvas-editor/issues/826)
+* not update default range style when unchanged #970 ([21a71c0](https://github.com/Hufe921/canvas-editor/commit/21a71c0cfabaf9e6f0a68ca5ddbe1df49d408ee8)), closes [#970](https://github.com/Hufe921/canvas-editor/issues/970)
+
+
+### Performance Improvements
+
+* deep clone performance for control data #971 ([71d52de](https://github.com/Hufe921/canvas-editor/commit/71d52de30c63beca806c0a7af0c82c1244d59429)), closes [#971](https://github.com/Hufe921/canvas-editor/issues/971)
+
+
+
 ## [0.9.100](https://github.com/Hufe921/canvas-editor/compare/v0.9.99...v0.9.100) (2025-01-03)
 
 
