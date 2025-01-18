@@ -2,6 +2,7 @@ import { defineConfig } from 'vite'
 import typescript from '@rollup/plugin-typescript'
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
 import * as path from 'path'
+import { resolve } from 'node:url'
 
 export default defineConfig(({ mode }) => {
   const name = 'canvas-editor'
@@ -39,6 +40,12 @@ export default defineConfig(({ mode }) => {
   }
   return {
     base: `/${name}/`,
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        pdf: resolve(__dirname, 'pdf.html'),
+      }
+    },
     server: {
       host: '0.0.0.0'
     }

@@ -3,3 +3,7 @@ interface CanvasRenderingContext2D {
   letterSpacing: string
   wordSpacing: string
 }
+
+interface FontFaceSet {
+  add: (font: FontFace) => void
+}

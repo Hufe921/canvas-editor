@@ -3,6 +3,7 @@ import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
 import { Footer } from './Footer'
 import { Header } from './Header'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class PageBorder {
   private draw: Draw
@@ -17,15 +18,11 @@ export class PageBorder {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: CERenderingContext) {
     const {
       scale,
       pageBorder: { color, lineWidth, padding }
     } = this.options
-    ctx.save()
-    ctx.translate(0.5, 0.5)
-    ctx.strokeStyle = color
-    ctx.lineWidth = lineWidth * scale
     const margins = this.draw.getMargins()
     // x：左边距 - 左距离正文距离
     const x = margins[3] - padding[3] * scale
@@ -40,8 +37,9 @@ export class PageBorder {
       this.footer.getExtraHeight() -
       margins[2] +
       padding[2] * scale
-    ctx.rect(x, y, width, height)
-    ctx.stroke()
-    ctx.restore()
+
+    ctx.strokeRect(x, y, width, height, {
+      color, lineWidth: lineWidth * scale, translate: [0.5, 0.5]
+    })
   }
 }

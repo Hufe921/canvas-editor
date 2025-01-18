@@ -15,6 +15,7 @@ import { Zone } from '../../zone/Zone'
 import { Position } from '../../position/Position'
 import { zipElementList } from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class Area {
   private draw: Draw
@@ -94,9 +95,8 @@ export class Area {
     return areaId
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: CERenderingContext, pageNo: number) {
     if (!this.areaInfoMap.size) return
-    ctx.save()
     const margins = this.draw.getMargins()
     const width = this.draw.getInnerWidth()
     for (const areaInfoItem of this.areaInfoMap) {
@@ -104,7 +104,6 @@ export class Area {
       if (!area?.backgroundColor && !area?.borderColor) continue
       const pagePositionList = positionList.filter(p => p.pageNo === pageNo)
       if (!pagePositionList.length) continue
-      ctx.translate(0.5, 0.5)
       const firstPosition = pagePositionList[0]
       const lastPosition = pagePositionList[pagePositionList.length - 1]
       // 起始位置
@@ -113,16 +112,19 @@ export class Area {
       const height = Math.ceil(lastPosition.coordinate.rightBottom[1] - y)
       // 背景色
       if (area.backgroundColor) {
-        ctx.fillStyle = area.backgroundColor
-        ctx.fillRect(x, y, width, height)
+        ctx.fillRect(x, y, width, height, {
+          translate: [0.5, 0.5],
+          fillColor: area.backgroundColor
+        })
       }
       // 边框
       if (area.borderColor) {
-        ctx.strokeStyle = area.borderColor
-        ctx.strokeRect(x, y, width, height)
+        ctx.strokeRect(x, y, width, height, {
+          translate: [0.5, 0.5],
+          color: area.borderColor
+        })
       }
     }
-    ctx.restore()
   }
 
   public compute() {
