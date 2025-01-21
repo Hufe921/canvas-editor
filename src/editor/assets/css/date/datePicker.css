@@ -1,4 +1,6 @@
-.ce-date-container {
+.ce-date-container,
+.ce-month-container,
+.ce-year-container {
   display: none;
   width: 300px;
   overflow: hidden;
@@ -15,7 +17,9 @@
   box-shadow: 0 2px 12px 0 rgb(0 0 0 / 10%);
 }
 
-.ce-date-container.active {
+.ce-date-container.active,
+.ce-month-container.active,
+.ce-year-container.active {
   display: block;
 }
 
@@ -29,7 +33,7 @@
 
 .ce-date-title {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
   text-align: center;
   color: #606266;
@@ -49,6 +53,16 @@
   color: #5175F4;
 }
 
+.ce-date-title>.ce-date-title__now>.ce-date-title__now-year,
+.ce-date-title>.ce-date-title__now>.ce-date-title__now-month {
+  cursor: pointer;
+}
+
+.ce-date-title>.ce-date-title__now>.ce-date-title__now-year:hover,
+.ce-date-title>.ce-date-title__now>.ce-date-title__now-month:hover {
+  color: #5175F4;
+}
+
 .ce-date-title .ce-date-title__pre-year {
   width: 15%;
 }
@@ -59,6 +73,14 @@
 
 .ce-date-title .ce-date-title__now {
   width: 40%;
+}
+
+.ce-date-title .ce-date-title__now .ce-date-title__now-year {
+  cursor: pointer;
+}
+
+.ce-date-title .ce-date-title__now .ce-date-title__now-month {
+  cursor: pointer;
 }
 
 .ce-date-title .ce-date-title__next-year {
@@ -86,12 +108,20 @@
   font-size: 14px;
 }
 
-.ce-date-day {
+.ce-date-day,
+.ce-date-month,
+.ce-date-year {
   width: 100%;
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   margin-top: 5px;
+}
+
+.ce-date-month,
+.ce-date-year {
+  margin-top: 10px;
+  border-top: 1px solid #e4e7ed;
 }
 
 .ce-date-day>div {
@@ -105,12 +135,37 @@
   border-radius: 4px;
 }
 
-.ce-date-day>div:hover {
+.ce-date-month>div,
+.ce-date-year>div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: calc(100%/4);
+  height: 60px;
+  cursor: pointer;
+}
+
+.ce-date-month>div>div,
+.ce-date-year>div>div {
+  width: 55px;
+  height: 40px;
+  text-align: center;
+  color: #606266;
+  line-height: 40px;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.ce-date-day>div:hover,
+.ce-date-month>div>div:hover,
+.ce-date-year>div>div:hover {
   color: #5175F4;
   opacity: .8;
 }
 
-.ce-date-day>div.active {
+.ce-date-day>div.active,
+.ce-date-month>div>div.active,
+.ce-date-year>div>div.active {
   color: #5175F4;
   font-weight: 700;
 }
@@ -119,7 +174,9 @@
   color: #c0c4cc;
 }
 
-.ce-date-day>div.select {
+.ce-date-day>div.select,
+.ce-date-month>div>div.select,
+.ce-date-year>div>div.select {
   color: #fff;
   background-color: #5175F4;
 }

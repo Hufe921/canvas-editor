@@ -5,6 +5,8 @@ import {
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { IElementPosition } from '../../../../interface/Element'
 import { Draw } from '../../Draw'
+import { MonthPicker } from './MonthPicker'
+import { YearPicker } from './YearPicker'
 
 export interface IDatePickerLang {
   now: string
@@ -39,7 +41,10 @@ interface IDatePickerDom {
   title: {
     preYear: HTMLSpanElement
     preMonth: HTMLSpanElement
-    now: HTMLSpanElement
+    now: {
+      nowYear: HTMLSpanElement
+      nowMonth: HTMLSpanElement
+    }
     nextMonth: HTMLSpanElement
     nextYear: HTMLSpanElement
   }
@@ -56,7 +61,7 @@ interface IDatePickerDom {
   }
 }
 
-interface IRenderOption {
+export interface IRenderOption {
   value: string
   position: IElementPosition
   dateFormat?: string
@@ -71,6 +76,8 @@ export class DatePicker {
   private isDatePicker: boolean
   private pickDate: Date | null
   private lang: IDatePickerLang
+  private yearPicker: YearPicker
+  private monthPicker: MonthPicker
 
   constructor(draw: Draw, options: IDatePickerOption = {}) {
     this.draw = draw
@@ -78,6 +85,23 @@ export class DatePicker {
     this.lang = this._getLang()
     this.now = new Date()
     this.dom = this._createDom()
+    this.yearPicker = new YearPicker(this.draw, {
+      onSubmit: (date: string) => {
+        const setDate = new Date(date)
+        const year = setDate.getFullYear()
+        this._setYearPick(year)
+        this._toggleVisible(true)
+      }
+    })
+    this.monthPicker = new MonthPicker(this.draw, {
+      onSubmit: (date: string) => {
+        const setDate = new Date(date)
+        const year = setDate.getFullYear()
+        const month = setDate.getMonth()
+        this._setMonthPick(year, month)
+        this._toggleVisible(true)
+      }
+    })
     this.renderOptions = null
     this.isDatePicker = true
     this.pickDate = null
@@ -101,6 +125,12 @@ export class DatePicker {
     preMonthTitle.innerText = `<`
     const nowTitle = document.createElement('span')
     nowTitle.classList.add(`${EDITOR_PREFIX}-date-title__now`)
+    const nowYear = document.createElement('span')
+    nowYear.classList.add(`${EDITOR_PREFIX}-date-title__now-year`)
+    const nowMonth = document.createElement('span')
+    nowMonth.classList.add(`${EDITOR_PREFIX}-date-title__now-month`)
+    nowTitle.appendChild(nowYear)
+    nowTitle.appendChild(nowMonth)
     const nextMonthTitle = document.createElement('span')
     nextMonthTitle.classList.add(`${EDITOR_PREFIX}-date-title__next-month`)
     nextMonthTitle.innerText = `>`
@@ -191,7 +221,10 @@ export class DatePicker {
       title: {
         preYear: preYearTitle,
         preMonth: preMonthTitle,
-        now: nowTitle,
+        now: {
+          nowYear,
+          nowMonth
+        },
         nextMonth: nextMonthTitle,
         nextYear: nextYearTitle
       },
@@ -221,6 +254,12 @@ export class DatePicker {
     }
     this.dom.title.nextYear.onclick = () => {
       this._nextYear()
+    }
+    this.dom.title.now.nowYear.onclick = () => {
+      this._toggleYearPicker()
+    }
+    this.dom.title.now.nowMonth.onclick = () => {
+      this._toggleMonthPicker()
     }
     this.dom.menu.time.onclick = () => {
       this.isDatePicker = !this.isDatePicker
@@ -362,9 +401,10 @@ export class DatePicker {
     // 当前年月日
     const year = this.now.getFullYear()
     const month = this.now.getMonth() + 1
-    this.dom.title.now.innerText = `${year}${this.lang.year} ${String(
-      month
-    ).padStart(2, '0')}${this.lang.month}`
+    this.dom.title.now.nowYear.innerText = `${year}${this.lang.year}`
+    this.dom.title.now.nowMonth.innerText = `${String(month).padStart(2, '0')}${
+      this.lang.month
+    }`
     // 日期补差
     const curDate = new Date(year, month, 0) // 当月日期
     const curDay = curDate.getDate() // 当月总天数
@@ -424,6 +464,16 @@ export class DatePicker {
     }
   }
 
+  private _toggleYearPicker() {
+    this._toggleVisible(false)
+    this.yearPicker.toggleVisible(true)
+  }
+
+  private _toggleMonthPicker() {
+    this._toggleVisible(false)
+    this.monthPicker.toggleVisible(true)
+  }
+
   private _toggleDateTimePicker() {
     if (this.isDatePicker) {
       this.dom.dateWrap.classList.add('active')
@@ -436,6 +486,20 @@ export class DatePicker {
       // 设置时分秒选择
       this._setTimePick()
     }
+  }
+
+  private _setYearPick(year: number) {
+    this.now.setFullYear(year)
+    this.pickDate?.setFullYear(year)
+    this._update()
+  }
+
+  private _setMonthPick(year: number, month: number) {
+    this.now.setFullYear(year)
+    this.now.setMonth(month)
+    this.pickDate?.setFullYear(year)
+    this.pickDate?.setMonth(month)
+    this._update()
   }
 
   private _setDatePick(year: number, month: number, day: number) {
@@ -569,6 +633,14 @@ export class DatePicker {
   public render(option: IRenderOption) {
     this.renderOptions = option
     this.lang = this._getLang()
+    this.yearPicker.render({
+      ...option,
+      isVisible: false
+    })
+    this.monthPicker.render({
+      ...option,
+      isVisible: false
+    })
     this._setLangChange()
     this._setValue()
     this._update()
@@ -584,5 +656,7 @@ export class DatePicker {
 
   public destroy() {
     this.dom.container.remove()
+    this.yearPicker.destroy()
+    this.monthPicker.destroy()
   }
 }
