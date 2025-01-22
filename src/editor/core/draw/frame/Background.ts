@@ -5,6 +5,7 @@ import {
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class Background {
   private draw: Draw
@@ -18,19 +19,18 @@ export class Background {
   }
 
   private _renderBackgroundColor(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     color: string,
     width: number,
     height: number
   ) {
-    ctx.save()
-    ctx.fillStyle = color
-    ctx.fillRect(0, 0, width, height)
-    ctx.restore()
+    ctx.fillRect(0, 0, width, height, {
+      fillColor: color
+    })
   }
 
   private _drawImage(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     imageElement: HTMLImageElement,
     width: number,
     height: number
@@ -74,7 +74,7 @@ export class Background {
   }
 
   private _renderBackgroundImage(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     width: number,
     height: number
   ) {
@@ -98,7 +98,7 @@ export class Background {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: CERenderingContext, pageNo: number) {
     const {
       background: { image, color, applyPageNumbers }
     } = this.options

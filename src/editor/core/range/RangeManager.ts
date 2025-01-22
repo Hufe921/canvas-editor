@@ -21,6 +21,7 @@ import { EventBus } from '../event/eventbus/EventBus'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
+import { CERenderingContext } from '../../interface/CERenderingContext'
 
 export class RangeManager {
   private draw: Draw
@@ -687,17 +688,16 @@ export class RangeManager {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     x: number,
     y: number,
     width: number,
     height: number
   ) {
-    ctx.save()
-    ctx.globalAlpha = this.options.rangeAlpha
-    ctx.fillStyle = this.options.rangeColor
-    ctx.fillRect(x, y, width, height)
-    ctx.restore()
+    ctx.fillRect(x, y, width, height, {
+      alpha: this.options.rangeAlpha,
+      fillColor: this.options.rangeColor
+    })
   }
 
   public toString(): string {

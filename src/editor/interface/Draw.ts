@@ -2,6 +2,7 @@ import { ImageDisplay } from '../dataset/enum/Common'
 import { EditorMode, EditorZone } from '../dataset/enum/Editor'
 import { IElement, IElementPosition } from './Element'
 import { IRow } from './Row'
+import jsPDF from 'jspdf'
 
 export interface IDrawOption {
   curIndex?: number
@@ -76,4 +77,8 @@ export interface IComputeRowListPayload {
   pageHeight?: number
   mainOuterHeight?: number
   surroundElementList?: IElement[]
+}
+
+export interface IGetPdfOption {
+  beforeExport?: (doc: jsPDF) => void
 }

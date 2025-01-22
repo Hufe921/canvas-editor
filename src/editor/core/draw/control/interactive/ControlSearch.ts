@@ -14,6 +14,7 @@ import {
 } from '../../../../interface/Search'
 import { Draw } from '../../Draw'
 import { Control } from '../Control'
+import { CERenderingContext } from '../../../../interface/CERenderingContext'
 
 type IHighlightMatchResult = (ISearchResult & IControlHighlightRule)[]
 
@@ -120,12 +121,11 @@ export class ControlSearch {
     computeHighlight(this.draw.getOriginalMainElementList())
   }
 
-  public renderHighlightList(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public renderHighlightList(ctx: CERenderingContext, pageIndex: number) {
     if (!this.highlightMatchResult?.length) return
     const { searchMatchAlpha, searchMatchColor } = this.options
     const positionList = this.draw.getPosition().getOriginalPositionList()
     const elementList = this.draw.getOriginalElementList()
-    ctx.save()
     for (let s = 0; s < this.highlightMatchResult.length; s++) {
       const searchMatch = this.highlightMatchResult[s]
       let position: IElementPosition | null = null
@@ -143,14 +143,14 @@ export class ControlSearch {
         pageNo
       } = position
       if (pageNo !== pageIndex) continue
-      ctx.fillStyle = searchMatch.backgroundColor || searchMatchColor
-      ctx.globalAlpha = searchMatch.alpha || searchMatchAlpha
       const x = leftTop[0]
       const y = leftTop[1]
       const width = rightTop[0] - leftTop[0]
       const height = leftBottom[1] - leftTop[1]
-      ctx.fillRect(x, y, width, height)
+      ctx.fillRect(x, y, width, height, {
+        fillColor: searchMatch.backgroundColor || searchMatchColor,
+        alpha: searchMatch.alpha || searchMatchAlpha
+      })
     }
-    ctx.restore()
   }
 }

@@ -5,6 +5,7 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { convertNumberToChinese } from '../../../utils'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export class PageNumber {
   private draw: Draw
@@ -15,7 +16,7 @@ export class PageNumber {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: CERenderingContext, pageNo: number) {
     const {
       scale,
       pageNumber: {
@@ -55,9 +56,6 @@ export class PageNumber {
     const height = this.draw.getHeight()
     const pageNumberBottom = this.draw.getPageNumberBottom()
     const y = height - pageNumberBottom
-    ctx.save()
-    ctx.fillStyle = color
-    ctx.font = `${size * scale}px ${font}`
     // 计算x位置-居左、居中、居右
     let x = 0
     const margins = this.draw.getMargins()
@@ -69,7 +67,8 @@ export class PageNumber {
     } else {
       x = margins[3]
     }
-    ctx.fillText(text, x, y)
-    ctx.restore()
+    ctx.text(text, x, y, {
+      font: `${size * scale}px ${font}`, color
+    })
   }
 }

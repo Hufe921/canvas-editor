@@ -4,6 +4,11 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
+import { IDrawFloatPayload } from '../../../interface/Draw'
+import { IFloatPosition } from '../../../interface/Position'
+import { EditorZone } from '../../../dataset/enum/Editor'
+import { ElementType } from '../../../dataset/enum/Element'
 
 export class ImageParticle {
   private draw: Draw
@@ -94,7 +99,7 @@ export class ImageParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: CERenderingContext,
     element: IElement,
     x: number,
     y: number
@@ -137,6 +142,30 @@ export class ImageParticle {
         }
       })
       this.addImageObserver(imageLoadPromise)
+    }
+  }
+
+  public static drawFloat(ctx: CERenderingContext, payload: IDrawFloatPayload, scale: number, positionList: IFloatPosition[], imgParticle: ImageParticle) {
+    const { imgDisplays, pageNo } = payload
+    for (let e = 0; e < positionList.length; e++) {
+      const floatPosition = positionList[e]
+      const element = floatPosition.element
+      if (
+        (pageNo === floatPosition.pageNo ||
+          floatPosition.zone === EditorZone.HEADER ||
+          floatPosition.zone == EditorZone.FOOTER) &&
+        element.imgDisplay &&
+        imgDisplays.includes(element.imgDisplay) &&
+        element.type === ElementType.IMAGE
+      ) {
+        const imgFloatPosition = element.imgFloatPosition!
+        imgParticle.render(
+          ctx,
+          element,
+          imgFloatPosition.x * scale,
+          imgFloatPosition.y * scale
+        )
+      }
     }
   }
 }

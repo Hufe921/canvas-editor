@@ -13,6 +13,7 @@ import {
 import { getUUID, isNumber } from '../../../utils'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
+import { CERenderingContext } from '../../../interface/CERenderingContext'
 
 export interface INavigateInfo {
   index: number
@@ -276,7 +277,7 @@ export class Search {
     )
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public render(ctx: CERenderingContext, pageIndex: number) {
     if (
       !this.searchMatchList ||
       !this.searchMatchList.length ||
@@ -288,8 +289,6 @@ export class Search {
       this.options
     const positionList = this.position.getOriginalPositionList()
     const elementList = this.draw.getOriginalElementList()
-    ctx.save()
-    ctx.globalAlpha = searchMatchAlpha
     for (let s = 0; s < this.searchMatchList.length; s++) {
       const searchMatch = this.searchMatchList[s]
       let position: IElementPosition | null = null
@@ -309,23 +308,25 @@ export class Search {
       if (pageNo !== pageIndex) continue
       // 高亮并定位当前搜索词
       const searchMatchIndexList = this.getSearchNavigateIndexList()
+      let color
       if (searchMatchIndexList.includes(s)) {
-        ctx.fillStyle = searchNavigateMatchColor
+        color = searchNavigateMatchColor
         // 是否是第一个字符，则移动到可视范围
         const preSearchMatch = this.searchMatchList[s - 1]
         if (!preSearchMatch || preSearchMatch.groupId !== searchMatch.groupId) {
           this.searchNavigateScrollIntoView(position)
         }
       } else {
-        ctx.fillStyle = searchMatchColor
+        color = searchMatchColor
       }
       const x = leftTop[0]
       const y = leftTop[1]
       const width = rightTop[0] - leftTop[0]
       const height = leftBottom[1] - leftTop[1]
-      ctx.fillRect(x, y, width, height)
+      ctx.fillRect(x, y, width, height, {
+        fillColor: color, alpha: searchMatchAlpha
+      })
     }
-    ctx.restore()
   }
 
   public replace(payload: string, option?: IReplaceOption) {
