@@ -30,7 +30,7 @@ export function input(data: string, host: CanvasEvent) {
     const cursor = draw.getCursor()
     cursor.clearAgentDomValue()
   }
-  const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE } = ElementType
+  const { TEXT, HYPERLINK, SUBSCRIPT, SUPERSCRIPT, DATE, TAB } = ElementType
   const text = data.replaceAll(`\n`, ZERO)
   const { startIndex, endIndex } = rangeManager.getRange()
   // 格式化元素
@@ -47,6 +47,7 @@ export function input(data: string, host: CanvasEvent) {
       (!copyElement.title?.disabled && !copyElement.control?.disabled)
     ) {
       const nextElement = elementList[endIndex + 1]
+      // 文本、超链接、日期、上下标：复制所有信息（元素类型、样式、特殊属性）
       if (
         !copyElement.type ||
         copyElement.type === TEXT ||
@@ -64,10 +65,12 @@ export function input(data: string, host: CanvasEvent) {
           }
         })
       }
-      // 使用默认样式（组合输入法输入 || 无法匹配元素类型时逻辑）
-      if (defaultStyle) {
+      // 仅复制样式：存在默认样式设置 || 无法匹配文本类元素时（TAB）
+      if (defaultStyle || copyElement.type === TAB) {
         EDITOR_ELEMENT_STYLE_ATTR.forEach(attr => {
-          const value = defaultStyle[attr as keyof IRangeElementStyle]
+          const value =
+            defaultStyle?.[attr as keyof IRangeElementStyle] ||
+            copyElement[attr]
           if (value !== undefined) {
             newElement[attr] = value as never
           }
