@@ -2297,4 +2297,32 @@ export class CommandAdapt {
   public setAreaProperties(payload: ISetAreaPropertiesOption) {
     this.draw.getArea().setAreaProperties(payload)
   }
+
+  public locationArea(areaId: string) {
+    const context = this.draw.getArea().getContextByAreaId(areaId)
+    if (!context) return
+    const {
+      range: { endIndex },
+      elementPosition
+    } = context
+    this.position.setPositionContext({
+      isTable: false
+    })
+    this.range.setRange(endIndex, endIndex)
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false,
+      isSubmitHistory: false
+    })
+    // 移动到可见区域
+    const cursor = this.draw.getCursor()
+    this.position.setCursorPosition(elementPosition)
+    cursor.drawCursor({
+      hitLineStartIndex: endIndex
+    })
+    cursor.moveCursorToVisible({
+      cursorPosition: elementPosition,
+      direction: MoveDirection.UP
+    })
+  }
 }

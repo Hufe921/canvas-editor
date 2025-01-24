@@ -15,6 +15,8 @@ import { Zone } from '../../zone/Zone'
 import { Position } from '../../position/Position'
 import { zipElementList } from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
+import { IRange } from '../../../interface/Range'
+import { IElementPosition } from '../../../interface/Element'
 
 export class Area {
   private draw: Draw
@@ -163,6 +165,26 @@ export class Area {
       endPageNo: areaInfo.positionList[areaInfo.positionList.length - 1].pageNo,
       value: zipElementList(areaInfo.elementList)
     }
+  }
+
+  public getContextByAreaId(
+    areaId: string
+  ): { range: IRange; elementPosition: IElementPosition } | null {
+    const elementList = this.draw.getOriginalMainElementList()
+    for (let e = 0; e < elementList.length; e++) {
+      const element = elementList[e]
+      if (element.areaId === areaId) {
+        const positionList = this.position.getOriginalMainPositionList()
+        return {
+          range: {
+            startIndex: e,
+            endIndex: e
+          },
+          elementPosition: positionList[e]
+        }
+      }
+    }
+    return null
   }
 
   public setAreaProperties(payload: ISetAreaPropertiesOption) {

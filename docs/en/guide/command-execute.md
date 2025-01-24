@@ -1051,3 +1051,13 @@ Usage:
 ```javascript
 instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
 ```
+
+## executeLocationArea
+
+Feature: positioning area position
+
+Usage:
+
+```javascript
+instance.command.executeLocationArea(areaId: string)
+```

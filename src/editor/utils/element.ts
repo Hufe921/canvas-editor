@@ -164,7 +164,7 @@ export function formatElementList(
       const valueList = el?.valueList || []
       formatElementList(valueList, {
         ...options,
-        isHandleFirstElement: false,
+        isHandleFirstElement: true,
         isForceCompensation: false
       })
       if (valueList.length) {
