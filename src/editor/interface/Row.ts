@@ -13,6 +13,7 @@ export interface IRow {
   ascent: number
   rowFlex?: RowFlex
   startIndex: number
+  endIndex: number
   isPageBreak?: boolean
   isList?: boolean
   listIndex?: number
@@ -22,4 +23,15 @@ export interface IRow {
   isWidthNotEnough?: boolean
   rowIndex: number
   isSurround?: boolean
+}
+
+
+export interface IRowRef {
+  listIndex: number
+  level: number
+  originalIndex: number
+  parents: number[]
+  children: number[]
+  subChildren: number[]
+  majorSubLevel: number
 }

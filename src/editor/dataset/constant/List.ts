@@ -19,3 +19,9 @@ export const listStyleCSSMapping: Record<ListStyle, string> = {
   [ListStyle.DECIMAL]: 'decimal',
   [ListStyle.CHECKBOX]: 'checkbox'
 }
+
+export const ulStyleIndexMapping: Record<number, UlStyle> = {
+  0: UlStyle.DISC,
+  1: UlStyle.CIRCLE,
+  2: UlStyle.SQUARE
+}
