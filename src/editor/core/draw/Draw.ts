@@ -688,6 +688,7 @@ export class Draw {
       curIndex = activeControl.setValue(payload, undefined, {
         isIgnoreDisabledRule: true
       })
+      this.control.emitControlContentChange()
     } else {
       const elementList = this.getElementList()
       const isCollapsed = startIndex === endIndex

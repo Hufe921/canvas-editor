@@ -30,6 +30,9 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (control.getActiveControl() && control.getIsRangeWithinControl()) {
     // 光标在控件内
     curIndex = control.keydown(evt)
+    if (curIndex) {
+      control.emitControlContentChange()
+    }
   } else if (elementList[endIndex + 1]?.controlId) {
     // 光标在控件前
     curIndex = control.removeControl(endIndex + 1)

@@ -61,5 +61,8 @@ export class RadioControl extends CheckboxControl {
       curIndex: startIndex,
       isSetCursor: false
     })
+    this.control.emitControlContentChange({
+      context
+    })
   }
 }

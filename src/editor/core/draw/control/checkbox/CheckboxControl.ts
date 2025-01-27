@@ -128,6 +128,9 @@ export class CheckboxControl implements IControlInstance {
       curIndex: startIndex,
       isSetCursor: false
     })
+    this.control.emitControlContentChange({
+      context
+    })
   }
 
   public keydown(evt: KeyboardEvent): number | null {

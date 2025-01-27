@@ -33,6 +33,9 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   ) {
     // 光标在控件内
     curIndex = control.keydown(evt)
+    if (curIndex) {
+      control.emitControlContentChange()
+    }
   } else {
     // 普通元素删除
     const position = draw.getPosition()

@@ -83,6 +83,18 @@ Usage:
 instance.listener.controlChange = (payload: IControlChangeResult) => {}
 ```
 
+## controlContentChange
+
+Feature: The control content changes
+
+Usage:
+
+```javascript
+instance.listener.controlContentChange = (
+  payload: IControlContentChangeResult
+) => {}
+```
+
 ## pageModeChange
 
 Feature: The page mode changes

@@ -87,6 +87,9 @@ export function input(data: string, host: CanvasEvent) {
   let curIndex: number
   if (control.getActiveControl() && control.getIsRangeWithinControl()) {
     curIndex = control.setValue(inputData)
+    if (!isComposing) {
+      control.emitControlContentChange()
+    }
   } else {
     const start = startIndex + 1
     if (startIndex !== endIndex) {
