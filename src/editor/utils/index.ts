@@ -56,6 +56,9 @@ export function deepCloneOmitKeys<T, K>(obj: T, omitKeys: (keyof K)[]): T {
 }
 
 export function deepClone<T>(obj: T): T {
+  if (typeof structuredClone === 'function') {
+    return structuredClone(obj)
+  }
   if (!obj || typeof obj !== 'object') {
     return obj
   }
