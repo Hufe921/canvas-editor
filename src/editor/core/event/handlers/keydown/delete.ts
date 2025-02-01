@@ -7,8 +7,22 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
   const { startIndex, endIndex, isCrossRowCol } = rangeManager.getRange()
+  // 隐藏控件删除
   const elementList = draw.getElementList()
   const control = draw.getControl()
+  if (rangeManager.getIsCollapsed()) {
+    const nextElement = elementList[startIndex + 1]
+    if (nextElement?.control?.hide) {
+      const newIndex = control.removeControl(startIndex + 1)
+      if (newIndex) {
+        // 更新位置信息
+        const position = draw.getPosition()
+        const positionList = position.getPositionList()
+        position.setCursorPosition(positionList[newIndex])
+      }
+    }
+  }
+  // 删除操作
   let curIndex: number | null
   if (isCrossRowCol) {
     // 表格跨行列选中时清空单元格内容

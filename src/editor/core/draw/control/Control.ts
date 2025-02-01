@@ -36,6 +36,7 @@ import { deepClone, omitObject, pickObject, splitText } from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
+  getNonHideElementIndex,
   pickElementAttr,
   zipElementList
 } from '../../../utils/element'
@@ -539,6 +540,15 @@ export class Control {
     } else {
       element = elementList[index]
     }
+    // 隐藏元素移动光标
+    if (element.control?.hide) {
+      const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
+      return {
+        newIndex: nonHideIndex,
+        newElement: elementList[nonHideIndex]
+      }
+    }
+    // 控件内移动光标
     if (element.controlComponent === ControlComponent.VALUE) {
       // VALUE-无需移动
       return {

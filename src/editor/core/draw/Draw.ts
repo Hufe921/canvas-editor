@@ -782,6 +782,7 @@ export class Draw {
           const deleteElement = elementList[deleteIndex]
           if (
             isDesignMode ||
+            deleteElement?.control?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
               deleteElement?.title?.deletable !== false)
@@ -1322,7 +1323,11 @@ export class Draw {
       const isStartElement = curRow.elementList.length === 1
       x += isStartElement ? offsetX : 0
       y += isStartElement ? curRow.offsetY || 0 : 0
-      if (
+      if (element.control?.hide && !this.isDesignMode()) {
+        metrics.height =
+          curRow.elementList[curRow.elementList.length - 1]?.metrics.height ||
+          this.options.defaultSize * scale
+      } else if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
       ) {
@@ -2057,7 +2062,10 @@ export class Draw {
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
-        if (element.type === ElementType.IMAGE) {
+        if (element.control?.hide && !this.isDesignMode()) {
+          // 控件隐藏时不绘制
+          this.textParticle.complete()
+        } else if (element.type === ElementType.IMAGE) {
           this.textParticle.complete()
           // 浮动图片单独绘制
           if (

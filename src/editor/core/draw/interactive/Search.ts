@@ -215,7 +215,8 @@ export class Search {
         .map(e =>
           !e.type ||
           (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
-            e.controlComponent !== ControlComponent.CHECKBOX)
+            e.controlComponent !== ControlComponent.CHECKBOX &&
+            !e.control?.hide)
             ? e.value
             : ZERO
         )

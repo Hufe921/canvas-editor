@@ -62,6 +62,7 @@ export interface IControlRule {
   deletable?: boolean
   disabled?: boolean
   pasteDisabled?: boolean
+  hide?: boolean
 }
 
 export interface IControlBasic {
