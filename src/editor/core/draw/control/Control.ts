@@ -8,7 +8,9 @@ import { ElementType } from '../../../dataset/enum/Element'
 import { DeepRequired } from '../../../interface/Common'
 import {
   IControl,
+  IControlChangeOption,
   IControlChangeResult,
+  IControlContentChangeResult,
   IControlContext,
   IControlHighlight,
   IControlInitOption,
@@ -34,6 +36,7 @@ import { deepClone, omitObject, pickObject, splitText } from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
+  getNonHideElementIndex,
   pickElementAttr,
   zipElementList
 } from '../../../utils/element'
@@ -477,6 +480,39 @@ export class Control {
     }
   }
 
+  public emitControlContentChange(options?: IControlChangeOption) {
+    const isSubscribeControlContentChange = this.eventBus.isSubscribe(
+      'controlContentChange'
+    )
+    if (
+      !isSubscribeControlContentChange &&
+      !this.listener.controlContentChange
+    ) {
+      return
+    }
+    const controlElement =
+      options?.controlElement || this.activeControl?.getElement()
+    if (!controlElement) return
+    const controlValue =
+      options?.controlValue || this.getControlElementList(options?.context)
+    let control: IControl
+    if (controlValue?.length) {
+      control = zipElementList(controlValue)[0].control!
+    } else {
+      control = controlElement.control!
+      control.value = []
+    }
+    if (!control) return
+    const payload: IControlContentChangeResult = {
+      control,
+      controlId: controlElement.controlId!
+    }
+    this.listener.controlContentChange?.(payload)
+    if (isSubscribeControlContentChange) {
+      this.eventBus.emit('controlContentChange', payload)
+    }
+  }
+
   public reAwakeControl() {
     if (!this.activeControl) return
     const elementList = this.getElementList()
@@ -504,6 +540,15 @@ export class Control {
     } else {
       element = elementList[index]
     }
+    // 隐藏元素移动光标
+    if (element.control?.hide) {
+      const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
+      return {
+        newIndex: nonHideIndex,
+        newElement: elementList[nonHideIndex]
+      }
+    }
+    // 控件内移动光标
     if (element.controlComponent === ControlComponent.VALUE) {
       // VALUE-无需移动
       return {
@@ -940,6 +985,10 @@ export class Control {
             text.clearValue(controlContext, controlRule)
           }
         }
+        // 控件值变更事件
+        this.emitControlContentChange({
+          context: controlContext
+        })
         // 模拟控件激活后销毁
         this.activeControl = null
         // 修改后控件结束索引

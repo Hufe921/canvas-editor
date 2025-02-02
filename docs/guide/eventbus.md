@@ -90,6 +90,16 @@ instance.eventBus.on('contentChange', () => void)
 instance.eventBus.on('controlChange', (payload: IControlChangeResult) => void)
 ```
 
+## controlContentChange
+
+功能：控件内容发生改变
+
+用法：
+
+```javascript
+instance.eventBus.on('controlContentChange', (payload: IControlContentChangeResult) => void)
+```
+
 ## pageModeChange
 
 功能：页面模式发生改变

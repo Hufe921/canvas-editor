@@ -1,7 +1,9 @@
+import { LocationPosition } from '../../../../dataset/enum/Common'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorMode } from '../../../../dataset/enum/Editor'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
+import { getNonHideElementIndex } from '../../../../utils/element'
 import { isMod } from '../../../../utils/hotkey'
 import { CanvasEvent } from '../../CanvasEvent'
 
@@ -151,6 +153,19 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   ) {
     return
   }
+  // 隐藏元素跳过
+  const newElementList = draw.getElementList()
+  anchorStartIndex = getNonHideElementIndex(
+    newElementList,
+    anchorStartIndex,
+    LocationPosition.AFTER
+  )
+  anchorEndIndex = getNonHideElementIndex(
+    newElementList,
+    anchorEndIndex,
+    LocationPosition.AFTER
+  )
+  // 设置上下文
   rangeManager.setRange(anchorStartIndex, anchorEndIndex)
   const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
   draw.render({

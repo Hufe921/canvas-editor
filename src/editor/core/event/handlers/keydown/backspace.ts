@@ -7,8 +7,28 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   // 可输入性验证
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
-  const { startIndex, endIndex, isCrossRowCol } = rangeManager.getRange()
+  // 隐藏控件删除
   const control = draw.getControl()
+  const position = draw.getPosition()
+  if (rangeManager.getIsCollapsed()) {
+    const range = rangeManager.getRange()
+    const elementList = draw.getElementList()
+    const element = elementList[range.startIndex]
+    if (element.control?.hide) {
+      const newIndex = control.removeControl(range.startIndex)
+      if (newIndex) {
+        // 更新选区信息
+        range.startIndex = newIndex
+        range.endIndex = newIndex
+        rangeManager.replaceRange(range)
+        // 更新位置信息
+        const positionList = position.getPositionList()
+        position.setCursorPosition(positionList[newIndex])
+      }
+    }
+  }
+  // 删除操作
+  const { startIndex, endIndex, isCrossRowCol } = rangeManager.getRange()
   let curIndex: number | null
   if (isCrossRowCol) {
     // 表格跨行列选中时清空单元格内容
@@ -33,9 +53,11 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   ) {
     // 光标在控件内
     curIndex = control.keydown(evt)
+    if (curIndex) {
+      control.emitControlContentChange()
+    }
   } else {
     // 普通元素删除
-    const position = draw.getPosition()
     const cursorPosition = position.getCursorPosition()
     if (!cursorPosition) return
     const { index } = cursorPosition

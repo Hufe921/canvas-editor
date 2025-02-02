@@ -45,21 +45,23 @@ function pickText(elementList: IElement[]): string {
       }
       text += pickText(valueList)
     } else if (element.controlId) {
-      const controlId = element.controlId
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const controlE = elementList[e]
-        if (controlId !== controlE.controlId) {
-          e--
-          break
+      if (!element.control?.hide) {
+        const controlId = element.controlId
+        const valueList: IElement[] = []
+        while (e < elementList.length) {
+          const controlE = elementList[e]
+          if (controlId !== controlE.controlId) {
+            e--
+            break
+          }
+          if (controlE.controlComponent === ControlComponent.VALUE) {
+            delete controlE.controlId
+            valueList.push(controlE)
+          }
+          e++
         }
-        if (controlE.controlComponent === ControlComponent.VALUE) {
-          delete controlE.controlId
-          valueList.push(controlE)
-        }
-        e++
+        text += pickText(valueList)
       }
-      text += pickText(valueList)
     } else if (!element.type || element.type === ElementType.TEXT) {
       text += element.value
     }

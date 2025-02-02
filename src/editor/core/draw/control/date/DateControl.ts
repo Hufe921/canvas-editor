@@ -227,6 +227,9 @@ export class DateControl implements IControlInstance {
       this.control.repaintControl({
         curIndex: newIndex
       })
+      this.control.emitControlContentChange({
+        context
+      })
       this.destroy()
     }
   }

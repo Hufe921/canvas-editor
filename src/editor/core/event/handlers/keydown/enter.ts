@@ -79,6 +79,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   let curIndex: number
   if (activeControl && control.getIsRangeWithinControl()) {
     curIndex = control.setValue([enterText])
+    control.emitControlContentChange()
   } else {
     const position = draw.getPosition()
     const cursorPosition = position.getCursorPosition()

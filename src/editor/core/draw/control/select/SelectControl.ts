@@ -354,6 +354,9 @@ export class SelectControl implements IControlInstance {
           this.control.repaintControl({
             curIndex: prefixIndex
           })
+          this.control.emitControlContentChange({
+            controlValue: []
+          })
         }
       }
       return
@@ -408,6 +411,9 @@ export class SelectControl implements IControlInstance {
       const newIndex = start + data.length - 1
       this.control.repaintControl({
         curIndex: newIndex
+      })
+      this.control.emitControlContentChange({
+        context
       })
       if (!isMultiSelect) {
         this.destroy()

@@ -62,6 +62,7 @@ export interface IControlRule {
   deletable?: boolean
   disabled?: boolean
   pasteDisabled?: boolean
+  hide?: boolean
 }
 
 export interface IControlBasic {
@@ -186,6 +187,12 @@ export type IRepaintControlOption = Pick<
   'curIndex' | 'isCompute' | 'isSubmitHistory' | 'isSetCursor'
 >
 
+export interface IControlChangeOption {
+  context?: IControlContext
+  controlElement?: IElement
+  controlValue?: IElement[]
+}
+
 export interface INextControlContext {
   positionContext: IPositionContext
   nextIndex: number
@@ -208,6 +215,11 @@ export interface ISetControlRowFlexOption {
 
 export interface IControlChangeResult {
   state: ControlState
+  control: IControl
+  controlId: string
+}
+
+export interface IControlContentChangeResult {
   control: IControl
   controlId: string
 }

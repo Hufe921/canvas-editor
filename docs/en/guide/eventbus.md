@@ -90,6 +90,16 @@ Usage:
 instance.eventBus.on('controlChange', (payload: IControlChangeResult) => void)
 ```
 
+## controlContentChange
+
+Feature: The control content changes
+
+Usage:
+
+```javascript
+instance.eventBus.on('controlContentChange', (payload: IControlContentChangeResult) => void)
+```
+
 ## pageModeChange
 
 Feature: The page mode changes

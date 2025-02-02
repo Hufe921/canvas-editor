@@ -83,6 +83,18 @@ instance.listener.contentChange = () => {}
 instance.listener.controlChange = (payload: IControlChangeResult) => {}
 ```
 
+## controlContentChange
+
+功能：控件内容发生改变
+
+用法：
+
+```javascript
+instance.listener.controlContentChange = (
+  payload: IControlContentChangeResult
+) => {}
+```
+
 ## pageModeChange
 
 功能：页面模式发生改变

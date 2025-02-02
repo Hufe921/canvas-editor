@@ -110,6 +110,7 @@ interface IElement {
     deletable?: boolean;
     disabled?: boolean;
     pasteDisabled?: boolean;
+    hide?: boolean;
     code: string | null;
     min?: number;
     max?: number;
