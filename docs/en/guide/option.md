@@ -58,7 +58,7 @@ interface IEditorOption {
   contextMenuDisableKeys?: string[] // Disable context menu keys. default: []
   scrollContainerSelector?: string // scroll container selector. default: document
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
-  watermark?: IWatermark // Watermark{data:string; color?:string; opacity?:number; size?:number; font?:string;}
+  watermark?: IWatermark // Watermark{data:string; color?:string; opacity?:number; size?:number; font?:string; numberType:NumberType;}
   control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string; activeBackgroundColor?: string;}
   checkbox?: ICheckboxOption // Checkbox {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
   radio?: IRadioOption // Radio {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
@@ -138,6 +138,7 @@ interface IWatermark {
   font?: string // font. default: Microsoft YaHei
   repeat?: boolean // repeat watermark. default: false
   gap?: [horizontal: number, vertical: number] // watermark spacing. default: [10,10]
+  numberType?: NumberType // The numeric type. default: ARABIC
 }
 ```
 

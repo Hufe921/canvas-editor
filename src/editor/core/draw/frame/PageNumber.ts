@@ -15,6 +15,19 @@ export class PageNumber {
     this.options = draw.getOptions()
   }
 
+  static formatNumberPlaceholder(
+    text: string,
+    pageNo: number,
+    replaceReg: RegExp,
+    numberType: NumberType
+  ) {
+    const pageNoText =
+      numberType === NumberType.CHINESE
+        ? convertNumberToChinese(pageNo)
+        : `${pageNo}`
+    return text.replace(replaceReg, pageNoText)
+  }
+
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     const {
       scale,
@@ -34,21 +47,21 @@ export class PageNumber {
     let text = format
     const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
     if (pageNoReg.test(text)) {
-      const realPageNo = pageNo + startPageNo - fromPageNo
-      const pageNoText =
-        numberType === NumberType.CHINESE
-          ? convertNumberToChinese(realPageNo)
-          : `${realPageNo}`
-      text = text.replace(pageNoReg, pageNoText)
+      text = PageNumber.formatNumberPlaceholder(
+        text,
+        pageNo + startPageNo - fromPageNo,
+        pageNoReg,
+        numberType
+      )
     }
     const pageCountReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_COUNT)
     if (pageCountReg.test(text)) {
-      const pageCount = this.draw.getPageCount() - fromPageNo
-      const pageCountText =
-        numberType === NumberType.CHINESE
-          ? convertNumberToChinese(pageCount)
-          : `${pageCount}`
-      text = text.replace(pageCountReg, pageCountText)
+      text = PageNumber.formatNumberPlaceholder(
+        text,
+        this.draw.getPageCount() - fromPageNo,
+        pageCountReg,
+        numberType
+      )
     }
     const width = this.draw.getWidth()
     // 计算y位置

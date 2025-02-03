@@ -2437,7 +2437,7 @@ export class Draw {
     }
     // 绘制水印
     if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
-      this.waterMark.render(ctx)
+      this.waterMark.render(ctx, pageNo)
     }
     // 绘制页边距
     if (!isPrintMode) {

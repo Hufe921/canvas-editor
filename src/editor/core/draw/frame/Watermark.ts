@@ -1,6 +1,8 @@
 import { IEditorOption } from '../../..'
+import { FORMAT_PLACEHOLDER } from '../../../dataset/constant/PageNumber'
 import { DeepRequired } from '../../../interface/Common'
 import { Draw } from '../Draw'
+import { PageNumber } from './PageNumber'
 
 export class Watermark {
   private draw: Draw
@@ -11,9 +13,9 @@ export class Watermark {
     this.options = <DeepRequired<IEditorOption>>draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     const {
-      watermark: { data, opacity, font, size, color, repeat, gap },
+      watermark: { data, opacity, font, size, color, repeat, gap, numberType },
       scale
     } = this.options
     const width = this.draw.getWidth()
@@ -22,7 +24,28 @@ export class Watermark {
     ctx.save()
     ctx.globalAlpha = opacity
     ctx.font = `${size * scale}px ${font}`
-    const measureText = ctx.measureText(data)
+    // 格式化文本
+    let text = data
+    const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
+    if (pageNoReg.test(text)) {
+      text = PageNumber.formatNumberPlaceholder(
+        text,
+        pageNo + 1,
+        pageNoReg,
+        numberType
+      )
+    }
+    const pageCountReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_COUNT)
+    if (pageCountReg.test(text)) {
+      text = PageNumber.formatNumberPlaceholder(
+        text,
+        this.draw.getPageCount(),
+        pageCountReg,
+        numberType
+      )
+    }
+    // 测量长度并绘制
+    const measureText = ctx.measureText(text)
     if (repeat) {
       const dpr = this.draw.getPagePixelRatio()
       const temporaryCanvas = document.createElement('canvas')
@@ -51,7 +74,7 @@ export class Watermark {
       temporaryCtx.font = `${size * scale}px ${font}`
       temporaryCtx.fillStyle = color
       temporaryCtx.fillText(
-        data,
+        text,
         (patternWidth - textWidth) / 2,
         (patternHeight - textHeight) / 2 + measureText.actualBoundingBoxAscent
       )
@@ -68,7 +91,7 @@ export class Watermark {
       ctx.translate(x, y)
       ctx.rotate((-45 * Math.PI) / 180)
       ctx.fillText(
-        data,
+        text,
         -measureText.width / 2,
         measureText.actualBoundingBoxAscent - size / 2
       )
