@@ -1407,7 +1407,6 @@ export function getElementListByHTML(
         // br元素与display:block元素需换行
         if (node.nodeName === 'BR') {
           if (isTable) {
-            console.log('Tableeneterfound : ', tableEnterFound)
             if (tableEnterFound) {
               elementList.push({
                 value: '\n'
@@ -1573,7 +1572,6 @@ export function getElementListByHTML(
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
             const display = window.getComputedStyle(node as Element).display
-            console.log('DISPLAY : ', display)
 
             if (display === 'block') {
               elementList.push({
