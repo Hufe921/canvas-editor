@@ -1387,9 +1387,12 @@ export interface IGetElementListByHTMLOption {
 
 export function getElementListByHTML(
   htmlText: string,
-  options: IGetElementListByHTMLOption
+  options: IGetElementListByHTMLOption,
+  isTable = false
 ): IElement[] {
   const elementList: IElement[] = []
+  let tableEnterFound = false
+
   function findTextNode(dom: Element | Node) {
     if (dom.nodeType === 3) {
       const element = convertTextNodeToElement(dom)
@@ -1400,11 +1403,22 @@ export function getElementListByHTML(
       const childNodes = dom.childNodes
       for (let n = 0; n < childNodes.length; n++) {
         const node = childNodes[n]
+
         // br元素与display:block元素需换行
         if (node.nodeName === 'BR') {
-          elementList.push({
-            value: '\n'
-          })
+          if (isTable) {
+            console.log('Tableeneterfound : ', tableEnterFound)
+            if (tableEnterFound) {
+              elementList.push({
+                value: '\n'
+              })
+            }
+            tableEnterFound = true
+          } else {
+            elementList.push({
+              value: '\n'
+            })
+          }
         } else if (node.nodeName === 'A') {
           const aElement = node as HTMLLinkElement
           const value = aElement.innerText
@@ -1504,7 +1518,8 @@ export function getElementListByHTML(
               const tableCell = <HTMLTableCellElement>tdElement
               const valueList = getElementListByHTML(
                 tableCell.innerHTML,
-                options
+                options,
+                true
               )
               const td: ITd = {
                 colspan: tableCell.colSpan,
@@ -1558,6 +1573,8 @@ export function getElementListByHTML(
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
             const display = window.getComputedStyle(node as Element).display
+            console.log('DISPLAY : ', display)
+
             if (display === 'block') {
               elementList.push({
                 value: '\n'
