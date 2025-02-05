@@ -9,6 +9,7 @@ import {
   splitText
 } from '.'
 import {
+  BlockType,
   EditorMode,
   ElementType,
   IEditorOption,
@@ -1249,6 +1250,17 @@ export function createDomFromElementList(
           img.height = element.height!
         }
         clipboardDom.append(img)
+      } else if (element.type === ElementType.BLOCK) {
+        if (
+          element.block?.type === BlockType.VIDEO &&
+          element.block.videoBlock?.src
+        ) {
+          const video = document.createElement('video')
+          video.src = element.block.videoBlock?.src
+          video.width = element.width!
+          video.height = element.height!
+          clipboardDom.append(video)
+        }
       } else if (element.type === ElementType.SEPARATOR) {
         const hr = document.createElement('hr')
         clipboardDom.append(hr)
@@ -1494,6 +1506,22 @@ export function getElementListByHTML(
               height,
               value: src,
               type: ElementType.IMAGE
+            })
+          }
+        } else if (node.nodeName === 'VIDEO') {
+          const { src, width, height } = node as any
+          if (src && width && height) {
+            elementList.push({
+              value: '',
+              type: ElementType.BLOCK,
+              block: {
+                type: BlockType.VIDEO,
+                videoBlock: {
+                  src: src
+                }
+              },
+              width: width,
+              height: height
             })
           }
         } else if (node.nodeName === 'TABLE') {
