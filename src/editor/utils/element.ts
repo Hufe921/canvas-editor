@@ -1399,12 +1399,9 @@ export interface IGetElementListByHTMLOption {
 
 export function getElementListByHTML(
   htmlText: string,
-  options: IGetElementListByHTMLOption,
-  isTable = false
+  options: IGetElementListByHTMLOption
 ): IElement[] {
   const elementList: IElement[] = []
-  let tableEnterFound = false
-
   function findTextNode(dom: Element | Node) {
     if (dom.nodeType === 3) {
       const element = convertTextNodeToElement(dom)
@@ -1418,18 +1415,9 @@ export function getElementListByHTML(
 
         // br元素与display:block元素需换行
         if (node.nodeName === 'BR') {
-          if (isTable) {
-            if (tableEnterFound) {
-              elementList.push({
-                value: '\n'
-              })
-            }
-            tableEnterFound = true
-          } else {
-            elementList.push({
-              value: '\n'
-            })
-          }
+          elementList.push({
+            value: '\n'
+          })
         } else if (node.nodeName === 'A') {
           const aElement = node as HTMLLinkElement
           const value = aElement.innerText
@@ -1545,8 +1533,7 @@ export function getElementListByHTML(
               const tableCell = <HTMLTableCellElement>tdElement
               const valueList = getElementListByHTML(
                 tableCell.innerHTML,
-                options,
-                true
+                options
               )
               const td: ITd = {
                 colspan: tableCell.colSpan,
