@@ -161,7 +161,7 @@ export interface ISetControlValueOption {
   id?: string
   conceptId?: string
   areaId?: string
-  value: string | IElement[]
+  value: string | IElement[] | null
   isSubmitHistory?: boolean
 }
 

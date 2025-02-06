@@ -929,14 +929,20 @@ export class Control {
           isIgnoreDisabledRule: true
         }
         if (type === ControlType.TEXT) {
-          const formatValue = Array.isArray(value) ? value : [{ value }]
-          formatElementList(formatValue, {
-            isHandleFirstElement: false,
-            editorOptions: this.options
-          })
+          const formatValue = Array.isArray(value)
+            ? value
+            : value
+            ? [{ value }]
+            : []
+          if (formatValue.length) {
+            formatElementList(formatValue, {
+              isHandleFirstElement: false,
+              editorOptions: this.options
+            })
+          }
           const text = new TextControl(element, this)
           this.activeControl = text
-          if (value) {
+          if (formatValue.length) {
             text.setValue(formatValue, controlContext, controlRule)
           } else {
             text.clearValue(controlContext, controlRule)
@@ -972,14 +978,20 @@ export class Control {
             date.clearSelect(controlContext, controlRule)
           }
         } else if (type === ControlType.NUMBER) {
-          const formatValue = Array.isArray(value) ? value : [{ value }]
-          formatElementList(formatValue, {
-            isHandleFirstElement: false,
-            editorOptions: this.options
-          })
+          const formatValue = Array.isArray(value)
+            ? value
+            : value
+            ? [{ value }]
+            : []
+          if (formatValue.length) {
+            formatElementList(formatValue, {
+              isHandleFirstElement: false,
+              editorOptions: this.options
+            })
+          }
           const text = new NumberControl(element, this)
           this.activeControl = text
-          if (value) {
+          if (formatValue.length) {
             text.setValue(formatValue, controlContext, controlRule)
           } else {
             text.clearValue(controlContext, controlRule)
