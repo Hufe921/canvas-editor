@@ -1,3 +1,24 @@
+## [0.9.102](https://github.com/Hufe921/canvas-editor/compare/v0.9.101...v0.9.102) (2025-02-07)
+
+
+### Bug Fixes
+
+* clear control content boundary error #988 ([635f7f0](https://github.com/Hufe921/canvas-editor/commit/635f7f09a4bd76386860bc2c6694e8b07f107897)), closes [#988](https://github.com/Hufe921/canvas-editor/issues/988)
+* disable replace when element cannot be deleted #976 ([f0ffe31](https://github.com/Hufe921/canvas-editor/commit/f0ffe317f6b5a956b192b9ad00b39c3a123ae6bd)), closes [#976](https://github.com/Hufe921/canvas-editor/issues/976)
+
+
+### Features
+
+* add control content change event #940 ([01a3149](https://github.com/Hufe921/canvas-editor/commit/01a31491ff3432ee8a0ed6a1855013a5b3fe5fb1)), closes [#940](https://github.com/Hufe921/canvas-editor/issues/940)
+* add executeLocationArea api #940 ([cd42514](https://github.com/Hufe921/canvas-editor/commit/cd42514a01eca2e133c1fd875cfc9b8f85fb97ff)), closes [#940](https://github.com/Hufe921/canvas-editor/issues/940)
+* add hide property to control element #979 ([e49fe94](https://github.com/Hufe921/canvas-editor/commit/e49fe94efef5becb54fbc5d9ba3c059ae65cdf35)), closes [#979](https://github.com/Hufe921/canvas-editor/issues/979)
+* add id option to executeImage api #989 ([d82237e](https://github.com/Hufe921/canvas-editor/commit/d82237e586d425742dce2e123fc6c459abb8c275)), closes [#989](https://github.com/Hufe921/canvas-editor/issues/989)
+* add page number format option to watermark #981 ([b3c6259](https://github.com/Hufe921/canvas-editor/commit/b3c6259fd55be34f0f1d58828aa790427df759f4)), closes [#981](https://github.com/Hufe921/canvas-editor/issues/981)
+* copy style when insert tab element #974 ([ae8bbb8](https://github.com/Hufe921/canvas-editor/commit/ae8bbb87a5ac019a982c9b737370ea72ce6c342e)), closes [#974](https://github.com/Hufe921/canvas-editor/issues/974)
+* prefer structuredClone api for cloning #980 ([fdda5c7](https://github.com/Hufe921/canvas-editor/commit/fdda5c7e1b16e5d76ac547d04507c0b0f8846208)), closes [#980](https://github.com/Hufe921/canvas-editor/issues/980)
+
+
+
 ## [0.9.101](https://github.com/Hufe921/canvas-editor/compare/v0.9.100...v0.9.101) (2025-01-18)
 
 
