@@ -535,9 +535,11 @@ instance.command.executeTableSelectAll()
 
 ```javascript
 instance.command.executeImage({
+  id?: string;
   width: number;
   height: number;
   value: string;
+  imgDisplay?: ImageDisplay;
 })
 ```
 

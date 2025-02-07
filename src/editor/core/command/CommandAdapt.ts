@@ -1232,22 +1232,24 @@ export class CommandAdapt {
     }
   }
 
-  public image(payload: IDrawImagePayload) {
+  public image(payload: IDrawImagePayload): string | null {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
-    if (isDisabled) return
+    if (isDisabled) return null
     const { startIndex, endIndex } = this.range.getRange()
-    if (!~startIndex && !~endIndex) return
-    const { value, width, height, imgDisplay } = payload
+    if (!~startIndex && !~endIndex) return null
+    const { id, value, width, height, imgDisplay } = payload
+    const imageId = id || getUUID()
     this.insertElementList([
       {
         value,
         width,
         height,
-        id: getUUID(),
+        id: imageId,
         type: ElementType.IMAGE,
         imgDisplay
       }
     ])
+    return imageId
   }
 
   public search(payload: string | null) {
