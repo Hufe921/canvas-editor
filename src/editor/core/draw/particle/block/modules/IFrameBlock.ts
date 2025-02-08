@@ -1,7 +1,7 @@
 import { IRowElement } from '../../../../../interface/Row'
 
 export class IFrameBlock {
-  private static readonly sandbox = ['allow-scripts', 'allow-same-origin']
+  public static readonly sandbox = ['allow-scripts', 'allow-same-origin']
   private element: IRowElement
 
   constructor(element: IRowElement) {

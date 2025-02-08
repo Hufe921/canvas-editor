@@ -15,7 +15,6 @@ export class VideoBlock {
     video.style.objectFit = 'contain'
     video.src = block.videoBlock?.src || ''
     video.controls = true
-    video.crossOrigin = 'anonymous'
     blockItemContainer.append(video)
   }
 }
