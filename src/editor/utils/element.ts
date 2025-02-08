@@ -22,6 +22,7 @@ import {
   TableBorder,
   TdBorder
 } from '..'
+import { IFrameBlock } from '../core/draw/particle/block/modules/IFrameBlock'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
 import {
@@ -1251,15 +1252,35 @@ export function createDomFromElementList(
         }
         clipboardDom.append(img)
       } else if (element.type === ElementType.BLOCK) {
-        if (
-          element.block?.type === BlockType.VIDEO &&
-          element.block.videoBlock?.src
-        ) {
-          const video = document.createElement('video')
-          video.src = element.block.videoBlock?.src
-          video.width = element.width!
-          video.height = element.height!
-          clipboardDom.append(video)
+        if (element.block?.type === BlockType.VIDEO) {
+          const src = element.block.videoBlock?.src
+          if (src) {
+            const video = document.createElement('video')
+            video.style.display = 'block'
+            video.controls = true
+            video.src = src
+            video.width = element.width! || options?.width || window.innerWidth
+            video.height = element.height!
+            clipboardDom.append(video)
+          }
+        } else if (element.block?.type === BlockType.IFRAME) {
+          const { src, srcdoc } = element.block.iframeBlock || {}
+          if (src || srcdoc) {
+            const iframe = document.createElement('iframe')
+            iframe.sandbox.add(...IFrameBlock.sandbox)
+            iframe.style.display = 'block'
+            iframe.style.border = 'none'
+            if (src) {
+              iframe.src = src
+            } else if (srcdoc) {
+              iframe.srcdoc = srcdoc
+            }
+            iframe.width = `${
+              element.width || options?.width || window.innerWidth
+            }`
+            iframe.height = `${element.height!}`
+            clipboardDom.append(iframe)
+          }
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const hr = document.createElement('hr')
@@ -1412,7 +1433,6 @@ export function getElementListByHTML(
       const childNodes = dom.childNodes
       for (let n = 0; n < childNodes.length; n++) {
         const node = childNodes[n]
-
         // br元素与display:block元素需换行
         if (node.nodeName === 'BR') {
           elementList.push({
@@ -1497,7 +1517,7 @@ export function getElementListByHTML(
             })
           }
         } else if (node.nodeName === 'VIDEO') {
-          const { src, width, height } = node as any
+          const { src, width, height } = node as HTMLVideoElement
           if (src && width && height) {
             elementList.push({
               value: '',
@@ -1505,11 +1525,28 @@ export function getElementListByHTML(
               block: {
                 type: BlockType.VIDEO,
                 videoBlock: {
-                  src: src
+                  src
                 }
               },
-              width: width,
-              height: height
+              width,
+              height
+            })
+          }
+        } else if (node.nodeName === 'IFRAME') {
+          const { src, srcdoc, width, height } = node as HTMLIFrameElement
+          if ((src || srcdoc) && width && height) {
+            elementList.push({
+              value: '',
+              type: ElementType.BLOCK,
+              block: {
+                type: BlockType.IFRAME,
+                iframeBlock: {
+                  src,
+                  srcdoc
+                }
+              },
+              width: parseInt(width),
+              height: parseInt(height)
             })
           }
         } else if (node.nodeName === 'TABLE') {
@@ -1587,7 +1624,6 @@ export function getElementListByHTML(
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
             const display = window.getComputedStyle(node as Element).display
-
             if (display === 'block') {
               elementList.push({
                 value: '\n'
