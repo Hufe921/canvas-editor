@@ -317,6 +317,7 @@ export class Control {
     const elementList = context.elementList || this.getElementList()
     const { startIndex } = context.range || this.getRange()
     const startElement = elementList[startIndex]
+    if (!startElement?.controlId) return []
     const data: IElement[] = []
     // 向左查找
     let preIndex = startIndex
@@ -493,6 +494,11 @@ export class Control {
     const controlElement =
       options?.controlElement || this.activeControl?.getElement()
     if (!controlElement) return
+    // 控件被删除不触发事件
+    const elementList = options?.context?.elementList || this.getElementList()
+    const { startIndex } = options?.context?.range || this.getRange()
+    if (!elementList[startIndex]?.controlId) return
+    // 格式化回调数据
     const controlValue =
       options?.controlValue || this.getControlElementList(options?.context)
     let control: IControl
