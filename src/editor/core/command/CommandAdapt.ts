@@ -1696,7 +1696,7 @@ export class CommandAdapt {
           }
         }
         if (
-          (id && (element.id === id || element.controlId === id)) ||
+          (id && element.id === id) ||
           (conceptId && element.conceptId === conceptId)
         ) {
           updateElementInfoList.push({
@@ -1719,14 +1719,18 @@ export class CommandAdapt {
     if (!updateElementInfoList.length) return
     for (let i = 0; i < updateElementInfoList.length; i++) {
       const { elementList, index } = updateElementInfoList[i]
-      elementList[index] = {
-        ...elementList[index],
-        ...payload.properties
-      }
-      formatElementList(zipElementList([elementList[index]]), {
+      // 重新格式化元素
+      const newElement = zipElementList([
+        {
+          ...elementList[index],
+          ...payload.properties
+        }
+      ])
+      formatElementList(newElement, {
         isHandleFirstElement: false,
         editorOptions: this.options
       })
+      elementList[index] = newElement[0]
     }
     this.draw.render({
       isSetCursor: false
@@ -1753,7 +1757,7 @@ export class CommandAdapt {
           }
         }
         if (
-          (id && element.controlId !== id && element.id !== id) ||
+          (id && element.id !== id) ||
           (conceptId && element.conceptId !== conceptId)
         ) {
           continue
