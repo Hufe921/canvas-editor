@@ -59,6 +59,7 @@ import {
   IUpdateOption
 } from '../../interface/Editor'
 import {
+  IDeleteElementByIdOption,
   IElement,
   IElementPosition,
   IElementStyle,
@@ -1732,6 +1733,50 @@ export class CommandAdapt {
       })
       elementList[index] = newElement[0]
     }
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
+  public deleteElementById(payload: IDeleteElementByIdOption) {
+    const { id, conceptId } = payload
+    if (!id && !conceptId) return
+    let isExistDelete = false
+    function deleteElement(elementList: IElement[]) {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              deleteElement(td.value)
+            }
+          }
+        }
+        if (
+          (id && element.id === id) ||
+          (conceptId && element.conceptId === conceptId)
+        ) {
+          isExistDelete = true
+          elementList.splice(i, 1)
+          i--
+        }
+        i++
+      }
+    }
+    // 优先正文再页眉页脚
+    const data = [
+      this.draw.getOriginalMainElementList(),
+      this.draw.getHeaderElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      deleteElement(elementList)
+    }
+    if (!isExistDelete) return
     this.draw.render({
       isSetCursor: false
     })

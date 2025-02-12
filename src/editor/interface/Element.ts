@@ -195,6 +195,11 @@ export interface IUpdateElementByIdOption {
   properties: Omit<Partial<IElement>, 'id'>
 }
 
+export interface IDeleteElementByIdOption {
+  id?: string
+  conceptId?: string
+}
+
 export interface IGetElementByIdOption {
   id?: string
   conceptId?: string

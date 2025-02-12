@@ -844,6 +844,16 @@ instance.command.executeAppendElementList(elementList: IElement[], options?: IAp
 instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
 ```
 
+## executeDeleteElementById
+
+功能：根据 id 删除元素
+
+用法：
+
+```javascript
+instance.command.executeDeleteElementById(payload: IDeleteElementByIdOption)
+```
+
 ## executeSetValue
 
 功能：设置编辑器数据

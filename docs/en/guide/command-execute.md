@@ -844,6 +844,16 @@ Usage:
 instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
 ```
 
+## executeDeleteElementById
+
+Feature: Delete element by id
+
+Usage:
+
+```javascript
+instance.command.executeDeleteElementById(payload: IDeleteElementByIdOption)
+```
+
 ## executeSetValue
 
 Feature: Set the editor data
