@@ -69,7 +69,9 @@ import {
 import {
   ICopyOption,
   IPasteOption,
-  IPositionContextByEvent
+  IPositionContextByEventOption,
+  IPositionContextByEventResult,
+  ITableInfoByEvent
 } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
@@ -2242,10 +2244,12 @@ export class CommandAdapt {
   }
 
   public getPositionContextByEvent(
-    evt: MouseEvent
-  ): IPositionContextByEvent | null {
+    evt: MouseEvent,
+    options: IPositionContextByEventOption = {}
+  ): IPositionContextByEventResult | null {
     const pageIndex = (<HTMLElement>evt.target)?.dataset.index
     if (!pageIndex) return null
+    const { isMustDirectHit = true } = options
     const pageNo = Number(pageIndex)
     const positionContext = this.position.getPositionByXY({
       x: evt.offsetX,
@@ -2262,8 +2266,14 @@ export class CommandAdapt {
       zone
     } = positionContext
     // 非直接命中或选区不一致时返回空值
-    if (!isDirectHit || (zone && zone !== this.zone.getZone())) return null
+    if (
+      (isMustDirectHit && !isDirectHit) ||
+      (zone && zone !== this.zone.getZone())
+    ) {
+      return null
+    }
     // 命中元素信息
+    let tableInfo: ITableInfoByEvent | null = null
     let element: IElement | null = null
     const elementList = this.draw.getOriginalElementList()
     let position: IElementPosition | null = null
@@ -2272,6 +2282,11 @@ export class CommandAdapt {
       const td = elementList[index!].trList?.[trIndex!].tdList[tdIndex!]
       element = td?.value[tdValueIndex!] || null
       position = td?.positionList?.[tdValueIndex!] || null
+      tableInfo = {
+        element: elementList[index!],
+        trIndex: trIndex!,
+        tdIndex: tdIndex!
+      }
     } else {
       element = elementList[index] || null
       position = positionList[index] || null
@@ -2296,7 +2311,8 @@ export class CommandAdapt {
     return {
       pageNo,
       element,
-      rangeRect
+      rangeRect,
+      tableInfo
     }
   }
 

@@ -29,5 +29,8 @@ export interface EventBusMap {
   mousemove: IMouseEventChange
   mouseleave: IMouseEventChange
   mouseenter: IMouseEventChange
+  mousedown: IMouseEventChange
+  mouseup: IMouseEventChange
+  click: IMouseEventChange
   positionContextChange: IPositionContextChange
 }
