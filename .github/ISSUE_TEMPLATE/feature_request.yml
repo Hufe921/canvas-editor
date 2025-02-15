@@ -14,6 +14,7 @@ body:
 
         Also try to search for your issue - another user may have already requested something similar!
 
+        作者牺牲业余时间，非全职开发此项目。您的[赞助](https://hufe.club/donate.jpg)不仅能支持项目的持续发展，还能激励作者加快此功能的完善。赞助时可以备注需求id
   - type: textarea
     id: problem-description
     attributes:

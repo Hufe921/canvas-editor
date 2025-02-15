@@ -14,6 +14,8 @@ body:
         Also try to search for your issue - it may have already been answered or even fixed in the development branch.
         However, if you find that an old, closed issue still persists in the latest version,
         you should open a new issue using the form below instead of commenting on the old issue.
+
+        作者牺牲业余时间，非全职开发此项目。您的[赞助](https://hufe.club/donate.jpg)不仅能支持项目的持续发展，还能激励作者加快此bug的解决。赞助时可以备注bug id
   - type: input
     id: version
     attributes:
