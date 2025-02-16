@@ -1,3 +1,32 @@
+## [0.9.103](https://github.com/Hufe921/canvas-editor/compare/v0.9.102...v0.9.103) (2025-02-16)
+
+
+### Bug Fixes
+
+* checkbox list select error in paper horizontal mode #997 ([5442f5e](https://github.com/Hufe921/canvas-editor/commit/5442f5ea1795cd54869912e887aacb60a3160cc9)), closes [#997](https://github.com/Hufe921/canvas-editor/issues/997)
+* control content change event boundary error #996 ([e6c681d](https://github.com/Hufe921/canvas-editor/commit/e6c681d2867c7894491b42842ac180503f0702a3)), closes [#996](https://github.com/Hufe921/canvas-editor/issues/996)
+* format error when update element by id #1006 ([15728e8](https://github.com/Hufe921/canvas-editor/commit/15728e8d799cf334bcc355cc7198ebcfc0345843)), closes [#1006](https://github.com/Hufe921/canvas-editor/issues/1006)
+
+
+### Chores
+
+* update issue template ([fd34310](https://github.com/Hufe921/canvas-editor/commit/fd343106fbd613f395a78d768dbca306d9461338))
+* update README.md ([e355de8](https://github.com/Hufe921/canvas-editor/commit/e355de8a597b58b9b79aba1bfec2ae31e0db4589))
+
+
+### Features
+
+* add executeDeleteElementById api #1003 ([089d684](https://github.com/Hufe921/canvas-editor/commit/089d6841988d20efb84efd6556469455207d5a2e)), closes [#1003](https://github.com/Hufe921/canvas-editor/issues/1003)
+* convert block elements to html #984 ([b77fd96](https://github.com/Hufe921/canvas-editor/commit/b77fd96dfadc012c6a2a9a4957d59fb8af0abc55)), closes [#984](https://github.com/Hufe921/canvas-editor/issues/984)
+
+
+### Performance Improvements
+
+* mouse event listener option #1010 ([56f9604](https://github.com/Hufe921/canvas-editor/commit/56f9604e9c8c11e31c7c86f5246373412bcc6625)), closes [#1010](https://github.com/Hufe921/canvas-editor/issues/1010)
+* timing of updating range style #985 ([cfb09ce](https://github.com/Hufe921/canvas-editor/commit/cfb09cef78c9e661540b87834495dc5a19839ef8)), closes [#985](https://github.com/Hufe921/canvas-editor/issues/985)
+
+
+
 ## [0.9.102](https://github.com/Hufe921/canvas-editor/compare/v0.9.101...v0.9.102) (2025-02-07)
 
 
