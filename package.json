@@ -65,6 +65,7 @@
     "vue": "^3.2.45"
   },
   "dependencies": {
+    "openai": "^4.85.1",
     "prismjs": "^1.27.0"
   },
   "simple-git-hooks": {

@@ -26,6 +26,7 @@ import { Dialog } from './components/dialog/Dialog'
 import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
 import { debounce, nextTick, scrollIntoView } from './utils'
+import { CommandWithAI, aiPlugin } from './plugins/ai/index'
 
 window.onload = function () {
   const isApple =
@@ -65,6 +66,7 @@ window.onload = function () {
   console.log('实例: ', instance)
   // cypress使用
   Reflect.set(window, 'editor', instance)
+  instance.use(aiPlugin)
 
   // 菜单弹窗销毁
   window.addEventListener(
@@ -1941,6 +1943,95 @@ window.onload = function () {
       isGlobal: true,
       callback: (command: Command) => {
         command.executePageScaleRecovery()
+      }
+    }
+  ])
+
+  // 使用ai进行文本处理
+  const useAgent = async (
+    command: Command,
+    inputText: string,
+    systemContent: string
+  ) => {
+    // 开启ai（以通义千问举例）
+    const response = await (<CommandWithAI>command).executeAI({
+      apiKey: '', // 自行申请apiKey
+      model: 'qwen-plus',
+      baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
+      inputText,
+      systemContent
+    })
+    // 注册事件
+    const close = () => {
+      response?.controller.abort()
+      aiPopup.classList.remove('show')
+      aiMask.classList.remove('show')
+    }
+    aiContent.innerText = ''
+    aiPopup.classList.add('show')
+    aiMask.classList.add('show')
+    aiCancel.onclick = () => {
+      close()
+    }
+    aiReplace.onclick = () => {
+      command.executeInsertElementList([
+        {
+          value: aiContent.innerText
+        }
+      ])
+      close()
+    }
+    // 内容响应
+    for await (const chunk of response) {
+      aiContent.innerText += chunk.choices[0]?.delta?.content || ''
+    }
+  }
+  const aiMask = document.querySelector<HTMLDivElement>('.ai-mask')!
+  const aiPopup = document.querySelector<HTMLDivElement>('.ai-popup')!
+  const aiContent = document.querySelector<HTMLDivElement>('.ai-content')!
+  const aiCancel = document.querySelector<HTMLButtonElement>('.ai-cancel')!
+  const aiReplace = document.querySelector<HTMLButtonElement>('.ai-replace')!
+  instance.register.contextMenuList([
+    {
+      name: 'AI润色',
+      when: payload => {
+        return payload.editorHasSelection
+      },
+      callback: async (command: Command) => {
+        const inputText = command.getRangeText()
+        useAgent(
+          command,
+          `请帮我润色这段文字，使其更流畅自然，并且直接输出润色后的纯文本不要其他格式：\n\n${inputText}`,
+          '你是一个擅长润色文本的助手'
+        )
+      }
+    },
+    {
+      name: 'AI扩写',
+      when: payload => {
+        return payload.editorHasSelection
+      },
+      callback: async (command: Command) => {
+        const inputText = command.getRangeText()
+        useAgent(
+          command,
+          `请帮我扩写这段文字，使其内容更加丰富，并且直接输出扩写后的纯文本不要其他格式：：\n\n${inputText}`,
+          '你是一个擅长扩写文本的助手'
+        )
+      }
+    },
+    {
+      name: 'AI缩写',
+      when: payload => {
+        return payload.editorHasSelection
+      },
+      callback: async (command: Command) => {
+        const inputText = command.getRangeText()
+        useAgent(
+          command,
+          `请帮我缩写这段文字，使其内容更加简洁，并且直接输出缩写后的纯文本不要其他格式：：\n\n${inputText}`,
+          '你是一个擅长缩写文本的助手'
+        )
       }
     }
   ])
