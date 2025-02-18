@@ -635,7 +635,38 @@ export function zipElementList(
       continue
     }
     // 优先处理虚拟元素，后表格、超链接、日期、控件特殊处理
-    if (element.titleId && element.level) {
+    if (element.areaId && element.area) {
+      const areaId = element.areaId
+      const area = element.area
+      // 收集并压缩数据
+      const valueList: IElement[] = []
+      while (e < elementList.length) {
+        const areaE = elementList[e]
+        if (areaId !== areaE.areaId) {
+          e--
+          break
+        }
+        delete areaE.area
+        delete areaE.areaId
+        valueList.push(areaE)
+        e++
+      }
+      const areaElementList = zipElementList(valueList, options)
+      // 不归类区域元素
+      if (isClassifyArea) {
+        const areaElement: IElement = {
+          type: ElementType.AREA,
+          value: '',
+          areaId,
+          area
+        }
+        areaElement.valueList = areaElementList
+        element = areaElement
+      } else {
+        zipElementListData.splice(e, 0, ...areaElementList)
+        continue
+      }
+    } else if (element.titleId && element.level) {
       // 标题处理
       const titleId = element.titleId
       if (titleId) {
@@ -689,37 +720,6 @@ export function zipElementList(
         }
         listElement.valueList = zipElementList(valueList, options)
         element = listElement
-      }
-    } else if (element.areaId && element.area) {
-      const areaId = element.areaId
-      const area = element.area
-      // 收集并压缩数据
-      const valueList: IElement[] = []
-      while (e < elementList.length) {
-        const areaE = elementList[e]
-        if (areaId !== areaE.areaId) {
-          e--
-          break
-        }
-        delete areaE.area
-        delete areaE.areaId
-        valueList.push(areaE)
-        e++
-      }
-      const areaElementList = zipElementList(valueList, options)
-      // 不归类区域元素
-      if (isClassifyArea) {
-        const areaElement: IElement = {
-          type: ElementType.AREA,
-          value: '',
-          areaId,
-          area
-        }
-        areaElement.valueList = areaElementList
-        element = areaElement
-      } else {
-        zipElementListData.splice(e, 0, ...areaElementList)
-        continue
       }
     } else if (element.type === ElementType.TABLE) {
       // 分页表格先进行合并
