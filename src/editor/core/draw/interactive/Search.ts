@@ -395,10 +395,12 @@ export class Search {
           if (p === 0) {
             tableElement.value = value
           } else {
-            this.draw.spliceElementList(tableElementList, curIndex + p, 0, {
-              ...tableElement,
-              value
-            })
+            this.draw.spliceElementList(tableElementList, curIndex + p, 0, [
+              {
+                ...tableElement,
+                value
+              }
+            ])
             tableDiffCount++
           }
         }
@@ -428,10 +430,12 @@ export class Search {
           if (p === 0) {
             element.value = value
           } else {
-            this.draw.spliceElementList(elementList, curIndex + p, 0, {
-              ...element,
-              value
-            })
+            this.draw.spliceElementList(elementList, curIndex + p, 0, [
+              {
+                ...element,
+                value
+              }
+            ])
             pageDiffCount++
           }
         }

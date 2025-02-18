@@ -92,7 +92,7 @@ export class TableOperate {
       elementList,
       curIndex,
       startIndex === endIndex ? 0 : endIndex - startIndex,
-      element
+      [element]
     )
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex, isSetCursor: false })

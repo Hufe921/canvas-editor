@@ -98,7 +98,7 @@ export function input(data: string, host: CanvasEvent) {
     formatElementContext(elementList, inputData, startIndex, {
       editorOptions: draw.getOptions()
     })
-    draw.spliceElementList(elementList, start, 0, ...inputData)
+    draw.spliceElementList(elementList, start, 0, inputData)
     curIndex = startIndex + inputData.length
   }
   if (~curIndex) {

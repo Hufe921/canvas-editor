@@ -720,12 +720,9 @@ export class Control {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
-      this.draw.spliceElementList(
-        elementList,
-        startIndex + p + 1,
-        0,
+      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, [
         newElement
-      )
+      ])
     }
   }
 

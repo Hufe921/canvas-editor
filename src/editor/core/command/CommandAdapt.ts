@@ -1034,7 +1034,7 @@ export class CommandAdapt {
       elementList,
       start,
       startIndex === endIndex ? 0 : endIndex - startIndex,
-      ...newElementList
+      newElementList
     )
     const curIndex = start + newElementList.length - 1
     this.range.setRange(curIndex, curIndex)
@@ -1178,10 +1178,12 @@ export class CommandAdapt {
         editorOptions: this.options
       })
       if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
-        this.draw.spliceElementList(elementList, startIndex, 1, newElement)
+        this.draw.spliceElementList(elementList, startIndex, 1, [newElement])
         curIndex = startIndex - 1
       } else {
-        this.draw.spliceElementList(elementList, startIndex + 1, 0, newElement)
+        this.draw.spliceElementList(elementList, startIndex + 1, 0, [
+          newElement
+        ])
         curIndex = startIndex
       }
     }

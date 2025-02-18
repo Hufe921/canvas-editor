@@ -148,7 +148,7 @@ export class DateControl implements IControlInstance {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     return start + data.length - 1
   }
@@ -219,7 +219,7 @@ export class DateControl implements IControlInstance {
       formatElementContext(elementList, [newElement], prefixIndex, {
         editorOptions: this.options
       })
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     // 重新渲染控件
     if (!context.range) {
