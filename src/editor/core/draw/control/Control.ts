@@ -1176,7 +1176,8 @@ export class Control {
     for (const key in pageComponentData) {
       const pageComponentKey = <keyof IEditorData>key
       const elementList = zipElementList(pageComponentData[pageComponentKey]!, {
-        isClassifyArea: true
+        isClassifyArea: true,
+        extraPickAttrs: ['id']
       })
       pageComponentData[pageComponentKey] = elementList
       formatElementList(elementList, {
