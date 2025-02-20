@@ -1,4 +1,3 @@
-import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
@@ -20,8 +19,8 @@ import {
 } from '../../interface/Editor'
 import {
   IElement,
-  IElementMetrics,
   IElementFillRect,
+  IElementMetrics,
   IElementStyle
 } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
@@ -31,6 +30,10 @@ import { CanvasEvent } from '../event/CanvasEvent'
 import { GlobalEvent } from '../event/GlobalEvent'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
+import {
+  ICursorPositionChange,
+  IParagraphIndentChange
+} from '../../interface/Listener'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
 import { Background } from './frame/Background'
@@ -50,10 +53,10 @@ import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
 import { Header } from './frame/Header'
-import { SuperscriptParticle } from './particle/SuperscriptParticle'
-import { SubscriptParticle } from './particle/SubscriptParticle'
-import { SeparatorParticle } from './particle/SeparatorParticle'
-import { PageBreakParticle } from './particle/PageBreakParticle'
+import { SuperscriptParticle } from './particle/Superscript'
+import { SubscriptParticle } from './particle/Subscript'
+import { SeparatorParticle } from './particle/Separator'
+import { PageBreakParticle } from './particle/PageBreak'
 import { Watermark } from './frame/Watermark'
 import {
   EditorComponent,
@@ -66,6 +69,7 @@ import {
 import { Control } from './control/Control'
 import {
   deleteSurroundElementList,
+  formatElementList,
   getIsBlockElement,
   getSlimCloneElementList,
   pickSurroundElementList,
@@ -78,7 +82,6 @@ import {
   ControlComponent,
   ControlIndentation
 } from '../../dataset/enum/Control'
-import { formatElementList } from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
@@ -99,7 +102,7 @@ import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
-import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
+import { ImageDisplay } from '../../dataset/enum/Common'
 import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
 import { MouseObserver } from '../observer/MouseObserver'
@@ -107,9 +110,6 @@ import { LineNumber } from './frame/LineNumber'
 import { PageBorder } from './frame/PageBorder'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
-import { TableOperate } from './particle/table/TableOperate'
-import { Area } from './interactive/Area'
-import { Badge } from './frame/Badge'
 
 export class Draw {
   private container: HTMLDivElement
@@ -117,7 +117,6 @@ export class Draw {
   private pageList: HTMLCanvasElement[]
   private ctxList: CanvasRenderingContext2D[]
   private pageNo: number
-  private renderCount: number
   private pagePixelRatio: number | null
   private mode: EditorMode
   private options: DeepRequired<IEditorOption>
@@ -135,10 +134,8 @@ export class Draw {
   private range: RangeManager
   private margin: Margin
   private background: Background
-  private badge: Badge
   private search: Search
   private group: Group
-  private area: Area
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -149,7 +146,6 @@ export class Draw {
   private textParticle: TextParticle
   private tableParticle: TableParticle
   private tableTool: TableTool
-  private tableOperate: TableOperate
   private pageNumber: PageNumber
   private lineNumber: LineNumber
   private waterMark: Watermark
@@ -184,6 +180,9 @@ export class Draw {
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
   private printModeData: Required<IEditorData> | null
+  public onLastPageReached = () => {
+    /* empty */
+  }
 
   constructor(
     rootContainer: HTMLElement,
@@ -197,7 +196,6 @@ export class Draw {
     this.pageList = []
     this.ctxList = []
     this.pageNo = 0
-    this.renderCount = 0
     this.pagePixelRatio = null
     this.mode = options.mode
     this.options = options
@@ -205,7 +203,6 @@ export class Draw {
     this.listener = listener
     this.eventBus = eventBus
     this.override = override
-
     this._formatContainer()
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
@@ -217,10 +214,8 @@ export class Draw {
     this.range = new RangeManager(this)
     this.margin = new Margin(this)
     this.background = new Background(this)
-    this.badge = new Badge(this)
     this.search = new Search(this)
     this.group = new Group(this)
-    this.area = new Area(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -230,7 +225,6 @@ export class Draw {
     this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
     this.tableTool = new TableTool(this)
-    this.tableOperate = new TableOperate(this)
     this.pageNumber = new PageNumber(this)
     this.lineNumber = new LineNumber(this)
     this.waterMark = new Watermark(this)
@@ -251,7 +245,7 @@ export class Draw {
     this.control = new Control(this)
     this.pageBorder = new PageBorder(this)
 
-    this.scrollObserver = new ScrollObserver(this)
+    this.scrollObserver = new ScrollObserver(this, this.onLastPageReached)
     this.selectionObserver = new SelectionObserver(this)
     this.imageObserver = new ImageObserver()
     new MouseObserver(this)
@@ -264,7 +258,6 @@ export class Draw {
 
     this.workerManager = new WorkerManager(this)
     new Actuator(this)
-
     const { letterClass } = options
     this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
     this.WORD_LIKE_REG = new RegExp(
@@ -329,9 +322,6 @@ export class Draw {
   }
 
   public isReadonly() {
-    if (this.area.getActiveAreaId()) {
-      return this.area.isReadonly()
-    }
     switch (this.mode) {
       case EditorMode.DESIGN:
         return false
@@ -520,10 +510,6 @@ export class Draw {
     this.pageNo = payload
   }
 
-  public getRenderCount(): number {
-    return this.renderCount
-  }
-
   public getPage(pageNo = -1): HTMLCanvasElement {
     return this.pageList[~pageNo ? pageNo : this.pageNo]
   }
@@ -578,14 +564,6 @@ export class Draw {
 
   public getGroup(): Group {
     return this.group
-  }
-
-  public getArea(): Area {
-    return this.area
-  }
-
-  public getBadge(): Badge {
-    return this.badge
   }
 
   public getHistoryManager(): HistoryManager {
@@ -668,55 +646,239 @@ export class Draw {
     return null
   }
 
-  public insertElementList(payload: IElement[]) {
+  public insertElementList(
+    payload: IElement[],
+    isCopied?: boolean,
+    startIndex2?: number,
+    endIndex2?: number
+  ) {
+    startIndex2 = startIndex2 ?? 0
+    endIndex2 = endIndex2 ?? payload.length
+    console.time('paste')
     if (!payload.length || !this.range.getIsCanInput()) return
+
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
+
     formatElementList(payload, {
       isHandleFirstElement: false,
       editorOptions: this.options
     })
-    let curIndex = -1
-    // 判断是否在控件内
+
+    let currentIndex = -1
+
     let activeControl = this.control.getActiveControl()
-    // 光标在控件内如果当前没有被激活，需要手动激活
+
     if (!activeControl && this.control.getIsRangeWithinControl()) {
       this.control.initControl()
       activeControl = this.control.getActiveControl()
     }
+
     if (activeControl && this.control.getIsRangeWithinControl()) {
-      curIndex = activeControl.setValue(payload, undefined, {
+      currentIndex = activeControl.setValue(payload, undefined, {
         isIgnoreDisabledRule: true
       })
-      this.control.emitControlContentChange()
     } else {
       const elementList = this.getElementList()
       const isCollapsed = startIndex === endIndex
-      const start = startIndex + 1
-      if (!isCollapsed) {
-        this.spliceElementList(elementList, start, endIndex - startIndex)
+      const insertPosition = startIndex + 1
+      const initialStartIndex2 = startIndex2 || 0
+      const pageRowList = this.getPageRowList()
+      const position = this.getPosition()
+      const positionList = position.getPositionList()
+      const cursorPosition = position.getCursorPosition()
+      const marginTop = this.getMainOuterHeight()
+      const currentPageRows = pageRowList[cursorPosition?.pageNo ?? 0] || []
+
+      // Вычисляем текущую высоту страницы до места вставки
+      let currentPageHeight =
+        currentPageRows.reduce(
+          (acc, currentRow) => acc + currentRow.height,
+          0
+        ) +
+        marginTop +
+        50
+
+      const pageHeight = this.getHeight()
+
+      // Если вставка происходит при копировании, определяем границы вставки
+      if (isCopied) {
+        if (!cursorPosition) return
+
+        currentPageHeight -= currentPageRows[cursorPosition.rowIndex]?.height
+        startIndex2 += 1
+
+        let rowIndex = cursorPosition.rowIndex
+
+        // Проверяем, пока есть свободное место на странице и элементы для вставки
+        while (currentPageHeight < pageHeight && startIndex2 < endIndex2) {
+          const innerWidth = this.getInnerWidth()
+          const currentRow = currentPageRows[rowIndex]
+          let availableWidth = innerWidth - (currentRow?.width || 0)
+
+          // Размещение элементов в текущей строке, пока хватает ширины
+          while (availableWidth > 0 && startIndex2 < endIndex2) {
+            if (positionList[startIndex2]?.value === ZERO) {
+              startIndex2++
+              break
+            }
+            availableWidth -= positionList[startIndex2]?.metrics.width
+            startIndex2++
+          }
+          rowIndex++
+
+          if (startIndex2 < endIndex2) {
+            currentPageHeight +=
+              currentPageRows[positionList[startIndex2].rowIndex].height
+          }
+        }
+
+        // Проверяем, находится ли курсор ниже разделителя сноски (если есть)
+        const footnoteRowIndexInPage = currentPageRows.findIndex(row =>
+          row.elementList.some(
+            elem => elem.type === ElementType.SEPARATOR && elem.isFootnote
+          )
+        )
+
+        // let isCursorUnderSeparator = false
+        if (footnoteRowIndexInPage !== -1) {
+          const cursorRowIndexInPage =
+            cursorPosition.rowIndex -
+            pageRowList
+              .slice(0, cursorPosition.pageNo)
+              .reduce((acc, pageRows) => acc + pageRows.length, 0)
+
+          if (cursorRowIndexInPage > footnoteRowIndexInPage) {
+            // isCursorUnderSeparator = true
+          }
+        }
       }
-      this.spliceElementList(elementList, start, 0, payload)
-      curIndex = startIndex + payload.length
-      // 列表前如有换行符则删除-因为列表内已存在
-      const preElement = elementList[start - 1]
+
+      if (isCopied) {
+        // Количество элементов, которые мы можем вставить до окончания места
+        const elementsToPushBefore = startIndex2 - initialStartIndex2
+
+        // Если выделение не схлопнуто, сначала удаляем выбранный диапазон
+        if (!isCollapsed) {
+          this.spliceElementList(
+            elementList,
+            insertPosition,
+            endIndex - startIndex
+          )
+        }
+
+        // Проверяем позицию разделителя сноски на текущей странице
+        const footnoteRowIndexInPage = currentPageRows.findIndex(row =>
+          row.elementList.some(
+            elem => elem.type === ElementType.SEPARATOR && elem.isFootnote
+          )
+        )
+
+        // Подсчитываем количество элементов под разделителем, если страница переполнена
+        const elementUnderSeparatorAmount =
+          currentPageRows
+            .filter(
+              (_, index) =>
+                index > footnoteRowIndexInPage && currentPageHeight > pageHeight
+            )
+            .reduce(
+              (sum, currentRow) => sum + currentRow.elementList.length,
+              0
+            ) + 3 || 0
+
+        // Если текущая высота превысила высоту страницы, разбиваем вставку
+        if (currentPageHeight > pageHeight && isCopied) {
+          // Вставляем часть элементов
+          this.spliceElementList(
+            elementList,
+            insertPosition,
+            0,
+            payload.splice(0, elementsToPushBefore + 1)
+          )
+
+          this.spliceElementList(
+            elementList,
+            insertPosition + elementsToPushBefore + 1,
+            0,
+            [{ value: ZERO }]
+          )
+
+          this.spliceElementList(elementList, elementList.length, 0, [
+            {
+              value: ZERO
+            }
+          ])
+
+          this.spliceElementList(
+            elementList,
+            elementList.length,
+            0,
+            payload.slice(elementsToPushBefore, -1)
+          )
+          currentIndex =
+            startIndex + payload.length + elementUnderSeparatorAmount
+        }
+        // const chunkSize = 10000;
+        // for (let i = 0; i < payload.length; i += chunkSize) {
+        //     const chunk = payload.slice(i, i + chunkSize);
+        //     this.spliceElementList(
+        //         elementList,
+        //         insertPosition,
+        //         0,
+        //         ...chunk,
+        //     );
+        // }
+        this.spliceElementList(elementList, insertPosition, 0, payload)
+        currentIndex = startIndex + payload.length
+      } else {
+        // Иначе вставляем весь список сразу
+        this.spliceElementList(elementList, insertPosition, 0, payload)
+        currentIndex = startIndex + payload.length
+      }
+      const rowIndexInElementList = elementList.findLastIndex(
+        (el, index) =>
+          el?.listId === payload[0]?.listId &&
+          el.value === ZERO &&
+          index <= insertPosition
+      )
+
+      const isEmpty = elementList.find(
+        (el, index) =>
+          index < currentIndex &&
+          index > rowIndexInElementList &&
+          el.type !== ElementType.TAB
+      )
+
       if (
-        payload[0].listId &&
+        payload[0]?.type === ElementType.TAB &&
+        !isEmpty &&
+        rowIndexInElementList >= 0 &&
+        rowIndexInElementList < elementList.length
+      ) {
+        elementList[rowIndexInElementList].listLevel =
+          (elementList[rowIndexInElementList].listLevel ?? 0) + 1
+      }
+
+      const preElement = elementList[insertPosition - 1]
+
+      if (
+        payload[0]?.listId &&
         preElement &&
-        !preElement.listId &&
+        !preElement?.listId &&
         preElement?.value === ZERO &&
-        (!preElement.type || preElement.type === ElementType.TEXT)
+        (!preElement?.type || preElement?.type === ElementType.TEXT)
       ) {
         elementList.splice(startIndex, 1)
-        curIndex -= 1
+        currentIndex -= 1
       }
     }
-    if (~curIndex) {
-      this.range.setRange(curIndex, curIndex)
+    if (~currentIndex) {
+      this.range.setRange(currentIndex, currentIndex)
       this.render({
-        curIndex
+        curIndex: currentIndex
       })
     }
+    console.timeEnd('paste')
   }
 
   public appendElementList(
@@ -782,7 +944,6 @@ export class Draw {
           const deleteElement = elementList[deleteIndex]
           if (
             isDesignMode ||
-            deleteElement?.control?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
               deleteElement?.title?.deletable !== false)
@@ -837,10 +998,6 @@ export class Draw {
 
   public getTableTool(): TableTool {
     return this.tableTool
-  }
-
-  public getTableOperate(): TableOperate {
-    return this.tableOperate
   }
 
   public getTableParticle(): TableParticle {
@@ -1110,6 +1267,7 @@ export class Draw {
   public getValue(options: IGetValueOption = {}): IEditorResult {
     const { pageNo, extraPickAttrs } = options
     let mainElementList = this.elementList
+
     if (
       Number.isInteger(pageNo) &&
       pageNo! >= 0 &&
@@ -1124,15 +1282,14 @@ export class Draw {
         extraPickAttrs
       }),
       main: zipElementList(mainElementList, {
-        extraPickAttrs,
-        isClassifyArea: true
+        extraPickAttrs
       }),
       footer: zipElementList(this.getFooterElementList(), {
         extraPickAttrs
       })
     }
     return {
-      version,
+      version: '1',
       data,
       options: deepClone(this.options)
     }
@@ -1259,7 +1416,9 @@ export class Draw {
     )
   }
 
-  public computeRowList(payload: IComputeRowListPayload) {
+  public computeRowList(
+    payload: IComputeRowListPayload & { startIndex?: number }
+  ) {
     const {
       innerWidth,
       elementList,
@@ -1271,11 +1430,12 @@ export class Draw {
       mainOuterHeight = 0,
       surroundElementList = []
     } = payload
+    const currentStartIndex = payload.startIndex || 0
     const {
       defaultSize,
       defaultRowMargin,
       scale,
-      table: { tdPadding, defaultTrMinHeight },
+      table: { tdPadding },
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -1284,16 +1444,25 @@ export class Draw {
     // 计算列表偏移宽度
     const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
     const rowList: IRow[] = []
-    if (elementList.length) {
+    let rowsCount = -1
+    let curRowChunked: IRow | null = null
+    if (
+      currentStartIndex &&
+      elementList[0]?.id === this.elementList[currentStartIndex - 1]?.id
+    ) {
+      curRowChunked = this.rowList[this.rowList.length - 1]
+    } else if (elementList.length) {
       rowList.push({
         width: 0,
         height: 0,
         ascent: 0,
         elementList: [],
-        startIndex: 0,
+        startIndex: currentStartIndex,
         rowIndex: 0,
         rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
       })
+      rowsCount++
+      curRowChunked = null
     }
     // 起始位置及页码计算
     let x = startX
@@ -1301,35 +1470,78 @@ export class Draw {
     let pageNo = 0
     // 列表位置
     let listId: string | undefined
-    let listIndex = 0
+    const listIndex = 0
+    const secondListIndex = 0
+    let indexes: number[] = []
     // 控件最小宽度
     let controlRealWidth = 0
+
     for (let i = 0; i < elementList.length; i++) {
-      const curRow: IRow = rowList[rowList.length - 1]
+      let curRow: IRow = rowList[rowList.length - 1]
+      if (curRowChunked !== null && rowList.length === 0) {
+        curRow = curRowChunked
+      }
       const element = elementList[i]
       const rowMargin =
         defaultBasicRowMarginHeight * (element.rowMargin ?? defaultRowMargin)
+
       const metrics: IElementMetrics = {
         width: 0,
         height: 0,
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
+
+      let spacingBefore = 0
+      let spacingAfter = 0
+      let firstLine = 0
+
+      if (curRow.elementList && curRow.elementList.length > 0) {
+        //отступ слева
+        const foundElementBefore = curRow.elementList.find(
+          el => el.spacing?.before
+        )
+        if (foundElementBefore) {
+          spacingBefore = foundElementBefore.spacing?.before || 0
+        }
+
+        // отступ справа
+        const foundElementAfter = curRow.elementList.find(
+          el => el.spacing?.after
+        )
+        if (foundElementAfter) {
+          spacingAfter = foundElementAfter.spacing?.after || 0
+        }
+        // const currentId = curRow.elementList.find(el => el.id)?.id || null
+        // const isFirstRowInParagraph = rowList.findIndex(row =>
+        //   row.elementList.find(el => el.id === currentId)
+        // )
+        // Вычисляем firstLine отступ для первой строки
+        const foundElementFirstLine = curRow.elementList.find(
+          el => el.spacing?.firstLine
+        )
+        if (foundElementFirstLine) {
+          firstLine = foundElementFirstLine?.spacing?.firstLine || 0
+        }
+      }
       // 实际可用宽度
       const offsetX =
         curRow.offsetX ||
         (element.listId && listStyleMap.get(element.listId)) ||
         0
-      const availableWidth = innerWidth - offsetX
+      //уменьшаем доступную ширину на величину отступов для переноса элементов на следующую строку
+      const currentId = curRow.elementList.find(el => el.id)?.id || null
+      const isFirstRowInParagraph = rowList.findIndex(row =>
+        row.elementList.find(el => el.id === currentId)
+      )
+      let availableWidth = innerWidth - offsetX - spacingBefore - spacingAfter
+      if (isFirstRowInParagraph === rowsCount) {
+        availableWidth -= firstLine
+        availableWidth += spacingBefore
+      }
       // 增加起始位置坐标偏移量
-      const isStartElement = curRow.elementList.length === 1
-      x += isStartElement ? offsetX : 0
-      y += isStartElement ? curRow.offsetY || 0 : 0
-      if (element.control?.hide && !this.isDesignMode()) {
-        metrics.height =
-          curRow.elementList[curRow.elementList.length - 1]?.metrics.height ||
-          this.options.defaultSize * scale
-      } else if (
+      x += curRow.elementList.length === 1 ? offsetX : 0
+      if (
         element.type === ElementType.IMAGE ||
         element.type === ElementType.LATEX
       ) {
@@ -1388,16 +1600,10 @@ export class Draw {
           }
         }
         element.pagingIndex = element.pagingIndex ?? 0
-        const trList = element.trList!
-        // 计算前移除上一次的高度
-        for (let t = 0; t < trList.length; t++) {
-          const tr = trList[t]
-          tr.height = tr.minHeight || defaultTrMinHeight
-          tr.minHeight = tr.height
-        }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)
         // 计算表格内元素信息
+        const trList = element.trList!
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
@@ -1419,11 +1625,6 @@ export class Draw {
               changeTr.height += extraHeight
               changeTr.tdList.forEach(changeTd => {
                 changeTd.height! += extraHeight
-                if (!changeTd.realHeight) {
-                  changeTd.realHeight = changeTd.height!
-                } else {
-                  changeTd.realHeight! += extraHeight
-                }
               })
             }
             // 当前单元格最小高度及真实高度（包含跨列）
@@ -1465,7 +1666,6 @@ export class Draw {
             changeTr.height -= reduceHeight
             changeTr.tdList.forEach(changeTd => {
               changeTd.height! -= reduceHeight
-              changeTd.realHeight! -= reduceHeight
             })
           }
         }
@@ -1482,10 +1682,6 @@ export class Draw {
         metrics.height = elementHeight
         metrics.boundingBoxDescent = elementHeight
         metrics.boundingBoxAscent = -rowMargin
-        // 后一个元素也是表格则移除行间距
-        if (elementList[i + 1]?.type === ElementType.TABLE) {
-          metrics.boundingBoxAscent -= rowMargin
-        }
         // 表格分页处理(拆分表格)
         if (isPagingMode) {
           const height = this.getHeight()
@@ -1493,21 +1689,20 @@ export class Draw {
           let curPagePreHeight = marginHeight
           for (let r = 0; r < rowList.length; r++) {
             const row = rowList[r]
-            const rowOffsetY = row.offsetY || 0
             if (
-              row.height + curPagePreHeight + rowOffsetY > height ||
+              row.height + curPagePreHeight > height ||
               rowList[r - 1]?.isPageBreak
             ) {
-              curPagePreHeight = marginHeight + row.height + rowOffsetY
+              curPagePreHeight = marginHeight + row.height
             } else {
-              curPagePreHeight += row.height + rowOffsetY
+              curPagePreHeight += row.height
             }
           }
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
           const rowMarginHeight = rowMargin * 2 * scale
-          const firstTrHeight = element.trList![0].height! * scale
           if (
-            curPagePreHeight + firstTrHeight + rowMarginHeight > height ||
+            curPagePreHeight + element.trList![0].height! + rowMarginHeight >
+              height ||
             (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
             // 无可拆分行则切换至新页
@@ -1551,12 +1746,11 @@ export class Draw {
                 (pre, cur) => pre + cur.height,
                 0
               )
-              const cloneTrRealHeight = cloneTrHeight * scale
               const pagingId = element.pagingId || getUUID()
               element.pagingId = pagingId
               element.height -= cloneTrHeight
-              metrics.height -= cloneTrRealHeight
-              metrics.boundingBoxDescent -= cloneTrRealHeight
+              metrics.height -= cloneTrHeight
+              metrics.boundingBoxDescent -= cloneTrHeight
               // 追加拆分表格
               const cloneElement = deepClone(element)
               cloneElement.pagingId = pagingId
@@ -1698,13 +1892,16 @@ export class Draw {
           controlRealWidth += metrics.width
         }
         if (rowElement.controlComponent === ControlComponent.POSTFIX) {
-          // 设置最小宽度控件属性（字符偏移量）
-          this.control.setMinWidthControlInfo({
-            row: curRow,
-            rowElement,
-            availableWidth,
-            controlRealWidth
-          })
+          const extraWidth = rowElement.control.minWidth - controlRealWidth
+          // 消费超出实际最小宽度的长度
+          if (extraWidth > 0) {
+            // 超出行宽时截断
+            const rowRemainingWidth =
+              availableWidth - curRow.width - metrics.width
+            const left = Math.min(rowRemainingWidth, extraWidth) * scale
+            rowElement.left = left
+            curRow.width += left
+          }
           controlRealWidth = 0
         }
       }
@@ -1743,12 +1940,38 @@ export class Draw {
       }
       // 列表信息
       if (element.listId) {
+        // if (element.listId !== listId) {
+        //     listIndex = 0;
+        //     secondListIndex = 0;
+        //     indexes = []
+        // }
+        //  if(element.listLevel >= 1) {
+        //     secondListIndex++
+        // }else if (element.value === ZERO && !element.listWrap) {
+        //     secondListIndex = 0
+        //     listIndex++;
+        // }
+        const currentLevel = element.listLevel || 0
+
         if (element.listId !== listId) {
-          listIndex = 0
-        } else if (element.value === ZERO && !element.listWrap) {
-          listIndex++
+          // Начинаем новый список, сбрасываем `indexes`
+          indexes = []
+        }
+
+        // Убедимся, что `indexes` имеет достаточную длину
+        while (indexes.length <= currentLevel) {
+          indexes.push(0)
+        }
+
+        if (element.value === ZERO && !element.listWrap) {
+          // Увеличиваем счетчик на текущем уровне
+          indexes[currentLevel]++
+
+          // Сбрасываем счетчики более глубоких уровней
+          indexes = indexes.slice(0, currentLevel + 1)
         }
       }
+
       listId = element.listId
       // 计算四周环绕导致的元素偏移量
       const surroundPosition = this.position.setSurroundPosition({
@@ -1777,11 +2000,6 @@ export class Draw {
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
-        preElement?.areaId !== element.areaId ||
-        (element.control?.flexDirection === FlexDirection.COLUMN &&
-          (element.controlComponent === ControlComponent.CHECKBOX ||
-            element.controlComponent === ControlComponent.RADIO) &&
-          preElement?.controlComponent === ControlComponent.VALUE) ||
         (i !== 0 && element.value === ZERO)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
@@ -1791,7 +2009,8 @@ export class Draw {
         const row: IRow = {
           width: metrics.width,
           height,
-          startIndex: i,
+          startIndex: currentStartIndex + i,
+          // startIndex: i,
           elementList: [rowElement],
           ascent,
           rowIndex: curRow.rowIndex + 1,
@@ -1823,24 +2042,19 @@ export class Draw {
         // 列表缩进
         if (element.listId) {
           row.isList = true
-          row.offsetX = listStyleMap.get(element.listId!)
+          row.offsetX =
+            listStyleMap.get(element.listId!)! +
+            (row.elementList[0].listLevel ?? 0 * defaultTabWidth - 6)
           row.listIndex = listIndex
+          row.indexes = indexes.slice(0)
+          row.secondListIndex = secondListIndex
         }
-        // Y轴偏移量
-        row.offsetY =
-          !isFromTable &&
-          element.area?.top &&
-          element.areaId !== elementList[i - 1]?.areaId
-            ? element.area.top * scale
-            : 0
         rowList.push(row)
+        rowsCount++
       } else {
         curRow.width += metrics.width
         // 减小块元素前第一行空行行高
-        if (
-          i === 0 &&
-          (getIsBlockElement(elementList[1]) || !!elementList[1]?.areaId)
-        ) {
+        if (i === 0 && getIsBlockElement(elementList[1])) {
           curRow.height = defaultBasicRowMarginHeight
           curRow.ascent = defaultBasicRowMarginHeight
         } else if (curRow.height < height) {
@@ -1857,8 +2071,7 @@ export class Draw {
         if (
           !curRow.isSurround &&
           (preElement?.rowFlex === RowFlex.JUSTIFY ||
-            (preElement?.rowFlex === RowFlex.ALIGNMENT &&
-              curRow.isWidthNotEnough))
+            (preElement?.rowFlex === RowFlex.ALIGNMENT && isWidthNotEnough))
         ) {
           // 忽略换行符及尾部元素间隔设置
           const rowElementList =
@@ -1910,6 +2123,7 @@ export class Draw {
         x += metrics.width
       }
     }
+
     return rowList
   }
 
@@ -1926,10 +2140,7 @@ export class Draw {
     if (pageMode === PageMode.CONTINUITY) {
       pageRowList[0] = this.rowList
       // 重置高度
-      pageHeight += this.rowList.reduce(
-        (pre, cur) => pre + cur.height + (cur.offsetY || 0),
-        0
-      )
+      pageHeight += this.rowList.reduce((pre, cur) => pre + cur.height, 0)
       const dpr = this.getPagePixelRatio()
       const pageDom = this.pageList[0]
       const pageDomHeight = Number(pageDom.style.height.replace('px', ''))
@@ -1945,20 +2156,19 @@ export class Draw {
     } else {
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]
-        const rowOffsetY = row.offsetY || 0
         if (
-          row.height + rowOffsetY + pageHeight > height ||
+          row.height + pageHeight > height ||
           this.rowList[i - 1]?.isPageBreak
         ) {
           if (Number.isInteger(maxPageNo) && pageNo >= maxPageNo!) {
             this.elementList = this.elementList.slice(0, row.startIndex)
             break
           }
-          pageHeight = marginHeight + row.height + rowOffsetY
+          pageHeight = marginHeight + row.height
           pageRowList.push([row])
           pageNo++
         } else {
-          pageHeight += row.height + rowOffsetY
+          pageHeight += row.height
           pageRowList[pageNo].push(row)
         }
       }
@@ -2064,10 +2274,7 @@ export class Draw {
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
-        if (element.control?.hide && !this.isDesignMode()) {
-          // 控件隐藏时不绘制
-          this.textParticle.complete()
-        } else if (element.type === ElementType.IMAGE) {
+        if (element.type === ElementType.IMAGE) {
           this.textParticle.complete()
           // 浮动图片单独绘制
           if (
@@ -2214,9 +2421,10 @@ export class Draw {
             offsetY = this.subscriptParticle.getOffsetY(element)
           }
           // 占位符不参与颜色计算
-          const color = element.control?.underline
-            ? this.options.underlineColor
-            : element.color
+          const color =
+            element.controlComponent === ControlComponent.PLACEHOLDER
+              ? undefined
+              : element.color
           this.underline.recordFillInfo(
             ctx,
             x - offsetX,
@@ -2425,7 +2633,6 @@ export class Draw {
       lineNumber,
       pageBorder
     } = this.options
-    const isPrintMode = this.mode === EditorMode.PRINT
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2433,16 +2640,8 @@ export class Draw {
     this._clearPage(pageNo)
     // 绘制背景
     this.background.render(ctx, pageNo)
-    // 绘制区域
-    if (!isPrintMode) {
-      this.area.render(ctx, pageNo)
-    }
-    // 绘制水印
-    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
-      this.waterMark.render(ctx, pageNo)
-    }
     // 绘制页边距
-    if (!isPrintMode) {
+    if (this.mode !== EditorMode.PRINT) {
       this.margin.render(ctx, pageNo)
     }
     // 渲染衬于文字下方元素
@@ -2451,9 +2650,7 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_BOTTOM]
     })
     // 控件高亮
-    if (!isPrintMode) {
-      this.control.renderHighlightList(ctx, pageNo)
-    }
+    this.control.renderHighlightList(ctx, pageNo)
     // 渲染元素
     const index = rowList[0]?.startIndex
     this.drawRow(ctx, {
@@ -2485,8 +2682,12 @@ export class Draw {
       imgDisplays: [ImageDisplay.FLOAT_TOP, ImageDisplay.SURROUND]
     })
     // 搜索匹配绘制
-    if (!isPrintMode && this.search.getSearchKeyword()) {
+    if (this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
+    }
+    // 绘制水印
+    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
+      this.waterMark.render(ctx)
     }
     // 绘制空白占位符
     if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
@@ -2500,8 +2701,6 @@ export class Draw {
     if (!pageBorder.disabled) {
       this.pageBorder.render(ctx)
     }
-    // 绘制签章
-    this.badge.render(ctx, pageNo)
   }
 
   private _disconnectLazyRender() {
@@ -2544,7 +2743,6 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
-    this.renderCount++
     const { header, footer } = this.options
     const {
       isSubmitHistory = true,
@@ -2558,8 +2756,6 @@ export class Draw {
     let { curIndex } = payload || {}
     const innerWidth = this.getInnerWidth()
     const isPagingMode = this.getIsPagingMode()
-    // 缓存当前页数信息
-    const oldPageSize = this.pageRowList.length
     // 计算文档信息
     if (isCompute) {
       // 清空浮动元素位置信息
@@ -2582,31 +2778,40 @@ export class Draw {
       const startX = margins[3]
       const startY = margins[0] + extraHeight
       const surroundElementList = pickSurroundElementList(this.elementList)
-      this.rowList = this.computeRowList({
-        startX,
-        startY,
-        pageHeight,
-        mainOuterHeight,
-        isPagingMode,
-        innerWidth,
-        surroundElementList,
-        elementList: this.elementList
-      })
+      const maxChunkSize = 1000
+      const elementListChunks = []
+
+      for (let i = 0; i < this.elementList.length; i += maxChunkSize) {
+        elementListChunks.push(this.elementList.slice(i, i + maxChunkSize))
+      }
+      this.rowList = []
+      let currentStartIndex = 0
+      for (const chunk of elementListChunks) {
+        const rowListChunk = this.computeRowList({
+          startX,
+          startY,
+          pageHeight,
+          mainOuterHeight,
+          isPagingMode,
+          innerWidth,
+          surroundElementList,
+          elementList: chunk,
+          startIndex: currentStartIndex
+        })
+        currentStartIndex += chunk.length
+        this.rowList = this.rowList.concat(rowListChunk)
+      }
       // 页面信息
       this.pageRowList = this._computePageList()
       // 位置信息
       this.position.computePositionList()
-      // 区域信息
-      this.area.compute()
-      if (this.mode !== EditorMode.PRINT) {
-        // 搜索信息
-        const searchKeyword = this.search.getSearchKeyword()
-        if (searchKeyword) {
-          this.search.compute(searchKeyword)
-        }
-        // 控件关键词高亮
-        this.control.computeHighlightList()
+      // 搜索信息
+      const searchKeyword = this.search.getSearchKeyword()
+      if (searchKeyword) {
+        this.search.compute(searchKeyword)
       }
+      // 控件关键词高亮
+      this.control.computeHighlightList()
     }
     // 清除光标等副作用
     this.imageObserver.clearAll()
@@ -2637,9 +2842,6 @@ export class Draw {
     // 光标重绘
     if (isSetCursor) {
       curIndex = this.setCursor(curIndex)
-    } else if (this.range.getIsSelection()) {
-      // 存在选区时仅定位避免事件无法捕获
-      this.cursor.focus()
     }
     // 历史记录用于undo、redo（非首次渲染内容变更 || 第一次存在光标时）
     if (
@@ -2650,8 +2852,6 @@ export class Draw {
     }
     // 信息变动回调
     nextTick(() => {
-      // 选区样式
-      this.range.setRangeStyle()
       // 重新唤起弹窗类控件
       if (isCompute && this.control.getActiveControl()) {
         this.control.reAwakeControl()
@@ -2668,14 +2868,12 @@ export class Draw {
       if (isCompute && !this.zone.isMainActive()) {
         this.zone.drawZoneIndicator()
       }
-      // 页数改变
-      if (oldPageSize !== this.pageRowList.length) {
-        if (this.listener.pageSizeChange) {
-          this.listener.pageSizeChange(this.pageRowList.length)
-        }
-        if (this.eventBus.isSubscribe('pageSizeChange')) {
-          this.eventBus.emit('pageSizeChange', this.pageRowList.length)
-        }
+      // 页面尺寸改变
+      if (this.listener.pageSizeChange) {
+        this.listener.pageSizeChange(this.pageRowList.length)
+      }
+      if (this.eventBus.isSubscribe('pageSizeChange')) {
+        this.eventBus.emit('pageSizeChange', this.pageRowList.length)
       }
       // 文档内容改变
       if ((isSubmitHistory || isSourceHistory) && !isInit) {
@@ -2706,6 +2904,14 @@ export class Draw {
       this.position.setCursorPosition(
         curIndex !== undefined ? positionList[curIndex] : null
       )
+      if (curIndex !== undefined) {
+        const cursorPositionChange: ICursorPositionChange = (index: number) => {
+          return index
+        }
+        cursorPositionChange(curIndex)
+
+        this.eventBus.emit('cursorPositionChange', curIndex)
+      }
     }
     // 定位到图片元素并且位置发生变化
     let isShowCursor = true
@@ -2773,5 +2979,79 @@ export class Draw {
     this.getHyperlinkParticle().clearHyperlinkPopup()
     // 日期控件
     this.getDateParticle().clearDatePicker()
+  }
+
+  public setParagraphIndentById(
+    ids: string | string[],
+    spacing: { before?: number; after?: number; firstLine?: number }
+  ) {
+    const isDisabled = this.isReadonly() || this.isDisabled()
+    if (isDisabled) return
+    const idArray = Array.isArray(ids) ? ids : [ids]
+    const elementList = this.getOriginalElementList()
+    let spacingDiffernce = 0
+    const foundElement = elementList.find(el => el.id === ids)
+    if (spacing.firstLine)
+      spacingDiffernce =
+        spacing?.firstLine - (foundElement?.spacing?.firstLine ?? 0)
+    const updatedElements = elementList.map(element => {
+      if (element.id && idArray.includes(element.id)) {
+        const existingSpacing = element.spacing || {}
+
+        return {
+          ...element,
+          spacing: {
+            ...existingSpacing,
+            before:
+              spacing.before !== undefined
+                ? spacing.before
+                : existingSpacing.before,
+            after:
+              spacing.after !== undefined
+                ? spacing.after
+                : existingSpacing.after,
+            firstLine:
+              spacing.firstLine !== undefined
+                ? spacing.firstLine
+                : existingSpacing.firstLine
+          }
+        }
+      }
+      return element
+    })
+    const positionList = this.position.getPositionList()
+    let coordinates = null
+    if (ids !== null) {
+      if (Array.isArray(ids))
+        coordinates =
+          positionList[elementList.findIndex(elem => elem?.id === ids[0])]
+            .coordinate
+      else {
+        coordinates =
+          positionList[elementList.findIndex(elem => elem?.id === ids)]
+            .coordinate
+      }
+    }
+    let posX = 0
+    let posY
+    if (coordinates) {
+      posX = coordinates.leftTop[0] - 25 + (spacingDiffernce || 0)
+      posY = (coordinates.leftTop[1] + coordinates.leftBottom[1]) / 2 + 2
+    }
+    if (ids !== undefined) {
+      const paragraphIndentChange: IParagraphIndentChange = () => {
+        return ids
+      }
+      paragraphIndentChange({ ids, x: posX, y: posY })
+
+      this.eventBus.emit('paragraphIndentChange', {
+        ids,
+        x: posX,
+        y: posY
+      })
+    }
+    this.setEditorData({ main: updatedElements })
+    this.elementList = updatedElements
+    this.render()
   }
 }

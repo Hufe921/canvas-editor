@@ -246,10 +246,9 @@ export class Signature {
         this.canvasWidth,
         this.canvasHeight
       )
-      const self = this
-      this._saveUndoFn(function () {
-        self.ctx.clearRect(0, 0, self.canvasWidth, self.canvasHeight)
-        self.ctx.putImageData(imageData, 0, 0)
+      this._saveUndoFn(() => {
+        this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
+        this.ctx.putImageData(imageData, 0, 0)
       })
       this.isDrawn = false
     }

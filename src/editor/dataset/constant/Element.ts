@@ -29,7 +29,6 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'strikeout',
   'rowFlex',
   'url',
-  'areaId',
   'hyperlinkId',
   'dateId',
   'dateFormat',
@@ -53,7 +52,6 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'dashArray',
   'trList',
   'borderType',
-  'borderColor',
   'width',
   'height',
   'url',
@@ -76,8 +74,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'textDecoration',
   'extension',
   'externalId',
-  'areaId',
-  'area'
+  'isFootnote'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
@@ -101,11 +98,19 @@ export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = [
   'titleId',
   'title'
 ]
+export const PARAGRAPH_CONTEXT_ATTR: Array<keyof IElement> = [
+  'r',
+  'id',
+  'value',
+  'type',
+  'spacing'
+]
 
 export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
   'listId',
   'listType',
-  'listStyle'
+  'listStyle',
+  'listLevel'
 ]
 
 export const CONTROL_CONTEXT_ATTR: Array<keyof IElement> = [
@@ -123,13 +128,11 @@ export const CONTROL_STYLE_ATTR: Array<keyof IControlStyle> = [
   'strikeout'
 ]
 
-export const AREA_CONTEXT_ATTR: Array<keyof IElement> = ['areaId', 'area']
-
 export const EDITOR_ELEMENT_CONTEXT_ATTR: Array<keyof IElement> = [
   ...TABLE_CONTEXT_ATTR,
   ...TITLE_CONTEXT_ATTR,
   ...LIST_CONTEXT_ATTR,
-  ...AREA_CONTEXT_ATTR
+  ...PARAGRAPH_CONTEXT_ATTR
 ]
 
 export const TEXTLIKE_ELEMENT_TYPE: ElementType[] = [
@@ -157,5 +160,6 @@ export const INLINE_NODE_NAME: string[] = ['HR', 'TABLE', 'UL', 'OL']
 
 export const VIRTUAL_ELEMENT_TYPE: ElementType[] = [
   ElementType.TITLE,
-  ElementType.LIST
+  ElementType.LIST,
+  ElementType.PARAGRAPH
 ]

@@ -1,6 +1,5 @@
 import { ElementType, IElement, TableBorder } from '../../../..'
 import { TdBorder, TdSlash } from '../../../../dataset/enum/table/Table'
-import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
@@ -20,7 +19,7 @@ interface IDrawTableBorderOption {
 export class TableParticle {
   private draw: Draw
   private range: RangeManager
-  private options: DeepRequired<IEditorOption>
+  private options: Required<IEditorOption>
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -149,29 +148,19 @@ export class TableParticle {
     startX: number,
     startY: number
   ) {
-    const { colgroup, trList, borderType, borderColor } = element
+    const { colgroup, trList, borderType } = element
     if (!colgroup || !trList) return
-    const {
-      scale,
-      table: { defaultBorderColor }
-    } = this.options
+    const { scale } = this.options
     const tableWidth = element.width! * scale
     const tableHeight = element.height! * scale
     // 无边框
     const isEmptyBorderType = borderType === TableBorder.EMPTY
     // 仅外边框
     const isExternalBorderType = borderType === TableBorder.EXTERNAL
-    // 内边框
-    const isInternalBorderType = borderType === TableBorder.INTERNAL
     ctx.save()
-    // 虚线
-    if (borderType === TableBorder.DASH) {
-      ctx.setLineDash([3, 3])
-    }
     ctx.lineWidth = scale
-    ctx.strokeStyle = borderColor || defaultBorderColor
     // 渲染边框
-    if (!isEmptyBorderType && !isInternalBorderType) {
+    if (!isEmptyBorderType) {
       this._drawOuterBorder({
         ctx,
         startX,
@@ -227,22 +216,9 @@ export class TableParticle {
         }
         // 表格线
         if (!isEmptyBorderType && !isExternalBorderType) {
-          // 右边框
-          if (
-            !isInternalBorderType ||
-            td.colIndex! + td.colspan < colgroup.length
-          ) {
-            ctx.moveTo(x, y)
-            ctx.lineTo(x, y + height)
-          }
-          // 下边框
-          if (
-            !isInternalBorderType ||
-            td.rowIndex! + td.rowspan < trList.length
-          ) {
-            ctx.moveTo(x, y + height)
-            ctx.lineTo(x - width, y + height)
-          }
+          ctx.moveTo(x, y)
+          ctx.lineTo(x, y + height)
+          ctx.lineTo(x - width, y + height)
           ctx.stroke()
         }
         ctx.translate(-0.5, -0.5)
@@ -306,22 +282,6 @@ export class TableParticle {
         const min = td.colIndex!
         const max = min + td.colspan - 1
         if (colIndex >= min && colIndex <= max) {
-          data.push(td)
-        }
-      }
-    }
-    return data
-  }
-
-  public getTdListByRowIndex(trList: ITr[], rowIndex: number) {
-    const data: ITd[] = []
-    for (let r = 0; r < trList.length; r++) {
-      const tdList = trList[r].tdList
-      for (let d = 0; d < tdList.length; d++) {
-        const td = tdList[d]
-        const min = td.rowIndex!
-        const max = min + td.rowspan - 1
-        if (rowIndex >= min && rowIndex <= max) {
           data.push(td)
         }
       }

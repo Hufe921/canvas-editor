@@ -1,8 +1,6 @@
-import { EDITOR_ELEMENT_STYLE_ATTR } from '../../../../dataset/constant/Element'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
 import { IElement } from '../../../../interface/Element'
-import { pickObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
 import { CanvasEvent } from '../../CanvasEvent'
 
@@ -19,20 +17,14 @@ export function tab(evt: KeyboardEvent, host: CanvasEvent) {
       direction: evt.shiftKey ? MoveDirection.UP : MoveDirection.DOWN
     })
   } else {
-    const rangeManager = draw.getRange()
-    const elementList = draw.getElementList()
-    const { startIndex, endIndex } = rangeManager.getRange()
     // 插入tab符
-    const anchorStyle = rangeManager.getRangeAnchorStyle(elementList, endIndex)
-    // 仅复制样式
-    const copyStyle = anchorStyle
-      ? pickObject(anchorStyle, EDITOR_ELEMENT_STYLE_ATTR)
-      : null
     const tabElement: IElement = {
-      ...copyStyle,
       type: ElementType.TAB,
       value: ''
     }
+    const rangeManager = draw.getRange()
+    const { startIndex } = rangeManager.getRange()
+    const elementList = draw.getElementList()
     formatElementContext(elementList, [tabElement], startIndex, {
       editorOptions: draw.getOptions()
     })

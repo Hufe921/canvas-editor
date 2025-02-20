@@ -6,11 +6,7 @@ import { Command } from './core/command/Command'
 import { CommandAdapt } from './core/command/CommandAdapt'
 import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
-import {
-  FlexDirection,
-  ImageDisplay,
-  LocationPosition
-} from './dataset/enum/Common'
+import { ImageDisplay, LocationPosition } from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
@@ -28,13 +24,9 @@ import {
   WordBreak,
   RenderMode
 } from './dataset/enum/Editor'
-import { EDITOR_CLIPBOARD, EDITOR_COMPONENT } from './dataset/constant/Editor'
+import { EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IWatermark } from './interface/Watermark'
-import {
-  ControlIndentation,
-  ControlState,
-  ControlType
-} from './dataset/enum/Control'
+import { ControlIndentation, ControlType } from './dataset/enum/Control'
 import { INavigateInfo } from './core/draw/interactive/Search'
 import { Shortcut } from './core/shortcut/Shortcut'
 import { KeyMap } from './dataset/enum/KeyMap'
@@ -57,18 +49,10 @@ import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
 import { IRange } from './interface/Range'
 import { deepClone, splitText } from './utils'
-import {
-  createDomFromElementList,
-  getElementListByHTML,
-  getTextFromElementList,
-  type IGetElementListByHTMLOption
-} from './utils/element'
 import { BackgroundRepeat, BackgroundSize } from './dataset/enum/Background'
 import { TextDecorationStyle } from './dataset/enum/Text'
 import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
-import { AreaMode } from './dataset/enum/Area'
-import { IBadge } from './interface/Badge'
 
 export default class Editor {
   public command: Command
@@ -153,20 +137,10 @@ export default class Editor {
 }
 
 // 对外方法
-export {
-  splitText,
-  createDomFromElementList,
-  getElementListByHTML,
-  getTextFromElementList
-}
+export { splitText }
 
 // 对外常量
-export {
-  EDITOR_COMPONENT,
-  LETTER_CLASS,
-  INTERNAL_CONTEXT_MENU_KEY,
-  EDITOR_CLIPBOARD
-}
+export { EDITOR_COMPONENT, LETTER_CLASS, INTERNAL_CONTEXT_MENU_KEY }
 
 // 对外枚举
 export {
@@ -199,10 +173,7 @@ export {
   BackgroundSize,
   TextDecorationStyle,
   LineNumberType,
-  LocationPosition,
-  AreaMode,
-  ControlState,
-  FlexDirection
+  LocationPosition
 }
 
 // 对外类型
@@ -220,7 +191,5 @@ export type {
   ICatalog,
   ICatalogItem,
   IRange,
-  IRangeStyle,
-  IBadge,
-  IGetElementListByHTMLOption
+  IRangeStyle
 }

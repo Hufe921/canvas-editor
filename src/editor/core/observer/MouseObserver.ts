@@ -19,9 +19,6 @@ export class MouseObserver {
       'mouseleave',
       this._mouseleave.bind(this)
     )
-    this.pageContainer.addEventListener('mousedown', this._mousedown.bind(this))
-    this.pageContainer.addEventListener('mouseup', this._mouseup.bind(this))
-    this.pageContainer.addEventListener('click', this._click.bind(this))
   }
 
   private _mousemove(evt: MouseEvent) {
@@ -37,20 +34,5 @@ export class MouseObserver {
   private _mouseleave(evt: MouseEvent) {
     if (!this.eventBus.isSubscribe('mouseleave')) return
     this.eventBus.emit('mouseleave', evt)
-  }
-
-  private _mousedown(evt: MouseEvent) {
-    if (!this.eventBus.isSubscribe('mousedown')) return
-    this.eventBus.emit('mousedown', evt)
-  }
-
-  private _mouseup(evt: MouseEvent) {
-    if (!this.eventBus.isSubscribe('mouseup')) return
-    this.eventBus.emit('mouseup', evt)
-  }
-
-  private _click(evt: MouseEvent) {
-    if (!this.eventBus.isSubscribe('click')) return
-    this.eventBus.emit('click', evt)
   }
 }

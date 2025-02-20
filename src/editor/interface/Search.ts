@@ -1,6 +1,4 @@
 import { EditorContext } from '../dataset/enum/Editor'
-import { IElementPosition } from './Element'
-import { IRange } from './Range'
 
 export interface ISearchResultBasic {
   type: EditorContext
@@ -18,13 +16,3 @@ export interface ISearchResultRestArgs {
 }
 
 export type ISearchResult = ISearchResultBasic & ISearchResultRestArgs
-
-export interface ISearchResultContext {
-  range: IRange
-  startPosition: IElementPosition
-  endPosition: IElementPosition
-}
-
-export interface IReplaceOption {
-  index?: number
-}

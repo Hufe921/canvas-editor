@@ -1,5 +1,6 @@
 import { FORMAT_PLACEHOLDER } from '../../../dataset/constant/PageNumber'
 import { NumberType } from '../../../dataset/enum/Common'
+import { PageMode } from '../../../dataset/enum/Editor'
 import { RowFlex } from '../../../dataset/enum/Row'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
@@ -15,22 +16,10 @@ export class PageNumber {
     this.options = draw.getOptions()
   }
 
-  static formatNumberPlaceholder(
-    text: string,
-    pageNo: number,
-    replaceReg: RegExp,
-    numberType: NumberType
-  ) {
-    const pageNoText =
-      numberType === NumberType.CHINESE
-        ? convertNumberToChinese(pageNo)
-        : `${pageNo}`
-    return text.replace(replaceReg, pageNoText)
-  }
-
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     const {
       scale,
+      pageMode,
       pageNumber: {
         size,
         font,
@@ -47,25 +36,28 @@ export class PageNumber {
     let text = format
     const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
     if (pageNoReg.test(text)) {
-      text = PageNumber.formatNumberPlaceholder(
-        text,
-        pageNo + startPageNo - fromPageNo,
-        pageNoReg,
-        numberType
-      )
+      const realPageNo = pageNo + startPageNo - fromPageNo
+      const pageNoText =
+        numberType === NumberType.CHINESE
+          ? convertNumberToChinese(realPageNo)
+          : `${realPageNo}`
+      text = text.replace(pageNoReg, pageNoText)
     }
     const pageCountReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_COUNT)
     if (pageCountReg.test(text)) {
-      text = PageNumber.formatNumberPlaceholder(
-        text,
-        this.draw.getPageCount() - fromPageNo,
-        pageCountReg,
-        numberType
-      )
+      const pageCount = this.draw.getPageCount() - fromPageNo
+      const pageCountText =
+        numberType === NumberType.CHINESE
+          ? convertNumberToChinese(pageCount)
+          : `${pageCount}`
+      text = text.replace(pageCountReg, pageCountText)
     }
     const width = this.draw.getWidth()
     // 计算y位置
-    const height = this.draw.getHeight()
+    const height =
+      pageMode === PageMode.CONTINUITY
+        ? this.draw.getCanvasHeight(pageNo)
+        : this.draw.getHeight()
     const pageNumberBottom = this.draw.getPageNumberBottom()
     const y = height - pageNumberBottom
     ctx.save()

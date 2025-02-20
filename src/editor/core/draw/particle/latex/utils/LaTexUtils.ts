@@ -69,8 +69,8 @@ function parseAtom(x: string): Expr {
     mode: 'math',
     text: x,
     chld: [],
-    // @ts-ignore
-    bbox: null
+
+    bbox: {} as Bbox
   }
 }
 
@@ -81,8 +81,8 @@ function parse(tokens: string[]): Expr {
     text: '',
     mode: 'math',
     chld: [],
-    // @ts-ignore
-    bbox: null
+
+    bbox: {} as Bbox
   }
 
   function takeOpt(): Expr | null {
@@ -150,8 +150,8 @@ function parse(tokens: string[]): Expr {
       text: tokens[i],
       mode: 'math',
       chld: [],
-      // @ts-ignore
-      bbox: null
+
+      bbox: {} as Bbox
     }
     if (s) {
       if (s.arity) {
@@ -251,8 +251,7 @@ function computeBbox(exprs: Expr[]): Bbox {
 
 function group(exprs: Expr[]): Expr {
   if (!exprs.length) {
-    // @ts-ignore
-    return null
+    return { bbox: { w: 0, h: 0, x: 0, y: 0 } } as Expr
   }
   const bbox: Bbox = computeBbox(exprs)
   // console.log(exprs,bbox);
@@ -288,8 +287,7 @@ function align(exprs: Expr[], alignment = 'center'): void {
       if (exprs[i].text == '\'') {
         exprs[i].bbox.y = h
       } else {
-        // @ts-ignore
-        transform(exprs[i], CONFIG.SUB_SUP_SCALE, null, 0, 0)
+        transform(exprs[i], CONFIG.SUB_SUP_SCALE, 0, 0, 0)
         if (SYMB[exprs[j].text] && SYMB[exprs[j].text].flags.big) {
           exprs[i].bbox.y = h - exprs[i].bbox.h
         } else if (exprs[j].text == '\\int') {
@@ -308,8 +306,8 @@ function align(exprs: Expr[], alignment = 'center'): void {
         j--
       }
       h = exprs[j].bbox.y + exprs[j].bbox.h
-      // @ts-ignore
-      transform(exprs[i], CONFIG.SUB_SUP_SCALE, null, 0, 0)
+
+      transform(exprs[i], CONFIG.SUB_SUP_SCALE, 0, 0, 0)
       if (SYMB[exprs[j].text] && SYMB[exprs[j].text].flags.big) {
         exprs[i].bbox.y = h
       } else if (exprs[j].text == '\\int') {
@@ -407,7 +405,7 @@ function align(exprs: Expr[], alignment = 'center'): void {
   for (let i = 0; i < rows.length; i++) {
     const erow: Expr[] = []
     for (let j = 0; j < rows[i].length; j++) {
-      const e: Expr = group(rows[i][j])
+      const e: Expr  = group(rows[i][j])
       if (e) {
         colws[j] = colws[j] || 0
         colws[j] = Math.max(e.bbox.w + 1, colws[j])
@@ -556,13 +554,13 @@ function plan(expr: Expr, mode = 'math'): void {
     b.bbox.x = 0
     b.bbox.y = 0
     const mw: number = Math.max(a.bbox.w, b.bbox.w) * s
-    // @ts-ignore
-    transform(a, s, null, (mw - a.bbox.w * s) / 2, 0)
+
+    transform(a, s, 0, (mw - a.bbox.w * s) / 2, 0)
     transform(
       b,
       s,
-      // @ts-ignore
-      null,
+
+      0,
       (mw - b.bbox.w * s) / 2,
       a.bbox.h + CONFIG.FRAC_SPACING
     )
@@ -582,11 +580,16 @@ function plan(expr: Expr, mode = 'math'): void {
     b.bbox.x = 0
     b.bbox.y = 0
     const mw: number = Math.max(a.bbox.w, b.bbox.w)
-    // @ts-ignore
-    transform(a, 1, null, (mw - a.bbox.w) / 2 + 1, 0)
-    // @ts-ignore
-    transform(b, 1, null, (mw - b.bbox.w) / 2 + 1, a.bbox.h)
-    expr.bbox = { x: 0, y: -a.bbox.h + 1, w: mw + 2, h: a.bbox.h + b.bbox.h }
+
+    transform(a, 1, 0, (mw - a.bbox.w) / 2 + 1, 0)
+
+    transform(b, 1, 0, (mw - b.bbox.w) / 2 + 1, a.bbox.h)
+    expr.bbox = {
+      x: 0,
+      y: -a.bbox.h + 1,
+      w: mw + 2,
+      h: a.bbox.h + b.bbox.h
+    }
   } else if (expr.text == '\\sqrt') {
     const e: Expr = expr.chld[0]
     plan(e)
@@ -595,11 +598,11 @@ function plan(expr: Expr, mode = 'math'): void {
     if (f) {
       plan(f)
       pl = Math.max(f.bbox.w * CONFIG.SQRT_MAG_SCALE - 0.5, 0)
-      // @ts-ignore
-      transform(f, CONFIG.SQRT_MAG_SCALE, null, 0, 0.5)
+
+      transform(f, CONFIG.SQRT_MAG_SCALE, 0, 0, 0.5)
     }
-    // @ts-ignore
-    transform(e, 1, null, 1 + pl, 0.5)
+
+    transform(e, 1, 0, 1 + pl, 0.5)
     expr.bbox = {
       x: 0,
       y: 2 - e.bbox.h - 0.5,
@@ -622,7 +625,7 @@ function plan(expr: Expr, mode = 'math'): void {
     let mh = 1
     for (let i = 0; i < expr.chld.length; i++) {
       const c: Expr = expr.chld[i]
-      // @ts-ignore
+
       const spac: number =
         {
           '\\quad': 2,
@@ -630,7 +633,7 @@ function plan(expr: Expr, mode = 'math'): void {
           '\\:': (2 * 4) / 18,
           '\\;': (2 * 5) / 18,
           '\\!': (2 * -3) / 18
-        }[c.text] ?? null
+        }[c.text] ?? 0
 
       if (c.text == '\\\\') {
         dy += mh
@@ -644,8 +647,8 @@ function plan(expr: Expr, mode = 'math'): void {
         continue
       } else {
         plan(c, tmd)
-        // @ts-ignore
-        transform(c, 1, null, dx, dy)
+
+        transform(c, 1, 0, dx, dy)
         if (c.text == '^' || c.text == '_' || c.text == '\'') {
           let j: number = i
           while (
@@ -724,8 +727,7 @@ function plan(expr: Expr, mode = 'math'): void {
     }
 
     for (let i = 0; i < expr.chld.length; i++) {
-      // @ts-ignore
-      transform(expr.chld[i], 1, null, -bb.x + (hasLp ? 1.5 : 0), -bb.y)
+      transform(expr.chld[i], 1, 0, -bb.x + (hasLp ? 1.5 : 0), -bb.y)
     }
     expr.bbox = {
       x: 0,
@@ -1104,8 +1106,8 @@ export class LaTexUtils {
       xmlns="http://www.w3.org/2000/svg"
       width="${w}" height="${h}"
       fill="none" stroke="${opt.FG_COLOR ?? 'black'}" stroke-width="${
-      opt.STROKE_W ?? 1
-    }"
+        opt.STROKE_W ?? 1
+      }"
       stroke-linecap="round" stroke-linejoin="round"
     >`
     if (opt.BG_COLOR) {
@@ -1167,7 +1169,12 @@ export class LaTexUtils {
     const bs: Bbox[] = []
     for (let i = 0; i < this._tree.chld.length; i++) {
       const { x, y, w, h } = this._tree.chld[i].bbox
-      bs.push({ x: px + x * sclx, y: py + y * scly, w: w * sclx, h: h * scly })
+      bs.push({
+        x: px + x * sclx,
+        y: py + y * scly,
+        w: w * sclx,
+        h: h * scly
+      })
     }
     return bs
   }

@@ -14,20 +14,20 @@ import {
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 import { IOverrideResult } from '../../override/Override'
-import { normalizeLineBreak } from '../../../utils'
+import { getUUID } from '../../../utils'
 
-export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
+export function pasteElement(
+  host: CanvasEvent,
+  elementList: IElement[],
+  startIndex2?: number,
+  endIndex?: number
+) {
   const draw = host.getDraw()
-  if (
-    draw.isReadonly() ||
-    draw.isDisabled() ||
-    draw.getControl().getIsDisabledPasteControl()
-  ) {
-    return
-  }
+  if (draw.isReadonly() || draw.isDisabled()) return
   const rangeManager = draw.getRange()
   const { startIndex } = rangeManager.getRange()
   const originalElementList = draw.getElementList()
+
   // 全选粘贴无需格式化上下文
   if (~startIndex && !rangeManager.getIsSelectAll()) {
     // 如果是复制到虚拟元素里，则粘贴列表的虚拟元素需扁平化处理，避免产生新的虚拟元素
@@ -61,7 +61,12 @@ export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
       editorOptions: draw.getOptions()
     })
   }
-  draw.insertElementList(elementList)
+  elementList.forEach(el => {
+    if (el.type === ElementType.PARAGRAPH) {
+      el.id = getUUID()
+    }
+  })
+  draw.insertElementList(elementList, true, startIndex2, endIndex)
 }
 
 export function pasteHTML(host: CanvasEvent, htmlText: string) {
@@ -120,13 +125,13 @@ export function pasteByEvent(host: CanvasEvent, evt: ClipboardEvent) {
   if (!getIsClipboardContainFile(clipboardData)) {
     const clipboardText = clipboardData.getData('text')
     const editorClipboardData = getClipboardData()
-    // 不同系统间默认换行符不同 windows:\r\n mac:\n
-    if (
-      editorClipboardData &&
-      normalizeLineBreak(clipboardText) ===
-        normalizeLineBreak(editorClipboardData.text)
-    ) {
-      pasteElement(host, editorClipboardData.elementList)
+    if (clipboardText === editorClipboardData?.text) {
+      pasteElement(
+        host,
+        editorClipboardData.elementList,
+        editorClipboardData.startIndex,
+        editorClipboardData.endIndex
+      )
       return
     }
   }

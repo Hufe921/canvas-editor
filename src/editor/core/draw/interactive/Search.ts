@@ -5,12 +5,8 @@ import { EditorContext } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
-import {
-  IReplaceOption,
-  ISearchResult,
-  ISearchResultRestArgs
-} from '../../../interface/Search'
-import { getUUID, isNumber } from '../../../utils'
+import { ISearchResult, ISearchResultRestArgs } from '../../../interface/Search'
+import { getUUID } from '../../../utils'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
@@ -215,8 +211,7 @@ export class Search {
         .map(e =>
           !e.type ||
           (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
-            e.controlComponent !== ControlComponent.CHECKBOX &&
-            !e.control?.hide)
+            e.controlComponent !== ControlComponent.CHECKBOX)
             ? e.value
             : ZERO
         )
@@ -327,147 +322,5 @@ export class Search {
       ctx.fillRect(x, y, width, height)
     }
     ctx.restore()
-  }
-
-  public replace(payload: string, option?: IReplaceOption) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
-    if (!payload || new RegExp(`${ZERO}`, 'g').test(payload)) return
-    let matchList = this.getSearchMatchList()
-    // 替换搜索项
-    const replaceIndex = option?.index
-    if (isNumber(replaceIndex)) {
-      const matchGroup: ISearchResult[][] = []
-      matchList.forEach(match => {
-        const last = matchGroup[matchGroup.length - 1]
-        if (!last || last[0].groupId !== match.groupId) {
-          matchGroup.push([match])
-        } else {
-          last.push(match)
-        }
-      })
-      matchList = matchGroup[replaceIndex]
-    }
-    if (!matchList?.length) return
-    const isDesignMode = this.draw.isDesignMode()
-    // 匹配index变化的差值
-    let pageDiffCount = 0
-    let tableDiffCount = 0
-    // 匹配搜索词的组标识
-    let curGroupId = ''
-    // 表格上下文
-    let curTdId = ''
-    // 搜索值 > 替换值：增加元素；搜索值 < 替换值：减少元素
-    let firstMatchIndex = -1
-    const elementList = this.draw.getOriginalElementList()
-    for (let m = 0; m < matchList.length; m++) {
-      const match = matchList[m]
-      if (match.type === EditorContext.TABLE) {
-        const { tableIndex, trIndex, tdIndex, index, tdId } = match
-        if (curTdId && tdId !== curTdId) {
-          tableDiffCount = 0
-        }
-        curTdId = tdId!
-        const curTableIndex = tableIndex! + pageDiffCount
-        const tableElementList =
-          elementList[curTableIndex].trList![trIndex!].tdList[tdIndex!].value
-        // 表格内元素
-        const curIndex = index + tableDiffCount
-        const tableElement = tableElementList[curIndex]
-        // 非设计模式下设置元素不可删除 || 控件结构元素 => 禁止替换
-        if (
-          !isDesignMode &&
-          (tableElement?.control?.deletable === false ||
-            tableElement?.title?.deletable === false)
-        ) {
-          continue
-        }
-        if (curGroupId === match.groupId) {
-          this.draw.spliceElementList(tableElementList, curIndex, 1)
-          tableDiffCount--
-          continue
-        }
-        if (!~firstMatchIndex) {
-          firstMatchIndex = m
-        }
-        for (let p = 0; p < payload.length; p++) {
-          const value = payload[p]
-          if (p === 0) {
-            tableElement.value = value
-          } else {
-            this.draw.spliceElementList(tableElementList, curIndex + p, 0, [
-              {
-                ...tableElement,
-                value
-              }
-            ])
-            tableDiffCount++
-          }
-        }
-      } else {
-        const curIndex = match.index + pageDiffCount
-        const element = elementList[curIndex]
-        // 非设计模式下设置元素不可删除 || 控件结构元素 => 禁止替换
-        if (
-          (!isDesignMode &&
-            (element?.control?.deletable === false ||
-              element?.title?.deletable === false)) ||
-          (element.type === ElementType.CONTROL &&
-            element.controlComponent !== ControlComponent.VALUE)
-        ) {
-          continue
-        }
-        if (!~firstMatchIndex) {
-          firstMatchIndex = m
-        }
-        if (curGroupId === match.groupId) {
-          this.draw.spliceElementList(elementList, curIndex, 1)
-          pageDiffCount--
-          continue
-        }
-        for (let p = 0; p < payload.length; p++) {
-          const value = payload[p]
-          if (p === 0) {
-            element.value = value
-          } else {
-            this.draw.spliceElementList(elementList, curIndex + p, 0, [
-              {
-                ...element,
-                value
-              }
-            ])
-            pageDiffCount++
-          }
-        }
-      }
-      curGroupId = match.groupId
-    }
-    if (!~firstMatchIndex) return
-    // 定位-首个被匹配关键词后
-    const firstMatch = matchList[firstMatchIndex]
-    const firstIndex = firstMatch.index + (payload.length - 1)
-    if (firstMatch.type === EditorContext.TABLE) {
-      const { tableIndex, trIndex, tdIndex, index } = firstMatch
-      const element =
-        elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!].value[index]
-      this.position.setPositionContext({
-        isTable: true,
-        index: tableIndex,
-        trIndex,
-        tdIndex,
-        tdId: element.tdId,
-        trId: element.trId,
-        tableId: element.tableId
-      })
-    } else {
-      this.position.setPositionContext({
-        isTable: false
-      })
-    }
-    this.draw.getRange().setRange(firstIndex, firstIndex)
-    // 重新渲染
-    this.draw.render({
-      curIndex: firstIndex
-    })
   }
 }

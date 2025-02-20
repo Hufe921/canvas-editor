@@ -6,6 +6,8 @@ import { createDomFromElementList, zipElementList } from './element'
 export interface IClipboardData {
   text: string
   elementList: IElement[]
+  startIndex?: number
+  endIndex?: number
 }
 
 export function setClipboardData(data: IClipboardData) {
@@ -13,7 +15,9 @@ export function setClipboardData(data: IClipboardData) {
     EDITOR_CLIPBOARD,
     JSON.stringify({
       text: data.text,
-      elementList: data.elementList
+      elementList: data.elementList,
+      startIndex: data.startIndex,
+      endIndex: data.endIndex
     })
   )
 }
@@ -30,13 +34,14 @@ export function removeClipboardData() {
 export function writeClipboardItem(
   text: string,
   html: string,
-  elementList: IElement[]
+  elementList: IElement[],
+  startIndex?: number,
+  endIndex?: number
 ) {
   if (!text && !html && !elementList.length) return
   const plainText = new Blob([text], { type: 'text/plain' })
   const htmlText = new Blob([html], { type: 'text/html' })
   if (window.ClipboardItem) {
-    // @ts-ignore
     const item = new ClipboardItem({
       [plainText.type]: plainText,
       [htmlText.type]: htmlText
@@ -62,12 +67,14 @@ export function writeClipboardItem(
     fakeElement.remove()
   }
   // 编辑器结构化数据
-  setClipboardData({ text, elementList })
+  setClipboardData({ text, elementList, startIndex, endIndex })
 }
 
 export function writeElementList(
   elementList: IElement[],
-  options: DeepRequired<IEditorOption>
+  options: DeepRequired<IEditorOption>,
+  startIndex?: number,
+  endIndex?: number
 ) {
   const clipboardDom = createDomFromElementList(elementList, options)
   // 写入剪贴板
@@ -77,7 +84,13 @@ export function writeElementList(
   clipboardDom.remove()
   const html = clipboardDom.innerHTML
   if (!text && !html && !elementList.length) return
-  writeClipboardItem(text, html, zipElementList(elementList))
+  writeClipboardItem(
+    text,
+    html,
+    zipElementList(elementList),
+    startIndex,
+    endIndex
+  )
 }
 
 export function getIsClipboardContainFile(clipboardData: DataTransfer) {

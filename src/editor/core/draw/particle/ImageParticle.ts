@@ -79,8 +79,8 @@ export class ImageParticle {
                   <rect width="${width}" height="${height}" fill="url(#mosaic)" />
                   <defs>
                     <pattern id="mosaic" x="${x}" y="${y}" width="${
-      tileSize * 2
-    }" height="${tileSize * 2}" patternUnits="userSpaceOnUse">
+                      tileSize * 2
+                    }" height="${tileSize * 2}" patternUnits="userSpaceOnUse">
                       <rect width="${tileSize}" height="${tileSize}" fill="#cccccc" />
                       <rect width="${tileSize}" height="${tileSize}" fill="#cccccc" transform="translate(${tileSize}, ${tileSize})" />
                     </pattern>
@@ -102,20 +102,17 @@ export class ImageParticle {
     const { scale } = this.options
     const width = element.width! * scale
     const height = element.height! * scale
-    if (this.imageCache.has(element.value)) {
-      const img = this.imageCache.get(element.value)!
+    if (this.imageCache.has(element.id!)) {
+      const img = this.imageCache.get(element.id!)!
       ctx.drawImage(img, x, y, width, height)
     } else {
-      const cacheRenderCount = this.draw.getRenderCount()
       const imageLoadPromise = new Promise((resolve, reject) => {
         const img = new Image()
         img.setAttribute('crossOrigin', 'Anonymous')
         img.src = element.value
         img.onload = () => {
-          this.imageCache.set(element.value, img)
+          this.imageCache.set(element.id!, img)
           resolve(element)
-          // 因图片加载异步，图片加载后可能属于上一次渲染方法
-          if (cacheRenderCount !== this.draw.getRenderCount()) return
           // 衬于文字下方图片需要重新首先绘制
           if (element.imgDisplay === ImageDisplay.FLOAT_BOTTOM) {
             this.draw.render({
@@ -131,7 +128,7 @@ export class ImageParticle {
           const fallbackImage = this.getFallbackImage(width, height)
           fallbackImage.onload = () => {
             ctx.drawImage(fallbackImage, x, y, width, height)
-            this.imageCache.set(element.value, fallbackImage)
+            this.imageCache.set(element.id!, fallbackImage)
           }
           reject(error)
         }

@@ -355,7 +355,6 @@ export class Previewer {
     }
     previewerContainer.onwheel = evt => {
       evt.preventDefault()
-      evt.stopPropagation()
       if (evt.deltaY < 0) {
         // 放大
         scaleSize += 0.1
@@ -390,7 +389,6 @@ export class Previewer {
 
   public _updateResizerRect(width: number, height: number) {
     const { resizerSize: handleSize, scale } = this.options
-    const isReadonly = this.draw.isReadonly()
     this.resizerSelection.style.width = `${width}px`
     this.resizerSelection.style.height = `${height}px`
     // handle
@@ -399,18 +397,17 @@ export class Previewer {
         i === 0 || i === 6 || i === 7
           ? -handleSize
           : i === 1 || i === 5
-          ? width / 2
-          : width - handleSize
+            ? width / 2
+            : width - handleSize
       const top =
         i === 0 || i === 1 || i === 2
           ? -handleSize
           : i === 3 || i === 7
-          ? height / 2 - handleSize
-          : height - handleSize
+            ? height / 2 - handleSize
+            : height - handleSize
       this.resizerHandleList[i].style.transform = `scale(${scale})`
       this.resizerHandleList[i].style.left = `${left}px`
       this.resizerHandleList[i].style.top = `${top}px`
-      this.resizerHandleList[i].style.display = isReadonly ? 'none' : 'block'
     }
   }
 

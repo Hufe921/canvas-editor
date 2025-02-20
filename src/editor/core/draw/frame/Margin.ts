@@ -16,7 +16,7 @@ export class Margin {
     const width = this.draw.getWidth()
     const height =
       pageMode === PageMode.CONTINUITY
-        ? this.draw.getCanvasHeight(pageNo) / this.draw.getPagePixelRatio()
+        ? this.draw.getCanvasHeight(pageNo)
         : this.draw.getHeight()
     const margins = this.draw.getMargins()
     const marginIndicatorSize = this.draw.getMarginIndicatorSize()

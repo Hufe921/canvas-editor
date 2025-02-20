@@ -37,7 +37,6 @@ export function cut(host: CanvasEvent) {
   let curIndex: number
   if (control.getActiveControl() && control.getIsRangeWithinControl()) {
     curIndex = control.cut()
-    control.emitControlContentChange()
   } else {
     draw.spliceElementList(elementList, start + 1, end - start)
     curIndex = start

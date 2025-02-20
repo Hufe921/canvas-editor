@@ -124,8 +124,8 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
           index,
           trIndex: preTrIndex,
           tdIndex: preTdIndex,
-          tdId: preTd.id,
-          trId: preTr.id,
+          tdId: preTr.id,
+          trId: preTd.id,
           tableId
         })
         anchorStartIndex = preTd.value.length - 1
@@ -173,8 +173,8 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
           index,
           trIndex: nexTrIndex,
           tdIndex: nextTdIndex,
-          tdId: nextTd.id,
-          trId: nextTr.id,
+          tdId: nextTr.id,
+          trId: nextTd.id,
           tableId
         })
         anchorStartIndex = nextTd.value.length - 1

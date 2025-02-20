@@ -77,8 +77,8 @@ export function printImageBase64(
   @page {
     margin: 0;
     size: ${paperSize.size} ${
-    direction === PaperDirection.HORIZONTAL ? `landscape` : `portrait`
-  };
+      direction === PaperDirection.HORIZONTAL ? `landscape` : `portrait`
+    };
   }`
   style.append(document.createTextNode(stylesheet))
   setTimeout(() => {

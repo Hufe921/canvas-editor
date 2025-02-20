@@ -22,8 +22,7 @@ export class TextControl implements IControlInstance {
   private options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
-    const draw = control.getDraw()
-    this.options = draw.getOptions()
+    this.options = control.getDraw().getOptions()
     this.element = element
     this.control = control
   }
@@ -47,8 +46,7 @@ export class TextControl implements IControlInstance {
       const preElement = elementList[preIndex]
       if (
         preElement.controlId !== startElement.controlId ||
-        preElement.controlComponent === ControlComponent.PREFIX ||
-        preElement.controlComponent === ControlComponent.PRE_TEXT
+        preElement.controlComponent === ControlComponent.PREFIX
       ) {
         break
       }
@@ -63,8 +61,7 @@ export class TextControl implements IControlInstance {
       const nextElement = elementList[nextIndex]
       if (
         nextElement.controlId !== startElement.controlId ||
-        nextElement.controlComponent === ControlComponent.POSTFIX ||
-        nextElement.controlComponent === ControlComponent.POST_TEXT
+        nextElement.controlComponent === ControlComponent.POSTFIX
       ) {
         break
       }
@@ -106,8 +103,7 @@ export class TextControl implements IControlInstance {
     const anchorElement =
       (startElement.type &&
         !TEXTLIKE_ELEMENT_TYPE.includes(startElement.type)) ||
-      startElement.controlComponent === ControlComponent.PREFIX ||
-      startElement.controlComponent === ControlComponent.PRE_TEXT
+      startElement.controlComponent === ControlComponent.PREFIX
         ? pickObject(startElement, [
             'control',
             'controlId',
@@ -183,9 +179,7 @@ export class TextControl implements IControlInstance {
       } else {
         if (
           startElement.controlComponent === ControlComponent.PREFIX ||
-          startElement.controlComponent === ControlComponent.PRE_TEXT ||
           endElement.controlComponent === ControlComponent.POSTFIX ||
-          endElement.controlComponent === ControlComponent.POST_TEXT ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
           // 前缀、后缀、占位符
@@ -216,11 +210,9 @@ export class TextControl implements IControlInstance {
       } else {
         const endNextElement = elementList[endIndex + 1]
         if (
-          ((startElement.controlComponent === ControlComponent.PREFIX ||
-            startElement.controlComponent === ControlComponent.PRE_TEXT) &&
+          (startElement.controlComponent === ControlComponent.PREFIX &&
             endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
           endNextElement.controlComponent === ControlComponent.POSTFIX ||
-          endNextElement.controlComponent === ControlComponent.POST_TEXT ||
           startElement.controlComponent === ControlComponent.PLACEHOLDER
         ) {
           // 前缀、后缀、占位符

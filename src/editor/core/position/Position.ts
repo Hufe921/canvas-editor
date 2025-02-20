@@ -121,44 +121,91 @@ export class Position {
       innerWidth,
       zone
     } = payload
+
     const {
       scale,
       table: { tdPadding }
     } = this.options
+
     let x = startX
     let y = startY
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 行存在环绕的可能性均不设置行布局
-      if (!curRow.isSurround) {
-        // 计算行偏移量（行居中、居右）
-        const curRowWidth = curRow.width + (curRow.offsetX || 0)
-        if (curRow.rowFlex === RowFlex.CENTER) {
-          x += (innerWidth - curRowWidth) / 2
-        } else if (curRow.rowFlex === RowFlex.RIGHT) {
-          x += innerWidth - curRowWidth
+
+      let leftIndent = 0
+      let firstLineIndent = 0
+      let rightIndent = 0
+      let rowX = x
+
+      const currentId = curRow.elementList.find(el => el.id)?.id || null
+      const isFirstRowInParagraph = rowList.findIndex(row =>
+        row.elementList.find(el => el.id === currentId)
+      )
+      for (const element of curRow.elementList) {
+        leftIndent = element.spacing?.before || leftIndent
+        firstLineIndent = element.spacing?.firstLine || firstLineIndent
+        rightIndent = element.spacing?.after || rightIndent
+        if (leftIndent || firstLineIndent || rightIndent) {
+          break
         }
       }
-      // 当前行X/Y轴偏移量
-      x += curRow.offsetX || 0
-      y += curRow.offsetY || 0
-      // 当前td所在位置
-      const tablePreX = x
+      rowX = startX + leftIndent
+      if (isFirstRowInParagraph === i) {
+        rowX += firstLineIndent - leftIndent
+      }
+
+      if (!curRow.isSurround) {
+        const curRowWidth = curRow.width + (curRow.offsetX || 0)
+        if (curRow.rowFlex === RowFlex.CENTER) {
+          rowX += (innerWidth - curRowWidth) / 2
+        } else if (curRow.rowFlex === RowFlex.RIGHT) {
+          rowX += innerWidth - curRowWidth
+        }
+      }
+
+      rowX += curRow.offsetX || 0
+      const tablePreX = rowX
       const tablePreY = y
+
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const metrics = element.metrics
+        if (element.type === ElementType.SEPARATOR && element.isFootnote) {
+          const pageHeight = this.draw.getHeight()
+          const margins = this.draw.getMargins() // [top, right, bottom, left]
+          const headerHeight = this.draw.getHeader().getHeight()
+          const footerHeight = this.draw.getFooter().getHeight()
+          const extraHeight = this.draw.getHeader().getExtraHeight()
+
+          const availableHeight =
+            pageHeight -
+            margins[0] -
+            margins[2] -
+            headerHeight -
+            footerHeight -
+            extraHeight
+
+          const maxY =
+            margins[0] +
+            headerHeight +
+            extraHeight +
+            availableHeight -
+            metrics.height
+
+          const contentBelowHeight = rowList
+            .slice(i + 1)
+            .reduce((sum, row) => sum + row.height, 0)
+
+          y = maxY - contentBelowHeight
+        }
         const offsetY =
           (element.imgDisplay !== ImageDisplay.INLINE &&
             element.type === ElementType.IMAGE) ||
           element.type === ElementType.LATEX
             ? curRow.ascent - metrics.height
             : curRow.ascent
-        // 偏移量
-        if (element.left) {
-          x += element.left
-        }
+
         const positionItem: IElementPosition = {
           pageNo,
           index,
@@ -172,25 +219,23 @@ export class Position {
           isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
           coordinate: {
-            leftTop: [x, y],
-            leftBottom: [x, y + curRow.height],
-            rightTop: [x + metrics.width, y],
-            rightBottom: [x + metrics.width, y + curRow.height]
+            leftTop: [rowX, y],
+            leftBottom: [rowX, y + curRow.height],
+            rightTop: [rowX + metrics.width, y],
+            rightBottom: [rowX + metrics.width, y + curRow.height]
           }
         }
-        // 缓存浮动元素信息
+
         if (
           element.imgDisplay === ImageDisplay.SURROUND ||
           element.imgDisplay === ImageDisplay.FLOAT_TOP ||
           element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
         ) {
-          // 浮动元素使用上一位置信息
           const prePosition = positionList[positionList.length - 1]
           if (prePosition) {
             positionItem.metrics = prePosition.metrics
             positionItem.coordinate = prePosition.coordinate
           }
-          // 兼容浮动元素初始坐标为空的情况-默认使用左上坐标
           if (!element.imgFloatPosition) {
             element.imgFloatPosition = {
               x,
@@ -210,73 +255,87 @@ export class Position {
             zone
           })
         }
+
         positionList.push(positionItem)
         index++
-        x += metrics.width
-        // 计算表格内元素位置
-        if (element.type === ElementType.TABLE) {
-          const tdPaddingWidth = tdPadding[1] + tdPadding[3]
-          const tdPaddingHeight = tdPadding[0] + tdPadding[2]
-          for (let t = 0; t < element.trList!.length; t++) {
-            const tr = element.trList![t]
-            for (let d = 0; d < tr.tdList!.length; d++) {
-              const td = tr.tdList[d]
-              td.positionList = []
-              const rowList = td.rowList!
-              const drawRowResult = this.computePageRowPosition({
-                positionList: td.positionList,
-                rowList,
-                pageNo,
-                startRowIndex: 0,
-                startIndex: 0,
-                startX: (td.x! + tdPadding[3]) * scale + tablePreX,
-                startY: (td.y! + tdPadding[0]) * scale + tablePreY,
-                innerWidth: (td.width! - tdPaddingWidth) * scale,
-                isTable: true,
-                index: index - 1,
-                tdIndex: d,
-                trIndex: t,
-                zone
-              })
-              // 垂直对齐方式
-              if (
-                td.verticalAlign === VerticalAlign.MIDDLE ||
-                td.verticalAlign === VerticalAlign.BOTTOM
-              ) {
-                const rowsHeight = rowList.reduce(
-                  (pre, cur) => pre + cur.height,
-                  0
-                )
-                const blankHeight =
-                  (td.height! - tdPaddingHeight) * scale - rowsHeight
-                const offsetHeight =
-                  td.verticalAlign === VerticalAlign.MIDDLE
-                    ? blankHeight / 2
-                    : blankHeight
-                if (Math.floor(offsetHeight) > 0) {
-                  td.positionList.forEach(tdPosition => {
-                    const {
-                      coordinate: { leftTop, leftBottom, rightBottom, rightTop }
-                    } = tdPosition
-                    leftTop[1] += offsetHeight
-                    leftBottom[1] += offsetHeight
-                    rightBottom[1] += offsetHeight
-                    rightTop[1] += offsetHeight
-                  })
+        rowX += metrics.width
+      }
+
+      if (
+        curRow.elementList.some(element => element.type === ElementType.TABLE)
+      ) {
+        for (let j = 0; j < curRow.elementList.length; j++) {
+          const element = curRow.elementList[j]
+          if (element.type === ElementType.TABLE) {
+            const tdPaddingWidth = tdPadding[1] + tdPadding[3]
+            const tdPaddingHeight = tdPadding[0] + tdPadding[2]
+            for (let t = 0; t < element.trList!.length; t++) {
+              const tr = element.trList![t]
+              for (let d = 0; d < tr.tdList!.length; d++) {
+                const td = tr.tdList[d]
+                td.positionList = []
+                const rowList = td.rowList!
+                const drawRowResult = this.computePageRowPosition({
+                  positionList: td.positionList,
+                  rowList,
+                  pageNo,
+                  startRowIndex: 0,
+                  startIndex: 0,
+                  startX: (td.x! + tdPadding[3]) * scale + tablePreX,
+                  startY: (td.y! + tdPadding[0]) * scale + tablePreY,
+                  innerWidth: (td.width! - tdPaddingWidth) * scale,
+                  isTable: true,
+                  index: index - 1,
+                  tdIndex: d,
+                  trIndex: t,
+                  zone
+                })
+
+                if (
+                  td.verticalAlign === VerticalAlign.MIDDLE ||
+                  td.verticalAlign === VerticalAlign.BOTTOM
+                ) {
+                  const rowsHeight = rowList.reduce(
+                    (pre, cur) => pre + cur.height,
+                    0
+                  )
+                  const blankHeight =
+                    (td.height! - tdPaddingHeight) * scale - rowsHeight
+                  const offsetHeight =
+                    td.verticalAlign === VerticalAlign.MIDDLE
+                      ? blankHeight / 2
+                      : blankHeight
+                  if (Math.floor(offsetHeight) > 0) {
+                    td.positionList.forEach(tdPosition => {
+                      const {
+                        coordinate: {
+                          leftTop,
+                          leftBottom,
+                          rightBottom,
+                          rightTop
+                        }
+                      } = tdPosition
+                      leftTop[1] += offsetHeight
+                      leftBottom[1] += offsetHeight
+                      rightBottom[1] += offsetHeight
+                      rightTop[1] += offsetHeight
+                    })
+                  }
                 }
+                x = drawRowResult.x
+                y = drawRowResult.y
               }
-              x = drawRowResult.x
-              y = drawRowResult.y
             }
+            x = tablePreX
+            y = tablePreY
           }
-          // 恢复初始x、y
-          x = tablePreX
-          y = tablePreY
         }
       }
+
       x = startX
       y += curRow.height
     }
+
     return { x, y, index }
   }
 
@@ -531,8 +590,8 @@ export class Position {
         const headPosition = positionList[headIndex]
         // 是否在头部
         const headStartX =
-          headElement.listStyle === ListStyle.CHECKBOX
-            ? this.draw.getMargins()[3]
+          headElement?.listStyle === ListStyle.CHECKBOX
+            ? this.options.margins[3]
             : headPosition.coordinate.leftTop[0]
         if (x < headStartX) {
           // 头部元素为空元素时无需选中
@@ -598,7 +657,7 @@ export class Position {
       }
       // 正文上-循环首行
       const margins = this.draw.getMargins()
-      if (y <= margins[0]) {
+      if (y <= margins[1]) {
         for (let p = 0; p < positionList.length; p++) {
           const position = positionList[p]
           if (position.pageNo !== positionNo || position.rowNo !== 0) continue
@@ -777,6 +836,7 @@ export class Position {
       surroundElementList,
       availableWidth
     } = payload
+
     let x = rowElementRect.x
     let rowIncreaseWidth = 0
     if (

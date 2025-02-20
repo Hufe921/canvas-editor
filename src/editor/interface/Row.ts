@@ -16,10 +16,11 @@ export interface IRow {
   isPageBreak?: boolean
   isList?: boolean
   listIndex?: number
+  secondListIndex?: number
   offsetX?: number
-  offsetY?: number
   elementList: IRowElement[]
   isWidthNotEnough?: boolean
   rowIndex: number
   isSurround?: boolean
+  indexes?: number[]
 }

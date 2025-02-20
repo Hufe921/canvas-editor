@@ -5,7 +5,6 @@ import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
 import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
-import { IArea } from './Area'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
 import { IControl } from './Control'
@@ -26,6 +25,7 @@ export interface IElementBasic {
 export interface IElementStyle {
   font?: string
   size?: number
+  metrics?: IElementMetrics
   width?: number
   height?: number
   bold?: boolean
@@ -44,6 +44,29 @@ export interface IElementGroup {
   groupIds?: string[]
 }
 
+export interface IParagraph {
+  id?: string | undefined
+  v?: string[] // ID вариативностей
+  r?: IElement[] // Элементы (runs) внутри параграфа
+  size?: number
+  bold?: boolean
+  spacing?: {
+    before?: number
+    after?: number
+    firstLine?: number //для первой строки
+  }
+  rowFlex?: RowFlex // Дополнительные стили параграфа
+}
+
+export interface IFootnote {
+  isFootnote?: boolean
+}
+
+// Элемент параграфа
+export interface IParagraphElement {
+  r: IElement[]
+}
+
 export interface ITitleElement {
   valueList?: IElement[]
   level?: TitleLevel
@@ -57,17 +80,13 @@ export interface IListElement {
   listStyle?: ListStyle
   listId?: string
   listWrap?: boolean
+  listLevel?: number
 }
 
 export interface ITableAttr {
   colgroup?: IColgroup[]
   trList?: ITr[]
   borderType?: TableBorder
-  borderColor?: string
-}
-
-export interface ITableRule {
-  tableToolDisabled?: boolean
 }
 
 export interface ITableElement {
@@ -79,7 +98,7 @@ export interface ITableElement {
   pagingIndex?: number // 拆分的表格索引
 }
 
-export type ITable = ITableAttr & ITableRule & ITableElement
+export type ITable = ITableAttr & ITableElement
 
 export interface IHyperlinkElement {
   valueList?: IElement[]
@@ -131,12 +150,6 @@ export interface IBlockElement {
   block?: IBlock
 }
 
-export interface IAreaElement {
-  valueList?: IElement[]
-  areaId?: string
-  area?: IArea
-}
-
 export type IElement = IElementBasic &
   IElementStyle &
   IElementGroup &
@@ -153,7 +166,8 @@ export type IElement = IElementBasic &
   IBlockElement &
   ITitleElement &
   IListElement &
-  IAreaElement
+  IParagraph &
+  IFootnote
 
 export interface IElementMetrics {
   width: number
@@ -190,17 +204,6 @@ export interface IElementFillRect {
 }
 
 export interface IUpdateElementByIdOption {
-  id?: string
-  conceptId?: string
+  id: string
   properties: Omit<Partial<IElement>, 'id'>
-}
-
-export interface IDeleteElementByIdOption {
-  id?: string
-  conceptId?: string
-}
-
-export interface IGetElementByIdOption {
-  id?: string
-  conceptId?: string
 }

@@ -1,6 +1,6 @@
 import { ICatalog, ICatalogItem } from '../../../interface/Catalog'
 import { IElement, IElementPosition } from '../../../interface/Element'
-
+import { ElementType as ElementType2 } from '../../../dataset/enum/Element'
 interface IGetCatalogPayload {
   elementList: IElement[]
   positionList: IElementPosition[]
@@ -28,7 +28,8 @@ enum ElementType {
   BLOCK = 'block',
   TITLE = 'title',
   AREA = 'area',
-  LIST = 'list'
+  LIST = 'list',
+  PARAGRAPH = 'paragraph'
 }
 
 enum TitleLevel {
@@ -75,7 +76,7 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
       const titleId = element.titleId
       const level = element.level
       const titleElement: ICatalogElement = {
-        type: ElementType.TITLE,
+        type: ElementType2.TITLE,
         value: '',
         level,
         titleId,
@@ -117,7 +118,6 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
         id: title.titleId!,
         name: title.value,
         level: title.level!,
-        pageNo: title.pageNo,
         subCatalog: []
       })
     }
@@ -138,7 +138,6 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
         id: title.titleId!,
         name: title.value,
         level: title.level!,
-        pageNo: title.pageNo,
         subCatalog: []
       })
     }
