@@ -361,10 +361,10 @@ export class Draw {
   }
   // 添加痕迹信息
   public addReviewInformation(elementList: IElement[], type: TrackType) {
-    if(this.mode !== EditorMode.REVIEW) return
+    if (this.mode !== EditorMode.REVIEW) return
     const trackId = getUUID()
     const len = elementList.length
-    for(let  i = 0; i < len; i++){
+    for (let i = 0; i < len; i++) {
       const element = elementList[i]
       element.trackId = trackId
       element.trackType = type
@@ -372,27 +372,52 @@ export class Draw {
         author: this.options.user.name,
         date: getCurrentTimeString()
       }
-      if(this.hideTrack && type === TrackType.DELETE) element.hide = true
+      if (this.hideTrack && type === TrackType.DELETE) {
+        element.hide = true
+        if(element.type === ElementType.TABLE){
+          const trList = element.trList!
+          trList.forEach(tr => {
+            tr.tdList.forEach(td => {
+              td.value.forEach((_, index) => {
+                  td.value[index].hide = true
+              })
+            })
+          })
+        }
+      }
     }
   }
   // 隐藏、显示痕迹
   public hideReview() {
     this.hideTrack = true
     const len = this.elementList.length
-    for(let i = 0; i < len; i++){
+    for (let i = 0; i < len; i++) {
       const el = this.elementList[i]
-      if(el.type === ElementType.TABLE) {
+      if (el.type === ElementType.TABLE) {
         const trList = el.trList!
-        trList.forEach(tr => {
-          tr.tdList.forEach(td => {
-            td.value.forEach((el, index) => {
-              if (el.trackId && el.trackType === TrackType.DELETE) {
-                td.value[index].hide = true
-              }
+        if (el.trackId && el.trackType === TrackType.DELETE) {
+          el.hide = true
+          trList.forEach(tr => {
+            tr.tdList.forEach(td => {
+              td.value.forEach((_, index) => {
+                  td.value[index].hide = true
+              })
             })
           })
-        })
-      } else if(el.trackId && el.trackType === TrackType.DELETE) {
+        } else {
+          const trList = el.trList!
+          trList.forEach(tr => {
+            tr.tdList.forEach(td => {
+              td.value.forEach((el, index) => {
+                if (el.trackId && el.trackType === TrackType.DELETE) {
+                  td.value[index].hide = true
+                }
+              })
+            })
+          })
+        }
+        
+      } else if (el.trackId && el.trackType === TrackType.DELETE) {
         el.hide = true
       }
     }
@@ -405,20 +430,31 @@ export class Draw {
   public showReview() {
     this.hideTrack = false
     const len = this.elementList.length
-    for(let i = 0; i < len; i++){
+    for (let i = 0; i < len; i++) {
       const el = this.elementList[i]
-      if(el.type === ElementType.TABLE) {
+      if (el.type === ElementType.TABLE) {
         const trList = el.trList!
-        trList.forEach(tr => {
-          tr.tdList.forEach(td => {
-            td.value.forEach((el, index) => {
-              if (el.trackId && el.trackType === TrackType.DELETE && el.hide) {
-                delete td.value[index].hide
-              }
+        if (el.trackId && el.trackType === TrackType.DELETE && el.hide) {
+          delete el.hide
+          trList.forEach(tr => {
+            tr.tdList.forEach(td => {
+              td.value.forEach((_, index) => {
+                  delete td.value[index].hide
+              })
             })
           })
-        })
-      } else if(el.trackId && el.trackType === TrackType.DELETE && el.hide) {
+        } else {
+          trList.forEach(tr => {
+            tr.tdList.forEach(td => {
+              td.value.forEach((el, index) => {
+                if (el.trackId && el.trackType === TrackType.DELETE && el.hide) {
+                  delete td.value[index].hide
+                }
+              })
+            })
+          })
+        }
+      } else if (el.trackId && el.trackType === TrackType.DELETE && el.hide) {
         delete el.hide
       }
     }
@@ -1297,9 +1333,8 @@ export class Draw {
     const { defaultSize, defaultFont } = this.options
     const font = el.font || defaultFont
     const size = el.actualSize || el.size || defaultSize
-    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${
-      size * scale
-    }px ${font}`
+    return `${el.italic ? 'italic ' : ''}${el.bold ? 'bold ' : ''}${size * scale
+      }px ${font}`
   }
 
   public getElementSize(el: IElement) {
@@ -1378,7 +1413,7 @@ export class Draw {
       const availableWidth = innerWidth - offsetX
       // 增加起始位置坐标偏移量
       x += curRow.elementList.length === 1 ? offsetX : 0
-      if(element.hide) {
+      if (element.hide) {
         metrics.width = 0
         metrics.height = 0
         metrics.boundingBoxDescent = 0
@@ -1544,7 +1579,7 @@ export class Draw {
           const rowMarginHeight = rowMargin * 2 * scale
           if (
             curPagePreHeight + element.trList![0].height! + rowMarginHeight >
-              height ||
+            height ||
             (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
           ) {
             // 无可拆分行则切换至新页
@@ -1715,7 +1750,7 @@ export class Draw {
       const ascent =
         (element.imgDisplay !== ImageDisplay.INLINE &&
           element.type === ElementType.IMAGE) ||
-        element.type === ElementType.LATEX
+          element.type === ElementType.LATEX
           ? metrics.height + rowMargin
           : metrics.boundingBoxAscent + rowMargin
       const height =
@@ -1823,9 +1858,9 @@ export class Draw {
       // 新行数据处理
       if (isWrap) {
         // 整行宽度为0 隐藏行不保留高度
-        if(curRow.width === 0) {
+        if (curRow.width === 0) {
           const emptyPara = curRow.elementList.length === 1 && curRow.elementList[0].value === ZERO
-          if(!emptyPara) {
+          if (!emptyPara) {
             curRow.height = 0
           }
         }
@@ -2090,7 +2125,7 @@ export class Draw {
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
-        if(element.hide) {
+        if (element.hide) {
           this.textParticle.complete()
         } else if (element.type === ElementType.IMAGE) {
           this.textParticle.complete()
@@ -2267,7 +2302,7 @@ export class Draw {
                 (preElement.type === ElementType.SUPERSCRIPT &&
                   element.type !== ElementType.SUPERSCRIPT) ||
                 this.getElementSize(preElement) !==
-                  this.getElementSize(element))
+                this.getElementSize(element))
             ) {
               this.strikeout.render(ctx)
             }
@@ -2341,10 +2376,10 @@ export class Draw {
           this.group.recordFillInfo(element, x, y, metrics.width, curRow.height)
         }
         // todo : 留痕信息记录
-        if(element.trackId) {
+        if (element.trackId) {
           // 如果前后类型不一致
-          if(preElement?.trackId && preElement?.trackType && element?.trackType && element.trackType !== preElement.trackType) {
-            if(!this.hideTrack) {
+          if (preElement?.trackId && preElement?.trackType && element?.trackType && element.trackType !== preElement.trackType) {
+            if (!this.hideTrack) {
               this.track.render(ctx)
             } else {
               this.track.clearRectInfo()
@@ -2357,22 +2392,22 @@ export class Draw {
           )
           const rowMargin = this.getElementRowMargin(element)
 
-          if(element.trackType === TrackType.INSERT) {
+          if (element.trackType === TrackType.INSERT) {
             const offsetX = element.left || 0
             const coordinateX = x - offsetX
             const coordinateY = y + curRow.height - rowMargin + 1
             const width = metrics.width + offsetX
             const height = curRow.height
             this.track.recordInsertRectInfo(element, coordinateX, coordinateY, width, height)
-          } else if(element.trackType === TrackType.DELETE) {
+          } else if (element.trackType === TrackType.DELETE) {
             let adjustY = y + offsetY + standardMetrics.actualBoundingBoxDescent * scale - metrics.height / 2
-            if(element.type === ElementType.IMAGE || element.type === ElementType.LATEX || element.type === ElementType.TABLE) {
+            if (element.type === ElementType.IMAGE || element.type === ElementType.LATEX || element.type === ElementType.TABLE) {
               adjustY = y + (element.height! / 2) + offsetY
             }
             this.track.recordDeleteRectInfo(element, x, adjustY, metrics.width, curRow.height)
           }
-        } else if(preElement?.trackId) {
-          if(!this.hideTrack) {
+        } else if (preElement?.trackId) {
+          if (!this.hideTrack) {
             this.track.render(ctx)
           } else {
             this.track.clearRectInfo()
@@ -2415,7 +2450,7 @@ export class Draw {
       this.strikeout.render(ctx)
       // 绘制批注样式
       this.group.render(ctx)
-      if(!this.hideTrack) {
+      if (!this.hideTrack) {
         this.track.render(ctx)
       } else {
         this.track.clearRectInfo()
