@@ -1,3 +1,23 @@
+## [0.9.104](https://github.com/Hufe921/canvas-editor/compare/v0.9.103...v0.9.104) (2025-02-22)
+
+
+### Bug Fixes
+
+* missing some fields when zip elements #1023 ([c41fc9e](https://github.com/Hufe921/canvas-editor/commit/c41fc9eb578d4dc0f59cbb642050cee49158b460)), closes [#1023](https://github.com/Hufe921/canvas-editor/issues/1023)
+
+
+### Features
+
+* add imgToolDisabled option #1028 ([01b2c16](https://github.com/Hufe921/canvas-editor/commit/01b2c16596e9208bfdc08182b5e329f7a78a6b45)), closes [#1028](https://github.com/Hufe921/canvas-editor/issues/1028)
+* increase priority when zip area elements #1020 ([21543cc](https://github.com/Hufe921/canvas-editor/commit/21543cc15f87302cd89d53da56f1a0a95b0a9f54)), closes [#1020](https://github.com/Hufe921/canvas-editor/issues/1020)
+
+
+### Performance Improvements
+
+* spliceElementList method performance #1021 ([2066d0d](https://github.com/Hufe921/canvas-editor/commit/2066d0de80a2f2aae5f0b8bc4f0bc8378aaaa47d)), closes [#1021](https://github.com/Hufe921/canvas-editor/issues/1021)
+
+
+
 ## [0.9.103](https://github.com/Hufe921/canvas-editor/compare/v0.9.102...v0.9.103) (2025-02-16)
 
 
