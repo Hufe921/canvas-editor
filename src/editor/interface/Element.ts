@@ -118,7 +118,11 @@ export interface IDateElement {
   dateId?: string
 }
 
-export interface IImageElement {
+export interface IImageRule {
+  imgToolDisabled?: boolean
+}
+
+export interface IImageBasic {
   imgDisplay?: ImageDisplay
   imgFloatPosition?: {
     x: number
@@ -126,6 +130,8 @@ export interface IImageElement {
     pageNo?: number
   }
 }
+
+export type IImageElement = IImageBasic & IImageRule
 
 export interface IBlockElement {
   block?: IBlock

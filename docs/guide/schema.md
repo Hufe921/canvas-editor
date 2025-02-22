@@ -163,6 +163,7 @@ interface IElement {
     y: number;
     pageNo?: number;
   }
+  imgToolDisabled?: boolean;
   // 内容块
   block?: {
     type: {
