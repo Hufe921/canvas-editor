@@ -419,6 +419,13 @@ export class Previewer {
   }
 
   public render() {
+    // 图片工具配置禁用又非设计模式时不渲染
+    if (
+      !this.curElement ||
+      (this.curElement.imgToolDisabled && !this.draw.isDesignMode())
+    ) {
+      return
+    }
     this._drawPreviewer()
     document.body.style.overflow = 'hidden'
   }
@@ -428,6 +435,8 @@ export class Previewer {
     position: IElementPosition | null = null,
     options: IPreviewerDrawOption = {}
   ) {
+    // 图片工具配置禁用又非设计模式时不渲染
+    if (element.imgToolDisabled && !this.draw.isDesignMode()) return
     // 缓存配置
     this.previewerDrawOption = options
     this.curElementSrc = element[options.srcKey || 'value'] || ''

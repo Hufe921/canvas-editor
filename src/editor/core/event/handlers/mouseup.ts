@@ -202,12 +202,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       rangeEnd = activeControl.setValue(replaceElementList)
       rangeStart = rangeEnd - replaceLength
     } else {
-      draw.spliceElementList(
-        elementList,
-        rangeStart + 1,
-        0,
-        ...replaceElementList
-      )
+      draw.spliceElementList(elementList, rangeStart + 1, 0, replaceElementList)
     }
     if (!~rangeEnd) {
       draw.render({

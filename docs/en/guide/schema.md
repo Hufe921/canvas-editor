@@ -163,6 +163,7 @@ interface IElement {
     y: number;
     pageNo?: number;
   }
+  imgToolDisabled?: boolean;
   // block
   block?: {
     type: {

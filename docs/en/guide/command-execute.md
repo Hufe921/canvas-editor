@@ -535,9 +535,11 @@ Usage:
 
 ```javascript
 instance.command.executeImage({
+  id?: string;
   width: number;
   height: number;
   value: string;
+  imgDisplay?: ImageDisplay;
 })
 ```
 
@@ -840,6 +842,16 @@ Usage:
 
 ```javascript
 instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
+```
+
+## executeDeleteElementById
+
+Feature: Delete element by id
+
+Usage:
+
+```javascript
+instance.command.executeDeleteElementById(payload: IDeleteElementByIdOption)
 ```
 
 ## executeSetValue

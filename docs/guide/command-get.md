@@ -275,7 +275,8 @@ const {
   pageNo: number
   element: IElement | null
   rangeRect: RangeRect | null
-}[] = await instance.command.getPositionContextByEvent(evt: MouseEvent)
+  tableInfo: ITableInfoByEvent | null
+}[] = await instance.command.getPositionContextByEvent(evt: MouseEvent, options?: IPositionContextByEventOption)
 ```
 
 示例：

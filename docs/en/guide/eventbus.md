@@ -160,6 +160,36 @@ Usage:
 instance.eventBus.on('mouseleave', (evt: MouseEvent) => void)
 ```
 
+## mousedown
+
+Feature: Editor mousedown event
+
+Usage:
+
+```javascript
+instance.eventBus.on('mousedown', (evt: MouseEvent) => void)
+```
+
+## mouseup
+
+Feature: Editor mouseup event
+
+Usage:
+
+```javascript
+instance.eventBus.on('mouseup', (evt: MouseEvent) => void)
+```
+
+## click
+
+Feature: Editor click event
+
+Usage:
+
+```javascript
+instance.eventBus.on('click', (evt: MouseEvent) => void)
+```
+
 ## positionContextChange
 
 Feature: The position context change

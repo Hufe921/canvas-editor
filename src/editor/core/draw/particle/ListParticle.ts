@@ -75,9 +75,11 @@ export class ListParticle {
         const element = elementList[start]
         if (element.value === ZERO && !element.listWrap) break
         if (element.listId !== endElement.listId) {
-          this.draw.spliceElementList(elementList, start, 0, {
-            value: ZERO
-          })
+          this.draw.spliceElementList(elementList, start, 0, [
+            {
+              value: ZERO
+            }
+          ])
           break
         }
         start++

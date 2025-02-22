@@ -535,9 +535,11 @@ instance.command.executeTableSelectAll()
 
 ```javascript
 instance.command.executeImage({
+  id?: string;
   width: number;
   height: number;
   value: string;
+  imgDisplay?: ImageDisplay;
 })
 ```
 
@@ -840,6 +842,16 @@ instance.command.executeAppendElementList(elementList: IElement[], options?: IAp
 
 ```javascript
 instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
+```
+
+## executeDeleteElementById
+
+功能：根据 id 删除元素
+
+用法：
+
+```javascript
+instance.command.executeDeleteElementById(payload: IDeleteElementByIdOption)
 ```
 
 ## executeSetValue

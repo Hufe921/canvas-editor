@@ -696,7 +696,7 @@ export class Draw {
       if (!isCollapsed) {
         this.spliceElementList(elementList, start, endIndex - startIndex)
       }
-      this.spliceElementList(elementList, start, 0, ...payload)
+      this.spliceElementList(elementList, start, 0, payload)
       curIndex = startIndex + payload.length
       // 列表前如有换行符则删除-因为列表内已存在
       const preElement = elementList[start - 1]
@@ -747,7 +747,7 @@ export class Draw {
     elementList: IElement[],
     start: number,
     deleteCount: number,
-    ...items: IElement[]
+    items?: IElement[]
   ) {
     const isDesignMode = this.isDesignMode()
     if (deleteCount > 0) {
@@ -796,8 +796,10 @@ export class Draw {
       }
     }
     // 循环添加，避免使用解构影响性能
-    for (let i = 0; i < items.length; i++) {
-      elementList.splice(start + i, 0, items[i])
+    if (items?.length) {
+      for (let i = 0; i < items.length; i++) {
+        elementList.splice(start + i, 0, items[i])
+      }
     }
   }
 
@@ -1568,7 +1570,7 @@ export class Draw {
               }
               cloneElement.trList = cloneTrList
               cloneElement.id = getUUID()
-              this.spliceElementList(elementList, i + 1, 0, cloneElement)
+              this.spliceElementList(elementList, i + 1, 0, [cloneElement])
             }
           }
           // 表格经过分页处理-需要处理上下文
@@ -2437,7 +2439,7 @@ export class Draw {
     }
     // 绘制水印
     if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
-      this.waterMark.render(ctx)
+      this.waterMark.render(ctx, pageNo)
     }
     // 绘制页边距
     if (!isPrintMode) {
@@ -2648,6 +2650,8 @@ export class Draw {
     }
     // 信息变动回调
     nextTick(() => {
+      // 选区样式
+      this.range.setRangeStyle()
       // 重新唤起弹窗类控件
       if (isCompute && this.control.getActiveControl()) {
         this.control.reAwakeControl()

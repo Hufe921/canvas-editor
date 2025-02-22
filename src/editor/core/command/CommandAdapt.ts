@@ -59,6 +59,7 @@ import {
   IUpdateOption
 } from '../../interface/Editor'
 import {
+  IDeleteElementByIdOption,
   IElement,
   IElementPosition,
   IElementStyle,
@@ -68,7 +69,9 @@ import {
 import {
   ICopyOption,
   IPasteOption,
-  IPositionContextByEvent
+  IPositionContextByEventOption,
+  IPositionContextByEventResult,
+  ITableInfoByEvent
 } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition } from '../../interface/Position'
@@ -1031,7 +1034,7 @@ export class CommandAdapt {
       elementList,
       start,
       startIndex === endIndex ? 0 : endIndex - startIndex,
-      ...newElementList
+      newElementList
     )
     const curIndex = start + newElementList.length - 1
     this.range.setRange(curIndex, curIndex)
@@ -1175,10 +1178,12 @@ export class CommandAdapt {
         editorOptions: this.options
       })
       if (startIndex !== 0 && elementList[startIndex].value === ZERO) {
-        this.draw.spliceElementList(elementList, startIndex, 1, newElement)
+        this.draw.spliceElementList(elementList, startIndex, 1, [newElement])
         curIndex = startIndex - 1
       } else {
-        this.draw.spliceElementList(elementList, startIndex + 1, 0, newElement)
+        this.draw.spliceElementList(elementList, startIndex + 1, 0, [
+          newElement
+        ])
         curIndex = startIndex
       }
     }
@@ -1232,22 +1237,24 @@ export class CommandAdapt {
     }
   }
 
-  public image(payload: IDrawImagePayload) {
+  public image(payload: IDrawImagePayload): string | null {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
-    if (isDisabled) return
+    if (isDisabled) return null
     const { startIndex, endIndex } = this.range.getRange()
-    if (!~startIndex && !~endIndex) return
-    const { value, width, height, imgDisplay } = payload
+    if (!~startIndex && !~endIndex) return null
+    const { id, value, width, height, imgDisplay } = payload
+    const imageId = id || getUUID()
     this.insertElementList([
       {
         value,
         width,
         height,
-        id: getUUID(),
+        id: imageId,
         type: ElementType.IMAGE,
         imgDisplay
       }
     ])
+    return imageId
   }
 
   public search(payload: string | null) {
@@ -1694,7 +1701,7 @@ export class CommandAdapt {
           }
         }
         if (
-          (id && (element.id === id || element.controlId === id)) ||
+          (id && element.id === id) ||
           (conceptId && element.conceptId === conceptId)
         ) {
           updateElementInfoList.push({
@@ -1717,15 +1724,63 @@ export class CommandAdapt {
     if (!updateElementInfoList.length) return
     for (let i = 0; i < updateElementInfoList.length; i++) {
       const { elementList, index } = updateElementInfoList[i]
-      elementList[index] = {
-        ...elementList[index],
-        ...payload.properties
-      }
-      formatElementList(zipElementList([elementList[index]]), {
+      // 重新格式化元素
+      const newElement = zipElementList([
+        {
+          ...elementList[index],
+          ...payload.properties
+        }
+      ])
+      formatElementList(newElement, {
         isHandleFirstElement: false,
         editorOptions: this.options
       })
+      elementList[index] = newElement[0]
     }
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
+  public deleteElementById(payload: IDeleteElementByIdOption) {
+    const { id, conceptId } = payload
+    if (!id && !conceptId) return
+    let isExistDelete = false
+    function deleteElement(elementList: IElement[]) {
+      let i = 0
+      while (i < elementList.length) {
+        const element = elementList[i]
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              deleteElement(td.value)
+            }
+          }
+        }
+        if (
+          (id && element.id === id) ||
+          (conceptId && element.conceptId === conceptId)
+        ) {
+          isExistDelete = true
+          elementList.splice(i, 1)
+          i--
+        }
+        i++
+      }
+    }
+    // 优先正文再页眉页脚
+    const data = [
+      this.draw.getOriginalMainElementList(),
+      this.draw.getHeaderElementList(),
+      this.draw.getFooterElementList()
+    ]
+    for (const elementList of data) {
+      deleteElement(elementList)
+    }
+    if (!isExistDelete) return
     this.draw.render({
       isSetCursor: false
     })
@@ -1751,7 +1806,7 @@ export class CommandAdapt {
           }
         }
         if (
-          (id && element.controlId !== id && element.id !== id) ||
+          (id && element.id !== id) ||
           (conceptId && element.conceptId !== conceptId)
         ) {
           continue
@@ -2191,10 +2246,12 @@ export class CommandAdapt {
   }
 
   public getPositionContextByEvent(
-    evt: MouseEvent
-  ): IPositionContextByEvent | null {
+    evt: MouseEvent,
+    options: IPositionContextByEventOption = {}
+  ): IPositionContextByEventResult | null {
     const pageIndex = (<HTMLElement>evt.target)?.dataset.index
     if (!pageIndex) return null
+    const { isMustDirectHit = true } = options
     const pageNo = Number(pageIndex)
     const positionContext = this.position.getPositionByXY({
       x: evt.offsetX,
@@ -2211,8 +2268,14 @@ export class CommandAdapt {
       zone
     } = positionContext
     // 非直接命中或选区不一致时返回空值
-    if (!isDirectHit || (zone && zone !== this.zone.getZone())) return null
+    if (
+      (isMustDirectHit && !isDirectHit) ||
+      (zone && zone !== this.zone.getZone())
+    ) {
+      return null
+    }
     // 命中元素信息
+    let tableInfo: ITableInfoByEvent | null = null
     let element: IElement | null = null
     const elementList = this.draw.getOriginalElementList()
     let position: IElementPosition | null = null
@@ -2221,6 +2284,11 @@ export class CommandAdapt {
       const td = elementList[index!].trList?.[trIndex!].tdList[tdIndex!]
       element = td?.value[tdValueIndex!] || null
       position = td?.positionList?.[tdValueIndex!] || null
+      tableInfo = {
+        element: elementList[index!],
+        trIndex: trIndex!,
+        tdIndex: tdIndex!
+      }
     } else {
       element = elementList[index] || null
       position = positionList[index] || null
@@ -2245,7 +2313,8 @@ export class CommandAdapt {
     return {
       pageNo,
       element,
-      rangeRect
+      rangeRect,
+      tableInfo
     }
   }
 

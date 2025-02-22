@@ -160,6 +160,36 @@ instance.eventBus.on('mouseenter', (evt: MouseEvent) => void)
 instance.eventBus.on('mouseleave', (evt: MouseEvent) => void)
 ```
 
+## mousedown
+
+功能：编辑器 mousedown 事件监听
+
+用法：
+
+```javascript
+instance.eventBus.on('mousedown', (evt: MouseEvent) => void)
+```
+
+## mouseup
+
+功能：编辑器 mouseup 事件监听
+
+用法：
+
+```javascript
+instance.eventBus.on('mouseup', (evt: MouseEvent) => void)
+```
+
+## click
+
+功能：编辑器 click 事件监听
+
+用法：
+
+```javascript
+instance.eventBus.on('click', (evt: MouseEvent) => void)
+```
+
 ## positionContextChange
 
 功能：上下文内容发生改变

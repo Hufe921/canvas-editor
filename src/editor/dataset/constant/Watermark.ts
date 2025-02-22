@@ -1,4 +1,5 @@
 import { IWatermark } from '../../interface/Watermark'
+import { NumberType } from '../enum/Common'
 
 export const defaultWatermarkOption: Readonly<Required<IWatermark>> = {
   data: '',
@@ -7,5 +8,6 @@ export const defaultWatermarkOption: Readonly<Required<IWatermark>> = {
   size: 200,
   font: 'Microsoft YaHei',
   repeat: false,
-  gap: [10, 10]
+  gap: [10, 10],
+  numberType: NumberType.ARABIC
 }

@@ -317,6 +317,7 @@ export class Control {
     const elementList = context.elementList || this.getElementList()
     const { startIndex } = context.range || this.getRange()
     const startElement = elementList[startIndex]
+    if (!startElement?.controlId) return []
     const data: IElement[] = []
     // 向左查找
     let preIndex = startIndex
@@ -493,6 +494,11 @@ export class Control {
     const controlElement =
       options?.controlElement || this.activeControl?.getElement()
     if (!controlElement) return
+    // 控件被删除不触发事件
+    const elementList = options?.context?.elementList || this.getElementList()
+    const { startIndex } = options?.context?.range || this.getRange()
+    if (!elementList[startIndex]?.controlId) return
+    // 格式化回调数据
     const controlValue =
       options?.controlValue || this.getControlElementList(options?.context)
     let control: IControl
@@ -714,12 +720,9 @@ export class Control {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
-      this.draw.spliceElementList(
-        elementList,
-        startIndex + p + 1,
-        0,
+      this.draw.spliceElementList(elementList, startIndex + p + 1, 0, [
         newElement
-      )
+      ])
     }
   }
 
@@ -929,14 +932,20 @@ export class Control {
           isIgnoreDisabledRule: true
         }
         if (type === ControlType.TEXT) {
-          const formatValue = Array.isArray(value) ? value : [{ value }]
-          formatElementList(formatValue, {
-            isHandleFirstElement: false,
-            editorOptions: this.options
-          })
+          const formatValue = Array.isArray(value)
+            ? value
+            : value
+            ? [{ value }]
+            : []
+          if (formatValue.length) {
+            formatElementList(formatValue, {
+              isHandleFirstElement: false,
+              editorOptions: this.options
+            })
+          }
           const text = new TextControl(element, this)
           this.activeControl = text
-          if (value) {
+          if (formatValue.length) {
             text.setValue(formatValue, controlContext, controlRule)
           } else {
             text.clearValue(controlContext, controlRule)
@@ -972,14 +981,20 @@ export class Control {
             date.clearSelect(controlContext, controlRule)
           }
         } else if (type === ControlType.NUMBER) {
-          const formatValue = Array.isArray(value) ? value : [{ value }]
-          formatElementList(formatValue, {
-            isHandleFirstElement: false,
-            editorOptions: this.options
-          })
+          const formatValue = Array.isArray(value)
+            ? value
+            : value
+            ? [{ value }]
+            : []
+          if (formatValue.length) {
+            formatElementList(formatValue, {
+              isHandleFirstElement: false,
+              editorOptions: this.options
+            })
+          }
           const text = new NumberControl(element, this)
           this.activeControl = text
-          if (value) {
+          if (formatValue.length) {
             text.setValue(formatValue, controlContext, controlRule)
           } else {
             text.clearValue(controlContext, controlRule)
@@ -1161,7 +1176,8 @@ export class Control {
     for (const key in pageComponentData) {
       const pageComponentKey = <keyof IEditorData>key
       const elementList = zipElementList(pageComponentData[pageComponentKey]!, {
-        isClassifyArea: true
+        isClassifyArea: true,
+        extraPickAttrs: ['id']
       })
       pageComponentData[pageComponentKey] = elementList
       formatElementList(elementList, {
