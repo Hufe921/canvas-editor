@@ -3,3 +3,10 @@ interface CanvasRenderingContext2D {
   letterSpacing: string
   wordSpacing: string
 }
+
+declare module '*?worker&inline' {
+  class WorkerConstructor extends Worker {
+    constructor()
+  }
+  export default WorkerConstructor
+}

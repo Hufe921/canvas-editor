@@ -15,11 +15,13 @@ export class ScrollObserver {
   private draw: Draw
   private options: Required<IEditorOption>
   private scrollContainer: Element | Document
+  private onLastPageVisibleCallback?: () => void
 
-  constructor(draw: Draw) {
+  constructor(draw: Draw, onLastPageVisibleCallback?: () => void) {
     this.draw = draw
     this.options = draw.getOptions()
     this.scrollContainer = this.getScrollContainer()
+    this.onLastPageVisibleCallback = onLastPageVisibleCallback
     // 监听滚轮
     setTimeout(() => {
       if (!window.scrollY) {
@@ -84,5 +86,17 @@ export class ScrollObserver {
     const { intersectionPageNo, visiblePageNoList } = this.getPageVisibleInfo()
     this.draw.setIntersectionPageNo(intersectionPageNo)
     this.draw.setVisiblePageNoList(visiblePageNoList)
+    this.loadVisibleElements(visiblePageNoList)
   }, 150)
+  private loadVisibleElements(visiblePageNoList: number[]) {
+    const pageCount = this.draw.getPageCount()
+    if (pageCount <= 1) return
+    const isLastPageVisible = visiblePageNoList.includes(pageCount - 1)
+
+    if (isLastPageVisible) {
+      if (this.onLastPageVisibleCallback) {
+        this.onLastPageVisibleCallback()
+      }
+    }
+  }
 }

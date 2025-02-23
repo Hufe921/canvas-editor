@@ -1,7 +1,7 @@
 import {
   IContentChange,
   IControlChange,
-  IControlContentChange,
+  ICursorPositionChange,
   IIntersectionPageNoChange,
   IMouseEventChange,
   IPageModeChange,
@@ -11,7 +11,9 @@ import {
   IRangeStyleChange,
   ISaved,
   IVisiblePageNoListChange,
-  IZoneChange
+  IZoneChange,
+  ISelectionChange,
+  IParagraphIndentChange
 } from './Listener'
 
 export interface EventBusMap {
@@ -23,14 +25,13 @@ export interface EventBusMap {
   saved: ISaved
   contentChange: IContentChange
   controlChange: IControlChange
-  controlContentChange: IControlContentChange
   pageModeChange: IPageModeChange
   zoneChange: IZoneChange
   mousemove: IMouseEventChange
   mouseleave: IMouseEventChange
   mouseenter: IMouseEventChange
-  mousedown: IMouseEventChange
-  mouseup: IMouseEventChange
-  click: IMouseEventChange
   positionContextChange: IPositionContextChange
+  cursorPositionChange: ICursorPositionChange
+  paragraphIndentChange: IParagraphIndentChange
+  selectionChange: ISelectionChange
 }

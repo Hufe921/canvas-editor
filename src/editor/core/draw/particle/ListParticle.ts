@@ -6,7 +6,7 @@ import { ListStyle, ListType, UlStyle } from '../../../dataset/enum/List'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
-import { IRow, IRowElement } from '../../../interface/Row'
+import { IRow } from '../../../interface/Row'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -27,7 +27,11 @@ export class ListParticle {
     this.options = draw.getOptions()
   }
 
-  public setList(listType: ListType | null, listStyle?: ListStyle) {
+  public setList(
+    listType: ListType | null,
+    listStyle?: ListStyle,
+    listLevel = 0
+  ) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
@@ -49,6 +53,7 @@ export class ListParticle {
       el.listId = listId
       el.listType = listType
       el.listStyle = listStyle
+      el.listLevel = listLevel
     })
     // 光标定位
     const isSetCursor = startIndex === endIndex
@@ -104,7 +109,7 @@ export class ListParticle {
   ): Map<string, number> {
     const listStyleMap = new Map<string, number>()
     let start = 0
-    let curListId = elementList[start].listId
+    let curListId = elementList[start]?.listId
     let curElementList: IElement[] = []
     const elementLength = elementList.length
     while (start < elementLength) {
@@ -160,7 +165,9 @@ export class ListParticle {
       KeyMap.PERIOD
     }`
     const textMetrics = ctx.measureText(text)
-    return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
+    const width = Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
+
+    return width
   }
 
   public drawListStyle(
@@ -168,63 +175,45 @@ export class ListParticle {
     row: IRow,
     position: IElementPosition
   ) {
-    const { elementList, offsetX, listIndex, ascent } = row
+    const { elementList, offsetX, ascent, indexes } = row
     const startElement = elementList[0]
     if (startElement.value !== ZERO || startElement.listWrap) return
-    // tab width
+
+    const baseIndent = 20 * this.options.scale
+
+    const totalIndent = baseIndent * 0
+
     let tabWidth = 0
-    const { defaultTabWidth, scale, defaultFont, defaultSize } = this.options
+    const { defaultTabWidth, scale, defaultFont } = this.options
     for (let i = 1; i < elementList.length; i++) {
       const element = elementList[i]
       if (element?.type !== ElementType.TAB) break
       tabWidth += defaultTabWidth * scale
     }
-    // 列表样式渲染
     const {
       coordinate: {
         leftTop: [startX, startY]
       }
     } = position
-    const x = startX - offsetX! + tabWidth
+    const x = startX - offsetX! + tabWidth + totalIndent - 5
     const y = startY + ascent
-    // 复选框样式特殊处理
-    if (startElement.listStyle === ListStyle.CHECKBOX) {
-      const { width, height, gap } = this.options.checkbox
-      const checkboxRowElement: IRowElement = {
-        ...startElement,
-        checkbox: {
-          value: !!startElement.checkbox?.value
-        },
-        metrics: {
-          ...startElement.metrics,
-          width: (width + gap * 2) * scale,
-          height: height * scale
-        }
-      }
-      this.draw.getCheckboxParticle().render({
-        ctx,
-        x: x - gap * scale,
-        y,
-        index: 0,
-        row: {
-          ...row,
-          elementList: [checkboxRowElement, ...row.elementList]
-        }
-      })
-    } else {
-      let text = ''
-      if (startElement.listType === ListType.UL) {
-        text =
-          ulStyleMapping[<UlStyle>(<unknown>startElement.listStyle)] ||
-          ulStyleMapping[UlStyle.DISC]
-      } else {
-        text = `${listIndex! + 1}${KeyMap.PERIOD}`
-      }
-      if (!text) return
-      ctx.save()
-      ctx.font = `${defaultSize * scale}px ${defaultFont}`
-      ctx.fillText(text, x, y)
-      ctx.restore()
+    let text = ''
+    if (startElement.listType === ListType.UL) {
+      text =
+        ulStyleMapping[<UlStyle>(<unknown>startElement.listStyle)] ||
+        ulStyleMapping[UlStyle.DISC]
+    } else if (indexes && indexes.length > 0) {
+      text = `${indexes.join(KeyMap.PERIOD)}${KeyMap.PERIOD}`
     }
+
+    //   else {
+    //   text = `${listIndex!}${KeyMap.PERIOD}`;
+    // }
+    if (!text) return
+
+    ctx.save()
+    ctx.font = `${14.5 * scale}px ${defaultFont}`
+    ctx.fillText(text, x, y)
+    ctx.restore()
   }
 }

@@ -28,8 +28,7 @@ export class RadioControl extends CheckboxControl {
       const preElement = elementList[preIndex]
       if (
         preElement.controlId !== startElement.controlId ||
-        preElement.controlComponent === ControlComponent.PREFIX ||
-        preElement.controlComponent === ControlComponent.PRE_TEXT
+        preElement.controlComponent === ControlComponent.PREFIX
       ) {
         break
       }
@@ -45,8 +44,7 @@ export class RadioControl extends CheckboxControl {
       const nextElement = elementList[nextIndex]
       if (
         nextElement.controlId !== startElement.controlId ||
-        nextElement.controlComponent === ControlComponent.POSTFIX ||
-        nextElement.controlComponent === ControlComponent.POST_TEXT
+        nextElement.controlComponent === ControlComponent.POSTFIX
       ) {
         break
       }
@@ -60,9 +58,6 @@ export class RadioControl extends CheckboxControl {
     this.control.repaintControl({
       curIndex: startIndex,
       isSetCursor: false
-    })
-    this.control.emitControlContentChange({
-      context
     })
   }
 }

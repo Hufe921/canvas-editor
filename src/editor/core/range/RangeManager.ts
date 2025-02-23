@@ -10,7 +10,6 @@ import { EventBusMap } from '../../interface/EventBus'
 import { IRangeStyle } from '../../interface/Listener'
 import {
   IRange,
-  IRangeElementStyle,
   IRangeParagraphInfo,
   RangeRowArray,
   RangeRowMap
@@ -30,7 +29,6 @@ export class RangeManager {
   private eventBus: EventBus<EventBusMap>
   private position: Position
   private historyManager: HistoryManager
-  private defaultStyle: IRangeElementStyle | null
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -43,7 +41,6 @@ export class RangeManager {
       startIndex: -1,
       endIndex: -1
     }
-    this.defaultStyle = null
   }
 
   public getRange(): IRange {
@@ -54,68 +51,21 @@ export class RangeManager {
     this.setRange(-1, -1)
   }
 
-  public setDefaultStyle(style: IRangeElementStyle | null) {
-    if (!style) {
-      this.defaultStyle = null
-    } else {
-      this.defaultStyle = {
-        ...this.defaultStyle,
-        ...style
-      }
-    }
-  }
-
-  public getDefaultStyle(): IRangeElementStyle | null {
-    return this.defaultStyle
-  }
-
-  public getRangeAnchorStyle(
-    elementList: IElement[],
-    anchorIndex: number
-  ): IElement | null {
-    const anchorElement = getAnchorElement(elementList, anchorIndex)
-    if (!anchorElement) return null
-    return {
-      ...anchorElement,
-      ...this.defaultStyle
-    }
-  }
-
-  public getIsRangeChange(
-    startIndex: number,
-    endIndex: number,
-    tableId?: string,
-    startTdIndex?: number,
-    endTdIndex?: number,
-    startTrIndex?: number,
-    endTrIndex?: number
-  ): boolean {
-    return (
-      this.range.startIndex !== startIndex ||
-      this.range.endIndex !== endIndex ||
-      this.range.tableId !== tableId ||
-      this.range.startTdIndex !== startTdIndex ||
-      this.range.endTdIndex !== endTdIndex ||
-      this.range.startTrIndex !== startTrIndex ||
-      this.range.endTrIndex !== endTrIndex
-    )
-  }
-
   public getIsCollapsed(): boolean {
     const { startIndex, endIndex } = this.range
     return startIndex === endIndex
-  }
-
-  public getIsSelection(): boolean {
-    const { startIndex, endIndex } = this.range
-    if (!~startIndex && !~endIndex) return false
-    return startIndex !== endIndex
   }
 
   public getSelection(): IElement[] | null {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null
     const elementList = this.draw.getElementList()
+
+    const rangeElementList = elementList.slice(startIndex + 1, endIndex + 1)
+    const uniqueIds = Array.from(
+      new Set(rangeElementList.map(el => el.id))
+    ).filter(Boolean) as string[]
+    this.eventBus.emit('selectionChange', uniqueIds)
     return elementList.slice(startIndex + 1, endIndex + 1)
   }
 
@@ -361,7 +311,7 @@ export class RangeManager {
       } else {
         const { type, groupId, tableId, index, tdIndex, trIndex } = searchMatch
         const range: IRange = {
-          startIndex: index,
+          startIndex: index - 1,
           endIndex: index
         }
         if (type === EditorContext.TABLE) {
@@ -384,16 +334,9 @@ export class RangeManager {
   public getIsCanInput(): boolean {
     const { startIndex, endIndex } = this.getRange()
     if (!~startIndex && !~endIndex) return false
+    if (startIndex === endIndex) return true
     const elementList = this.draw.getElementList()
     const startElement = elementList[startIndex]
-    if (startIndex === endIndex) {
-      return (
-        (startElement.controlComponent !== ControlComponent.PRE_TEXT ||
-          elementList[startIndex + 1]?.controlComponent !==
-            ControlComponent.PRE_TEXT) &&
-        startElement.controlComponent !== ControlComponent.POST_TEXT
-      )
-    }
     const endElement = elementList[endIndex]
     // 选区前后不是控件 || 选区前不是控件或是后缀&&选区后不是控件或是后缀 || 选区在控件内
     return (
@@ -404,8 +347,6 @@ export class RangeManager {
           endElement.controlComponent === ControlComponent.POSTFIX)) ||
       (!!startElement.controlId &&
         endElement.controlId === startElement.controlId &&
-        endElement.controlComponent !== ControlComponent.PRE_TEXT &&
-        endElement.controlComponent !== ControlComponent.POST_TEXT &&
         endElement.controlComponent !== ControlComponent.POSTFIX)
     )
   }
@@ -419,32 +360,19 @@ export class RangeManager {
     startTrIndex?: number,
     endTrIndex?: number
   ) {
-    // 判断光标是否改变
-    const isChange = this.getIsRangeChange(
-      startIndex,
-      endIndex,
-      tableId,
-      startTdIndex,
-      endTdIndex,
-      startTrIndex,
+    this.range.startIndex = startIndex
+    this.range.endIndex = endIndex
+    this.range.tableId = tableId
+    this.range.startTdIndex = startTdIndex
+    this.range.endTdIndex = endTdIndex
+    this.range.startTrIndex = startTrIndex
+    this.range.endTrIndex = endTrIndex
+    this.range.isCrossRowCol = !!(
+      startTdIndex ||
+      endTdIndex ||
+      startTrIndex ||
       endTrIndex
     )
-    if (isChange) {
-      this.range.startIndex = startIndex
-      this.range.endIndex = endIndex
-      this.range.tableId = tableId
-      this.range.startTdIndex = startTdIndex
-      this.range.endTdIndex = endTdIndex
-      this.range.startTrIndex = startTrIndex
-      this.range.endTrIndex = endTrIndex
-      this.range.isCrossRowCol = !!(
-        startTdIndex ||
-        endTdIndex ||
-        startTrIndex ||
-        endTrIndex
-      )
-      this.setDefaultStyle(null)
-    }
     this.range.zone = this.draw.getZone().getZone()
     // 激活控件
     const control = this.draw.getControl()
@@ -489,7 +417,7 @@ export class RangeManager {
       const index = ~endIndex ? endIndex : 0
       // 行首以第一个非换行符元素定位
       const elementList = this.draw.getElementList()
-      curElement = this.getRangeAnchorStyle(elementList, index)
+      curElement = getAnchorElement(elementList, index)
     }
     if (!curElement) return
     // 选取元素列表
@@ -610,8 +538,7 @@ export class RangeManager {
           const preElement = elementList[index]
           if (
             preElement.controlId !== startElement.controlId ||
-            preElement.controlComponent === ControlComponent.PREFIX ||
-            preElement.controlComponent === ControlComponent.PRE_TEXT
+            preElement.controlComponent === ControlComponent.PREFIX
           ) {
             range.startIndex = index
             range.endIndex = index
@@ -631,8 +558,7 @@ export class RangeManager {
           const preElement = elementList[index]
           if (
             preElement.controlId !== endElement.controlId ||
-            preElement.controlComponent === ControlComponent.PREFIX ||
-            preElement.controlComponent === ControlComponent.PRE_TEXT
+            preElement.controlComponent === ControlComponent.PREFIX
           ) {
             range.startIndex = index
             range.endIndex = index

@@ -46,8 +46,6 @@ import {
   RenderMode,
   WordBreak
 } from '../dataset/enum/Editor'
-import { defaultBadgeOption } from '../dataset/constant/Badge'
-import { IBadgeOption } from '../interface/Badge'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -128,10 +126,6 @@ export function mergeOption(
     ...defaultPageBorderOption,
     ...options.pageBorder
   }
-  const badgeOptions: Required<IBadgeOption> = {
-    ...defaultBadgeOption,
-    ...options.badge
-  }
 
   return {
     mode: EditorMode.EDIT,
@@ -193,7 +187,6 @@ export function mergeOption(
     lineBreak: lineBreakOptions,
     separator: separatorOptions,
     lineNumber: lineNumberOptions,
-    pageBorder: pageBorderOptions,
-    badge: badgeOptions
+    pageBorder: pageBorderOptions
   }
 }

@@ -292,18 +292,6 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     draw.render({
       isSetCursor: false
     })
-    // 控件值变更回调
-    if (activeControl) {
-      control.emitControlContentChange()
-    } else if (cacheStartElement.controlId) {
-      control.emitControlContentChange({
-        context: {
-          range: cacheRange,
-          elementList: cacheElementList
-        },
-        controlElement: cacheStartElement
-      })
-    }
     // 拖拽后渲染图片工具
     if (imgElement) {
       if (

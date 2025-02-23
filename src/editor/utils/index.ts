@@ -56,9 +56,6 @@ export function deepCloneOmitKeys<T, K>(obj: T, omitKeys: (keyof K)[]): T {
 }
 
 export function deepClone<T>(obj: T): T {
-  if (typeof structuredClone === 'function') {
-    return structuredClone(obj)
-  }
   if (!obj || typeof obj !== 'object') {
     return obj
   }
@@ -183,10 +180,6 @@ export function isArray(type: unknown): type is Array<unknown> {
   return Array.isArray(type)
 }
 
-export function isNumber(type: unknown): type is Array<unknown> {
-  return Object.prototype.toString.call(type) === '[object Number]'
-}
-
 export function mergeObject<T>(source: T, target: T): T {
   if (isObject(source) && isObject(target)) {
     const objectTarget = <Record<string, unknown>>target
@@ -265,6 +258,9 @@ export function cloneProperty<T>(
 ) {
   for (let i = 0; i < properties.length; i++) {
     const property = properties[i]
+    if (property === 'value') continue
+    if (property === 'type') continue
+    if (property === 'r') continue
     const value = sourceElement[property]
     if (value !== undefined) {
       targetElement[property] = value
@@ -356,12 +352,4 @@ export function isRectIntersect(
     return false
   }
   return true
-}
-
-export function isNonValue(value: unknown): boolean {
-  return value === undefined || value === null
-}
-
-export function normalizeLineBreak(text: string): string {
-  return text.replace(/\r\n|\r/g, '\n')
 }

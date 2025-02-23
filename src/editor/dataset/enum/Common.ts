@@ -21,8 +21,3 @@ export enum LocationPosition {
   BEFORE = 'before',
   AFTER = 'after'
 }
-
-export enum FlexDirection {
-  ROW = 'row',
-  COLUMN = 'column'
-}

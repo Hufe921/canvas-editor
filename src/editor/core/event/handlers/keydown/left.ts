@@ -2,7 +2,6 @@ import { EditorMode } from '../../../..'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
-import { getNonHideElementIndex } from '../../../../utils/element'
 import { isMod } from '../../../../utils/hotkey'
 import { CanvasEvent } from '../../CanvasEvent'
 
@@ -25,8 +24,7 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
   if (
     draw.getMode() === EditorMode.FORM &&
     control.getActiveControl() &&
-    (elementList[index]?.controlComponent === ControlComponent.PREFIX ||
-      elementList[index]?.controlComponent === ControlComponent.PRE_TEXT)
+    elementList[index]?.controlComponent === ControlComponent.PREFIX
   ) {
     control.initNextControl({
       direction: MoveDirection.UP
@@ -131,7 +129,7 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
                 tdIndex: preTdIndex,
                 tdId: preTd.id,
                 trId: preTr.id,
-                tableId: element.tableId
+                tableId: element.id
               })
               anchorStartIndex = preTd.value.length - 1
               anchorEndIndex = anchorStartIndex
@@ -145,11 +143,6 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
   }
   // 执行跳转
   if (!~anchorStartIndex || !~anchorEndIndex) return
-  // 隐藏元素跳过
-  const newElementList = draw.getElementList()
-  anchorStartIndex = getNonHideElementIndex(newElementList, anchorStartIndex)
-  anchorEndIndex = getNonHideElementIndex(newElementList, anchorEndIndex)
-  // 设置上下文
   rangeManager.setRange(anchorStartIndex, anchorEndIndex)
   const isAnchorCollapsed = anchorStartIndex === anchorEndIndex
   draw.render({
