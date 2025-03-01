@@ -821,7 +821,7 @@ instance.command.executeSetAreaBadge(payload: IAreaBadge[])
 用法：
 
 ```javascript
-instance.command.executeInsertElementList(elementList: IElement[])
+instance.command.executeInsertElementList(elementList: IElement[], options?: IInsertElementListOption)
 ```
 
 ## executeAppendElementList

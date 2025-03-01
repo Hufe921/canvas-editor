@@ -471,6 +471,15 @@ export class RangeManager {
     )
   }
 
+  public shrinkRange() {
+    const { startIndex, endIndex } = this.range
+    if (startIndex === endIndex || (!~startIndex && !~endIndex)) return
+    this.replaceRange({
+      ...this.range,
+      startIndex: endIndex
+    })
+  }
+
   public setRangeStyle() {
     const rangeStyleChangeListener = this.listener.rangeStyleChange
     const isSubscribeRangeStyleChange =

@@ -210,3 +210,7 @@ export interface IGetElementByIdOption {
   id?: string
   conceptId?: string
 }
+
+export interface IInsertElementListOption {
+  isReplace?: boolean
+}

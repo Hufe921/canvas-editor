@@ -821,7 +821,7 @@ Feature: Insert an element
 Usage:
 
 ```javascript
-instance.command.executeInsertElementList(elementList: IElement[])
+instance.command.executeInsertElementList(elementList: IElement[], options?: IInsertElementListOption)
 ```
 
 ## executeAppendElementList
