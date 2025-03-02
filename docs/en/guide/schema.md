@@ -77,6 +77,7 @@ interface IElement {
   }[];
   borderType?: TableBorder;
   borderColor?: string;
+  borderWidth?: number;
   tableToolDisabled?: boolean;
   // Hyperlinks
   url?: string;

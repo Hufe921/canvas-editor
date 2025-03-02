@@ -64,6 +64,7 @@ export interface ITableAttr {
   trList?: ITr[]
   borderType?: TableBorder
   borderColor?: string
+  borderWidth?: number
 }
 
 export interface ITableRule {

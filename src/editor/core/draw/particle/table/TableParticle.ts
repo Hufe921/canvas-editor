@@ -149,7 +149,13 @@ export class TableParticle {
     startX: number,
     startY: number
   ) {
-    const { colgroup, trList, borderType, borderColor } = element
+    const {
+      colgroup,
+      trList,
+      borderType,
+      borderColor,
+      borderWidth = 1
+    } = element
     if (!colgroup || !trList) return
     const {
       scale,
@@ -168,7 +174,7 @@ export class TableParticle {
     if (borderType === TableBorder.DASH) {
       ctx.setLineDash([3, 3])
     }
-    ctx.lineWidth = scale
+    ctx.lineWidth = scale * borderWidth
     ctx.strokeStyle = borderColor || defaultBorderColor
     // 渲染边框
     if (!isEmptyBorderType && !isInternalBorderType) {
