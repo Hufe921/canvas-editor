@@ -628,8 +628,8 @@ export class Control {
   ): number | null {
     const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
-    // 设计模式不验证删除权限
-    if (!this.draw.isDesignMode()) {
+    // 设计模式 || 元素隐藏 => 不验证删除权限
+    if (!this.draw.isDesignMode() && !startElement?.control?.hide) {
       const { deletable = true } = startElement.control!
       if (!deletable) return null
     }
