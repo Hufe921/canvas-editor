@@ -199,3 +199,13 @@ instance.eventBus.on('click', (evt: MouseEvent) => void)
 ```javascript
 instance.eventBus.on('positionContextChange', (payload: IPositionContextChangePayload) => void)
 ```
+
+## imageSizeChange
+
+功能：图片尺寸发生改变事件
+
+用法：
+
+```javascript
+instance.eventBus.on('imageSizeChange', (payload: { element: IElement }) => void)
+```

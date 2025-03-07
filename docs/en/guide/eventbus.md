@@ -199,3 +199,13 @@ Usage:
 ```javascript
 instance.eventBus.on('positionContextChange', (payload: IPositionContextChangePayload) => void)
 ```
+
+## imageSizeChange
+
+Feature: The image size change
+
+Usage:
+
+```javascript
+instance.eventBus.on('imageSizeChange', (payload: { element: IElement }) => void)
+```

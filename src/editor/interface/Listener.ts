@@ -1,6 +1,7 @@
 import {
   EditorZone,
   ElementType,
+  IElement,
   ListStyle,
   ListType,
   PageMode,
@@ -70,3 +71,5 @@ export interface IPositionContextChangePayload {
 export type IPositionContextChange = (
   payload: IPositionContextChangePayload
 ) => void
+
+export type IImageSizeChange = (payload: { element: IElement }) => void
