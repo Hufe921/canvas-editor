@@ -65,6 +65,7 @@ export interface ITableAttr {
   borderType?: TableBorder
   borderColor?: string
   borderWidth?: number
+  borderExternalWidth?: number
 }
 
 export interface ITableRule {

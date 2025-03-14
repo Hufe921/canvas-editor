@@ -14,6 +14,7 @@ interface IDrawTableBorderOption {
   startY: number
   width: number
   height: number
+  borderExternalWidth?: number
   isDrawFullBorder?: boolean
 }
 
@@ -101,7 +102,21 @@ export class TableParticle {
   }
 
   private _drawOuterBorder(payload: IDrawTableBorderOption) {
-    const { ctx, startX, startY, width, height, isDrawFullBorder } = payload
+    const {
+      ctx,
+      startX,
+      startY,
+      width,
+      height,
+      isDrawFullBorder,
+      borderExternalWidth
+    } = payload
+    const { scale } = this.options
+    // 外部边框单独设置
+    const lineWidth = ctx.lineWidth
+    if (borderExternalWidth) {
+      ctx.lineWidth = borderExternalWidth * scale
+    }
     ctx.beginPath()
     const x = Math.round(startX)
     const y = Math.round(startY)
@@ -114,6 +129,10 @@ export class TableParticle {
       ctx.lineTo(x + width, y)
     }
     ctx.stroke()
+    // 还原边框设置
+    if (borderExternalWidth) {
+      ctx.lineWidth = lineWidth
+    }
     ctx.translate(-0.5, -0.5)
   }
 
@@ -154,7 +173,8 @@ export class TableParticle {
       trList,
       borderType,
       borderColor,
-      borderWidth = 1
+      borderWidth = 1,
+      borderExternalWidth
     } = element
     if (!colgroup || !trList) return
     const {
@@ -174,7 +194,7 @@ export class TableParticle {
     if (borderType === TableBorder.DASH) {
       ctx.setLineDash([3, 3])
     }
-    ctx.lineWidth = scale * borderWidth
+    ctx.lineWidth = borderWidth * scale
     ctx.strokeStyle = borderColor || defaultBorderColor
     // 渲染边框
     if (!isEmptyBorderType && !isInternalBorderType) {
@@ -184,6 +204,7 @@ export class TableParticle {
         startY,
         width: tableWidth,
         height: tableHeight,
+        borderExternalWidth,
         isDrawFullBorder: isExternalBorderType
       })
     }
@@ -240,14 +261,46 @@ export class TableParticle {
           ) {
             ctx.moveTo(x, y)
             ctx.lineTo(x, y + height)
+            // 外部边框宽度设置时 => 最右边框宽度单独设置
+            if (
+              borderExternalWidth &&
+              borderExternalWidth !== borderWidth &&
+              td.colIndex! + td.colspan === colgroup.length
+            ) {
+              const lineWidth = ctx.lineWidth
+              ctx.lineWidth = borderExternalWidth * scale
+              ctx.stroke()
+              // 清空path
+              ctx.beginPath()
+              ctx.lineWidth = lineWidth
+            }
           }
           // 下边框
           if (
             !isInternalBorderType ||
             td.rowIndex! + td.rowspan < trList.length
           ) {
+            // 外部边框宽度设置时 => 立即绘制竖线
+            const isSetExternalBottomBorder =
+              borderExternalWidth &&
+              borderExternalWidth !== borderWidth &&
+              td.rowIndex! + td.rowspan === trList.length
+            if (isSetExternalBottomBorder) {
+              ctx.stroke()
+              // 清空path
+              ctx.beginPath()
+            }
             ctx.moveTo(x, y + height)
             ctx.lineTo(x - width, y + height)
+            // 外部边框宽度设置时 => 最下边框宽度单独设置
+            if (isSetExternalBottomBorder) {
+              const lineWidth = ctx.lineWidth
+              ctx.lineWidth = borderExternalWidth * scale
+              ctx.stroke()
+              // 清空path
+              ctx.beginPath()
+              ctx.lineWidth = lineWidth
+            }
           }
           ctx.stroke()
         }
