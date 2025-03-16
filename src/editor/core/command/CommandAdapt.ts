@@ -1442,10 +1442,14 @@ export class CommandAdapt {
     const endElement = pickElementAttr(elementList[endIndex], {
       extraPickAttrs: ['id']
     })
-    // 页码信息
+    // 页码信息、行信息
     const positionList = this.position.getPositionList()
-    const startPageNo = positionList[startIndex].pageNo
-    const endPageNo = positionList[endIndex].pageNo
+    const startPosition = positionList[startIndex]
+    const endPosition = positionList[endIndex]
+    const startPageNo = startPosition.pageNo
+    const endPageNo = endPosition.pageNo
+    const startRowNo = startPosition.rowIndex
+    const endRowNo = endPosition.rowIndex
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
     const height = this.draw.getOriginalHeight()
@@ -1532,6 +1536,8 @@ export class CommandAdapt {
       endElement,
       startPageNo,
       endPageNo,
+      startRowNo,
+      endRowNo,
       rangeRects,
       zone,
       isTable,
