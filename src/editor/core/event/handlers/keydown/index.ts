@@ -26,24 +26,24 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     right(evt, host)
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     updown(evt, host)
-  } else if (isMod(evt) && evt.key === KeyMap.Z) {
+  } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.Z) {
     if (draw.isReadonly() && draw.getMode() !== EditorMode.FORM) return
     draw.getHistoryManager().undo()
     evt.preventDefault()
-  } else if (isMod(evt) && evt.key === KeyMap.Y) {
+  } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.Y) {
     if (draw.isReadonly() && draw.getMode() !== EditorMode.FORM) return
     draw.getHistoryManager().redo()
     evt.preventDefault()
-  } else if (isMod(evt) && evt.key === KeyMap.C) {
+  } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.C) {
     host.copy()
     evt.preventDefault()
-  } else if (isMod(evt) && evt.key === KeyMap.X) {
+  } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.X) {
     host.cut()
     evt.preventDefault()
-  } else if (isMod(evt) && evt.key === KeyMap.A) {
+  } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.A) {
     host.selectAll()
     evt.preventDefault()
-  } else if (isMod(evt) && evt.key === KeyMap.S) {
+  } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.S) {
     if (draw.isReadonly()) return
     const listener = draw.getListener()
     if (listener.saved) {
