@@ -2041,15 +2041,27 @@ export class CommandAdapt {
   }
 
   public setControlValue(payload: ISetControlValueOption) {
-    this.draw.getControl().setValueById(payload)
+    this.draw.getControl().setValueListById([payload])
+  }
+
+  public setControlValueList(payload: ISetControlValueOption[]) {
+    this.draw.getControl().setValueListById(payload)
   }
 
   public setControlExtension(payload: ISetControlExtensionOption) {
-    this.draw.getControl().setExtensionById(payload)
+    this.draw.getControl().setExtensionListById([payload])
+  }
+
+  public setControlExtensionList(payload: ISetControlExtensionOption[]) {
+    this.draw.getControl().setExtensionListById(payload)
   }
 
   public setControlProperties(payload: ISetControlProperties) {
-    this.draw.getControl().setPropertiesById(payload)
+    this.draw.getControl().setPropertiesListById([payload])
+  }
+
+  public setControlPropertiesList(payload: ISetControlProperties[]) {
+    this.draw.getControl().setPropertiesListById(payload)
   }
 
   public setControlHighlight(payload: ISetControlHighlightOption) {

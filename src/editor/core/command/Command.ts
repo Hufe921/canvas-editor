@@ -98,8 +98,11 @@ export class Command {
   public executeLocationGroup: CommandAdapt['locationGroup']
   public executeSetZone: CommandAdapt['setZone']
   public executeSetControlValue: CommandAdapt['setControlValue']
+  public executeSetControlValueList: CommandAdapt['setControlValueList']
   public executeSetControlExtension: CommandAdapt['setControlExtension']
+  public executeSetControlExtensionList: CommandAdapt['setControlExtensionList']
   public executeSetControlProperties: CommandAdapt['setControlProperties']
+  public executeSetControlPropertiesList: CommandAdapt['setControlPropertiesList']
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
   public executeLocationControl: CommandAdapt['locationControl']
   public executeInsertControl: CommandAdapt['insertControl']
@@ -271,8 +274,13 @@ export class Command {
     this.getElementById = adapt.getElementById.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.executeSetControlValueList = adapt.setControlValueList.bind(adapt)
     this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
+    this.executeSetControlExtensionList =
+      adapt.setControlExtensionList.bind(adapt)
     this.executeSetControlProperties = adapt.setControlProperties.bind(adapt)
+    this.executeSetControlPropertiesList =
+      adapt.setControlPropertiesList.bind(adapt)
     this.executeSetControlHighlight = adapt.setControlHighlight.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
     this.getControlList = adapt.getControlList.bind(adapt)
