@@ -113,6 +113,7 @@ export class Command {
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
   public getValue: CommandAdapt['getValue']
+  public getValueAsync: CommandAdapt['getValueAsync']
   public getAreaValue: CommandAdapt['getAreaValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
@@ -252,6 +253,7 @@ export class Command {
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
+    this.getValueAsync = adapt.getValueAsync.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)

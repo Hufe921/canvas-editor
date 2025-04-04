@@ -9,6 +9,7 @@ import {
   IDrawPagePayload,
   IDrawRowPayload,
   IGetImageOption,
+  IGetOriginValueOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -1123,8 +1124,10 @@ export class Draw {
     })
   }
 
-  public getValue(options: IGetValueOption = {}): IEditorResult {
-    const { pageNo, extraPickAttrs } = options
+  public getOriginValue(
+    options: IGetOriginValueOption = {}
+  ): Required<IEditorData> {
+    const { pageNo } = options
     let mainElementList = this.elementList
     if (
       Number.isInteger(pageNo) &&
@@ -1135,15 +1138,26 @@ export class Draw {
         row => row.elementList
       )
     }
+    const data: Required<IEditorData> = {
+      header: this.getHeaderElementList(),
+      main: mainElementList,
+      footer: this.getFooterElementList()
+    }
+    return data
+  }
+
+  public getValue(options: IGetValueOption = {}): IEditorResult {
+    const originData = this.getOriginValue(options)
+    const { extraPickAttrs } = options
     const data: IEditorData = {
-      header: zipElementList(this.getHeaderElementList(), {
+      header: zipElementList(originData.header, {
         extraPickAttrs
       }),
-      main: zipElementList(mainElementList, {
+      main: zipElementList(originData.main, {
         extraPickAttrs,
         isClassifyArea: true
       }),
-      footer: zipElementList(this.getFooterElementList(), {
+      footer: zipElementList(originData.footer, {
         extraPickAttrs
       })
     }

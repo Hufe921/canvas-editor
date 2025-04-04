@@ -58,6 +58,8 @@ export interface IGetValueOption {
   extraPickAttrs?: Array<keyof IElement>
 }
 
+export type IGetOriginValueOption = Omit<IGetValueOption, 'extraPickAttrs'>
+
 export interface IAppendElementListOption {
   isPrepend?: boolean
 }

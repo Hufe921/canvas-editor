@@ -1376,6 +1376,10 @@ export class CommandAdapt {
     return this.draw.getValue(options)
   }
 
+  public getValueAsync(options?: IGetValueOption): Promise<IEditorResult> {
+    return this.draw.getWorkerManager().getValue(options)
+  }
+
   public getAreaValue(
     options?: IGetAreaValueOption
   ): IGetAreaValueResult | null {
