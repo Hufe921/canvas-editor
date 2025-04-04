@@ -1,3 +1,26 @@
+## [0.9.106](https://github.com/Hufe921/canvas-editor/compare/v0.9.105...v0.9.106) (2025-04-04)
+
+
+### Bug Fixes
+
+* delete elements within the td when dragging #1056 ([dcb7589](https://github.com/Hufe921/canvas-editor/commit/dcb7589afa2b00bcb0775a4d216032339368e695)), closes [#1056](https://github.com/Hufe921/canvas-editor/issues/1056)
+* internal shortcut keys ignore capitalization #1061 ([c282366](https://github.com/Hufe921/canvas-editor/commit/c28236699cf7ce2acb55fbb5a8dcbf52f46aae89)), closes [#1061](https://github.com/Hufe921/canvas-editor/issues/1061)
+
+
+### Chores
+
+* optimize the import interface path ([7256a13](https://github.com/Hufe921/canvas-editor/commit/7256a13d57735a51700af3ba261fe4c684a47250))
+
+
+### Features
+
+* add dragFloatImageDisabled to cursor option #1054 ([09a8de2](https://github.com/Hufe921/canvas-editor/commit/09a8de2a88bc3193b5cfee366dcae189e38fc8da)), closes [#1054](https://github.com/Hufe921/canvas-editor/issues/1054)
+* add getValueAsync api #1067 ([6f34bce](https://github.com/Hufe921/canvas-editor/commit/6f34bce7db81f429372bba9110df8a2f314c4981)), closes [#1067](https://github.com/Hufe921/canvas-editor/issues/1067)
+* add row number to RangeContext ([fa5936e](https://github.com/Hufe921/canvas-editor/commit/fa5936ec004de0273d9b94fa86a08162cce4cad4))
+* batch set control properties #1037 ([94e7b2c](https://github.com/Hufe921/canvas-editor/commit/94e7b2ca7cd43fd3da83612369cb29c074481378)), closes [#1037](https://github.com/Hufe921/canvas-editor/issues/1037)
+
+
+
 ## [0.9.105](https://github.com/Hufe921/canvas-editor/compare/v0.9.104...v0.9.105) (2025-03-15)
 
 
