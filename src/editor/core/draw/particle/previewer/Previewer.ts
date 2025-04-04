@@ -1,11 +1,13 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
+import { EventBusMap } from '../../../../interface/EventBus'
 import {
   IPreviewerCreateResult,
   IPreviewerDrawOption
 } from '../../../../interface/Previewer'
 import { downloadFile } from '../../../../utils'
+import { EventBus } from '../../../event/eventbus/EventBus'
 import { Draw } from '../../Draw'
 
 export class Previewer {
@@ -17,6 +19,7 @@ export class Previewer {
   private curElementSrc: string
   private previewerDrawOption: IPreviewerDrawOption
   private curPosition: IElementPosition | null
+  private eventBus: EventBus<EventBusMap>
   // 拖拽改变尺寸
   private resizerSelection: HTMLDivElement
   private resizerHandleList: HTMLDivElement[]
@@ -41,6 +44,7 @@ export class Previewer {
     this.curElementSrc = ''
     this.previewerDrawOption = {}
     this.curPosition = null
+    this.eventBus = draw.getEventBus()
     // 图片尺寸缩放
     const {
       resizerSelection,
@@ -261,6 +265,12 @@ export class Previewer {
     // 尺寸预览
     this._updateResizerSizeView(elementWidth, elementHeight)
     evt.preventDefault()
+    // 图片尺寸发生改变事件
+    if (this.eventBus.isSubscribe('imageSizeChange')) {
+      this.eventBus.emit('imageSizeChange', {
+        element: this.curElement
+      })
+    }
   }
 
   private _drawPreviewer() {

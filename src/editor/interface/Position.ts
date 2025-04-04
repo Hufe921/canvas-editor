@@ -1,6 +1,7 @@
-import { IElement, ImageDisplay, IRange } from '..'
+import { ImageDisplay } from '../dataset/enum/Common'
 import { EditorZone } from '../dataset/enum/Editor'
-import { IElementFillRect, IElementPosition } from './Element'
+import { IElement, IElementFillRect, IElementPosition } from './Element'
+import { IRange } from './Range'
 import { IRow, IRowElement } from './Row'
 import { ITd } from './table/Td'
 

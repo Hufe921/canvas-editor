@@ -628,8 +628,8 @@ export class Control {
   ): number | null {
     const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
-    // 设计模式不验证删除权限
-    if (!this.draw.isDesignMode()) {
+    // 设计模式 || 元素隐藏 => 不验证删除权限
+    if (!this.draw.isDesignMode() && !startElement?.control?.hide) {
       const { deletable = true } = startElement.control!
       if (!deletable) return null
     }
@@ -881,10 +881,10 @@ export class Control {
     return result
   }
 
-  public setValueById(payload: ISetControlValueOption) {
+  public setValueListById(payload: ISetControlValueOption[]) {
+    if (!payload.length) return
     let isExistSet = false
-    const { id, conceptId, areaId, value, isSubmitHistory = true } = payload
-    if (!id && !conceptId) return
+    let isExistSubmitHistory = false
     // 设置值
     const setValue = (elementList: IElement[]) => {
       let i = 0
@@ -902,15 +902,21 @@ export class Control {
             }
           }
         }
-        if (
-          !element.control ||
-          (id && element.controlId !== id) ||
-          (conceptId && element.control.conceptId !== conceptId) ||
-          (areaId && element.areaId !== areaId)
-        ) {
-          continue
-        }
+        if (!element.control) continue
+        // 获取设置值优先id、conceptId、areaId
+        const payloadItem = payload.find(
+          p =>
+            (p.id && element.controlId === p.id) ||
+            (p.conceptId && element.control!.conceptId === p.conceptId) ||
+            (p.areaId && element.areaId === p.areaId)
+        )
+        if (!payloadItem) continue
+        const { value, isSubmitHistory = true } = payloadItem
+        // 只要存在一次保存历史均记录
         isExistSet = true
+        if (isSubmitHistory) {
+          isExistSubmitHistory = true
+        }
         const { type } = element.control!
         // 当前控件结束索引
         let currentEndIndex = i
@@ -1031,19 +1037,18 @@ export class Control {
     }
     if (isExistSet) {
       // 不保存历史时需清空之前记录，避免还原
-      if (!isSubmitHistory) {
+      if (!isExistSubmitHistory) {
         this.draw.getHistoryManager().recovery()
       }
       this.draw.render({
-        isSubmitHistory,
+        isSubmitHistory: isExistSubmitHistory,
         isSetCursor: false
       })
     }
   }
 
-  public setExtensionById(payload: ISetControlExtensionOption) {
-    const { id, conceptId, areaId, extension } = payload
-    if (!id && !conceptId) return
+  public setExtensionListById(payload: ISetControlExtensionOption[]) {
+    if (!payload.length) return
     const setExtension = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
@@ -1060,14 +1065,16 @@ export class Control {
             }
           }
         }
-        if (
-          !element.control ||
-          (id && element.controlId !== id) ||
-          (conceptId && element.control.conceptId !== conceptId) ||
-          (areaId && element.areaId !== areaId)
-        ) {
-          continue
-        }
+        if (!element.control) continue
+        // 获取设置值优先id、conceptId、areaId
+        const payloadItem = payload.find(
+          p =>
+            (p.id && element.controlId === p.id) ||
+            (p.conceptId && element.control!.conceptId === p.conceptId) ||
+            (p.areaId && element.areaId === p.areaId)
+        )
+        if (!payloadItem) continue
+        const { extension } = payloadItem
         // 设置值
         this.setControlProperties(
           {
@@ -1098,16 +1105,10 @@ export class Control {
     }
   }
 
-  public setPropertiesById(payload: ISetControlProperties) {
-    const {
-      id,
-      conceptId,
-      areaId,
-      properties,
-      isSubmitHistory = true
-    } = payload
-    if (!id && !conceptId) return
+  public setPropertiesListById(payload: ISetControlProperties[]) {
+    if (!payload.length) return
     let isExistUpdate = false
+    let isExistSubmitHistory = false
     const setProperties = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
@@ -1123,15 +1124,20 @@ export class Control {
             }
           }
         }
-        if (
-          !element.control ||
-          (id && element.controlId !== id) ||
-          (conceptId && element.control.conceptId !== conceptId) ||
-          (areaId && element.areaId !== areaId)
-        ) {
-          continue
-        }
+        if (!element.control) continue
+        // 获取设置值优先id、conceptId、areaId
+        const payloadItem = payload.find(
+          p =>
+            (p.id && element.controlId === p.id) ||
+            (p.conceptId && element.control!.conceptId === p.conceptId) ||
+            (p.areaId && element.areaId === p.areaId)
+        )
+        if (!payloadItem) continue
+        const { properties, isSubmitHistory = true } = payloadItem
         isExistUpdate = true
+        if (isSubmitHistory) {
+          isExistSubmitHistory = true
+        }
         // 设置属性
         this.setControlProperties(
           {
@@ -1187,11 +1193,11 @@ export class Control {
     }
     this.draw.setEditorData(pageComponentData)
     // 不保存历史时需清空之前记录，避免还原
-    if (!isSubmitHistory) {
+    if (!isExistSubmitHistory) {
       this.draw.getHistoryManager().recovery()
     }
     this.draw.render({
-      isSubmitHistory,
+      isSubmitHistory: isExistSubmitHistory,
       isSetCursor: false
     })
   }

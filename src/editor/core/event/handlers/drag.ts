@@ -1,3 +1,5 @@
+import { ImageDisplay } from '../../../dataset/enum/Common'
+import { ElementType } from '../../../dataset/enum/Element'
 import { findParent } from '../../../utils'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -37,8 +39,20 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   }
   const cursor = draw.getCursor()
   const {
-    cursor: { dragColor, dragWidth }
+    cursor: { dragColor, dragWidth, dragFloatImageDisabled }
   } = draw.getOptions()
+  // 拖拽图片是否定位光标
+  if (dragFloatImageDisabled) {
+    const dragElement = host.cacheElementList?.[host.cacheRange!.startIndex]
+    if (
+      dragElement?.type === ElementType.IMAGE &&
+      (dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
+        dragElement.imgDisplay === ImageDisplay.FLOAT_BOTTOM ||
+        dragElement.imgDisplay === ImageDisplay.SURROUND)
+    ) {
+      return
+    }
+  }
   cursor.drawCursor({
     width: dragWidth,
     color: dragColor,

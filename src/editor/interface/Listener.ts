@@ -1,14 +1,11 @@
-import {
-  EditorZone,
-  ElementType,
-  ListStyle,
-  ListType,
-  PageMode,
-  TitleLevel
-} from '..'
+import { EditorZone, PageMode } from '../dataset/enum/Editor'
+import { ElementType } from '../dataset/enum/Element'
+import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
+import { TitleLevel } from '../dataset/enum/Title'
 import { IControlChangeResult, IControlContentChangeResult } from './Control'
 import { IEditorResult } from './Editor'
+import { IElement } from './Element'
 import { IPositionContext } from './Position'
 import { ITextDecoration } from './Text'
 
@@ -70,3 +67,5 @@ export interface IPositionContextChangePayload {
 export type IPositionContextChange = (
   payload: IPositionContextChangePayload
 ) => void
+
+export type IImageSizeChange = (payload: { element: IElement }) => void

@@ -8,20 +8,6 @@ import {
   pickObject,
   splitText
 } from '.'
-import {
-  BlockType,
-  EditorMode,
-  ElementType,
-  IEditorOption,
-  IElement,
-  ImageDisplay,
-  ListStyle,
-  ListType,
-  LocationPosition,
-  RowFlex,
-  TableBorder,
-  TdBorder
-} from '..'
 import { IFrameBlock } from '../core/draw/particle/block/modules/IFrameBlock'
 import { LaTexParticle } from '../core/draw/particle/latex/LaTexParticle'
 import { NON_BREAKING_SPACE, ZERO } from '../dataset/constant/Common'
@@ -49,10 +35,18 @@ import {
   titleOrderNumberMapping,
   titleSizeMapping
 } from '../dataset/constant/Title'
+import { BlockType } from '../dataset/enum/Block'
+import { ImageDisplay, LocationPosition } from '../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../dataset/enum/Control'
-import { UlStyle } from '../dataset/enum/List'
+import { EditorMode } from '../dataset/enum/Editor'
+import { ElementType } from '../dataset/enum/Element'
+import { ListStyle, ListType, UlStyle } from '../dataset/enum/List'
+import { RowFlex } from '../dataset/enum/Row'
+import { TableBorder, TdBorder } from '../dataset/enum/table/Table'
 import { DeepRequired } from '../interface/Common'
 import { IControlSelect } from '../interface/Control'
+import { IEditorOption } from '../interface/Editor'
+import { IElement } from '../interface/Element'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
@@ -613,13 +607,14 @@ export function pickElementAttr(
 interface IZipElementListOption {
   extraPickAttrs?: Array<keyof IElement>
   isClassifyArea?: boolean
+  isClone?: boolean
 }
 export function zipElementList(
   payload: IElement[],
   options: IZipElementListOption = {}
 ): IElement[] {
-  const { extraPickAttrs, isClassifyArea = false } = options
-  const elementList = deepClone(payload)
+  const { extraPickAttrs, isClassifyArea = false, isClone = true } = options
+  const elementList = isClone ? deepClone(payload) : payload
   const zipElementListData: IElement[] = []
   let e = 0
   while (e < elementList.length) {

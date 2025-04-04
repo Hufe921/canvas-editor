@@ -821,7 +821,7 @@ Feature: Insert an element
 Usage:
 
 ```javascript
-instance.command.executeInsertElementList(elementList: IElement[])
+instance.command.executeInsertElementList(elementList: IElement[], options?: IInsertElementListOption)
 ```
 
 ## executeAppendElementList
@@ -964,6 +964,16 @@ Usage:
 instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```
 
+## executeSetControlValueList
+
+Feature: Batch set control value
+
+Usage:
+
+```javascript
+instance.command.executeSetControlValueList(payload: ISetControlValueOption[])
+```
+
 ## executeSetControlExtension
 
 Feature: Set control extension value
@@ -974,6 +984,16 @@ Usage:
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```
 
+## executeSetControlExtensionList
+
+Feature: Batch set control extension value
+
+Usage:
+
+```javascript
+instance.command.executeSetControlExtensionList(payload: ISetControlExtensionOption[])
+```
+
 ## executeSetControlProperties
 
 Feature: Set control properties
@@ -982,6 +1002,16 @@ Usage:
 
 ```javascript
 instance.command.executeSetControlProperties(payload: ISetControlProperties)
+```
+
+## executeSetControlPropertiesList
+
+Feature: Batch set control properties
+
+Usage:
+
+```javascript
+instance.command.executeSetControlPropertiesList(payload: ISetControlProperties[])
 ```
 
 ## executeSetControlHighlight

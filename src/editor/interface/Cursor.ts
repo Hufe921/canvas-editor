@@ -3,4 +3,5 @@ export interface ICursorOption {
   color?: string
   dragWidth?: number
   dragColor?: string
+  dragFloatImageDisabled?: boolean
 }

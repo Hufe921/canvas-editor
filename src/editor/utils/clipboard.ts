@@ -1,6 +1,7 @@
-import { IEditorOption, IElement } from '..'
 import { EDITOR_CLIPBOARD } from '../dataset/constant/Editor'
 import { DeepRequired } from '../interface/Common'
+import { IEditorOption } from '../interface/Editor'
+import { IElement } from '../interface/Element'
 import { createDomFromElementList, zipElementList } from './element'
 
 export interface IClipboardData {

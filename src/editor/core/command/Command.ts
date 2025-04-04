@@ -98,8 +98,11 @@ export class Command {
   public executeLocationGroup: CommandAdapt['locationGroup']
   public executeSetZone: CommandAdapt['setZone']
   public executeSetControlValue: CommandAdapt['setControlValue']
+  public executeSetControlValueList: CommandAdapt['setControlValueList']
   public executeSetControlExtension: CommandAdapt['setControlExtension']
+  public executeSetControlExtensionList: CommandAdapt['setControlExtensionList']
   public executeSetControlProperties: CommandAdapt['setControlProperties']
+  public executeSetControlPropertiesList: CommandAdapt['setControlPropertiesList']
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
   public executeLocationControl: CommandAdapt['locationControl']
   public executeInsertControl: CommandAdapt['insertControl']
@@ -110,6 +113,7 @@ export class Command {
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
   public getValue: CommandAdapt['getValue']
+  public getValueAsync: CommandAdapt['getValueAsync']
   public getAreaValue: CommandAdapt['getAreaValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
@@ -249,6 +253,7 @@ export class Command {
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
+    this.getValueAsync = adapt.getValueAsync.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
@@ -271,8 +276,13 @@ export class Command {
     this.getElementById = adapt.getElementById.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.executeSetControlValueList = adapt.setControlValueList.bind(adapt)
     this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
+    this.executeSetControlExtensionList =
+      adapt.setControlExtensionList.bind(adapt)
     this.executeSetControlProperties = adapt.setControlProperties.bind(adapt)
+    this.executeSetControlPropertiesList =
+      adapt.setControlPropertiesList.bind(adapt)
     this.executeSetControlHighlight = adapt.setControlHighlight.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
     this.getControlList = adapt.getControlList.bind(adapt)

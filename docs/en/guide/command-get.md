@@ -23,6 +23,21 @@ const {
 } = instance.command.getValue(options?: IGetValueOption)
 ```
 
+## getValueAsync
+
+Feature: Get the current document value (async)
+
+Usage:
+
+```javascript
+const {
+  version: string
+  data: IEditorData
+  options: IEditorOption
+} = await instance.command.getValueAsync(options?: IGetValueOption)
+```
+
+
 ## getImage
 
 Feature: Gets the base64 string of the current page image

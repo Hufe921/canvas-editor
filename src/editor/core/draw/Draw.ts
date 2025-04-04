@@ -9,6 +9,7 @@ import {
   IDrawPagePayload,
   IDrawRowPayload,
   IGetImageOption,
+  IGetOriginValueOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -279,11 +280,41 @@ export class Draw {
     this.lazyRenderIntersectionObserver = null
     this.printModeData = null
 
+    // 打印模式优先设置打印数据
+    if (this.mode === EditorMode.PRINT) {
+      this.setPrintData()
+    }
     this.render({
       isInit: true,
       isSetCursor: false,
       isFirstRender: true
     })
+  }
+
+  // 设置打印数据
+  public setPrintData() {
+    this.printModeData = {
+      header: this.header.getElementList(),
+      main: this.elementList,
+      footer: this.footer.getElementList()
+    }
+    // 过滤控件辅助元素
+    const clonePrintModeData = deepClone(this.printModeData)
+    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
+    editorDataKeys.forEach(key => {
+      clonePrintModeData[key] = this.control.filterAssistElement(
+        clonePrintModeData[key]
+      )
+    })
+    this.setEditorData(clonePrintModeData)
+  }
+
+  // 还原打印数据
+  public clearPrintData() {
+    if (this.printModeData) {
+      this.setEditorData(this.printModeData)
+      this.printModeData = null
+    }
   }
 
   public getLetterReg(): RegExp {
@@ -298,25 +329,11 @@ export class Draw {
     if (this.mode === payload) return
     // 设置打印模式
     if (payload === EditorMode.PRINT) {
-      this.printModeData = {
-        header: this.header.getElementList(),
-        main: this.elementList,
-        footer: this.footer.getElementList()
-      }
-      // 过滤控件辅助元素
-      const clonePrintModeData = deepClone(this.printModeData)
-      const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
-      editorDataKeys.forEach(key => {
-        clonePrintModeData[key] = this.control.filterAssistElement(
-          clonePrintModeData[key]
-        )
-      })
-      this.setEditorData(clonePrintModeData)
+      this.setPrintData()
     }
     // 取消打印模式
-    if (this.mode === EditorMode.PRINT && this.printModeData) {
-      this.setEditorData(this.printModeData)
-      this.printModeData = null
+    if (this.mode === EditorMode.PRINT) {
+      this.clearPrintData()
     }
     this.clearSideEffect()
     this.range.clearRange()
@@ -1107,8 +1124,10 @@ export class Draw {
     })
   }
 
-  public getValue(options: IGetValueOption = {}): IEditorResult {
-    const { pageNo, extraPickAttrs } = options
+  public getOriginValue(
+    options: IGetOriginValueOption = {}
+  ): Required<IEditorData> {
+    const { pageNo } = options
     let mainElementList = this.elementList
     if (
       Number.isInteger(pageNo) &&
@@ -1119,15 +1138,26 @@ export class Draw {
         row => row.elementList
       )
     }
+    const data: Required<IEditorData> = {
+      header: this.getHeaderElementList(),
+      main: mainElementList,
+      footer: this.getFooterElementList()
+    }
+    return data
+  }
+
+  public getValue(options: IGetValueOption = {}): IEditorResult {
+    const originData = this.getOriginValue(options)
+    const { extraPickAttrs } = options
     const data: IEditorData = {
-      header: zipElementList(this.getHeaderElementList(), {
+      header: zipElementList(originData.header, {
         extraPickAttrs
       }),
-      main: zipElementList(mainElementList, {
+      main: zipElementList(originData.main, {
         extraPickAttrs,
         isClassifyArea: true
       }),
-      footer: zipElementList(this.getFooterElementList(), {
+      footer: zipElementList(originData.footer, {
         extraPickAttrs
       })
     }

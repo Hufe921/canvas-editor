@@ -62,14 +62,20 @@ export function hitRadio(element: IElement, draw: Draw) {
 }
 
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
-  if (evt.button === MouseEventButton.RIGHT) return
   const draw = host.getDraw()
   const isReadonly = draw.isReadonly()
   const rangeManager = draw.getRange()
   const position = draw.getPosition()
+  // 存在选区时忽略右键点击
+  const range = rangeManager.getRange()
+  if (
+    evt.button === MouseEventButton.RIGHT &&
+    (range.isCrossRowCol || !rangeManager.getIsCollapsed())
+  ) {
+    return
+  }
   // 是否是选区拖拽
   if (!host.isAllowDrag) {
-    const range = rangeManager.getRange()
     if (!isReadonly && range.startIndex !== range.endIndex) {
       const isPointInRange = rangeManager.getIsPointInRange(
         evt.offsetX,

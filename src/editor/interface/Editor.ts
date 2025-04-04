@@ -1,4 +1,3 @@
-import { IElement, LocationPosition } from '..'
 import {
   EditorMode,
   PageMode,
@@ -27,6 +26,8 @@ import { ITableOption } from './table/Table'
 import { ILineNumberOption } from './LineNumber'
 import { IPageBorderOption } from './PageBorder'
 import { IBadgeOption } from './Badge'
+import { IElement } from './Element'
+import { LocationPosition } from '../dataset/enum/Common'
 
 export interface IEditorData {
   header?: IElement[]

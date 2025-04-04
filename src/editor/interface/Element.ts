@@ -64,6 +64,8 @@ export interface ITableAttr {
   trList?: ITr[]
   borderType?: TableBorder
   borderColor?: string
+  borderWidth?: number
+  borderExternalWidth?: number
 }
 
 export interface ITableRule {
@@ -209,4 +211,8 @@ export interface IDeleteElementByIdOption {
 export interface IGetElementByIdOption {
   id?: string
   conceptId?: string
+}
+
+export interface IInsertElementListOption {
+  isReplace?: boolean
 }

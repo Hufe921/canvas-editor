@@ -821,7 +821,7 @@ instance.command.executeSetAreaBadge(payload: IAreaBadge[])
 用法：
 
 ```javascript
-instance.command.executeInsertElementList(elementList: IElement[])
+instance.command.executeInsertElementList(elementList: IElement[], options?: IInsertElementListOption)
 ```
 
 ## executeAppendElementList
@@ -964,6 +964,16 @@ instance.command.executeSetZone(zone: EditorZone)
 instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```
 
+## executeSetControlValueList
+
+功能：批量设置控件值
+
+用法：
+
+```javascript
+instance.command.executeSetControlValueList(payload: ISetControlValueOption[])
+```
+
 ## executeSetControlExtension
 
 功能：设置控件扩展值
@@ -974,6 +984,16 @@ instance.command.executeSetControlValue(payload: ISetControlValueOption)
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```
 
+## executeSetControlExtensionList
+
+功能：批量设置控件扩展值
+
+用法：
+
+```javascript
+instance.command.executeSetControlExtensionList(payload: ISetControlExtensionOption[])
+```
+
 ## executeSetControlProperties
 
 功能：设置控件属性
@@ -982,6 +1002,16 @@ instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 
 ```javascript
 instance.command.executeSetControlProperties(payload: ISetControlProperties)
+```
+
+## executeSetControlPropertiesList
+
+功能：批量设置控件属性
+
+用法：
+
+```javascript
+instance.command.executeSetControlPropertiesList(payload: ISetControlProperties[])
 ```
 
 ## executeSetControlHighlight
