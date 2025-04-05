@@ -14,6 +14,7 @@ export interface IAreaStyle {
 
 export interface IAreaRule {
   mode?: AreaMode
+  deletable?: boolean
 }
 
 export type IArea = IAreaBasic & IAreaStyle & IAreaRule

@@ -802,7 +802,9 @@ export class Draw {
             deleteElement?.control?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
-              deleteElement?.title?.deletable !== false)
+              deleteElement?.title?.deletable !== false &&
+              (deleteElement?.area?.deletable !== false ||
+                deleteElement?.areaIndex !== 0))
           ) {
             elementList.splice(deleteIndex, 1)
           }

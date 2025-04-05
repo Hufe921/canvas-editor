@@ -142,6 +142,7 @@ export interface IBlockElement {
 export interface IAreaElement {
   valueList?: IElement[]
   areaId?: string
+  areaIndex?: number
   area?: IArea
 }
 
