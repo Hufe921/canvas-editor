@@ -791,8 +791,8 @@ export class Draw {
           startIndex++
         }
       }
-      // 元素删除（不可删除控件忽略）
-      if (!this.control.getActiveControl()) {
+      // 光标在控件内时独立控制
+      if (!this.control.getIsRangeWithinControl()) {
         const tdDeletable = this.getTd()?.deletable
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
