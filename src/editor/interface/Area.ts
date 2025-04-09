@@ -1,9 +1,11 @@
 import { AreaMode } from '../dataset/enum/Area'
 import { LocationPosition } from '../dataset/enum/Common'
 import { IElement, IElementPosition } from './Element'
+import { IPlaceholder } from './Placeholder'
 
 export interface IAreaBasic {
   extension?: unknown
+  placeholder?: IPlaceholder
 }
 
 export interface IAreaStyle {

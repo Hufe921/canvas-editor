@@ -1,11 +1,17 @@
 import { IEditorOption, IElement } from '../../..'
 import { DeepRequired } from '../../../interface/Common'
 import { IElementPosition } from '../../../interface/Element'
+import { IPlaceholder } from '../../../interface/Placeholder'
 import { IRow } from '../../../interface/Row'
 import { formatElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 import { LineBreakParticle } from '../particle/LineBreakParticle'
+
+export interface IPlaceholderRenderOption {
+  placeholder: Required<IPlaceholder>
+  startY?: number
+}
 
 export class Placeholder {
   private draw: Draw
@@ -32,9 +38,9 @@ export class Placeholder {
     this.positionList = []
   }
 
-  public _compute() {
+  public _compute(options?: IPlaceholderRenderOption) {
     this._computeRowList()
-    this._computePositionList()
+    this._computePositionList(options)
   }
 
   private _computeRowList() {
@@ -45,7 +51,7 @@ export class Placeholder {
     })
   }
 
-  private _computePositionList() {
+  private _computePositionList(options?: IPlaceholderRenderOption) {
     const { lineBreak, scale } = this.options
     const headerExtraHeight = this.draw.getHeader().getExtraHeight()
     const innerWidth = this.draw.getInnerWidth()
@@ -55,7 +61,7 @@ export class Placeholder {
     if (!lineBreak.disabled) {
       startX += (LineBreakParticle.WIDTH + LineBreakParticle.GAP) * scale
     }
-    const startY = margins[0] + headerExtraHeight
+    const startY = options?.startY || margins[0] + headerExtraHeight
     this.position.computePageRowPosition({
       positionList: this.positionList,
       rowList: this.rowList,
@@ -68,11 +74,12 @@ export class Placeholder {
     })
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
-    const {
-      placeholder: { data, font, size, color, opacity }
-    } = this.options
-    if (!data) return
+  public render(
+    ctx: CanvasRenderingContext2D,
+    options?: IPlaceholderRenderOption
+  ) {
+    const { placeholder = this.options.placeholder } = options || {}
+    const { data, font, size, color, opacity } = placeholder
     this._recovery()
     // 构建元素列表并格式化
     this.elementList = [
@@ -88,7 +95,7 @@ export class Placeholder {
       isForceCompensation: true
     })
     // 计算
-    this._compute()
+    this._compute(options)
     const innerWidth = this.draw.getInnerWidth()
     // 绘制
     ctx.save()

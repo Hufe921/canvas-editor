@@ -200,6 +200,7 @@ interface IElement {
     backgroundColor?: string;
     mode?: AreaMode;
     deletable?: boolean;
+    placeholder?: IPlaceholder;
   };
 }
 ```
