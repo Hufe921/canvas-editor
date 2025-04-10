@@ -138,6 +138,7 @@ export class Area {
           startY: firstPosition.coordinate.leftTop[1]
         })
       }
+      ctx.translate(-0.5, -0.5)
     }
     ctx.restore()
   }
