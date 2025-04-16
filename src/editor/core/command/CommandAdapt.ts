@@ -1745,12 +1745,20 @@ export class CommandAdapt {
     for (let i = 0; i < updateElementInfoList.length; i++) {
       const { elementList, index } = updateElementInfoList[i]
       // 重新格式化元素
-      const newElement = zipElementList([
+      const oldElement = elementList[index]
+      const newElement = zipElementList(
+        [
+          {
+            ...oldElement,
+            ...payload.properties
+          }
+        ],
         {
-          ...elementList[index],
-          ...payload.properties
+          extraPickAttrs: ['id']
         }
-      ])
+      )
+      // 区域上下文提取
+      cloneProperty<IElement>(AREA_CONTEXT_ATTR, oldElement, newElement[0])
       formatElementList(newElement, {
         isHandleFirstElement: false,
         editorOptions: this.options
