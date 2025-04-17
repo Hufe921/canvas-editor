@@ -372,8 +372,12 @@ export class Draw {
       const startElement = elementList[startIndex]
       const nextElement = elementList[startIndex + 1]
       return !!(
-        (startElement?.title?.disabled && nextElement?.title?.disabled) ||
-        (startElement?.control?.disabled && nextElement?.control?.disabled)
+        (startElement?.title?.disabled &&
+          nextElement?.title?.disabled &&
+          startElement.titleId === nextElement.titleId) ||
+        (startElement?.control?.disabled &&
+          nextElement?.control?.disabled &&
+          startElement.controlId === nextElement.controlId)
       )
     }
     const selectionElementList = elementList.slice(startIndex + 1, endIndex + 1)
