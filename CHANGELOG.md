@@ -1,3 +1,23 @@
+## [0.9.107](https://github.com/Hufe921/canvas-editor/compare/v0.9.106...v0.9.107) (2025-04-18)
+
+
+### Bug Fixes
+
+* area background position error #1082 ([d708629](https://github.com/Hufe921/canvas-editor/commit/d708629c4883b73c78d722352a6ff5a08642fa9e)), closes [#1082](https://github.com/Hufe921/canvas-editor/issues/1082)
+* delete control element boundary error #1079 ([b8132cd](https://github.com/Hufe921/canvas-editor/commit/b8132cdd82822b2840dee95a88fcc8492737f352)), closes [#1079](https://github.com/Hufe921/canvas-editor/issues/1079)
+* input boundary error when control is disabled #1092 ([353ada2](https://github.com/Hufe921/canvas-editor/commit/353ada21cd70adb61094fef301462063ddc00a01)), closes [#1092](https://github.com/Hufe921/canvas-editor/issues/1092)
+* update area element context #1084 ([a7598d2](https://github.com/Hufe921/canvas-editor/commit/a7598d2a08e87e86ea34e80903f168010362d188)), closes [#1084](https://github.com/Hufe921/canvas-editor/issues/1084)
+
+
+### Features
+
+* add area deletable option #1014 ([6bb1982](https://github.com/Hufe921/canvas-editor/commit/6bb19824c1f6f31adb99ecac5c8b20d3dfa7b17c)), closes [#1014](https://github.com/Hufe921/canvas-editor/issues/1014)
+* add area placeholder option #1076 ([fd9f780](https://github.com/Hufe921/canvas-editor/commit/fd9f780b537c99d9aaa93054e6bbaee8b363ec45)), closes [#1076](https://github.com/Hufe921/canvas-editor/issues/1076)
+* add conceptId to executeImage api #1080 ([b05eb06](https://github.com/Hufe921/canvas-editor/commit/b05eb065e25162ebf21a32c160db6f3e74365588)), closes [#1080](https://github.com/Hufe921/canvas-editor/issues/1080)
+* remove null values when merging cells #1096 ([f673352](https://github.com/Hufe921/canvas-editor/commit/f673352b095653e85921c02cee7a23a0bd8105b1)), closes [#1096](https://github.com/Hufe921/canvas-editor/issues/1096)
+
+
+
 ## [0.9.106](https://github.com/Hufe921/canvas-editor/compare/v0.9.105...v0.9.106) (2025-04-04)
 
 
