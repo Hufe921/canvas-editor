@@ -19,7 +19,9 @@ export enum ImageDisplay {
 
 export enum LocationPosition {
   BEFORE = 'before',
-  AFTER = 'after'
+  AFTER = 'after',
+  OUTER_BEFORE = 'outer-before',
+  OUTER_AFTER = 'outer-after'
 }
 
 export enum FlexDirection {

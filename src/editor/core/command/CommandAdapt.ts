@@ -2097,7 +2097,6 @@ export class CommandAdapt {
   }
 
   public locationControl(controlId: string, options?: ILocationControlOption) {
-    const isLocationAfter = options?.position === LocationPosition.AFTER
     function location(
       elementList: IElement[],
       zone: EditorZone
@@ -2132,7 +2131,22 @@ export class CommandAdapt {
         }
         if (element?.controlId !== controlId) continue
         let curIndex = i - 1
-        if (isLocationAfter) {
+        if (options?.position === LocationPosition.OUTER_AFTER) {
+          // 控件外面最后
+          if (
+            !(
+              element.controlComponent === ControlComponent.POSTFIX &&
+              elementList[i + 1]?.controlComponent !==
+                ControlComponent.POST_TEXT
+            )
+          ) {
+            continue
+          }
+        } else if (options?.position === LocationPosition.OUTER_BEFORE) {
+          // 控件外面最前
+          curIndex -= 1
+        } else if (options?.position === LocationPosition.AFTER) {
+          // 控件内部最后
           curIndex -= 1
           if (
             element.controlComponent !== ControlComponent.PLACEHOLDER &&
@@ -2142,6 +2156,7 @@ export class CommandAdapt {
             continue
           }
         } else {
+          // 控件内部最前（默认）
           if (
             (element.controlComponent !== ControlComponent.PREFIX &&
               element.controlComponent !== ControlComponent.PRE_TEXT) ||
