@@ -589,7 +589,7 @@ export function pickElementAttr(
   option: IPickElementOption = {}
 ): IElement {
   const { extraPickAttrs } = option
-  const zipAttrs = EDITOR_ELEMENT_ZIP_ATTR
+  const zipAttrs = [...EDITOR_ELEMENT_ZIP_ATTR]
   if (extraPickAttrs) {
     zipAttrs.push(...extraPickAttrs)
   }
