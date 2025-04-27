@@ -217,3 +217,7 @@ export interface IGetElementByIdOption {
 export interface IInsertElementListOption {
   isReplace?: boolean
 }
+
+export interface ISpliceElementListOption {
+  isIgnoreDeletedRule?: boolean
+}

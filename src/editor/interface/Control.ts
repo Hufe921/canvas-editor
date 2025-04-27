@@ -141,6 +141,7 @@ export interface IControlContext {
 
 export interface IControlRuleOption {
   isIgnoreDisabledRule?: boolean // 忽略禁用校验规则
+  isIgnoreDeletedRule?: boolean // 忽略删除校验规则
   isAddPlaceholder?: boolean // 是否添加占位符
 }
 

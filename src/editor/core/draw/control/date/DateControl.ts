@@ -169,7 +169,15 @@ export class DateControl implements IControlInstance {
     const elementList = context.elementList || this.control.getElementList()
     // 删除元素
     const draw = this.control.getDraw()
-    draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
+    draw.spliceElementList(
+      elementList,
+      leftIndex + 1,
+      rightIndex - leftIndex,
+      [],
+      {
+        isIgnoreDeletedRule: options.isIgnoreDeletedRule
+      }
+    )
     // 增加占位符
     if (isAddPlaceholder) {
       this.control.addPlaceholder(leftIndex, context)
@@ -198,7 +206,8 @@ export class DateControl implements IControlInstance {
       : pickObject(elementList[range.startIndex], CONTROL_STYLE_ATTR)
     // 清空选项
     const prefixIndex = this.clearSelect(context, {
-      isAddPlaceholder: false
+      isAddPlaceholder: false,
+      isIgnoreDeletedRule: options.isIgnoreDeletedRule
     })
     if (!~prefixIndex) return
     // 属性赋值元素-默认为前缀属性

@@ -23,7 +23,8 @@ import {
   IElement,
   IElementMetrics,
   IElementFillRect,
-  IElementStyle
+  IElementStyle,
+  ISpliceElementListOption
 } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID, nextTick } from '../../utils'
@@ -768,9 +769,10 @@ export class Draw {
     elementList: IElement[],
     start: number,
     deleteCount: number,
-    items?: IElement[]
+    items?: IElement[],
+    options?: ISpliceElementListOption
   ) {
-    const isDesignMode = this.isDesignMode()
+    const { isIgnoreDeletedRule = false } = options || {}
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -795,14 +797,17 @@ export class Draw {
           startIndex++
         }
       }
-      // 光标在控件内时独立控制
-      if (!this.control.getIsRangeWithinControl()) {
+      // 非明确忽略删除规则 && 非设计模式 && 非光标在控件内(控件内控制) =》 校验删除规则
+      if (
+        !isIgnoreDeletedRule &&
+        !this.isDesignMode() &&
+        !this.control.getIsRangeWithinControl()
+      ) {
         const tdDeletable = this.getTd()?.deletable
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
           if (
-            isDesignMode ||
             deleteElement?.control?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&

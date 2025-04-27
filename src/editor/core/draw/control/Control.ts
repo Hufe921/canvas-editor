@@ -935,7 +935,8 @@ export class Control {
           elementList
         }
         const controlRule: IControlRuleOption = {
-          isIgnoreDisabledRule: true
+          isIgnoreDisabledRule: true,
+          isIgnoreDeletedRule: true
         }
         if (type === ControlType.TEXT) {
           const formatValue = Array.isArray(value)
