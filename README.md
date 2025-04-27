@@ -26,7 +26,7 @@
   <a href="https://github.com/Hufe921/canvas-editor/discussions" target="_blank">FAQ</a>
 </p>
 
-<p align="center">Love the project? Please consider <a href="https://hufe.club/donate.jpg" target="_blank">donating</a> to help it improve!</p>
+<p align="center">Love the project? Please consider <a href="https://hufe.club/donate.jpg" target="_blank">donating(赞助)</a> to help it improve!</p>
 
 ## Tips
 

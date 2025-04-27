@@ -25,6 +25,10 @@ export default defineConfig({
       {
         text: '官方插件',
         link: '/guide/plugin-internal.html'
+      },
+      {
+        text: '赞助',
+        link: 'https://hufe.club/donate.jpg'
       }
     ],
     sidebar: [
@@ -118,6 +122,10 @@ export default defineConfig({
           {
             text: 'Official plugin',
             link: '/en/guide/plugin-internal.html'
+          },
+          {
+            text: 'Donate',
+            link: 'https://hufe.club/donate.jpg'
           }
         ],
         sidebar: [
