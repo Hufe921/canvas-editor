@@ -107,6 +107,7 @@ export interface IControlOption {
   borderWidth?: number
   borderColor?: string
   activeBackgroundColor?: string
+  disabledBackgroundColor?: string
 }
 
 export interface IControlInitOption {

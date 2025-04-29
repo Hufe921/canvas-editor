@@ -7,5 +7,6 @@ export const defaultControlOption: Readonly<Required<IControlOption>> = {
   postfix: '}',
   borderWidth: 1,
   borderColor: '#000000',
-  activeBackgroundColor: ''
+  activeBackgroundColor: '',
+  disabledBackgroundColor: ''
 }

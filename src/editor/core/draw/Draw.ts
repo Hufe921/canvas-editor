@@ -391,6 +391,10 @@ export class Draw {
     return this.mode === EditorMode.DESIGN
   }
 
+  public isPrintMode() {
+    return this.mode === EditorMode.PRINT
+  }
+
   public getOriginalWidth(): number {
     const { paperDirection, width, height } = this.options
     return paperDirection === PaperDirection.VERTICAL ? width : height
@@ -2012,21 +2016,30 @@ export class Draw {
     payload: IDrawRowPayload
   ) {
     const {
-      control: { activeBackgroundColor }
+      control: { activeBackgroundColor, disabledBackgroundColor }
     } = this.options
     const { rowList, positionList } = payload
+    const isPrintMode = this.isPrintMode()
     const activeControlElement = this.control.getActiveControl()?.getElement()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const preElement = curRow.elementList[j - 1]
+        // 控件激活时高亮色
+        const isActiveControlHighlight =
+          !isPrintMode &&
+          activeBackgroundColor &&
+          activeControlElement &&
+          element.controlId === activeControlElement.controlId &&
+          !this.control.getIsRangeInPostfix()
+        // 控件禁用时高亮色
+        const isDisabledControlHighlight =
+          !isPrintMode && disabledBackgroundColor && element.control?.disabled
         if (
           element.highlight ||
-          (activeBackgroundColor &&
-            activeControlElement &&
-            element.controlId === activeControlElement.controlId &&
-            !this.control.getIsRangeInPostfix())
+          isActiveControlHighlight ||
+          isDisabledControlHighlight
         ) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (
@@ -2050,7 +2063,9 @@ export class Draw {
             y,
             element.metrics.width + offsetX,
             curRow.height,
-            element.highlight || activeBackgroundColor
+            element.highlight ||
+              (isActiveControlHighlight ? activeBackgroundColor : '') ||
+              (isDisabledControlHighlight ? disabledBackgroundColor : '')
           )
         } else if (preElement?.highlight) {
           // 之前是高亮元素，当前不是需立即绘制
