@@ -1,3 +1,24 @@
+## [0.9.108](https://github.com/Hufe921/canvas-editor/compare/v0.9.107...v0.9.108) (2025-04-30)
+
+
+### Bug Fixes
+
+* delete pickElementAttr method data reference #1107 ([a7a7e47](https://github.com/Hufe921/canvas-editor/commit/a7a7e474b6170d26c2b253c8189720e25e17438b)), closes [#1107](https://github.com/Hufe921/canvas-editor/issues/1107)
+* set non deletable control boundary error #1111 ([34fe3e8](https://github.com/Hufe921/canvas-editor/commit/34fe3e87d03b0abf22511d5054ea966847ef853a)), closes [#1111](https://github.com/Hufe921/canvas-editor/issues/1111)
+
+
+### Chores
+
+* update README.md ([f6828fb](https://github.com/Hufe921/canvas-editor/commit/f6828fb43a176d3098fe3bac1cd0dde9744d630d))
+
+
+### Features
+
+* add control disabledBackgroundColor option #1105 ([bb6b5ce](https://github.com/Hufe921/canvas-editor/commit/bb6b5ce711ab784ff4e1f3e2b98629bca2018dbd)), closes [#1105](https://github.com/Hufe921/canvas-editor/issues/1105)
+* locate outside the control #1100 ([949421b](https://github.com/Hufe921/canvas-editor/commit/949421baad9ba5854913af0bc17f1b4df7b88f69)), closes [#1100](https://github.com/Hufe921/canvas-editor/issues/1100)
+
+
+
 ## [0.9.107](https://github.com/Hufe921/canvas-editor/compare/v0.9.106...v0.9.107) (2025-04-18)
 
 
