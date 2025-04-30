@@ -20,6 +20,7 @@ export interface IForceUpdateOption {
 
 export interface IDrawImagePayload {
   id?: string
+  conceptId?: string
   width: number
   height: number
   value: string

@@ -199,6 +199,8 @@ interface IElement {
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;
+    deletable?: boolean;
+    placeholder?: IPlaceholder;
   };
 }
 ```

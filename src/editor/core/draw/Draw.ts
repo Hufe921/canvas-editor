@@ -23,7 +23,8 @@ import {
   IElement,
   IElementMetrics,
   IElementFillRect,
-  IElementStyle
+  IElementStyle,
+  ISpliceElementListOption
 } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID, nextTick } from '../../utils'
@@ -372,8 +373,12 @@ export class Draw {
       const startElement = elementList[startIndex]
       const nextElement = elementList[startIndex + 1]
       return !!(
-        (startElement?.title?.disabled && nextElement?.title?.disabled) ||
-        (startElement?.control?.disabled && nextElement?.control?.disabled)
+        (startElement?.title?.disabled &&
+          nextElement?.title?.disabled &&
+          startElement.titleId === nextElement.titleId) ||
+        (startElement?.control?.disabled &&
+          nextElement?.control?.disabled &&
+          startElement.controlId === nextElement.controlId)
       )
     }
     const selectionElementList = elementList.slice(startIndex + 1, endIndex + 1)
@@ -384,6 +389,10 @@ export class Draw {
 
   public isDesignMode() {
     return this.mode === EditorMode.DESIGN
+  }
+
+  public isPrintMode() {
+    return this.mode === EditorMode.PRINT
   }
 
   public getOriginalWidth(): number {
@@ -764,9 +773,10 @@ export class Draw {
     elementList: IElement[],
     start: number,
     deleteCount: number,
-    items?: IElement[]
+    items?: IElement[],
+    options?: ISpliceElementListOption
   ) {
-    const isDesignMode = this.isDesignMode()
+    const { isIgnoreDeletedRule = false } = options || {}
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -791,18 +801,23 @@ export class Draw {
           startIndex++
         }
       }
-      // 元素删除（不可删除控件忽略）
-      if (!this.control.getActiveControl()) {
+      // 非明确忽略删除规则 && 非设计模式 && 非光标在控件内(控件内控制) =》 校验删除规则
+      if (
+        !isIgnoreDeletedRule &&
+        !this.isDesignMode() &&
+        !this.control.getIsRangeWithinControl()
+      ) {
         const tdDeletable = this.getTd()?.deletable
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
           if (
-            isDesignMode ||
             deleteElement?.control?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
-              deleteElement?.title?.deletable !== false)
+              deleteElement?.title?.deletable !== false &&
+              (deleteElement?.area?.deletable !== false ||
+                deleteElement?.areaIndex !== 0))
           ) {
             elementList.splice(deleteIndex, 1)
           }
@@ -2001,21 +2016,30 @@ export class Draw {
     payload: IDrawRowPayload
   ) {
     const {
-      control: { activeBackgroundColor }
+      control: { activeBackgroundColor, disabledBackgroundColor }
     } = this.options
     const { rowList, positionList } = payload
+    const isPrintMode = this.isPrintMode()
     const activeControlElement = this.control.getActiveControl()?.getElement()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const preElement = curRow.elementList[j - 1]
+        // 控件激活时高亮色
+        const isActiveControlHighlight =
+          !isPrintMode &&
+          activeBackgroundColor &&
+          activeControlElement &&
+          element.controlId === activeControlElement.controlId &&
+          !this.control.getIsRangeInPostfix()
+        // 控件禁用时高亮色
+        const isDisabledControlHighlight =
+          !isPrintMode && disabledBackgroundColor && element.control?.disabled
         if (
           element.highlight ||
-          (activeBackgroundColor &&
-            activeControlElement &&
-            element.controlId === activeControlElement.controlId &&
-            !this.control.getIsRangeInPostfix())
+          isActiveControlHighlight ||
+          isDisabledControlHighlight
         ) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (
@@ -2039,7 +2063,9 @@ export class Draw {
             y,
             element.metrics.width + offsetX,
             curRow.height,
-            element.highlight || activeBackgroundColor
+            element.highlight ||
+              (isActiveControlHighlight ? activeBackgroundColor : '') ||
+              (isDisabledControlHighlight ? disabledBackgroundColor : '')
           )
         } else if (preElement?.highlight) {
           // 之前是高亮元素，当前不是需立即绘制

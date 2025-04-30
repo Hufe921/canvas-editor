@@ -1243,13 +1243,14 @@ export class CommandAdapt {
     if (isDisabled) return null
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return null
-    const { id, value, width, height, imgDisplay } = payload
+    const { id, conceptId, value, width, height, imgDisplay } = payload
     const imageId = id || getUUID()
     this.insertElementList([
       {
         value,
         width,
         height,
+        conceptId,
         id: imageId,
         type: ElementType.IMAGE,
         imgDisplay
@@ -1744,12 +1745,20 @@ export class CommandAdapt {
     for (let i = 0; i < updateElementInfoList.length; i++) {
       const { elementList, index } = updateElementInfoList[i]
       // 重新格式化元素
-      const newElement = zipElementList([
+      const oldElement = elementList[index]
+      const newElement = zipElementList(
+        [
+          {
+            ...oldElement,
+            ...payload.properties
+          }
+        ],
         {
-          ...elementList[index],
-          ...payload.properties
+          extraPickAttrs: ['id']
         }
-      ])
+      )
+      // 区域上下文提取
+      cloneProperty<IElement>(AREA_CONTEXT_ATTR, oldElement, newElement[0])
       formatElementList(newElement, {
         isHandleFirstElement: false,
         editorOptions: this.options
@@ -2088,7 +2097,6 @@ export class CommandAdapt {
   }
 
   public locationControl(controlId: string, options?: ILocationControlOption) {
-    const isLocationAfter = options?.position === LocationPosition.AFTER
     function location(
       elementList: IElement[],
       zone: EditorZone
@@ -2123,7 +2131,22 @@ export class CommandAdapt {
         }
         if (element?.controlId !== controlId) continue
         let curIndex = i - 1
-        if (isLocationAfter) {
+        if (options?.position === LocationPosition.OUTER_AFTER) {
+          // 控件外面最后
+          if (
+            !(
+              element.controlComponent === ControlComponent.POSTFIX &&
+              elementList[i + 1]?.controlComponent !==
+                ControlComponent.POST_TEXT
+            )
+          ) {
+            continue
+          }
+        } else if (options?.position === LocationPosition.OUTER_BEFORE) {
+          // 控件外面最前
+          curIndex -= 1
+        } else if (options?.position === LocationPosition.AFTER) {
+          // 控件内部最后
           curIndex -= 1
           if (
             element.controlComponent !== ControlComponent.PLACEHOLDER &&
@@ -2133,6 +2156,7 @@ export class CommandAdapt {
             continue
           }
         } else {
+          // 控件内部最前（默认）
           if (
             (element.controlComponent !== ControlComponent.PREFIX &&
               element.controlComponent !== ControlComponent.PRE_TEXT) ||

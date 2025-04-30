@@ -170,6 +170,7 @@ export function formatElementList(
           const value = valueList[v]
           value.areaId = el.areaId || areaId
           value.area = el.area
+          value.areaIndex = v
           if (value.type === ElementType.TABLE) {
             const trList = value.trList!
             for (let r = 0; r < trList.length; r++) {
@@ -588,7 +589,7 @@ export function pickElementAttr(
   option: IPickElementOption = {}
 ): IElement {
   const { extraPickAttrs } = option
-  const zipAttrs = EDITOR_ELEMENT_ZIP_ATTR
+  const zipAttrs = [...EDITOR_ELEMENT_ZIP_ATTR]
   if (extraPickAttrs) {
     zipAttrs.push(...extraPickAttrs)
   }

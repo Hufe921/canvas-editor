@@ -17,6 +17,8 @@ import { zipElementList } from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
 import { IRange } from '../../../interface/Range'
 import { IElementPosition } from '../../../interface/Element'
+import { Placeholder } from '../frame/Placeholder'
+import { defaultPlaceholderOption } from '../../../dataset/constant/Placeholder'
 
 export class Area {
   private draw: Draw
@@ -103,7 +105,9 @@ export class Area {
     const width = this.draw.getInnerWidth()
     for (const areaInfoItem of this.areaInfoMap) {
       const { area, positionList } = areaInfoItem[1]
-      if (!area?.backgroundColor && !area?.borderColor) continue
+      if (!area?.backgroundColor && !area?.borderColor && !area?.placeholder) {
+        continue
+      }
       const pagePositionList = positionList.filter(p => p.pageNo === pageNo)
       if (!pagePositionList.length) continue
       ctx.translate(0.5, 0.5)
@@ -123,6 +127,18 @@ export class Area {
         ctx.strokeStyle = area.borderColor
         ctx.strokeRect(x, y, width, height)
       }
+      // 提示词
+      if (area.placeholder && positionList.length <= 1) {
+        const placeholder = new Placeholder(this.draw)
+        placeholder.render(ctx, {
+          placeholder: {
+            ...defaultPlaceholderOption,
+            ...area.placeholder
+          },
+          startY: firstPosition.coordinate.leftTop[1]
+        })
+      }
+      ctx.translate(-0.5, -0.5)
     }
     ctx.restore()
   }

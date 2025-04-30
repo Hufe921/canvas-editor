@@ -556,8 +556,10 @@ export class TableOperate {
         // 缓存待删除单元id并合并单元格内容
         if (!isAnchorTd) {
           mergeTdIdList.push(td.id!)
+          // 被合并单元格没内容时忽略换行符
+          const startTdValueIndex = td.value.length > 1 ? 0 : 1
           // 复制表格属性后追加
-          for (let d = 0; d < td.value.length; d++) {
+          for (let d = startTdValueIndex; d < td.value.length; d++) {
             const tdElement = td.value[d]
             cloneProperty<IElement>(
               TABLE_CONTEXT_ATTR,

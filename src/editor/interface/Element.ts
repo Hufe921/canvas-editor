@@ -142,6 +142,7 @@ export interface IBlockElement {
 export interface IAreaElement {
   valueList?: IElement[]
   areaId?: string
+  areaIndex?: number
   area?: IArea
 }
 
@@ -215,4 +216,8 @@ export interface IGetElementByIdOption {
 
 export interface IInsertElementListOption {
   isReplace?: boolean
+}
+
+export interface ISpliceElementListOption {
+  isIgnoreDeletedRule?: boolean
 }

@@ -292,7 +292,15 @@ export class SelectControl implements IControlInstance {
     if (!~leftIndex || !~rightIndex) return -1
     // 删除元素
     const draw = this.control.getDraw()
-    draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
+    draw.spliceElementList(
+      elementList,
+      leftIndex + 1,
+      rightIndex - leftIndex,
+      [],
+      {
+        isIgnoreDeletedRule: options.isIgnoreDeletedRule
+      }
+    )
     // 增加占位符
     if (isAddPlaceholder) {
       this.control.addPlaceholder(preIndex, context)
@@ -349,7 +357,9 @@ export class SelectControl implements IControlInstance {
     if (!text) {
       // 之前存在内容时清空文本
       if (oldCode) {
-        const prefixIndex = this.clearSelect(context)
+        const prefixIndex = this.clearSelect(context, {
+          isIgnoreDeletedRule: options.isIgnoreDeletedRule
+        })
         if (~prefixIndex) {
           this.control.repaintControl({
             curIndex: prefixIndex
@@ -368,7 +378,8 @@ export class SelectControl implements IControlInstance {
       : pickObject(elementList[range.startIndex], CONTROL_STYLE_ATTR)
     // 清空选项
     const prefixIndex = this.clearSelect(context, {
-      isAddPlaceholder: false
+      isAddPlaceholder: false,
+      isIgnoreDeletedRule: options.isIgnoreDeletedRule
     })
     if (!~prefixIndex) return
     // 当前无值时清空占位符
