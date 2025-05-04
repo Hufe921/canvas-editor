@@ -347,7 +347,7 @@ export class Draw {
   }
 
   public isReadonly() {
-    if (this.area.getActiveAreaId()) {
+    if (this.area.getActiveAreaInfo()?.area.mode) {
       return this.area.isReadonly()
     }
     switch (this.mode) {
