@@ -75,6 +75,7 @@ export interface IEditorOption {
   letterClass?: string[]
   contextMenuDisableKeys?: string[]
   scrollContainerSelector?: string
+  pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
   table?: ITableOption
   header?: IHeader

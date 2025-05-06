@@ -174,6 +174,7 @@ export function mergeOption(
     letterClass: [LETTER_CLASS.ENGLISH],
     contextMenuDisableKeys: [],
     scrollContainerSelector: '',
+    pageOuterSelectionDisable: false,
     ...options,
     table: tableOptions,
     header: headerOptions,
