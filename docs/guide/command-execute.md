@@ -174,7 +174,7 @@ instance.command.executeApplyPainterStyle()
 用法：
 
 ```javascript
-instance.command.executeFormat()
+instance.command.executeFormat(options?: IRichtextOption)
 ```
 
 ## executeFont
@@ -184,7 +184,7 @@ instance.command.executeFormat()
 用法：
 
 ```javascript
-instance.command.executeFont(font: string)
+instance.command.executeFont(font: string, options?: IRichtextOption)
 ```
 
 ## executeSize
@@ -194,7 +194,7 @@ instance.command.executeFont(font: string)
 用法：
 
 ```javascript
-instance.command.executeSize(size: number)
+instance.command.executeSize(size: number, options?: IRichtextOption)
 ```
 
 ## executeSizeAdd
@@ -204,7 +204,7 @@ instance.command.executeSize(size: number)
 用法：
 
 ```javascript
-instance.command.executeSizeAdd()
+instance.command.executeSizeAdd(options?: IRichtextOption)
 ```
 
 ## executeSizeMinus
@@ -214,7 +214,7 @@ instance.command.executeSizeAdd()
 用法：
 
 ```javascript
-instance.command.executeSizeMinus()
+instance.command.executeSizeMinus(options?: IRichtextOption)
 ```
 
 ## executeBold
@@ -224,7 +224,7 @@ instance.command.executeSizeMinus()
 用法：
 
 ```javascript
-instance.command.executeBold()
+instance.command.executeBold(options?: IRichtextOption)
 ```
 
 ## executeItalic
@@ -234,7 +234,7 @@ instance.command.executeBold()
 用法：
 
 ```javascript
-instance.command.executeItalic()
+instance.command.executeItalic(options?: IRichtextOption)
 ```
 
 ## executeUnderline
@@ -244,7 +244,7 @@ instance.command.executeItalic()
 用法：
 
 ```javascript
-instance.command.executeUnderline(textDecoration?: ITextDecoration)
+instance.command.executeUnderline(textDecoration?: ITextDecoration, options?: IRichtextOption)
 ```
 
 ## executeStrikeout
@@ -254,7 +254,7 @@ instance.command.executeUnderline(textDecoration?: ITextDecoration)
 用法：
 
 ```javascript
-instance.command.executeStrikeout()
+instance.command.executeStrikeout(options?: IRichtextOption)
 ```
 
 ## executeSuperscript
@@ -264,7 +264,7 @@ instance.command.executeStrikeout()
 用法：
 
 ```javascript
-instance.command.executeSuperscript()
+instance.command.executeSuperscript(options?: IRichtextOption)
 ```
 
 ## executeSubscript
@@ -274,7 +274,7 @@ instance.command.executeSuperscript()
 用法：
 
 ```javascript
-instance.command.executeSubscript()
+instance.command.executeSubscript(options?: IRichtextOption)
 ```
 
 ## executeColor
@@ -284,7 +284,7 @@ instance.command.executeSubscript()
 用法：
 
 ```javascript
-instance.command.executeColor(color: string | null)
+instance.command.executeColor(color: string | null, options?: IRichtextOption)
 ```
 
 ## executeHighlight
@@ -294,7 +294,7 @@ instance.command.executeColor(color: string | null)
 用法：
 
 ```javascript
-instance.command.executeHighlight(color: string | null)
+instance.command.executeHighlight(color: string | null, options?: IRichtextOption)
 ```
 
 ## executeTitle
