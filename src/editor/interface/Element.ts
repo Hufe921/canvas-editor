@@ -216,6 +216,7 @@ export interface IGetElementByIdOption {
 
 export interface IInsertElementListOption {
   isReplace?: boolean
+  isSubmitHistory?: boolean
 }
 
 export interface ISpliceElementListOption {

@@ -1728,7 +1728,7 @@ export class CommandAdapt {
       isBreakWhenWrap: true,
       editorOptions: this.options
     })
-    this.draw.insertElementList(cloneElementList)
+    this.draw.insertElementList(cloneElementList, options)
   }
 
   public appendElementList(

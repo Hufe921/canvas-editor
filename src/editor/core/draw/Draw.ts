@@ -24,7 +24,8 @@ import {
   IElementMetrics,
   IElementFillRect,
   IElementStyle,
-  ISpliceElementListOption
+  ISpliceElementListOption,
+  IInsertElementListOption
 } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID, nextTick } from '../../utils'
@@ -694,10 +695,14 @@ export class Draw {
     return null
   }
 
-  public insertElementList(payload: IElement[]) {
+  public insertElementList(
+    payload: IElement[],
+    options: IInsertElementListOption = {}
+  ) {
     if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
+    const { isSubmitHistory = true } = options
     formatElementList(payload, {
       isHandleFirstElement: false,
       editorOptions: this.options
@@ -740,7 +745,8 @@ export class Draw {
     if (~curIndex) {
       this.range.setRange(curIndex, curIndex)
       this.render({
-        curIndex
+        curIndex,
+        isSubmitHistory
       })
     }
   }
@@ -755,7 +761,7 @@ export class Draw {
       editorOptions: this.options
     })
     let curIndex: number
-    const { isPrepend } = options
+    const { isPrepend, isSubmitHistory = true } = options
     if (isPrepend) {
       this.elementList.splice(1, 0, ...elementList)
       curIndex = elementList.length
@@ -765,7 +771,8 @@ export class Draw {
     }
     this.range.setRange(curIndex, curIndex)
     this.render({
-      curIndex
+      curIndex,
+      isSubmitHistory
     })
   }
 
