@@ -1484,11 +1484,11 @@ export class CommandAdapt {
     const startElement = pickElementAttr(
       elementList[isCollapsed ? startIndex : startIndex + 1],
       {
-        extraPickAttrs: ['id']
+        extraPickAttrs: ['id', 'controlComponent']
       }
     )
     const endElement = pickElementAttr(elementList[endIndex], {
-      extraPickAttrs: ['id']
+      extraPickAttrs: ['id', 'controlComponent']
     })
     // 页码信息、行信息
     const positionList = this.position.getPositionList()
