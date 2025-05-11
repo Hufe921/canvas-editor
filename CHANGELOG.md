@@ -1,3 +1,20 @@
+## [0.9.109](https://github.com/Hufe921/canvas-editor/compare/v0.9.108...v0.9.109) (2025-05-11)
+
+
+### Bug Fixes
+
+* area mode priority error #1119 ([2abd43a](https://github.com/Hufe921/canvas-editor/commit/2abd43a2a4eb156d154c72a7b709cde6aa433fbd)), closes [#1119](https://github.com/Hufe921/canvas-editor/issues/1119)
+
+
+### Features
+
+* add controlComponent property to getRangeContext api ([6420421](https://github.com/Hufe921/canvas-editor/commit/6420421e2fd01d79ad5be835eac4f2f49359fec6))
+* add disable selection option outside the page #1120 ([f2c61e5](https://github.com/Hufe921/canvas-editor/commit/f2c61e539747c71a6e051fe9f607bf0098b3b22f)), closes [#1120](https://github.com/Hufe921/canvas-editor/issues/1120)
+* add isIgnoreDisabledRule option to richtext style setting apis #1109 ([46d917c](https://github.com/Hufe921/canvas-editor/commit/46d917caa5023c28e692a852f5b036bfbb9a6f0d)), closes [#1109](https://github.com/Hufe921/canvas-editor/issues/1109)
+* add isSubmitHistory option to the insert element apis #1124 ([424e01f](https://github.com/Hufe921/canvas-editor/commit/424e01f9d30d88cf8d749cb169c6733309821d71)), closes [#1124](https://github.com/Hufe921/canvas-editor/issues/1124)
+
+
+
 ## [0.9.108](https://github.com/Hufe921/canvas-editor/compare/v0.9.107...v0.9.108) (2025-04-30)
 
 
