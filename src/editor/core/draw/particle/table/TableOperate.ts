@@ -457,8 +457,23 @@ export class TableOperate {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const originalElementList = this.draw.getOriginalElementList()
-    originalElementList.splice(positionContext.index!, 1)
-    const curIndex = positionContext.index! - 1
+    // 拆分表格的pagingId
+    const tablePagingId = originalElementList[positionContext.index!].pagingId
+    // 需要删除的Table数量
+    let deleteTableNum = 0
+    // 开始删除的下标位置
+    let startIndex = positionContext.index! - originalElementList[positionContext.index!].pagingIndex!
+    // 计算删除的表格数量
+    for (let i = startIndex; i < originalElementList.length; i++) {
+      if (originalElementList[i] && originalElementList[i].pagingId === tablePagingId) {
+        deleteTableNum++
+      } else {
+        break
+      }
+    }
+    // 删除
+    originalElementList.splice(startIndex, deleteTableNum)
+    const curIndex = startIndex - 1
     this.position.setPositionContext({
       isTable: false,
       index: curIndex
