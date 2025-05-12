@@ -46,8 +46,8 @@ export class ImageParticle {
     const pageGap = this.draw.getPageGap()
     const preY = this.draw.getPageNo() * (height + pageGap)
     const imgFloatPosition = element.imgFloatPosition!
-    floatImageContainer.style.left = `${imgFloatPosition.x}px`
-    floatImageContainer.style.top = `${preY + imgFloatPosition.y}px`
+    floatImageContainer.style.left = `${imgFloatPosition.x * scale}px`
+    floatImageContainer.style.top = `${preY + imgFloatPosition.y * scale}px`
     floatImage.src = element.value
   }
 

@@ -71,6 +71,7 @@ export class Previewer {
     element: IElement,
     position: IElementPosition | null = null
   ): { x: number; y: number } {
+    const { scale } = this.options
     let x = 0
     let y = 0
     const height = this.draw.getHeight()
@@ -79,8 +80,8 @@ export class Previewer {
     const preY = pageNo * (height + pageGap)
     // 优先使用浮动位置
     if (element.imgFloatPosition) {
-      x = element.imgFloatPosition.x!
-      y = element.imgFloatPosition.y + preY
+      x = element.imgFloatPosition.x! * scale
+      y = element.imgFloatPosition.y * scale + preY
     } else if (position) {
       const {
         coordinate: {
