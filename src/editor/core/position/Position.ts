@@ -661,6 +661,7 @@ export class Position {
     const { x, y } = payload
     const currentPageNo = payload.pageNo ?? this.draw.getPageNo()
     const currentZone = this.draw.getZone().getZone()
+    const { scale } = this.options
     for (let f = 0; f < this.floatPositionList.length; f++) {
       const {
         position,
@@ -681,11 +682,15 @@ export class Position {
         (!floatElementZone || floatElementZone === currentZone)
       ) {
         const imgFloatPosition = element.imgFloatPosition!
+        const imgFloatPositionX = imgFloatPosition.x * scale
+        const imgFloatPositionY = imgFloatPosition.y * scale
+        const elementWidth = element.width! * scale
+        const elementHeight = element.height! * scale
         if (
-          x >= imgFloatPosition.x &&
-          x <= imgFloatPosition.x + element.width! &&
-          y >= imgFloatPosition.y &&
-          y <= imgFloatPosition.y + element.height!
+          x >= imgFloatPositionX &&
+          x <= imgFloatPositionX + elementWidth &&
+          y >= imgFloatPositionY &&
+          y <= imgFloatPositionY + elementHeight
         ) {
           if (isTable) {
             return {
