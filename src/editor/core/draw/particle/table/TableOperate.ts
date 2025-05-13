@@ -356,8 +356,8 @@ export class TableOperate {
     const trList = element.trList!
     const curTr = trList[trIndex!]
     const curTdRowIndex = curTr.tdList[tdIndex!].rowIndex!
-    // 如果是最后一行，直接删除整个表格
-    if (trList.length <= 1) {
+    // 如果是最后一行，直接删除整个表格（如果是拆分表格按照正常逻辑走）
+    if (trList.length <= 1 && !element.pagingIndex) {
       this.deleteTable()
       return
     }
