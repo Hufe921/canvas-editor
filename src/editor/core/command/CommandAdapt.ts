@@ -89,6 +89,7 @@ import {
   deepClone,
   downloadFile,
   getUUID,
+  isNumber,
   isObjectEqual
 } from '../../utils'
 import {
@@ -2439,22 +2440,36 @@ export class CommandAdapt {
   }
 
   public focus(payload?: IFocusOption) {
-    const { position = LocationPosition.AFTER } = payload || {}
-    const curIndex =
-      position === LocationPosition.BEFORE
-        ? 0
-        : this.draw.getOriginalMainElementList().length - 1
+    const { position = LocationPosition.AFTER, isMoveCursorToVisible = true } =
+      payload || {}
+    let curIndex = 0
+    const rowNo = payload?.rowNo
+    if (isNumber(rowNo)) {
+      const rowList = this.draw.getOriginalRowList()
+      curIndex =
+        position === LocationPosition.BEFORE
+          ? rowList[rowNo]?.startIndex
+          : rowList[rowNo + 1]?.startIndex - 1
+    } else {
+      curIndex =
+        position === LocationPosition.BEFORE
+          ? 0
+          : this.draw.getOriginalMainElementList().length - 1
+    }
+    if (!isNumber(curIndex)) return
     this.range.setRange(curIndex, curIndex)
     this.draw.render({
       curIndex,
       isCompute: false,
       isSubmitHistory: false
     })
-    const positionList = this.draw.getPosition().getPositionList()
-    this.draw.getCursor().moveCursorToVisible({
-      cursorPosition: positionList[curIndex],
-      direction: MoveDirection.DOWN
-    })
+    if (isMoveCursorToVisible) {
+      const positionList = this.draw.getPosition().getPositionList()
+      this.draw.getCursor().moveCursorToVisible({
+        cursorPosition: positionList[curIndex],
+        direction: MoveDirection.DOWN
+      })
+    }
   }
 
   public insertArea(payload: IInsertAreaOption) {

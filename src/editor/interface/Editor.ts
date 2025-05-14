@@ -132,4 +132,6 @@ export interface ISetValueOption {
 
 export interface IFocusOption {
   position?: LocationPosition
+  rowNo?: number
+  isMoveCursorToVisible?: boolean
 }
