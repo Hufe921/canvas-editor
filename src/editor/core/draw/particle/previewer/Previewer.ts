@@ -1,4 +1,5 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
+import { EditorMode } from '../../../../dataset/enum/Editor'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 import { EventBusMap } from '../../../../interface/EventBus'
@@ -431,9 +432,14 @@ export class Previewer {
 
   public render() {
     // 图片工具配置禁用又非设计模式时不渲染
+    const mode = this.draw.getMode()
     if (
       !this.curElement ||
-      (this.curElement.imgToolDisabled && !this.draw.isDesignMode())
+      (this.curElement.imgToolDisabled && !this.draw.isDesignMode()) ||
+      (mode === EditorMode.PRINT &&
+        this.options.modeRule[EditorMode.PRINT]?.imagePreviewerDisabled) ||
+      (mode === EditorMode.READONLY &&
+        this.options.modeRule[EditorMode.READONLY]?.imagePreviewerDisabled)
     ) {
       return
     }
@@ -447,7 +453,16 @@ export class Previewer {
     options: IPreviewerDrawOption = {}
   ) {
     // 图片工具配置禁用又非设计模式时不渲染
-    if (element.imgToolDisabled && !this.draw.isDesignMode()) return
+    const mode = this.draw.getMode()
+    if (
+      (element.imgToolDisabled && !this.draw.isDesignMode()) ||
+      (mode === EditorMode.PRINT &&
+        this.options.modeRule[EditorMode.PRINT]?.imagePreviewerDisabled) ||
+      (mode === EditorMode.READONLY &&
+        this.options.modeRule[EditorMode.READONLY]?.imagePreviewerDisabled)
+    ) {
+      return
+    }
     // 缓存配置
     this.previewerDrawOption = options
     this.curElementSrc = element[options.srcKey || 'value'] || ''
