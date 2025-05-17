@@ -16,6 +16,7 @@ export interface IAreaStyle {
 
 export interface IAreaRule {
   mode?: AreaMode
+  hide?: boolean
   deletable?: boolean
 }
 

@@ -820,6 +820,7 @@ export class Draw {
           const deleteElement = elementList[deleteIndex]
           if (
             deleteElement?.control?.hide ||
+            deleteElement?.area?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
               deleteElement?.title?.deletable !== false &&
@@ -1377,7 +1378,10 @@ export class Draw {
       const isStartElement = curRow.elementList.length === 1
       x += isStartElement ? offsetX : 0
       y += isStartElement ? curRow.offsetY || 0 : 0
-      if (element.control?.hide && !this.isDesignMode()) {
+      if (
+        (element.control?.hide || element.area?.hide) &&
+        !this.isDesignMode()
+      ) {
         metrics.height =
           curRow.elementList[curRow.elementList.length - 1]?.metrics.height ||
           this.options.defaultSize * scale
@@ -1829,12 +1833,12 @@ export class Draw {
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
-        preElement?.areaId !== element.areaId ||
+        (preElement?.areaId !== element.areaId && !element.area?.hide) ||
         (element.control?.flexDirection === FlexDirection.COLUMN &&
           (element.controlComponent === ControlComponent.CHECKBOX ||
             element.controlComponent === ControlComponent.RADIO) &&
           preElement?.controlComponent === ControlComponent.VALUE) ||
-        (i !== 0 && element.value === ZERO)
+        (i !== 0 && element.value === ZERO && !element.area?.hide)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
       const isWrap = isForceBreak || isWidthNotEnough
@@ -2127,7 +2131,10 @@ export class Draw {
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
-        if (element.control?.hide && !this.isDesignMode()) {
+        if (
+          (element.control?.hide || element.area?.hide) &&
+          !this.isDesignMode()
+        ) {
           // 控件隐藏时不绘制
           this.textParticle.complete()
         } else if (element.type === ElementType.IMAGE) {

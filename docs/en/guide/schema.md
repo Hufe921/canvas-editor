@@ -196,6 +196,7 @@ interface IElement {
   area?: {
     extension?: unknown;
     top?: number;
+    hide?: boolean;
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;

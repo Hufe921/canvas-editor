@@ -554,7 +554,7 @@ export class Control {
       element = elementList[index]
     }
     // 隐藏元素移动光标
-    if (element.control?.hide) {
+    if (element.control?.hide || element.area?.hide) {
       const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
       return {
         newIndex: nonHideIndex,
@@ -636,7 +636,11 @@ export class Control {
     const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     // 设计模式 || 元素隐藏 => 不验证删除权限
-    if (!this.draw.isDesignMode() && !startElement?.control?.hide) {
+    if (
+      !this.draw.isDesignMode() &&
+      !startElement?.control?.hide &&
+      !startElement?.area?.hide
+    ) {
       const { deletable = true } = startElement.control!
       if (!deletable) return null
     }

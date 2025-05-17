@@ -14,7 +14,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     const range = rangeManager.getRange()
     const elementList = draw.getElementList()
     const element = elementList[range.startIndex]
-    if (element.control?.hide) {
+    if (element.control?.hide || element.area?.hide) {
       const newIndex = control.removeControl(range.startIndex)
       if (newIndex) {
         // 更新选区信息
