@@ -784,6 +784,7 @@ export class Draw {
     options?: ISpliceElementListOption
   ) {
     const { isIgnoreDeletedRule = false } = options || {}
+    const { group } = this.options
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -824,6 +825,7 @@ export class Draw {
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
               deleteElement?.title?.deletable !== false &&
+              (group.deletable !== false || !deleteElement.groupIds?.length) &&
               (deleteElement?.area?.deletable !== false ||
                 deleteElement?.areaIndex !== 0))
           ) {
