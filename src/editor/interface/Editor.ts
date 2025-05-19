@@ -145,7 +145,12 @@ export interface IReadonlyModeRule {
   imagePreviewerDisabled?: boolean
 }
 
+export interface IFormModeRule {
+  controlDeletableDisabled?: boolean
+}
+
 export interface IModeRule {
   [EditorMode.PRINT]?: IPrintModeRule
   [EditorMode.READONLY]?: IReadonlyModeRule
+  [EditorMode.FORM]?: IFormModeRule
 }

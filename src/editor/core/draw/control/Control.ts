@@ -3,7 +3,7 @@ import {
   ControlState,
   ControlType
 } from '../../../dataset/enum/Control'
-import { EditorZone } from '../../../dataset/enum/Editor'
+import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { DeepRequired } from '../../../interface/Common'
 import {
@@ -643,6 +643,14 @@ export class Control {
     ) {
       const { deletable = true } = startElement.control!
       if (!deletable) return null
+      // 表单模式控件删除权限验证
+      const mode = this.draw.getMode()
+      if (
+        mode === EditorMode.FORM &&
+        this.options.modeRule[mode].controlDeletableDisabled
+      ) {
+        return null
+      }
     }
     let leftIndex = -1
     let rightIndex = -1
