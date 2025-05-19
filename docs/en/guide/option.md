@@ -66,7 +66,7 @@ interface IEditorOption {
   cursor?: ICursorOption // Cursor style. {width?: number; color?: string; dragWidth?: number; dragColor?: string; dragFloatImageDisabled?: boolean;}
   title?: ITitleOption // Title configuration.{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
   placeholder?: IPlaceholder // Placeholder text
-  group?: IGroup // Group option. {opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
+  group?: IGroup // Group option. {opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean; deletable?:boolean;}
   pageBreak?: IPageBreak // PageBreak option。{font?:string; fontSize?:number; lineDash?:number[];}
   zone?: IZoneOption // Zone option。{tipDisabled?:boolean;}
   background?: IBackgroundOption // Background option. {color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。default: {color: '#FFFFFF'}
@@ -75,6 +75,7 @@ interface IEditorOption {
   lineNumber?: ILineNumberOption // LineNumber option. {size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
   pageBorder?: IPageBorderOption // PageBorder option. {color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
   badge?: IBadgeOption // Badge option. {top?:number; left?:number}
+  modeRule?: IModeRule // mode rule option. {print:{imagePreviewerDisabled?: boolean}; readonly:{imagePreviewerDisabled?: boolean}}
 }
 ```
 

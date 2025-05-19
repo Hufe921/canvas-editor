@@ -2,6 +2,7 @@ import { Draw } from '../Draw'
 import { deepClone, getUUID, isNonValue } from '../../../utils'
 import { ElementType } from '../../../dataset/enum/Element'
 import {
+  IArea,
   IAreaInfo,
   IGetAreaValueOption,
   IGetAreaValueResult,
@@ -105,7 +106,10 @@ export class Area {
     const width = this.draw.getInnerWidth()
     for (const areaInfoItem of this.areaInfoMap) {
       const { area, positionList } = areaInfoItem[1]
-      if (!area?.backgroundColor && !area?.borderColor && !area?.placeholder) {
+      if (
+        area.hide ||
+        (!area?.backgroundColor && !area?.borderColor && !area?.placeholder)
+      ) {
         continue
       }
       const pagePositionList = positionList.filter(p => p.pageNo === pageNo)
@@ -211,22 +215,18 @@ export class Area {
     if (!areaInfo.area) {
       areaInfo.area = {}
     }
-    // 是否计算
+    // 需要计算的属性
     let isCompute = false
-    // 修改属性
-    if (payload.properties.mode) {
-      areaInfo.area.mode = payload.properties.mode
-    }
-    if (payload.properties.borderColor) {
-      areaInfo.area.borderColor = payload.properties.borderColor
-    }
-    if (payload.properties.backgroundColor) {
-      areaInfo.area.backgroundColor = payload.properties.backgroundColor
-    }
-    if (!isNonValue(payload.properties.top)) {
-      isCompute = true
-      areaInfo.area.top = payload.properties.top
-    }
+    const computeProps: Array<keyof IArea> = ['top', 'hide']
+    // 循环设置
+    Object.entries(payload.properties).forEach(([key, value]) => {
+      if (isNonValue(value)) return
+      const propKey = key as keyof IArea
+      areaInfo.area[propKey] = value
+      if (computeProps.includes(propKey)) {
+        isCompute = true
+      }
+    })
     this.draw.render({
       isCompute,
       isSetCursor: false

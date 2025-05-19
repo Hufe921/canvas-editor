@@ -66,7 +66,7 @@ interface IEditorOption {
   cursor?: ICursorOption // 光标样式。{width?: number; color?: string; dragWidth?: number; dragColor?: string; dragFloatImageDisabled?: boolean;}
   title?: ITitleOption // 标题配置。{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
   placeholder?: IPlaceholder // 编辑器空白占位文本
-  group?: IGroup // 成组配置。{opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean}
+  group?: IGroup // 成组配置。{opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean; deletable?:boolean;}
   pageBreak?: IPageBreak // 分页符配置。{font?:string; fontSize?:number; lineDash?:number[];}
   zone?: IZoneOption // 编辑器区域配置。{tipDisabled?:boolean;}
   background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。默认：{color: '#FFFFFF'}
@@ -75,6 +75,7 @@ interface IEditorOption {
   lineNumber?: ILineNumberOption // 行号配置。{size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
   pageBorder?: IPageBorderOption // 页面边框配置。{color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
   badge?: IBadgeOption // 徽章配置。{top?:number; left?:number}
+  modeRule?: IModeRule // 编辑器模式规则配置。{print:{imagePreviewerDisabled?: boolean}; readonly:{imagePreviewerDisabled?: boolean}}
 }
 ```
 

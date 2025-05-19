@@ -97,6 +97,7 @@ export interface IEditorOption {
   lineNumber?: ILineNumberOption
   pageBorder?: IPageBorderOption
   badge?: IBadgeOption
+  modeRule?: IModeRule
 }
 
 export interface IEditorResult {
@@ -134,4 +135,17 @@ export interface IFocusOption {
   position?: LocationPosition
   rowNo?: number
   isMoveCursorToVisible?: boolean
+}
+
+export interface IPrintModeRule {
+  imagePreviewerDisabled?: boolean
+}
+
+export interface IReadonlyModeRule {
+  imagePreviewerDisabled?: boolean
+}
+
+export interface IModeRule {
+  [EditorMode.PRINT]?: IPrintModeRule
+  [EditorMode.READONLY]?: IReadonlyModeRule
 }

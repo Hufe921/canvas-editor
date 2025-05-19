@@ -32,7 +32,14 @@ import { IEditorData, IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { EventBusMap } from '../../../interface/EventBus'
 import { IRange } from '../../../interface/Range'
-import { deepClone, omitObject, pickObject, splitText } from '../../../utils'
+import {
+  deepClone,
+  isArray,
+  isString,
+  omitObject,
+  pickObject,
+  splitText
+} from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
@@ -547,7 +554,7 @@ export class Control {
       element = elementList[index]
     }
     // 隐藏元素移动光标
-    if (element.control?.hide) {
+    if (element.control?.hide || element.area?.hide) {
       const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
       return {
         newIndex: nonHideIndex,
@@ -629,7 +636,11 @@ export class Control {
     const elementList = context.elementList || this.getElementList()
     const startElement = elementList[startIndex]
     // 设计模式 || 元素隐藏 => 不验证删除权限
-    if (!this.draw.isDesignMode() && !startElement?.control?.hide) {
+    if (
+      !this.draw.isDesignMode() &&
+      !startElement?.control?.hide &&
+      !startElement?.area?.hide
+    ) {
       const { deletable = true } = startElement.control!
       if (!deletable) return null
     }
@@ -979,10 +990,17 @@ export class Control {
           const codes = value ? [value] : []
           radio.setSelect(codes, controlContext, controlRule)
         } else if (type === ControlType.DATE) {
-          if (Array.isArray(value)) continue
           const date = new DateControl(element, this)
           this.activeControl = date
-          if (value) {
+          if (isArray(value)) {
+            if (value.length) {
+              formatElementList(value, {
+                isHandleFirstElement: false,
+                editorOptions: this.options
+              })
+            }
+            date.setValue(value, controlContext, controlRule)
+          } else if (isString(value)) {
             date.setSelect(value, controlContext, controlRule)
           } else {
             date.clearSelect(controlContext, controlRule)

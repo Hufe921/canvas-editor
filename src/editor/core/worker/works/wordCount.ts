@@ -62,7 +62,10 @@ function pickText(elementList: IElement[]): string {
         }
         text += pickText(valueList)
       }
-    } else if (!element.type || element.type === ElementType.TEXT) {
+    } else if (
+      (!element.type || element.type === ElementType.TEXT) &&
+      !element.area?.hide
+    ) {
       text += element.value
     }
     e++

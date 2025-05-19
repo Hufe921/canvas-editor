@@ -5,5 +5,6 @@ export const defaultGroupOption: Readonly<Required<IGroup>> = {
   backgroundColor: '#E99D00',
   activeOpacity: 0.5,
   activeBackgroundColor: '#E99D00',
-  disabled: false
+  disabled: false,
+  deletable: true
 }
