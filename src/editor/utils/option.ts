@@ -141,6 +141,10 @@ export function mergeOption(
     readonly: {
       ...defaultModeRuleOption.readonly,
       ...options.modeRule?.readonly
+    },
+    form: {
+      ...defaultModeRuleOption.form,
+      ...options.modeRule?.form
     }
   }
 
