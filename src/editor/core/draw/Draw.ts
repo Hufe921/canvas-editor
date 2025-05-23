@@ -24,7 +24,8 @@ import {
   IElementMetrics,
   IElementFillRect,
   IElementStyle,
-  ISpliceElementListOption
+  ISpliceElementListOption,
+  IInsertElementListOption
 } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID, nextTick } from '../../utils'
@@ -347,7 +348,7 @@ export class Draw {
   }
 
   public isReadonly() {
-    if (this.area.getActiveAreaId()) {
+    if (this.area.getActiveAreaInfo()?.area.mode) {
       return this.area.isReadonly()
     }
     switch (this.mode) {
@@ -694,10 +695,14 @@ export class Draw {
     return null
   }
 
-  public insertElementList(payload: IElement[]) {
+  public insertElementList(
+    payload: IElement[],
+    options: IInsertElementListOption = {}
+  ) {
     if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
+    const { isSubmitHistory = true } = options
     formatElementList(payload, {
       isHandleFirstElement: false,
       editorOptions: this.options
@@ -740,7 +745,8 @@ export class Draw {
     if (~curIndex) {
       this.range.setRange(curIndex, curIndex)
       this.render({
-        curIndex
+        curIndex,
+        isSubmitHistory
       })
     }
   }
@@ -755,7 +761,7 @@ export class Draw {
       editorOptions: this.options
     })
     let curIndex: number
-    const { isPrepend } = options
+    const { isPrepend, isSubmitHistory = true } = options
     if (isPrepend) {
       this.elementList.splice(1, 0, ...elementList)
       curIndex = elementList.length
@@ -765,7 +771,8 @@ export class Draw {
     }
     this.range.setRange(curIndex, curIndex)
     this.render({
-      curIndex
+      curIndex,
+      isSubmitHistory
     })
   }
 
@@ -777,6 +784,7 @@ export class Draw {
     options?: ISpliceElementListOption
   ) {
     const { isIgnoreDeletedRule = false } = options || {}
+    const { group, modeRule } = this.options
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -813,9 +821,14 @@ export class Draw {
           const deleteElement = elementList[deleteIndex]
           if (
             deleteElement?.control?.hide ||
+            deleteElement?.area?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
+              (!deleteElement.controlId ||
+                this.mode !== EditorMode.FORM ||
+                !modeRule[this.mode].controlDeletableDisabled) &&
               deleteElement?.title?.deletable !== false &&
+              (group.deletable !== false || !deleteElement.groupIds?.length) &&
               (deleteElement?.area?.deletable !== false ||
                 deleteElement?.areaIndex !== 0))
           ) {
@@ -1370,7 +1383,10 @@ export class Draw {
       const isStartElement = curRow.elementList.length === 1
       x += isStartElement ? offsetX : 0
       y += isStartElement ? curRow.offsetY || 0 : 0
-      if (element.control?.hide && !this.isDesignMode()) {
+      if (
+        (element.control?.hide || element.area?.hide) &&
+        !this.isDesignMode()
+      ) {
         metrics.height =
           curRow.elementList[curRow.elementList.length - 1]?.metrics.height ||
           this.options.defaultSize * scale
@@ -1822,12 +1838,12 @@ export class Draw {
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
-        preElement?.areaId !== element.areaId ||
+        (preElement?.areaId !== element.areaId && !element.area?.hide) ||
         (element.control?.flexDirection === FlexDirection.COLUMN &&
           (element.controlComponent === ControlComponent.CHECKBOX ||
             element.controlComponent === ControlComponent.RADIO) &&
           preElement?.controlComponent === ControlComponent.VALUE) ||
-        (i !== 0 && element.value === ZERO)
+        (i !== 0 && element.value === ZERO && !element.area?.hide)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
       const isWrap = isForceBreak || isWidthNotEnough
@@ -2120,7 +2136,10 @@ export class Draw {
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
-        if (element.control?.hide && !this.isDesignMode()) {
+        if (
+          (element.control?.hide || element.area?.hide) &&
+          !this.isDesignMode()
+        ) {
           // 控件隐藏时不绘制
           this.textParticle.complete()
         } else if (element.type === ElementType.IMAGE) {

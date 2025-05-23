@@ -4,4 +4,5 @@ export interface IGroup {
   activeOpacity?: number
   activeBackgroundColor?: string
   disabled?: boolean
+  deletable?: boolean
 }

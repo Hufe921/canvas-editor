@@ -31,6 +31,7 @@ import {
 import { EDITOR_CLIPBOARD, EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IWatermark } from './interface/Watermark'
 import {
+  ControlComponent,
   ControlIndentation,
   ControlState,
   ControlType
@@ -195,6 +196,7 @@ export {
   ListStyle,
   WordBreak,
   ControlIndentation,
+  ControlComponent,
   BackgroundRepeat,
   BackgroundSize,
   TextDecorationStyle,

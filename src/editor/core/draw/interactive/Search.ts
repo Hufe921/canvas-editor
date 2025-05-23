@@ -216,7 +216,8 @@ export class Search {
           !e.type ||
           (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
             e.controlComponent !== ControlComponent.CHECKBOX &&
-            !e.control?.hide)
+            !e.control?.hide &&
+            !e.area?.hide)
             ? e.value
             : ZERO
         )

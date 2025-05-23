@@ -63,6 +63,7 @@ export type IGetOriginValueOption = Omit<IGetValueOption, 'extraPickAttrs'>
 
 export interface IAppendElementListOption {
   isPrepend?: boolean
+  isSubmitHistory?: boolean
 }
 
 export interface IGetImageOption {

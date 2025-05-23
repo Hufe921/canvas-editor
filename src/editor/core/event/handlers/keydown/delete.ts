@@ -12,7 +12,7 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
   const control = draw.getControl()
   if (rangeManager.getIsCollapsed()) {
     const nextElement = elementList[startIndex + 1]
-    if (nextElement?.control?.hide) {
+    if (nextElement?.control?.hide || nextElement?.area?.hide) {
       const newIndex = control.removeControl(startIndex + 1)
       if (newIndex) {
         // 更新位置信息
