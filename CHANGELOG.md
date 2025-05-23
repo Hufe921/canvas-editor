@@ -1,3 +1,23 @@
+## [0.9.110](https://github.com/Hufe921/canvas-editor/compare/v0.9.109...v0.9.110) (2025-05-23)
+
+
+### Bug Fixes
+
+* delete pagination table #1130 ([5c1d1da](https://github.com/Hufe921/canvas-editor/commit/5c1d1da58f99f42f620315329e1f2be23ec8c93e)), closes [#1130](https://github.com/Hufe921/canvas-editor/issues/1130)
+* floating image position when scaling page #1131 ([0c04243](https://github.com/Hufe921/canvas-editor/commit/0c042436363f261b6f5a1701454de65461d0c165)), closes [#1131](https://github.com/Hufe921/canvas-editor/issues/1131)
+
+
+### Features
+
+* add area hide option #1139 ([595eb07](https://github.com/Hufe921/canvas-editor/commit/595eb0708d4cf7486d979bfd8b4d4c18482eda1e)), closes [#1139](https://github.com/Hufe921/canvas-editor/issues/1139)
+* add form mode rule option #1143 ([99c2838](https://github.com/Hufe921/canvas-editor/commit/99c283835955d43cf71f4f59fb4de392048f347e)), closes [#1143](https://github.com/Hufe921/canvas-editor/issues/1143)
+* add group deletable option #1134 ([68da503](https://github.com/Hufe921/canvas-editor/commit/68da503f307c6132c1ba318a370b7a466d80ac19)), closes [#1134](https://github.com/Hufe921/canvas-editor/issues/1134)
+* add mode rule option #1132 ([a6c44d4](https://github.com/Hufe921/canvas-editor/commit/a6c44d4265e7dc4aea8dc97e5001f97752cf6c67)), closes [#1132](https://github.com/Hufe921/canvas-editor/issues/1132)
+* add rowNo option to executeFocus api #1127 ([603f6fe](https://github.com/Hufe921/canvas-editor/commit/603f6feb9aeb71aeb704fcb3d419457eb6e44ca3)), closes [#1127](https://github.com/Hufe921/canvas-editor/issues/1127)
+* set date control value with format #1136 ([2288b66](https://github.com/Hufe921/canvas-editor/commit/2288b663f79ccbe76d6790d8e9f2f5e6b8eea05f)), closes [#1136](https://github.com/Hufe921/canvas-editor/issues/1136)
+
+
+
 ## [0.9.109](https://github.com/Hufe921/canvas-editor/compare/v0.9.108...v0.9.109) (2025-05-11)
 
 
