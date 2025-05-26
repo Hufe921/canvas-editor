@@ -2440,29 +2440,47 @@ export class CommandAdapt {
   }
 
   public focus(payload?: IFocusOption) {
-    const { position = LocationPosition.AFTER, isMoveCursorToVisible = true } =
-      payload || {}
-    let curIndex = 0
-    const rowNo = payload?.rowNo
-    if (isNumber(rowNo)) {
+    const {
+      position = LocationPosition.AFTER,
+      isMoveCursorToVisible = true,
+      rowNo,
+      range
+    } = payload || {}
+    let curIndex = -1
+    if (range) {
+      // 根据选区定位
+      this.range.replaceRange(range)
+      curIndex =
+        position === LocationPosition.BEFORE ? range.startIndex : range.endIndex
+    } else if (isNumber(rowNo)) {
+      // 根据行号定位
       const rowList = this.draw.getOriginalRowList()
       curIndex =
         position === LocationPosition.BEFORE
           ? rowList[rowNo]?.startIndex
           : rowList[rowNo + 1]?.startIndex - 1
+      if (!isNumber(curIndex)) return
+      this.range.setRange(curIndex, curIndex)
     } else {
+      // 默认文档首尾
       curIndex =
         position === LocationPosition.BEFORE
           ? 0
           : this.draw.getOriginalMainElementList().length - 1
+      this.range.setRange(curIndex, curIndex)
     }
-    if (!isNumber(curIndex)) return
-    this.range.setRange(curIndex, curIndex)
-    this.draw.render({
-      curIndex,
+    // 光标存在且闭合时定位
+    const renderParams: IDrawOption = {
       isCompute: false,
+      isSetCursor: false,
       isSubmitHistory: false
-    })
+    }
+    if (~curIndex && this.range.getIsCollapsed()) {
+      renderParams.curIndex = curIndex
+      renderParams.isSetCursor = true
+    }
+    this.draw.render(renderParams)
+    // 移动滚动条到可见区域
     if (isMoveCursorToVisible) {
       const positionList = this.draw.getPosition().getPositionList()
       this.draw.getCursor().moveCursorToVisible({

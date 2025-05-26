@@ -28,6 +28,7 @@ import { IPageBorderOption } from './PageBorder'
 import { IBadgeOption } from './Badge'
 import { IElement } from './Element'
 import { LocationPosition } from '../dataset/enum/Common'
+import { IRange } from './Range'
 
 export interface IEditorData {
   header?: IElement[]
@@ -132,8 +133,9 @@ export interface ISetValueOption {
 }
 
 export interface IFocusOption {
-  position?: LocationPosition
   rowNo?: number
+  range?: IRange
+  position?: LocationPosition
   isMoveCursorToVisible?: boolean
 }
 
