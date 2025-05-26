@@ -107,7 +107,7 @@ export class Area {
     for (const areaInfoItem of this.areaInfoMap) {
       const { area, positionList } = areaInfoItem[1]
       if (
-        area.hide ||
+        area?.hide ||
         (!area?.backgroundColor && !area?.borderColor && !area?.placeholder)
       ) {
         continue
