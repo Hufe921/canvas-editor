@@ -287,6 +287,75 @@ export class Control {
     return !!this.activeControl.getElement()?.control?.pasteDisabled
   }
 
+  // 通过索引找到控件并判断控件是否存在值
+  public getIsExistValueByElementListIndex(
+    elementList: IElement[],
+    index: number
+  ): boolean {
+    const element = elementList[index]
+    // 是否是控件
+    if (!element.controlId) return false
+    // 单选框、复选框仅需验证控件值
+    if (
+      element.control?.type === ControlType.CHECKBOX ||
+      element.control?.type === ControlType.RADIO
+    ) {
+      return !!element.control?.code
+    }
+    // 其他控件需校验文本
+    if (element.controlComponent === ControlComponent.VALUE) {
+      return true
+    }
+    if (element.controlComponent === ControlComponent.PLACEHOLDER) {
+      return false
+    }
+    // 向后查找值元素
+    if (
+      element.controlComponent === ControlComponent.PREFIX ||
+      element.controlComponent === ControlComponent.PRE_TEXT
+    ) {
+      let i = index + 1
+      while (i < elementList.length) {
+        const nextElement = elementList[i]
+        if (nextElement.controlId !== element.controlId) {
+          return false
+        }
+        if (nextElement.controlComponent === ControlComponent.VALUE) {
+          return true
+        }
+        if (nextElement.controlComponent === ControlComponent.PLACEHOLDER) {
+          return false
+        }
+        i++
+      }
+    }
+    // 向前查找值元素
+    if (
+      element.controlComponent === ControlComponent.POSTFIX ||
+      element.controlComponent === ControlComponent.POST_TEXT
+    ) {
+      let i = index - 1
+      while (i >= 0) {
+        const preElement = elementList[i]
+        if (preElement.controlId !== element.controlId) {
+          return false
+        }
+        if (preElement.controlComponent === ControlComponent.VALUE) {
+          return true
+        }
+        if (preElement.controlComponent === ControlComponent.PLACEHOLDER) {
+          return false
+        }
+        i--
+      }
+    }
+    return false
+  }
+
+  public getControlHighlight(elementList: IElement[], index: number) {
+    return this.controlSearch.getControlHighlight(elementList, index)
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }

@@ -60,7 +60,7 @@ interface IEditorOption {
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
   watermark?: IWatermark // Watermark{data:string; color?:string; opacity?:number; size?:number; font?:string; numberType:NumberType;}
-  control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string; activeBackgroundColor?: string; disabledBackgroundColor?: string;}
+  control?: IControlOption // Control {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string; activeBackgroundColor?: string; disabledBackgroundColor?: string; existValueBackgroundColor?: string; noValueBackgroundColor?: string;}
   checkbox?: ICheckboxOption // Checkbox {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
   radio?: IRadioOption // Radio {width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
   cursor?: ICursorOption // Cursor style. {width?: number; color?: string; dragWidth?: number; dragColor?: string; dragFloatImageDisabled?: boolean;}
