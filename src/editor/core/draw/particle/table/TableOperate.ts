@@ -411,12 +411,38 @@ export class TableOperate {
   public deleteTableCol() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index, tdIndex, trIndex } = positionContext
+    const {index, tdIndex, trIndex} = positionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
+    // 记录当前表格数据的trIndex
+    let curTrIndex = trIndex!
+    // 拆分表格的第一个表格的originalElementList的index
+    const curIndex = (index! - originalElementList[index!].pagingIndex!)
+    // 记录拆分表格的pagingId
+    const tablePagingId = originalElementList[index!].pagingId
+    // 需要删除的表格数量
+    let deleteTableQuantity = 0
+    // 合并同pagingId的表格到第一个表格中，删除后面所有的拆分表格
+    for (let i = curIndex; i < originalElementList.length; i++) {
+      if (originalElementList[i] && originalElementList[i].pagingId === tablePagingId) {
+        if (originalElementList[i].pagingIndex) {
+          originalElementList[curIndex].trList = (originalElementList[curIndex].trList || []).concat(originalElementList[i].trList || [])
+          deleteTableQuantity++
+        }
+        // trIndex需要位移
+        if (index! > i) {
+          curTrIndex! += (originalElementList[i].trList || []).length
+        }
+      } else {
+        break
+      }
+    }
+    originalElementList.splice(curIndex + 1, deleteTableQuantity)
+
+    const element = originalElementList[curIndex]
     const curTrList = element.trList!
-    const curTd = curTrList[trIndex!].tdList[tdIndex!]
+    const curTd = curTrList[curTrIndex!].tdList[tdIndex!]
     const curColIndex = curTd.colIndex!
+
     // 如果是最后一列，直接删除整个表格
     const moreTdTr = curTrList.find(tr => tr.tdList.length > 1)
     if (!moreTdTr) {
@@ -448,7 +474,7 @@ export class TableOperate {
     this.range.setRange(0, 0)
     // 重新渲染
     this.draw.render({
-      curIndex: positionContext.index
+      curIndex: curIndex
     })
     this.tableTool.dispose()
   }
