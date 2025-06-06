@@ -1741,6 +1741,17 @@ window.onload = function () {
         scrollIntoView(commentDom, activeCommentDom)
       }
     }
+
+    // 行列信息
+    const rangeContext = instance.command.getRangeContext()
+    if (rangeContext) {
+      document.querySelector<HTMLSpanElement>('.row-no')!.innerText = `${
+        rangeContext.startRowNo + 1
+      }`
+      document.querySelector<HTMLSpanElement>('.col-no')!.innerText = `${
+        rangeContext.startColNo + 1
+      }`
+    }
   }
 
   instance.listener.visiblePageNoListChange = function (payload) {
