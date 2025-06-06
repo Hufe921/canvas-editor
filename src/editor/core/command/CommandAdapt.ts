@@ -1492,6 +1492,7 @@ export class CommandAdapt {
       extraPickAttrs: ['id', 'controlComponent']
     })
     // 页码信息、行信息
+    const rowList = this.draw.getRowList()
     const positionList = this.position.getPositionList()
     const startPosition = positionList[startIndex]
     const endPosition = positionList[endIndex]
@@ -1499,6 +1500,29 @@ export class CommandAdapt {
     const endPageNo = endPosition.pageNo
     const startRowNo = startPosition.rowIndex
     const endRowNo = endPosition.rowIndex
+    // 列信息
+    const startRow = rowList[startRowNo]
+    const endRow = rowList[endRowNo]
+    let startColNo = 0
+    let endColNo = 0
+    // 以光标显示位置为准
+    if (!this.draw.getCursor().getHitLineStartIndex()) {
+      // 换行符不计算列数量
+      startColNo =
+        startRow.elementList[0]?.value === ZERO
+          ? startPosition.index! - startRow.startIndex
+          : startPosition.index! - startRow.startIndex + 1
+    }
+    // 光标闭合时列位置相同
+    if (startPosition === endPosition) {
+      endColNo = startColNo
+    } else {
+      endColNo =
+        endRow.elementList[0]?.value === ZERO
+          ? endPosition.index! - endRow.startIndex
+          : endPosition.index! - endRow.startIndex + 1
+    }
+
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
     const height = this.draw.getOriginalHeight()
@@ -1587,6 +1611,8 @@ export class CommandAdapt {
       endPageNo,
       startRowNo,
       endRowNo,
+      startColNo,
+      endColNo,
       rangeRects,
       zone,
       isTable,
@@ -2440,29 +2466,47 @@ export class CommandAdapt {
   }
 
   public focus(payload?: IFocusOption) {
-    const { position = LocationPosition.AFTER, isMoveCursorToVisible = true } =
-      payload || {}
-    let curIndex = 0
-    const rowNo = payload?.rowNo
-    if (isNumber(rowNo)) {
+    const {
+      position = LocationPosition.AFTER,
+      isMoveCursorToVisible = true,
+      rowNo,
+      range
+    } = payload || {}
+    let curIndex = -1
+    if (range) {
+      // 根据选区定位
+      this.range.replaceRange(range)
+      curIndex =
+        position === LocationPosition.BEFORE ? range.startIndex : range.endIndex
+    } else if (isNumber(rowNo)) {
+      // 根据行号定位
       const rowList = this.draw.getOriginalRowList()
       curIndex =
         position === LocationPosition.BEFORE
           ? rowList[rowNo]?.startIndex
           : rowList[rowNo + 1]?.startIndex - 1
+      if (!isNumber(curIndex)) return
+      this.range.setRange(curIndex, curIndex)
     } else {
+      // 默认文档首尾
       curIndex =
         position === LocationPosition.BEFORE
           ? 0
           : this.draw.getOriginalMainElementList().length - 1
+      this.range.setRange(curIndex, curIndex)
     }
-    if (!isNumber(curIndex)) return
-    this.range.setRange(curIndex, curIndex)
-    this.draw.render({
-      curIndex,
+    // 光标存在且闭合时定位
+    const renderParams: IDrawOption = {
       isCompute: false,
+      isSetCursor: false,
       isSubmitHistory: false
-    })
+    }
+    if (~curIndex && this.range.getIsCollapsed()) {
+      renderParams.curIndex = curIndex
+      renderParams.isSetCursor = true
+    }
+    this.draw.render(renderParams)
+    // 移动滚动条到可见区域
     if (isMoveCursorToVisible) {
       const positionList = this.draw.getPosition().getPositionList()
       this.draw.getCursor().moveCursorToVisible({

@@ -85,6 +85,7 @@ export class Control {
   private controlOptions: IControlOption
   private activeControl: IControlInstance | null
   private activeControlValue: IElement[]
+  private preElement: IElement | null
 
   constructor(draw: Draw) {
     this.controlBorder = new ControlBorder(draw)
@@ -99,6 +100,7 @@ export class Control {
     this.controlOptions = this.options.control
     this.activeControl = null
     this.activeControlValue = []
+    this.preElement = null
   }
 
   // 搜索高亮匹配
@@ -287,6 +289,75 @@ export class Control {
     return !!this.activeControl.getElement()?.control?.pasteDisabled
   }
 
+  // 通过索引找到控件并判断控件是否存在值
+  public getIsExistValueByElementListIndex(
+    elementList: IElement[],
+    index: number
+  ): boolean {
+    const element = elementList[index]
+    // 是否是控件
+    if (!element.controlId) return false
+    // 单选框、复选框仅需验证控件值
+    if (
+      element.control?.type === ControlType.CHECKBOX ||
+      element.control?.type === ControlType.RADIO
+    ) {
+      return !!element.control?.code
+    }
+    // 其他控件需校验文本
+    if (element.controlComponent === ControlComponent.VALUE) {
+      return true
+    }
+    if (element.controlComponent === ControlComponent.PLACEHOLDER) {
+      return false
+    }
+    // 向后查找值元素
+    if (
+      element.controlComponent === ControlComponent.PREFIX ||
+      element.controlComponent === ControlComponent.PRE_TEXT
+    ) {
+      let i = index + 1
+      while (i < elementList.length) {
+        const nextElement = elementList[i]
+        if (nextElement.controlId !== element.controlId) {
+          return false
+        }
+        if (nextElement.controlComponent === ControlComponent.VALUE) {
+          return true
+        }
+        if (nextElement.controlComponent === ControlComponent.PLACEHOLDER) {
+          return false
+        }
+        i++
+      }
+    }
+    // 向前查找值元素
+    if (
+      element.controlComponent === ControlComponent.POSTFIX ||
+      element.controlComponent === ControlComponent.POST_TEXT
+    ) {
+      let i = index - 1
+      while (i >= 0) {
+        const preElement = elementList[i]
+        if (preElement.controlId !== element.controlId) {
+          return false
+        }
+        if (preElement.controlComponent === ControlComponent.VALUE) {
+          return true
+        }
+        if (preElement.controlComponent === ControlComponent.PLACEHOLDER) {
+          return false
+        }
+        i--
+      }
+    }
+    return false
+  }
+
+  public getControlHighlight(elementList: IElement[], index: number) {
+    return this.controlSearch.getControlHighlight(elementList, index)
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
@@ -351,6 +422,30 @@ export class Control {
     }
   }
 
+  public emitControlChange(state: ControlState) {
+    if (!this.activeControl) return
+    const isSubscribeControlChange = this.eventBus.isSubscribe('controlChange')
+    if (!this.listener.controlChange && !isSubscribeControlChange) return
+    let control: IControl
+    const value = this.activeControlValue
+    const activeElement = this.activeControl.getElement()
+    if (value?.length) {
+      control = zipElementList(value)[0].control!
+    } else {
+      control = pickElementAttr(deepClone(activeElement)).control!
+      control.value = []
+    }
+    const payload: IControlChangeResult = {
+      state,
+      control,
+      controlId: activeElement.controlId!
+    }
+    this.listener.controlChange?.(payload)
+    if (isSubscribeControlChange) {
+      this.eventBus.emit('controlChange', payload)
+    }
+  }
+
   public initControl() {
     const elementList = this.getElementList()
     const range = this.getRange()
@@ -368,10 +463,23 @@ export class Control {
           this.activeControl.awake()
         }
       }
+      // 相同控件元素
+      if (this.preElement?.controlId === element.controlId) {
+        // 当前元素在尾部：控件失活事件
+        if (element.controlComponent === ControlComponent.POSTFIX) {
+          this.emitControlChange(ControlState.INACTIVE)
+        } else if (
+          // 之前元素在尾部 && 当前不在尾部：控件激活事件
+          this.preElement?.controlComponent === ControlComponent.POSTFIX
+        ) {
+          this.emitControlChange(ControlState.ACTIVE)
+        }
+      }
+      // 更新缓存控件数据
       const controlElement = this.activeControl.getElement()
       if (element.controlId === controlElement.controlId) {
-        // 更新缓存控件数据
         this.updateActiveControlValue()
+        this.preElement = element
         return
       }
     }
@@ -400,26 +508,10 @@ export class Control {
     }
     // 缓存控件数据
     this.updateActiveControlValue()
+    this.preElement = element
     // 激活控件回调
-    const isSubscribeControlChange = this.eventBus.isSubscribe('controlChange')
-    if (this.listener.controlChange || isSubscribeControlChange) {
-      let control: IControl
-      const value = this.activeControlValue
-      if (value?.length) {
-        control = zipElementList(value)[0].control!
-      } else {
-        control = pickElementAttr(deepClone(element)).control!
-        control.value = []
-      }
-      const payload: IControlChangeResult = {
-        control,
-        controlId: element.controlId!,
-        state: ControlState.ACTIVE
-      }
-      this.listener.controlChange?.(payload)
-      if (isSubscribeControlChange) {
-        this.eventBus.emit('controlChange', payload)
-      }
+    if (element.controlComponent !== ControlComponent.POSTFIX) {
+      this.emitControlChange(ControlState.ACTIVE)
     }
   }
 
@@ -433,31 +525,14 @@ export class Control {
       this.activeControl.destroy()
     }
     // 销毁控件回调
-    if (isEmitEvent) {
-      const isSubscribeControlChange =
-        this.eventBus.isSubscribe('controlChange')
-      if (this.listener.controlChange || isSubscribeControlChange) {
-        let control: IControl
-        const value = this.activeControlValue
-        const activeElement = this.activeControl.getElement()
-        if (value?.length) {
-          control = zipElementList(value)[0].control!
-        } else {
-          control = pickElementAttr(deepClone(activeElement)).control!
-          control.value = []
-        }
-        const payload: IControlChangeResult = {
-          control,
-          controlId: activeElement.controlId!,
-          state: ControlState.INACTIVE
-        }
-        this.listener.controlChange?.(payload)
-        if (isSubscribeControlChange) {
-          this.eventBus.emit('controlChange', payload)
-        }
-      }
+    if (
+      isEmitEvent &&
+      this.preElement?.controlComponent !== ControlComponent.POSTFIX
+    ) {
+      this.emitControlChange(ControlState.INACTIVE)
     }
     // 清空变量
+    this.preElement = null
     this.activeControl = null
     this.activeControlValue = []
   }

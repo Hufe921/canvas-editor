@@ -108,6 +108,8 @@ export interface IControlOption {
   borderColor?: string
   activeBackgroundColor?: string
   disabledBackgroundColor?: string
+  existValueBackgroundColor?: string
+  noValueBackgroundColor?: string
 }
 
 export interface IControlInitOption {

@@ -162,7 +162,7 @@ export function formatElementList(
       formatElementList(valueList, {
         ...options,
         isHandleFirstElement: true,
-        isForceCompensation: false
+        isForceCompensation: true
       })
       if (valueList.length) {
         const areaId = getUUID()
@@ -631,7 +631,7 @@ export function zipElementList(
       continue
     }
     // 优先处理虚拟元素，后表格、超链接、日期、控件特殊处理
-    if (element.areaId && element.area) {
+    if (element.areaId) {
       const areaId = element.areaId
       const area = element.area
       // 收集并压缩数据

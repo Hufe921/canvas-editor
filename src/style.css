@@ -1023,6 +1023,9 @@ ul {
 .footer .editor-mode {
   cursor: pointer;
   user-select: none;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .footer .paper-size {
