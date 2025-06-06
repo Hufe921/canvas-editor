@@ -1,3 +1,25 @@
+## [0.9.111](https://github.com/Hufe921/canvas-editor/compare/v0.9.110...v0.9.111) (2025-06-06)
+
+
+### Bug Fixes
+
+* control activation and deactivation trigger points #1125 ([ed64e9b](https://github.com/Hufe921/canvas-editor/commit/ed64e9b4574573d8520956ce1838ae85170bc8cb)), closes [#1125](https://github.com/Hufe921/canvas-editor/issues/1125)
+* format area element  boundary error #1147 ([facf277](https://github.com/Hufe921/canvas-editor/commit/facf277935988b458005a9e776a49ffb937f0d01)), closes [#1147](https://github.com/Hufe921/canvas-editor/issues/1147)
+
+
+### Chores
+
+* add row and col position display ([ff230df](https://github.com/Hufe921/canvas-editor/commit/ff230df4f2a00c0198e380c5b4f65abde8c065a8))
+
+
+### Features
+
+* add col index to getRangeContext api #1150 ([754e87f](https://github.com/Hufe921/canvas-editor/commit/754e87fc76bb53ff7f60808c454aade0b74f6ac0)), closes [#1150](https://github.com/Hufe921/canvas-editor/issues/1150)
+* add range option to executeFocus api #1090 ([8b75715](https://github.com/Hufe921/canvas-editor/commit/8b757150c65e7c67bc116f708a8e6087ab1fccb0)), closes [#1090](https://github.com/Hufe921/canvas-editor/issues/1090)
+* highlight when control value exists or not #1140 ([cadc530](https://github.com/Hufe921/canvas-editor/commit/cadc530ff9f4d13f3281abfbbc39a4cd5f5da214)), closes [#1140](https://github.com/Hufe921/canvas-editor/issues/1140)
+
+
+
 ## [0.9.110](https://github.com/Hufe921/canvas-editor/compare/v0.9.109...v0.9.110) (2025-05-23)
 
 
