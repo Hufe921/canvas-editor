@@ -1492,6 +1492,7 @@ export class CommandAdapt {
       extraPickAttrs: ['id', 'controlComponent']
     })
     // 页码信息、行信息
+    const rowList = this.draw.getRowList()
     const positionList = this.position.getPositionList()
     const startPosition = positionList[startIndex]
     const endPosition = positionList[endIndex]
@@ -1499,6 +1500,29 @@ export class CommandAdapt {
     const endPageNo = endPosition.pageNo
     const startRowNo = startPosition.rowIndex
     const endRowNo = endPosition.rowIndex
+    // 列信息
+    const startRow = rowList[startRowNo]
+    const endRow = rowList[endRowNo]
+    let startColNo = 0
+    let endColNo = 0
+    // 以光标显示位置为准
+    if (!this.draw.getCursor().getHitLineStartIndex()) {
+      // 换行符不计算列数量
+      startColNo =
+        startRow.elementList[0]?.value === ZERO
+          ? startPosition.index! - startRow.startIndex
+          : startPosition.index! - startRow.startIndex + 1
+    }
+    // 光标闭合时列位置相同
+    if (startPosition === endPosition) {
+      endColNo = startColNo
+    } else {
+      endColNo =
+        endRow.elementList[0]?.value === ZERO
+          ? endPosition.index! - endRow.startIndex
+          : endPosition.index! - endRow.startIndex + 1
+    }
+
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
     const height = this.draw.getOriginalHeight()
@@ -1587,6 +1611,8 @@ export class CommandAdapt {
       endPageNo,
       startRowNo,
       endRowNo,
+      startColNo,
+      endColNo,
       rangeRects,
       zone,
       isTable,
