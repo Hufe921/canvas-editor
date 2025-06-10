@@ -134,6 +134,9 @@ interface IPageNumber {
 ```typescript
 interface IWatermark {
   data: string // 文本。
+  type?: WatermarkType
+  width?: number
+  height?: number
   color?: string // 颜色。默认：#AEB5C0
   opacity?: number // 透明度。默认：0.3
   size?: number // 字体大小。默认：200

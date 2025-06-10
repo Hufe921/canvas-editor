@@ -134,6 +134,9 @@ interface IPageNumber {
 ```typescript
 interface IWatermark {
   data: string // text.
+  type?: WatermarkType
+  width?: number
+  height?: number
   color?: string // color. default: #AEB5C0
   opacity?: number // transparency. default: 0.3
   size?: number // font size. default: 200
