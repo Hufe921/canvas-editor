@@ -190,6 +190,16 @@ instance.eventBus.on('mouseup', (evt: MouseEvent) => void)
 instance.eventBus.on('click', (evt: MouseEvent) => void)
 ```
 
+## input
+
+功能：编辑器 input 事件监听
+
+用法：
+
+```javascript
+instance.eventBus.on('input', (evt: Event) => void)
+```
+
 ## positionContextChange
 
 功能：上下文内容发生改变

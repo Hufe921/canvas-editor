@@ -190,6 +190,16 @@ Usage:
 instance.eventBus.on('click', (evt: MouseEvent) => void)
 ```
 
+## input
+
+Feature: Editor input event
+
+Usage:
+
+```javascript
+instance.eventBus.on('input', (evt: Event) => void)
+```
+
 ## positionContextChange
 
 Feature: The position context change
