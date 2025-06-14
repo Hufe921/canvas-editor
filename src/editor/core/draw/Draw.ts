@@ -213,7 +213,7 @@ export class Draw {
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
-    this.i18n = new I18n()
+    this.i18n = new I18n(options.locale)
     this.historyManager = new HistoryManager(this)
     this.position = new Position(this)
     this.zone = new Zone(this)

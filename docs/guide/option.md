@@ -15,6 +15,7 @@ new Editor(container, IEditorData | IElement[], {
 ```typescript
 interface IEditorOption {
   mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）、设计模式（不可删除、只读等配置不控制）。默认：编辑
+  locale?: string // 多语言类型。默认：zhCN
   defaultType?: string // 默认元素类型。默认：TEXT
   defaultColor?: string // 默认字体颜色。默认：#000000
   defaultFont?: string // 默认字体。默认：Microsoft YaHei

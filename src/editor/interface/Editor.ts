@@ -38,6 +38,7 @@ export interface IEditorData {
 
 export interface IEditorOption {
   mode?: EditorMode
+  locale?: string
   defaultType?: string
   defaultColor?: string
   defaultFont?: string
