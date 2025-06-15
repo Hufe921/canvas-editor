@@ -332,8 +332,5 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         draw.getPreviewer().drawResizer(imgElement, dragPosition)
       }
     }
-  } else if (host.isAllowDrag) {
-    // 如果是允许拖拽不允许拖放则光标重置
-    host.mousedown(evt)
   }
 }
