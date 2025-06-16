@@ -219,3 +219,16 @@ Usage:
 ```javascript
 instance.eventBus.on('imageSizeChange', (payload: { element: IElement }) => void)
 ```
+
+## imageMousedown
+
+Feature: The image mousedown event
+
+Usage:
+
+```javascript
+instance.eventBus.on('imageMousedown', (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void)
+```

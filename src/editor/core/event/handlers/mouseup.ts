@@ -333,7 +333,9 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       }
     }
   } else if (host.isAllowDrag) {
-    // 如果是允许拖拽不允许拖放则光标重置
-    host.mousedown(evt)
+    // 如果是允许拖拽不允许拖放（点击选区时光标闭合）则光标重置
+    if (host.cacheRange?.startIndex !== host.cacheRange?.endIndex) {
+      host.mousedown(evt)
+    }
   }
 }

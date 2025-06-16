@@ -71,3 +71,8 @@ export type IPositionContextChange = (
 ) => void
 
 export type IImageSizeChange = (payload: { element: IElement }) => void
+
+export type IImageMousedown = (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void

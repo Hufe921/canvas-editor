@@ -219,3 +219,16 @@ instance.eventBus.on('positionContextChange', (payload: IPositionContextChangePa
 ```javascript
 instance.eventBus.on('imageSizeChange', (payload: { element: IElement }) => void)
 ```
+
+## imageMousedown
+
+功能：图片 mousedown 事件
+
+用法：
+
+```javascript
+instance.eventBus.on('imageMousedown', (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void)
+```
