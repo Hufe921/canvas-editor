@@ -38,6 +38,7 @@ interface IEditorOption {
   searchNavigateMatchColor?: string // Search navigation highlighted color.default: #AAD280
   searchMatchAlpha?: number // Search for highlight transparency. default: 0.6
   highlightAlpha?: number //  Highlight element transparency. default: 0.6
+  highlightMarginHeight?: number // Highlight element margin height. default: 8
   resizerColor?: string // Image sizer color. default: #4182D9
   resizerSize?: number // Image sizer size. default: 5
   marginIndicatorSize?: number // The margin indicator length. default: 35

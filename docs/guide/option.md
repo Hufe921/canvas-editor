@@ -38,6 +38,7 @@ interface IEditorOption {
   searchNavigateMatchColor?: string // 搜索导航高亮颜色。默认：#AAD280
   searchMatchAlpha?: number // 搜索高亮透明度。默认：0.6
   highlightAlpha?: number // 高亮元素透明度。默认：0.6
+  highlightMarginHeight?: number // 高亮元素边距高度。默认：8
   resizerColor?: string // 图片尺寸器颜色。默认：#4182D9
   resizerSize?: number // 图片尺寸器大小。默认：5
   marginIndicatorSize?: number // 页边距指示器长度。默认：35
