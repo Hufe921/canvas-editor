@@ -96,6 +96,7 @@ interface ITableOption {
 ```typescript
 interface IHeader {
   top?: number // 距离页面顶部大小。默认：30
+  inactiveAlpha?: number // 失活时透明度。默认：1
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑标题内容
@@ -107,6 +108,7 @@ interface IHeader {
 ```typescript
 interface IFooter {
   bottom?: number // 距离页面底部大小。默认：30
+  inactiveAlpha?: number // 失活时透明度。默认：1
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑页脚内容

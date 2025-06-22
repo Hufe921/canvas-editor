@@ -96,6 +96,7 @@ interface ITableOption {
 ```typescript
 interface IHeader {
   top?: number // Size from the top of the page.default: 30
+  inactiveAlpha?: number // Transparency during deactivation. default: 1
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the header content from being edited
@@ -107,6 +108,7 @@ interface IHeader {
 ```typescript
 interface IFooter {
   bottom?: number // The size from the bottom of the page.default: 30
+  inactiveAlpha?: number // Transparency during deactivation. default: 1
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the footer content from being edited
