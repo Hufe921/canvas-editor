@@ -59,6 +59,8 @@ export type IZoneChange = (payload: EditorZone) => void
 
 export type IMouseEventChange = (evt: MouseEvent) => void
 
+export type IInputEventChange = (evt: Event) => void
+
 export interface IPositionContextChangePayload {
   value: IPositionContext
   oldValue: IPositionContext
@@ -69,3 +71,8 @@ export type IPositionContextChange = (
 ) => void
 
 export type IImageSizeChange = (payload: { element: IElement }) => void
+
+export type IImageMousedown = (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void

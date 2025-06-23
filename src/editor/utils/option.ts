@@ -150,6 +150,7 @@ export function mergeOption(
 
   return {
     mode: EditorMode.EDIT,
+    locale: 'zhCN',
     defaultType: 'TEXT',
     defaultColor: '#000000',
     defaultFont: 'Microsoft YaHei',
@@ -172,6 +173,7 @@ export function mergeOption(
     searchMatchColor: '#FFFF00',
     searchNavigateMatchColor: '#AAD280',
     highlightAlpha: 0.6,
+    highlightMarginHeight: 8,
     resizerColor: '#4182D9',
     resizerSize: 5,
     marginIndicatorSize: 35,

@@ -1990,6 +1990,10 @@ export class CommandAdapt {
     }
   }
 
+  public translate(path: string): string {
+    return this.i18n.t(path)
+  }
+
   public setLocale(payload: string) {
     this.i18n.setLocale(payload)
   }

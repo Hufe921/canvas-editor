@@ -217,6 +217,14 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     ) {
       draw.getImageParticle().createFloatImage(curElement)
     }
+    // 图片点击事件
+    const eventBus = draw.getEventBus()
+    if (eventBus.isSubscribe('imageMousedown')) {
+      eventBus.emit('imageMousedown', {
+        evt,
+        element: curElement
+      })
+    }
   }
   // 表格工具组件
   const tableTool = draw.getTableTool()

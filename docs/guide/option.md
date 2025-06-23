@@ -15,6 +15,7 @@ new Editor(container, IEditorData | IElement[], {
 ```typescript
 interface IEditorOption {
   mode?: EditorMode // 编辑器模式：编辑、清洁（不显示视觉辅助元素。如：分页符）、只读、表单（仅控件内可编辑）、打印（不显示辅助元素、未书写控件及前后括号）、设计模式（不可删除、只读等配置不控制）。默认：编辑
+  locale?: string // 多语言类型。默认：zhCN
   defaultType?: string // 默认元素类型。默认：TEXT
   defaultColor?: string // 默认字体颜色。默认：#000000
   defaultFont?: string // 默认字体。默认：Microsoft YaHei
@@ -37,6 +38,7 @@ interface IEditorOption {
   searchNavigateMatchColor?: string // 搜索导航高亮颜色。默认：#AAD280
   searchMatchAlpha?: number // 搜索高亮透明度。默认：0.6
   highlightAlpha?: number // 高亮元素透明度。默认：0.6
+  highlightMarginHeight?: number // 高亮元素边距高度。默认：8
   resizerColor?: string // 图片尺寸器颜色。默认：#4182D9
   resizerSize?: number // 图片尺寸器大小。默认：5
   marginIndicatorSize?: number // 页边距指示器长度。默认：35
@@ -94,6 +96,7 @@ interface ITableOption {
 ```typescript
 interface IHeader {
   top?: number // 距离页面顶部大小。默认：30
+  inactiveAlpha?: number // 失活时透明度。默认：1
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑标题内容
@@ -105,6 +108,7 @@ interface IHeader {
 ```typescript
 interface IFooter {
   bottom?: number // 距离页面底部大小。默认：30
+  inactiveAlpha?: number // 失活时透明度。默认：1
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑页脚内容
@@ -134,6 +138,9 @@ interface IPageNumber {
 ```typescript
 interface IWatermark {
   data: string // 文本。
+  type?: WatermarkType
+  width?: number
+  height?: number
   color?: string // 颜色。默认：#AEB5C0
   opacity?: number // 透明度。默认：0.3
   size?: number // 字体大小。默认：200

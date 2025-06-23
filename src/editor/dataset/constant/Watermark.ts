@@ -1,8 +1,12 @@
 import { IWatermark } from '../../interface/Watermark'
 import { NumberType } from '../enum/Common'
+import { WatermarkType } from '../enum/Watermark'
 
 export const defaultWatermarkOption: Readonly<Required<IWatermark>> = {
   data: '',
+  type: WatermarkType.TEXT,
+  width: 0,
+  height: 0,
   color: '#AEB5C0',
   opacity: 0.3,
   size: 200,

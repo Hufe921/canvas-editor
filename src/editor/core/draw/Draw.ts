@@ -213,7 +213,7 @@ export class Draw {
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
-    this.i18n = new I18n()
+    this.i18n = new I18n(options.locale)
     this.historyManager = new HistoryManager(this)
     this.position = new Position(this)
     this.zone = new Zone(this)
@@ -493,6 +493,10 @@ export class Draw {
 
   public getDefaultBasicRowMarginHeight(): number {
     return this.options.defaultBasicRowMarginHeight * this.options.scale
+  }
+
+  public getHighlightMarginHeight(): number {
+    return this.options.highlightMarginHeight * this.options.scale
   }
 
   public getTdPadding(): IPadding {
@@ -2032,6 +2036,8 @@ export class Draw {
     payload: IDrawRowPayload
   ) {
     const { rowList, positionList, elementList } = payload
+    const marginHeight = this.getDefaultBasicRowMarginHeight()
+    const highlightMarginHeight = this.getHighlightMarginHeight()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       for (let j = 0; j < curRow.elementList.length; j++) {
@@ -2061,9 +2067,9 @@ export class Draw {
           this.highlight.recordFillInfo(
             ctx,
             x - offsetX,
-            y,
+            y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
             element.metrics.width + offsetX,
-            curRow.height,
+            curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
             highlight
           )
         } else if (preElement?.highlight) {

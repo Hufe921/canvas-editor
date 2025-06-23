@@ -38,6 +38,7 @@ export interface IEditorData {
 
 export interface IEditorOption {
   mode?: EditorMode
+  locale?: string
   defaultType?: string
   defaultColor?: string
   defaultFont?: string
@@ -60,6 +61,7 @@ export interface IEditorOption {
   searchNavigateMatchColor?: string
   searchMatchAlpha?: number
   highlightAlpha?: number
+  highlightMarginHeight?: number
   resizerColor?: string
   resizerSize?: number
   marginIndicatorSize?: number
