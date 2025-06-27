@@ -77,6 +77,7 @@ export interface IEditorOption {
   maskMargin?: IMargin
   letterClass?: string[]
   contextMenuDisableKeys?: string[]
+  shortcutDisableKeys?: string[]
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak

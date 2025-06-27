@@ -11,6 +11,7 @@ import { TableTool } from '../draw/particle/table/TableTool'
 import { RangeManager } from '../range/RangeManager'
 import { CanvasEvent } from './CanvasEvent'
 import { ImageParticle } from '../draw/particle/ImageParticle'
+import { INTERNAL_SHORTCUT_KEY } from '../../dataset/constant/Shortcut'
 
 export class GlobalEvent {
   private draw: Draw
@@ -121,6 +122,15 @@ export class GlobalEvent {
   }
 
   public setPageScale = (evt: WheelEvent) => {
+    // 设置禁用快捷键
+    if (
+      this.options.shortcutDisableKeys.includes(
+        INTERNAL_SHORTCUT_KEY.PAGE_SCALE
+      )
+    ) {
+      return
+    }
+    // 仅在按下Ctrl键时生效
     if (!evt.ctrlKey) return
     evt.preventDefault()
     const { scale } = this.options
