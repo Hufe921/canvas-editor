@@ -190,6 +190,7 @@ export function mergeOption(
     maskMargin: [0, 0, 0, 0],
     letterClass: [LETTER_CLASS.ENGLISH],
     contextMenuDisableKeys: [],
+    shortcutDisableKeys: [],
     scrollContainerSelector: '',
     pageOuterSelectionDisable: false,
     ...options,

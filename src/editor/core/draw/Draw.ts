@@ -2213,7 +2213,7 @@ export class Draw {
           this.textParticle.complete()
         } else if (element.type === ElementType.BLOCK) {
           this.textParticle.complete()
-          this.blockParticle.render(pageNo, element, x, y)
+          this.blockParticle.render(pageNo, element, x, y + offsetY)
         } else {
           // 如果当前元素设置左偏移，则上一元素立即绘制
           if (element.left) {

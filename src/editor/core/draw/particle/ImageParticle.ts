@@ -1,5 +1,6 @@
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import { ImageDisplay } from '../../../dataset/enum/Common'
+import { ElementType } from '../../../dataset/enum/Element'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
@@ -20,6 +21,17 @@ export class ImageParticle {
     this.imageCache = new Map()
     this.floatImageContainer = null
     this.floatImage = null
+  }
+
+  public getOriginalMainImageList(): IElement[] {
+    const elementList = this.draw.getOriginalMainElementList()
+    const imageList = []
+    for (const element of elementList) {
+      if (element.type === ElementType.IMAGE) {
+        imageList.push(element)
+      }
+    }
+    return imageList
   }
 
   public createFloatImage(element: IElement) {
