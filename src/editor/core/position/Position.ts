@@ -456,6 +456,28 @@ export class Position {
           }
         }
         if (
+          element.type === ElementType.TAB &&
+          element.listStyle === ListStyle.CHECKBOX
+        ) {
+          // 向前找checkbox元素
+          let index = curPositionIndex - 1
+          while (index > 0) {
+            const element = elementList[index]
+            if (
+              element.value === ZERO &&
+              element.listStyle === ListStyle.CHECKBOX
+            ) {
+              break
+            }
+            index--
+          }
+          return {
+            index,
+            isDirectHit: true,
+            isCheckbox: true
+          }
+        }
+        if (
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
         ) {
