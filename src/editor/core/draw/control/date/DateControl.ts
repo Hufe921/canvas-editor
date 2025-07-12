@@ -348,7 +348,13 @@ export class DateControl implements IControlInstance {
   }
 
   public awake() {
-    if (this.isPopup || this.control.getIsDisabledControl()) return
+    if (
+      this.isPopup ||
+      this.control.getIsDisabledControl() ||
+      !this.control.getIsRangeWithinControl()
+    ) {
+      return
+    }
     const position = this.control.getPosition()
     if (!position) return
     const elementList = this.draw.getElementList()
