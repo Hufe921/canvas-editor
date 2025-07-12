@@ -1,3 +1,21 @@
+## [0.9.113](https://github.com/Hufe921/canvas-editor/compare/v0.9.112...v0.9.113) (2025-07-12)
+
+
+### Bug Fixes
+
+* block element rendering position ([5e2184e](https://github.com/Hufe921/canvas-editor/commit/5e2184eda2325cd318dfd9f569ff9de68aea6596))
+* checkbox cannot be selected after indentation of the list #1186 ([ab170d8](https://github.com/Hufe921/canvas-editor/commit/ab170d85747f9ee4e362fca8998a7df396165007)), closes [#1186](https://github.com/Hufe921/canvas-editor/issues/1186)
+
+
+### Features
+
+* add previous/next navigation to image preview #1173 ([cd42f79](https://github.com/Hufe921/canvas-editor/commit/cd42f790a90bbc7880759f0b1e99a4f86476e5da)), closes [#1173](https://github.com/Hufe921/canvas-editor/issues/1173)
+* add shortcutDisableKeys option #1167 ([d72f6b2](https://github.com/Hufe921/canvas-editor/commit/d72f6b27550d6b14c11f675fdb78b8a8a7325e9b)), closes [#1167](https://github.com/Hufe921/canvas-editor/issues/1167)
+* alpha option when header and footer are inactive #1164 ([1be6a99](https://github.com/Hufe921/canvas-editor/commit/1be6a99495c47c9ac58841a2c3d7efd572bdbdd1)), closes [#1164](https://github.com/Hufe921/canvas-editor/issues/1164)
+* not activate control when selection exists #1189 ([5819e28](https://github.com/Hufe921/canvas-editor/commit/5819e2860ff386a382cbbbfbf6c47bf9d187eed3)), closes [#1189](https://github.com/Hufe921/canvas-editor/issues/1189)
+
+
+
 ## [0.9.112](https://github.com/Hufe921/canvas-editor/compare/v0.9.111...v0.9.112) (2025-06-20)
 
 
