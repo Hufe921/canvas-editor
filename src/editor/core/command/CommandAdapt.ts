@@ -121,6 +121,7 @@ import {
   IGetAreaValueOption,
   IGetAreaValueResult,
   IInsertAreaOption,
+  ILocationAreaOption,
   ISetAreaPropertiesOption
 } from '../../interface/Area'
 import { IAreaBadge, IBadge } from '../../interface/Badge'
@@ -2528,8 +2529,8 @@ export class CommandAdapt {
     this.draw.getArea().setAreaProperties(payload)
   }
 
-  public locationArea(areaId: string) {
-    const context = this.draw.getArea().getContextByAreaId(areaId)
+  public locationArea(areaId: string, options?: ILocationAreaOption) {
+    const context = this.draw.getArea().getContextByAreaId(areaId, options)
     if (!context) return
     const {
       range: { endIndex },
