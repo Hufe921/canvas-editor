@@ -1,6 +1,5 @@
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { EventBusMap } from '../../interface/EventBus'
-import { debounce } from '../../utils'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { EventBus } from '../event/eventbus/EventBus'
@@ -27,7 +26,7 @@ export class CursorAgent {
     this.agentCursorDom = agentCursorDom
     // 事件
     agentCursorDom.onkeydown = (evt: KeyboardEvent) => this._keyDown(evt)
-    agentCursorDom.oninput = debounce(this._input.bind(this), 0)
+    agentCursorDom.oninput = this._input.bind(this)
     agentCursorDom.onpaste = (evt: ClipboardEvent) => this._paste(evt)
     agentCursorDom.addEventListener(
       'compositionstart',
