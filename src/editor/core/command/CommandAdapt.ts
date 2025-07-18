@@ -1288,17 +1288,12 @@ export class CommandAdapt {
     if (isDisabled) return null
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return null
-    const { id, conceptId, value, width, height, imgDisplay } = payload
-    const imageId = id || getUUID()
+    const imageId = payload.id || getUUID()
     this.insertElementList([
       {
-        value,
-        width,
-        height,
-        conceptId,
+        ...payload,
         id: imageId,
-        type: ElementType.IMAGE,
-        imgDisplay
+        type: ElementType.IMAGE
       }
     ])
     return imageId
