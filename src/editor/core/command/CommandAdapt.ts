@@ -75,7 +75,7 @@ import {
   ITableInfoByEvent
 } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
-import { ILocationPosition } from '../../interface/Position'
+import { ILocationPosition, IPositionContext } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
 import { IReplaceOption, ISearchResultContext } from '../../interface/Search'
 import { ITextDecoration } from '../../interface/Text'
@@ -2003,25 +2003,97 @@ export class CommandAdapt {
   }
 
   public locationCatalog(titleId: string) {
-    const elementList = this.draw.getOriginalMainElementList()
-    let newIndex = -1
-    for (let e = 0; e < elementList.length; e++) {
-      const element = elementList[e]
-      if (
-        element.titleId === titleId &&
-        elementList[e + 1]?.titleId !== titleId
-      ) {
-        newIndex = e
-        break
+    const elementList = this.draw.getOriginalElementList()
+
+    function getPosition(
+      elementList: IElement[],
+      titleId: string
+    ): (IRange & IPositionContext) | null { 
+      let isTrueRange = false
+      let startIndex = -1
+      let endIndex = -1
+      for (let e = 0; e < elementList.length; e++) {
+        const element = elementList[e]
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              const range = getPosition(td.value, titleId)
+              if (range) {
+                return {
+                  ...range,
+                  isTable: true,
+                  index: e,
+                  trIndex: r,
+                  tdIndex: d,
+                  tdId: td.id,
+                  trId: tr.id,
+                  tableId: element.id
+                }
+              }
+            }
+          }
+        }
+        const nextElement = elementList[e + 1]
+        if (
+          element.titleId === titleId
+        ) {
+          if (!~startIndex) {
+            startIndex = e - 1
+            if (!nextElement || nextElement.titleId !== titleId) {
+              endIndex = e
+            }
+          } else {
+            if (!nextElement || nextElement.id !== titleId) {
+              endIndex = e
+            } else {
+              endIndex = e
+            }
+          }
+          isTrueRange = true
+        }
       }
+      if (isTrueRange) {
+        return {
+          isTable: false,
+          startIndex: startIndex,
+          endIndex: endIndex
+        }
+      }
+      return null
     }
-    if (!~newIndex) return
+
+    const context = getPosition(elementList, titleId)
+    if (!context) return
+    const {
+      isTable,
+      index,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId,
+//      startIndex,
+      endIndex
+    } = context
     this.position.setPositionContext({
-      isTable: false
+      isTable,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
     })
-    this.range.setRange(newIndex, newIndex)
+    this.range.setRange(endIndex, endIndex, tableId, startTdIndex, endTdIndex, startTrIndex, endTrIndex)
     this.draw.render({
-      curIndex: newIndex,
+      curIndex: endIndex,
       isCompute: false,
       isSubmitHistory: false
     })
