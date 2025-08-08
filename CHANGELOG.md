@@ -1,3 +1,19 @@
+## [0.9.114](https://github.com/Hufe921/canvas-editor/compare/v0.9.113...v0.9.114) (2025-08-08)
+
+
+### Bug Fixes
+
+* composition error while using input method editor #1193 ([87e7394](https://github.com/Hufe921/canvas-editor/commit/87e739455898d2c99485aa8621af26c02269b6be)), closes [#1193](https://github.com/Hufe921/canvas-editor/issues/1193)
+* update position context when selecting table cells #1211 ([602896a](https://github.com/Hufe921/canvas-editor/commit/602896adb8989ca5f0a0f91441a90926307a7bb0)), closes [#1211](https://github.com/Hufe921/canvas-editor/issues/1211)
+
+
+### Features
+
+* add extension option to executeImage api #1201 ([5845843](https://github.com/Hufe921/canvas-editor/commit/5845843e4bee5214745a5f93dcf392db21cbba20)), closes [#1201](https://github.com/Hufe921/canvas-editor/issues/1201)
+* add location option to executeLocationArea api #1180 ([f6eff67](https://github.com/Hufe921/canvas-editor/commit/f6eff67e99e6472e065a60cecc5fb9091e8ac7cf)), closes [#1180](https://github.com/Hufe921/canvas-editor/issues/1180)
+
+
+
 ## [0.9.113](https://github.com/Hufe921/canvas-editor/compare/v0.9.112...v0.9.113) (2025-07-12)
 
 
