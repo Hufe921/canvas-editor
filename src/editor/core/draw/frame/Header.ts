@@ -6,11 +6,13 @@ import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow } from '../../../interface/Row'
 import { pickSurroundElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
+import { Zone } from '../../zone/Zone'
 import { Draw } from '../Draw'
 
 export class Header {
   private draw: Draw
   private position: Position
+  private zone: Zone
   private options: DeepRequired<IEditorOption>
 
   private elementList: IElement[]
@@ -20,6 +22,7 @@ export class Header {
   constructor(draw: Draw, data?: IElement[]) {
     this.draw = draw
     this.position = draw.getPosition()
+    this.zone = draw.getZone()
     this.options = draw.getOptions()
 
     this.elementList = data || []
@@ -123,7 +126,10 @@ export class Header {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
-    ctx.globalAlpha = 1
+    ctx.save()
+    ctx.globalAlpha = this.zone.isHeaderActive()
+      ? 1
+      : this.options.header.inactiveAlpha
     const innerWidth = this.draw.getInnerWidth()
     const maxHeight = this.getMaxHeight()
     // 超出最大高度不渲染
@@ -146,5 +152,6 @@ export class Header {
       innerWidth,
       zone: EditorZone.HEADER
     })
+    ctx.restore()
   }
 }

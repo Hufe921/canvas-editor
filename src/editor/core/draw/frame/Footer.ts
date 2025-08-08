@@ -5,11 +5,13 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow } from '../../../interface/Row'
 import { Position } from '../../position/Position'
+import { Zone } from '../../zone/Zone'
 import { Draw } from '../Draw'
 
 export class Footer {
   private draw: Draw
   private position: Position
+  private zone: Zone
   private options: DeepRequired<IEditorOption>
 
   private elementList: IElement[]
@@ -19,6 +21,7 @@ export class Footer {
   constructor(draw: Draw, data?: IElement[]) {
     this.draw = draw
     this.position = draw.getPosition()
+    this.zone = draw.getZone()
     this.options = draw.getOptions()
 
     this.elementList = data || []
@@ -120,7 +123,10 @@ export class Footer {
   }
 
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
-    ctx.globalAlpha = 1
+    ctx.save()
+    ctx.globalAlpha = this.zone.isFooterActive()
+      ? 1
+      : this.options.footer.inactiveAlpha
     const innerWidth = this.draw.getInnerWidth()
     const maxHeight = this.getMaxHeight()
     // 超出最大高度不渲染
@@ -143,5 +149,6 @@ export class Footer {
       innerWidth,
       zone: EditorZone.FOOTER
     })
+    ctx.restore()
   }
 }

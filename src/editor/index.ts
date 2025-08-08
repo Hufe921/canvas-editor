@@ -70,6 +70,8 @@ import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
 import { AreaMode } from './dataset/enum/Area'
 import { IBadge } from './interface/Badge'
+import { WatermarkType } from './dataset/enum/Watermark'
+import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
 
 export default class Editor {
   public command: Command
@@ -166,6 +168,7 @@ export {
   EDITOR_COMPONENT,
   LETTER_CLASS,
   INTERNAL_CONTEXT_MENU_KEY,
+  INTERNAL_SHORTCUT_KEY,
   EDITOR_CLIPBOARD
 }
 
@@ -204,7 +207,8 @@ export {
   LocationPosition,
   AreaMode,
   ControlState,
-  FlexDirection
+  FlexDirection,
+  WatermarkType
 }
 
 // 对外类型

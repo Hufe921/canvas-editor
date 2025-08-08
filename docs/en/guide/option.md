@@ -15,6 +15,7 @@ new Editor(container, IEditorData | IElement[], {
 ```typescript
 interface IEditorOption {
   mode?: EditorMode // Editor mode: Edit, Clean (Visual aids are not displayed, For example: page break), ReadOnly, Form (Only editable within the control), Print (Visual aids are not displayed, Unwritten content control), Design (Do not handle configurations such as non deletable and read-only). default: Edit
+  locale?: string // Language. default: zhCN
   defaultType?: string // Default element type. default: TEXT
   defaultColor?: string // Default color. default: #000000
   defaultFont?: string // Default font. default: Microsoft YaHei
@@ -37,6 +38,7 @@ interface IEditorOption {
   searchNavigateMatchColor?: string // Search navigation highlighted color.default: #AAD280
   searchMatchAlpha?: number // Search for highlight transparency. default: 0.6
   highlightAlpha?: number //  Highlight element transparency. default: 0.6
+  highlightMarginHeight?: number // Highlight element margin height. default: 8
   resizerColor?: string // Image sizer color. default: #4182D9
   resizerSize?: number // Image sizer size. default: 5
   marginIndicatorSize?: number // The margin indicator length. default: 35
@@ -56,6 +58,7 @@ interface IEditorOption {
   maskMargin?: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
   letterClass?: string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
   contextMenuDisableKeys?: string[] // Disable context menu keys. default: []
+  shortcutDisableKeys?: string[] // Disable shortcut keys. default: []
   scrollContainerSelector?: string // scroll container selector. default: document
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
@@ -94,6 +97,7 @@ interface ITableOption {
 ```typescript
 interface IHeader {
   top?: number // Size from the top of the page.default: 30
+  inactiveAlpha?: number // Transparency during deactivation. default: 1
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the header content from being edited
@@ -105,6 +109,7 @@ interface IHeader {
 ```typescript
 interface IFooter {
   bottom?: number // The size from the bottom of the page.default: 30
+  inactiveAlpha?: number // Transparency during deactivation. default: 1
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the footer content from being edited
@@ -134,6 +139,9 @@ interface IPageNumber {
 ```typescript
 interface IWatermark {
   data: string // text.
+  type?: WatermarkType
+  width?: number
+  height?: number
   color?: string // color. default: #AEB5C0
   opacity?: number // transparency. default: 0.3
   size?: number // font size. default: 200

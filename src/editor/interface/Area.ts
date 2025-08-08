@@ -52,3 +52,7 @@ export interface IAreaInfo {
   elementList: IElement[]
   positionList: IElementPosition[]
 }
+
+export interface ILocationAreaOption {
+  position: LocationPosition
+}

@@ -25,6 +25,7 @@ export interface IDrawImagePayload {
   height: number
   value: string
   imgDisplay?: ImageDisplay
+  extension?: unknown
 }
 
 export interface IDrawRowPayload {

@@ -7,6 +7,7 @@ import {
   IGetAreaValueOption,
   IGetAreaValueResult,
   IInsertAreaOption,
+  ILocationAreaOption,
   ISetAreaPropertiesOption
 } from '../../../interface/Area'
 import { EditorZone } from '../../../dataset/enum/Editor'
@@ -188,20 +189,40 @@ export class Area {
   }
 
   public getContextByAreaId(
-    areaId: string
+    areaId: string,
+    options?: ILocationAreaOption
   ): { range: IRange; elementPosition: IElementPosition } | null {
     const elementList = this.draw.getOriginalMainElementList()
     for (let e = 0; e < elementList.length; e++) {
       const element = elementList[e]
-      if (element.areaId === areaId) {
-        const positionList = this.position.getOriginalMainPositionList()
-        return {
-          range: {
-            startIndex: e,
-            endIndex: e
-          },
-          elementPosition: positionList[e]
+      if (options?.position === LocationPosition.OUTER_BEFORE) {
+        // 区域外面最前
+        if (elementList[e + 1]?.areaId !== areaId) continue
+      } else if (options?.position === LocationPosition.AFTER) {
+        // 区域内部最后
+        if (
+          !(element.areaId === areaId && elementList[e + 1]?.areaId !== areaId)
+        ) {
+          continue
         }
+      } else if (options?.position === LocationPosition.OUTER_AFTER) {
+        // 区域外部最后
+        if (
+          !(element.areaId !== areaId && elementList[e - 1]?.areaId === areaId)
+        ) {
+          continue
+        }
+      } else {
+        // 区域内部最前
+        if (element.areaId !== areaId) continue
+      }
+      const positionList = this.position.getOriginalMainPositionList()
+      return {
+        range: {
+          startIndex: e,
+          endIndex: e
+        },
+        elementPosition: positionList[e]
       }
     }
     return null

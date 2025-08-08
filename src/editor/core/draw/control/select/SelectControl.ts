@@ -488,7 +488,13 @@ export class SelectControl implements IControlInstance {
   }
 
   public awake() {
-    if (this.isPopup || this.control.getIsDisabledControl()) return
+    if (
+      this.isPopup ||
+      this.control.getIsDisabledControl() ||
+      !this.control.getIsRangeWithinControl()
+    ) {
+      return
+    }
     const { startIndex } = this.control.getRange()
     const elementList = this.control.getElementList()
     if (elementList[startIndex + 1]?.controlId !== this.element.controlId) {

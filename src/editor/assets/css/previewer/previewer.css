@@ -96,3 +96,27 @@
 .ce-image-previewer .ce-image-menu i.image-download {
   background-image: url(../../images/image-download.svg);
 }
+
+.ce-image-previewer .ce-image-menu .image-navigate {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ce-image-previewer .ce-image-menu i.image-pre {
+  background-image: url(../../images/image-pre.svg);
+}
+
+.ce-image-previewer .ce-image-menu i.image-next {
+  background-image: url(../../images/image-next.svg);
+}
+
+.ce-image-previewer .ce-image-menu .image-count {
+  color: #000000;
+  font-size: 20px;
+}
+
+.ce-image-previewer .ce-image-menu i.disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

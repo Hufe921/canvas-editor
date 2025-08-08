@@ -1095,5 +1095,5 @@ instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
 功能：定位区域位置
 
 ```js
-instance.command.executeLocationArea(areaId: string)
+instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
 ```

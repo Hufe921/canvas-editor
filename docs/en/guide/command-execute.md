@@ -1101,5 +1101,5 @@ Feature: positioning area position
 Usage:
 
 ```javascript
-instance.command.executeLocationArea(areaId: string)
+instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
 ```
