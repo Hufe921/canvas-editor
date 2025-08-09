@@ -333,7 +333,7 @@ export class Search {
   public replace(payload: string, option?: IReplaceOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    if (payload === undefined || payload === null) return;
+    if (payload === undefined || payload === null) return
     let matchList = this.getSearchMatchList()
     // 替换搜索项
     const replaceIndex = option?.index
@@ -383,9 +383,9 @@ export class Search {
         ) {
           continue
         }
-        if (payload === "") {
+        if (payload === '') {
           this.draw.spliceElementList(tableElementList, curIndex, 1)
-          tableDiffCount--;
+          tableDiffCount--
           if (!~firstMatchIndex) {
             firstMatchIndex = m
           }
@@ -426,13 +426,13 @@ export class Search {
         ) {
           continue
         }
-         if (payload === "") {
-          this.draw.spliceElementList(elementList, curIndex, 1);
-          pageDiffCount--;
+        if (payload === '') {
+          this.draw.spliceElementList(elementList, curIndex, 1)
+          pageDiffCount--
           if (!~firstMatchIndex) {
             firstMatchIndex = m
           }
-          continue;
+          continue
         }
         if (!~firstMatchIndex) {
           firstMatchIndex = m
