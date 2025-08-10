@@ -2525,6 +2525,26 @@ export class CommandAdapt {
   }
 
   public locationArea(areaId: string, options?: ILocationAreaOption) {
+    // 区域在最后时，如果后面没有元素是否追加换行符
+    if (
+      options?.isAppendLastLineBreak &&
+      options?.position === LocationPosition.OUTER_AFTER
+    ) {
+      const elementList = this.draw.getOriginalMainElementList()
+      if (elementList[elementList.length - 1].areaId === areaId) {
+        this.draw.appendElementList(
+          [
+            {
+              value: ZERO
+            }
+          ],
+          {
+            isSubmitHistory: false
+          }
+        )
+      }
+    }
+    // 获取区域位置
     const context = this.draw.getArea().getContextByAreaId(areaId, options)
     if (!context) return
     const {
@@ -2536,16 +2556,14 @@ export class CommandAdapt {
     })
     this.range.setRange(endIndex, endIndex)
     this.draw.render({
-      isSetCursor: false,
+      curIndex: endIndex,
+      isSetCursor: true,
       isCompute: false,
       isSubmitHistory: false
     })
     // 移动到可见区域
     const cursor = this.draw.getCursor()
     this.position.setCursorPosition(elementPosition)
-    cursor.drawCursor({
-      hitLineStartIndex: endIndex
-    })
     cursor.moveCursorToVisible({
       cursorPosition: elementPosition,
       direction: MoveDirection.UP

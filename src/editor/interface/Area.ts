@@ -55,4 +55,5 @@ export interface IAreaInfo {
 
 export interface ILocationAreaOption {
   position: LocationPosition
+  isAppendLastLineBreak?: boolean
 }
