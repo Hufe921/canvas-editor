@@ -70,6 +70,7 @@ export class Area {
   }
 
   public insertArea(payload: IInsertAreaOption): string | null {
+    const { id, value, area, position, range } = payload
     // 切换至正文
     if (this.zone.getZone() !== EditorZone.MAIN) {
       this.zone.setZone(EditorZone.MAIN)
@@ -78,14 +79,24 @@ export class Area {
     this.draw.getPosition().setPositionContext({
       isTable: false
     })
-    // 设置插入位置
-    const { id, value, area, position } = payload
-    if (position === LocationPosition.BEFORE) {
-      this.range.setRange(0, 0)
-    } else {
+    // 通过光标插入area && 不能在area内再次插入area
+    if (range && !this.getActiveAreaId()) {
+      const { startIndex, endIndex } = range
+      // 校验位置合法性
       const elementList = this.draw.getOriginalMainElementList()
-      const lastIndex = elementList.length - 1
-      this.range.setRange(lastIndex, lastIndex)
+      if (!elementList[startIndex] || !elementList[endIndex]) {
+        return null
+      }
+      this.range.setRange(range.startIndex, range.endIndex)
+    } else {
+      // 设置插入位置
+      if (position === LocationPosition.BEFORE) {
+        this.range.setRange(0, 0)
+      } else {
+        const elementList = this.draw.getOriginalMainElementList()
+        const lastIndex = elementList.length - 1
+        this.range.setRange(lastIndex, lastIndex)
+      }
     }
     const areaId = id || getUUID()
     this.draw.insertElementList([
