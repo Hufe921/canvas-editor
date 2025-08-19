@@ -2008,10 +2008,7 @@ export class CommandAdapt {
     function getPosition(
       elementList: IElement[],
       titleId: string
-    ): (IRange & IPositionContext) | null { 
-      let isTrueRange = false
-      let startIndex = -1
-      let endIndex = -1
+    ): (IRange & IPositionContext) | null {
       for (let e = 0; e < elementList.length; e++) {
         const element = elementList[e]
         if (element.type === ElementType.TABLE) {
@@ -2036,30 +2033,19 @@ export class CommandAdapt {
             }
           }
         }
-        const nextElement = elementList[e + 1]
-        if (
-          element.titleId === titleId
-        ) {
-          if (!~startIndex) {
-            startIndex = e - 1
-            if (!nextElement || nextElement.titleId !== titleId) {
-              endIndex = e
+        // 找到标题末尾
+        if (element.titleId === titleId) {
+          let newIndex = e
+          while (newIndex < elementList.length) {
+            if (elementList[newIndex + 1]?.titleId !== titleId) {
+              return {
+                isTable: false,
+                startIndex: newIndex,
+                endIndex: newIndex
+              }
             }
-          } else {
-            if (!nextElement || nextElement.id !== titleId) {
-              endIndex = e
-            } else {
-              endIndex = e
-            }
+            newIndex++
           }
-          isTrueRange = true
-        }
-      }
-      if (isTrueRange) {
-        return {
-          isTable: false,
-          startIndex: startIndex,
-          endIndex: endIndex
         }
       }
       return null
@@ -2079,7 +2065,6 @@ export class CommandAdapt {
       tdId,
       trId,
       tableId,
-//      startIndex,
       endIndex
     } = context
     this.position.setPositionContext({
@@ -2091,7 +2076,15 @@ export class CommandAdapt {
       trId,
       tableId
     })
-    this.range.setRange(endIndex, endIndex, tableId, startTdIndex, endTdIndex, startTrIndex, endTrIndex)
+    this.range.setRange(
+      endIndex,
+      endIndex,
+      tableId,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex
+    )
     this.draw.render({
       curIndex: endIndex,
       isCompute: false,
