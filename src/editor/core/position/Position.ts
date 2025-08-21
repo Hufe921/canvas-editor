@@ -796,6 +796,7 @@ export class Position {
   }
 
   public setSurroundPosition(payload: ISetSurroundPositionPayload) {
+    const { scale } = this.options
     const {
       pageNo,
       row,
@@ -817,8 +818,10 @@ export class Position {
         if (floatPosition.pageNo !== pageNo) continue
         const surroundRect = {
           ...floatPosition,
-          width: surroundElement.width!,
-          height: surroundElement.height!
+          x: floatPosition.x * scale,
+          y: floatPosition.y * scale,
+          width: surroundElement.width! * scale,
+          height: surroundElement.height! * scale
         }
         if (isRectIntersect(rowElementRect, surroundRect)) {
           row.isSurround = true
