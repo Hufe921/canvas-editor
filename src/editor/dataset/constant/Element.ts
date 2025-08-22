@@ -52,6 +52,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'rowMargin',
   'dashArray',
   'trList',
+  'tableToolDisabled',
   'borderType',
   'borderColor',
   'width',
@@ -73,6 +74,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'conceptId',
   'imgDisplay',
   'imgFloatPosition',
+  'imgToolDisabled',
   'textDecoration',
   'extension',
   'externalId',
@@ -87,7 +89,9 @@ export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
   'verticalAlign',
   'backgroundColor',
   'borderTypes',
-  'slashTypes'
+  'slashTypes',
+  'disabled',
+  'deletable'
 ]
 
 export const TABLE_CONTEXT_ATTR: Array<keyof IElement> = [

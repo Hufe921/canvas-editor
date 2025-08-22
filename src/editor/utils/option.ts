@@ -22,7 +22,7 @@ import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
 import { ICursorOption } from '../interface/Cursor'
-import { IEditorOption } from '../interface/Editor'
+import { IEditorOption, IModeRule } from '../interface/Editor'
 import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
 import { IHeader } from '../interface/Header'
@@ -48,6 +48,7 @@ import {
 } from '../dataset/enum/Editor'
 import { defaultBadgeOption } from '../dataset/constant/Badge'
 import { IBadgeOption } from '../interface/Badge'
+import { defaultModeRuleOption } from '../dataset/constant/Editor'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -132,9 +133,24 @@ export function mergeOption(
     ...defaultBadgeOption,
     ...options.badge
   }
+  const modeRuleOption: DeepRequired<IModeRule> = {
+    print: {
+      ...defaultModeRuleOption.print,
+      ...options.modeRule?.print
+    },
+    readonly: {
+      ...defaultModeRuleOption.readonly,
+      ...options.modeRule?.readonly
+    },
+    form: {
+      ...defaultModeRuleOption.form,
+      ...options.modeRule?.form
+    }
+  }
 
   return {
     mode: EditorMode.EDIT,
+    locale: 'zhCN',
     defaultType: 'TEXT',
     defaultColor: '#000000',
     defaultFont: 'Microsoft YaHei',
@@ -157,6 +173,7 @@ export function mergeOption(
     searchMatchColor: '#FFFF00',
     searchNavigateMatchColor: '#AAD280',
     highlightAlpha: 0.6,
+    highlightMarginHeight: 8,
     resizerColor: '#4182D9',
     resizerSize: 5,
     marginIndicatorSize: 35,
@@ -173,7 +190,9 @@ export function mergeOption(
     maskMargin: [0, 0, 0, 0],
     letterClass: [LETTER_CLASS.ENGLISH],
     contextMenuDisableKeys: [],
+    shortcutDisableKeys: [],
     scrollContainerSelector: '',
+    pageOuterSelectionDisable: false,
     ...options,
     table: tableOptions,
     header: headerOptions,
@@ -194,6 +213,7 @@ export function mergeOption(
     separator: separatorOptions,
     lineNumber: lineNumberOptions,
     pageBorder: pageBorderOptions,
-    badge: badgeOptions
+    badge: badgeOptions,
+    modeRule: modeRuleOption
   }
 }

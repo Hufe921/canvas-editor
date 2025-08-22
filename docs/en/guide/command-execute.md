@@ -174,7 +174,7 @@ Feature: Clear format
 Usage:
 
 ```javascript
-instance.command.executeFormat()
+instance.command.executeFormat(options?: IRichtextOption)
 ```
 
 ## executeFont
@@ -184,7 +184,7 @@ Feature: Set font
 Usage:
 
 ```javascript
-instance.command.executeFont(font: string)
+instance.command.executeFont(font: string, options?: IRichtextOption)
 ```
 
 ## executeSize
@@ -194,7 +194,7 @@ Feature: Set font size
 Usage:
 
 ```javascript
-instance.command.executeSize(size: number)
+instance.command.executeSize(size: number, options?: IRichtextOption)
 ```
 
 ## executeSizeAdd
@@ -204,7 +204,7 @@ Feature: Increase the font size
 Usage:
 
 ```javascript
-instance.command.executeSizeAdd()
+instance.command.executeSizeAdd(options?: IRichtextOption)
 ```
 
 ## executeSizeMinus
@@ -214,7 +214,7 @@ Feature: Reduce the font size
 Usage:
 
 ```javascript
-instance.command.executeSizeMinus()
+instance.command.executeSizeMinus(options?: IRichtextOption)
 ```
 
 ## executeBold
@@ -224,7 +224,7 @@ Feature: Bold
 Usage:
 
 ```javascript
-instance.command.executeBold()
+instance.command.executeBold(options?: IRichtextOption)
 ```
 
 ## executeItalic
@@ -234,7 +234,7 @@ Feature: Italic
 Usage:
 
 ```javascript
-instance.command.executeItalic()
+instance.command.executeItalic(options?: IRichtextOption)
 ```
 
 ## executeUnderline
@@ -244,7 +244,7 @@ Feature: Underline
 Usage:
 
 ```javascript
-instance.command.executeUnderline(textDecoration?: ITextDecoration)
+instance.command.executeUnderline(textDecoration?: ITextDecoration, options?: IRichtextOption)
 ```
 
 ## executeStrikeout
@@ -254,7 +254,7 @@ Feature: Strikeout
 Usage:
 
 ```javascript
-instance.command.executeStrikeout()
+instance.command.executeStrikeout(options?: IRichtextOption)
 ```
 
 ## executeSuperscript
@@ -264,7 +264,7 @@ Feature: Superscript
 Usage:
 
 ```javascript
-instance.command.executeSuperscript()
+instance.command.executeSuperscript(options?: IRichtextOption)
 ```
 
 ## executeSubscript
@@ -274,7 +274,7 @@ Feature: Subscript
 Usage:
 
 ```javascript
-instance.command.executeSubscript()
+instance.command.executeSubscript(options?: IRichtextOption)
 ```
 
 ## executeColor
@@ -284,7 +284,7 @@ Feature: Font color
 Usage:
 
 ```javascript
-instance.command.executeColor(color: string | null)
+instance.command.executeColor(color: string | null, options?: IRichtextOption)
 ```
 
 ## executeHighlight
@@ -294,7 +294,7 @@ Feature: Highlight
 Usage:
 
 ```javascript
-instance.command.executeHighlight(color: string | null)
+instance.command.executeHighlight(color: string | null, options?: IRichtextOption)
 ```
 
 ## executeTitle
@@ -821,7 +821,7 @@ Feature: Insert an element
 Usage:
 
 ```javascript
-instance.command.executeInsertElementList(elementList: IElement[])
+instance.command.executeInsertElementList(elementList: IElement[], options?: IInsertElementListOption)
 ```
 
 ## executeAppendElementList
@@ -842,6 +842,16 @@ Usage:
 
 ```javascript
 instance.command.executeUpdateElementById(payload: IUpdateElementByIdOption)
+```
+
+## executeDeleteElementById
+
+Feature: Delete element by id
+
+Usage:
+
+```javascript
+instance.command.executeDeleteElementById(payload: IDeleteElementByIdOption)
 ```
 
 ## executeSetValue
@@ -954,6 +964,16 @@ Usage:
 instance.command.executeSetControlValue(payload: ISetControlValueOption)
 ```
 
+## executeSetControlValueList
+
+Feature: Batch set control value
+
+Usage:
+
+```javascript
+instance.command.executeSetControlValueList(payload: ISetControlValueOption[])
+```
+
 ## executeSetControlExtension
 
 Feature: Set control extension value
@@ -964,6 +984,16 @@ Usage:
 instance.command.executeSetControlExtension(payload: ISetControlExtensionOption)
 ```
 
+## executeSetControlExtensionList
+
+Feature: Batch set control extension value
+
+Usage:
+
+```javascript
+instance.command.executeSetControlExtensionList(payload: ISetControlExtensionOption[])
+```
+
 ## executeSetControlProperties
 
 Feature: Set control properties
@@ -972,6 +1002,16 @@ Usage:
 
 ```javascript
 instance.command.executeSetControlProperties(payload: ISetControlProperties)
+```
+
+## executeSetControlPropertiesList
+
+Feature: Batch set control properties
+
+Usage:
+
+```javascript
+instance.command.executeSetControlPropertiesList(payload: ISetControlProperties[])
 ```
 
 ## executeSetControlHighlight
@@ -1061,5 +1101,5 @@ Feature: positioning area position
 Usage:
 
 ```javascript
-instance.command.executeLocationArea(areaId: string)
+instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
 ```

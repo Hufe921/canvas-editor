@@ -11,6 +11,7 @@ import { TableTool } from '../draw/particle/table/TableTool'
 import { RangeManager } from '../range/RangeManager'
 import { CanvasEvent } from './CanvasEvent'
 import { ImageParticle } from '../draw/particle/ImageParticle'
+import { INTERNAL_SHORTCUT_KEY } from '../../dataset/constant/Shortcut'
 
 export class GlobalEvent {
   private draw: Draw
@@ -50,8 +51,7 @@ export class GlobalEvent {
 
   private addEvent() {
     window.addEventListener('blur', this.clearSideEffect)
-    document.addEventListener('keyup', this.setRangeStyle)
-    document.addEventListener('click', this.clearSideEffect)
+    document.addEventListener('mousedown', this.clearSideEffect)
     document.addEventListener('mouseup', this.setCanvasEventAbility)
     document.addEventListener('wheel', this.setPageScale, { passive: false })
     document.addEventListener('visibilitychange', this._handleVisibilityChange)
@@ -60,8 +60,7 @@ export class GlobalEvent {
 
   public removeEvent() {
     window.removeEventListener('blur', this.clearSideEffect)
-    document.removeEventListener('keyup', this.setRangeStyle)
-    document.removeEventListener('click', this.clearSideEffect)
+    document.removeEventListener('mousedown', this.clearSideEffect)
     document.removeEventListener('mouseup', this.setCanvasEventAbility)
     document.removeEventListener('wheel', this.setPageScale)
     document.removeEventListener(
@@ -81,10 +80,7 @@ export class GlobalEvent {
       (node: any) => pageList.includes(node),
       true
     )
-    if (innerEditorDom) {
-      this.setRangeStyle()
-      return
-    }
+    if (innerEditorDom) return
     // 编辑器外部组件dom
     const outerEditorDom = findParent(
       target,
@@ -93,7 +89,6 @@ export class GlobalEvent {
       true
     )
     if (outerEditorDom) {
-      this.setRangeStyle()
       this.watchCursorActive()
       return
     }
@@ -112,10 +107,6 @@ export class GlobalEvent {
     this.canvasEvent.setIsAllowSelection(false)
   }
 
-  public setRangeStyle = () => {
-    this.range.setRangeStyle()
-  }
-
   public watchCursorActive() {
     // 选区闭合&实际光标移出光标代理
     if (!this.range.getIsCollapsed()) return
@@ -131,6 +122,15 @@ export class GlobalEvent {
   }
 
   public setPageScale = (evt: WheelEvent) => {
+    // 设置禁用快捷键
+    if (
+      this.options.shortcutDisableKeys.includes(
+        INTERNAL_SHORTCUT_KEY.PAGE_SCALE
+      )
+    ) {
+      return
+    }
+    // 仅在按下Ctrl键时生效
     if (!evt.ctrlKey) return
     evt.preventDefault()
     const { scale } = this.options

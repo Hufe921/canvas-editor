@@ -57,8 +57,16 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     y: evt.offsetY
   })
   if (!~positionResult.index) return
-  const { index, isTable, tdValueIndex, tdIndex, trIndex, tableId } =
-    positionResult
+  const {
+    index,
+    isTable,
+    tdValueIndex,
+    tdIndex,
+    trIndex,
+    tableId,
+    trId,
+    tdId
+  } = positionResult
   const {
     index: startIndex,
     isTable: startIsTable,
@@ -83,6 +91,15 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
       startTrIndex,
       trIndex
     )
+    position.setPositionContext({
+      isTable,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
+    })
   } else {
     let end = ~endIndex ? endIndex : 0
     // 开始或结束位置存在表格，但是非相同表格则忽略选区设置

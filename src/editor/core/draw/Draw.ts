@@ -9,6 +9,7 @@ import {
   IDrawPagePayload,
   IDrawRowPayload,
   IGetImageOption,
+  IGetOriginValueOption,
   IGetValueOption,
   IPainterOption
 } from '../../interface/Draw'
@@ -22,7 +23,9 @@ import {
   IElement,
   IElementMetrics,
   IElementFillRect,
-  IElementStyle
+  IElementStyle,
+  ISpliceElementListOption,
+  IInsertElementListOption
 } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
 import { deepClone, getUUID, nextTick } from '../../utils'
@@ -210,7 +213,7 @@ export class Draw {
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
-    this.i18n = new I18n()
+    this.i18n = new I18n(options.locale)
     this.historyManager = new HistoryManager(this)
     this.position = new Position(this)
     this.zone = new Zone(this)
@@ -279,11 +282,41 @@ export class Draw {
     this.lazyRenderIntersectionObserver = null
     this.printModeData = null
 
+    // 打印模式优先设置打印数据
+    if (this.mode === EditorMode.PRINT) {
+      this.setPrintData()
+    }
     this.render({
       isInit: true,
       isSetCursor: false,
       isFirstRender: true
     })
+  }
+
+  // 设置打印数据
+  public setPrintData() {
+    this.printModeData = {
+      header: this.header.getElementList(),
+      main: this.elementList,
+      footer: this.footer.getElementList()
+    }
+    // 过滤控件辅助元素
+    const clonePrintModeData = deepClone(this.printModeData)
+    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
+    editorDataKeys.forEach(key => {
+      clonePrintModeData[key] = this.control.filterAssistElement(
+        clonePrintModeData[key]
+      )
+    })
+    this.setEditorData(clonePrintModeData)
+  }
+
+  // 还原打印数据
+  public clearPrintData() {
+    if (this.printModeData) {
+      this.setEditorData(this.printModeData)
+      this.printModeData = null
+    }
   }
 
   public getLetterReg(): RegExp {
@@ -298,25 +331,11 @@ export class Draw {
     if (this.mode === payload) return
     // 设置打印模式
     if (payload === EditorMode.PRINT) {
-      this.printModeData = {
-        header: this.header.getElementList(),
-        main: this.elementList,
-        footer: this.footer.getElementList()
-      }
-      // 过滤控件辅助元素
-      const clonePrintModeData = deepClone(this.printModeData)
-      const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
-      editorDataKeys.forEach(key => {
-        clonePrintModeData[key] = this.control.filterAssistElement(
-          clonePrintModeData[key]
-        )
-      })
-      this.setEditorData(clonePrintModeData)
+      this.setPrintData()
     }
     // 取消打印模式
-    if (this.mode === EditorMode.PRINT && this.printModeData) {
-      this.setEditorData(this.printModeData)
-      this.printModeData = null
+    if (this.mode === EditorMode.PRINT) {
+      this.clearPrintData()
     }
     this.clearSideEffect()
     this.range.clearRange()
@@ -329,7 +348,7 @@ export class Draw {
   }
 
   public isReadonly() {
-    if (this.area.getActiveAreaId()) {
+    if (this.area.getActiveAreaInfo()?.area?.mode) {
       return this.area.isReadonly()
     }
     switch (this.mode) {
@@ -355,8 +374,12 @@ export class Draw {
       const startElement = elementList[startIndex]
       const nextElement = elementList[startIndex + 1]
       return !!(
-        (startElement?.title?.disabled && nextElement?.title?.disabled) ||
-        (startElement?.control?.disabled && nextElement?.control?.disabled)
+        (startElement?.title?.disabled &&
+          nextElement?.title?.disabled &&
+          startElement.titleId === nextElement.titleId) ||
+        (startElement?.control?.disabled &&
+          nextElement?.control?.disabled &&
+          startElement.controlId === nextElement.controlId)
       )
     }
     const selectionElementList = elementList.slice(startIndex + 1, endIndex + 1)
@@ -367,6 +390,10 @@ export class Draw {
 
   public isDesignMode() {
     return this.mode === EditorMode.DESIGN
+  }
+
+  public isPrintMode() {
+    return this.mode === EditorMode.PRINT
   }
 
   public getOriginalWidth(): number {
@@ -466,6 +493,10 @@ export class Draw {
 
   public getDefaultBasicRowMarginHeight(): number {
     return this.options.defaultBasicRowMarginHeight * this.options.scale
+  }
+
+  public getHighlightMarginHeight(): number {
+    return this.options.highlightMarginHeight * this.options.scale
   }
 
   public getTdPadding(): IPadding {
@@ -668,10 +699,14 @@ export class Draw {
     return null
   }
 
-  public insertElementList(payload: IElement[]) {
+  public insertElementList(
+    payload: IElement[],
+    options: IInsertElementListOption = {}
+  ) {
     if (!payload.length || !this.range.getIsCanInput()) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
+    const { isSubmitHistory = true } = options
     formatElementList(payload, {
       isHandleFirstElement: false,
       editorOptions: this.options
@@ -696,7 +731,7 @@ export class Draw {
       if (!isCollapsed) {
         this.spliceElementList(elementList, start, endIndex - startIndex)
       }
-      this.spliceElementList(elementList, start, 0, ...payload)
+      this.spliceElementList(elementList, start, 0, payload)
       curIndex = startIndex + payload.length
       // 列表前如有换行符则删除-因为列表内已存在
       const preElement = elementList[start - 1]
@@ -714,7 +749,8 @@ export class Draw {
     if (~curIndex) {
       this.range.setRange(curIndex, curIndex)
       this.render({
-        curIndex
+        curIndex,
+        isSubmitHistory
       })
     }
   }
@@ -729,7 +765,7 @@ export class Draw {
       editorOptions: this.options
     })
     let curIndex: number
-    const { isPrepend } = options
+    const { isPrepend, isSubmitHistory = true } = options
     if (isPrepend) {
       this.elementList.splice(1, 0, ...elementList)
       curIndex = elementList.length
@@ -739,7 +775,8 @@ export class Draw {
     }
     this.range.setRange(curIndex, curIndex)
     this.render({
-      curIndex
+      curIndex,
+      isSubmitHistory
     })
   }
 
@@ -747,9 +784,11 @@ export class Draw {
     elementList: IElement[],
     start: number,
     deleteCount: number,
-    ...items: IElement[]
+    items?: IElement[],
+    options?: ISpliceElementListOption
   ) {
-    const isDesignMode = this.isDesignMode()
+    const { isIgnoreDeletedRule = false } = options || {}
+    const { group, modeRule } = this.options
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -774,18 +813,28 @@ export class Draw {
           startIndex++
         }
       }
-      // 元素删除（不可删除控件忽略）
-      if (!this.control.getActiveControl()) {
+      // 非明确忽略删除规则 && 非设计模式 && 非光标在控件内(控件内控制) =》 校验删除规则
+      if (
+        !isIgnoreDeletedRule &&
+        !this.isDesignMode() &&
+        !this.control.getIsRangeWithinControl()
+      ) {
         const tdDeletable = this.getTd()?.deletable
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
           if (
-            isDesignMode ||
             deleteElement?.control?.hide ||
+            deleteElement?.area?.hide ||
             (tdDeletable !== false &&
               deleteElement?.control?.deletable !== false &&
-              deleteElement?.title?.deletable !== false)
+              (!deleteElement.controlId ||
+                this.mode !== EditorMode.FORM ||
+                !modeRule[this.mode].controlDeletableDisabled) &&
+              deleteElement?.title?.deletable !== false &&
+              (group.deletable !== false || !deleteElement.groupIds?.length) &&
+              (deleteElement?.area?.deletable !== false ||
+                deleteElement?.areaIndex !== 0))
           ) {
             elementList.splice(deleteIndex, 1)
           }
@@ -796,8 +845,10 @@ export class Draw {
       }
     }
     // 循环添加，避免使用解构影响性能
-    for (let i = 0; i < items.length; i++) {
-      elementList.splice(start + i, 0, items[i])
+    if (items?.length) {
+      for (let i = 0; i < items.length; i++) {
+        elementList.splice(start + i, 0, items[i])
+      }
     }
   }
 
@@ -1105,8 +1156,10 @@ export class Draw {
     })
   }
 
-  public getValue(options: IGetValueOption = {}): IEditorResult {
-    const { pageNo, extraPickAttrs } = options
+  public getOriginValue(
+    options: IGetOriginValueOption = {}
+  ): Required<IEditorData> {
+    const { pageNo } = options
     let mainElementList = this.elementList
     if (
       Number.isInteger(pageNo) &&
@@ -1117,15 +1170,26 @@ export class Draw {
         row => row.elementList
       )
     }
+    const data: Required<IEditorData> = {
+      header: this.getHeaderElementList(),
+      main: mainElementList,
+      footer: this.getFooterElementList()
+    }
+    return data
+  }
+
+  public getValue(options: IGetValueOption = {}): IEditorResult {
+    const originData = this.getOriginValue(options)
+    const { extraPickAttrs } = options
     const data: IEditorData = {
-      header: zipElementList(this.getHeaderElementList(), {
+      header: zipElementList(originData.header, {
         extraPickAttrs
       }),
-      main: zipElementList(mainElementList, {
+      main: zipElementList(originData.main, {
         extraPickAttrs,
         isClassifyArea: true
       }),
-      footer: zipElementList(this.getFooterElementList(), {
+      footer: zipElementList(originData.footer, {
         extraPickAttrs
       })
     }
@@ -1323,7 +1387,10 @@ export class Draw {
       const isStartElement = curRow.elementList.length === 1
       x += isStartElement ? offsetX : 0
       y += isStartElement ? curRow.offsetY || 0 : 0
-      if (element.control?.hide && !this.isDesignMode()) {
+      if (
+        (element.control?.hide || element.area?.hide) &&
+        !this.isDesignMode()
+      ) {
         metrics.height =
           curRow.elementList[curRow.elementList.length - 1]?.metrics.height ||
           this.options.defaultSize * scale
@@ -1568,7 +1635,7 @@ export class Draw {
               }
               cloneElement.trList = cloneTrList
               cloneElement.id = getUUID()
-              this.spliceElementList(elementList, i + 1, 0, cloneElement)
+              this.spliceElementList(elementList, i + 1, 0, [cloneElement])
             }
           }
           // 表格经过分页处理-需要处理上下文
@@ -1775,12 +1842,12 @@ export class Draw {
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
-        preElement?.areaId !== element.areaId ||
+        (preElement?.areaId !== element.areaId && !element.area?.hide) ||
         (element.control?.flexDirection === FlexDirection.COLUMN &&
           (element.controlComponent === ControlComponent.CHECKBOX ||
             element.controlComponent === ControlComponent.RADIO) &&
           preElement?.controlComponent === ControlComponent.VALUE) ||
-        (i !== 0 && element.value === ZERO)
+        (i !== 0 && element.value === ZERO && !element.area?.hide)
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
       const isWrap = isForceBreak || isWidthNotEnough
@@ -1968,23 +2035,19 @@ export class Draw {
     ctx: CanvasRenderingContext2D,
     payload: IDrawRowPayload
   ) {
-    const {
-      control: { activeBackgroundColor }
-    } = this.options
-    const { rowList, positionList } = payload
-    const activeControlElement = this.control.getActiveControl()?.getElement()
+    const { rowList, positionList, elementList } = payload
+    const marginHeight = this.getDefaultBasicRowMarginHeight()
+    const highlightMarginHeight = this.getHighlightMarginHeight()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         const preElement = curRow.elementList[j - 1]
-        if (
+        // 高亮配置：元素 > 控件配置
+        const highlight =
           element.highlight ||
-          (activeBackgroundColor &&
-            activeControlElement &&
-            element.controlId === activeControlElement.controlId &&
-            !this.control.getIsRangeInPostfix())
-        ) {
+          this.control.getControlHighlight(elementList, curRow.startIndex + j)
+        if (highlight) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (
             preElement &&
@@ -2004,10 +2067,10 @@ export class Draw {
           this.highlight.recordFillInfo(
             ctx,
             x - offsetX,
-            y,
+            y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
             element.metrics.width + offsetX,
-            curRow.height,
-            element.highlight || activeBackgroundColor
+            curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
+            highlight
           )
         } else if (preElement?.highlight) {
           // 之前是高亮元素，当前不是需立即绘制
@@ -2062,7 +2125,10 @@ export class Draw {
         } = positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
-        if (element.control?.hide && !this.isDesignMode()) {
+        if (
+          (element.control?.hide || element.area?.hide) &&
+          !this.isDesignMode()
+        ) {
           // 控件隐藏时不绘制
           this.textParticle.complete()
         } else if (element.type === ElementType.IMAGE) {
@@ -2147,7 +2213,7 @@ export class Draw {
           this.textParticle.complete()
         } else if (element.type === ElementType.BLOCK) {
           this.textParticle.complete()
-          this.blockParticle.render(pageNo, element, x, y)
+          this.blockParticle.render(pageNo, element, x, y + offsetY)
         } else {
           // 如果当前元素设置左偏移，则上一元素立即绘制
           if (element.left) {
@@ -2648,6 +2714,8 @@ export class Draw {
     }
     // 信息变动回调
     nextTick(() => {
+      // 选区样式
+      this.range.setRangeStyle()
       // 重新唤起弹窗类控件
       if (isCompute && this.control.getActiveControl()) {
         this.control.reAwakeControl()

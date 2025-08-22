@@ -5,12 +5,16 @@ import { mergeObject } from '../../utils'
 import { DeepPartial } from '../../interface/Common'
 
 export class I18n {
+  private currentLocale: string
+
   private langMap: Map<string, ILang> = new Map([
     ['zhCN', zhCN],
     ['en', en]
   ])
 
-  private currentLocale = 'zhCN'
+  constructor(locale: string) {
+    this.currentLocale = locale
+  }
 
   public registerLangMap(locale: string, lang: DeepPartial<ILang>) {
     const sourceLang = this.langMap.get(locale)

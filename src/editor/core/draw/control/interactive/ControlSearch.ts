@@ -19,16 +19,74 @@ type IHighlightMatchResult = (ISearchResult & IControlHighlightRule)[]
 
 export class ControlSearch {
   private draw: Draw
+  private control: Control
   private options: DeepRequired<IEditorOption>
   private highlightList: IControlHighlight[]
   private highlightMatchResult: IHighlightMatchResult
 
   constructor(control: Control) {
     this.draw = control.getDraw()
+    this.control = control
     this.options = this.draw.getOptions()
 
     this.highlightList = []
     this.highlightMatchResult = []
+  }
+
+  // 获取控件设置高亮信息
+  public getControlHighlight(elementList: IElement[], index: number) {
+    const {
+      control: {
+        activeBackgroundColor,
+        disabledBackgroundColor,
+        existValueBackgroundColor,
+        noValueBackgroundColor
+      }
+    } = this.options
+    const element = elementList[index]
+    const isPrintMode = this.draw.isPrintMode()
+    const activeControlElement = this.control.getActiveControl()?.getElement()
+    // 颜色配置：元素 > 控件激活 > 控件禁用 > 控件存在值 > 控件不存在值
+    let isActiveControlHighlight = false
+    let isDisabledControlHighlight = false
+    let isExitsValueControlHighlight = false
+    let isNoValueControlHighlight = false
+    if (!element.highlight) {
+      // 控件激活时高亮色
+      isActiveControlHighlight =
+        !isPrintMode &&
+        !!activeBackgroundColor &&
+        !!activeControlElement &&
+        element.controlId === activeControlElement.controlId &&
+        !this.control.getIsRangeInPostfix()
+    }
+    if (!isActiveControlHighlight) {
+      // 控件禁用时高亮色
+      isDisabledControlHighlight =
+        !isPrintMode && !!disabledBackgroundColor && !!element.control?.disabled
+    }
+    if (!isDisabledControlHighlight) {
+      // 控件存在值时高亮色
+      isExitsValueControlHighlight =
+        !isPrintMode &&
+        !!existValueBackgroundColor &&
+        !!element.controlId &&
+        this.control.getIsExistValueByElementListIndex(elementList, index)
+    }
+    if (!isExitsValueControlHighlight) {
+      // 控件不存在值时高亮色
+      isNoValueControlHighlight =
+        !isPrintMode &&
+        !!noValueBackgroundColor &&
+        !!element.controlId &&
+        !this.control.getIsExistValueByElementListIndex(elementList, index)
+    }
+    return (
+      (isActiveControlHighlight ? activeBackgroundColor : '') ||
+      (isDisabledControlHighlight ? disabledBackgroundColor : '') ||
+      (isExitsValueControlHighlight ? existValueBackgroundColor : '') ||
+      (isNoValueControlHighlight ? noValueBackgroundColor : '')
+    )
   }
 
   public getHighlightMatchResult(): IHighlightMatchResult {

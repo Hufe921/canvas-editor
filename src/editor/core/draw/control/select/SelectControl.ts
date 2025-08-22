@@ -172,7 +172,7 @@ export class SelectControl implements IControlInstance {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     return start + data.length - 1
   }
@@ -292,7 +292,15 @@ export class SelectControl implements IControlInstance {
     if (!~leftIndex || !~rightIndex) return -1
     // 删除元素
     const draw = this.control.getDraw()
-    draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
+    draw.spliceElementList(
+      elementList,
+      leftIndex + 1,
+      rightIndex - leftIndex,
+      [],
+      {
+        isIgnoreDeletedRule: options.isIgnoreDeletedRule
+      }
+    )
     // 增加占位符
     if (isAddPlaceholder) {
       this.control.addPlaceholder(preIndex, context)
@@ -349,7 +357,9 @@ export class SelectControl implements IControlInstance {
     if (!text) {
       // 之前存在内容时清空文本
       if (oldCode) {
-        const prefixIndex = this.clearSelect(context)
+        const prefixIndex = this.clearSelect(context, {
+          isIgnoreDeletedRule: options.isIgnoreDeletedRule
+        })
         if (~prefixIndex) {
           this.control.repaintControl({
             curIndex: prefixIndex
@@ -368,7 +378,8 @@ export class SelectControl implements IControlInstance {
       : pickObject(elementList[range.startIndex], CONTROL_STYLE_ATTR)
     // 清空选项
     const prefixIndex = this.clearSelect(context, {
-      isAddPlaceholder: false
+      isAddPlaceholder: false,
+      isIgnoreDeletedRule: options.isIgnoreDeletedRule
     })
     if (!~prefixIndex) return
     // 当前无值时清空占位符
@@ -394,7 +405,7 @@ export class SelectControl implements IControlInstance {
       formatElementContext(elementList, [newElement], prefixIndex, {
         editorOptions: this.options
       })
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     // 设置状态
     this.control.setControlProperties(
@@ -477,7 +488,13 @@ export class SelectControl implements IControlInstance {
   }
 
   public awake() {
-    if (this.isPopup || this.control.getIsDisabledControl()) return
+    if (
+      this.isPopup ||
+      this.control.getIsDisabledControl() ||
+      !this.control.getIsRangeWithinControl()
+    ) {
+      return
+    }
     const { startIndex } = this.control.getRange()
     const elementList = this.control.getElementList()
     if (elementList[startIndex + 1]?.controlId !== this.element.controlId) {

@@ -23,6 +23,20 @@ const {
 } = instance.command.getValue(options?: IGetValueOption)
 ```
 
+## getValueAsync
+
+功能：获取当前文档信息（异步）
+
+用法：
+
+```javascript
+const {
+  version: string
+  data: IEditorData
+  options: IEditorOption
+} = await instance.command.getValueAsync(options?: IGetValueOption)
+```
+
 ## getImage
 
 功能：获取当前页面图片 base64 字符串
@@ -275,7 +289,8 @@ const {
   pageNo: number
   element: IElement | null
   rangeRect: RangeRect | null
-}[] = await instance.command.getPositionContextByEvent(evt: MouseEvent)
+  tableInfo: ITableInfoByEvent | null
+}[] = await instance.command.getPositionContextByEvent(evt: MouseEvent, options?: IPositionContextByEventOption)
 ```
 
 示例：

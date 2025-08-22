@@ -86,8 +86,10 @@ export class Command {
   public executeLocationArea: CommandAdapt['locationArea']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
+  public executeDeleteElementById: CommandAdapt['deleteElementById']
   public executeSetValue: CommandAdapt['setValue']
   public executeRemoveControl: CommandAdapt['removeControl']
+  public executeTranslate: CommandAdapt['translate']
   public executeSetLocale: CommandAdapt['setLocale']
   public executeLocationCatalog: CommandAdapt['locationCatalog']
   public executeWordTool: CommandAdapt['wordTool']
@@ -97,8 +99,11 @@ export class Command {
   public executeLocationGroup: CommandAdapt['locationGroup']
   public executeSetZone: CommandAdapt['setZone']
   public executeSetControlValue: CommandAdapt['setControlValue']
+  public executeSetControlValueList: CommandAdapt['setControlValueList']
   public executeSetControlExtension: CommandAdapt['setControlExtension']
+  public executeSetControlExtensionList: CommandAdapt['setControlExtensionList']
   public executeSetControlProperties: CommandAdapt['setControlProperties']
+  public executeSetControlPropertiesList: CommandAdapt['setControlPropertiesList']
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
   public executeLocationControl: CommandAdapt['locationControl']
   public executeInsertControl: CommandAdapt['insertControl']
@@ -109,6 +114,7 @@ export class Command {
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
   public getValue: CommandAdapt['getValue']
+  public getValueAsync: CommandAdapt['getValueAsync']
   public getAreaValue: CommandAdapt['getAreaValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
@@ -230,8 +236,10 @@ export class Command {
     this.executeInsertElementList = adapt.insertElementList.bind(adapt)
     this.executeAppendElementList = adapt.appendElementList.bind(adapt)
     this.executeUpdateElementById = adapt.updateElementById.bind(adapt)
+    this.executeDeleteElementById = adapt.deleteElementById.bind(adapt)
     this.executeSetValue = adapt.setValue.bind(adapt)
     this.executeRemoveControl = adapt.removeControl.bind(adapt)
+    this.executeTranslate = adapt.translate.bind(adapt)
     this.executeSetLocale = adapt.setLocale.bind(adapt)
     this.executeLocationCatalog = adapt.locationCatalog.bind(adapt)
     this.executeWordTool = adapt.wordTool.bind(adapt)
@@ -247,6 +255,7 @@ export class Command {
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
     this.getValue = adapt.getValue.bind(adapt)
+    this.getValueAsync = adapt.getValueAsync.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
@@ -269,8 +278,13 @@ export class Command {
     this.getElementById = adapt.getElementById.bind(adapt)
     // 控件
     this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.executeSetControlValueList = adapt.setControlValueList.bind(adapt)
     this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
+    this.executeSetControlExtensionList =
+      adapt.setControlExtensionList.bind(adapt)
     this.executeSetControlProperties = adapt.setControlProperties.bind(adapt)
+    this.executeSetControlPropertiesList =
+      adapt.setControlPropertiesList.bind(adapt)
     this.executeSetControlHighlight = adapt.setControlHighlight.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
     this.getControlList = adapt.getControlList.bind(adapt)

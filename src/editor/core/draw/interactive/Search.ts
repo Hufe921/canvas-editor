@@ -216,7 +216,8 @@ export class Search {
           !e.type ||
           (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
             e.controlComponent !== ControlComponent.CHECKBOX &&
-            !e.control?.hide)
+            !e.control?.hide &&
+            !e.area?.hide)
             ? e.value
             : ZERO
         )
@@ -332,7 +333,7 @@ export class Search {
   public replace(payload: string, option?: IReplaceOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    if (!payload || new RegExp(`${ZERO}`, 'g').test(payload)) return
+    if (payload === undefined || payload === null) return
     let matchList = this.getSearchMatchList()
     // 替换搜索项
     const replaceIndex = option?.index
@@ -382,6 +383,14 @@ export class Search {
         ) {
           continue
         }
+        if (payload === '') {
+          this.draw.spliceElementList(tableElementList, curIndex, 1)
+          tableDiffCount--
+          if (!~firstMatchIndex) {
+            firstMatchIndex = m
+          }
+          continue
+        }
         if (curGroupId === match.groupId) {
           this.draw.spliceElementList(tableElementList, curIndex, 1)
           tableDiffCount--
@@ -395,10 +404,12 @@ export class Search {
           if (p === 0) {
             tableElement.value = value
           } else {
-            this.draw.spliceElementList(tableElementList, curIndex + p, 0, {
-              ...tableElement,
-              value
-            })
+            this.draw.spliceElementList(tableElementList, curIndex + p, 0, [
+              {
+                ...tableElement,
+                value
+              }
+            ])
             tableDiffCount++
           }
         }
@@ -415,6 +426,14 @@ export class Search {
         ) {
           continue
         }
+        if (payload === '') {
+          this.draw.spliceElementList(elementList, curIndex, 1)
+          pageDiffCount--
+          if (!~firstMatchIndex) {
+            firstMatchIndex = m
+          }
+          continue
+        }
         if (!~firstMatchIndex) {
           firstMatchIndex = m
         }
@@ -428,10 +447,12 @@ export class Search {
           if (p === 0) {
             element.value = value
           } else {
-            this.draw.spliceElementList(elementList, curIndex + p, 0, {
-              ...element,
-              value
-            })
+            this.draw.spliceElementList(elementList, curIndex + p, 0, [
+              {
+                ...element,
+                value
+              }
+            ])
             pageDiffCount++
           }
         }

@@ -1,5 +1,6 @@
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import { ImageDisplay } from '../../../dataset/enum/Common'
+import { ElementType } from '../../../dataset/enum/Element'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
@@ -20,6 +21,29 @@ export class ImageParticle {
     this.imageCache = new Map()
     this.floatImageContainer = null
     this.floatImage = null
+  }
+
+  public getOriginalMainImageList(): IElement[] {
+    const imageList: IElement[] = []
+    const getImageList = (elementList: IElement[]) => {
+      for (const element of elementList) {
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              getImageList(td.value)
+            }
+          }
+        } else if (element.type === ElementType.IMAGE) {
+          imageList.push(element)
+        }
+      }
+    }
+    // 获取正文图片列表
+    getImageList(this.draw.getOriginalMainElementList())
+    return imageList
   }
 
   public createFloatImage(element: IElement) {
@@ -46,8 +70,8 @@ export class ImageParticle {
     const pageGap = this.draw.getPageGap()
     const preY = this.draw.getPageNo() * (height + pageGap)
     const imgFloatPosition = element.imgFloatPosition!
-    floatImageContainer.style.left = `${imgFloatPosition.x}px`
-    floatImageContainer.style.top = `${preY + imgFloatPosition.y}px`
+    floatImageContainer.style.left = `${imgFloatPosition.x * scale}px`
+    floatImageContainer.style.top = `${preY + imgFloatPosition.y * scale}px`
     floatImage.src = element.value
   }
 

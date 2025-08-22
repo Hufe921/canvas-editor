@@ -34,6 +34,7 @@ export class Cursor {
   private cursorDom: HTMLDivElement
   private cursorAgent: CursorAgent
   private blinkTimeout: number | null
+  private hitLineStartIndex: number | undefined
 
   constructor(draw: Draw, canvasEvent: CanvasEvent) {
     this.draw = draw
@@ -66,6 +67,10 @@ export class Cursor {
 
   public clearAgentDomValue() {
     this.getAgentDom().value = ''
+  }
+
+  public getHitLineStartIndex() {
+    return this.hitLineStartIndex
   }
 
   private _blinkStart() {
@@ -118,6 +123,7 @@ export class Cursor {
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
     // 光标位置
+    this.hitLineStartIndex = hitLineStartIndex
     if (hitLineStartIndex) {
       const positionList = this.position.getPositionList()
       cursorPosition = positionList[hitLineStartIndex]

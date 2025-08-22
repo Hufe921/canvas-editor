@@ -86,13 +86,13 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     if (!cursorPosition) return
     const { index } = cursorPosition
     if (isCollapsed) {
-      draw.spliceElementList(elementList, index + 1, 0, enterText)
+      draw.spliceElementList(elementList, index + 1, 0, [enterText])
     } else {
       draw.spliceElementList(
         elementList,
         startIndex + 1,
         endIndex - startIndex,
-        enterText
+        [enterText]
       )
     }
     curIndex = index + 1

@@ -92,7 +92,7 @@ export class TableOperate {
       elementList,
       curIndex,
       startIndex === endIndex ? 0 : endIndex - startIndex,
-      element
+      [element]
     )
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex, isSetCursor: false })
@@ -356,8 +356,8 @@ export class TableOperate {
     const trList = element.trList!
     const curTr = trList[trIndex!]
     const curTdRowIndex = curTr.tdList[tdIndex!].rowIndex!
-    // 如果是最后一行，直接删除整个表格
-    if (trList.length <= 1) {
+    // 如果是最后一行，直接删除整个表格（如果是拆分表格按照正常逻辑走）
+    if (trList.length <= 1 && element.pagingIndex === 0) {
       this.deleteTable()
       return
     }
@@ -457,8 +457,25 @@ export class TableOperate {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const originalElementList = this.draw.getOriginalElementList()
-    originalElementList.splice(positionContext.index!, 1)
-    const curIndex = positionContext.index! - 1
+    const tableElement = originalElementList[positionContext.index!]
+    // 需要删除的表格数量（拆分表格）及位置
+    let deleteCount = 1
+    let deleteStartIndex = positionContext.index!
+    if (tableElement.pagingId) {
+      // 开始删除的下标位置
+      deleteStartIndex = positionContext.index! - tableElement.pagingIndex!
+      // 计算删除的表格数量
+      for (let i = deleteStartIndex + 1; i < originalElementList.length; i++) {
+        if (originalElementList[i].pagingId === tableElement.pagingId) {
+          deleteCount++
+        } else {
+          break
+        }
+      }
+    }
+    // 删除
+    originalElementList.splice(deleteStartIndex, deleteCount)
+    const curIndex = deleteStartIndex - 1
     this.position.setPositionContext({
       isTable: false,
       index: curIndex
@@ -556,8 +573,10 @@ export class TableOperate {
         // 缓存待删除单元id并合并单元格内容
         if (!isAnchorTd) {
           mergeTdIdList.push(td.id!)
+          // 被合并单元格没内容时忽略换行符
+          const startTdValueIndex = td.value.length > 1 ? 0 : 1
           // 复制表格属性后追加
-          for (let d = 0; d < td.value.length; d++) {
+          for (let d = startTdValueIndex; d < td.value.length; d++) {
             const tdElement = td.value[d]
             cloneProperty<IElement>(
               TABLE_CONTEXT_ATTR,

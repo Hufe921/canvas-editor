@@ -1219,7 +1219,7 @@ window.onload = function () {
     function () {
       const searchValue = searchInputDom.value
       const replaceValue = replaceInputDom.value
-      if (searchValue && replaceValue && searchValue !== replaceValue) {
+      if (searchValue && searchValue !== replaceValue) {
         instance.command.executeReplace(replaceValue)
       }
     }
@@ -1740,6 +1740,17 @@ window.onload = function () {
         activeCommentDom.classList.add('active')
         scrollIntoView(commentDom, activeCommentDom)
       }
+    }
+
+    // 行列信息
+    const rangeContext = instance.command.getRangeContext()
+    if (rangeContext) {
+      document.querySelector<HTMLSpanElement>('.row-no')!.innerText = `${
+        rangeContext.startRowNo + 1
+      }`
+      document.querySelector<HTMLSpanElement>('.col-no')!.innerText = `${
+        rangeContext.startColNo + 1
+      }`
     }
   }
 

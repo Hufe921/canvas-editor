@@ -77,6 +77,8 @@ interface IElement {
   }[];
   borderType?: TableBorder;
   borderColor?: string;
+  borderWidth?: number;
+  borderExternalWidth?: number;
   tableToolDisabled?: boolean;
   // Hyperlinks
   url?: string;
@@ -163,6 +165,7 @@ interface IElement {
     y: number;
     pageNo?: number;
   }
+  imgToolDisabled?: boolean;
   // block
   block?: {
     type: {
@@ -193,9 +196,12 @@ interface IElement {
   area?: {
     extension?: unknown;
     top?: number;
+    hide?: boolean;
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;
+    deletable?: boolean;
+    placeholder?: IPlaceholder;
   };
 }
 ```

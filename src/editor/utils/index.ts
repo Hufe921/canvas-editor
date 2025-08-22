@@ -183,8 +183,12 @@ export function isArray(type: unknown): type is Array<unknown> {
   return Array.isArray(type)
 }
 
-export function isNumber(type: unknown): type is Array<unknown> {
+export function isNumber(type: unknown): type is number {
   return Object.prototype.toString.call(type) === '[object Number]'
+}
+
+export function isString(type: unknown): type is string {
+  return Object.prototype.toString.call(type) === '[object String]'
 }
 
 export function mergeObject<T>(source: T, target: T): T {

@@ -148,7 +148,7 @@ export class DateControl implements IControlInstance {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     return start + data.length - 1
   }
@@ -169,7 +169,15 @@ export class DateControl implements IControlInstance {
     const elementList = context.elementList || this.control.getElementList()
     // 删除元素
     const draw = this.control.getDraw()
-    draw.spliceElementList(elementList, leftIndex + 1, rightIndex - leftIndex)
+    draw.spliceElementList(
+      elementList,
+      leftIndex + 1,
+      rightIndex - leftIndex,
+      [],
+      {
+        isIgnoreDeletedRule: options.isIgnoreDeletedRule
+      }
+    )
     // 增加占位符
     if (isAddPlaceholder) {
       this.control.addPlaceholder(leftIndex, context)
@@ -198,7 +206,8 @@ export class DateControl implements IControlInstance {
       : pickObject(elementList[range.startIndex], CONTROL_STYLE_ATTR)
     // 清空选项
     const prefixIndex = this.clearSelect(context, {
-      isAddPlaceholder: false
+      isAddPlaceholder: false,
+      isIgnoreDeletedRule: options.isIgnoreDeletedRule
     })
     if (!~prefixIndex) return
     // 属性赋值元素-默认为前缀属性
@@ -219,7 +228,7 @@ export class DateControl implements IControlInstance {
       formatElementContext(elementList, [newElement], prefixIndex, {
         editorOptions: this.options
       })
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     // 重新渲染控件
     if (!context.range) {
@@ -339,7 +348,13 @@ export class DateControl implements IControlInstance {
   }
 
   public awake() {
-    if (this.isPopup || this.control.getIsDisabledControl()) return
+    if (
+      this.isPopup ||
+      this.control.getIsDisabledControl() ||
+      !this.control.getIsRangeWithinControl()
+    ) {
+      return
+    }
     const position = this.control.getPosition()
     if (!position) return
     const elementList = this.draw.getElementList()

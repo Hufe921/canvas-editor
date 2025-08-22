@@ -1,11 +1,14 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
+import { EditorMode } from '../../../../dataset/enum/Editor'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
+import { EventBusMap } from '../../../../interface/EventBus'
 import {
   IPreviewerCreateResult,
   IPreviewerDrawOption
 } from '../../../../interface/Previewer'
 import { downloadFile } from '../../../../utils'
+import { EventBus } from '../../../event/eventbus/EventBus'
 import { Draw } from '../../Draw'
 
 export class Previewer {
@@ -17,6 +20,13 @@ export class Previewer {
   private curElementSrc: string
   private previewerDrawOption: IPreviewerDrawOption
   private curPosition: IElementPosition | null
+  private eventBus: EventBus<EventBusMap>
+  // 图片列表
+  private imageList: IElement[]
+  private curShowElement: IElement | null
+  private imageCount: HTMLSpanElement | null
+  private imagePre: HTMLElement | null
+  private imageNext: HTMLElement | null
   // 拖拽改变尺寸
   private resizerSelection: HTMLDivElement
   private resizerHandleList: HTMLDivElement[]
@@ -41,6 +51,12 @@ export class Previewer {
     this.curElementSrc = ''
     this.previewerDrawOption = {}
     this.curPosition = null
+    this.eventBus = draw.getEventBus()
+    this.imageList = []
+    this.curShowElement = null
+    this.imageCount = null
+    this.imagePre = null
+    this.imageNext = null
     // 图片尺寸缩放
     const {
       resizerSelection,
@@ -67,6 +83,7 @@ export class Previewer {
     element: IElement,
     position: IElementPosition | null = null
   ): { x: number; y: number } {
+    const { scale } = this.options
     let x = 0
     let y = 0
     const height = this.draw.getHeight()
@@ -75,8 +92,8 @@ export class Previewer {
     const preY = pageNo * (height + pageGap)
     // 优先使用浮动位置
     if (element.imgFloatPosition) {
-      x = element.imgFloatPosition.x!
-      y = element.imgFloatPosition.y + preY
+      x = element.imgFloatPosition.x! * scale
+      y = element.imgFloatPosition.y * scale + preY
     } else if (position) {
       const {
         coordinate: {
@@ -261,6 +278,12 @@ export class Previewer {
     // 尺寸预览
     this._updateResizerSizeView(elementWidth, elementHeight)
     evt.preventDefault()
+    // 图片尺寸发生改变事件
+    if (this.eventBus.isSubscribe('imageSizeChange')) {
+      this.eventBus.emit('imageSizeChange', {
+        element: this.curElement
+      })
+    }
   }
 
   private _drawPreviewer() {
@@ -289,6 +312,41 @@ export class Previewer {
     let rotateSize = 0
     const menuContainer = document.createElement('div')
     menuContainer.classList.add(`${EDITOR_PREFIX}-image-menu`)
+    // 切换上下张图片
+    const navigateContainer = document.createElement('div')
+    navigateContainer.classList.add('image-navigate')
+    const imagePre = document.createElement('i')
+    imagePre.classList.add('image-pre')
+    imagePre.onclick = () => {
+      const curIndex = this.imageList.findIndex(
+        el => el.id === this.curShowElement?.id
+      )
+      if (curIndex <= 0) return
+      this.curShowElement = this.imageList[curIndex - 1]
+      img.src = this.curShowElement.value
+      this._updateImageNavigate()
+    }
+    navigateContainer.append(imagePre)
+    this.imagePre = imagePre
+    const imageCount = document.createElement('span')
+    imageCount.classList.add('image-count')
+    this.imageCount = imageCount
+    navigateContainer.append(imageCount)
+    const imageNext = document.createElement('i')
+    imageNext.classList.add('image-next')
+    imageNext.onclick = () => {
+      const curIndex = this.imageList.findIndex(
+        el => el.id === this.curShowElement?.id
+      )
+      if (curIndex >= this.imageList.length - 1) return
+      this.curShowElement = this.imageList[curIndex + 1]
+      img.src = this.curShowElement.value
+      this._updateImageNavigate()
+    }
+    this.imageNext = imageNext
+    navigateContainer.append(imageNext)
+    menuContainer.append(navigateContainer)
+    // 缩放
     const zoomIn = document.createElement('i')
     zoomIn.classList.add('zoom-in')
     zoomIn.onclick = () => {
@@ -304,6 +362,7 @@ export class Previewer {
     }
     zoomOut.classList.add('zoom-out')
     menuContainer.append(zoomOut)
+    // 旋转
     const rotate = document.createElement('i')
     rotate.classList.add('rotate')
     rotate.onclick = () => {
@@ -311,6 +370,7 @@ export class Previewer {
       this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     menuContainer.append(rotate)
+    // 恢复原始大小
     const originalSize = document.createElement('i')
     originalSize.classList.add('original-size')
     originalSize.onclick = () => {
@@ -321,6 +381,7 @@ export class Previewer {
       this._setPreviewerTransform(scaleSize, rotateSize, x, y)
     }
     menuContainer.append(originalSize)
+    // 下载图片
     const imageDownload = document.createElement('i')
     imageDownload.classList.add('image-download')
     imageDownload.onclick = () => {
@@ -365,6 +426,29 @@ export class Previewer {
         scaleSize -= 0.1
       }
       this._setPreviewerTransform(scaleSize, rotateSize, x, y)
+    }
+    // 更新图片索引信息
+    this._updateImageNavigate()
+  }
+
+  private _updateImageNavigate() {
+    // 更新当前图片位置索引
+    const currentIndex = this.imageList.findIndex(
+      el => el.id === this.curShowElement?.id
+    )
+    this.imageCount!.innerText = `${currentIndex + 1} / ${
+      this.imageList.length
+    }`
+    // 更新按钮权限
+    if (currentIndex <= 0) {
+      this.imagePre!.classList.add('disabled')
+    } else {
+      this.imagePre!.classList.remove('disabled')
+    }
+    if (currentIndex >= this.imageList.length - 1) {
+      this.imageNext!.classList.add('disabled')
+    } else {
+      this.imageNext!.classList.remove('disabled')
     }
   }
 
@@ -419,6 +503,22 @@ export class Previewer {
   }
 
   public render() {
+    // 图片工具配置禁用又非设计模式时不渲染
+    const mode = this.draw.getMode()
+    if (
+      !this.curElement ||
+      (this.curElement.imgToolDisabled && !this.draw.isDesignMode()) ||
+      (mode === EditorMode.PRINT &&
+        this.options.modeRule[EditorMode.PRINT]?.imagePreviewerDisabled) ||
+      (mode === EditorMode.READONLY &&
+        this.options.modeRule[EditorMode.READONLY]?.imagePreviewerDisabled)
+    ) {
+      return
+    }
+    // 获取所有图片
+    this.imageList = this.draw.getImageParticle().getOriginalMainImageList()
+    this.curShowElement = this.curElement
+    // 渲染预览框
     this._drawPreviewer()
     document.body.style.overflow = 'hidden'
   }
@@ -428,6 +528,17 @@ export class Previewer {
     position: IElementPosition | null = null,
     options: IPreviewerDrawOption = {}
   ) {
+    // 图片工具配置禁用又非设计模式时不渲染
+    const mode = this.draw.getMode()
+    if (
+      (element.imgToolDisabled && !this.draw.isDesignMode()) ||
+      (mode === EditorMode.PRINT &&
+        this.options.modeRule[EditorMode.PRINT]?.imagePreviewerDisabled) ||
+      (mode === EditorMode.READONLY &&
+        this.options.modeRule[EditorMode.READONLY]?.imagePreviewerDisabled)
+    ) {
+      return
+    }
     // 缓存配置
     this.previewerDrawOption = options
     this.curElementSrc = element[options.srcKey || 'value'] || ''

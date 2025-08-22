@@ -25,6 +25,10 @@ export type RangeContext = {
   endElement: IElement
   startPageNo: number
   endPageNo: number
+  startRowNo: number
+  endRowNo: number
+  startColNo: number
+  endColNo: number
   rangeRects: RangeRect[]
   zone: EditorZone
   isTable: boolean

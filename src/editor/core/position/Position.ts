@@ -456,6 +456,28 @@ export class Position {
           }
         }
         if (
+          element.type === ElementType.TAB &&
+          element.listStyle === ListStyle.CHECKBOX
+        ) {
+          // 向前找checkbox元素
+          let index = curPositionIndex - 1
+          while (index > 0) {
+            const element = elementList[index]
+            if (
+              element.value === ZERO &&
+              element.listStyle === ListStyle.CHECKBOX
+            ) {
+              break
+            }
+            index--
+          }
+          return {
+            index,
+            isDirectHit: true,
+            isCheckbox: true
+          }
+        }
+        if (
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
         ) {
@@ -532,7 +554,7 @@ export class Position {
         // 是否在头部
         const headStartX =
           headElement.listStyle === ListStyle.CHECKBOX
-            ? this.options.margins[3]
+            ? this.draw.getMargins()[3]
             : headPosition.coordinate.leftTop[0]
         if (x < headStartX) {
           // 头部元素为空元素时无需选中
@@ -661,6 +683,7 @@ export class Position {
     const { x, y } = payload
     const currentPageNo = payload.pageNo ?? this.draw.getPageNo()
     const currentZone = this.draw.getZone().getZone()
+    const { scale } = this.options
     for (let f = 0; f < this.floatPositionList.length; f++) {
       const {
         position,
@@ -681,11 +704,15 @@ export class Position {
         (!floatElementZone || floatElementZone === currentZone)
       ) {
         const imgFloatPosition = element.imgFloatPosition!
+        const imgFloatPositionX = imgFloatPosition.x * scale
+        const imgFloatPositionY = imgFloatPosition.y * scale
+        const elementWidth = element.width! * scale
+        const elementHeight = element.height! * scale
         if (
-          x >= imgFloatPosition.x &&
-          x <= imgFloatPosition.x + element.width! &&
-          y >= imgFloatPosition.y &&
-          y <= imgFloatPosition.y + element.height!
+          x >= imgFloatPositionX &&
+          x <= imgFloatPositionX + elementWidth &&
+          y >= imgFloatPositionY &&
+          y <= imgFloatPositionY + elementHeight
         ) {
           if (isTable) {
             return {
@@ -769,6 +796,7 @@ export class Position {
   }
 
   public setSurroundPosition(payload: ISetSurroundPositionPayload) {
+    const { scale } = this.options
     const {
       pageNo,
       row,
@@ -790,8 +818,10 @@ export class Position {
         if (floatPosition.pageNo !== pageNo) continue
         const surroundRect = {
           ...floatPosition,
-          width: surroundElement.width!,
-          height: surroundElement.height!
+          x: floatPosition.x * scale,
+          y: floatPosition.y * scale,
+          width: surroundElement.width! * scale,
+          height: surroundElement.height! * scale
         }
         if (isRectIntersect(rowElementRect, surroundRect)) {
           row.isSurround = true

@@ -96,7 +96,15 @@ export class TextControl implements IControlInstance {
     const draw = this.control.getDraw()
     // 移除选区元素
     if (startIndex !== endIndex) {
-      draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+      draw.spliceElementList(
+        elementList,
+        startIndex + 1,
+        endIndex - startIndex,
+        [],
+        {
+          isIgnoreDeletedRule: options.isIgnoreDeletedRule
+        }
+      )
     } else {
       // 移除空白占位符
       this.control.removePlaceholder(startIndex, context)
@@ -125,7 +133,7 @@ export class TextControl implements IControlInstance {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
-      draw.spliceElementList(elementList, start + i, 0, newElement)
+      draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     return start + data.length - 1
   }
@@ -146,7 +154,15 @@ export class TextControl implements IControlInstance {
     const { startIndex, endIndex } = range
     this.control
       .getDraw()
-      .spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+      .spliceElementList(
+        elementList,
+        startIndex + 1,
+        endIndex - startIndex,
+        [],
+        {
+          isIgnoreDeletedRule: options.isIgnoreDeletedRule
+        }
+      )
     const value = this.getValue(context)
     if (!value.length) {
       this.control.addPlaceholder(startIndex, context)

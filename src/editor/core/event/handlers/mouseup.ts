@@ -61,6 +61,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const cacheRange = host.cacheRange!
     const cacheElementList = host.cacheElementList!
     const cachePositionList = host.cachePositionList!
+    const cachePositionContext = host.cachePositionContext
     const range = rangeManager.getRange()
     // 缓存选区的信息
     const isCacheRangeCollapsed = cacheRange.startIndex === cacheRange.endIndex
@@ -202,12 +203,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       rangeEnd = activeControl.setValue(replaceElementList)
       rangeStart = rangeEnd - replaceLength
     } else {
-      draw.spliceElementList(
-        elementList,
-        rangeStart + 1,
-        0,
-        ...replaceElementList
-      )
+      draw.spliceElementList(elementList, rangeStart + 1, 0, replaceElementList)
     }
     if (!~rangeEnd) {
       draw.render({
@@ -239,11 +235,24 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       })
       control.getActiveControl()?.cut()
     } else {
-      draw.spliceElementList(
-        cacheElementList,
-        cacheRangeStartIndex + 1,
-        cacheRangeEndIndex - cacheRangeStartIndex
-      )
+      // td不可删除判断
+      let isTdElementDeletable = true
+      if (cachePositionContext?.isTable) {
+        const { tableId, trIndex, tdIndex } = cachePositionContext
+        const originElementList = draw.getOriginalElementList()
+        isTdElementDeletable = !originElementList.some(
+          el =>
+            el.id === tableId &&
+            el?.trList?.[trIndex!]?.tdList?.[tdIndex!]?.deletable === false
+        )
+      }
+      if (isTdElementDeletable) {
+        draw.spliceElementList(
+          cacheElementList,
+          cacheRangeStartIndex + 1,
+          cacheRangeEndIndex - cacheRangeStartIndex
+        )
+      }
     }
     // 重设上下文
     const startElement = elementList[range.startIndex]
@@ -324,7 +333,9 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       }
     }
   } else if (host.isAllowDrag) {
-    // 如果是允许拖拽不允许拖放则光标重置
-    host.mousedown(evt)
+    // 如果是允许拖拽不允许拖放（点击选区时光标闭合）则光标重置
+    if (host.cacheRange?.startIndex !== host.cacheRange?.endIndex) {
+      host.mousedown(evt)
+    }
   }
 }

@@ -26,13 +26,14 @@
   <a href="https://github.com/Hufe921/canvas-editor/discussions" target="_blank">FAQ</a>
 </p>
 
-<p align="center">Love the project? Please consider <a href="https://hufe.club/donate.jpg" target="_blank">donating</a> to help it improve!</p>
+<p align="center">Love the project? Please consider <a href="https://hufe.club/donate.jpg" target="_blank">donating(赞助)</a> to help it improve!</p>
 
 ## Tips
 
 1. Official plugin: [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)
 2. The render layer by svg is under development, see [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)
 3. The export pdf feature is available now, see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)
+4. The AI-powered text processing demo, see [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)
 
 ## Basic usage
 
