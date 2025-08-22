@@ -1558,10 +1558,8 @@ export function getElementListByHTML(
             colgroup: [],
             trList: []
           }
-
           // colgroup
           const colElements = tableElement.querySelectorAll('colgroup col')
-
           // 基础数据
           tableElement.querySelectorAll('tr').forEach(trElement => {
             const trHeightStr = window
@@ -1583,7 +1581,7 @@ export function getElementListByHTML(
                 value: valueList,
                 verticalAlign: window.getComputedStyle(tdElement)
                   .verticalAlign as VerticalAlign,
-                width: +window.getComputedStyle(tdElement).width
+                width: parseFloat(window.getComputedStyle(tdElement).width)
               }
               if (tableCell.style.backgroundColor) {
                 td.backgroundColor = tableCell.style.backgroundColor
@@ -1600,8 +1598,9 @@ export function getElementListByHTML(
             )
             const width = Math.ceil(options.innerWidth / tdCount)
             for (let i = 0; i < tdCount; i++) {
+              const colElement = colElements[i]?.getAttribute('width')
               element.colgroup!.push({
-                width: +(colElements[i].getAttribute('width') || width)
+                width: colElement ? parseFloat(colElement) : width
               })
             }
             elementList.push(element)
