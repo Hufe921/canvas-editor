@@ -150,9 +150,10 @@ export class Position {
         const element = curRow.elementList[j]
         const metrics = element.metrics
         const offsetY =
-          (element.imgDisplay !== ImageDisplay.INLINE &&
+          !element.hide &&
+          ((element.imgDisplay !== ImageDisplay.INLINE &&
             element.type === ElementType.IMAGE) ||
-          element.type === ElementType.LATEX
+            element.type === ElementType.LATEX)
             ? curRow.ascent - metrics.height
             : curRow.ascent
         // 偏移量
@@ -214,7 +215,7 @@ export class Position {
         index++
         x += metrics.width
         // 计算表格内元素位置
-        if (element.type === ElementType.TABLE) {
+        if (element.type === ElementType.TABLE && !element.hide) {
           const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           const tdPaddingHeight = tdPadding[0] + tdPadding[2]
           for (let t = 0; t < element.trList!.length; t++) {

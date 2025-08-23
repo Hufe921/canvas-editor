@@ -1775,14 +1775,22 @@ export function getNonHideElementIndex(
   index: number,
   position: LocationPosition = LocationPosition.BEFORE
 ) {
-  if (!elementList[index]?.control?.hide && !elementList[index]?.area?.hide) {
+  if (
+    !elementList[index]?.hide &&
+    !elementList[index]?.control?.hide &&
+    !elementList[index]?.area?.hide
+  ) {
     return index
   }
   let i = index
   if (position === LocationPosition.BEFORE) {
     i = index - 1
     while (i > 0) {
-      if (!elementList[i]?.control?.hide && !elementList[i]?.area?.hide) {
+      if (
+        !elementList[i]?.hide &&
+        !elementList[i]?.control?.hide &&
+        !elementList[i]?.area?.hide
+      ) {
         return i
       }
       i--
@@ -1790,7 +1798,11 @@ export function getNonHideElementIndex(
   } else {
     i = index + 1
     while (i < elementList.length) {
-      if (!elementList[i]?.control?.hide && !elementList[i]?.area?.hide) {
+      if (
+        !elementList[i]?.hide &&
+        !elementList[i]?.control?.hide &&
+        !elementList[i]?.area?.hide
+      ) {
         return i
       }
       i++

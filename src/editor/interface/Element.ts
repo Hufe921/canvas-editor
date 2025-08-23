@@ -40,6 +40,10 @@ export interface IElementStyle {
   textDecoration?: ITextDecoration
 }
 
+export interface IElementRule {
+  hide?: boolean
+}
+
 export interface IElementGroup {
   groupIds?: string[]
 }
@@ -148,6 +152,7 @@ export interface IAreaElement {
 
 export type IElement = IElementBasic &
   IElementStyle &
+  IElementRule &
   IElementGroup &
   ITable &
   IHyperlinkElement &

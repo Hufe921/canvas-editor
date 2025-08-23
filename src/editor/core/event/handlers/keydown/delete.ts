@@ -1,5 +1,41 @@
 import { CanvasEvent } from '../../CanvasEvent'
 
+// 删除光后前隐藏元素
+function deleteHideElement(host: CanvasEvent) {
+  const draw = host.getDraw()
+  const rangeManager = draw.getRange()
+  const range = rangeManager.getRange()
+  // 光标所在位置为隐藏元素时触发循环删除
+  const elementList = draw.getElementList()
+  const nextElement = elementList[range.startIndex + 1]
+  if (
+    !nextElement.hide &&
+    !nextElement.control?.hide &&
+    !nextElement.area?.hide
+  ) {
+    return
+  }
+  // 向后删除所有隐藏元素
+  const index = range.startIndex + 1
+  while (index < elementList.length) {
+    const element = elementList[index]
+    let newIndex: number | null = null
+    if (element.controlId) {
+      newIndex = draw.getControl().removeControl(index)
+    } else {
+      draw.spliceElementList(elementList, index, 1)
+      newIndex = index
+    }
+    const newElement = elementList[newIndex!]
+    if (
+      !newElement ||
+      (!newElement.hide && !newElement.control?.hide && !newElement.area?.hide)
+    ) {
+      break
+    }
+  }
+}
+
 export function del(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   if (draw.isReadonly()) return
@@ -11,16 +47,7 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
   const elementList = draw.getElementList()
   const control = draw.getControl()
   if (rangeManager.getIsCollapsed()) {
-    const nextElement = elementList[startIndex + 1]
-    if (nextElement?.control?.hide || nextElement?.area?.hide) {
-      const newIndex = control.removeControl(startIndex + 1)
-      if (newIndex) {
-        // 更新位置信息
-        const position = draw.getPosition()
-        const positionList = position.getPositionList()
-        position.setCursorPosition(positionList[newIndex])
-      }
-    }
+    deleteHideElement(host)
   }
   // 删除操作
   let curIndex: number | null
