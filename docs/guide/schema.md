@@ -25,6 +25,7 @@ interface IElement {
   valueList?: IElement[]; // 复合元素（超链接、标题、列表等）使用
   extension?: unknown;
   externalId?: string;
+  hide?: boolean;
   // 样式
   font?: string;
   size?: number;

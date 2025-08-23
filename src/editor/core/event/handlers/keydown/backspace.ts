@@ -1,33 +1,63 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
 
-export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
+// 删除光标前隐藏元素
+function backspaceHideElement(host: CanvasEvent) {
   const draw = host.getDraw()
-  if (draw.isReadonly()) return
-  // 可输入性验证
   const rangeManager = draw.getRange()
-  if (!rangeManager.getIsCanInput()) return
-  // 隐藏控件删除
-  const control = draw.getControl()
-  const position = draw.getPosition()
-  if (rangeManager.getIsCollapsed()) {
-    const range = rangeManager.getRange()
-    const elementList = draw.getElementList()
-    const element = elementList[range.startIndex]
-    if (element.control?.hide || element.area?.hide) {
-      const newIndex = control.removeControl(range.startIndex)
+  const range = rangeManager.getRange()
+  // 光标所在位置为隐藏元素时触发循环删除
+  const elementList = draw.getElementList()
+  const element = elementList[range.startIndex]
+  if (!element.hide && !element.control?.hide && !element.area?.hide) return
+  // 向前删除所有隐藏元素
+  let index = range.startIndex
+  while (index > 0) {
+    const element = elementList[index]
+    let newIndex: number | null = null
+    if (element.controlId) {
+      newIndex = draw.getControl().removeControl(index)
+      if (newIndex !== null) {
+        index = newIndex
+      }
+    } else {
+      draw.spliceElementList(elementList, index, 1)
+      newIndex = index - 1
+      index--
+    }
+    const newElement = elementList[newIndex!]
+    if (
+      !newElement ||
+      (!newElement.hide && !newElement.control?.hide && !newElement.area?.hide)
+    ) {
+      // 更新上下文信息
       if (newIndex) {
         // 更新选区信息
         range.startIndex = newIndex
         range.endIndex = newIndex
         rangeManager.replaceRange(range)
         // 更新位置信息
+        const position = draw.getPosition()
         const positionList = position.getPositionList()
         position.setCursorPosition(positionList[newIndex])
       }
+      break
     }
   }
+}
+
+export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
+  const draw = host.getDraw()
+  if (draw.isReadonly()) return
+  // 可输入性验证
+  const rangeManager = draw.getRange()
+  if (!rangeManager.getIsCanInput()) return
+  // 隐藏元素删除
+  if (rangeManager.getIsCollapsed()) {
+    backspaceHideElement(host)
+  }
   // 删除操作
+  const control = draw.getControl()
   const { startIndex, endIndex, isCrossRowCol } = rangeManager.getRange()
   let curIndex: number | null
   if (isCrossRowCol) {
@@ -58,7 +88,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     }
   } else {
     // 普通元素删除
-    const cursorPosition = position.getCursorPosition()
+    const cursorPosition = draw.getPosition().getCursorPosition()
     if (!cursorPosition) return
     const { index } = cursorPosition
     const isCollapsed = rangeManager.getIsCollapsed()
