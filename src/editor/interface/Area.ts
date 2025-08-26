@@ -31,6 +31,11 @@ export interface IInsertAreaOption {
   range?: Pick<IRange, 'startIndex' | 'endIndex'>
 }
 
+export interface ISetAreaValueOption {
+  id?: string
+  value: IElement[]
+}
+
 export interface ISetAreaPropertiesOption {
   id?: string
   properties: IArea

@@ -8,29 +8,34 @@ import {
   IGetAreaValueResult,
   IInsertAreaOption,
   ILocationAreaOption,
-  ISetAreaPropertiesOption
+  ISetAreaPropertiesOption,
+  ISetAreaValueOption
 } from '../../../interface/Area'
 import { EditorZone } from '../../../dataset/enum/Editor'
 import { LocationPosition } from '../../../dataset/enum/Common'
 import { RangeManager } from '../../range/RangeManager'
 import { Zone } from '../../zone/Zone'
 import { Position } from '../../position/Position'
-import { zipElementList } from '../../../utils/element'
+import { formatElementList, zipElementList } from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
 import { IRange } from '../../../interface/Range'
 import { IElementPosition } from '../../../interface/Element'
 import { Placeholder } from '../frame/Placeholder'
 import { defaultPlaceholderOption } from '../../../dataset/constant/Placeholder'
+import { DeepRequired } from '../../../interface/Common'
+import { IEditorOption } from '../../../interface/Editor'
 
 export class Area {
   private draw: Draw
   private zone: Zone
   private range: RangeManager
   private position: Position
+  private options: DeepRequired<IEditorOption>
   private areaInfoMap = new Map<string, IAreaInfo>()
 
   constructor(draw: Draw) {
     this.draw = draw
+    this.options = draw.getOptions()
     this.zone = draw.getZone()
     this.range = draw.getRange()
     this.position = draw.getPosition()
@@ -261,6 +266,43 @@ export class Area {
     })
     this.draw.render({
       isCompute,
+      isSetCursor: false
+    })
+  }
+
+  public setAreaValue(payload: ISetAreaValueOption) {
+    const areaId = payload.id || this.getActiveAreaId()
+    if (!areaId) return
+    const areaInfo = this.areaInfoMap.get(areaId)
+    if (!areaInfo) return
+    // 删除旧数据并替换新的格式化数据
+    const { positionList } = areaInfo
+    const elementList = this.draw.getOriginalMainElementList()
+    const valueList = payload.value
+    formatElementList(
+      [
+        {
+          type: ElementType.AREA,
+          value: '',
+          valueList,
+          areaId: areaInfo.id,
+          area: areaInfo.area
+        }
+      ],
+      {
+        editorOptions: this.options
+      }
+    )
+    this.draw.spliceElementList(
+      elementList,
+      positionList[0].index,
+      positionList.length,
+      valueList,
+      {
+        isIgnoreDeletedRule: true
+      }
+    )
+    this.draw.render({
       isSetCursor: false
     })
   }

@@ -122,7 +122,8 @@ import {
   IGetAreaValueResult,
   IInsertAreaOption,
   ILocationAreaOption,
-  ISetAreaPropertiesOption
+  ISetAreaPropertiesOption,
+  ISetAreaValueOption
 } from '../../interface/Area'
 import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
@@ -2583,6 +2584,10 @@ export class CommandAdapt {
 
   public insertArea(payload: IInsertAreaOption) {
     return this.draw.getArea().insertArea(payload)
+  }
+
+  public setAreaValue(payload: ISetAreaValueOption) {
+    return this.draw.getArea().setAreaValue(payload)
   }
 
   public setAreaProperties(payload: ISetAreaPropertiesOption) {

@@ -1094,6 +1094,16 @@ Usage:
 instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
 ```
 
+## executeSetAreaValue
+
+Feature: set area value
+
+Usage:
+
+```javascript
+instance.command.executeSetAreaValue(payload: ISetAreaValueOption)
+```
+
 ## executeLocationArea
 
 Feature: positioning area position
