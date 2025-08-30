@@ -1,3 +1,4 @@
+import { isFirefox } from '../../../utils/ua'
 import { CanvasEvent } from '../CanvasEvent'
 import { input, removeComposingInput } from './input'
 
@@ -20,8 +21,17 @@ function compositionend(host: CanvasEvent, evt: CompositionEvent) {
     })
   } else {
     // 存在值：无法触发input事件需手动检测并触发渲染
-    if (host.compositionInfo) {
-      input(evt.data, host)
+    if (isFirefox) {
+      // 如果为0，火狐浏览器会在input事件之前执行导致重复输入
+      setTimeout(() => {
+        if (host.compositionInfo) {
+          input(evt.data, host)
+        }
+      }, 1)
+    } else {
+      if (host.compositionInfo) {
+        input(evt.data, host)
+      }
     }
   }
   // 移除代理输入框数据
