@@ -1627,8 +1627,12 @@ export function getElementListByHTML(
         } else {
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
-            const display = window.getComputedStyle(node as Element).display
-            if (display === 'block') {
+            const nodeElement = node as Element
+            const display = window.getComputedStyle(nodeElement).display
+            if (
+              display === 'block' &&
+              !/(\n|\r\n)$/.test(nodeElement.textContent!)
+            ) {
               elementList.push({
                 value: '\n'
               })
