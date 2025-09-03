@@ -1558,11 +1558,12 @@ export function getElementListByHTML(
           const colElements = tableElement.querySelectorAll('colgroup col')
           // 基础数据
           tableElement.querySelectorAll('tr').forEach(trElement => {
-            const trHeightStr = window
-              .getComputedStyle(trElement)
-              .height.replace('px', '')
+            const trHeightStr = Number(
+              window.getComputedStyle(trElement).height.replace('px', '')
+            )
             const tr: ITr = {
-              height: Number(trHeightStr),
+              height: trHeightStr,
+              minHeight: trHeightStr,
               tdList: []
             }
             trElement.querySelectorAll('th,td').forEach(tdElement => {
