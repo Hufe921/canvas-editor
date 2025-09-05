@@ -216,6 +216,14 @@ export function formatElementList(
               isHandleFirstElement: true,
               isForceCompensation: true
             })
+            // 首字符字体大小默认使用首个字符元素字体大小
+            if (
+              !td.value[0].size &&
+              td.value[1]?.size &&
+              isTextLikeElement(td.value[1])
+            ) {
+              td.value[0].size = td.value[1].size
+            }
             for (let v = 0; v < td.value.length; v++) {
               const value = td.value[v]
               value.tdId = tdId
