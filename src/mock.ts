@@ -226,124 +226,6 @@ elementList.splice(456, 0, {
   type: ElementType.IMAGE
 })
 
-// 模拟表格
-elementList.push({
-  type: ElementType.TABLE,
-  value: '',
-  colgroup: [
-    {
-      width: 180
-    },
-    {
-      width: 80
-    },
-    {
-      width: 130
-    },
-    {
-      width: 130
-    }
-  ],
-  trList: [
-    {
-      height: 40,
-      tdList: [
-        {
-          colspan: 1,
-          rowspan: 2,
-          value: [
-            { value: `1`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        },
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `2`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        },
-        {
-          colspan: 2,
-          rowspan: 1,
-          value: [
-            { value: `3`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        }
-      ]
-    },
-    {
-      height: 40,
-      tdList: [
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `4`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        },
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `5`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        },
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `6`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        }
-      ]
-    },
-    {
-      height: 40,
-      tdList: [
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `7`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        },
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `8`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        },
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `9`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        },
-        {
-          colspan: 1,
-          rowspan: 1,
-          value: [
-            { value: `1`, size: 16 },
-            { value: `0`, size: 16 },
-            { value: '.', size: 16 }
-          ]
-        }
-      ]
-    }
-  ]
-})
-
 // 模拟checkbox
 elementList.push(
   ...(<IElement[]>[
@@ -465,6 +347,193 @@ elementList.push(
     }
   ]
 )
+
+elementList.push({
+  value: '',
+  type: ElementType.TABLE,
+  trList: [
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 376.3920097351074,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            {
+              value:
+                '否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属无以上情况。',
+              size: 16
+            }
+          ]
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: [
+            {
+              value: '右'
+            }
+          ]
+        }
+      ],
+      minHeight: 42
+    },
+    {
+      height: 42,
+      tdList: [
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        },
+        {
+          colspan: 1,
+          rowspan: 1,
+          value: []
+        }
+      ],
+      minHeight: 42
+    }
+  ],
+  width: 554,
+  height: 449.58999729156494,
+  colgroup: [
+    {
+      width: 277
+    },
+    {
+      width: 277
+    }
+  ]
+})
 
 export const data: IElement[] = elementList
 

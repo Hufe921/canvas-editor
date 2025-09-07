@@ -18,6 +18,12 @@ interface IDrawTableBorderOption {
   isDrawFullBorder?: boolean
 }
 
+interface IMergeSplittedTablePayload {
+  elementList: IElement[]
+  element: IElement
+  index: number
+}
+
 export class TableParticle {
   private draw: Draw
   private range: RangeManager
@@ -65,8 +71,9 @@ export class TableParticle {
     if (!isCrossRowCol) {
       return [[curTrList[trIndex!].tdList[tdIndex!]]]
     }
-    let startTd = curTrList[startTrIndex!].tdList[startTdIndex!]
-    let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
+    let startTd = curTrList[startTrIndex!]?.tdList[startTdIndex!]
+    let endTd = curTrList[endTrIndex!]?.tdList[endTdIndex!]
+    if (!startTd || !endTd) return null
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
       // prettier-ignore
@@ -491,6 +498,56 @@ export class TableParticle {
     }
   }
 
+  public mergeSplittedTable(payload: IMergeSplittedTablePayload) {
+    const { element, index: i } = payload
+    const { elementList } = payload
+    if (element.pagingId) {
+      const trList = element.trList!
+      let tableIndex = i + 1
+      let combineCount = 0
+      while (tableIndex < elementList.length) {
+        const nextElement = elementList[tableIndex]
+        if (nextElement.pagingId === element.pagingId) {
+          const nexTrList = nextElement.trList!.filter(tr => !tr.pagingRepeat)
+          // 第一行存在跨页需特殊处理合并
+          const firstTr = nexTrList[0]
+          if (firstTr?.tdList[0]?.pagingOriginId) {
+            for (let f = 0; f < firstTr.tdList.length; f++) {
+              const firstTd = firstTr.tdList[f]
+              // 上一个表格从后遍历追加单元格内容
+              for (let r = trList.length - 1; r >= 0; r--) {
+                const tr = trList[r]
+                for (let d = 0; d < tr.tdList.length; d++) {
+                  const td = tr.tdList[d]
+                  if (firstTd.pagingOriginId === td.id) {
+                    // 合并value
+                    for (let e = 0; e < firstTd.value.length; e++) {
+                      const val = firstTd.value[e]
+                      val.tdId = td.id
+                      val.trId = td.id
+                      val.tableId = element.id
+                      td.value.push(val)
+                    }
+                  }
+                }
+              }
+            }
+            nexTrList.splice(0, 1)
+          }
+          element.trList!.push(...nexTrList)
+          tableIndex++
+          combineCount++
+        } else {
+          break
+        }
+        if (combineCount) {
+          elementList.splice(i + 1, combineCount)
+        }
+      }
+      element.pagingIndex = element.pagingIndex ?? 0
+    }
+  }
+
   public drawRange(
     ctx: CanvasRenderingContext2D,
     element: IElement,
@@ -509,8 +566,9 @@ export class TableParticle {
     } = this.range.getRange()
     // 存在跨行/列
     if (!isCrossRowCol) return
-    let startTd = trList[startTrIndex!].tdList[startTdIndex!]
-    let endTd = trList[endTrIndex!].tdList[endTdIndex!]
+    let startTd = trList[startTrIndex!]?.tdList[startTdIndex!]
+    let endTd = trList[endTrIndex!]?.tdList[endTdIndex!]
+    if (!startTd || !endTd) return
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
       // prettier-ignore

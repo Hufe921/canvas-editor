@@ -721,13 +721,46 @@ export function zipElementList(
     } else if (element.type === ElementType.TABLE) {
       // 分页表格先进行合并
       if (element.pagingId) {
+        const trList = element.trList!
         let tableIndex = e + 1
         let combineCount = 0
         while (tableIndex < elementList.length) {
           const nextElement = elementList[tableIndex]
           if (nextElement.pagingId === element.pagingId) {
-            element.height! += nextElement.height!
-            element.trList!.push(...nextElement.trList!)
+            const nexTrList = nextElement.trList!.filter(tr => !tr.pagingRepeat)
+            // 第一行存在跨页需特殊处理合并
+            const firstTr = nexTrList[0]
+            if (firstTr?.tdList[0]?.pagingOriginId) {
+              for (let f = 0; f < firstTr.tdList.length; f++) {
+                const firstTd = firstTr.tdList[f]
+                // 上一个表格从后遍历追加单元格内容
+                for (let r = trList.length - 1; r >= 0; r--) {
+                  const tr = trList[r]
+                  for (let d = 0; d < tr.tdList.length; d++) {
+                    const td = tr.tdList[d]
+                    if (firstTd.pagingOriginId === td.id) {
+                      // 合并value
+                      for (let e = 0; e < firstTd.value.length; e++) {
+                        const val = firstTd.value[e]
+                        val.tdId = td.id
+                        val.trId = td.id
+                        val.tableId = element.id
+                        td.value.push(val)
+                      }
+                    }
+                  }
+                }
+              }
+              // 修改合并行及表格高度
+              const height = firstTr.pagingOriginHeight || firstTr.height
+              // 最后一行行高（加上跨页行高）
+              trList[trList.length - 1].height += height
+              // 合并表格高度（(跨行表格高度 - 第一行实际行高) + 第一行内容高度）
+              element.height! += nextElement.height! - firstTr.height + height
+              // 删除跨页行
+              nexTrList.splice(0, 1)
+            }
+            element.trList!.push(...nexTrList)
             tableIndex++
             combineCount++
           } else {
