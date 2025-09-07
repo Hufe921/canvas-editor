@@ -1,3 +1,26 @@
+## [0.9.116](https://github.com/Hufe921/canvas-editor/compare/v0.9.115...v0.9.116) (2025-09-07)
+
+
+### Bug Fixes
+
+* adjust the priority of default style settings #1248 ([c2e4413](https://github.com/Hufe921/canvas-editor/commit/c2e4413d237dcc93b079cb6ef6be8201df6d68ea)), closes [#1248](https://github.com/Hufe921/canvas-editor/issues/1248)
+* repeated input in firefox browser using input method #1244 ([2fcb595](https://github.com/Hufe921/canvas-editor/commit/2fcb595bcf2e510e2da6540b9764207104642586)), closes [#1244](https://github.com/Hufe921/canvas-editor/issues/1244)
+* use executeSetHTML to set the table row height #1251 ([60c530c](https://github.com/Hufe921/canvas-editor/commit/60c530c43c9cc6882f55c88c2fb320d4b51757bb)), closes [#1251](https://github.com/Hufe921/canvas-editor/issues/1251)
+
+
+### Chores
+
+* update README.md ([1a68612](https://github.com/Hufe921/canvas-editor/commit/1a686125f23c3ba79049abaad8e4e68bff0f5bd6))
+* update tsconfig.json ([f650a32](https://github.com/Hufe921/canvas-editor/commit/f650a3201d33b8dcb74f7e0c6fc0f3c9adb0007a))
+
+
+### Features
+
+* add executeSetAreaValue api #1243 ([a1d49a5](https://github.com/Hufe921/canvas-editor/commit/a1d49a5f7d820e7012e29fbb548571089ebb2e2f)), closes [#1243](https://github.com/Hufe921/canvas-editor/issues/1243)
+* optimize empty lines using executeSetHTML #1252 ([ae2f4c9](https://github.com/Hufe921/canvas-editor/commit/ae2f4c9213e807c77c9494311c0ba33691859c49)), closes [#1252](https://github.com/Hufe921/canvas-editor/issues/1252)
+
+
+
 ## [0.9.115](https://github.com/Hufe921/canvas-editor/compare/v0.9.114...v0.9.115) (2025-08-23)
 
 
