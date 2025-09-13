@@ -12,6 +12,7 @@ export class BaseBlock {
   private block: IFrameBlock | VideoBlock | null
   private blockContainer: HTMLDivElement
   private blockItem: HTMLDivElement
+  protected blockCache: Map<string, IFrameBlock | VideoBlock>
 
   constructor(blockParticle: BlockParticle, element: IRowElement) {
     this.draw = blockParticle.getDraw()
@@ -20,6 +21,7 @@ export class BaseBlock {
     this.block = null
     this.blockItem = this._createBlockItem()
     this.blockContainer.append(this.blockItem)
+    this.blockCache = new Map()
   }
 
   public getBlockElement(): IRowElement {
@@ -30,6 +32,22 @@ export class BaseBlock {
     const blockItem = document.createElement('div')
     blockItem.classList.add(`${EDITOR_PREFIX}-block-item`)
     return blockItem
+  }
+
+  public snapshot(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    const block = this.element.block!
+    if (block.type === BlockType.VIDEO) {
+      this.blockItem.style.display = 'none'
+      if (this.blockCache.has(this.element.id!)) {
+        const videoBlock = <VideoBlock>this.blockCache.get(this.element.id!)
+        videoBlock.snapshot(ctx, x, y)
+      } else {
+        this.block = new VideoBlock(this.element)
+        const promise = this.block.snapshot(ctx, x, y)
+        this.draw.getImageObserver().add(promise)
+        this.blockCache.set(this.element.id!, this.block)
+      }
+    }
   }
 
   public render() {
@@ -49,6 +67,7 @@ export class BaseBlock {
     const preY = pageNo * (height + pageGap)
     // 尺寸
     const { metrics } = this.element
+    this.blockItem.style.display = 'block'
     this.blockItem.style.width = `${metrics.width}px`
     this.blockItem.style.height = `${metrics.height}px`
     // 位置
