@@ -70,6 +70,7 @@ export interface IControlBasic {
   value: IElement[] | null
   placeholder?: string
   conceptId?: string
+  groupId?: string
   prefix?: string
   postfix?: string
   minWidth?: number
@@ -150,6 +151,7 @@ export interface IControlRuleOption {
 
 export interface IGetControlValueOption {
   id?: string
+  groupId?: string
   conceptId?: string
   areaId?: string
 }
@@ -163,6 +165,7 @@ export type IGetControlValueResult = (Omit<IControl, 'value'> & {
 
 export interface ISetControlValueOption {
   id?: string
+  groupId?: string
   conceptId?: string
   areaId?: string
   value: string | IElement[] | null
@@ -171,6 +174,7 @@ export interface ISetControlValueOption {
 
 export interface ISetControlExtensionOption {
   id?: string
+  groupId?: string
   conceptId?: string
   areaId?: string
   extension: unknown
@@ -180,6 +184,7 @@ export type ISetControlHighlightOption = IControlHighlight[]
 
 export type ISetControlProperties = {
   id?: string
+  groupId?: string
   conceptId?: string
   areaId?: string
   properties: Partial<Omit<IControl, 'value'>>

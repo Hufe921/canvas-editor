@@ -99,6 +99,7 @@ interface IElement {
     };
     value: IElement[] | null;
     placeholder?: string;
+    groupId?: string;
     conceptId?: string;
     prefix?: string;
     postfix?: string;
