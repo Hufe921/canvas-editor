@@ -127,6 +127,7 @@ import {
 } from '../../interface/Area'
 import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
+import { WatermarkType } from '../../dataset/enum/Watermark'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1258,11 +1259,21 @@ export class CommandAdapt {
     const options = this.draw.getOptions()
     const { color, size, opacity, font, gap } = defaultWatermarkOption
     options.watermark.data = payload.data
+    options.watermark.type = payload.type || WatermarkType.TEXT
+    if (payload.width) {
+      options.watermark.width = payload.width
+    }
+    if (payload.height) {
+      options.watermark.height = payload.height
+    }
     options.watermark.color = payload.color || color
-    options.watermark.size = payload.size || size
     options.watermark.opacity = payload.opacity || opacity
+    options.watermark.size = payload.size || size
     options.watermark.font = payload.font || font
     options.watermark.repeat = !!payload.repeat
+    if (payload.numberType) {
+      options.watermark.numberType = payload.numberType
+    }
     options.watermark.gap = payload.gap || gap
     this.draw.render({
       isSetCursor: false,
