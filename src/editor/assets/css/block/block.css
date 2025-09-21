@@ -1,8 +1,21 @@
 .ce-block-item {
   position: absolute;
   z-index: 0;
-  overflow: hidden;
-  border-radius: 8px;
   background-color: #ffffff;
   border: 1px solid rgb(235 236 240);
+}
+
+.ce-block-item .ce-resizer-selection {
+  width: 100%;
+  height: 100%;
+}
+
+.ce-block-item .ce-resizer-mask {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background-color: transparent;
 }

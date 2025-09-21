@@ -57,7 +57,7 @@ export class BlockParticle {
 
   public clear() {
     if (!this.blockMap.size) return
-    const elementList = this.draw.getElementList()
+    const elementList = this.draw.getOriginalMainElementList()
     const blockElementIds: string[] = []
     for (let e = 0; e < elementList.length; e++) {
       const element = elementList[e]
