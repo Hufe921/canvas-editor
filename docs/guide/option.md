@@ -89,6 +89,7 @@ interface ITableOption {
   tdPadding?: IPadding // 单元格内边距。默认：[0, 5, 5, 5]
   defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
   defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
+  overflow?: boolean // 是否允许表格超出正文区域。默认：true
 }
 ```
 

@@ -156,9 +156,13 @@ export class Position {
             element.type === ElementType.LATEX)
             ? curRow.ascent - metrics.height
             : curRow.ascent
-        // 偏移量
+        // 偏移量（内部计算使用）
         if (element.left) {
           x += element.left
+        }
+        // 偏移量（外部传入）
+        if (element.translateX) {
+          x += element.translateX * scale
         }
         const positionItem: IElementPosition = {
           pageNo,
@@ -230,7 +234,10 @@ export class Position {
                 pageNo,
                 startRowIndex: 0,
                 startIndex: 0,
-                startX: (td.x! + tdPadding[3]) * scale + tablePreX,
+                startX:
+                  (td.x! + tdPadding[3]) * scale +
+                  tablePreX +
+                  (element.translateX || 0) * scale,
                 startY: (td.y! + tdPadding[0]) * scale + tablePreY,
                 innerWidth: (td.width! - tdPaddingWidth) * scale,
                 isTable: true,

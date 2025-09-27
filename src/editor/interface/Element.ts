@@ -70,6 +70,7 @@ export interface ITableAttr {
   borderColor?: string
   borderWidth?: number
   borderExternalWidth?: number
+  translateX?: number
 }
 
 export interface ITableRule {
