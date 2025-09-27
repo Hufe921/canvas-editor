@@ -629,7 +629,7 @@ export class Control {
       element = elementList[index]
     }
     // 隐藏元素移动光标
-    if (element.control?.hide || element.area?.hide) {
+    if (element.hide || element.control?.hide || element.area?.hide) {
       const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
       return {
         newIndex: nonHideIndex,
@@ -713,6 +713,7 @@ export class Control {
     // 设计模式 || 元素隐藏 => 不验证删除权限
     if (
       !this.draw.isDesignMode() &&
+      !startElement?.hide &&
       !startElement?.control?.hide &&
       !startElement?.area?.hide
     ) {
@@ -873,9 +874,9 @@ export class Control {
   }
 
   public getValueById(payload: IGetControlValueOption): IGetControlValueResult {
-    const { id, conceptId, areaId } = payload
+    const { id, groupId, conceptId, areaId } = payload
     const result: IGetControlValueResult = []
-    if (!id && !conceptId) return result
+    if (!id && !conceptId && !groupId) return result
     const getValue = (elementList: IElement[], zone: EditorZone) => {
       let i = 0
       while (i < elementList.length) {
@@ -894,6 +895,7 @@ export class Control {
         }
         if (
           !element.control ||
+          (groupId && element.control.groupId !== groupId) ||
           (id && element.controlId !== id) ||
           (conceptId && element.control.conceptId !== conceptId) ||
           (areaId && element.areaId !== areaId)
@@ -997,12 +999,13 @@ export class Control {
           }
         }
         if (!element.control) continue
-        // 获取设置值优先id、conceptId、areaId
+        // 获取设置值优先id、conceptId、areaId并于groupId组合设置
         const payloadItem = payload.find(
           p =>
-            (p.id && element.controlId === p.id) ||
-            (p.conceptId && element.control!.conceptId === p.conceptId) ||
-            (p.areaId && element.areaId === p.areaId)
+            (!p.groupId || p.groupId === element.control?.groupId) &&
+            ((p.id && element.controlId === p.id) ||
+              (p.conceptId && element.control!.conceptId === p.conceptId) ||
+              (p.areaId && element.areaId === p.areaId))
         )
         if (!payloadItem) continue
         const { value, isSubmitHistory = true } = payloadItem
@@ -1168,12 +1171,13 @@ export class Control {
           }
         }
         if (!element.control) continue
-        // 获取设置值优先id、conceptId、areaId
+        // 获取设置值优先id、conceptId、areaId并于groupId组合设置
         const payloadItem = payload.find(
           p =>
-            (p.id && element.controlId === p.id) ||
-            (p.conceptId && element.control!.conceptId === p.conceptId) ||
-            (p.areaId && element.areaId === p.areaId)
+            (!p.groupId || p.groupId === element.control?.groupId) &&
+            ((p.id && element.controlId === p.id) ||
+              (p.conceptId && element.control!.conceptId === p.conceptId) ||
+              (p.areaId && element.areaId === p.areaId))
         )
         if (!payloadItem) continue
         const { extension } = payloadItem
@@ -1227,12 +1231,13 @@ export class Control {
           }
         }
         if (!element.control) continue
-        // 获取设置值优先id、conceptId、areaId
+        // 获取设置值优先id、conceptId、areaId并于groupId组合设置
         const payloadItem = payload.find(
           p =>
-            (p.id && element.controlId === p.id) ||
-            (p.conceptId && element.control!.conceptId === p.conceptId) ||
-            (p.areaId && element.areaId === p.areaId)
+            (!p.groupId || p.groupId === element.control?.groupId) &&
+            ((p.id && element.controlId === p.id) ||
+              (p.conceptId && element.control!.conceptId === p.conceptId) ||
+              (p.areaId && element.areaId === p.areaId))
         )
         if (!payloadItem) continue
         const { properties, isSubmitHistory = true } = payloadItem

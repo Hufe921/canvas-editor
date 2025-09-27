@@ -5,4 +5,5 @@ export interface ITableOption {
   defaultTrMinHeight?: number
   defaultColMinWidth?: number
   defaultBorderColor?: string
+  overflow?: boolean
 }

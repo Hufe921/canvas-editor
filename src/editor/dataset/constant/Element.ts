@@ -55,6 +55,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'tableToolDisabled',
   'borderType',
   'borderColor',
+  'translateX',
   'width',
   'height',
   'url',
@@ -79,7 +80,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'extension',
   'externalId',
   'areaId',
-  'area'
+  'area',
+  'hide'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [

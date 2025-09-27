@@ -216,6 +216,7 @@ export class Search {
           !e.type ||
           (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
             e.controlComponent !== ControlComponent.CHECKBOX &&
+            !e.hide &&
             !e.control?.hide &&
             !e.area?.hide)
             ? e.value
@@ -333,7 +334,7 @@ export class Search {
   public replace(payload: string, option?: IReplaceOption) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    if (!payload || new RegExp(`${ZERO}`, 'g').test(payload)) return
+    if (payload === undefined || payload === null) return
     let matchList = this.getSearchMatchList()
     // 替换搜索项
     const replaceIndex = option?.index
@@ -383,6 +384,14 @@ export class Search {
         ) {
           continue
         }
+        if (payload === '') {
+          this.draw.spliceElementList(tableElementList, curIndex, 1)
+          tableDiffCount--
+          if (!~firstMatchIndex) {
+            firstMatchIndex = m
+          }
+          continue
+        }
         if (curGroupId === match.groupId) {
           this.draw.spliceElementList(tableElementList, curIndex, 1)
           tableDiffCount--
@@ -416,6 +425,14 @@ export class Search {
           (element.type === ElementType.CONTROL &&
             element.controlComponent !== ControlComponent.VALUE)
         ) {
+          continue
+        }
+        if (payload === '') {
+          this.draw.spliceElementList(elementList, curIndex, 1)
+          pageDiffCount--
+          if (!~firstMatchIndex) {
+            firstMatchIndex = m
+          }
           continue
         }
         if (!~firstMatchIndex) {

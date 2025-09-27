@@ -32,22 +32,32 @@ export class BlockParticle {
     return this.blockContainer
   }
 
-  public render(pageNo: number, element: IRowElement, x: number, y: number) {
+  public render(
+    ctx: CanvasRenderingContext2D,
+    pageNo: number,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
+    // 优先使用缓存block
     const id = element.id!
-    const cacheBlock = this.blockMap.get(id)
-    if (cacheBlock) {
-      cacheBlock.setClientRects(pageNo, x, y)
+    let cacheBlock = this.blockMap.get(id)
+    if (!cacheBlock) {
+      cacheBlock = new BaseBlock(this, element)
+      cacheBlock.render()
+      this.blockMap.set(id, cacheBlock)
+    }
+    // 打印模式截图，其他模式更新位置
+    if (this.draw.isPrintMode()) {
+      cacheBlock.snapshot(ctx, x, y)
     } else {
-      const newBlock = new BaseBlock(this, element)
-      newBlock.render()
-      newBlock.setClientRects(pageNo, x, y)
-      this.blockMap.set(id, newBlock)
+      cacheBlock.setClientRects(pageNo, x, y)
     }
   }
 
   public clear() {
     if (!this.blockMap.size) return
-    const elementList = this.draw.getElementList()
+    const elementList = this.draw.getOriginalMainElementList()
     const blockElementIds: string[] = []
     for (let e = 0; e < elementList.length; e++) {
       const element = elementList[e]

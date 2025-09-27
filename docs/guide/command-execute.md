@@ -1090,6 +1090,14 @@ const areaId = instance.command.executeInsertArea(payload: IInsertAreaOption)
 instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
 ```
 
+## executeSetAreaValue
+
+功能：设置区域值
+
+```js
+instance.command.executeSetAreaValue(payload: ISetAreaValueOption)
+```
+
 ## executeLocationArea
 
 功能：定位区域位置

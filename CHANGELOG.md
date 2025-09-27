@@ -1,3 +1,64 @@
+## [0.9.117](https://github.com/Hufe921/canvas-editor/compare/v0.9.116...v0.9.117) (2025-09-27)
+
+
+### Bug Fixes
+
+* missing some attributes in addWatermark api #1267 ([04b024a](https://github.com/Hufe921/canvas-editor/commit/04b024ad2a9c9b1a633574dac08074e1f4a795f7)), closes [#1267](https://github.com/Hufe921/canvas-editor/issues/1267)
+* punctuation width calculation error #1269 ([d545cae](https://github.com/Hufe921/canvas-editor/commit/d545caed43ff5cf83c314129ff4d710e5a7e8599)), closes [#1269](https://github.com/Hufe921/canvas-editor/issues/1269)
+
+
+### Features
+
+* add groupId option to control element #1259 ([4ee36f5](https://github.com/Hufe921/canvas-editor/commit/4ee36f558700dcb33ee73bd813e8ee1375192e62)), closes [#1259](https://github.com/Hufe921/canvas-editor/issues/1259)
+* add scaling function to block element #1184 ([782f52a](https://github.com/Hufe921/canvas-editor/commit/782f52a86054a10144c59959ab5b0da9cb2e18b2)), closes [#1184](https://github.com/Hufe921/canvas-editor/issues/1184)
+* optimize double-click selection at start of line #1214 ([19a6336](https://github.com/Hufe921/canvas-editor/commit/19a6336cd52a7cd877b00e9537a146389789093a)), closes [#1214](https://github.com/Hufe921/canvas-editor/issues/1214)
+* support printing video block element #1265 ([e113f14](https://github.com/Hufe921/canvas-editor/commit/e113f14f396d9558aedd10c4dec48e48b8eb51b9)), closes [#1265](https://github.com/Hufe921/canvas-editor/issues/1265)
+* table can exceed the main text boundary option #1232 ([160df59](https://github.com/Hufe921/canvas-editor/commit/160df59935a171cb1053c9979db4940963b89d4b)), closes [#1232](https://github.com/Hufe921/canvas-editor/issues/1232)
+
+
+
+## [0.9.116](https://github.com/Hufe921/canvas-editor/compare/v0.9.115...v0.9.116) (2025-09-07)
+
+
+### Bug Fixes
+
+* adjust the priority of default style settings #1248 ([c2e4413](https://github.com/Hufe921/canvas-editor/commit/c2e4413d237dcc93b079cb6ef6be8201df6d68ea)), closes [#1248](https://github.com/Hufe921/canvas-editor/issues/1248)
+* repeated input in firefox browser using input method #1244 ([2fcb595](https://github.com/Hufe921/canvas-editor/commit/2fcb595bcf2e510e2da6540b9764207104642586)), closes [#1244](https://github.com/Hufe921/canvas-editor/issues/1244)
+* use executeSetHTML to set the table row height #1251 ([60c530c](https://github.com/Hufe921/canvas-editor/commit/60c530c43c9cc6882f55c88c2fb320d4b51757bb)), closes [#1251](https://github.com/Hufe921/canvas-editor/issues/1251)
+
+
+### Chores
+
+* update README.md ([1a68612](https://github.com/Hufe921/canvas-editor/commit/1a686125f23c3ba79049abaad8e4e68bff0f5bd6))
+* update tsconfig.json ([f650a32](https://github.com/Hufe921/canvas-editor/commit/f650a3201d33b8dcb74f7e0c6fc0f3c9adb0007a))
+
+
+### Features
+
+* add executeSetAreaValue api #1243 ([a1d49a5](https://github.com/Hufe921/canvas-editor/commit/a1d49a5f7d820e7012e29fbb548571089ebb2e2f)), closes [#1243](https://github.com/Hufe921/canvas-editor/issues/1243)
+* optimize empty lines using executeSetHTML #1252 ([ae2f4c9](https://github.com/Hufe921/canvas-editor/commit/ae2f4c9213e807c77c9494311c0ba33691859c49)), closes [#1252](https://github.com/Hufe921/canvas-editor/issues/1252)
+
+
+
+## [0.9.115](https://github.com/Hufe921/canvas-editor/compare/v0.9.114...v0.9.115) (2025-08-23)
+
+
+### Bug Fixes
+
+*  fix: table width and alignment issue when using getHTML and setHTML #991 ([79941a1](https://github.com/Hufe921/canvas-editor/commit/79941a17a5c0bb6e4df5a8dff6701ec421c643b6)), closes [#991](https://github.com/Hufe921/canvas-editor/issues/991)
+* surrounding image rendering error when scaling the page ([aab4615](https://github.com/Hufe921/canvas-editor/commit/aab4615f36ade98fd77b5a1b0b0dd0d7dcf84657))
+
+
+### Features
+
+* add element hide option #1194 ([5b8f714](https://github.com/Hufe921/canvas-editor/commit/5b8f7149db9cf7cd3ef8cf95c6ead053fd8102bf)), closes [#1194](https://github.com/Hufe921/canvas-editor/issues/1194)
+* allow replacing search results with empty string #1222 ([da687db](https://github.com/Hufe921/canvas-editor/commit/da687db6a17f5f02d902bfb0c5fe0c7f4800f8b5)), closes [#1222](https://github.com/Hufe921/canvas-editor/issues/1222)
+* executeInsertArea api support inserting by range #1223 ([8d39bb1](https://github.com/Hufe921/canvas-editor/commit/8d39bb1c0ee650af775aa3072c189bc68dc0bb0f)), closes [#1223](https://github.com/Hufe921/canvas-editor/issues/1223)
+* optimization of positioning outside the area #1212 ([7cd7bc7](https://github.com/Hufe921/canvas-editor/commit/7cd7bc7ab2d5249e13a2cccf336e3fefc2fafa93)), closes [#1212](https://github.com/Hufe921/canvas-editor/issues/1212)
+* the getCatalog and locationCatalog api support within table #1216 ([ba5884c](https://github.com/Hufe921/canvas-editor/commit/ba5884c5665bea283d9ababdfb12802d3d2e5c8e)), closes [#1216](https://github.com/Hufe921/canvas-editor/issues/1216)
+
+
+
 ## [0.9.114](https://github.com/Hufe921/canvas-editor/compare/v0.9.113...v0.9.114) (2025-08-08)
 
 

@@ -8,3 +8,6 @@ export const isMobile =
   /Mobile|Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent
   )
+
+export const isFirefox =
+  typeof navigator !== 'undefined' && /Firefox/.test(navigator.userAgent)

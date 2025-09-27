@@ -75,7 +75,7 @@ import {
   ITableInfoByEvent
 } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
-import { ILocationPosition } from '../../interface/Position'
+import { ILocationPosition, IPositionContext } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
 import { IReplaceOption, ISearchResultContext } from '../../interface/Search'
 import { ITextDecoration } from '../../interface/Text'
@@ -122,10 +122,12 @@ import {
   IGetAreaValueResult,
   IInsertAreaOption,
   ILocationAreaOption,
-  ISetAreaPropertiesOption
+  ISetAreaPropertiesOption,
+  ISetAreaValueOption
 } from '../../interface/Area'
 import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
+import { WatermarkType } from '../../dataset/enum/Watermark'
 
 export class CommandAdapt {
   private draw: Draw
@@ -374,12 +376,12 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        font: payload
+      })
       if (enterElement?.value === ZERO) {
         enterElement.font = payload
       } else {
-        this.range.setDefaultStyle({
-          font: payload
-        })
         isSubmitHistory = false
       }
       this.draw.render({
@@ -409,13 +411,13 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        size: payload
+      })
       if (enterElement?.value === ZERO) {
         changeElementList.push(enterElement)
         renderOption = { curIndex: endIndex }
       } else {
-        this.range.setDefaultStyle({
-          size: payload
-        })
         this.draw.render({
           curIndex: endIndex,
           isCompute: false,
@@ -458,15 +460,16 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      // 设置默认样式
+      const style = this.range.getDefaultStyle()
+      const anchorSize = style?.size || enterElement.size || defaultSize
+      this.range.setDefaultStyle({
+        size: anchorSize + 2 > maxSize ? maxSize : anchorSize + 2
+      })
       if (enterElement?.value === ZERO) {
         changeElementList.push(enterElement)
         renderOption = { curIndex: endIndex }
       } else {
-        const style = this.range.getDefaultStyle()
-        const anchorSize = style?.size || enterElement.size || defaultSize
-        this.range.setDefaultStyle({
-          size: anchorSize + 2 > maxSize ? maxSize : anchorSize + 2
-        })
         this.draw.render({
           curIndex: endIndex,
           isCompute: false,
@@ -511,15 +514,15 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      const style = this.range.getDefaultStyle()
+      const anchorSize = style?.size || enterElement.size || defaultSize
+      this.range.setDefaultStyle({
+        size: anchorSize - 2 < minSize ? minSize : anchorSize - 2
+      })
       if (enterElement?.value === ZERO) {
         changeElementList.push(enterElement)
         renderOption = { curIndex: endIndex }
       } else {
-        const style = this.range.getDefaultStyle()
-        const anchorSize = style?.size || enterElement.size || defaultSize
-        this.range.setDefaultStyle({
-          size: anchorSize - 2 < minSize ? minSize : anchorSize - 2
-        })
         this.draw.render({
           curIndex: endIndex,
           isCompute: false,
@@ -564,12 +567,12 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        bold: enterElement.bold ? false : !this.range.getDefaultStyle()?.bold
+      })
       if (enterElement?.value === ZERO) {
         enterElement.bold = !enterElement.bold
       } else {
-        this.range.setDefaultStyle({
-          bold: enterElement.bold ? false : !this.range.getDefaultStyle()?.bold
-        })
         isSubmitHistory = false
       }
       this.draw.render({
@@ -598,14 +601,14 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        italic: enterElement.italic
+          ? false
+          : !this.range.getDefaultStyle()?.italic
+      })
       if (enterElement?.value === ZERO) {
         enterElement.italic = !enterElement.italic
       } else {
-        this.range.setDefaultStyle({
-          italic: enterElement.italic
-            ? false
-            : !this.range.getDefaultStyle()?.italic
-        })
         isSubmitHistory = false
       }
       this.draw.render({
@@ -654,14 +657,14 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        underline: enterElement?.underline
+          ? false
+          : !this.range.getDefaultStyle()?.underline
+      })
       if (enterElement?.value === ZERO) {
         enterElement.underline = !enterElement.underline
       } else {
-        this.range.setDefaultStyle({
-          underline: enterElement?.underline
-            ? false
-            : !this.range.getDefaultStyle()?.underline
-        })
         isSubmitHistory = false
       }
       this.draw.render({
@@ -693,14 +696,14 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        strikeout: enterElement.strikeout
+          ? false
+          : !this.range.getDefaultStyle()?.strikeout
+      })
       if (enterElement?.value === ZERO) {
         enterElement.strikeout = !enterElement.strikeout
       } else {
-        this.range.setDefaultStyle({
-          strikeout: enterElement.strikeout
-            ? false
-            : !this.range.getDefaultStyle()?.strikeout
-        })
         isSubmitHistory = false
       }
       this.draw.render({
@@ -799,6 +802,9 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        color: payload || undefined
+      })
       if (enterElement?.value === ZERO) {
         if (payload) {
           enterElement.color = payload
@@ -806,9 +812,6 @@ export class CommandAdapt {
           delete enterElement.color
         }
       } else {
-        this.range.setDefaultStyle({
-          color: payload || undefined
-        })
         isSubmitHistory = false
       }
       this.draw.render({
@@ -843,6 +846,9 @@ export class CommandAdapt {
       const { endIndex } = this.range.getRange()
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
+      this.range.setDefaultStyle({
+        highlight: payload || undefined
+      })
       if (enterElement?.value === ZERO) {
         if (payload) {
           enterElement.highlight = payload
@@ -850,9 +856,6 @@ export class CommandAdapt {
           delete enterElement.highlight
         }
       } else {
-        this.range.setDefaultStyle({
-          highlight: payload || undefined
-        })
         isSubmitHistory = false
       }
       this.draw.render({
@@ -1256,11 +1259,21 @@ export class CommandAdapt {
     const options = this.draw.getOptions()
     const { color, size, opacity, font, gap } = defaultWatermarkOption
     options.watermark.data = payload.data
+    options.watermark.type = payload.type || WatermarkType.TEXT
+    if (payload.width) {
+      options.watermark.width = payload.width
+    }
+    if (payload.height) {
+      options.watermark.height = payload.height
+    }
     options.watermark.color = payload.color || color
-    options.watermark.size = payload.size || size
     options.watermark.opacity = payload.opacity || opacity
+    options.watermark.size = payload.size || size
     options.watermark.font = payload.font || font
     options.watermark.repeat = !!payload.repeat
+    if (payload.numberType) {
+      options.watermark.numberType = payload.numberType
+    }
     options.watermark.gap = payload.gap || gap
     this.draw.render({
       isSetCursor: false,
@@ -2003,25 +2016,90 @@ export class CommandAdapt {
   }
 
   public locationCatalog(titleId: string) {
-    const elementList = this.draw.getOriginalMainElementList()
-    let newIndex = -1
-    for (let e = 0; e < elementList.length; e++) {
-      const element = elementList[e]
-      if (
-        element.titleId === titleId &&
-        elementList[e + 1]?.titleId !== titleId
-      ) {
-        newIndex = e
-        break
+    const elementList = this.draw.getOriginalElementList()
+
+    function getPosition(
+      elementList: IElement[],
+      titleId: string
+    ): (IRange & IPositionContext) | null {
+      for (let e = 0; e < elementList.length; e++) {
+        const element = elementList[e]
+        if (element.type === ElementType.TABLE) {
+          const trList = element.trList!
+          for (let r = 0; r < trList.length; r++) {
+            const tr = trList[r]
+            for (let d = 0; d < tr.tdList.length; d++) {
+              const td = tr.tdList[d]
+              const range = getPosition(td.value, titleId)
+              if (range) {
+                return {
+                  ...range,
+                  isTable: true,
+                  index: e,
+                  trIndex: r,
+                  tdIndex: d,
+                  tdId: td.id,
+                  trId: tr.id,
+                  tableId: element.id
+                }
+              }
+            }
+          }
+        }
+        // 找到标题末尾
+        if (element.titleId === titleId) {
+          let newIndex = e
+          while (newIndex < elementList.length) {
+            if (elementList[newIndex + 1]?.titleId !== titleId) {
+              return {
+                isTable: false,
+                startIndex: newIndex,
+                endIndex: newIndex
+              }
+            }
+            newIndex++
+          }
+        }
       }
+      return null
     }
-    if (!~newIndex) return
+
+    const context = getPosition(elementList, titleId)
+    if (!context) return
+    const {
+      isTable,
+      index,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId,
+      endIndex
+    } = context
     this.position.setPositionContext({
-      isTable: false
+      isTable,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId
     })
-    this.range.setRange(newIndex, newIndex)
+    this.range.setRange(
+      endIndex,
+      endIndex,
+      tableId,
+      startTdIndex,
+      endTdIndex,
+      startTrIndex,
+      endTrIndex
+    )
     this.draw.render({
-      curIndex: newIndex,
+      curIndex: endIndex,
       isCompute: false,
       isSubmitHistory: false
     })
@@ -2520,11 +2598,35 @@ export class CommandAdapt {
     return this.draw.getArea().insertArea(payload)
   }
 
+  public setAreaValue(payload: ISetAreaValueOption) {
+    return this.draw.getArea().setAreaValue(payload)
+  }
+
   public setAreaProperties(payload: ISetAreaPropertiesOption) {
     this.draw.getArea().setAreaProperties(payload)
   }
 
   public locationArea(areaId: string, options?: ILocationAreaOption) {
+    // 区域在最后时，如果后面没有元素是否追加换行符
+    if (
+      options?.isAppendLastLineBreak &&
+      options?.position === LocationPosition.OUTER_AFTER
+    ) {
+      const elementList = this.draw.getOriginalMainElementList()
+      if (elementList[elementList.length - 1].areaId === areaId) {
+        this.draw.appendElementList(
+          [
+            {
+              value: ZERO
+            }
+          ],
+          {
+            isSubmitHistory: false
+          }
+        )
+      }
+    }
+    // 获取区域位置
     const context = this.draw.getArea().getContextByAreaId(areaId, options)
     if (!context) return
     const {
@@ -2536,16 +2638,14 @@ export class CommandAdapt {
     })
     this.range.setRange(endIndex, endIndex)
     this.draw.render({
-      isSetCursor: false,
+      curIndex: endIndex,
+      isSetCursor: true,
       isCompute: false,
       isSubmitHistory: false
     })
     // 移动到可见区域
     const cursor = this.draw.getCursor()
     this.position.setCursorPosition(elementPosition)
-    cursor.drawCursor({
-      hitLineStartIndex: endIndex
-    })
     cursor.moveCursorToVisible({
       cursorPosition: elementPosition,
       direction: MoveDirection.UP

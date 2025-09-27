@@ -81,6 +81,7 @@ export class TextParticle {
     element: IElement
   ): number {
     if (!element || !PUNCTUATION_LIST.includes(element.value)) return 0
+    ctx.font = this.draw.getElementFont(element)
     return this.measureText(ctx, element).width
   }
 

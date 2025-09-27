@@ -26,8 +26,11 @@ function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
       )
       .join('') || ''
   if (!paragraphText) return null
-  // 光标所在位置
-  const cursorStartIndex = cursorPosition.index
+  // 光标所在位置：光标在开头时只能选择选择当前行进行分词，光标后移
+  const cursorStartIndex =
+    cursorPosition.isFirstLetter || draw.getCursor().getHitLineStartIndex()
+      ? cursorPosition.index + 1
+      : cursorPosition.index
   // 段落首字符相对文档起始位置
   const offset = paragraphInfo.startIndex
   const segmenter = new Intl.Segmenter(undefined, { granularity: 'word' })

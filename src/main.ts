@@ -1288,7 +1288,7 @@ function initEditorInstance(
     function () {
       const searchValue = searchInputDom.value
       const replaceValue = replaceInputDom.value
-      if (searchValue && replaceValue && searchValue !== replaceValue) {
+      if (searchValue && searchValue !== replaceValue) {
         instance.command.executeReplace(replaceValue)
       }
     }
