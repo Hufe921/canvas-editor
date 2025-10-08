@@ -1064,6 +1064,12 @@ export function convertElementToDom(
   if (element.strikeout) {
     dom.style.textDecoration += ' line-through'
   }
+  if (element.type === ElementType.LATEX) {
+    dom.setAttribute('data-type', ElementType.LATEX)
+  }
+  if (element.rowMargin) {
+    dom.style.lineHeight = (element.rowMargin ?? options.defaultRowMargin).toString()
+  }
   dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
 }
