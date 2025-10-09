@@ -1319,6 +1319,10 @@ export function createDomFromElementList(
         const childDom = buildDom(element.control?.value || [])
         controlElement.innerHTML = childDom.innerHTML
         clipboardDom.append(controlElement)
+      } else if (element.type === ElementType.PAGE_BREAK) {
+        const pageBreakElement = document.createElement('div')
+        pageBreakElement.style.breakAfter = 'page'
+        clipboardDom.append(pageBreakElement)
       } else if (
         !element.type ||
         element.type === ElementType.LATEX ||
