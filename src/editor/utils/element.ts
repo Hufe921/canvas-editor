@@ -1295,6 +1295,7 @@ export function createDomFromElementList(
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const hr = document.createElement('hr')
+        hr.setAttribute('data-dash-array', element.dashArray!.join(','))
         clipboardDom.append(hr)
       } else if (element.type === ElementType.CHECKBOX) {
         const checkbox = document.createElement('input')
@@ -1368,6 +1369,9 @@ export function createDomFromElementList(
         rowFlexDom.style.textAlign = convertRowFlexToTextAlign(
           elementGroupRowFlex.rowFlex!
         )
+        if (elementGroupRowFlex.rowFlex === 'justify') {
+          rowFlexDom.style.textAlignLast = 'justify'
+        }
       }
     }
     // 布局内容
