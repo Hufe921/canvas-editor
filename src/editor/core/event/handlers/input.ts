@@ -108,7 +108,7 @@ export function input(data: string, host: CanvasEvent) {
       isSubmitHistory: !isComposing
     })
   }
-  if (isComposing) {
+  if (isComposing && ~curIndex) {
     host.compositionInfo = {
       elementList,
       value: text,

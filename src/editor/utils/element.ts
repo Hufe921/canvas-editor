@@ -949,6 +949,14 @@ export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
 
+export function getElementListText(elementList: IElement[]): string {
+  return elementList
+    .filter(el => isTextLikeElement(el))
+    .map(el => el.value)
+    .join('')
+    .replace(new RegExp(ZERO, 'g'), '')
+}
+
 export function getAnchorElement(
   elementList: IElement[],
   anchorIndex: number
