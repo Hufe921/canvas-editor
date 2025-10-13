@@ -1060,6 +1060,7 @@ export function convertElementToDom(
   }
   if (element.underline) {
     dom.style.textDecoration = 'underline'
+    dom.style.textDecorationStyle = element.textDecoration?.style || 'solid'
   }
   if (element.strikeout) {
     dom.style.textDecoration += ' line-through'
