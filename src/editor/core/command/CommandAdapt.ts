@@ -162,14 +162,14 @@ export class CommandAdapt {
     this.draw.setMode(payload)
   }
 
-  public cut() {
+  public async cut() {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    this.canvasEvent.cut()
+    await this.canvasEvent.cut()
   }
 
-  public copy(payload?: ICopyOption) {
-    this.canvasEvent.copy(payload)
+  public async copy(payload?: ICopyOption) {
+    await this.canvasEvent.copy(payload)
   }
 
   public paste(payload?: IPasteOption) {
