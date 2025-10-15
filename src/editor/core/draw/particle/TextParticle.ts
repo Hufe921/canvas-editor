@@ -10,7 +10,7 @@ import { Draw } from '../Draw'
 
 export interface IMeasureWordResult {
   width: number
-  endElement: IElement
+  endElement: IElement | null
 }
 
 export class TextParticle {
@@ -56,7 +56,7 @@ export class TextParticle {
   ): IMeasureWordResult {
     const LETTER_REG = this.draw.getLetterReg()
     let width = 0
-    let endElement: IElement = elementList[curIndex]
+    let endElement: IElement | null = null
     let i = curIndex
     while (i < elementList.length) {
       const element = elementList[i]
