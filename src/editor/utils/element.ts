@@ -554,10 +554,14 @@ export function formatElementList(
       el.id = el.id || getUUID()
     }
     if (el.type === ElementType.LATEX) {
-      const { svg, width, height } = LaTexParticle.convertLaTextToSVG(el.value)
-      el.width = el.width || width
-      el.height = el.height || height
-      el.laTexSVG = svg
+      if (!(el.laTexSVG && el.width && el.height)) {
+        const { svg, width, height } = LaTexParticle.convertLaTextToSVG(
+          el.value
+        )
+        el.width = el.width || width
+        el.height = el.height || height
+        el.laTexSVG = svg
+      }
       el.id = el.id || getUUID()
     }
     i++
