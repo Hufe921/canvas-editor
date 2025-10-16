@@ -483,8 +483,6 @@ window.onload = function () {
         const url = payload.find(p => p.name === 'url')?.value
         if (!url) return
         instance.command.executeHyperlink({
-          type: ElementType.HYPERLINK,
-          value: '',
           url,
           valueList: splitText(name).map(n => ({
             value: n,
