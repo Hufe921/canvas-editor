@@ -1,3 +1,27 @@
+## [0.9.118](https://github.com/Hufe921/canvas-editor/compare/v0.9.117...v0.9.118) (2025-10-17)
+
+
+### Bug Fixes
+
+* character typesetting boundary error #1280 ([798d555](https://github.com/Hufe921/canvas-editor/commit/798d5555fe6eca4870bffbcf951d835c61302a6f)), closes [#1280](https://github.com/Hufe921/canvas-editor/issues/1280)
+* disabling the header and footer through the api is ineffective #1278 ([7f87a6e](https://github.com/Hufe921/canvas-editor/commit/7f87a6ec08cb7a68ee36ff344e1273861c642196)), closes [#1278](https://github.com/Hufe921/canvas-editor/issues/1278)
+* executeHyperlink api is missing some attributes #1282 ([beacfbd](https://github.com/Hufe921/canvas-editor/commit/beacfbdfed8add88e7358360d372ae2ba25141a6)), closes [#1282](https://github.com/Hufe921/canvas-editor/issues/1282)
+* handle line breaks in clipboard comparison #1275 ([1537cb6](https://github.com/Hufe921/canvas-editor/commit/1537cb66893b3e7a04a6e56cbdea2778da992182)), closes [#1275](https://github.com/Hufe921/canvas-editor/issues/1275)
+
+
+### Documentation
+
+* update command-execute.md #1277 ([bc76acd](https://github.com/Hufe921/canvas-editor/commit/bc76acd4776399e6432e6dbc9de241f42b8fbe56)), closes [#1277](https://github.com/Hufe921/canvas-editor/issues/1277)
+
+
+### Features
+
+* improve date formatting ([3eca535](https://github.com/Hufe921/canvas-editor/commit/3eca53581f92d93909b70901cf0ea2d9e14f2938))
+* make clipboard operations async for consistency #1276 ([ce4eb10](https://github.com/Hufe921/canvas-editor/commit/ce4eb107987c1b00717f3aea6465aca7b47fa15c)), closes [#1276](https://github.com/Hufe921/canvas-editor/issues/1276)
+* number control reject non-numeric input #925 ([8c6b6ce](https://github.com/Hufe921/canvas-editor/commit/8c6b6cebe8e52d285546ae08536685d0f085adff)), closes [#925](https://github.com/Hufe921/canvas-editor/issues/925)
+
+
+
 ## [0.9.117](https://github.com/Hufe921/canvas-editor/compare/v0.9.116...v0.9.117) (2025-09-27)
 
 
