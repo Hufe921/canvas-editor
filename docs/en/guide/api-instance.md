@@ -9,6 +9,16 @@ const instance = new Editor(container, <IElement[]>data, options)
 instance.apiName()
 ```
 
+## version
+
+Feature: version number
+
+Usage：
+
+```javascript
+instance.version
+```
+
 ## destroy
 
 Feature: Destroy the editor
