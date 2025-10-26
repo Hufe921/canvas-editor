@@ -1073,11 +1073,13 @@ export function convertElementToDom(
   if (element.strikeout) {
     dom.style.textDecoration += ' line-through'
   }
-  if (element.type === ElementType.LATEX) {
-    dom.setAttribute('data-type', ElementType.LATEX)
+  if (element.type) {
+    dom.setAttribute('data-type', element.type)
   }
   if (element.rowMargin) {
-    dom.style.lineHeight = (element.rowMargin ?? options.defaultRowMargin).toString()
+    dom.style.lineHeight = (
+      element.rowMargin ?? options.defaultRowMargin
+    ).toString()
   }
   dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
@@ -1304,7 +1306,9 @@ export function createDomFromElementList(
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const hr = document.createElement('hr')
-        hr.setAttribute('data-dash-array', element.dashArray!.join(','))
+        if (element.dashArray?.length) {
+          hr.setAttribute('data-dash-array', element.dashArray.join(','))
+        }
         clipboardDom.append(hr)
       } else if (element.type === ElementType.CHECKBOX) {
         const checkbox = document.createElement('input')
@@ -1338,42 +1342,20 @@ export function createDomFromElementList(
         element.type === ElementType.LATEX ||
         TEXTLIKE_ELEMENT_TYPE.includes(element.type)
       ) {
-        if (
-          payload[e - 1]?.type === ElementType.TITLE
-          && payload[e + 1]?.type === ElementType.TITLE
-          && payload[e + 1]?.level === payload[e - 1]?.level
-        ) {
-          // 相同级别标题之间的换行符处理
-          let text = element.value
-          if (!text) continue
-          text = text.replace(/^\n/, '')
-          const prevTitleElement = payload[e - 1]
-          const h = document.createElement(
-            `h${titleOrderNumberMapping[prevTitleElement.level!]}`
-          )
-          const brList = text.split('\n')
-          for (let b = 0; b < brList.length; b++) {
-            if (b > 0) {
-              h.append(document.createElement('br'))
-            }
-          }
-          clipboardDom.append(h)
+        let text = ''
+        if (element.type === ElementType.DATE) {
+          text = element.valueList?.map(v => v.value).join('') || ''
         } else {
-          let text = ''
-          if (element.type === ElementType.DATE) {
-            text = element.valueList?.map(v => v.value).join('') || ''
-          } else {
-            text = element.value
-          }
-          if (!text) continue
-          const dom = convertElementToDom(element, editorOptions)
-          // 前一个元素是标题，移除首行换行符
-          if (payload[e - 1]?.type === ElementType.TITLE) {
-            text = text.replace(/^\n/, '')
-          }
-          dom.innerText = text.replace(new RegExp(`${ ZERO }`, 'g'), '\n')
-          clipboardDom.append(dom)
+          text = element.value
         }
+        if (!text) continue
+        const dom = convertElementToDom(element, editorOptions)
+        // 前一个元素是标题，移除首行换行符
+        if (payload[e - 1]?.type === ElementType.TITLE) {
+          text = text.replace(/^\n/, '')
+        }
+        dom.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+        clipboardDom.append(dom)
       }
     }
     return clipboardDom
