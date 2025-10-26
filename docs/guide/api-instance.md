@@ -9,6 +9,16 @@ const instance = new Editor(container, <IElement[]>data, options)
 instance.apiName()
 ```
 
+## version
+
+功能：版本号
+
+用法：
+
+```javascript
+instance.version
+```
+
 ## destroy
 
 功能：销毁编辑器

@@ -1,4 +1,5 @@
 import './assets/css/index.css'
+import { version } from '../../package.json'
 import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
@@ -75,6 +76,7 @@ import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
 
 export default class Editor {
   public command: Command
+  public version: string
   public listener: Listener
   public eventBus: EventBus<EventBusMap>
   public override: Override
@@ -112,6 +114,8 @@ export default class Editor {
         isForceCompensation: true
       })
     })
+    // 版本
+    this.version = version
     // 监听
     this.listener = new Listener()
     // 事件

@@ -1795,9 +1795,9 @@ export class Draw {
               elementList,
               i
             )
-            // 单词宽度大于行可用宽度，无需折行
+            // 后面存在元素 && 单词宽度大于行可用宽度，无需折行
             const wordWidth = width * scale
-            if (wordWidth <= availableWidth) {
+            if (endElement && wordWidth <= availableWidth) {
               curRowWidth += wordWidth
               nextElement = endElement
             }

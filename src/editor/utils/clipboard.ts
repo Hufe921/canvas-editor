@@ -28,7 +28,7 @@ export function removeClipboardData() {
   localStorage.removeItem(EDITOR_CLIPBOARD)
 }
 
-export function writeClipboardItem(
+export async function writeClipboardItem(
   text: string,
   html: string,
   elementList: IElement[]
@@ -42,7 +42,7 @@ export function writeClipboardItem(
       [plainText.type]: plainText,
       [htmlText.type]: htmlText
     })
-    window.navigator.clipboard.write([item])
+    await window.navigator.clipboard.write([item])
   } else {
     const fakeElement = document.createElement('div')
     fakeElement.setAttribute('contenteditable', 'true')
@@ -66,7 +66,7 @@ export function writeClipboardItem(
   setClipboardData({ text, elementList })
 }
 
-export function writeElementList(
+export async function writeElementList(
   elementList: IElement[],
   options: DeepRequired<IEditorOption>
 ) {
@@ -78,7 +78,7 @@ export function writeElementList(
   clipboardDom.remove()
   const html = clipboardDom.innerHTML
   if (!text && !html && !elementList.length) return
-  writeClipboardItem(text, html, zipElementList(elementList))
+  await writeClipboardItem(text, html, zipElementList(elementList))
 }
 
 export function getIsClipboardContainFile(clipboardData: DataTransfer) {

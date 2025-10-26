@@ -17,9 +17,9 @@ import { formatElementContext } from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class TextControl implements IControlInstance {
-  private element: IElement
-  private control: Control
-  private options: DeepRequired<IEditorOption>
+  protected element: IElement
+  protected control: Control
+  protected options: DeepRequired<IEditorOption>
 
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()

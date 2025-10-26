@@ -11,7 +11,7 @@ export function copyWithCopyrightPlugin(
 ) {
   const copy = editor.command.executeCopy
 
-  editor.command.executeCopy = () => {
+  editor.command.executeCopy = async () => {
     const { copyrightText } = options || {}
     if (copyrightText) {
       const rangeText = editor.command.getRangeText()
@@ -22,9 +22,9 @@ export function copyWithCopyrightPlugin(
       const item = new ClipboardItem({
         [plainText.type]: plainText
       })
-      window.navigator.clipboard.write([item])
+      await window.navigator.clipboard.write([item])
     } else {
-      copy()
+      await copy()
     }
   }
 }

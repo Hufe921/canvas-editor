@@ -176,12 +176,12 @@ export class CanvasEvent {
     input(data, this)
   }
 
-  public cut() {
-    cut(this)
+  public async cut() {
+    await cut(this)
   }
 
-  public copy(options?: ICopyOption) {
-    copy(this, options)
+  public async copy(options?: ICopyOption) {
+    await copy(this, options)
   }
 
   public compositionstart() {

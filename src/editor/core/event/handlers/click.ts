@@ -152,6 +152,10 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
 
 function threeClick(host: CanvasEvent) {
   const draw = host.getDraw()
+  // 优先选择控件内容
+  const control = draw.getControl()
+  if (control.getActiveControl() && control.selectValue()) return
+  // 选择整个段落
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return
