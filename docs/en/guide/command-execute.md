@@ -1056,6 +1056,16 @@ Usage:
 instance.command.executeInsertControl(payload: IElement)
 ```
 
+## executeJumpControl
+
+Feature: Jump to the next/previous control
+
+Usage:
+
+```javascript
+instance.command.executeJumpControl(payload?: { direction?: MoveDirection })
+```
+
 ## executeUpdateOptions
 
 Feature: Update options

@@ -1056,6 +1056,16 @@ instance.command.executeLocationControl(controlId: string, options?: ILocationCo
 instance.command.executeInsertControl(payload: IElement)
 ```
 
+## executeJumpControl
+
+功能：跳转到下/上一个控件
+
+用法：
+
+```javascript
+instance.command.executeJumpControl(payload?: { direction?: MoveDirection })
+```
+
 ## executeUpdateOptions
 
 功能：修改配置

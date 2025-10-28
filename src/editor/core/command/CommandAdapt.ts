@@ -2368,6 +2368,12 @@ export class CommandAdapt {
     this.draw.insertElementList([cloneElement])
   }
 
+  public jumpControl(payload?: { direction?: MoveDirection }) {
+    this.draw.getControl().initNextControl({
+      direction: payload?.direction
+    })
+  }
+
   public getContainer(): HTMLDivElement {
     return this.draw.getContainer()
   }
