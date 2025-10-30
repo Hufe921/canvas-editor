@@ -46,6 +46,7 @@ import { ControlSearch } from './interactive/ControlSearch'
 import { ControlBorder } from './richtext/Border'
 import { SelectControl } from './select/SelectControl'
 import { TextControl } from './text/TextControl'
+import { NumberControl } from './text/NumberControl'
 import { DateControl } from './date/DateControl'
 import { MoveDirection } from '../../../dataset/enum/Observer'
 import {
@@ -293,6 +294,8 @@ export class Control {
       const dateControl = new DateControl(element, this)
       this.activeControl = dateControl
       dateControl.awake()
+    } else if (control.type === ControlType.NUMBER) {
+      this.activeControl = new NumberControl(element, this)
     }
     // 激活控件回调
     nextTick(() => {

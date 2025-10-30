@@ -879,6 +879,66 @@ window.onload = function () {
           }
         })
         break
+      case ControlType.NUMBER:
+        new Dialog({
+          title: '格式化数字控件',
+          data: [
+            {
+              type: 'text',
+              label: '占位符',
+              name: 'placeholder',
+              required: true,
+              placeholder: '请输入占位符'
+            },
+            {
+              type: 'text',
+              label: '默认值',
+              name: 'value',
+              placeholder: '请输入默认值'
+            },
+            {
+              type: 'number',
+              label: '最大值',
+              name: 'max',
+              placeholder: '请输入最大值'
+            },
+            {
+              type: 'number',
+              label: '最小值',
+              name: 'min',
+              placeholder: '请输入最小值'
+            }
+          ],
+          onConfirm: payload => {
+            const placeholder = payload.find(
+              p => p.name === 'placeholder'
+            )?.value
+            if (!placeholder) return
+            const value = payload.find(p => p.name === 'value')?.value || ''
+            const max = payload.find(p => p.name === 'max')?.value || ''
+            const min = payload.find(p => p.name === 'min')?.value || ''
+            instance.command.executeInsertElementList([
+              {
+                type: ElementType.CONTROL,
+                value: '',
+                control: {
+                  type,
+                  value: value
+                    ? [
+                        {
+                          value
+                        }
+                      ]
+                    : null,
+                  placeholder,
+                  max: max ? Number(max) : undefined,
+                  min: min ? Number(min) : undefined
+                }
+              }
+            ])
+          }
+        })
+        break
       default:
         break
     }
