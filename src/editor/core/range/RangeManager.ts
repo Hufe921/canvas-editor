@@ -410,7 +410,7 @@ export class RangeManager {
     )
   }
 
-  public setRange(
+  public async setRange(
     startIndex: number,
     endIndex: number,
     tableId?: string,
@@ -452,7 +452,7 @@ export class RangeManager {
       const elementList = this.draw.getElementList()
       const element = elementList[startIndex]
       if (element?.controlId) {
-        control.initControl()
+        await control.initControl()
         return
       }
     }

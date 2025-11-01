@@ -247,85 +247,12 @@ export class DateControl implements IControlInstance {
     if (this.control.getIsDisabledControl()) {
       return null
     }
-    const elementList = this.control.getElementList()
-    const range = this.control.getRange()
-    // 收缩边界到Value内
-    this.control.shrinkBoundary()
-    const { startIndex, endIndex } = range
-    const startElement = elementList[startIndex]
-    const endElement = elementList[endIndex]
-    const draw = this.control.getDraw()
-    // backspace
-    if (evt.key === KeyMap.Backspace) {
-      // 移除选区元素
-      if (startIndex !== endIndex) {
-        draw.spliceElementList(
-          elementList,
-          startIndex + 1,
-          endIndex - startIndex
-        )
-        const value = this.getValue()
-        if (!value.length) {
-          this.control.addPlaceholder(startIndex)
-        }
-        return startIndex
-      } else {
-        if (
-          startElement.controlComponent === ControlComponent.PREFIX ||
-          startElement.controlComponent === ControlComponent.PRE_TEXT ||
-          endElement.controlComponent === ControlComponent.POSTFIX ||
-          endElement.controlComponent === ControlComponent.POST_TEXT ||
-          startElement.controlComponent === ControlComponent.PLACEHOLDER
-        ) {
-          // 前缀、后缀、占位符
-          return this.control.removeControl(startIndex)
-        } else {
-          // 文本
-          draw.spliceElementList(elementList, startIndex, 1)
-          const value = this.getValue()
-          if (!value.length) {
-            this.control.addPlaceholder(startIndex - 1)
-          }
-          return startIndex - 1
-        }
-      }
-    } else if (evt.key === KeyMap.Delete) {
-      // 移除选区元素
-      if (startIndex !== endIndex) {
-        draw.spliceElementList(
-          elementList,
-          startIndex + 1,
-          endIndex - startIndex
-        )
-        const value = this.getValue()
-        if (!value.length) {
-          this.control.addPlaceholder(startIndex)
-        }
-        return startIndex
-      } else {
-        const endNextElement = elementList[endIndex + 1]
-        if (
-          ((startElement.controlComponent === ControlComponent.PREFIX ||
-            startElement.controlComponent === ControlComponent.PRE_TEXT) &&
-            endNextElement.controlComponent === ControlComponent.PLACEHOLDER) ||
-          endNextElement.controlComponent === ControlComponent.POSTFIX ||
-          endNextElement.controlComponent === ControlComponent.POST_TEXT ||
-          startElement.controlComponent === ControlComponent.PLACEHOLDER
-        ) {
-          // 前缀、后缀、占位符
-          return this.control.removeControl(startIndex)
-        } else {
-          // 文本
-          draw.spliceElementList(elementList, startIndex + 1, 1)
-          const value = this.getValue()
-          if (!value.length) {
-            this.control.addPlaceholder(startIndex)
-          }
-          return startIndex
-        }
-      }
+    // 只允许Tab键导航，禁止其他所有输入
+    if (evt.key !== KeyMap.Tab) {
+      evt.preventDefault()
+      return this.control.getRange().endIndex
     }
-    return endIndex
+    return this.control.getRange().endIndex
   }
 
   public cut(): number {

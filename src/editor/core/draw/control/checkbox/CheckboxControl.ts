@@ -151,4 +151,8 @@ export class CheckboxControl implements IControlInstance {
   public cut(): number {
     return -1
   }
+
+  public awake(): void {
+    // CheckboxControl不需要额外的初始化操作
+  }
 }

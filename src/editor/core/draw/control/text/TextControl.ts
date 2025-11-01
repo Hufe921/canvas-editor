@@ -273,4 +273,8 @@ export class TextControl implements IControlInstance {
     }
     return startIndex
   }
+
+  public awake(): void {
+    // TextControl不需要额外的初始化操作
+  }
 }

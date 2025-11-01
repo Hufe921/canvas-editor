@@ -432,9 +432,67 @@ export class SelectControl implements IControlInstance {
     }
   }
 
-  private _createSelectPopupDom() {
+  private async loadValueSets() {
     const control = this.element.control!
     const valueSets = control.valueSets
+    if (!Array.isArray(valueSets) || !valueSets.length) return []
+
+    // 加载所有值集，包括从API获取的数据
+    const loadedValueSets = await Promise.all(
+      valueSets.map(async (valueSet) => {
+        // 如果值集包含API信息，则从API获取数据
+        if (valueSet.apiUrl) {
+          try {
+            const response = await fetch(valueSet.apiUrl, {
+              method: valueSet.apiMethod || 'GET',
+              headers: valueSet.apiHeaders || {},
+              body: valueSet.apiMethod === 'POST' ? JSON.stringify(valueSet.apiParams) : undefined
+            })
+            const data = await response.json()
+
+            // 处理API响应数据
+            const apiResponsePath = valueSet.apiResponsePath || ''
+            const apiValueKey = valueSet.apiValueKey || 'value'
+            const apiCodeKey = valueSet.apiCodeKey || 'code'
+
+            // 解析响应路径
+            let values = data
+            if (apiResponsePath) {
+              const paths = apiResponsePath.split('.')
+              for (const path of paths) {
+                if (values && typeof values === 'object') {
+                  values = values[path]
+                } else {
+                  values = []
+                  break
+                }
+              }
+            }
+
+            // 转换为IValueSet格式
+            if (Array.isArray(values)) {
+              return values.map(item => ({
+                value: item[apiValueKey],
+                code: item[apiCodeKey]
+              }))
+            }
+          } catch (error) {
+            console.error('Failed to load value set from API:', error)
+          }
+        }
+
+        // 如果不是API值集或加载失败，则返回原始值集
+        return [valueSet]
+      })
+    )
+
+    // 合并所有值集
+    return loadedValueSets.flat()
+  }
+
+  private async _createSelectPopupDom() {
+    const control = this.element.control!
+    const valueSets = await this.loadValueSets()
     if (!Array.isArray(valueSets) || !valueSets.length) return
     const position = this.control.getPosition()
     if (!position) return
@@ -487,7 +545,7 @@ export class SelectControl implements IControlInstance {
     this.selectDom = selectPopupContainer
   }
 
-  public awake() {
+  public async awake() {
     if (
       this.isPopup ||
       this.control.getIsDisabledControl() ||
@@ -500,7 +558,7 @@ export class SelectControl implements IControlInstance {
     if (elementList[startIndex + 1]?.controlId !== this.element.controlId) {
       return
     }
-    this._createSelectPopupDom()
+    await this._createSelectPopupDom()
     this.isPopup = true
   }
 

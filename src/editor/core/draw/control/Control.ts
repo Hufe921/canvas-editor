@@ -446,7 +446,7 @@ export class Control {
     }
   }
 
-  public initControl() {
+  public async initControl() {
     const elementList = this.getElementList()
     const range = this.getRange()
     const element = elementList[range.startIndex]
@@ -460,7 +460,7 @@ export class Control {
         if (element.controlComponent === ControlComponent.POSTFIX) {
           this.activeControl.destroy()
         } else {
-          this.activeControl.awake()
+          await this.activeControl.awake()
         }
       }
       // 相同控件元素
@@ -494,7 +494,7 @@ export class Control {
     } else if (control.type === ControlType.SELECT) {
       const selectControl = new SelectControl(element, this)
       this.activeControl = selectControl
-      selectControl.awake()
+      await selectControl.awake()
     } else if (control.type === ControlType.CHECKBOX) {
       this.activeControl = new CheckboxControl(element, this)
     } else if (control.type === ControlType.RADIO) {
@@ -502,7 +502,7 @@ export class Control {
     } else if (control.type === ControlType.DATE) {
       const dateControl = new DateControl(element, this)
       this.activeControl = dateControl
-      dateControl.awake()
+      await dateControl.awake()
     } else if (control.type === ControlType.NUMBER) {
       this.activeControl = new NumberControl(element, this)
     }
@@ -601,7 +601,7 @@ export class Control {
     }
   }
 
-  public reAwakeControl() {
+  public async reAwakeControl() {
     if (!this.activeControl) return
     const elementList = this.getElementList()
     const range = this.getRange()

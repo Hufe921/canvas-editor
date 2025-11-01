@@ -127,6 +127,21 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
       return
     }
   }
+  // 双击表单控件时切换可编辑状态
+  if (positionContext.controlId) {
+    const elementList = draw.getElementList()
+    const element = elementList.find(el => el.controlId === positionContext.controlId)
+    if (element && element.control) {
+      element.control.disabled = !element.control.disabled
+      // 刷新文档以更新控件样式
+      draw.render({
+        isSubmitHistory: false,
+        isSetCursor: false,
+        isCompute: true
+      })
+      return
+    }
+  }
   // 复选/单选框双击时是切换选择状态，禁用扩选
   if (
     (positionContext.isCheckbox || positionContext.isRadio) &&
@@ -136,8 +151,7 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
   }
   // 自动扩选文字-分词处理，优先使用分词器否则降级使用光标所在位置
   const rangeManager = draw.getRange()
-  const segmenterRange =
-    getWordRangeBySegmenter(host) || getWordRangeByCursor(host)
+  const segmenterRange = getWordRangeBySegmenter(host) || getWordRangeByCursor(host)
   if (!segmenterRange) return
   rangeManager.setRange(segmenterRange.startIndex, segmenterRange.endIndex)
   // 刷新文档

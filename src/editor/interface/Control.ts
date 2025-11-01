@@ -16,6 +16,15 @@ import { IRow, IRowElement } from './Row'
 export interface IValueSet {
   value: string
   code: string
+  // API对接相关属性
+  apiUrl?: string
+  apiMethod?: 'GET' | 'POST'
+  apiParams?: Record<string, any>
+  apiHeaders?: Record<string, any>
+  // API响应处理相关属性
+  apiResponsePath?: string
+  apiValueKey?: string
+  apiCodeKey?: string
 }
 
 export interface IControlSelect {
@@ -136,6 +145,7 @@ export interface IControlInstance {
   ): number
   keydown(evt: KeyboardEvent): number | null
   cut(): number
+  awake(): Promise<void> | void
 }
 
 export interface IControlContext {
