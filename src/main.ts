@@ -752,12 +752,81 @@ window.onload = function () {
               placeholder: '请输入默认值'
             },
             {
+              type: 'radio',
+              label: '值集来源',
+              name: 'valueSource',
+              required: true,
+              options: [
+                { label: '手动输入', value: 'manual' },
+                { label: 'API获取', value: 'api' }
+              ],
+              default: 'manual'
+            },
+            {
               type: 'textarea',
               label: '值集',
               name: 'valueSets',
               required: true,
               height: 100,
-              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+              placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`,
+              visible: (data: any) => data.valueSource === 'manual'
+            },
+            {
+              type: 'text',
+              label: 'API URL',
+              name: 'apiUrl',
+              placeholder: '请输入API地址',
+              visible: (data: any) => data.valueSource === 'api'
+            },
+            {
+              type: 'textarea',
+              label: 'API参数',
+              name: 'apiParams',
+              height: 80,
+              placeholder: '请输入API参数（JSON格式）',
+              visible: (data: any) => data.valueSource === 'api'
+            },
+            {
+              type: 'radio',
+              label: '请求方法',
+              name: 'apiMethod',
+              options: [
+                { label: 'GET', value: 'GET' },
+                { label: 'POST', value: 'POST' }
+              ],
+              default: 'GET',
+              visible: (data: any) => data.valueSource === 'api'
+            },
+            {
+              type: 'textarea',
+              label: '请求头',
+              name: 'apiHeaders',
+              height: 80,
+              placeholder: '请输入请求头（JSON格式）',
+              visible: (data: any) => data.valueSource === 'api'
+            },
+            {
+              type: 'text',
+              label: '响应路径',
+              name: 'apiResponsePath',
+              placeholder: '请输入响应路径（如：data.list）',
+              visible: (data: any) => data.valueSource === 'api'
+            },
+            {
+              type: 'text',
+              label: '值键',
+              name: 'apiValueKey',
+              placeholder: '请输入值键（如：value）',
+              default: 'value',
+              visible: (data: any) => data.valueSource === 'api'
+            },
+            {
+              type: 'text',
+              label: '代码键',
+              name: 'apiCodeKey',
+              placeholder: '请输入代码键（如：code）',
+              default: 'code',
+              visible: (data: any) => data.valueSource === 'api'
             }
           ],
           onConfirm: payload => {
@@ -765,19 +834,44 @@ window.onload = function () {
               p => p.name === 'placeholder'
             )?.value
             if (!placeholder) return
-            const valueSets = payload.find(p => p.name === 'valueSets')?.value
-            if (!valueSets) return
+            const valueSource = payload.find(p => p.name === 'valueSource')?.value
             const code = payload.find(p => p.name === 'code')?.value
+            const controlConfig: any = {
+              type,
+              code,
+              value: null,
+              placeholder
+            }
+            
+            if (valueSource === 'manual') {
+              const valueSets = payload.find(p => p.name === 'valueSets')?.value
+              if (!valueSets) return
+              controlConfig.valueSets = JSON.parse(valueSets)
+            } else {
+              const apiUrl = payload.find(p => p.name === 'apiUrl')?.value
+              if (!apiUrl) return
+              const apiParams = payload.find(p => p.name === 'apiParams')?.value
+              const apiMethod = payload.find(p => p.name === 'apiMethod')?.value || 'GET'
+              const apiHeaders = payload.find(p => p.name === 'apiHeaders')?.value
+              const apiResponsePath = payload.find(p => p.name === 'apiResponsePath')?.value
+              const apiValueKey = payload.find(p => p.name === 'apiValueKey')?.value || 'value'
+              const apiCodeKey = payload.find(p => p.name === 'apiCodeKey')?.value || 'code'
+              
+              controlConfig.apiConfig = {
+                url: apiUrl,
+                method: apiMethod,
+                headers: apiHeaders ? JSON.parse(apiHeaders) : {},
+                params: apiParams ? JSON.parse(apiParams) : {},
+                responsePath: apiResponsePath,
+                valueKey: apiValueKey,
+                codeKey: apiCodeKey
+              }
+            }
+            
             instance.command.executeInsertControl({
               type: ElementType.CONTROL,
               value: '',
-              control: {
-                type,
-                code,
-                value: null,
-                placeholder,
-                valueSets: JSON.parse(valueSets)
-              }
+              control: controlConfig
             })
           }
         })
