@@ -434,60 +434,51 @@ export class SelectControl implements IControlInstance {
 
   private async loadValueSets() {
     const control = this.element.control!
-    const valueSets = control.valueSets
-    if (!Array.isArray(valueSets) || !valueSets.length) return []
+    let valueSets = control.valueSets || []
+    const apiConfig = control.apiConfig
 
-    // 加载所有值集，包括从API获取的数据
-    const loadedValueSets = await Promise.all(
-      valueSets.map(async (valueSet) => {
-        // 如果值集包含API信息，则从API获取数据
-        if (valueSet.apiUrl) {
-          try {
-            const response = await fetch(valueSet.apiUrl, {
-              method: valueSet.apiMethod || 'GET',
-              headers: valueSet.apiHeaders || {},
-              body: valueSet.apiMethod === 'POST' ? JSON.stringify(valueSet.apiParams) : undefined
-            })
-            const data = await response.json()
+    // 如果存在API配置，则从API获取数据
+    if (apiConfig && apiConfig.url) {
+      try {
+        const response = await fetch(apiConfig.url, {
+          method: apiConfig.method || 'GET',
+          headers: apiConfig.headers || {},
+          body: apiConfig.method === 'POST' ? JSON.stringify(apiConfig.params) : undefined
+        })
+        const data = await response.json()
 
-            // 处理API响应数据
-            const apiResponsePath = valueSet.apiResponsePath || ''
-            const apiValueKey = valueSet.apiValueKey || 'value'
-            const apiCodeKey = valueSet.apiCodeKey || 'code'
+        // 处理API响应数据
+        const apiResponsePath = apiConfig.responsePath || ''
+        const apiValueKey = apiConfig.valueKey || 'value'
+        const apiCodeKey = apiConfig.codeKey || 'code'
 
-            // 解析响应路径
-            let values = data
-            if (apiResponsePath) {
-              const paths = apiResponsePath.split('.')
-              for (const path of paths) {
-                if (values && typeof values === 'object') {
-                  values = values[path]
-                } else {
-                  values = []
-                  break
-                }
-              }
+        // 解析响应路径
+        let values = data
+        if (apiResponsePath) {
+          const paths = apiResponsePath.split('.')
+          for (const path of paths) {
+            if (values && typeof values === 'object') {
+              values = values[path]
+            } else {
+              values = []
+              break
             }
-
-            // 转换为IValueSet格式
-            if (Array.isArray(values)) {
-              return values.map(item => ({
-                value: item[apiValueKey],
-                code: item[apiCodeKey]
-              }))
-            }
-          } catch (error) {
-            console.error('Failed to load value set from API:', error)
           }
         }
 
-        // 如果不是API值集或加载失败，则返回原始值集
-        return [valueSet]
-      })
-    )
+        // 转换为IValueSet格式
+        if (Array.isArray(values)) {
+          valueSets = values.map(item => ({
+            value: item[apiValueKey],
+            code: item[apiCodeKey]
+          }))
+        }
+      } catch (error) {
+        console.error('Failed to load value set from API:', error)
+      }
+    }
 
-    // 合并所有值集
-    return loadedValueSets.flat()
+    return valueSets
   }
 
   private async _createSelectPopupDom() {
