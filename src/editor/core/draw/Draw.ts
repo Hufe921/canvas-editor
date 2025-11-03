@@ -2720,7 +2720,6 @@ export class Draw {
     }
     // 信息变动回调
     nextTick(() => {
-      console.log(this.elementList)
       // 选区样式
       this.range.setRangeStyle()
       // 重新唤起弹窗类控件

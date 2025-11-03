@@ -6,7 +6,7 @@ import { IRange } from '../../../interface/Range'
 import { CanvasEvent } from '../CanvasEvent'
 
 // 通过分词器获取单词所在选区
-function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
+export function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
   if (!Intl.Segmenter) return null
   const draw = host.getDraw()
   const cursorPosition = draw.getPosition().getCursorPosition()
@@ -54,7 +54,7 @@ function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
 }
 
 // 通过光标位置获取单词所在选区
-function getWordRangeByCursor(host: CanvasEvent): IRange | null {
+export function getWordRangeByCursor(host: CanvasEvent): IRange | null {
   const draw = host.getDraw()
   const cursorPosition = draw.getPosition().getCursorPosition()
   if (!cursorPosition) return null
