@@ -980,6 +980,7 @@ export class TableOperate {
       endTrIndex
     })
     this.draw.render({
+      isSetCursor: false,
       isCompute: false,
       isSubmitHistory: false
     })

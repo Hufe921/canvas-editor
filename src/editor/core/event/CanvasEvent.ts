@@ -136,13 +136,18 @@ export class CanvasEvent {
   }
 
   public selectAll() {
-    const position = this.position.getPositionList()
-    this.range.setRange(0, position.length - 1)
-    this.draw.render({
-      isSubmitHistory: false,
-      isSetCursor: false,
-      isCompute: false
-    })
+    // 光标在表格内时选择整个表格
+    if (this.position.getPositionContext().isTable) {
+      this.draw.getTableOperate().tableSelectAll()
+    } else {
+      const positionList = this.position.getPositionList()
+      this.range.setRange(0, positionList.length - 1)
+      this.draw.render({
+        isSubmitHistory: false,
+        isSetCursor: false,
+        isCompute: false
+      })
+    }
   }
 
   public mousemove(evt: MouseEvent) {
