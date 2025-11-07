@@ -179,7 +179,11 @@ export async function pasteByApi(host: CanvasEvent, options?: IPasteOption) {
   // 优先读取编辑器内部粘贴板数据
   const clipboardText = await navigator.clipboard.readText()
   const editorClipboardData = getClipboardData()
-  if (clipboardText === editorClipboardData?.text) {
+  if (
+    editorClipboardData &&
+    normalizeLineBreak(clipboardText) ===
+      normalizeLineBreak(editorClipboardData.text)
+  ) {
     pasteElement(host, editorClipboardData.elementList)
     return
   }

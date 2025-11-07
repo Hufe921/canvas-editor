@@ -9,6 +9,18 @@ const instance = new Editor(container, <IElement[]>data, options)
 instance.command.commandName()
 ```
 
+::: tip
+The execution of certain commands may cause the cursor to move out of the document (e.g., clicking the "Bold" button on the custom toolbar). In such cases, you can assign an identifier (EDITOR_COMPONENT) to the editor, allowing it to recognize the component as internal. For example:
+
+```js
+import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
+
+<div class="menu" :[EDITOR_COMPONENT]="EditorComponent.MENU">
+  <button class="bold"></button>
+</div>
+```
+:::
+
 ## executeMode
 
 Feature: Switch editor mode (Edit, Clean, Read only)
@@ -1042,6 +1054,16 @@ Usage:
 
 ```javascript
 instance.command.executeInsertControl(payload: IElement)
+```
+
+## executeJumpControl
+
+Feature: Jump to the next/previous control
+
+Usage:
+
+```javascript
+instance.command.executeJumpControl(payload?: { direction?: MoveDirection })
 ```
 
 ## executeUpdateOptions

@@ -1572,11 +1572,13 @@ export class Draw {
             }
           }
           // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
+          // 前面元素为换页符时重新计算高度
           const rowMarginHeight = rowMargin * 2 * scale
           const firstTrHeight = element.trList![0].height! * scale
           if (
             curPagePreHeight + firstTrHeight + rowMarginHeight > height ||
-            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat)
+            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat) ||
+            elementList[i - 1]?.type === ElementType.PAGE_BREAK
           ) {
             // 无可拆分行则切换至新页
             curPagePreHeight = marginHeight
@@ -1795,9 +1797,9 @@ export class Draw {
               elementList,
               i
             )
-            // 单词宽度大于行可用宽度，无需折行
+            // 后面存在元素 && 单词宽度大于行可用宽度，无需折行
             const wordWidth = width * scale
-            if (wordWidth <= availableWidth) {
+            if (endElement && wordWidth <= availableWidth) {
               curRowWidth += wordWidth
               nextElement = endElement
             }

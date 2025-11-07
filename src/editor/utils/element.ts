@@ -949,6 +949,14 @@ export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
 
+export function getElementListText(elementList: IElement[]): string {
+  return elementList
+    .filter(el => isTextLikeElement(el))
+    .map(el => el.value)
+    .join('')
+    .replace(new RegExp(ZERO, 'g'), '')
+}
+
 export function getAnchorElement(
   elementList: IElement[],
   anchorIndex: number
@@ -1060,9 +1068,18 @@ export function convertElementToDom(
   }
   if (element.underline) {
     dom.style.textDecoration = 'underline'
+    dom.style.textDecorationStyle = element.textDecoration?.style || 'solid'
   }
   if (element.strikeout) {
     dom.style.textDecoration += ' line-through'
+  }
+  if (element.type) {
+    dom.setAttribute('data-type', element.type)
+  }
+  if (element.rowMargin) {
+    dom.style.lineHeight = (
+      element.rowMargin ?? options.defaultRowMargin
+    ).toString()
   }
   dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
@@ -1289,6 +1306,9 @@ export function createDomFromElementList(
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const hr = document.createElement('hr')
+        if (element.dashArray?.length) {
+          hr.setAttribute('data-dash-array', element.dashArray.join(','))
+        }
         clipboardDom.append(hr)
       } else if (element.type === ElementType.CHECKBOX) {
         const checkbox = document.createElement('input')
@@ -1313,6 +1333,10 @@ export function createDomFromElementList(
         const childDom = buildDom(element.control?.value || [])
         controlElement.innerHTML = childDom.innerHTML
         clipboardDom.append(controlElement)
+      } else if (element.type === ElementType.PAGE_BREAK) {
+        const pageBreakElement = document.createElement('div')
+        pageBreakElement.style.breakAfter = 'page'
+        clipboardDom.append(pageBreakElement)
       } else if (
         !element.type ||
         element.type === ElementType.LATEX ||
@@ -1358,6 +1382,9 @@ export function createDomFromElementList(
         rowFlexDom.style.textAlign = convertRowFlexToTextAlign(
           elementGroupRowFlex.rowFlex!
         )
+        if (elementGroupRowFlex.rowFlex === 'justify') {
+          rowFlexDom.style.textAlignLast = 'justify'
+        }
       }
     }
     // 布局内容

@@ -7,7 +7,7 @@ import { getTextFromElementList, zipElementList } from '../../../utils/element'
 import { IOverrideResult } from '../../override/Override'
 import { CanvasEvent } from '../CanvasEvent'
 
-export function copy(host: CanvasEvent, options?: ICopyOption) {
+export async function copy(host: CanvasEvent, options?: ICopyOption) {
   const draw = host.getDraw()
   // 自定义粘贴事件
   const { copy } = draw.getOverride()
@@ -68,5 +68,5 @@ export function copy(host: CanvasEvent, options?: ICopyOption) {
     ]
   }
   if (!copyElementList?.length) return
-  writeElementList(copyElementList, draw.getOptions())
+  await writeElementList(copyElementList, draw.getOptions())
 }

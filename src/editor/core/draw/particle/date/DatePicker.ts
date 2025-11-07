@@ -541,15 +541,27 @@ export class DatePicker {
     }
   }
 
-  public formatDate(date: Date, format = 'yyyy-MM-dd hh:mm:ss'): string {
+  public formatDate(date: Date, format = 'YYYY-MM-DD HH:mm:ss'): string {
     let dateString = format
+    const year = date.getFullYear().toString()
+    const month = (date.getMonth() + 1).toString()
+    const day = date.getDate().toString()
+    const hours24 = date.getHours()
+    const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12
+    const minute = date.getMinutes().toString()
+    const second = date.getSeconds().toString()
+    const millisecond = date.getMilliseconds().toString()
     const dateOption = {
-      'y+': date.getFullYear().toString(),
-      'M+': (date.getMonth() + 1).toString(),
-      'd+': date.getDate().toString(),
-      'h+': date.getHours().toString(),
-      'm+': date.getMinutes().toString(),
-      's+': date.getSeconds().toString()
+      'y+': year,
+      'Y+': year,
+      'M+': month,
+      'd+': day,
+      'D+': day,
+      'h+': hours12.toString(),
+      'H+': hours24.toString(),
+      'm+': minute,
+      's+': second,
+      'S+': millisecond
     }
     for (const k in dateOption) {
       const reg = new RegExp('(' + k + ')').exec(format)

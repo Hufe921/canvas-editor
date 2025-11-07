@@ -162,14 +162,14 @@ export class CommandAdapt {
     this.draw.setMode(payload)
   }
 
-  public cut() {
+  public async cut() {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    this.canvasEvent.cut()
+    await this.canvasEvent.cut()
   }
 
-  public copy(payload?: ICopyOption) {
-    this.canvasEvent.copy(payload)
+  public async copy(payload?: ICopyOption) {
+    await this.canvasEvent.copy(payload)
   }
 
   public paste(payload?: IPasteOption) {
@@ -1058,36 +1058,26 @@ export class CommandAdapt {
     this.tableOperate.tableSelectAll()
   }
 
-  public hyperlink(payload: IElement) {
+  public hyperlink(
+    payload: Pick<IElement, 'valueList' | 'hyperlinkId' | 'url'>
+  ) {
+    const { valueList, url, hyperlinkId } = payload
+    if (!url || !valueList?.length) return
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const activeControl = this.control.getActiveControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const elementList = this.draw.getElementList()
-    const { valueList, url } = payload
-    const hyperlinkId = getUUID()
-    const newElementList = valueList?.map<IElement>(v => ({
-      url,
-      hyperlinkId,
-      value: v.value,
-      type: ElementType.HYPERLINK
-    }))
-    if (!newElementList) return
-    const start = startIndex + 1
-    formatElementContext(elementList, newElementList, startIndex, {
-      editorOptions: this.options
-    })
-    this.draw.spliceElementList(
-      elementList,
-      start,
-      startIndex === endIndex ? 0 : endIndex - startIndex,
-      newElementList
-    )
-    const curIndex = start + newElementList.length - 1
-    this.range.setRange(curIndex, curIndex)
-    this.draw.render({ curIndex })
+    this.insertElementList([
+      {
+        type: ElementType.HYPERLINK,
+        value: '',
+        valueList,
+        url,
+        hyperlinkId: hyperlinkId || getUUID()
+      }
+    ])
   }
 
   public getHyperlinkRange(): [number, number] | null {
@@ -2376,6 +2366,12 @@ export class CommandAdapt {
     cloneProperty<IElement>(cloneAttr, copyElement, cloneElement)
     // 插入控件
     this.draw.insertElementList([cloneElement])
+  }
+
+  public jumpControl(payload?: { direction?: MoveDirection }) {
+    this.draw.getControl().initNextControl({
+      direction: payload?.direction
+    })
   }
 
   public getContainer(): HTMLDivElement {

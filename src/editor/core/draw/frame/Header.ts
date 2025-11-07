@@ -107,6 +107,7 @@ export class Header {
   }
 
   public getHeight(): number {
+    if (this.options.header.disabled) return 0
     const maxHeight = this.getMaxHeight()
     const rowHeight = this.getRowHeight()
     return rowHeight > maxHeight ? maxHeight : rowHeight

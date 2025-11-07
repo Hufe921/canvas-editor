@@ -15,7 +15,7 @@ import { input } from './handlers/input'
 import { cut } from './handlers/cut'
 import { copy } from './handlers/copy'
 import { drop } from './handlers/drop'
-import click from './handlers/click'
+import click, { getWordRangeBySegmenter } from './handlers/click'
 import composition from './handlers/composition'
 import drag from './handlers/drag'
 import { isIOS } from '../../utils/ua'
@@ -110,7 +110,15 @@ export class CanvasEvent {
     if (!painterStyle) return
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const selection = this.range.getSelection()
+    let selection = this.range.getSelection()
+    // 当前不存在选区时：判断光标处是否存词组
+    if (!selection) {
+      const range = getWordRangeBySegmenter(this)
+      if (range) {
+        const elementList = this.draw.getElementList()
+        selection = elementList.slice(range.startIndex + 1, range.endIndex + 1)
+      }
+    }
     if (!selection) return
     const painterStyleKeys = Object.keys(painterStyle)
     selection.forEach(s => {
@@ -128,13 +136,18 @@ export class CanvasEvent {
   }
 
   public selectAll() {
-    const position = this.position.getPositionList()
-    this.range.setRange(0, position.length - 1)
-    this.draw.render({
-      isSubmitHistory: false,
-      isSetCursor: false,
-      isCompute: false
-    })
+    // 光标在表格内时选择整个表格
+    if (this.position.getPositionContext().isTable) {
+      this.draw.getTableOperate().tableSelectAll()
+    } else {
+      const positionList = this.position.getPositionList()
+      this.range.setRange(0, positionList.length - 1)
+      this.draw.render({
+        isSubmitHistory: false,
+        isSetCursor: false,
+        isCompute: false
+      })
+    }
   }
 
   public mousemove(evt: MouseEvent) {
@@ -176,12 +189,12 @@ export class CanvasEvent {
     input(data, this)
   }
 
-  public cut() {
-    cut(this)
+  public async cut() {
+    await cut(this)
   }
 
-  public copy(options?: ICopyOption) {
-    copy(this, options)
+  public async copy(options?: ICopyOption) {
+    await copy(this, options)
   }
 
   public compositionstart() {

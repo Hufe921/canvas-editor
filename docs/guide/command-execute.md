@@ -9,6 +9,18 @@ const instance = new Editor(container, <IElement[]>data, options)
 instance.command.commandName()
 ```
 
+::: tip
+某些命令的执行，会使光标从文档中移出（比如：点击自定义工具栏-加粗文字）。此时可以设置一个标识(EDITOR_COMPONENT)给编辑器，让编辑器将其识别为内部组件。如：
+
+```js
+import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
+
+<div class="menu" :[EDITOR_COMPONENT]="EditorComponent.MENU">
+  <button class="bold"></button>
+</div>
+```
+:::
+
 ## executeMode
 
 功能：切换编辑器模式（编辑、清洁、只读、表单）
@@ -1042,6 +1054,16 @@ instance.command.executeLocationControl(controlId: string, options?: ILocationCo
 
 ```javascript
 instance.command.executeInsertControl(payload: IElement)
+```
+
+## executeJumpControl
+
+功能：跳转到下/上一个控件
+
+用法：
+
+```javascript
+instance.command.executeJumpControl(payload?: { direction?: MoveDirection })
 ```
 
 ## executeUpdateOptions

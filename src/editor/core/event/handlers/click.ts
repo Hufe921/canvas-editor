@@ -6,7 +6,7 @@ import { IRange } from '../../../interface/Range'
 import { CanvasEvent } from '../CanvasEvent'
 
 // 通过分词器获取单词所在选区
-function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
+export function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
   if (!Intl.Segmenter) return null
   const draw = host.getDraw()
   const cursorPosition = draw.getPosition().getCursorPosition()
@@ -54,7 +54,7 @@ function getWordRangeBySegmenter(host: CanvasEvent): IRange | null {
 }
 
 // 通过光标位置获取单词所在选区
-function getWordRangeByCursor(host: CanvasEvent): IRange | null {
+export function getWordRangeByCursor(host: CanvasEvent): IRange | null {
   const draw = host.getDraw()
   const cursorPosition = draw.getPosition().getCursorPosition()
   if (!cursorPosition) return null
@@ -152,6 +152,10 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
 
 function threeClick(host: CanvasEvent) {
   const draw = host.getDraw()
+  // 优先选择控件内容
+  const control = draw.getControl()
+  if (control.getActiveControl() && control.selectValue()) return
+  // 选择整个段落
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return

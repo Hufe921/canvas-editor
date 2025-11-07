@@ -617,6 +617,52 @@ export class Control {
     }
   }
 
+  public selectValue(): boolean {
+    const elementList = this.getElementList()
+    const { startIndex } = this.getRange()
+    const startElement = elementList[startIndex]
+    if (
+      !startElement?.controlId ||
+      (startElement.controlComponent !== ControlComponent.VALUE &&
+        elementList[startIndex + 1]?.controlComponent ===
+          ControlComponent.VALUE)
+    ) {
+      return false
+    }
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (preElement.controlComponent !== ControlComponent.VALUE) break
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (nextElement.controlComponent !== ControlComponent.VALUE) {
+        nextIndex--
+        break
+      }
+      nextIndex++
+    }
+    if (preIndex !== nextIndex) {
+      const range = this.range.getRange()
+      this.range.replaceRange({
+        ...range,
+        startIndex: preIndex,
+        endIndex: nextIndex
+      })
+      this.draw.render({
+        isCompute: false,
+        isSetCursor: false,
+        isSubmitHistory: false
+      })
+      return true
+    }
+    return false
+  }
+
   public moveCursor(position: IControlInitOption): IMoveCursorResult {
     const { index, trIndex, tdIndex, tdValueIndex } = position
     let elementList = this.draw.getOriginalElementList()
