@@ -1167,6 +1167,8 @@ window.onload = function () {
   const replaceInputDom = document.querySelector<HTMLInputElement>(
     '.menu-item__search__collapse__replace input'
   )!
+  const searchRegInputDom =
+    document.querySelector<HTMLInputElement>('#option-reg')!
   const searchDom =
     document.querySelector<HTMLDivElement>('.menu-item__search')!
   searchDom.title = `搜索与替换(${isApple ? '⌘' : 'Ctrl'}+F)`
@@ -1204,14 +1206,24 @@ window.onload = function () {
       setSearchResult()
     }
   searchInputDom.oninput = function () {
-    instance.command.executeSearch(searchInputDom.value || null)
+    instance.command.executeSearch(searchInputDom.value || null, {
+      isRegEnable: searchRegInputDom.checked
+    })
     setSearchResult()
   }
   searchInputDom.onkeydown = function (evt) {
     if (evt.key === 'Enter') {
-      instance.command.executeSearch(searchInputDom.value || null)
+      instance.command.executeSearch(searchInputDom.value || null, {
+        isRegEnable: searchRegInputDom.checked
+      })
       setSearchResult()
     }
+  }
+  searchRegInputDom.onchange = function () {
+    instance.command.executeSearch(searchInputDom.value || null, {
+      isRegEnable: searchRegInputDom.checked
+    })
+    setSearchResult()
   }
   searchCollapseDom.querySelector<HTMLButtonElement>('button')!.onclick =
     function () {

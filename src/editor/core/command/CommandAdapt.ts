@@ -77,7 +77,11 @@ import {
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition, IPositionContext } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
-import { IReplaceOption, ISearchResultContext } from '../../interface/Search'
+import {
+  IReplaceOption,
+  ISearchOption,
+  ISearchResultContext
+} from '../../interface/Search'
 import { ITextDecoration } from '../../interface/Text'
 import {
   IGetTitleValueOption,
@@ -1302,8 +1306,8 @@ export class CommandAdapt {
     return imageId
   }
 
-  public search(payload: string | null) {
-    this.searchManager.setSearchKeyword(payload)
+  public search(payload: string | null, options?: ISearchOption) {
+    this.searchManager.setSearchKeyword(payload, options)
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false

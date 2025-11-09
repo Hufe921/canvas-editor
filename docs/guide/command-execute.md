@@ -653,7 +653,7 @@ instance.command.executeDeleteWatermark()
 用法：
 
 ```javascript
-instance.command.executeSearch(keyword: string)
+instance.command.executeSearch(keyword: string, options?: ISearchOption)
 ```
 
 ## executeSearchNavigatePre

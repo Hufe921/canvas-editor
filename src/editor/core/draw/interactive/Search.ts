@@ -7,10 +7,11 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import {
   IReplaceOption,
+  ISearchOption,
   ISearchResult,
   ISearchResultRestArgs
 } from '../../../interface/Search'
-import { getUUID, isNumber } from '../../../utils'
+import { getUUID, indexOf, isNumber } from '../../../utils'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
 
@@ -25,6 +26,7 @@ export class Search {
   private position: Position
   private searchKeyword: string | null
   private searchNavigateIndex: number | null
+  private searchOptions: ISearchOption | null
   private searchMatchList: ISearchResult[]
 
   constructor(draw: Draw) {
@@ -32,6 +34,7 @@ export class Search {
     this.options = draw.getOptions()
     this.position = draw.getPosition()
     this.searchNavigateIndex = null
+    this.searchOptions = null
     this.searchKeyword = null
     this.searchMatchList = []
   }
@@ -40,9 +43,10 @@ export class Search {
     return this.searchKeyword
   }
 
-  public setSearchKeyword(payload: string | null) {
+  public setSearchKeyword(payload: string | null, options?: ISearchOption) {
     this.searchKeyword = payload
     this.searchNavigateIndex = null
+    this.searchOptions = options || null
   }
 
   public searchNavigatePre(): number | null {
@@ -161,6 +165,7 @@ export class Search {
     payload: string,
     originalElementList: IElement[]
   ): ISearchResult[] {
+    const { isRegEnable = false } = this.searchOptions || {}
     const keyword = payload.toLocaleLowerCase()
     const searchMatchList: ISearchResult[] = []
     // 分组
@@ -225,16 +230,24 @@ export class Search {
         .filter(Boolean)
         .join('')
         .toLocaleLowerCase()
-      const matchStartIndexList = []
-      let index = text.indexOf(payload)
-      while (index !== -1) {
-        matchStartIndexList.push(index)
-        index = text.indexOf(payload, index + payload.length)
+      // 匹配的结果列表
+      const matchList: { index: number; length: number }[] = []
+      // 从索引0开始依次匹配
+      const searchStr = isRegEnable ? new RegExp(payload) : payload
+      let { index, length } = indexOf(text, searchStr)
+      while (index !== -1 && length !== 0) {
+        matchList.push({
+          index,
+          length
+        })
+        const matchResult = indexOf(text, searchStr, index + length)
+        index = matchResult.index
+        length = matchResult.length
       }
-      for (let m = 0; m < matchStartIndexList.length; m++) {
-        const startIndex = matchStartIndexList[m]
+      for (let m = 0; m < matchList.length; m++) {
+        const { index: startIndex, length: matchLength } = matchList[m]
         const groupId = getUUID()
-        for (let i = 0; i < payload.length; i++) {
+        for (let i = 0; i < matchLength; i++) {
           const index = startIndex + i + (restArgs?.startIndex || 0)
           searchMatchList.push({
             type,
