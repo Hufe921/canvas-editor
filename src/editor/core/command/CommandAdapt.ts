@@ -1745,7 +1745,7 @@ export class CommandAdapt {
     if (!payload.length) return
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const { isReplace = true } = options
+    const { isReplace = true, ignoreContextKeys } = options
     // 如果配置不替换时，需收缩选区至末尾
     if (!isReplace) {
       this.range.shrinkRange()
@@ -1755,6 +1755,7 @@ export class CommandAdapt {
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     formatElementContext(elementList, cloneElementList, startIndex, {
+      ignoreContextKeys,
       isBreakWhenWrap: true,
       editorOptions: this.options
     })

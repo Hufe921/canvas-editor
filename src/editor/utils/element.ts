@@ -2,6 +2,7 @@ import {
   cloneProperty,
   deepClone,
   deepCloneOmitKeys,
+  deleteProperty,
   getUUID,
   isArrayEqual,
   omitObject,
@@ -976,6 +977,7 @@ export function getAnchorElement(
 
 export interface IFormatElementContextOption {
   isBreakWhenWrap?: boolean
+  ignoreContextKeys?: Array<keyof IElement>
   editorOptions?: DeepRequired<IEditorOption>
 }
 
@@ -987,7 +989,11 @@ export function formatElementContext(
 ) {
   let copyElement = getAnchorElement(sourceElementList, anchorIndex)
   if (!copyElement) return
-  const { isBreakWhenWrap = false, editorOptions } = options || {}
+  const {
+    isBreakWhenWrap = false,
+    editorOptions,
+    ignoreContextKeys = []
+  } = options || {}
   const { mode } = editorOptions || {}
   // 非设计模式时：标题元素禁用时不复制标题属性
   if (mode !== EditorMode.DESIGN && copyElement.title?.disabled) {
@@ -1015,6 +1021,7 @@ export function formatElementContext(
         ...EDITOR_ROW_ATTR,
         ...AREA_CONTEXT_ATTR
       ]
+      deleteProperty(cloneAttr, ignoreContextKeys)
       cloneProperty<IElement>(cloneAttr, copyElement!, targetElement)
       targetElement.valueList?.forEach(valueItem => {
         cloneProperty<IElement>(cloneAttr, copyElement!, valueItem)
@@ -1034,6 +1041,7 @@ export function formatElementContext(
     if (!getIsBlockElement(targetElement)) {
       cloneAttr.push(...EDITOR_ROW_ATTR)
     }
+    deleteProperty(cloneAttr, ignoreContextKeys)
     cloneProperty<IElement>(cloneAttr, copyElement, targetElement)
   }
 }

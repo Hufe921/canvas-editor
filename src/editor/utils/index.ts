@@ -278,6 +278,15 @@ export function cloneProperty<T>(
   }
 }
 
+export function deleteProperty<T>(sourceKeys: T[], deleteKeys: T[]) {
+  if (!deleteKeys.length || !sourceKeys.length) return
+  for (let i = sourceKeys.length - 1; i >= 0; i--) {
+    if (deleteKeys.includes(sourceKeys[i])) {
+      sourceKeys.splice(i, 1)
+    }
+  }
+}
+
 export function pickObject<T>(object: T, pickKeys: (keyof T)[]): T {
   const newObject: T = <T>{}
   for (const key in object) {
