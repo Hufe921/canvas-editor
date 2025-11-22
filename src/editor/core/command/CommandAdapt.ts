@@ -2580,19 +2580,11 @@ export class CommandAdapt {
       isSetCursor: false,
       isSubmitHistory: false
     }
-    if (~curIndex && this.range.getIsCollapsed()) {
+    if (isMoveCursorToVisible && ~curIndex && this.range.getIsCollapsed()) {
       renderParams.curIndex = curIndex
       renderParams.isSetCursor = true
     }
     this.draw.render(renderParams)
-    // 移动滚动条到可见区域
-    if (isMoveCursorToVisible) {
-      const positionList = this.draw.getPosition().getPositionList()
-      this.draw.getCursor().moveCursorToVisible({
-        cursorPosition: positionList[curIndex],
-        direction: MoveDirection.DOWN
-      })
-    }
   }
 
   public insertArea(payload: IInsertAreaOption) {
@@ -2631,8 +2623,7 @@ export class CommandAdapt {
     const context = this.draw.getArea().getContextByAreaId(areaId, options)
     if (!context) return
     const {
-      range: { endIndex },
-      elementPosition
+      range: { endIndex }
     } = context
     this.position.setPositionContext({
       isTable: false
@@ -2643,13 +2634,6 @@ export class CommandAdapt {
       isSetCursor: true,
       isCompute: false,
       isSubmitHistory: false
-    })
-    // 移动到可见区域
-    const cursor = this.draw.getCursor()
-    this.position.setCursorPosition(elementPosition)
-    cursor.moveCursorToVisible({
-      cursorPosition: elementPosition,
-      direction: MoveDirection.UP
     })
   }
 }
