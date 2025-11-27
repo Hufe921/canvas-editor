@@ -702,9 +702,14 @@ ul {
   background: url(./assets/images/arrow-right.svg) no-repeat;
 }
 
+.menu-item__search__collapse__option {
+  justify-content: flex-start !important;
+}
+
 .menu-item .menu-item__search__collapse__option .search-option-item {
   display: flex;
   align-items: center;
+  margin-right: 10px;
 }
 
 .menu-item .menu-item__search__collapse__option label {

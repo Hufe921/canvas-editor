@@ -31,5 +31,5 @@ export interface IReplaceOption {
 
 export interface ISearchOption {
   isRegEnable?: boolean
-  isCase?: boolean
+  isIgnoreCase?: boolean
 }
