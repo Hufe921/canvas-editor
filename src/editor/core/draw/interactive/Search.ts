@@ -165,8 +165,9 @@ export class Search {
     payload: string,
     originalElementList: IElement[]
   ): ISearchResult[] {
-    const { isRegEnable = false } = this.searchOptions || {}
-    const keyword = payload.toLocaleLowerCase()
+    const { isRegEnable = false, isIgnoreCase = true } =
+      this.searchOptions || {}
+    const keyword = isIgnoreCase ? payload.toLocaleLowerCase() : payload
     const searchMatchList: ISearchResult[] = []
     // 分组
     const elementListGroup: {
@@ -216,7 +217,7 @@ export class Search {
       restArgs?: ISearchResultRestArgs
     ) {
       if (!payload) return
-      const text = elementList
+      let text = elementList
         .map(e =>
           !e.type ||
           (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
@@ -229,7 +230,9 @@ export class Search {
         )
         .filter(Boolean)
         .join('')
-        .toLocaleLowerCase()
+      if (isIgnoreCase) {
+        text = text.toLocaleLowerCase()
+      }
       // 匹配的结果列表
       const matchList: { index: number; length: number }[] = []
       // 从索引0开始依次匹配
