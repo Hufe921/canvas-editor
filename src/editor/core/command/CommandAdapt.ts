@@ -77,7 +77,11 @@ import {
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition, IPositionContext } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
-import { IReplaceOption, ISearchResultContext } from '../../interface/Search'
+import {
+  IReplaceOption,
+  ISearchOption,
+  ISearchResultContext
+} from '../../interface/Search'
 import { ITextDecoration } from '../../interface/Text'
 import {
   IGetTitleValueOption,
@@ -1302,8 +1306,8 @@ export class CommandAdapt {
     return imageId
   }
 
-  public search(payload: string | null) {
-    this.searchManager.setSearchKeyword(payload)
+  public search(payload: string | null, options?: ISearchOption) {
+    this.searchManager.setSearchKeyword(payload, options)
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false
@@ -1741,7 +1745,7 @@ export class CommandAdapt {
     if (!payload.length) return
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const { isReplace = true } = options
+    const { isReplace = true, ignoreContextKeys } = options
     // 如果配置不替换时，需收缩选区至末尾
     if (!isReplace) {
       this.range.shrinkRange()
@@ -1751,6 +1755,7 @@ export class CommandAdapt {
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
     formatElementContext(elementList, cloneElementList, startIndex, {
+      ignoreContextKeys,
       isBreakWhenWrap: true,
       editorOptions: this.options
     })
@@ -2575,19 +2580,11 @@ export class CommandAdapt {
       isSetCursor: false,
       isSubmitHistory: false
     }
-    if (~curIndex && this.range.getIsCollapsed()) {
+    if (isMoveCursorToVisible && ~curIndex && this.range.getIsCollapsed()) {
       renderParams.curIndex = curIndex
       renderParams.isSetCursor = true
     }
     this.draw.render(renderParams)
-    // 移动滚动条到可见区域
-    if (isMoveCursorToVisible) {
-      const positionList = this.draw.getPosition().getPositionList()
-      this.draw.getCursor().moveCursorToVisible({
-        cursorPosition: positionList[curIndex],
-        direction: MoveDirection.DOWN
-      })
-    }
   }
 
   public insertArea(payload: IInsertAreaOption) {
@@ -2626,8 +2623,7 @@ export class CommandAdapt {
     const context = this.draw.getArea().getContextByAreaId(areaId, options)
     if (!context) return
     const {
-      range: { endIndex },
-      elementPosition
+      range: { endIndex }
     } = context
     this.position.setPositionContext({
       isTable: false
@@ -2638,13 +2634,6 @@ export class CommandAdapt {
       isSetCursor: true,
       isCompute: false,
       isSubmitHistory: false
-    })
-    // 移动到可见区域
-    const cursor = this.draw.getCursor()
-    this.position.setCursorPosition(elementPosition)
-    cursor.moveCursorToVisible({
-      cursorPosition: elementPosition,
-      direction: MoveDirection.UP
     })
   }
 }

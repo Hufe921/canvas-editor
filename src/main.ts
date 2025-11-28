@@ -1236,6 +1236,10 @@ function initEditorInstance(
   const replaceInputDom = document.querySelector<HTMLInputElement>(
     '.menu-item__search__collapse__replace input'
   )!
+  const searchRegInputDom =
+    document.querySelector<HTMLInputElement>('#option-reg')!
+  const searchCaseInputDom =
+    document.querySelector<HTMLInputElement>('#option-case')!
   const searchDom =
     document.querySelector<HTMLDivElement>('.menu-item__search')!
   searchDom.title = `搜索与替换(${isApple ? '⌘' : 'Ctrl'}+F)`
@@ -1272,14 +1276,21 @@ function initEditorInstance(
       instance.command.executeSearch(null)
       setSearchResult()
     }
-  searchInputDom.oninput = function () {
-    instance.command.executeSearch(searchInputDom.value || null)
+
+  function emitSearch() {
+    instance.command.executeSearch(searchInputDom.value || null, {
+      isRegEnable: searchRegInputDom.checked,
+      isIgnoreCase: searchCaseInputDom.checked
+    })
     setSearchResult()
   }
+
+  searchInputDom.oninput = emitSearch
+  searchRegInputDom.onchange = emitSearch
+  searchCaseInputDom.onchange = emitSearch
   searchInputDom.onkeydown = function (evt) {
     if (evt.key === 'Enter') {
-      instance.command.executeSearch(searchInputDom.value || null)
-      setSearchResult()
+      emitSearch()
     }
   }
   searchCollapseDom.querySelector<HTMLButtonElement>('button')!.onclick =

@@ -582,7 +582,7 @@ ul {
 
 .menu-item .menu-item__search__collapse {
   width: 260px;
-  height: 72px;
+  height: 108px;
   box-sizing: border-box;
   position: absolute;
   display: none;
@@ -608,7 +608,7 @@ ul {
   border-radius: 4px;
 }
 
-.menu-item .menu-item__search__collapse>div input {
+.menu-item .menu-item__search__collapse>div input[type='text'] {
   width: 205px;
   height: 27px;
   appearance: none;
@@ -700,6 +700,22 @@ ul {
 
 .menu-item .menu-item__search__collapse__search .arrow-right i {
   background: url(./assets/images/arrow-right.svg) no-repeat;
+}
+
+.menu-item__search__collapse__option {
+  justify-content: flex-start !important;
+}
+
+.menu-item .menu-item__search__collapse__option .search-option-item {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.menu-item .menu-item__search__collapse__option label {
+  font-size: 14px;
+  margin-left: 4px;
+  cursor: pointer;
 }
 
 .menu-item__print i {

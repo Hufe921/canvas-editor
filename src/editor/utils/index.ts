@@ -278,6 +278,15 @@ export function cloneProperty<T>(
   }
 }
 
+export function deleteProperty<T>(sourceKeys: T[], deleteKeys: T[]) {
+  if (!deleteKeys.length || !sourceKeys.length) return
+  for (let i = sourceKeys.length - 1; i >= 0; i--) {
+    if (deleteKeys.includes(sourceKeys[i])) {
+      sourceKeys.splice(i, 1)
+    }
+  }
+}
+
 export function pickObject<T>(object: T, pickKeys: (keyof T)[]): T {
   const newObject: T = <T>{}
   for (const key in object) {
@@ -369,3 +378,40 @@ export function isNonValue(value: unknown): boolean {
 export function normalizeLineBreak(text: string): string {
   return text.replace(/\r\n|\r/g, '\n')
 }
+
+// 支持正则的indexOf
+export function indexOf(
+  source: string,
+  search: string | RegExp,
+  fromIndex = 0
+): { index: number; length: number } {
+  const start = Math.max(0, Math.floor(fromIndex))
+
+  if (start >= source.length) {
+    if (typeof search === 'string' && search === '') {
+      return { index: source.length, length: 0 }
+    }
+    return { index: -1, length: 0 }
+  }
+
+  // 关键词匹配
+  if (typeof search === 'string') {
+    if (search === '') {
+      return { index: start, length: 0 }
+    }
+    const index = source.indexOf(search, start)
+    return index === -1 ? { index: -1, length: 0 } : { index, length: search.length }
+  }
+
+  // 确保正则包含 "g" 才可以设置 lastIndex，从而从任意位置开始搜索
+  const originalFlags = search.flags
+  const flags = originalFlags.includes('g') ? originalFlags : originalFlags + 'g'
+  const re = new RegExp(search.source, flags)
+  re.lastIndex = start
+  const match = re.exec(source)
+  if (!match) {
+    return { index: -1, length: 0 }
+  }
+  return { index: match.index, length: match[0].length }
+}
+

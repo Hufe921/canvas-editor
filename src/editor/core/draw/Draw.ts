@@ -1944,6 +1944,16 @@ export class Draw {
           }
           curRow.width = availableWidth
         }
+        // 行距离顶部偏移量等于行高时 => 行增加默认标准元素偏移量
+        // 如整行都是空格测量偏移量为0，导致行塌陷
+        if (curRow.ascent === rowMargin) {
+          const boundingBoxDescent = this.textParticle.measureBasisWord(
+            ctx,
+            element.font!
+          ).actualBoundingBoxAscent
+          curRow.ascent += boundingBoxDescent
+          curRow.height += boundingBoxDescent
+        }
       }
       // 重新计算坐标、页码、下一行首行元素环绕交叉
       if (isWrap) {
@@ -2502,7 +2512,12 @@ export class Draw {
     ctx.globalAlpha = !this.zone.isMainActive() ? inactiveAlpha : 1
     this._clearPage(pageNo)
     // 绘制背景
-    this.background.render(ctx, pageNo)
+    if (
+      !isPrintMode ||
+      !this.options.modeRule[EditorMode.PRINT]?.backgroundDisabled
+    ) {
+      this.background.render(ctx, pageNo)
+    }
     // 绘制区域
     if (!isPrintMode) {
       this.area.render(ctx, pageNo)

@@ -1657,11 +1657,6 @@ export class Control {
       isSetCursor: true,
       isSubmitHistory: false
     })
-    const positionList = position.getPositionList()
-    this.draw.getCursor().moveCursorToVisible({
-      cursorPosition: positionList[nextIndex],
-      direction
-    })
   }
 
   public setMinWidthControlInfo(option: ISetControlRowFlexOption) {

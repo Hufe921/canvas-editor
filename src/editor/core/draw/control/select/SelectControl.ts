@@ -27,9 +27,11 @@ import {
   splitText
 } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
+import { Draw } from '../../Draw'
 import { Control } from '../Control'
 
 export class SelectControl implements IControlInstance {
+  private draw: Draw
   private element: IElement
   private control: Control
   private isPopup: boolean
@@ -40,6 +42,7 @@ export class SelectControl implements IControlInstance {
 
   constructor(element: IElement, control: Control) {
     const draw = control.getDraw()
+    this.draw = draw
     this.options = draw.getOptions()
     this.element = element
     this.control = control
@@ -189,9 +192,23 @@ export class SelectControl implements IControlInstance {
     const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
     // backspace
+    const inputAble = this.element.control?.selectExclusiveOptions?.inputAble
     if (evt.key === KeyMap.Backspace) {
       // 清空选项
       if (startIndex !== endIndex) {
+        // 设置可输入时：仅删除选择元素
+        if (inputAble) {
+          this.draw.spliceElementList(
+            elementList,
+            startIndex + 1,
+            endIndex - startIndex
+          )
+          const value = this.getValue()
+          if (!value.length) {
+            this.control.addPlaceholder(startIndex)
+          }
+          return startIndex
+        }
         return this.clearSelect()
       } else {
         if (
@@ -204,6 +221,15 @@ export class SelectControl implements IControlInstance {
           // 前缀、后缀、占位符
           return this.control.removeControl(startIndex)
         } else {
+          // 设置可输入时：仅往前删除元素
+          if (inputAble) {
+            this.draw.spliceElementList(elementList, startIndex, 1)
+            const value = this.getValue()
+            if (!value.length) {
+              this.control.addPlaceholder(startIndex - 1)
+            }
+            return startIndex - 1
+          }
           // 清空选项
           return this.clearSelect()
         }
@@ -211,6 +237,19 @@ export class SelectControl implements IControlInstance {
     } else if (evt.key === KeyMap.Delete) {
       // 移除选区元素
       if (startIndex !== endIndex) {
+        // 删除元素
+        if (inputAble) {
+          this.draw.spliceElementList(
+            elementList,
+            startIndex + 1,
+            endIndex - startIndex
+          )
+          const value = this.getValue()
+          if (!value.length) {
+            this.control.addPlaceholder(startIndex)
+          }
+          return startIndex
+        }
         // 清空选项
         return this.clearSelect()
       } else {
@@ -226,6 +265,15 @@ export class SelectControl implements IControlInstance {
           // 前缀、后缀、占位符
           return this.control.removeControl(startIndex)
         } else {
+          // 删除元素
+          if (inputAble) {
+            this.draw.spliceElementList(elementList, startIndex + 1, 1)
+            const value = this.getValue()
+            if (!value.length) {
+              this.control.addPlaceholder(startIndex)
+            }
+            return startIndex
+          }
           // 清空选项
           return this.clearSelect()
         }
