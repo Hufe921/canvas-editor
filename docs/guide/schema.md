@@ -125,6 +125,7 @@ interface IElement {
     }[];
     isMultiSelect?: boolean;
     multiSelectDelimiter?: string;
+    selectStyle?: 'checkbox' | 'radio';
     dateFormat?: string;
     font?: string;
     size?: number;
