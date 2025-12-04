@@ -4,7 +4,7 @@ import {
   EDITOR_ELEMENT_STYLE_ATTR,
   EDITOR_ROW_ATTR
 } from '../../../../dataset/constant/Element'
-import { ControlComponent, ControlType } from '../../../../dataset/enum/Control'
+import { ControlComponent } from '../../../../dataset/enum/Control'
 import { IElement } from '../../../../interface/Element'
 import { omitObject } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
@@ -78,13 +78,6 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   const activeControl = control.getActiveControl()
   let curIndex: number
   if (activeControl && control.getIsRangeWithinControl()) {
-    // // 数字控件阻止回车键输入
-    const element = activeControl.getElement()
-    if (element.control?.type === ControlType.NUMBER) {
-      evt.preventDefault()
-      return
-    }
-
     curIndex = control.setValue([enterText])
     control.emitControlContentChange()
   } else {

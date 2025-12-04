@@ -17,3 +17,5 @@ export const PUNCTUATION_REG =
   /[、，。？！；：……「」“”‘’*（）【】〔〕〖〗〘〙〚〛《》———﹝﹞–—\\/·.,!?;:`~<>()[\]{}'"|]/
 
 export const START_LINE_BREAK_REG = new RegExp(`^[${ZERO}\n]`)
+
+export const NON_NUMBER_STR_REG = /[^0-9\+\-\.eE,]/

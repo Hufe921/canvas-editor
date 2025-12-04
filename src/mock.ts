@@ -392,33 +392,6 @@ elementList.push(
   ])
 )
 
-// 模拟数字控件（年龄）
-elementList.push(
-  ...[
-    {
-      value: '患者年龄：'
-    },
-    {
-      type: ElementType.CONTROL,
-      value: '',
-      control: {
-        conceptId: '7',
-        type: ControlType.NUMBER,
-        value: null,
-        placeholder: '岁',
-        prefix: '{',
-        postfix: '}'
-      }
-    },
-    {
-      value: '岁'
-    },
-    {
-      value: '\n'
-    }
-  ]
-)
-
 // 日期选择
 elementList.push(
   ...(<IElement[]>[
