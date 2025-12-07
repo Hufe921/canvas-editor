@@ -43,4 +43,8 @@ export class EventBus<EventMap> {
     const eventSet = this.eventHub.get(eventName)
     return !!eventSet && eventSet.size > 0
   }
+
+  public dangerouslyClearAll() {
+    this.eventHub.clear()
+  }
 }

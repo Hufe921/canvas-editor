@@ -152,6 +152,7 @@ export default class Editor {
       draw.destroy()
       shortcut.removeEvent()
       contextMenu.removeEvent()
+      this.eventBus.dangerouslyClearAll()
     }
     // 插件
     const plugin = new Plugin(this)
