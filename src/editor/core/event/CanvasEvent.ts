@@ -124,7 +124,7 @@ export class CanvasEvent {
     selection.forEach(s => {
       painterStyleKeys.forEach(pKey => {
         const key = pKey as keyof typeof ElementStyleKey
-        s[key] = painterStyle[key] as any
+        Reflect.set(s, key, painterStyle[key])
       })
     })
     this.draw.render({ isSetCursor: false })

@@ -77,7 +77,7 @@ export class GlobalEvent {
     const pageList = this.draw.getPageList()
     const innerEditorDom = findParent(
       target,
-      (node: any) => pageList.includes(node),
+      (node: HTMLCanvasElement) => pageList.includes(node),
       true
     )
     if (innerEditorDom) return

@@ -28,7 +28,7 @@ export interface IDatePickerLang {
 }
 
 export interface IDatePickerOption {
-  onSubmit?: (date: string) => any
+  onSubmit?: (date: string) => void
 }
 
 interface IDatePickerDom {
