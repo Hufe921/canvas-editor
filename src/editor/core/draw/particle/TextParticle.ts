@@ -113,6 +113,13 @@ export class TextParticle {
     return textMetrics
   }
 
+  public getBasisWordBoundingBoxAscent(
+    ctx: CanvasRenderingContext2D,
+    font: string
+  ): number {
+    return this.measureBasisWord(ctx, font).actualBoundingBoxAscent
+  }
+
   public complete() {
     this._render()
     this.text = ''

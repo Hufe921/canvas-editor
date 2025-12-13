@@ -319,7 +319,7 @@ export class CommandAdapt {
       painterStyleKeys.forEach(p => {
         const key = p as keyof typeof ElementStyleKey
         if (painterStyle[key] === undefined) {
-          painterStyle[key] = s[key] as any
+          Reflect.set(painterStyle, key, s[key])
         }
       })
     })

@@ -950,6 +950,10 @@ export function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
 
+export function isTextElement(element: IElement): boolean {
+  return !element.type || element.type === ElementType.TEXT
+}
+
 export function getElementListText(elementList: IElement[]): string {
   return elementList
     .filter(el => isTextLikeElement(el))

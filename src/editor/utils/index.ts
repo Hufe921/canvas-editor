@@ -42,14 +42,14 @@ export function deepCloneOmitKeys<T, K>(obj: T, omitKeys: (keyof K)[]): T {
   if (!obj || typeof obj !== 'object') {
     return obj
   }
-  let newObj: any = {}
+  let newObj = {} as T
   if (Array.isArray(obj)) {
-    newObj = obj.map(item => deepCloneOmitKeys(item, omitKeys))
+    newObj = obj.map(item => deepCloneOmitKeys(item, omitKeys)) as T
   } else {
     // prettier-ignore
-    (Object.keys(obj) as (keyof K)[]).forEach(key => {
-      if (omitKeys.includes(key)) return
-      return (newObj[key] = deepCloneOmitKeys((obj[key as unknown as keyof T] ), omitKeys))
+    (Object.keys(obj) as (keyof T)[]).forEach(key => {
+      if (omitKeys.includes(key as unknown as keyof K)) return
+      newObj[key] = deepCloneOmitKeys(obj[key] , omitKeys)
     })
   }
   return newObj
@@ -62,13 +62,13 @@ export function deepClone<T>(obj: T): T {
   if (!obj || typeof obj !== 'object') {
     return obj
   }
-  let newObj: any = {}
+  let newObj = {} as T
   if (Array.isArray(obj)) {
-    newObj = obj.map(item => deepClone(item))
+    newObj = obj.map(item => deepClone(item)) as T
   } else {
     // prettier-ignore
     (Object.keys(obj) as (keyof T)[]).forEach(key => {
-      return (newObj[key] = deepClone(obj[key]))
+      newObj[key] = deepClone(obj[key])
     })
   }
   return newObj
@@ -150,14 +150,14 @@ export function downloadFile(href: string, fileName: string) {
   a.click()
 }
 
-export function threeClick(dom: HTMLElement, fn: (evt: MouseEvent) => any) {
+export function threeClick(dom: HTMLElement, fn: (evt: MouseEvent) => void) {
   nClickEvent(3, dom, fn)
 }
 
 function nClickEvent(
   n: number,
   dom: HTMLElement,
-  fn: (evt: MouseEvent) => any
+  fn: (evt: MouseEvent) => void
 ) {
   let count = 0
   let lastTime = 0
@@ -400,12 +400,16 @@ export function indexOf(
       return { index: start, length: 0 }
     }
     const index = source.indexOf(search, start)
-    return index === -1 ? { index: -1, length: 0 } : { index, length: search.length }
+    return index === -1
+      ? { index: -1, length: 0 }
+      : { index, length: search.length }
   }
 
   // 确保正则包含 "g" 才可以设置 lastIndex，从而从任意位置开始搜索
   const originalFlags = search.flags
-  const flags = originalFlags.includes('g') ? originalFlags : originalFlags + 'g'
+  const flags = originalFlags.includes('g')
+    ? originalFlags
+    : originalFlags + 'g'
   const re = new RegExp(search.source, flags)
   re.lastIndex = start
   const match = re.exec(source)
@@ -414,4 +418,3 @@ export function indexOf(
   }
   return { index: match.index, length: match[0].length }
 }
-

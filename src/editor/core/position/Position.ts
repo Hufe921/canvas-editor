@@ -303,7 +303,8 @@ export class Position {
     let startRowIndex = 0
     for (let i = 0; i < pageRowList.length; i++) {
       const rowList = pageRowList[i]
-      const startIndex = rowList[0]?.startIndex
+      if (!rowList?.length) continue
+      const startIndex = rowList[0].startIndex
       this.computePageRowPosition({
         positionList: this.positionList,
         rowList,
