@@ -1734,9 +1734,13 @@ export class Draw {
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing * scale
         }
+        // 零宽字符ascent默认为：基线元素ascent
         metrics.boundingBoxAscent =
           (element.value === ZERO
-            ? element.size || defaultSize
+            ? this.textParticle.getBasisWordBoundingBoxAscent(
+                ctx,
+                element.font!
+              )
             : fontMetrics.actualBoundingBoxAscent) * scale
         metrics.boundingBoxDescent =
           fontMetrics.actualBoundingBoxDescent * scale
@@ -1947,10 +1951,11 @@ export class Draw {
         // 行距离顶部偏移量等于行高时 => 行增加默认标准元素偏移量
         // 如整行都是空格测量偏移量为0，导致行塌陷
         if (curRow.ascent === rowMargin) {
-          const boundingBoxDescent = this.textParticle.measureBasisWord(
-            ctx,
-            element.font!
-          ).actualBoundingBoxAscent
+          const boundingBoxDescent =
+            this.textParticle.getBasisWordBoundingBoxAscent(
+              ctx,
+              element.font!
+            ) * scale
           curRow.ascent += boundingBoxDescent
           curRow.height += boundingBoxDescent
         }
