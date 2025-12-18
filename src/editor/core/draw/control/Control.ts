@@ -1327,13 +1327,14 @@ export class Control {
       footer: this.draw.getFooterElementList()
     }
     for (const key in pageComponentData) {
-      const elementList = pageComponentData[<keyof IEditorData>key]!
+      const elementList =
+        pageComponentData[<keyof Omit<IEditorData, 'graffiti'>>key]!
       setProperties(elementList)
     }
     if (!isExistUpdate) return
     // 强制更新
     for (const key in pageComponentData) {
-      const pageComponentKey = <keyof IEditorData>key
+      const pageComponentKey = <keyof Omit<IEditorData, 'graffiti'>>key
       const elementList = zipElementList(pageComponentData[pageComponentKey]!, {
         isClassifyArea: true,
         extraPickAttrs: ['id']

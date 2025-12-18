@@ -79,6 +79,7 @@ interface IEditorOption {
   pageBorder?: IPageBorderOption // PageBorder option. {color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
   badge?: IBadgeOption // Badge option. {top?:number; left?:number}
   modeRule?: IModeRule // mode rule option. {print:{imagePreviewerDisabled?: boolean; backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
+  graffiti?: IGraffitiOption // graffiti mode option. {defaultLineWidth?: number; defaultLineColor?: string}
 }
 ```
 

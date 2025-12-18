@@ -1506,6 +1506,10 @@ window.onload = function () {
     {
       mode: EditorMode.DESIGN,
       name: '设计模式'
+    },
+    {
+      mode: EditorMode.GRAFFITI,
+      name: '涂鸦模式'
     }
   ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
@@ -1911,6 +1915,15 @@ window.onload = function () {
       },
       callback: (command: Command) => {
         command.executeWordTool()
+      }
+    },
+    {
+      name: '清空涂鸦信息',
+      when: payload => {
+        return payload.options.mode === EditorMode.GRAFFITI
+      },
+      callback: (command: Command) => {
+        command.executeClearGraffiti()
       }
     }
   ])
