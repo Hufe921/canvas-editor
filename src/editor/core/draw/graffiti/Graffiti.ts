@@ -20,12 +20,13 @@ export class Graffiti {
   }
 
   private register() {
-    this.pageContainer.addEventListener('mousedown', this.mousedown.bind(this))
-    this.pageContainer.addEventListener('mouseup', this.mouseup.bind(this))
-    this.pageContainer.addEventListener('mousemove', this.mousemove.bind(this))
+    this.pageContainer.addEventListener('mousedown', this.start.bind(this))
+    this.pageContainer.addEventListener('mouseup', this.stop.bind(this))
+    this.pageContainer.addEventListener('mouseleave', this.stop.bind(this))
+    this.pageContainer.addEventListener('mousemove', this.drawing.bind(this))
   }
 
-  private mousedown(evt: MouseEvent) {
+  private start(evt: MouseEvent) {
     if (!this.draw.isGraffitiMode()) return
     this.isDrawing = true
     // 缓存起始数据
@@ -37,11 +38,11 @@ export class Graffiti {
     }
   }
 
-  private mouseup() {
+  private stop() {
     this.isDrawing = false
   }
 
-  private mousemove(evt: MouseEvent) {
+  private drawing(evt: MouseEvent) {
     if (!this.isDrawing || !this.draw.isGraffitiMode()) return
     // 移动超过至少2个像素后开始绘制
     const { offsetX, offsetY } = evt
