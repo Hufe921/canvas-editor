@@ -1,3 +1,21 @@
+## [0.9.121](https://github.com/Hufe921/canvas-editor/compare/v0.9.120...v0.9.121) (2025-12-19)
+
+
+### Bug Fixes
+
+* clear eventbus when destroying editor ([17e7fcd](https://github.com/Hufe921/canvas-editor/commit/17e7fcda00a71e8a4bad8360f8c473f188ba229c))
+* compute position boundary error ([5835396](https://github.com/Hufe921/canvas-editor/commit/58353968376623fcd82a308d8760a2eb449188bf))
+* graffiti mode boundary error ([9781f2d](https://github.com/Hufe921/canvas-editor/commit/9781f2d038d3537fc26bf3cebff0ae452c45b07a))
+* restrict allowed characters in number control #1319 ([9e31b41](https://github.com/Hufe921/canvas-editor/commit/9e31b41720ad5269813db364db3b1c39e9865185)), closes [#1319](https://github.com/Hufe921/canvas-editor/issues/1319)
+
+
+### Features
+
+* add graffiti mode #992 ([5bd66a6](https://github.com/Hufe921/canvas-editor/commit/5bd66a641031d0390f7d37d50b1210aed9defc7a)), closes [#992](https://github.com/Hufe921/canvas-editor/issues/992)
+* optimize zero width element ascent calculation #1324 ([890b87d](https://github.com/Hufe921/canvas-editor/commit/890b87da4b3c4b80c725e15956e417eef5dce712)), closes [#1324](https://github.com/Hufe921/canvas-editor/issues/1324)
+
+
+
 ## [0.9.120](https://github.com/Hufe921/canvas-editor/compare/v0.9.119...v0.9.120) (2025-11-28)
 
 
