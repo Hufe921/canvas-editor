@@ -30,10 +30,11 @@ export class Graffiti {
     if (!this.draw.isGraffitiMode()) return
     this.isDrawing = true
     // 缓存起始数据
+    const { scale } = this.options
     this.startStroke = {
       lineColor: this.options.graffiti.defaultLineColor,
       lineWidth: this.options.graffiti.defaultLineWidth,
-      points: [evt.offsetX, evt.offsetY]
+      points: [evt.offsetX / scale, evt.offsetY / scale]
     }
   }
 
@@ -69,9 +70,10 @@ export class Graffiti {
       this.startStroke = null
     }
     if (!currentValue?.strokes?.length) return
+    const { scale } = this.options
     const lastPoints =
       currentValue.strokes[currentValue.strokes.length - 1].points
-    lastPoints.push(offsetX, offsetY)
+    lastPoints.push(offsetX / scale, offsetY / scale)
     // 重新渲染
     this.draw.render({
       isCompute: false,
