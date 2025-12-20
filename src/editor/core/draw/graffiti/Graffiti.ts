@@ -31,10 +31,9 @@ export class Graffiti {
     this.isDrawing = true
     // 缓存起始数据
     this.startStroke = {
-      isBegin: true,
-      lineWidth: this.options.graffiti.defaultLineWidth,
       lineColor: this.options.graffiti.defaultLineColor,
-      linePoints: [evt.offsetX, evt.offsetY]
+      lineWidth: this.options.graffiti.defaultLineWidth,
+      points: [evt.offsetX, evt.offsetY]
     }
   }
 
@@ -49,8 +48,8 @@ export class Graffiti {
     const DISTANCE = 2
     if (
       this.startStroke &&
-      Math.abs(this.startStroke.linePoints[0] - offsetX) < DISTANCE &&
-      Math.abs(this.startStroke.linePoints[1] - offsetY) < DISTANCE
+      Math.abs(this.startStroke.points[0] - offsetX) < DISTANCE &&
+      Math.abs(this.startStroke.points[1] - offsetY) < DISTANCE
     ) {
       return
     }
@@ -70,9 +69,9 @@ export class Graffiti {
       this.startStroke = null
     }
     if (!currentValue?.strokes?.length) return
-    currentValue.strokes.push({
-      linePoints: [offsetX, offsetY]
-    })
+    const lastPoints =
+      currentValue.strokes[currentValue.strokes.length - 1].points
+    lastPoints.push(offsetX, offsetY)
     // 重新渲染
     this.draw.render({
       isCompute: false,
@@ -110,14 +109,12 @@ export class Graffiti {
     ctx.save()
     for (let s = 0; s < strokes.length; s++) {
       const stroke = strokes[s]
-      const { isBegin, lineColor, lineWidth, linePoints } = stroke
-      if (isBegin) {
-        ctx.strokeStyle = lineColor || defaultLineColor
-        ctx.lineWidth = (lineWidth || defaultLineWidth) * scale
-        ctx.beginPath()
-        ctx.moveTo(linePoints[0] * scale, linePoints[1] * scale)
-      } else {
-        ctx.lineTo(linePoints[0] * scale, linePoints[1] * scale)
+      ctx.beginPath()
+      ctx.strokeStyle = stroke.lineColor || defaultLineColor
+      ctx.lineWidth = (stroke.lineWidth || defaultLineWidth) * scale
+      ctx.moveTo(stroke.points[0] * scale, stroke.points[1] * scale)
+      for (let p = 2; p < stroke.points.length; p += 2) {
+        ctx.lineTo(stroke.points[p] * scale, stroke.points[p + 1] * scale)
       }
       ctx.stroke()
     }

@@ -1,8 +1,7 @@
 export interface IGraffitiStroke {
-  isBegin?: boolean
   lineWidth?: number
   lineColor?: string
-  linePoints: [x: number, y: number]
+  points: number[]
 }
 
 export interface IGraffitiData {
