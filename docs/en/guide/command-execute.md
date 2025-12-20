@@ -1135,3 +1135,13 @@ Usage:
 ```javascript
 instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
 ```
+
+## executeClearGraffiti
+
+Feature: clear graffiti data
+
+Usage:
+
+```javascript
+instance.command.executeClearGraffiti()
+```

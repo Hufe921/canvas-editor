@@ -73,6 +73,7 @@ import { AreaMode } from './dataset/enum/Area'
 import { IBadge } from './interface/Badge'
 import { WatermarkType } from './dataset/enum/Watermark'
 import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
+import { IGraffitiData } from './interface/Graffiti'
 
 export default class Editor {
   public command: Command
@@ -96,12 +97,14 @@ export default class Editor {
     let headerElementList: IElement[] = []
     let mainElementList: IElement[] = []
     let footerElementList: IElement[] = []
+    let graffitiData: IGraffitiData[] = []
     if (Array.isArray(data)) {
       mainElementList = data
     } else {
       headerElementList = data.header || []
       mainElementList = data.main
       footerElementList = data.footer || []
+      graffitiData = data.graffiti || []
     }
     const pageComponentData = [
       headerElementList,
@@ -129,7 +132,8 @@ export default class Editor {
       {
         header: headerElementList,
         main: mainElementList,
-        footer: footerElementList
+        footer: footerElementList,
+        graffiti: graffitiData
       },
       this.listener,
       this.eventBus,

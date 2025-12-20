@@ -113,6 +113,7 @@ import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
 import { Badge } from './frame/Badge'
+import { Graffiti } from './graffiti/Graffiti'
 
 export class Draw {
   private container: HTMLDivElement
@@ -176,6 +177,7 @@ export class Draw {
   private scrollObserver: ScrollObserver
   private selectionObserver: SelectionObserver
   private imageObserver: ImageObserver
+  private graffiti: Graffiti
 
   private LETTER_REG: RegExp
   private WORD_LIKE_REG: RegExp
@@ -186,7 +188,7 @@ export class Draw {
   private visiblePageNoList: number[]
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
-  private printModeData: Required<IEditorData> | null
+  private printModeData: Required<Omit<IEditorData, 'graffiti'>> | null
 
   constructor(
     rootContainer: HTMLElement,
@@ -253,6 +255,7 @@ export class Draw {
     this.lineBreakParticle = new LineBreakParticle(this)
     this.control = new Control(this)
     this.pageBorder = new PageBorder(this)
+    this.graffiti = new Graffiti(this, data.graffiti)
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -302,7 +305,11 @@ export class Draw {
     }
     // 过滤控件辅助元素
     const clonePrintModeData = deepClone(this.printModeData)
-    const editorDataKeys: (keyof IEditorData)[] = ['header', 'main', 'footer']
+    const editorDataKeys: (keyof Omit<IEditorData, 'graffiti'>)[] = [
+      'header',
+      'main',
+      'footer'
+    ]
     editorDataKeys.forEach(key => {
       clonePrintModeData[key] = this.control.filterAssistElement(
         clonePrintModeData[key]
@@ -356,6 +363,7 @@ export class Draw {
         return false
       case EditorMode.READONLY:
       case EditorMode.PRINT:
+      case EditorMode.GRAFFITI:
         return true
       case EditorMode.FORM:
         return !this.control.getIsRangeWithinControl()
@@ -394,6 +402,10 @@ export class Draw {
 
   public isPrintMode() {
     return this.mode === EditorMode.PRINT
+  }
+
+  public isGraffitiMode() {
+    return this.mode === EditorMode.GRAFFITI
   }
 
   public getOriginalWidth(): number {
@@ -941,6 +953,10 @@ export class Draw {
     return this.i18n
   }
 
+  public getGraffiti(): Graffiti {
+    return this.graffiti
+  }
+
   public getRowCount(): number {
     return this.getRowList().length
   }
@@ -1174,7 +1190,8 @@ export class Draw {
     const data: Required<IEditorData> = {
       header: this.getHeaderElementList(),
       main: mainElementList,
-      footer: this.getFooterElementList()
+      footer: this.getFooterElementList(),
+      graffiti: this.graffiti.getValue()
     }
     return data
   }
@@ -1192,7 +1209,8 @@ export class Draw {
       }),
       footer: zipElementList(originData.footer, {
         extraPickAttrs
-      })
+      }),
+      graffiti: originData.graffiti
     }
     return {
       version,
@@ -1235,7 +1253,7 @@ export class Draw {
     })
   }
 
-  public setEditorData(payload: Partial<IEditorData>) {
+  public setEditorData(payload: Partial<Omit<IEditorData, 'graffiti'>>) {
     const { header, main, footer } = payload
     if (header) {
       this.header.setElementList(header)
@@ -2121,7 +2139,8 @@ export class Draw {
       zone,
       isDrawLineBreak = !lineBreak.disabled
     } = payload
-    const isPrintMode = this.mode === EditorMode.PRINT
+    const isPrintMode = this.isPrintMode()
+    const isGraffitiMode = this.isGraffitiMode()
     const { isCrossRowCol, tableId } = this.range.getRange()
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
@@ -2437,7 +2456,7 @@ export class Draw {
       // 绘制批注样式
       this.group.render(ctx)
       // 绘制选区
-      if (!isPrintMode) {
+      if (!isPrintMode && !isGraffitiMode) {
         if (rangeRecord.width && rangeRecord.height) {
           const { x, y, width, height } = rangeRecord
           this.range.render(ctx, x, y, width, height)
@@ -2592,6 +2611,10 @@ export class Draw {
     }
     // 绘制签章
     this.badge.render(ctx, pageNo)
+    // 绘制涂鸦
+    if (this.isGraffitiMode()) {
+      this.graffiti.render(ctx, pageNo)
+    }
   }
 
   private _disconnectLazyRender() {
@@ -2688,7 +2711,7 @@ export class Draw {
       this.position.computePositionList()
       // 区域信息
       this.area.compute()
-      if (this.mode !== EditorMode.PRINT) {
+      if (!this.isPrintMode()) {
         // 搜索信息
         const searchKeyword = this.search.getSearchKeyword()
         if (searchKeyword) {
@@ -2696,6 +2719,10 @@ export class Draw {
         }
         // 控件关键词高亮
         this.control.computeHighlightList()
+      }
+      // 涂鸦信息
+      if (this.isGraffitiMode()) {
+        this.graffiti.compute()
       }
     }
     // 清除光标等副作用

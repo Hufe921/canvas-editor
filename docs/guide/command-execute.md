@@ -1127,3 +1127,11 @@ instance.command.executeSetAreaValue(payload: ISetAreaValueOption)
 ```js
 instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
 ```
+
+## executeClearGraffiti
+
+功能：清空涂鸦信息
+
+```js
+instance.command.executeClearGraffiti()
+```

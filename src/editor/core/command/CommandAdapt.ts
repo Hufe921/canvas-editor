@@ -2636,4 +2636,17 @@ export class CommandAdapt {
       isSubmitHistory: false
     })
   }
+
+  // 清空涂鸦信息
+  public clearGraffiti() {
+    this.draw.getGraffiti().clear()
+    // 涂鸦模式下重新渲染
+    if (this.draw.isGraffitiMode()) {
+      this.draw.render({
+        isCompute: false,
+        isSetCursor: false,
+        isSubmitHistory: false
+      })
+    }
+  }
 }

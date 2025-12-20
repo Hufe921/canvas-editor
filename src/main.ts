@@ -1575,6 +1575,10 @@ function initEditorInstance(
     {
       mode: EditorMode.DESIGN,
       name: '设计模式'
+    },
+    {
+      mode: EditorMode.GRAFFITI,
+      name: '涂鸦模式'
     }
   ]
   const modeElement = document.querySelector<HTMLDivElement>('.editor-mode')!
@@ -1995,6 +1999,15 @@ function initEditorInstance(
         if (text) {
           window.open(`https://www.baidu.com/s?ie=UTF-8&wd=${text}`, '_blank')
         }
+      }
+    },
+    {
+      name: '清空涂鸦信息',
+      when: payload => {
+        return payload.options.mode === EditorMode.GRAFFITI
+      },
+      callback: (command: Command) => {
+        command.executeClearGraffiti()
       }
     }
   ])

@@ -49,6 +49,8 @@ import {
 import { defaultBadgeOption } from '../dataset/constant/Badge'
 import { IBadgeOption } from '../interface/Badge'
 import { defaultModeRuleOption } from '../dataset/constant/Editor'
+import { IGraffitiOption } from '../interface/Graffiti'
+import { defaultGraffitiOption } from '../dataset/constant/Graffiti'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -133,6 +135,10 @@ export function mergeOption(
     ...defaultBadgeOption,
     ...options.badge
   }
+  const graffitiOptions: Required<IGraffitiOption> = {
+    ...defaultGraffitiOption,
+    ...options.graffiti
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -214,6 +220,7 @@ export function mergeOption(
     lineNumber: lineNumberOptions,
     pageBorder: pageBorderOptions,
     badge: badgeOptions,
-    modeRule: modeRuleOption
+    modeRule: modeRuleOption,
+    graffiti: graffitiOptions
   }
 }
