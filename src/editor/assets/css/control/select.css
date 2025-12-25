@@ -42,3 +42,14 @@
   color: var(--COLOR-HOVER, #5175f4);
   font-weight: 700;
 }
+
+.ce-select-checkbox,
+.ce-select-radio {
+  margin-right: 8px;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.ce-select-control-popup ul li span {
+  vertical-align: middle;
+}
