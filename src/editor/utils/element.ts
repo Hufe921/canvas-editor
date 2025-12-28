@@ -1298,10 +1298,12 @@ export function createDomFromElementList(
             clipboardDom.append(video)
           }
         } else if (element.block?.type === BlockType.IFRAME) {
-          const { src, srcdoc } = element.block.iframeBlock || {}
+          const { src, srcdoc, sandbox, allow } =
+            element.block.iframeBlock || {}
           if (src || srcdoc) {
             const iframe = document.createElement('iframe')
-            iframe.sandbox.add(...IFrameBlock.sandbox)
+            iframe.sandbox.add(...(sandbox || IFrameBlock.sandbox))
+            iframe.setAttribute('allow', [allow || IFrameBlock.allow].join(' '))
             iframe.style.display = 'block'
             iframe.style.border = 'none'
             if (src) {

@@ -2,6 +2,8 @@ import { IRowElement } from '../../../../../interface/Row'
 
 export class IFrameBlock {
   public static readonly sandbox = ['allow-scripts', 'allow-same-origin']
+  public static readonly allow = ['fullscreen']
+
   private element: IRowElement
 
   constructor(element: IRowElement) {
@@ -22,17 +24,21 @@ export class IFrameBlock {
   }
 
   public render(blockItemContainer: HTMLDivElement) {
-    const block = this.element.block!
+    const { iframeBlock } = this.element.block || {}
     const iframe = document.createElement('iframe')
     iframe.setAttribute('data-id', this.element.id!)
-    iframe.sandbox.add(...IFrameBlock.sandbox)
+    iframe.sandbox.add(...(iframeBlock?.sandbox || IFrameBlock.sandbox))
+    iframe.setAttribute(
+      'allow',
+      [iframeBlock?.allow || IFrameBlock.allow].join(' ')
+    )
     iframe.style.border = 'none'
     iframe.style.width = '100%'
     iframe.style.height = '100%'
-    if (block.iframeBlock?.src) {
-      iframe.src = block.iframeBlock.src
-    } else if (block.iframeBlock?.srcdoc) {
-      iframe.srcdoc = block.iframeBlock.srcdoc
+    if (iframeBlock?.src) {
+      iframe.src = iframeBlock.src
+    } else if (iframeBlock?.srcdoc) {
+      iframe.srcdoc = iframeBlock.srcdoc
     }
     blockItemContainer.append(iframe)
     // 重新定义iframe上属性
