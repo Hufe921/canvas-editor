@@ -103,8 +103,12 @@ import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
 import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
-import { PUNCTUATION_REG } from '../../dataset/constant/Regular'
+import {
+  PUNCTUATION_REG,
+  WHITE_SPACE_REG
+} from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
+import { WhiteSpaceParticle } from './particle/WhiteSpaceParticle'
 import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
 import { PageBorder } from './frame/PageBorder'
@@ -171,6 +175,7 @@ export class Draw {
   private blockParticle: BlockParticle
   private listParticle: ListParticle
   private lineBreakParticle: LineBreakParticle
+  private whiteSpaceParticle: WhiteSpaceParticle
   private control: Control
   private pageBorder: PageBorder
   private workerManager: WorkerManager
@@ -253,6 +258,7 @@ export class Draw {
     this.blockParticle = new BlockParticle(this)
     this.listParticle = new ListParticle(this)
     this.lineBreakParticle = new LineBreakParticle(this)
+    this.whiteSpaceParticle = new WhiteSpaceParticle(this)
     this.control = new Control(this)
     this.pageBorder = new PageBorder(this)
     this.graffiti = new Graffiti(this, data.graffiti)
@@ -2128,7 +2134,8 @@ export class Draw {
       scale,
       table: { tdPadding },
       group,
-      lineBreak
+      lineBreak,
+      whiteSpace
     } = this.options
     const {
       rowList,
@@ -2137,7 +2144,8 @@ export class Draw {
       positionList,
       startIndex,
       zone,
-      isDrawLineBreak = !lineBreak.disabled
+      isDrawLineBreak = !lineBreak.disabled,
+      isDrawWhiteSpace = !whiteSpace.disabled
     } = payload
     const isPrintMode = this.isPrintMode()
     const isGraffitiMode = this.isGraffitiMode()
@@ -2278,6 +2286,10 @@ export class Draw {
           j === curRow.elementList.length - 1
         ) {
           this.lineBreakParticle.render(ctx, element, x, y + curRow.height / 2)
+        }
+        // 空白符绘制
+        if (isDrawWhiteSpace && WHITE_SPACE_REG.test(element.value)) {
+          this.whiteSpaceParticle.render(ctx, element, x, y + curRow.height / 2)
         }
         // 边框绘制（目前仅支持控件）
         if (element.control?.border) {

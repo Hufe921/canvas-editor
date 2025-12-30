@@ -30,6 +30,7 @@ import { IElement } from './Element'
 import { LocationPosition } from '../dataset/enum/Common'
 import { IRange } from './Range'
 import { IGraffitiData, IGraffitiOption } from './Graffiti'
+import { IWhiteSpaceOption } from './WhiteSpace'
 
 export interface IEditorData {
   header?: IElement[]
@@ -99,6 +100,7 @@ export interface IEditorOption {
   zone?: IZoneOption
   background?: IBackgroundOption
   lineBreak?: ILineBreakOption
+  whiteSpace?: IWhiteSpaceOption
   separator?: ISeparatorOption
   lineNumber?: ILineNumberOption
   pageBorder?: IPageBorderOption

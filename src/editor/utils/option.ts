@@ -51,6 +51,8 @@ import { IBadgeOption } from '../interface/Badge'
 import { defaultModeRuleOption } from '../dataset/constant/Editor'
 import { IGraffitiOption } from '../interface/Graffiti'
 import { defaultGraffitiOption } from '../dataset/constant/Graffiti'
+import { IWhiteSpaceOption } from '../interface/WhiteSpace'
+import { defaultWhiteSpaceOption } from '../dataset/constant/WhiteSpace'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -118,6 +120,10 @@ export function mergeOption(
   const lineBreakOptions: Required<ILineBreakOption> = {
     ...defaultLineBreak,
     ...options.lineBreak
+  }
+  const whiteSpaceOptions: Required<IWhiteSpaceOption> = {
+    ...defaultWhiteSpaceOption,
+    ...options.whiteSpace
   }
   const separatorOptions: Required<ISeparatorOption> = {
     ...defaultSeparatorOption,
@@ -216,6 +222,7 @@ export function mergeOption(
     zone: zoneOptions,
     background: backgroundOptions,
     lineBreak: lineBreakOptions,
+    whiteSpace: whiteSpaceOptions,
     separator: separatorOptions,
     lineNumber: lineNumberOptions,
     pageBorder: pageBorderOptions,

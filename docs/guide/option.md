@@ -74,6 +74,7 @@ interface IEditorOption {
   zone?: IZoneOption // 编辑器区域配置。{tipDisabled?:boolean;}
   background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。默认：{color: '#FFFFFF'}
   lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
+  whiteSpace?: IWhiteSpaceOption // 空格符配置。{disabled?:boolean; color?:string; radius?:number;}
   separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
   lineNumber?: ILineNumberOption // 行号配置。{size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
   pageBorder?: IPageBorderOption // 页面边框配置。{color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}

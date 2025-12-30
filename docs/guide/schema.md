@@ -177,6 +177,8 @@ interface IElement {
     iframeBlock?: {
       src?: string;
       srcdoc?: string;
+      sandbox?: string[];
+      allow?: string[];
     };
     videoBlock?: {
       src: string;
