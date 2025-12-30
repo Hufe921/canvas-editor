@@ -1,3 +1,28 @@
+## [0.9.122](https://github.com/Hufe921/canvas-editor/compare/v0.9.121...v0.9.122) (2025-12-30)
+
+
+### Bug Fixes
+
+* drawing position error in graffiti mode ([20dc863](https://github.com/Hufe921/canvas-editor/commit/20dc863d6ff2396b43cfb8f6709d71f1a704a7c9))
+
+
+### Documentation
+
+* update README.md ([4462afd](https://github.com/Hufe921/canvas-editor/commit/4462afd7471eb5366363bc1527e6b53a6d1105b7))
+
+
+### Features
+
+* add iframe block allow permissions configuration #1260 ([0caa225](https://github.com/Hufe921/canvas-editor/commit/0caa225ab1d481a2c508cc4609ce459370d1dd27)), closes [#1260](https://github.com/Hufe921/canvas-editor/issues/1260)
+* draw white space marker #1329 ([2c1f378](https://github.com/Hufe921/canvas-editor/commit/2c1f378b8aaaa3cf60bddc71135df908d05a6cd1)), closes [#1329](https://github.com/Hufe921/canvas-editor/issues/1329)
+
+
+### Performance Improvements
+
+* reduce graffiti points and optimize drawing performance ([a252997](https://github.com/Hufe921/canvas-editor/commit/a25299732d5befb187dd5b57f6b41313f6abf7b0))
+
+
+
 ## [0.9.121](https://github.com/Hufe921/canvas-editor/compare/v0.9.120...v0.9.121) (2025-12-19)
 
 
