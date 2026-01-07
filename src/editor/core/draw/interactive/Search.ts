@@ -13,6 +13,7 @@ import {
 } from '../../../interface/Search'
 import { getUUID, indexOf, isNumber } from '../../../utils'
 import { Position } from '../../position/Position'
+import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
 
 export interface INavigateInfo {
@@ -24,6 +25,7 @@ export class Search {
   private draw: Draw
   private options: Required<IEditorOption>
   private position: Position
+  private range: RangeManager
   private searchKeyword: string | null
   private searchNavigateIndex: number | null
   private searchOptions: ISearchOption | null
@@ -33,6 +35,7 @@ export class Search {
     this.draw = draw
     this.options = draw.getOptions()
     this.position = draw.getPosition()
+    this.range = draw.getRange()
     this.searchNavigateIndex = null
     this.searchOptions = null
     this.searchKeyword = null
@@ -289,10 +292,26 @@ export class Search {
   }
 
   public compute(payload: string) {
-    this.searchMatchList = this.getMatchList(
-      payload,
-      this.draw.getOriginalElementList()
-    )
+    const isPickSelectionElementList =
+      this.searchOptions?.isLimitSelection && !this.range.getIsCollapsed()
+    // 搜索元素范围（默认全部 || 设置搜索选中区域）
+    const searchElementList = isPickSelectionElementList
+      ? this.range.getSelectionElementList()
+      : this.draw.getOriginalElementList()
+    if (!searchElementList?.length) return
+    this.searchMatchList = this.getMatchList(payload, searchElementList)
+    // 根据选区位置index/tableIndex往后移动
+    if (!isPickSelectionElementList || !this.searchMatchList.length) return
+    const { startIndex } = this.range.getRange()
+    // getSelectionElementList实际返回的元素列表为选区位置之后的元素列表，所以需要+1
+    const offset = startIndex + 1
+    for (const searchMatch of this.searchMatchList) {
+      if (searchMatch.type === EditorContext.TABLE) {
+        searchMatch.tableIndex! += offset
+      } else {
+        searchMatch.index += offset
+      }
+    }
   }
 
   public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
