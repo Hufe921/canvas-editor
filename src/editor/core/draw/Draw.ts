@@ -1897,6 +1897,23 @@ export class Draw {
           rowFlex: elementList[i]?.rowFlex || elementList[i + 1]?.rowFlex,
           isPageBreak: element.type === ElementType.PAGE_BREAK
         }
+        // 有些字符的上升高度可能是负数，比如下划线
+        // 所以行高大于等于上身高度时，赋予一个基础的上升高度避免行塌陷
+        // 比如整行都是空格，行上升高度为rowMargin
+        // 比如整行都是下划线，行上升高度小于rowMargin
+        // 要注意表格的上升高度为0，所以要判断元素类型是否为文本
+        if (
+          (!element.type || element.type === ElementType.TEXT) &&
+          row.ascent <= rowMargin
+        ) {
+          const boundingBoxAscent =
+            this.textParticle.getBasisWordBoundingBoxAscent(
+              ctx,
+              element.font!
+            ) * scale
+          row.ascent = rowMargin + boundingBoxAscent
+          row.height = rowMargin + boundingBoxAscent
+        }
         // 控件缩进
         if (
           rowElement.controlComponent !== ControlComponent.PREFIX &&
@@ -1971,17 +1988,6 @@ export class Draw {
             el.metrics.width += gap
           }
           curRow.width = availableWidth
-        }
-        // 行距离顶部偏移量等于行高时 => 行增加默认标准元素偏移量
-        // 如整行都是空格测量偏移量为0，导致行塌陷
-        if (curRow.ascent === rowMargin) {
-          const boundingBoxDescent =
-            this.textParticle.getBasisWordBoundingBoxAscent(
-              ctx,
-              element.font!
-            ) * scale
-          curRow.ascent += boundingBoxDescent
-          curRow.height += boundingBoxDescent
         }
       }
       // 重新计算坐标、页码、下一行首行元素环绕交叉
