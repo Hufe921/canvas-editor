@@ -418,3 +418,28 @@ export function indexOf(
   }
   return { index: match.index, length: match[0].length }
 }
+
+// 滚动到可视视野范围
+export function scrollIntoView(container: HTMLElement, selected: HTMLElement) {
+  if (!selected) {
+    container.scrollTop = 0
+    return
+  }
+  const offsetParents: HTMLElement[] = []
+  let pointer = <HTMLElement>selected.offsetParent
+  while (pointer && container !== pointer && container.contains(pointer)) {
+    offsetParents.push(pointer)
+    pointer = <HTMLElement>pointer.offsetParent
+  }
+  const top =
+    selected.offsetTop +
+    offsetParents.reduce((prev, curr) => prev + curr.offsetTop, 0)
+  const bottom = top + selected.offsetHeight
+  const viewRectTop = container.scrollTop
+  const viewRectBottom = viewRectTop + container.clientHeight
+  if (top < viewRectTop) {
+    container.scrollTop = top
+  } else if (bottom > viewRectBottom) {
+    container.scrollTop = bottom - container.clientHeight
+  }
+}

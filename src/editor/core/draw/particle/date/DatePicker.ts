@@ -4,6 +4,7 @@ import {
 } from '../../../../dataset/constant/Editor'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { IElementPosition } from '../../../../interface/Element'
+import { scrollIntoView } from '../../../../utils'
 import { Draw } from '../../Draw'
 
 export interface IDatePickerLang {
@@ -471,33 +472,9 @@ export class DatePicker {
       const pickDom = dom.querySelector<HTMLLIElement>(`[data-id='${time}']`)!
       pickDom.classList.add('active')
       if (isIntoView) {
-        this._scrollIntoView(dom, pickDom)
+        scrollIntoView(dom, pickDom)
       }
     })
-  }
-
-  private _scrollIntoView(container: HTMLElement, selected: HTMLElement) {
-    if (!selected) {
-      container.scrollTop = 0
-      return
-    }
-    const offsetParents: HTMLElement[] = []
-    let pointer = <HTMLElement>selected.offsetParent
-    while (pointer && container !== pointer && container.contains(pointer)) {
-      offsetParents.push(pointer)
-      pointer = <HTMLElement>pointer.offsetParent
-    }
-    const top =
-      selected.offsetTop +
-      offsetParents.reduce((prev, curr) => prev + curr.offsetTop, 0)
-    const bottom = top + selected.offsetHeight
-    const viewRectTop = container.scrollTop
-    const viewRectBottom = viewRectTop + container.clientHeight
-    if (top < viewRectTop) {
-      container.scrollTop = top
-    } else if (bottom > viewRectBottom) {
-      container.scrollTop = bottom - container.clientHeight
-    }
   }
 
   private _preMonth() {

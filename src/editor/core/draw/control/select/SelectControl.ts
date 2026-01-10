@@ -24,6 +24,7 @@ import {
   isNonValue,
   omitObject,
   pickObject,
+  scrollIntoView,
   splitText
 } from '../../../../utils'
 import { formatElementContext } from '../../../../utils/element'
@@ -491,12 +492,14 @@ export class SelectControl implements IControlInstance {
     selectPopupContainer.classList.add(`${EDITOR_PREFIX}-select-control-popup`)
     selectPopupContainer.setAttribute(EDITOR_COMPONENT, EditorComponent.POPUP)
     const ul = document.createElement('ul')
+    let activeSelectDom: HTMLLIElement | null = null
     for (let v = 0; v < valueSets.length; v++) {
       const valueSet = valueSets[v]
       const li = document.createElement('li')
       let codes = this.getCodes()
       if (codes.includes(valueSet.code)) {
         li.classList.add('active')
+        activeSelectDom = li
       }
       li.onclick = () => {
         const codeIndex = codes.findIndex(code => code === valueSet.code)
@@ -533,6 +536,10 @@ export class SelectControl implements IControlInstance {
     const container = this.control.getContainer()
     container.append(selectPopupContainer)
     this.selectDom = selectPopupContainer
+    // 将激活项跳转到可视视野范围内
+    if (activeSelectDom) {
+      scrollIntoView(selectPopupContainer, activeSelectDom)
+    }
   }
 
   public awake() {
