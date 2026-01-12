@@ -1370,7 +1370,6 @@ export class Draw {
     } = payload
     const {
       defaultSize,
-      defaultRowMargin,
       scale,
       table: { tdPadding, defaultTrMinHeight },
       defaultTabWidth
