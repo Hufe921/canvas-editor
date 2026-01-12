@@ -1339,8 +1339,18 @@ export class Draw {
   }
 
   public getElementRowMargin(el: IElement) {
-    const { defaultBasicRowMarginHeight, defaultRowMargin, scale } =
+    const { defaultBasicRowMarginHeight, defaultRowMargin, scale, lineHeight } =
       this.options
+    // 使用相对行高(相对于字体大小),rowMargin直接作为行高倍数
+    if (lineHeight !== undefined) {
+      const fontSize = this.getElementSize(el) * scale
+      // rowMargin直接作为行高倍数(Google Docs风格: 1=单倍, 2=双倍, 3=三倍)
+      const effectiveLineHeight = el.rowMargin ?? defaultRowMargin ?? lineHeight
+      const totalLineHeight = fontSize * effectiveLineHeight
+      const margin = (totalLineHeight - fontSize) / 2
+      return margin
+    }
+    // 向后兼容:未设置lineHeight时使用固定行距
     return (
       defaultBasicRowMarginHeight * (el.rowMargin ?? defaultRowMargin) * scale
     )
@@ -1394,8 +1404,7 @@ export class Draw {
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
-      const rowMargin =
-        defaultBasicRowMarginHeight * (element.rowMargin ?? defaultRowMargin)
+      const rowMargin = this.getElementRowMargin(element)
       const metrics: IElementMetrics = {
         width: 0,
         height: 0,
