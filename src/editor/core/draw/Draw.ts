@@ -1759,16 +1759,17 @@ export class Draw {
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing * scale
         }
-        // 零宽字符ascent默认为：基线元素ascent
+        // 使用基线ascent和descent保持行高稳定
         metrics.boundingBoxAscent =
-          (element.value === ZERO
-            ? this.textParticle.getBasisWordBoundingBoxAscent(
-                ctx,
-                element.font!
-              )
-            : fontMetrics.actualBoundingBoxAscent) * scale
+          this.textParticle.getBasisWordBoundingBoxAscent(
+            ctx,
+            element.font!
+          ) * scale
         metrics.boundingBoxDescent =
-          fontMetrics.actualBoundingBoxDescent * scale
+          this.textParticle.getBasisWordBoundingBoxDescent(
+            ctx,
+            element.font!
+          ) * scale
         if (element.type === ElementType.SUPERSCRIPT) {
           metrics.boundingBoxAscent += metrics.height / 2
         } else if (element.type === ElementType.SUBSCRIPT) {
