@@ -50,6 +50,7 @@ export interface IEditorOption {
   maxSize?: number
   defaultBasicRowMarginHeight?: number
   defaultRowMargin?: number
+  lineHeight?: number
   defaultTabWidth?: number
   width?: number
   height?: number
