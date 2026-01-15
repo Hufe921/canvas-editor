@@ -497,10 +497,26 @@ export class SelectControl implements IControlInstance {
       const valueSet = valueSets[v]
       const li = document.createElement('li')
       let codes = this.getCodes()
-      if (codes.includes(valueSet.code)) {
+      const isChecked = codes.includes(valueSet.code)
+
+      // 添加选择框（复选框或单选框）
+      let inputElement: HTMLInputElement | null = null
+      if (
+        control.selectStyle === 'checkbox' ||
+        control.selectStyle === 'radio'
+      ) {
+        inputElement = document.createElement('input')
+        inputElement.type = control.selectStyle
+        inputElement.checked = isChecked
+        inputElement.className = `${EDITOR_PREFIX}-select-${control.selectStyle}`
+        li.append(inputElement)
+      }
+
+      if (isChecked) {
         li.classList.add('active')
         activeSelectDom = li
       }
+
       li.onclick = () => {
         const codeIndex = codes.findIndex(code => code === valueSet.code)
         if (control.isMultiSelect) {
@@ -518,7 +534,10 @@ export class SelectControl implements IControlInstance {
         }
         this.setSelect(codes.join(this.VALUE_DELIMITER))
       }
-      li.append(document.createTextNode(valueSet.value))
+
+      const span = document.createElement('span')
+      span.append(document.createTextNode(valueSet.value))
+      li.append(span)
       ul.append(li)
     }
     selectPopupContainer.append(ul)
