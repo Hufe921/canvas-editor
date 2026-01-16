@@ -1309,7 +1309,6 @@ export class CommandAdapt {
   public search(payload: string | null, options?: ISearchOption) {
     this.searchManager.setSearchKeyword(payload, options)
     this.draw.render({
-      isSetCursor: false,
       isSubmitHistory: false
     })
   }

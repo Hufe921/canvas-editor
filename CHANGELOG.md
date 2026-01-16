@@ -1,3 +1,20 @@
+## [0.9.123](https://github.com/Hufe921/canvas-editor/compare/v0.9.122...v0.9.123) (2026-01-16)
+
+
+### Bug Fixes
+
+* prevent cursor jump when selection exists during search #1335 ([55b7cc9](https://github.com/Hufe921/canvas-editor/commit/55b7cc9b11dd809341bab4cfc336d9ebf7ecf6e9)), closes [#1335](https://github.com/Hufe921/canvas-editor/issues/1335)
+* search highlight position for radio control #1346 ([cee5d60](https://github.com/Hufe921/canvas-editor/commit/cee5d609b2f7741aa52ac293f0bae0cc69fd6a98)), closes [#1346](https://github.com/Hufe921/canvas-editor/issues/1346)
+* tab element boundingBoxAscent value #1341 ([c66df89](https://github.com/Hufe921/canvas-editor/commit/c66df899f3cfd94f8ad169e28c8ce5eb9d9e8416)), closes [#1341](https://github.com/Hufe921/canvas-editor/issues/1341)
+
+
+### Features
+
+* ensure selected option scrolls into view #1340 ([30dea59](https://github.com/Hufe921/canvas-editor/commit/30dea59ea57115dac7e23c0a5cfe46522e703a60)), closes [#1340](https://github.com/Hufe921/canvas-editor/issues/1340)
+* search support within selected content #1336 ([629168c](https://github.com/Hufe921/canvas-editor/commit/629168c77d4c672e06f57c658ca5a08d8f8a5adf)), closes [#1336](https://github.com/Hufe921/canvas-editor/issues/1336)
+
+
+
 ## [0.9.122](https://github.com/Hufe921/canvas-editor/compare/v0.9.121...v0.9.122) (2025-12-30)
 
 

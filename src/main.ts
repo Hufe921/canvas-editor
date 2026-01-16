@@ -1240,6 +1240,8 @@ function initEditorInstance(
     document.querySelector<HTMLInputElement>('#option-reg')!
   const searchCaseInputDom =
     document.querySelector<HTMLInputElement>('#option-case')!
+  const searchSelectionInputDom =
+    document.querySelector<HTMLInputElement>('#option-selection')!
   const searchDom =
     document.querySelector<HTMLDivElement>('.menu-item__search')!
   searchDom.title = `搜索与替换(${isApple ? '⌘' : 'Ctrl'}+F)`
@@ -1280,7 +1282,8 @@ function initEditorInstance(
   function emitSearch() {
     instance.command.executeSearch(searchInputDom.value || null, {
       isRegEnable: searchRegInputDom.checked,
-      isIgnoreCase: searchCaseInputDom.checked
+      isIgnoreCase: searchCaseInputDom.checked,
+      isLimitSelection: searchSelectionInputDom.checked
     })
     setSearchResult()
   }
@@ -1288,6 +1291,7 @@ function initEditorInstance(
   searchInputDom.oninput = emitSearch
   searchRegInputDom.onchange = emitSearch
   searchCaseInputDom.onchange = emitSearch
+  searchSelectionInputDom.onchange = emitSearch
   searchInputDom.onkeydown = function (evt) {
     if (evt.key === 'Enter') {
       emitSearch()

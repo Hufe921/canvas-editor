@@ -1731,7 +1731,8 @@ export class Draw {
         metrics.width = defaultTabWidth * scale
         metrics.height = defaultSize * scale
         metrics.boundingBoxDescent = 0
-        metrics.boundingBoxAscent = metrics.height
+        metrics.boundingBoxAscent =
+          this.textParticle.getBasisWordBoundingBoxAscent(ctx, ctx.font)
       } else if (element.type === ElementType.BLOCK) {
         if (!element.width) {
           metrics.width = availableWidth
