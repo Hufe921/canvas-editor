@@ -50,8 +50,13 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   ) {
     enterText = omitObject(enterText, AREA_CONTEXT_ATTR)
   }
-  // 标题结尾处回车无需格式化及样式复制
+  // 标题开始 && 标题结尾处回车 => 无需格式化及样式复制
   if (
+    !(
+      elementList[startIndex + 1]?.titleId &&
+      (!startElement.titleId ||
+        startElement.titleId !== elementList[startIndex + 1]?.titleId)
+    ) &&
     !(
       endElement.titleId &&
       endElement.titleId !== elementList[endIndex + 1]?.titleId
