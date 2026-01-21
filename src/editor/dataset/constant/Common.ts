@@ -41,4 +41,4 @@ export const LETTER_CLASS = {
   GREEK: 'ΑαΒβΓγΔδΕεΖζΗηΘθΙιΚκΛλΜμΝνΞξΟοΠπΡρΣσςΤτΥυΦφΧχΨψΩω'
 }
 
-export const METRICS_BASIS_TEXT = '日'
+export const METRICS_BASIS_TEXT = '中'
