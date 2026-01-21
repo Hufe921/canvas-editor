@@ -117,14 +117,7 @@ export class TextParticle {
     ctx: CanvasRenderingContext2D,
     font: string
   ): number {
-    return this.measureBasisWord(ctx, font).fontBoundingBoxAscent
-  }
-
-  public getBasisWordBoundingBoxDescent(
-    ctx: CanvasRenderingContext2D,
-    font: string
-  ): number {
-    return this.measureBasisWord(ctx, font).fontBoundingBoxDescent
+    return this.measureBasisWord(ctx, font).actualBoundingBoxAscent
   }
 
   public complete() {

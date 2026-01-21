@@ -1759,17 +1759,14 @@ export class Draw {
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing * scale
         }
-        // 使用基线ascent和descent保持行高稳定
-        metrics.boundingBoxAscent =
-          this.textParticle.getBasisWordBoundingBoxAscent(
-            ctx,
-            element.font!
-          ) * scale
+        // 使用基于字体的基准度量以确保一致的行高，避免字符特定度量导致的布局跳动
+        const basisMetrics = this.textParticle.measureBasisWord(
+          ctx,
+          element.font!
+        )
+        metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
         metrics.boundingBoxDescent =
-          this.textParticle.getBasisWordBoundingBoxDescent(
-            ctx,
-            element.font!
-          ) * scale
+          basisMetrics.actualBoundingBoxDescent * scale
         if (element.type === ElementType.SUPERSCRIPT) {
           metrics.boundingBoxAscent += metrics.height / 2
         } else if (element.type === ElementType.SUBSCRIPT) {
@@ -1973,17 +1970,6 @@ export class Draw {
             el.metrics.width += gap
           }
           curRow.width = availableWidth
-        }
-        // 行距离顶部偏移量等于行高时 => 行增加默认标准元素偏移量
-        // 如整行都是空格测量偏移量为0，导致行塌陷
-        if (curRow.ascent === rowMargin) {
-          const boundingBoxDescent =
-            this.textParticle.getBasisWordBoundingBoxAscent(
-              ctx,
-              element.font!
-            ) * scale
-          curRow.ascent += boundingBoxDescent
-          curRow.height += boundingBoxDescent
         }
       }
       // 重新计算坐标、页码、下一行首行元素环绕交叉
