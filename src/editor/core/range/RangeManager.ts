@@ -116,7 +116,10 @@ export class RangeManager {
     const { startIndex, endIndex } = this.range
     if (startIndex === endIndex) return null
     const elementList = this.draw.getElementList()
-    return elementList.slice(startIndex + 1, endIndex + 1)
+    return elementList.slice(
+      elementList[startIndex]?.value === ZERO ? startIndex : startIndex + 1,
+      endIndex + 1
+    )
   }
 
   public getSelectionElementList(): IElement[] | null {

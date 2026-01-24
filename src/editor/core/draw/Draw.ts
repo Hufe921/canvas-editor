@@ -1339,10 +1339,25 @@ export class Draw {
   }
 
   public getElementRowMargin(el: IElement) {
-    const { defaultBasicRowMarginHeight, defaultRowMargin, scale } =
-      this.options
+    const {
+      defaultSize,
+      defaultBasicRowMarginHeight,
+      defaultRowMargin,
+      scale
+    } = this.options
+    // 字体在12-30之间，行间距不变，小于12按比例缩小，大于30按比例放大
+    const fontSize = el.size || defaultSize
+    let ratio = 1
+    if (fontSize < 12) {
+      ratio = fontSize / 12
+    } else if (fontSize > 30) {
+      ratio = 1 + (fontSize - 30) / 30
+    }
     return (
-      defaultBasicRowMarginHeight * (el.rowMargin ?? defaultRowMargin) * scale
+      defaultBasicRowMarginHeight *
+      ratio *
+      (el.rowMargin ?? defaultRowMargin) *
+      scale
     )
   }
 
@@ -1360,7 +1375,6 @@ export class Draw {
     } = payload
     const {
       defaultSize,
-      defaultRowMargin,
       scale,
       table: { tdPadding, defaultTrMinHeight },
       defaultTabWidth
@@ -1394,8 +1408,7 @@ export class Draw {
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
-      const rowMargin =
-        defaultBasicRowMarginHeight * (element.rowMargin ?? defaultRowMargin)
+      const rowMargin = this.getElementRowMargin(element)
       const metrics: IElementMetrics = {
         width: 0,
         height: 0,
