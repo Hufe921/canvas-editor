@@ -1,3 +1,26 @@
+## [0.9.124](https://github.com/Hufe921/canvas-editor/compare/v0.9.123...v0.9.124) (2026-01-31)
+
+
+### Bug Fixes
+
+* checkbox not selectable on first click in form mode #1347 ([66e5a31](https://github.com/Hufe921/canvas-editor/commit/66e5a31bb90e6ec1b61b49ca86a2d8d8c9ada1c0)), closes [#1347](https://github.com/Hufe921/canvas-editor/issues/1347)
+* copy style before title line break #1339 ([5c1b341](https://github.com/Hufe921/canvas-editor/commit/5c1b3410ee9cfc48026f15b2533b16b1b108fbe2)), closes [#1339](https://github.com/Hufe921/canvas-editor/issues/1339)
+* cursor unable to focus table when resizing last row in paged continuous mode #1349 ([d9449ff](https://github.com/Hufe921/canvas-editor/commit/d9449ff1bdd24b45363706780c8941a60c3db003)), closes [#1349](https://github.com/Hufe921/canvas-editor/issues/1349)
+* layout shift when typing descended character or symbols #1342 ([d89c0ad](https://github.com/Hufe921/canvas-editor/commit/d89c0adea0894801bb5d36e371175faadc115c10)), closes [#1342](https://github.com/Hufe921/canvas-editor/issues/1342)
+
+
+### Chores
+
+* add AGENTS.md ([4d57daf](https://github.com/Hufe921/canvas-editor/commit/4d57daf43cc830c7393dc1fe77150e6b7add3a62))
+
+
+### Features
+
+* add calculator to number control #925 ([fbd8b6a](https://github.com/Hufe921/canvas-editor/commit/fbd8b6a3ba358c2baecad839fb554f881d3206f1)), closes [#925](https://github.com/Hufe921/canvas-editor/issues/925)
+* line spacing scale proportionally with font size #1344 ([19ea5d8](https://github.com/Hufe921/canvas-editor/commit/19ea5d81a79a0124eec03bbb532c2e43f53f7995)), closes [#1344](https://github.com/Hufe921/canvas-editor/issues/1344)
+
+
+
 ## [0.9.123](https://github.com/Hufe921/canvas-editor/compare/v0.9.122...v0.9.123) (2026-01-16)
 
 
