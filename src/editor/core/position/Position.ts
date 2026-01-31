@@ -593,37 +593,40 @@ export class Position {
       }
     }
     if (!isLastArea) {
-      // 页眉底部距离页面顶部距离
-      const header = this.draw.getHeader()
-      const headerHeight = header.getHeight()
-      const headerBottomY = header.getHeaderTop() + headerHeight
-      // 页脚上部距离页面顶部距离
-      const footer = this.draw.getFooter()
-      const pageHeight = this.draw.getHeight()
-      const footerTopY =
-        pageHeight - (footer.getFooterBottom() + footer.getHeight())
-      // 判断所属位置是否属于页眉页脚区域
-      if (isMainActive) {
-        // 页眉：当前位置小于页眉底部位置
-        if (y < headerBottomY) {
-          return {
-            index: -1,
-            zone: EditorZone.HEADER
+      // 页眉页脚正文切换
+      if (this.draw.getIsPagingMode()) {
+        // 页眉底部距离页面顶部距离
+        const header = this.draw.getHeader()
+        const headerHeight = header.getHeight()
+        const headerBottomY = header.getHeaderTop() + headerHeight
+        // 页脚上部距离页面顶部距离
+        const footer = this.draw.getFooter()
+        const pageHeight = this.draw.getHeight()
+        const footerTopY =
+          pageHeight - (footer.getFooterBottom() + footer.getHeight())
+        // 判断所属位置是否属于页眉页脚区域
+        if (isMainActive) {
+          // 页眉：当前位置小于页眉底部位置
+          if (y < headerBottomY) {
+            return {
+              index: -1,
+              zone: EditorZone.HEADER
+            }
           }
-        }
-        // 页脚：当前位置大于页脚顶部位置
-        if (y > footerTopY) {
-          return {
-            index: -1,
-            zone: EditorZone.FOOTER
+          // 页脚：当前位置大于页脚顶部位置
+          if (y > footerTopY) {
+            return {
+              index: -1,
+              zone: EditorZone.FOOTER
+            }
           }
-        }
-      } else {
-        // main区域：当前位置小于页眉底部位置 && 大于页脚顶部位置
-        if (y <= footerTopY && y >= headerBottomY) {
-          return {
-            index: -1,
-            zone: EditorZone.MAIN
+        } else {
+          // main区域：当前位置小于页眉底部位置 && 大于页脚顶部位置
+          if (y <= footerTopY && y >= headerBottomY) {
+            return {
+              index: -1,
+              zone: EditorZone.MAIN
+            }
           }
         }
       }

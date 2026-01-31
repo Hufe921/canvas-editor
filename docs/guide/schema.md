@@ -135,6 +135,9 @@ interface IElement {
     strikeout?: boolean;
     selectExclusiveOptions?: {
       inputAble?: boolean;
+    },
+    numberExclusiveOptions?: {
+      calculatorDisabled?: boolean;
     }
   };
   controlComponent?: {

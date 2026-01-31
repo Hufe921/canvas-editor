@@ -63,7 +63,7 @@ export function hitRadio(element: IElement, draw: Draw) {
 
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
-  const isReadonly = draw.isReadonly()
+  let isReadonly = draw.isReadonly()
   const rangeManager = draw.getRange()
   const position = draw.getPosition()
   // 存在选区时忽略右键点击
@@ -145,6 +145,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     }
     rangeManager.setRange(startIndex, endIndex)
     position.setCursorPosition(positionList[curIndex])
+    // 更新只读状态
+    isReadonly = draw.isReadonly()
     // 复选框
     if (isDirectHitCheckbox && !isReadonly) {
       hitCheckbox(curElement, draw)

@@ -1,15 +1,34 @@
 import { NON_NUMBER_STR_REG } from '../../../../dataset/constant/Regular'
 import { ControlComponent } from '../../../../dataset/enum/Control'
+import { ElementType } from '../../../../dataset/enum/Element'
 import {
   IControlContext,
   IControlRuleOption
 } from '../../../../interface/Control'
 import { IElement } from '../../../../interface/Element'
-import { deepClone } from '../../../../utils'
+import { deepClone, omitObject, pickObject } from '../../../../utils'
 import { getElementListText, isTextElement } from '../../../../utils/element'
 import { TextControl } from '../text/TextControl'
+import { Calculator } from './Calculator'
+import {
+  CONTROL_STYLE_ATTR,
+  EDITOR_ELEMENT_STYLE_ATTR
+} from '../../../../dataset/constant/Element'
 
 export class NumberControl extends TextControl {
+  private isPopup: boolean
+  private calculator: Calculator | null
+
+  constructor(element: IElement, control: any) {
+    super(element, control)
+    this.isPopup = false
+    this.calculator = null
+  }
+
+  public getIsPopup(): boolean {
+    return this.isPopup
+  }
+
   public setValue(
     data: IElement[],
     context: IControlContext = {},
@@ -67,5 +86,98 @@ export class NumberControl extends TextControl {
       return -1
     }
     return super.setValue(data, context, options)
+  }
+
+  private _setCalculatedValue(value: number) {
+    // 清空旧值
+    const prefixIndex = super.clearValue(
+      {},
+      {
+        isAddPlaceholder: false,
+        isIgnoreDeletedRule: true
+      }
+    )
+    if (!~prefixIndex) return
+
+    // 样式赋值元素-默认值的第一个字符样式，否则取默认样式
+    const elementList = this.control.getElementList()
+    const range = this.control.getRange()
+    const valueElement = this.getValue()[0]
+    const styleElement = valueElement
+      ? pickObject(valueElement, EDITOR_ELEMENT_STYLE_ATTR)
+      : pickObject(elementList[range.startIndex], CONTROL_STYLE_ATTR)
+
+    // 属性赋值元素-默认为前缀属性
+    const propertyElement = omitObject(
+      elementList[prefixIndex],
+      EDITOR_ELEMENT_STYLE_ATTR
+    )
+
+    // 创建新的元素
+    const valueStr = value.toString()
+    const data: IElement[] = []
+
+    for (let i = 0; i < valueStr.length; i++) {
+      const newElement: IElement = {
+        ...styleElement,
+        ...propertyElement,
+        type: ElementType.TEXT,
+        value: valueStr[i],
+        controlComponent: ControlComponent.VALUE
+      }
+      data.push(newElement)
+    }
+
+    // 设置值
+    this.setValue(data)
+
+    // 重新渲染控件
+    this.control.repaintControl({
+      curIndex: prefixIndex + data.length
+    })
+
+    // 触发控件内容变化事件
+    this.control.emitControlContentChange()
+
+    // 销毁弹窗
+    this.destroy()
+  }
+
+  public awake() {
+    // 检查是否启用计算器模式
+    const isCalculatorEnabled =
+      this.element.control?.numberExclusiveOptions?.calculatorDisabled === false
+    if (
+      this.isPopup ||
+      !isCalculatorEnabled ||
+      this.control.getIsDisabledControl() ||
+      !this.control.getIsRangeWithinControl()
+    ) {
+      return
+    }
+    const { startIndex } = this.control.getRange()
+    const elementList = this.control.getElementList()
+    if (elementList[startIndex + 1]?.controlId !== this.element.controlId) {
+      return
+    }
+
+    // 创建计算器实例
+    this.calculator = new Calculator({
+      control: this.control,
+      onCalculate: result => {
+        this._setCalculatedValue(result)
+      }
+    })
+
+    // 显示计算器弹窗
+    this.calculator.createPopup()
+    this.isPopup = true
+  }
+
+  public destroy() {
+    if (!this.isPopup) return
+    this.calculator?.destroy()
+    this.calculator = null
+    this.isPopup = false
   }
 }
