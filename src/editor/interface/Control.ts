@@ -46,6 +46,12 @@ export interface IControlDate {
   dateFormat?: string
 }
 
+export interface IControlNumber {
+  numberExclusiveOptions?: {
+    calculatorDisabled?: boolean
+  }
+}
+
 export interface IControlHighlightRule {
   keyword: string
   alpha?: number
@@ -98,7 +104,8 @@ export type IControl = IControlBasic &
   Partial<IControlSelect> &
   Partial<IControlCheckbox> &
   Partial<IControlRadio> &
-  Partial<IControlDate>
+  Partial<IControlDate> &
+  Partial<IControlNumber>
 
 export interface IControlOption {
   placeholderColor?: string

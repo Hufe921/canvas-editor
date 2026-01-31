@@ -1,0 +1,85 @@
+.ce-calculator {
+  position: absolute;
+  z-index: 1;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  background-color: #fff;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+  box-sizing: border-box;
+  margin: 5px 0;
+  padding: 8px;
+  width: 200px;
+}
+
+.ce-calculator-display {
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  text-align: right;
+  padding: 0 10px;
+  margin-bottom: 8px;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  background-color: #f5f7fa;
+  font-size: 16px;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ce-calculator-buttons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+
+.ce-calculator-button {
+  width: 100%;
+  height: 36px;
+  border: 1px solid #e4e7ed;
+  border-radius: 4px;
+  background-color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.ce-calculator-button:hover {
+  background-color: #EEF2FD;
+  border-color: #c6d1ff;
+}
+
+.ce-calculator-button:active {
+  background-color: #e1e8ff;
+}
+
+/* 运算符按钮样式 */
+.ce-calculator-button.operator {
+  background-color: #f5f7fa;
+}
+
+.ce-calculator-button.operator:hover {
+  background-color: #EEF2FD;
+}
+
+/* 等号按钮样式 */
+.ce-calculator-button.equal {
+  background-color: var(--COLOR-HOVER, #5175f4);
+  color: #fff;
+  border-color: var(--COLOR-HOVER, #5175f4);
+}
+
+.ce-calculator-button.equal:hover {
+  background-color: var(--COLOR-HOVER, #6a84ff);
+  border-color: var(--COLOR-HOVER, #6a84ff);
+}
+
+/* 功能按钮样式 */
+.ce-calculator-button.utility {
+  background-color: #f0f2f5;
+}
+
+.ce-calculator-button.utility:hover {
+  background-color: #e6e8eb;
+}

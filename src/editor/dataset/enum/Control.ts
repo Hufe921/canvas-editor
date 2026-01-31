@@ -29,3 +29,11 @@ export enum ControlState {
   ACTIVE = 'active',
   INACTIVE = 'inactive'
 }
+
+// 数值控件计算器按钮类型
+export enum CalculatorButtonType {
+  NUMBER = 'number',
+  OPERATOR = 'operator',
+  UTILITY = 'utility',
+  EQUAL = 'equal'
+}

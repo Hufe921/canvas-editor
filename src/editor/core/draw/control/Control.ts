@@ -383,6 +383,43 @@ export class Control {
     return this.range.getRange()
   }
 
+  public getValueRange(context: IControlContext = {}): IRange | null {
+    const elementList = context.elementList || this.getElementList()
+    const { startIndex } = context.range || this.getRange()
+    const startElement = elementList[startIndex]
+    // 向左查找
+    let preIndex = startIndex
+    while (preIndex > 0) {
+      const preElement = elementList[preIndex]
+      if (
+        preElement.controlId !== startElement.controlId ||
+        preElement.controlComponent === ControlComponent.PREFIX ||
+        preElement.controlComponent === ControlComponent.PRE_TEXT
+      ) {
+        break
+      }
+      preIndex--
+    }
+    // 向右查找
+    let nextIndex = startIndex + 1
+    while (nextIndex < elementList.length) {
+      const nextElement = elementList[nextIndex]
+      if (
+        nextElement.controlId !== startElement.controlId ||
+        nextElement.controlComponent === ControlComponent.POSTFIX ||
+        nextElement.controlComponent === ControlComponent.POST_TEXT
+      ) {
+        break
+      }
+      nextIndex++
+    }
+    if (preIndex === nextIndex) return null
+    return {
+      startIndex: preIndex,
+      endIndex: nextIndex - 1
+    }
+  }
+
   public shrinkBoundary(context: IControlContext = {}) {
     this.range.shrinkBoundary(context)
   }
@@ -455,7 +492,8 @@ export class Control {
       // 弹窗类控件唤醒弹窗，后缀处移除弹窗
       if (
         this.activeControl instanceof SelectControl ||
-        this.activeControl instanceof DateControl
+        this.activeControl instanceof DateControl ||
+        this.activeControl instanceof NumberControl
       ) {
         if (element.controlComponent === ControlComponent.POSTFIX) {
           this.activeControl.destroy()
@@ -504,7 +542,9 @@ export class Control {
       this.activeControl = dateControl
       dateControl.awake()
     } else if (control.type === ControlType.NUMBER) {
-      this.activeControl = new NumberControl(element, this)
+      const numberControl = new NumberControl(element, this)
+      this.activeControl = numberControl
+      numberControl.awake()
     }
     // 缓存控件数据
     this.updateActiveControlValue()
@@ -520,7 +560,8 @@ export class Control {
     const { isEmitEvent = true } = options
     if (
       this.activeControl instanceof SelectControl ||
-      this.activeControl instanceof DateControl
+      this.activeControl instanceof DateControl ||
+      this.activeControl instanceof NumberControl
     ) {
       this.activeControl.destroy()
     }
@@ -609,7 +650,8 @@ export class Control {
     this.activeControl.setElement(element)
     if (
       (this.activeControl instanceof DateControl ||
-        this.activeControl instanceof SelectControl) &&
+        this.activeControl instanceof SelectControl ||
+        this.activeControl instanceof NumberControl) &&
       this.activeControl.getIsPopup()
     ) {
       this.activeControl.destroy()
@@ -1085,8 +1127,8 @@ export class Control {
           const formatValue = Array.isArray(value)
             ? value
             : value
-            ? [{ value }]
-            : []
+              ? [{ value }]
+              : []
           if (formatValue.length) {
             formatElementList(formatValue, {
               isHandleFirstElement: false,
@@ -1141,8 +1183,8 @@ export class Control {
           const formatValue = Array.isArray(value)
             ? value
             : value
-            ? [{ value }]
-            : []
+              ? [{ value }]
+              : []
           if (formatValue.length) {
             formatElementList(formatValue, {
               isHandleFirstElement: false,

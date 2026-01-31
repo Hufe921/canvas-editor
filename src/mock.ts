@@ -441,6 +441,29 @@ elementList.push(
   ]
 )
 
+elementList.push(
+  ...[
+    {
+      value: '\n就诊次数：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        conceptId: '7',
+        type: ControlType.NUMBER,
+        value: null,
+        placeholder: '就诊次数',
+        prefix: '{',
+        postfix: '}',
+        numberExclusiveOptions: {
+          calculatorDisabled: false
+        }
+      }
+    }
+  ]
+)
+
 // 模拟结尾文本
 elementList.push(
   ...[

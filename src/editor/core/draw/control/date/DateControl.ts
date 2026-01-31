@@ -50,46 +50,12 @@ export class DateControl implements IControlInstance {
     return this.isPopup
   }
 
-  public getValueRange(context: IControlContext = {}): [number, number] | null {
-    const elementList = context.elementList || this.control.getElementList()
-    const { startIndex } = context.range || this.control.getRange()
-    const startElement = elementList[startIndex]
-    // 向左查找
-    let preIndex = startIndex
-    while (preIndex > 0) {
-      const preElement = elementList[preIndex]
-      if (
-        preElement.controlId !== startElement.controlId ||
-        preElement.controlComponent === ControlComponent.PREFIX ||
-        preElement.controlComponent === ControlComponent.PRE_TEXT
-      ) {
-        break
-      }
-      preIndex--
-    }
-    // 向右查找
-    let nextIndex = startIndex + 1
-    while (nextIndex < elementList.length) {
-      const nextElement = elementList[nextIndex]
-      if (
-        nextElement.controlId !== startElement.controlId ||
-        nextElement.controlComponent === ControlComponent.POSTFIX ||
-        nextElement.controlComponent === ControlComponent.POST_TEXT
-      ) {
-        break
-      }
-      nextIndex++
-    }
-    if (preIndex === nextIndex) return null
-    return [preIndex, nextIndex - 1]
-  }
-
   public getValue(context: IControlContext = {}): IElement[] {
     const elementList = context.elementList || this.control.getElementList()
-    const range = this.getValueRange(context)
+    const range = this.control.getValueRange(context)
     if (!range) return []
     const data: IElement[] = []
-    const [startIndex, endIndex] = range
+    const { startIndex, endIndex } = range
     for (let i = startIndex; i <= endIndex; i++) {
       const element = elementList[i]
       if (element.controlComponent === ControlComponent.VALUE) {
@@ -162,17 +128,17 @@ export class DateControl implements IControlInstance {
     if (!isIgnoreDisabledRule && this.control.getIsDisabledControl(context)) {
       return -1
     }
-    const range = this.getValueRange(context)
+    const range = this.control.getValueRange(context)
     if (!range) return -1
-    const [leftIndex, rightIndex] = range
-    if (!~leftIndex || !~rightIndex) return -1
+    const { startIndex, endIndex } = range
+    if (!~startIndex || !~endIndex) return -1
     const elementList = context.elementList || this.control.getElementList()
     // 删除元素
     const draw = this.control.getDraw()
     draw.spliceElementList(
       elementList,
-      leftIndex + 1,
-      rightIndex - leftIndex,
+      startIndex + 1,
+      endIndex - startIndex,
       [],
       {
         isIgnoreDeletedRule: options.isIgnoreDeletedRule
@@ -180,9 +146,9 @@ export class DateControl implements IControlInstance {
     )
     // 增加占位符
     if (isAddPlaceholder) {
-      this.control.addPlaceholder(leftIndex, context)
+      this.control.addPlaceholder(startIndex, context)
     }
-    return leftIndex
+    return startIndex
   }
 
   public setSelect(
