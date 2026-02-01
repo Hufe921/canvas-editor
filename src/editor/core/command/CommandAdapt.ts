@@ -64,6 +64,7 @@ import {
   IElementPosition,
   IElementStyle,
   IGetElementByIdOption,
+  IImageCrop,
   IInsertElementListOption,
   IUpdateElementByIdOption
 } from '../../interface/Element'
@@ -1380,6 +1381,18 @@ export class CommandAdapt {
     const element = elementList[startIndex]
     if (!element || element.type !== ElementType.IMAGE) return
     downloadFile(element.value, `${element.id!}.png`)
+  }
+
+  public setImageCrop(crop: IImageCrop) {
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (!element || element.type !== ElementType.IMAGE) return
+    element.imgCrop = crop
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
   }
 
   public changeImageDisplay(element: IElement, display: ImageDisplay) {

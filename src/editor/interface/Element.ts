@@ -129,6 +129,13 @@ export interface IImageRule {
   imgToolDisabled?: boolean
 }
 
+export interface IImageCrop {
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export interface IImageBasic {
   imgDisplay?: ImageDisplay
   imgFloatPosition?: {
@@ -136,6 +143,7 @@ export interface IImageBasic {
     y: number
     pageNo?: number
   }
+  imgCrop?: IImageCrop
 }
 
 export type IImageElement = IImageBasic & IImageRule

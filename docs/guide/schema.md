@@ -170,6 +170,12 @@ interface IElement {
     y: number;
     pageNo?: number;
   }
+  imgCrop?: {
+    x: number;      // 裁剪起始X坐标（相对于原图）
+    y: number;      // 裁剪起始Y坐标（相对于原图）
+    width: number;  // 裁剪宽度
+    height: number; // 裁剪高度
+  }
   imgToolDisabled?: boolean;
   // 内容块
   block?: {

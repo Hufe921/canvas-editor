@@ -726,6 +726,16 @@ Usage:
 instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
 ```
 
+## executeSetImageCrop
+
+Feature: Set image crop information
+
+Usage:
+
+```javascript
+instance.command.executeSetImageCrop(crop: IImageCrop)
+```
+
 ## executePageMode
 
 Feature: Page mode

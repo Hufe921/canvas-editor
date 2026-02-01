@@ -726,6 +726,16 @@ instance.command.executeSaveAsImageElement()
 instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
 ```
 
+## executeSetImageCrop
+
+功能：设置图片裁剪信息
+
+用法：
+
+```javascript
+instance.command.executeSetImageCrop(crop: IImageCrop)
+```
+
 ## executePageMode
 
 功能：页面模式

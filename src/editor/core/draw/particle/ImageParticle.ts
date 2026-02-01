@@ -103,8 +103,8 @@ export class ImageParticle {
                   <rect width="${width}" height="${height}" fill="url(#mosaic)" />
                   <defs>
                     <pattern id="mosaic" x="${x}" y="${y}" width="${
-      tileSize * 2
-    }" height="${tileSize * 2}" patternUnits="userSpaceOnUse">
+                      tileSize * 2
+                    }" height="${tileSize * 2}" patternUnits="userSpaceOnUse">
                       <rect width="${tileSize}" height="${tileSize}" fill="#cccccc" />
                       <rect width="${tileSize}" height="${tileSize}" fill="#cccccc" transform="translate(${tileSize}, ${tileSize})" />
                     </pattern>
@@ -115,6 +115,38 @@ export class ImageParticle {
       svg
     )}`
     return fallbackImage
+  }
+
+  private _drawImageWithCrop(
+    ctx: CanvasRenderingContext2D,
+    img: HTMLImageElement,
+    element: IElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) {
+    if (element.imgCrop) {
+      const {
+        x: cropX,
+        y: cropY,
+        width: cropWidth,
+        height: cropHeight
+      } = element.imgCrop
+      ctx.drawImage(
+        img,
+        cropX,
+        cropY,
+        cropWidth,
+        cropHeight,
+        x,
+        y,
+        width,
+        height
+      )
+    } else {
+      ctx.drawImage(img, x, y, width, height)
+    }
   }
 
   public render(
@@ -128,7 +160,7 @@ export class ImageParticle {
     const height = element.height! * scale
     if (this.imageCache.has(element.value)) {
       const img = this.imageCache.get(element.value)!
-      ctx.drawImage(img, x, y, width, height)
+      this._drawImageWithCrop(ctx, img, element, x, y, width, height)
     } else {
       const cacheRenderCount = this.draw.getRenderCount()
       const imageLoadPromise = new Promise((resolve, reject) => {
@@ -148,13 +180,21 @@ export class ImageParticle {
               isSubmitHistory: false
             })
           } else {
-            ctx.drawImage(img, x, y, width, height)
+            this._drawImageWithCrop(ctx, img, element, x, y, width, height)
           }
         }
         img.onerror = error => {
           const fallbackImage = this.getFallbackImage(width, height)
           fallbackImage.onload = () => {
-            ctx.drawImage(fallbackImage, x, y, width, height)
+            this._drawImageWithCrop(
+              ctx,
+              fallbackImage,
+              element,
+              x,
+              y,
+              width,
+              height
+            )
             this.imageCache.set(element.value, fallbackImage)
           }
           reject(error)

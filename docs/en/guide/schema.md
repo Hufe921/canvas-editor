@@ -170,6 +170,12 @@ interface IElement {
     y: number;
     pageNo?: number;
   }
+  imgCrop?: {
+    x: number;      // Crop start X coordinate (relative to original image)
+    y: number;      // Crop start Y coordinate (relative to original image)
+    width: number;  // Crop width
+    height: number; // Crop height
+  }
   imgToolDisabled?: boolean;
   // block
   block?: {
