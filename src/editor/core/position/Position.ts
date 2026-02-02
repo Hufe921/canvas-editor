@@ -464,6 +464,14 @@ export class Position {
             isCheckbox: true
           }
         }
+        // 标签元素检测
+        if (element.type === ElementType.LABEL) {
+          return {
+            index: curPositionIndex,
+            isDirectHit: true,
+            isLabel: true
+          }
+        }
         if (
           element.type === ElementType.TAB &&
           element.listStyle === ListStyle.CHECKBOX
@@ -781,6 +789,7 @@ export class Position {
       isRadio,
       isControl,
       isImage,
+      isLabel,
       isDirectHit,
       isTable,
       trIndex,
@@ -796,6 +805,7 @@ export class Position {
       isRadio: isRadio || false,
       isControl: isControl || false,
       isImage: isImage || false,
+      isLabel: isLabel || false,
       isDirectHit: isDirectHit || false,
       index,
       trIndex,

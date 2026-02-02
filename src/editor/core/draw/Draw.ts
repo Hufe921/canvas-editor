@@ -52,6 +52,7 @@ import { SelectionObserver } from '../observer/SelectionObserver'
 import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
+import { LabelParticle } from './particle/LabelParticle'
 import { Header } from './frame/Header'
 import { SuperscriptParticle } from './particle/SuperscriptParticle'
 import { SubscriptParticle } from './particle/SubscriptParticle'
@@ -165,6 +166,7 @@ export class Draw {
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
+  private labelParticle: LabelParticle
   private dateParticle: DateParticle
   private separatorParticle: SeparatorParticle
   private pageBreakParticle: PageBreakParticle
@@ -248,6 +250,7 @@ export class Draw {
     this.header = new Header(this, data.header)
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.labelParticle = new LabelParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle(this)
     this.pageBreakParticle = new PageBreakParticle(this)
@@ -1756,6 +1759,19 @@ export class Draw {
         metrics.height = element.height! * scale
         metrics.boundingBoxDescent = metrics.height
         metrics.boundingBoxAscent = 0
+      } else if (element.type === ElementType.LABEL) {
+        const {
+          defaultSize,
+          label: { defaultPadding }
+        } = this.options
+        ctx.font = this.getElementFont(element)
+        const fontMetrics = this.textParticle.measureText(ctx, element)
+        metrics.width =
+          (fontMetrics.width + defaultPadding[1] + defaultPadding[3]) * scale
+        metrics.height = (element.size || defaultSize) * scale
+        metrics.boundingBoxDescent = 0
+        metrics.boundingBoxAscent =
+          (defaultPadding[0] + fontMetrics.actualBoundingBoxAscent) * scale
       } else {
         // 设置上下标真实字体尺寸
         const size = element.size || defaultSize
@@ -2203,6 +2219,9 @@ export class Draw {
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+        } else if (element.type === ElementType.LABEL) {
+          this.textParticle.complete()
+          this.labelParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.DATE) {
           const nextElement = curRow.elementList[j + 1]
           // 释放之前的

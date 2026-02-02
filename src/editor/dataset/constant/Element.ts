@@ -81,7 +81,9 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'externalId',
   'areaId',
   'area',
-  'hide'
+  'hide',
+  'label',
+  'labelId'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [

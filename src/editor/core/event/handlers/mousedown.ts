@@ -107,6 +107,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     isCheckbox,
     isRadio,
     isImage,
+    isLabel,
     isTable,
     tdValueIndex,
     hitLineStartIndex
@@ -126,6 +127,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const isDirectHitImage = !!(isDirectHit && isImage)
   const isDirectHitCheckbox = !!(isDirectHit && isCheckbox)
   const isDirectHitRadio = !!(isDirectHit && isRadio)
+  const isDirectHitLabel = !!(isDirectHit && isLabel)
   if (~index) {
     let startIndex = curIndex
     let endIndex = curIndex
@@ -186,6 +188,14 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       })
     }
   }
+  // 标签点击事件
+    const eventBus = draw.getEventBus()
+  if (isDirectHitLabel && eventBus.isSubscribe('labelMousedown')) {
+    eventBus.emit('labelMousedown', {
+      evt,
+      element: curElement
+    })
+  }
   // 预览工具组件
   const previewer = draw.getPreviewer()
   previewer.clearResizer()
@@ -220,7 +230,6 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       draw.getImageParticle().createFloatImage(curElement)
     }
     // 图片点击事件
-    const eventBus = draw.getEventBus()
     if (eventBus.isSubscribe('imageMousedown')) {
       eventBus.emit('imageMousedown', {
         evt,

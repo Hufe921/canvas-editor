@@ -8,6 +8,7 @@ import { TableBorder } from '../dataset/enum/table/Table'
 import { IArea } from './Area'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
+import { IPadding } from './Common'
 import { IControl } from './Control'
 import { IRadio } from './Radio'
 import { ITextDecoration } from './Text'
@@ -159,6 +160,16 @@ export interface IAreaElement {
   area?: IArea
 }
 
+export interface ILabelElement {
+  labelId?: string
+  label?: {
+    color?: string
+    backgroundColor?: string
+    borderRadius?: number
+    padding?: IPadding
+  }
+}
+
 export type IElement = IElementBasic &
   IElementStyle &
   IElementRule &
@@ -176,7 +187,8 @@ export type IElement = IElementBasic &
   IBlockElement &
   ITitleElement &
   IListElement &
-  IAreaElement
+  IAreaElement &
+  ILabelElement
 
 export interface IElementMetrics {
   width: number

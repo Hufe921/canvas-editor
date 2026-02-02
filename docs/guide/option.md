@@ -81,6 +81,7 @@ interface IEditorOption {
   badge?: IBadgeOption // 徽章配置。{top?:number; left?:number}
   modeRule?: IModeRule // 编辑器模式规则配置。{print:{imagePreviewerDisabled?: boolean;backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
   graffiti?: IGraffitiOption // 涂鸦模式配置。{defaultLineWidth?: number; defaultLineColor?: string}
+  label?: ILabelOption // 标签配置。{defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
 }
 ```
 
@@ -188,5 +189,16 @@ interface IPageBorderOption {
   lineWidth?: number // 宽度。默认：1
   padding?: IPadding // 距离正文内边距。默认：[0, 5, 0, 5]
   disabled?: boolean // 是否禁用。默认：true
+}
+```
+
+## 标签配置
+
+```typescript
+interface ILabelOption {
+  defaultColor?: string // 默认标签文本颜色
+  defaultBackgroundColor?: string // 默认标签背景颜色
+  defaultBorderRadius?: number // 默认标签边框半径
+  defaultPadding?: IPadding // 默认标签内边距
 }
 ```

@@ -232,3 +232,16 @@ instance.eventBus.on('imageMousedown', (payload: {
   element: IElement
 }) => void)
 ```
+
+## labelMousedown
+
+Feature: The label mousedown event
+
+Usage:
+
+```javascript
+instance.eventBus.on('labelMousedown', (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void)
+```

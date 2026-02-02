@@ -418,6 +418,24 @@ elementList.push(
   ])
 )
 
+// 模拟Label标签
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '诊断标签：'
+    },
+    {
+      type: ElementType.LABEL,
+      value: '高血压',
+      labelId: 'l1',
+      size: 14
+    },
+    {
+      value: '\n'
+    }
+  ])
+)
+
 // 模拟固定长度下划线
 elementList.push(
   ...[

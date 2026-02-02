@@ -81,6 +81,7 @@ interface IEditorOption {
   badge?: IBadgeOption // Badge option. {top?:number; left?:number}
   modeRule?: IModeRule // mode rule option. {print:{imagePreviewerDisabled?: boolean; backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
   graffiti?: IGraffitiOption // graffiti mode option. {defaultLineWidth?: number; defaultLineColor?: string}
+  label?: ILabelOption // Label option. {defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
 }
 ```
 
@@ -188,5 +189,16 @@ interface IPageBorderOption {
   lineWidth?: number // line width. default: 1
   padding?: IPadding // padding. default: [0, 0, 0, 0]
   disabled?: boolean //  Whether to disable. default: true
+}
+```
+
+## Label Configuration
+
+```typescript
+interface ILabelOption {
+  defaultColor?: string // Default label text color
+  defaultBackgroundColor?: string // Default label background color
+  defaultBorderRadius?: number // Default label border radius
+  defaultPadding?: IPadding // Default label padding
 }
 ```

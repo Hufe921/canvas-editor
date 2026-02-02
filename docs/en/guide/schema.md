@@ -216,5 +216,13 @@ interface IElement {
     deletable?: boolean;
     placeholder?: IPlaceholder;
   };
+  // label
+  labelId?: string;
+  label?: {
+    color?: string;
+    backgroundColor?: string;
+    borderRadius?: number;
+    padding?: IPadding;
+  };
 }
 ```

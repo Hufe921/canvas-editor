@@ -13,6 +13,7 @@ import { ICursorOption } from './Cursor'
 import { IFooter } from './Footer'
 import { IGroup } from './Group'
 import { IHeader } from './Header'
+import { ILabelOption } from './Label'
 import { ILineBreakOption } from './LineBreak'
 import { IMargin } from './Margin'
 import { IPageBreak } from './PageBreak'
@@ -107,6 +108,7 @@ export interface IEditorOption {
   badge?: IBadgeOption
   modeRule?: IModeRule
   graffiti?: IGraffitiOption
+  label?: ILabelOption
 }
 
 export interface IEditorResult {
