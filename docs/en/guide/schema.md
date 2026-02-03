@@ -177,6 +177,7 @@ interface IElement {
     height: number; // Crop height
   }
   imgToolDisabled?: boolean;
+  imgPreviewDisabled?: boolean;
   // block
   block?: {
     type: {

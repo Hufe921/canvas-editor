@@ -77,6 +77,11 @@ export type IImageMousedown = (payload: {
   element: IElement
 }) => void
 
+export type IImageDblclick = (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void
+
 export type ILabelMousedown = (payload: {
   evt: MouseEvent
   element: IElement

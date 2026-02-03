@@ -177,6 +177,7 @@ interface IElement {
     height: number; // 裁剪高度
   }
   imgToolDisabled?: boolean;
+  imgPreviewDisabled?: boolean;
   // 内容块
   block?: {
     type: {

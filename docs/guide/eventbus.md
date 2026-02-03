@@ -233,6 +233,19 @@ instance.eventBus.on('imageMousedown', (payload: {
 }) => void)
 ```
 
+## imageDblclick
+
+功能：图片双击事件
+
+用法：
+
+```javascript
+instance.eventBus.on('imageDblclick', (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void)
+```
+
 ## labelMousedown
 
 功能：标签 mousedown 事件
