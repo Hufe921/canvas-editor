@@ -101,6 +101,7 @@ export interface ISuperscriptSubscript {
 
 export interface ISeparator {
   dashArray?: number[]
+  lineWidth?: number
 }
 
 export interface IControlElement {

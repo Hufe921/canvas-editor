@@ -86,7 +86,8 @@ interface IElement {
   // Superscript and subscript
   actualSize?: number;
   // Dividing line
-  dashArray?: number[];
+  dashArray?: number[]; // Array for dashed line style
+  lineWidth?: number; // Line width of the separator
   // control
   control?: {
     type: {

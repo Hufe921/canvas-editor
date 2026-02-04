@@ -1191,7 +1191,10 @@ export class CommandAdapt {
     })
   }
 
-  public separator(payload: number[]) {
+  public separator(
+    dashArray: number[],
+    option?: { lineWidth?: number; color?: string }
+  ) {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const activeControl = this.control.getActiveControl()
@@ -1205,17 +1208,21 @@ export class CommandAdapt {
     if (endElement && endElement.type === ElementType.SEPARATOR) {
       if (
         endElement.dashArray &&
-        endElement.dashArray.join() === payload.join()
+        endElement.dashArray.join() === dashArray.join()
       ) {
         return
       }
       curIndex = endIndex
-      endElement.dashArray = payload
+      Object.assign(endElement, {
+        dashArray,
+        ...option
+      })
     } else {
       const newElement: IElement = {
         value: WRAP,
         type: ElementType.SEPARATOR,
-        dashArray: payload
+        dashArray,
+        ...option
       }
       // 从行头增加分割线
       formatElementContext(elementList, [newElement], startIndex, {

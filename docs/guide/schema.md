@@ -86,7 +86,8 @@ interface IElement {
   // 上下标
   actualSize?: number;
   // 分割线
-  dashArray?: number[];
+  dashArray?: number[]; // 分割线的虚线样式数组
+  lineWidth?: number; // 分割线的线宽
   // 控件
   control?: {
     type: {

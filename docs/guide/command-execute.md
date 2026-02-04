@@ -607,7 +607,7 @@ instance.command.executeEditHyperlink(newUrl: string)
 用法：
 
 ```javascript
-instance.command.executeSeparator(dashArray: number[])
+instance.command.executeSeparator(dashArray: number[], option?: { lineWidth?: number; color?: string })
 ```
 
 ## executePageBreak

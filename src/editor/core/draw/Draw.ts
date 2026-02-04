@@ -1714,8 +1714,9 @@ export class Draw {
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const {
-          separator: { lineWidth }
+          separator: { lineWidth: defaultLineWidth }
         } = this.options
+        const lineWidth = element.lineWidth || defaultLineWidth
         element.width = availableWidth / scale
         metrics.width = availableWidth
         metrics.height = lineWidth * scale

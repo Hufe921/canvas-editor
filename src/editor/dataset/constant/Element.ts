@@ -84,7 +84,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'area',
   'hide',
   'label',
-  'labelId'
+  'labelId',
+  'lineWidth'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
