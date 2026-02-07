@@ -77,6 +77,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'imgFloatPosition',
   'imgToolDisabled',
   'imgPreviewDisabled',
+  'imgCrop',
+  'imgCaption',
   'textDecoration',
   'extension',
   'externalId',

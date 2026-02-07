@@ -139,6 +139,21 @@ export interface IImageCrop {
   height: number
 }
 
+export interface IImageCaption {
+  value: string
+  color?: string
+  font?: string
+  size?: number
+  top?: number
+}
+
+export interface IImgCaptionOption {
+  color?: string
+  font?: string
+  size?: number
+  top?: number
+}
+
 export interface IImageBasic {
   imgDisplay?: ImageDisplay
   imgFloatPosition?: {
@@ -147,6 +162,7 @@ export interface IImageBasic {
     pageNo?: number
   }
   imgCrop?: IImageCrop
+  imgCaption?: IImageCaption
 }
 
 export type IImageElement = IImageBasic & IImageRule

@@ -1379,6 +1379,7 @@ export class Draw {
     const {
       defaultSize,
       scale,
+      imgCaption,
       table: { tdPadding, defaultTrMinHeight },
       defaultTabWidth
     } = this.options
@@ -1467,8 +1468,14 @@ export class Draw {
             metrics.height = elementHeight
             metrics.boundingBoxDescent = elementHeight
           }
+          // 增加题注高度
+          if (element.imgCaption?.value) {
+            const fontSize = element.imgCaption.size || imgCaption.size
+            const captionTop = element.imgCaption.top ?? imgCaption.top
+            const captionHeight = (fontSize + captionTop) * scale
+            metrics.boundingBoxAscent += captionHeight
+          }
         }
-        metrics.boundingBoxAscent = 0
       } else if (element.type === ElementType.TABLE) {
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]

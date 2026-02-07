@@ -14,6 +14,7 @@ import { IFooter } from './Footer'
 import { IGroup } from './Group'
 import { IHeader } from './Header'
 import { ILabelOption } from './Label'
+import { IImgCaptionOption } from './Element'
 import { ILineBreakOption } from './LineBreak'
 import { IMargin } from './Margin'
 import { IPageBreak } from './PageBreak'
@@ -109,6 +110,7 @@ export interface IEditorOption {
   modeRule?: IModeRule
   graffiti?: IGraffitiOption
   label?: ILabelOption
+  imgCaption?: IImgCaptionOption
 }
 
 export interface IEditorResult {

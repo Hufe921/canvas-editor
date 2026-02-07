@@ -177,6 +177,13 @@ interface IElement {
     width: number;  // 裁剪宽度
     height: number; // 裁剪高度
   }
+  imgCaption?: {
+    value: string;  // 题注内容，支持{imageNo}占位符
+    color?: string; // 题注字体颜色
+    font?: string;  // 题注字体
+    size?: number;  // 题注字号
+    top?: number;   // 题注与图片的间距
+  }
   imgToolDisabled?: boolean;
   imgPreviewDisabled?: boolean;
   // 内容块

@@ -82,6 +82,7 @@ interface IEditorOption {
   modeRule?: IModeRule // mode rule option. {print:{imagePreviewerDisabled?: boolean; backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
   graffiti?: IGraffitiOption // graffiti mode option. {defaultLineWidth?: number; defaultLineColor?: string}
   label?: ILabelOption // Label option. {defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
+  imgCaption?: IImgCaptionOption // Image caption option. {color?:string; font?:string; size?:number; top?:number}
 }
 ```
 

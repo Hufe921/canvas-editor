@@ -177,6 +177,13 @@ interface IElement {
     width: number;  // Crop width
     height: number; // Crop height
   }
+  imgCaption?: {
+    value: string;  // Caption content, supports {imageNo} placeholder
+    color?: string; // Caption font color
+    font?: string;  // Caption font family
+    size?: number;  // Caption font size
+    top?: number;   // Spacing between caption and image
+  }
   imgToolDisabled?: boolean;
   imgPreviewDisabled?: boolean;
   // block

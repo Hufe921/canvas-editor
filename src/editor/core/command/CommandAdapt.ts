@@ -64,6 +64,7 @@ import {
   IElementPosition,
   IElementStyle,
   IGetElementByIdOption,
+  IImageCaption,
   IImageCrop,
   IInsertElementListOption,
   IUpdateElementByIdOption
@@ -1399,6 +1400,17 @@ export class CommandAdapt {
     this.draw.render({
       isSetCursor: false,
       isCompute: false
+    })
+  }
+
+  public setImageCaption(imgCaption: IImageCaption) {
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (element?.type !== ElementType.IMAGE) return
+    element.imgCaption = imgCaption
+    this.draw.render({
+      isSetCursor: false
     })
   }
 

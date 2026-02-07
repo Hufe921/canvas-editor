@@ -1,6 +1,7 @@
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
+import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
@@ -8,7 +9,7 @@ import { Draw } from '../Draw'
 
 export class ImageParticle {
   private draw: Draw
-  protected options: Required<IEditorOption>
+  protected options: DeepRequired<IEditorOption>
   protected imageCache: Map<string, HTMLImageElement>
   private container: HTMLDivElement
   private floatImageContainer: HTMLDivElement | null
@@ -44,6 +45,27 @@ export class ImageParticle {
     // 获取正文图片列表
     getImageList(this.draw.getOriginalMainElementList())
     return imageList
+  }
+
+  private _countImagesBeforeTarget(
+    elementList: IElement[],
+    targetElement: IElement
+  ): number {
+    let count = 0
+    for (const element of elementList) {
+      if (element === targetElement) break
+      if (element.type === ElementType.TABLE) {
+        const trList = element.trList!
+        for (const tr of trList) {
+          for (const td of tr.tdList) {
+            count += this._countImagesBeforeTarget(td.value, targetElement)
+          }
+        }
+      } else if (element.type === ElementType.IMAGE) {
+        count++
+      }
+    }
+    return count
   }
 
   public createFloatImage(element: IElement) {
@@ -149,6 +171,55 @@ export class ImageParticle {
     }
   }
 
+  private _renderCaption(
+    ctx: CanvasRenderingContext2D,
+    element: IElement,
+    x: number,
+    y: number,
+    width: number,
+    height: number
+  ) {
+    if (!element.imgCaption?.value) return
+    const { scale, imgCaption } = this.options
+    let captionText = element.imgCaption.value
+    // 替换特殊字符
+    if (captionText.includes('{imageNo}')) {
+      const elementList = this.draw.getOriginalMainElementList()
+      const imageNo = this._countImagesBeforeTarget(elementList, element) + 1
+      captionText = captionText.replace(/\{imageNo\}/g, String(imageNo))
+    }
+    const fontSize = (element.imgCaption.size || imgCaption.size) * scale
+    const fontFamily = element.imgCaption.font || imgCaption.font
+    const color = element.imgCaption.color || imgCaption.color
+    ctx.save()
+    ctx.font = `${fontSize}px ${fontFamily}`
+    ctx.fillStyle = color
+    ctx.textAlign = 'center'
+    // 超出图片宽度后省略
+    let displayText = captionText
+    const textMetrics = ctx.measureText(captionText)
+    if (textMetrics.width > width) {
+      let left = 0
+      let right = captionText.length
+      while (left < right) {
+        const mid = Math.ceil((left + right) / 2)
+        const truncated = captionText.substring(0, mid)
+        if (ctx.measureText(truncated + '...').width <= width) {
+          left = mid
+        } else {
+          right = mid - 1
+        }
+      }
+      displayText = captionText.substring(0, left) + '...'
+    }
+    const captionTop = (element.imgCaption.top ?? imgCaption.top) * scale
+    const captionY =
+      y + height + captionTop + textMetrics.actualBoundingBoxAscent
+    const captionX = x + width / 2
+    ctx.fillText(displayText, captionX, captionY)
+    ctx.restore()
+  }
+
   public render(
     ctx: CanvasRenderingContext2D,
     element: IElement,
@@ -161,6 +232,7 @@ export class ImageParticle {
     if (this.imageCache.has(element.value)) {
       const img = this.imageCache.get(element.value)!
       this._drawImageWithCrop(ctx, img, element, x, y, width, height)
+      this._renderCaption(ctx, element, x, y, width, height)
     } else {
       const cacheRenderCount = this.draw.getRenderCount()
       const imageLoadPromise = new Promise((resolve, reject) => {
@@ -181,6 +253,7 @@ export class ImageParticle {
             })
           } else {
             this._drawImageWithCrop(ctx, img, element, x, y, width, height)
+            this._renderCaption(ctx, element, x, y, width, height)
           }
         }
         img.onerror = error => {
@@ -196,6 +269,7 @@ export class ImageParticle {
               height
             )
             this.imageCache.set(element.value, fallbackImage)
+            this._renderCaption(ctx, element, x, y, width, height)
           }
           reject(error)
         }

@@ -7,6 +7,7 @@ import { defaultFooterOption } from '../dataset/constant/Footer'
 import { defaultGroupOption } from '../dataset/constant/Group'
 import { defaultHeaderOption } from '../dataset/constant/Header'
 import { defaultLabelOption } from '../dataset/constant/Label'
+import { defaultImgCaptionOption } from '../dataset/constant/ImgCaption'
 import { defaultLineBreak } from '../dataset/constant/LineBreak'
 import { defaultPageBreakOption } from '../dataset/constant/PageBreak'
 import { defaultPageNumberOption } from '../dataset/constant/PageNumber'
@@ -28,6 +29,7 @@ import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
 import { IHeader } from '../interface/Header'
 import { ILabelOption } from '../interface/Label'
+import { IImgCaptionOption } from '../interface/Element'
 import { ILineBreakOption } from '../interface/LineBreak'
 import { IPageBreak } from '../interface/PageBreak'
 import { IPageNumber } from '../interface/PageNumber'
@@ -151,6 +153,10 @@ export function mergeOption(
     ...defaultLabelOption,
     ...options.label
   }
+  const imgCaptionOptions: Required<IImgCaptionOption> = {
+    ...defaultImgCaptionOption,
+    ...options.imgCaption
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -235,6 +241,7 @@ export function mergeOption(
     badge: badgeOptions,
     modeRule: modeRuleOption,
     graffiti: graffitiOptions,
-    label: labelOptions
+    label: labelOptions,
+    imgCaption: imgCaptionOptions
   }
 }

@@ -82,6 +82,7 @@ interface IEditorOption {
   modeRule?: IModeRule // 编辑器模式规则配置。{print:{imagePreviewerDisabled?: boolean;backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
   graffiti?: IGraffitiOption // 涂鸦模式配置。{defaultLineWidth?: number; defaultLineColor?: string}
   label?: ILabelOption // 标签配置。{defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
+  imgCaption?: IImgCaptionOption // 图片题注配置。{color?:string; font?:string; size?:number; top?:number}
 }
 ```
 
