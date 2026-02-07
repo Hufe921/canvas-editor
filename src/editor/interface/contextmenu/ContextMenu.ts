@@ -55,6 +55,9 @@ export interface IContextmenuLang {
     textWrapType: {
       embed: string
       upDown: string
+      surround: string
+      floatTop: string
+      floatBottom: string
     }
   }
   table: {
