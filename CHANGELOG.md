@@ -1,3 +1,23 @@
+## [0.9.125](https://github.com/Hufe921/canvas-editor/compare/v0.9.124...v0.9.125) (2026-02-07)
+
+
+### Chores
+
+* add CLAUDE.md ([f01024e](https://github.com/Hufe921/canvas-editor/commit/f01024e8013305af567d4eba3e918d256de4de45))
+* add formatOnSave option ([8d6e873](https://github.com/Hufe921/canvas-editor/commit/8d6e873e2d7983aad16388c1fa5808cfb9c78ce9))
+
+
+### Features
+
+* add executeHideCursor api #1352 ([bf41f69](https://github.com/Hufe921/canvas-editor/commit/bf41f69a80964a076e49fe383fce3520d2887284)), closes [#1352](https://github.com/Hufe921/canvas-editor/issues/1352)
+* add executeSetImageCrop api to support image cropping #1327 ([bc066f3](https://github.com/Hufe921/canvas-editor/commit/bc066f3316ca3fac145be533fe19d9ca259092bc)), closes [#1327](https://github.com/Hufe921/canvas-editor/issues/1327)
+* add image caption #1326 ([45d01fc](https://github.com/Hufe921/canvas-editor/commit/45d01fc7738aad0837bf40cce120b77606d3d608)), closes [#1326](https://github.com/Hufe921/canvas-editor/issues/1326)
+* add image preview disable option and double click callback #1351 ([cdaf5fc](https://github.com/Hufe921/canvas-editor/commit/cdaf5fc1f39c5a0d7d4a7de8818ad3ebcf20aeee)), closes [#1351](https://github.com/Hufe921/canvas-editor/issues/1351)
+* add label element and event #859 ([570b9c1](https://github.com/Hufe921/canvas-editor/commit/570b9c1c752207a8e748220d107297f9c22a27fe)), closes [#859](https://github.com/Hufe921/canvas-editor/issues/859)
+* add lineWidth and color to the separator #674 ([0f191a4](https://github.com/Hufe921/canvas-editor/commit/0f191a4275822c6f127cd3f2dfa4147b0e462e9e)), closes [#674](https://github.com/Hufe921/canvas-editor/issues/674)
+
+
+
 ## [0.9.124](https://github.com/Hufe921/canvas-editor/compare/v0.9.123...v0.9.124) (2026-01-31)
 
 
