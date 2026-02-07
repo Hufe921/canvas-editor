@@ -139,6 +139,16 @@ Usage:
 instance.command.executeBlur()
 ```
 
+## executeHideCursor
+
+Feature: Hide cursor (keep range)
+
+Usage:
+
+```javascript
+instance.command.executeHideCursor()
+```
+
 ## executeUndo
 
 Feature: Undo

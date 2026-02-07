@@ -13,6 +13,7 @@ export class Command {
   public executeSetPositionContext: CommandAdapt['setPositionContext']
   public executeForceUpdate: CommandAdapt['forceUpdate']
   public executeBlur: CommandAdapt['blur']
+  public executeHideCursor: CommandAdapt['hideCursor']
   public executeUndo: CommandAdapt['undo']
   public executeRedo: CommandAdapt['redo']
   public executePainter: CommandAdapt['painter']
@@ -156,6 +157,7 @@ export class Command {
     this.executeSetPositionContext = adapt.setPositionContext.bind(adapt)
     this.executeForceUpdate = adapt.forceUpdate.bind(adapt)
     this.executeBlur = adapt.blur.bind(adapt)
+    this.executeHideCursor = adapt.hideCursor.bind(adapt)
     // 撤销、重做、格式刷、清除格式
     this.executeUndo = adapt.undo.bind(adapt)
     this.executeRedo = adapt.redo.bind(adapt)

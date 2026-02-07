@@ -139,6 +139,16 @@ instance.command.executeForceUpdate(options?: IForceUpdateOption)
 instance.command.executeBlur()
 ```
 
+## executeHideCursor
+
+功能：隐藏光标（保留选区）
+
+用法：
+
+```javascript
+instance.command.executeHideCursor()
+```
+
 ## executeUndo
 
 功能：撤销

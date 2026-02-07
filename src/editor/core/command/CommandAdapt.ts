@@ -295,6 +295,10 @@ export class CommandAdapt {
     this.draw.getCursor().recoveryCursor()
   }
 
+  public hideCursor() {
+    this.draw.getCursor().recoveryCursor()
+  }
+
   public undo() {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
