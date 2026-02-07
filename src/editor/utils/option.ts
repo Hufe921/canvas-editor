@@ -19,6 +19,7 @@ import { defaultTitleOption } from '../dataset/constant/Title'
 import { defaultWatermarkOption } from '../dataset/constant/Watermark'
 import { defaultZoneOption } from '../dataset/constant/Zone'
 import { defaultLineNumberOption } from '../dataset/constant/LineNumber'
+import { defaultListOption } from '../dataset/constant/List'
 import { IBackgroundOption } from '../interface/Background'
 import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
@@ -29,7 +30,7 @@ import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
 import { IHeader } from '../interface/Header'
 import { ILabelOption } from '../interface/Label'
-import { IImgCaptionOption } from '../interface/Element'
+import { IImgCaptionOption, IListOption } from '../interface/Element'
 import { ILineBreakOption } from '../interface/LineBreak'
 import { IPageBreak } from '../interface/PageBreak'
 import { IPageNumber } from '../interface/PageNumber'
@@ -157,6 +158,10 @@ export function mergeOption(
     ...defaultImgCaptionOption,
     ...options.imgCaption
   }
+  const listOptions: Required<IListOption> = {
+    ...defaultListOption,
+    ...options.list
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -242,6 +247,7 @@ export function mergeOption(
     modeRule: modeRuleOption,
     graffiti: graffitiOptions,
     label: labelOptions,
-    imgCaption: imgCaptionOptions
+    imgCaption: imgCaptionOptions,
+    list: listOptions
   }
 }

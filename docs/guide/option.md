@@ -83,6 +83,7 @@ interface IEditorOption {
   graffiti?: IGraffitiOption // 涂鸦模式配置。{defaultLineWidth?: number; defaultLineColor?: string}
   label?: ILabelOption // 标签配置。{defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
   imgCaption?: IImgCaptionOption // 图片题注配置。{color?:string; font?:string; size?:number; top?:number}
+  list?: IListOption // 列表配置。{inheritStyle?:boolean}
 }
 ```
 
@@ -201,5 +202,13 @@ interface ILabelOption {
   defaultBackgroundColor?: string // 默认标签背景颜色
   defaultBorderRadius?: number // 默认标签边框半径
   defaultPadding?: IPadding // 默认标签内边距
+}
+```
+
+## 列表配置
+
+```typescript
+interface IListOption {
+  inheritStyle?: boolean // 是否让列表序号继承文字样式。默认：false
 }
 ```

@@ -154,6 +154,10 @@ export interface IImgCaptionOption {
   top?: number
 }
 
+export interface IListOption {
+  inheritStyle?: boolean // 是否让列表序号继承文字样式
+}
+
 export interface IImageBasic {
   imgDisplay?: ImageDisplay
   imgFloatPosition?: {

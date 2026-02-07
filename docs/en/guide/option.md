@@ -83,6 +83,7 @@ interface IEditorOption {
   graffiti?: IGraffitiOption // graffiti mode option. {defaultLineWidth?: number; defaultLineColor?: string}
   label?: ILabelOption // Label option. {defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
   imgCaption?: IImgCaptionOption // Image caption option. {color?:string; font?:string; size?:number; top?:number}
+  list?: IListOption // List option. {inheritStyle?:boolean}
 }
 ```
 
@@ -201,5 +202,13 @@ interface ILabelOption {
   defaultBackgroundColor?: string // Default label background color
   defaultBorderRadius?: number // Default label border radius
   defaultPadding?: IPadding // Default label padding
+}
+```
+
+## List Configuration
+
+```typescript
+interface IListOption {
+  inheritStyle?: boolean // Whether to let the list number inherit the text style. default: false
 }
 ```
