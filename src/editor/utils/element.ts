@@ -1559,7 +1559,8 @@ export function getElementListByHTML(
               width,
               height,
               value: src,
-              type: ElementType.IMAGE
+              type: ElementType.IMAGE,
+              rowFlex: convertTextAlignToRowFlex(node.parentElement!)
             })
           }
         } else if (node.nodeName === 'VIDEO') {
