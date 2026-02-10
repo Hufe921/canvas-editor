@@ -742,6 +742,13 @@ export class Control {
             newElement: elementList[startIndex - 1]
           }
         }
+        // 全文最后一个元素时移动后缀尾部
+        if (startIndex === elementList.length - 1) {
+          return {
+            newIndex: startIndex,
+            newElement: elementList[startIndex]
+          }
+        }
         startIndex++
       }
     } else if (

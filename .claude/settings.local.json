@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run type:check:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run cypress:run:*)"
+    ]
+  }
+}
