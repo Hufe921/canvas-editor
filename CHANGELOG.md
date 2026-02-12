@@ -1,3 +1,26 @@
+## [0.9.126](https://github.com/Hufe921/canvas-editor/compare/v0.9.125...v0.9.126) (2026-02-12)
+
+
+### Bug Fixes
+
+* adjusted image rowFlex when converting HTML to elements #1354 ([3fe395e](https://github.com/Hufe921/canvas-editor/commit/3fe395e7c0e669d5d93bca673f9429faa20e2aeb)), closes [#1354](https://github.com/Hufe921/canvas-editor/issues/1354)
+* cursor positioning when clicking control postfix #1353 ([ea650f6](https://github.com/Hufe921/canvas-editor/commit/ea650f6520b194d76458fbe33b88b01f901db4bc)), closes [#1353](https://github.com/Hufe921/canvas-editor/issues/1353)
+* restore titleId when splitting/merging title #921 #1337 ([0b659ef](https://github.com/Hufe921/canvas-editor/commit/0b659ef9ff9d9562880dedba86e0c0540ea90c65)), closes [#921](https://github.com/Hufe921/canvas-editor/issues/921) [#1337](https://github.com/Hufe921/canvas-editor/issues/1337)
+
+
+### Chores
+
+* add claude settings ([99de4e4](https://github.com/Hufe921/canvas-editor/commit/99de4e416e16b970b23d770319f278a9071ec4e7))
+* update README.md ([afa05b2](https://github.com/Hufe921/canvas-editor/commit/afa05b2272d1c093ac02f948375e707291be5439))
+
+
+### Features
+
+* add compute elements height  and remaining page height api #1213 ([f5e80f9](https://github.com/Hufe921/canvas-editor/commit/f5e80f99f8505c57bf36f8b9c8e948a0b29cf6d8)), closes [#1213](https://github.com/Hufe921/canvas-editor/issues/1213)
+* implement list number style inheritance with config option #727 ([0b99406](https://github.com/Hufe921/canvas-editor/commit/0b994068723c85bff504e04470ae82ee241b894e)), closes [#727](https://github.com/Hufe921/canvas-editor/issues/727)
+
+
+
 ## [0.9.125](https://github.com/Hufe921/canvas-editor/compare/v0.9.124...v0.9.125) (2026-02-07)
 
 
