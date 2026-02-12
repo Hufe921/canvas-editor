@@ -107,7 +107,8 @@ import {
   getElementListByHTML,
   getTextFromElementList,
   zipElementList,
-  getAnchorElement
+  getAnchorElement,
+  pickSurroundElementList
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
 import { printImageBase64 } from '../../utils/print'
@@ -1498,6 +1499,38 @@ export class CommandAdapt {
 
   public getCursorPosition(): IElementPosition | null {
     return this.position.getCursorPosition()
+  }
+
+  public getRemainingContentHeight(): number {
+    if (!this.draw.getIsPagingMode()) return 0
+    const pageRowList = this.draw.getPageRowList()
+    const lastPageIndex = pageRowList.length - 1
+    const rowList = pageRowList[lastPageIndex] || []
+    const usedHeight = rowList.reduce(
+      (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+      0
+    )
+    const height = this.draw.getHeight()
+    const mainOuterHeight = this.draw.getMainOuterHeight()
+    const remaining = height - (mainOuterHeight + usedHeight)
+    return remaining > 0 ? remaining : 0
+  }
+
+  public computeElementListHeight(elementList: IElement[]): number {
+    if (!elementList.length) return 0
+    const innerWidth = this.draw.getInnerWidth()
+    if (innerWidth <= 0) return 0
+    const targetElementList = deepClone(elementList)
+    const surroundElementList = pickSurroundElementList(targetElementList)
+    const rowList = this.draw.computeRowList({
+      innerWidth,
+      elementList: targetElementList,
+      surroundElementList
+    })
+    return rowList.reduce(
+      (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+      0
+    )
   }
 
   public getRange(): IRange {
