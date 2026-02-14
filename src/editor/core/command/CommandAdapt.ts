@@ -1521,6 +1521,10 @@ export class CommandAdapt {
     const innerWidth = this.draw.getInnerWidth()
     if (innerWidth <= 0) return 0
     const targetElementList = deepClone(elementList)
+    formatElementList(targetElementList, {
+      isHandleFirstElement: false,
+      editorOptions: this.options
+    })
     const surroundElementList = pickSurroundElementList(targetElementList)
     const rowList = this.draw.computeRowList({
       innerWidth,
