@@ -1,3 +1,13 @@
+## [0.9.127](https://github.com/Hufe921/canvas-editor/compare/v0.9.126...v0.9.127) (2026-02-18)
+
+
+### Bug Fixes
+
+* format elements error in executeComputeElementListHeight api #1356 ([6fe3e70](https://github.com/Hufe921/canvas-editor/commit/6fe3e70d801a34337814e936ebe83349fe8d2684)), closes [#1356](https://github.com/Hufe921/canvas-editor/issues/1356)
+* move cursor to the visible range boundary error ([2c01b92](https://github.com/Hufe921/canvas-editor/commit/2c01b929be8bd58560bb3c1c99292f0b4fff4eae))
+
+
+
 ## [0.9.126](https://github.com/Hufe921/canvas-editor/compare/v0.9.125...v0.9.126) (2026-02-12)
 
 
