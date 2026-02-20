@@ -1692,10 +1692,13 @@ export function getElementListByHTML(
       }
     }
   }
-  // 追加dom
+  // 追加dom - 使用Shadow DOM隔离外部样式影响
+  const clipboardHost = document.createElement('div')
+  document.body.appendChild(clipboardHost)
+  const shadowRoot = clipboardHost.attachShadow({ mode: 'open' })
   const clipboardDom = document.createElement('div')
   clipboardDom.innerHTML = htmlText
-  document.body.appendChild(clipboardDom)
+  shadowRoot.appendChild(clipboardDom)
   const deleteNodes: ChildNode[] = []
   clipboardDom.childNodes.forEach(child => {
     if (child.nodeType !== 1 && !child.textContent?.trim()) {
@@ -1706,7 +1709,7 @@ export function getElementListByHTML(
   // 搜索文本节点
   findTextNode(clipboardDom)
   // 移除dom
-  clipboardDom.remove()
+  clipboardHost.remove()
   return elementList
 }
 
