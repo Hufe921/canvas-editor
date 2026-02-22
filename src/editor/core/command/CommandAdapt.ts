@@ -98,6 +98,7 @@ import {
   isNumber,
   isObjectEqual
 } from '../../utils'
+import { getParagraphNo } from '../../utils/paragraph'
 import {
   createDomFromElementList,
   formatElementContext,
@@ -1678,6 +1679,12 @@ export class CommandAdapt {
       }
       start--
     }
+    // 段落索引
+    const startParagraphNo = getParagraphNo(elementList, startIndex)
+    const endParagraphNo =
+      startIndex === endIndex
+        ? startParagraphNo
+        : getParagraphNo(elementList, endIndex)
     return deepClone<RangeContext>({
       isCollapsed,
       startElement,
@@ -1697,7 +1704,9 @@ export class CommandAdapt {
       selectionText,
       selectionElementList,
       titleId,
-      titleStartPageNo
+      titleStartPageNo,
+      startParagraphNo,
+      endParagraphNo
     })
   }
 
