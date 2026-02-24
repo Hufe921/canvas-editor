@@ -12,7 +12,7 @@ export function home(evt: KeyboardEvent, host: CanvasEvent) {
   const { startIndex, endIndex } = rangeManager.getRange()
   const positionList = position.getPositionList()
 
-  // 🔥 Determinar qual lado está ativo (igual updown)
+  // Determine which side is active (same as updown)
   let anchorPosition = cursorPosition
 
   if (evt.shiftKey && startIndex !== endIndex) {
@@ -25,7 +25,7 @@ export function home(evt: KeyboardEvent, host: CanvasEvent) {
 
   const { rowNo } = anchorPosition
 
-  // 🔥 Encontrar início da linha baseado no lado ativo
+  // Find the start of the line based on the active side
   let lineStartIndex = anchorPosition.index
   for (let i = anchorPosition.index - 1; i >= 0; i--) {
     if (positionList[i].rowNo !== rowNo) break
@@ -51,7 +51,7 @@ export function home(evt: KeyboardEvent, host: CanvasEvent) {
   }
 
   if (anchorStart > anchorEnd) {
-    ;[anchorStart, anchorEnd] = [anchorEnd, anchorStart]
+    [anchorStart, anchorEnd] = [anchorEnd, anchorStart]
   }
 
   rangeManager.setRange(anchorStart, anchorEnd)
