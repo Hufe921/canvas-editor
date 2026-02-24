@@ -1311,8 +1311,9 @@ export function createDomFromElementList(
             } else if (srcdoc) {
               iframe.srcdoc = srcdoc
             }
-            iframe.width = `${element.width || options?.width || window.innerWidth
-              }`
+            iframe.width = `${
+              element.width || options?.width || window.innerWidth
+            }`
             iframe.height = `${element.height!}`
             clipboardDom.append(iframe)
           }
@@ -1766,8 +1767,9 @@ export function getTextFromElementList(elementList: IElement[]) {
         if (element.type === ElementType.CONTROL) {
           const controlValue = element.control!.value?.[0]?.value || ''
           textLike = controlValue
-            ? `${element.control?.preText || ''}${controlValue}${element.control?.postText || ''
-            }`
+            ? `${element.control?.preText || ''}${controlValue}${
+                element.control?.postText || ''
+              }`
             : ''
         } else if (element.type === ElementType.DATE) {
           textLike = element.valueList?.map(v => v.value).join('') || ''
