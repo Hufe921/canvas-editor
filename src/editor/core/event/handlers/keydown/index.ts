@@ -9,6 +9,8 @@ import { left } from './left'
 import { right } from './right'
 import { tab } from './tab'
 import { updown } from './updown'
+import { home } from './home'
+import { end } from './end'
 
 export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   if (host.isComposing) return
@@ -21,11 +23,25 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   } else if (evt.key === KeyMap.Enter) {
     enter(evt, host)
   } else if (evt.key === KeyMap.Left) {
-    left(evt, host)
+    // Mac: Cmd+Left = Home
+    if (isMod(evt)) {
+      home(evt, host)
+    } else {
+      left(evt, host)
+    }
   } else if (evt.key === KeyMap.Right) {
-    right(evt, host)
+    // Mac: Cmd+Right = End
+    if (isMod(evt)) {
+      end(evt, host)
+    } else {
+      right(evt, host)
+    }
   } else if (evt.key === KeyMap.Up || evt.key === KeyMap.Down) {
     updown(evt, host)
+  } else if (evt.key === KeyMap.Home) {
+    home(evt, host)
+  } else if (evt.key === KeyMap.End) {
+    end(evt, host)
   } else if (isMod(evt) && evt.key.toLocaleLowerCase() === KeyMap.Z) {
     if (draw.isReadonly() && draw.getMode() !== EditorMode.FORM) return
     draw.getHistoryManager().undo()
