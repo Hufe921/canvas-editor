@@ -13,5 +13,6 @@ export interface ICheckboxOption {
   lineWidth?: number
   fillStyle?: string
   strokeStyle?: string
+  checkMarkColor?: string
   verticalAlign?: VerticalAlign
 }

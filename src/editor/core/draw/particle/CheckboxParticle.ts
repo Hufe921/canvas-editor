@@ -42,7 +42,14 @@ export class CheckboxParticle {
     const { ctx, x, index, row } = payload
     let { y } = payload
     const {
-      checkbox: { gap, lineWidth, fillStyle, strokeStyle, verticalAlign },
+      checkbox: {
+        gap,
+        lineWidth,
+        fillStyle,
+        strokeStyle,
+        checkMarkColor,
+        verticalAlign
+      },
       scale
     } = this.options
     const { metrics, checkbox } = row.elementList[index]
@@ -83,18 +90,17 @@ export class CheckboxParticle {
     ctx.translate(0.5, 0.5)
     // 绘制勾选状态
     if (checkbox?.value) {
-      // 边框
-      ctx.lineWidth = lineWidth
-      ctx.strokeStyle = fillStyle
-      ctx.rect(left, top, width, height)
-      ctx.stroke()
-      // 背景色
-      ctx.beginPath()
       ctx.fillStyle = fillStyle
       ctx.fillRect(left, top, width, height)
-      // 勾选对号
+      //绘制边框
       ctx.beginPath()
-      ctx.strokeStyle = strokeStyle
+      ctx.lineWidth = lineWidth
+      ctx.strokeStyle = strokeStyle 
+      ctx.rect(left, top, width, height)
+      ctx.stroke()
+      //勾选对号
+      ctx.beginPath()
+      ctx.strokeStyle = checkMarkColor  // 需要新增一个配置项
       ctx.lineWidth = lineWidth * 2 * scale
       ctx.moveTo(left + 2 * scale, top + height / 2)
       ctx.lineTo(left + width / 2, top + height - 3 * scale)
