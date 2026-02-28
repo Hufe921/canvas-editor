@@ -6,8 +6,10 @@ export const defaultCheckboxOption: Readonly<Required<ICheckboxOption>> = {
   height: 14,
   gap: 5,
   lineWidth: 1,
-  fillStyle: '#fff',//勾选框填充色
-  strokeStyle: '#000',//勾选框边框色
-  checkMarkColor: '#000',//勾选图标颜色
+  fillStyle: '#ffffff', // 未选中时填充色
+  strokeStyle: '#000000', // 未选中时边框色
+  checkFillStyle: '#5175f4', // 选中时填充色
+  checkStrokeStyle: '#5175f4', // 选中时边框色
+  checkMarkColor: '#ffffff', // 选中时对勾颜色
   verticalAlign: VerticalAlign.BOTTOM
 }

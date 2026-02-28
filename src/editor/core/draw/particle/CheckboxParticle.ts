@@ -47,6 +47,8 @@ export class CheckboxParticle {
         lineWidth,
         fillStyle,
         strokeStyle,
+        checkFillStyle,
+        checkStrokeStyle,
         checkMarkColor,
         verticalAlign
       },
@@ -90,24 +92,31 @@ export class CheckboxParticle {
     ctx.translate(0.5, 0.5)
     // 绘制勾选状态
     if (checkbox?.value) {
-      ctx.fillStyle = fillStyle
+      // 选中时填充背景
+      ctx.fillStyle = checkFillStyle
       ctx.fillRect(left, top, width, height)
-      //绘制边框
+      // 选中时绘制边框
       ctx.beginPath()
       ctx.lineWidth = lineWidth
-      ctx.strokeStyle = strokeStyle 
+      ctx.strokeStyle = checkStrokeStyle
       ctx.rect(left, top, width, height)
       ctx.stroke()
-      //勾选对号
+      // 勾选对号
       ctx.beginPath()
-      ctx.strokeStyle = checkMarkColor  // 需要新增一个配置项
+      ctx.strokeStyle = checkMarkColor
       ctx.lineWidth = lineWidth * 2 * scale
       ctx.moveTo(left + 2 * scale, top + height / 2)
       ctx.lineTo(left + width / 2, top + height - 3 * scale)
       ctx.lineTo(left + width - 2 * scale, top + 3 * scale)
       ctx.stroke()
     } else {
+      // 未选中时填充背景
+      ctx.fillStyle = fillStyle
+      ctx.fillRect(left, top, width, height)
+      // 未选中时绘制边框
+      ctx.beginPath()
       ctx.lineWidth = lineWidth
+      ctx.strokeStyle = strokeStyle
       ctx.rect(left, top, width, height)
       ctx.stroke()
     }
