@@ -1,3 +1,30 @@
+## [0.9.128](https://github.com/Hufe921/canvas-editor/compare/v0.9.127...v0.9.128) (2026-02-28)
+
+
+### Bug Fixes
+
+* prevent global CSS styles from affecting pasted text color #1359 ([c7925e6](https://github.com/Hufe921/canvas-editor/commit/c7925e642fe6933523c89ac3b6c1f4452472e656)), closes [#1359](https://github.com/Hufe921/canvas-editor/issues/1359)
+
+
+### Chores
+
+* add deep wiki ([2496c30](https://github.com/Hufe921/canvas-editor/commit/2496c306572281363bd7bc5ffdf098afa563fd21))
+
+
+### Documentation
+
+* add ZRead and DeepWiki badges ([22dd500](https://github.com/Hufe921/canvas-editor/commit/22dd500ca013173b39544b43260bae56fe968306))
+
+
+### Features
+
+* add checkMarkColor option for checkbox #1367 ([3cf52b4](https://github.com/Hufe921/canvas-editor/commit/3cf52b4f0ffa6306d0f6b76e10b6eb08ce12d5e5)), closes [#1367](https://github.com/Hufe921/canvas-editor/issues/1367)
+* add paragraph index for getRangeContext api #1360 ([a26e6c3](https://github.com/Hufe921/canvas-editor/commit/a26e6c349bf4d61839252e27b3f58daf0ee809c1)), closes [#1360](https://github.com/Hufe921/canvas-editor/issues/1360)
+* add pasteImage override support #1365 ([558b138](https://github.com/Hufe921/canvas-editor/commit/558b138e59624c0cca848b1e32a1b399a776d1af)), closes [#1365](https://github.com/Hufe921/canvas-editor/issues/1365)
+* implemented shortcut for home and end keys #1361 ([942fb5b](https://github.com/Hufe921/canvas-editor/commit/942fb5b69855488c29d67f4c7503f1294919b92a)), closes [#1361](https://github.com/Hufe921/canvas-editor/issues/1361)
+
+
+
 ## [0.9.127](https://github.com/Hufe921/canvas-editor/compare/v0.9.126...v0.9.127) (2026-02-18)
 
 
