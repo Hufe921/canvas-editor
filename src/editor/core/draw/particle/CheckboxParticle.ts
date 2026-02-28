@@ -42,7 +42,16 @@ export class CheckboxParticle {
     const { ctx, x, index, row } = payload
     let { y } = payload
     const {
-      checkbox: { gap, lineWidth, fillStyle, strokeStyle, verticalAlign },
+      checkbox: {
+        gap,
+        lineWidth,
+        fillStyle,
+        strokeStyle,
+        checkFillStyle,
+        checkStrokeStyle,
+        checkMarkColor,
+        verticalAlign
+      },
       scale
     } = this.options
     const { metrics, checkbox } = row.elementList[index]
@@ -83,25 +92,31 @@ export class CheckboxParticle {
     ctx.translate(0.5, 0.5)
     // 绘制勾选状态
     if (checkbox?.value) {
-      // 边框
+      // 选中时填充背景
+      ctx.fillStyle = checkFillStyle
+      ctx.fillRect(left, top, width, height)
+      // 选中时绘制边框
+      ctx.beginPath()
       ctx.lineWidth = lineWidth
-      ctx.strokeStyle = fillStyle
+      ctx.strokeStyle = checkStrokeStyle
       ctx.rect(left, top, width, height)
       ctx.stroke()
-      // 背景色
-      ctx.beginPath()
-      ctx.fillStyle = fillStyle
-      ctx.fillRect(left, top, width, height)
       // 勾选对号
       ctx.beginPath()
-      ctx.strokeStyle = strokeStyle
+      ctx.strokeStyle = checkMarkColor
       ctx.lineWidth = lineWidth * 2 * scale
       ctx.moveTo(left + 2 * scale, top + height / 2)
       ctx.lineTo(left + width / 2, top + height - 3 * scale)
       ctx.lineTo(left + width - 2 * scale, top + 3 * scale)
       ctx.stroke()
     } else {
+      // 未选中时填充背景
+      ctx.fillStyle = fillStyle
+      ctx.fillRect(left, top, width, height)
+      // 未选中时绘制边框
+      ctx.beginPath()
       ctx.lineWidth = lineWidth
+      ctx.strokeStyle = strokeStyle
       ctx.rect(left, top, width, height)
       ctx.stroke()
     }
