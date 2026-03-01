@@ -109,8 +109,9 @@ export function input(data: string, host: CanvasEvent) {
     })
   }
   if (isComposing) {
+    // 不缓存 elementList 引用，因为表格分页处理可能改变 elementList 结构
+    // 只保存索引，在 removeComposingInput 中使用当前的 elementList
     host.compositionInfo = {
-      elementList,
       value: text,
       startIndex: curIndex - inputData.length,
       endIndex: curIndex,
@@ -121,9 +122,15 @@ export function input(data: string, host: CanvasEvent) {
 
 export function removeComposingInput(host: CanvasEvent) {
   if (!host.compositionInfo) return
-  const { elementList, startIndex, endIndex } = host.compositionInfo
-  elementList.splice(startIndex + 1, endIndex - startIndex)
-  const rangeManager = host.getDraw().getRange()
+  const { startIndex, endIndex } = host.compositionInfo
+  const draw = host.getDraw()
+  // 使用当前的 elementList，因为表格分页处理可能改变了 elementList 的结构
+  const elementList = draw.getElementList()
+  // 确保索引在有效范围内
+  if (startIndex >= 0 && endIndex > startIndex && endIndex <= elementList.length) {
+    elementList.splice(startIndex + 1, endIndex - startIndex)
+  }
+  const rangeManager = draw.getRange()
   rangeManager.setRange(startIndex, startIndex)
   host.compositionInfo = null
 }

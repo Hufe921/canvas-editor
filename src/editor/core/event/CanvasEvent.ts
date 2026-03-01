@@ -22,7 +22,7 @@ import { isIOS } from '../../utils/ua'
 import { ICopyOption } from '../../interface/Event'
 
 export interface ICompositionInfo {
-  elementList: IElement[]
+  elementList?: IElement[]
   startIndex: number
   endIndex: number
   value: string
