@@ -96,6 +96,77 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     // 判断是否允许删除
     if (isCollapsed && index === 0) {
       const firstElement = elementList[index]
+      // 检查是否在表格单元格内
+      const positionContext = draw.getPosition().getPositionContext()
+      if (positionContext.isTable && firstElement.tableId) {
+        // 检查是否是分页表格，如果是则跳转到上一页表格的对应单元格
+        const originalElementList = draw.getOriginalElementList()
+        const currentElement = originalElementList[positionContext.index!]
+        if (currentElement?.pagingId && (currentElement.pagingIndex ?? 0) > 0) {
+          // 查找上一页的表格
+          let prevTableIndex = -1
+          for (let i = positionContext.index! - 1; i >= 0; i--) {
+            if (originalElementList[i]?.pagingId === currentElement.pagingId) {
+              prevTableIndex = i
+              break
+            }
+          }
+          if (~prevTableIndex) {
+            const prevElement = originalElementList[prevTableIndex]
+            const prevTrList = prevElement.trList!
+            // 找到上一页表格的最后一行（非重复表头）
+            let lastTrIndex = prevTrList.length - 1
+            while (lastTrIndex >= 0 && prevTrList[lastTrIndex].pagingRepeat) {
+              lastTrIndex--
+            }
+            if (lastTrIndex >= 0) {
+              const lastTr = prevTrList[lastTrIndex]
+              // 查找当前单元格所在列在上一页对应位置的单元格
+              const curTdColIndex = positionContext.tdIndex ?? 0
+              let targetTdIndex = -1
+              for (let d = 0; d < lastTr.tdList.length; d++) {
+                const td = lastTr.tdList[d]
+                if (
+                  td.colIndex === curTdColIndex ||
+                  (td.colIndex! + td.colspan - 1 >= curTdColIndex &&
+                    td.colIndex! <= curTdColIndex)
+                ) {
+                  targetTdIndex = d
+                  break
+                }
+              }
+              if (~targetTdIndex) {
+                // 先删除当前单元格的第一个元素（如果存在且不是ZERO占位符）
+                if (firstElement.value !== ZERO) {
+                  draw.spliceElementList(elementList, 0, 1)
+                }
+                const targetTd = lastTr.tdList[targetTdIndex]
+                const position = draw.getPosition()
+                position.setPositionContext({
+                  isTable: true,
+                  index: prevTableIndex,
+                  trIndex: lastTrIndex,
+                  tdIndex: targetTdIndex,
+                  tdId: targetTd.id,
+                  trId: lastTr.id,
+                  tableId: prevElement.id
+                })
+                // 跳转到目标单元格的最后一个元素
+                const targetIndex = targetTd.value.length - 1
+                rangeManager.setRange(targetIndex, targetIndex)
+                draw.render({
+                  curIndex: targetIndex,
+                  isSetCursor: true,
+                  isSubmitHistory: false
+                })
+                draw.getTableTool().render()
+                evt.preventDefault()
+                return
+              }
+            }
+          }
+        }
+      }
       if (firstElement.value === ZERO) {
         // 取消首字符列表设置
         if (firstElement.listId) {
