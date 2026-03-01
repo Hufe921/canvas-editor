@@ -751,7 +751,7 @@ export function zipElementList(
                       for (let e = 0; e < firstTd.value.length; e++) {
                         const val = firstTd.value[e]
                         val.tdId = td.id
-                        val.trId = td.id
+                        val.trId = tr.id
                         val.tableId = element.id
                         td.value.push(val)
                       }
