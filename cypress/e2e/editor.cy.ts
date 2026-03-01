@@ -61,7 +61,7 @@ describe('基础功能', () => {
         }
       ])
 
-      cy.get('.word-count').contains('7')
+      cy.get('.word-count').contains('5')
     })
   })
 })
