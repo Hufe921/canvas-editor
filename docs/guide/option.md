@@ -47,10 +47,10 @@ interface IEditorOption {
   pageMode?: PageMode // 纸张模式：连页、分页。默认：分页
   renderMode?: RenderMode // 渲染模式：极速（多个字组合渲染）、兼容（逐字渲染：避免浏览器字体等环境差异）。默认：极速
   defaultHyperlinkColor?: string // 默认超链接颜色。默认：#0000FF
-  table?: ITableOption // 表格配置。{tdPadding?:IPadding; defaultTrMinHeight?:number; defaultColMinWidth?:number}
-  header?: IHeader // 页眉信息。{top?:number; maxHeightRadio?:MaxHeightRatio;}
-  footer?: IFooter // 页脚信息。{bottom?:number; maxHeightRadio?:MaxHeightRatio;}
-  pageNumber?: IPageNumber // 页码信息。{bottom:number; size:number; font:string; color:string; rowFlex:RowFlex; format:string; numberType:NumberType;}
+  table?: ITableOption // 表格配置
+  header?: IHeader // 页眉配置
+  footer?: IFooter // 页脚配置
+  pageNumber?: IPageNumber // 页码配置
   paperDirection?: PaperDirection // 纸张方向：纵向、横向
   inactiveAlpha?: number // 正文内容失焦时透明度。默认值：0.6
   historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次
@@ -62,28 +62,28 @@ interface IEditorOption {
   scrollContainerSelector?: string // 滚动区域选择器。默认：document
   pageOuterSelectionDisable?: boolean // 鼠标移出页面时选区禁用。默认：false
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
-  watermark?: IWatermark // 水印信息。{data:string; color?:string; opacity?:number; size?:number; font?:string; numberType:NumberType;}
-  control?: IControlOption // 控件信息。 {placeholderColor?:string; bracketColor?:string; prefix?:string; postfix?:string; borderWidth?: number; borderColor?: string; activeBackgroundColor?: string; disabledBackgroundColor?: string; existValueBackgroundColor?: string; noValueBackgroundColor?: string;}
-  checkbox?: ICheckboxOption // 复选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; checkFillStyle?: string; checkStrokeStyle?: string; checkMarkColor?: string; verticalAlign?: VerticalAlign;}
-  radio?: IRadioOption // 单选框信息。{width?:number; height?:number; gap?:number; lineWidth?:number; fillStyle?:string; strokeStyle?: string; verticalAlign?: VerticalAlign;}
-  cursor?: ICursorOption // 光标样式。{width?: number; color?: string; dragWidth?: number; dragColor?: string; dragFloatImageDisabled?: boolean;}
-  title?: ITitleOption // 标题配置。{ defaultFirstSize?: number; defaultSecondSize?: number; defaultThirdSize?: number defaultFourthSize?: number; defaultFifthSize?: number; defaultSixthSize?: number;}
-  placeholder?: IPlaceholder // 编辑器空白占位文本
-  group?: IGroup // 成组配置。{opacity?:number; backgroundColor?:string; activeOpacity?:number; activeBackgroundColor?:string; disabled?:boolean; deletable?:boolean;}
-  pageBreak?: IPageBreak // 分页符配置。{font?:string; fontSize?:number; lineDash?:number[];}
-  zone?: IZoneOption // 编辑器区域配置。{tipDisabled?:boolean;}
-  background?: IBackgroundOption // 背景配置。{color?:string; image?:string; size?:BackgroundSize; repeat?:BackgroundRepeat; applyPageNumbers?:number[]}。默认：{color: '#FFFFFF'}
-  lineBreak?: ILineBreakOption // 换行符配置。{disabled?:boolean; color?:string; lineWidth?:number;}
-  whiteSpace?: IWhiteSpaceOption // 空格符配置。{disabled?:boolean; color?:string; radius?:number;}
-  separator?: ISeparatorOption // 分隔符配置。{lineWidth?:number; strokeStyle?:string;}
-  lineNumber?: ILineNumberOption // 行号配置。{size?:number; font?:string; color?:string; disabled?:boolean; right?:number}
-  pageBorder?: IPageBorderOption // 页面边框配置。{color?:string; lineWidth:number; padding?:IPadding; disabled?:boolean;}
-  badge?: IBadgeOption // 徽章配置。{top?:number; left?:number}
-  modeRule?: IModeRule // 编辑器模式规则配置。{print:{imagePreviewerDisabled?: boolean;backgroundDisabled?: boolean;}; readonly:{imagePreviewerDisabled?: boolean}; form:{controlDeletableDisabled?: boolean}}
-  graffiti?: IGraffitiOption // 涂鸦模式配置。{defaultLineWidth?: number; defaultLineColor?: string}
-  label?: ILabelOption // 标签配置。{defaultColor?:string; defaultBackgroundColor?:string; defaultBorderRadius?:number; defaultPadding?:IPadding}
-  imgCaption?: IImgCaptionOption // 图片题注配置。{color?:string; font?:string; size?:number; top?:number}
-  list?: IListOption // 列表配置。{inheritStyle?:boolean}
+  watermark?: IWatermark // 水印配置
+  control?: IControlOption // 控件配置
+  checkbox?: ICheckboxOption // 复选框配置
+  radio?: IRadioOption // 单选框配置
+  cursor?: ICursorOption // 光标样式配置
+  title?: ITitleOption // 标题配置
+  placeholder?: IPlaceholder // 占位文本配置
+  group?: IGroup // 成组配置
+  pageBreak?: IPageBreak // 分页符配置
+  zone?: IZoneOption // 编辑器区域配置
+  background?: IBackgroundOption // 背景配置
+  lineBreak?: ILineBreakOption // 换行符配置
+  whiteSpace?: IWhiteSpaceOption // 空格符配置
+  separator?: ISeparatorOption // 分隔符配置
+  lineNumber?: ILineNumberOption // 行号配置
+  pageBorder?: IPageBorderOption // 页面边框配置
+  badge?: IBadgeOption // 徽章配置
+  modeRule?: IModeRule // 编辑器模式规则配置
+  graffiti?: IGraffitiOption // 涂鸦模式配置
+  label?: ILabelOption // 标签配置
+  imgCaption?: IImgCaptionOption // 图片题注配置
+  list?: IListOption // 列表配置
 }
 ```
 
@@ -158,6 +158,79 @@ interface IWatermark {
 }
 ```
 
+## 控件配置
+
+```typescript
+interface IControlOption {
+  placeholderColor?: string // 占位符颜色。默认：#000000
+  bracketColor?: string // 括号颜色。默认：#000000
+  prefix?: string // 前缀字符。默认：{}
+  postfix?: string // 后缀字符。默认：{}
+  borderWidth?: number // 边框宽度。默认：0
+  borderColor?: string // 边框颜色
+  activeBackgroundColor?: string // 激活时背景色
+  disabledBackgroundColor?: string // 禁用时背景色
+  existValueBackgroundColor?: string // 有值时背景色
+  noValueBackgroundColor?: string // 无值时背景色
+}
+```
+
+## 复选框配置
+
+```typescript
+interface ICheckboxOption {
+  width?: number // 宽度。默认：14
+  height?: number // 高度。默认：14
+  gap?: number // 与文本间距。默认：5
+  lineWidth?: number // 边框线宽。默认：1
+  fillStyle?: string // 填充样式。默认：#FFFFFF
+  strokeStyle?: string // 边框颜色。默认：#000000
+  checkFillStyle?: string // 选中时填充样式
+  checkStrokeStyle?: string // 选中时边框颜色
+  checkMarkColor?: string // 对勾颜色
+  verticalAlign?: VerticalAlign // 垂直对齐方式。默认：MIDDLE
+}
+```
+
+## 单选框配置
+
+```typescript
+interface IRadioOption {
+  width?: number // 宽度。默认：14
+  height?: number // 高度。默认：14
+  gap?: number // 与文本间距。默认：5
+  lineWidth?: number // 边框线宽。默认：1
+  fillStyle?: string // 填充样式。默认：#FFFFFF
+  strokeStyle?: string // 边框颜色。默认：#000000
+  verticalAlign?: VerticalAlign // 垂直对齐方式。默认：MIDDLE
+}
+```
+
+## 光标配置
+
+```typescript
+interface ICursorOption {
+  width?: number // 光标宽度。默认：1
+  color?: string // 光标颜色。默认：#000000
+  dragWidth?: number // 拖拽光标宽度。默认：2
+  dragColor?: string // 拖拽光标颜色。默认：#000000
+  dragFloatImageDisabled?: boolean // 是否禁用拖拽浮动图片。默认：false
+}
+```
+
+## 标题配置
+
+```typescript
+interface ITitleOption {
+  defaultFirstSize?: number // 一级标题默认字号。默认：32
+  defaultSecondSize?: number // 二级标题默认字号。默认：24
+  defaultThirdSize?: number // 三级标题默认字号。默认：18
+  defaultFourthSize?: number // 四级标题默认字号。默认：16
+  defaultFifthSize?: number // 五级标题默认字号。默认：14
+  defaultSixthSize?: number // 六级标题默认字号。默认：12
+}
+```
+
 ## 占位文本配置
 
 ```typescript
@@ -167,6 +240,78 @@ interface IPlaceholder {
   opacity?: number // 透明度。默认：1
   size?: number // 字体大小。默认：16
   font?: string // 字体。默认：Microsoft YaHei
+}
+```
+
+## 成组配置
+
+```typescript
+interface IGroup {
+  opacity?: number // 透明度。默认：0.2
+  backgroundColor?: string // 背景颜色。默认：#FFFFFF
+  activeOpacity?: number // 激活时透明度。默认：0.4
+  activeBackgroundColor?: string // 激活时背景颜色。默认：#FFFFFF
+  disabled?: boolean // 是否禁用。默认：false
+  deletable?: boolean // 是否可删除。默认：true
+}
+```
+
+## 分页符配置
+
+```typescript
+interface IPageBreak {
+  font?: string // 字体。默认：Microsoft YaHei
+  fontSize?: number // 字号。默认：12
+  lineDash?: number[] // 虚线样式。默认：[5, 5]
+}
+```
+
+## 区域配置
+
+```typescript
+interface IZoneOption {
+  tipDisabled?: boolean // 是否禁用区域提示。默认：false
+}
+```
+
+## 背景配置
+
+```typescript
+interface IBackgroundOption {
+  color?: string // 背景颜色。默认：#FFFFFF
+  image?: string // 背景图片URL
+  size?: BackgroundSize // 背景尺寸。默认：COVER
+  repeat?: BackgroundRepeat // 背景重复方式。默认：NO_REPEAT
+  applyPageNumbers?: number[] // 应用的页码数组，默认全部页面
+}
+```
+
+## 换行符配置
+
+```typescript
+interface ILineBreakOption {
+  disabled?: boolean // 是否禁用显示。默认：true
+  color?: string // 颜色。默认：#000000
+  lineWidth?: number // 线宽。默认：1
+}
+```
+
+## 空格符配置
+
+```typescript
+interface IWhiteSpaceOption {
+  disabled?: boolean // 是否禁用显示。默认：true
+  color?: string // 颜色。默认：#000000
+  radius?: number // 圆点半径。默认：2
+}
+```
+
+## 分隔符配置
+
+```typescript
+interface ISeparatorOption {
+  lineWidth?: number // 线宽。默认：1
+  strokeStyle?: string // 线条颜色。默认：#000000
 }
 ```
 
@@ -194,6 +339,41 @@ interface IPageBorderOption {
 }
 ```
 
+## 徽章配置
+
+```typescript
+interface IBadgeOption {
+  top?: number // 距离顶部距离。默认：0
+  left?: number // 距离左侧距离。默认：0
+}
+```
+
+## 模式规则配置
+
+```typescript
+interface IModeRule {
+  print?: {
+    imagePreviewerDisabled?: boolean // 打印模式禁用图片预览
+    backgroundDisabled?: boolean // 打印模式禁用背景
+  }
+  readonly?: {
+    imagePreviewerDisabled?: boolean // 只读模式禁用图片预览
+  }
+  form?: {
+    controlDeletableDisabled?: boolean // 表单模式禁用控件删除
+  }
+}
+```
+
+## 涂鸦配置
+
+```typescript
+interface IGraffitiOption {
+  defaultLineWidth?: number // 默认线条宽度。默认：2
+  defaultLineColor?: string // 默认线条颜色。默认：#000000
+}
+```
+
 ## 标签配置
 
 ```typescript
@@ -202,6 +382,17 @@ interface ILabelOption {
   defaultBackgroundColor?: string // 默认标签背景颜色
   defaultBorderRadius?: number // 默认标签边框半径
   defaultPadding?: IPadding // 默认标签内边距
+}
+```
+
+## 图片题注配置
+
+```typescript
+interface IImgCaptionOption {
+  color?: string // 颜色。默认：#000000
+  font?: string // 字体。默认：Microsoft YaHei
+  size?: number // 字号。默认：12
+  top?: number // 距离图片顶部距离。默认：5
 }
 ```
 
