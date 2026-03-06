@@ -1196,6 +1196,8 @@ export class Draw {
         row => row.elementList
       )
     }
+    // 同步block的最新数据
+    this.blockParticle.update()
     const data: Required<IEditorData> = {
       header: this.getHeaderElementList(),
       main: mainElementList,

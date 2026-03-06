@@ -5,9 +5,14 @@ export class IFrameBlock {
   public static readonly allow = ['fullscreen']
 
   private element: IRowElement
+  private iframe: HTMLIFrameElement | null = null
 
   constructor(element: IRowElement) {
     this.element = element
+  }
+
+  public getIframe(): HTMLIFrameElement | null {
+    return this.iframe
   }
 
   private _defineIframeProperties(iframeWindow: Window) {
@@ -43,5 +48,6 @@ export class IFrameBlock {
     blockItemContainer.append(iframe)
     // 重新定义iframe上属性
     this._defineIframeProperties(iframe.contentWindow!)
+    this.iframe = iframe
   }
 }

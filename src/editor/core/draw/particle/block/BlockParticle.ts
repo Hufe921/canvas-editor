@@ -1,4 +1,5 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
+import { BlockType } from '../../../../dataset/enum/Block'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { IRowElement } from '../../../../interface/Row'
 import { Draw } from '../../Draw'
@@ -70,6 +71,23 @@ export class BlockParticle {
       if (!blockElementIds.includes(id)) {
         block.remove()
         this.blockMap.delete(id)
+      }
+    })
+  }
+
+  public update() {
+    this.blockMap.forEach(baseBlock => {
+      const element = baseBlock.getBlockElement()
+      // 更新iframe srcdoc
+      if (
+        element.block?.type === BlockType.IFRAME &&
+        element.block.iframeBlock?.srcdoc
+      ) {
+        const iframe = baseBlock.getIFrameBlock?.()?.getIframe?.()
+        if (iframe?.contentDocument) {
+          element.block.iframeBlock.srcdoc =
+            iframe.contentDocument.documentElement.outerHTML
+        }
       }
     })
   }

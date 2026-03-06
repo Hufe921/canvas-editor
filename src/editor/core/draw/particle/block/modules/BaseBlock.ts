@@ -56,6 +56,10 @@ export class BaseBlock {
     return this.element.width || this.element.metrics.width
   }
 
+  public getIFrameBlock(): IFrameBlock | null {
+    return this.block instanceof IFrameBlock ? this.block : null
+  }
+
   private _createBlockItem() {
     const { scale, resizerColor } = this.options
     const blockItem = document.createElement('div')
@@ -114,14 +118,14 @@ export class BaseBlock {
         i === 0 || i === 6 || i === 7
           ? -handleSize
           : i === 1 || i === 5
-          ? width / 2
-          : width - handleSize
+            ? width / 2
+            : width - handleSize
       const top =
         i === 0 || i === 1 || i === 2
           ? -handleSize
           : i === 3 || i === 7
-          ? height / 2 - handleSize
-          : height - handleSize
+            ? height / 2 - handleSize
+            : height - handleSize
       this.resizerHandleList[i].style.transform = `scale(${scale})`
       this.resizerHandleList[i].style.left = `${left}px`
       this.resizerHandleList[i].style.top = `${top}px`
