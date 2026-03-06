@@ -180,15 +180,17 @@ export class Cursor {
     } else {
       this._clearBlinkTimeout()
     }
-    // 移动到视野范围内
-    nextTick(() => {
-      // nexttick后执行 => 避免画布没有渲染完成造成残影
-      this.moveCursorToVisible({
-        cursorPosition: cursorPosition!,
-        direction:
-          parseInt(oldTop) > cursorTop ? MoveDirection.UP : MoveDirection.DOWN
+    // 移动到视野范围内（仅在聚焦时）
+    if (isFocus) {
+      nextTick(() => {
+        // nexttick后执行 => 避免画布没有渲染完成造成残影
+        this.moveCursorToVisible({
+          cursorPosition: cursorPosition!,
+          direction:
+            parseInt(oldTop) > cursorTop ? MoveDirection.UP : MoveDirection.DOWN
+        })
       })
-    })
+    }
   }
 
   public recoveryCursor() {
