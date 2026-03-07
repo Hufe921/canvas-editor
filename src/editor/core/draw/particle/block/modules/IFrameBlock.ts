@@ -6,9 +6,11 @@ export class IFrameBlock {
 
   private element: IRowElement
   private iframe: HTMLIFrameElement | null = null
+  private isReadonly: boolean
 
   constructor(element: IRowElement) {
     this.element = element
+    this.isReadonly = false
   }
 
   public getIframe(): HTMLIFrameElement | null {
@@ -49,5 +51,17 @@ export class IFrameBlock {
     // 重新定义iframe上属性
     this._defineIframeProperties(iframe.contentWindow!)
     this.iframe = iframe
+  }
+
+  public setReadonly(readonly: boolean) {
+    if (!this.iframe || this.isReadonly === readonly) return
+    this.isReadonly = readonly
+    if (readonly) {
+      this.iframe.style.pointerEvents = 'none'
+      this.iframe.setAttribute('tabindex', '-1')
+    } else {
+      this.iframe.style.pointerEvents = ''
+      this.iframe.removeAttribute('tabindex')
+    }
   }
 }

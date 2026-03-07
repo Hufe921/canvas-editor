@@ -54,6 +54,8 @@ export class BlockParticle {
     } else {
       cacheBlock.setClientRects(pageNo, x, y)
     }
+    // 更新block状态
+    cacheBlock.setStatus()
   }
 
   public clear() {

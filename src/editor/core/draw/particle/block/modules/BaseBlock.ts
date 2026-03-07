@@ -286,6 +286,13 @@ export class BaseBlock {
     this.blockItem.style.top = `${preY + y}px`
   }
 
+  public setStatus() {
+    // iframe 更新只读状态
+    if (this.block instanceof IFrameBlock) {
+      this.block.setReadonly(this.draw.isReadonly())
+    }
+  }
+
   public remove() {
     this.blockItem.remove()
   }
