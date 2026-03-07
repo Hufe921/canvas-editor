@@ -50,7 +50,7 @@ export class BlockParticle {
     }
     // 打印模式截图，其他模式更新位置
     if (this.draw.isPrintMode()) {
-      cacheBlock.snapshot(ctx, x, y)
+      cacheBlock.snapshot(ctx, pageNo, x, y)
     } else {
       cacheBlock.setClientRects(pageNo, x, y)
     }

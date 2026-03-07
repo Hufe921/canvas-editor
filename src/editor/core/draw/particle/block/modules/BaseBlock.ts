@@ -237,7 +237,12 @@ export class BaseBlock {
     evt.preventDefault()
   }
 
-  public snapshot(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  public snapshot(
+    ctx: CanvasRenderingContext2D,
+    pageNo: number,
+    x: number,
+    y: number
+  ) {
     const block = this.element.block!
     if (block.type === BlockType.VIDEO) {
       this.blockItem.style.display = 'none'
@@ -250,6 +255,9 @@ export class BaseBlock {
         this.draw.getImageObserver().add(promise)
         this.blockCache.set(this.element.id!, this.block)
       }
+    } else if (block.type === BlockType.IFRAME) {
+      // 更新坐标，默认是打印模式时没有默认坐标
+      this.setClientRects(pageNo, x, y)
     }
   }
 
