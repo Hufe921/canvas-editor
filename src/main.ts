@@ -65,6 +65,8 @@ window.onload = function () {
   console.log('实例: ', instance)
   // cypress使用
   Reflect.set(window, 'editor', instance)
+  // canvas-editor-devtools使用
+  Reflect.set(window, '__CANVAS_EDITOR_INSTANCE__', instance)
 
   // 菜单弹窗销毁
   window.addEventListener(
