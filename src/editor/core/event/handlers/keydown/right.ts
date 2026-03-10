@@ -16,6 +16,28 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   if (!cursorPosition) return
   const { index } = cursorPosition
   const positionList = position.getPositionList()
+
+  // Cursor can be in a logical position before the first character of the line (|ABC)
+  // When pressing →, move to the first real character of the line (A|BC)
+  const hitLineStartIndex = draw.getCursor().getHitLineStartIndex()
+
+  if (!evt.shiftKey && !isMod(evt) && hitLineStartIndex !== undefined) {
+    const nextIndex = hitLineStartIndex
+
+    const rangeManager = draw.getRange()
+    rangeManager.setRange(nextIndex, nextIndex)
+
+    draw.render({
+      curIndex: nextIndex,
+      isSetCursor: true,
+      isSubmitHistory: false,
+      isCompute: false
+    })
+
+    evt.preventDefault()
+    return
+  }
+
   const positionContext = position.getPositionContext()
   if (index > positionList.length - 1 && !positionContext.isTable) return
   const rangeManager = draw.getRange()
@@ -57,6 +79,32 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
     }
   }
   const curIndex = endIndex + moveCount
+
+  // When the cursor is at the end of the line (ABC|) and the next index already belongs to the next line
+  // In this case, we position the cursor before the first character of the next line (|DEF)
+  if (!evt.shiftKey && !isMod(evt)) {
+    const nextPosition = positionList[curIndex]
+    const currentPosition = positionList[endIndex]
+
+    if (nextPosition && nextPosition.rowNo !== currentPosition.rowNo) {
+      rangeManager.setRange(endIndex, endIndex)
+
+      draw.render({
+        curIndex: endIndex,
+        isSetCursor: true,
+        isSubmitHistory: false,
+        isCompute: false
+      })
+
+      draw.getCursor().drawCursor({
+        hitLineStartIndex: curIndex
+      })
+
+      evt.preventDefault()
+      return
+    }
+  }
+
   // shift则缩放选区
   let anchorStartIndex = curIndex
   let anchorEndIndex = curIndex
