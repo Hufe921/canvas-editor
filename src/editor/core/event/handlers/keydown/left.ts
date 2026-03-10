@@ -21,45 +21,47 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
   const positionList = position.getPositionList()
 
   // The cursor can be in a logical position before the first character of the line.
-  const hitLineStartIndex = draw.getCursor().getHitLineStartIndex()
+  if (!evt.shiftKey && !isMod(evt)) {
+    const prevPosition = positionList[index - 1]
+    const currentPosition = positionList[index]
 
-  // If the cursor is in |ABC and press ←, move to the end of the previous line (ABC|)
-  if (!evt.shiftKey && !isMod(evt) && hitLineStartIndex !== undefined) {
-    const prevIndex = hitLineStartIndex - 1
+    // If the cursor is in A|BC at the start of the visual line and press ←, move to |ABC
+    if (positionList[index]?.isFirstLetter && prevPosition.rowNo === currentPosition.rowNo) {
+      const prevIndex = index - 1
+      if (prevIndex >= 0) {
+        console.log('prev A|BC > |ABC', prevIndex)
+        rangeManager.setRange(prevIndex, prevIndex)
 
-    if (prevIndex >= 0) {
-      rangeManager.setRange(prevIndex, prevIndex)
+        draw.render({
+          curIndex: prevIndex,
+          isSetCursor: true,
+          isSubmitHistory: false,
+          isCompute: false
+        })
 
-      draw.render({
-        curIndex: prevIndex,
-        isSetCursor: true,
-        isSubmitHistory: false,
-        isCompute: false
-      })
+        // Draw the cursor in the logical position before the first character of the line
+        draw.getCursor().drawCursor({
+          hitLineStartIndex: index
+        })
 
-      evt.preventDefault()
-      return
+        evt.preventDefault()
+        return
+      }
     }
-  }
 
-  // If the cursor is in A|BC at the start of the visual line and press ←, move to |ABC
-  if (!evt.shiftKey && !isMod(evt) && positionList[index]?.isFirstLetter) {
-    const prevIndex = index - 1
-    if (prevIndex >= 0) {
+    // If the cursor is in |ABC and press ←, move to the end of the previous line (ABC|)
+    if (prevPosition && currentPosition && prevPosition.rowNo !== currentPosition.rowNo) {
+      const prevIndex = index - 1
+      
       rangeManager.setRange(prevIndex, prevIndex)
-
+      
       draw.render({
         curIndex: prevIndex,
         isSetCursor: true,
         isSubmitHistory: false,
         isCompute: false
       })
-
-      // Draw the cursor in the logical position before the first character of the line
-      draw.getCursor().drawCursor({
-        hitLineStartIndex: index
-      })
-
+      
       evt.preventDefault()
       return
     }

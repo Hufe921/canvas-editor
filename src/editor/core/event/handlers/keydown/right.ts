@@ -17,30 +17,38 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   const { index } = cursorPosition
   const positionList = position.getPositionList()
 
+  const hitLineStartIndex = draw.getCursor().getHitLineStartIndex()
+  
   // Cursor can be in a logical position before the first character of the line (|ABC)
   // When pressing →, move to the first real character of the line (A|BC)
-  const hitLineStartIndex = draw.getCursor().getHitLineStartIndex()
+  const rangeManager = draw.getRange()
+  
+  if (!evt.shiftKey && !isMod(evt)) {
+    // ABC| → |DEF
+    if (hitLineStartIndex !== undefined) {
+      let nextIndex = index
+      
+      // |ABC → A|BC
+      if (positionList[index]?.isLastLetter) {
+        nextIndex = hitLineStartIndex + 1
+      }
+      
+      rangeManager.setRange(nextIndex, nextIndex)
 
-  if (!evt.shiftKey && !isMod(evt) && hitLineStartIndex !== undefined) {
-    const nextIndex = hitLineStartIndex
+      draw.render({
+        curIndex: nextIndex,
+        isSetCursor: true,
+        isSubmitHistory: false,
+        isCompute: false
+      })
 
-    const rangeManager = draw.getRange()
-    rangeManager.setRange(nextIndex, nextIndex)
-
-    draw.render({
-      curIndex: nextIndex,
-      isSetCursor: true,
-      isSubmitHistory: false,
-      isCompute: false
-    })
-
-    evt.preventDefault()
-    return
+      evt.preventDefault()
+      return
+    }
   }
 
   const positionContext = position.getPositionContext()
   if (index > positionList.length - 1 && !positionContext.isTable) return
-  const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
   const isCollapsed = rangeManager.getIsCollapsed()
   let elementList = draw.getElementList()
