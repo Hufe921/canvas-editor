@@ -15,8 +15,57 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
   if (!cursorPosition) return
   const positionContext = position.getPositionContext()
   const { index } = cursorPosition
-  if (index <= 0 && !positionContext.isTable) return
+
   const rangeManager = draw.getRange()
+
+  const positionList = position.getPositionList()
+
+  // The cursor can be in a logical position before the first character of the line.
+  if (!evt.shiftKey && !isMod(evt)) {
+    const prevPosition = positionList[index - 1]
+    const currentPosition = positionList[index]
+
+    // If the cursor is in A|BC at the start of the visual line and press ←, move to |ABC
+    if (positionList[index]?.isFirstLetter && prevPosition.rowNo === currentPosition.rowNo) {
+      const prevIndex = index - 1
+      if (prevIndex >= 0) {
+        rangeManager.setRange(prevIndex, prevIndex)
+
+        draw.render({
+          curIndex: prevIndex,
+          isSetCursor: true,
+          isSubmitHistory: false,
+          isCompute: false
+        })
+
+        // Draw the cursor in the logical position before the first character of the line
+        draw.getCursor().drawCursor({
+          hitLineStartIndex: index
+        })
+
+        evt.preventDefault()
+        return
+      }
+    }
+
+    // If the cursor is in |ABC and press ←, move to the end of the previous line (ABC|)
+    if (prevPosition && currentPosition && prevPosition.rowNo !== currentPosition.rowNo) {
+      const prevIndex = index - 1
+      
+      rangeManager.setRange(prevIndex, prevIndex)
+      
+      draw.render({
+        curIndex: prevIndex,
+        isSetCursor: true,
+        isSubmitHistory: false,
+        isCompute: false
+      })
+      
+      evt.preventDefault()
+      return
+    }
+  }
+
   const { startIndex, endIndex } = rangeManager.getRange()
   const isCollapsed = rangeManager.getIsCollapsed()
   const elementList = draw.getElementList()
