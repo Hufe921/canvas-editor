@@ -29,7 +29,6 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
     if (positionList[index]?.isFirstLetter && prevPosition.rowNo === currentPosition.rowNo) {
       const prevIndex = index - 1
       if (prevIndex >= 0) {
-        console.log('prev A|BC > |ABC', prevIndex)
         rangeManager.setRange(prevIndex, prevIndex)
 
         draw.render({
