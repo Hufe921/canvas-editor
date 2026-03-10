@@ -130,6 +130,7 @@ import {
   IGetAreaValueResult,
   IInsertAreaOption,
   ILocationAreaOption,
+  IDeleteAreaOption,
   ISetAreaPropertiesOption,
   ISetAreaValueOption
 } from '../../interface/Area'
@@ -2678,6 +2679,10 @@ export class CommandAdapt {
 
   public setAreaProperties(payload: ISetAreaPropertiesOption) {
     this.draw.getArea().setAreaProperties(payload)
+  }
+
+  public deleteArea(options?: IDeleteAreaOption) {
+    this.draw.getArea().deleteArea(options)
   }
 
   public locationArea(areaId: string, options?: ILocationAreaOption) {

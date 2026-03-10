@@ -87,6 +87,7 @@ export class Command {
   public executeInsertArea: CommandAdapt['insertArea']
   public executeSetAreaValue: CommandAdapt['setAreaValue']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
+  public executeDeleteArea: CommandAdapt['deleteArea']
   public executeLocationArea: CommandAdapt['locationArea']
   public executeClearGraffiti: CommandAdapt['clearGraffiti']
   public executeAppendElementList: CommandAdapt['appendElementList']
@@ -243,6 +244,7 @@ export class Command {
     this.executeInsertArea = adapt.insertArea.bind(adapt)
     this.executeSetAreaValue = adapt.setAreaValue.bind(adapt)
     this.executeSetAreaProperties = adapt.setAreaProperties.bind(adapt)
+    this.executeDeleteArea = adapt.deleteArea.bind(adapt)
     this.executeLocationArea = adapt.locationArea.bind(adapt)
     // 涂鸦
     this.executeClearGraffiti = adapt.clearGraffiti.bind(adapt)

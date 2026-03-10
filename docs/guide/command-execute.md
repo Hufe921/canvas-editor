@@ -1140,6 +1140,14 @@ instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
 instance.command.executeSetAreaValue(payload: ISetAreaValueOption)
 ```
 
+## executeDeleteArea
+
+功能：删除区域
+
+```js
+instance.command.executeDeleteArea(payload?: IDeleteAreaOption)
+```
+
 ## executeLocationArea
 
 功能：定位区域位置

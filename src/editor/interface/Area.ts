@@ -64,3 +64,7 @@ export interface ILocationAreaOption {
   position: LocationPosition
   isAppendLastLineBreak?: boolean
 }
+
+export interface IDeleteAreaOption {
+  id?: string
+}

@@ -1146,6 +1146,16 @@ Usage:
 instance.command.executeSetAreaValue(payload: ISetAreaValueOption)
 ```
 
+## executeDeleteArea
+
+Feature: delete area
+
+Usage:
+
+```javascript
+instance.command.executeDeleteArea(payload?: IDeleteAreaOption)
+```
+
 ## executeLocationArea
 
 Feature: positioning area position
