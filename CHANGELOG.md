@@ -1,3 +1,34 @@
+## [0.9.129](https://github.com/Hufe921/canvas-editor/compare/v0.9.128...v0.9.129) (2026-03-13)
+
+
+### Bug Fixes
+
+* cursor positioning when pressing home key at line start #1376 ([3158103](https://github.com/Hufe921/canvas-editor/commit/3158103158d9a048b15b796b7dd89488e5ddef7b)), closes [#1376](https://github.com/Hufe921/canvas-editor/issues/1376)
+* disable iframe editing in readonly mode #1373 ([d2b2cf1](https://github.com/Hufe921/canvas-editor/commit/d2b2cf13adb5b545d27f9afc00387a0bb679a26d)), closes [#1373](https://github.com/Hufe921/canvas-editor/issues/1373)
+* iframe block position in print mode #1374 ([bc03f7b](https://github.com/Hufe921/canvas-editor/commit/bc03f7bf1126e8f484ebd6d6433f946efdf2a681)), closes [#1374](https://github.com/Hufe921/canvas-editor/issues/1374)
+* prevent auto-scroll when clicking menu bar #1371 ([ee09e93](https://github.com/Hufe921/canvas-editor/commit/ee09e9362d3034188ab4f5ef468533199df167ff)), closes [#1371](https://github.com/Hufe921/canvas-editor/issues/1371)
+* sync iframe block srcdoc when getValue #1369 ([53400b4](https://github.com/Hufe921/canvas-editor/commit/53400b4a6846b980d3e59385210eec8e768765ab)), closes [#1369](https://github.com/Hufe921/canvas-editor/issues/1369)
+
+
+### Chores
+
+* expose instance for canvas-editor-devtools ([8ea4798](https://github.com/Hufe921/canvas-editor/commit/8ea4798dc5b5c50b268da41dd2c6134787f669b6))
+
+
+### Documentation
+
+* add canvas-editor-devtools documentation ([1cbd9ee](https://github.com/Hufe921/canvas-editor/commit/1cbd9ee9c70c22107ece2dc76667211911b64efb))
+* refactor option.md configuration ([43ec928](https://github.com/Hufe921/canvas-editor/commit/43ec9285d080547cab2d6ec4fcebac46caca38df))
+
+
+### Features
+
+* add executeDeleteArea api #1377 ([10174ec](https://github.com/Hufe921/canvas-editor/commit/10174ecb0f0ade11a01db1b5227dee6a91266d81)), closes [#1377](https://github.com/Hufe921/canvas-editor/issues/1377)
+* improve word count logic to match mainstream word processors #452 ([117b1cb](https://github.com/Hufe921/canvas-editor/commit/117b1cb4ef2e3025464e66c44f398822cb7fbcda)), closes [#452](https://github.com/Hufe921/canvas-editor/issues/452)
+* print support for iframe block #1375 ([dfc3191](https://github.com/Hufe921/canvas-editor/commit/dfc31912173b7b44d2b81145d37080475f6dd9fe)), closes [#1375](https://github.com/Hufe921/canvas-editor/issues/1375)
+
+
+
 ## [0.9.128](https://github.com/Hufe921/canvas-editor/compare/v0.9.127...v0.9.128) (2026-02-28)
 
 
