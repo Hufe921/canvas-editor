@@ -918,6 +918,10 @@ export class Draw {
     return this.tableParticle
   }
 
+  public getBlockParticle(): BlockParticle {
+    return this.blockParticle
+  }
+
   public getHeader(): Header {
     return this.header
   }

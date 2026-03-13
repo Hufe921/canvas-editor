@@ -1,18 +1,23 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { BlockType } from '../../../../dataset/enum/Block'
 import { ElementType } from '../../../../dataset/enum/Element'
+import { IIframeInfo } from '../../../../interface/Block'
+import { DeepRequired } from '../../../../interface/Common'
+import { IEditorOption } from '../../../../interface/Editor'
 import { IRowElement } from '../../../../interface/Row'
 import { Draw } from '../../Draw'
 import { BaseBlock } from './modules/BaseBlock'
 
 export class BlockParticle {
   private draw: Draw
+  private options: DeepRequired<IEditorOption>
   private container: HTMLDivElement
   private blockContainer: HTMLDivElement
   private blockMap: Map<string, BaseBlock>
 
   constructor(draw: Draw) {
     this.draw = draw
+    this.options = draw.getOptions()
     this.container = draw.getContainer()
     this.blockMap = new Map()
     this.blockContainer = this._createBlockContainer()
@@ -92,5 +97,40 @@ export class BlockParticle {
         }
       }
     })
+  }
+
+  public pickIframeInfo(): IIframeInfo[][] {
+    const result: IIframeInfo[][] = []
+    const { scale } = this.options
+    this.blockMap.forEach(cacheBlock => {
+      const element = cacheBlock.getBlockElement()
+
+      if (
+        !element.block?.iframeBlock ||
+        element.block.type !== BlockType.IFRAME
+      ) {
+        return
+      }
+
+      // 获取位置信息
+      const positionInfo = cacheBlock.getPositionInfo()
+      if (!positionInfo) return
+
+      const { pageNo, x, y } = positionInfo
+      if (!result[pageNo]) {
+        result[pageNo] = []
+      }
+
+      result[pageNo].push({
+        x,
+        y,
+        width: element.metrics.width / scale,
+        height: element.metrics.height / scale,
+        src: element.block.iframeBlock.src,
+        srcdoc: element.block.iframeBlock.srcdoc
+      })
+    })
+
+    return result
   }
 }

@@ -14,6 +14,7 @@ export class BaseBlock {
   private block: IFrameBlock | VideoBlock | null
   private blockContainer: HTMLDivElement
   private blockItem: HTMLDivElement
+  private positionInfo: { pageNo: number; x: number; y: number } | null = null
   protected blockCache: Map<string, IFrameBlock | VideoBlock>
   // 缩放业务
   private resizerMask: HTMLDivElement
@@ -58,6 +59,10 @@ export class BaseBlock {
 
   public getIFrameBlock(): IFrameBlock | null {
     return this.block instanceof IFrameBlock ? this.block : null
+  }
+
+  public getPositionInfo(): { pageNo: number; x: number; y: number } | null {
+    return this.positionInfo
   }
 
   private _createBlockItem() {
@@ -258,6 +263,8 @@ export class BaseBlock {
     } else if (block.type === BlockType.IFRAME) {
       // 更新坐标，默认是打印模式时没有默认坐标
       this.setClientRects(pageNo, x, y)
+      // 缓存位置信息
+      this.positionInfo = { pageNo, x, y }
     }
   }
 
