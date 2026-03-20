@@ -5,6 +5,7 @@ import { IIframeInfo } from '../../../../interface/Block'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IRowElement } from '../../../../interface/Row'
+import { loadImage } from '../../../../utils'
 import { Draw } from '../../Draw'
 import { BaseBlock } from './modules/BaseBlock'
 
@@ -97,6 +98,30 @@ export class BlockParticle {
         }
       }
     })
+  }
+
+  public async drawIframeToPage(
+    pageList: HTMLCanvasElement[],
+    snapDomFunction: (iframe: HTMLIFrameElement) => Promise<string>
+  ) {
+    const tasks: Promise<void>[] = []
+    this.blockMap.forEach(cacheBlock => {
+      if (cacheBlock.getBlockElement().block?.type !== BlockType.IFRAME) return
+      const positionInfo = cacheBlock.getPositionInfo()
+      if (!positionInfo) return
+      const iframe = cacheBlock.getIFrameBlock()?.getIframe()
+      if (!iframe) return
+      const { pageNo, x, y } = positionInfo
+      const ctx = pageList[pageNo]?.getContext('2d')
+      if (!ctx) return
+      const { width, height } = cacheBlock.getBlockElement().metrics
+      tasks.push(
+        snapDomFunction(iframe)
+          .then(base64 => loadImage(base64))
+          .then(img => ctx.drawImage(img, x, y, width, height))
+      )
+    })
+    await Promise.allSettled(tasks)
   }
 
   public pickIframeInfo(): IIframeInfo[][] {

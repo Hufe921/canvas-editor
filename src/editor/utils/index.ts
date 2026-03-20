@@ -375,6 +375,15 @@ export function isNonValue(value: unknown): boolean {
   return value === undefined || value === null
 }
 
+export function loadImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => resolve(img)
+    img.onerror = reject
+    img.src = src
+  })
+}
+
 export function normalizeLineBreak(text: string): string {
   return text.replace(/\r\n|\r/g, '\n')
 }

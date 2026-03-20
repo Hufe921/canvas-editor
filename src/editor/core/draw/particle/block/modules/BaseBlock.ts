@@ -263,8 +263,6 @@ export class BaseBlock {
     } else if (block.type === BlockType.IFRAME) {
       // 更新坐标，默认是打印模式时没有默认坐标
       this.setClientRects(pageNo, x, y)
-      // 缓存位置信息
-      this.positionInfo = { pageNo, x, y }
     }
   }
 
@@ -291,6 +289,8 @@ export class BaseBlock {
     // 位置
     this.blockItem.style.left = `${x}px`
     this.blockItem.style.top = `${preY + y}px`
+    // 缓存位置信息
+    this.positionInfo = { pageNo, x, y }
   }
 
   public setStatus() {
