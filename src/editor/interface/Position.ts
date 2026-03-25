@@ -55,6 +55,7 @@ export interface IPositionContext {
   tdId?: string
   trId?: string
   tableId?: string
+  tdValueIndex?: number
 }
 
 export interface IComputeRowPositionPayload {

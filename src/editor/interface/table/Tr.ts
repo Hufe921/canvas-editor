@@ -8,4 +8,5 @@ export interface ITr {
   tdList: ITd[]
   minHeight?: number
   pagingRepeat?: boolean // 在各页顶端以标题行的形式重复出现
+  originalRowIndex?: number // 原始行索引
 }
