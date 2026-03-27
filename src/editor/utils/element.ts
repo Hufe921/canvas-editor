@@ -154,6 +154,16 @@ export function formatElementList(
           elementList.splice(i, 0, value)
           i++
         }
+        // 尾部如果不是换行符则补充一个换行符
+        if (
+          elementList[i] &&
+          !START_LINE_BREAK_REG.test(elementList[i].value)
+        ) {
+          elementList.splice(i, 0, {
+            value: ZERO
+          })
+          i++
+        }
       }
       i--
     } else if (el.type === ElementType.AREA) {
