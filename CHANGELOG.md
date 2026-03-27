@@ -1,3 +1,20 @@
+## [0.9.130](https://github.com/Hufe921/canvas-editor/compare/v0.9.129...v0.9.130) (2026-03-27)
+
+
+### Bug Fixes
+
+* correct duplicate variable check in TextParticle render ([4b72161](https://github.com/Hufe921/canvas-editor/commit/4b721618d10ef484e92b79f52ea27ee4be316814))
+* ensure trailing line break in element list formatting #1378 ([30074b6](https://github.com/Hufe921/canvas-editor/commit/30074b6b703b3da581c5446a75edb38f4bff56b7)), closes [#1378](https://github.com/Hufe921/canvas-editor/issues/1378)
+* optimize cursor positioning for left/right key handlers #1378 ([a79928f](https://github.com/Hufe921/canvas-editor/commit/a79928fc507cac0302e105110bc31f2baeefb74c)), closes [#1378](https://github.com/Hufe921/canvas-editor/issues/1378)
+* prevent extra line break when list is first element in table #1381 ([bae2394](https://github.com/Hufe921/canvas-editor/commit/bae2394ceffee5e1a5b8f55d5ef8d60f7edc44b9)), closes [#1381](https://github.com/Hufe921/canvas-editor/issues/1381)
+
+
+### Features
+
+* support iframe snapshot in getImage api #1380 ([d980298](https://github.com/Hufe921/canvas-editor/commit/d9802988587333b8b624112f554d2b4e9d702e00)), closes [#1380](https://github.com/Hufe921/canvas-editor/issues/1380)
+
+
+
 ## [0.9.129](https://github.com/Hufe921/canvas-editor/compare/v0.9.128...v0.9.129) (2026-03-13)
 
 
