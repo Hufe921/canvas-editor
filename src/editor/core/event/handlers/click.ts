@@ -111,8 +111,19 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     x: evt.offsetX,
     y: evt.offsetY
   })
-  // 图片预览
   if (positionContext.isImage && positionContext.isDirectHit) {
+    // 双击图片事件
+    const elementList = draw.getElementList()
+    const eventBus = draw.getEventBus()
+    const curElement = elementList[positionContext.index]
+    if (eventBus.isSubscribe('imageDblclick')) {
+      eventBus.emit('imageDblclick', {
+        evt,
+        element: curElement
+      })
+    }
+    // 图片预览
+    if (curElement.imgPreviewDisabled) return
     draw.getPreviewer().render()
     return
   }

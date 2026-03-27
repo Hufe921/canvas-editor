@@ -84,11 +84,11 @@ export function formatElementList(
   const startElement = elementList[0]
   // 非首字符零宽节点文本元素则补偿-列表元素内部会补偿此处忽略
   if (
-    isForceCompensation ||
-    (isHandleFirstElement &&
-      startElement?.type !== ElementType.LIST &&
-      ((startElement?.type && startElement.type !== ElementType.TEXT) ||
-        !START_LINE_BREAK_REG.test(startElement?.value)))
+    startElement?.type !== ElementType.LIST &&
+    (isForceCompensation ||
+      (isHandleFirstElement &&
+        ((startElement?.type && startElement.type !== ElementType.TEXT) ||
+          !START_LINE_BREAK_REG.test(startElement?.value))))
   ) {
     elementList.unshift({
       value: ZERO
@@ -152,6 +152,16 @@ export function formatElementList(
           value.listType = el.listType
           value.listStyle = el.listStyle
           elementList.splice(i, 0, value)
+          i++
+        }
+        // 尾部如果不是换行符则补充一个换行符
+        if (
+          elementList[i] &&
+          !START_LINE_BREAK_REG.test(elementList[i].value)
+        ) {
+          elementList.splice(i, 0, {
+            value: ZERO
+          })
           i++
         }
       }
@@ -1559,7 +1569,8 @@ export function getElementListByHTML(
               width,
               height,
               value: src,
-              type: ElementType.IMAGE
+              type: ElementType.IMAGE,
+              rowFlex: convertTextAlignToRowFlex(node.parentElement!)
             })
           }
         } else if (node.nodeName === 'VIDEO') {
@@ -1691,10 +1702,13 @@ export function getElementListByHTML(
       }
     }
   }
-  // 追加dom
+  // 追加dom - 使用Shadow DOM隔离外部样式影响
+  const clipboardHost = document.createElement('div')
+  document.body.appendChild(clipboardHost)
+  const shadowRoot = clipboardHost.attachShadow({ mode: 'open' })
   const clipboardDom = document.createElement('div')
   clipboardDom.innerHTML = htmlText
-  document.body.appendChild(clipboardDom)
+  shadowRoot.appendChild(clipboardDom)
   const deleteNodes: ChildNode[] = []
   clipboardDom.childNodes.forEach(child => {
     if (child.nodeType !== 1 && !child.textContent?.trim()) {
@@ -1705,7 +1719,7 @@ export function getElementListByHTML(
   // 搜索文本节点
   findTextNode(clipboardDom)
   // 移除dom
-  clipboardDom.remove()
+  clipboardHost.remove()
   return elementList
 }
 

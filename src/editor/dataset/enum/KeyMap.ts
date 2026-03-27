@@ -6,6 +6,8 @@ export enum KeyMap {
   Right = 'ArrowRight',
   Up = 'ArrowUp',
   Down = 'ArrowDown',
+  Home = 'Home',
+  End = 'End',
   ESC = 'Escape',
   TAB = 'Tab',
   META = 'Meta',

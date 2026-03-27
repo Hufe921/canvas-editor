@@ -78,6 +78,28 @@ Usage:
 const range = instance.command.getCursorPosition()
 ```
 
+## getRemainingContentHeight
+
+Feature: Get remaining available content height on last page
+
+Usage:
+
+```javascript
+const remainingHeight = instance.command.getRemainingContentHeight()
+```
+
+## computeElementListHeight
+
+Feature: Compute element list height
+
+Usage:
+
+```javascript
+const height = instance.command.computeElementListHeight(
+  elementList: IElement[]
+)
+```
+
 ## getRange
 
 Feature: Get range

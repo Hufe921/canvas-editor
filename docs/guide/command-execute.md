@@ -139,6 +139,16 @@ instance.command.executeForceUpdate(options?: IForceUpdateOption)
 instance.command.executeBlur()
 ```
 
+## executeHideCursor
+
+功能：隐藏光标（保留选区）
+
+用法：
+
+```javascript
+instance.command.executeHideCursor()
+```
+
 ## executeUndo
 
 功能：撤销
@@ -607,7 +617,7 @@ instance.command.executeEditHyperlink(newUrl: string)
 用法：
 
 ```javascript
-instance.command.executeSeparator(dashArray: number[])
+instance.command.executeSeparator(dashArray: number[], option?: { lineWidth?: number; color?: string })
 ```
 
 ## executePageBreak
@@ -724,6 +734,16 @@ instance.command.executeSaveAsImageElement()
 
 ```javascript
 instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
+```
+
+## executeSetImageCrop
+
+功能：设置图片裁剪信息
+
+用法：
+
+```javascript
+instance.command.executeSetImageCrop(crop: IImageCrop)
 ```
 
 ## executePageMode
@@ -1118,6 +1138,14 @@ instance.command.executeSetAreaProperties(payload: ISetAreaPropertiesOption)
 
 ```js
 instance.command.executeSetAreaValue(payload: ISetAreaValueOption)
+```
+
+## executeDeleteArea
+
+功能：删除区域
+
+```js
+instance.command.executeDeleteArea(payload?: IDeleteAreaOption)
 ```
 
 ## executeLocationArea

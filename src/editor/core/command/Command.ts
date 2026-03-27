@@ -13,6 +13,7 @@ export class Command {
   public executeSetPositionContext: CommandAdapt['setPositionContext']
   public executeForceUpdate: CommandAdapt['forceUpdate']
   public executeBlur: CommandAdapt['blur']
+  public executeHideCursor: CommandAdapt['hideCursor']
   public executeUndo: CommandAdapt['undo']
   public executeRedo: CommandAdapt['redo']
   public executePainter: CommandAdapt['painter']
@@ -69,6 +70,8 @@ export class Command {
   public executePrint: CommandAdapt['print']
   public executeReplaceImageElement: CommandAdapt['replaceImageElement']
   public executeSaveAsImageElement: CommandAdapt['saveAsImageElement']
+  public executeSetImageCrop: CommandAdapt['setImageCrop']
+  public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
   public executePageScale: CommandAdapt['pageScale']
@@ -84,6 +87,7 @@ export class Command {
   public executeInsertArea: CommandAdapt['insertArea']
   public executeSetAreaValue: CommandAdapt['setAreaValue']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
+  public executeDeleteArea: CommandAdapt['deleteArea']
   public executeLocationArea: CommandAdapt['locationArea']
   public executeClearGraffiti: CommandAdapt['clearGraffiti']
   public executeAppendElementList: CommandAdapt['appendElementList']
@@ -113,6 +117,7 @@ export class Command {
   public executeUpdateOptions: CommandAdapt['updateOptions']
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
+  public executeComputeElementListHeight: CommandAdapt['computeElementListHeight']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -123,6 +128,7 @@ export class Command {
   public getText: CommandAdapt['getText']
   public getWordCount: CommandAdapt['getWordCount']
   public getCursorPosition: CommandAdapt['getCursorPosition']
+  public getRemainingContentHeight: CommandAdapt['getRemainingContentHeight']
   public getRange: CommandAdapt['getRange']
   public getRangeText: CommandAdapt['getRangeText']
   public getRangeContext: CommandAdapt['getRangeContext']
@@ -154,6 +160,7 @@ export class Command {
     this.executeSetPositionContext = adapt.setPositionContext.bind(adapt)
     this.executeForceUpdate = adapt.forceUpdate.bind(adapt)
     this.executeBlur = adapt.blur.bind(adapt)
+    this.executeHideCursor = adapt.hideCursor.bind(adapt)
     // 撤销、重做、格式刷、清除格式
     this.executeUndo = adapt.undo.bind(adapt)
     this.executeRedo = adapt.redo.bind(adapt)
@@ -217,6 +224,8 @@ export class Command {
     this.executePrint = adapt.print.bind(adapt)
     this.executeReplaceImageElement = adapt.replaceImageElement.bind(adapt)
     this.executeSaveAsImageElement = adapt.saveAsImageElement.bind(adapt)
+    this.executeSetImageCrop = adapt.setImageCrop.bind(adapt)
+    this.executeSetImageCaption = adapt.setImageCaption.bind(adapt)
     this.executeChangeImageDisplay = adapt.changeImageDisplay.bind(adapt)
     // 页面模式、页面缩放、纸张大小、纸张方向、页边距
     this.executePageMode = adapt.pageMode.bind(adapt)
@@ -235,6 +244,7 @@ export class Command {
     this.executeInsertArea = adapt.insertArea.bind(adapt)
     this.executeSetAreaValue = adapt.setAreaValue.bind(adapt)
     this.executeSetAreaProperties = adapt.setAreaProperties.bind(adapt)
+    this.executeDeleteArea = adapt.deleteArea.bind(adapt)
     this.executeLocationArea = adapt.locationArea.bind(adapt)
     // 涂鸦
     this.executeClearGraffiti = adapt.clearGraffiti.bind(adapt)
@@ -257,6 +267,8 @@ export class Command {
     this.executeUpdateOptions = adapt.updateOptions.bind(adapt)
     this.executeInsertTitle = adapt.insertTitle.bind(adapt)
     this.executeFocus = adapt.focus.bind(adapt)
+    this.executeComputeElementListHeight =
+      adapt.computeElementListHeight.bind(adapt)
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
@@ -266,6 +278,7 @@ export class Command {
     this.getText = adapt.getText.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getCursorPosition = adapt.getCursorPosition.bind(adapt)
+    this.getRemainingContentHeight = adapt.getRemainingContentHeight.bind(adapt)
     this.getRange = adapt.getRange.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)

@@ -232,3 +232,29 @@ instance.eventBus.on('imageMousedown', (payload: {
   element: IElement
 }) => void)
 ```
+
+## imageDblclick
+
+Feature: The image double click event
+
+Usage:
+
+```javascript
+instance.eventBus.on('imageDblclick', (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void)
+```
+
+## labelMousedown
+
+Feature: The label mousedown event
+
+Usage:
+
+```javascript
+instance.eventBus.on('labelMousedown', (payload: {
+  evt: MouseEvent
+  element: IElement
+}) => void)
+```

@@ -4,6 +4,7 @@ import { ElementType } from '../../../dataset/enum/Element'
 import {
   IArea,
   IAreaInfo,
+  IDeleteAreaOption,
   IGetAreaValueOption,
   IGetAreaValueResult,
   IInsertAreaOption,
@@ -298,6 +299,28 @@ export class Area {
       positionList[0].index,
       positionList.length,
       valueList,
+      {
+        isIgnoreDeletedRule: true
+      }
+    )
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
+  public deleteArea(options: IDeleteAreaOption = {}) {
+    const areaId = options.id || this.getActiveAreaId()
+    if (!areaId) return
+    const areaInfo = this.areaInfoMap.get(areaId)
+    if (!areaInfo) return
+    // 删除区域内的所有元素
+    const { positionList } = areaInfo
+    const elementList = this.draw.getOriginalMainElementList()
+    this.draw.spliceElementList(
+      elementList,
+      positionList[0].index,
+      positionList.length,
+      [],
       {
         isIgnoreDeletedRule: true
       }

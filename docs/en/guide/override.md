@@ -26,6 +26,16 @@ Usage:
 instance.override.paste = (evt?: ClipboardEvent) => unknown | IOverrideResult
 ```
 
+## pasteImage
+
+Feature: Override internal paste image function
+
+Usage:
+
+```javascript
+instance.override.pasteImage = (file: File | Blob) => unknown | IOverrideResult
+```
+
 ## copy
 
 Feature: Override internal copy function

@@ -1,3 +1,131 @@
+## [0.9.130](https://github.com/Hufe921/canvas-editor/compare/v0.9.129...v0.9.130) (2026-03-27)
+
+
+### Bug Fixes
+
+* correct duplicate variable check in TextParticle render ([4b72161](https://github.com/Hufe921/canvas-editor/commit/4b721618d10ef484e92b79f52ea27ee4be316814))
+* ensure trailing line break in element list formatting #1378 ([30074b6](https://github.com/Hufe921/canvas-editor/commit/30074b6b703b3da581c5446a75edb38f4bff56b7)), closes [#1378](https://github.com/Hufe921/canvas-editor/issues/1378)
+* optimize cursor positioning for left/right key handlers #1378 ([a79928f](https://github.com/Hufe921/canvas-editor/commit/a79928fc507cac0302e105110bc31f2baeefb74c)), closes [#1378](https://github.com/Hufe921/canvas-editor/issues/1378)
+* prevent extra line break when list is first element in table #1381 ([bae2394](https://github.com/Hufe921/canvas-editor/commit/bae2394ceffee5e1a5b8f55d5ef8d60f7edc44b9)), closes [#1381](https://github.com/Hufe921/canvas-editor/issues/1381)
+
+
+### Features
+
+* support iframe snapshot in getImage api #1380 ([d980298](https://github.com/Hufe921/canvas-editor/commit/d9802988587333b8b624112f554d2b4e9d702e00)), closes [#1380](https://github.com/Hufe921/canvas-editor/issues/1380)
+
+
+
+## [0.9.129](https://github.com/Hufe921/canvas-editor/compare/v0.9.128...v0.9.129) (2026-03-13)
+
+
+### Bug Fixes
+
+* cursor positioning when pressing home key at line start #1376 ([3158103](https://github.com/Hufe921/canvas-editor/commit/3158103158d9a048b15b796b7dd89488e5ddef7b)), closes [#1376](https://github.com/Hufe921/canvas-editor/issues/1376)
+* disable iframe editing in readonly mode #1373 ([d2b2cf1](https://github.com/Hufe921/canvas-editor/commit/d2b2cf13adb5b545d27f9afc00387a0bb679a26d)), closes [#1373](https://github.com/Hufe921/canvas-editor/issues/1373)
+* iframe block position in print mode #1374 ([bc03f7b](https://github.com/Hufe921/canvas-editor/commit/bc03f7bf1126e8f484ebd6d6433f946efdf2a681)), closes [#1374](https://github.com/Hufe921/canvas-editor/issues/1374)
+* prevent auto-scroll when clicking menu bar #1371 ([ee09e93](https://github.com/Hufe921/canvas-editor/commit/ee09e9362d3034188ab4f5ef468533199df167ff)), closes [#1371](https://github.com/Hufe921/canvas-editor/issues/1371)
+* sync iframe block srcdoc when getValue #1369 ([53400b4](https://github.com/Hufe921/canvas-editor/commit/53400b4a6846b980d3e59385210eec8e768765ab)), closes [#1369](https://github.com/Hufe921/canvas-editor/issues/1369)
+
+
+### Chores
+
+* expose instance for canvas-editor-devtools ([8ea4798](https://github.com/Hufe921/canvas-editor/commit/8ea4798dc5b5c50b268da41dd2c6134787f669b6))
+
+
+### Documentation
+
+* add canvas-editor-devtools documentation ([1cbd9ee](https://github.com/Hufe921/canvas-editor/commit/1cbd9ee9c70c22107ece2dc76667211911b64efb))
+* refactor option.md configuration ([43ec928](https://github.com/Hufe921/canvas-editor/commit/43ec9285d080547cab2d6ec4fcebac46caca38df))
+
+
+### Features
+
+* add executeDeleteArea api #1377 ([10174ec](https://github.com/Hufe921/canvas-editor/commit/10174ecb0f0ade11a01db1b5227dee6a91266d81)), closes [#1377](https://github.com/Hufe921/canvas-editor/issues/1377)
+* improve word count logic to match mainstream word processors #452 ([117b1cb](https://github.com/Hufe921/canvas-editor/commit/117b1cb4ef2e3025464e66c44f398822cb7fbcda)), closes [#452](https://github.com/Hufe921/canvas-editor/issues/452)
+* print support for iframe block #1375 ([dfc3191](https://github.com/Hufe921/canvas-editor/commit/dfc31912173b7b44d2b81145d37080475f6dd9fe)), closes [#1375](https://github.com/Hufe921/canvas-editor/issues/1375)
+
+
+
+## [0.9.128](https://github.com/Hufe921/canvas-editor/compare/v0.9.127...v0.9.128) (2026-02-28)
+
+
+### Bug Fixes
+
+* prevent global CSS styles from affecting pasted text color #1359 ([c7925e6](https://github.com/Hufe921/canvas-editor/commit/c7925e642fe6933523c89ac3b6c1f4452472e656)), closes [#1359](https://github.com/Hufe921/canvas-editor/issues/1359)
+
+
+### Chores
+
+* add deep wiki ([2496c30](https://github.com/Hufe921/canvas-editor/commit/2496c306572281363bd7bc5ffdf098afa563fd21))
+
+
+### Documentation
+
+* add ZRead and DeepWiki badges ([22dd500](https://github.com/Hufe921/canvas-editor/commit/22dd500ca013173b39544b43260bae56fe968306))
+
+
+### Features
+
+* add checkMarkColor option for checkbox #1367 ([3cf52b4](https://github.com/Hufe921/canvas-editor/commit/3cf52b4f0ffa6306d0f6b76e10b6eb08ce12d5e5)), closes [#1367](https://github.com/Hufe921/canvas-editor/issues/1367)
+* add paragraph index for getRangeContext api #1360 ([a26e6c3](https://github.com/Hufe921/canvas-editor/commit/a26e6c349bf4d61839252e27b3f58daf0ee809c1)), closes [#1360](https://github.com/Hufe921/canvas-editor/issues/1360)
+* add pasteImage override support #1365 ([558b138](https://github.com/Hufe921/canvas-editor/commit/558b138e59624c0cca848b1e32a1b399a776d1af)), closes [#1365](https://github.com/Hufe921/canvas-editor/issues/1365)
+* implemented shortcut for home and end keys #1361 ([942fb5b](https://github.com/Hufe921/canvas-editor/commit/942fb5b69855488c29d67f4c7503f1294919b92a)), closes [#1361](https://github.com/Hufe921/canvas-editor/issues/1361)
+
+
+
+## [0.9.127](https://github.com/Hufe921/canvas-editor/compare/v0.9.126...v0.9.127) (2026-02-18)
+
+
+### Bug Fixes
+
+* format elements error in executeComputeElementListHeight api #1356 ([6fe3e70](https://github.com/Hufe921/canvas-editor/commit/6fe3e70d801a34337814e936ebe83349fe8d2684)), closes [#1356](https://github.com/Hufe921/canvas-editor/issues/1356)
+* move cursor to the visible range boundary error ([2c01b92](https://github.com/Hufe921/canvas-editor/commit/2c01b929be8bd58560bb3c1c99292f0b4fff4eae))
+
+
+
+## [0.9.126](https://github.com/Hufe921/canvas-editor/compare/v0.9.125...v0.9.126) (2026-02-12)
+
+
+### Bug Fixes
+
+* adjusted image rowFlex when converting HTML to elements #1354 ([3fe395e](https://github.com/Hufe921/canvas-editor/commit/3fe395e7c0e669d5d93bca673f9429faa20e2aeb)), closes [#1354](https://github.com/Hufe921/canvas-editor/issues/1354)
+* cursor positioning when clicking control postfix #1353 ([ea650f6](https://github.com/Hufe921/canvas-editor/commit/ea650f6520b194d76458fbe33b88b01f901db4bc)), closes [#1353](https://github.com/Hufe921/canvas-editor/issues/1353)
+* restore titleId when splitting/merging title #921 #1337 ([0b659ef](https://github.com/Hufe921/canvas-editor/commit/0b659ef9ff9d9562880dedba86e0c0540ea90c65)), closes [#921](https://github.com/Hufe921/canvas-editor/issues/921) [#1337](https://github.com/Hufe921/canvas-editor/issues/1337)
+
+
+### Chores
+
+* add claude settings ([99de4e4](https://github.com/Hufe921/canvas-editor/commit/99de4e416e16b970b23d770319f278a9071ec4e7))
+* update README.md ([afa05b2](https://github.com/Hufe921/canvas-editor/commit/afa05b2272d1c093ac02f948375e707291be5439))
+
+
+### Features
+
+* add compute elements height  and remaining page height api #1213 ([f5e80f9](https://github.com/Hufe921/canvas-editor/commit/f5e80f99f8505c57bf36f8b9c8e948a0b29cf6d8)), closes [#1213](https://github.com/Hufe921/canvas-editor/issues/1213)
+* implement list number style inheritance with config option #727 ([0b99406](https://github.com/Hufe921/canvas-editor/commit/0b994068723c85bff504e04470ae82ee241b894e)), closes [#727](https://github.com/Hufe921/canvas-editor/issues/727)
+
+
+
+## [0.9.125](https://github.com/Hufe921/canvas-editor/compare/v0.9.124...v0.9.125) (2026-02-07)
+
+
+### Chores
+
+* add CLAUDE.md ([f01024e](https://github.com/Hufe921/canvas-editor/commit/f01024e8013305af567d4eba3e918d256de4de45))
+* add formatOnSave option ([8d6e873](https://github.com/Hufe921/canvas-editor/commit/8d6e873e2d7983aad16388c1fa5808cfb9c78ce9))
+
+
+### Features
+
+* add executeHideCursor api #1352 ([bf41f69](https://github.com/Hufe921/canvas-editor/commit/bf41f69a80964a076e49fe383fce3520d2887284)), closes [#1352](https://github.com/Hufe921/canvas-editor/issues/1352)
+* add executeSetImageCrop api to support image cropping #1327 ([bc066f3](https://github.com/Hufe921/canvas-editor/commit/bc066f3316ca3fac145be533fe19d9ca259092bc)), closes [#1327](https://github.com/Hufe921/canvas-editor/issues/1327)
+* add image caption #1326 ([45d01fc](https://github.com/Hufe921/canvas-editor/commit/45d01fc7738aad0837bf40cce120b77606d3d608)), closes [#1326](https://github.com/Hufe921/canvas-editor/issues/1326)
+* add image preview disable option and double click callback #1351 ([cdaf5fc](https://github.com/Hufe921/canvas-editor/commit/cdaf5fc1f39c5a0d7d4a7de8818ad3ebcf20aeee)), closes [#1351](https://github.com/Hufe921/canvas-editor/issues/1351)
+* add label element and event #859 ([570b9c1](https://github.com/Hufe921/canvas-editor/commit/570b9c1c752207a8e748220d107297f9c22a27fe)), closes [#859](https://github.com/Hufe921/canvas-editor/issues/859)
+* add lineWidth and color to the separator #674 ([0f191a4](https://github.com/Hufe921/canvas-editor/commit/0f191a4275822c6f127cd3f2dfa4147b0e462e9e)), closes [#674](https://github.com/Hufe921/canvas-editor/issues/674)
+
+
+
 ## [0.9.124](https://github.com/Hufe921/canvas-editor/compare/v0.9.123...v0.9.124) (2026-01-31)
 
 

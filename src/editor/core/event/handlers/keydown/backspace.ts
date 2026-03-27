@@ -116,6 +116,28 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
         })
       }
     }
+    // 如果在标题中删除内容，恢复titleId
+    const preElement =
+      startElement.value === ZERO ? elementList[startIndex - 1] : startElement
+    const nextElement = elementList[endIndex + 1]
+    if (
+      preElement?.titleId &&
+      nextElement?.titleId &&
+      preElement.level === nextElement.level &&
+      preElement.titleId !== nextElement.titleId
+    ) {
+      const preTitleId = preElement.titleId
+      const nextTitleId = nextElement.titleId
+      // 循环处理后面的元素修改为前面标题的titleId
+      let nextIndex = endIndex + 1
+      while (
+        nextIndex < elementList.length &&
+        elementList[nextIndex]?.titleId === nextTitleId
+      ) {
+        elementList[nextIndex].titleId = preTitleId
+        nextIndex++
+      }
+    }
     if (!isCollapsed) {
       draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {

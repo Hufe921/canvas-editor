@@ -107,8 +107,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     // 开始位置
     let start = startIndex
     if (start > end) {
-      // prettier-ignore
-      [start, end] = [end, start]
+      // eslint-disable-next-line @typescript-eslint/no-extra-semi
+      ;[start, end] = [end, start]
     }
     if (start === end) return
     // 背景文本禁止选区

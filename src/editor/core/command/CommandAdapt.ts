@@ -64,6 +64,8 @@ import {
   IElementPosition,
   IElementStyle,
   IGetElementByIdOption,
+  IImageCaption,
+  IImageCrop,
   IInsertElementListOption,
   IUpdateElementByIdOption
 } from '../../interface/Element'
@@ -96,6 +98,7 @@ import {
   isNumber,
   isObjectEqual
 } from '../../utils'
+import { getParagraphNo } from '../../utils/paragraph'
 import {
   createDomFromElementList,
   formatElementContext,
@@ -105,10 +108,11 @@ import {
   getElementListByHTML,
   getTextFromElementList,
   zipElementList,
-  getAnchorElement
+  getAnchorElement,
+  pickSurroundElementList
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
-import { printImageBase64 } from '../../utils/print'
+import { print } from '../../utils/print'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
@@ -126,6 +130,7 @@ import {
   IGetAreaValueResult,
   IInsertAreaOption,
   ILocationAreaOption,
+  IDeleteAreaOption,
   ISetAreaPropertiesOption,
   ISetAreaValueOption
 } from '../../interface/Area'
@@ -290,6 +295,10 @@ export class CommandAdapt {
 
   public blur() {
     this.range.clearRange()
+    this.draw.getCursor().recoveryCursor()
+  }
+
+  public hideCursor() {
     this.draw.getCursor().recoveryCursor()
   }
 
@@ -1190,7 +1199,10 @@ export class CommandAdapt {
     })
   }
 
-  public separator(payload: number[]) {
+  public separator(
+    dashArray: number[],
+    option?: { lineWidth?: number; color?: string }
+  ) {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
     const activeControl = this.control.getActiveControl()
@@ -1204,17 +1216,21 @@ export class CommandAdapt {
     if (endElement && endElement.type === ElementType.SEPARATOR) {
       if (
         endElement.dashArray &&
-        endElement.dashArray.join() === payload.join()
+        endElement.dashArray.join() === dashArray.join()
       ) {
         return
       }
       curIndex = endIndex
-      endElement.dashArray = payload
+      Object.assign(endElement, {
+        dashArray,
+        ...option
+      })
     } else {
       const newElement: IElement = {
         value: WRAP,
         type: ElementType.SEPARATOR,
-        dashArray: payload
+        dashArray,
+        ...option
       }
       // 从行头增加分割线
       formatElementContext(elementList, [newElement], startIndex, {
@@ -1353,10 +1369,11 @@ export class CommandAdapt {
       pixelRatio: printPixelRatio,
       mode: EditorMode.PRINT
     })
-    printImageBase64(base64List, {
+    await print(base64List, {
       width,
       height,
-      direction: paperDirection
+      direction: paperDirection,
+      iframeInfoList: this.draw.getBlockParticle().pickIframeInfo()
     })
     if (scale !== 1) {
       this.draw.setPageScale(scale)
@@ -1380,6 +1397,29 @@ export class CommandAdapt {
     const element = elementList[startIndex]
     if (!element || element.type !== ElementType.IMAGE) return
     downloadFile(element.value, `${element.id!}.png`)
+  }
+
+  public setImageCrop(crop: IImageCrop) {
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (!element || element.type !== ElementType.IMAGE) return
+    element.imgCrop = crop
+    this.draw.render({
+      isSetCursor: false,
+      isCompute: false
+    })
+  }
+
+  public setImageCaption(imgCaption: IImageCaption) {
+    const { startIndex } = this.range.getRange()
+    const elementList = this.draw.getElementList()
+    const element = elementList[startIndex]
+    if (element?.type !== ElementType.IMAGE) return
+    element.imgCaption = imgCaption
+    this.draw.render({
+      isSetCursor: false
+    })
   }
 
   public changeImageDisplay(element: IElement, display: ImageDisplay) {
@@ -1462,6 +1502,42 @@ export class CommandAdapt {
 
   public getCursorPosition(): IElementPosition | null {
     return this.position.getCursorPosition()
+  }
+
+  public getRemainingContentHeight(): number {
+    if (!this.draw.getIsPagingMode()) return 0
+    const pageRowList = this.draw.getPageRowList()
+    const lastPageIndex = pageRowList.length - 1
+    const rowList = pageRowList[lastPageIndex] || []
+    const usedHeight = rowList.reduce(
+      (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+      0
+    )
+    const height = this.draw.getHeight()
+    const mainOuterHeight = this.draw.getMainOuterHeight()
+    const remaining = height - (mainOuterHeight + usedHeight)
+    return remaining > 0 ? remaining : 0
+  }
+
+  public computeElementListHeight(elementList: IElement[]): number {
+    if (!elementList.length) return 0
+    const innerWidth = this.draw.getInnerWidth()
+    if (innerWidth <= 0) return 0
+    const targetElementList = deepClone(elementList)
+    formatElementList(targetElementList, {
+      isHandleFirstElement: false,
+      editorOptions: this.options
+    })
+    const surroundElementList = pickSurroundElementList(targetElementList)
+    const rowList = this.draw.computeRowList({
+      innerWidth,
+      elementList: targetElementList,
+      surroundElementList
+    })
+    return rowList.reduce(
+      (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+      0
+    )
   }
 
   public getRange(): IRange {
@@ -1605,6 +1681,12 @@ export class CommandAdapt {
       }
       start--
     }
+    // 段落索引
+    const startParagraphNo = getParagraphNo(elementList, startIndex)
+    const endParagraphNo =
+      startIndex === endIndex
+        ? startParagraphNo
+        : getParagraphNo(elementList, endIndex)
     return deepClone<RangeContext>({
       isCollapsed,
       startElement,
@@ -1624,7 +1706,9 @@ export class CommandAdapt {
       selectionText,
       selectionElementList,
       titleId,
-      titleStartPageNo
+      titleStartPageNo,
+      startParagraphNo,
+      endParagraphNo
     })
   }
 
@@ -2596,6 +2680,10 @@ export class CommandAdapt {
 
   public setAreaProperties(payload: ISetAreaPropertiesOption) {
     this.draw.getArea().setAreaProperties(payload)
+  }
+
+  public deleteArea(options?: IDeleteAreaOption) {
+    this.draw.getArea().deleteArea(options)
   }
 
   public locationArea(areaId: string, options?: ILocationAreaOption) {

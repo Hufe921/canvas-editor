@@ -21,7 +21,7 @@ export class SeparatorParticle {
       scale,
       separator: { lineWidth, strokeStyle }
     } = this.options
-    ctx.lineWidth = lineWidth * scale
+    ctx.lineWidth = (element.lineWidth || lineWidth) * scale
     ctx.strokeStyle = element.color || strokeStyle
     if (element.dashArray?.length) {
       ctx.setLineDash(element.dashArray)

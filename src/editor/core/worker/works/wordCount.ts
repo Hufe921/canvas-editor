@@ -4,7 +4,8 @@ enum ElementType {
   TEXT = 'text',
   TABLE = 'table',
   HYPERLINK = 'hyperlink',
-  CONTROL = 'control'
+  CONTROL = 'control',
+  LATEX = 'latex'
 }
 
 enum ControlComponent {
@@ -44,6 +45,8 @@ function pickText(elementList: IElement[]): string {
         e++
       }
       text += pickText(valueList)
+    } else if (element.type === ElementType.LATEX) {
+      text += element.value
     } else if (element.controlId) {
       if (!element.control?.hide) {
         const controlId = element.controlId
@@ -74,48 +77,81 @@ function pickText(elementList: IElement[]): string {
 }
 
 function groupText(text: string): string[] {
-  const characterList: string[] = []
-  // 英文或数字整体分隔为一个字数
-  const numberReg = /[0-9]/
-  const letterReg = /[A-Za-z]/
-  const blankReg = /\s/
-  // for of 循环字符
-  let isPreLetter = false
-  let isPreNumber = false
-  let compositionText = ''
-  // 处理组合文本
-  function pushCompositionText() {
-    if (compositionText) {
-      characterList.push(compositionText)
-      compositionText = ''
+  const result: string[] = []
+  let buffer = ''
+
+  const pushBuffer = () => {
+    if (buffer) {
+      result.push(buffer)
+      buffer = ''
     }
   }
-  for (const t of text) {
-    if (letterReg.test(t)) {
-      if (!isPreLetter) {
-        pushCompositionText()
-      }
-      compositionText += t
-      isPreLetter = true
-      isPreNumber = false
-    } else if (numberReg.test(t)) {
-      if (!isPreNumber) {
-        pushCompositionText()
-      }
-      compositionText += t
-      isPreLetter = false
-      isPreNumber = true
-    } else {
-      pushCompositionText()
-      isPreLetter = false
-      isPreNumber = false
-      if (!blankReg.test(t)) {
-        characterList.push(t)
-      }
-    }
+  // 空白字符
+  const isBlank = (code: number): boolean => {
+    return (
+      // ASCII whitespace
+      code <= 32 ||
+      // NBSP
+      code === 160 ||
+      // Unicode spaces
+      (code >= 8192 && code <= 8202) ||
+      // Narrow NBSP
+      code === 8239 ||
+      // Ideographic space (全角空格)
+      code === 12288 ||
+      // Zero-width chars
+      (code >= 8203 && code <= 8207) ||
+      // Direction marks
+      (code >= 8234 && code <= 8238) ||
+      // Word joiner
+      code === 8288 ||
+      // BOM
+      code === 65279
+    )
   }
-  pushCompositionText()
-  return characterList
+
+  // 半角英文字母和数字
+  const isHalfLetterOrNumber = (code: number) =>
+    (code >= 48 && code <= 57) || // 0-9
+    (code >= 65 && code <= 90) || // A-Z
+    (code >= 97 && code <= 122) // a-z
+
+  // 半角标点符号（包括连接符、小数点、斜杠等）
+  const isHalfPunctuation = (code: number) =>
+    (code >= 33 && code <= 47) ||
+    (code >= 58 && code <= 64) ||
+    (code >= 91 && code <= 96) ||
+    (code >= 123 && code <= 126)
+
+  // 可作为单词边界的标点（花括号等）
+  const isWordBoundary = (code: number) => code === 123 || code === 125
+
+  for (const char of text) {
+    const code = char.charCodeAt(0)
+
+    // 跳过空白字符
+    if (isBlank(code)) {
+      pushBuffer()
+      continue
+    }
+
+    // 半角英文字母和数字 || 花括号：用于处理 {E_k} 这种形式 || 半角标点符号 => 可能是一个单词的开始或延续
+    if (
+      isHalfLetterOrNumber(code) ||
+      isWordBoundary(code) ||
+      isHalfPunctuation(code)
+    ) {
+      buffer += char
+      continue
+    }
+
+    // 其他字符（中文、全角标点、全角特殊符号、拉丁文、特殊符号等）：按独立字符处理
+    pushBuffer()
+    result.push(char)
+  }
+
+  pushBuffer()
+  return result
 }
 
 onmessage = evt => {

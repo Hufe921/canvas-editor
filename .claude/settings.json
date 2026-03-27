@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run dev)",
+      "Bash(npm run lib)",
+      "Bash(npm run build)",
+      "Bash(npm run lint*)",
+      "Bash(npm run type:check*)",
+      "Bash(npm run cypress:open)",
+      "Bash(npm run cypress:run*)",
+      "Bash(npm run docs:dev)",
+      "Bash(npm run docs:build)",
+      "Bash(npm install*)",
+      "Bash(npx cypress run*)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git branch*)",
+      "Bash(git stash*)",
+      "Bash(ls*)",
+      "Bash(cat *)",
+      "Bash(pwd)"
+    ],
+    "deny": [
+      "Bash(git push*)",
+      "Bash(git reset*)",
+      "Bash(git clean*)",
+      "Bash(git checkout -b *)",
+      "Bash(git commit*)",
+      "Bash(rm -rf*)",
+      "Bash(rm -f*)",
+      "Bash(npm publish*)",
+      "Bash(npm run release)"
+    ]
+  }
+}

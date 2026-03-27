@@ -26,6 +26,16 @@ interface IOverrideResult {
 instance.override.paste = (evt?: ClipboardEvent) => unknown | IOverrideResult
 ```
 
+## pasteImage
+
+功能：重写粘贴图片方法
+
+用法：
+
+```javascript
+instance.override.pasteImage = (file: File | Blob) => unknown | IOverrideResult
+```
+
 ## copy
 
 功能：重写复制方法

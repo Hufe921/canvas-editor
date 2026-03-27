@@ -86,7 +86,8 @@ interface IElement {
   // 上下标
   actualSize?: number;
   // 分割线
-  dashArray?: number[];
+  dashArray?: number[]; // 分割线的虚线样式数组
+  lineWidth?: number; // 分割线的线宽
   // 控件
   control?: {
     type: {
@@ -170,7 +171,21 @@ interface IElement {
     y: number;
     pageNo?: number;
   }
+  imgCrop?: {
+    x: number;      // 裁剪起始X坐标（相对于原图）
+    y: number;      // 裁剪起始Y坐标（相对于原图）
+    width: number;  // 裁剪宽度
+    height: number; // 裁剪高度
+  }
+  imgCaption?: {
+    value: string;  // 题注内容，支持{imageNo}占位符
+    color?: string; // 题注字体颜色
+    font?: string;  // 题注字体
+    size?: number;  // 题注字号
+    top?: number;   // 题注与图片的间距
+  }
   imgToolDisabled?: boolean;
+  imgPreviewDisabled?: boolean;
   // 内容块
   block?: {
     type: {
@@ -209,6 +224,14 @@ interface IElement {
     mode?: AreaMode;
     deletable?: boolean;
     placeholder?: IPlaceholder;
+  };
+  // 标签
+  labelId?: string;
+  label?: {
+    color?: string;
+    backgroundColor?: string;
+    borderRadius?: number;
+    padding?: IPadding;
   };
 }
 ```
