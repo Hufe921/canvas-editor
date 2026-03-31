@@ -1267,7 +1267,7 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const options = this.draw.getOptions()
-    const { color, size, opacity, font, gap } = defaultWatermarkOption
+    const { color, size, opacity, font, gap, layer } = defaultWatermarkOption
     options.watermark.data = payload.data
     options.watermark.type = payload.type || WatermarkType.TEXT
     if (payload.width) {
@@ -1285,6 +1285,7 @@ export class CommandAdapt {
       options.watermark.numberType = payload.numberType
     }
     options.watermark.gap = payload.gap || gap
+    options.watermark.layer = payload.layer || layer
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false,

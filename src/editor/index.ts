@@ -71,7 +71,7 @@ import { mergeOption } from './utils/option'
 import { LineNumberType } from './dataset/enum/LineNumber'
 import { AreaMode } from './dataset/enum/Area'
 import { IBadge } from './interface/Badge'
-import { WatermarkType } from './dataset/enum/Watermark'
+import { WatermarkType, WatermarkLayer } from './dataset/enum/Watermark'
 import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
 import { IGraffitiData } from './interface/Graffiti'
 
@@ -217,7 +217,8 @@ export {
   AreaMode,
   ControlState,
   FlexDirection,
-  WatermarkType
+  WatermarkType,
+  WatermarkLayer
 }
 
 // 对外类型

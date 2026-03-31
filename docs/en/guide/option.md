@@ -155,6 +155,7 @@ interface IWatermark {
   repeat?: boolean // repeat watermark. default: false
   gap?: [horizontal: number, vertical: number] // watermark spacing. default: [10,10]
   numberType?: NumberType // The numeric type. default: ARABIC
+  layer?: WatermarkLayer // watermark layer. default: bottom
 }
 ```
 

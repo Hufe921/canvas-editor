@@ -643,6 +643,7 @@ instance.command.executeAddWatermark({
   opacity?: number;
   size?: number;
   font?: string;
+  layer?: WatermarkLayer;
 })
 ```
 

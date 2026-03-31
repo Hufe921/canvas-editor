@@ -1,5 +1,5 @@
 import { NumberType } from '../dataset/enum/Common'
-import { WatermarkType } from '../dataset/enum/Watermark'
+import { WatermarkLayer, WatermarkType } from '../dataset/enum/Watermark'
 
 export interface IWatermark {
   data: string
@@ -13,4 +13,5 @@ export interface IWatermark {
   repeat?: boolean
   numberType?: NumberType
   gap?: [horizontal: number, vertical: number]
+  layer?: WatermarkLayer
 }

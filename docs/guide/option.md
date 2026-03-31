@@ -155,6 +155,7 @@ interface IWatermark {
   repeat?: boolean // 重复水印。默认：false
   gap?: [horizontal: number, vertical: number] // 水印间距。默认：[10,10]
   numberType: NumberType.ARABIC // 页码格式。默认：{pageNo}。示例：第{pageNo}页/共{pageCount}页
+  layer?: WatermarkLayer // 水印层级。默认：bottom
 }
 ```
 

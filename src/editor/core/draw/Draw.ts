@@ -59,6 +59,7 @@ import { SubscriptParticle } from './particle/SubscriptParticle'
 import { SeparatorParticle } from './particle/SeparatorParticle'
 import { PageBreakParticle } from './particle/PageBreakParticle'
 import { Watermark } from './frame/Watermark'
+import { WatermarkLayer } from '../../dataset/enum/Watermark'
 import {
   EditorComponent,
   EditorMode,
@@ -2580,6 +2581,7 @@ export class Draw {
       pageBorder
     } = this.options
     const isPrintMode = this.mode === EditorMode.PRINT
+    const isContinuityMode = pageMode === PageMode.CONTINUITY
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2596,8 +2598,12 @@ export class Draw {
     if (!isPrintMode) {
       this.area.render(ctx, pageNo)
     }
-    // 绘制水印
-    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
+    // 绘制水印（底层）
+    if (
+      !isContinuityMode &&
+      this.options.watermark.data &&
+      this.options.watermark.layer === WatermarkLayer.BOTTOM
+    ) {
       this.waterMark.render(ctx, pageNo)
     }
     // 绘制页边距
@@ -2664,6 +2670,14 @@ export class Draw {
     // 绘制涂鸦
     if (this.isGraffitiMode()) {
       this.graffiti.render(ctx, pageNo)
+    }
+    // 绘制水印（顶层）
+    if (
+      !isContinuityMode &&
+      this.options.watermark.data &&
+      this.options.watermark.layer === WatermarkLayer.TOP
+    ) {
+      this.waterMark.render(ctx, pageNo)
     }
   }
 
