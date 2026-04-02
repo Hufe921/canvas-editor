@@ -1391,7 +1391,7 @@ export class Draw {
       defaultSize,
       scale,
       imgCaption,
-      table: { tdPadding, defaultTrMinHeight },
+      table: { tdPadding },
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -1515,10 +1515,13 @@ export class Draw {
         }
         element.pagingIndex = element.pagingIndex ?? 0
         const trList = element.trList!
-        // 计算前移除上一次的高度
+        // 重置tr高度：行高不可低于一个单元格最小高度
+        const tdMinHeight =
+          tdPaddingHeight + defaultSize + (rowMargin * 2) / scale
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
-          tr.height = tr.minHeight || defaultTrMinHeight
+          // 行高默认当前最小高度，后续根据内容自适应
+          tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
           tr.minHeight = tr.height
         }
         // 计算表格行列
