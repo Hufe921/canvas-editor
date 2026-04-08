@@ -356,6 +356,7 @@ interface IModeRule {
   print?: {
     imagePreviewerDisabled?: boolean // 打印模式禁用图片预览
     backgroundDisabled?: boolean // 打印模式禁用背景
+    filterEmptyControl?: boolean // 打印模式过滤无值控件。默认：true
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // 只读模式禁用图片预览

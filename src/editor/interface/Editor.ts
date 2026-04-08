@@ -155,6 +155,7 @@ export interface IFocusOption {
 export interface IPrintModeRule {
   imagePreviewerDisabled?: boolean
   backgroundDisabled?: boolean
+  filterEmptyControl?: boolean
 }
 
 export interface IReadonlyModeRule {
