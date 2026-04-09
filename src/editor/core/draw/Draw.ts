@@ -2946,6 +2946,8 @@ export class Draw {
     this.globalEvent.removeEvent()
     this.scrollObserver.removeEvent()
     this.selectionObserver.removeEvent()
+    this.workerManager.destroy()
+    this.lazyRenderIntersectionObserver?.disconnect()
   }
 
   public clearSideEffect() {
