@@ -1,3 +1,20 @@
+## [0.9.131](https://github.com/Hufe921/canvas-editor/compare/v0.9.130...v0.9.131) (2026-04-10)
+
+
+### Bug Fixes
+
+* multiple consecutive lists rendering extra blank lines #1389 ([f344b74](https://github.com/Hufe921/canvas-editor/commit/f344b74bb342408a8f39cdae4d06782e8c5945db)), closes [#1389](https://github.com/Hufe921/canvas-editor/issues/1389)
+* table cell adaptive row height #1388 ([8d23ce3](https://github.com/Hufe921/canvas-editor/commit/8d23ce3fa8eb8edacd0dcf4652c78eb71ded50a4)), closes [#1388](https://github.com/Hufe921/canvas-editor/issues/1388)
+* terminate workers and disconnect observer when editor destroy ([132b992](https://github.com/Hufe921/canvas-editor/commit/132b9927df698012a46e597265fadc5ce0be56f2))
+
+
+### Features
+
+* add filterEmptyControl option to print mode #1385 ([81a6c86](https://github.com/Hufe921/canvas-editor/commit/81a6c86ab0736461f77b821401b08f87a06588c0)), closes [#1385](https://github.com/Hufe921/canvas-editor/issues/1385)
+* support watermark layer configuration #1386 ([b0a068b](https://github.com/Hufe921/canvas-editor/commit/b0a068b097b9ec3a6b89b3385f0bdb589c4204f5)), closes [#1386](https://github.com/Hufe921/canvas-editor/issues/1386)
+
+
+
 ## [0.9.130](https://github.com/Hufe921/canvas-editor/compare/v0.9.129...v0.9.130) (2026-03-27)
 
 
