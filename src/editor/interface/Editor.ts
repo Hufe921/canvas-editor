@@ -33,6 +33,7 @@ import { LocationPosition } from '../dataset/enum/Common'
 import { IRange } from './Range'
 import { IGraffitiData, IGraffitiOption } from './Graffiti'
 import { IWhiteSpaceOption } from './WhiteSpace'
+import { IMagnifierOption } from './Magnifier'
 
 export interface IEditorData {
   header?: IElement[]
@@ -112,6 +113,7 @@ export interface IEditorOption {
   label?: ILabelOption
   imgCaption?: IImgCaptionOption
   list?: IListOption
+  magnifier?: IMagnifierOption
 }
 
 export interface IEditorResult {

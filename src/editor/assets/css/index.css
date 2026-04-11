@@ -8,6 +8,7 @@
 @import './contextmenu/contextmenu.css';
 @import './hyperlink/hyperlink.css';
 @import './zone/zone.css';
+@import './magnifier/magnifier.css';
 
 .ce-inputarea {
   width: 100px;
@@ -51,23 +52,23 @@
 
 @keyframes cursorAnimation {
   from {
-    opacity: 1
+    opacity: 1;
   }
 
   13% {
-    opacity: 0
+    opacity: 0;
   }
 
   50% {
-    opacity: 0
+    opacity: 0;
   }
 
   63% {
-    opacity: 1
+    opacity: 1;
   }
 
   to {
-    opacity: 1
+    opacity: 1;
   }
 }
 

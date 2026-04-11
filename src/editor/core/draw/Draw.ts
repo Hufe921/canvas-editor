@@ -120,6 +120,7 @@ import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
 import { Badge } from './frame/Badge'
 import { Graffiti } from './graffiti/Graffiti'
+import { Magnifier } from './interactive/Magnifier'
 
 export class Draw {
   private container: HTMLDivElement
@@ -146,6 +147,7 @@ export class Draw {
   private margin: Margin
   private background: Background
   private badge: Badge
+  private magnifier: Magnifier
   private search: Search
   private group: Group
   private area: Area
@@ -231,6 +233,7 @@ export class Draw {
     this.margin = new Margin(this)
     this.background = new Background(this)
     this.badge = new Badge(this)
+    this.magnifier = new Magnifier(this)
     this.search = new Search(this)
     this.group = new Group(this)
     this.area = new Area(this)
@@ -639,6 +642,10 @@ export class Draw {
 
   public getBadge(): Badge {
     return this.badge
+  }
+
+  public getMagnifier(): Magnifier {
+    return this.magnifier
   }
 
   public getHistoryManager(): HistoryManager {
@@ -2947,6 +2954,7 @@ export class Draw {
     this.scrollObserver.removeEvent()
     this.selectionObserver.removeEvent()
     this.workerManager.destroy()
+    this.magnifier.destroy()
     this.lazyRenderIntersectionObserver?.disconnect()
   }
 

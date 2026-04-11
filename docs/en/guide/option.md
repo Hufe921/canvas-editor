@@ -84,6 +84,7 @@ interface IEditorOption {
   label?: ILabelOption // Label configuration
   imgCaption?: IImgCaptionOption // Image caption configuration
   list?: IListOption // List configuration
+  magnifier?: IMagnifierOption // Magnifier configuration
 }
 ```
 
@@ -403,5 +404,16 @@ interface IImgCaptionOption {
 ```typescript
 interface IListOption {
   inheritStyle?: boolean // Whether to let the list number inherit the text style. default: false
+}
+```
+
+## Magnifier Configuration
+
+```typescript
+interface IMagnifierOption {
+  disabled?: boolean // Whether to disable. default: true
+  size?: number // Magnifier diameter. default: 120
+  zoom?: number // Magnification. default: 2
+  borderColor?: string // Border color. default: #efefef
 }
 ```

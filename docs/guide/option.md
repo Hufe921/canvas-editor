@@ -84,6 +84,7 @@ interface IEditorOption {
   label?: ILabelOption // 标签配置
   imgCaption?: IImgCaptionOption // 图片题注配置
   list?: IListOption // 列表配置
+  magnifier?: IMagnifierOption // 放大镜配置
 }
 ```
 
@@ -403,5 +404,16 @@ interface IImgCaptionOption {
 ```typescript
 interface IListOption {
   inheritStyle?: boolean // 是否让列表序号继承文字样式。默认：false
+}
+```
+
+## 放大镜配置
+
+```typescript
+interface IMagnifierOption {
+  disabled?: boolean // 是否禁用。默认：true
+  size?: number // 放大镜直径。默认：120
+  zoom?: number // 放大倍率。默认：2
+  borderColor?: string // 边框颜色。默认：#efefef
 }
 ```
