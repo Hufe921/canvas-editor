@@ -8,7 +8,7 @@ import {
   getIsBlockElement,
   getNonHideElementIndex
 } from '../../../../utils/element'
-import { isMod } from '../../../../utils/hotkey'
+import { isApple } from '../../../../utils/ua'
 import { CanvasEvent } from '../../CanvasEvent'
 
 export function right(evt: KeyboardEvent, host: CanvasEvent) {
@@ -41,7 +41,7 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   }
   // 单词整体移动
   let moveCount = 1
-  if (isMod(evt)) {
+  if (isApple ? evt.altKey : evt.ctrlKey) {
     const LETTER_REG = draw.getLetterReg()
     // 起始位置
     const moveStartIndex =
