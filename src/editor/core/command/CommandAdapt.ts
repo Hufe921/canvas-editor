@@ -1103,7 +1103,8 @@ export class CommandAdapt {
     if (startElement.type !== ElementType.HYPERLINK) return null
     // 向左查找
     let preIndex = startIndex
-    while (preIndex > 0) {
+    //第一行超链接
+    while (preIndex >= 0) {
       const preElement = elementList[preIndex]
       if (preElement.hyperlinkId !== startElement.hyperlinkId) {
         leftIndex = preIndex + 1
@@ -1111,6 +1112,12 @@ export class CommandAdapt {
       }
       preIndex--
     }
+
+    // 处理链接在最开头的情况（第一行）
+    if (preIndex === -1) {
+      leftIndex = 0
+    }
+
     // 向右查找
     let nextIndex = startIndex + 1
     while (nextIndex < elementList.length) {
