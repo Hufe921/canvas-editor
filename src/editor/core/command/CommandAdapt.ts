@@ -1103,7 +1103,7 @@ export class CommandAdapt {
     if (startElement.type !== ElementType.HYPERLINK) return null
     // 向左查找
     let preIndex = startIndex
-    //第一行超链接
+    // 确保循环到第一个元素：避免超链接在开头
     while (preIndex >= 0) {
       const preElement = elementList[preIndex]
       if (preElement.hyperlinkId !== startElement.hyperlinkId) {
@@ -1112,25 +1112,16 @@ export class CommandAdapt {
       }
       preIndex--
     }
-
-    // 处理链接在最开头的情况（第一行）
-    if (preIndex === -1) {
-      leftIndex = 0
-    }
-
     // 向右查找
     let nextIndex = startIndex + 1
-    while (nextIndex < elementList.length) {
+    // 确保循环到最后一个元素：避免超链接在最后
+    while (nextIndex <= elementList.length) {
       const nextElement = elementList[nextIndex]
-      if (nextElement.hyperlinkId !== startElement.hyperlinkId) {
+      if (nextElement?.hyperlinkId !== startElement.hyperlinkId) {
         rightIndex = nextIndex - 1
         break
       }
       nextIndex++
-    }
-    // 控件在最后
-    if (nextIndex === elementList.length) {
-      rightIndex = nextIndex - 1
     }
     if (!~leftIndex || !~rightIndex) return null
     return [leftIndex, rightIndex]
