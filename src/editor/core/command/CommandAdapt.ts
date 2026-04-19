@@ -1902,24 +1902,37 @@ export class CommandAdapt {
       const { elementList, index } = updateElementInfoList[i]
       // 重新格式化元素
       const oldElement = elementList[index]
-      const newElement = zipElementList(
-        [
-          {
-            ...oldElement,
-            ...payload.properties
-          }
-        ],
-        {
-          extraPickAttrs: ['id']
+      // 简易独立元素直接修改属性，不走格式化
+      if (
+        oldElement.type === ElementType.BLOCK ||
+        oldElement.type === ElementType.IMAGE ||
+        oldElement.type === ElementType.LATEX
+      ) {
+        elementList[index] = {
+          ...oldElement,
+          ...payload.properties,
+          type: oldElement.type
         }
-      )
-      // 区域上下文提取
-      cloneProperty<IElement>(AREA_CONTEXT_ATTR, oldElement, newElement[0])
-      formatElementList(newElement, {
-        isHandleFirstElement: false,
-        editorOptions: this.options
-      })
-      elementList[index] = newElement[0]
+      } else {
+        const newElement = zipElementList(
+          [
+            {
+              ...oldElement,
+              ...payload.properties
+            }
+          ],
+          {
+            extraPickAttrs: ['id']
+          }
+        )
+        // 区域上下文提取
+        cloneProperty<IElement>(AREA_CONTEXT_ATTR, oldElement, newElement[0])
+        formatElementList(newElement, {
+          isHandleFirstElement: false,
+          editorOptions: this.options
+        })
+        elementList[index] = newElement[0]
+      }
     }
     this.draw.render({
       isSetCursor: false

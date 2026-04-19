@@ -145,7 +145,7 @@ export function formatElementList(
       })
       // 追加节点
       if (valueList.length) {
-        const listId = getUUID()
+        const listId = el.listId || getUUID()
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
           value.listId = listId
