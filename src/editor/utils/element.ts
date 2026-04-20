@@ -1194,6 +1194,11 @@ export function createDomFromElementList(
   const editorOptions = mergeOption(options)
   function buildDom(payload: IElement[]): HTMLDivElement {
     const clipboardDom = document.createElement('div')
+    const setGroupIdsAttr = (node: HTMLElement, el: IElement) => {
+      if (el.groupIds && el.groupIds.length) {
+        node.setAttribute('data-group-ids', el.groupIds.join(','))
+      }
+    }
     for (let e = 0; e < payload.length; e++) {
       const element = payload[e]
       // 构造表格
@@ -1257,6 +1262,7 @@ export function createDomFromElementList(
           }
           tableDom.append(trDom)
         }
+        setGroupIdsAttr(tableDom, element)
         clipboardDom.append(tableDom)
       } else if (element.type === ElementType.HYPERLINK) {
         const a = document.createElement('a')
@@ -1264,6 +1270,7 @@ export function createDomFromElementList(
         if (element.url) {
           a.href = element.url
         }
+        setGroupIdsAttr(a, element)
         clipboardDom.append(a)
       } else if (element.type === ElementType.TITLE) {
         const h = document.createElement(
@@ -1271,6 +1278,7 @@ export function createDomFromElementList(
         )
         const childDom = buildDom(element.valueList!)
         h.innerHTML = childDom.innerHTML
+        setGroupIdsAttr(h, element)
         clipboardDom.append(h)
       } else if (element.type === ElementType.LIST) {
         const list = document.createElement(
@@ -1288,6 +1296,7 @@ export function createDomFromElementList(
           li.innerHTML = childDom.innerHTML
           list.append(li)
         })
+        setGroupIdsAttr(list, element)
         clipboardDom.append(list)
       } else if (element.type === ElementType.IMAGE) {
         const img = document.createElement('img')
@@ -1296,6 +1305,7 @@ export function createDomFromElementList(
           img.width = element.width!
           img.height = element.height!
         }
+        setGroupIdsAttr(img, element)
         clipboardDom.append(img)
       } else if (element.type === ElementType.BLOCK) {
         if (element.block?.type === BlockType.VIDEO) {
@@ -1307,6 +1317,7 @@ export function createDomFromElementList(
             video.src = src
             video.width = element.width! || options?.width || window.innerWidth
             video.height = element.height!
+            setGroupIdsAttr(video, element)
             clipboardDom.append(video)
           }
         } else if (element.block?.type === BlockType.IFRAME) {
@@ -1327,6 +1338,7 @@ export function createDomFromElementList(
               element.width || options?.width || window.innerWidth
             }`
             iframe.height = `${element.height!}`
+            setGroupIdsAttr(iframe, element)
             clipboardDom.append(iframe)
           }
         }
@@ -1335,6 +1347,7 @@ export function createDomFromElementList(
         if (element.dashArray?.length) {
           hr.setAttribute('data-dash-array', element.dashArray.join(','))
         }
+        setGroupIdsAttr(hr, element)
         clipboardDom.append(hr)
       } else if (element.type === ElementType.CHECKBOX) {
         const checkbox = document.createElement('input')
@@ -1342,6 +1355,7 @@ export function createDomFromElementList(
         if (element.checkbox?.value) {
           checkbox.setAttribute('checked', 'true')
         }
+        setGroupIdsAttr(checkbox, element)
         clipboardDom.append(checkbox)
       } else if (element.type === ElementType.RADIO) {
         const radio = document.createElement('input')
@@ -1349,19 +1363,23 @@ export function createDomFromElementList(
         if (element.radio?.value) {
           radio.setAttribute('checked', 'true')
         }
+        setGroupIdsAttr(radio, element)
         clipboardDom.append(radio)
       } else if (element.type === ElementType.TAB) {
         const tab = document.createElement('span')
         tab.innerHTML = `${NON_BREAKING_SPACE}${NON_BREAKING_SPACE}`
+        setGroupIdsAttr(tab, element)
         clipboardDom.append(tab)
       } else if (element.type === ElementType.CONTROL) {
         const controlElement = document.createElement('span')
         const childDom = buildDom(element.control?.value || [])
         controlElement.innerHTML = childDom.innerHTML
+        setGroupIdsAttr(controlElement, element)
         clipboardDom.append(controlElement)
       } else if (element.type === ElementType.PAGE_BREAK) {
         const pageBreakElement = document.createElement('div')
         pageBreakElement.style.breakAfter = 'page'
+        setGroupIdsAttr(pageBreakElement, element)
         clipboardDom.append(pageBreakElement)
       } else if (
         !element.type ||
@@ -1381,6 +1399,7 @@ export function createDomFromElementList(
           text = text.replace(/^\n/, '')
         }
         dom.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+        setGroupIdsAttr(dom, element)
         clipboardDom.append(dom)
       }
     }
@@ -1481,11 +1500,23 @@ export function getElementListByHTML(
   options: IGetElementListByHTMLOption
 ): IElement[] {
   const elementList: IElement[] = []
+  const pushElement = (el: IElement, domNode?: Element | Node) => {
+    if (domNode && domNode.nodeType === 1) {
+      const groupAttr = (domNode as Element).getAttribute('data-group-ids')
+      if (groupAttr) {
+        el.groupIds = groupAttr
+          .split(',')
+          .map(v => v.trim())
+          .filter(Boolean)
+      }
+    }
+    elementList.push(el)
+  }
   function findTextNode(dom: Element | Node) {
     if (dom.nodeType === 3) {
       const element = convertTextNodeToElement(dom)
       if (element) {
-        elementList.push(element)
+        pushElement(element, (dom as Node).parentNode || undefined)
       }
     } else if (dom.nodeType === 1) {
       const childNodes = dom.childNodes
@@ -1500,7 +1531,7 @@ export function getElementListByHTML(
           const aElement = node as HTMLLinkElement
           const value = aElement.innerText
           if (value) {
-            elementList.push({
+            const el: IElement = {
               type: ElementType.HYPERLINK,
               value: '',
               valueList: [
@@ -1509,7 +1540,8 @@ export function getElementListByHTML(
                 }
               ],
               url: aElement.href
-            })
+            }
+            pushElement(el, node)
           }
         } else if (/H[1-6]/.test(node.nodeName)) {
           const hElement = node as HTMLTitleElement
@@ -1517,12 +1549,15 @@ export function getElementListByHTML(
             replaceHTMLElementTag(hElement, 'div').outerHTML,
             options
           )
-          elementList.push({
-            value: '',
-            type: ElementType.TITLE,
-            level: titleNodeNameMapping[node.nodeName],
-            valueList
-          })
+          pushElement(
+            {
+              value: '',
+              type: ElementType.TITLE,
+              level: titleNodeNameMapping[node.nodeName],
+              valueList
+            },
+            node
+          )
           if (
             node.nextSibling &&
             !INLINE_NODE_NAME.includes(node.nextSibling.nodeName)
@@ -1558,55 +1593,67 @@ export function getElementListByHTML(
             })
             listElement.valueList!.push(...liValueList)
           })
-          elementList.push(listElement)
+          pushElement(listElement, node)
         } else if (node.nodeName === 'HR') {
-          elementList.push({
-            value: '\n',
-            type: ElementType.SEPARATOR
-          })
+          pushElement(
+            {
+              value: '\n',
+              type: ElementType.SEPARATOR
+            },
+            node
+          )
         } else if (node.nodeName === 'IMG') {
           const { src, width, height } = node as HTMLImageElement
           if (src && width && height) {
-            elementList.push({
-              width,
-              height,
-              value: src,
-              type: ElementType.IMAGE,
-              rowFlex: convertTextAlignToRowFlex(node.parentElement!)
-            })
+            pushElement(
+              {
+                width,
+                height,
+                value: src,
+                type: ElementType.IMAGE,
+                rowFlex: convertTextAlignToRowFlex(node.parentElement!)
+              },
+              node
+            )
           }
         } else if (node.nodeName === 'VIDEO') {
           const { src, width, height } = node as HTMLVideoElement
           if (src && width && height) {
-            elementList.push({
-              value: '',
-              type: ElementType.BLOCK,
-              block: {
-                type: BlockType.VIDEO,
-                videoBlock: {
-                  src
-                }
+            pushElement(
+              {
+                value: '',
+                type: ElementType.BLOCK,
+                block: {
+                  type: BlockType.VIDEO,
+                  videoBlock: {
+                    src
+                  }
+                },
+                width,
+                height
               },
-              width,
-              height
-            })
+              node
+            )
           }
         } else if (node.nodeName === 'IFRAME') {
           const { src, srcdoc, width, height } = node as HTMLIFrameElement
           if ((src || srcdoc) && width && height) {
-            elementList.push({
-              value: '',
-              type: ElementType.BLOCK,
-              block: {
-                type: BlockType.IFRAME,
-                iframeBlock: {
-                  src,
-                  srcdoc
-                }
+            pushElement(
+              {
+                value: '',
+                type: ElementType.BLOCK,
+                block: {
+                  type: BlockType.IFRAME,
+                  iframeBlock: {
+                    src,
+                    srcdoc
+                  }
+                },
+                width: parseInt(width),
+                height: parseInt(height)
               },
-              width: parseInt(width),
-              height: parseInt(height)
-            })
+              node
+            )
           }
         } else if (node.nodeName === 'TABLE') {
           const tableElement = node as HTMLTableElement
@@ -1662,30 +1709,36 @@ export function getElementListByHTML(
                 width: colElement ? parseFloat(colElement) : width
               })
             }
-            elementList.push(element)
+            pushElement(element, node)
           }
         } else if (
           node.nodeName === 'INPUT' &&
           (<HTMLInputElement>node).type === ControlComponent.CHECKBOX
         ) {
-          elementList.push({
-            type: ElementType.CHECKBOX,
-            value: '',
-            checkbox: {
-              value: (<HTMLInputElement>node).checked
-            }
-          })
+          pushElement(
+            {
+              type: ElementType.CHECKBOX,
+              value: '',
+              checkbox: {
+                value: (<HTMLInputElement>node).checked
+              }
+            },
+            node
+          )
         } else if (
           node.nodeName === 'INPUT' &&
           (<HTMLInputElement>node).type === ControlComponent.RADIO
         ) {
-          elementList.push({
-            type: ElementType.RADIO,
-            value: '',
-            radio: {
-              value: (<HTMLInputElement>node).checked
-            }
-          })
+          pushElement(
+            {
+              type: ElementType.RADIO,
+              value: '',
+              radio: {
+                value: (<HTMLInputElement>node).checked
+              }
+            },
+            node
+          )
         } else {
           findTextNode(node)
           if (node.nodeType === 1 && n !== childNodes.length - 1) {
@@ -1695,9 +1748,12 @@ export function getElementListByHTML(
               display === 'block' &&
               !/(\n|\r\n)$/.test(nodeElement.textContent!)
             ) {
-              elementList.push({
-                value: '\n'
-              })
+              pushElement(
+                {
+                  value: '\n'
+                },
+                node
+              )
             }
           }
         }
