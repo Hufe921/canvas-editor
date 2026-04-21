@@ -180,7 +180,7 @@ export class ListParticle {
     ctx.save()
     ctx.font = this.getListFontStyle(listElementList, scale)
     // 以递增样式最大宽度为准
-    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length)}${
+    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length - 1 || 1)}${
       KeyMap.PERIOD
     }`
     const textMetrics = ctx.measureText(text)
