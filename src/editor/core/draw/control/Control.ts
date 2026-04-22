@@ -176,7 +176,7 @@ export class Control {
         ) {
           let isExistValue = false
           let start = index - 1
-          while (start < elementList.length) {
+          while (start >= 0) {
             const preElement = elementList[start]
             if (element.controlId !== preElement.controlId) break
             if (preElement.controlComponent === ControlComponent.VALUE) {
