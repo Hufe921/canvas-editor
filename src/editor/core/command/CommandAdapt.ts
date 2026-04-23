@@ -356,6 +356,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
@@ -387,6 +388,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -422,6 +424,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -471,6 +474,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       // 设置默认样式
@@ -525,6 +529,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       const style = this.range.getDefaultStyle()
@@ -578,6 +583,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -612,6 +618,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -668,6 +675,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -707,6 +715,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -813,6 +822,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -857,6 +867,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
