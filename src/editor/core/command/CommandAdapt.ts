@@ -356,6 +356,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       if (enterElement?.value === ZERO) {
@@ -387,6 +388,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -422,6 +424,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -471,6 +474,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       // 设置默认样式
@@ -525,6 +529,7 @@ export class CommandAdapt {
       renderOption = { isSetCursor: false }
     } else {
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       const style = this.range.getDefaultStyle()
@@ -578,6 +583,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -612,6 +618,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -668,6 +675,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -707,6 +715,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -813,6 +822,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -857,6 +867,7 @@ export class CommandAdapt {
     } else {
       let isSubmitHistory = true
       const { endIndex } = this.range.getRange()
+      if (!~endIndex) return
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
@@ -1103,7 +1114,8 @@ export class CommandAdapt {
     if (startElement.type !== ElementType.HYPERLINK) return null
     // 向左查找
     let preIndex = startIndex
-    while (preIndex > 0) {
+    // 确保循环到第一个元素：避免超链接在开头
+    while (preIndex >= 0) {
       const preElement = elementList[preIndex]
       if (preElement.hyperlinkId !== startElement.hyperlinkId) {
         leftIndex = preIndex + 1
@@ -1113,17 +1125,14 @@ export class CommandAdapt {
     }
     // 向右查找
     let nextIndex = startIndex + 1
-    while (nextIndex < elementList.length) {
+    // 确保循环到最后一个元素：避免超链接在最后
+    while (nextIndex <= elementList.length) {
       const nextElement = elementList[nextIndex]
-      if (nextElement.hyperlinkId !== startElement.hyperlinkId) {
+      if (nextElement?.hyperlinkId !== startElement.hyperlinkId) {
         rightIndex = nextIndex - 1
         break
       }
       nextIndex++
-    }
-    // 控件在最后
-    if (nextIndex === elementList.length) {
-      rightIndex = nextIndex - 1
     }
     if (!~leftIndex || !~rightIndex) return null
     return [leftIndex, rightIndex]
@@ -1267,7 +1276,7 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const options = this.draw.getOptions()
-    const { color, size, opacity, font, gap } = defaultWatermarkOption
+    const { color, size, opacity, font, gap, layer } = defaultWatermarkOption
     options.watermark.data = payload.data
     options.watermark.type = payload.type || WatermarkType.TEXT
     if (payload.width) {
@@ -1285,6 +1294,7 @@ export class CommandAdapt {
       options.watermark.numberType = payload.numberType
     }
     options.watermark.gap = payload.gap || gap
+    options.watermark.layer = payload.layer || layer
     this.draw.render({
       isSetCursor: false,
       isSubmitHistory: false,
@@ -1903,24 +1913,37 @@ export class CommandAdapt {
       const { elementList, index } = updateElementInfoList[i]
       // 重新格式化元素
       const oldElement = elementList[index]
-      const newElement = zipElementList(
-        [
-          {
-            ...oldElement,
-            ...payload.properties
-          }
-        ],
-        {
-          extraPickAttrs: ['id']
+      // 简易独立元素直接修改属性，不走格式化
+      if (
+        oldElement.type === ElementType.BLOCK ||
+        oldElement.type === ElementType.IMAGE ||
+        oldElement.type === ElementType.LATEX
+      ) {
+        elementList[index] = {
+          ...oldElement,
+          ...payload.properties,
+          type: oldElement.type
         }
-      )
-      // 区域上下文提取
-      cloneProperty<IElement>(AREA_CONTEXT_ATTR, oldElement, newElement[0])
-      formatElementList(newElement, {
-        isHandleFirstElement: false,
-        editorOptions: this.options
-      })
-      elementList[index] = newElement[0]
+      } else {
+        const newElement = zipElementList(
+          [
+            {
+              ...oldElement,
+              ...payload.properties
+            }
+          ],
+          {
+            extraPickAttrs: ['id']
+          }
+        )
+        // 区域上下文提取
+        cloneProperty<IElement>(AREA_CONTEXT_ATTR, oldElement, newElement[0])
+        formatElementList(newElement, {
+          isHandleFirstElement: false,
+          editorOptions: this.options
+        })
+        elementList[index] = newElement[0]
+      }
     }
     this.draw.render({
       isSetCursor: false

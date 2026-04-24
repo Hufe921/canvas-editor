@@ -84,6 +84,7 @@ interface IEditorOption {
   label?: ILabelOption // Label configuration
   imgCaption?: IImgCaptionOption // Image caption configuration
   list?: IListOption // List configuration
+  magnifier?: IMagnifierOption // Magnifier configuration
 }
 ```
 
@@ -155,6 +156,7 @@ interface IWatermark {
   repeat?: boolean // repeat watermark. default: false
   gap?: [horizontal: number, vertical: number] // watermark spacing. default: [10,10]
   numberType?: NumberType // The numeric type. default: ARABIC
+  layer?: WatermarkLayer // watermark layer. default: bottom
 }
 ```
 
@@ -355,6 +357,7 @@ interface IModeRule {
   print?: {
     imagePreviewerDisabled?: boolean // Disable image previewer in print mode
     backgroundDisabled?: boolean // Disable background in print mode
+    filterEmptyControl?: boolean // Filter empty controls in print mode. default: true
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // Disable image previewer in readonly mode
@@ -401,5 +404,16 @@ interface IImgCaptionOption {
 ```typescript
 interface IListOption {
   inheritStyle?: boolean // Whether to let the list number inherit the text style. default: false
+}
+```
+
+## Magnifier Configuration
+
+```typescript
+interface IMagnifierOption {
+  disabled?: boolean // Whether to disable. default: true
+  size?: number // Magnifier diameter. default: 120
+  zoom?: number // Magnification. default: 2
+  borderColor?: string // Border color. default: #efefef
 }
 ```

@@ -59,6 +59,7 @@ import { SubscriptParticle } from './particle/SubscriptParticle'
 import { SeparatorParticle } from './particle/SeparatorParticle'
 import { PageBreakParticle } from './particle/PageBreakParticle'
 import { Watermark } from './frame/Watermark'
+import { WatermarkLayer } from '../../dataset/enum/Watermark'
 import {
   EditorComponent,
   EditorMode,
@@ -119,6 +120,7 @@ import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
 import { Badge } from './frame/Badge'
 import { Graffiti } from './graffiti/Graffiti'
+import { Magnifier } from './interactive/Magnifier'
 
 export class Draw {
   private container: HTMLDivElement
@@ -145,6 +147,7 @@ export class Draw {
   private margin: Margin
   private background: Background
   private badge: Badge
+  private magnifier: Magnifier
   private search: Search
   private group: Group
   private area: Area
@@ -230,6 +233,7 @@ export class Draw {
     this.margin = new Margin(this)
     this.background = new Background(this)
     this.badge = new Badge(this)
+    this.magnifier = new Magnifier(this)
     this.search = new Search(this)
     this.group = new Group(this)
     this.area = new Area(this)
@@ -638,6 +642,10 @@ export class Draw {
 
   public getBadge(): Badge {
     return this.badge
+  }
+
+  public getMagnifier(): Magnifier {
+    return this.magnifier
   }
 
   public getHistoryManager(): HistoryManager {
@@ -1390,7 +1398,7 @@ export class Draw {
       defaultSize,
       scale,
       imgCaption,
-      table: { tdPadding, defaultTrMinHeight },
+      table: { tdPadding },
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -1514,10 +1522,13 @@ export class Draw {
         }
         element.pagingIndex = element.pagingIndex ?? 0
         const trList = element.trList!
-        // 计算前移除上一次的高度
+        // 重置tr高度：行高不可低于一个单元格最小高度
+        const tdMinHeight =
+          tdPaddingHeight + defaultSize + (rowMargin * 2) / scale
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
-          tr.height = tr.minHeight || defaultTrMinHeight
+          // 行高默认当前最小高度，后续根据内容自适应
+          tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
           tr.minHeight = tr.height
         }
         // 计算表格行列
@@ -2580,6 +2591,7 @@ export class Draw {
       pageBorder
     } = this.options
     const isPrintMode = this.mode === EditorMode.PRINT
+    const isContinuityMode = pageMode === PageMode.CONTINUITY
     const innerWidth = this.getInnerWidth()
     const ctx = this.ctxList[pageNo]
     // 判断当前激活区域-非正文区域时元素透明度降低
@@ -2596,8 +2608,12 @@ export class Draw {
     if (!isPrintMode) {
       this.area.render(ctx, pageNo)
     }
-    // 绘制水印
-    if (pageMode !== PageMode.CONTINUITY && this.options.watermark.data) {
+    // 绘制水印（底层）
+    if (
+      !isContinuityMode &&
+      this.options.watermark.data &&
+      this.options.watermark.layer === WatermarkLayer.BOTTOM
+    ) {
       this.waterMark.render(ctx, pageNo)
     }
     // 绘制页边距
@@ -2664,6 +2680,14 @@ export class Draw {
     // 绘制涂鸦
     if (this.isGraffitiMode()) {
       this.graffiti.render(ctx, pageNo)
+    }
+    // 绘制水印（顶层）
+    if (
+      !isContinuityMode &&
+      this.options.watermark.data &&
+      this.options.watermark.layer === WatermarkLayer.TOP
+    ) {
+      this.waterMark.render(ctx, pageNo)
     }
   }
 
@@ -2929,6 +2953,9 @@ export class Draw {
     this.globalEvent.removeEvent()
     this.scrollObserver.removeEvent()
     this.selectionObserver.removeEvent()
+    this.workerManager.destroy()
+    this.magnifier.destroy()
+    this.lazyRenderIntersectionObserver?.disconnect()
   }
 
   public clearSideEffect() {

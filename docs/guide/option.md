@@ -84,6 +84,7 @@ interface IEditorOption {
   label?: ILabelOption // 标签配置
   imgCaption?: IImgCaptionOption // 图片题注配置
   list?: IListOption // 列表配置
+  magnifier?: IMagnifierOption // 放大镜配置
 }
 ```
 
@@ -155,6 +156,7 @@ interface IWatermark {
   repeat?: boolean // 重复水印。默认：false
   gap?: [horizontal: number, vertical: number] // 水印间距。默认：[10,10]
   numberType: NumberType.ARABIC // 页码格式。默认：{pageNo}。示例：第{pageNo}页/共{pageCount}页
+  layer?: WatermarkLayer // 水印层级。默认：bottom
 }
 ```
 
@@ -355,6 +357,7 @@ interface IModeRule {
   print?: {
     imagePreviewerDisabled?: boolean // 打印模式禁用图片预览
     backgroundDisabled?: boolean // 打印模式禁用背景
+    filterEmptyControl?: boolean // 打印模式过滤无值控件。默认：true
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // 只读模式禁用图片预览
@@ -401,5 +404,16 @@ interface IImgCaptionOption {
 ```typescript
 interface IListOption {
   inheritStyle?: boolean // 是否让列表序号继承文字样式。默认：false
+}
+```
+
+## 放大镜配置
+
+```typescript
+interface IMagnifierOption {
+  disabled?: boolean // 是否禁用。默认：true
+  size?: number // 放大镜直径。默认：120
+  zoom?: number // 放大倍率。默认：2
+  borderColor?: string // 边框颜色。默认：#efefef
 }
 ```

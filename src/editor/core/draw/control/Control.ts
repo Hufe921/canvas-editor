@@ -128,6 +128,9 @@ export class Control {
 
   // 过滤控件辅助元素（前后缀、背景提示）
   public filterAssistElement(elementList: IElement[]): IElement[] {
+    // 打印模式配置
+    const { filterEmptyControl } = this.options.modeRule[EditorMode.PRINT]
+
     return elementList.filter((element, index) => {
       if (element.type === ElementType.TABLE) {
         const trList = element.trList!
@@ -173,7 +176,7 @@ export class Control {
         ) {
           let isExistValue = false
           let start = index - 1
-          while (start < elementList.length) {
+          while (start >= 0) {
             const preElement = elementList[start]
             if (element.controlId !== preElement.controlId) break
             if (preElement.controlComponent === ControlComponent.VALUE) {
@@ -188,7 +191,8 @@ export class Control {
       return (
         element.controlComponent !== ControlComponent.PREFIX &&
         element.controlComponent !== ControlComponent.POSTFIX &&
-        element.controlComponent !== ControlComponent.PLACEHOLDER
+        (!filterEmptyControl ||
+          element.controlComponent !== ControlComponent.PLACEHOLDER)
       )
     })
   }

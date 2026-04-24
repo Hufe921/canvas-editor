@@ -160,7 +160,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         const newElement: IElement = {
           value: el.value
         }
-        const copyAttr = EDITOR_ELEMENT_STYLE_ATTR
+        const copyAttr = [...EDITOR_ELEMENT_STYLE_ATTR]
         if (!isOmitControlAttr) {
           copyAttr.push(...CONTROL_CONTEXT_ATTR)
         }

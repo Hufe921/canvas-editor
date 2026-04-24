@@ -5,7 +5,7 @@ export async function cut(host: CanvasEvent) {
   const draw = host.getDraw()
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
-  if (!~startIndex && !~startIndex) return
+  if (!~startIndex && !~endIndex) return
   if (draw.isReadonly() || !rangeManager.getIsCanInput()) return
 
   const elementList = draw.getElementList()

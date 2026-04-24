@@ -12,6 +12,7 @@ import { RangeManager } from '../range/RangeManager'
 import { CanvasEvent } from './CanvasEvent'
 import { ImageParticle } from '../draw/particle/ImageParticle'
 import { INTERNAL_SHORTCUT_KEY } from '../../dataset/constant/Shortcut'
+import { Magnifier } from '../draw/interactive/Magnifier'
 
 export class GlobalEvent {
   private draw: Draw
@@ -23,6 +24,7 @@ export class GlobalEvent {
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
   private control: Control
+  private magnifier: Magnifier
   private dateParticle: DateParticle
   private imageParticle: ImageParticle
   private dprMediaQueryList: MediaQueryList
@@ -39,6 +41,7 @@ export class GlobalEvent {
     this.dateParticle = draw.getDateParticle()
     this.imageParticle = draw.getImageParticle()
     this.control = draw.getControl()
+    this.magnifier = draw.getMagnifier()
     this.dprMediaQueryList = window.matchMedia(
       `(resolution: ${window.devicePixelRatio}dppx)`
     )
@@ -100,6 +103,7 @@ export class GlobalEvent {
     this.control.destroyControl()
     this.dateParticle.clearDatePicker()
     this.imageParticle.destroyFloatImage()
+    this.magnifier.hide()
   }
 
   public setCanvasEventAbility = () => {

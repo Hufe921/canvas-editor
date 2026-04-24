@@ -4,7 +4,10 @@ describe('菜单-分页符', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.get('.ce-page-container canvas')
+      .first()
+      .as('canvas')
+      .should('have.length', 1)
   })
 
   it('分页符', () => {
@@ -15,7 +18,7 @@ describe('菜单-分页符', () => {
 
       cy.get('.menu-item__page-break').click().click()
 
-      cy.get('canvas').should('have.length', 2)
+      cy.get('.ce-page-container canvas').should('have.length', 2)
     })
   })
 })

@@ -1,3 +1,45 @@
+## [0.9.132](https://github.com/Hufe921/canvas-editor/compare/v0.9.131...v0.9.132) (2026-04-24)
+
+
+### Bug Fixes
+
+* add endIndex validation in style commands ([cfa6ae0](https://github.com/Hufe921/canvas-editor/commit/cfa6ae0d0597062249c3f74f90e52bd3edd20cb0))
+* correct logic bugs in control, cut and mouseup handlers ([45579ab](https://github.com/Hufe921/canvas-editor/commit/45579ab15d56cb766410c9026d9b14cc53e866e9))
+* correct word jump and home/end shortcuts on different platforms #1392 ([30f5d11](https://github.com/Hufe921/canvas-editor/commit/30f5d118a28df372ece79901a1698d66e88ce43b)), closes [#1392](https://github.com/Hufe921/canvas-editor/issues/1392)
+* hyperlink cannot delete on first line #1395 ([fd93005](https://github.com/Hufe921/canvas-editor/commit/fd9300586fc4614b043fa907d8fb5e81c9dfc6a3)), closes [#1395](https://github.com/Hufe921/canvas-editor/issues/1395)
+* image update error in list #1398 ([e4a140b](https://github.com/Hufe921/canvas-editor/commit/e4a140bdc4362fc2b21b74a1e851966ac22e4d7d)), closes [#1398](https://github.com/Hufe921/canvas-editor/issues/1398)
+* prevent scroll jump when clicking toolbar after selection #1402 ([1df74da](https://github.com/Hufe921/canvas-editor/commit/1df74da7f0486c1ff075f3dbcfd2732c67cdbd29)), closes [#1402](https://github.com/Hufe921/canvas-editor/issues/1402)
+
+
+### Chores
+
+* update print and pagebreak test case ([013f0e0](https://github.com/Hufe921/canvas-editor/commit/013f0e02d6bc74387d00dab75ff6df271c9becba))
+
+
+### Features
+
+* add magnifier feature #1391 ([f9ea24f](https://github.com/Hufe921/canvas-editor/commit/f9ea24f911ae0e5308a7b44b9ad15441f008a60c)), closes [#1391](https://github.com/Hufe921/canvas-editor/issues/1391)
+* improve spacing between list item numbers and their content #1396 ([6e32400](https://github.com/Hufe921/canvas-editor/commit/6e324003ff74669b2ef5dbda6f443096d46d8ce4)), closes [#1396](https://github.com/Hufe921/canvas-editor/issues/1396)
+
+
+
+## [0.9.131](https://github.com/Hufe921/canvas-editor/compare/v0.9.130...v0.9.131) (2026-04-10)
+
+
+### Bug Fixes
+
+* multiple consecutive lists rendering extra blank lines #1389 ([f344b74](https://github.com/Hufe921/canvas-editor/commit/f344b74bb342408a8f39cdae4d06782e8c5945db)), closes [#1389](https://github.com/Hufe921/canvas-editor/issues/1389)
+* table cell adaptive row height #1388 ([8d23ce3](https://github.com/Hufe921/canvas-editor/commit/8d23ce3fa8eb8edacd0dcf4652c78eb71ded50a4)), closes [#1388](https://github.com/Hufe921/canvas-editor/issues/1388)
+* terminate workers and disconnect observer when editor destroy ([132b992](https://github.com/Hufe921/canvas-editor/commit/132b9927df698012a46e597265fadc5ce0be56f2))
+
+
+### Features
+
+* add filterEmptyControl option to print mode #1385 ([81a6c86](https://github.com/Hufe921/canvas-editor/commit/81a6c86ab0736461f77b821401b08f87a06588c0)), closes [#1385](https://github.com/Hufe921/canvas-editor/issues/1385)
+* support watermark layer configuration #1386 ([b0a068b](https://github.com/Hufe921/canvas-editor/commit/b0a068b097b9ec3a6b89b3385f0bdb589c4204f5)), closes [#1386](https://github.com/Hufe921/canvas-editor/issues/1386)
+
+
+
 ## [0.9.130](https://github.com/Hufe921/canvas-editor/compare/v0.9.129...v0.9.130) (2026-03-27)
 
 

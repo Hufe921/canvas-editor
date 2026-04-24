@@ -21,10 +21,12 @@ export class SelectionObserver {
   private clientWidth: number
   private clientHeight: number
   private containerRect: DOMRect | null
+  private pageContainer: HTMLDivElement
 
   constructor(draw: Draw) {
     this.rangeManager = draw.getRange()
     // 优先使用配置的滚动容器dom
+    this.pageContainer = draw.getPageContainer()
     const { scrollContainerSelector } = draw.getOptions()
     this.selectionContainer = scrollContainerSelector
       ? document.querySelector(scrollContainerSelector) || document
@@ -80,7 +82,13 @@ export class SelectionObserver {
   }
 
   private _mousemove = (evt: MouseEvent) => {
-    if (!this.isMousedown || this.rangeManager.getIsCollapsed()) return
+    if (
+      !this.isMousedown ||
+      this.rangeManager.getIsCollapsed() ||
+      !this.pageContainer.contains(evt.target as HTMLDivElement)
+    ) {
+      return
+    }
     let { x, y } = evt
     if (this.containerRect) {
       x = x - this.containerRect.x
