@@ -14,6 +14,7 @@
     "module": "esnext",
     "moduleResolution": "node",
     "resolveJsonModule": true,
+    "ignoreDeprecations": "6.0",
   },
   "include": [
     "./**/*.ts"
