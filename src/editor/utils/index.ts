@@ -195,6 +195,9 @@ export function mergeObject<T>(source: T, target: T): T {
   if (isObject(source) && isObject(target)) {
     const objectTarget = <Record<string, unknown>>target
     for (const [key, val] of Object.entries(source)) {
+      if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+        continue
+      }
       if (!objectTarget[key]) {
         objectTarget[key] = val
       } else {
