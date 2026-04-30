@@ -23,10 +23,7 @@ export class Group {
   }
 
   public setGroup(): string | null {
-    if (
-      this.draw.isReadonly() ||
-      this.draw.getZone().getZone() !== EditorZone.MAIN
-    ) {
+    if (this.draw.getZone().getZone() !== EditorZone.MAIN) {
       return null
     }
     const selection = this.range.getSelection()
@@ -79,7 +76,6 @@ export class Group {
   }
 
   public deleteGroup(groupId: string) {
-    if (this.draw.isReadonly()) return
     // 仅主体内容可以成组
     const elementList = this.draw.getOriginalMainElementList()
     const groupElementList = this.getElementListByGroupId(elementList, groupId)

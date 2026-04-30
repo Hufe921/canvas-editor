@@ -2252,14 +2252,10 @@ export class CommandAdapt {
   }
 
   public setGroup(): string | null {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return null
     return this.draw.getGroup().setGroup()
   }
 
   public deleteGroup(groupId: string) {
-    const isReadonly = this.draw.isReadonly()
-    if (isReadonly) return
     this.draw.getGroup().deleteGroup(groupId)
   }
 
