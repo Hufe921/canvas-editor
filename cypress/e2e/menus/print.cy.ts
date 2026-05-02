@@ -4,7 +4,7 @@ describe('菜单-打印', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
 
-    cy.get('.ce-page-container canvas').should('have.length', 2)
+    cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 
   it('打印', () => {

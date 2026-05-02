@@ -14,15 +14,15 @@ on:
 jobs:
   cypress:
     runs-on: ubuntu-latest
-    container: cypress/browsers:node16.17.0-chrome106
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Use Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v1
+    - uses: actions/checkout@v4
+    - name: Use Node.js 24
+      uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
-    - run: npm i yarn serve@14.0.1 -g
+        node-version: '24'
+    - run: corepack enable
+    - run: npm i serve@14.0.1 -g
     - run: yarn
     - run: yarn run build
     - run: mv dist canvas-editor
