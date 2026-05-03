@@ -321,7 +321,6 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
   // 执行跳转
   if (!~anchorStartIndex || !~anchorEndIndex) return
   if (anchorStartIndex > anchorEndIndex) {
-    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;[anchorStartIndex, anchorEndIndex] = [anchorEndIndex, anchorStartIndex]
   }
   rangeManager.setRange(anchorStartIndex, anchorEndIndex)

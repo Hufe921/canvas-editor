@@ -29,18 +29,15 @@ export default defineConfig(({ mode }) => {
           fileName: name,
           entry: path.resolve(__dirname, 'src/editor/index.ts')
         },
-        rollupOptions: {
-          output: {
-            sourcemap: true
-          }
-        }
+        sourcemap: true
       }
     }
   }
   return {
     base: `/${name}/`,
     server: {
-      host: '0.0.0.0'
+      host: '0.0.0.0',
+      port: 3000
     }
   }
 })
