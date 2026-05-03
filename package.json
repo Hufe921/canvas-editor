@@ -46,7 +46,7 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "postinstall": "simple-git-hooks",
-    "release": "node scripts/release.js"
+    "pre-release": "node scripts/pre-release.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

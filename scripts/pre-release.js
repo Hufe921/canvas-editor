@@ -1,4 +1,3 @@
-import { execSync } from 'child_process'
 import fs from 'fs'
 import path from 'path'
 
@@ -18,13 +17,3 @@ Reflect.deleteProperty(targetPkg, 'engines')
 Reflect.deleteProperty(targetPkg, 'dependencies')
 Reflect.deleteProperty(targetPkg.scripts, 'postinstall')
 fs.writeFileSync(pkgPath, JSON.stringify(targetPkg, null, 2))
-
-// 发布包
-try {
-  execSync('npm publish')
-} catch (error) {
-  throw new Error(error)
-} finally {
-  // 还原
-  fs.writeFileSync(pkgPath, sourcePkg)
-}
