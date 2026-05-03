@@ -16,8 +16,8 @@
     "package.json"
   ],
   "typings": "./dist/src/editor/index.d.ts",
-  "main": "./dist/canvas-editor.umd.js",
-  "module": "./dist/canvas-editor.es.js",
+  "main": "./dist/canvas-editor.umd.cjs",
+  "module": "./dist/canvas-editor.js",
   "homepage": "https://github.com/Hufe921/canvas-editor",
   "repository": {
     "type": "git",
@@ -30,13 +30,13 @@
     "emr"
   ],
   "engines": {
-    "node": ">=16.9.1"
+    "node": ">=24.13.1"
   },
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "lib": "npm run lint && tsc && vite build --mode lib",
-    "build": "npm run lint && tsc && vite build --mode app",
+    "lib": "yarn lint && tsc && vite build --mode lib",
+    "build": "yarn lint && tsc && vite build --mode app",
     "serve": "vite preview",
     "lint": "eslint .",
     "cypress:open": "cypress open",
@@ -49,20 +49,24 @@
     "release": "node scripts/release.js"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^10.0.1",
-    "@types/node": "16.18.96",
-    "@types/prismjs": "^1.26.0",
-    "@typescript-eslint/eslint-plugin": "5.62.0",
-    "@typescript-eslint/parser": "5.62.0",
-    "cypress": "13.6.0",
+    "@eslint/js": "^10.0.1",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@types/node": "^24.0.0",
+    "@types/prismjs": "^1.26.6",
+    "@typescript-eslint/eslint-plugin": "^8.59.1",
+    "@typescript-eslint/parser": "^8.59.1",
+    "cypress": "^15.14.2",
     "cypress-file-upload": "^5.0.8",
-    "eslint": "7.32.0",
-    "simple-git-hooks": "^2.8.1",
-    "typescript": "4.9.5",
-    "vite": "^2.4.2",
-    "vite-plugin-css-injected-by-js": "^2.1.1",
-    "vitepress": "1.0.0-beta.6",
-    "vue": "^3.2.45"
+    "eslint": "^10.3.0",
+    "globals": "^17.6.0",
+    "simple-git-hooks": "^2.13.1",
+    "tslib": "^2.8.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.59.1",
+    "vite": "^8.0.10",
+    "vite-plugin-css-injected-by-js": "^5.0.1",
+    "vitepress": "^1.6.4",
+    "vue": "^3.5.33"
   },
   "dependencies": {
     "axios": "^0.24.0",

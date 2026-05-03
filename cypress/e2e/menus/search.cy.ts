@@ -110,3 +110,175 @@ describe('菜单-搜索', () => {
     })
   })
 })
+
+describe('菜单-搜索-高级', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000/canvas-editor/')
+
+    cy.get('canvas').first().as('canvas').should('have.length', 1)
+  })
+
+  const searchText = 'test'
+
+  it('搜索-普通文本多处匹配', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: `${searchText} hello ${searchText} world ${searchText}`
+        }
+      ])
+
+      cy.get('.menu-item__search').click()
+
+      cy.get('.menu-item__search__collapse input').eq(0).type(searchText)
+
+      cy.get('.menu-item__search__collapse__search .search-result').should(
+        'exist'
+      )
+    })
+  })
+
+  it('搜索-无匹配结果', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: 'no match here'
+        }
+      ])
+
+      cy.get('.menu-item__search').click()
+
+      cy.get('.menu-item__search__collapse input').eq(0).type(searchText)
+
+      cy.get('.menu-item__search__collapse').should('be.visible')
+    })
+  })
+
+  it('搜索导航-UI交互', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: `${searchText} hello ${searchText} world ${searchText}`
+        }
+      ])
+
+      cy.get('.menu-item__search').click()
+
+      cy.get('.menu-item__search__collapse input').eq(0).type(searchText)
+
+      cy.get('.menu-item__search__collapse .arrow-right').should('be.visible')
+
+      cy.get('.menu-item__search__collapse .arrow-left').should('be.visible')
+
+      cy.get('.menu-item__search__collapse .arrow-right').click()
+
+      cy.get('.menu-item__search__collapse__search .search-result').should(
+        'exist'
+      )
+    })
+  })
+
+  it('通过API搜索', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: `${searchText} hello ${searchText} world`
+        }
+      ])
+
+      editor.command.executeSearch(searchText)
+
+      const info = editor.command.getSearchNavigateInfo()
+
+      expect(info).to.exist
+    })
+  })
+
+  it('通过API搜索导航', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: `${searchText} hello ${searchText} world`
+        }
+      ])
+
+      editor.command.executeSearch(searchText)
+
+      editor.command.executeSearchNavigateNext()
+
+      editor.command.executeSearchNavigatePre()
+
+      const info = editor.command.getSearchNavigateInfo()
+
+      expect(info).to.exist
+    })
+  })
+
+  it('搜索-验证UI可见', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: searchText
+        }
+      ])
+
+      cy.get('.menu-item__search').click()
+
+      cy.get('.menu-item__search__collapse').should('be.visible')
+
+      cy.get('.menu-item__search__collapse input').should(
+        'have.length.at.least',
+        1
+      )
+    })
+  })
+
+  it('搜索-导航按钮存在', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: searchText
+        }
+      ])
+
+      cy.get('.menu-item__search').click()
+
+      cy.get('.menu-item__search__collapse__replace').should('be.visible')
+
+      cy.get('.menu-item__search__collapse__replace input').should('be.visible')
+
+      cy.get('.menu-item__search__collapse__replace button').should(
+        'have.length.at.least',
+        1
+      )
+    })
+  })
+})

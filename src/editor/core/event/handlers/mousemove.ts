@@ -107,7 +107,6 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     // 开始位置
     let start = startIndex
     if (start > end) {
-      // eslint-disable-next-line @typescript-eslint/no-extra-semi
       ;[start, end] = [end, start]
     }
     if (start === end) return

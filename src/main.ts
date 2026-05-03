@@ -96,6 +96,7 @@ async function init() {
     }
     value = rest
   } catch (error) {
+    console.error('数据格式错误: ', error)
     alert('数据格式错误')
   }
   initEditorInstance(

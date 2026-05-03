@@ -1,4 +1,4 @@
-import Editor from '../../../src/editor'
+import Editor, { ElementType } from '../../../src/editor'
 
 describe('菜单-超链接', () => {
   beforeEach(() => {
@@ -34,6 +34,100 @@ describe('菜单-超链接', () => {
 
           expect(data[0]?.valueList?.[0].value).to.eq(text)
         })
+    })
+  })
+})
+
+describe('菜单-超链接操作', () => {
+  beforeEach(() => {
+    cy.visit('http://localhost:3000/canvas-editor/')
+
+    cy.get('canvas').first().as('canvas').should('have.length', 1)
+  })
+
+  const text = 'canvas-editor'
+  const url = 'https://hufe.club/canvas-editor'
+
+  it('通过API插入超链接', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
+
+      editor.command.executeSetRange(0, text.length)
+
+      editor.command.executeHyperlink({
+        url,
+        valueList: [{ value: text }]
+      })
+
+      const data = editor.command.getValue().data.main
+
+      expect(data[0].type).to.eq(<ElementType>'hyperlink')
+
+      expect(data[0].url).to.eq(url)
+    })
+  })
+
+  it('取消超链接', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
+
+      editor.command.executeSetRange(0, text.length)
+
+      editor.command.executeHyperlink({
+        url,
+        valueList: [{ value: text }]
+      })
+
+      editor.command.executeSetRange(0, text.length)
+
+      editor.command.executeCancelHyperlink()
+
+      const textResult = editor.command.getText()
+
+      expect(textResult.main).to.include(text)
+    })
+  })
+
+  it('删除超链接', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([
+        {
+          value: text
+        }
+      ])
+
+      editor.command.executeSetRange(0, text.length)
+
+      editor.command.executeHyperlink({
+        url,
+        valueList: [{ value: text }]
+      })
+
+      editor.command.executeDeleteHyperlink()
+
+      const textResult = editor.command.getText()
+
+      expect(textResult.main).to.exist
     })
   })
 })
