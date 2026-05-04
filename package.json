@@ -35,8 +35,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "lib": "yarn lint && tsc && vite build --mode lib",
-    "build": "yarn lint && tsc && vite build --mode app",
+    "lib": "eslint . && tsc && vite build --mode lib",
+    "build": "eslint . && tsc && vite build --mode app",
     "serve": "vite preview",
     "lint": "eslint .",
     "cypress:open": "cypress open",
