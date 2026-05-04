@@ -15,14 +15,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
+
       - name: Use Node.js 24
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '24'
-      - run: corepack enable
-      - run: yarn
-      - run: yarn run build
+
+      - run: npm install -g pnpm
+      - run: echo "/usr/local/bin:/usr/bin:/bin" >> $GITHUB_PATH
+      - run: pnpm install --ignore-scripts
+      - run: pnpm run build
       - run: /usr/bin/mv dist canvas-editor
       - name: Copy folder content recursively to remote
         uses: appleboy/scp-action@v0.1.7

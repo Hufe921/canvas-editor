@@ -38,10 +38,10 @@
     ".github",
     "dist",
     "node_modules",
-    "yarn.lock",
+    "pnpm-lock.yaml",
     "src/editor/core/draw/particle/latex/utils"
   ],
-  "typescript.tsdk": "node_modules/typescript/lib",
+  "js/ts.tsdk.path": "node_modules/typescript/lib",
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit"

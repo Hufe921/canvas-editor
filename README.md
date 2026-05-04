@@ -93,7 +93,7 @@ new Editor(document.querySelector('.canvas-editor'), {
 
 ## Install
 
-`yarn`
+`pnpm install`
 
 ## Dev
 

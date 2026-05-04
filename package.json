@@ -35,8 +35,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "lib": "yarn lint && tsc && vite build --mode lib",
-    "build": "yarn lint && tsc && vite build --mode app",
+    "lib": "eslint . && tsc && vite build --mode lib",
+    "build": "eslint . && tsc && vite build --mode app",
     "serve": "vite preview",
     "lint": "eslint .",
     "cypress:open": "cypress open",
@@ -46,7 +46,7 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "postinstall": "simple-git-hooks",
-    "release": "node scripts/release.js"
+    "pre-release": "node scripts/pre-release.js"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
