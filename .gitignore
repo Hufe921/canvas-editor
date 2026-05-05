@@ -6,3 +6,4 @@ dist-ssr
 *.local
 cache
 .temp
+coverage
