@@ -1,3 +1,31 @@
+## [0.9.133](https://github.com/Hufe921/canvas-editor/compare/v0.9.132...v0.9.133) (2026-05-05)
+
+
+### Bug Fixes
+
+* prevent prototype pollution in mergeObject #1405 ([e18abe4](https://github.com/Hufe921/canvas-editor/commit/e18abe497ea3ef37aff8e0611879e53fac069272)), closes [#1405](https://github.com/Hufe921/canvas-editor/issues/1405)
+
+
+### Chores
+
+* migrate package manager from yarn to pnpm ([8a03995](https://github.com/Hufe921/canvas-editor/commit/8a039952151c7590292e9961329f94ce6851ad2b))
+* update release script ([06172a3](https://github.com/Hufe921/canvas-editor/commit/06172a366f3ed875c3f30e66c54f89769683070a))
+* upgrade dependency version #1407 ([1125ae4](https://github.com/Hufe921/canvas-editor/commit/1125ae448479f0feb56174d85fe4996a61d65629)), closes [#1407](https://github.com/Hufe921/canvas-editor/issues/1407)
+
+
+### Features
+
+* allow setGroup and deleteGroup in readonly/form mode #1406 ([bd6e903](https://github.com/Hufe921/canvas-editor/commit/bd6e9039e76114c3af2c29b37481462e52244633)), closes [#1406](https://github.com/Hufe921/canvas-editor/issues/1406)
+* auto-generate colgroup for table when not provided #1404 ([636a786](https://github.com/Hufe921/canvas-editor/commit/636a7868fbace75d35cff2e18c01d9caed01d30c)), closes [#1404](https://github.com/Hufe921/canvas-editor/issues/1404)
+
+
+### Tests
+
+* add unit tests for core modules ([a12c679](https://github.com/Hufe921/canvas-editor/commit/a12c67988b2eea07f4ec926038f120bb85c4f746))
+* improve test coverage with new test cases ([10357f6](https://github.com/Hufe921/canvas-editor/commit/10357f6b6f92e561b043061fc0b6d159f155c1ba))
+
+
+
 ## [0.9.132](https://github.com/Hufe921/canvas-editor/compare/v0.9.131...v0.9.132) (2026-04-24)
 
 
