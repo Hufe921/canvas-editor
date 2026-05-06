@@ -2,11 +2,11 @@
 layout: home
 
 title: canvas-editor
-titleTemplate: rich text editor by canvas/svg
+titleTemplate: A Canvas/SVG-based rich text editor
 
 hero:
   name: canvas-editor
-  text: canvas/svg based rich text editor
+  text: Canvas/SVG-based rich text editor
   actions:
     - theme: brand
       text: Get Started

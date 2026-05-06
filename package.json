@@ -3,7 +3,7 @@
   "author": "Hufe",
   "license": "MIT",
   "version": "0.9.133",
-  "description": "rich text editor by canvas/svg",
+  "description": "A Canvas/SVG-based rich text editor",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
