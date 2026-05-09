@@ -23,6 +23,7 @@ export interface IControlSelect {
   valueSets: IValueSet[]
   isMultiSelect?: boolean
   multiSelectDelimiter?: string
+  selectStyle?: 'checkbox' | 'radio'
   selectExclusiveOptions?: {
     inputAble?: boolean
   }
