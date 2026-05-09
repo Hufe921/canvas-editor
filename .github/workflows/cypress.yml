@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: '24'
 
-      - run: npm install -g pnpm serve@14.0.1
+      - run: npm install -g pnpm@10 serve@14.0.1
       - run: echo "/usr/local/bin:/usr/bin:/bin" >> $GITHUB_PATH
       - run: pnpm install --ignore-scripts
       - run: pnpm exec cypress install

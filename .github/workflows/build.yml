@@ -22,7 +22,7 @@ jobs:
         with:
           node-version: '24'
 
-      - run: npm install -g pnpm
+      - run: npm install -g pnpm@10
       - run: echo "/usr/local/bin:/usr/bin:/bin" >> $GITHUB_PATH
       - run: pnpm install --ignore-scripts
       - run: pnpm run build
