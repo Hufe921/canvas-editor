@@ -358,6 +358,7 @@ interface IModeRule {
     imagePreviewerDisabled?: boolean // Disable image previewer in print mode
     backgroundDisabled?: boolean // Disable background in print mode
     filterEmptyControl?: boolean // Filter empty controls in print mode. default: true
+    filterHideElementRow?: boolean // Filter hidden element empty rows in print mode. default: false
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // Disable image previewer in readonly mode

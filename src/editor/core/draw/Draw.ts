@@ -2007,6 +2007,19 @@ export class Draw {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
+        // 打印模式下隐藏行元素均为隐藏元素 => 行不显示
+        if (
+          this.mode === EditorMode.PRINT &&
+          this.options.modeRule[EditorMode.PRINT].filterHideElementRow
+        ) {
+          const isAllHidden = curRow.elementList
+            .filter(el => el.value !== ZERO)
+            .every(el => el.hide || el.control?.hide || el.area?.hide)
+          if (isAllHidden) {
+            curRow.height = 0
+            curRow.ascent = 0
+          }
+        }
         // 换行原因：宽度不足
         curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
         // 两端对齐、分散对齐

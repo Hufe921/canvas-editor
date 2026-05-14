@@ -158,6 +158,7 @@ export interface IPrintModeRule {
   imagePreviewerDisabled?: boolean
   backgroundDisabled?: boolean
   filterEmptyControl?: boolean
+  filterHideElementRow?: boolean
 }
 
 export interface IReadonlyModeRule {
