@@ -1442,14 +1442,19 @@ export class CommandAdapt {
       display === ImageDisplay.FLOAT_BOTTOM
     ) {
       const positionList = this.position.getPositionList()
+      const positionContext = this.position.getPositionContext()
       const {
         pageNo,
         coordinate: { leftTop }
       } = positionList[startIndex]
+      const tablePosition = positionContext.isTable
+        ? this.position.getOriginalPositionList()[positionContext.index!]
+        : null
+      const tableLeftTop = tablePosition?.coordinate.leftTop
       element.imgFloatPosition = {
         pageNo,
-        x: leftTop[0],
-        y: leftTop[1]
+        x: tableLeftTop ? leftTop[0] - tableLeftTop[0] : leftTop[0],
+        y: tableLeftTop ? leftTop[1] - tableLeftTop[1] : leftTop[1]
       }
     } else {
       delete element.imgFloatPosition

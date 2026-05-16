@@ -107,6 +107,46 @@ export class Position {
     this.floatPositionList = payload
   }
 
+  public getFloatPositionByElement(element: IElement): IFloatPosition | null {
+    return (
+      this.floatPositionList.find(
+        floatPosition => floatPosition.element === element
+      ) || null
+    )
+  }
+
+  public getFloatPositionCoordinate(floatPosition: IFloatPosition): {
+    x: number
+    y: number
+  } {
+    const { scale } = this.options
+    const imgFloatPosition = floatPosition.element.imgFloatPosition!
+    let x = imgFloatPosition.x * scale
+    let y = imgFloatPosition.y * scale
+    const { index, isTable, zone } = floatPosition
+    if (isTable && index !== undefined) {
+      let positionList: IElementPosition[]
+      if (zone === EditorZone.HEADER) {
+        positionList = this.draw.getHeader().getPositionList()
+      } else if (zone === EditorZone.FOOTER) {
+        positionList = this.draw.getFooter().getPositionList()
+      } else {
+        positionList = this.positionList
+      }
+      const tablePosition = positionList[index]
+      if (tablePosition) {
+        const {
+          coordinate: {
+            leftTop: [tableX, tableY]
+          }
+        } = tablePosition
+        x += tableX
+        y += tableY
+      }
+    }
+    return { x, y }
+  }
+
   public computePageRowPosition(
     payload: IComputePageRowPositionPayload
   ): IComputePageRowPositionResult {
@@ -119,7 +159,8 @@ export class Position {
       startRowIndex,
       startIndex,
       innerWidth,
-      zone
+      zone,
+      tablePosition
     } = payload
     const {
       scale,
@@ -197,9 +238,10 @@ export class Position {
           }
           // 兼容浮动元素初始坐标为空的情况-默认使用左上坐标
           if (!element.imgFloatPosition) {
+            const tableLeftTop = tablePosition?.coordinate.leftTop
             element.imgFloatPosition = {
-              x,
-              y,
+              x: tableLeftTop ? x - tableLeftTop[0] : x,
+              y: tableLeftTop ? y - tableLeftTop[1] : y,
               pageNo
             }
           }
@@ -244,7 +286,8 @@ export class Position {
                 index: index - 1,
                 tdIndex: d,
                 trIndex: t,
-                zone
+                zone,
+                tablePosition: positionItem
               })
               // 垂直对齐方式
               if (
@@ -723,9 +766,8 @@ export class Position {
         payload.imgDisplays.includes(element.imgDisplay) &&
         (!floatElementZone || floatElementZone === currentZone)
       ) {
-        const imgFloatPosition = element.imgFloatPosition!
-        const imgFloatPositionX = imgFloatPosition.x * scale
-        const imgFloatPositionY = imgFloatPosition.y * scale
+        const { x: imgFloatPositionX, y: imgFloatPositionY } =
+          this.getFloatPositionCoordinate(this.floatPositionList[f])
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         if (
