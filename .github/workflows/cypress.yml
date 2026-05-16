@@ -25,7 +25,7 @@ jobs:
 
       - run: npm install -g pnpm@10 serve@14.0.1
       - run: echo "/usr/local/bin:/usr/bin:/bin" >> $GITHUB_PATH
-      - run: pnpm install --ignore-scripts
+      - run: pnpm install --ignore-scripts --no-frozen-lockfile
       - run: pnpm exec cypress install
       - run: pnpm run build
       - run: /usr/bin/mv dist canvas-editor

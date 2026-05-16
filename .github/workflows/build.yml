@@ -24,7 +24,7 @@ jobs:
 
       - run: npm install -g pnpm@10
       - run: echo "/usr/local/bin:/usr/bin:/bin" >> $GITHUB_PATH
-      - run: pnpm install --ignore-scripts
+      - run: pnpm install --ignore-scripts --no-frozen-lockfile
       - run: pnpm run build
       - run: /usr/bin/mv dist canvas-editor
       - name: Copy folder content recursively to remote
