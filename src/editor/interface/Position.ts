@@ -77,6 +77,7 @@ export interface IComputePageRowPositionPayload {
   trIndex?: number
   tdValueIndex?: number
   zone?: EditorZone
+  tablePosition?: IElementPosition
 }
 
 export interface IComputePageRowPositionResult {

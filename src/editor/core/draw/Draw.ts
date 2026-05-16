@@ -2542,7 +2542,6 @@ export class Draw {
     ctx: CanvasRenderingContext2D,
     payload: IDrawFloatPayload
   ) {
-    const { scale } = this.options
     const floatPositionList = this.position.getFloatPositionList()
     const { imgDisplays, pageNo } = payload
     for (let e = 0; e < floatPositionList.length; e++) {
@@ -2556,13 +2555,8 @@ export class Draw {
         imgDisplays.includes(element.imgDisplay) &&
         element.type === ElementType.IMAGE
       ) {
-        const imgFloatPosition = element.imgFloatPosition!
-        this.imageParticle.render(
-          ctx,
-          element,
-          imgFloatPosition.x * scale,
-          imgFloatPosition.y * scale
-        )
+        const { x, y } = this.position.getFloatPositionCoordinate(floatPosition)
+        this.imageParticle.render(ctx, element, x, y)
       }
     }
   }
