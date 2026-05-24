@@ -14,6 +14,31 @@ describe('搜索替换命令', () => {
     }).not.toThrow()
   })
 
+  it('正则搜索导航按实际匹配长度计算', () => {
+    ctx = createTestEditor({
+      data: {
+        header: [],
+        main: [{ value: 'hi hello hey' }, { value: '\n' }],
+        footer: []
+      }
+    })
+
+    ctx.editor.command.executeSearch('h\\w+', { isRegEnable: true })
+    ctx.editor.command.executeSearchNavigateNext()
+
+    expect(ctx.editor.command.getSearchNavigateInfo()).toEqual({
+      index: 1,
+      count: 3
+    })
+
+    ctx.editor.command.executeSearchNavigatePre()
+
+    expect(ctx.editor.command.getSearchNavigateInfo()).toEqual({
+      index: 3,
+      count: 3
+    })
+  })
+
   it('executeReplace 不抛错', () => {
     ctx = createTestEditor()
     ctx.editor.command.executeFocus()
