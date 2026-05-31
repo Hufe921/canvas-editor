@@ -20,6 +20,16 @@ instance.eventBus.off<K keyof EventMap>(
 )
 ```
 
+## rangeChange
+
+Feature: The selection changes
+
+Usage:
+
+```javascript
+instance.eventBus.on('rangeChange', (payload: IRange) => void)
+```
+
 ## rangeStyleChange
 
 Feature: The selection style changes

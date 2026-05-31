@@ -102,5 +102,9 @@
   "zone": {
     "headerTip": "双击编辑页眉",
     "footerTip": "双击编辑页脚"
+  },
+  "accessibility": {
+    "selected": "选中：",
+    "input": "输入："
   }
 }

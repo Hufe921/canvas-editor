@@ -460,6 +460,10 @@ export class RangeManager {
       }
     }
     control.destroyControl()
+    // 抛出选区变化事件
+    if (isChange && this.eventBus.isSubscribe('rangeChange')) {
+      this.eventBus.emit('rangeChange', this.range)
+    }
   }
 
   public replaceRange(range: IRange) {

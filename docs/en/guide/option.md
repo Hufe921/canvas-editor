@@ -85,6 +85,7 @@ interface IEditorOption {
   imgCaption?: IImgCaptionOption // Image caption configuration
   list?: IListOption // List configuration
   magnifier?: IMagnifierOption // Magnifier configuration
+  accessibility?: IAccessibilityOption // Accessibility configuration
 }
 ```
 
@@ -416,5 +417,13 @@ interface IMagnifierOption {
   size?: number // Magnifier diameter. default: 120
   zoom?: number // Magnification. default: 2
   borderColor?: string // Border color. default: #efefef
+}
+```
+
+## Accessibility Configuration
+
+```typescript
+interface IAccessibilityOption {
+  disabled?: boolean // Whether to disable accessibility support. default: true
 }
 ```

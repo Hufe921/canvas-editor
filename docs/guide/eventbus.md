@@ -20,6 +20,16 @@ instance.eventBus.off<K keyof EventMap>(
 )
 ```
 
+## rangeChange
+
+功能：选区发生改变
+
+用法：
+
+```javascript
+instance.eventBus.on('rangeChange', (payload: IRange) => void)
+```
+
 ## rangeStyleChange
 
 功能：选区样式发生改变

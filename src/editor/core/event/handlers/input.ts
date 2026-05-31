@@ -107,6 +107,9 @@ export function input(data: string, host: CanvasEvent) {
       curIndex,
       isSubmitHistory: !isComposing
     })
+    if (data) {
+      draw.getAccessibility().input(data)
+    }
   }
   if (isComposing && ~curIndex) {
     host.compositionInfo = {

@@ -121,6 +121,7 @@ import { Area } from './interactive/Area'
 import { Badge } from './frame/Badge'
 import { Graffiti } from './graffiti/Graffiti'
 import { Magnifier } from './interactive/Magnifier'
+import { Accessibility } from '../accessibility/Accessibility'
 
 export class Draw {
   private container: HTMLDivElement
@@ -188,6 +189,7 @@ export class Draw {
   private selectionObserver: SelectionObserver
   private imageObserver: ImageObserver
   private graffiti: Graffiti
+  private accessibility: Accessibility
 
   private LETTER_REG: RegExp
   private WORD_LIKE_REG: RegExp
@@ -283,6 +285,7 @@ export class Draw {
 
     this.workerManager = new WorkerManager(this)
     new Actuator(this)
+    this.accessibility = new Accessibility(this)
 
     const { letterClass } = options
     this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
@@ -976,6 +979,10 @@ export class Draw {
 
   public getGraffiti(): Graffiti {
     return this.graffiti
+  }
+
+  public getAccessibility(): Accessibility {
+    return this.accessibility
   }
 
   public getRowCount(): number {
@@ -2962,6 +2969,7 @@ export class Draw {
     this.selectionObserver.removeEvent()
     this.workerManager.destroy()
     this.magnifier.destroy()
+    this.accessibility.destroy()
     this.lazyRenderIntersectionObserver?.disconnect()
   }
 

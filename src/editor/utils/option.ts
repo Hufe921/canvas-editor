@@ -21,6 +21,8 @@ import { defaultZoneOption } from '../dataset/constant/Zone'
 import { defaultLineNumberOption } from '../dataset/constant/LineNumber'
 import { defaultListOption } from '../dataset/constant/List'
 import { defaultMagnifierOption } from '../dataset/constant/Magnifier'
+import { defaultAccessibilityOption } from '../dataset/constant/Accessibility'
+import { IAccessibilityOption } from '../interface/Accessibility'
 import { IBackgroundOption } from '../interface/Background'
 import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
@@ -168,6 +170,10 @@ export function mergeOption(
     ...defaultMagnifierOption,
     ...options.magnifier
   }
+  const accessibilityOptions: Required<IAccessibilityOption> = {
+    ...defaultAccessibilityOption,
+    ...options.accessibility
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -255,6 +261,7 @@ export function mergeOption(
     label: labelOptions,
     imgCaption: imgCaptionOptions,
     list: listOptions,
-    magnifier: magnifierOptions
+    magnifier: magnifierOptions,
+    accessibility: accessibilityOptions
   }
 }

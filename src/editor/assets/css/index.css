@@ -9,6 +9,7 @@
 @import './hyperlink/hyperlink.css';
 @import './zone/zone.css';
 @import './magnifier/magnifier.css';
+@import './accessibility/accessibility.css';
 
 .ce-inputarea {
   width: 100px;

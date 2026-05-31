@@ -85,6 +85,7 @@ interface IEditorOption {
   imgCaption?: IImgCaptionOption // 图片题注配置
   list?: IListOption // 列表配置
   magnifier?: IMagnifierOption // 放大镜配置
+  accessibility?: IAccessibilityOption // 无障碍配置
 }
 ```
 
@@ -416,5 +417,13 @@ interface IMagnifierOption {
   size?: number // 放大镜直径。默认：120
   zoom?: number // 放大倍率。默认：2
   borderColor?: string // 边框颜色。默认：#efefef
+}
+```
+
+## 无障碍配置
+
+```typescript
+interface IAccessibilityOption {
+  disabled?: boolean // 是否禁用无障碍支持。默认：true
 }
 ```
