@@ -1,3 +1,24 @@
+## [0.9.135](https://github.com/Hufe921/canvas-editor/compare/v0.9.134...v0.9.135) (2026-06-06)
+
+
+### Bug Fixes
+
+* avoid removing last checkbox code when unchecked code is missing ([ffaccae](https://github.com/Hufe921/canvas-editor/commit/ffaccae9cfd804bae3045ebc90b294ffc2518f91))
+* correct delete key behavior when text is selected before control #1421 ([56a713a](https://github.com/Hufe921/canvas-editor/commit/56a713a1f4eb80610c778b9b6c91faaea4c55687)), closes [#1421](https://github.com/Hufe921/canvas-editor/issues/1421)
+* correct regex search navigation match length ([f540dda](https://github.com/Hufe921/canvas-editor/commit/f540dda8bdb3f40791c654e7eb1522a8384b9204))
+
+
+### Chores
+
+* add pnpm-workspace.yaml ([078dfb1](https://github.com/Hufe921/canvas-editor/commit/078dfb125197925847b48b4f2489212a26627b30))
+
+
+### Features
+
+* add accessibility support for screen readers #1420 ([ae28324](https://github.com/Hufe921/canvas-editor/commit/ae283249f63962736e758640eb77c5f4a955a0f8)), closes [#1420](https://github.com/Hufe921/canvas-editor/issues/1420)
+
+
+
 ## [0.9.134](https://github.com/Hufe921/canvas-editor/compare/v0.9.133...v0.9.134) (2026-05-22)
 
 
