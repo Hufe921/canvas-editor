@@ -22,6 +22,7 @@ export interface ICurrentPosition {
   tdId?: string
   trId?: string
   tableId?: string
+  tablePath?: ITablePositionContext[]
   zone?: EditorZone
   hitLineStartIndex?: number
 }
@@ -52,6 +53,16 @@ export interface IPositionContext {
   index?: number
   trIndex?: number
   tdIndex?: number
+  tdId?: string
+  trId?: string
+  tableId?: string
+  tablePath?: ITablePositionContext[]
+}
+
+export interface ITablePositionContext {
+  index: number
+  trIndex: number
+  tdIndex: number
   tdId?: string
   trId?: string
   tableId?: string
