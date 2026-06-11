@@ -479,9 +479,8 @@ export class Draw {
   public getContextInnerWidth(): number {
     const positionContext = this.position.getPositionContext()
     if (positionContext.isTable) {
-      const { index, trIndex, tdIndex } = positionContext
       const elementList = this.getOriginalElementList()
-      const td = elementList[index!].trList![trIndex!].tdList[tdIndex!]
+      const td = this.position.getTableTdByContext(elementList, positionContext)
       const tdPadding = this.getTdPadding()
       return td!.width! - tdPadding[1] - tdPadding[3]
     }
@@ -597,8 +596,10 @@ export class Draw {
 
   public getTableRowList(sourceElementList: IElement[]): IRow[] {
     const positionContext = this.position.getPositionContext()
-    const { index, trIndex, tdIndex } = positionContext
-    return sourceElementList[index!].trList![trIndex!].tdList[tdIndex!].rowList!
+    return this.position.getTableTdByContext(
+      sourceElementList,
+      positionContext
+    )!.rowList!
   }
 
   public getOriginalRowList() {
@@ -681,9 +682,9 @@ export class Draw {
 
   public getTableElementList(sourceElementList: IElement[]): IElement[] {
     const positionContext = this.position.getPositionContext()
-    const { index, trIndex, tdIndex } = positionContext
     return (
-      sourceElementList[index!].trList?.[trIndex!].tdList[tdIndex!].value || []
+      this.position.getTableTdByContext(sourceElementList, positionContext)
+        ?.value || []
     )
   }
 
@@ -723,12 +724,11 @@ export class Draw {
 
   public getTd(): ITd | null {
     const positionContext = this.position.getPositionContext()
-    const { index, trIndex, tdIndex, isTable } = positionContext
-    if (isTable) {
-      const elementList = this.getOriginalElementList()
-      return elementList[index!].trList![trIndex!].tdList[tdIndex!]
-    }
-    return null
+    if (!positionContext.isTable) return null
+    return this.position.getTableTdByContext(
+      this.getOriginalElementList(),
+      positionContext
+    )
   }
 
   public insertElementList(
@@ -2898,10 +2898,11 @@ export class Draw {
     const positionContext = this.position.getPositionContext()
     const positionList = this.position.getPositionList()
     if (positionContext.isTable) {
-      const { index, trIndex, tdIndex } = positionContext
       const elementList = this.getOriginalElementList()
-      const tablePositionList =
-        elementList[index!].trList?.[trIndex!].tdList[tdIndex!].positionList
+      const tablePositionList = this.position.getTableTdByContext(
+        elementList,
+        positionContext
+      )?.positionList
       if (curIndex === undefined && tablePositionList) {
         curIndex = tablePositionList.length - 1
       }

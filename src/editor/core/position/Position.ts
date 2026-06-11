@@ -14,7 +14,8 @@ import { IElement, IElementPosition } from '../../interface/Element'
 import {
   ICurrentPosition,
   IGetPositionByXYPayload,
-  IPositionContext
+  IPositionContext,
+  ITablePositionContext
 } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
 import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
@@ -56,11 +57,132 @@ export class Position {
   public getTablePositionList(
     sourceElementList: IElement[]
   ): IElementPosition[] {
-    const { index, trIndex, tdIndex } = this.positionContext
     return (
-      sourceElementList[index!].trList![trIndex!].tdList[tdIndex!]
-        .positionList || []
+      this.getTableTdByContext(sourceElementList, this.positionContext)
+        ?.positionList || []
     )
+  }
+
+  public getTableTdByContext(
+    sourceElementList: IElement[],
+    context: IPositionContext
+  ) {
+    const tablePath = context.tablePath?.length
+      ? context.tablePath
+      : this._getTablePathByContext(context)
+    let elementList = sourceElementList
+    let td = null
+    for (let p = 0; p < tablePath.length; p++) {
+      const { index, trIndex, tdIndex } = tablePath[p]
+      td = elementList[index]?.trList?.[trIndex]?.tdList[tdIndex] || null
+      if (!td) return null
+      elementList = td.value
+    }
+    return td
+  }
+
+  public buildTablePositionContext(
+    context: IPositionContext,
+    element: IElement,
+    trIndex: number,
+    tdIndex: number
+  ): IPositionContext {
+    const tr = element.trList![trIndex]
+    const td = tr.tdList[tdIndex]
+    const tablePath = context.tablePath?.length
+      ? context.tablePath.map((item, itemIndex, tablePath) =>
+          itemIndex === tablePath.length - 1
+            ? {
+                ...item,
+                trIndex,
+                tdIndex,
+                tdId: td.id,
+                trId: tr.id,
+                tableId: element.id
+              }
+            : item
+        )
+      : undefined
+    return {
+      ...context,
+      isTable: true,
+      trIndex,
+      tdIndex,
+      tdId: td.id,
+      trId: tr.id,
+      tableId: element.id,
+      tablePath
+    }
+  }
+
+  public getTableElementByContext(
+    sourceElementList: IElement[],
+    context: IPositionContext
+  ) {
+    const tablePath = context.tablePath?.length
+      ? context.tablePath
+      : this._getTablePathByContext(context)
+    let elementList = sourceElementList
+    let tableElement = null
+    for (let p = 0; p < tablePath.length; p++) {
+      const { index, trIndex, tdIndex } = tablePath[p]
+      tableElement = elementList[index] || null
+      if (!tableElement) return null
+      if (p === tablePath.length - 1) break
+      const td = tableElement.trList?.[trIndex]?.tdList[tdIndex]
+      if (!td) return null
+      elementList = td.value
+    }
+    return tableElement
+  }
+
+  public getTableElementPositionByContext(
+    sourceElementList: IElement[],
+    sourcePositionList: IElementPosition[],
+    context: IPositionContext
+  ) {
+    const tablePath = context.tablePath?.length
+      ? context.tablePath
+      : this._getTablePathByContext(context)
+    let elementList = sourceElementList
+    let positionList = sourcePositionList
+    let tablePosition = null
+    for (let p = 0; p < tablePath.length; p++) {
+      const { index, trIndex, tdIndex } = tablePath[p]
+      tablePosition = positionList[index] || null
+      const tableElement = elementList[index]
+      if (!tablePosition || !tableElement) return null
+      if (p === tablePath.length - 1) break
+      const td = tableElement.trList?.[trIndex]?.tdList[tdIndex]
+      if (!td) return null
+      elementList = td.value
+      positionList = td.positionList || []
+    }
+    return tablePosition
+  }
+
+  private _getTablePathByContext(
+    context: IPositionContext
+  ): ITablePositionContext[] {
+    const { isTable, index, trIndex, tdIndex, tdId, trId, tableId } = context
+    if (
+      !isTable ||
+      index === undefined ||
+      trIndex === undefined ||
+      tdIndex === undefined
+    ) {
+      return []
+    }
+    return [
+      {
+        index,
+        trIndex,
+        tdIndex,
+        tdId,
+        trId,
+        tableId
+      }
+    ]
   }
 
   public getPositionList(): IElementPosition[] {
@@ -458,8 +580,29 @@ export class Position {
                 positionList: td.positionList
               })
               if (~tablePosition.index) {
-                const { index: tdValueIndex, hitLineStartIndex } = tablePosition
-                const tdValueElement = td.value[tdValueIndex]
+                const {
+                  index: tablePositionIndex,
+                  isTable: isNestedTable,
+                  hitLineStartIndex,
+                  tablePath = []
+                } = tablePosition
+                const tablePathItem = {
+                  index,
+                  trIndex: t,
+                  tdIndex: d,
+                  tdId: td.id,
+                  trId: tr.id,
+                  tableId: element.id
+                }
+                if (isNestedTable) {
+                  return {
+                    ...tablePosition,
+                    index,
+                    tablePath: [tablePathItem, ...tablePath],
+                    hitLineStartIndex
+                  }
+                }
+                const tdValueElement = td.value[tablePositionIndex]
                 return {
                   index,
                   isCheckbox:
@@ -476,10 +619,11 @@ export class Position {
                   isTable: true,
                   tdIndex: d,
                   trIndex: t,
-                  tdValueIndex,
+                  tdValueIndex: tablePositionIndex,
                   tdId: td.id,
                   trId: tr.id,
                   tableId: element.id,
+                  tablePath: [tablePathItem],
                   hitLineStartIndex
                 }
               }
@@ -838,7 +982,8 @@ export class Position {
       tdIndex,
       tdId,
       trId,
-      tableId
+      tableId,
+      tablePath
     } = positionResult
     // 设置位置上下文
     this.setPositionContext({
@@ -854,7 +999,8 @@ export class Position {
       tdIndex,
       tdId,
       trId,
-      tableId
+      tableId,
+      tablePath
     })
     return positionResult
   }
