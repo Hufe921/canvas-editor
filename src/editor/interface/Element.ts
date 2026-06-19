@@ -108,6 +108,7 @@ export interface IControlElement {
   control?: IControl
   controlId?: string
   controlComponent?: ControlComponent
+  isControlMinWidthPlaceholder?: boolean
 }
 
 export interface ICheckboxElement {

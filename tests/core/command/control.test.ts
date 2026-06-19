@@ -1,5 +1,6 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { ControlType } from '../../../src/editor/dataset/enum/Control'
+import { ElementType } from '../../../src/editor/dataset/enum/Element'
 import { createTestEditor } from '../../factories/editor'
 import { CheckboxControl } from '../../../src/editor/core/draw/control/checkbox/CheckboxControl'
 import { hitCheckbox } from '../../../src/editor/core/event/handlers/mousedown'
@@ -54,6 +55,65 @@ describe('控件命令', () => {
         { ruleList: [{ keyword: 'test' }] }
       ])
     }).not.toThrow()
+  })
+
+  it('control.minWidth 大于行宽时按多行计算高度', () => {
+    ctx = createTestEditor({
+      options: {
+        width: 240,
+        margins: [20, 20, 20, 20]
+      }
+    })
+    const createControl = (minWidth: number): IElement[] => [
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          type: ControlType.TEXT,
+          value: null,
+          prefix: '\u200c',
+          postfix: '\u200c',
+          minWidth,
+          underline: true
+        }
+      }
+    ]
+
+    const oneLineHeight = ctx.editor.command.executeComputeElementListHeight(
+      createControl(120)
+    )
+    const wrappedHeight = ctx.editor.command.executeComputeElementListHeight(
+      createControl(1000)
+    )
+
+    expect(wrappedHeight).toBeGreaterThan(oneLineHeight)
+  })
+
+  it('control.minWidth 跨行占位不写入控件值', () => {
+    ctx = createTestEditor({
+      data: [
+        {
+          type: ElementType.CONTROL,
+          value: '',
+          control: {
+            type: ControlType.TEXT,
+            value: [{ value: 'A' }],
+            prefix: '\u200c',
+            postfix: '\u200c',
+            minWidth: 1000,
+            underline: true
+          }
+        }
+      ],
+      options: {
+        width: 240,
+        margins: [20, 20, 20, 20]
+      }
+    })
+
+    const control = ctx.editor.command.getValue().data.main[0].control
+
+    expect(control?.value?.map(element => element.value)).toEqual(['A'])
   })
 
   it('hitCheckbox 取消不存在的 code 时不误删最后一个已选 code', () => {

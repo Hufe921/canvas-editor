@@ -201,6 +201,7 @@ export class Draw {
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
   private printModeData: Required<Omit<IEditorData, 'graffiti'>> | null
+  private controlMinWidthPlaceholderElementListSet: WeakSet<IElement[]>
 
   constructor(
     rootContainer: HTMLElement,
@@ -300,6 +301,7 @@ export class Draw {
     this.intersectionPageNo = 0
     this.lazyRenderIntersectionObserver = null
     this.printModeData = null
+    this.controlMinWidthPlaceholderElementListSet = new WeakSet()
 
     // 打印模式优先设置打印数据
     if (this.mode === EditorMode.PRINT) {
@@ -1410,6 +1412,15 @@ export class Draw {
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    // 还原最小宽度控件占位
+    if (this.controlMinWidthPlaceholderElementListSet.has(elementList)) {
+      for (let i = elementList.length - 1; i >= 0; i--) {
+        if (elementList[i].isControlMinWidthPlaceholder) {
+          elementList.splice(i, 1)
+        }
+      }
+      this.controlMinWidthPlaceholderElementListSet.delete(elementList)
+    }
     // 计算列表偏移宽度
     const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
     const rowList: IRow[] = []
@@ -1791,6 +1802,17 @@ export class Draw {
         metrics.boundingBoxDescent = 0
         metrics.boundingBoxAscent =
           this.textParticle.getBasisWordBoundingBoxAscent(ctx, ctx.font)
+      } else if (element.isControlMinWidthPlaceholder) {
+        metrics.width = (element.width || 0) * scale
+        metrics.height = defaultSize * scale
+        ctx.font = this.getElementFont(element)
+        const basisMetrics = this.textParticle.measureBasisWord(
+          ctx,
+          element.font!
+        )
+        metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
+        metrics.boundingBoxDescent =
+          basisMetrics.actualBoundingBoxDescent * scale
       } else if (element.type === ElementType.BLOCK) {
         if (!element.width) {
           metrics.width = availableWidth
@@ -1861,12 +1883,21 @@ export class Draw {
         left: 0,
         style: this.getElementFont(element, scale)
       })
-      // 暂时只考虑非换行场景：控件开始时统计宽度，结束时消费宽度及还原
-      if (rowElement.control?.minWidth) {
+      // 控件开始时统计宽度，结束时消费最小宽度并补充跨行占位
+      if (
+        rowElement.control?.minWidth &&
+        !rowElement.isControlMinWidthPlaceholder
+      ) {
         if (rowElement.controlComponent) {
           controlRealWidth += metrics.width
         }
         if (rowElement.controlComponent === ControlComponent.POSTFIX) {
+          const controlMinWidth = rowElement.control.minWidth * scale
+          const extraWidth = controlMinWidth - controlRealWidth
+          const rowRemainingWidth = Math.max(
+            availableWidth - curRow.width - rowElement.metrics.width,
+            0
+          )
           // 设置最小宽度控件属性（字符偏移量）
           this.control.setMinWidthControlInfo({
             row: curRow,
@@ -1874,6 +1905,23 @@ export class Draw {
             availableWidth,
             controlRealWidth
           })
+          let placeholderWidth = extraWidth - rowRemainingWidth
+          const placeholderList: IElement[] = []
+          while (placeholderWidth > 0) {
+            const width = Math.min(placeholderWidth, availableWidth)
+            placeholderList.push({
+              ...rowElement,
+              value: '',
+              width: width / scale,
+              left: 0,
+              isControlMinWidthPlaceholder: true
+            } as IElement)
+            placeholderWidth -= width
+          }
+          if (placeholderList.length) {
+            elementList.splice(i + 1, 0, ...placeholderList)
+            this.controlMinWidthPlaceholderElementListSet.add(elementList)
+          }
           controlRealWidth = 0
         }
       }
