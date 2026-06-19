@@ -17,6 +17,13 @@ export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
 
 export const EDITOR_ROW_ATTR: Array<keyof IElement> = ['rowFlex', 'rowMargin']
 
+export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
+  'rowFlex',
+  'rowMargin',
+  'level',
+  'title'
+]
+
 export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'type',
   'font',
