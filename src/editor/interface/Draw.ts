@@ -82,6 +82,5 @@ export interface IComputeRowListPayload {
   isFromTable?: boolean
   isPagingMode?: boolean
   pageHeight?: number
-  mainOuterHeight?: number
   surroundElementList?: IElement[]
 }

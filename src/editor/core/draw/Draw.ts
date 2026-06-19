@@ -447,10 +447,10 @@ export class Draw {
     return pageHeight - this.getMainOuterHeight()
   }
 
-  public getMainOuterHeight(): number {
+  public getMainOuterHeight(pageNo?: number): number {
     const margins = this.getMargins()
-    const headerExtraHeight = this.header.getExtraHeight()
-    const footerExtraHeight = this.footer.getExtraHeight()
+    const headerExtraHeight = this.header.getExtraHeight(pageNo)
+    const footerExtraHeight = this.footer.getExtraHeight(pageNo)
     return margins[0] + margins[2] + headerExtraHeight + footerExtraHeight
   }
 
@@ -1398,7 +1398,6 @@ export class Draw {
       startX = 0,
       startY = 0,
       pageHeight = 0,
-      mainOuterHeight = 0,
       surroundElementList = []
     } = payload
     const {
@@ -1429,6 +1428,12 @@ export class Draw {
     let x = startX
     let y = startY
     let pageNo = 0
+    // 分页模式下按页计算起始 Y（页眉/页脚禁用时该页起始位置上移）
+    let pageStartY = startY
+    if (isPagingMode && !isFromTable) {
+      pageStartY = this.getMargins()[0] + this.getHeader().getExtraHeight(0)
+      y = pageStartY
+    }
     // 列表位置
     let listId: string | undefined
     let listIndex = 0
@@ -1632,7 +1637,8 @@ export class Draw {
         // 表格分页处理(拆分表格)
         if (isPagingMode) {
           const height = this.getHeight()
-          const marginHeight = this.getMainOuterHeight()
+          // 按表格所在页计算外部占位高度（页眉/页脚禁用时该页可用空间更大）
+          const marginHeight = this.getMainOuterHeight(pageNo)
           let curPagePreHeight = marginHeight
           for (let r = 0; r < rowList.length; r++) {
             const row = rowList[r]
@@ -2054,17 +2060,19 @@ export class Draw {
       if (isWrap) {
         x = startX
         y += curRow.height
-        if (
-          isPagingMode &&
-          !isFromTable &&
-          pageHeight &&
-          (y - startY + mainOuterHeight + height > pageHeight ||
-            element.type === ElementType.PAGE_BREAK)
-        ) {
-          y = startY
-          // 删除多余四周环绕型元素
-          deleteSurroundElementList(surroundElementList, pageNo)
-          pageNo += 1
+        if (isPagingMode && !isFromTable && pageHeight) {
+          const curMainOuterHeight = this.getMainOuterHeight(pageNo)
+          if (
+            y - pageStartY + curMainOuterHeight + height > pageHeight ||
+            element.type === ElementType.PAGE_BREAK
+          ) {
+            // 删除多余四周环绕型元素
+            deleteSurroundElementList(surroundElementList, pageNo)
+            pageNo += 1
+            pageStartY =
+              this.getMargins()[0] + this.getHeader().getExtraHeight(pageNo)
+            y = pageStartY
+          }
         }
         // 计算下一行第一个元素是否存在环绕交叉
         rowElement.left = 0
@@ -2096,10 +2104,10 @@ export class Draw {
       pageNumber: { maxPageNo }
     } = this.options
     const height = this.getHeight()
-    const marginHeight = this.getMainOuterHeight()
-    let pageHeight = marginHeight
     let pageNo = 0
     if (pageMode === PageMode.CONTINUITY) {
+      const marginHeight = this.getMainOuterHeight(0)
+      let pageHeight = marginHeight
       pageRowList[0] = this.rowList
       // 重置高度
       pageHeight += this.rowList.reduce(
@@ -2119,6 +2127,8 @@ export class Draw {
       }
       this._initPageContext(this.ctxList[0])
     } else {
+      // 每页页眉/页脚禁用状态可能不同，按页计算外部占位高度
+      let pageHeight = this.getMainOuterHeight(0)
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]
         const rowOffsetY = row.offsetY || 0
@@ -2130,9 +2140,9 @@ export class Draw {
             this.elementList = this.elementList.slice(0, row.startIndex)
             break
           }
-          pageHeight = marginHeight + row.height + rowOffsetY
-          pageRowList.push([row])
           pageNo++
+          pageHeight = this.getMainOuterHeight(pageNo) + row.height + rowOffsetY
+          pageRowList.push([row])
         } else {
           pageHeight += row.height + rowOffsetY
           pageRowList[pageNo].push(row)
@@ -2779,7 +2789,6 @@ export class Draw {
       const margins = this.getMargins()
       const pageHeight = this.getHeight()
       const extraHeight = this.header.getExtraHeight()
-      const mainOuterHeight = this.getMainOuterHeight()
       const startX = margins[3]
       const startY = margins[0] + extraHeight
       const surroundElementList = pickSurroundElementList(this.elementList)
@@ -2787,7 +2796,6 @@ export class Draw {
         startX,
         startY,
         pageHeight,
-        mainOuterHeight,
         isPagingMode,
         innerWidth,
         surroundElementList,

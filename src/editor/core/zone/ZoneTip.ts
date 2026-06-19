@@ -50,7 +50,13 @@ export class ZoneTip {
         if (this.isDisableMouseMove || !this.draw.getIsPagingMode()) return
         if (!evt.offsetY) return
         if (evt.target instanceof HTMLCanvasElement) {
-          const mousemoveZone = this.zone.getZoneByY(evt.offsetY)
+          const pageNo = Number(
+            (evt.target as HTMLCanvasElement).getAttribute('data-index')
+          )
+          const mousemoveZone = this.zone.getZoneByY(
+            evt.offsetY,
+            Number.isNaN(pageNo) ? undefined : pageNo
+          )
           if (!watchZones.includes(mousemoveZone)) {
             this._updateZoneTip(false)
             return

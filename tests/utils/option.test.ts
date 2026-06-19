@@ -17,9 +17,23 @@ describe('mergeOption', () => {
   })
 
   it('嵌套 table 默认值合并', () => {
-    const options = mergeOption({ table: { tdPadding: [0, 10, 10, 10] as any } })
+    const options = mergeOption({
+      table: { tdPadding: [0, 10, 10, 10] as any }
+    })
     expect(options.table.tdPadding).toEqual([0, 10, 10, 10])
     expect(options.table.defaultBorderColor).toBeDefined()
+  })
+
+  it('header disabledPages 合并', () => {
+    const options = mergeOption({ header: { disabledPages: [0, 2] } })
+    expect(options.header.disabledPages).toEqual([0, 2])
+    expect(options.header.disabled).toBe(false)
+  })
+
+  it('footer disabledPages 合并', () => {
+    const options = mergeOption({ footer: { disabledPages: [0] } })
+    expect(options.footer.disabledPages).toEqual([0])
+    expect(options.footer.bottom).toBeDefined()
   })
 
   it('#1405 回归:恶意原型键不污染', () => {

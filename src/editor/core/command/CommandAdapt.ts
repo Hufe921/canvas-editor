@@ -1529,7 +1529,7 @@ export class CommandAdapt {
       0
     )
     const height = this.draw.getHeight()
-    const mainOuterHeight = this.draw.getMainOuterHeight()
+    const mainOuterHeight = this.draw.getMainOuterHeight(lastPageIndex)
     const remaining = height - (mainOuterHeight + usedHeight)
     return remaining > 0 ? remaining : 0
   }
