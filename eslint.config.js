@@ -44,5 +44,13 @@ export default tseslint.config(
       semi: ['warn', 'never'],
       quotes: ['warn', 'single', { allowTemplateLiterals: true }]
     }
+  },
+  {
+    files: ['tests/**/*.ts', 'vitest.config.ts'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unused-expressions': 'off'
+    }
   }
 )

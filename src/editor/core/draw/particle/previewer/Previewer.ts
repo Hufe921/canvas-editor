@@ -83,7 +83,6 @@ export class Previewer {
     element: IElement,
     position: IElementPosition | null = null
   ): { x: number; y: number } {
-    const { scale } = this.options
     let x = 0
     let y = 0
     const height = this.draw.getHeight()
@@ -92,8 +91,13 @@ export class Previewer {
     const preY = pageNo * (height + pageGap)
     // 优先使用浮动位置
     if (element.imgFloatPosition) {
-      x = element.imgFloatPosition.x! * scale
-      y = element.imgFloatPosition.y * scale + preY
+      const position = this.draw.getPosition()
+      const floatPosition = position.getFloatPositionByElement(element)
+      if (floatPosition) {
+        const coordinate = position.getFloatPositionCoordinate(floatPosition)
+        x = coordinate.x
+        y = coordinate.y + preY
+      }
     } else if (position) {
       const {
         coordinate: {
@@ -483,14 +487,14 @@ export class Previewer {
         i === 0 || i === 6 || i === 7
           ? -handleSize
           : i === 1 || i === 5
-          ? width / 2
-          : width - handleSize
+            ? width / 2
+            : width - handleSize
       const top =
         i === 0 || i === 1 || i === 2
           ? -handleSize
           : i === 3 || i === 7
-          ? height / 2 - handleSize
-          : height - handleSize
+            ? height / 2 - handleSize
+            : height - handleSize
       this.resizerHandleList[i].style.transform = `scale(${scale})`
       this.resizerHandleList[i].style.left = `${left}px`
       this.resizerHandleList[i].style.top = `${top}px`

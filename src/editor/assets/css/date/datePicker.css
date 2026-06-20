@@ -27,6 +27,13 @@
   display: block;
 }
 
+.ce-date-wrap.year-mode .ce-date-week,
+.ce-date-wrap.year-mode .ce-date-day,
+.ce-date-wrap.month-mode .ce-date-week,
+.ce-date-wrap.month-mode .ce-date-day {
+  display: none;
+}
+
 .ce-date-title {
   display: flex;
   justify-content: center;
@@ -36,17 +43,17 @@
   font-size: 16px;
 }
 
-.ce-date-title>span {
+.ce-date-title > span {
   display: inline-block;
 }
 
-.ce-date-title>span:not(.ce-date-title__now) {
+.ce-date-title > span:not(.ce-date-title__now) {
   font-family: cursive;
   cursor: pointer;
 }
 
-.ce-date-title>span:not(.ce-date-title__now):hover {
-  color: #5175F4;
+.ce-date-title > span:not(.ce-date-title__now):hover {
+  color: #5175f4;
 }
 
 .ce-date-title .ce-date-title__pre-year {
@@ -59,6 +66,17 @@
 
 .ce-date-title .ce-date-title__now {
   width: 40%;
+}
+
+.ce-date-title .ce-date-title__year-label,
+.ce-date-title .ce-date-title__month-label {
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ce-date-title .ce-date-title__year-label:hover,
+.ce-date-title .ce-date-title__month-label:hover {
+  color: #5175f4;
 }
 
 .ce-date-title .ce-date-title__next-year {
@@ -78,9 +96,9 @@
   border-bottom: 1px solid #e4e7ed;
 }
 
-.ce-date-week>span {
+.ce-date-week > span {
   list-style: none;
-  width: calc(100%/7);
+  width: calc(100% / 7);
   text-align: center;
   color: #606266;
   font-size: 14px;
@@ -94,8 +112,8 @@
   margin-top: 5px;
 }
 
-.ce-date-day>div {
-  width: calc(100%/7);
+.ce-date-day > div {
+  width: calc(100% / 7);
   height: 40px;
   text-align: center;
   color: #606266;
@@ -105,23 +123,103 @@
   border-radius: 4px;
 }
 
-.ce-date-day>div:hover {
-  color: #5175F4;
-  opacity: .8;
+.ce-date-day > div:hover {
+  color: #5175f4;
+  opacity: 0.8;
 }
 
-.ce-date-day>div.active {
-  color: #5175F4;
+.ce-date-day > div.active {
+  color: #5175f4;
   font-weight: 700;
 }
 
-.ce-date-day>div.disable {
+.ce-date-day > div.disable {
   color: #c0c4cc;
 }
 
-.ce-date-day>div.select {
+.ce-date-day > div.select {
   color: #fff;
-  background-color: #5175F4;
+  background-color: #5175f4;
+}
+
+/* year picker */
+.ce-year-wrap {
+  display: none;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 15px;
+  min-height: 280px;
+}
+
+.ce-year-wrap.active {
+  display: flex;
+}
+
+.ce-year-wrap > div {
+  width: calc(100% / 3);
+  height: 60px;
+  text-align: center;
+  color: #606266;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 60px;
+  border-radius: 4px;
+}
+
+.ce-year-wrap > div:hover {
+  color: #5175f4;
+  opacity: 0.8;
+}
+
+.ce-year-wrap > div.active {
+  color: #5175f4;
+  font-weight: 700;
+}
+
+.ce-year-wrap > div.select {
+  color: #fff;
+  background-color: #5175f4;
+}
+
+/* month picker */
+.ce-month-wrap {
+  display: none;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 15px;
+  min-height: 280px;
+}
+
+.ce-month-wrap.active {
+  display: flex;
+}
+
+.ce-month-wrap > div {
+  width: calc(100% / 3);
+  height: 60px;
+  text-align: center;
+  color: #606266;
+  font-size: 14px;
+  cursor: pointer;
+  line-height: 60px;
+  border-radius: 4px;
+}
+
+.ce-month-wrap > div:hover {
+  color: #5175f4;
+  opacity: 0.8;
+}
+
+.ce-month-wrap > div.active {
+  color: #5175f4;
+  font-weight: 700;
+}
+
+.ce-month-wrap > div.select {
+  color: #fff;
+  background-color: #5175f4;
 }
 
 .ce-time-wrap {
@@ -142,45 +240,45 @@
   list-style: none;
 }
 
-.ce-time-wrap>li {
+.ce-time-wrap > li {
   width: 33.3%;
   height: 100%;
   text-align: center;
 }
 
-.ce-time-wrap>li>span {
+.ce-time-wrap > li > span {
   transform: translateY(-5px);
   display: inline-block;
 }
 
-.ce-time-wrap>li>ol {
+.ce-time-wrap > li > ol {
   height: calc(100% - 20px);
   overflow-y: auto;
   border: 1px solid #e2e2e2;
   position: relative;
 }
 
-.ce-time-wrap>li:first-child>ol {
+.ce-time-wrap > li:first-child > ol {
   border-right: 0;
 }
 
-.ce-time-wrap>li:last-child>ol {
+.ce-time-wrap > li:last-child > ol {
   border-left: 0;
 }
 
-.ce-time-wrap>li>ol>li {
+.ce-time-wrap > li > ol > li {
   line-height: 30px;
   cursor: pointer;
-  transition: all .3s;
+  transition: all 0.3s;
 }
 
-.ce-time-wrap>li>ol>li:hover {
+.ce-time-wrap > li > ol > li:hover {
   background-color: #eaeaea;
 }
 
-.ce-time-wrap>li>ol>li.active {
+.ce-time-wrap > li > ol > li.active {
   color: #ffffff;
-  background: #5175F4;
+  background: #5175f4;
 }
 
 .ce-date-menu {
@@ -207,7 +305,7 @@
   box-sizing: border-box;
   outline: none;
   margin: 0;
-  transition: .1s;
+  transition: 0.1s;
   font-weight: 500;
   user-select: none;
   padding: 7px 15px;
@@ -217,8 +315,8 @@
 }
 
 .ce-date-menu button:hover {
-  color: #5175F4;
-  border-color: #5175F4;
+  color: #5175f4;
+  border-color: #5175f4;
 }
 
 .ce-date-menu button.ce-date-menu__time {
@@ -229,5 +327,5 @@
 }
 
 .ce-date-menu button.ce-date-menu__time:hover {
-  color: #5175F4;
+  color: #5175f4;
 }

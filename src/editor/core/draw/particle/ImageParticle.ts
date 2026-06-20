@@ -91,9 +91,12 @@ export class ImageParticle {
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
     const preY = this.draw.getPageNo() * (height + pageGap)
-    const imgFloatPosition = element.imgFloatPosition!
-    floatImageContainer.style.left = `${imgFloatPosition.x * scale}px`
-    floatImageContainer.style.top = `${preY + imgFloatPosition.y * scale}px`
+    const position = this.draw.getPosition()
+    const floatPosition = position.getFloatPositionByElement(element)
+    if (!floatPosition) return
+    const { x, y } = position.getFloatPositionCoordinate(floatPosition)
+    floatImageContainer.style.left = `${x}px`
+    floatImageContainer.style.top = `${preY + y}px`
     floatImage.src = element.value
   }
 

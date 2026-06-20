@@ -65,7 +65,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     trIndex,
     tableId,
     trId,
-    tdId
+    tdId,
+    tablePath
   } = positionResult
   const {
     index: startIndex,
@@ -80,6 +81,7 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   if (
     isTable &&
     startIsTable &&
+    startTableId === tableId &&
     (tdIndex !== startTdIndex || trIndex !== startTrIndex)
   ) {
     rangeManager.setRange(
@@ -98,7 +100,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
       tdIndex,
       tdId,
       trId,
-      tableId
+      tableId,
+      tablePath
     })
   } else {
     let end = ~endIndex ? endIndex : 0

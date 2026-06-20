@@ -52,6 +52,19 @@ export class Search {
     this.searchOptions = options || null
   }
 
+  private getSearchMatchGroupStartIndex(index: number): number | null {
+    const searchMatch = this.searchMatchList[index]
+    if (!searchMatch) return null
+    let groupStartIndex = index
+    while (
+      groupStartIndex > 0 &&
+      this.searchMatchList[groupStartIndex - 1].groupId === searchMatch.groupId
+    ) {
+      groupStartIndex--
+    }
+    return groupStartIndex
+  }
+
   public searchNavigatePre(): number | null {
     if (!this.searchMatchList.length || !this.searchKeyword) return null
     if (this.searchNavigateIndex === null) {
@@ -65,7 +78,7 @@ export class Search {
         const match = this.searchMatchList[index]
         if (searchNavigateId !== match.groupId) {
           isExistPre = true
-          this.searchNavigateIndex = index - (this.searchKeyword.length - 1)
+          this.searchNavigateIndex = this.getSearchMatchGroupStartIndex(index)
           break
         }
         index--
@@ -74,8 +87,9 @@ export class Search {
         const lastSearchMatch =
           this.searchMatchList[this.searchMatchList.length - 1]
         if (lastSearchMatch.groupId === searchNavigateId) return null
-        this.searchNavigateIndex =
-          this.searchMatchList.length - 1 - (this.searchKeyword.length - 1)
+        this.searchNavigateIndex = this.getSearchMatchGroupStartIndex(
+          this.searchMatchList.length - 1
+        )
       }
     }
     return this.searchNavigateIndex
@@ -135,9 +149,18 @@ export class Search {
 
   public getSearchNavigateIndexList() {
     if (this.searchNavigateIndex === null || !this.searchKeyword) return []
-    return new Array(this.searchKeyword.length)
-      .fill(this.searchNavigateIndex)
-      .map((navigate, index) => navigate + index)
+    const searchNavigate = this.searchMatchList[this.searchNavigateIndex]
+    if (!searchNavigate) return []
+    const indexList: number[] = []
+    let index = this.searchNavigateIndex
+    while (
+      index < this.searchMatchList.length &&
+      this.searchMatchList[index].groupId === searchNavigate.groupId
+    ) {
+      indexList.push(index)
+      index++
+    }
+    return indexList
   }
 
   public getSearchMatchList(): ISearchResult[] {
@@ -146,10 +169,11 @@ export class Search {
 
   public getSearchNavigateInfo(): null | INavigateInfo {
     if (!this.searchKeyword || !this.searchMatchList.length) return null
-    const index =
+    const searchNavigateId =
       this.searchNavigateIndex !== null
-        ? this.searchNavigateIndex / this.searchKeyword.length + 1
-        : 0
+        ? this.searchMatchList[this.searchNavigateIndex]?.groupId
+        : null
+    let index = 0
     let count = 0
     let groupId = null
     for (let s = 0; s < this.searchMatchList.length; s++) {
@@ -157,6 +181,9 @@ export class Search {
       if (groupId === match.groupId) continue
       groupId = match.groupId
       count += 1
+      if (searchNavigateId === groupId) {
+        index = count
+      }
     }
     return {
       index,

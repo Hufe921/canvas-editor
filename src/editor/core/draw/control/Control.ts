@@ -143,6 +143,7 @@ export class Control {
         }
       }
       if (!element.controlId) return true
+      if (element.isControlMinWidthPlaceholder) return false
       if (element.control?.minWidth) {
         if (
           element.controlComponent === ControlComponent.PREFIX ||

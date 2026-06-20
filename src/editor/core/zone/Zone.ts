@@ -49,9 +49,16 @@ export class Zone {
 
   public setZone(payload: EditorZone) {
     const { header, footer } = this.options
+    const curPageNo = this.draw.getPageNo()
     if (
-      (!header.editable && payload === EditorZone.HEADER) ||
-      (!footer.editable && payload === EditorZone.FOOTER)
+      payload === EditorZone.HEADER &&
+      (!header.editable || this.draw.getHeader().isDisabled(curPageNo))
+    ) {
+      return
+    }
+    if (
+      payload === EditorZone.FOOTER &&
+      (!footer.editable || this.draw.getFooter().isDisabled(curPageNo))
     ) {
       return
     }
@@ -78,21 +85,26 @@ export class Zone {
     })
   }
 
-  public getZoneByY(y: number): EditorZone {
+  public getZoneByY(y: number, pageNo?: number): EditorZone {
     // 页眉底部距离页面顶部距离
     const header = this.draw.getHeader()
-    const headerBottomY = header.getHeaderTop() + header.getHeight()
+    const headerDisabled = header.isDisabled(pageNo)
+    const headerBottomY = headerDisabled
+      ? 0
+      : header.getHeaderTop(pageNo) + header.getHeight(pageNo)
     // 页脚上部距离页面顶部距离
     const footer = this.draw.getFooter()
+    const footerDisabled = footer.isDisabled(pageNo)
     const pageHeight = this.draw.getHeight()
-    const footerTopY =
-      pageHeight - (footer.getFooterBottom() + footer.getHeight())
+    const footerTopY = footerDisabled
+      ? pageHeight
+      : pageHeight - (footer.getFooterBottom(pageNo) + footer.getHeight(pageNo))
     // 页眉：当前位置小于页眉底部位置
-    if (y < headerBottomY) {
+    if (!headerDisabled && y < headerBottomY) {
       return EditorZone.HEADER
     }
     // 页脚：当前位置大于页脚顶部位置
-    if (y > footerTopY) {
+    if (!footerDisabled && y > footerTopY) {
       return EditorZone.FOOTER
     }
     return EditorZone.MAIN
@@ -116,13 +128,15 @@ export class Zone {
     // 指示器位置
     const header = this.draw.getHeader()
     const footer = this.draw.getFooter()
-    const indicatorHeight = isHeaderActive
-      ? header.getHeight()
-      : footer.getHeight()
-    const indicatorTop = isHeaderActive
-      ? header.getHeaderTop()
-      : pageHeight - footer.getFooterBottom() - indicatorHeight
     for (let p = 0; p < pageList.length; p++) {
+      // 禁用页不绘制指示器
+      if (isHeaderActive ? header.isDisabled(p) : footer.isDisabled(p)) continue
+      const indicatorHeight = isHeaderActive
+        ? header.getHeight(p)
+        : footer.getHeight(p)
+      const indicatorTop = isHeaderActive
+        ? header.getHeaderTop(p)
+        : pageHeight - footer.getFooterBottom(p) - indicatorHeight
       const startY = preY * p + indicatorTop
       const indicatorLeftX = margins[3] - this.INDICATOR_PADDING
       const indicatorRightX = margins[3] + innerWidth + this.INDICATOR_PADDING

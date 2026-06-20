@@ -85,6 +85,7 @@ interface IEditorOption {
   imgCaption?: IImgCaptionOption // 图片题注配置
   list?: IListOption // 列表配置
   magnifier?: IMagnifierOption // 放大镜配置
+  accessibility?: IAccessibilityOption // 无障碍配置
 }
 ```
 
@@ -108,6 +109,7 @@ interface IHeader {
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑标题内容
+  disabledPages?: number[] // 不显示页眉的页码（从 0 开始）。默认：[]
 }
 ```
 
@@ -120,6 +122,7 @@ interface IFooter {
   maxHeightRadio?: MaxHeightRatio // 占页面最大高度比。默认：HALF
   disabled?: boolean // 是否禁用
   editable?: boolean // 禁止编辑页脚内容
+  disabledPages?: number[] // 不显示页脚的页码（从 0 开始）。默认：[]
 }
 ```
 
@@ -358,6 +361,7 @@ interface IModeRule {
     imagePreviewerDisabled?: boolean // 打印模式禁用图片预览
     backgroundDisabled?: boolean // 打印模式禁用背景
     filterEmptyControl?: boolean // 打印模式过滤无值控件。默认：true
+    filterHideElementRow?: boolean // 打印模式过滤隐藏元素空行。默认：false
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // 只读模式禁用图片预览
@@ -415,5 +419,13 @@ interface IMagnifierOption {
   size?: number // 放大镜直径。默认：120
   zoom?: number // 放大倍率。默认：2
   borderColor?: string // 边框颜色。默认：#efefef
+}
+```
+
+## 无障碍配置
+
+```typescript
+interface IAccessibilityOption {
+  disabled?: boolean // 是否禁用无障碍支持。默认：true
 }
 ```

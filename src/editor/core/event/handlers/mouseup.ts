@@ -6,6 +6,7 @@ import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
+import { IPositionContext } from '../../../interface/Position'
 import { deepClone, getUUID, omitObject } from '../../../utils'
 import { formatElementContext, formatElementList } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
@@ -26,9 +27,12 @@ function getElementIndexByDragId(dragId: string, elementList: IElement[]) {
 function moveImgPosition(
   element: IElement,
   evt: MouseEvent,
-  host: CanvasEvent
+  host: CanvasEvent,
+  cachePositionContext: IPositionContext | null | undefined,
+  positionContext: IPositionContext
 ) {
   const draw = host.getDraw()
+  const position = draw.getPosition()
   if (
     element.imgDisplay === ImageDisplay.SURROUND ||
     element.imgDisplay === ImageDisplay.FLOAT_TOP ||
@@ -37,10 +41,41 @@ function moveImgPosition(
     const moveX = evt.offsetX - host.mouseDownStartPosition!.x!
     const moveY = evt.offsetY - host.mouseDownStartPosition!.y!
     const imgFloatPosition = element.imgFloatPosition!
+    const wasInTable = cachePositionContext?.isTable
+    const isNowInTable = positionContext.isTable
+    let x = imgFloatPosition.x + moveX
+    let y = imgFloatPosition.y + moveY
+    const pageNo = draw.getPageNo()
+    if (wasInTable && !isNowInTable) {
+      // 从表格内移动到表格外：相对坐标转为绝对坐标
+      const cacheIndex = cachePositionContext?.index
+      if (cacheIndex !== undefined) {
+        const originalPositionList = position.getOriginalPositionList()
+        const tablePosition = originalPositionList[cacheIndex]
+        if (tablePosition) {
+          const [tableX, tableY] = tablePosition.coordinate.leftTop
+          x = imgFloatPosition.x + tableX + moveX
+          y = imgFloatPosition.y + tableY + moveY
+        }
+      }
+    } else if (!wasInTable && isNowInTable) {
+      // 从表格外移动到表格内：绝对坐标转为相对坐标
+      const nowIndex = positionContext.index
+      if (nowIndex !== undefined) {
+        const originalPositionList = position.getOriginalPositionList()
+        const tablePosition = originalPositionList[nowIndex]
+        if (tablePosition) {
+          const [tableX, tableY] = tablePosition.coordinate.leftTop
+          x = imgFloatPosition.x + moveX - tableX
+          y = imgFloatPosition.y + moveY - tableY
+        }
+      }
+    }
     element.imgFloatPosition = {
-      x: imgFloatPosition.x + moveX,
-      y: imgFloatPosition.y + moveY,
-      pageNo: draw.getPageNo()
+      ...imgFloatPosition,
+      x,
+      y,
+      pageNo
     }
   }
   draw.getImageParticle().destroyFloatImage()
@@ -88,7 +123,13 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
           dragElement.type === ElementType.IMAGE ||
           dragElement.type === ElementType.LATEX
         ) {
-          moveImgPosition(dragElement, evt, host)
+          moveImgPosition(
+            dragElement,
+            evt,
+            host,
+            host.cachePositionContext,
+            positionContext
+          )
           if (
             dragElement.imgDisplay === ImageDisplay.SURROUND ||
             dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||
@@ -298,7 +339,13 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         dragElement.type === ElementType.IMAGE ||
         dragElement.type === ElementType.LATEX
       ) {
-        moveImgPosition(dragElement, evt, host)
+        moveImgPosition(
+          dragElement,
+          evt,
+          host,
+          host.cachePositionContext,
+          positionContext
+        )
         imgElement = dragElement
       }
     }

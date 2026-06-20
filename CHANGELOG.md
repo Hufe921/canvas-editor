@@ -1,3 +1,93 @@
+## [0.9.136](https://github.com/Hufe921/canvas-editor/compare/v0.9.135...v0.9.136) (2026-06-20)
+
+
+### Features
+
+* allow hiding header/footer on individual pages #778 ([bbd2292](https://github.com/Hufe921/canvas-editor/commit/bbd229244c01a5d5a4a77540f305b7ee56b72be0)), closes [#778](https://github.com/Hufe921/canvas-editor/issues/778)
+* improve format painter paragraph style handling #446 ([5e880a9](https://github.com/Hufe921/canvas-editor/commit/5e880a9fc12038e448c4a34de2d3ecdf3807e107)), closes [#446](https://github.com/Hufe921/canvas-editor/issues/446)
+* support control minWidth wrapping across lines #442 ([d2bb97a](https://github.com/Hufe921/canvas-editor/commit/d2bb97ae1e8b33989e5728d348962a707fdcaa71)), closes [#442](https://github.com/Hufe921/canvas-editor/issues/442)
+* table nesting operations #650 ([2243671](https://github.com/Hufe921/canvas-editor/commit/2243671cdbc443cce6c00a8084f45bcedc496c00)), closes [#650](https://github.com/Hufe921/canvas-editor/issues/650)
+
+
+### Tests
+
+* update page layout test case ([2b4553b](https://github.com/Hufe921/canvas-editor/commit/2b4553bd2cf86838e6d75a07a66f32228b395d54))
+
+
+
+## [0.9.135](https://github.com/Hufe921/canvas-editor/compare/v0.9.134...v0.9.135) (2026-06-06)
+
+
+### Bug Fixes
+
+* avoid removing last checkbox code when unchecked code is missing ([ffaccae](https://github.com/Hufe921/canvas-editor/commit/ffaccae9cfd804bae3045ebc90b294ffc2518f91))
+* correct delete key behavior when text is selected before control #1421 ([56a713a](https://github.com/Hufe921/canvas-editor/commit/56a713a1f4eb80610c778b9b6c91faaea4c55687)), closes [#1421](https://github.com/Hufe921/canvas-editor/issues/1421)
+* correct regex search navigation match length ([f540dda](https://github.com/Hufe921/canvas-editor/commit/f540dda8bdb3f40791c654e7eb1522a8384b9204))
+
+
+### Chores
+
+* add pnpm-workspace.yaml ([078dfb1](https://github.com/Hufe921/canvas-editor/commit/078dfb125197925847b48b4f2489212a26627b30))
+
+
+### Features
+
+* add accessibility support for screen readers #1420 ([ae28324](https://github.com/Hufe921/canvas-editor/commit/ae283249f63962736e758640eb77c5f4a955a0f8)), closes [#1420](https://github.com/Hufe921/canvas-editor/issues/1420)
+
+
+
+## [0.9.134](https://github.com/Hufe921/canvas-editor/compare/v0.9.133...v0.9.134) (2026-05-22)
+
+
+### Chores
+
+* add dependabot config ([4478c59](https://github.com/Hufe921/canvas-editor/commit/4478c59a77bdedf58c655319254be3485a5438b4))
+* lock pnpm version ([c474691](https://github.com/Hufe921/canvas-editor/commit/c47469115dd1ffb5a5251d04e0665547b4022dfc))
+* update workflow config ([0e9aa29](https://github.com/Hufe921/canvas-editor/commit/0e9aa29a16cedbe51bd22130656840797eb02cb9))
+
+
+### Documentation
+
+* add CONTRIBUTING.md ([c7b138d](https://github.com/Hufe921/canvas-editor/commit/c7b138d436da7105fb21027fa8cfdba78214f69b))
+* update documentation descriptions ([1322c86](https://github.com/Hufe921/canvas-editor/commit/1322c86a98356110ad3255b8aaf8d209311ce6d4))
+
+
+### Features
+
+* add filterHideElementRow option for print mode #1410 ([67ca33a](https://github.com/Hufe921/canvas-editor/commit/67ca33a1f2002c1e70eee6f04882e55b65fed8ee)), closes [#1410](https://github.com/Hufe921/canvas-editor/issues/1410)
+* add year and month picker for date control #1256 ([fb45ee1](https://github.com/Hufe921/canvas-editor/commit/fb45ee18811f23b733b8fa2c6e7529d31b83691b)), closes [#1256](https://github.com/Hufe921/canvas-editor/issues/1256)
+* use table-relative coordinates for float images #1372 ([1d403ea](https://github.com/Hufe921/canvas-editor/commit/1d403ea6f344217791de151c8606e93788bce533)), closes [#1372](https://github.com/Hufe921/canvas-editor/issues/1372)
+
+
+
+## [0.9.133](https://github.com/Hufe921/canvas-editor/compare/v0.9.132...v0.9.133) (2026-05-05)
+
+
+### Bug Fixes
+
+* prevent prototype pollution in mergeObject #1405 ([e18abe4](https://github.com/Hufe921/canvas-editor/commit/e18abe497ea3ef37aff8e0611879e53fac069272)), closes [#1405](https://github.com/Hufe921/canvas-editor/issues/1405)
+
+
+### Chores
+
+* migrate package manager from yarn to pnpm ([8a03995](https://github.com/Hufe921/canvas-editor/commit/8a039952151c7590292e9961329f94ce6851ad2b))
+* update release script ([06172a3](https://github.com/Hufe921/canvas-editor/commit/06172a366f3ed875c3f30e66c54f89769683070a))
+* upgrade dependency version #1407 ([1125ae4](https://github.com/Hufe921/canvas-editor/commit/1125ae448479f0feb56174d85fe4996a61d65629)), closes [#1407](https://github.com/Hufe921/canvas-editor/issues/1407)
+
+
+### Features
+
+* allow setGroup and deleteGroup in readonly/form mode #1406 ([bd6e903](https://github.com/Hufe921/canvas-editor/commit/bd6e9039e76114c3af2c29b37481462e52244633)), closes [#1406](https://github.com/Hufe921/canvas-editor/issues/1406)
+* auto-generate colgroup for table when not provided #1404 ([636a786](https://github.com/Hufe921/canvas-editor/commit/636a7868fbace75d35cff2e18c01d9caed01d30c)), closes [#1404](https://github.com/Hufe921/canvas-editor/issues/1404)
+
+
+### Tests
+
+* add unit tests for core modules ([a12c679](https://github.com/Hufe921/canvas-editor/commit/a12c67988b2eea07f4ec926038f120bb85c4f746))
+* improve test coverage with new test cases ([10357f6](https://github.com/Hufe921/canvas-editor/commit/10357f6b6f92e561b043061fc0b6d159f155c1ba))
+
+
+
 ## [0.9.132](https://github.com/Hufe921/canvas-editor/compare/v0.9.131...v0.9.132) (2026-04-24)
 
 

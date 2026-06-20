@@ -29,11 +29,12 @@ describe('菜单-页面布局', () => {
 
   it('设置纸张大小', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.command.executePaperSize(148, 210) // A5
+      editor.command.executePaperSize(565, 796) // A5
 
-      // 验证无异常
       const options = editor.command.getOptions()
       expect(options).to.be.an('object')
+      expect(options.width).to.eq(565)
+      expect(options.height).to.eq(796)
     })
   })
 

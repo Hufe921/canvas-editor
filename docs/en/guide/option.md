@@ -85,6 +85,7 @@ interface IEditorOption {
   imgCaption?: IImgCaptionOption // Image caption configuration
   list?: IListOption // List configuration
   magnifier?: IMagnifierOption // Magnifier configuration
+  accessibility?: IAccessibilityOption // Accessibility configuration
 }
 ```
 
@@ -108,6 +109,7 @@ interface IHeader {
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the header content from being edited
+  disabledPages?: number[] // Page numbers (0-based) on which the header is not displayed. default: []
 }
 ```
 
@@ -120,6 +122,7 @@ interface IFooter {
   maxHeightRadio?: MaxHeightRatio // Occupies the maximum height ratio of the page.default: HALF
   disabled?: boolean // Whether to disable
   editable?: boolean // Disable the footer content from being edited
+  disabledPages?: number[] // Page numbers (0-based) on which the footer is not displayed. default: []
 }
 ```
 
@@ -358,6 +361,7 @@ interface IModeRule {
     imagePreviewerDisabled?: boolean // Disable image previewer in print mode
     backgroundDisabled?: boolean // Disable background in print mode
     filterEmptyControl?: boolean // Filter empty controls in print mode. default: true
+    filterHideElementRow?: boolean // Filter hidden element empty rows in print mode. default: false
   }
   readonly?: {
     imagePreviewerDisabled?: boolean // Disable image previewer in readonly mode
@@ -415,5 +419,13 @@ interface IMagnifierOption {
   size?: number // Magnifier diameter. default: 120
   zoom?: number // Magnification. default: 2
   borderColor?: string // Border color. default: #efefef
+}
+```
+
+## Accessibility Configuration
+
+```typescript
+interface IAccessibilityOption {
+  disabled?: boolean // Whether to disable accessibility support. default: true
 }
 ```

@@ -2,6 +2,7 @@ import {
   EDITOR_COMPONENT,
   EDITOR_PREFIX
 } from '../../../../dataset/constant/Editor'
+import { DatePickerMode } from '../../../../dataset/enum/DatePicker'
 import { EditorComponent } from '../../../../dataset/enum/Editor'
 import { IElementPosition } from '../../../../interface/Element'
 import { scrollIntoView } from '../../../../utils'
@@ -23,6 +24,20 @@ export interface IDatePickerLang {
   }
   year: string
   month: string
+  months: {
+    jan: string
+    feb: string
+    mar: string
+    apr: string
+    may: string
+    jun: string
+    jul: string
+    aug: string
+    sep: string
+    oct: string
+    nov: string
+    dec: string
+  }
   hour: string
   minute: string
   second: string
@@ -36,11 +51,15 @@ interface IDatePickerDom {
   container: HTMLDivElement
   dateWrap: HTMLDivElement
   datePickerWeek: HTMLDivElement
+  yearWrap: HTMLDivElement
+  monthWrap: HTMLDivElement
   timeWrap: HTMLUListElement
   title: {
     preYear: HTMLSpanElement
     preMonth: HTMLSpanElement
     now: HTMLSpanElement
+    yearLabel: HTMLSpanElement
+    monthLabel: HTMLSpanElement
     nextMonth: HTMLSpanElement
     nextYear: HTMLSpanElement
   }
@@ -72,6 +91,9 @@ export class DatePicker {
   private isDatePicker: boolean
   private pickDate: Date | null
   private lang: IDatePickerLang
+  private datePickerType: DatePickerMode
+  private viewMode: DatePickerMode
+  private yearPageStart: number
 
   constructor(draw: Draw, options: IDatePickerOption = {}) {
     this.draw = draw
@@ -82,6 +104,9 @@ export class DatePicker {
     this.renderOptions = null
     this.isDatePicker = true
     this.pickDate = null
+    this.datePickerType = DatePickerMode.DATE
+    this.viewMode = DatePickerMode.DATE
+    this.yearPageStart = 0
     this._bindEvent()
   }
 
@@ -100,8 +125,14 @@ export class DatePicker {
     const preMonthTitle = document.createElement('span')
     preMonthTitle.classList.add(`${EDITOR_PREFIX}-date-title__pre-month`)
     preMonthTitle.innerText = `<`
+    const yearLabel = document.createElement('span')
+    yearLabel.classList.add(`${EDITOR_PREFIX}-date-title__year-label`)
+    const monthLabel = document.createElement('span')
+    monthLabel.classList.add(`${EDITOR_PREFIX}-date-title__month-label`)
     const nowTitle = document.createElement('span')
     nowTitle.classList.add(`${EDITOR_PREFIX}-date-title__now`)
+    nowTitle.append(yearLabel)
+    nowTitle.append(monthLabel)
     const nextMonthTitle = document.createElement('span')
     nextMonthTitle.classList.add(`${EDITOR_PREFIX}-date-title__next-month`)
     nextMonthTitle.innerText = `>`
@@ -132,6 +163,12 @@ export class DatePicker {
     dateWrap.append(datePickerTitle)
     dateWrap.append(datePickerWeek)
     dateWrap.append(datePickerDay)
+    // year-年份选择
+    const yearWrap = document.createElement('div')
+    yearWrap.classList.add(`${EDITOR_PREFIX}-year-wrap`)
+    // month-月份选择
+    const monthWrap = document.createElement('div')
+    monthWrap.classList.add(`${EDITOR_PREFIX}-month-wrap`)
     // time-时间选择
     const timeWrap = document.createElement('ul')
     timeWrap.classList.add(`${EDITOR_PREFIX}-time-wrap`)
@@ -181,6 +218,8 @@ export class DatePicker {
     datePickerMenu.append(submitMenu)
     // 构建
     datePickerContainer.append(dateWrap)
+    datePickerContainer.append(yearWrap)
+    datePickerContainer.append(monthWrap)
     datePickerContainer.append(timeWrap)
     datePickerContainer.append(datePickerMenu)
     this.draw.getContainer().append(datePickerContainer)
@@ -188,11 +227,15 @@ export class DatePicker {
       container: datePickerContainer,
       dateWrap,
       datePickerWeek,
+      yearWrap,
+      monthWrap,
       timeWrap,
       title: {
         preYear: preYearTitle,
         preMonth: preMonthTitle,
         now: nowTitle,
+        yearLabel,
+        monthLabel,
         nextMonth: nextMonthTitle,
         nextYear: nextYearTitle
       },
@@ -212,7 +255,11 @@ export class DatePicker {
 
   private _bindEvent() {
     this.dom.title.preYear.onclick = () => {
-      this._preYear()
+      if (this.viewMode === DatePickerMode.YEAR) {
+        this._preYearPage()
+      } else {
+        this._preYear()
+      }
     }
     this.dom.title.preMonth.onclick = () => {
       this._preMonth()
@@ -221,7 +268,45 @@ export class DatePicker {
       this._nextMonth()
     }
     this.dom.title.nextYear.onclick = () => {
-      this._nextYear()
+      if (this.viewMode === DatePickerMode.YEAR) {
+        this._nextYearPage()
+      } else {
+        this._nextYear()
+      }
+    }
+    this.dom.title.yearLabel.onclick = evt => {
+      evt.stopPropagation()
+      if (
+        this.datePickerType === DatePickerMode.DATE &&
+        this.viewMode === DatePickerMode.DATE
+      ) {
+        this.viewMode = DatePickerMode.YEAR
+        this._update()
+        this._switchView()
+      }
+    }
+    this.dom.title.monthLabel.onclick = evt => {
+      evt.stopPropagation()
+      if (
+        this.datePickerType === DatePickerMode.DATE &&
+        this.viewMode === DatePickerMode.DATE
+      ) {
+        this.viewMode = DatePickerMode.MONTH
+        this._update()
+        this._switchView()
+      }
+    }
+    this.dom.title.now.onclick = () => {
+      // 从年份/月份视图返回日期视图（仅日期选择器）
+      if (
+        this.datePickerType === DatePickerMode.DATE &&
+        (this.viewMode === DatePickerMode.YEAR ||
+          this.viewMode === DatePickerMode.MONTH)
+      ) {
+        this.viewMode = DatePickerMode.DATE
+        this._update()
+        this._switchView()
+      }
     }
     this.dom.menu.time.onclick = () => {
       this.isDatePicker = !this.isDatePicker
@@ -296,6 +381,16 @@ export class DatePicker {
     this.pickDate = new Date(this.now)
   }
 
+  private _getDatePickerType(format?: string): DatePickerMode {
+    if (!format) return DatePickerMode.DATE
+    const hasYear = /y+/i.test(format)
+    const hasMonth = /M+/.test(format)
+    const hasDay = /[dD]+/.test(format)
+    if (hasYear && !hasMonth && !hasDay) return DatePickerMode.YEAR
+    if (hasYear && hasMonth && !hasDay) return DatePickerMode.MONTH
+    return DatePickerMode.DATE
+  }
+
   private _getLang() {
     const i18n = this.draw.getI18n()
     const t = i18n.t.bind(i18n)
@@ -315,6 +410,20 @@ export class DatePicker {
       },
       year: t('datePicker.year'),
       month: t('datePicker.month'),
+      months: {
+        jan: t('datePicker.months.jan'),
+        feb: t('datePicker.months.feb'),
+        mar: t('datePicker.months.mar'),
+        apr: t('datePicker.months.apr'),
+        may: t('datePicker.months.may'),
+        jun: t('datePicker.months.jun'),
+        jul: t('datePicker.months.jul'),
+        aug: t('datePicker.months.aug'),
+        sep: t('datePicker.months.sep'),
+        oct: t('datePicker.months.oct'),
+        nov: t('datePicker.months.nov'),
+        dec: t('datePicker.months.dec')
+      },
       hour: t('datePicker.hour'),
       minute: t('datePicker.minute'),
       second: t('datePicker.second')
@@ -346,6 +455,48 @@ export class DatePicker {
   }
 
   private _update() {
+    if (this.viewMode === DatePickerMode.YEAR) {
+      this._updateYearView()
+    } else if (this.viewMode === DatePickerMode.MONTH) {
+      this._updateMonthView()
+    } else {
+      this._updateDateView()
+    }
+    this._updateTitleVisibility()
+  }
+
+  private _updateTitleVisibility() {
+    const { preYear, preMonth, nextMonth, nextYear } = this.dom.title
+    if (this.viewMode === DatePickerMode.YEAR) {
+      // 年份视图：只显示前后年翻页
+      preYear.style.display = 'inline-block'
+      preYear.innerText = '<<'
+      nextYear.style.display = 'inline-block'
+      nextYear.innerText = '>>'
+      preMonth.style.display = 'none'
+      nextMonth.style.display = 'none'
+    } else if (this.viewMode === DatePickerMode.MONTH) {
+      // 月份视图：只显示前后年翻页
+      preYear.style.display = 'inline-block'
+      preYear.innerText = '<<'
+      nextYear.style.display = 'inline-block'
+      nextYear.innerText = '>>'
+      preMonth.style.display = 'none'
+      nextMonth.style.display = 'none'
+    } else {
+      // 日期视图：显示全部
+      preYear.style.display = 'inline-block'
+      preYear.innerText = '<<'
+      preMonth.style.display = 'inline-block'
+      preMonth.innerText = '<'
+      nextMonth.style.display = 'inline-block'
+      nextMonth.innerText = '>'
+      nextYear.style.display = 'inline-block'
+      nextYear.innerText = '>>'
+    }
+  }
+
+  private _updateDateView() {
     // 本地年月日
     const localDate = new Date()
     const localYear = localDate.getFullYear()
@@ -363,9 +514,11 @@ export class DatePicker {
     // 当前年月日
     const year = this.now.getFullYear()
     const month = this.now.getMonth() + 1
-    this.dom.title.now.innerText = `${year}${this.lang.year} ${String(
-      month
-    ).padStart(2, '0')}${this.lang.month}`
+    this.dom.title.yearLabel.innerText = `${year}${this.lang.year}`
+    this.dom.title.monthLabel.innerText = ` ${String(month).padStart(
+      2,
+      '0'
+    )}${this.lang.month}`
     // 日期补差
     const curDate = new Date(year, month, 0) // 当月日期
     const curDay = curDate.getDate() // 当月总天数
@@ -422,6 +575,131 @@ export class DatePicker {
         this._setDatePick(year, month, i)
       }
       this.dom.day.append(dayDom)
+    }
+  }
+
+  private _updateYearView() {
+    const year = this.now.getFullYear()
+    // 计算年份范围（12年一页）
+    if (this.yearPageStart === 0) {
+      this.yearPageStart = year - 5
+    }
+    const startYear = this.yearPageStart
+    const endYear = startYear + 11
+    this.dom.title.yearLabel.innerText = `${startYear} - ${endYear}`
+    this.dom.title.monthLabel.innerText = ''
+    this.dom.yearWrap.innerHTML = ''
+    // 选择年份
+    const pickYear = this.pickDate?.getFullYear() || null
+    const localYear = new Date().getFullYear()
+    for (let i = startYear; i <= endYear; i++) {
+      const yearDom = document.createElement('div')
+      yearDom.innerText = `${i}`
+      if (i === localYear) {
+        yearDom.classList.add('active')
+      }
+      if (pickYear === i) {
+        yearDom.classList.add('select')
+      }
+      yearDom.onclick = () => {
+        this.now.setFullYear(i)
+        if (this.pickDate) {
+          this.pickDate.setFullYear(i)
+        }
+        if (this.datePickerType === DatePickerMode.YEAR) {
+          // 年份选择器直接提交
+          this._submit()
+          this.dispose()
+        } else {
+          // 切换到月份视图
+          this.viewMode = DatePickerMode.MONTH
+          this._update()
+          this._switchView()
+        }
+      }
+      this.dom.yearWrap.append(yearDom)
+    }
+  }
+
+  private _updateMonthView() {
+    const year = this.now.getFullYear()
+    this.dom.title.yearLabel.innerText = `${year}${this.lang.year}`
+    this.dom.title.monthLabel.innerText = ''
+    this.dom.monthWrap.innerHTML = ''
+    const monthNames = [
+      this.lang.months.jan,
+      this.lang.months.feb,
+      this.lang.months.mar,
+      this.lang.months.apr,
+      this.lang.months.may,
+      this.lang.months.jun,
+      this.lang.months.jul,
+      this.lang.months.aug,
+      this.lang.months.sep,
+      this.lang.months.oct,
+      this.lang.months.nov,
+      this.lang.months.dec
+    ]
+    const localDate = new Date()
+    const localYear = localDate.getFullYear()
+    const localMonth = localDate.getMonth()
+    const pickYear = this.pickDate?.getFullYear() || null
+    const pickMonth = this.pickDate?.getMonth() || null
+    for (let i = 0; i < 12; i++) {
+      const monthDom = document.createElement('div')
+      monthDom.innerText = monthNames[i]
+      if (localYear === year && localMonth === i) {
+        monthDom.classList.add('active')
+      }
+      if (pickYear === year && pickMonth === i) {
+        monthDom.classList.add('select')
+      }
+      monthDom.onclick = () => {
+        this.now.setMonth(i)
+        if (this.pickDate) {
+          this.pickDate.setMonth(i)
+        }
+        if (this.datePickerType === DatePickerMode.MONTH) {
+          // 月份选择器直接提交
+          this._submit()
+          this.dispose()
+        } else {
+          // 切换到日期视图
+          this.viewMode = DatePickerMode.DATE
+          this._update()
+          this._switchView()
+        }
+      }
+      this.dom.monthWrap.append(monthDom)
+    }
+  }
+
+  private _switchView() {
+    // 切换可见视图
+    this.dom.yearWrap.classList.remove('active')
+    this.dom.monthWrap.classList.remove('active')
+    this.dom.timeWrap.classList.remove('active')
+    this.dom.dateWrap.classList.remove('year-mode', 'month-mode')
+    this.dom.datePickerWeek.style.display = 'flex'
+    if (this.viewMode === DatePickerMode.DATE) {
+      this.dom.dateWrap.classList.add('active')
+    } else if (this.viewMode === DatePickerMode.YEAR) {
+      this.dom.dateWrap.classList.add('active', 'year-mode')
+      this.dom.yearWrap.classList.add('active')
+      this.dom.datePickerWeek.style.display = 'none'
+    } else if (this.viewMode === DatePickerMode.MONTH) {
+      this.dom.dateWrap.classList.add('active', 'month-mode')
+      this.dom.monthWrap.classList.add('active')
+      this.dom.datePickerWeek.style.display = 'none'
+    }
+    // 时间选择按钮只在日期类型且为日期视图时显示
+    if (
+      this.datePickerType === DatePickerMode.DATE &&
+      this.viewMode === DatePickerMode.DATE
+    ) {
+      this.dom.menu.time.style.display = 'inline-block'
+    } else {
+      this.dom.menu.time.style.display = 'none'
     }
   }
 
@@ -497,8 +775,22 @@ export class DatePicker {
     this._update()
   }
 
+  private _preYearPage() {
+    this.yearPageStart -= 12
+    this._update()
+  }
+
+  private _nextYearPage() {
+    this.yearPageStart += 12
+    this._update()
+  }
+
   private _now() {
     this.pickDate = new Date()
+    this.now = new Date()
+    if (this.datePickerType === DatePickerMode.YEAR) {
+      this.yearPageStart = this.now.getFullYear() - 5
+    }
     this.dispose()
   }
 
@@ -560,10 +852,24 @@ export class DatePicker {
     this.lang = this._getLang()
     this._setLangChange()
     this._setValue()
+    // 根据 dateFormat 推断选择器类型
+    this.datePickerType = this._getDatePickerType(option.dateFormat)
+    // 设置初始视图
+    if (this.datePickerType === DatePickerMode.YEAR) {
+      this.viewMode = DatePickerMode.YEAR
+      this.yearPageStart = this.now.getFullYear() - 5
+    } else if (this.datePickerType === DatePickerMode.MONTH) {
+      this.viewMode = DatePickerMode.MONTH
+    } else {
+      this.viewMode = DatePickerMode.DATE
+    }
     this._update()
+    this._switchView()
     this._setPosition()
     this.isDatePicker = true
-    this._toggleDateTimePicker()
+    if (this.datePickerType === DatePickerMode.DATE) {
+      this._toggleDateTimePicker()
+    }
     this._toggleVisible(true)
   }
 

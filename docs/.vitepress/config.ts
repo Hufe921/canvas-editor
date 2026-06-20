@@ -3,7 +3,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   base: '/canvas-editor-docs/',
   title: 'canvas-editor',
-  description: 'rich text editor by canvas/svg',
+  description: 'A Canvas/SVG-based rich text editor',
   themeConfig: {
     i18nRouting: false,
     algolia: {
