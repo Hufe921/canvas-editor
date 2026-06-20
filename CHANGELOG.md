@@ -1,3 +1,20 @@
+## [0.9.136](https://github.com/Hufe921/canvas-editor/compare/v0.9.135...v0.9.136) (2026-06-20)
+
+
+### Features
+
+* allow hiding header/footer on individual pages #778 ([bbd2292](https://github.com/Hufe921/canvas-editor/commit/bbd229244c01a5d5a4a77540f305b7ee56b72be0)), closes [#778](https://github.com/Hufe921/canvas-editor/issues/778)
+* improve format painter paragraph style handling #446 ([5e880a9](https://github.com/Hufe921/canvas-editor/commit/5e880a9fc12038e448c4a34de2d3ecdf3807e107)), closes [#446](https://github.com/Hufe921/canvas-editor/issues/446)
+* support control minWidth wrapping across lines #442 ([d2bb97a](https://github.com/Hufe921/canvas-editor/commit/d2bb97ae1e8b33989e5728d348962a707fdcaa71)), closes [#442](https://github.com/Hufe921/canvas-editor/issues/442)
+* table nesting operations #650 ([2243671](https://github.com/Hufe921/canvas-editor/commit/2243671cdbc443cce6c00a8084f45bcedc496c00)), closes [#650](https://github.com/Hufe921/canvas-editor/issues/650)
+
+
+### Tests
+
+* update page layout test case ([2b4553b](https://github.com/Hufe921/canvas-editor/commit/2b4553bd2cf86838e6d75a07a66f32228b395d54))
+
+
+
 ## [0.9.135](https://github.com/Hufe921/canvas-editor/compare/v0.9.134...v0.9.135) (2026-06-06)
 
 
