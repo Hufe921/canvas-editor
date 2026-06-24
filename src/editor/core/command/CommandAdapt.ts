@@ -138,6 +138,7 @@ import {
 import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
 import { WatermarkType } from '../../dataset/enum/Watermark'
+import { IPrintOption } from '@/editor/interface/Print'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1373,7 +1374,28 @@ export class CommandAdapt {
     this.draw.getSearch().replace(payload, option)
   }
 
-  public async print() {
+  public async print(option?: IPrintOption) {
+    // 离屏渲染支持自定义data和option
+    if (option?.offscreen) {
+      const data = option.data ?? this.draw.getValue().data
+      const options = option.options ?? this.draw.getOptions()
+      const container = document.createElement('div')
+      container.style.position = 'absolute'
+      container.style.left = '-9999px'
+      container.style.top = '0'
+      container.style.visibility = 'hidden'
+      document.body.append(container)
+      const { default: Editor } = await import('../../index')
+      let tempEditor: InstanceType<typeof Editor> | null = null
+      try {
+        tempEditor = new Editor(container, data, options)
+        await tempEditor.command.executePrint()
+      } finally {
+        tempEditor?.destroy()
+        container.remove()
+      }
+      return
+    }
     const { scale, printPixelRatio, paperDirection, width, height } =
       this.options
     if (scale !== 1) {

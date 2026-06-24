@@ -31,7 +31,7 @@ function convertPxToPaperSize(width: number, height: number) {
   }
 }
 
-export interface IPrintOption {
+interface IPrintOption {
   width: number
   height: number
   direction?: PaperDirection

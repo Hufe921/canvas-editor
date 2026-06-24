@@ -19,6 +19,7 @@ import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
   <button class="bold"></button>
 </div>
 ```
+
 :::
 
 ## executeMode
@@ -704,7 +705,7 @@ instance.command.executeReplace(newWord: string, option?: IReplaceOption)
 用法：
 
 ```javascript
-instance.command.executePrint()
+instance.command.executePrint(option?: IPrintOption)
 ```
 
 ## executeReplaceImageElement
