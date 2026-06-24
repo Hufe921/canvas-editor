@@ -161,6 +161,7 @@ export interface IPrintModeRule {
   backgroundDisabled?: boolean
   filterEmptyControl?: boolean
   filterHideElementRow?: boolean
+  areaHideDisabled?: boolean
 }
 
 export interface IReadonlyModeRule {

@@ -125,7 +125,7 @@ export class Area {
     for (const areaInfoItem of this.areaInfoMap) {
       const { area, positionList } = areaInfoItem[1]
       if (
-        area?.hide ||
+        (area?.hide && !this.draw.isAreaHideDisabled()) ||
         (!area?.backgroundColor && !area?.borderColor && !area?.placeholder)
       ) {
         continue

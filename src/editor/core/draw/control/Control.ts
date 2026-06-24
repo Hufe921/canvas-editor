@@ -721,8 +721,11 @@ export class Control {
     } else {
       element = elementList[index]
     }
-    // 隐藏元素移动光标
-    if (element.hide || element.control?.hide || element.area?.hide) {
+    // 隐藏元素移动光标（设计模式下允许选中）
+    if (
+      !this.draw.isDesignMode() &&
+      (element.hide || element.control?.hide || element.area?.hide)
+    ) {
       const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
       return {
         newIndex: nonHideIndex,

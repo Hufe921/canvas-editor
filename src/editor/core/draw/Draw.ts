@@ -422,6 +422,14 @@ export class Draw {
     return this.mode === EditorMode.PRINT
   }
 
+  public isAreaHideDisabled() {
+    return (
+      this.isDesignMode() ||
+      (this.isPrintMode() &&
+        this.options.modeRule[EditorMode.PRINT].areaHideDisabled)
+    )
+  }
+
   public isGraffitiMode() {
     return this.mode === EditorMode.GRAFFITI
   }
@@ -1471,7 +1479,9 @@ export class Draw {
       x += isStartElement ? offsetX : 0
       y += isStartElement ? curRow.offsetY || 0 : 0
       if (
-        (element.hide || element.control?.hide || element.area?.hide) &&
+        (element.hide ||
+          element.control?.hide ||
+          (element.area?.hide && !this.isAreaHideDisabled())) &&
         !this.isDesignMode()
       ) {
         const preElement = curRow.elementList[curRow.elementList.length - 1]
@@ -1994,12 +2004,15 @@ export class Draw {
         preElement?.imgDisplay === ImageDisplay.INLINE ||
         element.imgDisplay === ImageDisplay.INLINE ||
         preElement?.listId !== element.listId ||
-        (preElement?.areaId !== element.areaId && !element.area?.hide) ||
+        (preElement?.areaId !== element.areaId &&
+          !(element.area?.hide && !this.isAreaHideDisabled())) ||
         (element.control?.flexDirection === FlexDirection.COLUMN &&
           (element.controlComponent === ControlComponent.CHECKBOX ||
             element.controlComponent === ControlComponent.RADIO) &&
           preElement?.controlComponent === ControlComponent.VALUE) ||
-        (i !== 0 && element.value === ZERO && !element.area?.hide)
+        (i !== 0 &&
+          element.value === ZERO &&
+          !(element.area?.hide && !this.isAreaHideDisabled()))
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
       const isWrap = isForceBreak || isWidthNotEnough
@@ -2075,7 +2088,12 @@ export class Draw {
         ) {
           const isAllHidden = curRow.elementList
             .filter(el => el.value !== ZERO)
-            .every(el => el.hide || el.control?.hide || el.area?.hide)
+            .every(
+              el =>
+                el.hide ||
+                el.control?.hide ||
+                (el.area?.hide && !this.isAreaHideDisabled())
+            )
           if (isAllHidden) {
             curRow.height = 0
             curRow.ascent = 0
@@ -2298,7 +2316,9 @@ export class Draw {
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
         if (
-          (element.hide || element.control?.hide || element.area?.hide) &&
+          (element.hide ||
+            element.control?.hide ||
+            (element.area?.hide && !this.isAreaHideDisabled())) &&
           !this.isDesignMode()
         ) {
           // 控件隐藏时不绘制
