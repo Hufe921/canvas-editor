@@ -20,11 +20,12 @@ import { Position } from '../../position/Position'
 import { formatElementList, zipElementList } from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
 import { IRange } from '../../../interface/Range'
-import { IElementPosition } from '../../../interface/Element'
+import { IElement, IElementPosition } from '../../../interface/Element'
 import { Placeholder } from '../frame/Placeholder'
 import { defaultPlaceholderOption } from '../../../dataset/constant/Placeholder'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
+import { ITd } from '../../../interface/table/Td'
 
 export class Area {
   private draw: Draw
@@ -81,15 +82,11 @@ export class Area {
     if (this.zone.getZone() !== EditorZone.MAIN) {
       this.zone.setZone(EditorZone.MAIN)
     }
-    // 跳出表格
-    this.draw.getPosition().setPositionContext({
-      isTable: false
-    })
     // 通过光标插入area && 不能在area内再次插入area
     if (range && !this.getActiveAreaId()) {
       const { startIndex, endIndex } = range
       // 校验位置合法性
-      const elementList = this.draw.getOriginalMainElementList()
+      const elementList = this.draw.getMainElementList()
       if (!elementList[startIndex] || !elementList[endIndex]) {
         return null
       }
@@ -99,7 +96,7 @@ export class Area {
       if (position === LocationPosition.BEFORE) {
         this.range.setRange(0, 0)
       } else {
-        const elementList = this.draw.getOriginalMainElementList()
+        const elementList = this.draw.getMainElementList()
         const lastIndex = elementList.length - 1
         this.range.setRange(lastIndex, lastIndex)
       }
@@ -135,19 +132,29 @@ export class Area {
       ctx.translate(0.5, 0.5)
       const firstPosition = pagePositionList[0]
       const lastPosition = pagePositionList[pagePositionList.length - 1]
+      const tableCell = areaInfoItem[1].tableCell
+      const isTableArea = !!tableCell
+      const tdPadding = this.draw.getTdPadding()
       // 起始位置
-      const x = margins[3]
+      const x = isTableArea
+        ? tableCell.tablePosition.coordinate.leftTop[0] +
+          tableCell.td.x! * this.options.scale +
+          tdPadding[3]
+        : margins[3]
       const y = Math.ceil(firstPosition.coordinate.leftTop[1])
       const height = Math.ceil(lastPosition.coordinate.rightBottom[1] - y)
+      const areaWidth = isTableArea
+        ? tableCell.td.width! * this.options.scale - tdPadding[1] - tdPadding[3]
+        : width
       // 背景色
       if (area.backgroundColor) {
         ctx.fillStyle = area.backgroundColor
-        ctx.fillRect(x, y, width, height)
+        ctx.fillRect(x, y, areaWidth, height)
       }
       // 边框
       if (area.borderColor) {
         ctx.strokeStyle = area.borderColor
-        ctx.strokeRect(x, y, width, height)
+        ctx.strokeRect(x, y, areaWidth, height)
       }
       // 提示词
       if (area.placeholder && positionList.length <= 1) {
@@ -169,22 +176,66 @@ export class Area {
     this.areaInfoMap.clear()
     const elementList = this.draw.getOriginalMainElementList()
     const positionList = this.position.getOriginalMainPositionList()
+    this.computeAreaInfo(elementList, positionList, elementList)
+  }
+
+  private computeAreaInfo(
+    elementList: IElement[],
+    positionList: IElementPosition[] = [],
+    sourceElementList: IElement[],
+    inheritedAreaId?: string,
+    tableCell?: IAreaInfo['tableCell']
+  ) {
     for (let e = 0; e < elementList.length; e++) {
       const element = elementList[e]
       const areaId = element.areaId
-      if (areaId) {
+      const position = positionList[e]
+      if (areaId && areaId !== inheritedAreaId) {
         const areaInfo = this.areaInfoMap.get(areaId)
         if (!areaInfo) {
           this.areaInfoMap.set(areaId, {
             id: areaId,
             area: element.area!,
             elementList: [element],
-            positionList: [positionList[e]]
+            positionList: position ? [position] : [],
+            sourceElementList,
+            tableCell
           })
         } else {
           areaInfo.elementList.push(element)
-          areaInfo.positionList.push(positionList[e])
+          if (position) {
+            areaInfo.positionList.push(position)
+          }
         }
+      }
+      if (element.type === ElementType.TABLE && element.trList) {
+        this.computeTableAreaInfo(element, position, areaId)
+      }
+    }
+  }
+
+  private computeTableAreaInfo(
+    tableElement: IElement,
+    tablePosition?: IElementPosition,
+    inheritedAreaId?: string
+  ) {
+    const trList = tableElement.trList!
+    for (let r = 0; r < trList.length; r++) {
+      const tr = trList[r]
+      for (let d = 0; d < tr.tdList.length; d++) {
+        const td: ITd = tr.tdList[d]
+        this.computeAreaInfo(
+          td.value,
+          td.positionList,
+          td.value,
+          inheritedAreaId,
+          tablePosition
+            ? {
+                td,
+                tablePosition
+              }
+            : undefined
+        )
       }
     }
   }
@@ -278,7 +329,7 @@ export class Area {
     if (!areaInfo) return
     // 删除旧数据并替换新的格式化数据
     const { positionList } = areaInfo
-    const elementList = this.draw.getOriginalMainElementList()
+    const elementList = areaInfo.sourceElementList
     const valueList = payload.value
     formatElementList(
       [
@@ -315,7 +366,7 @@ export class Area {
     if (!areaInfo) return
     // 删除区域内的所有元素
     const { positionList } = areaInfo
-    const elementList = this.draw.getOriginalMainElementList()
+    const elementList = areaInfo.sourceElementList
     this.draw.spliceElementList(
       elementList,
       positionList[0].index,
