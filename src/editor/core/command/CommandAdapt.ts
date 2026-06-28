@@ -976,7 +976,7 @@ export class CommandAdapt {
   public insertTable(row: number, col: number) {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     this.tableOperate.insertTable(row, col)
   }
@@ -1094,7 +1094,7 @@ export class CommandAdapt {
     if (!url || !valueList?.length) return
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
@@ -1219,7 +1219,7 @@ export class CommandAdapt {
   ) {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
@@ -1267,7 +1267,7 @@ export class CommandAdapt {
   public pageBreak() {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     this.insertElementList([
       {
