@@ -828,6 +828,16 @@ Usage:
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
 ```
 
+## executeSetColumns
+
+Feature: Set the column configuration.
+
+Usage:
+
+```javascript
+instance.command.executeSetColumns(config: IColumnOption | null)
+```
+
 ## executeSetMainBadge
 
 Feature: Set main badge

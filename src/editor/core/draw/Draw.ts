@@ -28,6 +28,8 @@ import {
   IInsertElementListOption
 } from '../../interface/Element'
 import { IRow, IRowElement } from '../../interface/Row'
+import { IColumnLayout, IColumnOption } from '../../interface/Column'
+import { ColumnManager } from './column/ColumnManager'
 import { deepClone, getUUID, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -202,6 +204,7 @@ export class Draw {
   private lazyRenderIntersectionObserver: IntersectionObserver | null
   private printModeData: Required<Omit<IEditorData, 'graffiti'>> | null
   private controlMinWidthPlaceholderElementListSet: WeakSet<IElement[]>
+  private columnManager: ColumnManager
 
   constructor(
     rootContainer: HTMLElement,
@@ -272,6 +275,7 @@ export class Draw {
     this.control = new Control(this)
     this.pageBorder = new PageBorder(this)
     this.graffiti = new Graffiti(this, data.graffiti)
+    this.columnManager = new ColumnManager(this)
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -480,6 +484,15 @@ export class Draw {
     return width - margins[1] - margins[3]
   }
 
+  public getColumnLayout(): IColumnLayout | null {
+    return this.columnManager.getLayout()
+  }
+
+  public setColumnConfig(config: IColumnOption | null): void {
+    if (this.options.pageMode === PageMode.CONTINUITY) return
+    this.columnManager.setConfig(this.getInnerWidth(), config)
+  }
+
   public getOriginalInnerWidth(): number {
     const width = this.getOriginalWidth()
     const margins = this.getOriginalMargins()
@@ -672,6 +685,10 @@ export class Draw {
 
   public getZone(): Zone {
     return this.zone
+  }
+
+  public getColumnManager(): ColumnManager {
+    return this.columnManager
   }
 
   public getRange(): RangeManager {
@@ -1432,6 +1449,9 @@ export class Draw {
     // 计算列表偏移宽度
     const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
     const rowList: IRow[] = []
+    const layout =
+      isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
+    const isColumnEnabled = !!layout && layout.count > 1
     if (elementList.length) {
       rowList.push({
         width: 0,
@@ -1440,7 +1460,8 @@ export class Draw {
         elementList: [],
         startIndex: 0,
         rowIndex: 0,
-        rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex
+        rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex,
+        ...(isColumnEnabled ? { columnIndex: 0 } : {})
       })
     }
     // 起始位置及页码计算
@@ -1458,6 +1479,8 @@ export class Draw {
     let listIndex = 0
     // 控件最小宽度
     let controlRealWidth = 0
+    // 分栏游标
+    let currentColumn = 0
     for (let i = 0; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
@@ -1473,7 +1496,8 @@ export class Draw {
         curRow.offsetX ||
         (element.listId && listStyleMap.get(element.listId)) ||
         0
-      const availableWidth = innerWidth - offsetX
+      const rowMaxWidth = isColumnEnabled && layout ? layout.width : innerWidth
+      const availableWidth = rowMaxWidth - offsetX
       // 增加起始位置坐标偏移量
       const isStartElement = curRow.elementList.length === 1
       x += isStartElement ? offsetX : 0
@@ -2026,7 +2050,8 @@ export class Draw {
           ascent,
           rowIndex: curRow.rowIndex + 1,
           rowFlex: elementList[i]?.rowFlex || elementList[i + 1]?.rowFlex,
-          isPageBreak: element.type === ElementType.PAGE_BREAK
+          isPageBreak: element.type === ElementType.PAGE_BREAK,
+          ...(isColumnEnabled ? { columnIndex: currentColumn } : {})
         }
         // 控件缩进
         if (
@@ -2124,25 +2149,43 @@ export class Draw {
       }
       // 重新计算坐标、页码、下一行首行元素环绕交叉
       if (isWrap) {
-        x = startX
+        const columnOffset = !layout ? 0 : layout.offsets[currentColumn] || 0
+        x = startX + columnOffset
         y += curRow.height
         if (isPagingMode && !isFromTable && pageHeight) {
           const curMainOuterHeight = this.getMainOuterHeight(pageNo)
-          if (
-            y - pageStartY + curMainOuterHeight + height > pageHeight ||
-            element.type === ElementType.PAGE_BREAK
-          ) {
-            // 删除多余四周环绕型元素
-            deleteSurroundElementList(surroundElementList, pageNo)
-            pageNo += 1
-            pageStartY =
-              this.getMargins()[0] + this.getHeader().getExtraHeight(pageNo)
-            y = pageStartY
+          const isOverflow =
+            y - pageStartY + curMainOuterHeight + height > pageHeight
+          const isPageBreakElement = element.type === ElementType.PAGE_BREAK
+          if (isOverflow || isPageBreakElement) {
+            if (
+              !isPageBreakElement &&
+              isColumnEnabled &&
+              layout &&
+              currentColumn < layout.count - 1
+            ) {
+              currentColumn += 1
+              y = pageStartY
+              x = startX + (layout.offsets[currentColumn] || 0)
+            } else {
+              // 删除多余四周环绕型元素
+              deleteSurroundElementList(surroundElementList, pageNo)
+              pageNo += 1
+              currentColumn = 0
+              pageStartY =
+                this.getMargins()[0] + this.getHeader().getExtraHeight(pageNo)
+              y = pageStartY
+              x = startX + (layout ? layout.offsets[0] || 0 : 0)
+            }
           }
+        }
+        // 同步新行的栏索引（栏游标可能在翻栏/翻页逻辑中变化）
+        const nextRow = rowList[rowList.length - 1]
+        if (nextRow && isColumnEnabled && nextRow.columnIndex !== undefined) {
+          nextRow.columnIndex = currentColumn
         }
         // 计算下一行第一个元素是否存在环绕交叉
         rowElement.left = 0
-        const nextRow = rowList[rowList.length - 1]
         const surroundPosition = this.position.setSurroundPosition({
           pageNo,
           rowElement,
@@ -2195,10 +2238,20 @@ export class Draw {
     } else {
       // 每页页眉/页脚禁用状态可能不同，按页计算外部占位高度
       let pageHeight = this.getMainOuterHeight(0)
+      let prevColumnIndex: number | undefined = undefined
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]
         const rowOffsetY = row.offsetY || 0
-        if (
+        // 分栏内栏切换：重置当前页累计高度，留在本页
+        const columnChanged =
+          prevColumnIndex !== undefined &&
+          row.columnIndex !== undefined &&
+          row.columnIndex > 0 &&
+          row.columnIndex !== prevColumnIndex
+        if (columnChanged) {
+          pageHeight = this.getMainOuterHeight(pageNo) + row.height + rowOffsetY
+          pageRowList[pageNo].push(row)
+        } else if (
           row.height + rowOffsetY + pageHeight > height ||
           this.rowList[i - 1]?.isPageBreak
         ) {
@@ -2213,6 +2266,7 @@ export class Draw {
           pageHeight += row.height + rowOffsetY
           pageRowList[pageNo].push(row)
         }
+        prevColumnIndex = row.columnIndex
       }
     }
     return pageRowList
@@ -2700,6 +2754,8 @@ export class Draw {
     if (!isPrintMode) {
       this.area.render(ctx, pageNo)
     }
+    // 绘制分栏分隔线
+    this.columnManager.drawSeparator(ctx, pageNo)
     // 绘制水印（底层）
     if (
       !isContinuityMode &&

@@ -828,6 +828,16 @@ instance.command.executePaperDirection(paperDirection: PaperDirection)
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
 ```
 
+## executeSetColumns
+
+功能：设置分栏配置
+
+用法：
+
+```javascript
+instance.command.executeSetColumns(config: IColumnOption | null)
+```
+
 ## executeSetMainBadge
 
 功能：设置正文徽章

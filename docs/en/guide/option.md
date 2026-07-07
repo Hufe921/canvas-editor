@@ -86,6 +86,7 @@ interface IEditorOption {
   list?: IListOption // List configuration
   magnifier?: IMagnifierOption // Magnifier configuration
   accessibility?: IAccessibilityOption // Accessibility configuration
+  column?: IColumnOption // Column configuration. default: disabled
 }
 ```
 
@@ -428,5 +429,17 @@ interface IMagnifierOption {
 ```typescript
 interface IAccessibilityOption {
   disabled?: boolean // Whether to disable accessibility support. default: true
+}
+```
+
+## Column Configuration
+
+```typescript
+interface IColumnOption {
+  count?: number // Number of columns. count<=1 disables columns. default: 1
+  gap?: number // Gap between columns in pixels. default: 20
+  separator?: boolean // Whether to draw separator lines between columns. default: false
+  separatorColor?: string // Separator line color. default: #000000
+  separatorWidth?: number // Separator line width. default: 1
 }
 ```
