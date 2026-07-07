@@ -86,6 +86,7 @@ interface IEditorOption {
   list?: IListOption // 列表配置
   magnifier?: IMagnifierOption // 放大镜配置
   accessibility?: IAccessibilityOption // 无障碍配置
+  column?: IColumnOption // 分栏配置。默认：关闭
 }
 ```
 
@@ -428,5 +429,17 @@ interface IMagnifierOption {
 ```typescript
 interface IAccessibilityOption {
   disabled?: boolean // 是否禁用无障碍支持。默认：true
+}
+```
+
+## 分栏配置
+
+```typescript
+interface IColumnOption {
+  count?: number // 栏数。count<=1 视为关闭分栏。默认：1
+  gap?: number // 栏间距（像素）。默认：20
+  separator?: boolean // 是否显示栏间分隔线。默认：false
+  separatorColor?: string // 分隔线颜色。默认：#000000
+  separatorWidth?: number // 分隔线宽度。默认：1
 }
 ```

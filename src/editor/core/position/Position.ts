@@ -291,16 +291,40 @@ export class Position {
     let x = startX
     let y = startY
     let index = startIndex
+    const columnLayout = this.draw.getColumnLayout()
+    let prevColumnIndex: number | undefined = undefined
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
+      // 分栏内栏切换：y 重置到栏顶
+      if (
+        prevColumnIndex !== undefined &&
+        curRow.columnIndex !== undefined &&
+        curRow.columnIndex > 0 &&
+        curRow.columnIndex !== prevColumnIndex
+      ) {
+        y = startY
+      }
+      prevColumnIndex = curRow.columnIndex
+      // 分栏偏移与有效宽度
+      const inColumn =
+        columnLayout &&
+        curRow.columnIndex !== undefined &&
+        curRow.columnIndex >= 0
+      const columnOffset =
+        inColumn && columnLayout
+          ? columnLayout.offsets[curRow.columnIndex!] || 0
+          : 0
+      const effectiveInnerWidth =
+        inColumn && columnLayout ? columnLayout.width : innerWidth
+      x += columnOffset
       // 行存在环绕的可能性均不设置行布局
       if (!curRow.isSurround) {
         // 计算行偏移量（行居中、居右）
         const curRowWidth = curRow.width + (curRow.offsetX || 0)
         if (curRow.rowFlex === RowFlex.CENTER) {
-          x += (innerWidth - curRowWidth) / 2
+          x += (effectiveInnerWidth - curRowWidth) / 2
         } else if (curRow.rowFlex === RowFlex.RIGHT) {
-          x += innerWidth - curRowWidth
+          x += effectiveInnerWidth - curRowWidth
         }
       }
       // 当前行X/Y轴偏移量

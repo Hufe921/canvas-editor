@@ -181,6 +181,16 @@ const [top: number, right: number, bottom: number, left: number] =
   instance.command.getPaperMargin()
 ```
 
+## getColumns
+
+Feature: Get the current column configuration. Returns `null` when columns are disabled.
+
+Usage:
+
+```javascript
+const columns: IColumnOption | null = instance.command.getColumns()
+```
+
 ## getSearchNavigateInfo
 
 Feature: Get search navigation information
