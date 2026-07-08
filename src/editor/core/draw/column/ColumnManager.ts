@@ -12,11 +12,7 @@ export class ColumnManager {
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
-    const { column } = this.options
-    this.layout = this.computeLayout(
-      draw.getInnerWidth(),
-      column.count > 1 ? column : undefined
-    )
+    this.layout = null
   }
 
   // 根据可用宽度和分栏配置计算布局；count<=1 或无配置时返回 null
@@ -28,7 +24,7 @@ export class ColumnManager {
     const count = Math.max(1, Math.floor(config.count))
     if (count === 1) return null
     // gap 未指定时回退到 option 中的默认栏间距
-    const rawGap = config.gap ?? this.options.column.gap
+    const rawGap = (config.gap ?? this.options.column.gap) * this.options.scale
     // 限制单栏最小宽度，避免栏间距过大导致栏宽为负
     const maxGap = (innerWidth / count) * 0.5
     const gap = Math.max(0, Math.min(rawGap, maxGap))
@@ -38,33 +34,31 @@ export class ColumnManager {
     for (let i = 0; i < count; i++) {
       offsets.push(i * (width + gap))
     }
-    return {
-      count,
-      width,
-      gap,
-      separator: config.separator ?? false,
-      offsets
-    }
+    return { count, width, gap, separator: config.separator ?? false, offsets }
+  }
+
+  // 重算布局
+  public compute() {
+    this.layout = this.computeLayout(
+      this.draw.getInnerWidth(),
+      this.options.column
+    )
   }
 
   public getLayout(): IColumnLayout | null {
     return this.layout
   }
 
-  // 重新设置分栏配置并刷新布局
-  public setConfig(
-    innerWidth: number,
-    config: IColumnOption | null | undefined
-  ): void {
+  // 设置分栏配置
+  public setConfig(config: IColumnOption | null | undefined): void {
     if (!config || config.count <= 1) {
-      this.layout = null
+      this.options.column = { ...this.options.column, count: 1 }
     } else {
-      this.layout = this.computeLayout(innerWidth, config)
-    }
-    this.options.column = {
-      ...this.options.column,
-      ...(config || { count: 1 }),
-      count: this.layout ? this.layout.count : 1
+      this.options.column = {
+        ...this.options.column,
+        ...config,
+        count: Math.max(1, Math.floor(config.count))
+      }
     }
   }
 

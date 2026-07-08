@@ -490,7 +490,7 @@ export class Draw {
 
   public setColumnConfig(config: IColumnOption | null): void {
     if (this.options.pageMode === PageMode.CONTINUITY) return
-    this.columnManager.setConfig(this.getInnerWidth(), config)
+    this.columnManager.setConfig(config)
   }
 
   public getOriginalInnerWidth(): number {
@@ -2900,6 +2900,8 @@ export class Draw {
       // 清空浮动元素位置信息
       this.position.setFloatPositionList([])
       if (isPagingMode) {
+        // 分栏信息
+        this.columnManager.compute()
         // 页眉信息
         if (!header.disabled) {
           this.header.compute()
