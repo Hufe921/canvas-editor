@@ -234,6 +234,7 @@ export interface IElementPosition {
   metrics: IElementMetrics
   isFirstLetter: boolean
   isLastLetter: boolean
+  columnIndex?: number
   coordinate: {
     leftTop: number[]
     leftBottom: number[]

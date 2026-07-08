@@ -363,6 +363,7 @@ export class Position {
           lineHeight: curRow.height,
           isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
+          columnIndex: curRow.columnIndex,
           coordinate: {
             leftTop: [x, y],
             leftBottom: [x, y + curRow.height],
@@ -544,6 +545,25 @@ export class Position {
       oldValue: this.positionContext
     })
     this.positionContext = payload
+  }
+
+  // 根据 x 坐标推断点击位置所属的分栏索引；无分栏布局时返回 undefined
+  private _getColumnIndexByX(x: number): number | undefined {
+    const layout = this.draw.getColumnLayout()
+    if (!layout) return
+    const startX = this.draw.getMargins()[3]
+    const xRel = x - startX
+    // 栏范围 [colStart, nextColStart)，gap 算入左侧栏，避免点击栏间空白时误判
+    for (let i = 0; i < layout.count; i++) {
+      const colStart = layout.offsets[i]
+      const colEnd =
+        i < layout.count - 1 ? layout.offsets[i + 1] : colStart + layout.width
+      if (xRel >= colStart && xRel < colEnd) {
+        return i
+      }
+    }
+    // 超出最后一栏右边界时按最后一栏处理
+    return layout.count - 1
   }
 
   public getPositionByXY(payload: IGetPositionByXYPayload): ICurrentPosition {
@@ -767,9 +787,18 @@ export class Position {
       }
     }
     // 判断所属行是否存在元素
-    const lastLetterList = isMainActive
+    const matchedLastLetterList = isMainActive
       ? positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
       : positionList.filter(p => p.isLastLetter)
+    // 分栏场景下，只保留与点击栏一致的行，避免误命中同 y 的其他栏
+    const clickColumnIndex = this._getColumnIndexByX(x)
+    const lastLetterList =
+      clickColumnIndex === undefined
+        ? matchedLastLetterList
+        : matchedLastLetterList.filter(
+            p =>
+              p.columnIndex === undefined || clickColumnIndex === p.columnIndex
+          )
     for (let j = 0; j < lastLetterList.length; j++) {
       const {
         index,
