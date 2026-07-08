@@ -61,6 +61,11 @@ export class ColumnManager {
     } else {
       this.layout = this.computeLayout(innerWidth, config)
     }
+    this.options.column = {
+      ...this.options.column,
+      ...(config || { count: 1 }),
+      count: this.layout ? this.layout.count : 1
+    }
   }
 
   // 根据栏索引获取 X 偏移；无布局或索引非法时返回 0
