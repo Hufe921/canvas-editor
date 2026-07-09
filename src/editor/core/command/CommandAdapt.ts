@@ -79,6 +79,7 @@ import {
   ITableInfoByEvent
 } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
+import { IRulerOption } from '../../interface/Ruler'
 import { ILocationPosition, IPositionContext } from '../../interface/Position'
 import { IRange, RangeContext, RangeRect } from '../../interface/Range'
 import {
@@ -1863,6 +1864,18 @@ export class CommandAdapt {
 
   public setPaperMargin(payload: IMargin) {
     return this.draw.setPaperMargin(payload)
+  }
+
+  public ruler(payload: Partial<IRulerOption>) {
+    this.draw.getRuler().setOptions(payload)
+    this.draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
+  }
+
+  public getRulerSetting(): DeepRequired<IRulerOption> {
+    return this.draw.getRuler().getOptions()
   }
 
   public setMainBadge(payload: IBadge | null) {

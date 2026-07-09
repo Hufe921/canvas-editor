@@ -82,6 +82,8 @@ export class Command {
   public executePaperSize: CommandAdapt['paperSize']
   public executePaperDirection: CommandAdapt['paperDirection']
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
+  public executeSetRuler: CommandAdapt['ruler']
+  public getRulerSetting: CommandAdapt['getRulerSetting']
   public executeSetMainBadge: CommandAdapt['setMainBadge']
   public executeSetAreaBadge: CommandAdapt['setAreaBadge']
   public executeInsertElementList: CommandAdapt['insertElementList']
@@ -239,6 +241,8 @@ export class Command {
     this.executePaperSize = adapt.paperSize.bind(adapt)
     this.executePaperDirection = adapt.paperDirection.bind(adapt)
     this.executeSetPaperMargin = adapt.setPaperMargin.bind(adapt)
+    this.executeSetRuler = adapt.ruler.bind(adapt)
+    this.getRulerSetting = adapt.getRulerSetting.bind(adapt)
     // 签章
     this.executeSetMainBadge = adapt.setMainBadge.bind(adapt)
     this.executeSetAreaBadge = adapt.setAreaBadge.bind(adapt)

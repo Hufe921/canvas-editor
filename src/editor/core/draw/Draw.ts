@@ -116,6 +116,7 @@ import { WhiteSpaceParticle } from './particle/WhiteSpaceParticle'
 import { MouseObserver } from '../observer/MouseObserver'
 import { LineNumber } from './frame/LineNumber'
 import { PageBorder } from './frame/PageBorder'
+import { Ruler } from './frame/Ruler'
 import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
@@ -169,6 +170,7 @@ export class Draw {
   private lineNumber: LineNumber
   private waterMark: Watermark
   private placeholder: Placeholder
+  private ruler: Ruler
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
@@ -257,6 +259,7 @@ export class Draw {
     this.lineNumber = new LineNumber(this)
     this.waterMark = new Watermark(this)
     this.placeholder = new Placeholder(this)
+    this.ruler = new Ruler(this)
     this.header = new Header(this, data.header)
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
@@ -669,6 +672,10 @@ export class Draw {
 
   public getBadge(): Badge {
     return this.badge
+  }
+
+  public getRuler(): Ruler {
+    return this.ruler
   }
 
   public getMagnifier(): Magnifier {
@@ -2971,6 +2978,8 @@ export class Draw {
     } else {
       this._immediateRender()
     }
+    // 标尺仅在尺寸/边距/刻度变化时重绘
+    this.ruler.renderIfChanged()
     // 光标重绘
     if (isSetCursor) {
       curIndex = this.setCursor(curIndex)

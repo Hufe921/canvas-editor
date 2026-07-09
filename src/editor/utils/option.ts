@@ -26,6 +26,8 @@ import { IAccessibilityOption } from '../interface/Accessibility'
 import { IBackgroundOption } from '../interface/Background'
 import { defaultColumnOption } from '../dataset/constant/Column'
 import { IColumnOption } from '../interface/Column'
+import { defaultRulerOption } from '../dataset/constant/Ruler'
+import { IRulerOption } from '../interface/Ruler'
 import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
@@ -180,6 +182,10 @@ export function mergeOption(
     ...defaultColumnOption,
     ...options.column
   }
+  const rulerOptions: Required<IRulerOption> = {
+    ...defaultRulerOption,
+    ...options.ruler
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -269,6 +275,7 @@ export function mergeOption(
     list: listOptions,
     magnifier: magnifierOptions,
     accessibility: accessibilityOptions,
-    column: columnOptions
+    column: columnOptions,
+    ruler: rulerOptions
   }
 }

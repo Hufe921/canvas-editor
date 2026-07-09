@@ -1468,6 +1468,13 @@ window.onload = function () {
     })
   }
 
+  // 标尺显隐
+  const rulerDom = document.querySelector<HTMLDivElement>('.ruler')!
+  rulerDom.onclick = function () {
+    const rulerSetting = instance.command.getRulerSetting()
+    instance.command.executeSetRuler({ disabled: !rulerSetting.disabled })
+  }
+
   // 分栏配置
   const columnConfigDom =
     document.querySelector<HTMLDivElement>('.column-config')!

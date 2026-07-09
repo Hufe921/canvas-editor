@@ -21,6 +21,7 @@ import { IMargin } from './Margin'
 import { IPageBreak } from './PageBreak'
 import { IPageNumber } from './PageNumber'
 import { IPlaceholder } from './Placeholder'
+import { IRulerOption } from './Ruler'
 import { ITitleOption } from './Title'
 import { IWatermark } from './Watermark'
 import { IZoneOption } from './Zone'
@@ -118,6 +119,7 @@ export interface IEditorOption {
   magnifier?: IMagnifierOption
   accessibility?: IAccessibilityOption
   column?: IColumnOption
+  ruler?: IRulerOption
 }
 
 export interface IEditorResult {

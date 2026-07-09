@@ -1036,6 +1036,23 @@ ul {
   background-image: url('./assets/images/paper-margin.svg');
 }
 
+.footer .ruler {
+  cursor: pointer;
+}
+
+.footer .ruler i {
+  background-image: url('./assets/images/ruler.svg');
+}
+
+.ce-ruler {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  user-select: none;
+}
+
 .footer .column-config {
   cursor: pointer;
 }
