@@ -4,6 +4,7 @@ import { TABLE_CONTEXT_ATTR } from '../../../../dataset/constant/Element'
 import { TdBorder, TdSlash } from '../../../../dataset/enum/table/Table'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
+import { IPositionContext } from '../../../../interface/Position'
 import { IColgroup } from '../../../../interface/table/Colgroup'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
@@ -98,131 +99,135 @@ export class TableOperate {
     this.draw.render({ curIndex, isSetCursor: false })
   }
 
-  public insertTableTopRow() {
-    const positionContext = this.position.getPositionContext()
-    if (!positionContext.isTable) return
-    const { index, trIndex, tableId } = positionContext
-    const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
-    const curTrList = element.trList!
-    const curTr = curTrList[trIndex!]
-    // 之前跨行的增加跨行数
-    if (curTr.tdList.length < element.colgroup!.length) {
-      const curTrNo = curTr.tdList[0].rowIndex!
-      for (let t = 0; t < trIndex!; t++) {
-        const tr = curTrList[t]
-        for (let d = 0; d < tr.tdList.length; d++) {
-          const td = tr.tdList[d]
-          if (td.rowspan > 1 && td.rowIndex! + td.rowspan >= curTrNo + 1) {
-            td.rowspan += 1
-          }
+  private _createEmptyTd(tableId: string | undefined, trId: string | undefined) {
+    const tdId = getUUID()
+    return {
+      id: tdId,
+      rowspan: 1,
+      colspan: 1,
+      value: [
+        {
+          value: ZERO,
+          size: 16,
+          tableId,
+          trId,
+          tdId
+        }
+      ]
+    }
+  }
+
+  private _setTablePosition(
+    positionContext: IPositionContext,
+    element: IElement,
+    targetTd: ITd
+  ) {
+    const trList = element.trList!
+    const trIndex = trList.findIndex(tr => tr.tdList.includes(targetTd))
+    if (!~trIndex) return
+    const tr = trList[trIndex]
+    const tdIndex = tr.tdList.indexOf(targetTd)
+    this.position.setPositionContext(
+      this.position.buildTablePositionContext(
+        positionContext,
+        element,
+        trIndex,
+        tdIndex
+      )
+    )
+  }
+
+  private _insertTableRow(
+    positionContext: IPositionContext,
+    element: IElement,
+    rowIndex: number,
+    height: number
+  ) {
+    const trList = element.trList!
+    const colgroup = element.colgroup!
+    const spanningTdList: ITd[] = []
+    for (let t = 0; t < trList.length; t++) {
+      const tdList = trList[t].tdList
+      for (let d = 0; d < tdList.length; d++) {
+        const td = tdList[d]
+        if (
+          td.rowIndex! < rowIndex &&
+          td.rowIndex! + td.rowspan > rowIndex
+        ) {
+          td.rowspan++
+          spanningTdList.push(td)
         }
       }
     }
-    // 增加当前行
+
+    const coveredColSet = new Set<number>()
+    for (let t = 0; t < spanningTdList.length; t++) {
+      const td = spanningTdList[t]
+      for (let c = 0; c < td.colspan; c++) {
+        coveredColSet.add(td.colIndex! + c)
+      }
+    }
     const newTrId = getUUID()
     const newTr: ITr = {
-      height: curTr.height,
+      height,
       id: newTrId,
       tdList: []
     }
-    for (let t = 0; t < curTr.tdList.length; t++) {
-      const curTd = curTr.tdList[t]
-      const newTdId = getUUID()
-      newTr.tdList.push({
-        id: newTdId,
-        rowspan: 1,
-        colspan: curTd.colspan,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: newTrId,
-            tdId: newTdId
-          }
-        ]
-      })
+    for (let c = 0; c < colgroup.length; c++) {
+      if (!coveredColSet.has(c)) {
+        newTr.tdList.push(this._createEmptyTd(element.id, newTrId))
+      }
     }
-    curTrList.splice(trIndex!, 0, newTr)
-    // 重新设置上下文
-    this.position.setPositionContext({
-      isTable: true,
-      index,
-      trIndex,
-      tdIndex: 0,
-      tdId: newTr.tdList[0].id,
-      trId: newTr.id,
-      tableId
-    })
+    trList.splice(rowIndex, 0, newTr)
+
+    const targetTd =
+      newTr.tdList[0] ||
+      spanningTdList.find(
+        td => td.colIndex! <= 0 && td.colIndex! + td.colspan > 0
+      ) ||
+      spanningTdList[0]
+    if (targetTd) {
+      this._setTablePosition(positionContext, element, targetTd)
+    }
     this.range.setRange(0, 0)
-    // 重新渲染
     this.draw.render({ curIndex: 0 })
     this.tableTool.render()
+  }
+
+  public insertTableTopRow() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { trIndex, tdIndex } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = this.position.getTableElementByContext(
+      originalElementList,
+      positionContext
+    )!
+    const curTr = element.trList![trIndex!]
+    const curTd = curTr.tdList[tdIndex!]
+    this._insertTableRow(
+      positionContext,
+      element,
+      curTd.rowIndex!,
+      curTr.height
+    )
   }
 
   public insertTableBottomRow() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index, trIndex, tableId } = positionContext
+    const { trIndex, tdIndex } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
-    const curTrList = element.trList!
-    const curTr = curTrList[trIndex!]
-    const anchorTr =
-      curTrList.length - 1 === trIndex ? curTr : curTrList[trIndex! + 1]
-    // 之前/当前行跨行的增加跨行数
-    if (anchorTr.tdList.length < element.colgroup!.length) {
-      const curTrNo = anchorTr.tdList[0].rowIndex!
-      for (let t = 0; t < trIndex! + 1; t++) {
-        const tr = curTrList[t]
-        for (let d = 0; d < tr.tdList.length; d++) {
-          const td = tr.tdList[d]
-          if (td.rowspan > 1 && td.rowIndex! + td.rowspan >= curTrNo + 1) {
-            td.rowspan += 1
-          }
-        }
-      }
-    }
-    // 增加当前行
-    const newTrId = getUUID()
-    const newTr: ITr = {
-      height: anchorTr.height,
-      id: newTrId,
-      tdList: []
-    }
-    for (let t = 0; t < anchorTr.tdList.length; t++) {
-      const curTd = anchorTr.tdList[t]
-      const newTdId = getUUID()
-      newTr.tdList.push({
-        id: newTdId,
-        rowspan: 1,
-        colspan: curTd.colspan,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: newTrId,
-            tdId: newTdId
-          }
-        ]
-      })
-    }
-    curTrList.splice(trIndex! + 1, 0, newTr)
-    // 重新设置上下文
-    this.position.setPositionContext({
-      isTable: true,
-      index,
-      trIndex: trIndex! + 1,
-      tdIndex: 0,
-      tdId: newTr.tdList[0].id,
-      trId: newTr.id,
-      tableId: element.id
-    })
-    this.range.setRange(0, 0)
-    // 重新渲染
-    this.draw.render({ curIndex: 0 })
+    const element = this.position.getTableElementByContext(
+      originalElementList,
+      positionContext
+    )!
+    const trList = element.trList!
+    const curTr = trList[trIndex!]
+    const curTd = curTr.tdList[tdIndex!]
+    const rowIndex = curTd.rowIndex! + curTd.rowspan
+    const height = trList[rowIndex]?.height || curTr.height
+    this._insertTableRow(positionContext, element, rowIndex, height)
   }
 
   public adjustColWidth(element: IElement) {
@@ -251,100 +256,84 @@ export class TableOperate {
   public insertTableLeftCol() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index, tdIndex, tableId } = positionContext
+    const { trIndex, tdIndex } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
-    const curTrList = element.trList!
-    const curTdIndex = tdIndex!
-    // 增加列
-    for (let t = 0; t < curTrList.length; t++) {
-      const tr = curTrList[t]
-      const tdId = getUUID()
-      tr.tdList.splice(curTdIndex, 0, {
-        id: tdId,
-        rowspan: 1,
-        colspan: 1,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: tr.id,
-            tdId
-          }
-        ]
-      })
-    }
-    // 重新计算宽度
-    const { defaultColMinWidth } = this.options.table
-    const colgroup = element.colgroup!
-    colgroup.splice(curTdIndex, 0, {
-      width: defaultColMinWidth
-    })
-    this.adjustColWidth(element)
-    // 重新设置上下文
-    this.position.setPositionContext({
-      isTable: true,
-      index,
-      trIndex: 0,
-      tdIndex: curTdIndex,
-      tdId: curTrList[0].tdList[curTdIndex].id,
-      trId: curTrList[0].id,
-      tableId
-    })
-    this.range.setRange(0, 0)
-    // 重新渲染
-    this.draw.render({ curIndex: 0 })
-    this.tableTool.render()
+    const element = this.position.getTableElementByContext(
+      originalElementList,
+      positionContext
+    )!
+    const curTd = element.trList![trIndex!].tdList[tdIndex!]
+    this._insertTableCol(positionContext, element, curTd.colIndex!)
   }
 
   public insertTableRightCol() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index, tdIndex, tableId } = positionContext
+    const { trIndex, tdIndex } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
-    const curTrList = element.trList!
-    const curTdIndex = tdIndex! + 1
-    // 增加列
-    for (let t = 0; t < curTrList.length; t++) {
-      const tr = curTrList[t]
-      const tdId = getUUID()
-      tr.tdList.splice(curTdIndex, 0, {
-        id: tdId,
-        rowspan: 1,
-        colspan: 1,
-        value: [
-          {
-            value: ZERO,
-            size: 16,
-            tableId,
-            trId: tr.id,
-            tdId
-          }
-        ]
-      })
+    const element = this.position.getTableElementByContext(
+      originalElementList,
+      positionContext
+    )!
+    const curTd = element.trList![trIndex!].tdList[tdIndex!]
+    this._insertTableCol(
+      positionContext,
+      element,
+      curTd.colIndex! + curTd.colspan
+    )
+  }
+
+  private _insertTableCol(
+    positionContext: IPositionContext,
+    element: IElement,
+    colIndex: number
+  ) {
+    const trList = element.trList!
+    const spanningTdList: ITd[] = []
+    for (let t = 0; t < trList.length; t++) {
+      const tdList = trList[t].tdList
+      for (let d = 0; d < tdList.length; d++) {
+        const td = tdList[d]
+        if (
+          td.colIndex! < colIndex &&
+          td.colIndex! + td.colspan > colIndex
+        ) {
+          td.colspan++
+          spanningTdList.push(td)
+        }
+      }
     }
-    // 重新计算宽度
+
+    const insertedTdList: ITd[] = []
+    for (let t = 0; t < trList.length; t++) {
+      const spanningTd = spanningTdList.find(
+        td => td.rowIndex! <= t && td.rowIndex! + td.rowspan > t
+      )
+      if (spanningTd) continue
+      const tr = trList[t]
+      const newTd = this._createEmptyTd(element.id, tr.id)
+      let tdIndex = tr.tdList.findIndex(td => td.colIndex! >= colIndex)
+      if (!~tdIndex) tdIndex = tr.tdList.length
+      tr.tdList.splice(tdIndex, 0, newTd)
+      insertedTdList.push(newTd)
+    }
+
     const { defaultColMinWidth } = this.options.table
-    const colgroup = element.colgroup!
-    colgroup.splice(curTdIndex, 0, {
+    element.colgroup!.splice(colIndex, 0, {
       width: defaultColMinWidth
     })
     this.adjustColWidth(element)
-    // 重新设置上下文
-    this.position.setPositionContext({
-      isTable: true,
-      index,
-      trIndex: 0,
-      tdIndex: curTdIndex,
-      tdId: curTrList[0].tdList[curTdIndex].id,
-      trId: curTrList[0].id,
-      tableId: element.id
-    })
+
+    const targetTd =
+      spanningTdList.find(
+        td => td.rowIndex! <= 0 && td.rowIndex! + td.rowspan > 0
+      ) || insertedTdList[0]
+    if (targetTd) {
+      this._setTablePosition(positionContext, element, targetTd)
+    }
     this.range.setRange(0, 0)
-    // 重新渲染
     this.draw.render({ curIndex: 0 })
+    this.tableTool.render()
   }
 
   public deleteTableRow() {
