@@ -24,6 +24,8 @@ import { defaultMagnifierOption } from '../dataset/constant/Magnifier'
 import { defaultAccessibilityOption } from '../dataset/constant/Accessibility'
 import { IAccessibilityOption } from '../interface/Accessibility'
 import { IBackgroundOption } from '../interface/Background'
+import { defaultColumnOption } from '../dataset/constant/Column'
+import { IColumnOption } from '../interface/Column'
 import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
@@ -174,6 +176,10 @@ export function mergeOption(
     ...defaultAccessibilityOption,
     ...options.accessibility
   }
+  const columnOptions: Required<IColumnOption> = {
+    ...defaultColumnOption,
+    ...options.column
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -262,6 +268,7 @@ export function mergeOption(
     imgCaption: imgCaptionOptions,
     list: listOptions,
     magnifier: magnifierOptions,
-    accessibility: accessibilityOptions
+    accessibility: accessibilityOptions,
+    column: columnOptions
   }
 }

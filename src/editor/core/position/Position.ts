@@ -291,16 +291,40 @@ export class Position {
     let x = startX
     let y = startY
     let index = startIndex
+    const columnLayout = this.draw.getColumnLayout()
+    let prevColumnIndex: number | undefined = undefined
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
+      // 分栏内栏切换：y 重置到栏顶
+      if (
+        prevColumnIndex !== undefined &&
+        curRow.columnIndex !== undefined &&
+        curRow.columnIndex > 0 &&
+        curRow.columnIndex !== prevColumnIndex
+      ) {
+        y = startY
+      }
+      prevColumnIndex = curRow.columnIndex
+      // 分栏偏移与有效宽度
+      const inColumn =
+        columnLayout &&
+        curRow.columnIndex !== undefined &&
+        curRow.columnIndex >= 0
+      const columnOffset =
+        inColumn && columnLayout
+          ? columnLayout.offsets[curRow.columnIndex!] || 0
+          : 0
+      const effectiveInnerWidth =
+        inColumn && columnLayout ? columnLayout.width : innerWidth
+      x += columnOffset
       // 行存在环绕的可能性均不设置行布局
       if (!curRow.isSurround) {
         // 计算行偏移量（行居中、居右）
         const curRowWidth = curRow.width + (curRow.offsetX || 0)
         if (curRow.rowFlex === RowFlex.CENTER) {
-          x += (innerWidth - curRowWidth) / 2
+          x += (effectiveInnerWidth - curRowWidth) / 2
         } else if (curRow.rowFlex === RowFlex.RIGHT) {
-          x += innerWidth - curRowWidth
+          x += effectiveInnerWidth - curRowWidth
         }
       }
       // 当前行X/Y轴偏移量
@@ -339,6 +363,7 @@ export class Position {
           lineHeight: curRow.height,
           isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
+          columnIndex: curRow.columnIndex,
           coordinate: {
             leftTop: [x, y],
             leftBottom: [x, y + curRow.height],
@@ -520,6 +545,25 @@ export class Position {
       oldValue: this.positionContext
     })
     this.positionContext = payload
+  }
+
+  // 根据 x 坐标推断点击位置所属的分栏索引；无分栏布局时返回 undefined
+  private _getColumnIndexByX(x: number): number | undefined {
+    const layout = this.draw.getColumnLayout()
+    if (!layout) return
+    const startX = this.draw.getMargins()[3]
+    const xRel = x - startX
+    // 栏范围 [colStart, nextColStart)，gap 算入左侧栏，避免点击栏间空白时误判
+    for (let i = 0; i < layout.count; i++) {
+      const colStart = layout.offsets[i]
+      const colEnd =
+        i < layout.count - 1 ? layout.offsets[i + 1] : colStart + layout.width
+      if (xRel >= colStart && xRel < colEnd) {
+        return i
+      }
+    }
+    // 超出最后一栏右边界时按最后一栏处理
+    return layout.count - 1
   }
 
   public getPositionByXY(payload: IGetPositionByXYPayload): ICurrentPosition {
@@ -743,9 +787,18 @@ export class Position {
       }
     }
     // 判断所属行是否存在元素
-    const lastLetterList = isMainActive
+    const matchedLastLetterList = isMainActive
       ? positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
       : positionList.filter(p => p.isLastLetter)
+    // 分栏场景下，只保留与点击栏一致的行，避免误命中同 y 的其他栏
+    const clickColumnIndex = this._getColumnIndexByX(x)
+    const lastLetterList =
+      clickColumnIndex === undefined
+        ? matchedLastLetterList
+        : matchedLastLetterList.filter(
+            p =>
+              p.columnIndex === undefined || clickColumnIndex === p.columnIndex
+          )
     for (let j = 0; j < lastLetterList.length; j++) {
       const {
         index,

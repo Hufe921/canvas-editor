@@ -19,6 +19,7 @@ import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
   <button class="bold"></button>
 </div>
 ```
+
 :::
 
 ## executeMode
@@ -704,7 +705,7 @@ Feature: Print
 Usage:
 
 ```javascript
-instance.command.executePrint()
+instance.command.executePrint(option?: IPrintOption)
 ```
 
 ## executeReplaceImageElement
@@ -825,6 +826,16 @@ Usage:
 
 ```javascript
 instance.command.executeSetPaperMargin([top: number, right: number, bottom: number, left: number])
+```
+
+## executeSetColumns
+
+Feature: Set the column configuration.
+
+Usage:
+
+```javascript
+instance.command.executeSetColumns(config: IColumnOption | null)
 ```
 
 ## executeSetMainBadge

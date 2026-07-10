@@ -5,6 +5,7 @@ import {
   RenderMode,
   WordBreak
 } from '../dataset/enum/Editor'
+import { IColumnOption } from './Column'
 import { IBackgroundOption } from './Background'
 import { ICheckboxOption } from './Checkbox'
 import { IRadioOption } from './Radio'
@@ -116,6 +117,7 @@ export interface IEditorOption {
   list?: IListOption
   magnifier?: IMagnifierOption
   accessibility?: IAccessibilityOption
+  column?: IColumnOption
 }
 
 export interface IEditorResult {
@@ -161,6 +163,7 @@ export interface IPrintModeRule {
   backgroundDisabled?: boolean
   filterEmptyControl?: boolean
   filterHideElementRow?: boolean
+  areaHideDisabled?: boolean
 }
 
 export interface IReadonlyModeRule {

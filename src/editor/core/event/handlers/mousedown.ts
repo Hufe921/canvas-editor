@@ -191,7 +191,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     }
   }
   // 标签点击事件
-    const eventBus = draw.getEventBus()
+  const eventBus = draw.getEventBus()
   if (isDirectHitLabel && eventBus.isSubscribe('labelMousedown')) {
     eventBus.emit('labelMousedown', {
       evt,

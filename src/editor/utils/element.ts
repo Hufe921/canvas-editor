@@ -784,7 +784,7 @@ export function zipElementList(
               rowspan: td.rowspan,
               value: zipElementList(td.value, {
                 ...options,
-                isClassifyArea: false
+                isClassifyArea: true
               })
             }
             // 压缩单元格属性

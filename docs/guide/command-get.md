@@ -180,6 +180,16 @@ const [top: number, right: number, bottom: number, left: number] =
   instance.command.getPaperMargin()
 ```
 
+## getColumns
+
+功能：获取当前分栏配置。未开启分栏时返回 `null`。
+
+用法：
+
+```javascript
+const columns: IColumnOption | null = instance.command.getColumns()
+```
+
 ## getSearchNavigateInfo
 
 功能：获取搜索导航信息

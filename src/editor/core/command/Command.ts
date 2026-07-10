@@ -74,6 +74,7 @@ export class Command {
   public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
+  public executeSetColumns: CommandAdapt['setColumns']
   public executePageScale: CommandAdapt['pageScale']
   public executePageScaleRecovery: CommandAdapt['pageScaleRecovery']
   public executePageScaleMinus: CommandAdapt['pageScaleMinus']
@@ -137,6 +138,7 @@ export class Command {
   public getKeywordRangeList: CommandAdapt['getKeywordRangeList']
   public getKeywordContext: CommandAdapt['getKeywordContext']
   public getPaperMargin: CommandAdapt['getPaperMargin']
+  public getColumns: CommandAdapt['getColumns']
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
@@ -229,6 +231,7 @@ export class Command {
     this.executeChangeImageDisplay = adapt.changeImageDisplay.bind(adapt)
     // 页面模式、页面缩放、纸张大小、纸张方向、页边距
     this.executePageMode = adapt.pageMode.bind(adapt)
+    this.executeSetColumns = adapt.setColumns.bind(adapt)
     this.executePageScale = adapt.pageScale.bind(adapt)
     this.executePageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
     this.executePageScaleMinus = adapt.pageScaleMinus.bind(adapt)
@@ -288,6 +291,7 @@ export class Command {
     this.getKeywordContext = adapt.getKeywordContext.bind(adapt)
     this.getCatalog = adapt.getCatalog.bind(adapt)
     this.getPaperMargin = adapt.getPaperMargin.bind(adapt)
+    this.getColumns = adapt.getColumns.bind(adapt)
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)

@@ -59,6 +59,7 @@ import {
   ISetValueOption,
   IUpdateOption
 } from '../../interface/Editor'
+import { IColumnOption } from '../../interface/Column'
 import {
   IDeleteElementByIdOption,
   IElement,
@@ -138,6 +139,7 @@ import {
 import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
 import { WatermarkType } from '../../dataset/enum/Watermark'
+import { IPrintOption } from '@/editor/interface/Print'
 
 export class CommandAdapt {
   private draw: Draw
@@ -975,7 +977,7 @@ export class CommandAdapt {
   public insertTable(row: number, col: number) {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     this.tableOperate.insertTable(row, col)
   }
@@ -1093,7 +1095,7 @@ export class CommandAdapt {
     if (!url || !valueList?.length) return
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
@@ -1218,7 +1220,7 @@ export class CommandAdapt {
   ) {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
@@ -1266,7 +1268,7 @@ export class CommandAdapt {
   public pageBreak() {
     const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
     if (isDisabled) return
-    const activeControl = this.control.getActiveControl()
+    const activeControl = this.control.getIsRangeWithinControl()
     if (activeControl) return
     this.insertElementList([
       {
@@ -1373,7 +1375,28 @@ export class CommandAdapt {
     this.draw.getSearch().replace(payload, option)
   }
 
-  public async print() {
+  public async print(option?: IPrintOption) {
+    // 离屏渲染支持自定义data和option
+    if (option?.offscreen) {
+      const data = option.data ?? this.draw.getValue().data
+      const options = option.options ?? this.draw.getOptions()
+      const container = document.createElement('div')
+      container.style.position = 'absolute'
+      container.style.left = '-9999px'
+      container.style.top = '0'
+      container.style.visibility = 'hidden'
+      document.body.append(container)
+      const { default: Editor } = await import('../../index')
+      let tempEditor: InstanceType<typeof Editor> | null = null
+      try {
+        tempEditor = new Editor(container, data, options)
+        await tempEditor.command.executePrint()
+      } finally {
+        tempEditor?.destroy()
+        container.remove()
+      }
+      return
+    }
     const { scale, printPixelRatio, paperDirection, width, height } =
       this.options
     if (scale !== 1) {
@@ -1778,6 +1801,24 @@ export class CommandAdapt {
 
   public pageMode(payload: PageMode) {
     this.draw.setPageMode(payload)
+  }
+
+  public setColumns(config: IColumnOption | null) {
+    this.draw.setColumnConfig(config)
+    this.draw.render({
+      isSubmitHistory: false,
+      isSetCursor: false
+    })
+  }
+
+  public getColumns(): IColumnOption | null {
+    const layout = this.draw.getColumnLayout()
+    if (!layout) return null
+    return {
+      count: layout.count,
+      gap: layout.gap,
+      separator: layout.separator
+    }
   }
 
   public pageScale(scale: number) {
