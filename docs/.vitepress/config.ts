@@ -78,6 +78,10 @@ export default defineConfig({
         items: [{ text: '重写方法', link: '/guide/override' }]
       },
       {
+        text: '宏',
+        items: [{ text: '宏(Macro)', link: '/guide/macro' }]
+      },
+      {
         text: 'API',
         items: [
           { text: '实例API', link: '/guide/api-instance' },
@@ -178,6 +182,10 @@ export default defineConfig({
           {
             text: 'Override',
             items: [{ text: 'override', link: '/en/guide/override' }]
+          },
+          {
+            text: 'Macro',
+            items: [{ text: 'macro', link: '/en/guide/macro' }]
           },
           {
             text: 'Api',
