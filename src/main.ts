@@ -1913,6 +1913,12 @@ window.onload = function () {
   }
 
   // 9. 右键菜单注册
+  // 宏：从 localStorage 恢复已保存的宏
+  const MACRO_STORAGE_KEY = 'canvas-editor:macros'
+  const saved = localStorage.getItem(MACRO_STORAGE_KEY)
+  if (saved) {
+    instance.macro.importMacros(saved)
+  }
   instance.register.contextMenuList([
     {
       name: '批注',
@@ -2060,6 +2066,114 @@ window.onload = function () {
       callback: (command: Command) => {
         command.executeClearGraffiti()
       }
+    },
+    {
+      name: '宏',
+      when: payload => !payload.isReadonly,
+      childMenus: [
+        {
+          name: '录制宏',
+          icon: 'record',
+          when: () => !instance.macro.isRecording(),
+          callback: () => {
+            instance.macro.startRecording()
+          }
+        },
+        {
+          name: '停止录制宏',
+          icon: 'stop',
+          when: () => instance.macro.isRecording(),
+          callback: () => {
+            new Dialog({
+              title: '保存宏',
+              data: [
+                {
+                  type: 'text',
+                  label: '宏名称',
+                  name: 'name',
+                  required: true,
+                  placeholder: '请输入宏名称'
+                }
+              ],
+              onConfirm: payload => {
+                const name = payload.find(p => p.name === 'name')?.value
+                if (!name) return
+                const macro = instance.macro.stopRecording(name)
+                if (!macro) return
+                localStorage.setItem(
+                  MACRO_STORAGE_KEY,
+                  instance.macro.exportMacros()
+                )
+              },
+              onCancel: () => {
+                instance.macro.cancelRecording()
+              }
+            })
+          }
+        },
+        {
+          name: '回放宏',
+          when: () =>
+            !instance.macro.isRecording() &&
+            instance.macro.getMacros().length > 0,
+          callback: () => {
+            const macros = instance.macro.getMacros()
+            new Dialog({
+              title: '回放宏',
+              data: [
+                {
+                  type: 'select',
+                  label: '选择宏',
+                  name: 'macroId',
+                  required: true,
+                  options: macros.map(m => ({
+                    label: `${m.name} (${m.type})`,
+                    value: m.id
+                  }))
+                }
+              ],
+              onConfirm: async payload => {
+                const id = payload.find(p => p.name === 'macroId')?.value
+                if (!id) return
+                await instance.macro.play(id)
+              }
+            })
+          }
+        },
+        {
+          name: '管理宏',
+          when: () =>
+            !instance.macro.isRecording() &&
+            instance.macro.getMacros().length > 0,
+          callback: () => {
+            const macros = instance.macro.getMacros()
+            new Dialog({
+              title: '管理宏',
+              data: [
+                {
+                  type: 'select',
+                  label: '选择要删除的宏',
+                  name: 'macroId',
+                  options: macros.map(m => ({
+                    label: `${m.name} (${m.type})`,
+                    value: m.id
+                  }))
+                }
+              ],
+              onConfirm: payload => {
+                const id = payload.find(p => p.name === 'macroId')?.value
+                if (!id) return
+                if (instance.macro.removeMacro(id)) {
+                  localStorage.setItem(
+                    MACRO_STORAGE_KEY,
+                    instance.macro.exportMacros()
+                  )
+                }
+              }
+            })
+          }
+        }
+      ]
     }
   ])
 
