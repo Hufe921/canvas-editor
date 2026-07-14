@@ -498,15 +498,22 @@ export function formatElementList(
           for (let v = 0; v < valueList.length; v++) {
             const element = valueList[v]
             const value = element.value
+            // 嵌套控件：都保留其自身的 controlId/control/controlComponent。
+            const isNestedControl =
+              !!element.controlId && element.controlId !== controlId
             elementList.splice(i, 0, {
               ...controlContext,
               ...controlDefaultStyle,
               ...element,
-              controlId,
+              ...(isNestedControl
+                ? {}
+                : {
+                    controlId,
+                    control: el.control,
+                    controlComponent: ControlComponent.VALUE
+                  }),
               value: value === '\n' ? ZERO : value,
-              type: element.type || ElementType.TEXT,
-              control: el.control,
-              controlComponent: ControlComponent.VALUE
+              type: element.type || ElementType.TEXT
             })
             i++
           }
@@ -854,16 +861,47 @@ export function zipElementList(
         let start = e
         while (start < elementList.length) {
           const controlE = elementList[start]
-          if (controlId !== controlE.controlId) break
-          if (controlE.controlComponent === ControlComponent.VALUE) {
-            delete controlE.control
-            delete controlE.controlId
-            valueList.push(controlE)
+          // 同 ownerId 正常处理
+          if (controlE.controlId === controlId) {
+            if (controlE.controlComponent === ControlComponent.VALUE) {
+              delete controlE.control
+              delete controlE.controlId
+              valueList.push(controlE)
+            }
+            if (controlE.controlComponent === ControlComponent.POSTFIX) {
+              isFull = true
+            }
+            start++
+            continue
           }
-          if (controlE.controlComponent === ControlComponent.POSTFIX) {
-            isFull = true
+          // 不同 ownerId：内层控件段——先定位内层 POSTFIX 边界，再递归压缩
+          if (controlE.controlComponent === ControlComponent.PREFIX) {
+            let innerEnd = start
+            while (innerEnd < elementList.length) {
+              const innerE = elementList[innerEnd]
+              if (
+                innerE.controlId === controlE.controlId &&
+                innerE.controlComponent === ControlComponent.POSTFIX
+              ) {
+                break
+              }
+              innerEnd++
+            }
+            const innerZipped = zipElementList(
+              elementList.slice(
+                start,
+                Math.min(innerEnd + 1, elementList.length)
+              ),
+              options
+            )
+            const innerElement = innerZipped[0]
+            if (innerElement) {
+              valueList.push(innerElement)
+            }
+            start = innerEnd + 1
+            continue
           }
-          start++
+          break
         }
         if (isFull) {
           // 以前缀为基准更新控件默认样式
@@ -1902,4 +1940,61 @@ export function getNonHideElementIndex(
     }
   }
   return i
+}
+
+/**
+ * 嵌套感知的边界步进：从 index 按方向移动一位。
+ * 若落点 controlId 与 ownerId 相同，返回落点；
+ * 若落点 controlId 不同（进入了内层控件段），持续同向步进直到回到 ownerId 或越界。
+ * 用于替换边界扫描循环里的 i++ / i--。
+ */
+export function scanToOwner(
+  elementList: IElement[],
+  index: number,
+  direction: 1 | -1,
+  ownerId: string
+): number {
+  let next = index + direction
+  if (next < 0 || next >= elementList.length) {
+    return next
+  }
+  if (elementList[next].controlId === ownerId) {
+    return next
+  }
+  while (next >= 0 && next < elementList.length) {
+    if (elementList[next].controlId === ownerId) {
+      return next
+    }
+    next += direction
+  }
+  return next
+}
+
+/**
+ * 查找位置所属的最外层控件 controlId。
+ * 通过向左扫找到当前控件的 PREFIX，递归检查 PREFIX 前一位是否仍在另一控件段内。
+ */
+export function getOutermostOwner(
+  elementList: IElement[],
+  index: number
+): string | null {
+  const ownerId = elementList[index]?.controlId
+  if (!ownerId) return null
+  let i = index
+  while (i > 0) {
+    const el = elementList[i]
+    if (
+      el.controlId !== ownerId ||
+      el.controlComponent === ControlComponent.PREFIX ||
+      el.controlComponent === ControlComponent.PRE_TEXT
+    ) {
+      break
+    }
+    i--
+  }
+  const outerCandidate = elementList[i - 1]?.controlId
+  if (outerCandidate && outerCandidate !== ownerId) {
+    return getOutermostOwner(elementList, i - 1)
+  }
+  return ownerId
 }
