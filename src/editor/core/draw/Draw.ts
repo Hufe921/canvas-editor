@@ -2106,11 +2106,8 @@ export class Draw {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
-        // 打印模式下隐藏行元素均为隐藏元素 => 行不显示
-        if (
-          this.mode === EditorMode.PRINT &&
-          this.options.modeRule[EditorMode.PRINT].filterHideElementRow
-        ) {
+        // 行内全部为隐藏元素时 => 行高折叠
+        if (!this.isDesignMode() && curRow.height > 0) {
           const isAllHidden = curRow.elementList
             .filter(el => el.value !== ZERO)
             .every(
