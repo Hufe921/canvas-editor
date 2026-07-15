@@ -13,7 +13,7 @@ import {
 } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
 import { ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
-import { ControlComponent } from '../../dataset/enum/Control'
+import { ControlComponent, ControlType } from '../../dataset/enum/Control'
 import {
   EditorMode,
   EditorZone,
@@ -2512,6 +2512,15 @@ export class CommandAdapt {
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
+    // 仅允许 TEXT 控件作为外层嵌套其他控件
+    const anchorElement = elementList[startIndex]
+    if (
+      anchorElement?.controlId &&
+      anchorElement.control?.type !== ControlType.TEXT &&
+      cloneElement.type === ElementType.CONTROL
+    ) {
+      return
+    }
     const copyElement = getAnchorElement(elementList, startIndex)
     if (!copyElement) return
     const cloneAttr = [

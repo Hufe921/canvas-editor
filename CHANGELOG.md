@@ -1,3 +1,23 @@
+## [0.9.137](https://github.com/Hufe921/canvas-editor/compare/v0.9.136...v0.9.137) (2026-07-10)
+
+
+### Bug Fixes
+
+* allow table insertion after control ([3a223a9](https://github.com/Hufe921/canvas-editor/commit/3a223a9f08b09d8bbd5638fc6b30ec379fc52b2b))
+* cursor jumps to wrong column when clicking empty area #1439 ([a77fd75](https://github.com/Hufe921/canvas-editor/commit/a77fd750821310683882b8a555559dcbb43b3618)), closes [#1439](https://github.com/Hufe921/canvas-editor/issues/1439)
+* recompute column layout on scale and dimension change #1440 ([6c3ce1f](https://github.com/Hufe921/canvas-editor/commit/6c3ce1f99ace95a91c6281fc681d2c4e11de0653)), closes [#1440](https://github.com/Hufe921/canvas-editor/issues/1440)
+* sync column option after setColumns  #1438 ([712779e](https://github.com/Hufe921/canvas-editor/commit/712779e33c91ed3e6b45eb76546d8e02778d98a7)), closes [#1438](https://github.com/Hufe921/canvas-editor/issues/1438)
+
+
+### Features
+
+* add areaHideDisabled print mode rule #1429 ([0268cca](https://github.com/Hufe921/canvas-editor/commit/0268cca4fe2b3c2187f5876a245c27142692909e)), closes [#1429](https://github.com/Hufe921/canvas-editor/issues/1429)
+* add offscreen print option #1429 ([5486385](https://github.com/Hufe921/canvas-editor/commit/548638538acced50156c625ef038be6a3d2a960b)), closes [#1429](https://github.com/Hufe921/canvas-editor/issues/1429)
+* support area elements in table cells #1317 ([0bdecc8](https://github.com/Hufe921/canvas-editor/commit/0bdecc86b80ae14b6bcc40f6f23b23d0dacbb46c)), closes [#1317](https://github.com/Hufe921/canvas-editor/issues/1317)
+* support multi-column layout #1237 ([d53d194](https://github.com/Hufe921/canvas-editor/commit/d53d194262b98855639999fc5da6d48851ae1195)), closes [#1237](https://github.com/Hufe921/canvas-editor/issues/1237)
+
+
+
 ## [0.9.136](https://github.com/Hufe921/canvas-editor/compare/v0.9.135...v0.9.136) (2026-06-20)
 
 
