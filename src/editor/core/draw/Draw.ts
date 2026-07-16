@@ -2106,14 +2106,14 @@ export class Draw {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
-        // 打印模式下隐藏行元素均为隐藏元素 => 行不显示
-        if (
-          this.mode === EditorMode.PRINT &&
-          this.options.modeRule[EditorMode.PRINT].filterHideElementRow
-        ) {
-          const isAllHidden = curRow.elementList
-            .filter(el => el.value !== ZERO)
-            .every(
+        // 行内全部为隐藏元素时 => 行高折叠（仅当行内不止换行符一个元素时）
+        if (!this.isDesignMode() && curRow.height > 0) {
+          const visibleElements = curRow.elementList.filter(
+            el => el.value !== ZERO
+          )
+          const isAllHidden =
+            visibleElements.length > 0 &&
+            visibleElements.every(
               el =>
                 el.hide ||
                 el.control?.hide ||
@@ -2121,7 +2121,6 @@ export class Draw {
             )
           if (isAllHidden) {
             curRow.height = 0
-            curRow.ascent = 0
           }
         }
         // 换行原因：宽度不足
