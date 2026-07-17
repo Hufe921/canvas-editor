@@ -291,6 +291,7 @@ export class Position {
     let x = startX
     let y = startY
     let index = startIndex
+    const traceParticle = this.draw.getTraceParticle()
     const columnLayout = this.draw.getColumnLayout()
     let prevColumnIndex: number | undefined = undefined
     for (let i = 0; i < rowList.length; i++) {
@@ -338,6 +339,7 @@ export class Position {
         const metrics = element.metrics
         const offsetY =
           !element.hide &&
+          !traceParticle.isTraceHidden(element) &&
           ((element.imgDisplay !== ImageDisplay.INLINE &&
             element.type === ElementType.IMAGE) ||
             element.type === ElementType.LATEX)
@@ -408,7 +410,11 @@ export class Position {
         index++
         x += metrics.width
         // 计算表格内元素位置
-        if (element.type === ElementType.TABLE && !element.hide) {
+        if (
+          element.type === ElementType.TABLE &&
+          !element.hide &&
+          !traceParticle.isTraceHidden(element)
+        ) {
           const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           const tdPaddingHeight = tdPadding[0] + tdPadding[2]
           for (let t = 0; t < element.trList!.length; t++) {

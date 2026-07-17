@@ -240,6 +240,7 @@ export class Search {
       i++
     }
     // 搜索文本
+    const traceParticle = this.draw.getTraceParticle()
     function searchClosure(
       payload: string | null,
       type: EditorContext,
@@ -255,7 +256,8 @@ export class Search {
             e.controlComponent !== ControlComponent.RADIO &&
             !e.hide &&
             !e.control?.hide &&
-            !e.area?.hide)
+            !e.area?.hide &&
+            !traceParticle.isTraceHidden(e))
             ? e.value
             : ZERO
         )

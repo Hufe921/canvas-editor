@@ -1,48 +1,67 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
 
-// 删除光标前隐藏元素
+// 删除光标前隐藏元素，跳过留痕删除元素（痕迹不可移除）
 function backspaceHideElement(host: CanvasEvent) {
   const draw = host.getDraw()
+  const traceParticle = draw.getTraceParticle()
   const rangeManager = draw.getRange()
   const range = rangeManager.getRange()
-  // 光标所在位置为隐藏元素时触发循环删除
+  // 光标所在位置为隐藏/留痕删除元素时触发循环
   const elementList = draw.getElementList()
-  const element = elementList[range.startIndex]
-  if (!element.hide && !element.control?.hide && !element.area?.hide) return
-  // 向前删除所有隐藏元素
   let index = range.startIndex
+  const element = elementList[index]
+  if (
+    !element ||
+    (!element.hide &&
+      !element.control?.hide &&
+      !element.area?.hide &&
+      !traceParticle.isTraceHidden(element))
+  ) {
+    return
+  }
+  // 向前跳过隐藏/留痕删除元素（隐藏元素直接删除，留痕删除元素仅移动光标）
+  let hasValidTarget = false
   while (index > 0) {
     const element = elementList[index]
-    let newIndex: number | null = null
-    if (element.controlId) {
-      newIndex = draw.getControl().removeControl(index)
-      if (newIndex !== null) {
-        index = newIndex
-      }
-    } else {
-      draw.spliceElementList(elementList, index, 1)
-      newIndex = index - 1
-      index--
-    }
-    const newElement = elementList[newIndex!]
-    if (
-      !newElement ||
-      (!newElement.hide && !newElement.control?.hide && !newElement.area?.hide)
-    ) {
-      // 更新上下文信息
-      if (newIndex) {
-        // 更新选区信息
-        range.startIndex = newIndex
-        range.endIndex = newIndex
-        rangeManager.replaceRange(range)
-        // 更新位置信息
-        const position = draw.getPosition()
-        const positionList = position.getPositionList()
-        position.setCursorPosition(positionList[newIndex])
-      }
+    const isHide = element.hide || element.control?.hide || element.area?.hide
+    const isTraceHidden = traceParticle.isTraceHidden(element)
+    if (!isHide && !isTraceHidden) {
+      hasValidTarget = true
       break
     }
+    let newIndex: number | null
+    if (isHide) {
+      // 隐藏元素直接删除
+      if (element.controlId) {
+        newIndex = draw.getControl().removeControl(index)
+      } else {
+        draw.spliceElementList(elementList, index, 1)
+        newIndex = index - 1
+      }
+    } else {
+      // 留痕删除元素仅移动光标：控件整体跳过
+      if (element.controlId) {
+        newIndex =
+          draw
+            .getControl()
+            .getControlStartIndex(elementList, index, element.controlId!) - 1
+      } else {
+        newIndex = index - 1
+      }
+    }
+    if (newIndex === null || newIndex < 0) break
+    index = newIndex
+  }
+  // 更新上下文信息
+  if (hasValidTarget && index !== range.startIndex) {
+    range.startIndex = index
+    range.endIndex = index
+    rangeManager.replaceRange(range)
+    // 更新位置信息
+    const position = draw.getPosition()
+    const positionList = position.getPositionList()
+    position.setCursorPosition(positionList[index])
   }
 }
 
@@ -52,7 +71,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   // 可输入性验证
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
-  // 隐藏元素删除
+  // 隐藏元素删除 / 跳过留痕删除元素
   if (rangeManager.getIsCollapsed()) {
     backspaceHideElement(host)
   }

@@ -45,6 +45,7 @@ import { Search } from './interactive/Search'
 import { Strikeout } from './richtext/Strikeout'
 import { Underline } from './richtext/Underline'
 import { ElementType } from '../../dataset/enum/Element'
+import { TraceType } from '../../dataset/enum/Trace'
 import { ImageParticle } from './particle/ImageParticle'
 import { LaTexParticle } from './particle/latex/LaTexParticle'
 import { TextParticle } from './particle/TextParticle'
@@ -933,6 +934,15 @@ export class Draw {
         let deleteIndex = endIndex - 1
         while (deleteIndex >= start) {
           const deleteElement = elementList[deleteIndex]
+          // 删除痕迹不可移除
+          if (
+            deleteElement?.trace?.length &&
+            deleteElement.trace[deleteElement.trace.length - 1].type ===
+              TraceType.DELETED
+          ) {
+            deleteIndex--
+            continue
+          }
           if (
             deleteElement?.hide ||
             deleteElement?.control?.hide ||
@@ -952,7 +962,19 @@ export class Draw {
           deleteIndex--
         }
       } else {
-        elementList.splice(start, deleteCount)
+        // 留痕删除记录不可移除
+        let deleteIndex = endIndex - 1
+        while (deleteIndex >= start) {
+          const deleteElement = elementList[deleteIndex]
+          if (
+            !deleteElement?.trace?.length ||
+            deleteElement.trace[deleteElement.trace.length - 1].type !==
+              TraceType.DELETED
+          ) {
+            elementList.splice(deleteIndex, 1)
+          }
+          deleteIndex--
+        }
       }
     }
     // 循环添加，避免使用解构影响性能
@@ -1958,6 +1980,7 @@ export class Draw {
       }
       const ascent =
         !element.hide &&
+        !this.traceParticle.isTraceHidden(element) &&
         ((element.imgDisplay !== ImageDisplay.INLINE &&
           element.type === ElementType.IMAGE) ||
           element.type === ElementType.LATEX)
@@ -1976,7 +1999,8 @@ export class Draw {
       // 控件开始时统计宽度，结束时消费最小宽度并补充跨行占位
       if (
         rowElement.control?.minWidth &&
-        !rowElement.isControlMinWidthPlaceholder
+        !rowElement.isControlMinWidthPlaceholder &&
+        !this.traceParticle.isTraceHidden(rowElement)
       ) {
         if (rowElement.controlComponent) {
           controlRealWidth += metrics.width
@@ -2173,7 +2197,8 @@ export class Draw {
               el =>
                 el.hide ||
                 el.control?.hide ||
-                (el.area?.hide && !this.isAreaHideDisabled())
+                (el.area?.hide && !this.isAreaHideDisabled()) ||
+                this.traceParticle.isTraceHidden(el)
             )
           if (isAllHidden) {
             curRow.height = 0
@@ -2701,7 +2726,11 @@ export class Draw {
         }
         index++
         // 绘制表格内元素
-        if (element.type === ElementType.TABLE && !element.hide) {
+        if (
+          element.type === ElementType.TABLE &&
+          !element.hide &&
+          !this.traceParticle.isTraceHidden(element)
+        ) {
           const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           for (let t = 0; t < element.trList!.length; t++) {
             const tr = element.trList![t]
@@ -2722,7 +2751,7 @@ export class Draw {
         }
       }
       // 绘制列表样式
-      if (curRow.isList) {
+      if (curRow.isList && curRow.height > 0) {
         this.listParticle.drawListStyle(
           ctx,
           curRow,

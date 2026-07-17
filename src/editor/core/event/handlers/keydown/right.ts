@@ -158,16 +158,19 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
     return
   }
   // 隐藏元素跳过
+  const traceParticle = draw.getTraceParticle()
   const newElementList = draw.getElementList()
   anchorStartIndex = getNonHideElementIndex(
     newElementList,
     anchorStartIndex,
-    LocationPosition.AFTER
+    LocationPosition.AFTER,
+    el => traceParticle.isTraceHidden(el)
   )
   anchorEndIndex = getNonHideElementIndex(
     newElementList,
     anchorEndIndex,
-    LocationPosition.AFTER
+    LocationPosition.AFTER,
+    el => traceParticle.isTraceHidden(el)
   )
   // 设置上下文
   rangeManager.setRange(anchorStartIndex, anchorEndIndex)

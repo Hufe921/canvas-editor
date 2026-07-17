@@ -5,6 +5,7 @@ import {
 } from '../../../dataset/enum/Control'
 import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
+import { LocationPosition } from '../../../dataset/enum/Common'
 import { DeepRequired } from '../../../interface/Common'
 import {
   IControl,
@@ -759,12 +760,21 @@ export class Control {
     } else {
       element = elementList[index]
     }
+    const traceParticle = this.draw.getTraceParticle()
     // 隐藏元素移动光标（设计模式下允许选中）
     if (
       !this.draw.isDesignMode() &&
-      (element.hide || element.control?.hide || element.area?.hide)
+      (element.hide ||
+        element.control?.hide ||
+        element.area?.hide ||
+        traceParticle.isTraceHidden(element))
     ) {
-      const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
+      const nonHideIndex = getNonHideElementIndex(
+        elementList,
+        newIndex,
+        LocationPosition.BEFORE,
+        el => traceParticle.isTraceHidden(el)
+      )
       return {
         newIndex: nonHideIndex,
         newElement: elementList[nonHideIndex]

@@ -1922,12 +1922,14 @@ export function deleteSurroundElementList(
 export function getNonHideElementIndex(
   elementList: IElement[],
   index: number,
-  position: LocationPosition = LocationPosition.BEFORE
+  position: LocationPosition = LocationPosition.BEFORE,
+  isHidden?: (element: IElement) => boolean
 ) {
   if (
     !elementList[index]?.hide &&
     !elementList[index]?.control?.hide &&
-    !elementList[index]?.area?.hide
+    !elementList[index]?.area?.hide &&
+    !isHidden?.(elementList[index])
   ) {
     return index
   }
@@ -1938,7 +1940,8 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide
+        !elementList[i]?.area?.hide &&
+        !isHidden?.(elementList[i])
       ) {
         return i
       }
@@ -1950,7 +1953,8 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide
+        !elementList[i]?.area?.hide &&
+        !isHidden?.(elementList[i])
       ) {
         return i
       }
