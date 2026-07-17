@@ -1061,6 +1061,34 @@ ul {
   white-space: nowrap;
 }
 
+.footer .trace-mode-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.footer .trace-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.footer .trace-toggle__input {
+  margin: 0;
+  cursor: pointer;
+}
+
+.footer .trace-toggle__input:disabled {
+  cursor: not-allowed;
+}
+
+.footer .trace-toggle__input:disabled + span {
+  opacity: 0.5;
+}
+
 .footer .paper-size {
   position: relative;
 }

@@ -1600,6 +1600,17 @@ window.onload = function () {
   modeOptionsElement.querySelectorAll<HTMLLIElement>('li').forEach(li => {
     li.classList.toggle('active', li.dataset.mode === currentMode)
   })
+
+  // 留痕记录开关（仅 "留痕模式" 行可见；留痕查看模式下禁用）
+  const traceToggleDom = document.querySelector<HTMLInputElement>(
+    '.trace-toggle__input'
+  )!
+  traceToggleDom.checked = !instance.command.getOptions().trace?.disabled
+  traceToggleDom.disabled = currentMode === EditorMode.TRACE
+  traceToggleDom.onchange = function () {
+    instance.command.executeToggleTrace(traceToggleDom.checked)
+  }
+
   const applyMode = (mode: EditorMode) => {
     modeTextElement.innerText = modeTextMap[mode]
     instance.command.executeMode(mode)
@@ -1616,6 +1627,8 @@ window.onload = function () {
         ? dom.classList.add('disable')
         : dom.classList.remove('disable')
     })
+    // 留痕查看模式禁止切回记录态
+    traceToggleDom.disabled = mode === EditorMode.TRACE
   }
   modeElement.onclick = function (evt) {
     // 点击 li 时不重复 toggle 弹窗（交由 options 处理）
@@ -1623,7 +1636,10 @@ window.onload = function () {
     modeOptionsElement.classList.toggle('visible')
   }
   modeOptionsElement.onclick = function (evt) {
-    const li = evt.target as HTMLLIElement
+    const target = evt.target as HTMLElement
+    if (target.closest('.trace-toggle')) return
+    const li = target.closest('li')
+    if (!li) return
     const mode = li.dataset.mode as EditorMode
     if (!modeTextMap[mode]) return
     applyMode(mode)
