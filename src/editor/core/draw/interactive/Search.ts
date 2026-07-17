@@ -628,23 +628,19 @@ export class Search {
       firstReplacedMatch = firstMatch
       firstReplacedIndex = payload
         ? replaceIndex + payload.length - 1
-        : replaceIndex - 1
+        : Math.max(replaceIndex - 1, 0)
     }
     if (!firstReplacedMatch) return
     if (firstReplacedMatch.type === EditorContext.TABLE) {
-      const { tableIndex, trIndex, tdIndex } = firstReplacedMatch
-      const element =
-        elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!].value[
-          firstReplacedIndex
-        ]
+      const { tableIndex, trIndex, tdIndex, tdId, tableId } = firstReplacedMatch
       this.position.setPositionContext({
         isTable: true,
         index: tableIndex,
         trIndex,
         tdIndex,
-        tdId: element.tdId,
-        trId: element.trId,
-        tableId: element.tableId
+        tdId,
+        trId: elementList[tableIndex!].trList![trIndex!].id,
+        tableId
       })
     } else {
       this.position.setPositionContext({
