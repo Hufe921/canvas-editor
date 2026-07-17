@@ -467,7 +467,8 @@ export class Draw {
   ) {
     if (!this.options.trace.disabled) {
       this.traceParticle.markElementListDeleted(
-        elementList.slice(index, index + count)
+        elementList.slice(index, index + count),
+        options
       )
     } else {
       this.spliceElementList(elementList, index, count, undefined, options)

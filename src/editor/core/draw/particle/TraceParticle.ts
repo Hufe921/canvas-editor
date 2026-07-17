@@ -1,4 +1,5 @@
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
+import { EditorMode } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { TraceType } from '../../../dataset/enum/Trace'
 import { DeepRequired } from '../../../interface/Common'
@@ -6,7 +7,8 @@ import { IEditorOption } from '../../../interface/Editor'
 import {
   IElement,
   IElementMetrics,
-  IElementPosition
+  IElementPosition,
+  ISpliceElementListOption
 } from '../../../interface/Element'
 import { IRow, IRowElement } from '../../../interface/Row'
 import { visitElementTree } from '../../../utils/element'
@@ -30,13 +32,13 @@ export class TraceParticle {
   private container: HTMLDivElement
   private tracePopupContainer: HTMLDivElement
   private listDom: HTMLDivElement
-  private lastHoverIndex: number
+  private lastHoverKey: string
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
     this.container = draw.getContainer()
-    this.lastHoverIndex = -1
+    this.lastHoverKey = ''
     // 初始化时创建 hover 浮窗 DOM
     const { popup, listDom } = this._createTracePopupDom()
     this.tracePopupContainer = popup
@@ -123,7 +125,7 @@ export class TraceParticle {
   // 隐藏痕迹 hover 浮窗并重置 hover 索引
   public clearTracePopup() {
     this.tracePopupContainer.style.display = 'none'
-    this.lastHoverIndex = -1
+    this.lastHoverKey = ''
   }
 
   // 留痕模式下根据鼠标位置显示/隐藏痕迹浮窗
@@ -143,20 +145,29 @@ export class TraceParticle {
       this.clearTracePopup()
       return
     }
-    const elementList = this.draw.getElementList()
-    const element = elementList[positionResult.index]
+    const elementList = this.draw.getOriginalElementList()
+    let element: IElement | undefined = elementList[positionResult.index]
+    let elementPosition: IElementPosition | undefined =
+      position.getOriginalPositionList()[positionResult.index]
+    let hoverKey = String(positionResult.index)
+    if (positionResult.isTable && positionResult.tdValueIndex !== undefined) {
+      const td = position.getTableTdByContext(elementList, {
+        ...positionResult,
+        isTable: true
+      })
+      element = td?.value[positionResult.tdValueIndex]
+      elementPosition = td?.positionList?.[positionResult.tdValueIndex]
+      hoverKey = `${positionResult.tablePath
+        ?.map(item => `${item.index}:${item.trIndex}:${item.tdIndex}`)
+        .join('/')}:${positionResult.tdValueIndex}`
+    }
     if (!element?.trace?.length) {
       this.clearTracePopup()
       return
     }
-    if (this.lastHoverIndex === positionResult.index) return
-    const positionList = position.getPositionList()
-    this.drawTracePopup(
-      element,
-      positionList[positionResult.index],
-      this.draw.getPageNo()
-    )
-    this.lastHoverIndex = positionResult.index
+    if (this.lastHoverKey === hoverKey) return
+    this.drawTracePopup(element, elementPosition, this.draw.getPageNo())
+    this.lastHoverKey = hoverKey
   }
 
   // 获取元素留痕类型标记
@@ -176,10 +187,7 @@ export class TraceParticle {
     const { hasInsert, hasDelete } = this._getTraceFlags(element)
     const preFlags = this._getTraceFlags(preElement)
     // 装饰组合切换时立即冲刷累积，避免跨类型连绘
-    if (
-      hasInsert !== preFlags.hasInsert ||
-      hasDelete !== preFlags.hasDelete
-    ) {
+    if (hasInsert !== preFlags.hasInsert || hasDelete !== preFlags.hasDelete) {
       this.draw.getStrikeout().render(ctx)
       this.draw.getUnderline().render(ctx)
     }
@@ -257,7 +265,34 @@ export class TraceParticle {
   }
 
   // 给删除元素打标
-  public markElementListDeleted(elementList: IElement[]) {
-    this._markElementList(elementList, TraceType.DELETED)
+  public markElementListDeleted(
+    elementList: IElement[],
+    options?: ISpliceElementListOption
+  ) {
+    let deleteElementList = elementList
+    if (
+      !options?.isIgnoreDeletedRule &&
+      !this.draw.isDesignMode() &&
+      !this.draw.getControl().getIsRangeWithinControl()
+    ) {
+      const mode = this.draw.getMode()
+      const tdDeletable = this.draw.getTd()?.deletable
+      const { group, modeRule } = this.options
+      deleteElementList = elementList.filter(
+        element =>
+          element.hide ||
+          element.control?.hide ||
+          element.area?.hide ||
+          (tdDeletable !== false &&
+            element.control?.deletable !== false &&
+            (!element.controlId ||
+              mode !== EditorMode.FORM ||
+              !modeRule[mode].controlDeletableDisabled) &&
+            element.title?.deletable !== false &&
+            (group.deletable !== false || !element.groupIds?.length) &&
+            (element.area?.deletable !== false || element.areaIndex !== 0))
+      )
+    }
+    this._markElementList(deleteElementList, TraceType.DELETED)
   }
 }
