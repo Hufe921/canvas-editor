@@ -91,6 +91,7 @@ export class Command {
   public executeDeleteArea: CommandAdapt['deleteArea']
   public executeLocationArea: CommandAdapt['locationArea']
   public executeClearGraffiti: CommandAdapt['clearGraffiti']
+  public executeToggleTrace: CommandAdapt['toggleTrace']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeDeleteElementById: CommandAdapt['deleteElementById']
@@ -458,6 +459,11 @@ export class Command {
     this.executeClearGraffiti = this.wrap(
       'executeClearGraffiti',
       adapt.clearGraffiti.bind(adapt)
+    )
+    // 留痕
+    this.executeToggleTrace = this.wrap(
+      'executeToggleTrace',
+      adapt.toggleTrace.bind(adapt)
     )
     // 通用
     this.executeInsertElementList = this.wrap(

@@ -54,6 +54,7 @@ import { SelectionObserver } from '../observer/SelectionObserver'
 import { TableParticle } from './particle/table/TableParticle'
 import { TableTool } from './particle/table/TableTool'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
+import { TraceParticle } from './particle/TraceParticle'
 import { LabelParticle } from './particle/LabelParticle'
 import { Header } from './frame/Header'
 import { SuperscriptParticle } from './particle/SuperscriptParticle'
@@ -172,6 +173,7 @@ export class Draw {
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
+  private traceParticle: TraceParticle
   private labelParticle: LabelParticle
   private dateParticle: DateParticle
   private separatorParticle: SeparatorParticle
@@ -260,6 +262,7 @@ export class Draw {
     this.header = new Header(this, data.header)
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.traceParticle = new TraceParticle(this)
     this.labelParticle = new LabelParticle(this)
     this.dateParticle = new DateParticle(this)
     this.separatorParticle = new SeparatorParticle(this)
@@ -386,6 +389,7 @@ export class Draw {
       case EditorMode.READONLY:
       case EditorMode.PRINT:
       case EditorMode.GRAFFITI:
+      case EditorMode.TRACE:
         return true
       case EditorMode.FORM:
         return !this.control.getIsRangeWithinControl()
@@ -436,6 +440,37 @@ export class Draw {
 
   public isGraffitiMode() {
     return this.mode === EditorMode.GRAFFITI
+  }
+
+  public isTraceMode() {
+    return this.mode === EditorMode.TRACE
+  }
+
+  public setTraceEnabled(enabled: boolean) {
+    // 留痕查看模式下不允许切换记录开关，避免查看态偷偷改数据
+    if (this.mode === EditorMode.TRACE) return
+    if (!this.options.trace.disabled === enabled) return
+    this.options.trace.disabled = !enabled
+    this.render({
+      isSetCursor: false,
+      isSubmitHistory: false
+    })
+  }
+
+  // 删除元素：trace 启用时软删除（保留在原位仅打标），否则硬删除
+  public deleteElementList(
+    elementList: IElement[],
+    index: number,
+    count: number = 1,
+    options?: ISpliceElementListOption
+  ) {
+    if (!this.options.trace.disabled) {
+      this.traceParticle.markElementListDeleted(
+        elementList.slice(index, index + count)
+      )
+    } else {
+      this.spliceElementList(elementList, index, count, undefined, options)
+    }
   }
 
   public getOriginalWidth(): number {
@@ -701,6 +736,22 @@ export class Draw {
 
   public getTextParticle(): TextParticle {
     return this.textParticle
+  }
+
+  public getStrikeout(): Strikeout {
+    return this.strikeout
+  }
+
+  public getUnderline(): Underline {
+    return this.underline
+  }
+
+  public getSubscriptParticle(): SubscriptParticle {
+    return this.subscriptParticle
+  }
+
+  public getSuperscriptParticle(): SuperscriptParticle {
+    return this.superscriptParticle
   }
 
   public getHeaderElementList(): IElement[] {
@@ -970,6 +1021,10 @@ export class Draw {
 
   public getHyperlinkParticle(): HyperlinkParticle {
     return this.hyperlinkParticle
+  }
+
+  public getTraceParticle(): TraceParticle {
+    return this.traceParticle
   }
 
   public getDateParticle(): DateParticle {
@@ -1505,7 +1560,8 @@ export class Draw {
       if (
         (element.hide ||
           element.control?.hide ||
-          (element.area?.hide && !this.isAreaHideDisabled())) &&
+          (element.area?.hide && !this.isAreaHideDisabled()) ||
+          this.traceParticle.isTraceHidden(element)) &&
         !this.isDesignMode()
       ) {
         const preElement = curRow.elementList[curRow.elementList.length - 1]
@@ -2369,7 +2425,8 @@ export class Draw {
         if (
           (element.hide ||
             element.control?.hide ||
-            (element.area?.hide && !this.isAreaHideDisabled())) &&
+            (element.area?.hide && !this.isAreaHideDisabled()) ||
+            this.traceParticle.isTraceHidden(element)) &&
           !this.isDesignMode()
         ) {
           // 控件隐藏时不绘制
@@ -2581,6 +2638,18 @@ export class Draw {
         } else if (preElement?.strikeout) {
           this.strikeout.render(ctx)
         }
+        // 留痕装饰
+        this.traceParticle.render({
+          ctx,
+          element,
+          preElement,
+          x,
+          y,
+          curRow,
+          metrics,
+          offsetY,
+          scale
+        })
         // 选区记录
         const {
           zone: currentZone,
@@ -3112,6 +3181,8 @@ export class Draw {
     this.getTableTool().dispose()
     // 超链接弹窗
     this.getHyperlinkParticle().clearHyperlinkPopup()
+    // 留痕悬浮弹窗
+    this.getTraceParticle().clearTracePopup()
     // 日期控件
     this.getDateParticle().clearDatePicker()
   }

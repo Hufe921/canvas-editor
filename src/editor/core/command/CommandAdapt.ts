@@ -209,13 +209,13 @@ export class CommandAdapt {
       return
     }
     if (!isCollapsed) {
-      this.draw.spliceElementList(
+      this.draw.deleteElementList(
         elementList,
         startIndex + 1,
         endIndex - startIndex
       )
     } else {
-      this.draw.spliceElementList(elementList, startIndex, 1)
+      this.draw.deleteElementList(elementList, startIndex, 1)
     }
     const curIndex = isCollapsed ? startIndex - 1 : startIndex
     this.range.setRange(curIndex, curIndex)
@@ -1894,6 +1894,8 @@ export class CommandAdapt {
       this.range.shrinkRange()
     }
     const cloneElementList = deepClone(payload)
+    // 留痕记录：新增元素打标
+    this.draw.getTraceParticle().markElementListInserted(cloneElementList)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
@@ -1912,7 +1914,9 @@ export class CommandAdapt {
     if (!elementList.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    this.draw.appendElementList(deepClone(elementList), options)
+    const cloneElementList = deepClone(elementList)
+    this.draw.getTraceParticle().markElementListInserted(cloneElementList)
+    this.draw.appendElementList(cloneElementList, options)
   }
 
   public updateElementById(payload: IUpdateElementByIdOption) {
@@ -2813,5 +2817,12 @@ export class CommandAdapt {
         isSubmitHistory: false
       })
     }
+  }
+
+  // 切换留痕记录开关；payload 省略时切换当前状态
+  public toggleTrace(payload?: boolean) {
+    const next =
+      payload === undefined ? this.draw.getOptions().trace.disabled : payload
+    this.draw.setTraceEnabled(next)
   }
 }

@@ -1,0 +1,263 @@
+import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
+import { ElementType } from '../../../dataset/enum/Element'
+import { TraceType } from '../../../dataset/enum/Trace'
+import { DeepRequired } from '../../../interface/Common'
+import { IEditorOption } from '../../../interface/Editor'
+import {
+  IElement,
+  IElementMetrics,
+  IElementPosition
+} from '../../../interface/Element'
+import { IRow, IRowElement } from '../../../interface/Row'
+import { visitElementTree } from '../../../utils/element'
+import { Draw } from '../Draw'
+
+interface ITraceRenderContext {
+  ctx: CanvasRenderingContext2D
+  element: IRowElement
+  preElement: IRowElement | null
+  x: number
+  y: number
+  curRow: IRow
+  metrics: IElementMetrics
+  offsetY: number
+  scale: number
+}
+
+export class TraceParticle {
+  private draw: Draw
+  private options: DeepRequired<IEditorOption>
+  private container: HTMLDivElement
+  private tracePopupContainer: HTMLDivElement
+  private listDom: HTMLDivElement
+  private lastHoverIndex: number
+
+  constructor(draw: Draw) {
+    this.draw = draw
+    this.options = draw.getOptions()
+    this.container = draw.getContainer()
+    this.lastHoverIndex = -1
+    // 初始化时创建 hover 浮窗 DOM
+    const { popup, listDom } = this._createTracePopupDom()
+    this.tracePopupContainer = popup
+    this.listDom = listDom
+  }
+
+  // 创建留痕 hover 浮窗容器
+  private _createTracePopupDom() {
+    const popup = document.createElement('div')
+    popup.classList.add(`${EDITOR_PREFIX}-trace-popup`)
+    const listDom = document.createElement('div')
+    listDom.classList.add(`${EDITOR_PREFIX}-trace-popup__list`)
+    popup.append(listDom)
+    this.container.append(popup)
+    return { popup, listDom }
+  }
+
+  // 绘制痕迹 hover 浮窗（按时间顺序展示 insert/delete 记录）
+  public drawTracePopup(
+    element: IElement,
+    position: IElementPosition | undefined,
+    pageNo: number
+  ) {
+    const records = element.trace
+    if (!records?.length || !position) {
+      this.clearTracePopup()
+      return
+    }
+    const {
+      coordinate: {
+        leftTop: [left, top]
+      },
+      lineHeight
+    } = position
+    const height = this.draw.getHeight()
+    const pageGap = this.draw.getPageGap()
+    const preY = pageNo * (height + pageGap)
+    // 位置
+    this.tracePopupContainer.style.display = 'block'
+    this.tracePopupContainer.style.left = `${left}px`
+    this.tracePopupContainer.style.top = `${top + preY + lineHeight}px`
+    // 时间线：按时间顺序自上而下逐条渲染（先插入后删除会显示两条）
+    const {
+      insertColor,
+      deleteColor,
+      author: defaultAuthor
+    } = this.options.trace
+    const i18n = this.draw.getI18n()
+    const authorLabel = i18n.t('trace.author')
+    const timeLabel = i18n.t('trace.time')
+    const unknownAuthor = i18n.t('trace.unknownAuthor')
+    this.listDom.innerHTML = ''
+    const fragment = document.createDocumentFragment()
+    for (const record of records) {
+      const isInsert = record.type === TraceType.INSERTED
+      const item = document.createElement('div')
+      item.classList.add(`${EDITOR_PREFIX}-trace-popup__item`)
+      // 类型徽标（按类型着色）
+      const typeSpan = document.createElement('span')
+      typeSpan.classList.add(`${EDITOR_PREFIX}-trace-popup__type`)
+      typeSpan.innerText = i18n.t(isInsert ? 'trace.insert' : 'trace.delete')
+      typeSpan.style.color = isInsert ? insertColor : deleteColor
+      item.append(typeSpan)
+      // 作者
+      const author = record.author || defaultAuthor || unknownAuthor
+      const authorSpan = document.createElement('span')
+      authorSpan.classList.add(`${EDITOR_PREFIX}-trace-popup__author`)
+      authorSpan.innerText = `${authorLabel}: ${author}`
+      item.append(authorSpan)
+      // 时间
+      if (record.timestamp) {
+        const timeSpan = document.createElement('span')
+        timeSpan.classList.add(`${EDITOR_PREFIX}-trace-popup__time`)
+        timeSpan.innerText = `${timeLabel}: ${new Date(
+          record.timestamp
+        ).toLocaleString()}`
+        item.append(timeSpan)
+      }
+      fragment.append(item)
+    }
+    this.listDom.append(fragment)
+  }
+
+  // 隐藏痕迹 hover 浮窗并重置 hover 索引
+  public clearTracePopup() {
+    this.tracePopupContainer.style.display = 'none'
+    this.lastHoverIndex = -1
+  }
+
+  // 留痕模式下根据鼠标位置显示/隐藏痕迹浮窗
+  public handleMouseMove(evt: MouseEvent) {
+    if (!this.draw.isTraceMode()) return
+    const target = evt.target as HTMLDivElement
+    const pageIndex = target.dataset.index
+    if (pageIndex) {
+      this.draw.setPageNo(Number(pageIndex))
+    }
+    const position = this.draw.getPosition()
+    const positionResult = position.getPositionByXY({
+      x: evt.offsetX,
+      y: evt.offsetY
+    })
+    if (!~positionResult.index) {
+      this.clearTracePopup()
+      return
+    }
+    const elementList = this.draw.getElementList()
+    const element = elementList[positionResult.index]
+    if (!element?.trace?.length) {
+      this.clearTracePopup()
+      return
+    }
+    if (this.lastHoverIndex === positionResult.index) return
+    const positionList = position.getPositionList()
+    this.drawTracePopup(
+      element,
+      positionList[positionResult.index],
+      this.draw.getPageNo()
+    )
+    this.lastHoverIndex = positionResult.index
+  }
+
+  // 获取元素留痕类型标记
+  private _getTraceFlags(element?: IRowElement | null) {
+    const records = element?.trace || []
+    return {
+      hasInsert: records.some(r => r.type === TraceType.INSERTED),
+      hasDelete: records.some(r => r.type === TraceType.DELETED)
+    }
+  }
+
+  // TRACE 模式下绘制元素留痕装饰（DELETED 红色中划线 / INSERTED 蓝色下划线）
+  public render(context: ITraceRenderContext) {
+    if (!this.draw.isTraceMode()) return
+    const { ctx, element, preElement, x, y, curRow, metrics, offsetY, scale } =
+      context
+    const { hasInsert, hasDelete } = this._getTraceFlags(element)
+    const preFlags = this._getTraceFlags(preElement)
+    // 装饰组合切换时立即冲刷累积，避免跨类型连绘
+    if (
+      hasInsert !== preFlags.hasInsert ||
+      hasDelete !== preFlags.hasDelete
+    ) {
+      this.draw.getStrikeout().render(ctx)
+      this.draw.getUnderline().render(ctx)
+    }
+    // 删除痕迹：红色中划线
+    if (hasDelete) {
+      const standardMetrics = this.draw
+        .getTextParticle()
+        .measureBasisWord(ctx, this.draw.getElementFont(element))
+      let traceAdjustY =
+        y +
+        offsetY +
+        standardMetrics.actualBoundingBoxDescent * scale -
+        metrics.height / 2
+      if (element.type === ElementType.SUBSCRIPT) {
+        traceAdjustY += this.draw.getSubscriptParticle().getOffsetY(element)
+      } else if (element.type === ElementType.SUPERSCRIPT) {
+        traceAdjustY += this.draw.getSuperscriptParticle().getOffsetY(element)
+      }
+      this.draw
+        .getStrikeout()
+        .recordFillInfo(
+          ctx,
+          x,
+          traceAdjustY,
+          metrics.width,
+          0,
+          this.options.trace.deleteColor
+        )
+    }
+    // 新增痕迹：蓝色下划线
+    if (hasInsert) {
+      const traceRowMargin = this.draw.getElementRowMargin(element)
+      const traceOffsetX = element.left || 0
+      let traceUY = 0
+      if (element.type === ElementType.SUBSCRIPT) {
+        traceUY = this.draw.getSubscriptParticle().getOffsetY(element)
+      }
+      this.draw
+        .getUnderline()
+        .recordFillInfo(
+          ctx,
+          x - traceOffsetX,
+          y + curRow.height - traceRowMargin + traceUY,
+          metrics.width + traceOffsetX,
+          0,
+          this.options.trace.insertColor
+        )
+    }
+  }
+
+  // 留痕软删除元素在非留痕查看模式下应隐藏（视觉等同于 hide=true）
+  public isTraceHidden(element: IElement) {
+    const records = element.trace
+    return (
+      records?.[records.length - 1]?.type === TraceType.DELETED &&
+      !this.draw.isTraceMode()
+    )
+  }
+
+  // 给元素列表打标；开启留痕时追加指定类型记录
+  private _markElementList(elementList: IElement[], type: TraceType) {
+    if (this.options.trace.disabled) return
+    const author = this.options.trace.author
+    const timestamp = Date.now()
+    visitElementTree(elementList, el => {
+      const records = el.trace || []
+      if (records[records.length - 1]?.type === type) return
+      el.trace = [...records, { type, author, timestamp }]
+    })
+  }
+
+  // 给新增元素打标
+  public markElementListInserted(elementList: IElement[]) {
+    this._markElementList(elementList, TraceType.INSERTED)
+  }
+
+  // 给删除元素打标
+  public markElementListDeleted(elementList: IElement[]) {
+    this._markElementList(elementList, TraceType.DELETED)
+  }
+}

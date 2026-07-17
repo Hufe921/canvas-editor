@@ -10,6 +10,7 @@
 @import './zone/zone.css';
 @import './magnifier/magnifier.css';
 @import './accessibility/accessibility.css';
+@import './trace/trace.css';
 
 .ce-inputarea {
   width: 100px;

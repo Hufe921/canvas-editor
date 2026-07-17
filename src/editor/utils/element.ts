@@ -48,7 +48,7 @@ import { VerticalAlign } from '../dataset/enum/VerticalAlign'
 import { DeepRequired } from '../interface/Common'
 import { IControlSelect } from '../interface/Control'
 import { IEditorOption } from '../interface/Editor'
-import { IElement } from '../interface/Element'
+import { IElement, ITraceRecord } from '../interface/Element'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
@@ -618,6 +618,24 @@ export function isSameElementExceptValue(
       Array.isArray(target[key]) &&
       isArrayEqual(source[key], target[key])
     ) {
+      continue
+    }
+    // trace数组需逐条校验内容是否一致
+    if (key === 'trace') {
+      const sourceTrace = (source[key] as ITraceRecord[]) || []
+      const targetTrace = (target[key] as ITraceRecord[]) || []
+      if (sourceTrace.length !== targetTrace.length) return false
+      for (let i = 0; i < sourceTrace.length; i++) {
+        const s = sourceTrace[i]
+        const t = targetTrace[i]
+        if (
+          s.type !== t.type ||
+          s.author !== t.author ||
+          s.timestamp !== t.timestamp
+        ) {
+          return false
+        }
+      }
       continue
     }
     if (source[key] !== target[key]) {
@@ -1997,4 +2015,24 @@ export function getOutermostOwner(
     return getOutermostOwner(elementList, i - 1)
   }
   return ownerId
+}
+
+// 深度遍历元素树（含表格单元格、控件/标题子列表）
+export function visitElementTree(
+  elementList: IElement[],
+  visitor: (element: IElement) => void
+) {
+  for (const el of elementList) {
+    visitor(el)
+    if (el.type === ElementType.TABLE) {
+      for (const tr of el.trList || []) {
+        for (const td of tr.tdList) {
+          visitElementTree(td.value, visitor)
+        }
+      }
+    }
+    if (el.valueList) {
+      visitElementTree(el.valueList, visitor)
+    }
+  }
 }

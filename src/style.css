@@ -1052,6 +1052,15 @@ ul {
   transform: translateX(-50%);
 }
 
+.footer .editor-mode .options {
+  left: 50%;
+  bottom: calc(100% + 4px);
+  transform: translateX(-50%);
+  width: max-content;
+  min-width: 90px;
+  white-space: nowrap;
+}
+
 .footer .paper-size {
   position: relative;
 }

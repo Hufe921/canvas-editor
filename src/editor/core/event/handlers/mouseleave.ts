@@ -2,6 +2,8 @@ import { CanvasEvent } from '../CanvasEvent'
 
 export function mouseleave(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
+  // 清理留痕悬浮弹窗
+  draw.getTraceParticle().clearTracePopup()
   // 鼠标移出页面时选区禁用
   if (!draw.getOptions().pageOuterSelectionDisable) return
   // 是否还在canvas内部

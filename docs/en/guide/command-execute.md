@@ -24,12 +24,22 @@ import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
 
 ## executeMode
 
-Feature: Switch editor mode (Edit, Clean, Read only)
+Feature: Switch editor mode (Edit, Clean, Read only, Form, Print, Design, Graffiti, Trace)
 
 Usage:
 
 ```javascript
 instance.command.executeMode(editorMode: EditorMode)
+```
+
+## executeToggleTrace
+
+Feature: Toggle trace recording.
+
+Usage:
+
+```javascript
+instance.command.executeToggleTrace(payload?: boolean)
 ```
 
 ## executeCut

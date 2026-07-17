@@ -133,11 +133,10 @@ export class TextControl implements IControlInstance {
     }
     // 移除选区元素
     if (startIndex !== endIndex) {
-      draw.spliceElementList(
+      draw.deleteElementList(
         elementList,
         startIndex + 1,
         endIndex - startIndex,
-        [],
         {
           isIgnoreDeletedRule: options.isIgnoreDeletedRule
         }
@@ -226,7 +225,7 @@ export class TextControl implements IControlInstance {
     if (evt.key === KeyMap.Backspace) {
       // 移除选区元素
       if (startIndex !== endIndex) {
-        draw.spliceElementList(
+        draw.deleteElementList(
           elementList,
           startIndex + 1,
           endIndex - startIndex
@@ -248,7 +247,7 @@ export class TextControl implements IControlInstance {
           return this.control.removeControl(startIndex)
         } else {
           // 文本
-          draw.spliceElementList(elementList, startIndex, 1)
+          draw.deleteElementList(elementList, startIndex, 1)
           const value = this.getValue()
           if (!value.length) {
             this.control.addPlaceholder(startIndex - 1)
@@ -259,7 +258,7 @@ export class TextControl implements IControlInstance {
     } else if (evt.key === KeyMap.Delete) {
       // 移除选区元素
       if (startIndex !== endIndex) {
-        draw.spliceElementList(
+        draw.deleteElementList(
           elementList,
           startIndex + 1,
           endIndex - startIndex
@@ -283,7 +282,7 @@ export class TextControl implements IControlInstance {
           return this.control.removeControl(startIndex)
         } else {
           // 文本
-          draw.spliceElementList(elementList, startIndex + 1, 1)
+          draw.deleteElementList(elementList, startIndex + 1, 1)
           const value = this.getValue()
           if (!value.length) {
             this.control.addPlaceholder(startIndex)
@@ -306,7 +305,7 @@ export class TextControl implements IControlInstance {
     }
     const draw = this.control.getDraw()
     const elementList = this.control.getElementList()
-    draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+    draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex)
     const value = this.getValue()
     if (!value.length) {
       this.control.addPlaceholder(startIndex)

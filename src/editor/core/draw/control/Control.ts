@@ -845,6 +845,43 @@ export class Control {
     }
   }
 
+  // 查找控件前缀/前文本段的起始位置（支持多字符前缀/前文本）
+  public getControlStartIndex(
+    elementList: IElement[],
+    startIndex: number,
+    controlId: string
+  ): number {
+    let index = startIndex
+    while (
+      index > 0 &&
+      elementList[index - 1]?.controlId === controlId &&
+      (elementList[index - 1]?.controlComponent === ControlComponent.PREFIX ||
+        elementList[index - 1]?.controlComponent === ControlComponent.PRE_TEXT)
+    ) {
+      index--
+    }
+    return index
+  }
+
+  // 查找控件后文本/后缀段的结束位置（支持多字符后文本/后缀）
+  public getControlEndIndex(
+    elementList: IElement[],
+    startIndex: number,
+    controlId: string
+  ): number {
+    let index = startIndex
+    while (
+      index < elementList.length - 1 &&
+      elementList[index + 1]?.controlId === controlId &&
+      (elementList[index + 1]?.controlComponent ===
+        ControlComponent.POST_TEXT ||
+        elementList[index + 1]?.controlComponent === ControlComponent.POSTFIX)
+    ) {
+      index++
+    }
+    return index
+  }
+
   public removeControl(
     startIndex: number,
     context: IControlContext = {}
@@ -895,12 +932,17 @@ export class Control {
     let rightIndex = -1
     // 向左查找（嵌套感知：跳过内层段落）
     let preIndex = startIndex
-    // 起点本身是外层 PREFIX 即为左边界
+    // 起点本身是外层 PREFIX / PRE_TEXT 即为左边界
     if (
       startElement.controlComponent === ControlComponent.PREFIX ||
       startElement.controlComponent === ControlComponent.PRE_TEXT
     ) {
-      leftIndex = preIndex - 1
+      const start = this.getControlStartIndex(
+        elementList,
+        preIndex,
+        startElement.controlId!
+      )
+      leftIndex = start - 1
     } else {
       while (preIndex > 0) {
         const next = scanToOwner(
@@ -920,7 +962,12 @@ export class Control {
           preElement.controlComponent === ControlComponent.PREFIX ||
           preElement.controlComponent === ControlComponent.PRE_TEXT
         ) {
-          leftIndex = next - 1
+          const start = this.getControlStartIndex(
+            elementList,
+            next,
+            startElement.controlId!
+          )
+          leftIndex = start - 1
           break
         }
         preIndex = next
@@ -928,15 +975,29 @@ export class Control {
     }
     // 向右查找（嵌套感知：跳过内层段落）
     let nextIndex = startIndex
-    // 起点本身是外层 POSTFIX 即为右边界
-    if (startElement.controlComponent === ControlComponent.POSTFIX) {
-      rightIndex = nextIndex
+    // 起点本身是外层 POSTFIX / POST_TEXT 即为右边界
+    if (
+      startElement.controlComponent === ControlComponent.POSTFIX ||
+      startElement.controlComponent === ControlComponent.POST_TEXT
+    ) {
+      rightIndex = this.getControlEndIndex(
+        elementList,
+        nextIndex,
+        startElement.controlId!
+      )
     } else {
       while (nextIndex < elementList.length) {
         const curElement = elementList[nextIndex]
-        // 落到外层 POSTFIX 即为右边界
-        if (curElement.controlComponent === ControlComponent.POSTFIX) {
-          rightIndex = nextIndex
+        // 落到外层 POSTFIX / POST_TEXT 即为右边界
+        if (
+          curElement.controlComponent === ControlComponent.POSTFIX ||
+          curElement.controlComponent === ControlComponent.POST_TEXT
+        ) {
+          rightIndex = this.getControlEndIndex(
+            elementList,
+            nextIndex,
+            startElement.controlId!
+          )
           break
         }
         const next = scanToOwner(
@@ -959,7 +1020,7 @@ export class Control {
     if (!~leftIndex && !~rightIndex) return startIndex
     leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
-    this.draw.spliceElementList(
+    this.draw.deleteElementList(
       elementList,
       leftIndex + 1,
       rightIndex - leftIndex

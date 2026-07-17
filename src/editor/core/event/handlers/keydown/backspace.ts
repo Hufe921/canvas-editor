@@ -139,9 +139,9 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       }
     }
     if (!isCollapsed) {
-      draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+      draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
-      draw.spliceElementList(elementList, index, 1)
+      draw.deleteElementList(elementList, index, 1)
     }
     curIndex = isCollapsed ? index - 1 : startIndex
   }

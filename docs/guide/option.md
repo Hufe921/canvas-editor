@@ -87,6 +87,7 @@ interface IEditorOption {
   magnifier?: IMagnifierOption // 放大镜配置
   accessibility?: IAccessibilityOption // 无障碍配置
   column?: IColumnOption // 分栏配置。默认：关闭
+  trace?: ITraceOption // 留痕配置。默认：禁用
 }
 ```
 
@@ -440,5 +441,16 @@ interface IColumnOption {
   separator?: boolean // 是否显示栏间分隔线。默认：false
   separatorColor?: string // 分隔线颜色。默认：#000000
   separatorWidth?: number // 分隔线宽度。默认：1
+}
+```
+
+## 留痕配置
+
+```typescript
+interface ITraceOption {
+  disabled?: boolean // 初始是否禁用留痕记录。默认：true
+  insertColor?: string // 新增痕迹下划线颜色。默认：#2B5CE6
+  deleteColor?: string // 删除痕迹中划线颜色。默认：#E03F3F
+  author?: string // 留痕记录作者标识。默认：''
 }
 ```

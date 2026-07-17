@@ -22,6 +22,7 @@ import {
   getOutermostOwner
 } from '@/editor/utils/element'
 import { ElementType } from '@/editor/dataset/enum/Element'
+import { TraceType } from '@/editor/dataset/enum/Trace'
 import { RowFlex } from '@/editor/dataset/enum/Row'
 import { ControlType, ControlComponent } from '@/editor/dataset/enum/Control'
 import type { IElement } from '@/editor/interface/Element'
@@ -310,6 +311,52 @@ describe('zipElementList', () => {
     const result = zipElementList(list as any)
     expect(result.length).toBe(1)
     expect(result[0].value).toBe('ab')
+  })
+
+  it('相同 trace 的相邻文本元素合并', () => {
+    const trace = [{ type: TraceType.DELETED, author: 'hufe', timestamp: 1 }]
+    const list = [
+      { value: 'a', type: ElementType.TEXT, size: 16, trace },
+      { value: 'b', type: ElementType.TEXT, size: 16, trace: [...trace] }
+    ]
+    const result = zipElementList(list as any)
+    expect(result.length).toBe(1)
+    expect(result[0].value).toBe('ab')
+    expect(result[0].trace).toEqual(trace)
+  })
+
+  it('不同 trace 的相邻文本元素不合并', () => {
+    const list = [
+      {
+        value: 'a',
+        type: ElementType.TEXT,
+        trace: [{ type: TraceType.DELETED, author: 'hufe', timestamp: 1 }]
+      },
+      {
+        value: 'b',
+        type: ElementType.TEXT,
+        trace: [{ type: TraceType.DELETED, author: 'hufe', timestamp: 2 }]
+      }
+    ]
+    const result = zipElementList(list as any)
+    expect(result.length).toBe(2)
+  })
+
+  it('先插入后删除的相邻元素合并，保留两条记录', () => {
+    const trace = [
+      { type: TraceType.INSERTED, author: 'hufe', timestamp: 1 },
+      { type: TraceType.DELETED, author: 'hufe', timestamp: 2 }
+    ]
+    const list = [
+      { value: 'a', type: ElementType.TEXT, size: 16, trace },
+      { value: 'b', type: ElementType.TEXT, size: 16, trace: [...trace] }
+    ]
+    const result = zipElementList(list as any)
+    expect(result.length).toBe(1)
+    expect(result[0].value).toBe('ab')
+    expect(result[0].trace).toHaveLength(2)
+    expect(result[0].trace?.[0].type).toBe(TraceType.INSERTED)
+    expect(result[0].trace?.[1].type).toBe(TraceType.DELETED)
   })
 })
 
