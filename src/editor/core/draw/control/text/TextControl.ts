@@ -13,7 +13,11 @@ import {
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
 import { omitObject, pickObject } from '../../../../utils'
-import { formatElementContext, scanToOwner } from '../../../../utils/element'
+import {
+  formatElementContext,
+  isElementTraceDeleted,
+  scanToOwner
+} from '../../../../utils/element'
 import { Control } from '../Control'
 
 export class TextControl implements IControlInstance {
@@ -41,7 +45,10 @@ export class TextControl implements IControlInstance {
     const { startIndex } = context.range || this.control.getRange()
     const startElement = elementList[startIndex]
     const data: IElement[] = []
-    if (startElement.controlComponent === ControlComponent.VALUE) {
+    if (
+      startElement.controlComponent === ControlComponent.VALUE &&
+      !isElementTraceDeleted(startElement)
+    ) {
       data.push(startElement)
     }
     // 向左查找
@@ -62,7 +69,10 @@ export class TextControl implements IControlInstance {
       ) {
         break
       }
-      if (preElement.controlComponent === ControlComponent.VALUE) {
+      if (
+        preElement.controlComponent === ControlComponent.VALUE &&
+        !isElementTraceDeleted(preElement)
+      ) {
         data.unshift(preElement)
       }
       preIndex = next
@@ -85,7 +95,10 @@ export class TextControl implements IControlInstance {
       ) {
         break
       }
-      if (nextElement.controlComponent === ControlComponent.VALUE) {
+      if (
+        nextElement.controlComponent === ControlComponent.VALUE &&
+        !isElementTraceDeleted(nextElement)
+      ) {
         data.push(nextElement)
       }
       nextIndex = next
@@ -168,6 +181,7 @@ export class TextControl implements IControlInstance {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
+      draw.getTraceParticle().markElementListInserted([newElement])
       draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     return start + data.length - 1
@@ -190,15 +204,9 @@ export class TextControl implements IControlInstance {
     const { startIndex, endIndex } = range
     this.control
       .getDraw()
-      .spliceElementList(
-        elementList,
-        startIndex + 1,
-        endIndex - startIndex,
-        [],
-        {
-          isIgnoreDeletedRule: options.isIgnoreDeletedRule
-        }
-      )
+      .deleteElementList(elementList, startIndex + 1, endIndex - startIndex, {
+        isIgnoreDeletedRule: options.isIgnoreDeletedRule
+      })
     const value = this.getValue({
       range,
       elementList

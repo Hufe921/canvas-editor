@@ -256,7 +256,9 @@ export class Area {
       id: areaInfo.id,
       startPageNo: areaInfo.positionList[0].pageNo,
       endPageNo: areaInfo.positionList[areaInfo.positionList.length - 1].pageNo,
-      value: zipElementList(getNonDeletedElementList(areaInfo.elementList))
+      value: zipElementList(getNonDeletedElementList(areaInfo.elementList), {
+        isClone: false
+      })
     }
   }
 

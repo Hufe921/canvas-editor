@@ -1,7 +1,6 @@
 import { ZERO } from '../../../dataset/constant/Common'
 import { VIRTUAL_ELEMENT_TYPE } from '../../../dataset/constant/Element'
 import { ElementType } from '../../../dataset/enum/Element'
-import { TraceType } from '../../../dataset/enum/Trace'
 import { IElement } from '../../../interface/Element'
 import { IPasteOption } from '../../../interface/Event'
 import {
@@ -63,18 +62,10 @@ export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
       editorOptions: draw.getOptions()
     })
   }
-  // 留痕记录：粘贴内容中的删除痕迹需重置，否则会因软删除隐藏而表现为“粘贴无效”
+  // 粘贴是一次新的插入操作，不继承来源元素的留痕作者和时间
   visitElementTree(elementList, element => {
-    if (!element.trace?.length) return
-    const filtered = element.trace.filter(r => r.type !== TraceType.DELETED)
-    if (filtered.length === 0) {
-      delete element.trace
-    } else {
-      element.trace = filtered
-    }
+    delete element.trace
   })
-  // 留痕记录：新增元素打标
-  draw.getTraceParticle().markElementListInserted(elementList)
   draw.insertElementList(elementList)
 }
 
@@ -119,8 +110,6 @@ export function pasteImage(host: CanvasEvent, file: File | Blob) {
           editorOptions: draw.getOptions()
         })
       }
-      // 留痕记录：新增元素打标
-      draw.getTraceParticle().markElementListInserted([imageElement])
       draw.insertElementList([imageElement])
     }
   }

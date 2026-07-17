@@ -464,7 +464,7 @@ export class Draw {
     elementList: IElement[],
     index: number,
     count: number = 1,
-    options?: ISpliceElementListOption | IMarkElementListDeletedOption
+    options?: IMarkElementListDeletedOption
   ) {
     if (!this.options.trace.disabled) {
       return this.traceParticle.markElementListDeleted(
@@ -472,7 +472,9 @@ export class Draw {
         options
       )
     } else {
-      this.spliceElementList(elementList, index, count, undefined, options)
+      this.spliceElementList(elementList, index, count, undefined, {
+        isIgnoreDeletedRule: options?.isIgnoreDeletedRule
+      })
       return []
     }
   }
@@ -825,6 +827,7 @@ export class Draw {
       isHandleFirstElement: false,
       editorOptions: this.options
     })
+    this.traceParticle.markElementListInserted(payload)
     let curIndex = -1
     // 判断是否在控件内
     let activeControl = this.control.getActiveControl()
@@ -843,7 +846,7 @@ export class Draw {
       const isCollapsed = startIndex === endIndex
       const start = startIndex + 1
       if (!isCollapsed) {
-        this.spliceElementList(elementList, start, endIndex - startIndex)
+        this.deleteElementList(elementList, start, endIndex - startIndex)
       }
       this.spliceElementList(elementList, start, 0, payload)
       curIndex = startIndex + payload.length
@@ -878,6 +881,7 @@ export class Draw {
       isHandleFirstElement: false,
       editorOptions: this.options
     })
+    this.traceParticle.markElementListInserted(elementList)
     let curIndex: number
     const { isPrepend, isSubmitHistory = true } = options
     if (isPrepend) {

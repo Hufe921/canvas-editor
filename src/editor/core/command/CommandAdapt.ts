@@ -1544,11 +1544,15 @@ export class CommandAdapt {
     const footerElementList = this.draw.getFooterElementList()
     return {
       header: getTextFromElementList(
-        getNonDeletedElementList(headerElementList)
+        getNonDeletedElementList(headerElementList),
+        { isClone: false }
       ),
-      main: getTextFromElementList(getNonDeletedElementList(mainElementList)),
+      main: getTextFromElementList(getNonDeletedElementList(mainElementList), {
+        isClone: false
+      }),
       footer: getTextFromElementList(
-        getNonDeletedElementList(footerElementList)
+        getNonDeletedElementList(footerElementList),
+        { isClone: false }
       )
     }
   }
@@ -1909,8 +1913,6 @@ export class CommandAdapt {
       this.range.shrinkRange()
     }
     const cloneElementList = deepClone(payload)
-    // 留痕记录：新增元素打标
-    this.draw.getTraceParticle().markElementListInserted(cloneElementList)
     // 格式化上下文信息
     const { startIndex } = this.range.getRange()
     const elementList = this.draw.getElementList()
@@ -1930,7 +1932,6 @@ export class CommandAdapt {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
     const cloneElementList = deepClone(elementList)
-    this.draw.getTraceParticle().markElementListInserted(cloneElementList)
     this.draw.appendElementList(cloneElementList, options)
   }
 
@@ -2605,7 +2606,7 @@ export class CommandAdapt {
         result.push({
           ...element.title!,
           value: getTextFromElementList(nonDeletedValueList),
-          elementList: zipElementList(nonDeletedValueList),
+          elementList: zipElementList(nonDeletedValueList, { isClone: false }),
           zone
         })
         i = j

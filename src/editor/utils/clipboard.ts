@@ -83,7 +83,11 @@ export async function writeElementList(
   clipboardDom.remove()
   const html = clipboardDom.innerHTML
   if (!text && !html && !clipboardElementList.length) return
-  await writeClipboardItem(text, html, zipElementList(clipboardElementList))
+  await writeClipboardItem(
+    text,
+    html,
+    zipElementList(clipboardElementList, { isClone: false })
+  )
 }
 
 export function getIsClipboardContainFile(clipboardData: DataTransfer) {

@@ -81,6 +81,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
   // 控件或文档插入换行元素
   const control = draw.getControl()
   const activeControl = control.getActiveControl()
+  draw.getTraceParticle().markElementListInserted([enterText])
   let curIndex: number
   if (activeControl && control.getIsRangeWithinControl()) {
     curIndex = control.setValue([enterText])
@@ -109,14 +110,11 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
         }
       }
     } else {
-      draw.spliceElementList(
-        elementList,
-        startIndex + 1,
-        endIndex - startIndex,
-        [enterText]
-      )
+      const start = startIndex + 1
+      draw.deleteElementList(elementList, start, endIndex - startIndex)
+      draw.spliceElementList(elementList, start, 0, [enterText])
     }
-    curIndex = index + 1
+    curIndex = isCollapsed ? index + 1 : startIndex + 1
   }
   if (~curIndex) {
     rangeManager.setRange(curIndex, curIndex)

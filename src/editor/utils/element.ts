@@ -1824,7 +1824,10 @@ export function getElementListByHTML(
   return elementList
 }
 
-export function getTextFromElementList(elementList: IElement[]) {
+export function getTextFromElementList(
+  elementList: IElement[],
+  options: { isClone?: boolean } = {}
+) {
   function buildText(payload: IElement[]): string {
     let text = ''
     for (let e = 0; e < payload.length; e++) {
@@ -1837,7 +1840,9 @@ export function getTextFromElementList(elementList: IElement[]) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const tdText = buildText(zipElementList(td.value!))
+            const tdText = buildText(
+              zipElementList(td.value!, { isClone: false })
+            )
             const isFirst = d === 0
             const isLast = tr.tdList.length - 1 === d
             text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
@@ -1848,10 +1853,12 @@ export function getTextFromElementList(elementList: IElement[]) {
       } else if (element.type === ElementType.HYPERLINK) {
         text += element.valueList!.map(v => v.value).join('')
       } else if (element.type === ElementType.TITLE) {
-        text += `${buildText(zipElementList(element.valueList!))}`
+        text += `${buildText(
+          zipElementList(element.valueList!, { isClone: false })
+        )}`
       } else if (element.type === ElementType.LIST) {
         // 按照换行符拆分
-        const zipList = zipElementList(element.valueList!)
+        const zipList = zipElementList(element.valueList!, { isClone: false })
         const listElementListMap = splitListElement(zipList)
         // 无序列表前缀
         let ulListStyleText = ''
@@ -1892,7 +1899,9 @@ export function getTextFromElementList(elementList: IElement[]) {
     }
     return text
   }
-  return buildText(zipElementList(elementList))
+  return buildText(
+    zipElementList(elementList, { isClone: options.isClone !== false })
+  )
 }
 
 export function getSlimCloneElementList(elementList: IElement[]) {
