@@ -100,7 +100,11 @@ export function input(data: string, host: CanvasEvent) {
   } else {
     const start = startIndex + 1
     if (startIndex !== endIndex) {
-      draw.spliceElementList(elementList, start, endIndex - startIndex)
+      if (draw.getOptions().trace.disabled) {
+        draw.spliceElementList(elementList, start, endIndex - startIndex)
+      } else {
+        draw.deleteElementList(elementList, start, endIndex - startIndex)
+      }
     }
     formatElementContext(elementList, inputData, startIndex, {
       editorOptions: draw.getOptions()

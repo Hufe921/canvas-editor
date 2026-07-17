@@ -43,6 +43,7 @@ import { EditorMode } from '../dataset/enum/Editor'
 import { ElementType } from '../dataset/enum/Element'
 import { ListStyle, ListType, UlStyle } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
+import { TraceType } from '../dataset/enum/Trace'
 import { TableBorder, TdBorder } from '../dataset/enum/table/Table'
 import { VerticalAlign } from '../dataset/enum/VerticalAlign'
 import { DeepRequired } from '../interface/Common'
@@ -53,6 +54,32 @@ import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 import { mergeOption } from './option'
+
+export function isElementTraceDeleted(element: IElement): boolean {
+  const records = element.trace
+  return records?.[records.length - 1]?.type === TraceType.DELETED
+}
+
+export function getNonDeletedElementList(elementList: IElement[]): IElement[] {
+  const result = deepClone(elementList)
+  const filter = (payload: IElement[]): IElement[] =>
+    payload.filter(element => {
+      if (isElementTraceDeleted(element)) return false
+      if (element.valueList) {
+        element.valueList = filter(element.valueList)
+      }
+      if (element.control?.value) {
+        element.control.value = filter(element.control.value)
+      }
+      for (const tr of element.trList || []) {
+        for (const td of tr.tdList) {
+          td.value = filter(td.value)
+        }
+      }
+      return true
+    })
+  return filter(result)
+}
 
 export function unzipElementList(elementList: IElement[]): IElement[] {
   const result: IElement[] = []

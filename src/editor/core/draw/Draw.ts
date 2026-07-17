@@ -27,6 +27,7 @@ import {
   ISpliceElementListOption,
   IInsertElementListOption
 } from '../../interface/Element'
+import { IMarkElementListDeletedOption } from '../../interface/Trace'
 import { IRow, IRowElement } from '../../interface/Row'
 import { IColumnLayout, IColumnOption } from '../../interface/Column'
 import { ColumnManager } from './column/ColumnManager'
@@ -463,15 +464,16 @@ export class Draw {
     elementList: IElement[],
     index: number,
     count: number = 1,
-    options?: ISpliceElementListOption
+    options?: ISpliceElementListOption | IMarkElementListDeletedOption
   ) {
     if (!this.options.trace.disabled) {
-      this.traceParticle.markElementListDeleted(
+      return this.traceParticle.markElementListDeleted(
         elementList.slice(index, index + count),
         options
       )
     } else {
       this.spliceElementList(elementList, index, count, undefined, options)
+      return []
     }
   }
 

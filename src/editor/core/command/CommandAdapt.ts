@@ -109,6 +109,8 @@ import {
   pickElementAttr,
   getElementListByHTML,
   getTextFromElementList,
+  getNonDeletedElementList,
+  isElementTraceDeleted,
   zipElementList,
   getAnchorElement,
   pickSurroundElementList
@@ -1521,9 +1523,18 @@ export class CommandAdapt {
     const mainElementList = this.draw.getOriginalMainElementList()
     const footerElementList = this.draw.getFooterElementList()
     return {
-      header: createDomFromElementList(headerElementList, options).innerHTML,
-      main: createDomFromElementList(mainElementList, options).innerHTML,
-      footer: createDomFromElementList(footerElementList, options).innerHTML
+      header: createDomFromElementList(
+        getNonDeletedElementList(headerElementList),
+        options
+      ).innerHTML,
+      main: createDomFromElementList(
+        getNonDeletedElementList(mainElementList),
+        options
+      ).innerHTML,
+      footer: createDomFromElementList(
+        getNonDeletedElementList(footerElementList),
+        options
+      ).innerHTML
     }
   }
 
@@ -1532,9 +1543,13 @@ export class CommandAdapt {
     const mainElementList = this.draw.getOriginalMainElementList()
     const footerElementList = this.draw.getFooterElementList()
     return {
-      header: getTextFromElementList(headerElementList),
-      main: getTextFromElementList(mainElementList),
-      footer: getTextFromElementList(footerElementList)
+      header: getTextFromElementList(
+        getNonDeletedElementList(headerElementList)
+      ),
+      main: getTextFromElementList(getNonDeletedElementList(mainElementList)),
+      footer: getTextFromElementList(
+        getNonDeletedElementList(footerElementList)
+      )
     }
   }
 
@@ -2568,6 +2583,7 @@ export class CommandAdapt {
             }
           }
         }
+        if (isElementTraceDeleted(element)) continue
         if (element?.title?.conceptId !== conceptId) continue
         // 先查找到标题，后循环至同级或上级标题处停止
         const valueList: IElement[] = []
@@ -2585,10 +2601,11 @@ export class CommandAdapt {
           }
           valueList.push(nextElement)
         }
+        const nonDeletedValueList = getNonDeletedElementList(valueList)
         result.push({
           ...element.title!,
-          value: getTextFromElementList(valueList),
-          elementList: zipElementList(valueList),
+          value: getTextFromElementList(nonDeletedValueList),
+          elementList: zipElementList(nonDeletedValueList),
           zone
         })
         i = j

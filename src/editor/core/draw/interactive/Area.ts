@@ -17,7 +17,11 @@ import { LocationPosition } from '../../../dataset/enum/Common'
 import { RangeManager } from '../../range/RangeManager'
 import { Zone } from '../../zone/Zone'
 import { Position } from '../../position/Position'
-import { formatElementList, zipElementList } from '../../../utils/element'
+import {
+  formatElementList,
+  getNonDeletedElementList,
+  zipElementList
+} from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
 import { IRange } from '../../../interface/Range'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -252,7 +256,7 @@ export class Area {
       id: areaInfo.id,
       startPageNo: areaInfo.positionList[0].pageNo,
       endPageNo: areaInfo.positionList[areaInfo.positionList.length - 1].pageNo,
-      value: zipElementList(areaInfo.elementList)
+      value: zipElementList(getNonDeletedElementList(areaInfo.elementList))
     }
   }
 

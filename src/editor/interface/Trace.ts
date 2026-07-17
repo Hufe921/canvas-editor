@@ -4,3 +4,8 @@ export interface ITraceOption {
   deleteColor?: string // 留痕模式下删除元素的红色中划线颜色，默认 '#E03F3F'
   author?: string // 留痕记录作者标识，预留字段
 }
+
+export interface IMarkElementListDeletedOption {
+  isIgnoreDeletedRule?: boolean
+  tdDeletable?: boolean
+}

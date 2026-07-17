@@ -45,6 +45,7 @@ import {
   formatElementContext,
   formatElementList,
   getNonHideElementIndex,
+  isElementTraceDeleted,
   getOutermostOwner,
   pickElementAttr,
   scanToOwner,
@@ -1197,10 +1198,14 @@ export class Control {
         let j = i
         let textControlValue = ''
         const textControlElementList = []
+        let hasVisibleControlElement = !isElementTraceDeleted(element)
         while (j < elementList.length) {
           const nextElement = elementList[j]
           if (nextElement.controlId !== element.controlId) break
+          const isDeleted = isElementTraceDeleted(nextElement)
+          if (!isDeleted) hasVisibleControlElement = true
           if (
+            !isDeleted &&
             (type === ControlType.TEXT ||
               type === ControlType.DATE ||
               type === ControlType.NUMBER) &&
@@ -1212,6 +1217,10 @@ export class Control {
             )
           }
           j++
+        }
+        if (!hasVisibleControlElement) {
+          i = j
+          continue
         }
         if (
           type === ControlType.TEXT ||
@@ -1617,7 +1626,7 @@ export class Control {
             }
           }
         }
-        if (element.controlId) {
+        if (element.controlId && !isElementTraceDeleted(element)) {
           // 移除控件所在标题及列表上下文信息
           const controlElement = omitObject(element, [
             ...TITLE_CONTEXT_ATTR,

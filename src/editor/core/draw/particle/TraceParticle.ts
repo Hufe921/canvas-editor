@@ -7,10 +7,10 @@ import { IEditorOption } from '../../../interface/Editor'
 import {
   IElement,
   IElementMetrics,
-  IElementPosition,
-  ISpliceElementListOption
+  IElementPosition
 } from '../../../interface/Element'
 import { IRow, IRowElement } from '../../../interface/Row'
+import { IMarkElementListDeletedOption } from '../../../interface/Trace'
 import { visitElementTree } from '../../../utils/element'
 import { Draw } from '../Draw'
 
@@ -267,7 +267,7 @@ export class TraceParticle {
   // 给删除元素打标
   public markElementListDeleted(
     elementList: IElement[],
-    options?: ISpliceElementListOption
+    options?: IMarkElementListDeletedOption
   ) {
     let deleteElementList = elementList
     if (
@@ -276,7 +276,7 @@ export class TraceParticle {
       !this.draw.getControl().getIsRangeWithinControl()
     ) {
       const mode = this.draw.getMode()
-      const tdDeletable = this.draw.getTd()?.deletable
+      const tdDeletable = options?.tdDeletable ?? this.draw.getTd()?.deletable
       const { group, modeRule } = this.options
       deleteElementList = elementList.filter(
         element =>
@@ -294,5 +294,6 @@ export class TraceParticle {
       )
     }
     this._markElementList(deleteElementList, TraceType.DELETED)
+    return deleteElementList
   }
 }

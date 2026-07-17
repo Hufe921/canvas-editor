@@ -89,7 +89,9 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       for (let c = 0; c < row.length; c++) {
         const col = row[c]
         if (col.value.length > 1) {
-          draw.spliceElementList(col.value, 1, col.value.length - 1)
+          draw.deleteElementList(col.value, 1, col.value.length - 1, {
+            tdDeletable: col.deletable !== false
+          })
           isDeleted = true
         }
       }
