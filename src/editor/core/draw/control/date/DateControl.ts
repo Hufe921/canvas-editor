@@ -149,7 +149,13 @@ export class DateControl implements IControlInstance {
     const elementList = context.elementList || this.control.getElementList()
     // 删除元素
     const draw = this.control.getDraw()
-    draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex, {
+    const deleteStartIndex = startIndex + 1
+    const deleteCount = this.control.removePlaceholderInRange(
+      elementList,
+      deleteStartIndex,
+      endIndex - startIndex
+    )
+    draw.deleteElementList(elementList, deleteStartIndex, deleteCount, {
       isIgnoreDeletedRule: options.isIgnoreDeletedRule
     })
     // 增加占位符

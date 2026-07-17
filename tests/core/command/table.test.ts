@@ -6,6 +6,8 @@ import { Override } from '@/editor/core/override/Override'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
 import { createTestEditor } from '../../factories/editor'
+import { TraceType } from '@/editor/dataset/enum/Trace'
+import { ElementType } from '@/editor/dataset/enum/Element'
 
 describe('表格与分隔命令', () => {
   let ctx: ReturnType<typeof createTestEditor>
@@ -25,6 +27,24 @@ describe('表格与分隔命令', () => {
     ctx.editor.command.executeSeparator([1, 1])
     const data = ctx.editor.command.getValue().data.main
     expect(data?.some((e: any) => e.type === 'separator')).toBe(true)
+  })
+
+  it('留痕开启时表格和分隔符标记为新增', () => {
+    ctx = createTestEditor({
+      options: { trace: { disabled: false } }
+    })
+    ctx.editor.command.executeFocus()
+    ctx.editor.command.executeInsertTable(1, 1)
+    ctx.editor.command.executeSeparator([1, 1])
+
+    const data = ctx.editor.command.getValue().data.main
+    const table = data.find(element => element.type === ElementType.TABLE)
+    const separator = data.find(
+      element => element.type === ElementType.SEPARATOR
+    )
+
+    expect(table?.trace?.at(-1)?.type).toBe(TraceType.INSERTED)
+    expect(separator?.trace?.at(-1)?.type).toBe(TraceType.INSERTED)
   })
 
   it('executePageBreak 插入分页符', () => {

@@ -19,6 +19,7 @@ import {
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
+  EDITOR_TRACE_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -355,7 +356,8 @@ export function formatElementList(
       // 控件上下文提取（压缩后的控件上下文无法提取）
       const controlContext = pickObject(el, [
         ...EDITOR_ELEMENT_CONTEXT_ATTR,
-        ...EDITOR_ROW_ATTR
+        ...EDITOR_ROW_ATTR,
+        ...EDITOR_TRACE_ATTR
       ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
@@ -915,6 +917,8 @@ export function zipElementList(
             }
             if (controlE.controlComponent === ControlComponent.POSTFIX) {
               isFull = true
+              start++
+              break
             }
             start++
             continue
@@ -962,7 +966,8 @@ export function zipElementList(
             type: ElementType.CONTROL,
             value: '',
             control,
-            controlId
+            controlId,
+            trace: element.trace
           }
           controlElement.control!.value = zipElementList(valueList, options)
           element = pickElementAttr(controlElement, { extraPickAttrs })

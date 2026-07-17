@@ -1,6 +1,7 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { EditorMode } from '../../../src/editor/dataset/enum/Editor'
 import { createTestEditor } from '../../factories/editor'
+import { TraceType } from '../../../src/editor/dataset/enum/Trace'
 
 describe('文档级命令', () => {
   let ctx: ReturnType<typeof createTestEditor>
@@ -38,6 +39,20 @@ describe('文档级命令', () => {
   it('executePrint 不抛错', () => {
     ctx = createTestEditor()
     expect(() => ctx.editor.command.executePrint()).not.toThrow()
+  })
+
+  it('留痕开启时按 id 删除元素保留删除记录', () => {
+    ctx = createTestEditor({
+      data: [{ id: 'trace-delete', value: 'A' }],
+      options: { trace: { disabled: false } }
+    })
+
+    ctx.editor.command.executeDeleteElementById({ id: 'trace-delete' })
+
+    const element = ctx.editor.command
+      .getValue({ extraPickAttrs: ['id'] })
+      .data.main.find(item => item.id === 'trace-delete')
+    expect(element?.trace?.at(-1)?.type).toBe(TraceType.DELETED)
   })
 
   it('#1406 readonly 下 setGroup / deleteGroup 仍生效', () => {

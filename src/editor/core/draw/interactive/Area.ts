@@ -351,15 +351,12 @@ export class Area {
         editorOptions: this.options
       }
     )
-    this.draw.spliceElementList(
-      elementList,
-      positionList[0].index,
-      positionList.length,
-      valueList,
-      {
-        isIgnoreDeletedRule: true
-      }
-    )
+    const startIndex = positionList[0].index
+    this.draw.deleteElementList(elementList, startIndex, positionList.length, {
+      isIgnoreDeletedRule: true
+    })
+    this.draw.getTraceParticle().markElementListInserted(valueList)
+    this.draw.spliceElementList(elementList, startIndex, 0, valueList)
     this.draw.render({
       isSetCursor: false
     })
@@ -373,11 +370,10 @@ export class Area {
     // 删除区域内的所有元素
     const { positionList } = areaInfo
     const elementList = areaInfo.sourceElementList
-    this.draw.spliceElementList(
+    this.draw.deleteElementList(
       elementList,
       positionList[0].index,
       positionList.length,
-      [],
       {
         isIgnoreDeletedRule: true
       }

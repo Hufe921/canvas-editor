@@ -8,7 +8,11 @@ import { ElementType } from '../../../dataset/enum/Element'
 import { IElement } from '../../../interface/Element'
 import { IPositionContext } from '../../../interface/Position'
 import { deepClone, getUUID, omitObject } from '../../../utils'
-import { formatElementContext, formatElementList } from '../../../utils/element'
+import {
+  formatElementContext,
+  formatElementList,
+  visitElementTree
+} from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 
 type IDragElement = IElement & { dragId: string }
@@ -227,6 +231,10 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     formatElementContext(elementList, replaceElementList, range.startIndex, {
       editorOptions: draw.getOptions()
     })
+    visitElementTree(replaceElementList, element => {
+      delete element.trace
+    })
+    draw.getTraceParticle().markElementListInserted(replaceElementList)
     // 缓存拖拽选区开始元素、位置、开始结束id
     const cacheStartElement = cacheElementList[cacheStartIndex]
     const cacheStartPosition = cachePositionList[cacheStartIndex]
@@ -288,10 +296,11 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         )
       }
       if (isTdElementDeletable) {
-        draw.spliceElementList(
+        draw.deleteElementList(
           cacheElementList,
           cacheRangeStartIndex + 1,
-          cacheRangeEndIndex - cacheRangeStartIndex
+          cacheRangeEndIndex - cacheRangeStartIndex,
+          { tdDeletable: isTdElementDeletable }
         )
       }
     }

@@ -420,12 +420,13 @@ export class Control {
         preElement.controlComponent === ControlComponent.PREFIX ||
         preElement.controlComponent === ControlComponent.PRE_TEXT
       ) {
+        preIndex = next
         break
       }
       preIndex = next
     }
     // 向右查找
-    let nextIndex = startIndex + 1
+    let nextIndex = startIndex
     while (nextIndex < elementList.length) {
       const next = scanToOwner(
         elementList,
@@ -447,7 +448,7 @@ export class Control {
     if (preIndex === nextIndex) return null
     return {
       startIndex: preIndex,
-      endIndex: nextIndex - 1
+      endIndex: nextIndex
     }
   }
 
@@ -1065,6 +1066,20 @@ export class Control {
         }
       }
     }
+  }
+
+  public removePlaceholderInRange(
+    elementList: IElement[],
+    startIndex: number,
+    count: number
+  ): number {
+    for (let i = startIndex + count - 1; i >= startIndex; i--) {
+      if (elementList[i]?.controlComponent === ControlComponent.PLACEHOLDER) {
+        elementList.splice(i, 1)
+        count--
+      }
+    }
+    return count
   }
 
   public addPlaceholder(startIndex: number, context: IControlContext = {}) {

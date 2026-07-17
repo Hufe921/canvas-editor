@@ -202,9 +202,15 @@ export class TextControl implements IControlInstance {
     const range =
       context.range || this.control.getValueRange() || this.control.getRange()
     const { startIndex, endIndex } = range
+    const deleteStartIndex = startIndex + 1
+    const deleteCount = this.control.removePlaceholderInRange(
+      elementList,
+      deleteStartIndex,
+      endIndex - startIndex
+    )
     this.control
       .getDraw()
-      .deleteElementList(elementList, startIndex + 1, endIndex - startIndex, {
+      .deleteElementList(elementList, deleteStartIndex, deleteCount, {
         isIgnoreDeletedRule: options.isIgnoreDeletedRule
       })
     const value = this.getValue({

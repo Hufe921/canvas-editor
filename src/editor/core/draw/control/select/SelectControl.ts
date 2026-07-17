@@ -358,7 +358,13 @@ export class SelectControl implements IControlInstance {
     if (!~leftIndex || !~rightIndex) return -1
     // 删除元素
     const draw = this.control.getDraw()
-    draw.deleteElementList(elementList, leftIndex + 1, rightIndex - leftIndex, {
+    const deleteStartIndex = leftIndex + 1
+    const deleteCount = this.control.removePlaceholderInRange(
+      elementList,
+      deleteStartIndex,
+      rightIndex - leftIndex
+    )
+    draw.deleteElementList(elementList, deleteStartIndex, deleteCount, {
       isIgnoreDeletedRule: options.isIgnoreDeletedRule
     })
     // 增加占位符

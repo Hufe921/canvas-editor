@@ -1155,7 +1155,7 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     const [leftIndex, rightIndex] = hyperRange
     // 删除元素
-    this.draw.spliceElementList(
+    this.draw.deleteElementList(
       elementList,
       leftIndex,
       rightIndex - leftIndex + 1
@@ -1237,11 +1237,18 @@ export class CommandAdapt {
       ) {
         return
       }
-      curIndex = endIndex
-      Object.assign(endElement, {
+      const separatorElement: IElement = {
+        ...endElement,
         dashArray,
         ...option
-      })
+      }
+      delete separatorElement.trace
+      this.draw.deleteElementList(elementList, endIndex + 1, 1)
+      this.draw.getTraceParticle().markElementListInserted([separatorElement])
+      this.draw.spliceElementList(elementList, endIndex + 1, 0, [
+        separatorElement
+      ])
+      curIndex = endIndex
     } else {
       const newElement: IElement = {
         value: WRAP,
@@ -1262,6 +1269,7 @@ export class CommandAdapt {
         ])
         curIndex = startIndex
       }
+      this.draw.getTraceParticle().markElementListInserted([newElement])
     }
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
@@ -1617,7 +1625,8 @@ export class CommandAdapt {
     const isCollapsed = startIndex === endIndex
     const selectionText = this.range.toString()
     const selectionElementList = zipElementList(
-      this.range.getSelectionElementList() || []
+      getNonDeletedElementList(this.range.getSelectionElementList() || []),
+      { isClone: false }
     )
     // 元素信息
     const elementList = this.draw.getElementList()
@@ -1775,12 +1784,20 @@ export class CommandAdapt {
 
   public getRangeRow(): IElement[] | null {
     const rowElementList = this.range.getRangeRowElementList()
-    return rowElementList ? zipElementList(rowElementList) : null
+    return rowElementList
+      ? zipElementList(getNonDeletedElementList(rowElementList), {
+          isClone: false
+        })
+      : null
   }
 
   public getRangeParagraph(): IElement[] | null {
     const paragraphElementList = this.range.getRangeParagraphElementList()
-    return paragraphElementList ? zipElementList(paragraphElementList) : null
+    return paragraphElementList
+      ? zipElementList(getNonDeletedElementList(paragraphElementList), {
+          isClone: false
+        })
+      : null
   }
 
   public getKeywordRangeList(payload: string): IRange[] {
@@ -1947,6 +1964,7 @@ export class CommandAdapt {
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        if (isElementTraceDeleted(element)) continue
         if (element.type === ElementType.TABLE) {
           const trList = element.trList!
           for (let r = 0; r < trList.length; r++) {
@@ -2024,7 +2042,7 @@ export class CommandAdapt {
     const { id, conceptId } = payload
     if (!id && !conceptId) return
     let isExistDelete = false
-    function deleteElement(elementList: IElement[]) {
+    const deleteElement = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
@@ -2043,8 +2061,9 @@ export class CommandAdapt {
           (conceptId && element.conceptId === conceptId)
         ) {
           isExistDelete = true
-          elementList.splice(i, 1)
-          i--
+          this.draw.deleteElementList(elementList, i, 1, {
+            isIgnoreDeletedRule: true
+          })
         }
         i++
       }
@@ -2073,6 +2092,7 @@ export class CommandAdapt {
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        if (isElementTraceDeleted(element)) continue
         if (element.type === ElementType.TABLE) {
           const trList = element.trList!
           for (let r = 0; r < trList.length; r++) {
@@ -2136,7 +2156,9 @@ export class CommandAdapt {
             continue
           }
           isExistRemove = true
-          elementList.splice(i + 1, 1)
+          this.draw.deleteElementList(elementList, i + 1, 1, {
+            isIgnoreDeletedRule: true
+          })
         }
       }
       const data = [
