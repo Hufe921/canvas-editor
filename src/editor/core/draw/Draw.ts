@@ -2676,7 +2676,6 @@ export class Draw {
         this.traceParticle.render({
           ctx,
           element,
-          preElement,
           x,
           y,
           curRow,
@@ -2770,6 +2769,8 @@ export class Draw {
       this.control.drawBorder(ctx)
       this.underline.render(ctx)
       this.strikeout.render(ctx)
+      // 冲刷留痕累积
+      this.traceParticle.flush(ctx)
       // 绘制批注样式
       this.group.render(ctx)
       // 绘制选区

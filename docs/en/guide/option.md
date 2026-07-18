@@ -452,5 +452,6 @@ interface ITraceOption {
   insertColor?: string // Color of the underline for inserted traces. default: #2B5CE6
   deleteColor?: string // Color of the strikeout for deleted traces. default: #E03F3F
   author?: string // Author identifier for trace records. default: ''
+  lineWidth?: number // Trace line width. default: 2
 }
 ```

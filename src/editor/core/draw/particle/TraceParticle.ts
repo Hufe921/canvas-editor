@@ -17,7 +17,6 @@ import { Draw } from '../Draw'
 interface ITraceRenderContext {
   ctx: CanvasRenderingContext2D
   element: IRowElement
-  preElement: IRowElement | null
   x: number
   y: number
   curRow: IRow
@@ -33,6 +32,10 @@ export class TraceParticle {
   private tracePopupContainer: HTMLDivElement
   private listDom: HTMLDivElement
   private lastHoverKey: string
+  // 留痕线条累积器：同色 run 内合并为一次 stroke
+  private strikeoutState: { x: number; y: number; width: number } | null = null
+  private underlineState: { x: number; y: number; width: number } | null = null
+  private currentRow: IRow | null = null
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -180,18 +183,18 @@ export class TraceParticle {
   }
 
   // TRACE 模式下绘制元素留痕装饰（DELETED 红色中划线 / INSERTED 蓝色下划线）
+  // 同 run 内累积为一次 stroke，跨类型/跨行时 flush，避免逐元素 stroke 在端点产生抗锯齿断裂
   public render(context: ITraceRenderContext) {
     if (!this.draw.isTraceMode()) return
-    const { ctx, element, preElement, x, y, curRow, metrics, offsetY, scale } =
-      context
-    const { hasInsert, hasDelete } = this._getTraceFlags(element)
-    const preFlags = this._getTraceFlags(preElement)
-    // 装饰组合切换时立即冲刷累积，避免跨类型连绘
-    if (hasInsert !== preFlags.hasInsert || hasDelete !== preFlags.hasDelete) {
-      this.draw.getStrikeout().render(ctx)
-      this.draw.getUnderline().render(ctx)
+    const { ctx, element, x, y, curRow, metrics, offsetY, scale } = context
+    // 跨行：冲刷累积，避免线条跨越行间距
+    if (this.currentRow !== curRow) {
+      this._flushStrikeout(ctx, scale)
+      this._flushUnderline(ctx, scale)
+      this.currentRow = curRow
     }
-    // 删除痕迹：红色中划线
+    const { hasInsert, hasDelete } = this._getTraceFlags(element)
+    // 删除痕迹：累积中划线段
     if (hasDelete) {
       const standardMetrics = this.draw
         .getTextParticle()
@@ -206,18 +209,19 @@ export class TraceParticle {
       } else if (element.type === ElementType.SUPERSCRIPT) {
         traceAdjustY += this.draw.getSuperscriptParticle().getOffsetY(element)
       }
-      this.draw
-        .getStrikeout()
-        .recordFillInfo(
-          ctx,
+      if (!this.strikeoutState) {
+        this.strikeoutState = {
           x,
-          traceAdjustY,
-          metrics.width,
-          0,
-          this.options.trace.deleteColor
-        )
+          y: traceAdjustY + 0.5,
+          width: metrics.width
+        }
+      } else {
+        this.strikeoutState.width += metrics.width
+      }
+    } else if (this.strikeoutState) {
+      this._flushStrikeout(ctx, scale)
     }
-    // 新增痕迹：蓝色下划线
+    // 新增痕迹：累积下划线段
     if (hasInsert) {
       const traceRowMargin = this.draw.getElementRowMargin(element)
       const traceOffsetX = element.left || 0
@@ -225,17 +229,65 @@ export class TraceParticle {
       if (element.type === ElementType.SUBSCRIPT) {
         traceUY = this.draw.getSubscriptParticle().getOffsetY(element)
       }
-      this.draw
-        .getUnderline()
-        .recordFillInfo(
-          ctx,
-          x - traceOffsetX,
-          y + curRow.height - traceRowMargin + traceUY,
-          metrics.width + traceOffsetX,
-          0,
-          this.options.trace.insertColor
-        )
+      const startX = x - traceOffsetX
+      // 与标准下划线一致：curRow.height - rowMargin 为文本内容底部，再加 2 * scale 腾出与文字的间距
+      const startY =
+        Math.floor(y + curRow.height - traceRowMargin + traceUY + 2 * scale) +
+        0.5
+      if (!this.underlineState) {
+        this.underlineState = {
+          x: startX,
+          y: startY,
+          width: metrics.width + traceOffsetX
+        }
+      } else {
+        this.underlineState.width += metrics.width + traceOffsetX
+      }
+    } else if (this.underlineState) {
+      this._flushUnderline(ctx, scale)
     }
+  }
+
+  // 主动冲刷所有累积（页面渲染结束、表格嵌套切换等场景调用）
+  public flush(ctx: CanvasRenderingContext2D) {
+    const scale = this.options.scale
+    this._flushStrikeout(ctx, scale)
+    this._flushUnderline(ctx, scale)
+    this.currentRow = null
+  }
+
+  private _flushStrikeout(ctx: CanvasRenderingContext2D, scale: number) {
+    if (!this.strikeoutState) return
+    ctx.save()
+    ctx.lineWidth = this.options.trace.lineWidth * scale
+    ctx.strokeStyle = this.options.trace.deleteColor
+    ctx.lineCap = 'butt'
+    ctx.beginPath()
+    ctx.moveTo(this.strikeoutState.x, this.strikeoutState.y)
+    ctx.lineTo(
+      this.strikeoutState.x + this.strikeoutState.width,
+      this.strikeoutState.y
+    )
+    ctx.stroke()
+    ctx.restore()
+    this.strikeoutState = null
+  }
+
+  private _flushUnderline(ctx: CanvasRenderingContext2D, scale: number) {
+    if (!this.underlineState) return
+    ctx.save()
+    ctx.lineWidth = this.options.trace.lineWidth * scale
+    ctx.strokeStyle = this.options.trace.insertColor
+    ctx.lineCap = 'butt'
+    ctx.beginPath()
+    ctx.moveTo(this.underlineState.x, this.underlineState.y)
+    ctx.lineTo(
+      this.underlineState.x + this.underlineState.width,
+      this.underlineState.y
+    )
+    ctx.stroke()
+    ctx.restore()
+    this.underlineState = null
   }
 
   // 留痕软删除元素在非留痕查看模式下应隐藏（视觉等同于 hide=true）

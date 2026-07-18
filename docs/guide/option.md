@@ -452,5 +452,6 @@ interface ITraceOption {
   insertColor?: string // 新增痕迹下划线颜色。默认：#2B5CE6
   deleteColor?: string // 删除痕迹中划线颜色。默认：#E03F3F
   author?: string // 留痕记录作者标识。默认：''
+  lineWidth?: number // 留痕线条宽度。默认：2
 }
 ```
