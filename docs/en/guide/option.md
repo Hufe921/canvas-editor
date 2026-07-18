@@ -87,6 +87,7 @@ interface IEditorOption {
   magnifier?: IMagnifierOption // Magnifier configuration
   accessibility?: IAccessibilityOption // Accessibility configuration
   column?: IColumnOption // Column configuration. default: disabled
+  trace?: ITraceOption // Trace configuration. default: disabled
 }
 ```
 
@@ -440,5 +441,16 @@ interface IColumnOption {
   separator?: boolean // Whether to draw separator lines between columns. default: false
   separatorColor?: string // Separator line color. default: #000000
   separatorWidth?: number // Separator line width. default: 1
+}
+```
+
+## Trace Configuration
+
+```typescript
+interface ITraceOption {
+  disabled?: boolean // Whether to disable trace recording initially. default: true
+  insertColor?: string // Color of the underline for inserted traces. default: #2B5CE6
+  deleteColor?: string // Color of the strikeout for deleted traces. default: #E03F3F
+  author?: string // Author identifier for trace records. default: ''
 }
 ```

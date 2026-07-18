@@ -24,12 +24,22 @@ import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
 
 ## executeMode
 
-功能：切换编辑器模式（编辑、清洁、只读、表单）
+功能：切换编辑器模式（编辑、清洁、只读、表单、打印、设计、涂鸦、留痕）
 
 用法：
 
 ```javascript
 instance.command.executeMode(editorMode: EditorMode)
+```
+
+## executeToggleTrace
+
+功能：切换留痕记录开关。
+
+用法：
+
+```javascript
+instance.command.executeToggleTrace(payload?: boolean)
 ```
 
 ## executeCut

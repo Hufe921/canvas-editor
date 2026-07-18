@@ -1,5 +1,6 @@
 import { EditorMode } from '../../../..'
 import { ZERO } from '../../../../dataset/constant/Common'
+import { LocationPosition } from '../../../../dataset/enum/Common'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
@@ -150,9 +151,20 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
   // 执行跳转
   if (!~anchorStartIndex || !~anchorEndIndex) return
   // 隐藏元素跳过
+  const traceParticle = draw.getTraceParticle()
   const newElementList = draw.getElementList()
-  anchorStartIndex = getNonHideElementIndex(newElementList, anchorStartIndex)
-  anchorEndIndex = getNonHideElementIndex(newElementList, anchorEndIndex)
+  anchorStartIndex = getNonHideElementIndex(
+    newElementList,
+    anchorStartIndex,
+    LocationPosition.BEFORE,
+    el => traceParticle.isTraceHidden(el)
+  )
+  anchorEndIndex = getNonHideElementIndex(
+    newElementList,
+    anchorEndIndex,
+    LocationPosition.BEFORE,
+    el => traceParticle.isTraceHidden(el)
+  )
   // 设置上下文
   rangeManager.setRange(anchorStartIndex, anchorEndIndex)
   const isAnchorCollapsed = anchorStartIndex === anchorEndIndex

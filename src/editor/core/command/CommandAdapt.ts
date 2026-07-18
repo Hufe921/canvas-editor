@@ -109,6 +109,8 @@ import {
   pickElementAttr,
   getElementListByHTML,
   getTextFromElementList,
+  getNonDeletedElementList,
+  isElementTraceDeleted,
   zipElementList,
   getAnchorElement,
   pickSurroundElementList
@@ -209,13 +211,13 @@ export class CommandAdapt {
       return
     }
     if (!isCollapsed) {
-      this.draw.spliceElementList(
+      this.draw.deleteElementList(
         elementList,
         startIndex + 1,
         endIndex - startIndex
       )
     } else {
-      this.draw.spliceElementList(elementList, startIndex, 1)
+      this.draw.deleteElementList(elementList, startIndex, 1)
     }
     const curIndex = isCollapsed ? startIndex - 1 : startIndex
     this.range.setRange(curIndex, curIndex)
@@ -1153,7 +1155,7 @@ export class CommandAdapt {
     const elementList = this.draw.getElementList()
     const [leftIndex, rightIndex] = hyperRange
     // 删除元素
-    this.draw.spliceElementList(
+    this.draw.deleteElementList(
       elementList,
       leftIndex,
       rightIndex - leftIndex + 1
@@ -1235,11 +1237,18 @@ export class CommandAdapt {
       ) {
         return
       }
-      curIndex = endIndex
-      Object.assign(endElement, {
+      const separatorElement: IElement = {
+        ...endElement,
         dashArray,
         ...option
-      })
+      }
+      delete separatorElement.trace
+      this.draw.deleteElementList(elementList, endIndex + 1, 1)
+      this.draw.getTraceParticle().markElementListInserted([separatorElement])
+      this.draw.spliceElementList(elementList, endIndex + 1, 0, [
+        separatorElement
+      ])
+      curIndex = endIndex
     } else {
       const newElement: IElement = {
         value: WRAP,
@@ -1260,6 +1269,7 @@ export class CommandAdapt {
         ])
         curIndex = startIndex
       }
+      this.draw.getTraceParticle().markElementListInserted([newElement])
     }
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
@@ -1521,9 +1531,18 @@ export class CommandAdapt {
     const mainElementList = this.draw.getOriginalMainElementList()
     const footerElementList = this.draw.getFooterElementList()
     return {
-      header: createDomFromElementList(headerElementList, options).innerHTML,
-      main: createDomFromElementList(mainElementList, options).innerHTML,
-      footer: createDomFromElementList(footerElementList, options).innerHTML
+      header: createDomFromElementList(
+        getNonDeletedElementList(headerElementList),
+        options
+      ).innerHTML,
+      main: createDomFromElementList(
+        getNonDeletedElementList(mainElementList),
+        options
+      ).innerHTML,
+      footer: createDomFromElementList(
+        getNonDeletedElementList(footerElementList),
+        options
+      ).innerHTML
     }
   }
 
@@ -1532,9 +1551,17 @@ export class CommandAdapt {
     const mainElementList = this.draw.getOriginalMainElementList()
     const footerElementList = this.draw.getFooterElementList()
     return {
-      header: getTextFromElementList(headerElementList),
-      main: getTextFromElementList(mainElementList),
-      footer: getTextFromElementList(footerElementList)
+      header: getTextFromElementList(
+        getNonDeletedElementList(headerElementList),
+        { isClone: false }
+      ),
+      main: getTextFromElementList(getNonDeletedElementList(mainElementList), {
+        isClone: false
+      }),
+      footer: getTextFromElementList(
+        getNonDeletedElementList(footerElementList),
+        { isClone: false }
+      )
     }
   }
 
@@ -1598,7 +1625,8 @@ export class CommandAdapt {
     const isCollapsed = startIndex === endIndex
     const selectionText = this.range.toString()
     const selectionElementList = zipElementList(
-      this.range.getSelectionElementList() || []
+      getNonDeletedElementList(this.range.getSelectionElementList() || []),
+      { isClone: false }
     )
     // 元素信息
     const elementList = this.draw.getElementList()
@@ -1756,12 +1784,20 @@ export class CommandAdapt {
 
   public getRangeRow(): IElement[] | null {
     const rowElementList = this.range.getRangeRowElementList()
-    return rowElementList ? zipElementList(rowElementList) : null
+    return rowElementList
+      ? zipElementList(getNonDeletedElementList(rowElementList), {
+          isClone: false
+        })
+      : null
   }
 
   public getRangeParagraph(): IElement[] | null {
     const paragraphElementList = this.range.getRangeParagraphElementList()
-    return paragraphElementList ? zipElementList(paragraphElementList) : null
+    return paragraphElementList
+      ? zipElementList(getNonDeletedElementList(paragraphElementList), {
+          isClone: false
+        })
+      : null
   }
 
   public getKeywordRangeList(payload: string): IRange[] {
@@ -1912,7 +1948,8 @@ export class CommandAdapt {
     if (!elementList.length) return
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
-    this.draw.appendElementList(deepClone(elementList), options)
+    const cloneElementList = deepClone(elementList)
+    this.draw.appendElementList(cloneElementList, options)
   }
 
   public updateElementById(payload: IUpdateElementByIdOption) {
@@ -1927,6 +1964,7 @@ export class CommandAdapt {
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        if (isElementTraceDeleted(element)) continue
         if (element.type === ElementType.TABLE) {
           const trList = element.trList!
           for (let r = 0; r < trList.length; r++) {
@@ -2004,7 +2042,7 @@ export class CommandAdapt {
     const { id, conceptId } = payload
     if (!id && !conceptId) return
     let isExistDelete = false
-    function deleteElement(elementList: IElement[]) {
+    const deleteElement = (elementList: IElement[]) => {
       let i = 0
       while (i < elementList.length) {
         const element = elementList[i]
@@ -2023,8 +2061,9 @@ export class CommandAdapt {
           (conceptId && element.conceptId === conceptId)
         ) {
           isExistDelete = true
-          elementList.splice(i, 1)
-          i--
+          this.draw.deleteElementList(elementList, i, 1, {
+            isIgnoreDeletedRule: true
+          })
         }
         i++
       }
@@ -2053,6 +2092,7 @@ export class CommandAdapt {
       while (i < elementList.length) {
         const element = elementList[i]
         i++
+        if (isElementTraceDeleted(element)) continue
         if (element.type === ElementType.TABLE) {
           const trList = element.trList!
           for (let r = 0; r < trList.length; r++) {
@@ -2116,7 +2156,9 @@ export class CommandAdapt {
             continue
           }
           isExistRemove = true
-          elementList.splice(i + 1, 1)
+          this.draw.deleteElementList(elementList, i + 1, 1, {
+            isIgnoreDeletedRule: true
+          })
         }
       }
       const data = [
@@ -2564,6 +2606,7 @@ export class CommandAdapt {
             }
           }
         }
+        if (isElementTraceDeleted(element)) continue
         if (element?.title?.conceptId !== conceptId) continue
         // 先查找到标题，后循环至同级或上级标题处停止
         const valueList: IElement[] = []
@@ -2581,10 +2624,11 @@ export class CommandAdapt {
           }
           valueList.push(nextElement)
         }
+        const nonDeletedValueList = getNonDeletedElementList(valueList)
         result.push({
           ...element.title!,
-          value: getTextFromElementList(valueList),
-          elementList: zipElementList(valueList),
+          value: getTextFromElementList(nonDeletedValueList),
+          elementList: zipElementList(nonDeletedValueList, { isClone: false }),
           zone
         })
         i = j
@@ -2813,5 +2857,12 @@ export class CommandAdapt {
         isSubmitHistory: false
       })
     }
+  }
+
+  // 切换留痕记录开关；payload 省略时切换当前状态
+  public toggleTrace(payload?: boolean) {
+    const next =
+      payload === undefined ? this.draw.getOptions().trace.disabled : payload
+    this.draw.setTraceEnabled(next)
   }
 }

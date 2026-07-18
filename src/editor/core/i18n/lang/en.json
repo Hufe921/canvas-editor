@@ -106,5 +106,12 @@
   "accessibility": {
     "selected": "Selected: ",
     "input": "Input: "
+  },
+  "trace": {
+    "insert": "Inserted",
+    "delete": "Deleted",
+    "author": "Author",
+    "time": "Time",
+    "unknownAuthor": "Unknown"
   }
 }

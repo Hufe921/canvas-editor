@@ -19,6 +19,7 @@ import {
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
+  EDITOR_TRACE_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -43,16 +44,43 @@ import { EditorMode } from '../dataset/enum/Editor'
 import { ElementType } from '../dataset/enum/Element'
 import { ListStyle, ListType, UlStyle } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
+import { TraceType } from '../dataset/enum/Trace'
 import { TableBorder, TdBorder } from '../dataset/enum/table/Table'
 import { VerticalAlign } from '../dataset/enum/VerticalAlign'
 import { DeepRequired } from '../interface/Common'
 import { IControlSelect } from '../interface/Control'
 import { IEditorOption } from '../interface/Editor'
-import { IElement } from '../interface/Element'
+import { IElement, ITraceRecord } from '../interface/Element'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 import { mergeOption } from './option'
+
+export function isElementTraceDeleted(element: IElement): boolean {
+  const records = element.trace
+  return records?.[records.length - 1]?.type === TraceType.DELETED
+}
+
+export function getNonDeletedElementList(elementList: IElement[]): IElement[] {
+  const result = deepClone(elementList)
+  const filter = (payload: IElement[]): IElement[] =>
+    payload.filter(element => {
+      if (isElementTraceDeleted(element)) return false
+      if (element.valueList) {
+        element.valueList = filter(element.valueList)
+      }
+      if (element.control?.value) {
+        element.control.value = filter(element.control.value)
+      }
+      for (const tr of element.trList || []) {
+        for (const td of tr.tdList) {
+          td.value = filter(td.value)
+        }
+      }
+      return true
+    })
+  return filter(result)
+}
 
 export function unzipElementList(elementList: IElement[]): IElement[] {
   const result: IElement[] = []
@@ -328,7 +356,8 @@ export function formatElementList(
       // 控件上下文提取（压缩后的控件上下文无法提取）
       const controlContext = pickObject(el, [
         ...EDITOR_ELEMENT_CONTEXT_ATTR,
-        ...EDITOR_ROW_ATTR
+        ...EDITOR_ROW_ATTR,
+        ...EDITOR_TRACE_ATTR
       ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
@@ -620,6 +649,24 @@ export function isSameElementExceptValue(
     ) {
       continue
     }
+    // trace数组需逐条校验内容是否一致
+    if (key === 'trace') {
+      const sourceTrace = (source[key] as ITraceRecord[]) || []
+      const targetTrace = (target[key] as ITraceRecord[]) || []
+      if (sourceTrace.length !== targetTrace.length) return false
+      for (let i = 0; i < sourceTrace.length; i++) {
+        const s = sourceTrace[i]
+        const t = targetTrace[i]
+        if (
+          s.type !== t.type ||
+          s.author !== t.author ||
+          s.timestamp !== t.timestamp
+        ) {
+          return false
+        }
+      }
+      continue
+    }
     if (source[key] !== target[key]) {
       return false
     }
@@ -870,6 +917,8 @@ export function zipElementList(
             }
             if (controlE.controlComponent === ControlComponent.POSTFIX) {
               isFull = true
+              start++
+              break
             }
             start++
             continue
@@ -917,7 +966,8 @@ export function zipElementList(
             type: ElementType.CONTROL,
             value: '',
             control,
-            controlId
+            controlId,
+            trace: element.trace
           }
           controlElement.control!.value = zipElementList(valueList, options)
           element = pickElementAttr(controlElement, { extraPickAttrs })
@@ -1779,7 +1829,10 @@ export function getElementListByHTML(
   return elementList
 }
 
-export function getTextFromElementList(elementList: IElement[]) {
+export function getTextFromElementList(
+  elementList: IElement[],
+  options: { isClone?: boolean } = {}
+) {
   function buildText(payload: IElement[]): string {
     let text = ''
     for (let e = 0; e < payload.length; e++) {
@@ -1792,7 +1845,9 @@ export function getTextFromElementList(elementList: IElement[]) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const tdText = buildText(zipElementList(td.value!))
+            const tdText = buildText(
+              zipElementList(td.value!, { isClone: false })
+            )
             const isFirst = d === 0
             const isLast = tr.tdList.length - 1 === d
             text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
@@ -1803,10 +1858,12 @@ export function getTextFromElementList(elementList: IElement[]) {
       } else if (element.type === ElementType.HYPERLINK) {
         text += element.valueList!.map(v => v.value).join('')
       } else if (element.type === ElementType.TITLE) {
-        text += `${buildText(zipElementList(element.valueList!))}`
+        text += `${buildText(
+          zipElementList(element.valueList!, { isClone: false })
+        )}`
       } else if (element.type === ElementType.LIST) {
         // 按照换行符拆分
-        const zipList = zipElementList(element.valueList!)
+        const zipList = zipElementList(element.valueList!, { isClone: false })
         const listElementListMap = splitListElement(zipList)
         // 无序列表前缀
         let ulListStyleText = ''
@@ -1847,7 +1904,9 @@ export function getTextFromElementList(elementList: IElement[]) {
     }
     return text
   }
-  return buildText(zipElementList(elementList))
+  return buildText(
+    zipElementList(elementList, { isClone: options.isClone !== false })
+  )
 }
 
 export function getSlimCloneElementList(elementList: IElement[]) {
@@ -1904,12 +1963,14 @@ export function deleteSurroundElementList(
 export function getNonHideElementIndex(
   elementList: IElement[],
   index: number,
-  position: LocationPosition = LocationPosition.BEFORE
+  position: LocationPosition = LocationPosition.BEFORE,
+  isHidden?: (element: IElement) => boolean
 ) {
   if (
     !elementList[index]?.hide &&
     !elementList[index]?.control?.hide &&
-    !elementList[index]?.area?.hide
+    !elementList[index]?.area?.hide &&
+    !isHidden?.(elementList[index])
   ) {
     return index
   }
@@ -1920,7 +1981,8 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide
+        !elementList[i]?.area?.hide &&
+        !isHidden?.(elementList[i])
       ) {
         return i
       }
@@ -1932,7 +1994,8 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide
+        !elementList[i]?.area?.hide &&
+        !isHidden?.(elementList[i])
       ) {
         return i
       }
@@ -1997,4 +2060,24 @@ export function getOutermostOwner(
     return getOutermostOwner(elementList, i - 1)
   }
   return ownerId
+}
+
+// 深度遍历元素树（含表格单元格、控件/标题子列表）
+export function visitElementTree(
+  elementList: IElement[],
+  visitor: (element: IElement) => void
+) {
+  for (const el of elementList) {
+    visitor(el)
+    if (el.type === ElementType.TABLE) {
+      for (const tr of el.trList || []) {
+        for (const td of tr.tdList) {
+          visitElementTree(td.value, visitor)
+        }
+      }
+    }
+    if (el.valueList) {
+      visitElementTree(el.valueList, visitor)
+    }
+  }
 }

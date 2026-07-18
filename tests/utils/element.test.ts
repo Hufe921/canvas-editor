@@ -19,9 +19,12 @@ import {
   convertRowFlexToJustifyContent,
   replaceHTMLElementTag,
   scanToOwner,
-  getOutermostOwner
+  getOutermostOwner,
+  getNonDeletedElementList,
+  isElementTraceDeleted
 } from '@/editor/utils/element'
 import { ElementType } from '@/editor/dataset/enum/Element'
+import { TraceType } from '@/editor/dataset/enum/Trace'
 import { RowFlex } from '@/editor/dataset/enum/Row'
 import { ControlType, ControlComponent } from '@/editor/dataset/enum/Control'
 import type { IElement } from '@/editor/interface/Element'
@@ -310,6 +313,120 @@ describe('zipElementList', () => {
     const result = zipElementList(list as any)
     expect(result.length).toBe(1)
     expect(result[0].value).toBe('ab')
+  })
+
+  it('相同 trace 的相邻文本元素合并', () => {
+    const trace = [{ type: TraceType.DELETED, author: 'hufe', timestamp: 1 }]
+    const list = [
+      { value: 'a', type: ElementType.TEXT, size: 16, trace },
+      { value: 'b', type: ElementType.TEXT, size: 16, trace: [...trace] }
+    ]
+    const result = zipElementList(list as any)
+    expect(result.length).toBe(1)
+    expect(result[0].value).toBe('ab')
+    expect(result[0].trace).toEqual(trace)
+  })
+
+  it('不同 trace 的相邻文本元素不合并', () => {
+    const list = [
+      {
+        value: 'a',
+        type: ElementType.TEXT,
+        trace: [{ type: TraceType.DELETED, author: 'hufe', timestamp: 1 }]
+      },
+      {
+        value: 'b',
+        type: ElementType.TEXT,
+        trace: [{ type: TraceType.DELETED, author: 'hufe', timestamp: 2 }]
+      }
+    ]
+    const result = zipElementList(list as any)
+    expect(result.length).toBe(2)
+  })
+
+  it('先插入后删除的相邻元素合并，保留两条记录', () => {
+    const trace = [
+      { type: TraceType.INSERTED, author: 'hufe', timestamp: 1 },
+      { type: TraceType.DELETED, author: 'hufe', timestamp: 2 }
+    ]
+    const list = [
+      { value: 'a', type: ElementType.TEXT, size: 16, trace },
+      { value: 'b', type: ElementType.TEXT, size: 16, trace: [...trace] }
+    ]
+    const result = zipElementList(list as any)
+    expect(result.length).toBe(1)
+    expect(result[0].value).toBe('ab')
+    expect(result[0].trace).toHaveLength(2)
+    expect(result[0].trace?.[0].type).toBe(TraceType.INSERTED)
+    expect(result[0].trace?.[1].type).toBe(TraceType.DELETED)
+  })
+})
+
+describe('trace element filter', () => {
+  it('仅过滤最后一条留痕为删除的元素', () => {
+    const insertedThenDeleted: IElement = {
+      value: 'a',
+      trace: [{ type: TraceType.INSERTED }, { type: TraceType.DELETED }]
+    }
+    const deletedThenInserted: IElement = {
+      value: 'b',
+      trace: [{ type: TraceType.DELETED }, { type: TraceType.INSERTED }]
+    }
+
+    expect(isElementTraceDeleted(insertedThenDeleted)).toBe(true)
+    expect(isElementTraceDeleted(deletedThenInserted)).toBe(false)
+    expect(
+      getNonDeletedElementList([insertedThenDeleted, deletedThenInserted])
+    ).toEqual([deletedThenInserted])
+  })
+
+  it('递归过滤嵌套内容且不修改原始元素', () => {
+    const elementList: IElement[] = [
+      {
+        type: ElementType.TABLE,
+        value: '',
+        colgroup: [],
+        trList: [
+          {
+            height: 0,
+            tdList: [
+              {
+                colspan: 1,
+                rowspan: 1,
+                value: [
+                  { value: 'visible' },
+                  {
+                    value: 'deleted',
+                    trace: [{ type: TraceType.DELETED }]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          type: ControlType.TEXT,
+          value: [
+            { value: 'kept' },
+            {
+              value: 'removed',
+              trace: [{ type: TraceType.DELETED }]
+            }
+          ]
+        }
+      }
+    ]
+
+    const result = getNonDeletedElementList(elementList)
+
+    expect(result[0].trList![0].tdList[0].value).toHaveLength(1)
+    expect(result[1].control!.value).toHaveLength(1)
+    expect(elementList[0].trList![0].tdList[0].value).toHaveLength(2)
+    expect(elementList[1].control!.value).toHaveLength(2)
   })
 })
 

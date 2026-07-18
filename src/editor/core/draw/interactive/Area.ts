@@ -17,7 +17,11 @@ import { LocationPosition } from '../../../dataset/enum/Common'
 import { RangeManager } from '../../range/RangeManager'
 import { Zone } from '../../zone/Zone'
 import { Position } from '../../position/Position'
-import { formatElementList, zipElementList } from '../../../utils/element'
+import {
+  formatElementList,
+  getNonDeletedElementList,
+  zipElementList
+} from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
 import { IRange } from '../../../interface/Range'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -252,7 +256,9 @@ export class Area {
       id: areaInfo.id,
       startPageNo: areaInfo.positionList[0].pageNo,
       endPageNo: areaInfo.positionList[areaInfo.positionList.length - 1].pageNo,
-      value: zipElementList(areaInfo.elementList)
+      value: zipElementList(getNonDeletedElementList(areaInfo.elementList), {
+        isClone: false
+      })
     }
   }
 
@@ -345,15 +351,12 @@ export class Area {
         editorOptions: this.options
       }
     )
-    this.draw.spliceElementList(
-      elementList,
-      positionList[0].index,
-      positionList.length,
-      valueList,
-      {
-        isIgnoreDeletedRule: true
-      }
-    )
+    const startIndex = positionList[0].index
+    this.draw.deleteElementList(elementList, startIndex, positionList.length, {
+      isIgnoreDeletedRule: true
+    })
+    this.draw.getTraceParticle().markElementListInserted(valueList)
+    this.draw.spliceElementList(elementList, startIndex, 0, valueList)
     this.draw.render({
       isSetCursor: false
     })
@@ -367,11 +370,10 @@ export class Area {
     // 删除区域内的所有元素
     const { positionList } = areaInfo
     const elementList = areaInfo.sourceElementList
-    this.draw.spliceElementList(
+    this.draw.deleteElementList(
       elementList,
       positionList[0].index,
       positionList.length,
-      [],
       {
         isIgnoreDeletedRule: true
       }

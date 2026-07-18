@@ -106,5 +106,12 @@
   "accessibility": {
     "selected": "选中：",
     "input": "输入："
+  },
+  "trace": {
+    "insert": "新增内容",
+    "delete": "删除内容",
+    "author": "作者",
+    "time": "时间",
+    "unknownAuthor": "未知作者"
   }
 }

@@ -143,4 +143,36 @@ describe('控件命令', () => {
 
     expect(setSelect).toHaveBeenCalledWith(['a', 'b'])
   })
+
+  it('留痕开启时日期控件连续改值不残留旧值字符', () => {
+    ctx = createTestEditor({
+      data: [
+        {
+          type: ElementType.CONTROL,
+          value: '',
+          control: {
+            conceptId: 'date-trace',
+            type: ControlType.DATE,
+            value: [{ value: '2024-01-01' }]
+          }
+        }
+      ],
+      options: { trace: { disabled: false } }
+    })
+
+    ctx.editor.command.executeSetControlValue({
+      conceptId: 'date-trace',
+      value: '2025-02-02'
+    })
+    ctx.editor.command.executeSetControlValue({
+      conceptId: 'date-trace',
+      value: '2026-03-03'
+    })
+
+    const [controlValue] = ctx.editor.command.getControlValue({
+      conceptId: 'date-trace'
+    })!
+
+    expect(controlValue.value).toBe('2026-03-03')
+  })
 })

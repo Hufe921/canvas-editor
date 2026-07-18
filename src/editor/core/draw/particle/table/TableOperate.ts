@@ -88,12 +88,11 @@ export class TableOperate {
       editorOptions: this.options
     })
     const curIndex = startIndex + 1
-    this.draw.spliceElementList(
-      elementList,
-      curIndex,
-      startIndex === endIndex ? 0 : endIndex - startIndex,
-      [element]
-    )
+    if (startIndex !== endIndex) {
+      this.draw.deleteElementList(elementList, curIndex, endIndex - startIndex)
+    }
+    this.draw.getTraceParticle().markElementListInserted([element])
+    this.draw.spliceElementList(elementList, curIndex, 0, [element])
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex, isSetCursor: false })
   }
