@@ -173,12 +173,24 @@ export function formatElementList(
       })
       // 追加节点
       if (valueList.length) {
-        const listId = el.listId || getUUID()
+        const fallbackListId = el.listId || getUUID()
+        const listIdMap = new Map<number, string>([[0, fallbackListId]])
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
-          value.listId = listId
-          value.listType = el.listType
-          value.listStyle = el.listStyle
+          const listLevel = value.listLevel ?? el.listLevel ?? 0
+          // 嵌套列表还原时按层级分配 listId，保证父子列表独立编号
+          if (!value.listId) {
+            value.listId = listIdMap.get(listLevel) || getUUID()
+          }
+          listIdMap.set(listLevel, value.listId)
+          Array.from(listIdMap.keys()).forEach(level => {
+            if (level > listLevel) {
+              listIdMap.delete(level)
+            }
+          })
+          value.listType = value.listType || el.listType
+          value.listStyle = value.listStyle || el.listStyle
+          value.listLevel = listLevel
           elementList.splice(i, 0, value)
           i++
         }
@@ -701,12 +713,18 @@ interface IZipElementListOption {
   extraPickAttrs?: Array<keyof IElement>
   isClassifyArea?: boolean
   isClone?: boolean
+  isListValue?: boolean
 }
 export function zipElementList(
   payload: IElement[],
   options: IZipElementListOption = {}
 ): IElement[] {
-  const { extraPickAttrs, isClassifyArea = false, isClone = true } = options
+  const {
+    extraPickAttrs,
+    isClassifyArea = false,
+    isClone = true,
+    isListValue = false
+  } = options
   const elementList = isClone ? deepClone(payload) : payload
   const zipElementListData: IElement[] = []
   let e = 0
@@ -781,7 +799,7 @@ export function zipElementList(
         titleElement.valueList = zipElementList(valueList, options)
         element = titleElement
       }
-    } else if (element.listId && element.listType) {
+    } else if (!isListValue && element.listId && element.listType) {
       // 列表处理
       const listId = element.listId
       if (listId) {
@@ -797,7 +815,7 @@ export function zipElementList(
         const valueList: IElement[] = []
         while (e < elementList.length) {
           const listE = elementList[e]
-          if (listId !== listE.listId) {
+          if (!listE.listId || listType !== listE.listType) {
             e--
             break
           }
@@ -806,7 +824,11 @@ export function zipElementList(
           valueList.push(listE)
           e++
         }
-        listElement.valueList = zipElementList(valueList, options)
+        // 嵌套列表导出为同一个 list，由 valueList 中的 listLevel 表达层级
+        listElement.valueList = zipElementList(valueList, {
+          ...options,
+          isListValue: true
+        })
         element = listElement
       }
     } else if (element.type === ElementType.TABLE) {
@@ -1650,18 +1672,58 @@ export function getElementListByHTML(
               (<unknown>listNode.style.listStyleType)
             )
           }
-          listNode.querySelectorAll('li').forEach(li => {
-            const liValueList = getElementListByHTML(li.innerHTML, options)
-            liValueList.forEach(list => {
-              if (list.value === '\n') {
-                list.listWrap = true
-              }
+          const collectListItems = (
+            parent: HTMLElement,
+            depth: number
+          ): IElement[] => {
+            // 每个 HTML 列表容器拥有独立 listId，保证嵌套序号按父项重置
+            const listId = getUUID()
+            const parentListType =
+              parent.tagName === 'OL' ? ListType.OL : ListType.UL
+            const parentListStyle =
+              parent.tagName === 'OL'
+                ? undefined
+                : <ListStyle>(<unknown>parent.style.listStyleType)
+            const items: IElement[] = []
+            Array.from(parent.children).forEach(child => {
+              const li = child as HTMLElement
+              if (li.tagName !== 'LI') return
+              const liClone = li.cloneNode(true) as HTMLElement
+              liClone
+                .querySelectorAll('ul,ol')
+                .forEach(nested => nested.remove())
+              const liValueList = getElementListByHTML(
+                liClone.innerHTML,
+                options
+              )
+              liValueList.forEach(item => {
+                if (item.value === '\n') {
+                  item.listWrap = true
+                }
+                item.listId = listId
+                item.listType = parentListType
+                if (parentListStyle) item.listStyle = parentListStyle
+                item.listLevel = depth
+              })
+              liValueList.unshift({
+                value: '\n',
+                listId,
+                listType: parentListType,
+                ...(parentListStyle ? { listStyle: parentListStyle } : {}),
+                listLevel: depth
+              })
+              items.push(...liValueList)
+              Array.from(
+                li.querySelectorAll(':scope > ul, :scope > ol')
+              ).forEach(nested => {
+                items.push(
+                  ...collectListItems(nested as HTMLElement, depth + 1)
+                )
+              })
             })
-            liValueList.unshift({
-              value: '\n'
-            })
-            listElement.valueList!.push(...liValueList)
-          })
+            return items
+          }
+          listElement.valueList = collectListItems(listNode, 0)
           elementList.push(listElement)
         } else if (node.nodeName === 'HR') {
           elementList.push({

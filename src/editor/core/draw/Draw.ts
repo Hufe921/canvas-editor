@@ -1559,8 +1559,8 @@ export class Draw {
       y = pageStartY
     }
     // 列表位置
-    let listId: string | undefined
-    let listIndex = 0
+    // 不同 listId 独立计数，避免父列表与子列表序号互相影响
+    const listIndexMap: Map<string, number> = new Map()
     // 控件最小宽度
     let controlRealWidth = 0
     // 分栏游标
@@ -1578,7 +1578,11 @@ export class Draw {
       // 实际可用宽度
       const offsetX =
         curRow.offsetX ||
-        (element.listId && listStyleMap.get(element.listId)) ||
+        (element.listId &&
+          (listStyleMap.get(element.listId) || 0) +
+            (element.listLevel
+              ? this.listParticle.LIST_INDENT_WIDTH * element.listLevel * scale
+              : 0)) ||
         0
       const rowMaxWidth = isColumnEnabled && layout ? layout.width : innerWidth
       const availableWidth = rowMaxWidth - offsetX
@@ -2080,14 +2084,16 @@ export class Draw {
         }
       }
       // 列表信息
-      if (element.listId) {
-        if (element.listId !== listId) {
-          listIndex = 0
-        } else if (element.value === ZERO && !element.listWrap) {
-          listIndex++
+      if (element.listId && element.value === ZERO && !element.listWrap) {
+        if (listIndexMap.has(element.listId)) {
+          listIndexMap.set(
+            element.listId,
+            (listIndexMap.get(element.listId) ?? 0) + 1
+          )
+        } else {
+          listIndexMap.set(element.listId, 0)
         }
       }
-      listId = element.listId
       // 计算四周环绕导致的元素偏移量
       const surroundPosition = this.position.setSurroundPosition({
         pageNo,
@@ -2165,8 +2171,12 @@ export class Draw {
         // 列表缩进
         if (element.listId) {
           row.isList = true
-          row.offsetX = listStyleMap.get(element.listId!)
-          row.listIndex = listIndex
+          row.offsetX =
+            (listStyleMap.get(element.listId!) || 0) +
+            (element.listLevel
+              ? this.listParticle.LIST_INDENT_WIDTH * element.listLevel * scale
+              : 0)
+          row.listIndex = listIndexMap.get(element.listId!) ?? 0
         }
         // Y轴偏移量
         row.offsetY =

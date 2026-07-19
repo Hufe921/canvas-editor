@@ -80,6 +80,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'listType',
   'listStyle',
   'listWrap',
+  'listLevel',
   'groupIds',
   'conceptId',
   'imgDisplay',
@@ -127,7 +128,8 @@ export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = [
 export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
   'listId',
   'listType',
-  'listStyle'
+  'listStyle',
+  'listLevel'
 ]
 
 export const CONTROL_CONTEXT_ATTR: Array<keyof IElement> = [

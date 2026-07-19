@@ -213,6 +213,7 @@ interface IElement {
   listType?: ListType;
   listStyle?: ListStyle;
   listWrap?: boolean;
+  listLevel?: number;
   // area
   areaId?: string;
   area?: {

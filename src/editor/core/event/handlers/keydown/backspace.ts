@@ -120,7 +120,12 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       if (firstElement.value === ZERO) {
         // 取消首字符列表设置
         if (firstElement.listId) {
-          draw.getListParticle().unsetList()
+          if (firstElement.listLevel) {
+            // 子列表段首 Backspace：先降级而非退出
+            draw.getListParticle().decreaseListLevel()
+          } else {
+            draw.getListParticle().unsetList()
+          }
         }
         evt.preventDefault()
         return
