@@ -37,6 +37,7 @@
       "deleteRow": "Delete 1 row",
       "deleteCol": "Delete 1 col",
       "deleteTable": "Delete table",
+      "cannotDeleteSplitTable": "Split table cannot be deleted by cursor",
       "mergeCell": "Merge cell",
       "mergeCancelCell": "Cancel merge cell",
       "verticalAlign": "Vertical align",
@@ -74,20 +75,6 @@
     },
     "year": " ",
     "month": " ",
-    "months": {
-      "jan": "Jan",
-      "feb": "Feb",
-      "mar": "Mar",
-      "apr": "Apr",
-      "may": "May",
-      "jun": "Jun",
-      "jul": "Jul",
-      "aug": "Aug",
-      "sep": "Sep",
-      "oct": "Oct",
-      "nov": "Nov",
-      "dec": "Dec"
-    },
     "hour": "Hour",
     "minute": "Minute",
     "second": "Second"
@@ -102,16 +89,5 @@
   "zone": {
     "headerTip": "Double click to edit header",
     "footerTip": "Double click to edit footer"
-  },
-  "accessibility": {
-    "selected": "Selected: ",
-    "input": "Input: "
-  },
-  "trace": {
-    "insert": "Inserted",
-    "delete": "Deleted",
-    "author": "Author",
-    "time": "Time",
-    "unknownAuthor": "Unknown"
   }
 }

@@ -1,7 +1,6 @@
 import { ImageDisplay } from '../dataset/enum/Common'
 import { ControlComponent } from '../dataset/enum/Control'
 import { ElementType } from '../dataset/enum/Element'
-import { TraceType } from '../dataset/enum/Trace'
 import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
 import { TitleLevel } from '../dataset/enum/Title'
@@ -38,8 +37,6 @@ export interface IElementStyle {
   strikeout?: boolean
   rowFlex?: RowFlex
   rowMargin?: number
-  level?: TitleLevel
-  title?: ITitle
   letterSpacing?: number
   textDecoration?: ITextDecoration
 }
@@ -50,16 +47,6 @@ export interface IElementRule {
 
 export interface IElementGroup {
   groupIds?: string[]
-}
-
-export interface ITraceRecord {
-  type: TraceType
-  author?: string
-  timestamp?: number
-}
-
-export interface IElementTrace {
-  trace?: ITraceRecord[]
 }
 
 export interface ITitleElement {
@@ -75,7 +62,6 @@ export interface IListElement {
   listStyle?: ListStyle
   listId?: string
   listWrap?: boolean
-  listLevel?: number
 }
 
 export interface ITableAttr {
@@ -122,7 +108,6 @@ export interface IControlElement {
   control?: IControl
   controlId?: string
   controlComponent?: ControlComponent
-  isControlMinWidthPlaceholder?: boolean
 }
 
 export interface ICheckboxElement {
@@ -211,7 +196,6 @@ export type IElement = IElementBasic &
   IElementStyle &
   IElementRule &
   IElementGroup &
-  IElementTrace &
   ITable &
   IHyperlinkElement &
   ISuperscriptSubscript &
@@ -247,7 +231,6 @@ export interface IElementPosition {
   metrics: IElementMetrics
   isFirstLetter: boolean
   isLastLetter: boolean
-  columnIndex?: number
   coordinate: {
     leftTop: number[]
     leftBottom: number[]

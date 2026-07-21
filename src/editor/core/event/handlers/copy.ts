@@ -3,11 +3,7 @@ import { IElement } from '../../../interface/Element'
 import { ICopyOption } from '../../../interface/Event'
 import { ITr } from '../../../interface/table/Tr'
 import { writeElementList } from '../../../utils/clipboard'
-import {
-  getNonDeletedElementList,
-  getTextFromElementList,
-  zipElementList
-} from '../../../utils/element'
+import { getTextFromElementList, zipElementList } from '../../../utils/element'
 import { IOverrideResult } from '../../override/Override'
 import { CanvasEvent } from '../CanvasEvent'
 
@@ -67,10 +63,11 @@ export async function copy(host: CanvasEvent, options?: ICopyOption) {
   if (options?.isPlainText && copyElementList?.length) {
     copyElementList = [
       {
-        value: getTextFromElementList(getNonDeletedElementList(copyElementList))
+        value: getTextFromElementList(copyElementList)
       }
     ]
   }
   if (!copyElementList?.length) return
+  copyElementList = draw.getTableOperate().mergeAllPagedTables(copyElementList)
   await writeElementList(copyElementList, draw.getOptions())
 }

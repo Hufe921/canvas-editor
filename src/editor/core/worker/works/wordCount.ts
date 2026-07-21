@@ -1,4 +1,3 @@
-import { TraceType } from '../../../dataset/enum/Trace'
 import { IElement } from '../../../interface/Element'
 
 enum ElementType {
@@ -21,15 +20,6 @@ function pickText(elementList: IElement[]): string {
   let e = 0
   while (e < elementList.length) {
     const element = elementList[e]
-    const records = element.trace
-    // 被删除的留痕元素不纳入字数统计
-    if (
-      !!records?.length &&
-      records[records.length - 1].type === TraceType.DELETED
-    ) {
-      e++
-      continue
-    }
     // 表格、超链接递归处理
     if (element.type === ElementType.TABLE) {
       if (element.trList) {

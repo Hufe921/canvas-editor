@@ -93,11 +93,4 @@ export class WorkerManager {
       })
     })
   }
-
-  public destroy() {
-    this.wordCountWorker.terminate()
-    this.catalogWorker.terminate()
-    this.groupWorker.terminate()
-    this.valueWorker.terminate()
-  }
 }

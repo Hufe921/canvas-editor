@@ -74,7 +74,6 @@ export class Command {
   public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
-  public executeSetColumns: CommandAdapt['setColumns']
   public executePageScale: CommandAdapt['pageScale']
   public executePageScaleRecovery: CommandAdapt['pageScaleRecovery']
   public executePageScaleMinus: CommandAdapt['pageScaleMinus']
@@ -88,10 +87,8 @@ export class Command {
   public executeInsertArea: CommandAdapt['insertArea']
   public executeSetAreaValue: CommandAdapt['setAreaValue']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
-  public executeDeleteArea: CommandAdapt['deleteArea']
   public executeLocationArea: CommandAdapt['locationArea']
   public executeClearGraffiti: CommandAdapt['clearGraffiti']
-  public executeToggleTrace: CommandAdapt['toggleTrace']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeDeleteElementById: CommandAdapt['deleteElementById']
@@ -139,7 +136,6 @@ export class Command {
   public getKeywordRangeList: CommandAdapt['getKeywordRangeList']
   public getKeywordContext: CommandAdapt['getKeywordContext']
   public getPaperMargin: CommandAdapt['getPaperMargin']
-  public getColumns: CommandAdapt['getColumns']
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
@@ -149,390 +145,129 @@ export class Command {
   public getTitleValue: CommandAdapt['getTitleValue']
   public getPositionContextByEvent: CommandAdapt['getPositionContextByEvent']
   public getElementById: CommandAdapt['getElementById']
-
-  private interceptor?: (name: string, args: unknown[]) => void
-
-  public setInterceptor(fn?: (name: string, args: unknown[]) => void) {
-    this.interceptor = fn
-  }
-
-  private wrap<T extends (...args: any[]) => any>(name: string, fn: T): T {
-    return ((...args: any[]) => {
-      this.interceptor?.(name, args)
-      return fn(...args)
-    }) as T
-  }
+  public getPageRowList: CommandAdapt['getPageRowList']
 
   constructor(adapt: CommandAdapt) {
     // 全局命令
-    this.executeMode = this.wrap('executeMode', adapt.mode.bind(adapt))
-    this.executeCut = this.wrap('executeCut', adapt.cut.bind(adapt))
-    this.executeCopy = this.wrap('executeCopy', adapt.copy.bind(adapt))
-    this.executePaste = this.wrap('executePaste', adapt.paste.bind(adapt))
-    this.executeSelectAll = this.wrap(
-      'executeSelectAll',
-      adapt.selectAll.bind(adapt)
-    )
-    this.executeBackspace = this.wrap(
-      'executeBackspace',
-      adapt.backspace.bind(adapt)
-    )
-    this.executeSetRange = this.wrap(
-      'executeSetRange',
-      adapt.setRange.bind(adapt)
-    )
-    this.executeReplaceRange = this.wrap(
-      'executeReplaceRange',
-      adapt.replaceRange.bind(adapt)
-    )
-    this.executeSetPositionContext = this.wrap(
-      'executeSetPositionContext',
-      adapt.setPositionContext.bind(adapt)
-    )
-    this.executeForceUpdate = this.wrap(
-      'executeForceUpdate',
-      adapt.forceUpdate.bind(adapt)
-    )
-    this.executeBlur = this.wrap('executeBlur', adapt.blur.bind(adapt))
-    this.executeHideCursor = this.wrap(
-      'executeHideCursor',
-      adapt.hideCursor.bind(adapt)
-    )
+    this.executeMode = adapt.mode.bind(adapt)
+    this.executeCut = adapt.cut.bind(adapt)
+    this.executeCopy = adapt.copy.bind(adapt)
+    this.executePaste = adapt.paste.bind(adapt)
+    this.executeSelectAll = adapt.selectAll.bind(adapt)
+    this.executeBackspace = adapt.backspace.bind(adapt)
+    this.executeSetRange = adapt.setRange.bind(adapt)
+    this.executeReplaceRange = adapt.replaceRange.bind(adapt)
+    this.executeSetPositionContext = adapt.setPositionContext.bind(adapt)
+    this.executeForceUpdate = adapt.forceUpdate.bind(adapt)
+    this.executeBlur = adapt.blur.bind(adapt)
+    this.executeHideCursor = adapt.hideCursor.bind(adapt)
     // 撤销、重做、格式刷、清除格式
-    this.executeUndo = this.wrap('executeUndo', adapt.undo.bind(adapt))
-    this.executeRedo = this.wrap('executeRedo', adapt.redo.bind(adapt))
-    this.executePainter = this.wrap('executePainter', adapt.painter.bind(adapt))
-    this.executeApplyPainterStyle = this.wrap(
-      'executeApplyPainterStyle',
-      adapt.applyPainterStyle.bind(adapt)
-    )
-    this.executeFormat = this.wrap('executeFormat', adapt.format.bind(adapt))
+    this.executeUndo = adapt.undo.bind(adapt)
+    this.executeRedo = adapt.redo.bind(adapt)
+    this.executePainter = adapt.painter.bind(adapt)
+    this.executeApplyPainterStyle = adapt.applyPainterStyle.bind(adapt)
+    this.executeFormat = adapt.format.bind(adapt)
     // 字体、字体大小、字体变大、字体变小、加粗、斜体、下划线、删除线、字体颜色、背景色
-    this.executeFont = this.wrap('executeFont', adapt.font.bind(adapt))
-    this.executeSize = this.wrap('executeSize', adapt.size.bind(adapt))
-    this.executeSizeAdd = this.wrap('executeSizeAdd', adapt.sizeAdd.bind(adapt))
-    this.executeSizeMinus = this.wrap(
-      'executeSizeMinus',
-      adapt.sizeMinus.bind(adapt)
-    )
-    this.executeBold = this.wrap('executeBold', adapt.bold.bind(adapt))
-    this.executeItalic = this.wrap('executeItalic', adapt.italic.bind(adapt))
-    this.executeUnderline = this.wrap(
-      'executeUnderline',
-      adapt.underline.bind(adapt)
-    )
-    this.executeStrikeout = this.wrap(
-      'executeStrikeout',
-      adapt.strikeout.bind(adapt)
-    )
-    this.executeSuperscript = this.wrap(
-      'executeSuperscript',
-      adapt.superscript.bind(adapt)
-    )
-    this.executeSubscript = this.wrap(
-      'executeSubscript',
-      adapt.subscript.bind(adapt)
-    )
-    this.executeColor = this.wrap('executeColor', adapt.color.bind(adapt))
-    this.executeHighlight = this.wrap(
-      'executeHighlight',
-      adapt.highlight.bind(adapt)
-    )
+    this.executeFont = adapt.font.bind(adapt)
+    this.executeSize = adapt.size.bind(adapt)
+    this.executeSizeAdd = adapt.sizeAdd.bind(adapt)
+    this.executeSizeMinus = adapt.sizeMinus.bind(adapt)
+    this.executeBold = adapt.bold.bind(adapt)
+    this.executeItalic = adapt.italic.bind(adapt)
+    this.executeUnderline = adapt.underline.bind(adapt)
+    this.executeStrikeout = adapt.strikeout.bind(adapt)
+    this.executeSuperscript = adapt.superscript.bind(adapt)
+    this.executeSubscript = adapt.subscript.bind(adapt)
+    this.executeColor = adapt.color.bind(adapt)
+    this.executeHighlight = adapt.highlight.bind(adapt)
     // 标题、对齐方式、列表
-    this.executeTitle = this.wrap('executeTitle', adapt.title.bind(adapt))
-    this.executeList = this.wrap('executeList', adapt.list.bind(adapt))
-    this.executeRowFlex = this.wrap('executeRowFlex', adapt.rowFlex.bind(adapt))
-    this.executeRowMargin = this.wrap(
-      'executeRowMargin',
-      adapt.rowMargin.bind(adapt)
-    )
+    this.executeTitle = adapt.title.bind(adapt)
+    this.executeList = adapt.list.bind(adapt)
+    this.executeRowFlex = adapt.rowFlex.bind(adapt)
+    this.executeRowMargin = adapt.rowMargin.bind(adapt)
     // 表格、图片上传、超链接、搜索、打印、图片操作
-    this.executeInsertTable = this.wrap(
-      'executeInsertTable',
-      adapt.insertTable.bind(adapt)
-    )
-    this.executeInsertTableTopRow = this.wrap(
-      'executeInsertTableTopRow',
-      adapt.insertTableTopRow.bind(adapt)
-    )
-    this.executeInsertTableBottomRow = this.wrap(
-      'executeInsertTableBottomRow',
-      adapt.insertTableBottomRow.bind(adapt)
-    )
-    this.executeInsertTableLeftCol = this.wrap(
-      'executeInsertTableLeftCol',
-      adapt.insertTableLeftCol.bind(adapt)
-    )
-    this.executeInsertTableRightCol = this.wrap(
-      'executeInsertTableRightCol',
-      adapt.insertTableRightCol.bind(adapt)
-    )
-    this.executeDeleteTableRow = this.wrap(
-      'executeDeleteTableRow',
-      adapt.deleteTableRow.bind(adapt)
-    )
-    this.executeDeleteTableCol = this.wrap(
-      'executeDeleteTableCol',
-      adapt.deleteTableCol.bind(adapt)
-    )
-    this.executeDeleteTable = this.wrap(
-      'executeDeleteTable',
-      adapt.deleteTable.bind(adapt)
-    )
-    this.executeMergeTableCell = this.wrap(
-      'executeMergeTableCell',
-      adapt.mergeTableCell.bind(adapt)
-    )
-    this.executeCancelMergeTableCell = this.wrap(
-      'executeCancelMergeTableCell',
-      adapt.cancelMergeTableCell.bind(adapt)
-    )
-    this.executeSplitVerticalTableCell = this.wrap(
-      'executeSplitVerticalTableCell',
+    this.executeInsertTable = adapt.insertTable.bind(adapt)
+    this.executeInsertTableTopRow = adapt.insertTableTopRow.bind(adapt)
+    this.executeInsertTableBottomRow = adapt.insertTableBottomRow.bind(adapt)
+    this.executeInsertTableLeftCol = adapt.insertTableLeftCol.bind(adapt)
+    this.executeInsertTableRightCol = adapt.insertTableRightCol.bind(adapt)
+    this.executeDeleteTableRow = adapt.deleteTableRow.bind(adapt)
+    this.executeDeleteTableCol = adapt.deleteTableCol.bind(adapt)
+    this.executeDeleteTable = adapt.deleteTable.bind(adapt)
+    this.executeMergeTableCell = adapt.mergeTableCell.bind(adapt)
+    this.executeCancelMergeTableCell = adapt.cancelMergeTableCell.bind(adapt)
+    this.executeSplitVerticalTableCell =
       adapt.splitVerticalTableCell.bind(adapt)
-    )
-    this.executeSplitHorizontalTableCell = this.wrap(
-      'executeSplitHorizontalTableCell',
+    this.executeSplitHorizontalTableCell =
       adapt.splitHorizontalTableCell.bind(adapt)
-    )
-    this.executeTableTdVerticalAlign = this.wrap(
-      'executeTableTdVerticalAlign',
-      adapt.tableTdVerticalAlign.bind(adapt)
-    )
-    this.executeTableBorderType = this.wrap(
-      'executeTableBorderType',
-      adapt.tableBorderType.bind(adapt)
-    )
-    this.executeTableBorderColor = this.wrap(
-      'executeTableBorderColor',
-      adapt.tableBorderColor.bind(adapt)
-    )
-    this.executeTableTdBorderType = this.wrap(
-      'executeTableTdBorderType',
-      adapt.tableTdBorderType.bind(adapt)
-    )
-    this.executeTableTdSlashType = this.wrap(
-      'executeTableTdSlashType',
-      adapt.tableTdSlashType.bind(adapt)
-    )
-    this.executeTableTdBackgroundColor = this.wrap(
-      'executeTableTdBackgroundColor',
+    this.executeTableTdVerticalAlign = adapt.tableTdVerticalAlign.bind(adapt)
+    this.executeTableBorderType = adapt.tableBorderType.bind(adapt)
+    this.executeTableBorderColor = adapt.tableBorderColor.bind(adapt)
+    this.executeTableTdBorderType = adapt.tableTdBorderType.bind(adapt)
+    this.executeTableTdSlashType = adapt.tableTdSlashType.bind(adapt)
+    this.executeTableTdBackgroundColor =
       adapt.tableTdBackgroundColor.bind(adapt)
-    )
-    this.executeTableSelectAll = this.wrap(
-      'executeTableSelectAll',
-      adapt.tableSelectAll.bind(adapt)
-    )
-    this.executeImage = this.wrap('executeImage', adapt.image.bind(adapt))
-    this.executeHyperlink = this.wrap(
-      'executeHyperlink',
-      adapt.hyperlink.bind(adapt)
-    )
-    this.executeDeleteHyperlink = this.wrap(
-      'executeDeleteHyperlink',
-      adapt.deleteHyperlink.bind(adapt)
-    )
-    this.executeCancelHyperlink = this.wrap(
-      'executeCancelHyperlink',
-      adapt.cancelHyperlink.bind(adapt)
-    )
-    this.executeEditHyperlink = this.wrap(
-      'executeEditHyperlink',
-      adapt.editHyperlink.bind(adapt)
-    )
-    this.executeSeparator = this.wrap(
-      'executeSeparator',
-      adapt.separator.bind(adapt)
-    )
-    this.executePageBreak = this.wrap(
-      'executePageBreak',
-      adapt.pageBreak.bind(adapt)
-    )
-    this.executeAddWatermark = this.wrap(
-      'executeAddWatermark',
-      adapt.addWatermark.bind(adapt)
-    )
-    this.executeDeleteWatermark = this.wrap(
-      'executeDeleteWatermark',
-      adapt.deleteWatermark.bind(adapt)
-    )
-    this.executeSearch = this.wrap('executeSearch', adapt.search.bind(adapt))
-    this.executeSearchNavigatePre = this.wrap(
-      'executeSearchNavigatePre',
-      adapt.searchNavigatePre.bind(adapt)
-    )
-    this.executeSearchNavigateNext = this.wrap(
-      'executeSearchNavigateNext',
-      adapt.searchNavigateNext.bind(adapt)
-    )
-    this.executeReplace = this.wrap('executeReplace', adapt.replace.bind(adapt))
-    this.executePrint = this.wrap('executePrint', adapt.print.bind(adapt))
-    this.executeReplaceImageElement = this.wrap(
-      'executeReplaceImageElement',
-      adapt.replaceImageElement.bind(adapt)
-    )
-    this.executeSaveAsImageElement = this.wrap(
-      'executeSaveAsImageElement',
-      adapt.saveAsImageElement.bind(adapt)
-    )
-    this.executeSetImageCrop = this.wrap(
-      'executeSetImageCrop',
-      adapt.setImageCrop.bind(adapt)
-    )
-    this.executeSetImageCaption = this.wrap(
-      'executeSetImageCaption',
-      adapt.setImageCaption.bind(adapt)
-    )
-    this.executeChangeImageDisplay = this.wrap(
-      'executeChangeImageDisplay',
-      adapt.changeImageDisplay.bind(adapt)
-    )
+    this.executeTableSelectAll = adapt.tableSelectAll.bind(adapt)
+    this.executeImage = adapt.image.bind(adapt)
+    this.executeHyperlink = adapt.hyperlink.bind(adapt)
+    this.executeDeleteHyperlink = adapt.deleteHyperlink.bind(adapt)
+    this.executeCancelHyperlink = adapt.cancelHyperlink.bind(adapt)
+    this.executeEditHyperlink = adapt.editHyperlink.bind(adapt)
+    this.executeSeparator = adapt.separator.bind(adapt)
+    this.executePageBreak = adapt.pageBreak.bind(adapt)
+    this.executeAddWatermark = adapt.addWatermark.bind(adapt)
+    this.executeDeleteWatermark = adapt.deleteWatermark.bind(adapt)
+    this.executeSearch = adapt.search.bind(adapt)
+    this.executeSearchNavigatePre = adapt.searchNavigatePre.bind(adapt)
+    this.executeSearchNavigateNext = adapt.searchNavigateNext.bind(adapt)
+    this.executeReplace = adapt.replace.bind(adapt)
+    this.executePrint = adapt.print.bind(adapt)
+    this.executeReplaceImageElement = adapt.replaceImageElement.bind(adapt)
+    this.executeSaveAsImageElement = adapt.saveAsImageElement.bind(adapt)
+    this.executeSetImageCrop = adapt.setImageCrop.bind(adapt)
+    this.executeSetImageCaption = adapt.setImageCaption.bind(adapt)
+    this.executeChangeImageDisplay = adapt.changeImageDisplay.bind(adapt)
     // 页面模式、页面缩放、纸张大小、纸张方向、页边距
-    this.executePageMode = this.wrap(
-      'executePageMode',
-      adapt.pageMode.bind(adapt)
-    )
-    this.executeSetColumns = this.wrap(
-      'executeSetColumns',
-      adapt.setColumns.bind(adapt)
-    )
-    this.executePageScale = this.wrap(
-      'executePageScale',
-      adapt.pageScale.bind(adapt)
-    )
-    this.executePageScaleRecovery = this.wrap(
-      'executePageScaleRecovery',
-      adapt.pageScaleRecovery.bind(adapt)
-    )
-    this.executePageScaleMinus = this.wrap(
-      'executePageScaleMinus',
-      adapt.pageScaleMinus.bind(adapt)
-    )
-    this.executePageScaleAdd = this.wrap(
-      'executePageScaleAdd',
-      adapt.pageScaleAdd.bind(adapt)
-    )
-    this.executePaperSize = this.wrap(
-      'executePaperSize',
-      adapt.paperSize.bind(adapt)
-    )
-    this.executePaperDirection = this.wrap(
-      'executePaperDirection',
-      adapt.paperDirection.bind(adapt)
-    )
-    this.executeSetPaperMargin = this.wrap(
-      'executeSetPaperMargin',
-      adapt.setPaperMargin.bind(adapt)
-    )
+    this.executePageMode = adapt.pageMode.bind(adapt)
+    this.executePageScale = adapt.pageScale.bind(adapt)
+    this.executePageScaleRecovery = adapt.pageScaleRecovery.bind(adapt)
+    this.executePageScaleMinus = adapt.pageScaleMinus.bind(adapt)
+    this.executePageScaleAdd = adapt.pageScaleAdd.bind(adapt)
+    this.executePaperSize = adapt.paperSize.bind(adapt)
+    this.executePaperDirection = adapt.paperDirection.bind(adapt)
+    this.executeSetPaperMargin = adapt.setPaperMargin.bind(adapt)
     // 签章
-    this.executeSetMainBadge = this.wrap(
-      'executeSetMainBadge',
-      adapt.setMainBadge.bind(adapt)
-    )
-    this.executeSetAreaBadge = this.wrap(
-      'executeSetAreaBadge',
-      adapt.setAreaBadge.bind(adapt)
-    )
+    this.executeSetMainBadge = adapt.setMainBadge.bind(adapt)
+    this.executeSetAreaBadge = adapt.setAreaBadge.bind(adapt)
     // 区域
     this.getAreaValue = adapt.getAreaValue.bind(adapt)
-    this.executeInsertArea = this.wrap(
-      'executeInsertArea',
-      adapt.insertArea.bind(adapt)
-    )
-    this.executeSetAreaValue = this.wrap(
-      'executeSetAreaValue',
-      adapt.setAreaValue.bind(adapt)
-    )
-    this.executeSetAreaProperties = this.wrap(
-      'executeSetAreaProperties',
-      adapt.setAreaProperties.bind(adapt)
-    )
-    this.executeDeleteArea = this.wrap(
-      'executeDeleteArea',
-      adapt.deleteArea.bind(adapt)
-    )
-    this.executeLocationArea = this.wrap(
-      'executeLocationArea',
-      adapt.locationArea.bind(adapt)
-    )
+    this.executeInsertArea = adapt.insertArea.bind(adapt)
+    this.executeSetAreaValue = adapt.setAreaValue.bind(adapt)
+    this.executeSetAreaProperties = adapt.setAreaProperties.bind(adapt)
+    this.executeLocationArea = adapt.locationArea.bind(adapt)
     // 涂鸦
-    this.executeClearGraffiti = this.wrap(
-      'executeClearGraffiti',
-      adapt.clearGraffiti.bind(adapt)
-    )
-    // 留痕
-    this.executeToggleTrace = this.wrap(
-      'executeToggleTrace',
-      adapt.toggleTrace.bind(adapt)
-    )
+    this.executeClearGraffiti = adapt.clearGraffiti.bind(adapt)
     // 通用
-    this.executeInsertElementList = this.wrap(
-      'executeInsertElementList',
-      adapt.insertElementList.bind(adapt)
-    )
-    this.executeAppendElementList = this.wrap(
-      'executeAppendElementList',
-      adapt.appendElementList.bind(adapt)
-    )
-    this.executeUpdateElementById = this.wrap(
-      'executeUpdateElementById',
-      adapt.updateElementById.bind(adapt)
-    )
-    this.executeDeleteElementById = this.wrap(
-      'executeDeleteElementById',
-      adapt.deleteElementById.bind(adapt)
-    )
-    this.executeSetValue = this.wrap(
-      'executeSetValue',
-      adapt.setValue.bind(adapt)
-    )
-    this.executeRemoveControl = this.wrap(
-      'executeRemoveControl',
-      adapt.removeControl.bind(adapt)
-    )
-    this.executeTranslate = this.wrap(
-      'executeTranslate',
-      adapt.translate.bind(adapt)
-    )
-    this.executeSetLocale = this.wrap(
-      'executeSetLocale',
-      adapt.setLocale.bind(adapt)
-    )
-    this.executeLocationCatalog = this.wrap(
-      'executeLocationCatalog',
-      adapt.locationCatalog.bind(adapt)
-    )
-    this.executeWordTool = this.wrap(
-      'executeWordTool',
-      adapt.wordTool.bind(adapt)
-    )
-    this.executeSetHTML = this.wrap('executeSetHTML', adapt.setHTML.bind(adapt))
-    this.executeSetGroup = this.wrap(
-      'executeSetGroup',
-      adapt.setGroup.bind(adapt)
-    )
-    this.executeDeleteGroup = this.wrap(
-      'executeDeleteGroup',
-      adapt.deleteGroup.bind(adapt)
-    )
-    this.executeLocationGroup = this.wrap(
-      'executeLocationGroup',
-      adapt.locationGroup.bind(adapt)
-    )
-    this.executeSetZone = this.wrap('executeSetZone', adapt.setZone.bind(adapt))
-    this.executeUpdateOptions = this.wrap(
-      'executeUpdateOptions',
-      adapt.updateOptions.bind(adapt)
-    )
-    this.executeInsertTitle = this.wrap(
-      'executeInsertTitle',
-      adapt.insertTitle.bind(adapt)
-    )
-    this.executeFocus = this.wrap('executeFocus', adapt.focus.bind(adapt))
-    this.executeComputeElementListHeight = this.wrap(
-      'executeComputeElementListHeight',
+    this.executeInsertElementList = adapt.insertElementList.bind(adapt)
+    this.executeAppendElementList = adapt.appendElementList.bind(adapt)
+    this.executeUpdateElementById = adapt.updateElementById.bind(adapt)
+    this.executeDeleteElementById = adapt.deleteElementById.bind(adapt)
+    this.executeSetValue = adapt.setValue.bind(adapt)
+    this.executeRemoveControl = adapt.removeControl.bind(adapt)
+    this.executeTranslate = adapt.translate.bind(adapt)
+    this.executeSetLocale = adapt.setLocale.bind(adapt)
+    this.executeLocationCatalog = adapt.locationCatalog.bind(adapt)
+    this.executeWordTool = adapt.wordTool.bind(adapt)
+    this.executeSetHTML = adapt.setHTML.bind(adapt)
+    this.executeSetGroup = adapt.setGroup.bind(adapt)
+    this.executeDeleteGroup = adapt.deleteGroup.bind(adapt)
+    this.executeLocationGroup = adapt.locationGroup.bind(adapt)
+    this.executeSetZone = adapt.setZone.bind(adapt)
+    this.executeUpdateOptions = adapt.updateOptions.bind(adapt)
+    this.executeInsertTitle = adapt.insertTitle.bind(adapt)
+    this.executeFocus = adapt.focus.bind(adapt)
+    this.executeComputeElementListHeight =
       adapt.computeElementListHeight.bind(adapt)
-    )
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
@@ -552,7 +287,6 @@ export class Command {
     this.getKeywordContext = adapt.getKeywordContext.bind(adapt)
     this.getCatalog = adapt.getCatalog.bind(adapt)
     this.getPaperMargin = adapt.getPaperMargin.bind(adapt)
-    this.getColumns = adapt.getColumns.bind(adapt)
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
@@ -560,48 +294,21 @@ export class Command {
     this.getTitleValue = adapt.getTitleValue.bind(adapt)
     this.getPositionContextByEvent = adapt.getPositionContextByEvent.bind(adapt)
     this.getElementById = adapt.getElementById.bind(adapt)
+    this.getPageRowList = adapt.getPageRowList.bind(adapt)
     // 控件
-    this.executeSetControlValue = this.wrap(
-      'executeSetControlValue',
-      adapt.setControlValue.bind(adapt)
-    )
-    this.executeSetControlValueList = this.wrap(
-      'executeSetControlValueList',
-      adapt.setControlValueList.bind(adapt)
-    )
-    this.executeSetControlExtension = this.wrap(
-      'executeSetControlExtension',
-      adapt.setControlExtension.bind(adapt)
-    )
-    this.executeSetControlExtensionList = this.wrap(
-      'executeSetControlExtensionList',
+    this.executeSetControlValue = adapt.setControlValue.bind(adapt)
+    this.executeSetControlValueList = adapt.setControlValueList.bind(adapt)
+    this.executeSetControlExtension = adapt.setControlExtension.bind(adapt)
+    this.executeSetControlExtensionList =
       adapt.setControlExtensionList.bind(adapt)
-    )
-    this.executeSetControlProperties = this.wrap(
-      'executeSetControlProperties',
-      adapt.setControlProperties.bind(adapt)
-    )
-    this.executeSetControlPropertiesList = this.wrap(
-      'executeSetControlPropertiesList',
+    this.executeSetControlProperties = adapt.setControlProperties.bind(adapt)
+    this.executeSetControlPropertiesList =
       adapt.setControlPropertiesList.bind(adapt)
-    )
-    this.executeSetControlHighlight = this.wrap(
-      'executeSetControlHighlight',
-      adapt.setControlHighlight.bind(adapt)
-    )
+    this.executeSetControlHighlight = adapt.setControlHighlight.bind(adapt)
     this.getControlValue = adapt.getControlValue.bind(adapt)
     this.getControlList = adapt.getControlList.bind(adapt)
-    this.executeLocationControl = this.wrap(
-      'executeLocationControl',
-      adapt.locationControl.bind(adapt)
-    )
-    this.executeInsertControl = this.wrap(
-      'executeInsertControl',
-      adapt.insertControl.bind(adapt)
-    )
-    this.executeJumpControl = this.wrap(
-      'executeJumpControl',
-      adapt.jumpControl.bind(adapt)
-    )
+    this.executeLocationControl = adapt.locationControl.bind(adapt)
+    this.executeInsertControl = adapt.insertControl.bind(adapt)
+    this.executeJumpControl = adapt.jumpControl.bind(adapt)
   }
 }

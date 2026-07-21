@@ -27,10 +27,7 @@ import {
   scrollIntoView,
   splitText
 } from '../../../../utils'
-import {
-  formatElementContext,
-  isElementTraceDeleted
-} from '../../../../utils/element'
+import { formatElementContext } from '../../../../utils/element'
 import { Draw } from '../../Draw'
 import { Control } from '../Control'
 
@@ -105,10 +102,7 @@ export class SelectControl implements IControlInstance {
       ) {
         break
       }
-      if (
-        preElement.controlComponent === ControlComponent.VALUE &&
-        !isElementTraceDeleted(preElement)
-      ) {
+      if (preElement.controlComponent === ControlComponent.VALUE) {
         data.unshift(preElement)
       }
       preIndex--
@@ -124,10 +118,7 @@ export class SelectControl implements IControlInstance {
       ) {
         break
       }
-      if (
-        nextElement.controlComponent === ControlComponent.VALUE &&
-        !isElementTraceDeleted(nextElement)
-      ) {
+      if (nextElement.controlComponent === ControlComponent.VALUE) {
         data.push(nextElement)
       }
       nextIndex++
@@ -156,14 +147,7 @@ export class SelectControl implements IControlInstance {
     const draw = this.control.getDraw()
     // 移除选区元素
     if (startIndex !== endIndex) {
-      draw.deleteElementList(
-        elementList,
-        startIndex + 1,
-        endIndex - startIndex,
-        {
-          isIgnoreDeletedRule: options.isIgnoreDeletedRule
-        }
-      )
+      draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
       // 移除空白占位符
       this.control.removePlaceholder(startIndex, context)
@@ -192,7 +176,6 @@ export class SelectControl implements IControlInstance {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
-      draw.getTraceParticle().markElementListInserted([newElement])
       draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     return start + data.length - 1
@@ -216,7 +199,7 @@ export class SelectControl implements IControlInstance {
       if (startIndex !== endIndex) {
         // 设置可输入时：仅删除选择元素
         if (inputAble) {
-          this.draw.deleteElementList(
+          this.draw.spliceElementList(
             elementList,
             startIndex + 1,
             endIndex - startIndex
@@ -241,7 +224,7 @@ export class SelectControl implements IControlInstance {
         } else {
           // 设置可输入时：仅往前删除元素
           if (inputAble) {
-            this.draw.deleteElementList(elementList, startIndex, 1)
+            this.draw.spliceElementList(elementList, startIndex, 1)
             const value = this.getValue()
             if (!value.length) {
               this.control.addPlaceholder(startIndex - 1)
@@ -257,7 +240,7 @@ export class SelectControl implements IControlInstance {
       if (startIndex !== endIndex) {
         // 删除元素
         if (inputAble) {
-          this.draw.deleteElementList(
+          this.draw.spliceElementList(
             elementList,
             startIndex + 1,
             endIndex - startIndex
@@ -285,7 +268,7 @@ export class SelectControl implements IControlInstance {
         } else {
           // 删除元素
           if (inputAble) {
-            this.draw.deleteElementList(elementList, startIndex + 1, 1)
+            this.draw.spliceElementList(elementList, startIndex + 1, 1)
             const value = this.getValue()
             if (!value.length) {
               this.control.addPlaceholder(startIndex)
@@ -358,15 +341,15 @@ export class SelectControl implements IControlInstance {
     if (!~leftIndex || !~rightIndex) return -1
     // 删除元素
     const draw = this.control.getDraw()
-    const deleteStartIndex = leftIndex + 1
-    const deleteCount = this.control.removePlaceholderInRange(
+    draw.spliceElementList(
       elementList,
-      deleteStartIndex,
-      rightIndex - leftIndex
+      leftIndex + 1,
+      rightIndex - leftIndex,
+      [],
+      {
+        isIgnoreDeletedRule: options.isIgnoreDeletedRule
+      }
     )
-    draw.deleteElementList(elementList, deleteStartIndex, deleteCount, {
-      isIgnoreDeletedRule: options.isIgnoreDeletedRule
-    })
     // 增加占位符
     if (isAddPlaceholder) {
       this.control.addPlaceholder(preIndex, context)
@@ -471,7 +454,6 @@ export class SelectControl implements IControlInstance {
       formatElementContext(elementList, [newElement], prefixIndex, {
         editorOptions: this.options
       })
-      draw.getTraceParticle().markElementListInserted([newElement])
       draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     // 设置状态

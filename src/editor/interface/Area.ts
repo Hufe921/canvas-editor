@@ -3,7 +3,6 @@ import { LocationPosition } from '../dataset/enum/Common'
 import { IElement, IElementPosition } from './Element'
 import { IPlaceholder } from './Placeholder'
 import { IRange } from './Range'
-import { ITd } from './table/Td'
 
 export interface IAreaBasic {
   extension?: unknown
@@ -14,6 +13,7 @@ export interface IAreaStyle {
   top?: number
   borderColor?: string
   backgroundColor?: string
+  borderWidth?: number
 }
 
 export interface IAreaRule {
@@ -59,18 +59,9 @@ export interface IAreaInfo {
   area: IArea
   elementList: IElement[]
   positionList: IElementPosition[]
-  sourceElementList: IElement[]
-  tableCell?: {
-    td: ITd
-    tablePosition: IElementPosition
-  }
 }
 
 export interface ILocationAreaOption {
   position: LocationPosition
   isAppendLastLineBreak?: boolean
-}
-
-export interface IDeleteAreaOption {
-  id?: string
 }

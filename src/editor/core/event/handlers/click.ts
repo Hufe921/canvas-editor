@@ -111,6 +111,21 @@ function dblclick(host: CanvasEvent, evt: MouseEvent) {
     x: evt.offsetX,
     y: evt.offsetY
   })
+  if (positionContext.areaId && positionContext.isDirectHit) {
+    const areaId = positionContext.areaId
+    const areaInfo = draw.getArea().getAreaInfo().get(areaId)
+    const eventBus = draw.getEventBus()
+    console.log('areaDblclick')
+
+    if (areaInfo && eventBus.isSubscribe('areaDblclick')) {
+      eventBus.emit('areaDblclick', {
+        evt,
+        element: areaInfo.elementList[0],
+        areaId
+      })
+    }
+    return
+  }
   if (positionContext.isImage && positionContext.isDirectHit) {
     // 双击图片事件
     const elementList = draw.getElementList()

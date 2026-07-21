@@ -13,13 +13,15 @@ export function getParagraphNo(elementList: IElement[], index: number): number {
   for (let i = 1; i < index; i++) {
     const curElement = elementList[i]
     const preElement = elementList[i - 1]
+    // 防御：elementList[i] 可能为 undefined（如下标越界、空洞元素、分页片段编辑后等）
+    if (!curElement) continue
     // 正常换行（非列表） || 列表导致的段落变化 || 标题导致的段落变化
     if (
       (curElement.value === ZERO &&
         !curElement.listWrap &&
         !curElement.listId) ||
-      (curElement.listId !== preElement?.listId && preElement.value !== ZERO) ||
-      (curElement.titleId !== preElement?.titleId && preElement.value !== ZERO)
+      (curElement.listId !== preElement?.listId && preElement?.value !== ZERO) ||
+      (curElement.titleId !== preElement?.titleId && preElement?.value !== ZERO)
     ) {
       paragraphNo++
     }

@@ -15,7 +15,7 @@ import {
   RangeRowArray,
   RangeRowMap
 } from '../../interface/Range'
-import { getAnchorElement, isElementTraceDeleted } from '../../utils/element'
+import { getAnchorElement } from '../../utils/element'
 import { Draw } from '../draw/Draw'
 import { EventBus } from '../event/eventbus/EventBus'
 import { HistoryManager } from '../history/HistoryManager'
@@ -151,7 +151,10 @@ export class RangeManager {
     const selection = this.getSelectionElementList()
     if (!selection) return null
     return selection.filter(
-      s => !s.type || TEXTLIKE_ELEMENT_TYPE.includes(s.type)
+      s =>
+        !s.type ||
+        TEXTLIKE_ELEMENT_TYPE.includes(s.type) ||
+        s.type === ElementType.LABEL
     )
   }
 
@@ -390,13 +393,15 @@ export class RangeManager {
     const elementList = this.draw.getElementList()
     const startElement = elementList[startIndex]
     if (startIndex === endIndex) {
+      // debugger
       return (
-        (startElement.controlComponent !== ControlComponent.PRE_TEXT ||
+        (startElement?.controlComponent !== ControlComponent.PRE_TEXT ||
           elementList[startIndex + 1]?.controlComponent !==
             ControlComponent.PRE_TEXT) &&
-        startElement.controlComponent !== ControlComponent.POST_TEXT
+        startElement?.controlComponent !== ControlComponent.POST_TEXT
       )
     }
+
     const endElement = elementList[endIndex]
     // 选区前后不是控件 || 选区前不是控件或是后缀&&选区后不是控件或是后缀 || 选区在控件内
     return (
@@ -460,10 +465,6 @@ export class RangeManager {
       }
     }
     control.destroyControl()
-    // 抛出选区变化事件
-    if (isChange && this.eventBus.isSubscribe('rangeChange')) {
-      this.eventBus.emit('rangeChange', this.range)
-    }
   }
 
   public replaceRange(range: IRange) {
@@ -720,7 +721,6 @@ export class RangeManager {
     const selection = this.getTextLikeSelection()
     if (!selection) return ''
     return selection
-      .filter(element => !isElementTraceDeleted(element))
       .map(s => s.value)
       .join('')
       .replace(new RegExp(ZERO, 'g'), '')

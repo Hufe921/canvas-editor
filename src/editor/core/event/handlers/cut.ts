@@ -5,7 +5,7 @@ export async function cut(host: CanvasEvent) {
   const draw = host.getDraw()
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
-  if (!~startIndex && !~endIndex) return
+  if (!~startIndex && !~startIndex) return
   if (draw.isReadonly() || !rangeManager.getIsCanInput()) return
 
   const elementList = draw.getElementList()
@@ -39,7 +39,7 @@ export async function cut(host: CanvasEvent) {
     curIndex = control.cut()
     control.emitControlContentChange()
   } else {
-    draw.deleteElementList(elementList, start + 1, end - start)
+    draw.spliceElementList(elementList, start + 1, end - start)
     curIndex = start
   }
   rangeManager.setRange(curIndex, curIndex)

@@ -4,7 +4,6 @@ import { ElementType } from '../../../dataset/enum/Element'
 import {
   IArea,
   IAreaInfo,
-  IDeleteAreaOption,
   IGetAreaValueOption,
   IGetAreaValueResult,
   IInsertAreaOption,
@@ -17,11 +16,7 @@ import { LocationPosition } from '../../../dataset/enum/Common'
 import { RangeManager } from '../../range/RangeManager'
 import { Zone } from '../../zone/Zone'
 import { Position } from '../../position/Position'
-import {
-  formatElementList,
-  getNonDeletedElementList,
-  zipElementList
-} from '../../../utils/element'
+import { formatElementList, zipElementList } from '../../../utils/element'
 import { AreaMode } from '../../../dataset/enum/Area'
 import { IRange } from '../../../interface/Range'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -29,7 +24,6 @@ import { Placeholder } from '../frame/Placeholder'
 import { defaultPlaceholderOption } from '../../../dataset/constant/Placeholder'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
-import { ITd } from '../../../interface/table/Td'
 
 export class Area {
   private draw: Draw
@@ -86,35 +80,60 @@ export class Area {
     if (this.zone.getZone() !== EditorZone.MAIN) {
       this.zone.setZone(EditorZone.MAIN)
     }
+    // 获取当前位置上下文
+    const positionContext = this.position.getPositionContext()
+    // 跳出区域中包含表格跳出表格 到最后去
+    const isRangeTable = value && value.some(v => v.type === ElementType.TABLE)
+    let isJumpToLast = false
+    if (isRangeTable && positionContext.isTable) {
+      // 跳出表格
+      this.draw.getPosition().setPositionContext({
+        isTable: false
+      })
+      // 跳转到最后位置
+      const elementList = this.draw.getElementList()
+      const lastIndex = elementList.length - 1
+      const insertIndex = Math.max(0, lastIndex)
+      this.range.setRange(insertIndex, insertIndex)
+      isJumpToLast = true
+    }
     // 通过光标插入area && 不能在area内再次插入area
-    if (range && !this.getActiveAreaId()) {
+    if (!isJumpToLast && range && !this.getActiveAreaId()) {
       const { startIndex, endIndex } = range
       // 校验位置合法性
-      const elementList = this.draw.getMainElementList()
+      const elementList = this.draw.getElementList()
       if (!elementList[startIndex] || !elementList[endIndex]) {
         return null
       }
       this.range.setRange(range.startIndex, range.endIndex)
-    } else {
+    } else if (!isJumpToLast) {
       // 设置插入位置
       if (position === LocationPosition.BEFORE) {
         this.range.setRange(0, 0)
       } else {
-        const elementList = this.draw.getMainElementList()
+        const elementList = this.draw.getElementList()
         const lastIndex = elementList.length - 1
         this.range.setRange(lastIndex, lastIndex)
       }
     }
     const areaId = id || getUUID()
-    this.draw.insertElementList([
-      {
-        type: ElementType.AREA,
-        value: '',
-        areaId,
-        valueList: value,
-        area: deepClone(area)
-      }
-    ])
+    // 创建area元素
+    const areaElement: IElement = {
+      type: ElementType.AREA,
+      value: '',
+      areaId,
+      valueList: value,
+      area: deepClone(area)
+    }
+    // 如果在表格中，添加表格相关属性
+    if (positionContext.isTable) {
+      const originalElementList = this.draw.getOriginalElementList()
+      const tableElement = originalElementList[positionContext.index!]
+      areaElement.tableId = tableElement.id
+      areaElement.trId = positionContext.trId
+      areaElement.tdId = positionContext.tdId
+    }
+    this.draw.insertElementList([areaElement])
     return areaId
   }
 
@@ -122,11 +141,11 @@ export class Area {
     if (!this.areaInfoMap.size) return
     ctx.save()
     const margins = this.draw.getMargins()
-    const width = this.draw.getInnerWidth()
+
     for (const areaInfoItem of this.areaInfoMap) {
-      const { area, positionList } = areaInfoItem[1]
+      const { area, positionList, elementList } = areaInfoItem[1]
       if (
-        (area?.hide && !this.draw.isAreaHideDisabled()) ||
+        area?.hide ||
         (!area?.backgroundColor && !area?.borderColor && !area?.placeholder)
       ) {
         continue
@@ -136,30 +155,78 @@ export class Area {
       ctx.translate(0.5, 0.5)
       const firstPosition = pagePositionList[0]
       const lastPosition = pagePositionList[pagePositionList.length - 1]
-      const tableCell = areaInfoItem[1].tableCell
-      const isTableArea = !!tableCell
-      const tdPadding = this.draw.getTdPadding()
-      // 起始位置
-      const x = isTableArea
-        ? tableCell.tablePosition.coordinate.leftTop[0] +
-          tableCell.td.x! * this.options.scale +
-          tdPadding[3]
-        : margins[3]
+
+      // 计算起始位置和宽度
+      let x, width
+      // 检查是否为表格内的 area（通过元素是否包含 tableId 属性判断）
+      const isTableArea = areaInfoItem[1].elementList.some(el => el.tableId)
+
+      // 是否存在表格
+      const isRangeTable = elementList.some(el => el.type === ElementType.TABLE)
+      if (isTableArea && !isRangeTable) {
+        // 表格内的 area，使用元素的实际坐标和宽度
+        x = firstPosition.coordinate.leftTop[0]
+        // 尝试从表格单元格获取宽度信息
+        const tableElement = areaInfoItem[1].elementList.find(el => el.tableId)
+        if (tableElement) {
+          // 查找对应的表格和单元格
+          const originalElementList = this.draw.getOriginalElementList()
+          const table = originalElementList.find(
+            el => el.id === tableElement.tableId
+          )
+          if (table && table.trList) {
+            for (const tr of table.trList) {
+              if (tr.id === tableElement.trId) {
+                for (const td of tr.tdList) {
+                  if (td.id === tableElement.tdId) {
+                    // 使用单元格宽度作为 area 宽度
+                    const { scale } = this.options
+                    width = (td.width || 100) * scale - 10
+                    break
+                  }
+                }
+              }
+            }
+          }
+        }
+        // 如果没有获取到单元格宽度，使用默认计算方式
+        if (!width) {
+          width = lastPosition.coordinate.rightTop[0] - x
+          if (width <= 0) {
+            width = firstPosition.metrics.width || 100
+          }
+        }
+      } else {
+        // 表格外的 area，使用页面宽度
+        x = margins[3]
+        width = this.draw.getInnerWidth()
+      }
+
       const y = Math.ceil(firstPosition.coordinate.leftTop[1])
-      const height = Math.ceil(lastPosition.coordinate.rightBottom[1] - y)
-      const areaWidth = isTableArea
-        ? tableCell.td.width! * this.options.scale - tdPadding[1] - tdPadding[3]
-        : width
+      // 计算高度时，确保包含所有元素的位置信息
+      let maxY = lastPosition.coordinate.rightBottom[1]
+      // 遍历所有位置，找到最大的底部坐标
+      for (const pos of pagePositionList) {
+        if (pos.coordinate.rightBottom[1] > maxY) {
+          maxY = pos.coordinate.rightBottom[1]
+        }
+      }
+      const height = Math.ceil(maxY - y)
+
       // 背景色
       if (area.backgroundColor) {
         ctx.fillStyle = area.backgroundColor
-        ctx.fillRect(x, y, areaWidth, height)
+        ctx.fillRect(x, y, width, height)
       }
+
       // 边框
-      if (area.borderColor) {
-        ctx.strokeStyle = area.borderColor
-        ctx.strokeRect(x, y, areaWidth, height)
+      if (area.borderColor || area.borderWidth) {
+        ctx.strokeStyle = area.borderColor || 'black'
+        ctx.lineWidth = area.borderWidth || 2
+        ctx.setLineDash([3, 2])
+        ctx.strokeRect(x, y, width, height)
       }
+
       // 提示词
       if (area.placeholder && positionList.length <= 1) {
         const placeholder = new Placeholder(this.draw)
@@ -168,7 +235,7 @@ export class Area {
             ...defaultPlaceholderOption,
             ...area.placeholder
           },
-          startY: firstPosition.coordinate.leftTop[1]
+          startY: y
         })
       }
       ctx.translate(-0.5, -0.5)
@@ -180,66 +247,97 @@ export class Area {
     this.areaInfoMap.clear()
     const elementList = this.draw.getOriginalMainElementList()
     const positionList = this.position.getOriginalMainPositionList()
-    this.computeAreaInfo(elementList, positionList, elementList)
-  }
 
-  private computeAreaInfo(
-    elementList: IElement[],
-    positionList: IElementPosition[] = [],
-    sourceElementList: IElement[],
-    inheritedAreaId?: string,
-    tableCell?: IAreaInfo['tableCell']
-  ) {
+    // 处理主文档元素
     for (let e = 0; e < elementList.length; e++) {
       const element = elementList[e]
       const areaId = element.areaId
-      const position = positionList[e]
-      if (areaId && areaId !== inheritedAreaId) {
+      // 仅收集由 AREA 展开出的元素（areaIndex 由 formatElementList 在 AREA 展开时打标）
+      // 避免普通元素意外携带 areaId/area 时被错误渲染为 area
+      if (areaId && element.areaIndex !== undefined) {
         const areaInfo = this.areaInfoMap.get(areaId)
         if (!areaInfo) {
           this.areaInfoMap.set(areaId, {
             id: areaId,
-            area: element.area!,
+            area: element.area || {},
             elementList: [element],
-            positionList: position ? [position] : [],
-            sourceElementList,
-            tableCell
+            positionList: [positionList[e]]
           })
         } else {
           areaInfo.elementList.push(element)
-          if (position) {
-            areaInfo.positionList.push(position)
+          areaInfo.positionList.push(positionList[e])
+        }
+
+        // 处理 area 中包含的表格元素
+        if (element.valueList) {
+          for (let v = 0; v < element.valueList.length; v++) {
+            const valueElement = element.valueList[v]
+            if (
+              valueElement.type === ElementType.TABLE &&
+              valueElement.trList &&
+              areaInfo
+            ) {
+              for (let t = 0; t < valueElement.trList.length; t++) {
+                const tr = valueElement.trList[t]
+                for (let d = 0; d < tr.tdList.length; d++) {
+                  const td = tr.tdList[d]
+                  if (td.positionList) {
+                    for (let p = 0; p < td.positionList.length; p++) {
+                      const position = td.positionList[p]
+                      if (position) {
+                        areaInfo.positionList.push(position)
+                      }
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
-      if (element.type === ElementType.TABLE && element.trList) {
-        this.computeTableAreaInfo(element, position, areaId)
-      }
-    }
-  }
 
-  private computeTableAreaInfo(
-    tableElement: IElement,
-    tablePosition?: IElementPosition,
-    inheritedAreaId?: string
-  ) {
-    const trList = tableElement.trList!
-    for (let r = 0; r < trList.length; r++) {
-      const tr = trList[r]
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td: ITd = tr.tdList[d]
-        this.computeAreaInfo(
-          td.value,
-          td.positionList,
-          td.value,
-          inheritedAreaId,
-          tablePosition
-            ? {
-                td,
-                tablePosition
+      // 处理表格内元素
+      if (element.type === ElementType.TABLE && element.trList) {
+        for (let t = 0; t < element.trList.length; t++) {
+          const tr = element.trList[t]
+          for (let d = 0; d < tr.tdList.length; d++) {
+            const td = tr.tdList[d]
+            if (td.value) {
+              for (let v = 0; v < td.value.length; v++) {
+                const tdElement = td.value[v]
+                const tdAreaId = tdElement.areaId
+                if (tdAreaId && tdElement.areaIndex !== undefined) {
+                  // 为表格内 area 元素添加表格相关属性
+                  tdElement.tableId = element.id
+                  tdElement.trId = tr.id
+                  tdElement.tdId = td.id
+
+                  const areaInfo = this.areaInfoMap.get(tdAreaId)
+                  // 确保 positionList 存在且有足够的元素
+                  const position =
+                    td.positionList && td.positionList[v]
+                      ? td.positionList[v]
+                      : null
+                  if (!areaInfo) {
+                    if (position) {
+                      this.areaInfoMap.set(tdAreaId, {
+                        id: tdAreaId,
+                        area: tdElement.area!,
+                        elementList: [tdElement],
+                        positionList: [position]
+                      })
+                    }
+                  } else {
+                    areaInfo.elementList.push(tdElement)
+                    if (position) {
+                      areaInfo.positionList.push(position)
+                    }
+                  }
+                }
               }
-            : undefined
-        )
+            }
+          }
+        }
       }
     }
   }
@@ -256,9 +354,7 @@ export class Area {
       id: areaInfo.id,
       startPageNo: areaInfo.positionList[0].pageNo,
       endPageNo: areaInfo.positionList[areaInfo.positionList.length - 1].pageNo,
-      value: zipElementList(getNonDeletedElementList(areaInfo.elementList), {
-        isClone: false
-      })
+      value: zipElementList(areaInfo.elementList)
     }
   }
 
@@ -335,7 +431,7 @@ export class Area {
     if (!areaInfo) return
     // 删除旧数据并替换新的格式化数据
     const { positionList } = areaInfo
-    const elementList = areaInfo.sourceElementList
+    const elementList = this.draw.getOriginalMainElementList()
     const valueList = payload.value
     formatElementList(
       [
@@ -351,29 +447,11 @@ export class Area {
         editorOptions: this.options
       }
     )
-    const startIndex = positionList[0].index
-    this.draw.deleteElementList(elementList, startIndex, positionList.length, {
-      isIgnoreDeletedRule: true
-    })
-    this.draw.getTraceParticle().markElementListInserted(valueList)
-    this.draw.spliceElementList(elementList, startIndex, 0, valueList)
-    this.draw.render({
-      isSetCursor: false
-    })
-  }
-
-  public deleteArea(options: IDeleteAreaOption = {}) {
-    const areaId = options.id || this.getActiveAreaId()
-    if (!areaId) return
-    const areaInfo = this.areaInfoMap.get(areaId)
-    if (!areaInfo) return
-    // 删除区域内的所有元素
-    const { positionList } = areaInfo
-    const elementList = areaInfo.sourceElementList
-    this.draw.deleteElementList(
+    this.draw.spliceElementList(
       elementList,
       positionList[0].index,
       positionList.length,
+      valueList,
       {
         isIgnoreDeletedRule: true
       }

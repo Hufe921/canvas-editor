@@ -1,14 +1,10 @@
-import { ZERO } from '../../../../dataset/constant/Common'
 import { LocationPosition } from '../../../../dataset/enum/Common'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorMode } from '../../../../dataset/enum/Editor'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
-import {
-  getIsBlockElement,
-  getNonHideElementIndex
-} from '../../../../utils/element'
-import { isApple } from '../../../../utils/ua'
+import { getNonHideElementIndex } from '../../../../utils/element'
+import { isMod } from '../../../../utils/hotkey'
 import { CanvasEvent } from '../../CanvasEvent'
 
 export function right(evt: KeyboardEvent, host: CanvasEvent) {
@@ -41,7 +37,7 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   }
   // 单词整体移动
   let moveCount = 1
-  if (isApple ? evt.altKey : evt.ctrlKey) {
+  if (isMod(evt)) {
     const LETTER_REG = draw.getLetterReg()
     // 起始位置
     const moveStartIndex =
@@ -158,19 +154,16 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
     return
   }
   // 隐藏元素跳过
-  const traceParticle = draw.getTraceParticle()
   const newElementList = draw.getElementList()
   anchorStartIndex = getNonHideElementIndex(
     newElementList,
     anchorStartIndex,
-    LocationPosition.AFTER,
-    el => traceParticle.isTraceHidden(el)
+    LocationPosition.AFTER
   )
   anchorEndIndex = getNonHideElementIndex(
     newElementList,
     anchorEndIndex,
-    LocationPosition.AFTER,
-    el => traceParticle.isTraceHidden(el)
+    LocationPosition.AFTER
   )
   // 设置上下文
   rangeManager.setRange(anchorStartIndex, anchorEndIndex)
@@ -181,27 +174,5 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
     isSubmitHistory: false,
     isCompute: false
   })
-  // 优化行首光标位置定位（自然换行元素定位到下一行的行首）
-  if (isAnchorCollapsed) {
-    const anchorPosition = positionList[anchorStartIndex]
-    if (
-      anchorPosition?.isLastLetter &&
-      anchorPosition.value !== ZERO &&
-      anchorStartIndex + 1 < positionList.length
-    ) {
-      const nextPosition = positionList[anchorStartIndex + 1]
-      const element = elementList[anchorStartIndex]
-      const nextElement = elementList[anchorStartIndex + 1]
-      if (
-        nextPosition.value !== ZERO &&
-        !getIsBlockElement(nextElement) &&
-        element.listId === nextElement.listId
-      ) {
-        draw.getCursor().drawCursor({
-          hitLineStartIndex: anchorStartIndex + 1
-        })
-      }
-    }
-  }
   evt.preventDefault()
 }

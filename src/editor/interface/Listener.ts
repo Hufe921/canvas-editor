@@ -7,7 +7,6 @@ import { IControlChangeResult, IControlContentChangeResult } from './Control'
 import { IEditorResult } from './Editor'
 import { IElement } from './Element'
 import { IPositionContext } from './Position'
-import { IRange } from './Range'
 import { ITextDecoration } from './Text'
 
 export interface IRangeStyle {
@@ -88,4 +87,8 @@ export type ILabelMousedown = (payload: {
   element: IElement
 }) => void
 
-export type IRangeChange = (payload: IRange) => void
+export type IAreaDblclick = (payload: {
+  evt: MouseEvent
+  element: IElement
+  areaId: string
+}) => void

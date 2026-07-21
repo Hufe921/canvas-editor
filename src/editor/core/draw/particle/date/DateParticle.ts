@@ -30,7 +30,7 @@ export class DateParticle {
     const elementList = this.draw.getElementList()
     const startElement = elementList[leftIndex + 1]
     // 删除旧时间
-    this.draw.deleteElementList(
+    this.draw.spliceElementList(
       elementList,
       leftIndex + 1,
       rightIndex - leftIndex

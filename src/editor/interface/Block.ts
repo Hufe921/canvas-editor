@@ -16,12 +16,3 @@ export interface IBlock {
   iframeBlock?: IIFrameBlock
   videoBlock?: IVideoBlock
 }
-
-export interface IIframeInfo {
-  x: number
-  y: number
-  width: number
-  height: number
-  src?: string
-  srcdoc?: string
-}

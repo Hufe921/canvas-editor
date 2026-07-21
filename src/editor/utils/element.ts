@@ -19,7 +19,6 @@ import {
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
-  EDITOR_TRACE_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -44,43 +43,16 @@ import { EditorMode } from '../dataset/enum/Editor'
 import { ElementType } from '../dataset/enum/Element'
 import { ListStyle, ListType, UlStyle } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
-import { TraceType } from '../dataset/enum/Trace'
 import { TableBorder, TdBorder } from '../dataset/enum/table/Table'
 import { VerticalAlign } from '../dataset/enum/VerticalAlign'
 import { DeepRequired } from '../interface/Common'
 import { IControlSelect } from '../interface/Control'
 import { IEditorOption } from '../interface/Editor'
-import { IElement, ITraceRecord } from '../interface/Element'
+import { IElement } from '../interface/Element'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 import { mergeOption } from './option'
-
-export function isElementTraceDeleted(element: IElement): boolean {
-  const records = element.trace
-  return records?.[records.length - 1]?.type === TraceType.DELETED
-}
-
-export function getNonDeletedElementList(elementList: IElement[]): IElement[] {
-  const result = deepClone(elementList)
-  const filter = (payload: IElement[]): IElement[] =>
-    payload.filter(element => {
-      if (isElementTraceDeleted(element)) return false
-      if (element.valueList) {
-        element.valueList = filter(element.valueList)
-      }
-      if (element.control?.value) {
-        element.control.value = filter(element.control.value)
-      }
-      for (const tr of element.trList || []) {
-        for (const td of tr.tdList) {
-          td.value = filter(td.value)
-        }
-      }
-      return true
-    })
-  return filter(result)
-}
 
 export function unzipElementList(elementList: IElement[]): IElement[] {
   const result: IElement[] = []
@@ -112,11 +84,11 @@ export function formatElementList(
   const startElement = elementList[0]
   // 非首字符零宽节点文本元素则补偿-列表元素内部会补偿此处忽略
   if (
-    startElement?.type !== ElementType.LIST &&
-    (isForceCompensation ||
-      (isHandleFirstElement &&
-        ((startElement?.type && startElement.type !== ElementType.TEXT) ||
-          !START_LINE_BREAK_REG.test(startElement?.value))))
+    isForceCompensation ||
+    (isHandleFirstElement &&
+      startElement?.type !== ElementType.LIST &&
+      ((startElement?.type && startElement.type !== ElementType.TEXT) ||
+        !START_LINE_BREAK_REG.test(startElement?.value)))
   ) {
     elementList.unshift({
       value: ZERO
@@ -173,37 +145,13 @@ export function formatElementList(
       })
       // 追加节点
       if (valueList.length) {
-        const fallbackListId = el.listId || getUUID()
-        const listIdMap = new Map<number, string>([[0, fallbackListId]])
+        const listId = getUUID()
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
-          const listLevel = value.listLevel ?? el.listLevel ?? 0
-          // 嵌套列表还原时按层级分配 listId，保证父子列表独立编号
-          if (!value.listId) {
-            value.listId = listIdMap.get(listLevel) || getUUID()
-          }
-          listIdMap.set(listLevel, value.listId)
-          Array.from(listIdMap.keys()).forEach(level => {
-            if (level > listLevel) {
-              listIdMap.delete(level)
-            }
-          })
-          value.listType = value.listType || el.listType
-          value.listStyle = value.listStyle || el.listStyle
-          value.listLevel = listLevel
+          value.listId = listId
+          value.listType = el.listType
+          value.listStyle = el.listStyle
           elementList.splice(i, 0, value)
-          i++
-        }
-        // 尾部如果不是换行符则补充一个换行符
-        if (
-          elementList[i] &&
-          (elementList[i].valueList?.length
-            ? !START_LINE_BREAK_REG.test(elementList[i].valueList![0].value)
-            : !START_LINE_BREAK_REG.test(elementList[i].value))
-        ) {
-          elementList.splice(i, 0, {
-            value: ZERO
-          })
           i++
         }
       }
@@ -249,23 +197,7 @@ export function formatElementList(
       const tableId = el.id || getUUID()
       el.id = tableId
       if (el.trList) {
-        const {
-          table: { defaultTrMinHeight, defaultColMinWidth },
-          margins
-        } = editorOptions
-        // 当colgroup未传入时，默认使用编辑器宽度平分
-        if (!el.colgroup?.length && el.trList.length) {
-          const colCount = el.trList[0].tdList.reduce(
-            (pre, cur) => pre + cur.colspan,
-            0
-          )
-          const innerWidth = editorOptions.width - margins[1] - margins[3]
-          const colWidth = Math.max(innerWidth / colCount, defaultColMinWidth)
-          el.colgroup = []
-          for (let c = 0; c < colCount; c++) {
-            el.colgroup.push({ width: colWidth })
-          }
-        }
+        const { defaultTrMinHeight } = editorOptions.table
         for (let t = 0; t < el.trList.length; t++) {
           const tr = el.trList[t]
           const trId = tr.id || getUUID()
@@ -293,6 +225,7 @@ export function formatElementList(
             ) {
               td.value[0].size = td.value[1].size
             }
+
             for (let v = 0; v < td.value.length; v++) {
               const value = td.value[v]
               value.tdId = tdId
@@ -368,8 +301,7 @@ export function formatElementList(
       // 控件上下文提取（压缩后的控件上下文无法提取）
       const controlContext = pickObject(el, [
         ...EDITOR_ELEMENT_CONTEXT_ATTR,
-        ...EDITOR_ROW_ATTR,
-        ...EDITOR_TRACE_ATTR
+        ...EDITOR_ROW_ATTR
       ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
@@ -539,22 +471,15 @@ export function formatElementList(
           for (let v = 0; v < valueList.length; v++) {
             const element = valueList[v]
             const value = element.value
-            // 嵌套控件：都保留其自身的 controlId/control/controlComponent。
-            const isNestedControl =
-              !!element.controlId && element.controlId !== controlId
             elementList.splice(i, 0, {
               ...controlContext,
               ...controlDefaultStyle,
               ...element,
-              ...(isNestedControl
-                ? {}
-                : {
-                    controlId,
-                    control: el.control,
-                    controlComponent: ControlComponent.VALUE
-                  }),
+              controlId,
               value: value === '\n' ? ZERO : value,
-              type: element.type || ElementType.TEXT
+              type: element.type || ElementType.TEXT,
+              control: el.control,
+              controlComponent: ControlComponent.VALUE
             })
             i++
           }
@@ -661,24 +586,6 @@ export function isSameElementExceptValue(
     ) {
       continue
     }
-    // trace数组需逐条校验内容是否一致
-    if (key === 'trace') {
-      const sourceTrace = (source[key] as ITraceRecord[]) || []
-      const targetTrace = (target[key] as ITraceRecord[]) || []
-      if (sourceTrace.length !== targetTrace.length) return false
-      for (let i = 0; i < sourceTrace.length; i++) {
-        const s = sourceTrace[i]
-        const t = targetTrace[i]
-        if (
-          s.type !== t.type ||
-          s.author !== t.author ||
-          s.timestamp !== t.timestamp
-        ) {
-          return false
-        }
-      }
-      continue
-    }
     if (source[key] !== target[key]) {
       return false
     }
@@ -697,15 +604,19 @@ export function pickElementAttr(
   if (extraPickAttrs) {
     zipAttrs.push(...extraPickAttrs)
   }
+
   const element: IElement = {
-    value: payload.value === ZERO ? `\n` : payload.value
+    value: (!payload || payload?.value) === ZERO ? `\n` : payload?.value
   }
+  if(payload !== undefined) {
   zipAttrs.forEach(attr => {
-    const value = payload[attr] as never
-    if (value !== undefined) {
-      element[attr] = value
-    }
-  })
+      const value = payload[attr] as never
+      if (value !== undefined) {
+        element[attr] = value
+      }
+    })
+  }
+
   return element
 }
 
@@ -713,7 +624,7 @@ interface IZipElementListOption {
   extraPickAttrs?: Array<keyof IElement>
   isClassifyArea?: boolean
   isClone?: boolean
-  isListValue?: boolean
+  currentAreaId?: string
 }
 export function zipElementList(
   payload: IElement[],
@@ -723,7 +634,7 @@ export function zipElementList(
     extraPickAttrs,
     isClassifyArea = false,
     isClone = true,
-    isListValue = false
+    currentAreaId
   } = options
   const elementList = isClone ? deepClone(payload) : payload
   const zipElementListData: IElement[] = []
@@ -741,7 +652,7 @@ export function zipElementList(
       continue
     }
     // 优先处理虚拟元素，后表格、超链接、日期、控件特殊处理
-    if (element.areaId) {
+    if (element.areaId && element.areaId !== currentAreaId) {
       const areaId = element.areaId
       const area = element.area
       // 收集并压缩数据
@@ -757,7 +668,11 @@ export function zipElementList(
         valueList.push(areaE)
         e++
       }
-      const areaElementList = zipElementList(valueList, options)
+
+      const areaElementList = zipElementList(valueList, {
+        ...options,
+        currentAreaId: areaId
+      })
       // 不归类区域元素
       if (isClassifyArea) {
         const areaElement: IElement = {
@@ -799,7 +714,7 @@ export function zipElementList(
         titleElement.valueList = zipElementList(valueList, options)
         element = titleElement
       }
-    } else if (!isListValue && element.listId && element.listType) {
+    } else if (element.listId && element.listType) {
       // 列表处理
       const listId = element.listId
       if (listId) {
@@ -815,7 +730,7 @@ export function zipElementList(
         const valueList: IElement[] = []
         while (e < elementList.length) {
           const listE = elementList[e]
-          if (!listE.listId || listType !== listE.listType) {
+          if (listId !== listE.listId) {
             e--
             break
           }
@@ -824,11 +739,7 @@ export function zipElementList(
           valueList.push(listE)
           e++
         }
-        // 嵌套列表导出为同一个 list，由 valueList 中的 listLevel 表达层级
-        listElement.valueList = zipElementList(valueList, {
-          ...options,
-          isListValue: true
-        })
+        listElement.valueList = zipElementList(valueList, options)
         element = listElement
       }
     } else if (element.type === ElementType.TABLE) {
@@ -858,10 +769,7 @@ export function zipElementList(
             const zipTd: ITd = {
               colspan: td.colspan,
               rowspan: td.rowspan,
-              value: zipElementList(td.value, {
-                ...options,
-                isClassifyArea: true
-              })
+              value: zipElementList(td.value, options)
             }
             // 压缩单元格属性
             TABLE_TD_ZIP_ATTR.forEach(attr => {
@@ -930,49 +838,16 @@ export function zipElementList(
         let start = e
         while (start < elementList.length) {
           const controlE = elementList[start]
-          // 同 ownerId 正常处理
-          if (controlE.controlId === controlId) {
-            if (controlE.controlComponent === ControlComponent.VALUE) {
-              delete controlE.control
-              delete controlE.controlId
-              valueList.push(controlE)
-            }
-            if (controlE.controlComponent === ControlComponent.POSTFIX) {
-              isFull = true
-              start++
-              break
-            }
-            start++
-            continue
+          if (controlId !== controlE.controlId) break
+          if (controlE.controlComponent === ControlComponent.VALUE) {
+            delete controlE.control
+            delete controlE.controlId
+            valueList.push(controlE)
           }
-          // 不同 ownerId：内层控件段——先定位内层 POSTFIX 边界，再递归压缩
-          if (controlE.controlComponent === ControlComponent.PREFIX) {
-            let innerEnd = start
-            while (innerEnd < elementList.length) {
-              const innerE = elementList[innerEnd]
-              if (
-                innerE.controlId === controlE.controlId &&
-                innerE.controlComponent === ControlComponent.POSTFIX
-              ) {
-                break
-              }
-              innerEnd++
-            }
-            const innerZipped = zipElementList(
-              elementList.slice(
-                start,
-                Math.min(innerEnd + 1, elementList.length)
-              ),
-              options
-            )
-            const innerElement = innerZipped[0]
-            if (innerElement) {
-              valueList.push(innerElement)
-            }
-            start = innerEnd + 1
-            continue
+          if (controlE.controlComponent === ControlComponent.POSTFIX) {
+            isFull = true
           }
-          break
+          start++
         }
         if (isFull) {
           // 以前缀为基准更新控件默认样式
@@ -988,8 +863,7 @@ export function zipElementList(
             type: ElementType.CONTROL,
             value: '',
             control,
-            controlId,
-            trace: element.trace
+            controlId
           }
           controlElement.control!.value = zipElementList(valueList, options)
           element = pickElementAttr(controlElement, { extraPickAttrs })
@@ -1041,6 +915,7 @@ export function zipElementList(
     }
     zipElementListData.push(pickElement)
   }
+
   return zipElementListData
 }
 
@@ -1158,15 +1033,19 @@ export function formatElementContext(
       isBreakWarped ||
       (!copyElement.listId && targetElement.type === ElementType.LIST)
     ) {
-      const cloneAttr = [
-        ...TABLE_CONTEXT_ATTR,
-        ...EDITOR_ROW_ATTR,
-        ...AREA_CONTEXT_ATTR
-      ]
+      // 对于 AREA 元素，不复制 areaId 和 area 属性，避免覆盖
+      const cloneAttr = [...TABLE_CONTEXT_ATTR, ...EDITOR_ROW_ATTR]
+      // 如果目标元素不是 AREA 元素，则复制 area 相关属性
+      if (targetElement.type !== ElementType.AREA) {
+        cloneAttr.push(...AREA_CONTEXT_ATTR)
+      }
       deleteProperty(cloneAttr, ignoreContextKeys)
       cloneProperty<IElement>(cloneAttr, copyElement!, targetElement)
       targetElement.valueList?.forEach(valueItem => {
-        cloneProperty<IElement>(cloneAttr, copyElement!, valueItem)
+        // 对于 valueList 中的元素，如果不是 AREA 元素，则复制 area 相关属性
+        if (valueItem.type !== ElementType.AREA) {
+          cloneProperty<IElement>(cloneAttr, copyElement!, valueItem)
+        }
       })
       continue
     }
@@ -1180,6 +1059,17 @@ export function formatElementContext(
     }
     // 非块类元素，需处理行属性
     const cloneAttr = [...EDITOR_ELEMENT_CONTEXT_ATTR]
+    // 对于 AREA 元素，移除 areaId 和 area 属性，避免覆盖
+    if (targetElement.type === ElementType.AREA) {
+      const areaAttrIndex = cloneAttr.indexOf('areaId')
+      if (areaAttrIndex > -1) {
+        cloneAttr.splice(areaAttrIndex, 1)
+      }
+      const areaIndex = cloneAttr.indexOf('area')
+      if (areaIndex > -1) {
+        cloneAttr.splice(areaIndex, 1)
+      }
+    }
     if (!getIsBlockElement(targetElement)) {
       cloneAttr.push(...EDITOR_ROW_ATTR)
     }
@@ -1672,58 +1562,18 @@ export function getElementListByHTML(
               (<unknown>listNode.style.listStyleType)
             )
           }
-          const collectListItems = (
-            parent: HTMLElement,
-            depth: number
-          ): IElement[] => {
-            // 每个 HTML 列表容器拥有独立 listId，保证嵌套序号按父项重置
-            const listId = getUUID()
-            const parentListType =
-              parent.tagName === 'OL' ? ListType.OL : ListType.UL
-            const parentListStyle =
-              parent.tagName === 'OL'
-                ? undefined
-                : <ListStyle>(<unknown>parent.style.listStyleType)
-            const items: IElement[] = []
-            Array.from(parent.children).forEach(child => {
-              const li = child as HTMLElement
-              if (li.tagName !== 'LI') return
-              const liClone = li.cloneNode(true) as HTMLElement
-              liClone
-                .querySelectorAll('ul,ol')
-                .forEach(nested => nested.remove())
-              const liValueList = getElementListByHTML(
-                liClone.innerHTML,
-                options
-              )
-              liValueList.forEach(item => {
-                if (item.value === '\n') {
-                  item.listWrap = true
-                }
-                item.listId = listId
-                item.listType = parentListType
-                if (parentListStyle) item.listStyle = parentListStyle
-                item.listLevel = depth
-              })
-              liValueList.unshift({
-                value: '\n',
-                listId,
-                listType: parentListType,
-                ...(parentListStyle ? { listStyle: parentListStyle } : {}),
-                listLevel: depth
-              })
-              items.push(...liValueList)
-              Array.from(
-                li.querySelectorAll(':scope > ul, :scope > ol')
-              ).forEach(nested => {
-                items.push(
-                  ...collectListItems(nested as HTMLElement, depth + 1)
-                )
-              })
+          listNode.querySelectorAll('li').forEach(li => {
+            const liValueList = getElementListByHTML(li.innerHTML, options)
+            liValueList.forEach(list => {
+              if (list.value === '\n') {
+                list.listWrap = true
+              }
             })
-            return items
-          }
-          listElement.valueList = collectListItems(listNode, 0)
+            liValueList.unshift({
+              value: '\n'
+            })
+            listElement.valueList!.push(...liValueList)
+          })
           elementList.push(listElement)
         } else if (node.nodeName === 'HR') {
           elementList.push({
@@ -1891,10 +1741,7 @@ export function getElementListByHTML(
   return elementList
 }
 
-export function getTextFromElementList(
-  elementList: IElement[],
-  options: { isClone?: boolean } = {}
-) {
+export function getTextFromElementList(elementList: IElement[]) {
   function buildText(payload: IElement[]): string {
     let text = ''
     for (let e = 0; e < payload.length; e++) {
@@ -1907,9 +1754,7 @@ export function getTextFromElementList(
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const tdText = buildText(
-              zipElementList(td.value!, { isClone: false })
-            )
+            const tdText = buildText(zipElementList(td.value!))
             const isFirst = d === 0
             const isLast = tr.tdList.length - 1 === d
             text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
@@ -1920,12 +1765,10 @@ export function getTextFromElementList(
       } else if (element.type === ElementType.HYPERLINK) {
         text += element.valueList!.map(v => v.value).join('')
       } else if (element.type === ElementType.TITLE) {
-        text += `${buildText(
-          zipElementList(element.valueList!, { isClone: false })
-        )}`
+        text += `${buildText(zipElementList(element.valueList!))}`
       } else if (element.type === ElementType.LIST) {
         // 按照换行符拆分
-        const zipList = zipElementList(element.valueList!, { isClone: false })
+        const zipList = zipElementList(element.valueList!)
         const listElementListMap = splitListElement(zipList)
         // 无序列表前缀
         let ulListStyleText = ''
@@ -1966,9 +1809,7 @@ export function getTextFromElementList(
     }
     return text
   }
-  return buildText(
-    zipElementList(elementList, { isClone: options.isClone !== false })
-  )
+  return buildText(zipElementList(elementList))
 }
 
 export function getSlimCloneElementList(elementList: IElement[]) {
@@ -2025,14 +1866,12 @@ export function deleteSurroundElementList(
 export function getNonHideElementIndex(
   elementList: IElement[],
   index: number,
-  position: LocationPosition = LocationPosition.BEFORE,
-  isHidden?: (element: IElement) => boolean
+  position: LocationPosition = LocationPosition.BEFORE
 ) {
   if (
     !elementList[index]?.hide &&
     !elementList[index]?.control?.hide &&
-    !elementList[index]?.area?.hide &&
-    !isHidden?.(elementList[index])
+    !elementList[index]?.area?.hide
   ) {
     return index
   }
@@ -2043,8 +1882,7 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide &&
-        !isHidden?.(elementList[i])
+        !elementList[i]?.area?.hide
       ) {
         return i
       }
@@ -2056,8 +1894,7 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide &&
-        !isHidden?.(elementList[i])
+        !elementList[i]?.area?.hide
       ) {
         return i
       }
@@ -2065,81 +1902,4 @@ export function getNonHideElementIndex(
     }
   }
   return i
-}
-
-/**
- * 嵌套感知的边界步进：从 index 按方向移动一位。
- * 若落点 controlId 与 ownerId 相同，返回落点；
- * 若落点 controlId 不同（进入了内层控件段），持续同向步进直到回到 ownerId 或越界。
- * 用于替换边界扫描循环里的 i++ / i--。
- */
-export function scanToOwner(
-  elementList: IElement[],
-  index: number,
-  direction: 1 | -1,
-  ownerId: string
-): number {
-  let next = index + direction
-  if (next < 0 || next >= elementList.length) {
-    return next
-  }
-  if (elementList[next].controlId === ownerId) {
-    return next
-  }
-  while (next >= 0 && next < elementList.length) {
-    if (elementList[next].controlId === ownerId) {
-      return next
-    }
-    next += direction
-  }
-  return next
-}
-
-/**
- * 查找位置所属的最外层控件 controlId。
- * 通过向左扫找到当前控件的 PREFIX，递归检查 PREFIX 前一位是否仍在另一控件段内。
- */
-export function getOutermostOwner(
-  elementList: IElement[],
-  index: number
-): string | null {
-  const ownerId = elementList[index]?.controlId
-  if (!ownerId) return null
-  let i = index
-  while (i > 0) {
-    const el = elementList[i]
-    if (
-      el.controlId !== ownerId ||
-      el.controlComponent === ControlComponent.PREFIX ||
-      el.controlComponent === ControlComponent.PRE_TEXT
-    ) {
-      break
-    }
-    i--
-  }
-  const outerCandidate = elementList[i - 1]?.controlId
-  if (outerCandidate && outerCandidate !== ownerId) {
-    return getOutermostOwner(elementList, i - 1)
-  }
-  return ownerId
-}
-
-// 深度遍历元素树（含表格单元格、控件/标题子列表）
-export function visitElementTree(
-  elementList: IElement[],
-  visitor: (element: IElement) => void
-) {
-  for (const el of elementList) {
-    visitor(el)
-    if (el.type === ElementType.TABLE) {
-      for (const tr of el.trList || []) {
-        for (const td of tr.tdList) {
-          visitElementTree(td.value, visitor)
-        }
-      }
-    }
-    if (el.valueList) {
-      visitElementTree(el.valueList, visitor)
-    }
-  }
 }

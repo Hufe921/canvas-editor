@@ -5,16 +5,9 @@ export class IFrameBlock {
   public static readonly allow = ['fullscreen']
 
   private element: IRowElement
-  private iframe: HTMLIFrameElement | null = null
-  private isReadonly: boolean
 
   constructor(element: IRowElement) {
     this.element = element
-    this.isReadonly = false
-  }
-
-  public getIframe(): HTMLIFrameElement | null {
-    return this.iframe
   }
 
   private _defineIframeProperties(iframeWindow: Window) {
@@ -50,18 +43,5 @@ export class IFrameBlock {
     blockItemContainer.append(iframe)
     // 重新定义iframe上属性
     this._defineIframeProperties(iframe.contentWindow!)
-    this.iframe = iframe
-  }
-
-  public setReadonly(readonly: boolean) {
-    if (!this.iframe || this.isReadonly === readonly) return
-    this.isReadonly = readonly
-    if (readonly) {
-      this.iframe.style.pointerEvents = 'none'
-      this.iframe.setAttribute('tabindex', '-1')
-    } else {
-      this.iframe.style.pointerEvents = ''
-      this.iframe.removeAttribute('tabindex')
-    }
   }
 }

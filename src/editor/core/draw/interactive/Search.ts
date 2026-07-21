@@ -52,19 +52,6 @@ export class Search {
     this.searchOptions = options || null
   }
 
-  private getSearchMatchGroupStartIndex(index: number): number | null {
-    const searchMatch = this.searchMatchList[index]
-    if (!searchMatch) return null
-    let groupStartIndex = index
-    while (
-      groupStartIndex > 0 &&
-      this.searchMatchList[groupStartIndex - 1].groupId === searchMatch.groupId
-    ) {
-      groupStartIndex--
-    }
-    return groupStartIndex
-  }
-
   public searchNavigatePre(): number | null {
     if (!this.searchMatchList.length || !this.searchKeyword) return null
     if (this.searchNavigateIndex === null) {
@@ -78,7 +65,7 @@ export class Search {
         const match = this.searchMatchList[index]
         if (searchNavigateId !== match.groupId) {
           isExistPre = true
-          this.searchNavigateIndex = this.getSearchMatchGroupStartIndex(index)
+          this.searchNavigateIndex = index - (this.searchKeyword.length - 1)
           break
         }
         index--
@@ -87,9 +74,8 @@ export class Search {
         const lastSearchMatch =
           this.searchMatchList[this.searchMatchList.length - 1]
         if (lastSearchMatch.groupId === searchNavigateId) return null
-        this.searchNavigateIndex = this.getSearchMatchGroupStartIndex(
-          this.searchMatchList.length - 1
-        )
+        this.searchNavigateIndex =
+          this.searchMatchList.length - 1 - (this.searchKeyword.length - 1)
       }
     }
     return this.searchNavigateIndex
@@ -149,18 +135,9 @@ export class Search {
 
   public getSearchNavigateIndexList() {
     if (this.searchNavigateIndex === null || !this.searchKeyword) return []
-    const searchNavigate = this.searchMatchList[this.searchNavigateIndex]
-    if (!searchNavigate) return []
-    const indexList: number[] = []
-    let index = this.searchNavigateIndex
-    while (
-      index < this.searchMatchList.length &&
-      this.searchMatchList[index].groupId === searchNavigate.groupId
-    ) {
-      indexList.push(index)
-      index++
-    }
-    return indexList
+    return new Array(this.searchKeyword.length)
+      .fill(this.searchNavigateIndex)
+      .map((navigate, index) => navigate + index)
   }
 
   public getSearchMatchList(): ISearchResult[] {
@@ -169,11 +146,10 @@ export class Search {
 
   public getSearchNavigateInfo(): null | INavigateInfo {
     if (!this.searchKeyword || !this.searchMatchList.length) return null
-    const searchNavigateId =
+    const index =
       this.searchNavigateIndex !== null
-        ? this.searchMatchList[this.searchNavigateIndex]?.groupId
-        : null
-    let index = 0
+        ? this.searchNavigateIndex / this.searchKeyword.length + 1
+        : 0
     let count = 0
     let groupId = null
     for (let s = 0; s < this.searchMatchList.length; s++) {
@@ -181,9 +157,6 @@ export class Search {
       if (groupId === match.groupId) continue
       groupId = match.groupId
       count += 1
-      if (searchNavigateId === groupId) {
-        index = count
-      }
     }
     return {
       index,
@@ -240,7 +213,6 @@ export class Search {
       i++
     }
     // 搜索文本
-    const traceParticle = this.draw.getTraceParticle()
     function searchClosure(
       payload: string | null,
       type: EditorContext,
@@ -256,8 +228,7 @@ export class Search {
             e.controlComponent !== ControlComponent.RADIO &&
             !e.hide &&
             !e.control?.hide &&
-            !e.area?.hide &&
-            !traceParticle.isTraceHidden(e))
+            !e.area?.hide)
             ? e.value
             : ZERO
         )
@@ -417,10 +388,6 @@ export class Search {
     }
     if (!matchList?.length) return
     const isDesignMode = this.draw.isDesignMode()
-    if (!this.draw.getOptions().trace.disabled) {
-      this.replaceWithTrace(payload, matchList)
-      return
-    }
     // 匹配index变化的差值
     let pageDiffCount = 0
     let tableDiffCount = 0
@@ -555,101 +522,6 @@ export class Search {
     // 重新渲染
     this.draw.render({
       curIndex: firstIndex
-    })
-  }
-
-  private replaceWithTrace(payload: string, matchList: ISearchResult[]) {
-    const matchGroupList: ISearchResult[][] = []
-    for (const match of matchList) {
-      const lastGroup = matchGroupList[matchGroupList.length - 1]
-      if (!lastGroup || lastGroup[0].groupId !== match.groupId) {
-        matchGroupList.push([match])
-      } else {
-        lastGroup.push(match)
-      }
-    }
-    const elementList = this.draw.getOriginalElementList()
-    let firstReplacedMatch: ISearchResult | null = null
-    let firstReplacedIndex = -1
-    for (let g = matchGroupList.length - 1; g >= 0; g--) {
-      const matchGroup = matchGroupList[g]
-      const firstMatch = matchGroup[0]
-      let targetElementList: IElement[]
-      let tdDeletable = true
-      if (firstMatch.type === EditorContext.TABLE) {
-        const { tableIndex, trIndex, tdIndex } = firstMatch
-        const td = elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!]
-        targetElementList = td.value
-        tdDeletable = td.deletable !== false
-      } else {
-        targetElementList = elementList
-      }
-      const startIndex = firstMatch.index
-      const matchElementList = targetElementList.slice(
-        startIndex,
-        startIndex + matchGroup.length
-      )
-      if (
-        matchElementList.some(
-          element =>
-            element.type === ElementType.CONTROL &&
-            element.controlComponent !== ControlComponent.VALUE
-        )
-      ) {
-        continue
-      }
-      const deleteElementList =
-        this.draw.deleteElementList(
-          targetElementList,
-          startIndex,
-          matchGroup.length,
-          { tdDeletable }
-        ) || []
-      const sourceElement = deleteElementList[0]
-      if (!sourceElement) continue
-      const replaceIndex = targetElementList.indexOf(sourceElement, startIndex)
-      if (payload) {
-        const insertElementList = payload.split('').map(value => {
-          const element: IElement = {
-            ...sourceElement,
-            value
-          }
-          delete element.trace
-          return element
-        })
-        this.draw.getTraceParticle().markElementListInserted(insertElementList)
-        this.draw.spliceElementList(
-          targetElementList,
-          replaceIndex,
-          0,
-          insertElementList
-        )
-      }
-      firstReplacedMatch = firstMatch
-      firstReplacedIndex = payload
-        ? replaceIndex + payload.length - 1
-        : Math.max(replaceIndex - 1, 0)
-    }
-    if (!firstReplacedMatch) return
-    if (firstReplacedMatch.type === EditorContext.TABLE) {
-      const { tableIndex, trIndex, tdIndex, tdId, tableId } = firstReplacedMatch
-      this.position.setPositionContext({
-        isTable: true,
-        index: tableIndex,
-        trIndex,
-        tdIndex,
-        tdId,
-        trId: elementList[tableIndex!].trList![trIndex!].id,
-        tableId
-      })
-    } else {
-      this.position.setPositionContext({
-        isTable: false
-      })
-    }
-    this.draw.getRange().setRange(firstReplacedIndex, firstReplacedIndex)
-    this.draw.render({
-      curIndex: firstReplacedIndex
     })
   }
 }

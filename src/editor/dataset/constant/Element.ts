@@ -17,15 +17,6 @@ export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
 
 export const EDITOR_ROW_ATTR: Array<keyof IElement> = ['rowFlex', 'rowMargin']
 
-export const EDITOR_TRACE_ATTR: Array<keyof IElement> = ['trace']
-
-export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
-  'rowFlex',
-  'rowMargin',
-  'level',
-  'title'
-]
-
 export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'type',
   'font',
@@ -80,7 +71,6 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'listType',
   'listStyle',
   'listWrap',
-  'listLevel',
   'groupIds',
   'conceptId',
   'imgDisplay',
@@ -97,8 +87,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'hide',
   'label',
   'labelId',
-  'lineWidth',
-  'trace'
+  'lineWidth'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
@@ -128,8 +117,7 @@ export const TITLE_CONTEXT_ATTR: Array<keyof IElement> = [
 export const LIST_CONTEXT_ATTR: Array<keyof IElement> = [
   'listId',
   'listType',
-  'listStyle',
-  'listLevel'
+  'listStyle'
 ]
 
 export const CONTROL_CONTEXT_ATTR: Array<keyof IElement> = [

@@ -1,6 +1,6 @@
 import { IWatermark } from '../../interface/Watermark'
 import { NumberType } from '../enum/Common'
-import { WatermarkLayer, WatermarkType } from '../enum/Watermark'
+import { WatermarkType } from '../enum/Watermark'
 
 export const defaultWatermarkOption: Readonly<Required<IWatermark>> = {
   data: '',
@@ -13,6 +13,5 @@ export const defaultWatermarkOption: Readonly<Required<IWatermark>> = {
   font: 'Microsoft YaHei',
   repeat: false,
   gap: [10, 10],
-  numberType: NumberType.ARABIC,
-  layer: WatermarkLayer.BOTTOM
+  numberType: NumberType.ARABIC
 }

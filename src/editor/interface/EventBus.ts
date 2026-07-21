@@ -1,4 +1,5 @@
 import {
+  IAreaDblclick,
   IContentChange,
   IControlChange,
   IControlContentChange,
@@ -13,7 +14,6 @@ import {
   IPageScaleChange,
   IPageSizeChange,
   IPositionContextChange,
-  IRangeChange,
   IRangeStyleChange,
   ISaved,
   IVisiblePageNoListChange,
@@ -44,5 +44,5 @@ export interface EventBusMap {
   imageMousedown: IImageMousedown
   imageDblclick: IImageDblclick
   labelMousedown: ILabelMousedown
-  rangeChange: IRangeChange
+  areaDblclick: IAreaDblclick
 }

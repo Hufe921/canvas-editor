@@ -180,17 +180,15 @@ export class Cursor {
     } else {
       this._clearBlinkTimeout()
     }
-    // 移动到视野范围内（仅在聚焦时）
-    if (isFocus) {
-      nextTick(() => {
-        // nexttick后执行 => 避免画布没有渲染完成造成残影
-        this.moveCursorToVisible({
-          cursorPosition: cursorPosition!,
-          direction:
-            parseInt(oldTop) > cursorTop ? MoveDirection.UP : MoveDirection.DOWN
-        })
+    // 移动到视野范围内
+    nextTick(() => {
+      // nexttick后执行 => 避免画布没有渲染完成造成残影
+      this.moveCursorToVisible({
+        cursorPosition: cursorPosition!,
+        direction:
+          parseInt(oldTop) > cursorTop ? MoveDirection.UP : MoveDirection.DOWN
       })
-    }
+    })
   }
 
   public recoveryCursor() {
@@ -201,12 +199,8 @@ export class Cursor {
   public moveCursorToVisible(payload: IMoveCursorToVisibleOption) {
     const { cursorPosition, direction } = payload
     if (!cursorPosition || !direction) return
-    const zoneManager = this.draw.getZone()
-    // 页眉/页脚 positionList 跨页共享，pageNo 不能代表光标实际所在页，用当前页
-    const pageNo = zoneManager.isMainActive()
-      ? cursorPosition.pageNo
-      : this.draw.getPageNo()
     const {
+      pageNo,
       coordinate: { leftTop, leftBottom }
     } = cursorPosition
     // 查找滚动容器，如果是滚动容器是document，则限制范围为当前窗口

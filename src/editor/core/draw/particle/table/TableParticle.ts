@@ -35,11 +35,11 @@ export class TableParticle {
       const tr = trList[t]
       for (let d = tr.tdList.length - 1; d >= 0; d--) {
         const td = tr.tdList[d]
-        const { rowspan, rowIndex, colIndex } = td
+        const { rowspan, rowIndex } = td
         const curRowIndex = rowIndex! + rowspan - 1
-        if (curRowIndex !== d) {
+        if (curRowIndex !== t) {
           const changeTd = tr.tdList.splice(d, 1)[0]
-          trList[curRowIndex]?.tdList.splice(colIndex!, 0, changeTd)
+          trList[curRowIndex]?.tdList.splice(d, 0, changeTd)
         }
       }
     }
@@ -47,33 +47,48 @@ export class TableParticle {
   }
 
   public getRangeRowCol(): ITd[][] | null {
-    const position = this.draw.getPosition()
-    const positionContext = position.getPositionContext()
-    const { isTable, trIndex, tdIndex } = positionContext
+    const { isTable, index, trIndex, tdIndex } = this.draw
+      .getPosition()
+      .getPositionContext()
     if (!isTable) return null
     const {
       isCrossRowCol,
       startTdIndex,
       endTdIndex,
       startTrIndex,
-      endTrIndex
+      endTrIndex,
+      tableId
     } = this.range.getRange()
     const originalElementList = this.draw.getOriginalElementList()
-    const element = position.getTableElementByContext(
-      originalElementList,
-      positionContext
-    )
-    if (!element) return null
+    const element = originalElementList[index!]
     const curTrList = element.trList!
     // 非跨列直接返回光标所在单元格
     if (!isCrossRowCol) {
       return [[curTrList[trIndex!].tdList[tdIndex!]]]
     }
+    if (tableId && element.pagingId && element.pagingId === tableId) {
+      const tableList = originalElementList
+        .filter(item => item.pagingId === tableId)
+        .sort((a, b) => (a.pagingIndex ?? 0) - (b.pagingIndex ?? 0))
+      const rowCol: ITd[][] = []
+      for (let i = 0; i < tableList.length; i++) {
+        const table = tableList[i]
+        const trList = table.trList || []
+        for (let t = 0; t < trList.length; t++) {
+          const tr = trList[t]
+          if (table.pagingIndex && tr.pagingRepeat) continue
+          rowCol.push(tr.tdList)
+        }
+      }
+      return rowCol.length ? rowCol : null
+    }
+
     let startTd = curTrList[startTrIndex!].tdList[startTdIndex!]
     let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
-      ;[startTd, endTd] = [endTd, startTd]
+      // prettier-ignore
+      [startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
     const endColIndex = endTd.colIndex! + (endTd.colspan - 1)
@@ -182,10 +197,11 @@ export class TableParticle {
     if (!colgroup || !trList) return
     const {
       scale,
-      table: { defaultBorderColor }
+      table: { defaultBorderColor, tdPadding }
     } = this.options
     const tableWidth = element.width! * scale
-    const tableHeight = element.height! * scale
+    const tableHeight =
+      element.height! * scale + tdPadding[0] + tdPadding[2] + tdPadding[1]
     // 无边框
     const isEmptyBorderType = borderType === TableBorder.EMPTY
     // 仅外边框
@@ -505,19 +521,52 @@ export class TableParticle {
     if (!trList || type !== ElementType.TABLE) return
     const {
       isCrossRowCol,
-      tableId,
       startTdIndex,
       endTdIndex,
       startTrIndex,
-      endTrIndex
+      endTrIndex,
+      tableId
     } = this.range.getRange()
     // 存在跨行/列
-    if (!isCrossRowCol || tableId !== element.id) return
-    let startTd = trList[startTrIndex!].tdList[startTdIndex!]
-    let endTd = trList[endTrIndex!].tdList[endTdIndex!]
+    if (!isCrossRowCol) return
+    // 分页表格全选：直接高亮当前分页片段的所有 td
+    // 避免 colIndex/rowIndex 范围判断漏画（colspan 跨列、splitTable 后 rowIndex 重置等）
+    // 也避免 startTrIndex/endTrIndex 越界（不同分页片段 trList 长度可能不同）
+    if (tableId && element.pagingId && element.pagingId === tableId) {
+      ctx.save()
+      for (let t = 0; t < trList.length; t++) {
+        const tr = trList[t]
+        for (let d = 0; d < tr.tdList.length; d++) {
+          const td = tr.tdList[d]
+          const x = td.x! * scale
+          const y = td.y! * scale
+          const width = td.width! * scale
+          const height = td.height! * scale
+          ctx.globalAlpha = rangeAlpha
+          ctx.fillStyle = rangeColor
+          ctx.fillRect(x + startX, y + startY, width, height)
+        }
+      }
+      ctx.restore()
+      return
+    }
+    // 越界保护：startTd/endTd 索引超出当前 trList 范围时退回当前 td
+    const safeTrIndex = Math.min(startTrIndex ?? 0, trList.length - 1)
+    const safeEndTrIndex = Math.min(endTrIndex ?? 0, trList.length - 1)
+    const safeTdIndex = Math.min(
+      startTdIndex ?? 0,
+      trList[safeTrIndex].tdList.length - 1
+    )
+    const safeEndTdIndex = Math.min(
+      endTdIndex ?? 0,
+      trList[safeEndTrIndex].tdList.length - 1
+    )
+    let startTd = trList[safeTrIndex].tdList[safeTdIndex]
+    let endTd = trList[safeEndTrIndex].tdList[safeEndTdIndex]
     // 交换起始位置
     if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
-      ;[startTd, endTd] = [endTd, startTd]
+      // prettier-ignore
+      [startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
     const endColIndex = endTd.colIndex! + (endTd.colspan - 1)

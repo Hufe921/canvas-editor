@@ -1,4 +1,5 @@
 import {
+  AreaMode,
   ControlType,
   ElementType,
   IEditorOption,
@@ -7,7 +8,7 @@ import {
   TitleLevel
 } from './editor'
 
-const text = `主诉：\n发热三天，咳嗽五天。\n现病史：\n患者于三天前无明显诱因，感冒后发现面部水肿，无皮疹，尿量减少，出现乏力，在外治疗无好转，现来我院就诊。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。报告其他既往疾病。\n流行病史：\n否认14天内接触过确诊患者、疑似患者、无症状感染者及其密切接触者；否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属无以上情况。\n体格检查：\nT：39.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10/L（偏高）参考值：0.1～0.6；\n门诊诊断：处置治疗：电子签名：【】\n其他记录：`
+const text = `主诉：\n发热三天，咳嗽五1天。\n现病史：\n患者于三xx天前无明显诱因，感冒后发现面部水肿，无皮疹，尿量减少，出现乏力，在外治疗无好转，现来我院就诊。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。报告其他既往疾病。\n流行病史：\n否认14天内接触过确诊患者、疑似患者、无症状感染者及其密切接触者；否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属无以上情况。\n体格检查：\nT：39.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10/L（偏高）参考值：0.1～0.6；\n门诊诊断：处置治疗：电子签名：【】\n其他记录：`
 
 // 模拟标题
 const titleText = [
@@ -253,7 +254,31 @@ elementList.push({
           rowspan: 2,
           value: [
             { value: `1`, size: 16 },
-            { value: '.', size: 16 }
+            { value: '.', size: 16 },
+            {
+              type: ElementType.AREA,
+              value: '',
+              valueList: [
+                {
+                  value: '诊断标签：'
+                },
+                {
+                  type: ElementType.LABEL,
+                  value: '高血压',
+                  labelId: '2222',
+                  size: 14
+                },
+                {
+                  value: '\n'
+                }
+              ],
+              area: {
+                top: 10,
+                borderColor: '#f3de58',
+                mode: AreaMode.EDIT,
+                deletable: true
+              }
+            }
           ]
         },
         {
@@ -507,6 +532,128 @@ elementList.push(
   ]
 )
 
+// 模拟结尾文本
+elementList.push(
+  ...[
+    {
+      type: ElementType.TABLE,
+      value: '',
+      colgroup: [
+        {
+          width: 180
+        },
+        {
+          width: 80
+        },
+        {
+          width: 130
+        },
+        {
+          width: 130
+        }
+      ],
+      trList: [
+        {
+          height: 40,
+          tdList: [
+            {
+              colspan: 1,
+              rowspan: 2,
+              value: [
+                { value: `1`, size: 16, type: ElementType.LABEL },
+                { value: '.', size: 16 }
+              ]
+            },
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `2`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            },
+            {
+              colspan: 2,
+              rowspan: 1,
+              value: [
+                { value: `3`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            }
+          ]
+        },
+        {
+          height: 40,
+          tdList: [
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `4`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            },
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `5`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            },
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `6`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            }
+          ]
+        },
+        {
+          height: 40,
+          tdList: [
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `7`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            },
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `8`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            },
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `9`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            },
+            {
+              colspan: 1,
+              rowspan: 1,
+              value: [
+                { value: `1`, size: 16 },
+                { value: `0`, size: 16 },
+                { value: '.', size: 16 }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+)
+
 export const data: IElement[] = elementList
 
 interface IComment {
@@ -529,9 +676,6 @@ export const commentList: IComment[] = [
 
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
-  trace: {
-    author: '游客1'
-  },
   watermark: {
     data: 'CANVAS-EDITOR',
     size: 120

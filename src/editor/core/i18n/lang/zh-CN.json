@@ -37,6 +37,7 @@
       "deleteRow": "删除1行",
       "deleteCol": "删除1列",
       "deleteTable": "删除整个表格",
+      "cannotDeleteSplitTable": "分割表格不支持通过光标删除",
       "mergeCell": "合并单元格",
       "mergeCancelCell": "取消合并",
       "verticalAlign": "垂直对齐",
@@ -74,20 +75,6 @@
     },
     "year": "年",
     "month": "月",
-    "months": {
-      "jan": "1月",
-      "feb": "2月",
-      "mar": "3月",
-      "apr": "4月",
-      "may": "5月",
-      "jun": "6月",
-      "jul": "7月",
-      "aug": "8月",
-      "sep": "9月",
-      "oct": "10月",
-      "nov": "11月",
-      "dec": "12月"
-    },
     "hour": "时",
     "minute": "分",
     "second": "秒"
@@ -102,16 +89,5 @@
   "zone": {
     "headerTip": "双击编辑页眉",
     "footerTip": "双击编辑页脚"
-  },
-  "accessibility": {
-    "selected": "选中：",
-    "input": "输入："
-  },
-  "trace": {
-    "insert": "新增内容",
-    "delete": "删除内容",
-    "author": "作者",
-    "time": "时间",
-    "unknownAuthor": "未知作者"
   }
 }

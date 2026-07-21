@@ -1,11 +1,10 @@
-import { EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR } from '../../dataset/constant/Element'
 import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { IElement, IElementPosition } from '../../interface/Element'
 import { ICurrentPosition, IPositionContext } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
-import { getUUID, threeClick } from '../../utils'
+import { threeClick } from '../../utils'
 import { IRange, IRangeElementStyle } from '../../interface/Range'
 import { mousedown } from './handlers/mousedown'
 import { mouseup } from './handlers/mouseup'
@@ -121,39 +120,13 @@ export class CanvasEvent {
       }
     }
     if (!selection) return
-    const paragraphStyleKeys = EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR
-    const painterStyleKeys = Object.keys(painterStyle).filter(
-      key => !paragraphStyleKeys.includes(key as keyof IElement)
-    )
+    const painterStyleKeys = Object.keys(painterStyle)
     selection.forEach(s => {
       painterStyleKeys.forEach(pKey => {
         const key = pKey as keyof typeof ElementStyleKey
         Reflect.set(s, key, painterStyle[key])
       })
     })
-    // 目标元素包含一个完整段落时应用标题样式
-    const rangeParagraphElementList = this.range.getRangeParagraphElementList()
-    const isFullParagraphSelection =
-      !!rangeParagraphElementList &&
-      rangeParagraphElementList.length === selection.length &&
-      rangeParagraphElementList.every(element => selection.includes(element))
-    if (isFullParagraphSelection) {
-      const titleId = painterStyle.level ? getUUID() : null
-      for (let e = 0; e < rangeParagraphElementList.length; e++) {
-        const element = rangeParagraphElementList[e]
-        element.rowFlex = painterStyle.rowFlex
-        element.rowMargin = painterStyle.rowMargin
-        if (painterStyle.level && titleId) {
-          element.level = painterStyle.level
-          element.title = painterStyle.title
-          element.titleId = titleId
-        } else {
-          delete element.level
-          delete element.title
-          delete element.titleId
-        }
-      }
-    }
     this.draw.render({ isSetCursor: false })
     // 清除格式刷
     const painterOptions = this.draw.getPainterOptions()

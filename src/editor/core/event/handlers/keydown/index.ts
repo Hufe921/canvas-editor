@@ -1,6 +1,5 @@
 import { EditorMode, EditorZone } from '../../../../dataset/enum/Editor'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
-import { isApple } from '../../../../utils/ua'
 import { isMod } from '../../../../utils/hotkey'
 import { CanvasEvent } from '../../CanvasEvent'
 import { backspace } from './backspace'
@@ -25,14 +24,14 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
     enter(evt, host)
   } else if (evt.key === KeyMap.Left) {
     // Mac: Cmd+Left = Home
-    if (isApple && evt.metaKey) {
+    if (isMod(evt)) {
       home(evt, host)
     } else {
       left(evt, host)
     }
   } else if (evt.key === KeyMap.Right) {
     // Mac: Cmd+Right = End
-    if (isApple && evt.metaKey) {
+    if (isMod(evt)) {
       end(evt, host)
     } else {
       right(evt, host)

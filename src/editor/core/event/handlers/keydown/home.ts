@@ -1,4 +1,3 @@
-import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
 
 export function home(evt: KeyboardEvent, host: CanvasEvent) {
@@ -33,12 +32,6 @@ export function home(evt: KeyboardEvent, host: CanvasEvent) {
     lineStartIndex = i
   }
 
-  // 首字符非换行符需向前进1，避免光标没有显示在行首
-  const isNonZero = positionList[lineStartIndex].value !== ZERO
-  if (isNonZero) {
-    lineStartIndex--
-  }
-
   let anchorStart = lineStartIndex
   let anchorEnd = lineStartIndex
 
@@ -58,7 +51,7 @@ export function home(evt: KeyboardEvent, host: CanvasEvent) {
   }
 
   if (anchorStart > anchorEnd) {
-    ;[anchorStart, anchorEnd] = [anchorEnd, anchorStart]
+    [anchorStart, anchorEnd] = [anchorEnd, anchorStart]
   }
 
   rangeManager.setRange(anchorStart, anchorEnd)
@@ -71,13 +64,6 @@ export function home(evt: KeyboardEvent, host: CanvasEvent) {
     isSubmitHistory: false,
     isCompute: false
   })
-
-  // 光标显示下一行首
-  if (isNonZero) {
-    draw.getCursor().drawCursor({
-      hitLineStartIndex: lineStartIndex + 1
-    })
-  }
 
   evt.preventDefault()
 }

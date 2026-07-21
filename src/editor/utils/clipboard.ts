@@ -2,11 +2,7 @@ import { EDITOR_CLIPBOARD } from '../dataset/constant/Editor'
 import { DeepRequired } from '../interface/Common'
 import { IEditorOption } from '../interface/Editor'
 import { IElement } from '../interface/Element'
-import {
-  createDomFromElementList,
-  getNonDeletedElementList,
-  zipElementList
-} from './element'
+import { createDomFromElementList, zipElementList } from './element'
 
 export interface IClipboardData {
   text: string
@@ -74,20 +70,15 @@ export async function writeElementList(
   elementList: IElement[],
   options: DeepRequired<IEditorOption>
 ) {
-  const clipboardElementList = getNonDeletedElementList(elementList)
-  const clipboardDom = createDomFromElementList(clipboardElementList, options)
+  const clipboardDom = createDomFromElementList(elementList, options)
   // 写入剪贴板
   document.body.append(clipboardDom)
   const text = clipboardDom.innerText
   // 先追加后移除，否则innerText无法解析换行符
   clipboardDom.remove()
   const html = clipboardDom.innerHTML
-  if (!text && !html && !clipboardElementList.length) return
-  await writeClipboardItem(
-    text,
-    html,
-    zipElementList(clipboardElementList, { isClone: false })
-  )
+  if (!text && !html && !elementList.length) return
+  await writeClipboardItem(text, html, zipElementList(elementList))
 }
 
 export function getIsClipboardContainFile(clipboardData: DataTransfer) {

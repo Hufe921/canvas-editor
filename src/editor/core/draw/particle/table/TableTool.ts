@@ -83,23 +83,16 @@ export class TableTool {
   }
 
   public render() {
-    const positionContext = this.position.getPositionContext()
-    const { isTable } = positionContext
-    if (!isTable) return
+    const { isTable, index, trIndex, tdIndex } =
+
+    this.position.getPositionContext()
     // 销毁之前工具
     this.dispose()
+    if (!isTable) return
+    if (this.draw.isReadonly() || this.draw.isDisabled()) return
     const elementList = this.draw.getOriginalElementList()
     const positionList = this.position.getOriginalPositionList()
-    const element = this.position.getTableElementByContext(
-      elementList,
-      positionContext
-    )
-    const position = this.position.getTableElementPositionByContext(
-      elementList,
-      positionList,
-      positionContext
-    )
-    if (!element || !position) return
+    const element = elementList[index!]
     // 表格工具配置禁用又非设计模式时不渲染
     if (element.tableToolDisabled && !this.draw.isDesignMode()) return
     // 渲染所需数据
@@ -107,6 +100,7 @@ export class TableTool {
       scale,
       table: { overflow }
     } = this.options
+    const position = positionList[index!]
     const { colgroup, trList } = element
     const {
       coordinate: { leftTop }
@@ -116,8 +110,7 @@ export class TableTool {
     const prePageHeight = this.draw.getPageNo() * (height + pageGap)
     const tableX = leftTop[0]
     const tableY = leftTop[1] + prePageHeight
-    const td = this.draw.getTd()
-    if (!td) return
+    const td = element.trList![trIndex!].tdList[tdIndex!]
     const rowIndex = td.rowIndex
     const colIndex = td.colIndex
     const tableHeight = element.height! * scale
@@ -158,14 +151,13 @@ export class TableTool {
           .getTdListByRowIndex(trList!, r)
         const firstTd = tdList[0]
         const lastTd = tdList[tdList.length - 1]
-        this.position.setPositionContext(
-          this.position.buildTablePositionContext(
-            positionContext,
-            element,
-            firstTd.trIndex!,
-            firstTd.tdIndex!
-          )
-        )
+        this.position.setPositionContext({
+          index,
+          isTable: true,
+          trIndex: firstTd.trIndex,
+          tdIndex: firstTd.tdIndex,
+          tableId: element.id
+        })
         this.range.setRange(
           0,
           0,
@@ -212,14 +204,13 @@ export class TableTool {
     }px, ${this.ROW_COL_QUICK_OFFSET * scale}px)`
     // 快捷添加行
     rowAddBtn.onclick = () => {
-      this.position.setPositionContext(
-        this.position.buildTablePositionContext(
-          positionContext,
-          element,
-          trList!.length - 1,
-          0
-        )
-      )
+      this.position.setPositionContext({
+        index,
+        isTable: true,
+        trIndex: trList!.length - 1,
+        tdIndex: 0,
+        tableId: element.id
+      })
       this.draw.getTableOperate().insertTableBottomRow()
     }
     this.container.append(rowAddBtn)
@@ -245,14 +236,13 @@ export class TableTool {
           .getTdListByColIndex(trList!, c)
         const firstTd = tdList[0]
         const lastTd = tdList[tdList.length - 1]
-        this.position.setPositionContext(
-          this.position.buildTablePositionContext(
-            positionContext,
-            element,
-            firstTd.trIndex!,
-            firstTd.tdIndex!
-          )
-        )
+        this.position.setPositionContext({
+          index,
+          isTable: true,
+          trIndex: firstTd.trIndex,
+          tdIndex: firstTd.tdIndex,
+          tableId: element.id
+        })
         this.range.setRange(
           0,
           0,
@@ -299,14 +289,13 @@ export class TableTool {
     }px, -${this.ROW_COL_QUICK_POSITION * scale}px)`
     // 快捷添加列
     colAddBtn.onclick = () => {
-      this.position.setPositionContext(
-        this.position.buildTablePositionContext(
-          positionContext,
-          element,
-          0,
-          trList![0].tdList.length - 1 || 0
-        )
-      )
+      this.position.setPositionContext({
+        index,
+        isTable: true,
+        trIndex: 0,
+        tdIndex: trList![0].tdList.length - 1 || 0,
+        tableId: element.id
+      })
       this.draw.getTableOperate().insertTableRightCol()
     }
     this.container.append(colAddBtn)
@@ -397,6 +386,7 @@ export class TableTool {
   }
 
   private _mousedown(payload: IAnchorMouseDown) {
+    if (this.draw.isReadonly() || this.draw.isDisabled()) return
     const { evt, index, order, element, isLeftStartBorder } = payload
     this.canvas = this.draw.getPage()
     const {

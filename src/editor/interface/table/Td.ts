@@ -33,4 +33,11 @@ export interface ITd {
   realMinHeight?: number // 真实最小高度（包含跨列）
   disabled?: boolean // 内容不可编辑
   deletable?: boolean // 内容不可删除
+  originalRowIndex?: number // 分页前单元格所在行
+  originalTdIndex?: number // 分页前单元格所在行中的索引
+  originalTdId?: string // 分页前单元格ID
+  originalRowspan?: number // 分页前跨行数
+  pagingFragmentIndex?: number // 单元格分页片段索引
+  pagingFragmentValues?: IElement[][] // 单元格分页片段内容
+  pagingPlaceholder?: boolean // 分页占位内容
 }

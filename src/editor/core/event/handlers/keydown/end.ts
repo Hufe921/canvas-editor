@@ -23,14 +23,7 @@ export function end(evt: KeyboardEvent, host: CanvasEvent) {
     }
   }
 
-  let { rowNo } = anchorPosition
-
-  // 光标显示在下一行行首时，rowNo需下移
-  const hitLineStartIndex = draw.getCursor().getHitLineStartIndex()
-
-  if (hitLineStartIndex !== undefined) {
-    rowNo++
-  }
+  const { rowNo } = anchorPosition
 
   // Find the end of the line based on the active side
   let lineEndIndex = anchorPosition.index
@@ -58,7 +51,7 @@ export function end(evt: KeyboardEvent, host: CanvasEvent) {
   }
 
   if (anchorStart > anchorEnd) {
-    ;[anchorStart, anchorEnd] = [anchorEnd, anchorStart]
+    [anchorStart, anchorEnd] = [anchorEnd, anchorStart]
   }
 
   rangeManager.setRange(anchorStart, anchorEnd)

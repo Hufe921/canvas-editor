@@ -1,67 +1,49 @@
 import { ZERO } from '../../../../dataset/constant/Common'
+import { ElementType } from '../../../../dataset/enum/Element'
 import { CanvasEvent } from '../../CanvasEvent'
 
-// 删除光标前隐藏元素，跳过留痕删除元素（痕迹不可移除）
+// 删除光标前隐藏元素
 function backspaceHideElement(host: CanvasEvent) {
   const draw = host.getDraw()
-  const traceParticle = draw.getTraceParticle()
   const rangeManager = draw.getRange()
   const range = rangeManager.getRange()
-  // 光标所在位置为隐藏/留痕删除元素时触发循环
+  // 光标所在位置为隐藏元素时触发循环删除
   const elementList = draw.getElementList()
+  const element = elementList[range.startIndex]
+  if (!element.hide && !element.control?.hide && !element.area?.hide) return
+  // 向前删除所有隐藏元素
   let index = range.startIndex
-  const element = elementList[index]
-  if (
-    !element ||
-    (!element.hide &&
-      !element.control?.hide &&
-      !element.area?.hide &&
-      !traceParticle.isTraceHidden(element))
-  ) {
-    return
-  }
-  // 向前跳过隐藏/留痕删除元素（隐藏元素直接删除，留痕删除元素仅移动光标）
-  let hasValidTarget = false
   while (index > 0) {
     const element = elementList[index]
-    const isHide = element.hide || element.control?.hide || element.area?.hide
-    const isTraceHidden = traceParticle.isTraceHidden(element)
-    if (!isHide && !isTraceHidden) {
-      hasValidTarget = true
-      break
-    }
-    let newIndex: number | null
-    if (isHide) {
-      // 隐藏元素直接删除
-      if (element.controlId) {
-        newIndex = draw.getControl().removeControl(index)
-      } else {
-        draw.spliceElementList(elementList, index, 1)
-        newIndex = index - 1
+    let newIndex: number | null = null
+    if (element.controlId) {
+      newIndex = draw.getControl().removeControl(index)
+      if (newIndex !== null) {
+        index = newIndex
       }
     } else {
-      // 留痕删除元素仅移动光标：控件整体跳过
-      if (element.controlId) {
-        newIndex =
-          draw
-            .getControl()
-            .getControlStartIndex(elementList, index, element.controlId!) - 1
-      } else {
-        newIndex = index - 1
-      }
+      draw.spliceElementList(elementList, index, 1)
+      newIndex = index - 1
+      index--
     }
-    if (newIndex === null || newIndex < 0) break
-    index = newIndex
-  }
-  // 更新上下文信息
-  if (hasValidTarget && index !== range.startIndex) {
-    range.startIndex = index
-    range.endIndex = index
-    rangeManager.replaceRange(range)
-    // 更新位置信息
-    const position = draw.getPosition()
-    const positionList = position.getPositionList()
-    position.setCursorPosition(positionList[index])
+    const newElement = elementList[newIndex!]
+    if (
+      !newElement ||
+      (!newElement.hide && !newElement.control?.hide && !newElement.area?.hide)
+    ) {
+      // 更新上下文信息
+      if (newIndex) {
+        // 更新选区信息
+        range.startIndex = newIndex
+        range.endIndex = newIndex
+        rangeManager.replaceRange(range)
+        // 更新位置信息
+        const position = draw.getPosition()
+        const positionList = position.getPositionList()
+        position.setCursorPosition(positionList[newIndex])
+      }
+      break
+    }
   }
 }
 
@@ -71,7 +53,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   // 可输入性验证
   const rangeManager = draw.getRange()
   if (!rangeManager.getIsCanInput()) return
-  // 隐藏元素删除 / 跳过留痕删除元素
+  // 隐藏元素删除
   if (rangeManager.getIsCollapsed()) {
     backspaceHideElement(host)
   }
@@ -89,9 +71,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       for (let c = 0; c < row.length; c++) {
         const col = row[c]
         if (col.value.length > 1) {
-          draw.deleteElementList(col.value, 1, col.value.length - 1, {
-            tdDeletable: col.deletable !== false
-          })
+          draw.spliceElementList(col.value, 1, col.value.length - 1)
           isDeleted = true
         }
       }
@@ -118,14 +98,74 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     if (isCollapsed && index === 0) {
       const firstElement = elementList[index]
       if (firstElement.value === ZERO) {
+        // 分割表格：在分割后的非首个分片的首行首格按删除键，光标应跳转到上一个分片末尾
+        const position = draw.getPosition()
+        const positionContext = position.getPositionContext()
+        if (
+          positionContext.isTable &&
+          positionContext.trIndex === 0 &&
+          positionContext.tdIndex === 0
+        ) {
+          const originalElementList = draw.getOriginalElementList()
+          const curTableElement = originalElementList[positionContext.index!]
+          if (
+            curTableElement?.pagingId &&
+            (curTableElement.pagingIndex ?? 0) > 0
+          ) {
+            // 查找上一个分片（pagingIndex - 1）
+            const targetPagingIndex =
+              (curTableElement.pagingIndex ?? 0) - 1
+            const preTableElement = originalElementList.find(
+              item =>
+                item.pagingId === curTableElement.pagingId &&
+                item.pagingIndex === targetPagingIndex
+            )
+            if (preTableElement) {
+              // 先删除当前单元格中的 ZERO 元素
+              draw.spliceElementList(elementList, index, 1)
+              const preIndex = originalElementList.indexOf(preTableElement)
+              const curTd =
+                curTableElement.trList?.[positionContext.trIndex!]?.tdList?.[
+                  positionContext.tdIndex!
+                ]
+              const curColIndex = curTd?.colIndex ?? 0
+              const preTrList = preTableElement.trList!
+              const lastTr = preTrList[preTrList.length - 1]
+              const targetTdIndex = lastTr.tdList.findIndex(
+                td =>
+                  curColIndex >= (td.colIndex ?? 0) &&
+                  curColIndex < (td.colIndex ?? 0) + td.colspan
+              )
+              const fallbackTdIndex = lastTr.tdList.length - 1
+              const finalTdIndex = ~targetTdIndex
+                ? targetTdIndex
+                : fallbackTdIndex
+              const targetTd = lastTr.tdList[finalTdIndex]
+              position.setPositionContext({
+                isTable: true,
+                index: preIndex,
+                trIndex: preTrList.length - 1,
+                tdIndex: finalTdIndex,
+                tdId: targetTd.id,
+                trId: lastTr.id,
+                tableId: preTableElement.id
+              })
+              const newIndex = targetTd.value.length - 1
+              rangeManager.setRange(newIndex, newIndex)
+              draw.render({
+                curIndex: newIndex,
+                isSetCursor: true,
+                isSubmitHistory: false
+              })
+              draw.getTableTool().render()
+              evt.preventDefault()
+              return
+            }
+          }
+        }
         // 取消首字符列表设置
         if (firstElement.listId) {
-          if (firstElement.listLevel) {
-            // 子列表段首 Backspace：先降级而非退出
-            draw.getListParticle().decreaseListLevel()
-          } else {
-            draw.getListParticle().unsetList()
-          }
+          draw.getListParticle().unsetList()
         }
         evt.preventDefault()
         return
@@ -165,9 +205,22 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       }
     }
     if (!isCollapsed) {
-      draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex)
+      draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
-      draw.deleteElementList(elementList, index, 1)
+      const currentElement = elementList[index]
+      if (currentElement?.type === ElementType.TABLE && currentElement.pagingId) {
+        const msg =
+          draw
+            .getI18n()
+            .t('contextmenu.table.cannotDeleteSplitTable') ||
+          '分割表格不支持通过光标删除'
+        if (typeof window !== 'undefined' && typeof window.alert === 'function') {
+          window.alert(msg)
+        }
+        evt.preventDefault()
+        return
+      }
+      draw.spliceElementList(elementList, index, 1)
     }
     curIndex = isCollapsed ? index - 1 : startIndex
   }

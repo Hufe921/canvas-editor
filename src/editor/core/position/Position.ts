@@ -14,8 +14,7 @@ import { IElement, IElementPosition } from '../../interface/Element'
 import {
   ICurrentPosition,
   IGetPositionByXYPayload,
-  IPositionContext,
-  ITablePositionContext
+  IPositionContext
 } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
 import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
@@ -57,132 +56,11 @@ export class Position {
   public getTablePositionList(
     sourceElementList: IElement[]
   ): IElementPosition[] {
+    const { index, trIndex, tdIndex } = this.positionContext
     return (
-      this.getTableTdByContext(sourceElementList, this.positionContext)
-        ?.positionList || []
+      sourceElementList[index!].trList![trIndex!].tdList[tdIndex!]
+        .positionList || []
     )
-  }
-
-  public getTableTdByContext(
-    sourceElementList: IElement[],
-    context: IPositionContext
-  ) {
-    const tablePath = context.tablePath?.length
-      ? context.tablePath
-      : this._getTablePathByContext(context)
-    let elementList = sourceElementList
-    let td = null
-    for (let p = 0; p < tablePath.length; p++) {
-      const { index, trIndex, tdIndex } = tablePath[p]
-      td = elementList[index]?.trList?.[trIndex]?.tdList[tdIndex] || null
-      if (!td) return null
-      elementList = td.value
-    }
-    return td
-  }
-
-  public buildTablePositionContext(
-    context: IPositionContext,
-    element: IElement,
-    trIndex: number,
-    tdIndex: number
-  ): IPositionContext {
-    const tr = element.trList![trIndex]
-    const td = tr.tdList[tdIndex]
-    const tablePath = context.tablePath?.length
-      ? context.tablePath.map((item, itemIndex, tablePath) =>
-          itemIndex === tablePath.length - 1
-            ? {
-                ...item,
-                trIndex,
-                tdIndex,
-                tdId: td.id,
-                trId: tr.id,
-                tableId: element.id
-              }
-            : item
-        )
-      : undefined
-    return {
-      ...context,
-      isTable: true,
-      trIndex,
-      tdIndex,
-      tdId: td.id,
-      trId: tr.id,
-      tableId: element.id,
-      tablePath
-    }
-  }
-
-  public getTableElementByContext(
-    sourceElementList: IElement[],
-    context: IPositionContext
-  ) {
-    const tablePath = context.tablePath?.length
-      ? context.tablePath
-      : this._getTablePathByContext(context)
-    let elementList = sourceElementList
-    let tableElement = null
-    for (let p = 0; p < tablePath.length; p++) {
-      const { index, trIndex, tdIndex } = tablePath[p]
-      tableElement = elementList[index] || null
-      if (!tableElement) return null
-      if (p === tablePath.length - 1) break
-      const td = tableElement.trList?.[trIndex]?.tdList[tdIndex]
-      if (!td) return null
-      elementList = td.value
-    }
-    return tableElement
-  }
-
-  public getTableElementPositionByContext(
-    sourceElementList: IElement[],
-    sourcePositionList: IElementPosition[],
-    context: IPositionContext
-  ) {
-    const tablePath = context.tablePath?.length
-      ? context.tablePath
-      : this._getTablePathByContext(context)
-    let elementList = sourceElementList
-    let positionList = sourcePositionList
-    let tablePosition = null
-    for (let p = 0; p < tablePath.length; p++) {
-      const { index, trIndex, tdIndex } = tablePath[p]
-      tablePosition = positionList[index] || null
-      const tableElement = elementList[index]
-      if (!tablePosition || !tableElement) return null
-      if (p === tablePath.length - 1) break
-      const td = tableElement.trList?.[trIndex]?.tdList[tdIndex]
-      if (!td) return null
-      elementList = td.value
-      positionList = td.positionList || []
-    }
-    return tablePosition
-  }
-
-  private _getTablePathByContext(
-    context: IPositionContext
-  ): ITablePositionContext[] {
-    const { isTable, index, trIndex, tdIndex, tdId, trId, tableId } = context
-    if (
-      !isTable ||
-      index === undefined ||
-      trIndex === undefined ||
-      tdIndex === undefined
-    ) {
-      return []
-    }
-    return [
-      {
-        index,
-        trIndex,
-        tdIndex,
-        tdId,
-        trId,
-        tableId
-      }
-    ]
   }
 
   public getPositionList(): IElementPosition[] {
@@ -229,46 +107,6 @@ export class Position {
     this.floatPositionList = payload
   }
 
-  public getFloatPositionByElement(element: IElement): IFloatPosition | null {
-    return (
-      this.floatPositionList.find(
-        floatPosition => floatPosition.element === element
-      ) || null
-    )
-  }
-
-  public getFloatPositionCoordinate(floatPosition: IFloatPosition): {
-    x: number
-    y: number
-  } {
-    const { scale } = this.options
-    const imgFloatPosition = floatPosition.element.imgFloatPosition!
-    let x = imgFloatPosition.x * scale
-    let y = imgFloatPosition.y * scale
-    const { index, isTable, zone } = floatPosition
-    if (isTable && index !== undefined) {
-      let positionList: IElementPosition[]
-      if (zone === EditorZone.HEADER) {
-        positionList = this.draw.getHeader().getPositionList()
-      } else if (zone === EditorZone.FOOTER) {
-        positionList = this.draw.getFooter().getPositionList()
-      } else {
-        positionList = this.positionList
-      }
-      const tablePosition = positionList[index]
-      if (tablePosition) {
-        const {
-          coordinate: {
-            leftTop: [tableX, tableY]
-          }
-        } = tablePosition
-        x += tableX
-        y += tableY
-      }
-    }
-    return { x, y }
-  }
-
   public computePageRowPosition(
     payload: IComputePageRowPositionPayload
   ): IComputePageRowPositionResult {
@@ -281,8 +119,7 @@ export class Position {
       startRowIndex,
       startIndex,
       innerWidth,
-      zone,
-      tablePosition
+      zone
     } = payload
     const {
       scale,
@@ -291,41 +128,16 @@ export class Position {
     let x = startX
     let y = startY
     let index = startIndex
-    const traceParticle = this.draw.getTraceParticle()
-    const columnLayout = this.draw.getColumnLayout()
-    let prevColumnIndex: number | undefined = undefined
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 分栏内栏切换：y 重置到栏顶
-      if (
-        prevColumnIndex !== undefined &&
-        curRow.columnIndex !== undefined &&
-        curRow.columnIndex > 0 &&
-        curRow.columnIndex !== prevColumnIndex
-      ) {
-        y = startY
-      }
-      prevColumnIndex = curRow.columnIndex
-      // 分栏偏移与有效宽度
-      const inColumn =
-        columnLayout &&
-        curRow.columnIndex !== undefined &&
-        curRow.columnIndex >= 0
-      const columnOffset =
-        inColumn && columnLayout
-          ? columnLayout.offsets[curRow.columnIndex!] || 0
-          : 0
-      const effectiveInnerWidth =
-        inColumn && columnLayout ? columnLayout.width : innerWidth
-      x += columnOffset
       // 行存在环绕的可能性均不设置行布局
       if (!curRow.isSurround) {
         // 计算行偏移量（行居中、居右）
         const curRowWidth = curRow.width + (curRow.offsetX || 0)
         if (curRow.rowFlex === RowFlex.CENTER) {
-          x += (effectiveInnerWidth - curRowWidth) / 2
+          x += (innerWidth - curRowWidth) / 2
         } else if (curRow.rowFlex === RowFlex.RIGHT) {
-          x += effectiveInnerWidth - curRowWidth
+          x += innerWidth - curRowWidth
         }
       }
       // 当前行X/Y轴偏移量
@@ -339,7 +151,6 @@ export class Position {
         const metrics = element.metrics
         const offsetY =
           !element.hide &&
-          !traceParticle.isTraceHidden(element) &&
           ((element.imgDisplay !== ImageDisplay.INLINE &&
             element.type === ElementType.IMAGE) ||
             element.type === ElementType.LATEX)
@@ -365,7 +176,6 @@ export class Position {
           lineHeight: curRow.height,
           isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
-          columnIndex: curRow.columnIndex,
           coordinate: {
             leftTop: [x, y],
             leftBottom: [x, y + curRow.height],
@@ -387,10 +197,9 @@ export class Position {
           }
           // 兼容浮动元素初始坐标为空的情况-默认使用左上坐标
           if (!element.imgFloatPosition) {
-            const tableLeftTop = tablePosition?.coordinate.leftTop
             element.imgFloatPosition = {
-              x: tableLeftTop ? x - tableLeftTop[0] : x,
-              y: tableLeftTop ? y - tableLeftTop[1] : y,
+              x,
+              y,
               pageNo
             }
           }
@@ -410,11 +219,7 @@ export class Position {
         index++
         x += metrics.width
         // 计算表格内元素位置
-        if (
-          element.type === ElementType.TABLE &&
-          !element.hide &&
-          !traceParticle.isTraceHidden(element)
-        ) {
+        if (element.type === ElementType.TABLE && !element.hide) {
           const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           const tdPaddingHeight = tdPadding[0] + tdPadding[2]
           for (let t = 0; t < element.trList!.length; t++) {
@@ -439,8 +244,7 @@ export class Position {
                 index: index - 1,
                 tdIndex: d,
                 trIndex: t,
-                zone,
-                tablePosition: positionItem
+                zone
               })
               // 垂直对齐方式
               if (
@@ -494,13 +298,13 @@ export class Position {
     const startX = margins[3]
     // 起始位置受页眉影响
     const header = this.draw.getHeader()
+    const extraHeight = header.getExtraHeight()
+    const startY = margins[0] + extraHeight
     let startRowIndex = 0
     for (let i = 0; i < pageRowList.length; i++) {
       const rowList = pageRowList[i]
       if (!rowList?.length) continue
       const startIndex = rowList[0].startIndex
-      // 每页页眉禁用状态不同，startY 需按页计算
-      const startY = margins[0] + header.getExtraHeight(i)
       this.computePageRowPosition({
         positionList: this.positionList,
         rowList,
@@ -553,25 +357,6 @@ export class Position {
     this.positionContext = payload
   }
 
-  // 根据 x 坐标推断点击位置所属的分栏索引；无分栏布局时返回 undefined
-  private _getColumnIndexByX(x: number): number | undefined {
-    const layout = this.draw.getColumnLayout()
-    if (!layout) return
-    const startX = this.draw.getMargins()[3]
-    const xRel = x - startX
-    // 栏范围 [colStart, nextColStart)，gap 算入左侧栏，避免点击栏间空白时误判
-    for (let i = 0; i < layout.count; i++) {
-      const colStart = layout.offsets[i]
-      const colEnd =
-        i < layout.count - 1 ? layout.offsets[i + 1] : colStart + layout.width
-      if (xRel >= colStart && xRel < colEnd) {
-        return i
-      }
-    }
-    // 超出最后一栏右边界时按最后一栏处理
-    return layout.count - 1
-  }
-
   public getPositionByXY(payload: IGetPositionByXYPayload): ICurrentPosition {
     const { x, y, isTable } = payload
     let { elementList, positionList } = payload
@@ -584,7 +369,7 @@ export class Position {
     const zoneManager = this.draw.getZone()
     const curPageNo = payload.pageNo ?? this.draw.getPageNo()
     const isMainActive = zoneManager.isMainActive()
-    const positionNo = curPageNo
+    const positionNo = isMainActive ? curPageNo : 0
     // 验证浮于文字上方元素
     if (!isTable) {
       const floatTopPosition = this.getFloatPositionByXY({
@@ -602,11 +387,8 @@ export class Position {
         isFirstLetter,
         coordinate: { leftTop, rightTop, leftBottom }
       } = positionList[j]
-      // 页眉/页脚的 positionList 跨页共享，坐标是页内的，按坐标命中即可
-      if (isMainActive) {
-        if (positionNo !== pageNo) continue
-        if (pageNo > positionNo) break
-      }
+      if (positionNo !== pageNo) continue
+      if (pageNo > positionNo) break
       // 命中元素
       if (
         leftTop[0] - left <= x &&
@@ -616,6 +398,7 @@ export class Position {
       ) {
         let curPositionIndex = j
         const element = elementList[j]
+
         // 表格被命中
         if (element.type === ElementType.TABLE) {
           for (let t = 0; t < element.trList!.length; t++) {
@@ -633,29 +416,8 @@ export class Position {
                 positionList: td.positionList
               })
               if (~tablePosition.index) {
-                const {
-                  index: tablePositionIndex,
-                  isTable: isNestedTable,
-                  hitLineStartIndex,
-                  tablePath = []
-                } = tablePosition
-                const tablePathItem = {
-                  index,
-                  trIndex: t,
-                  tdIndex: d,
-                  tdId: td.id,
-                  trId: tr.id,
-                  tableId: element.id
-                }
-                if (isNestedTable) {
-                  return {
-                    ...tablePosition,
-                    index,
-                    tablePath: [tablePathItem, ...tablePath],
-                    hitLineStartIndex
-                  }
-                }
-                const tdValueElement = td.value[tablePositionIndex]
+                const { index: tdValueIndex, hitLineStartIndex } = tablePosition
+                const tdValueElement = td.value[tdValueIndex]
                 return {
                   index,
                   isCheckbox:
@@ -668,15 +430,16 @@ export class Position {
                     tdValueElement.controlComponent === ControlComponent.RADIO,
                   isControl: !!tdValueElement.controlId,
                   isImage: tablePosition.isImage,
+                  isArea: !!tdValueElement.areaId,
+                  areaId: tdValueElement.areaId,
                   isDirectHit: tablePosition.isDirectHit,
                   isTable: true,
                   tdIndex: d,
                   trIndex: t,
-                  tdValueIndex: tablePositionIndex,
+                  tdValueIndex,
                   tdId: td.id,
                   trId: tr.id,
                   tableId: element.id,
-                  tablePath: [tablePathItem],
                   hitLineStartIndex
                 }
               }
@@ -759,7 +522,9 @@ export class Position {
           isDirectHit: true,
           hitLineStartIndex,
           index: curPositionIndex,
-          isControl: !!element.controlId
+          isControl: !!element.controlId,
+          isArea: !!element.areaId,
+          areaId: element.areaId
         }
       }
     }
@@ -793,18 +558,9 @@ export class Position {
       }
     }
     // 判断所属行是否存在元素
-    const matchedLastLetterList = isMainActive
-      ? positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
-      : positionList.filter(p => p.isLastLetter)
-    // 分栏场景下，只保留与点击栏一致的行，避免误命中同 y 的其他栏
-    const clickColumnIndex = this._getColumnIndexByX(x)
-    const lastLetterList =
-      clickColumnIndex === undefined
-        ? matchedLastLetterList
-        : matchedLastLetterList.filter(
-            p =>
-              p.columnIndex === undefined || clickColumnIndex === p.columnIndex
-          )
+    const lastLetterList = positionList.filter(
+      p => p.isLastLetter && p.pageNo === positionNo
+    )
     for (let j = 0; j < lastLetterList.length; j++) {
       const {
         index,
@@ -812,11 +568,9 @@ export class Position {
         coordinate: { leftTop, leftBottom }
       } = lastLetterList[j]
       if (y > leftTop[1] && y <= leftBottom[1]) {
-        const headIndex = isMainActive
-          ? positionList.findIndex(
-              p => p.pageNo === positionNo && p.rowNo === rowNo
-            )
-          : positionList.findIndex(p => p.rowNo === rowNo)
+        const headIndex = positionList.findIndex(
+          p => p.pageNo === positionNo && p.rowNo === rowNo
+        )
         const headElement = elementList[headIndex]
         const headPosition = positionList[headIndex]
         // 是否在头部
@@ -856,29 +610,24 @@ export class Position {
       if (this.draw.getIsPagingMode()) {
         // 页眉底部距离页面顶部距离
         const header = this.draw.getHeader()
-        const headerDisabled = header.isDisabled(curPageNo)
-        const headerBottomY = headerDisabled
-          ? 0
-          : header.getHeaderTop(curPageNo) + header.getHeight(curPageNo)
+        const headerHeight = header.getHeight()
+        const headerBottomY = header.getHeaderTop() + headerHeight
         // 页脚上部距离页面顶部距离
         const footer = this.draw.getFooter()
-        const footerDisabled = footer.isDisabled(curPageNo)
         const pageHeight = this.draw.getHeight()
-        const footerTopY = footerDisabled
-          ? pageHeight
-          : pageHeight -
-            (footer.getFooterBottom(curPageNo) + footer.getHeight(curPageNo))
+        const footerTopY =
+          pageHeight - (footer.getFooterBottom() + footer.getHeight())
         // 判断所属位置是否属于页眉页脚区域
         if (isMainActive) {
           // 页眉：当前位置小于页眉底部位置
-          if (!headerDisabled && y < headerBottomY) {
+          if (y < headerBottomY) {
             return {
               index: -1,
               zone: EditorZone.HEADER
             }
           }
           // 页脚：当前位置大于页脚顶部位置
-          if (!footerDisabled && y > footerTopY) {
+          if (y > footerTopY) {
             return {
               index: -1,
               zone: EditorZone.FOOTER
@@ -979,8 +728,9 @@ export class Position {
         payload.imgDisplays.includes(element.imgDisplay) &&
         (!floatElementZone || floatElementZone === currentZone)
       ) {
-        const { x: imgFloatPositionX, y: imgFloatPositionY } =
-          this.getFloatPositionCoordinate(this.floatPositionList[f])
+        const imgFloatPosition = element.imgFloatPosition!
+        const imgFloatPositionX = imgFloatPosition.x * scale
+        const imgFloatPositionY = imgFloatPosition.y * scale
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         if (
@@ -1045,6 +795,7 @@ export class Position {
       isControl,
       isImage,
       isLabel,
+      isArea,
       isDirectHit,
       isTable,
       trIndex,
@@ -1052,7 +803,7 @@ export class Position {
       tdId,
       trId,
       tableId,
-      tablePath
+      tdValueIndex
     } = positionResult
     // 设置位置上下文
     this.setPositionContext({
@@ -1062,6 +813,7 @@ export class Position {
       isControl: isControl || false,
       isImage: isImage || false,
       isLabel: isLabel || false,
+      isArea: isArea || false,
       isDirectHit: isDirectHit || false,
       index,
       trIndex,
@@ -1069,7 +821,7 @@ export class Position {
       tdId,
       trId,
       tableId,
-      tablePath
+      tdValueIndex
     })
     return positionResult
   }
