@@ -355,8 +355,8 @@ export class TableOperate {
     const trList = element.trList!
     const curTr = trList[trIndex!]
     const curTdRowIndex = curTr.tdList[tdIndex!].rowIndex!
-    // 如果是最后一行，直接删除整个表格（如果是拆分表格按照正常逻辑走）
-    if (trList.length <= 1 && element.pagingIndex === 0) {
+    // 如果是最后一行，直接删除整个表格
+    if (trList.length <= 1) {
       this.deleteTable()
       return
     }
@@ -456,24 +456,9 @@ export class TableOperate {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const originalElementList = this.draw.getOriginalElementList()
-    const tableElement = originalElementList[positionContext.index!]
-    // 需要删除的表格数量（拆分表格）及位置
-    let deleteCount = 1
-    let deleteStartIndex = positionContext.index!
-    if (tableElement.pagingId) {
-      // 开始删除的下标位置
-      deleteStartIndex = positionContext.index! - tableElement.pagingIndex!
-      // 计算删除的表格数量
-      for (let i = deleteStartIndex + 1; i < originalElementList.length; i++) {
-        if (originalElementList[i].pagingId === tableElement.pagingId) {
-          deleteCount++
-        } else {
-          break
-        }
-      }
-    }
-    // 删除
-    originalElementList.splice(deleteStartIndex, deleteCount)
+    // 数据层始终为单一表格（跨页仅在渲染层拆分），直接删除即可
+    const deleteStartIndex = positionContext.index!
+    originalElementList.splice(deleteStartIndex, 1)
     const curIndex = deleteStartIndex - 1
     this.position.setPositionContext({
       isTable: false,

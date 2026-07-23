@@ -47,6 +47,10 @@ export class TableTool {
   private anchorLine: HTMLDivElement | null
   private mousedownX: number
   private mousedownY: number
+  // 上次渲染的锚点（表格+页码+单元格），相同则不重复重建
+  private lastAnchorKey: string | null
+  // 当前工具所在页码（锚定片段的页码）
+  private anchorPageNo: number
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -65,6 +69,8 @@ export class TableTool {
     this.anchorLine = null
     this.mousedownX = 0
     this.mousedownY = 0
+    this.lastAnchorKey = null
+    this.anchorPageNo = 0
   }
 
   public dispose() {
@@ -80,14 +86,13 @@ export class TableTool {
     this.toolTableSelectBtn = null
     this.toolColContainer = null
     this.toolBorderContainer = null
+    this.lastAnchorKey = null
   }
 
   public render() {
     const positionContext = this.position.getPositionContext()
     const { isTable } = positionContext
     if (!isTable) return
-    // 销毁之前工具
-    this.dispose()
     const elementList = this.draw.getOriginalElementList()
     const positionList = this.position.getOriginalPositionList()
     const element = this.position.getTableElementByContext(
@@ -99,9 +104,16 @@ export class TableTool {
       positionList,
       positionContext
     )
-    if (!element || !position) return
-    // 表格工具配置禁用又非设计模式时不渲染
-    if (element.tableToolDisabled && !this.draw.isDesignMode()) return
+    if (!element || !position) {
+      // 元素或位置失效时清理旧工具
+      this.dispose()
+      return
+    }
+    // 表格工具配置禁用又非设计模式时不渲染（并清理旧工具）
+    if (element.tableToolDisabled && !this.draw.isDesignMode()) {
+      this.dispose()
+      return
+    }
     // 渲染所需数据
     const {
       scale,
@@ -111,21 +123,45 @@ export class TableTool {
     const {
       coordinate: { leftTop }
     } = position
+    // 表格跨页时锚定光标所在片段
+    const fragment = position.tableFragment
+    const fragmentStartTrIndex = fragment?.startTrIndex ?? 0
+    const fragmentEndTrIndex = fragment?.endTrIndex ?? trList!.length
+    // 锚点未变化且布局未重排时不重复重建：
+    // 键包含缩放、坐标、片段边界与行列尺寸，任一变化都会使缓存失效
+    let layoutKey = `${scale}:${leftTop[0]}:${leftTop[1]}:${
+      position.metrics.height
+    }:${fragmentStartTrIndex}:${fragmentEndTrIndex}:${
+      fragment?.startSplitTrOffset ?? 0
+    }:${fragment?.endSplitTrHeight ?? 0}`
+    for (let r = fragmentStartTrIndex; r < fragmentEndTrIndex; r++) {
+      layoutKey += `:${trList![r].height}`
+    }
+    for (const col of colgroup || []) {
+      layoutKey += `:${col.width}`
+    }
+    const anchorKey = `${element.id}:${position.pageNo}:${positionContext.trIndex}:${positionContext.tdIndex}:${layoutKey}`
+    if (anchorKey === this.lastAnchorKey) return
+    // 销毁之前工具
+    this.dispose()
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
-    const prePageHeight = this.draw.getPageNo() * (height + pageGap)
+    // 按锚点位置所在页计算纵向偏移（而非当前视图页码）
+    this.anchorPageNo = position.pageNo
+    const prePageHeight = position.pageNo * (height + pageGap)
     const tableX = leftTop[0]
     const tableY = leftTop[1] + prePageHeight
     const td = this.draw.getTd()
     if (!td) return
+    this.lastAnchorKey = anchorKey
     const rowIndex = td.rowIndex
     const colIndex = td.colIndex
-    const tableHeight = element.height! * scale
+    // 片段（或整表）像素高度（metrics 已含缩放，勿再乘 scale）
+    const tableHeight = position.metrics.height
     const tableWidth = element.width! * scale
-    // 表格选择工具
+    // 表格选择工具（尺寸由 CSS 类固定，无需设置高度）
     const tableSelectBtn = document.createElement('div')
     tableSelectBtn.classList.add(`${EDITOR_PREFIX}-table-tool__select`)
-    tableSelectBtn.style.height = `${tableHeight * scale}`
     tableSelectBtn.style.left = `${tableX}px`
     tableSelectBtn.style.top = `${tableY}px`
     tableSelectBtn.style.transform = `translate(-${
@@ -137,15 +173,17 @@ export class TableTool {
     }
     this.container.append(tableSelectBtn)
     this.toolTableSelectBtn = tableSelectBtn
-    // 渲染行工具
-    const rowHeightList = trList!.map(tr => tr.height)
+    // 渲染行工具（跨页片段仅渲染当前片段的行）
     const rowContainer = document.createElement('div')
     rowContainer.classList.add(`${EDITOR_PREFIX}-table-tool__row`)
     rowContainer.style.transform = `translateX(-${
       this.ROW_COL_OFFSET * scale
     }px)`
-    for (let r = 0; r < rowHeightList.length; r++) {
-      const rowHeight = rowHeightList[r] * scale
+    for (let r = fragmentStartTrIndex; r < fragmentEndTrIndex; r++) {
+      const rowHeight =
+        this.draw
+          .getTableParticle()
+          .getFragmentTrHeight(trList![r], r, fragment) * scale
       const rowItem = document.createElement('div')
       rowItem.classList.add(`${EDITOR_PREFIX}-table-tool__row__item`)
       if (r === rowIndex) {
@@ -180,7 +218,7 @@ export class TableTool {
           isCompute: false,
           isSubmitHistory: false
         })
-        this._setAnchorActive(rowContainer, r)
+        this._setAnchorActive(rowContainer, r - fragmentStartTrIndex)
       }
       const rowItemAnchor = document.createElement('div')
       rowItemAnchor.classList.add(`${EDITOR_PREFIX}-table-tool__anchor`)
@@ -198,13 +236,15 @@ export class TableTool {
       rowContainer.append(rowItem)
     }
     rowContainer.style.left = `${tableX}px`
-    rowContainer.style.top = `${tableY}px`
+    // 续页回显表头占据片段顶部，正文行工具起点需下移回显高度
+    rowContainer.style.top = `${
+      tableY + (fragment?.repeatHeight || 0) * scale
+    }px`
     this.container.append(rowContainer)
     this.toolRowContainer = rowContainer
-    // 添加行按钮
+    // 添加行按钮（尺寸由 CSS 类固定，无需设置高度）
     const rowAddBtn = document.createElement('div')
     rowAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
-    rowAddBtn.style.height = `${tableHeight * scale}`
     rowAddBtn.style.left = `${tableX}px`
     rowAddBtn.style.top = `${tableY + tableHeight}px`
     rowAddBtn.style.transform = `translate(-${
@@ -288,10 +328,9 @@ export class TableTool {
     colContainer.style.top = `${tableY}px`
     this.container.append(colContainer)
     this.toolColContainer = colContainer
-    // 添加列按钮
+    // 添加列按钮（尺寸由 CSS 类固定，无需设置高度）
     const colAddBtn = document.createElement('div')
     colAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
-    colAddBtn.style.height = `${tableHeight * scale}`
     colAddBtn.style.left = `${tableX + tableWidth}px`
     colAddBtn.style.top = `${tableY}px`
     colAddBtn.style.transform = `translate(${
@@ -318,66 +357,78 @@ export class TableTool {
     borderContainer.style.width = `${tableWidth}px`
     borderContainer.style.left = `${tableX}px`
     borderContainer.style.top = `${tableY}px`
-    for (let r = 0; r < trList!.length; r++) {
-      const tr = trList![r]
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        const rowBorder = document.createElement('div')
-        rowBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__row`)
-        rowBorder.style.width = `${td.width! * scale}px`
-        rowBorder.style.height = `${this.BORDER_VALUE}px`
-        rowBorder.style.top = `${
-          (td.y! + td.height!) * scale - this.BORDER_VALUE / 2
-        }px`
-        rowBorder.style.left = `${td.x! * scale}px`
-        // 行宽度拖拽开始
-        rowBorder.onmousedown = evt => {
-          this._mousedown({
-            evt,
-            element,
-            index: td.rowIndex! + td.rowspan - 1,
-            order: TableOrder.ROW
-          })
-        }
-        borderContainer.appendChild(rowBorder)
+    // 边框工具与绘制层统一枚举：片段含范围行与进位合并单元格（回显表头不参与交互）
+    const fragmentTdList = fragment
+      ? this.draw.getTableParticle().getFragmentTdList(element, fragment)
+      : trList!.flatMap(tr => tr.tdList)
+    for (const td of fragmentTdList) {
+      // 单元格在片段内的可见窗口（跨行合并/行内拆分按窗口裁剪）
+      let tdHeight = td.height!
+      let tdOffsetY = 0
+      if (fragment) {
+        const [windowStart, windowEnd] = this.draw
+          .getTableParticle()
+          .getTdWindowInFragment(td, element, fragment)
+        tdHeight = windowEnd - windowStart
+        tdOffsetY = this.draw
+          .getTableParticle()
+          .getTdWindowOffsetY(windowStart, fragment)
+      }
+      const rowBorder = document.createElement('div')
+      rowBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__row`)
+      rowBorder.style.width = `${td.width! * scale}px`
+      rowBorder.style.height = `${this.BORDER_VALUE}px`
+      rowBorder.style.top = `${
+        (td.y! + tdHeight) * scale + tdOffsetY - this.BORDER_VALUE / 2
+      }px`
+      rowBorder.style.left = `${td.x! * scale}px`
+      // 行宽度拖拽开始
+      rowBorder.onmousedown = evt => {
+        this._mousedown({
+          evt,
+          element,
+          index: td.rowIndex! + td.rowspan - 1,
+          order: TableOrder.ROW
+        })
+      }
+      borderContainer.appendChild(rowBorder)
+      const colBorder = document.createElement('div')
+      colBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__col`)
+      colBorder.style.width = `${this.BORDER_VALUE}px`
+      colBorder.style.height = `${tdHeight * scale}px`
+      colBorder.style.top = `${td.y! * scale + tdOffsetY}px`
+      colBorder.style.left = `${
+        (td.x! + td.width!) * scale - this.BORDER_VALUE / 2
+      }px`
+      // 列高度拖拽开始
+      colBorder.onmousedown = evt => {
+        this._mousedown({
+          evt,
+          element,
+          index: td.colIndex! + td.colspan - 1,
+          order: TableOrder.COL
+        })
+      }
+      borderContainer.appendChild(colBorder)
+      // 首列开头拖拽（配置表格可以超出正文区域宽度时）
+      if (overflow && td.colIndex === 0) {
         const colBorder = document.createElement('div')
         colBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__col`)
         colBorder.style.width = `${this.BORDER_VALUE}px`
-        colBorder.style.height = `${td.height! * scale}px`
-        colBorder.style.top = `${td.y! * scale}px`
-        colBorder.style.left = `${
-          (td.x! + td.width!) * scale - this.BORDER_VALUE / 2
-        }px`
-        // 列高度拖拽开始
+        colBorder.style.height = `${tdHeight * scale}px`
+        colBorder.style.top = `${td.y! * scale + tdOffsetY}px`
+        colBorder.style.left = `${td.x! * scale - this.BORDER_VALUE / 2}px`
+        // 首列拖拽
         colBorder.onmousedown = evt => {
           this._mousedown({
             evt,
             element,
-            index: td.colIndex! + td.colspan - 1,
+            index: 0,
+            isLeftStartBorder: true,
             order: TableOrder.COL
           })
         }
         borderContainer.appendChild(colBorder)
-        // 首列开头拖拽（配置表格可以超出正文区域宽度时）
-        if (overflow && td.colIndex === 0) {
-          const colBorder = document.createElement('div')
-          colBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__col`)
-          colBorder.style.width = `${this.BORDER_VALUE}px`
-          colBorder.style.height = `${td.height! * scale}px`
-          colBorder.style.top = `${td.y! * scale}px`
-          colBorder.style.left = `${td.x! * scale - this.BORDER_VALUE / 2}px`
-          // 首列拖拽
-          colBorder.onmousedown = evt => {
-            this._mousedown({
-              evt,
-              element,
-              index: 0,
-              isLeftStartBorder: true,
-              order: TableOrder.COL
-            })
-          }
-          borderContainer.appendChild(colBorder)
-        }
       }
     }
     this.container.append(borderContainer)
@@ -406,7 +457,8 @@ export class TableTool {
     const width = this.draw.getWidth()
     const height = this.draw.getHeight()
     const pageGap = this.draw.getPageGap()
-    const prePageHeight = this.draw.getPageNo() * (height + pageGap)
+    // 拖拽线与表格工具同页（锚定片段的页码）
+    const prePageHeight = this.anchorPageNo * (height + pageGap)
     this.mousedownX = evt.x
     this.mousedownY = evt.y
     const target = evt.target as HTMLDivElement
