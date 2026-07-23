@@ -551,6 +551,11 @@ export class Draw {
       const tdPadding = this.getTdPadding()
       return td!.width! - tdPadding[1] - tdPadding[3]
     }
+    // 分栏布局下按栏宽计算可用宽度（栏宽为缩放值，还原为未缩放单位）
+    const columnLayout = this.getColumnLayout()
+    if (columnLayout && columnLayout.count > 1) {
+      return columnLayout.width / this.options.scale
+    }
     return this.getOriginalInnerWidth()
   }
 
