@@ -99,6 +99,16 @@ export class TablePaging {
       for (let r = 0; r < trList!.length; r++) {
         trHeightPrefix.push(trHeightPrefix[r] + trList![r].height!)
       }
+      // 跨行合并单元格索引（rowspan > 1）：整表一次性收集，
+      // 拆分适应度计算与片段进位枚举复用，避免逐次全表扫描
+      const rowspanTdList: ITd[] = []
+      for (const tr of trList!) {
+        for (const td of tr.tdList) {
+          if (td.rowspan > 1) {
+            rowspanTdList.push(td)
+          }
+        }
+      }
       // 行内拆分条件：行内各单元格均有内容
       // （跨行合并单元格按窗口裁剪续排，不再限制切分位置）
       const canSplitMidRow = (trIndex: number) =>
@@ -106,15 +116,19 @@ export class TablePaging {
       // 拆分相关单元格：本行单元格 + 覆盖本行的跨行合并单元格
       const getSplitRelevantTdList = (trIndex: number) => {
         const tdList = [...trList![trIndex].tdList]
-        for (const tr of trList!) {
-          for (const td of tr.tdList) {
-            if (td.rowIndex! < trIndex && td.rowIndex! + td.rowspan > trIndex) {
-              tdList.push(td)
-            }
+        for (const td of rowspanTdList) {
+          if (td.rowIndex! < trIndex && td.rowIndex! + td.rowspan > trIndex) {
+            tdList.push(td)
           }
         }
         return tdList
       }
+      // 续留行盒最小高度（未缩放，避免产生空盒碎页）
+      const {
+        table: { tdPadding },
+        defaultSize
+      } = this.options
+      const minContinuationHeight = tdPadding[0] + tdPadding[2] + defaultSize
       // 拆分适应度：窗口内可容纳内容行数、续页是否有剩余内容、内容实际消耗高度
       // 注意：窗口、行高、返回值均为未缩放单位（与 td.y/tr.height 一致）
       const getSplitFitInfo = (
@@ -123,9 +137,6 @@ export class TablePaging {
         visibleTopFull: number
       ) => {
         const trY = trHeightPrefix[trIndex]
-        const {
-          table: { tdPadding }
-        } = this.options
         let fit = 0
         let hasRemaining = false
         let consumedHeight = 0
@@ -145,28 +156,15 @@ export class TablePaging {
           // 内容底部（相对行顶）：决定拆分点所需的最小行高
           // 内容行高为缩放单位，需还原为未缩放后再与行坐标运算；
           // 续排窗口需计入窗口之前已消耗的内容行高，否则续页消耗高度被低估
-          const fitHeight = td
-            .rowList!.slice(startLine, endLine)
-            .reduce((pre, cur) => pre + cur.height, 0)
-          const preHeight = td
-            .rowList!.slice(0, startLine)
+          const contentHeight = td
+            .rowList!.slice(0, endLine)
             .reduce((pre, cur) => pre + cur.height, 0)
           const contentBottom =
-            td.y! +
-            tdPadding[0] +
-            tdPadding[2] +
-            (preHeight + fitHeight) / scale -
-            trY
+            td.y! + tdPadding[0] + tdPadding[2] + contentHeight / scale - trY
           consumedHeight = Math.max(consumedHeight, contentBottom)
         }
         return { fit, hasRemaining, consumedHeight }
       }
-      // 续留行盒最小高度（未缩放，避免产生空盒碎页）
-      const {
-        table: { tdPadding },
-        defaultSize
-      } = this.options
-      const minContinuationHeight = tdPadding[0] + tdPadding[2] + defaultSize
       // 表格起始槽位：分页符或当前页容不下第一行时移至下一槽位（可行内拆分则留在当前页）
       let fragPageNo = pageNo
       let fragColumn = currentColumn
@@ -404,15 +402,6 @@ export class TablePaging {
         continue
       }
       hasSplitTable = true
-      // 跨行合并单元格索引（rowspan > 1）：整表一次性收集，避免逐片段全表扫描
-      const rowspanTdList: ITd[] = []
-      for (const tr of trList!) {
-        for (const td of tr.tdList) {
-          if (td.rowspan > 1) {
-            rowspanTdList.push(td)
-          }
-        }
-      }
       // 发射片段行（首片段外的每个片段各占一个槽位）
       const rowElement = row.elementList[0]
       let skipHeight = 0
@@ -533,6 +522,11 @@ export class TablePaging {
     }
     // 首个片段即超限（表格内容未展示）：整体删除
     if (!keepTrCount) return false
+    // 行高前缀和：单元格高度按跨度差值计算，避免逐单元格重复求和
+    const trHeightPrefix: number[] = [0]
+    for (let r = 0; r < keepTrCount; r++) {
+      trHeightPrefix.push(trHeightPrefix[r] + trList[r].height!)
+    }
     // 跨越裁剪点的跨行合并单元格：收缩跨度；
     // 行高可能已被裁剪缩短（含恰好结束于拆分行的合并单元格），统一按跨度重算高度
     for (let r = 0; r < keepTrCount; r++) {
@@ -540,9 +534,9 @@ export class TablePaging {
         if (td.rowIndex! + td.rowspan > keepTrCount) {
           td.rowspan = keepTrCount - td.rowIndex!
         }
-        td.height = trList
-          .slice(td.rowIndex!, td.rowIndex! + td.rowspan)
-          .reduce((pre, cur) => pre + cur.height!, 0)
+        td.height =
+          trHeightPrefix[td.rowIndex! + td.rowspan] -
+          trHeightPrefix[td.rowIndex!]
       }
     }
     element.trList = trList.slice(0, keepTrCount)

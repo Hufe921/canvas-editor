@@ -37,12 +37,18 @@ export class TableParticle {
   private options: DeepRequired<IEditorOption>
   // 片段内容高度缓存（片段对象随每次渲染重建，无过期风险）
   private fragmentContentHeightCache: WeakMap<object, number>
+  // 单元格内容行高前缀和缓存（按 rowList 数组身份，每次渲染重建无过期风险）
+  private tdLineHeightPrefixCache: WeakMap<IRow[], number[]>
+  // 片段单元格枚举缓存（片段对象随每次渲染重建，命中/绘制高频复用）
+  private fragmentTdListCache: WeakMap<ITableRowFragment, ITd[]>
 
   constructor(draw: Draw) {
     this.draw = draw
     this.range = draw.getRange()
     this.options = draw.getOptions()
     this.fragmentContentHeightCache = new WeakMap()
+    this.tdLineHeightPrefixCache = new WeakMap()
+    this.fragmentTdListCache = new WeakMap()
   }
 
   public getTrListGroupByCol(payload: ITr[]): ITr[] {
@@ -156,17 +162,21 @@ export class TableParticle {
   }
 
   // 枚举片段涉及的单元格：进位合并单元格（覆盖片段起始行的跨行单元格）
-  // + 片段范围行单元格。直接遍历行区间与缓存的进位单元格，避免全表扫描
+  // + 片段范围行单元格。直接遍历行区间与缓存的进位单元格，避免全表扫描；
+  // 结果按片段对象缓存（td 对象共享于 trList，枚举结果与传入 element 包装无关）
   public getFragmentTdList(
     element: IElement,
     fragment: ITableRowFragment
   ): ITd[] {
+    const cached = this.fragmentTdListCache.get(fragment)
+    if (cached) return cached
     const { startTrIndex, endTrIndex, carriedTds } = fragment
     const tdList: ITd[] = [...(carriedTds || [])]
     const trList = element.trList!
     for (let r = startTrIndex; r < endTrIndex; r++) {
       tdList.push(...trList[r].tdList)
     }
+    this.fragmentTdListCache.set(fragment, tdList)
     return tdList
   }
 
@@ -544,29 +554,37 @@ export class TableParticle {
     windowStart: number,
     windowEnd: number
   ): [number, number] {
-    const {
-      scale,
-      table: { tdPadding }
-    } = this.options
+    const { scale } = this.options
     const rowList = td.rowList || []
+    // 行高前缀和（含上内边距）：prefix[k] 为第 k 行底（缩放后）
+    let prefix = this.tdLineHeightPrefixCache.get(rowList)
+    if (!prefix) {
+      const {
+        table: { tdPadding }
+      } = this.options
+      prefix = [tdPadding[0] * scale]
+      for (let i = 0; i < rowList.length; i++) {
+        prefix.push(prefix[i] + rowList[i].height)
+      }
+      this.tdLineHeightPrefixCache.set(rowList, prefix)
+    }
     const topLimit = windowStart * scale
     const limit = windowEnd * scale
-    let accHeight = tdPadding[0] * scale
-    let startLine = 0
-    let endLine = 0
-    for (let i = 0; i < rowList.length; i++) {
-      const lineBottom = accHeight + rowList[i].height
-      if (lineBottom <= topLimit) {
-        startLine = i + 1
-        endLine = i + 1
-      } else if (lineBottom <= limit) {
-        endLine = i + 1
-      } else {
-        break
+    // 二分查找满足 行底(prefix[k]) <= 阈值 的最大行数（行高非负，前缀和单调）
+    const upperBound = (threshold: number) => {
+      let lo = 0
+      let hi = rowList.length
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1
+        if (prefix[mid] <= threshold) {
+          lo = mid
+        } else {
+          hi = mid - 1
+        }
       }
-      accHeight = lineBottom
+      return lo
     }
-    return [startLine, endLine]
+    return [upperBound(topLimit), upperBound(limit)]
   }
 
   public getTableHeight(element: IElement): number {

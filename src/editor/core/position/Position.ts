@@ -33,6 +33,8 @@ export class Position {
   private positionList: IElementPosition[]
   // 表格跨页片段位置列表（含全部片段；主列表仅保留首片段以维持下标对齐）
   private tablePagingPositionList: IElementPosition[]
+  // 片段位置按页索引（命中与片段查找只扫当前页，避免全表线性扫描）
+  private tablePagingPositionMap: Map<number, IElementPosition[]>
   private floatPositionList: IFloatPosition[]
 
   private draw: Draw
@@ -42,6 +44,7 @@ export class Position {
   constructor(draw: Draw) {
     this.positionList = []
     this.tablePagingPositionList = []
+    this.tablePagingPositionMap = new Map()
     this.floatPositionList = []
     this.cursorPosition = null
     this.positionContext = {
@@ -69,8 +72,10 @@ export class Position {
     pageNo: number,
     anchorPosition?: IElementPosition | null
   ): IElementPosition | null {
-    const fragmentPositionList = this.tablePagingPositionList.filter(
-      position => position.index === index && position.pageNo === pageNo
+    const pagePositionList = this.tablePagingPositionMap.get(pageNo)
+    if (!pagePositionList?.length) return null
+    const fragmentPositionList = pagePositionList.filter(
+      position => position.index === index
     )
     if (fragmentPositionList.length <= 1) {
       return fragmentPositionList[0] || null
@@ -492,6 +497,10 @@ export class Position {
           positionItem.tableFragment = tableFragment
           curRow.fragmentPosition = positionItem
           this.tablePagingPositionList.push(positionItem)
+          // 按页索引
+          const pagePositionList = this.tablePagingPositionMap.get(pageNo) || []
+          pagePositionList.push(positionItem)
+          this.tablePagingPositionMap.set(pageNo, pagePositionList)
           if (
             tableFragment.startTrIndex === 0 &&
             !tableFragment.startSplitTrOffset
@@ -660,6 +669,7 @@ export class Position {
     // 置空原位置信息
     this.positionList = []
     this.tablePagingPositionList = []
+    this.tablePagingPositionMap.clear()
     // 按每页行计算
     const innerWidth = this.draw.getInnerWidth()
     const pageRowList = this.draw.getPageRowList()
@@ -977,8 +987,10 @@ export class Position {
     }
     // 表格跨页片段命中（非首片段的位置记录不在主列表中）
     if (!isTable && isMainActive) {
-      for (const fragmentPosition of this.tablePagingPositionList) {
-        if (fragmentPosition.pageNo !== curPageNo) continue
+      // 仅遍历当前页的片段位置，避免长文档全表线性扫描
+      const pageFragmentPositionList =
+        this.tablePagingPositionMap.get(curPageNo) || []
+      for (const fragmentPosition of pageFragmentPositionList) {
         const {
           index,
           coordinate: { leftTop, rightTop, leftBottom }
