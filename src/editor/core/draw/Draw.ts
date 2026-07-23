@@ -25,13 +25,15 @@ import {
   IElementFillRect,
   IElementStyle,
   ISpliceElementListOption,
-  IInsertElementListOption
+  IInsertElementListOption,
+  ITableRowFragment
 } from '../../interface/Element'
 import { IMarkElementListDeletedOption } from '../../interface/Trace'
 import { IRow, IRowElement } from '../../interface/Row'
 import { IColumnLayout, IColumnOption } from '../../interface/Column'
+import { IPositionContext } from '../../interface/Position'
 import { ColumnManager } from './column/ColumnManager'
-import { deepClone, getUUID, nextTick } from '../../utils'
+import { deepClone, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { GlobalEvent } from '../event/GlobalEvent'
@@ -1643,30 +1645,7 @@ export class Draw {
       } else if (element.type === ElementType.TABLE) {
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
         const tdPaddingHeight = tdPadding[0] + tdPadding[2]
-        // 表格分页处理进度：https://github.com/Hufe921/canvas-editor/issues/41
-        // 查看后续表格是否属于同一个源表格-存在即合并
-        if (element.pagingId) {
-          let tableIndex = i + 1
-          let combineCount = 0
-          while (tableIndex < elementList.length) {
-            const nextElement = elementList[tableIndex]
-            if (nextElement.pagingId === element.pagingId) {
-              const nexTrList = nextElement.trList!.filter(
-                tr => !tr.pagingRepeat
-              )
-              element.trList!.push(...nexTrList)
-              element.height! += nextElement.height!
-              tableIndex++
-              combineCount++
-            } else {
-              break
-            }
-          }
-          if (combineCount) {
-            elementList.splice(i + 1, combineCount)
-          }
-        }
-        element.pagingIndex = element.pagingIndex ?? 0
+        // 表格跨页在渲染层拆分行（数据层保持单一表格）
         const trList = element.trList!
         // 重置tr高度：行高不可低于一个单元格最小高度
         const tdMinHeight =
@@ -1767,125 +1746,6 @@ export class Draw {
         // 后一个元素也是表格则移除行间距
         if (elementList[i + 1]?.type === ElementType.TABLE) {
           metrics.boundingBoxAscent -= rowMargin
-        }
-        // 表格分页处理(拆分表格)
-        if (isPagingMode) {
-          const height = this.getHeight()
-          // 按表格所在页计算外部占位高度（页眉/页脚禁用时该页可用空间更大）
-          const marginHeight = this.getMainOuterHeight(pageNo)
-          let curPagePreHeight = marginHeight
-          for (let r = 0; r < rowList.length; r++) {
-            const row = rowList[r]
-            const rowOffsetY = row.offsetY || 0
-            if (
-              row.height + curPagePreHeight + rowOffsetY > height ||
-              rowList[r - 1]?.isPageBreak
-            ) {
-              curPagePreHeight = marginHeight + row.height + rowOffsetY
-            } else {
-              curPagePreHeight += row.height + rowOffsetY
-            }
-          }
-          // 当前剩余高度是否能容下当前表格第一行（可拆分）的高度，排除掉表头类型
-          // 前面元素为换页符时重新计算高度
-          const rowMarginHeight = rowMargin * 2 * scale
-          const firstTrHeight = element.trList![0].height! * scale
-          if (
-            curPagePreHeight + firstTrHeight + rowMarginHeight > height ||
-            (element.pagingIndex !== 0 && element.trList![0].pagingRepeat) ||
-            elementList[i - 1]?.type === ElementType.PAGE_BREAK
-          ) {
-            // 无可拆分行则切换至新页
-            curPagePreHeight = marginHeight
-          }
-          // 表格高度超过页面高度开始截断行
-          if (curPagePreHeight + rowMarginHeight + elementHeight > height) {
-            const trList = element.trList!
-            // 计算需要移除的行数
-            let deleteStart = 0
-            let deleteCount = 0
-            let preTrHeight = 0
-            // 大于一行时再拆分避免循环
-            if (trList.length > 1) {
-              for (let r = 0; r < trList.length; r++) {
-                const tr = trList[r]
-                const trHeight = tr.height * scale
-                if (
-                  curPagePreHeight + rowMarginHeight + preTrHeight + trHeight >
-                  height
-                ) {
-                  // 当前行存在跨行中断-暂时忽略分页
-                  const rowColCount = tr.tdList.reduce(
-                    (pre, cur) => pre + cur.colspan,
-                    0
-                  )
-                  if (element.colgroup?.length !== rowColCount) {
-                    deleteCount = 0
-                  }
-                  break
-                } else {
-                  deleteStart = r + 1
-                  deleteCount = trList.length - deleteStart
-                  preTrHeight += trHeight
-                }
-              }
-            }
-            if (deleteCount) {
-              const cloneTrList = trList.splice(deleteStart, deleteCount)
-              const cloneTrHeight = cloneTrList.reduce(
-                (pre, cur) => pre + cur.height,
-                0
-              )
-              const cloneTrRealHeight = cloneTrHeight * scale
-              const pagingId = element.pagingId || getUUID()
-              element.pagingId = pagingId
-              element.height -= cloneTrHeight
-              metrics.height -= cloneTrRealHeight
-              metrics.boundingBoxDescent -= cloneTrRealHeight
-              // 追加拆分表格
-              const cloneElement = deepClone(element)
-              cloneElement.pagingId = pagingId
-              cloneElement.pagingIndex = element.pagingIndex! + 1
-              // 处理分页重复表头
-              const repeatTrList = trList.filter(tr => tr.pagingRepeat)
-              if (repeatTrList.length) {
-                const cloneRepeatTrList = deepClone(repeatTrList)
-                cloneRepeatTrList.forEach(tr => (tr.id = getUUID()))
-                cloneTrList.unshift(...cloneRepeatTrList)
-              }
-              cloneElement.trList = cloneTrList
-              cloneElement.id = getUUID()
-              this.spliceElementList(elementList, i + 1, 0, [cloneElement])
-            }
-          }
-          // 表格经过分页处理-需要处理上下文
-          if (element.pagingId) {
-            const positionContext = this.position.getPositionContext()
-            if (positionContext.isTable) {
-              // 查找光标所在表格索引（根据trId搜索）
-              let newPositionContextIndex = -1
-              let newPositionContextTrIndex = -1
-              let tableIndex = i
-              while (tableIndex < elementList.length) {
-                const curElement = elementList[tableIndex]
-                if (curElement.pagingId !== element.pagingId) break
-                const trIndex = curElement.trList!.findIndex(
-                  r => r.id === positionContext.trId
-                )
-                if (~trIndex) {
-                  newPositionContextIndex = tableIndex
-                  newPositionContextTrIndex = trIndex
-                  break
-                }
-                tableIndex++
-              }
-              if (~newPositionContextIndex) {
-                positionContext.index = newPositionContextIndex
-                positionContext.trIndex = newPositionContextTrIndex
-                this.position.setPositionContext(positionContext)
-              }
-            }
-          }
         }
       } else if (element.type === ElementType.SEPARATOR) {
         const {
@@ -2303,6 +2163,720 @@ export class Draw {
     return rowList
   }
 
+  // 表格跨页时在渲染层拆分行：数据层始终保持单一表格，
+  // 仅将跨页表格的行记录拆分为按页片段（超高单元格按内容行行内拆分）
+  private splitTableRowAcrossPages(rowList: IRow[]): IRow[] {
+    const { scale } = this.options
+    const height = this.getHeight()
+    // 分栏布局：行落位以（页码, 栏索引）槽位推进，与 _computePageList 规则一致
+    const columnLayout = this.getColumnLayout()
+    const columnCount = columnLayout?.count || 1
+    const isColumnEnabled = columnCount > 1
+    let pageNo = 0
+    let currentColumn = 0
+    // 与 _computePageList 保持一致的页面填充累计语义
+    let pageHeight = this.getMainOuterHeight(0)
+    const newRowList: IRow[] = []
+    // 是否已发生表格拆分（之后行的栏索引需按实际填充重新推导）
+    let hasSplitTable = false
+    for (let i = 0; i < rowList.length; i++) {
+      const row = rowList[i]
+      const element = row.elementList[0]
+      const trList = element?.trList
+      // 上一行是分页符则当前行另起新页
+      const isPrePageBreak = !!rowList[i - 1]?.isPageBreak
+      // 推进到下一个槽位：分栏时优先换栏，否则换页
+      const advanceSlot = () => {
+        if (isColumnEnabled && currentColumn < columnCount - 1) {
+          currentColumn++
+        } else {
+          pageNo++
+          currentColumn = 0
+        }
+        pageHeight = this.getMainOuterHeight(pageNo)
+      }
+      // 非表格行透传（与 _computePageList 一致：显式换栏重置页高，溢出换槽）
+      const passThrough = () => {
+        if (
+          isColumnEnabled &&
+          row.columnIndex !== undefined &&
+          row.columnIndex > currentColumn &&
+          !hasSplitTable
+        ) {
+          currentColumn = row.columnIndex
+          pageHeight = this.getMainOuterHeight(pageNo)
+        }
+        if (
+          row.height + (row.offsetY || 0) + pageHeight > height ||
+          isPrePageBreak
+        ) {
+          advanceSlot()
+        }
+        // 拆分后行的栏索引按实际填充重新推导
+        if (isColumnEnabled) row.columnIndex = currentColumn
+        pageHeight += row.height + (row.offsetY || 0)
+        newRowList.push(row)
+      }
+      const isHiddenTable =
+        element?.type === ElementType.TABLE &&
+        (element.hide ||
+          element.control?.hide ||
+          (element.area?.hide && !this.isAreaHideDisabled()) ||
+          this.traceParticle.isTraceHidden(element)) &&
+        !this.isDesignMode()
+      const isTableRow =
+        row.elementList.length === 1 &&
+        element?.type === ElementType.TABLE &&
+        !!trList?.length &&
+        !isHiddenTable
+      if (!isTableRow) {
+        passThrough()
+        continue
+      }
+      const rowMargin = this.getElementRowMargin(element)
+      const rowMarginHeight = rowMargin * 2
+      // 行高前缀和（未缩放）：拆分循环内直接取行起点，避免重复累计
+      const trHeightPrefix: number[] = [0]
+      for (let r = 0; r < trList!.length; r++) {
+        trHeightPrefix.push(trHeightPrefix[r] + trList![r].height!)
+      }
+      // 行内拆分条件：行内各单元格均有内容
+      // （跨行合并单元格按窗口裁剪续排，不再限制切分位置）
+      const canSplitMidRow = (trIndex: number) =>
+        trList![trIndex].tdList.every(td => !!td.rowList?.length)
+      // 拆分相关单元格：本行单元格 + 覆盖本行的跨行合并单元格
+      const getSplitRelevantTdList = (trIndex: number) => {
+        const tdList = [...trList![trIndex].tdList]
+        for (const tr of trList!) {
+          for (const td of tr.tdList) {
+            if (td.rowIndex! < trIndex && td.rowIndex! + td.rowspan > trIndex) {
+              tdList.push(td)
+            }
+          }
+        }
+        return tdList
+      }
+      // 拆分适应度：窗口内可容纳内容行数、续页是否有剩余内容、内容实际消耗高度
+      // 注意：窗口、行高、返回值均为未缩放单位（与 td.y/tr.height 一致）
+      const getSplitFitInfo = (
+        trIndex: number,
+        windowHeight: number,
+        visibleTopFull: number
+      ) => {
+        const trY = trHeightPrefix[trIndex]
+        const {
+          table: { tdPadding }
+        } = this.options
+        let fit = 0
+        let hasRemaining = false
+        let consumedHeight = 0
+        for (const td of getSplitRelevantTdList(trIndex)) {
+          // 单元格在整表坐标系中的窗口（可视区与本单元格区域的交集）
+          const tdWindowEnd = Math.min(td.height!, trY + windowHeight - td.y!)
+          const tdWindowStart = Math.max(0, visibleTopFull - td.y!)
+          if (tdWindowEnd <= tdWindowStart) continue
+          const [startLine, endLine] =
+            this.tableParticle.getTdLineRangeBySplitWindow(
+              td,
+              tdWindowStart,
+              tdWindowEnd
+            )
+          fit = Math.max(fit, endLine - startLine)
+          if (endLine < td.rowList!.length) hasRemaining = true
+          // 内容底部（相对行顶）：决定拆分点所需的最小行高
+          // 内容行高为缩放单位，需还原为未缩放后再与行坐标运算；
+          // 续排窗口需计入窗口之前已消耗的内容行高，否则续页消耗高度被低估
+          const fitHeight = td
+            .rowList!.slice(startLine, endLine)
+            .reduce((pre, cur) => pre + cur.height, 0)
+          const preHeight = td
+            .rowList!.slice(0, startLine)
+            .reduce((pre, cur) => pre + cur.height, 0)
+          const contentBottom =
+            td.y! +
+            tdPadding[0] +
+            tdPadding[2] +
+            (preHeight + fitHeight) / scale -
+            trY
+          consumedHeight = Math.max(consumedHeight, contentBottom)
+        }
+        return { fit, hasRemaining, consumedHeight }
+      }
+      // 续留行盒最小高度（未缩放，避免产生空盒碎页）
+      const {
+        table: { tdPadding },
+        defaultSize
+      } = this.options
+      const minContinuationHeight = tdPadding[0] + tdPadding[2] + defaultSize
+      // 表格起始槽位：分页符或当前页容不下第一行时移至下一槽位（可行内拆分则留在当前页）
+      let fragPageNo = pageNo
+      let fragColumn = currentColumn
+      let fragPageHeight = pageHeight
+      // 表格显式换栏（栏索引大于当前栏）：从下一栏顶部开始
+      if (
+        isColumnEnabled &&
+        row.columnIndex !== undefined &&
+        row.columnIndex > currentColumn
+      ) {
+        fragColumn = row.columnIndex
+        fragPageHeight = this.getMainOuterHeight(fragPageNo)
+      }
+      // 片段槽位推进：分栏时优先换栏，否则换页
+      const advanceFragSlot = () => {
+        if (isColumnEnabled && fragColumn < columnCount - 1) {
+          fragColumn++
+        } else {
+          fragPageNo++
+          fragColumn = 0
+        }
+        fragPageHeight = this.getMainOuterHeight(fragPageNo)
+      }
+      if (isPrePageBreak) {
+        advanceFragSlot()
+      } else if (
+        fragPageHeight + trList![0].height! * scale + rowMarginHeight >
+        height
+      ) {
+        const firstTrAvailable = height - fragPageHeight - rowMarginHeight
+        const { fit, hasRemaining, consumedHeight } = canSplitMidRow(0)
+          ? getSplitFitInfo(0, firstTrAvailable / scale, 0)
+          : { fit: 0, hasRemaining: false, consumedHeight: 0 }
+        // 第一行可行内拆分时留在当前页（规则同拆分循环）
+        let endSplitHeight = -1
+        if (fit >= 1) {
+          if (hasRemaining) {
+            endSplitHeight = Math.min(consumedHeight, firstTrAvailable / scale)
+            if (trList![0].height! - endSplitHeight < minContinuationHeight) {
+              endSplitHeight = trList![0].height! - minContinuationHeight
+            }
+          } else if (
+            trList![0].height! - firstTrAvailable / scale >=
+            minContinuationHeight
+          ) {
+            endSplitHeight = firstTrAvailable / scale
+          }
+        }
+        if (endSplitHeight <= 0) {
+          advanceFragSlot()
+        }
+      }
+      // 整表未超出当前页时不拆分
+      const tableHeight = element.height! * scale
+      if (fragPageHeight + rowMarginHeight + tableHeight <= height) {
+        passThrough()
+        continue
+      }
+      // 计算片段（每槽尽量铺满；超高单元格按内容行行内拆分）
+      const fragments: {
+        startTrIndex: number
+        endTrIndex: number
+        startSplitTrOffset?: number
+        endSplitTrHeight?: number
+        columnIndex?: number
+      }[] = []
+      let start = 0
+      // 当前起始行在之前页已消耗的高度（未缩放）
+      let pendingOffset = 0
+      // 片段落位槽位
+      let slotPageNo = fragPageNo
+      let slotColumn = fragColumn
+      let cutPageHeight = fragPageHeight
+      const repeatTrIndexes: number[] = []
+      let repeatHeight = 0
+      let isSplitAborted = false
+      while (start < trList!.length) {
+        const isFirstFragment = fragments.length === 0
+        if (!isFirstFragment) {
+          // 推进到下一个槽位并取其页高
+          if (isColumnEnabled && slotColumn < columnCount - 1) {
+            slotColumn++
+          } else {
+            slotPageNo++
+            slotColumn = 0
+          }
+          cutPageHeight = this.getMainOuterHeight(slotPageNo)
+          if (fragments.length === 1) {
+            // 续页回显表头：首页片段范围内的分页重复行
+            for (let r = 0; r < fragments[0].endTrIndex; r++) {
+              const tr = trList![r]
+              if (tr.pagingRepeat) {
+                repeatTrIndexes.push(r)
+                repeatHeight += tr.height!
+              }
+            }
+            // 回显表头占满续页可用高度时禁用回显：
+            // 保证每页至少容纳一行内容，避免续排行拆分无法推进
+            if (
+              repeatTrIndexes.length &&
+              height - cutPageHeight - rowMarginHeight - repeatHeight * scale <
+                minContinuationHeight * scale
+            ) {
+              repeatTrIndexes.length = 0
+              repeatHeight = 0
+            }
+          }
+        }
+        const reserved =
+          rowMarginHeight + (isFirstFragment ? 0 : repeatHeight * scale)
+        // 本页可用于表格内容的高度
+        const availableTotal = height - cutPageHeight - reserved
+        // 可用高度不足一行内容（极端页高/页边距）：
+        // 放弃拆分，整表按原行透出，避免续排行拆分循环无法推进
+        if (availableTotal < minContinuationHeight * scale) {
+          isSplitAborted = true
+          break
+        }
+        // 当前片段可视区顶部（整表坐标）
+        const visibleTopFull = trHeightPrefix[start] + pendingOffset
+        // 续排行仍然超页：按内容行继续行内拆分
+        if (pendingOffset > 0) {
+          const remainScaled = (trList![start].height! - pendingOffset) * scale
+          if (remainScaled > availableTotal) {
+            const windowHeight = pendingOffset + availableTotal / scale
+            const { fit, hasRemaining, consumedHeight } = getSplitFitInfo(
+              start,
+              windowHeight,
+              visibleTopFull
+            )
+            let endOffset = windowHeight
+            if (fit >= 1 && hasRemaining) {
+              endOffset = Math.min(consumedHeight, windowHeight)
+              // 给续留行盒留足最小高度（保底不少于已消耗高度，防止无法推进）
+              if (trList![start].height! - endOffset < minContinuationHeight) {
+                endOffset = Math.max(
+                  pendingOffset + 1,
+                  trList![start].height! - minContinuationHeight
+                )
+              }
+            }
+            // 推进保障：每轮拆分必须消耗新的高度，不允许原地踏步
+            if (endOffset <= pendingOffset) {
+              endOffset = pendingOffset + 1
+            }
+            fragments.push({
+              startTrIndex: start,
+              endTrIndex: start + 1,
+              startSplitTrOffset: pendingOffset,
+              endSplitTrHeight: endOffset,
+              columnIndex: slotColumn
+            })
+            pendingOffset = endOffset
+            continue
+          }
+        }
+        // 起始行（可能为续排行）之后的行逐行填充
+        let accHeight =
+          pendingOffset > 0
+            ? (trList![start].height! - pendingOffset) * scale
+            : 0
+        let end = pendingOffset > 0 ? start + 1 : start
+        let endSplitTrHeight: number | undefined
+        let isAbort = false
+        let isFinished = false
+        while (true) {
+          if (end >= trList!.length) {
+            isFinished = true
+            break
+          }
+          const trHeight = trList![end].height! * scale
+          if (accHeight + trHeight <= availableTotal) {
+            accHeight += trHeight
+            end++
+            continue
+          }
+          // 当前行放不下：优先尝试行内拆分（超高单元格内容行续排）
+          const available = availableTotal - accHeight
+          if (canSplitMidRow(end)) {
+            const { fit, hasRemaining, consumedHeight } = getSplitFitInfo(
+              end,
+              available / scale,
+              visibleTopFull
+            )
+            let candidate = -1
+            if (fit >= 1) {
+              if (hasRemaining) {
+                // 续页还有内容：拆分点取实际消耗高度，并给续留行盒留足最小高度
+                candidate = Math.min(consumedHeight, available / scale)
+                if (trList![end].height! - candidate < minContinuationHeight) {
+                  candidate = trList![end].height! - minContinuationHeight
+                }
+              } else if (
+                trList![end].height! - available / scale >=
+                minContinuationHeight
+              ) {
+                // 内容全部放下且续留行盒非碎页：按可用高度拆分填满页面
+                candidate = available / scale
+              }
+            }
+            if (candidate > 0) {
+              endSplitTrHeight = candidate
+              break
+            }
+          }
+          // 行边界切分（跨行合并单元格按窗口裁剪续排）
+          if (end <= start) {
+            // 首行即无法切分：首个片段即失败则整表放弃拆分，否则剩余行作为末片段
+            if (!fragments.length) {
+              isAbort = true
+            } else {
+              end = trList!.length
+              isFinished = true
+            }
+          }
+          break
+        }
+        if (isAbort) {
+          isSplitAborted = true
+          break
+        }
+        fragments.push({
+          startTrIndex: start,
+          endTrIndex: endSplitTrHeight !== undefined ? end + 1 : end,
+          startSplitTrOffset: pendingOffset || undefined,
+          endSplitTrHeight,
+          columnIndex: slotColumn
+        })
+        start = end
+        pendingOffset = endSplitTrHeight ?? 0
+        if (isFinished) break
+      }
+      if (isSplitAborted) {
+        passThrough()
+        continue
+      }
+      hasSplitTable = true
+      // 跨行合并单元格索引（rowspan > 1）：整表一次性收集，避免逐片段全表扫描
+      const rowspanTdList: ITd[] = []
+      for (const tr of trList!) {
+        for (const td of tr.tdList) {
+          if (td.rowspan > 1) {
+            rowspanTdList.push(td)
+          }
+        }
+      }
+      // 发射片段行（首片段外的每个片段各占一个槽位）
+      const rowElement = row.elementList[0]
+      let skipHeight = 0
+      let skipIndex = 0
+      for (let f = 0; f < fragments.length; f++) {
+        const fragment = fragments[f]
+        const isFirstFragment = f === 0
+        const fragRepeatTrIndexes =
+          !isFirstFragment && repeatTrIndexes.length
+            ? repeatTrIndexes
+            : undefined
+        const fragRepeatHeight = fragRepeatTrIndexes ? repeatHeight : 0
+        // 片段内容高度：行内拆分行按可见高度计算
+        let contentHeight = 0
+        for (let r = fragment.startTrIndex; r < fragment.endTrIndex; r++) {
+          let trHeight = trList![r].height!
+          if (r === fragment.startTrIndex && fragment.startSplitTrOffset) {
+            trHeight -= fragment.startSplitTrOffset
+          }
+          if (
+            r === fragment.endTrIndex - 1 &&
+            fragment.endSplitTrHeight !== undefined
+          ) {
+            trHeight -= trList![r].height! - fragment.endSplitTrHeight
+          }
+          contentHeight += trHeight
+        }
+        const fragHeight = (contentHeight + fragRepeatHeight) * scale
+        newRowList.push({
+          ...row,
+          height: fragHeight + rowMargin,
+          offsetY: isFirstFragment ? row.offsetY : 0,
+          // 列表标记仅在首片段绘制
+          isList: isFirstFragment ? row.isList : false,
+          // 分栏布局下片段落位到对应栏
+          ...(isColumnEnabled ? { columnIndex: fragment.columnIndex } : {}),
+          elementList: [
+            {
+              ...rowElement,
+              metrics: {
+                width: rowElement.metrics.width,
+                height: fragHeight,
+                boundingBoxAscent: rowElement.metrics.boundingBoxAscent,
+                boundingBoxDescent: fragHeight
+              }
+            }
+          ],
+          tableFragment: {
+            startTrIndex: fragment.startTrIndex,
+            endTrIndex: fragment.endTrIndex,
+            skipHeight,
+            repeatHeight: fragRepeatHeight,
+            repeatTrIndexes: fragRepeatTrIndexes,
+            startSplitTrOffset: fragment.startSplitTrOffset,
+            endSplitTrHeight: fragment.endSplitTrHeight,
+            // 带入片段的跨行合并单元格（覆盖片段起始行）
+            carriedTds: rowspanTdList.length
+              ? rowspanTdList.filter(
+                  td =>
+                    td.rowIndex! < fragment.startTrIndex &&
+                    td.rowIndex! + td.rowspan > fragment.startTrIndex
+                )
+              : undefined
+          }
+        })
+        // skipHeight 累计下一片段起始行之前的完整行高
+        const nextStart = fragments[f + 1]?.startTrIndex ?? 0
+        while (skipIndex < nextStart) {
+          skipHeight += trList![skipIndex].height!
+          skipIndex++
+        }
+      }
+      // 后续行的槽位累计
+      pageNo = slotPageNo
+      currentColumn = slotColumn
+      const lastFragRow = newRowList[newRowList.length - 1]
+      pageHeight =
+        this.getMainOuterHeight(pageNo) +
+        lastFragRow.height +
+        (lastFragRow.offsetY || 0)
+    }
+    // 重排行号
+    for (let r = 0; r < newRowList.length; r++) {
+      newRowList[r].rowIndex = r
+    }
+    return newRowList
+  }
+
+  // maxPageNo 截断：按片段边界裁剪表格，保留已展示片段内容。
+  // 处理拆分行部分内容、跨越裁剪点的 rowspan 收缩及光标上下文迁移；
+  // 返回是否有内容被保留（首个片段即超限时返回 false，应整体删除）
+  private _truncateTableByFragment(
+    element: IElement,
+    fragment: ITableRowFragment
+  ): boolean {
+    const { startTrIndex, startSplitTrOffset, skipHeight } = fragment
+    const trList = element.trList!
+    const trimmedTdSet = new Set<ITd>()
+    let keepTrCount = startTrIndex
+    // 裁剪点位于拆分行中间：保留该行已展示的内容行与高度
+    if (startSplitTrOffset) {
+      const splitTr = trList[startTrIndex]
+      for (const td of splitTr.tdList) {
+        if (this._trimTdContentToWindow(td, startSplitTrOffset)) {
+          trimmedTdSet.add(td)
+        }
+        td.height = startSplitTrOffset
+      }
+      splitTr.height = startSplitTrOffset
+      splitTr.minHeight = Math.min(
+        splitTr.minHeight ?? startSplitTrOffset,
+        startSplitTrOffset
+      )
+      // 跨入拆分行的合并单元格：按同一可见窗口裁剪内容
+      const visibleBottom = skipHeight + startSplitTrOffset
+      for (let r = 0; r < startTrIndex; r++) {
+        for (const td of trList[r].tdList) {
+          if (td.rowIndex! + td.rowspan <= startTrIndex) continue
+          const windowEnd = visibleBottom - td.y!
+          if (windowEnd >= td.height!) continue
+          if (this._trimTdContentToWindow(td, windowEnd)) {
+            trimmedTdSet.add(td)
+          }
+        }
+      }
+      keepTrCount = startTrIndex + 1
+    }
+    // 首个片段即超限（表格内容未展示）：整体删除
+    if (!keepTrCount) return false
+    // 跨越裁剪点的跨行合并单元格：收缩跨度；
+    // 行高可能已被裁剪缩短（含恰好结束于拆分行的合并单元格），统一按跨度重算高度
+    for (let r = 0; r < keepTrCount; r++) {
+      for (const td of trList[r].tdList) {
+        if (td.rowIndex! + td.rowspan > keepTrCount) {
+          td.rowspan = keepTrCount - td.rowIndex!
+        }
+        td.height = trList
+          .slice(td.rowIndex!, td.rowIndex! + td.rowspan)
+          .reduce((pre, cur) => pre + cur.height!, 0)
+      }
+    }
+    element.trList = trList.slice(0, keepTrCount)
+    // 同步表格高度（行数已截断，避免导出数据行高不一致）
+    element.height = this.tableParticle.getTableHeight(element)
+    // 修复截断后的光标上下文与选区索引
+    this._repairTableContextAfterTruncate(element, keepTrCount, trimmedTdSet)
+    return true
+  }
+
+  // 按可见窗口裁剪单元格内容与内容行（至少保留一个补偿节点，维持单元格非空约定）
+  private _trimTdContentToWindow(td: ITd, windowEnd: number): boolean {
+    const originalValueLength = td.value.length
+    const {
+      scale,
+      table: { tdPadding }
+    } = this.options
+    let [, endLine] = this.tableParticle.getTdLineRangeBySplitWindow(
+      td,
+      0,
+      Math.max(0, windowEnd)
+    )
+    // 裁剪后内容自然高度（内边距 + 内容行）不得超出行盒，
+    // 防止下次渲染按内容重新长高导致保留行再次被截断（截断震荡）
+    const rowList = td.rowList!
+    const tdPaddingHeight = tdPadding[0] + tdPadding[2]
+    let accHeight = 0
+    let fitLine = 0
+    for (let i = 0; i < endLine; i++) {
+      const nextHeight = accHeight + rowList[i].height / scale
+      if (tdPaddingHeight + nextHeight > windowEnd) break
+      accHeight = nextHeight
+      fitLine = i + 1
+    }
+    endLine = fitLine
+    const endElementIndex =
+      endLine < rowList.length ? rowList[endLine].startIndex : td.value.length
+    if (!endElementIndex) {
+      const { trId, tableId } = td.value[0] || {}
+      td.value = [{ value: ZERO, tdId: td.id, trId, tableId }]
+      // 同步重建内容行，避免位置/绘制使用过期行信息
+      td.rowList = this.computeRowList({
+        innerWidth: (td.width! - (tdPadding[1] + tdPadding[3])) * scale,
+        elementList: td.value,
+        isFromTable: true,
+        isPagingMode: this.getIsPagingMode()
+      })
+      return true
+    }
+    // 内容与内容行同步裁剪，避免位置/绘制使用过期行信息
+    td.value = td.value.slice(0, endElementIndex)
+    td.rowList = rowList.slice(0, endLine)
+    return endElementIndex < originalValueLength
+  }
+
+  // maxPageNo 截断后修复表格光标上下文与选区：
+  // 被裁剪行的光标迁移到末尾可见单元格并重建干净上下文；
+  // 嵌套表格路径失效时折叠到外层单元格；选区索引收缩到保留范围内
+  private _repairTableContextAfterTruncate(
+    element: IElement,
+    keepTrCount: number,
+    trimmedTdSet: Set<ITd>
+  ) {
+    // 跨行列选区存在被删除端点时直接折叠，避免合并单元格下将 tdIndex
+    // 误当作物理列号映射到错误单元格（与光标上下文无关，需独立修复）
+    const range = this.range.getRange()
+    if (
+      range.isCrossRowCol &&
+      range.tableId === element.id &&
+      ((range.startTrIndex ?? 0) >= keepTrCount ||
+        (range.endTrIndex ?? 0) >= keepTrCount)
+    ) {
+      const cursorTd = this.position.getTableTdByContext(
+        this.elementList,
+        this.position.getPositionContext()
+      )
+      const collapseIndex = Math.max(0, (cursorTd?.value.length ?? 1) - 1)
+      this.range.setRange(collapseIndex, collapseIndex)
+    }
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    // 嵌套表格时以路径根节点（外层表格）判断所在行是否被裁剪
+    const pathRoot = positionContext.tablePath?.[0]
+    const contextTableIndex = pathRoot ? pathRoot.index : positionContext.index
+    const contextTrIndex = pathRoot ? pathRoot.trIndex : positionContext.trIndex
+    if (
+      contextTableIndex === undefined ||
+      this.elementList[contextTableIndex] !== element
+    ) {
+      return
+    }
+    const rootTrIndex = pathRoot?.trIndex ?? positionContext.trIndex
+    const rootTdIndex = pathRoot?.tdIndex ?? positionContext.tdIndex
+    const rootTd =
+      rootTrIndex !== undefined && rootTdIndex !== undefined
+        ? element.trList?.[rootTrIndex]?.tdList[rootTdIndex]
+        : undefined
+    if (rootTd && trimmedTdSet.has(rootTd)) {
+      // 当前单元格内容被裁剪后，元素命中状态可能指向已删除内容。
+      // 仅保留表格结构定位，避免后续删除/方向键误走图片或控件分支。
+      this.position.setPositionContext({
+        isTable: true,
+        index: positionContext.index,
+        trIndex: positionContext.trIndex,
+        tdIndex: positionContext.tdIndex,
+        tdId: positionContext.tdId,
+        trId: positionContext.trId,
+        tableId: positionContext.tableId,
+        tablePath: positionContext.tablePath
+      })
+    }
+    if (contextTrIndex !== undefined && contextTrIndex >= keepTrCount) {
+      // 光标所在行被裁剪：迁移到末尾实际可见单元格（含跨行覆盖该行的单元格）
+      const visibleTdList = this.tableParticle.getTdListByRowIndex(
+        element.trList!,
+        keepTrCount - 1
+      )
+      const lastTd = visibleTdList[visibleTdList.length - 1]
+      if (lastTd) {
+        // 构造干净上下文（丢弃旧单元格的元素命中状态），嵌套折叠到外层单元格
+        const cleanContext: IPositionContext = {
+          isTable: true,
+          index: contextTableIndex,
+          tablePath: pathRoot ? [pathRoot] : undefined
+        }
+        this.position.setPositionContext(
+          this.position.buildTablePositionContext(
+            cleanContext,
+            element,
+            lastTd.rowIndex!,
+            lastTd.tdIndex!
+          )
+        )
+        // 跨单元格迁移后原选区失效：折叠为末尾内容处的光标
+        this.range.setRange(
+          Math.max(0, lastTd.value.length - 1),
+          Math.max(0, lastTd.value.length - 1)
+        )
+      } else {
+        this.position.setPositionContext({ isTable: false })
+      }
+    } else if (pathRoot) {
+      // 根行保留但嵌套表格可能已被内容裁剪：校验完整路径，失效则折叠到外层单元格
+      const cursorTd = this.position.getTableTdByContext(
+        this.elementList,
+        positionContext
+      )
+      if (!cursorTd) {
+        const cleanContext: IPositionContext = {
+          isTable: true,
+          index: contextTableIndex,
+          tablePath: [pathRoot]
+        }
+        this.position.setPositionContext(
+          this.position.buildTablePositionContext(
+            cleanContext,
+            element,
+            pathRoot.trIndex,
+            pathRoot.tdIndex
+          )
+        )
+      }
+    }
+    // 光标所在单元格内容被裁短时，选区索引收缩到保留范围内
+    const cursorTd = this.position.getTableTdByContext(
+      this.elementList,
+      this.position.getPositionContext()
+    )
+    if (cursorTd) {
+      const maxIndex = cursorTd.value.length - 1
+      const { startIndex, endIndex, isCrossRowCol } = this.range.getRange()
+      if (
+        !isCrossRowCol &&
+        maxIndex >= 0 &&
+        (startIndex > maxIndex || endIndex > maxIndex)
+      ) {
+        this.range.setRange(
+          Math.min(startIndex, maxIndex),
+          Math.min(endIndex, maxIndex)
+        )
+      }
+    }
+  }
+
   private _computePageList(): IRow[][] {
     const pageRowList: IRow[][] = [[]]
     const {
@@ -2353,7 +2927,19 @@ export class Draw {
           this.rowList[i - 1]?.isPageBreak
         ) {
           if (Number.isInteger(maxPageNo) && pageNo >= maxPageNo!) {
-            this.elementList = this.elementList.slice(0, row.startIndex)
+            // 跨页表格片段共享元素索引：按片段边界裁剪表格，
+            // 保留已展示片段内容，不能直接按共享索引整体截断
+            const fragment = row.tableFragment
+            const tableElement = this.elementList[row.startIndex]
+            if (
+              fragment &&
+              tableElement?.type === ElementType.TABLE &&
+              this._truncateTableByFragment(tableElement, fragment)
+            ) {
+              this.elementList = this.elementList.slice(0, row.startIndex + 1)
+            } else {
+              this.elementList = this.elementList.slice(0, row.startIndex)
+            }
             break
           }
           pageNo++
@@ -2394,12 +2980,12 @@ export class Draw {
           ) {
             this.highlight.render(ctx)
           }
-          // 当前元素位置信息记录
+          // 当前元素位置信息记录（表格跨页片段行优先使用片段位置）
           const {
             coordinate: {
               leftTop: [x, y]
             }
-          } = positionList[curRow.startIndex + j]
+          } = curRow.fragmentPosition || positionList[curRow.startIndex + j]
           // 元素向左偏移量
           const offsetX = element.left || 0
           this.highlight.recordFillInfo(
@@ -2438,7 +3024,8 @@ export class Draw {
       startIndex,
       zone,
       isDrawLineBreak = !lineBreak.disabled,
-      isDrawWhiteSpace = !whiteSpace.disabled
+      isDrawWhiteSpace = !whiteSpace.disabled,
+      isDrawRange = true
     } = payload
     const isPrintMode = this.isPrintMode()
     const isGraffitiMode = this.isGraffitiMode()
@@ -2456,14 +3043,19 @@ export class Draw {
       let tableRangeElement: IElement | null = null
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
+        // 表格跨页片段行：索引以行起始数据索引为基准，
+        // 避免同页多片段时选区记录索引漂移
+        if (curRow.tableFragment) {
+          index = curRow.startIndex + j
+        }
         const metrics = element.metrics
-        // 当前元素位置信息
+        // 当前元素位置信息（表格跨页片段行优先使用片段位置）
         const {
           ascent: offsetY,
           coordinate: {
             leftTop: [x, y]
           }
-        } = positionList[curRow.startIndex + j]
+        } = curRow.fragmentPosition || positionList[curRow.startIndex + j]
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
         if (
@@ -2494,7 +3086,7 @@ export class Draw {
             rangeRecord.y = y
             tableRangeElement = element
           }
-          this.tableParticle.render(ctx, element, x, y)
+          this.tableParticle.render(ctx, element, x, y, curRow.tableFragment)
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
           this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
@@ -2700,6 +3292,7 @@ export class Draw {
           endIndex
         } = this.range.getRange()
         if (
+          isDrawRange &&
           currentZone === zone &&
           startIndex !== endIndex &&
           startIndex <= index &&
@@ -2748,21 +3341,58 @@ export class Draw {
           !this.traceParticle.isTraceHidden(element)
         ) {
           const tdPaddingWidth = tdPadding[1] + tdPadding[3]
-          for (let t = 0; t < element.trList!.length; t++) {
-            const tr = element.trList![t]
-            for (let d = 0; d < tr.tdList!.length; d++) {
-              const td = tr.tdList[d]
+          const fragment = curRow.tableFragment
+          // 续页回显表头内容（使用一次性位置列表，不绘制选区）
+          if (curRow.repeatTdPositionList?.length) {
+            for (const {
+              td,
+              positionList: repeatPositionList
+            } of curRow.repeatTdPositionList) {
               this.drawRow(ctx, {
                 elementList: td.value,
-                positionList: td.positionList!,
+                positionList: repeatPositionList,
                 rowList: td.rowList!,
                 pageNo,
                 startIndex: 0,
                 innerWidth: (td.width! - tdPaddingWidth) * scale,
                 zone,
-                isDrawLineBreak
+                isDrawLineBreak,
+                isDrawRange: false
               })
             }
+          }
+          // 遍历片段范围行与进位合并单元格，仅绘制窗口内的内容行
+          const fragmentTdList = fragment
+            ? this.tableParticle.getFragmentTdList(element, fragment)
+            : element.trList!.flatMap(tr => tr.tdList)
+          for (const td of fragmentTdList) {
+            let rowList = td.rowList!
+            let startIndex = 0
+            if (fragment) {
+              const [windowStart, windowEnd] =
+                this.tableParticle.getTdWindowInFragment(td, element, fragment)
+              if (windowEnd <= windowStart) continue
+              if (windowStart > 0 || windowEnd < td.height!) {
+                const [startLine, endLine] =
+                  this.tableParticle.getTdLineRangeBySplitWindow(
+                    td,
+                    windowStart,
+                    windowEnd
+                  )
+                startIndex = rowList[startLine]?.startIndex ?? 0
+                rowList = rowList.slice(startLine, endLine)
+              }
+            }
+            this.drawRow(ctx, {
+              elementList: td.value,
+              positionList: td.positionList!,
+              rowList,
+              pageNo,
+              startIndex,
+              innerWidth: (td.width! - tdPaddingWidth) * scale,
+              zone,
+              isDrawLineBreak
+            })
           }
         }
       }
@@ -2790,6 +3420,7 @@ export class Draw {
           this.range.render(ctx, x, y, width, height)
         }
         if (
+          isDrawRange &&
           isCrossRowCol &&
           tableRangeElement &&
           tableRangeElement.id === tableId
@@ -2798,8 +3429,14 @@ export class Draw {
             coordinate: {
               leftTop: [x, y]
             }
-          } = positionList[curRow.startIndex]
-          this.tableParticle.drawRange(ctx, tableRangeElement, x, y)
+          } = curRow.fragmentPosition || positionList[curRow.startIndex]
+          this.tableParticle.drawRange(
+            ctx,
+            tableRangeElement,
+            x,
+            y,
+            curRow.tableFragment
+          )
         }
       }
     }
@@ -3042,6 +3679,10 @@ export class Draw {
         surroundElementList,
         elementList: this.elementList
       })
+      // 分页模式下跨页表格在渲染层拆分为按页片段行
+      if (isPagingMode) {
+        this.rowList = this.splitTableRowAcrossPages(this.rowList)
+      }
       // 页面信息
       this.pageRowList = this._computePageList()
       // 位置信息
@@ -3152,11 +3793,18 @@ export class Draw {
         elementList,
         positionContext
       )?.positionList
-      if (curIndex === undefined && tablePositionList) {
-        curIndex = tablePositionList.length - 1
+      if (tablePositionList?.length) {
+        if (curIndex === undefined) {
+          curIndex = tablePositionList.length - 1
+        } else if (curIndex > tablePositionList.length - 1) {
+          // 光标索引超出单元格位置（如内容被截断）：收缩到末尾有效位置
+          curIndex = tablePositionList.length - 1
+        }
       }
       const tablePosition = tablePositionList?.[curIndex!]
       this.position.setCursorPosition(tablePosition || null)
+      // 跨页表格光标所在片段可能变化，光标确定后重新锚定表格工具
+      this.tableTool.render()
     } else {
       this.position.setCursorPosition(
         curIndex !== undefined ? positionList[curIndex] : null

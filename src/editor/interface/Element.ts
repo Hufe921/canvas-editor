@@ -15,6 +15,7 @@ import { IRadio } from './Radio'
 import { ITextDecoration } from './Text'
 import { ITitle } from './Title'
 import { IColgroup } from './table/Colgroup'
+import { ITd } from './table/Td'
 import { ITr } from './table/Tr'
 
 export interface IElementBasic {
@@ -97,8 +98,6 @@ export interface ITableElement {
   trId?: string
   tableId?: string
   conceptId?: string
-  pagingId?: string // 用于区分拆分的表格同属一个源表格
-  pagingIndex?: number // 拆分的表格索引
 }
 
 export type ITable = ITableAttr & ITableRule & ITableElement
@@ -248,12 +247,28 @@ export interface IElementPosition {
   isFirstLetter: boolean
   isLastLetter: boolean
   columnIndex?: number
+  tableFragment?: ITableRowFragment // 表格跨页渲染片段信息
   coordinate: {
     leftTop: number[]
     leftBottom: number[]
     rightTop: number[]
     rightBottom: number[]
   }
+}
+
+// 表格跨页渲染片段（数据层保持单一表格，仅渲染时按页拆分行）
+export interface ITableRowFragment {
+  startTrIndex: number // 片段起始行索引（含）
+  endTrIndex: number // 片段结束行索引（不含）
+  skipHeight: number // 片段之前所有行高度和（未缩放，与 td.y 同单位）
+  repeatHeight: number // 续页回显表头高度和（未缩放，首页为 0）
+  repeatTrIndexes?: number[] // 续页需回显的 pagingRepeat 表头行索引
+  // 起始行为上一页拆分行的续排：该行在之前页已消耗的高度（未缩放）
+  startSplitTrOffset?: number
+  // 结束行在本页被拆分：该行截止到本页末累计消耗的高度（未缩放）
+  endSplitTrHeight?: number
+  // 从之前行带入片段的跨行合并单元格（渲染层缓存，避免逐片段全表扫描）
+  carriedTds?: ITd[]
 }
 
 export interface IElementFillRect {

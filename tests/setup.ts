@@ -19,6 +19,7 @@ class StubIntersectionObserver {
 ;(globalThis as any).ResizeObserver ??= StubResizeObserver
 ;(globalThis as any).IntersectionObserver ??= StubIntersectionObserver
 ;(Element.prototype as any).scrollIntoView ??= () => {}
+;(Element.prototype as any).scroll ??= () => {}
 
 ;(window as any).matchMedia = (query: string) => ({
   matches: false,

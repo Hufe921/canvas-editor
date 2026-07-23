@@ -2,6 +2,7 @@ import { ElementType, IElement, TableBorder } from '../../../..'
 import { TdBorder, TdSlash } from '../../../../dataset/enum/table/Table'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
+import { ITableRowFragment } from '../../../../interface/Element'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
 import { deepClone } from '../../../../utils'
@@ -18,15 +19,29 @@ interface IDrawTableBorderOption {
   isDrawFullBorder?: boolean
 }
 
+// 跨页片段内需绘制的单元格（含续页回显表头与进位合并单元格）
+interface IFragmentDrawTd {
+  td: ITd
+  // 缩放后的纵坐标偏移（td.y 相对整表，片段内需平移）
+  offsetY: number
+  // 缩放后的可见高度（窗口裁剪）
+  height: number
+  isRepeat: boolean
+  isCarried: boolean
+}
+
 export class TableParticle {
   private draw: Draw
   private range: RangeManager
   private options: DeepRequired<IEditorOption>
+  // 片段内容高度缓存（片段对象随每次渲染重建，无过期风险）
+  private fragmentContentHeightCache: WeakMap<ITableRowFragment, number>
 
   constructor(draw: Draw) {
     this.draw = draw
     this.range = draw.getRange()
     this.options = draw.getOptions()
+    this.fragmentContentHeightCache = new WeakMap()
   }
 
   public getTrListGroupByCol(payload: ITr[]): ITr[] {
@@ -139,18 +154,104 @@ export class TableParticle {
     ctx.translate(-0.5, -0.5)
   }
 
+  // 枚举片段涉及的单元格：进位合并单元格（覆盖片段起始行的跨行单元格）
+  // + 片段范围行单元格。直接遍历行区间与缓存的进位单元格，避免全表扫描
+  public getFragmentTdList(
+    element: IElement,
+    fragment: ITableRowFragment
+  ): ITd[] {
+    const { startTrIndex, endTrIndex, carriedTds } = fragment
+    const tdList: ITd[] = [...(carriedTds || [])]
+    const trList = element.trList!
+    for (let r = startTrIndex; r < endTrIndex; r++) {
+      tdList.push(...trList[r].tdList)
+    }
+    return tdList
+  }
+
+  // 枚举跨页片段内需绘制的单元格：续页回显表头 + 片段范围行 + 进位合并单元格
+  // 纵坐标与高度均按单元格窗口裁剪（合并/拆分/普通单元格统一处理）
+  private _getDrawTdList(
+    element: IElement,
+    fragment?: ITableRowFragment
+  ): IFragmentDrawTd[] {
+    const { scale } = this.options
+    const trList = element.trList!
+    const drawTdList: IFragmentDrawTd[] = []
+    if (!fragment) {
+      for (const tr of trList) {
+        for (const td of tr.tdList) {
+          drawTdList.push({
+            td,
+            offsetY: 0,
+            height: td.height! * scale,
+            isRepeat: false,
+            isCarried: false
+          })
+        }
+      }
+      return drawTdList
+    }
+    const {
+      startTrIndex,
+      skipHeight,
+      repeatHeight,
+      repeatTrIndexes,
+      startSplitTrOffset
+    } = fragment
+    // 续页回显表头（整行回显，不参与窗口裁剪）
+    if (repeatTrIndexes?.length) {
+      let accHeight = 0
+      for (const trIndex of repeatTrIndexes) {
+        const tr = trList[trIndex]
+        for (const td of tr.tdList) {
+          drawTdList.push({
+            td,
+            offsetY: (accHeight - td.y!) * scale,
+            height: td.height! * scale,
+            isRepeat: true,
+            isCarried: false
+          })
+        }
+        accHeight += tr.height!
+      }
+    }
+    // 片段范围行与进位合并单元格（按窗口裁剪）
+    for (const td of this.getFragmentTdList(element, fragment)) {
+      const [windowStart, windowEnd] = this.getTdWindowInFragment(
+        td,
+        element,
+        fragment
+      )
+      if (windowEnd <= windowStart) continue
+      drawTdList.push({
+        td,
+        offsetY:
+          (windowStart -
+            skipHeight -
+            (startSplitTrOffset ?? 0) +
+            repeatHeight) *
+          scale,
+        height: (windowEnd - windowStart) * scale,
+        isRepeat: false,
+        isCarried: td.rowIndex! < startTrIndex
+      })
+    }
+    return drawTdList
+  }
+
   private _drawSlash(
     ctx: CanvasRenderingContext2D,
-    td: ITd,
+    drawTd: IFragmentDrawTd,
     startX: number,
     startY: number
   ) {
     const { scale } = this.options
+    const { td, offsetY, height } = drawTd
     ctx.save()
     const width = td.width! * scale
-    const height = td.height! * scale
     const x = Math.round(td.x! * scale + startX)
-    const y = Math.round(td.y! * scale + startY)
+    const y = Math.round(td.y! * scale + startY + offsetY)
     // 正斜线 /
     if (td.slashTypes?.includes(TdSlash.FORWARD)) {
       ctx.moveTo(x + width, y)
@@ -169,7 +270,9 @@ export class TableParticle {
     ctx: CanvasRenderingContext2D,
     element: IElement,
     startX: number,
-    startY: number
+    startY: number,
+    drawTdList: IFragmentDrawTd[],
+    fragment?: ITableRowFragment
   ) {
     const {
       colgroup,
@@ -185,7 +288,12 @@ export class TableParticle {
       table: { defaultBorderColor }
     } = this.options
     const tableWidth = element.width! * scale
-    const tableHeight = element.height! * scale
+    // 外框高度：片段时为片段内行高和
+    const tableHeight = fragment
+      ? (fragment.repeatHeight +
+          this.getFragmentContentHeight(element, fragment)) *
+        scale
+      : element.height! * scale
     // 无边框
     const isEmptyBorderType = borderType === TableBorder.EMPTY
     // 仅外边框
@@ -212,135 +320,225 @@ export class TableParticle {
       })
     }
     // 渲染单元格
-    for (let t = 0; t < trList.length; t++) {
-      const tr = trList[t]
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        // 单元格内斜线
-        if (td.slashTypes?.length) {
-          this._drawSlash(ctx, td, startX, startY)
-        }
-        // 没有设置单元格边框 && 没有设置表格边框则忽略
+    for (const drawTd of drawTdList) {
+      const { td, offsetY, height } = drawTd
+      // 单元格内斜线
+      if (td.slashTypes?.length) {
+        this._drawSlash(ctx, drawTd, startX, startY)
+      }
+      // 没有设置单元格边框 && 没有设置表格边框则忽略
+      if (
+        !td.borderTypes?.length &&
+        (isEmptyBorderType || isExternalBorderType)
+      ) {
+        continue
+      }
+      const width = td.width! * scale
+      const x = Math.round(td.x! * scale + startX + width)
+      const y = Math.round(td.y! * scale + startY + offsetY)
+      ctx.translate(0.5, 0.5)
+      // 绘制线条
+      ctx.beginPath()
+      // 单元格边框
+      if (td.borderTypes?.includes(TdBorder.TOP)) {
+        ctx.moveTo(x - width, y)
+        ctx.lineTo(x, y)
+        ctx.stroke()
+      }
+      if (td.borderTypes?.includes(TdBorder.RIGHT)) {
+        ctx.moveTo(x, y)
+        ctx.lineTo(x, y + height)
+        ctx.stroke()
+      }
+      if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
+        ctx.moveTo(x, y + height)
+        ctx.lineTo(x - width, y + height)
+        ctx.stroke()
+      }
+      if (td.borderTypes?.includes(TdBorder.LEFT)) {
+        ctx.moveTo(x - width, y)
+        ctx.lineTo(x - width, y + height)
+        ctx.stroke()
+      }
+      // 表格线
+      if (!isEmptyBorderType && !isExternalBorderType) {
+        // 右边框
         if (
-          !td.borderTypes?.length &&
-          (isEmptyBorderType || isExternalBorderType)
+          !isInternalBorderType ||
+          td.colIndex! + td.colspan < colgroup.length
         ) {
-          continue
-        }
-        const width = td.width! * scale
-        const height = td.height! * scale
-        const x = Math.round(td.x! * scale + startX + width)
-        const y = Math.round(td.y! * scale + startY)
-        ctx.translate(0.5, 0.5)
-        // 绘制线条
-        ctx.beginPath()
-        // 单元格边框
-        if (td.borderTypes?.includes(TdBorder.TOP)) {
-          ctx.moveTo(x - width, y)
-          ctx.lineTo(x, y)
-          ctx.stroke()
-        }
-        if (td.borderTypes?.includes(TdBorder.RIGHT)) {
           ctx.moveTo(x, y)
           ctx.lineTo(x, y + height)
-          ctx.stroke()
+          // 外部边框宽度设置时 => 最右边框宽度单独设置
+          if (
+            borderExternalWidth &&
+            borderExternalWidth !== borderWidth &&
+            td.colIndex! + td.colspan === colgroup.length
+          ) {
+            const lineWidth = ctx.lineWidth
+            ctx.lineWidth = borderExternalWidth * scale
+            ctx.stroke()
+            // 清空path
+            ctx.beginPath()
+            ctx.lineWidth = lineWidth
+          }
         }
-        if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
+        // 下边框
+        if (
+          !isInternalBorderType ||
+          td.rowIndex! + td.rowspan < trList.length
+        ) {
+          // 外部边框宽度设置时 => 立即绘制竖线
+          // 跨页片段内到达片段末行的单元格视作最后一行（切口处外框封闭）
+          const isLastDrawnTr =
+            td.rowIndex! + td.rowspan ===
+            (fragment?.endTrIndex ?? trList.length)
+          const isSetExternalBottomBorder =
+            borderExternalWidth &&
+            borderExternalWidth !== borderWidth &&
+            isLastDrawnTr
+          if (isSetExternalBottomBorder) {
+            ctx.stroke()
+            // 清空path
+            ctx.beginPath()
+          }
           ctx.moveTo(x, y + height)
           ctx.lineTo(x - width, y + height)
-          ctx.stroke()
-        }
-        if (td.borderTypes?.includes(TdBorder.LEFT)) {
-          ctx.moveTo(x - width, y)
-          ctx.lineTo(x - width, y + height)
-          ctx.stroke()
-        }
-        // 表格线
-        if (!isEmptyBorderType && !isExternalBorderType) {
-          // 右边框
-          if (
-            !isInternalBorderType ||
-            td.colIndex! + td.colspan < colgroup.length
-          ) {
-            ctx.moveTo(x, y)
-            ctx.lineTo(x, y + height)
-            // 外部边框宽度设置时 => 最右边框宽度单独设置
-            if (
-              borderExternalWidth &&
-              borderExternalWidth !== borderWidth &&
-              td.colIndex! + td.colspan === colgroup.length
-            ) {
-              const lineWidth = ctx.lineWidth
-              ctx.lineWidth = borderExternalWidth * scale
-              ctx.stroke()
-              // 清空path
-              ctx.beginPath()
-              ctx.lineWidth = lineWidth
-            }
+          // 外部边框宽度设置时 => 最下边框宽度单独设置
+          if (isSetExternalBottomBorder) {
+            const lineWidth = ctx.lineWidth
+            ctx.lineWidth = borderExternalWidth * scale
+            ctx.stroke()
+            // 清空path
+            ctx.beginPath()
+            ctx.lineWidth = lineWidth
           }
-          // 下边框
-          if (
-            !isInternalBorderType ||
-            td.rowIndex! + td.rowspan < trList.length
-          ) {
-            // 外部边框宽度设置时 => 立即绘制竖线
-            const isSetExternalBottomBorder =
-              borderExternalWidth &&
-              borderExternalWidth !== borderWidth &&
-              td.rowIndex! + td.rowspan === trList.length
-            if (isSetExternalBottomBorder) {
-              ctx.stroke()
-              // 清空path
-              ctx.beginPath()
-            }
-            ctx.moveTo(x, y + height)
-            ctx.lineTo(x - width, y + height)
-            // 外部边框宽度设置时 => 最下边框宽度单独设置
-            if (isSetExternalBottomBorder) {
-              const lineWidth = ctx.lineWidth
-              ctx.lineWidth = borderExternalWidth * scale
-              ctx.stroke()
-              // 清空path
-              ctx.beginPath()
-              ctx.lineWidth = lineWidth
-            }
-          }
-          ctx.stroke()
         }
-        ctx.translate(-0.5, -0.5)
+        ctx.stroke()
       }
+      ctx.translate(-0.5, -0.5)
     }
     ctx.restore()
   }
 
   private _drawBackgroundColor(
     ctx: CanvasRenderingContext2D,
-    element: IElement,
     startX: number,
-    startY: number
+    startY: number,
+    drawTdList: IFragmentDrawTd[]
   ) {
-    const { trList } = element
-    if (!trList) return
     const { scale } = this.options
-    for (let t = 0; t < trList.length; t++) {
-      const tr = trList[t]
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        if (!td.backgroundColor) continue
-        ctx.save()
-        const width = td.width! * scale
-        const height = td.height! * scale
-        const x = Math.round(td.x! * scale + startX)
-        const y = Math.round(td.y! * scale + startY)
-        ctx.fillStyle = td.backgroundColor
-        ctx.fillRect(x, y, width, height)
-        ctx.restore()
-      }
+    for (const { td, offsetY, height } of drawTdList) {
+      if (!td.backgroundColor) continue
+      ctx.save()
+      const width = td.width! * scale
+      const x = Math.round(td.x! * scale + startX)
+      const y = Math.round(td.y! * scale + startY + offsetY)
+      ctx.fillStyle = td.backgroundColor
+      ctx.fillRect(x, y, width, height)
+      ctx.restore()
     }
   }
 
   public getTableWidth(element: IElement): number {
     return element.colgroup!.reduce((pre, cur) => pre + cur.width, 0)
+  }
+
+  // 行内拆分行在片段内的可见高度（未缩放；未拆分返回行原始高度）
+  public getFragmentTrHeight(
+    tr: ITr,
+    trIndex: number,
+    fragment?: ITableRowFragment
+  ): number {
+    if (!fragment) return tr.height!
+    let height = tr.height!
+    if (trIndex === fragment.startTrIndex && fragment.startSplitTrOffset) {
+      height -= fragment.startSplitTrOffset
+    }
+    if (
+      trIndex === fragment.endTrIndex - 1 &&
+      fragment.endSplitTrHeight !== undefined
+    ) {
+      // 行高可能已被 maxPageNo 截断收缩：拆分高度超出行高时按整行计算
+      height -= Math.max(0, tr.height! - fragment.endSplitTrHeight)
+    }
+    return height
+  }
+
+  // 片段内容高度（未缩放）：范围内行按可见高度求和（不含回显表头）
+  public getFragmentContentHeight(
+    element: IElement,
+    fragment: ITableRowFragment
+  ): number {
+    // 片段对象随每次渲染重建，按对象缓存结果避免逐单元格重复求和
+    const cached = this.fragmentContentHeightCache.get(fragment)
+    if (cached !== undefined) return cached
+    const { startTrIndex, endTrIndex, startSplitTrOffset, endSplitTrHeight } =
+      fragment
+    const trList = element.trList!
+    let contentHeight = 0
+    for (let r = startTrIndex; r < endTrIndex; r++) {
+      let trHeight = trList[r].height!
+      if (r === startTrIndex && startSplitTrOffset) {
+        trHeight -= startSplitTrOffset
+      }
+      if (r === endTrIndex - 1 && endSplitTrHeight !== undefined) {
+        // 行高可能已被 maxPageNo 截断收缩：拆分高度超出行高时按整行计算
+        trHeight -= Math.max(0, trList[r].height! - endSplitTrHeight)
+      }
+      contentHeight += trHeight
+    }
+    this.fragmentContentHeightCache.set(fragment, contentHeight)
+    return contentHeight
+  }
+
+  // 计算单元格在片段内的可见窗口（未缩放，相对单元格顶部）
+  // 合并/拆分/普通单元格通用：窗口为片段可视区与单元格区域的交集
+  public getTdWindowInFragment(
+    td: ITd,
+    element: IElement,
+    fragment: ITableRowFragment
+  ): [number, number] {
+    const { skipHeight, startSplitTrOffset } = fragment
+    // 片段可视区在整表坐标系中的范围
+    const visibleTopFull = skipHeight + (startSplitTrOffset ?? 0)
+    const visibleBottomFull =
+      visibleTopFull + this.getFragmentContentHeight(element, fragment)
+    const windowStart = Math.max(0, visibleTopFull - td.y!)
+    const windowEnd = Math.min(td.height!, visibleBottomFull - td.y!)
+    return [windowStart, windowEnd]
+  }
+
+  // 计算单元格内容行在垂直窗口内的行范围（行内拆分使用）
+  // windowStart/windowEnd 未缩放、相对行顶；返回 [起始行, 结束行)（按整行取舍不裁剪行）
+  public getTdLineRangeBySplitWindow(
+    td: ITd,
+    windowStart: number,
+    windowEnd: number
+  ): [number, number] {
+    const {
+      scale,
+      table: { tdPadding }
+    } = this.options
+    const rowList = td.rowList || []
+    const topLimit = windowStart * scale
+    const limit = windowEnd * scale
+    let accHeight = tdPadding[0] * scale
+    let startLine = 0
+    let endLine = 0
+    for (let i = 0; i < rowList.length; i++) {
+      const lineBottom = accHeight + rowList[i].height
+      if (lineBottom <= topLimit) {
+        startLine = i + 1
+        endLine = i + 1
+      } else if (lineBottom <= limit) {
+        endLine = i + 1
+      } else {
+        break
+      }
+      accHeight = lineBottom
+    }
+    return [startLine, endLine]
   }
 
   public getTableHeight(element: IElement): number {
@@ -498,7 +696,8 @@ export class TableParticle {
     ctx: CanvasRenderingContext2D,
     element: IElement,
     startX: number,
-    startY: number
+    startY: number,
+    fragment?: ITableRowFragment
   ) {
     const { scale, rangeAlpha, rangeColor } = this.options
     const { type, trList } = element
@@ -524,26 +723,24 @@ export class TableParticle {
     const startRowIndex = startTd.rowIndex!
     const endRowIndex = endTd.rowIndex! + (endTd.rowspan - 1)
     ctx.save()
-    for (let t = 0; t < trList.length; t++) {
-      const tr = trList[t]
-      for (let d = 0; d < tr.tdList.length; d++) {
-        const td = tr.tdList[d]
-        const tdColIndex = td.colIndex!
-        const tdRowIndex = td.rowIndex!
-        if (
-          tdColIndex >= startColIndex &&
-          tdColIndex <= endColIndex &&
-          tdRowIndex >= startRowIndex &&
-          tdRowIndex <= endRowIndex
-        ) {
-          const x = td.x! * scale
-          const y = td.y! * scale
-          const width = td.width! * scale
-          const height = td.height! * scale
-          ctx.globalAlpha = rangeAlpha
-          ctx.fillStyle = rangeColor
-          ctx.fillRect(x + startX, y + startY, width, height)
-        }
+    // 仅绘制片段范围内的单元格（回显表头不绘制选区）
+    const drawTdList = this._getDrawTdList(element, fragment)
+    for (const { td, offsetY, height, isRepeat } of drawTdList) {
+      if (isRepeat) continue
+      const tdColIndex = td.colIndex!
+      const tdRowIndex = td.rowIndex!
+      if (
+        tdColIndex >= startColIndex &&
+        tdColIndex <= endColIndex &&
+        tdRowIndex >= startRowIndex &&
+        tdRowIndex <= endRowIndex
+      ) {
+        const x = td.x! * scale
+        const y = td.y! * scale + offsetY
+        const width = td.width! * scale
+        ctx.globalAlpha = rangeAlpha
+        ctx.fillStyle = rangeColor
+        ctx.fillRect(x + startX, y + startY, width, height)
       }
     }
     ctx.restore()
@@ -553,9 +750,12 @@ export class TableParticle {
     ctx: CanvasRenderingContext2D,
     element: IElement,
     startX: number,
-    startY: number
+    startY: number,
+    fragment?: ITableRowFragment
   ) {
-    this._drawBackgroundColor(ctx, element, startX, startY)
-    this._drawBorder(ctx, element, startX, startY)
+    // 片段单元格枚举一次，供背景与边框复用
+    const drawTdList = this._getDrawTdList(element, fragment)
+    this._drawBackgroundColor(ctx, startX, startY, drawTdList)
+    this._drawBorder(ctx, element, startX, startY, drawTdList, fragment)
   }
 }
