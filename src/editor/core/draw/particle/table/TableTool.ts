@@ -159,10 +159,6 @@ export class TableTool {
     // 片段（或整表）像素高度（metrics 已含缩放，勿再乘 scale）
     const tableHeight = position.metrics.height
     const tableWidth = element.width! * scale
-    // 片段内 td.y 相对整表，需按片段偏移
-    const fragmentOffsetY = fragment
-      ? (fragment.repeatHeight - fragment.skipHeight) * scale
-      : 0
     // 表格选择工具（尺寸由 CSS 类固定，无需设置高度）
     const tableSelectBtn = document.createElement('div')
     tableSelectBtn.classList.add(`${EDITOR_PREFIX}-table-tool__select`)
@@ -367,28 +363,16 @@ export class TableTool {
       : trList!.flatMap(tr => tr.tdList)
     for (const td of fragmentTdList) {
       // 单元格在片段内的可见窗口（跨行合并/行内拆分按窗口裁剪）
-      let tdHeight =
-        td.rowspan === 1
-          ? this.draw
-              .getTableParticle()
-              .getFragmentTrHeight(
-                trList![td.rowIndex!],
-                td.rowIndex!,
-                fragment
-              )
-          : td.height!
-      let tdOffsetY = fragmentOffsetY
+      let tdHeight = td.height!
+      let tdOffsetY = 0
       if (fragment) {
         const [windowStart, windowEnd] = this.draw
           .getTableParticle()
           .getTdWindowInFragment(td, element, fragment)
         tdHeight = windowEnd - windowStart
-        tdOffsetY =
-          (windowStart -
-            fragment.skipHeight -
-            (fragment.startSplitTrOffset ?? 0) +
-            fragment.repeatHeight) *
-          scale
+        tdOffsetY = this.draw
+          .getTableParticle()
+          .getTdWindowOffsetY(windowStart, fragment)
       }
       const rowBorder = document.createElement('div')
       rowBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__row`)

@@ -534,12 +534,12 @@ export class Position {
             let startIndex = 0
             let startRowIndex = 0
             if (isSplitWindow) {
-              const [startLine, endLine] = this.draw
+              const visible = this.draw
                 .getTableParticle()
-                .getTdLineRangeBySplitWindow(td, windowStart, windowEnd)
-              startIndex = rowList[startLine]?.startIndex ?? 0
-              startRowIndex = startLine
-              rowList = rowList.slice(startLine, endLine)
+                .getTdVisibleRowListByWindow(td, windowStart, windowEnd)
+              rowList = visible.rowList
+              startIndex = visible.startIndex
+              startRowIndex = visible.startRowIndex
             }
             // 续排片段追加位置而非清空（同一单元格跨页累积）
             if (!isContinuation) {
@@ -548,11 +548,9 @@ export class Position {
             const tdPositionList = td.positionList!
             // 片段内单元格内容纵坐标偏移（窗口顶部在片段内的位置）
             const drawnOffsetY = tableFragment
-              ? (windowStart -
-                  tableFragment.skipHeight -
-                  (tableFragment.startSplitTrOffset ?? 0) +
-                  tableFragment.repeatHeight) *
-                scale
+              ? this.draw
+                  .getTableParticle()
+                  .getTdWindowOffsetY(windowStart, tableFragment)
               : 0
             const drawRowResult = this.computePageRowPosition({
               positionList: tdPositionList,
@@ -775,12 +773,8 @@ export class Position {
         if (windowEnd <= windowStart) continue
         const tdTop =
           tablePosition.coordinate.leftTop[1] +
-          (td.y! +
-            windowStart -
-            fragment.skipHeight -
-            (fragment.startSplitTrOffset ?? 0) +
-            fragment.repeatHeight) *
-            scale
+          td.y! * scale +
+          this.draw.getTableParticle().getTdWindowOffsetY(windowStart, fragment)
         const tdBottom = tdTop + (windowEnd - windowStart) * scale
         if (y < tdTop || y > tdBottom) continue
       }

@@ -3,6 +3,7 @@ import { TdBorder, TdSlash } from '../../../../dataset/enum/table/Table'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { ITableRowFragment } from '../../../../interface/Element'
+import { IRow } from '../../../../interface/Row'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
 import { deepClone } from '../../../../utils'
@@ -35,7 +36,7 @@ export class TableParticle {
   private range: RangeManager
   private options: DeepRequired<IEditorOption>
   // 片段内容高度缓存（片段对象随每次渲染重建，无过期风险）
-  private fragmentContentHeightCache: WeakMap<ITableRowFragment, number>
+  private fragmentContentHeightCache: WeakMap<object, number>
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -192,13 +193,7 @@ export class TableParticle {
       }
       return drawTdList
     }
-    const {
-      startTrIndex,
-      skipHeight,
-      repeatHeight,
-      repeatTrIndexes,
-      startSplitTrOffset
-    } = fragment
+    const { startTrIndex, repeatTrIndexes } = fragment
     // 续页回显表头（整行回显，不参与窗口裁剪）
     if (repeatTrIndexes?.length) {
       let accHeight = 0
@@ -226,12 +221,7 @@ export class TableParticle {
       if (windowEnd <= windowStart) continue
       drawTdList.push({
         td,
-        offsetY:
-          (windowStart -
-            skipHeight -
-            (startSplitTrOffset ?? 0) +
-            repeatHeight) *
-          scale,
+        offsetY: this.getTdWindowOffsetY(windowStart, fragment),
         height: (windowEnd - windowStart) * scale,
         isRepeat: false,
         isCarried: td.rowIndex! < startTrIndex
@@ -468,7 +458,10 @@ export class TableParticle {
   // 片段内容高度（未缩放）：范围内行按可见高度求和（不含回显表头）
   public getFragmentContentHeight(
     element: IElement,
-    fragment: ITableRowFragment
+    fragment: Pick<
+      ITableRowFragment,
+      'startTrIndex' | 'endTrIndex' | 'startSplitTrOffset' | 'endSplitTrHeight'
+    >
   ): number {
     // 片段对象随每次渲染重建，按对象缓存结果避免逐单元格重复求和
     const cached = this.fragmentContentHeightCache.get(fragment)
@@ -507,6 +500,41 @@ export class TableParticle {
     const windowStart = Math.max(0, visibleTopFull - td.y!)
     const windowEnd = Math.min(td.height!, visibleBottomFull - td.y!)
     return [windowStart, windowEnd]
+  }
+
+  // 单元格窗口顶部在片段内的纵坐标偏移（缩放后像素；
+  // td.y 相对整表，片段内需平移到窗口位置）
+  public getTdWindowOffsetY(
+    windowStart: number,
+    fragment: ITableRowFragment
+  ): number {
+    const { scale } = this.options
+    return (
+      (windowStart -
+        fragment.skipHeight -
+        (fragment.startSplitTrOffset ?? 0) +
+        fragment.repeatHeight) *
+      scale
+    )
+  }
+
+  // 窗口内可见内容行切片：返回行列表与首行在单元格内的起始行号/元素索引
+  public getTdVisibleRowListByWindow(
+    td: ITd,
+    windowStart: number,
+    windowEnd: number
+  ): { rowList: IRow[]; startIndex: number; startRowIndex: number } {
+    const rowList = td.rowList!
+    const [startLine, endLine] = this.getTdLineRangeBySplitWindow(
+      td,
+      windowStart,
+      windowEnd
+    )
+    return {
+      rowList: rowList.slice(startLine, endLine),
+      startIndex: rowList[startLine]?.startIndex ?? 0,
+      startRowIndex: startLine
+    }
   }
 
   // 计算单元格内容行在垂直窗口内的行范围（行内拆分使用）
