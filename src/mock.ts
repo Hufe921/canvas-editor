@@ -392,6 +392,101 @@ elementList.push(
   ])
 )
 
+// 多选下拉控件（复选框样式）
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '过敏史：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        conceptId: '8',
+        type: ControlType.SELECT,
+        value: null,
+        code: null,
+        placeholder: '请选择',
+        prefix: '{',
+        postfix: '}',
+        isMultiSelect: true,
+        selectStyle: 'checkbox',
+        multiSelectDelimiter: '、',
+        valueSets: [
+          {
+            value: '青霉素',
+            code: 'penicillin'
+          },
+          {
+            value: '头孢',
+            code: 'cephalosporin'
+          },
+          {
+            value: '磺胺',
+            code: 'sulfonamide'
+          },
+          {
+            value: '海鲜',
+            code: 'seafood'
+          },
+          {
+            value: '花粉',
+            code: 'pollen'
+          }
+        ]
+      }
+    },
+    {
+      value: '\n'
+    }
+  ])
+)
+
+// 单选下拉控件（单选框样式）
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '血型：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        conceptId: '9',
+        type: ControlType.SELECT,
+        value: null,
+        code: null,
+        placeholder: '请选择',
+        prefix: '{',
+        postfix: '}',
+        isMultiSelect: false,
+        selectStyle: 'radio',
+        valueSets: [
+          {
+            value: 'A型',
+            code: 'A'
+          },
+          {
+            value: 'B型',
+            code: 'B'
+          },
+          {
+            value: 'AB型',
+            code: 'AB'
+          },
+          {
+            value: 'O型',
+            code: 'O'
+          }
+        ]
+      }
+    },
+    {
+      value: '\n'
+    }
+  ])
+)
+
 // 日期选择
 elementList.push(
   ...(<IElement[]>[
