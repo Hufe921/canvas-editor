@@ -90,6 +90,7 @@ import {
   ControlIndentation
 } from '../../dataset/enum/Control'
 import { formatElementList } from '../../utils/element'
+import { shrinkColgroupToWidth } from '../../utils/table'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
@@ -1523,7 +1524,7 @@ export class Draw {
       defaultSize,
       scale,
       imgCaption,
-      table: { tdPadding },
+      table: { tdPadding, defaultColMinWidth, overflow },
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -1661,6 +1662,15 @@ export class Draw {
           // 行高默认当前最小高度，后续根据内容自适应
           tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
           tr.minHeight = tr.height
+        }
+        // 表格不允许超出正文区域时：等比例压缩列宽至内容区内，并清除横向偏移
+        if (!overflow) {
+          shrinkColgroupToWidth(
+            element.colgroup!,
+            this.getOriginalInnerWidth(),
+            defaultColMinWidth
+          )
+          element.translateX = 0
         }
         // 计算表格行列
         this.tableParticle.computeRowColInfo(element)

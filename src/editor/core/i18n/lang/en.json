@@ -39,6 +39,8 @@
       "deleteTable": "Delete table",
       "mergeCell": "Merge cell",
       "mergeCancelCell": "Cancel merge cell",
+      "autoFitToContent": "AutoFit to contents",
+      "autoFitToPage": "AutoFit to window",
       "verticalAlign": "Vertical align",
       "verticalAlignTop": "Top",
       "verticalAlignMiddle": "Middle",

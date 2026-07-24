@@ -98,7 +98,7 @@ interface ITableOption {
   tdPadding?: IPadding // Cell padding. default: [0, 5, 5, 5]
   defaultTrMinHeight?: number // Default table row minimum height. default: 42
   defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise
-  overflow?: boolean // Is it allowed for the table to exceed the main body. Default: true
+  overflow?: boolean // Is it allowed for the table to exceed the main body. When false, the total table width is proportionally shrunk to fit the page content area during layout (column width is not less than defaultColMinWidth). Default: false
 }
 ```
 

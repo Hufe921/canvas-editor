@@ -53,6 +53,8 @@ export class Command {
   public executeTableTdBorderType: CommandAdapt['tableTdBorderType']
   public executeTableTdSlashType: CommandAdapt['tableTdSlashType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
+  public executeTableAutoFitToContent: CommandAdapt['tableAutoFitToContent']
+  public executeTableAutoFitToPage: CommandAdapt['tableAutoFitToPage']
   public executeTableSelectAll: CommandAdapt['tableSelectAll']
   public executeImage: CommandAdapt['image']
   public executeHyperlink: CommandAdapt['hyperlink']
@@ -318,6 +320,14 @@ export class Command {
     this.executeTableTdBackgroundColor = this.wrap(
       'executeTableTdBackgroundColor',
       adapt.tableTdBackgroundColor.bind(adapt)
+    )
+    this.executeTableAutoFitToContent = this.wrap(
+      'executeTableAutoFitToContent',
+      adapt.tableAutoFitToContent.bind(adapt)
+    )
+    this.executeTableAutoFitToPage = this.wrap(
+      'executeTableAutoFitToPage',
+      adapt.tableAutoFitToPage.bind(adapt)
     )
     this.executeTableSelectAll = this.wrap(
       'executeTableSelectAll',

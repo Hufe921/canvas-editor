@@ -18,7 +18,7 @@
 
 .ce-contextmenu-content .ce-contextmenu-sub-item::after {
   position: absolute;
-  content: "";
+  content: '';
   width: 16px;
   height: 16px;
   right: 12px;
@@ -37,7 +37,7 @@
 }
 
 .ce-contextmenu-content .ce-contextmenu-item.hover {
-  background: rgba(25, 55, 88, .04);
+  background: rgba(25, 55, 88, 0.04);
 }
 
 .ce-contextmenu-content .ce-contextmenu-item span {
@@ -129,6 +129,14 @@
 
 .ce-contextmenu-merge-cancel-cell {
   background-image: url(../../../assets/images/merge-cancel-cell.svg);
+}
+
+.ce-contextmenu-table-auto-fit-content {
+  background-image: url(../../../assets/images/table-auto-fit-content.svg);
+}
+
+.ce-contextmenu-table-auto-fit-page {
+  background-image: url(../../../assets/images/table-auto-fit-page.svg);
 }
 
 .ce-contextmenu-vertical-align {

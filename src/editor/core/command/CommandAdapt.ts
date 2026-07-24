@@ -1086,6 +1086,18 @@ export class CommandAdapt {
     this.tableOperate.tableTdBackgroundColor(payload)
   }
 
+  public tableAutoFitToContent() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.tableAutoFitToContent()
+  }
+
+  public tableAutoFitToPage() {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    this.tableOperate.tableAutoFitToPage()
+  }
+
   public tableSelectAll() {
     this.tableOperate.tableSelectAll()
   }

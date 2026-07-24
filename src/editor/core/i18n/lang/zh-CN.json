@@ -39,6 +39,8 @@
       "deleteTable": "删除整个表格",
       "mergeCell": "合并单元格",
       "mergeCancelCell": "取消合并",
+      "autoFitToContent": "根据内容自动调整表格",
+      "autoFitToPage": "根据窗口自动调整表格",
       "verticalAlign": "垂直对齐",
       "verticalAlignTop": "顶端对齐",
       "verticalAlignMiddle": "垂直居中",

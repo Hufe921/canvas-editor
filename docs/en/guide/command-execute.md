@@ -560,6 +560,26 @@ Usage:
 instance.command.executeTableSelectAll()
 ```
 
+## executeTableAutoFitToContent
+
+Feature: AutoFit the table to its contents (each column width is adjusted to the measured maximum content width of its cells, not less than defaultColMinWidth; when overflow is false the result is proportionally shrunk to fit the page content area)
+
+Usage:
+
+```javascript
+instance.command.executeTableAutoFitToContent()
+```
+
+## executeTableAutoFitToPage
+
+Feature: AutoFit the table to the window (the total table width is proportionally scaled to the page content area width)
+
+Usage:
+
+```javascript
+instance.command.executeTableAutoFitToPage()
+```
+
 ## executeImage
 
 Feature: Insert a picture

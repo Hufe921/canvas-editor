@@ -560,6 +560,26 @@ instance.command.executeTableTdBackgroundColor(payload: string)
 instance.command.executeTableSelectAll()
 ```
 
+## executeTableAutoFitToContent
+
+功能：根据内容自动调整表格（每列宽度按该列单元格内容实测最大宽度调整，列宽不低于 defaultColMinWidth；overflow 为 false 时结果会等比例压缩至页面内容区内）
+
+用法：
+
+```javascript
+instance.command.executeTableAutoFitToContent()
+```
+
+## executeTableAutoFitToPage
+
+功能：根据窗口自动调整表格（表格总宽等比缩放至页面内容区宽度）
+
+用法：
+
+```javascript
+instance.command.executeTableAutoFitToPage()
+```
+
 ## executeImage
 
 功能：插入图片
