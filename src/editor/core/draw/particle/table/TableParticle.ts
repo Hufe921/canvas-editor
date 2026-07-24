@@ -59,7 +59,7 @@ export class TableParticle {
         const td = tr.tdList[d]
         const { rowspan, rowIndex, colIndex } = td
         const curRowIndex = rowIndex! + rowspan - 1
-        if (curRowIndex !== d) {
+        if (curRowIndex !== t) {
           const changeTd = tr.tdList.splice(d, 1)[0]
           trList[curRowIndex]?.tdList.splice(colIndex!, 0, changeTd)
         }
