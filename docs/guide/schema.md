@@ -89,58 +89,7 @@ interface IElement {
   dashArray?: number[]; // 分割线的虚线样式数组
   lineWidth?: number; // 分割线的线宽
   // 控件
-  control?: {
-    type: {
-      TEXT = 'text',
-      SELECT = 'select',
-      CHECKBOX = 'checkbox',
-      RADIO = 'radio'
-      DATE = 'date',
-      NUMBER = 'number'
-    };
-    value: IElement[] | null;
-    placeholder?: string;
-    groupId?: string;
-    conceptId?: string;
-    prefix?: string;
-    postfix?: string;
-    preText?: string;
-    postText?: string;
-    minWidth?: number;
-    underline?: boolean;
-    border?: boolean;
-    extension?: unknown;
-    indentation?: ControlIndentation;
-    rowFlex?: RowFlex
-    deletable?: boolean;
-    disabled?: boolean;
-    pasteDisabled?: boolean;
-    hide?: boolean;
-    code: string | null;
-    min?: number;
-    max?: number;
-    flexDirection: FlexDirection;
-    valueSets: {
-      value: string;
-      code: string;
-    }[];
-    isMultiSelect?: boolean;
-    multiSelectDelimiter?: string;
-    dateFormat?: string;
-    font?: string;
-    size?: number;
-    bold?: boolean;
-    color?: string;
-    highlight?: string;
-    italic?: boolean;
-    strikeout?: boolean;
-    selectExclusiveOptions?: {
-      inputAble?: boolean;
-    },
-    numberExclusiveOptions?: {
-      calculatorDisabled?: boolean;
-    }
-  };
+  control?: IControl; // 控件数据结构详见：控件-配置
   controlComponent?: {
     PREFIX = 'prefix',
     POSTFIX = 'postfix',

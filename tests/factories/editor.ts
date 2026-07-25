@@ -21,7 +21,9 @@ vi.mock('@/editor/core/worker/WorkerManager', () => {
         return Promise.resolve([])
       }
       getValue(options?: any): Promise<any> {
-        const data = this.draw.getOriginValue ? this.draw.getOriginValue(options) : { main: [] }
+        const data = this.draw.getOriginValue
+          ? this.draw.getOriginValue(options)
+          : { main: [] }
         return Promise.resolve({
           version: '0.9.132',
           data,
@@ -45,11 +47,17 @@ export interface TestEditorContext {
   destroy: () => void
 }
 
-export function createTestEditor(params: CreateTestEditorParams = {}): TestEditorContext {
+export function createTestEditor(
+  params: CreateTestEditorParams = {}
+): TestEditorContext {
   const container = params.container ?? document.createElement('div')
   if (!container.isConnected) document.body.appendChild(container)
 
-  const data = params.data ?? { header: [], main: [{ value: '\n' }], footer: [] }
+  const data = params.data ?? {
+    header: [],
+    main: [{ value: '\n' }],
+    footer: []
+  }
   const options = createOptions(params.options)
   const editor = new Editor(container, data as any, options as IEditorOption)
 
@@ -66,4 +74,9 @@ export function createTestEditor(params: CreateTestEditorParams = {}): TestEdito
   }
 
   return { editor, container, destroy }
+}
+
+// 等待一个宏任务（级联由 contentChange 异步驱动，值变更后需等待再断言）
+export function waitMacroTask(): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, 0))
 }

@@ -115,6 +115,8 @@ export class Command {
   public executeSetControlProperties: CommandAdapt['setControlProperties']
   public executeSetControlPropertiesList: CommandAdapt['setControlPropertiesList']
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
+  public executeValidate: CommandAdapt['validate']
+  public executeClearValidate: CommandAdapt['clearValidate']
   public executeLocationControl: CommandAdapt['locationControl']
   public executeInsertControl: CommandAdapt['insertControl']
   public executeJumpControl: CommandAdapt['jumpControl']
@@ -598,6 +600,14 @@ export class Command {
     this.executeSetControlHighlight = this.wrap(
       'executeSetControlHighlight',
       adapt.setControlHighlight.bind(adapt)
+    )
+    this.executeValidate = this.wrap(
+      'executeValidate',
+      adapt.validate.bind(adapt)
+    )
+    this.executeClearValidate = this.wrap(
+      'executeClearValidate',
+      adapt.clearValidate.bind(adapt)
     )
     this.getControlValue = adapt.getControlValue.bind(adapt)
     this.getControlList = adapt.getControlList.bind(adapt)

@@ -115,5 +115,20 @@
     "author": "作者",
     "time": "时间",
     "unknownAuthor": "未知作者"
+  },
+  "validate": {
+    "required": "该字段为必填项",
+    "minLength": "最小长度为 {min}",
+    "maxLength": "最大长度为 {max}",
+    "pattern": "格式不正确",
+    "invalidNumber": "请输入有效数值",
+    "min": "最小值为 {min}",
+    "max": "最大值为 {max}",
+    "integer": "必须为整数",
+    "precision": "最多 {precision} 位小数",
+    "minDate": "日期不能早于 {date}",
+    "maxDate": "日期不能晚于 {date}",
+    "minChecked": "至少选择 {count} 项",
+    "maxChecked": "最多选择 {count} 项"
   }
 }

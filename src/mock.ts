@@ -482,6 +482,170 @@ elementList.push(
   ]
 )
 
+// 模拟级联控件（选"有"时显示并必填"高血压分级"，否则隐藏且豁免校验）
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '\n有无高血压：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        conceptId: 'hypertension',
+        type: ControlType.SELECT,
+        value: null,
+        code: null,
+        placeholder: '有无',
+        prefix: '{',
+        postfix: '}',
+        valueSets: [
+          {
+            value: '有',
+            code: '1'
+          },
+          {
+            value: '无',
+            code: '0'
+          }
+        ],
+        cascade: [
+          {
+            expression: "getValue(@self) == '1'",
+            actions: [
+              {
+                conceptId: 'hypertensionLevel',
+                effects: {
+                  hide: false,
+                  required: true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        preText: '，高血压分级：',
+        conceptId: 'hypertensionLevel',
+        type: ControlType.SELECT,
+        value: null,
+        code: null,
+        placeholder: '分级',
+        prefix: '{',
+        postfix: '}',
+        hide: true,
+        valueSets: [
+          {
+            value: 'Ⅰ级',
+            code: '1'
+          },
+          {
+            value: 'Ⅱ级',
+            code: '2'
+          },
+          {
+            value: 'Ⅲ级',
+            code: '3'
+          }
+        ]
+      }
+    }
+  ])
+)
+
+// 模拟计算字段（身高体重自动计算 BMI，BMI > 28 显示干预建议）
+elementList.push(
+  ...(<IElement[]>[
+    {
+      value: '\n身高：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        postText: 'cm',
+        conceptId: 'height',
+        type: ControlType.NUMBER,
+        value: null,
+        placeholder: '身高',
+        prefix: '{',
+        postfix: '}',
+        required: true,
+        validation: {
+          min: 0,
+          max: 300
+        }
+      }
+    },
+    {
+      value: '，体重：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        postText: 'kg',
+        conceptId: 'weight',
+        type: ControlType.NUMBER,
+        value: null,
+        placeholder: '体重',
+        prefix: '{',
+        postfix: '}'
+      }
+    },
+    {
+      value: '，BMI：'
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        conceptId: 'bmi',
+        type: ControlType.NUMBER,
+        value: null,
+        placeholder: '自动计算',
+        disabled: true,
+        prefix: '{',
+        postfix: '}',
+        compute:
+          "round(getValue('weight') / ((getValue('height') * getValue('height')) / 10000), 2)",
+        cascade: [
+          {
+            expression: 'getValue(@self) > 28',
+            actions: [
+              {
+                conceptId: 'obesityTip',
+                effects: {
+                  hide: false,
+                  required: true
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      type: ElementType.CONTROL,
+      value: '',
+      control: {
+        preText: '，肥胖干预建议：',
+        conceptId: 'obesityTip',
+        type: ControlType.TEXT,
+        value: null,
+        placeholder: '干预建议',
+        prefix: '{',
+        postfix: '}',
+        hide: true
+      }
+    }
+  ])
+)
+
 // 模拟结尾文本
 elementList.push(
   ...[

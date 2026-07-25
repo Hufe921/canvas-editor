@@ -75,6 +75,8 @@ import {
   WordBreak
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
+import { CascadeManager } from '../cascade/CascadeManager'
+import { Validate } from '../validate/Validate'
 import {
   deleteSurroundElementList,
   getIsBlockElement,
@@ -192,6 +194,8 @@ export class Draw {
   private lineBreakParticle: LineBreakParticle
   private whiteSpaceParticle: WhiteSpaceParticle
   private control: Control
+  private cascadeManager: CascadeManager
+  private validate: Validate
   private pageBorder: PageBorder
   private workerManager: WorkerManager
   private scrollObserver: ScrollObserver
@@ -282,6 +286,8 @@ export class Draw {
     this.lineBreakParticle = new LineBreakParticle(this)
     this.whiteSpaceParticle = new WhiteSpaceParticle(this)
     this.control = new Control(this)
+    this.cascadeManager = new CascadeManager(this)
+    this.validate = new Validate(this)
     this.pageBorder = new PageBorder(this)
     this.graffiti = new Graffiti(this, data.graffiti)
     this.columnManager = new ColumnManager(this)
@@ -325,6 +331,8 @@ export class Draw {
       isSetCursor: false,
       isFirstRender: true
     })
+    // 级联规则初始化全量执行
+    this.cascadeManager.executeAll()
   }
 
   // 设置打印数据
@@ -1085,6 +1093,14 @@ export class Draw {
     return this.control
   }
 
+  public getCascadeManager(): CascadeManager {
+    return this.cascadeManager
+  }
+
+  public getValidate(): Validate {
+    return this.validate
+  }
+
   public getWorkerManager(): WorkerManager {
     return this.workerManager
   }
@@ -1405,6 +1421,8 @@ export class Draw {
       isSetCursor,
       isFirstRender: true
     })
+    // 数据替换后级联规则全量重算
+    this.cascadeManager.executeAll()
   }
 
   public setEditorData(payload: Partial<Omit<IEditorData, 'graffiti'>>) {

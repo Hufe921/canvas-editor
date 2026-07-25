@@ -31,6 +31,7 @@ import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
 import { DeepRequired } from '../../interface/Common'
 import {
+  IControlValidateResult,
   IGetControlValueOption,
   IGetControlValueResult,
   ILocationControlOption,
@@ -38,7 +39,8 @@ import {
   ISetControlExtensionOption,
   ISetControlHighlightOption,
   ISetControlProperties,
-  ISetControlValueOption
+  ISetControlValueOption,
+  IValidateOption
 } from '../../interface/Control'
 import {
   IAppendElementListOption,
@@ -197,8 +199,7 @@ export class CommandAdapt {
   }
 
   public backspace() {
-    const isDisabled = this.draw.isReadonly() || this.draw.isDisabled()
-    if (isDisabled) return
+    if (this.draw.isReadonly()) return
     const elementList = this.draw.getElementList()
     const { startIndex, endIndex } = this.range.getRange()
     const isCollapsed = startIndex === endIndex
@@ -2424,6 +2425,14 @@ export class CommandAdapt {
 
   public setControlPropertiesList(payload: ISetControlProperties[]) {
     this.draw.getControl().setPropertiesListById(payload)
+  }
+
+  public validate(payload?: IValidateOption): IControlValidateResult[] {
+    return this.draw.getValidate().execute(payload)
+  }
+
+  public clearValidate() {
+    this.draw.getValidate().clearHighlight()
   }
 
   public setControlHighlight(payload: ISetControlHighlightOption) {

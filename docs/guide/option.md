@@ -179,6 +179,7 @@ interface IControlOption {
   disabledBackgroundColor?: string // 禁用时背景色
   existValueBackgroundColor?: string // 有值时背景色
   noValueBackgroundColor?: string // 无值时背景色
+  errorBackgroundColor?: string // 校验失败背景色。默认：#FFECE8
 }
 ```
 

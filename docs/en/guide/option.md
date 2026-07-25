@@ -179,6 +179,7 @@ interface IControlOption {
   disabledBackgroundColor?: string // Background color when disabled
   existValueBackgroundColor?: string // Background color when has value
   noValueBackgroundColor?: string // Background color when no value
+  errorBackgroundColor?: string // Background color for failed validation. default: #FFECE8
 }
 ```
 

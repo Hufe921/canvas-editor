@@ -261,30 +261,7 @@ const locale = await instance.command.getLocale()
 const groupIds = await instance.command.getGroupIds()
 ```
 
-## getControlValue
-
-功能：获取控件值
-
-用法：
-
-```javascript
-const {
-  value: string | null
-  innerText: string | null
-  zone: EditorZone
-  elementList?: IElement[]
-}[] = await instance.command.getControlValue(payload: IGetControlValueOption)
-```
-
-## getControlList
-
-功能：获取所有控件
-
-用法：
-
-```javascript
-const controlList = await instance.command.getControlList()
-```
+控件相关命令已迁移至[控件-方法](./control/command.md)。
 
 ## getContainer
 
