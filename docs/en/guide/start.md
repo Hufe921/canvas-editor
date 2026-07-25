@@ -10,27 +10,25 @@ The official only provides the editor core layer npm package, the menu bar or ot
 
 ## Features
 
-- Rich text operations (Undo, Redo, Font, Size, Bold, Italic, Underline, Strikeout, Superscript, Alignment, Title, List, ...)
-- Insert elements (Table, Image, Link, Code Block, Page Break, Math Formula, Date Picker, Block, ...)
-- Print (Based on canvas to picture, pdf drawing)
-- Controls (Select, Text, Date, Radio, Checkbox)
-- Right-click menu (Internal, Custom)
-- Shortcut keys (Internal, Custom)
-- Drag and Drop(Text, Element, Control)
-- Header, Footer, Page Number
-- Page Margin
-- Watermark
-- Pagination
-- Comment
-- Catalog
+- Rich text operations: Undo, Redo, Painter, Clear Format, Font, Size, Bold, Italic, Underline, Strikeout, Superscript/Subscript, Text Color, Highlight, Alignment, Line Height, Row Margin, Title, List, First-line Indent
+- Insert elements: Table, Image, Hyperlink, Separator, Page Break, LaTeX Formula, Date Picker, Tab, Block, Label, Area
+- Table: Insert/Delete Rows and Columns, Merge/Split Cells, Border Style, Background Color, Vertical Alignment, Rowspan/Colspan, Cross-page Pagination
+- Print: Based on canvas to picture, pdf drawing
+- Controls: Text, Number, Select, Radio Group, Checkbox Group, Date, supporting Placeholder, Prefix/Postfix, Default Value, Disabled, Indent Alignment Rules and Control Nesting
+- Cascade Expression: Automatically toggles visibility, required, editable and deletable states of other controls or titles when control values change, with computed expression support
+- Track Changes: Records and visually marks inserted and deleted revisions
+- Macro: Recorded and script macros, supporting command recording/replay, JSON serialization and custom logic
+- Editor Modes: Edit, Clean, Readonly, Form, Print
+- Page Modes: Paging, Continuity, with Page Margin, Header, Footer, Page Number
+- Watermark: Text, Image, placed above or below the content
+- Comment: Add, Locate and Delete text comments
+- Catalog: Auto-generated from titles, click to navigate
+- Right-click menu: Built-in menu, customizable per element type
+- Shortcut keys: Built-in shortcuts, customizable overrides
+- Drag and Drop: Text, Element, Control
+- Search and Replace: Keyword search, navigation, replace
+- Internationalization (i18n): Built-in Chinese and English, extensible to other languages
 - [Plugin](https://github.com/Hufe921/canvas-editor-plugin)
-
-## TODO
-
-- Computational performance
-- Control rule
-- Table paging
-- Out of the box version for vue, react and other frameworks
 
 ## Step. 1: Download NPM Package
 
