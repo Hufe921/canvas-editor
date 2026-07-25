@@ -1146,8 +1146,8 @@ export class Control {
       }
       preIndex = next
     }
-    // 向右查找
-    let nextIndex = startIndex + 1
+    // 向右查找（scanToOwner 从给定索引的下一位开始扫描，
+    let nextIndex = startIndex
     while (nextIndex < elementList.length) {
       const next = scanToOwner(
         elementList,

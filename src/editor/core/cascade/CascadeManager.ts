@@ -56,10 +56,14 @@ export class CascadeManager {
   private draw: Draw
   private control: Control
   private eventBus: EventBus<EventBusMap>
+  // 标题 hide 基线（元素级）
   private baselines: WeakMap<
     IElement,
     Partial<Record<EffectProp | 'elementHide', unknown>>
   >
+  // 控件属性基线（controlId 级）：成员元素会随编辑增删、
+  // control 对象会被逐元素替换（发散），按元素/对象记录都会丢失
+  private controlBaselines: Map<string, Partial<Record<EffectProp, unknown>>>
   // 单次 executeAll 内的标识符取值缓存（效果不改值，pass 内值不变）
   private valueCache: Map<string, IResolvedValue | undefined>
   // 重入守卫：compute 回写值会再次触发 contentChange / 显式调用，
@@ -72,6 +76,7 @@ export class CascadeManager {
     this.control = draw.getControl()
     this.eventBus = draw.getEventBus()
     this.baselines = new WeakMap()
+    this.controlBaselines = new Map()
     this.valueCache = new Map()
     this.isExecuting = false
     this.needsRerun = false
@@ -251,6 +256,22 @@ export class CascadeManager {
     return matched
   }
 
+  // 把元素某属性的原值记入基线快照（已记录过则不覆盖）
+  private recordBaseline(
+    element: IElement,
+    key: EffectProp | 'elementHide',
+    get: () => unknown
+  ): void {
+    let baseline = this.baselines.get(element)
+    if (!baseline) {
+      baseline = {}
+      this.baselines.set(element, baseline)
+    }
+    if (!(key in baseline)) {
+      baseline[key] = get()
+    }
+  }
+
   // 写入效果属性，首次写入前把原值记入基线快照；
   // 返回是否有实际变更（值相同不重复写）
   private writeWithBaseline(
@@ -260,14 +281,7 @@ export class CascadeManager {
     set: (value: unknown) => void,
     value: unknown
   ): boolean {
-    let baseline = this.baselines.get(element)
-    if (!baseline) {
-      baseline = {}
-      this.baselines.set(element, baseline)
-    }
-    if (!(key in baseline)) {
-      baseline[key] = get()
-    }
+    this.recordBaseline(element, key, get)
     if (get() === value) return false
     set(value)
     return true
@@ -291,6 +305,34 @@ export class CascadeManager {
       if (control) {
         control[key] = oldValue
       }
+    }
+    return true
+  }
+
+  // 控件属性基线记录（controlId 级，首次记录后不覆盖）
+  private recordControlBaseline(element: IElement, prop: EffectProp): void {
+    const controlId = element.controlId
+    if (!controlId) return
+    let baseline = this.controlBaselines.get(controlId)
+    if (!baseline) {
+      baseline = {}
+      this.controlBaselines.set(controlId, baseline)
+    }
+    if (!(prop in baseline)) {
+      baseline[prop] = element.control?.[prop]
+    }
+  }
+
+  // 控件属性基线还原：新增成员（级联生效期间插入的值元素）
+  // 也能按 controlId 拿到控件级基线
+  private restoreControlBaseline(element: IElement, prop: EffectProp): boolean {
+    const baseline = this.controlBaselines.get(element.controlId!)
+    if (!baseline || !(prop in baseline)) return false
+    const oldValue = baseline[prop]
+    if (element.control?.[prop] === oldValue) return false
+    const control = element.control as Record<string, unknown> | undefined
+    if (control) {
+      control[prop] = oldValue
     }
     return true
   }
@@ -320,27 +362,29 @@ export class CascadeManager {
     let changed = false
     if (targetType === 'control') {
       const elements = controlElements
-      // 同一控件的组成元素共享 control 对象，按对象去重，
-      // 避免后处理元素把已变更值误记为基线导致还原错乱
-      const seen = new Set<object>()
-      for (const element of elements) {
-        const control = element.control as Record<string, unknown> | undefined
-        if (!control || seen.has(control)) continue
-        seen.add(control)
-        for (const prop of EFFECT_PROPS) {
-          if (matched && effects && prop in effects) {
-            changed =
-              this.writeWithBaseline(
-                element,
-                prop,
-                () => element.control?.[prop],
-                v => {
-                  control[prop] = v
-                },
-                effects[prop]
-              ) || changed
-          } else {
-            changed = this.restoreBaseline(element, prop) || changed
+      if (matched && effects) {
+        // 写入：同一控件的成员共享 control 对象时按对象去重；
+        // 基线按 controlId 记录（成员后续增删/对象发散都不受影响）
+        const seen = new Set<object>()
+        for (const element of elements) {
+          const control = element.control as Record<string, unknown> | undefined
+          if (!control) continue
+          const isFirstForObject = !seen.has(control)
+          for (const prop of EFFECT_PROPS) {
+            if (!(prop in effects)) continue
+            this.recordControlBaseline(element, prop)
+            if (isFirstForObject && control[prop] !== effects[prop]) {
+              control[prop] = effects[prop]
+              changed = true
+            }
+          }
+          seen.add(control)
+        }
+      } else {
+        // 还原：逐元素按 controlId 基线恢复
+        for (const element of elements) {
+          for (const prop of EFFECT_PROPS) {
+            changed = this.restoreControlBaseline(element, prop) || changed
           }
         }
       }
