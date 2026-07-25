@@ -39,7 +39,7 @@ export async function cut(host: CanvasEvent) {
     curIndex = control.cut()
     control.emitControlContentChange()
   } else {
-    draw.spliceElementList(elementList, start + 1, end - start)
+    draw.deleteElementList(elementList, start + 1, end - start)
     curIndex = start
   }
   rangeManager.setRange(curIndex, curIndex)

@@ -47,4 +47,25 @@ describe('搜索替换命令', () => {
       ctx.editor.command.executeReplace('planet')
     }).not.toThrow()
   })
+
+  it('留痕开启时替换为空字符串不产生非法光标', () => {
+    ctx = createTestEditor({
+      data: {
+        header: [],
+        main: [{ value: 'hello' }, { value: '\n' }],
+        footer: []
+      },
+      options: { trace: { disabled: false } }
+    })
+
+    ctx.editor.command.executeSearch('hello')
+
+    expect(() => {
+      ctx.editor.command.executeReplace('')
+    }).not.toThrow()
+
+    const range = ctx.editor.command.getRange()
+    expect(range.startIndex).toBeGreaterThanOrEqual(0)
+    expect(range.endIndex).toBeGreaterThanOrEqual(0)
+  })
 })

@@ -31,6 +31,7 @@ import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
 import { ICursorOption } from '../interface/Cursor'
 import { IEditorOption, IModeRule } from '../interface/Editor'
+import { ITraceOption } from '../interface/Trace'
 import { IMagnifierOption } from '../interface/Magnifier'
 import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
@@ -64,6 +65,7 @@ import { IGraffitiOption } from '../interface/Graffiti'
 import { defaultGraffitiOption } from '../dataset/constant/Graffiti'
 import { IWhiteSpaceOption } from '../interface/WhiteSpace'
 import { defaultWhiteSpaceOption } from '../dataset/constant/WhiteSpace'
+import { defaultTraceOption } from '../dataset/constant/Trace'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -180,6 +182,10 @@ export function mergeOption(
     ...defaultColumnOption,
     ...options.column
   }
+  const traceOptions: Required<ITraceOption> = {
+    ...defaultTraceOption,
+    ...options.trace
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -269,6 +275,7 @@ export function mergeOption(
     list: listOptions,
     magnifier: magnifierOptions,
     accessibility: accessibilityOptions,
-    column: columnOptions
+    column: columnOptions,
+    trace: traceOptions
   }
 }

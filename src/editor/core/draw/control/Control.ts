@@ -5,6 +5,7 @@ import {
 } from '../../../dataset/enum/Control'
 import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
+import { LocationPosition } from '../../../dataset/enum/Common'
 import { DeepRequired } from '../../../interface/Common'
 import {
   IControl,
@@ -44,7 +45,10 @@ import {
   formatElementContext,
   formatElementList,
   getNonHideElementIndex,
+  isElementTraceDeleted,
+  getOutermostOwner,
   pickElementAttr,
+  scanToOwner,
   zipElementList
 } from '../../../utils/element'
 import { EventBus } from '../../event/eventbus/EventBus'
@@ -212,11 +216,13 @@ export class Control {
     ) {
       return true
     }
-    // 在控件内
+    // 在控件内（嵌套下，选区起止可能属于同一最外层控件的不同子控件）
     const endElement = elementList[endIndex]
+    const startOuter = getOutermostOwner(elementList, startIndex)
+    const endOuter = getOutermostOwner(elementList, endIndex)
     if (
-      startElement.controlId &&
-      startElement.controlId === endElement.controlId &&
+      startOuter &&
+      startOuter === endOuter &&
       endElement.controlComponent !== ControlComponent.POSTFIX
     ) {
       return true
@@ -239,11 +245,13 @@ export class Control {
     const { startIndex, endIndex } = this.getRange()
     if (!~startIndex && !~endIndex) return false
     const elementList = this.getElementList()
-    const startElement = elementList[startIndex]
     const endElement = elementList[endIndex]
+    // 嵌套下，选区起止可能属于同一最外层控件的不同子控件
+    const startOuter = getOutermostOwner(elementList, startIndex)
+    const endOuter = getOutermostOwner(elementList, endIndex)
     if (
-      startElement?.controlId &&
-      startElement.controlId === endElement.controlId &&
+      startOuter &&
+      startOuter === endOuter &&
       endElement.controlComponent !== ControlComponent.POSTFIX
     ) {
       return true
@@ -321,9 +329,11 @@ export class Control {
       element.controlComponent === ControlComponent.PREFIX ||
       element.controlComponent === ControlComponent.PRE_TEXT
     ) {
-      let i = index + 1
+      let i = index
       while (i < elementList.length) {
-        const nextElement = elementList[i]
+        const next = scanToOwner(elementList, i, 1, element.controlId!)
+        if (next < 0 || next >= elementList.length) return false
+        const nextElement = elementList[next]
         if (nextElement.controlId !== element.controlId) {
           return false
         }
@@ -333,7 +343,7 @@ export class Control {
         if (nextElement.controlComponent === ControlComponent.PLACEHOLDER) {
           return false
         }
-        i++
+        i = next
       }
     }
     // 向前查找值元素
@@ -341,9 +351,11 @@ export class Control {
       element.controlComponent === ControlComponent.POSTFIX ||
       element.controlComponent === ControlComponent.POST_TEXT
     ) {
-      let i = index - 1
+      let i = index
       while (i >= 0) {
-        const preElement = elementList[i]
+        const next = scanToOwner(elementList, i, -1, element.controlId!)
+        if (next < 0) return false
+        const preElement = elementList[next]
         if (preElement.controlId !== element.controlId) {
           return false
         }
@@ -353,7 +365,7 @@ export class Control {
         if (preElement.controlComponent === ControlComponent.PLACEHOLDER) {
           return false
         }
-        i--
+        i = next
       }
     }
     return false
@@ -395,20 +407,35 @@ export class Control {
     // 向左查找
     let preIndex = startIndex
     while (preIndex > 0) {
-      const preElement = elementList[preIndex]
+      const next = scanToOwner(
+        elementList,
+        preIndex,
+        -1,
+        startElement.controlId!
+      )
+      if (next < 0) break
+      const preElement = elementList[next]
       if (
         preElement.controlId !== startElement.controlId ||
         preElement.controlComponent === ControlComponent.PREFIX ||
         preElement.controlComponent === ControlComponent.PRE_TEXT
       ) {
+        preIndex = next
         break
       }
-      preIndex--
+      preIndex = next
     }
     // 向右查找
-    let nextIndex = startIndex + 1
+    let nextIndex = startIndex
     while (nextIndex < elementList.length) {
-      const nextElement = elementList[nextIndex]
+      const next = scanToOwner(
+        elementList,
+        nextIndex,
+        1,
+        startElement.controlId!
+      )
+      if (next < 0 || next >= elementList.length) break
+      const nextElement = elementList[next]
       if (
         nextElement.controlId !== startElement.controlId ||
         nextElement.controlComponent === ControlComponent.POSTFIX ||
@@ -416,12 +443,12 @@ export class Control {
       ) {
         break
       }
-      nextIndex++
+      nextIndex = next
     }
     if (preIndex === nextIndex) return null
     return {
       startIndex: preIndex,
-      endIndex: nextIndex - 1
+      endIndex: nextIndex
     }
   }
 
@@ -438,22 +465,36 @@ export class Control {
     const { startIndex } = context.range || this.getRange()
     const startElement = elementList[startIndex]
     if (!startElement?.controlId) return []
-    const data: IElement[] = []
+    const data: IElement[] = [startElement]
     // 向左查找
     let preIndex = startIndex
     while (preIndex > 0) {
-      const preElement = elementList[preIndex]
+      const next = scanToOwner(
+        elementList,
+        preIndex,
+        -1,
+        startElement.controlId
+      )
+      if (next < 0) break
+      const preElement = elementList[next]
       if (preElement.controlId !== startElement.controlId) break
       data.unshift(preElement)
-      preIndex--
+      preIndex = next
     }
-    // 向右查找
-    let nextIndex = startIndex + 1
+    // 向右查找（从 startIndex 开始：scanToOwner 内部从 index+direction 起查）
+    let nextIndex = startIndex
     while (nextIndex < elementList.length) {
-      const nextElement = elementList[nextIndex]
+      const next = scanToOwner(
+        elementList,
+        nextIndex,
+        1,
+        startElement.controlId
+      )
+      if (next < 0 || next >= elementList.length) break
+      const nextElement = elementList[next]
       if (nextElement.controlId !== startElement.controlId) break
       data.push(nextElement)
-      nextIndex++
+      nextIndex = next
     }
     return data
   }
@@ -721,12 +762,21 @@ export class Control {
     } else {
       element = elementList[index]
     }
+    const traceParticle = this.draw.getTraceParticle()
     // 隐藏元素移动光标（设计模式下允许选中）
     if (
       !this.draw.isDesignMode() &&
-      (element.hide || element.control?.hide || element.area?.hide)
+      (element.hide ||
+        element.control?.hide ||
+        element.area?.hide ||
+        traceParticle.isTraceHidden(element))
     ) {
-      const nonHideIndex = getNonHideElementIndex(elementList, newIndex)
+      const nonHideIndex = getNonHideElementIndex(
+        elementList,
+        newIndex,
+        LocationPosition.BEFORE,
+        el => traceParticle.isTraceHidden(el)
+      )
       return {
         newIndex: nonHideIndex,
         newElement: elementList[nonHideIndex]
@@ -807,6 +857,43 @@ export class Control {
     }
   }
 
+  // 查找控件前缀/前文本段的起始位置（支持多字符前缀/前文本）
+  public getControlStartIndex(
+    elementList: IElement[],
+    startIndex: number,
+    controlId: string
+  ): number {
+    let index = startIndex
+    while (
+      index > 0 &&
+      elementList[index - 1]?.controlId === controlId &&
+      (elementList[index - 1]?.controlComponent === ControlComponent.PREFIX ||
+        elementList[index - 1]?.controlComponent === ControlComponent.PRE_TEXT)
+    ) {
+      index--
+    }
+    return index
+  }
+
+  // 查找控件后文本/后缀段的结束位置（支持多字符后文本/后缀）
+  public getControlEndIndex(
+    elementList: IElement[],
+    startIndex: number,
+    controlId: string
+  ): number {
+    let index = startIndex
+    while (
+      index < elementList.length - 1 &&
+      elementList[index + 1]?.controlId === controlId &&
+      (elementList[index + 1]?.controlComponent ===
+        ControlComponent.POST_TEXT ||
+        elementList[index + 1]?.controlComponent === ControlComponent.POSTFIX)
+    ) {
+      index++
+    }
+    return index
+  }
+
   public removeControl(
     startIndex: number,
     context: IControlContext = {}
@@ -830,37 +917,122 @@ export class Control {
       ) {
         return null
       }
+      // 外层删除时，递归校验内部所有子控件的 deletable
+      const ownerId = startElement.controlId!
+      let scanIndex = startIndex
+      while (scanIndex < elementList.length) {
+        const scanEl = elementList[scanIndex]
+        // 找到外层 POSTFIX 即结束
+        if (
+          scanEl.controlId === ownerId &&
+          scanEl.controlComponent === ControlComponent.POSTFIX
+        ) {
+          break
+        }
+        // 遇到内层控件段 PREFIX，检查该内层控件的 deletable
+        if (
+          scanEl.controlId !== ownerId &&
+          scanEl.controlComponent === ControlComponent.PREFIX &&
+          scanEl.control?.deletable === false
+        ) {
+          return null
+        }
+        scanIndex++
+      }
     }
     let leftIndex = -1
     let rightIndex = -1
-    // 向左查找
+    // 向左查找（嵌套感知：跳过内层段落）
     let preIndex = startIndex
-    while (preIndex > 0) {
-      const preElement = elementList[preIndex]
-      if (preElement.controlId !== startElement.controlId) {
-        leftIndex = preIndex
-        break
+    // 起点本身是外层 PREFIX / PRE_TEXT 即为左边界
+    if (
+      startElement.controlComponent === ControlComponent.PREFIX ||
+      startElement.controlComponent === ControlComponent.PRE_TEXT
+    ) {
+      const start = this.getControlStartIndex(
+        elementList,
+        preIndex,
+        startElement.controlId!
+      )
+      leftIndex = start - 1
+    } else {
+      while (preIndex > 0) {
+        const next = scanToOwner(
+          elementList,
+          preIndex,
+          -1,
+          startElement.controlId!
+        )
+        if (next < 0) break
+        const preElement = elementList[next]
+        if (preElement.controlId !== startElement.controlId) {
+          leftIndex = next
+          break
+        }
+        // 落到外层 PREFIX / PRE_TEXT 即为左边界
+        if (
+          preElement.controlComponent === ControlComponent.PREFIX ||
+          preElement.controlComponent === ControlComponent.PRE_TEXT
+        ) {
+          const start = this.getControlStartIndex(
+            elementList,
+            next,
+            startElement.controlId!
+          )
+          leftIndex = start - 1
+          break
+        }
+        preIndex = next
       }
-      preIndex--
     }
-    // 向右查找
-    let nextIndex = startIndex + 1
-    while (nextIndex < elementList.length) {
-      const nextElement = elementList[nextIndex]
-      if (nextElement.controlId !== startElement.controlId) {
-        rightIndex = nextIndex - 1
-        break
+    // 向右查找（嵌套感知：跳过内层段落）
+    let nextIndex = startIndex
+    // 起点本身是外层 POSTFIX / POST_TEXT 即为右边界
+    if (
+      startElement.controlComponent === ControlComponent.POSTFIX ||
+      startElement.controlComponent === ControlComponent.POST_TEXT
+    ) {
+      rightIndex = this.getControlEndIndex(
+        elementList,
+        nextIndex,
+        startElement.controlId!
+      )
+    } else {
+      while (nextIndex < elementList.length) {
+        const curElement = elementList[nextIndex]
+        // 落到外层 POSTFIX / POST_TEXT 即为右边界
+        if (
+          curElement.controlComponent === ControlComponent.POSTFIX ||
+          curElement.controlComponent === ControlComponent.POST_TEXT
+        ) {
+          rightIndex = this.getControlEndIndex(
+            elementList,
+            nextIndex,
+            startElement.controlId!
+          )
+          break
+        }
+        const next = scanToOwner(
+          elementList,
+          nextIndex,
+          1,
+          startElement.controlId!
+        )
+        if (next >= elementList.length) {
+          rightIndex = next - 1
+          break
+        }
+        nextIndex = next
       }
-      nextIndex++
     }
     // 控件在最后
-    if (nextIndex === elementList.length) {
-      rightIndex = nextIndex - 1
+    if (nextIndex >= elementList.length) {
+      rightIndex = elementList.length - 1
     }
     if (!~leftIndex && !~rightIndex) return startIndex
     leftIndex = ~leftIndex ? leftIndex : 0
     // 删除元素
-    this.draw.spliceElementList(
+    this.draw.deleteElementList(
       elementList,
       leftIndex + 1,
       rightIndex - leftIndex
@@ -894,6 +1066,20 @@ export class Control {
         }
       }
     }
+  }
+
+  public removePlaceholderInRange(
+    elementList: IElement[],
+    startIndex: number,
+    count: number
+  ): number {
+    for (let i = startIndex + count - 1; i >= startIndex; i--) {
+      if (elementList[i]?.controlComponent === ControlComponent.PLACEHOLDER) {
+        elementList.splice(i, 1)
+        count--
+      }
+    }
+    return count
   }
 
   public addPlaceholder(startIndex: number, context: IControlContext = {}) {
@@ -938,27 +1124,45 @@ export class Control {
     const elementList = context.elementList || this.getElementList()
     const { startIndex } = context.range || this.getRange()
     const startElement = elementList[startIndex]
+    startElement.control = {
+      ...startElement.control!,
+      ...properties
+    }
     // 向左查找
     let preIndex = startIndex
     while (preIndex > 0) {
-      const preElement = elementList[preIndex]
+      const next = scanToOwner(
+        elementList,
+        preIndex,
+        -1,
+        startElement.controlId!
+      )
+      if (next < 0) break
+      const preElement = elementList[next]
       if (preElement.controlId !== startElement.controlId) break
       preElement.control = {
         ...preElement.control!,
         ...properties
       }
-      preIndex--
+      preIndex = next
     }
     // 向右查找
     let nextIndex = startIndex + 1
     while (nextIndex < elementList.length) {
-      const nextElement = elementList[nextIndex]
+      const next = scanToOwner(
+        elementList,
+        nextIndex,
+        1,
+        startElement.controlId!
+      )
+      if (next < 0 || next >= elementList.length) break
+      const nextElement = elementList[next]
       if (nextElement.controlId !== startElement.controlId) break
       nextElement.control = {
         ...nextElement.control!,
         ...properties
       }
-      nextIndex++
+      nextIndex = next
     }
   }
 
@@ -1009,10 +1213,14 @@ export class Control {
         let j = i
         let textControlValue = ''
         const textControlElementList = []
+        let hasVisibleControlElement = !isElementTraceDeleted(element)
         while (j < elementList.length) {
           const nextElement = elementList[j]
           if (nextElement.controlId !== element.controlId) break
+          const isDeleted = isElementTraceDeleted(nextElement)
+          if (!isDeleted) hasVisibleControlElement = true
           if (
+            !isDeleted &&
             (type === ControlType.TEXT ||
               type === ControlType.DATE ||
               type === ControlType.NUMBER) &&
@@ -1024,6 +1232,10 @@ export class Control {
             )
           }
           j++
+        }
+        if (!hasVisibleControlElement) {
+          i = j
+          continue
         }
         if (
           type === ControlType.TEXT ||
@@ -1429,7 +1641,7 @@ export class Control {
             }
           }
         }
-        if (element.controlId) {
+        if (element.controlId && !isElementTraceDeleted(element)) {
           // 移除控件所在标题及列表上下文信息
           const controlElement = omitObject(element, [
             ...TITLE_CONTEXT_ATTR,

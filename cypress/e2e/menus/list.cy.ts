@@ -116,4 +116,66 @@ describe('菜单-列表', () => {
         })
     })
   })
+
+  it('子列表-缩进与反缩进', () => {
+    cy.getEditor().then((editor: Editor) => {
+      editor.command.executeSelectAll()
+
+      editor.command.executeBackspace()
+
+      editor.command.executeInsertElementList([{ value: text }])
+      editor.command.executeSetRange(0, text.length)
+      editor.command.executeList(<ListType>'ul')
+
+      editor.command.executeSetRange(1, 1)
+      cy.get('.ce-inputarea')
+        .trigger('keydown', {
+          key: 'Tab',
+          bubbles: true,
+          cancelable: true,
+          force: true
+        })
+        .then(() => {
+          let data = editor.command.getValue().data.main
+          const hasLevelOne = data.some(
+            (e: any) =>
+              e.valueList?.some((v: any) => v.listLevel === 1) ||
+              e.listLevel === 1
+          )
+          expect(hasLevelOne).to.eq(true)
+
+          editor.command.executeSetRange(1, 1)
+          cy.get('.ce-inputarea')
+            .trigger('keydown', {
+              key: 'Tab',
+              shiftKey: true,
+              bubbles: true,
+              cancelable: true,
+              force: true
+            })
+            .then(() => {
+              data = editor.command.getValue().data.main
+              const hasLevelZero = data.some((e: any) =>
+                e.valueList?.some((v: any) => v.listLevel === 0)
+              )
+              expect(hasLevelZero).to.eq(true)
+
+              editor.command.executeSetRange(1, 1)
+              cy.get('.ce-inputarea')
+                .trigger('keydown', {
+                  key: 'Tab',
+                  shiftKey: true,
+                  bubbles: true,
+                  cancelable: true,
+                  force: true
+                })
+                .then(() => {
+                  data = editor.command.getValue().data.main
+                  const hasList = data.some((e: any) => e.listType === 'ul')
+                  expect(hasList).to.eq(false)
+                })
+            })
+        })
+    })
+  })
 })

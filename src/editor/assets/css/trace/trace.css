@@ -1,0 +1,36 @@
+.ce-trace-popup {
+  background: #fff;
+  box-shadow: 0 2px 12px 0 rgb(98 107 132 / 20%);
+  border-radius: 4px;
+  color: #3d4757;
+  padding: 8px 12px;
+  position: absolute;
+  z-index: 1;
+  font-size: 12px;
+  line-height: 1.6;
+  display: none;
+  pointer-events: none;
+}
+
+.ce-trace-popup__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ce-trace-popup__item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.ce-trace-popup__type {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.ce-trace-popup__author,
+.ce-trace-popup__time {
+  color: #6b7280;
+}

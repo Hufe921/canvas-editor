@@ -37,7 +37,9 @@ const {
     DELETE_COL,
     DELETE_TABLE,
     MERGE_CELL,
-    CANCEL_MERGE_CELL
+    CANCEL_MERGE_CELL,
+    AUTO_FIT_TO_CONTENT,
+    AUTO_FIT_TO_PAGE
   }
 } = INTERNAL_CONTEXT_MENU_KEY
 
@@ -326,6 +328,36 @@ export const tableMenus: IRegisterContextMenu[] = [
     },
     callback: (command: Command) => {
       command.executeCancelMergeTableCell()
+    }
+  },
+  {
+    key: AUTO_FIT_TO_CONTENT,
+    i18nPath: 'contextmenu.table.autoFitToContent',
+    icon: 'table-auto-fit-content',
+    when: payload => {
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
+    },
+    callback: (command: Command) => {
+      command.executeTableAutoFitToContent()
+    }
+  },
+  {
+    key: AUTO_FIT_TO_PAGE,
+    i18nPath: 'contextmenu.table.autoFitToPage',
+    icon: 'table-auto-fit-page',
+    when: payload => {
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
+    },
+    callback: (command: Command) => {
+      command.executeTableAutoFitToPage()
     }
   }
 ]

@@ -39,6 +39,8 @@
       "deleteTable": "Delete table",
       "mergeCell": "Merge cell",
       "mergeCancelCell": "Cancel merge cell",
+      "autoFitToContent": "AutoFit to contents",
+      "autoFitToPage": "AutoFit to window",
       "verticalAlign": "Vertical align",
       "verticalAlignTop": "Top",
       "verticalAlignMiddle": "Middle",
@@ -106,5 +108,27 @@
   "accessibility": {
     "selected": "Selected: ",
     "input": "Input: "
+  },
+  "trace": {
+    "insert": "Inserted",
+    "delete": "Deleted",
+    "author": "Author",
+    "time": "Time",
+    "unknownAuthor": "Unknown"
+  },
+  "validate": {
+    "required": "This field is required",
+    "minLength": "Minimum length is {min}",
+    "maxLength": "Maximum length is {max}",
+    "pattern": "Invalid format",
+    "invalidNumber": "Please enter a valid number",
+    "min": "Minimum value is {min}",
+    "max": "Maximum value is {max}",
+    "integer": "Must be an integer",
+    "precision": "Up to {precision} decimal places",
+    "minDate": "Date cannot be earlier than {date}",
+    "maxDate": "Date cannot be later than {date}",
+    "minChecked": "Select at least {count} item(s)",
+    "maxChecked": "Select at most {count} item(s)"
   }
 }

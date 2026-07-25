@@ -42,7 +42,11 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-expressions': 'off',
       'no-constant-condition': ['error', { checkLoops: false }],
       semi: ['warn', 'never'],
-      quotes: ['warn', 'single', { allowTemplateLiterals: true }]
+      quotes: [
+        'warn',
+        'single',
+        { avoidEscape: true, allowTemplateLiterals: true }
+      ]
     }
   },
   {

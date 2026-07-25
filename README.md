@@ -104,14 +104,13 @@ For complete API documentation, see the [official docs](https://hufe.club/canvas
 
 ## Ecosystem
 
-| Project                                                                            | Description                                                           |
-| ---------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)            | Official plugin collection                                            |
-| [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)           | SVG render layer (in development)                                     |
-| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)           | PDF export feature                                                    |
-| [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)             | AI-powered text processing demo                                       |
-| [poc/table-paging](https://github.com/Hufe921/canvas-editor/tree/poc/table-paging) | Table pagination POC ([demo](https://hufe.club/canvas-editor-table/)) |
-| [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)         | CRDT-based collaboration (experimental)                               |
+| Project                                                                    | Description                             |
+| -------------------------------------------------------------------------- | --------------------------------------- |
+| [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)    | Official plugin collection              |
+| [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)   | SVG render layer (in development)       |
+| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)   | PDF export feature                      |
+| [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)     | AI-powered text processing demo         |
+| [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT) | CRDT-based collaboration (experimental) |
 
 ## Development
 

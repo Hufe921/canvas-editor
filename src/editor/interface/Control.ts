@@ -69,6 +69,7 @@ export interface IControlRule {
   disabled?: boolean
   pasteDisabled?: boolean
   hide?: boolean
+  required?: boolean // 必填（校验时使用，可被级联动态控制）
 }
 
 export interface IControlBasic {
@@ -87,6 +88,9 @@ export interface IControlBasic {
   rowFlex?: RowFlex
   preText?: string
   postText?: string
+  cascade?: IControlCascadeRule[]
+  validation?: IControlValidation
+  compute?: string // 计算表达式：结果自动回写本控件值（如 BMI）
 }
 
 export interface IControlStyle {
@@ -118,6 +122,7 @@ export interface IControlOption {
   disabledBackgroundColor?: string
   existValueBackgroundColor?: string
   noValueBackgroundColor?: string
+  errorBackgroundColor?: string // 校验失败背景色
 }
 
 export interface IControlInitOption {
@@ -247,4 +252,52 @@ export interface IDestroyControlOption {
 export interface IRemoveControlOption {
   id?: string
   conceptId?: string
+}
+
+export type CascadeTargetType = 'control' | 'title'
+
+export interface ICascadeAction {
+  controlId?: string // 目标控件 id（唯一，精确控制）
+  conceptId?: string // 目标控件/标题 conceptId（可多个，批量控制）
+  // 与 controlId 可同时配置，合并命中全部应用
+  targetType?: CascadeTargetType // conceptId 消歧用，缺省自动探测：先控件后标题
+  effects: {
+    hide?: boolean
+    required?: boolean
+    disabled?: boolean
+    deletable?: boolean
+  }
+}
+
+export interface IControlCascadeRule {
+  expression: string
+  actions: ICascadeAction[]
+  elseActions?: ICascadeAction[] // 缺省时还原目标基线值
+}
+
+export interface IControlValidation {
+  minLength?: number // TEXT
+  maxLength?: number
+  pattern?: string
+  min?: number // NUMBER
+  max?: number
+  integer?: boolean
+  precision?: number
+  minDate?: string // DATE：'YYYY-MM-DD' 或 'today'
+  maxDate?: string
+  minChecked?: number // CHECKBOX
+  maxChecked?: number
+  message?: string // 自定义错误文案
+}
+
+export interface IValidateOption {
+  zone?: EditorZone
+  errorBackgroundColor?: string
+}
+
+export interface IControlValidateResult {
+  controlId: string
+  conceptId?: string
+  control: IControl // 校验失败控件的完整配置（浅拷贝）
+  errors: string[]
 }

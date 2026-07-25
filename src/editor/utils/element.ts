@@ -19,6 +19,7 @@ import {
   EDITOR_ELEMENT_CONTEXT_ATTR,
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
+  EDITOR_TRACE_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -43,16 +44,43 @@ import { EditorMode } from '../dataset/enum/Editor'
 import { ElementType } from '../dataset/enum/Element'
 import { ListStyle, ListType, UlStyle } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
+import { TraceType } from '../dataset/enum/Trace'
 import { TableBorder, TdBorder } from '../dataset/enum/table/Table'
 import { VerticalAlign } from '../dataset/enum/VerticalAlign'
 import { DeepRequired } from '../interface/Common'
 import { IControlSelect } from '../interface/Control'
 import { IEditorOption } from '../interface/Editor'
-import { IElement } from '../interface/Element'
+import { IElement, ITraceRecord } from '../interface/Element'
 import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 import { mergeOption } from './option'
+
+export function isElementTraceDeleted(element: IElement): boolean {
+  const records = element.trace
+  return records?.[records.length - 1]?.type === TraceType.DELETED
+}
+
+export function getNonDeletedElementList(elementList: IElement[]): IElement[] {
+  const result = deepClone(elementList)
+  const filter = (payload: IElement[]): IElement[] =>
+    payload.filter(element => {
+      if (isElementTraceDeleted(element)) return false
+      if (element.valueList) {
+        element.valueList = filter(element.valueList)
+      }
+      if (element.control?.value) {
+        element.control.value = filter(element.control.value)
+      }
+      for (const tr of element.trList || []) {
+        for (const td of tr.tdList) {
+          td.value = filter(td.value)
+        }
+      }
+      return true
+    })
+  return filter(result)
+}
 
 export function unzipElementList(elementList: IElement[]): IElement[] {
   const result: IElement[] = []
@@ -145,12 +173,24 @@ export function formatElementList(
       })
       // 追加节点
       if (valueList.length) {
-        const listId = el.listId || getUUID()
+        const fallbackListId = el.listId || getUUID()
+        const listIdMap = new Map<number, string>([[0, fallbackListId]])
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
-          value.listId = listId
-          value.listType = el.listType
-          value.listStyle = el.listStyle
+          const listLevel = value.listLevel ?? el.listLevel ?? 0
+          // 嵌套列表还原时按层级分配 listId，保证父子列表独立编号
+          if (!value.listId) {
+            value.listId = listIdMap.get(listLevel) || getUUID()
+          }
+          listIdMap.set(listLevel, value.listId)
+          Array.from(listIdMap.keys()).forEach(level => {
+            if (level > listLevel) {
+              listIdMap.delete(level)
+            }
+          })
+          value.listType = value.listType || el.listType
+          value.listStyle = value.listStyle || el.listStyle
+          value.listLevel = listLevel
           elementList.splice(i, 0, value)
           i++
         }
@@ -328,7 +368,8 @@ export function formatElementList(
       // 控件上下文提取（压缩后的控件上下文无法提取）
       const controlContext = pickObject(el, [
         ...EDITOR_ELEMENT_CONTEXT_ATTR,
-        ...EDITOR_ROW_ATTR
+        ...EDITOR_ROW_ATTR,
+        ...EDITOR_TRACE_ATTR
       ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
@@ -498,15 +539,22 @@ export function formatElementList(
           for (let v = 0; v < valueList.length; v++) {
             const element = valueList[v]
             const value = element.value
+            // 嵌套控件：都保留其自身的 controlId/control/controlComponent。
+            const isNestedControl =
+              !!element.controlId && element.controlId !== controlId
             elementList.splice(i, 0, {
               ...controlContext,
               ...controlDefaultStyle,
               ...element,
-              controlId,
+              ...(isNestedControl
+                ? {}
+                : {
+                    controlId,
+                    control: el.control,
+                    controlComponent: ControlComponent.VALUE
+                  }),
               value: value === '\n' ? ZERO : value,
-              type: element.type || ElementType.TEXT,
-              control: el.control,
-              controlComponent: ControlComponent.VALUE
+              type: element.type || ElementType.TEXT
             })
             i++
           }
@@ -613,6 +661,24 @@ export function isSameElementExceptValue(
     ) {
       continue
     }
+    // trace数组需逐条校验内容是否一致
+    if (key === 'trace') {
+      const sourceTrace = (source[key] as ITraceRecord[]) || []
+      const targetTrace = (target[key] as ITraceRecord[]) || []
+      if (sourceTrace.length !== targetTrace.length) return false
+      for (let i = 0; i < sourceTrace.length; i++) {
+        const s = sourceTrace[i]
+        const t = targetTrace[i]
+        if (
+          s.type !== t.type ||
+          s.author !== t.author ||
+          s.timestamp !== t.timestamp
+        ) {
+          return false
+        }
+      }
+      continue
+    }
     if (source[key] !== target[key]) {
       return false
     }
@@ -647,12 +713,18 @@ interface IZipElementListOption {
   extraPickAttrs?: Array<keyof IElement>
   isClassifyArea?: boolean
   isClone?: boolean
+  isListValue?: boolean
 }
 export function zipElementList(
   payload: IElement[],
   options: IZipElementListOption = {}
 ): IElement[] {
-  const { extraPickAttrs, isClassifyArea = false, isClone = true } = options
+  const {
+    extraPickAttrs,
+    isClassifyArea = false,
+    isClone = true,
+    isListValue = false
+  } = options
   const elementList = isClone ? deepClone(payload) : payload
   const zipElementListData: IElement[] = []
   let e = 0
@@ -727,7 +799,7 @@ export function zipElementList(
         titleElement.valueList = zipElementList(valueList, options)
         element = titleElement
       }
-    } else if (element.listId && element.listType) {
+    } else if (!isListValue && element.listId && element.listType) {
       // 列表处理
       const listId = element.listId
       if (listId) {
@@ -743,7 +815,7 @@ export function zipElementList(
         const valueList: IElement[] = []
         while (e < elementList.length) {
           const listE = elementList[e]
-          if (listId !== listE.listId) {
+          if (!listE.listId || listType !== listE.listType) {
             e--
             break
           }
@@ -752,27 +824,14 @@ export function zipElementList(
           valueList.push(listE)
           e++
         }
-        listElement.valueList = zipElementList(valueList, options)
+        // 嵌套列表导出为同一个 list，由 valueList 中的 listLevel 表达层级
+        listElement.valueList = zipElementList(valueList, {
+          ...options,
+          isListValue: true
+        })
         element = listElement
       }
     } else if (element.type === ElementType.TABLE) {
-      // 分页表格先进行合并
-      if (element.pagingId) {
-        let tableIndex = e + 1
-        let combineCount = 0
-        while (tableIndex < elementList.length) {
-          const nextElement = elementList[tableIndex]
-          if (nextElement.pagingId === element.pagingId) {
-            element.height! += nextElement.height!
-            element.trList!.push(...nextElement.trList!)
-            tableIndex++
-            combineCount++
-          } else {
-            break
-          }
-        }
-        e += combineCount
-      }
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
@@ -854,16 +913,49 @@ export function zipElementList(
         let start = e
         while (start < elementList.length) {
           const controlE = elementList[start]
-          if (controlId !== controlE.controlId) break
-          if (controlE.controlComponent === ControlComponent.VALUE) {
-            delete controlE.control
-            delete controlE.controlId
-            valueList.push(controlE)
+          // 同 ownerId 正常处理
+          if (controlE.controlId === controlId) {
+            if (controlE.controlComponent === ControlComponent.VALUE) {
+              delete controlE.control
+              delete controlE.controlId
+              valueList.push(controlE)
+            }
+            if (controlE.controlComponent === ControlComponent.POSTFIX) {
+              isFull = true
+              start++
+              break
+            }
+            start++
+            continue
           }
-          if (controlE.controlComponent === ControlComponent.POSTFIX) {
-            isFull = true
+          // 不同 ownerId：内层控件段——先定位内层 POSTFIX 边界，再递归压缩
+          if (controlE.controlComponent === ControlComponent.PREFIX) {
+            let innerEnd = start
+            while (innerEnd < elementList.length) {
+              const innerE = elementList[innerEnd]
+              if (
+                innerE.controlId === controlE.controlId &&
+                innerE.controlComponent === ControlComponent.POSTFIX
+              ) {
+                break
+              }
+              innerEnd++
+            }
+            const innerZipped = zipElementList(
+              elementList.slice(
+                start,
+                Math.min(innerEnd + 1, elementList.length)
+              ),
+              options
+            )
+            const innerElement = innerZipped[0]
+            if (innerElement) {
+              valueList.push(innerElement)
+            }
+            start = innerEnd + 1
+            continue
           }
-          start++
+          break
         }
         if (isFull) {
           // 以前缀为基准更新控件默认样式
@@ -879,7 +971,8 @@ export function zipElementList(
             type: ElementType.CONTROL,
             value: '',
             control,
-            controlId
+            controlId,
+            trace: element.trace
           }
           controlElement.control!.value = zipElementList(valueList, options)
           element = pickElementAttr(controlElement, { extraPickAttrs })
@@ -1562,18 +1655,58 @@ export function getElementListByHTML(
               (<unknown>listNode.style.listStyleType)
             )
           }
-          listNode.querySelectorAll('li').forEach(li => {
-            const liValueList = getElementListByHTML(li.innerHTML, options)
-            liValueList.forEach(list => {
-              if (list.value === '\n') {
-                list.listWrap = true
-              }
+          const collectListItems = (
+            parent: HTMLElement,
+            depth: number
+          ): IElement[] => {
+            // 每个 HTML 列表容器拥有独立 listId，保证嵌套序号按父项重置
+            const listId = getUUID()
+            const parentListType =
+              parent.tagName === 'OL' ? ListType.OL : ListType.UL
+            const parentListStyle =
+              parent.tagName === 'OL'
+                ? undefined
+                : <ListStyle>(<unknown>parent.style.listStyleType)
+            const items: IElement[] = []
+            Array.from(parent.children).forEach(child => {
+              const li = child as HTMLElement
+              if (li.tagName !== 'LI') return
+              const liClone = li.cloneNode(true) as HTMLElement
+              liClone
+                .querySelectorAll('ul,ol')
+                .forEach(nested => nested.remove())
+              const liValueList = getElementListByHTML(
+                liClone.innerHTML,
+                options
+              )
+              liValueList.forEach(item => {
+                if (item.value === '\n') {
+                  item.listWrap = true
+                }
+                item.listId = listId
+                item.listType = parentListType
+                if (parentListStyle) item.listStyle = parentListStyle
+                item.listLevel = depth
+              })
+              liValueList.unshift({
+                value: '\n',
+                listId,
+                listType: parentListType,
+                ...(parentListStyle ? { listStyle: parentListStyle } : {}),
+                listLevel: depth
+              })
+              items.push(...liValueList)
+              Array.from(
+                li.querySelectorAll(':scope > ul, :scope > ol')
+              ).forEach(nested => {
+                items.push(
+                  ...collectListItems(nested as HTMLElement, depth + 1)
+                )
+              })
             })
-            liValueList.unshift({
-              value: '\n'
-            })
-            listElement.valueList!.push(...liValueList)
-          })
+            return items
+          }
+          listElement.valueList = collectListItems(listNode, 0)
           elementList.push(listElement)
         } else if (node.nodeName === 'HR') {
           elementList.push({
@@ -1741,7 +1874,10 @@ export function getElementListByHTML(
   return elementList
 }
 
-export function getTextFromElementList(elementList: IElement[]) {
+export function getTextFromElementList(
+  elementList: IElement[],
+  options: { isClone?: boolean } = {}
+) {
   function buildText(payload: IElement[]): string {
     let text = ''
     for (let e = 0; e < payload.length; e++) {
@@ -1754,7 +1890,9 @@ export function getTextFromElementList(elementList: IElement[]) {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const tdText = buildText(zipElementList(td.value!))
+            const tdText = buildText(
+              zipElementList(td.value!, { isClone: false })
+            )
             const isFirst = d === 0
             const isLast = tr.tdList.length - 1 === d
             text += `${!isFirst ? `  ` : ``}${tdText}${isLast ? `\n` : ``}`
@@ -1765,10 +1903,12 @@ export function getTextFromElementList(elementList: IElement[]) {
       } else if (element.type === ElementType.HYPERLINK) {
         text += element.valueList!.map(v => v.value).join('')
       } else if (element.type === ElementType.TITLE) {
-        text += `${buildText(zipElementList(element.valueList!))}`
+        text += `${buildText(
+          zipElementList(element.valueList!, { isClone: false })
+        )}`
       } else if (element.type === ElementType.LIST) {
         // 按照换行符拆分
-        const zipList = zipElementList(element.valueList!)
+        const zipList = zipElementList(element.valueList!, { isClone: false })
         const listElementListMap = splitListElement(zipList)
         // 无序列表前缀
         let ulListStyleText = ''
@@ -1809,7 +1949,9 @@ export function getTextFromElementList(elementList: IElement[]) {
     }
     return text
   }
-  return buildText(zipElementList(elementList))
+  return buildText(
+    zipElementList(elementList, { isClone: options.isClone !== false })
+  )
 }
 
 export function getSlimCloneElementList(elementList: IElement[]) {
@@ -1866,12 +2008,14 @@ export function deleteSurroundElementList(
 export function getNonHideElementIndex(
   elementList: IElement[],
   index: number,
-  position: LocationPosition = LocationPosition.BEFORE
+  position: LocationPosition = LocationPosition.BEFORE,
+  isHidden?: (element: IElement) => boolean
 ) {
   if (
     !elementList[index]?.hide &&
     !elementList[index]?.control?.hide &&
-    !elementList[index]?.area?.hide
+    !elementList[index]?.area?.hide &&
+    !isHidden?.(elementList[index])
   ) {
     return index
   }
@@ -1882,7 +2026,8 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide
+        !elementList[i]?.area?.hide &&
+        !isHidden?.(elementList[i])
       ) {
         return i
       }
@@ -1894,7 +2039,8 @@ export function getNonHideElementIndex(
       if (
         !elementList[i]?.hide &&
         !elementList[i]?.control?.hide &&
-        !elementList[i]?.area?.hide
+        !elementList[i]?.area?.hide &&
+        !isHidden?.(elementList[i])
       ) {
         return i
       }
@@ -1902,4 +2048,81 @@ export function getNonHideElementIndex(
     }
   }
   return i
+}
+
+/**
+ * 嵌套感知的边界步进：从 index 按方向移动一位。
+ * 若落点 controlId 与 ownerId 相同，返回落点；
+ * 若落点 controlId 不同（进入了内层控件段），持续同向步进直到回到 ownerId 或越界。
+ * 用于替换边界扫描循环里的 i++ / i--。
+ */
+export function scanToOwner(
+  elementList: IElement[],
+  index: number,
+  direction: 1 | -1,
+  ownerId: string
+): number {
+  let next = index + direction
+  if (next < 0 || next >= elementList.length) {
+    return next
+  }
+  if (elementList[next].controlId === ownerId) {
+    return next
+  }
+  while (next >= 0 && next < elementList.length) {
+    if (elementList[next].controlId === ownerId) {
+      return next
+    }
+    next += direction
+  }
+  return next
+}
+
+/**
+ * 查找位置所属的最外层控件 controlId。
+ * 通过向左扫找到当前控件的 PREFIX，递归检查 PREFIX 前一位是否仍在另一控件段内。
+ */
+export function getOutermostOwner(
+  elementList: IElement[],
+  index: number
+): string | null {
+  const ownerId = elementList[index]?.controlId
+  if (!ownerId) return null
+  let i = index
+  while (i > 0) {
+    const el = elementList[i]
+    if (
+      el.controlId !== ownerId ||
+      el.controlComponent === ControlComponent.PREFIX ||
+      el.controlComponent === ControlComponent.PRE_TEXT
+    ) {
+      break
+    }
+    i--
+  }
+  const outerCandidate = elementList[i - 1]?.controlId
+  if (outerCandidate && outerCandidate !== ownerId) {
+    return getOutermostOwner(elementList, i - 1)
+  }
+  return ownerId
+}
+
+// 深度遍历元素树（含表格单元格、控件/标题子列表）
+export function visitElementTree(
+  elementList: IElement[],
+  visitor: (element: IElement) => void
+) {
+  for (const el of elementList) {
+    visitor(el)
+    if (el.type === ElementType.TABLE) {
+      for (const tr of el.trList || []) {
+        for (const td of tr.tdList) {
+          visitElementTree(td.value, visitor)
+        }
+      }
+    }
+    if (el.valueList) {
+      visitElementTree(el.valueList, visitor)
+    }
+  }
 }

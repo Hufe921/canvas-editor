@@ -29,7 +29,7 @@ export class LineNumber {
       const row = rowList[i]
       const {
         coordinate: { leftBottom }
-      } = positionList[row.startIndex]
+      } = row.fragmentPosition || positionList[row.startIndex]
       const seq = type === LineNumberType.PAGE ? i + 1 : row.rowIndex + 1
       const textMetrics = textParticle.measureText(ctx, {
         value: `${seq}`

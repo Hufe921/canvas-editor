@@ -12,6 +12,10 @@ import {
   formatElementContext,
   formatElementList
 } from '../../../../utils/element'
+import {
+  scaleColgroupToWidth,
+  shrinkColgroupToWidth
+} from '../../../../utils/table'
 import { Position } from '../../../position/Position'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
@@ -88,12 +92,11 @@ export class TableOperate {
       editorOptions: this.options
     })
     const curIndex = startIndex + 1
-    this.draw.spliceElementList(
-      elementList,
-      curIndex,
-      startIndex === endIndex ? 0 : endIndex - startIndex,
-      [element]
-    )
+    if (startIndex !== endIndex) {
+      this.draw.deleteElementList(elementList, curIndex, endIndex - startIndex)
+    }
+    this.draw.getTraceParticle().markElementListInserted([element])
+    this.draw.spliceElementList(elementList, curIndex, 0, [element])
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex, isSetCursor: false })
   }
@@ -227,7 +230,9 @@ export class TableOperate {
 
   public adjustColWidth(element: IElement) {
     if (element.type !== ElementType.TABLE) return
-    const { defaultColMinWidth } = this.options.table
+    // 允许表格超出正文区域时无需压缩列宽
+    const { defaultColMinWidth, overflow } = this.options.table
+    if (overflow) return
     const colgroup = element.colgroup!
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
     const width = this.draw.getOriginalInnerWidth()
@@ -356,8 +361,8 @@ export class TableOperate {
     const trList = element.trList!
     const curTr = trList[trIndex!]
     const curTdRowIndex = curTr.tdList[tdIndex!].rowIndex!
-    // 如果是最后一行，直接删除整个表格（如果是拆分表格按照正常逻辑走）
-    if (trList.length <= 1 && element.pagingIndex === 0) {
+    // 如果是最后一行，直接删除整个表格
+    if (trList.length <= 1) {
       this.deleteTable()
       return
     }
@@ -457,24 +462,9 @@ export class TableOperate {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
     const originalElementList = this.draw.getOriginalElementList()
-    const tableElement = originalElementList[positionContext.index!]
-    // 需要删除的表格数量（拆分表格）及位置
-    let deleteCount = 1
-    let deleteStartIndex = positionContext.index!
-    if (tableElement.pagingId) {
-      // 开始删除的下标位置
-      deleteStartIndex = positionContext.index! - tableElement.pagingIndex!
-      // 计算删除的表格数量
-      for (let i = deleteStartIndex + 1; i < originalElementList.length; i++) {
-        if (originalElementList[i].pagingId === tableElement.pagingId) {
-          deleteCount++
-        } else {
-          break
-        }
-      }
-    }
-    // 删除
-    originalElementList.splice(deleteStartIndex, deleteCount)
+    // 数据层始终为单一表格（跨页仅在渲染层拆分），直接删除即可
+    const deleteStartIndex = positionContext.index!
+    originalElementList.splice(deleteStartIndex, 1)
     const curIndex = deleteStartIndex - 1
     this.position.setPositionContext({
       isTable: false,
@@ -965,6 +955,86 @@ export class TableOperate {
     this.draw.render({
       isCompute: false
     })
+  }
+
+  // 测量单元格内容最大行宽度（未缩放，不含内边距）
+  private _measureTdContentWidth(td: ITd): number {
+    const ctx = document.createElement('canvas').getContext('2d')!
+    const textParticle = this.draw.getTextParticle()
+    let maxWidth = 0
+    let curWidth = 0
+    for (let i = 0; i < td.value.length; i++) {
+      const el = td.value[i]
+      // 换行结算当前行宽度
+      if (el.value === ZERO) {
+        maxWidth = Math.max(maxWidth, curWidth)
+        curWidth = 0
+        continue
+      }
+      // 仅统计文本元素宽度
+      if (el.type && el.type !== ElementType.TEXT) continue
+      ctx.font = this.draw.getElementFont(el)
+      curWidth += textParticle.measureText(ctx, el).width
+    }
+    return Math.max(maxWidth, curWidth)
+  }
+
+  public tableAutoFitToContent() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    if (element?.type !== ElementType.TABLE) return
+    const { defaultColMinWidth, tdPadding, overflow } = this.options.table
+    const tdPaddingWidth = tdPadding[1] + tdPadding[3]
+    const colgroup = element.colgroup!
+    // 每列内容最大宽度（跨列单元格跳过：简单策略，不参与列宽计算）
+    const contentWidthList: number[] = colgroup.map(() => 0)
+    for (let t = 0; t < element.trList!.length; t++) {
+      const tdList = element.trList![t].tdList
+      for (let d = 0; d < tdList.length; d++) {
+        const td = tdList[d]
+        if (td.colspan > 1) continue
+        const colIndex = td.colIndex!
+        const contentWidth = this._measureTdContentWidth(td) + tdPaddingWidth
+        if (contentWidth > contentWidthList[colIndex]) {
+          contentWidthList[colIndex] = contentWidth
+        }
+      }
+    }
+    for (let c = 0; c < colgroup.length; c++) {
+      if (contentWidthList[c]) {
+        colgroup[c].width = Math.max(defaultColMinWidth, contentWidthList[c])
+      }
+    }
+    // 不允许超出正文区域时压缩至内容区内
+    if (!overflow) {
+      shrinkColgroupToWidth(
+        colgroup,
+        this.draw.getOriginalInnerWidth(),
+        defaultColMinWidth
+      )
+      element.translateX = 0
+    }
+    const { endIndex } = this.range.getRange()
+    this.draw.render({ curIndex: endIndex })
+    this.tableTool.render()
+  }
+
+  public tableAutoFitToPage() {
+    const positionContext = this.position.getPositionContext()
+    if (!positionContext.isTable) return
+    const { index } = positionContext
+    const originalElementList = this.draw.getOriginalElementList()
+    const element = originalElementList[index!]
+    if (element?.type !== ElementType.TABLE) return
+    // 表格总宽等比缩放（放大或缩小）至页面内容区宽度
+    scaleColgroupToWidth(element.colgroup!, this.draw.getOriginalInnerWidth())
+    element.translateX = 0
+    const { endIndex } = this.range.getRange()
+    this.draw.render({ curIndex: endIndex })
+    this.tableTool.render()
   }
 
   public tableSelectAll() {

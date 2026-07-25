@@ -87,6 +87,7 @@ interface IEditorOption {
   magnifier?: IMagnifierOption // 放大镜配置
   accessibility?: IAccessibilityOption // 无障碍配置
   column?: IColumnOption // 分栏配置。默认：关闭
+  trace?: ITraceOption // 留痕配置。默认：禁用
 }
 ```
 
@@ -97,7 +98,7 @@ interface ITableOption {
   tdPadding?: IPadding // 单元格内边距。默认：[0, 5, 5, 5]
   defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
   defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
-  overflow?: boolean // 是否允许表格超出正文区域。默认：true
+  overflow?: boolean // 是否允许表格超出正文区域。为 false 时表格总宽在布局阶段会被等比例压缩至页面内容区内（列宽不低于 defaultColMinWidth）。默认：false
 }
 ```
 
@@ -178,6 +179,7 @@ interface IControlOption {
   disabledBackgroundColor?: string // 禁用时背景色
   existValueBackgroundColor?: string // 有值时背景色
   noValueBackgroundColor?: string // 无值时背景色
+  errorBackgroundColor?: string // 校验失败背景色。默认：#FFECE8
 }
 ```
 
@@ -362,7 +364,6 @@ interface IModeRule {
     imagePreviewerDisabled?: boolean // 打印模式禁用图片预览
     backgroundDisabled?: boolean // 打印模式禁用背景
     filterEmptyControl?: boolean // 打印模式过滤无值控件。默认：true
-    filterHideElementRow?: boolean // 打印模式过滤隐藏元素空行。默认：false
     areaHideDisabled?: boolean // 打印模式忽略 area 的 hide 配置，强制显示区域及其内容。默认：false
   }
   readonly?: {
@@ -441,5 +442,17 @@ interface IColumnOption {
   separator?: boolean // 是否显示栏间分隔线。默认：false
   separatorColor?: string // 分隔线颜色。默认：#000000
   separatorWidth?: number // 分隔线宽度。默认：1
+}
+```
+
+## 留痕配置
+
+```typescript
+interface ITraceOption {
+  disabled?: boolean // 初始是否禁用留痕记录。默认：true
+  insertColor?: string // 新增痕迹下划线颜色。默认：#2B5CE6
+  deleteColor?: string // 删除痕迹中划线颜色。默认：#E03F3F
+  author?: string // 留痕记录作者标识。默认：''
+  lineWidth?: number // 留痕线条宽度。默认：2
 }
 ```

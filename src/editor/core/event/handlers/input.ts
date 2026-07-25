@@ -82,8 +82,15 @@ export function input(data: string, host: CanvasEvent) {
     }
     return newElement
   })
+  // 留痕记录：新增元素打标
+  draw.getTraceParticle().markElementListInserted(inputData)
   // 控件-移除placeholder
   const control = draw.getControl()
+  // 光标在控件内但控件未激活（windows输入法弹窗抢光标导致控件被失活）
+  if (control.getIsRangeWithinControl() && !control.getActiveControl()) {
+    control.initControl()
+    if (!control.getActiveControl()) return
+  }
   let curIndex: number
   if (control.getActiveControl() && control.getIsRangeWithinControl()) {
     curIndex = control.setValue(inputData)
@@ -93,7 +100,11 @@ export function input(data: string, host: CanvasEvent) {
   } else {
     const start = startIndex + 1
     if (startIndex !== endIndex) {
-      draw.spliceElementList(elementList, start, endIndex - startIndex)
+      if (draw.getOptions().trace.disabled) {
+        draw.spliceElementList(elementList, start, endIndex - startIndex)
+      } else {
+        draw.deleteElementList(elementList, start, endIndex - startIndex)
+      }
     }
     formatElementContext(elementList, inputData, startIndex, {
       editorOptions: draw.getOptions()

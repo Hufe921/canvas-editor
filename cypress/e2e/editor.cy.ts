@@ -30,9 +30,12 @@ describe('基础功能', () => {
 
     cy.get('.ce-cursor').should('have.css', 'display', 'block')
 
-    cy.get('.editor-mode').click().click()
+    // 打开模式弹窗并选择只读
+    cy.get('.editor-mode').click()
+    cy.get('.editor-mode .options').should('have.class', 'visible')
+    cy.get('.editor-mode .options li[data-mode="readonly"]').click()
 
-    cy.get('.editor-mode').contains('只读')
+    cy.get('.editor-mode .text').contains('只读')
 
     cy.get('@canvas').click()
 

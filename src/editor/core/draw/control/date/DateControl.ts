@@ -15,7 +15,10 @@ import {
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement } from '../../../../interface/Element'
 import { omitObject, pickObject } from '../../../../utils'
-import { formatElementContext } from '../../../../utils/element'
+import {
+  formatElementContext,
+  isElementTraceDeleted
+} from '../../../../utils/element'
 import { Draw } from '../../Draw'
 import { DatePicker } from '../../particle/date/DatePicker'
 import { Control } from '../Control'
@@ -58,7 +61,10 @@ export class DateControl implements IControlInstance {
     const { startIndex, endIndex } = range
     for (let i = startIndex; i <= endIndex; i++) {
       const element = elementList[i]
-      if (element.controlComponent === ControlComponent.VALUE) {
+      if (
+        element.controlComponent === ControlComponent.VALUE &&
+        !isElementTraceDeleted(element)
+      ) {
         data.push(element)
       }
     }
@@ -85,7 +91,14 @@ export class DateControl implements IControlInstance {
     const draw = this.control.getDraw()
     // 移除选区元素
     if (startIndex !== endIndex) {
-      draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+      draw.deleteElementList(
+        elementList,
+        startIndex + 1,
+        endIndex - startIndex,
+        {
+          isIgnoreDeletedRule: options.isIgnoreDeletedRule
+        }
+      )
     } else {
       // 移除空白占位符
       this.control.removePlaceholder(startIndex, context)
@@ -114,6 +127,7 @@ export class DateControl implements IControlInstance {
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
       })
+      draw.getTraceParticle().markElementListInserted([newElement])
       draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     return start + data.length - 1
@@ -135,15 +149,15 @@ export class DateControl implements IControlInstance {
     const elementList = context.elementList || this.control.getElementList()
     // 删除元素
     const draw = this.control.getDraw()
-    draw.spliceElementList(
+    const deleteStartIndex = startIndex + 1
+    const deleteCount = this.control.removePlaceholderInRange(
       elementList,
-      startIndex + 1,
-      endIndex - startIndex,
-      [],
-      {
-        isIgnoreDeletedRule: options.isIgnoreDeletedRule
-      }
+      deleteStartIndex,
+      endIndex - startIndex
     )
+    draw.deleteElementList(elementList, deleteStartIndex, deleteCount, {
+      isIgnoreDeletedRule: options.isIgnoreDeletedRule
+    })
     // 增加占位符
     if (isAddPlaceholder) {
       this.control.addPlaceholder(startIndex, context)
@@ -194,6 +208,7 @@ export class DateControl implements IControlInstance {
       formatElementContext(elementList, [newElement], prefixIndex, {
         editorOptions: this.options
       })
+      draw.getTraceParticle().markElementListInserted([newElement])
       draw.spliceElementList(elementList, start + i, 0, [newElement])
     }
     // 重新渲染控件
@@ -225,7 +240,7 @@ export class DateControl implements IControlInstance {
     if (evt.key === KeyMap.Backspace) {
       // 移除选区元素
       if (startIndex !== endIndex) {
-        draw.spliceElementList(
+        draw.deleteElementList(
           elementList,
           startIndex + 1,
           endIndex - startIndex
@@ -247,7 +262,7 @@ export class DateControl implements IControlInstance {
           return this.control.removeControl(startIndex)
         } else {
           // 文本
-          draw.spliceElementList(elementList, startIndex, 1)
+          draw.deleteElementList(elementList, startIndex, 1)
           const value = this.getValue()
           if (!value.length) {
             this.control.addPlaceholder(startIndex - 1)
@@ -258,7 +273,7 @@ export class DateControl implements IControlInstance {
     } else if (evt.key === KeyMap.Delete) {
       // 移除选区元素
       if (startIndex !== endIndex) {
-        draw.spliceElementList(
+        draw.deleteElementList(
           elementList,
           startIndex + 1,
           endIndex - startIndex
@@ -282,7 +297,7 @@ export class DateControl implements IControlInstance {
           return this.control.removeControl(startIndex)
         } else {
           // 文本
-          draw.spliceElementList(elementList, startIndex + 1, 1)
+          draw.deleteElementList(elementList, startIndex + 1, 1)
           const value = this.getValue()
           if (!value.length) {
             this.control.addPlaceholder(startIndex)
@@ -305,7 +320,7 @@ export class DateControl implements IControlInstance {
     }
     const draw = this.control.getDraw()
     const elementList = this.control.getElementList()
-    draw.spliceElementList(elementList, startIndex + 1, endIndex - startIndex)
+    draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex)
     const value = this.getValue()
     if (!value.length) {
       this.control.addPlaceholder(startIndex)

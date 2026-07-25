@@ -10,7 +10,8 @@ import {
 } from '../../../utils/clipboard'
 import {
   formatElementContext,
-  getElementListByHTML
+  getElementListByHTML,
+  visitElementTree
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 import { IOverrideResult } from '../../override/Override'
@@ -61,6 +62,10 @@ export function pasteElement(host: CanvasEvent, elementList: IElement[]) {
       editorOptions: draw.getOptions()
     })
   }
+  // 粘贴是一次新的插入操作，不继承来源元素的留痕作者和时间
+  visitElementTree(elementList, element => {
+    delete element.trace
+  })
   draw.insertElementList(elementList)
 }
 
