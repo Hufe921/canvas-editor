@@ -42,6 +42,16 @@ Usage:
 instance.command.executeToggleTrace(payload?: boolean)
 ```
 
+## executeToggleRuler
+
+Feature: Toggle ruler visibility.
+
+Usage:
+
+```javascript
+instance.command.executeToggleRuler(payload?: boolean)
+```
+
 ## executeCut
 
 Feature: Cut

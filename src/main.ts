@@ -1529,6 +1529,13 @@ window.onload = function () {
     })
   }
 
+  // 标尺开关
+  const rulerToggleDom =
+    document.querySelector<HTMLDivElement>('.ruler-toggle')!
+  rulerToggleDom.onclick = function () {
+    instance.command.executeToggleRuler()
+  }
+
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen

@@ -2886,4 +2886,11 @@ export class CommandAdapt {
       payload === undefined ? this.draw.getOptions().trace.disabled : payload
     this.draw.setTraceEnabled(next)
   }
+
+  // 切换标尺显示；payload 省略时切换当前状态
+  public toggleRuler(payload?: boolean) {
+    const next =
+      payload === undefined ? this.draw.getOptions().ruler.disabled : payload
+    this.draw.setRulerEnabled(next)
+  }
 }

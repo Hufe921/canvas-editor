@@ -42,6 +42,16 @@ instance.command.executeMode(editorMode: EditorMode)
 instance.command.executeToggleTrace(payload?: boolean)
 ```
 
+## executeToggleRuler
+
+功能：切换标尺显示。
+
+用法：
+
+```javascript
+instance.command.executeToggleRuler(payload?: boolean)
+```
+
 ## executeCut
 
 功能：剪切
