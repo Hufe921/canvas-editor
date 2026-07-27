@@ -799,6 +799,11 @@ ul {
   margin: 80px auto;
 }
 
+/* 标尺滚动吸附时避开固定工具栏 */
+.editor .ce-ruler-x {
+  top: 60px;
+}
+
 .ce-page-container canvas {
   box-shadow: rgb(158 161 165 / 40%) 0px 2px 12px 0px;
 }
@@ -1042,6 +1047,14 @@ ul {
 
 .footer .column-config i {
   background-image: url('./assets/images/column-config.svg');
+}
+
+.footer .ruler-toggle {
+  cursor: pointer;
+}
+
+.footer .ruler-toggle i {
+  background-image: url('./assets/images/ruler.svg');
 }
 
 .footer .editor-mode {

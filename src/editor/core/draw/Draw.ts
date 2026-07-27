@@ -56,6 +56,7 @@ import { SelectionObserver } from '../observer/SelectionObserver'
 import { TableParticle } from './particle/table/TableParticle'
 import { TablePaging } from './particle/table/TablePaging'
 import { TableTool } from './particle/table/TableTool'
+import { Ruler } from './ruler/Ruler'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
 import { TraceParticle } from './particle/TraceParticle'
 import { LabelParticle } from './particle/LabelParticle'
@@ -216,6 +217,7 @@ export class Draw {
   private printModeData: Required<Omit<IEditorData, 'graffiti'>> | null
   private controlMinWidthPlaceholderElementListSet: WeakSet<IElement[]>
   private columnManager: ColumnManager
+  private ruler: Ruler
 
   constructor(
     rootContainer: HTMLElement,
@@ -291,6 +293,7 @@ export class Draw {
     this.pageBorder = new PageBorder(this)
     this.graffiti = new Graffiti(this, data.graffiti)
     this.columnManager = new ColumnManager(this)
+    this.ruler = new Ruler(this)
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -469,6 +472,11 @@ export class Draw {
       isSetCursor: false,
       isSubmitHistory: false
     })
+  }
+
+  public setRulerEnabled(enabled: boolean) {
+    if (!this.options.ruler.disabled === enabled) return
+    this.ruler.setEnabled(enabled)
   }
 
   // 删除元素：trace 启用时软删除（保留在原位仅打标），否则硬删除
@@ -1043,6 +1051,10 @@ export class Draw {
 
   public getTableTool(): TableTool {
     return this.tableTool
+  }
+
+  public getRuler(): Ruler {
+    return this.ruler
   }
 
   public getTableOperate(): TableOperate {
@@ -3086,6 +3098,10 @@ export class Draw {
       if (isCompute && !this.zone.isMainActive()) {
         this.zone.drawZoneIndicator()
       }
+      // 标尺重新渲染
+      if (isCompute) {
+        this.ruler.render()
+      }
       // 页数改变
       if (oldPageSize !== this.pageRowList.length) {
         if (this.listener.pageSizeChange) {
@@ -3191,6 +3207,7 @@ export class Draw {
     this.workerManager.destroy()
     this.magnifier.destroy()
     this.accessibility.destroy()
+    this.ruler.dispose()
     this.lazyRenderIntersectionObserver?.disconnect()
   }
 

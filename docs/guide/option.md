@@ -88,6 +88,7 @@ interface IEditorOption {
   accessibility?: IAccessibilityOption // 无障碍配置
   column?: IColumnOption // 分栏配置。默认：关闭
   trace?: ITraceOption // 留痕配置。默认：禁用
+  ruler?: IRulerOption // 标尺配置。默认：禁用
 }
 ```
 
@@ -454,5 +455,14 @@ interface ITraceOption {
   deleteColor?: string // 删除痕迹中划线颜色。默认：#E03F3F
   author?: string // 留痕记录作者标识。默认：''
   lineWidth?: number // 留痕线条宽度。默认：2
+}
+```
+
+## 标尺配置
+
+```typescript
+interface IRulerOption {
+  disabled?: boolean // 初始是否禁用标尺。默认：true
+  height?: number // 标尺高度。默认：26
 }
 ```

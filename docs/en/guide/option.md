@@ -88,6 +88,7 @@ interface IEditorOption {
   accessibility?: IAccessibilityOption // Accessibility configuration
   column?: IColumnOption // Column configuration. default: disabled
   trace?: ITraceOption // Trace configuration. default: disabled
+  ruler?: IRulerOption // Ruler configuration. default: disabled
 }
 ```
 
@@ -454,5 +455,14 @@ interface ITraceOption {
   deleteColor?: string // Color of the strikeout for deleted traces. default: #E03F3F
   author?: string // Author identifier for trace records. default: ''
   lineWidth?: number // Trace line width. default: 2
+}
+```
+
+## Ruler Configuration
+
+```typescript
+interface IRulerOption {
+  disabled?: boolean // Whether to disable the ruler initially. default: true
+  height?: number // Ruler height. default: 26
 }
 ```

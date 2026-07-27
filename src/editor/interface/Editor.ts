@@ -37,6 +37,7 @@ import { IWhiteSpaceOption } from './WhiteSpace'
 import { IMagnifierOption } from './Magnifier'
 import { IAccessibilityOption } from './Accessibility'
 import { ITraceOption } from './Trace'
+import { IRulerOption } from './Ruler'
 
 export interface IEditorData {
   header?: IElement[]
@@ -120,6 +121,7 @@ export interface IEditorOption {
   accessibility?: IAccessibilityOption
   column?: IColumnOption
   trace?: ITraceOption
+  ruler?: IRulerOption
 }
 
 export interface IEditorResult {
