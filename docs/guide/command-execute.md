@@ -42,6 +42,16 @@ instance.command.executeMode(editorMode: EditorMode)
 instance.command.executeToggleTrace(payload?: boolean)
 ```
 
+## executeCompare
+
+功能：对比两个版本的文档数据，并切换到留痕模式展示内容差异。
+
+用法：
+
+```javascript
+instance.command.executeCompare(payload: IComparePayload)
+```
+
 ## executeToggleRuler
 
 功能：切换标尺显示。

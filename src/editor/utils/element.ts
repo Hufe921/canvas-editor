@@ -82,6 +82,23 @@ export function getNonDeletedElementList(elementList: IElement[]): IElement[] {
   return filter(result)
 }
 
+// 获取剔除软删除元素且剥离全部留痕记录的元素列表（对比前清洗，保证幂等）
+export function getNonTraceElementList(elementList: IElement[]): IElement[] {
+  const result = getNonDeletedElementList(elementList)
+  const clean = (payload: IElement[]) => {
+    for (const element of payload) {
+      delete element.trace
+      if (element.valueList) clean(element.valueList)
+      if (element.control?.value) clean(element.control.value)
+      for (const tr of element.trList || []) {
+        for (const td of tr.tdList) clean(td.value)
+      }
+    }
+  }
+  clean(result)
+  return result
+}
+
 export function unzipElementList(elementList: IElement[]): IElement[] {
   const result: IElement[] = []
   for (let v = 0; v < elementList.length; v++) {

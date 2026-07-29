@@ -42,6 +42,16 @@ Usage:
 instance.command.executeToggleTrace(payload?: boolean)
 ```
 
+## executeCompare
+
+Feature: Compare two versions of document data and switch to trace mode to show content differences.
+
+Usage:
+
+```javascript
+instance.command.executeCompare(payload: IComparePayload)
+```
+
 ## executeToggleRuler
 
 Feature: Toggle ruler visibility.

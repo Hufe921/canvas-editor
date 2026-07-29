@@ -30,6 +30,7 @@ import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
 import { DeepRequired } from '../../interface/Common'
+import { IComparePayload } from '../../interface/Compare'
 import {
   IControlValidateResult,
   IGetControlValueOption,
@@ -112,6 +113,7 @@ import {
   getElementListByHTML,
   getTextFromElementList,
   getNonDeletedElementList,
+  getNonTraceElementList,
   isElementTraceDeleted,
   zipElementList,
   getAnchorElement,
@@ -119,6 +121,7 @@ import {
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
 import { print } from '../../utils/print'
+import { compareElementList } from '../../utils/diff'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
@@ -2885,6 +2888,16 @@ export class CommandAdapt {
     const next =
       payload === undefined ? this.draw.getOptions().trace.disabled : payload
     this.draw.setTraceEnabled(next)
+  }
+
+  // 对比两个版本的文档数据，切换到留痕模式展示内容差异
+  public compare(payload: IComparePayload) {
+    // 缺省取当前编辑器内容时先清洗：剔除软删除元素、剥离留痕记录，保证幂等
+    const newData =
+      payload.newData ?? getNonTraceElementList(this.getValue().data.main)
+    const merged = compareElementList(payload.oldData, newData)
+    this.draw.setValue({ main: merged })
+    this.draw.setMode(EditorMode.TRACE)
   }
 
   // 切换标尺显示；payload 省略时切换当前状态

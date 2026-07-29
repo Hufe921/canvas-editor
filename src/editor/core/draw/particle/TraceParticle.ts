@@ -84,15 +84,10 @@ export class TraceParticle {
     this.tracePopupContainer.style.left = `${left}px`
     this.tracePopupContainer.style.top = `${top + preY + lineHeight}px`
     // 时间线：按时间顺序自上而下逐条渲染（先插入后删除会显示两条）
-    const {
-      insertColor,
-      deleteColor,
-      author: defaultAuthor
-    } = this.options.trace
+    const { insertColor, deleteColor } = this.options.trace
     const i18n = this.draw.getI18n()
     const authorLabel = i18n.t('trace.author')
     const timeLabel = i18n.t('trace.time')
-    const unknownAuthor = i18n.t('trace.unknownAuthor')
     this.listDom.innerHTML = ''
     const fragment = document.createDocumentFragment()
     for (const record of records) {
@@ -105,12 +100,13 @@ export class TraceParticle {
       typeSpan.innerText = i18n.t(isInsert ? 'trace.insert' : 'trace.delete')
       typeSpan.style.color = isInsert ? insertColor : deleteColor
       item.append(typeSpan)
-      // 作者
-      const author = record.author || defaultAuthor || unknownAuthor
-      const authorSpan = document.createElement('span')
-      authorSpan.classList.add(`${EDITOR_PREFIX}-trace-popup__author`)
-      authorSpan.innerText = `${authorLabel}: ${author}`
-      item.append(authorSpan)
+      // 作者（记录未携带时不展示）
+      if (record.author) {
+        const authorSpan = document.createElement('span')
+        authorSpan.classList.add(`${EDITOR_PREFIX}-trace-popup__author`)
+        authorSpan.innerText = `${authorLabel}: ${record.author}`
+        item.append(authorSpan)
+      }
       // 时间
       if (record.timestamp) {
         const timeSpan = document.createElement('span')
