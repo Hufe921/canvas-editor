@@ -24,6 +24,7 @@ export class TextParticle {
   private curStyle: string
   private curColor?: string
   public cacheMeasureText: Map<string, TextMetrics>
+  private cacheBasisWord: Map<string, ITextMetrics>
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -34,17 +35,30 @@ export class TextParticle {
     this.text = ''
     this.curStyle = ''
     this.cacheMeasureText = new Map()
+    this.cacheBasisWord = new Map()
   }
 
   public measureBasisWord(
     ctx: CanvasRenderingContext2D,
     font: string
   ): ITextMetrics {
+    // 基准字度量仅与字体相关：按字体缓存，避免逐元素 save/restore 与重复测量
+    const cacheMetrics = this.cacheBasisWord.get(font)
+    if (cacheMetrics) {
+      return cacheMetrics
+    }
     ctx.save()
     ctx.font = font
-    const textMetrics = this.measureText(ctx, {
-      value: METRICS_BASIS_TEXT
-    })
+    const effectiveFont = ctx.font
+    const textMetrics = this.measureText(
+      ctx,
+      { value: METRICS_BASIS_TEXT },
+      effectiveFont
+    )
+    this.cacheBasisWord.set(font, textMetrics)
+    if (effectiveFont !== font) {
+      this.cacheBasisWord.set(effectiveFont, textMetrics)
+    }
     ctx.restore()
     return textMetrics
   }
@@ -52,7 +66,8 @@ export class TextParticle {
   public measureWord(
     ctx: CanvasRenderingContext2D,
     elementList: IElement[],
-    curIndex: number
+    curIndex: number,
+    font?: string
   ): IMeasureWordResult {
     const LETTER_REG = this.draw.getLetterReg()
     let width = 0
@@ -67,7 +82,7 @@ export class TextParticle {
         endElement = element
         break
       }
-      width += this.measureText(ctx, element).width
+      width += this.measureText(ctx, element, font).width
       i++
     }
     return {
@@ -81,13 +96,14 @@ export class TextParticle {
     element: IElement
   ): number {
     if (!element || !PUNCTUATION_LIST.includes(element.value)) return 0
-    ctx.font = this.draw.getElementFont(element)
-    return this.measureText(ctx, element).width
+    return this.measureText(ctx, element, this.draw.getElementFont(element))
+      .width
   }
 
   public measureText(
     ctx: CanvasRenderingContext2D,
-    element: IElement
+    element: IElement,
+    font?: string
   ): ITextMetrics {
     // 优先使用自定义字宽设置
     if (element.width) {
@@ -103,10 +119,14 @@ export class TextParticle {
         fontBoundingBoxDescent: textMetrics.fontBoundingBoxDescent
       }
     }
-    const id = `${element.value}${ctx.font}`
+    // 显式传入字体可避免逐元素读取 ctx.font（浏览器序列化开销）
+    const id = `${element.value}${font ?? ctx.font}`
     const cacheTextMetrics = this.cacheMeasureText.get(id)
     if (cacheTextMetrics) {
       return cacheTextMetrics
+    }
+    if (font !== undefined) {
+      ctx.font = font
     }
     const textMetrics = ctx.measureText(element.value)
     this.cacheMeasureText.set(id, textMetrics)

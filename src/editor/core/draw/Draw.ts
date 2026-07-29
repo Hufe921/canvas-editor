@@ -99,7 +99,11 @@ import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
 import { IMargin } from '../../interface/Margin'
 import { BlockParticle } from './particle/block/BlockParticle'
-import { EDITOR_COMPONENT, EDITOR_PREFIX } from '../../dataset/constant/Editor'
+import {
+  EDITOR_COMPONENT,
+  EDITOR_PREFIX,
+  INCREMENTAL_COMPUTE_MIN_ELEMENT_COUNT
+} from '../../dataset/constant/Editor'
 import { I18n } from '../i18n/I18n'
 import { ImageObserver } from '../observer/ImageObserver'
 import { Zone } from '../zone/Zone'
@@ -132,6 +136,12 @@ import { Badge } from './frame/Badge'
 import { Graffiti } from './graffiti/Graffiti'
 import { Magnifier } from './interactive/Magnifier'
 import { Accessibility } from '../accessibility/Accessibility'
+import {
+  binarySearchRowByStartIndex,
+  IComputeRowListInternalOption,
+  IElementListChange,
+  IncrementalRowCompute
+} from './IncrementalRowCompute'
 
 export class Draw {
   private container: HTMLDivElement
@@ -208,6 +218,8 @@ export class Draw {
   private LETTER_REG: RegExp
   private WORD_LIKE_REG: RegExp
   private rowList: IRow[]
+  // 表格跨页拆分前的原始行（与 rowStateList 对齐，增量行计算依据）
+  private rawRowList: IRow[]
   private pageRowList: IRow[][]
   private painterStyle: IElementStyle | null
   private painterOptions: IPainterOption | null
@@ -218,6 +230,13 @@ export class Draw {
   private controlMinWidthPlaceholderElementListSet: WeakSet<IElement[]>
   private columnManager: ColumnManager
   private ruler: Ruler
+  // 增量行计算：变更记录与行布局快照（快照由 IncrementalRowCompute 持有）
+  private pendingChange: IElementListChange | null
+  private incrementalRowCompute: IncrementalRowCompute
+  // 表格计算缓存：未变更的单元格跳过重算
+  private tableComputeCacheKey: string | null
+  private tdRowListCacheWidth: WeakMap<IElement[], number>
+  private dirtyTdValueSet: WeakSet<IElement[]>
 
   constructor(
     rootContainer: HTMLElement,
@@ -316,6 +335,7 @@ export class Draw {
       `${letterClass.map(letter => `[^${letter}][${letter}]`).join('|')}`
     )
     this.rowList = []
+    this.rawRowList = []
     this.pageRowList = []
     this.painterStyle = null
     this.painterOptions = null
@@ -324,6 +344,13 @@ export class Draw {
     this.lazyRenderIntersectionObserver = null
     this.printModeData = null
     this.controlMinWidthPlaceholderElementListSet = new WeakSet()
+    // 增量行计算
+    this.pendingChange = null
+    this.incrementalRowCompute = new IncrementalRowCompute(this)
+    // 表格计算缓存
+    this.tableComputeCacheKey = null
+    this.tdRowListCacheWidth = new WeakMap()
+    this.dirtyTdValueSet = new WeakSet()
 
     // 打印模式优先设置打印数据
     if (this.mode === EditorMode.PRINT) {
@@ -932,6 +959,7 @@ export class Draw {
   ) {
     const { isIgnoreDeletedRule = false } = options || {}
     const { group, modeRule } = this.options
+    const beforeLength = elementList.length
     if (deleteCount > 0) {
       // 当最后元素与开始元素列表信息不一致时：清除当前列表信息
       const endIndex = start + deleteCount
@@ -1014,6 +1042,39 @@ export class Draw {
       for (let i = 0; i < items.length; i++) {
         elementList.splice(start + i, 0, items[i])
       }
+    }
+    // 记录列表变更：主文档供增量行计算使用，其余列表（如表格单元格）标记脏
+    if (elementList === this.elementList) {
+      const insertedCount = items?.length || 0
+      const deletedCount = insertedCount - (elementList.length - beforeLength)
+      this.recordMainElementListChange(start, deletedCount, insertedCount)
+    } else {
+      this.dirtyTdValueSet.add(elementList)
+    }
+  }
+
+  // 合并记录主文档变更：同一起点的连续变更（先删后插）合并为单段，其余视为复杂变更
+  private recordMainElementListChange(
+    start: number,
+    deletedCount: number,
+    insertedCount: number
+  ) {
+    if (!deletedCount && !insertedCount) return
+    const pending = this.pendingChange
+    if (pending) {
+      if (!pending.isComplex && pending.start === start) {
+        pending.deletedCount += deletedCount
+        pending.insertedCount += insertedCount
+      } else {
+        pending.isComplex = true
+      }
+      return
+    }
+    this.pendingChange = {
+      start,
+      deletedCount,
+      insertedCount,
+      isComplex: false
     }
   }
 
@@ -1539,7 +1600,10 @@ export class Draw {
     )
   }
 
-  public computeRowList(payload: IComputeRowListPayload) {
+  public computeRowList(
+    payload: IComputeRowListPayload,
+    internalOption?: IComputeRowListInternalOption
+  ) {
     const {
       innerWidth,
       elementList,
@@ -1550,6 +1614,7 @@ export class Draw {
       pageHeight = 0,
       surroundElementList = []
     } = payload
+    const { resume, sync, record } = internalOption || {}
     const {
       defaultSize,
       scale,
@@ -1560,6 +1625,14 @@ export class Draw {
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    // 字体串相同时跳过 ctx.font 赋值（浏览器字体解析开销），逐元素跟踪当前字体
+    let curCtxFont = ''
+    const setCtxFont = (font: string) => {
+      if (font !== curCtxFont) {
+        ctx.font = font
+        curCtxFont = font
+      }
+    }
     // 还原最小宽度控件占位
     if (this.controlMinWidthPlaceholderElementListSet.has(elementList)) {
       for (let i = elementList.length - 1; i >= 0; i--) {
@@ -1569,13 +1642,16 @@ export class Draw {
       }
       this.controlMinWidthPlaceholderElementListSet.delete(elementList)
     }
-    // 计算列表偏移宽度
-    const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
-    const rowList: IRow[] = []
+    // 计算列表偏移宽度（增量计算已门禁排除列表，可直接跳过）
+    const listStyleMap =
+      resume || sync
+        ? new Map<string, number>()
+        : this.listParticle.computeListStyle(ctx, elementList)
+    const rowList: IRow[] = resume ? resume.seedRowList : []
     const layout =
       isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
     const isColumnEnabled = !!layout && layout.count > 1
-    if (elementList.length) {
+    if (!resume && elementList.length) {
       rowList.push({
         width: 0,
         height: 0,
@@ -1588,12 +1664,12 @@ export class Draw {
       })
     }
     // 起始位置及页码计算
-    let x = startX
-    let y = startY
-    let pageNo = 0
+    let x = resume ? resume.state.x : startX
+    let y = resume ? resume.state.y : startY
+    let pageNo = resume ? resume.state.pageNo : 0
     // 分页模式下按页计算起始 Y（页眉/页脚禁用时该页起始位置上移）
-    let pageStartY = startY
-    if (isPagingMode && !isFromTable) {
+    let pageStartY = resume ? resume.state.pageStartY : startY
+    if (!resume && isPagingMode && !isFromTable) {
       pageStartY = this.getMargins()[0] + this.getHeader().getExtraHeight(0)
       y = pageStartY
     }
@@ -1603,10 +1679,38 @@ export class Draw {
     // 控件最小宽度
     let controlRealWidth = 0
     // 分栏游标
-    let currentColumn = 0
-    for (let i = 0; i < elementList.length; i++) {
+    let currentColumn = resume ? resume.state.columnIndex : 0
+    // 记录首行布局状态快照（与行创建点一一对应）
+    if (record && !resume && elementList.length) {
+      record.stateList.push({
+        x,
+        y,
+        pageNo,
+        pageStartY,
+        columnIndex: currentColumn,
+        initWidth: 0,
+        initHeight: 0,
+        initAscent: 0
+      })
+    }
+    for (
+      let i = resume ? resume.startElementIndex : 0;
+      i < elementList.length;
+      i++
+    ) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
+      // 记录复杂特性标记（增量计算门禁依据）
+      const feature = record?.feature
+      if (feature) {
+        if (element.listId) {
+          feature.list = true
+        } else if (element.controlId || element.control) {
+          feature.control = true
+        } else if (element.areaId) {
+          feature.area = true
+        }
+      }
       const rowMargin = this.getElementRowMargin(element)
       const metrics: IElementMetrics = {
         width: 0,
@@ -1709,12 +1813,23 @@ export class Draw {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
-            const rowList = this.computeRowList({
-              innerWidth: (td.width! - tdPaddingWidth) * scale,
-              elementList: td.value,
-              isFromTable: true,
-              isPagingMode
-            })
+            // 单元格计算缓存：内容未编辑且列宽未变时复用上次行信息
+            const isTdCacheHit =
+              !!td.rowList?.length &&
+              this.tdRowListCacheWidth.get(td.value) === td.width &&
+              !this.dirtyTdValueSet.has(td.value)
+            const rowList =
+              isTdCacheHit && td.rowList
+                ? td.rowList
+                : this.computeRowList({
+                    innerWidth: (td.width! - tdPaddingWidth) * scale,
+                    elementList: td.value,
+                    isFromTable: true,
+                    isPagingMode
+                  })
+            if (!isTdCacheHit) {
+              this.tdRowListCacheWidth.set(td.value, td.width!)
+            }
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
@@ -1830,14 +1945,18 @@ export class Draw {
         metrics.height = defaultSize * scale
         metrics.boundingBoxDescent = 0
         metrics.boundingBoxAscent =
-          this.textParticle.getBasisWordBoundingBoxAscent(ctx, ctx.font)
+          this.textParticle.getBasisWordBoundingBoxAscent(
+            ctx,
+            this.getElementFont(element)
+          )
       } else if (element.isControlMinWidthPlaceholder) {
         metrics.width = (element.width || 0) * scale
         metrics.height = defaultSize * scale
-        ctx.font = this.getElementFont(element)
+        const elementFont = this.getElementFont(element)
+        setCtxFont(elementFont)
         const basisMetrics = this.textParticle.measureBasisWord(
           ctx,
-          element.font!
+          elementFont
         )
         metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
         metrics.boundingBoxDescent =
@@ -1857,8 +1976,13 @@ export class Draw {
           defaultSize,
           label: { defaultPadding }
         } = this.options
-        ctx.font = this.getElementFont(element)
-        const fontMetrics = this.textParticle.measureText(ctx, element)
+        const elementFont = this.getElementFont(element)
+        setCtxFont(elementFont)
+        const fontMetrics = this.textParticle.measureText(
+          ctx,
+          element,
+          elementFont
+        )
         metrics.width =
           (fontMetrics.width + defaultPadding[1] + defaultPadding[3]) * scale
         metrics.height = (element.size || defaultSize) * scale
@@ -1875,8 +1999,13 @@ export class Draw {
           element.actualSize = Math.ceil(size * 0.6)
         }
         metrics.height = (element.actualSize || size) * scale
-        ctx.font = this.getElementFont(element)
-        const fontMetrics = this.textParticle.measureText(ctx, element)
+        const elementFont = this.getElementFont(element)
+        setCtxFont(elementFont)
+        const fontMetrics = this.textParticle.measureText(
+          ctx,
+          element,
+          elementFont
+        )
         metrics.width = fontMetrics.width * scale
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing * scale
@@ -1884,7 +2013,7 @@ export class Draw {
         // 使用基于字体的基准度量以确保一致的行高，避免字符特定度量导致的布局跳动
         const basisMetrics = this.textParticle.measureBasisWord(
           ctx,
-          element.font!
+          elementFont
         )
         metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
         metrics.boundingBoxDescent =
@@ -1972,7 +2101,8 @@ export class Draw {
             const { width, endElement } = this.textParticle.measureWord(
               ctx,
               elementList,
-              i
+              i,
+              this.getElementFont(element)
             )
             // 后面存在元素 && 单词宽度大于行可用宽度，无需折行
             const wordWidth = width * scale
@@ -2000,22 +2130,24 @@ export class Draw {
           listIndexMap.set(element.listId, 0)
         }
       }
-      // 计算四周环绕导致的元素偏移量
-      const surroundPosition = this.position.setSurroundPosition({
-        pageNo,
-        rowElement,
-        row: curRow,
-        rowElementRect: {
-          x,
-          y,
-          height,
-          width: metrics.width
-        },
-        availableWidth,
-        surroundElementList
-      })
-      x = surroundPosition.x
-      curRowWidth += surroundPosition.rowIncreaseWidth
+      // 计算四周环绕导致的元素偏移量（无环绕元素时跳过）
+      if (surroundElementList.length) {
+        const surroundPosition = this.position.setSurroundPosition({
+          pageNo,
+          rowElement,
+          row: curRow,
+          rowElementRect: {
+            x,
+            y,
+            height,
+            width: metrics.width
+          },
+          availableWidth,
+          surroundElementList
+        })
+        x = surroundPosition.x
+        curRowWidth += surroundPosition.rowIncreaseWidth
+      }
       x += metrics.width
       // 是否强制换行
       const isForceBreak =
@@ -2187,23 +2319,75 @@ export class Draw {
         if (nextRow && isColumnEnabled && nextRow.columnIndex !== undefined) {
           nextRow.columnIndex = currentColumn
         }
-        // 计算下一行第一个元素是否存在环绕交叉
+        // 计算下一行第一个元素是否存在环绕交叉（无环绕元素时跳过）
         rowElement.left = 0
-        const surroundPosition = this.position.setSurroundPosition({
-          pageNo,
-          rowElement,
-          row: nextRow,
-          rowElementRect: {
+        if (surroundElementList.length) {
+          const surroundPosition = this.position.setSurroundPosition({
+            pageNo,
+            rowElement,
+            row: nextRow,
+            rowElementRect: {
+              x,
+              y,
+              height,
+              width: metrics.width
+            },
+            availableWidth,
+            surroundElementList
+          })
+          x = surroundPosition.x
+        }
+        x += metrics.width
+        // 增量再同步：新行与旧行起点元素同一且布局状态一致时，
+        // 弹出新建行并复用其后全部旧行，提前结束计算
+        if (sync) {
+          const oldRowIndex = binarySearchRowByStartIndex(
+            sync.oldRowList,
+            i - sync.delta
+          )
+          if (~oldRowIndex) {
+            const oldRow = sync.oldRowList[oldRowIndex]
+            const oldState = sync.oldStateList[oldRowIndex]
+            if (
+              oldRow.elementList[0] === element &&
+              oldState &&
+              oldState.columnIndex === currentColumn &&
+              (!sync.isStrict ||
+                (oldState.y === y &&
+                  oldState.pageNo === pageNo &&
+                  oldState.pageStartY === pageStartY))
+            ) {
+              rowList.pop()
+              sync.oldRowIndex = oldRowIndex
+              break
+            }
+          }
+        }
+        // 记录新行布局状态快照
+        if (record) {
+          record.stateList.push({
             x,
             y,
-            height,
-            width: metrics.width
-          },
-          availableWidth,
-          surroundElementList
-        })
-        x = surroundPosition.x
-        x += metrics.width
+            pageNo,
+            pageStartY,
+            columnIndex: currentColumn,
+            initWidth: metrics.width,
+            initHeight: height,
+            initAscent: ascent
+          })
+        }
+      }
+    }
+    // 再同步命中：拼接修正下标后的旧行
+    if (sync?.oldRowIndex !== undefined) {
+      const { oldRowList, oldStateList, delta, oldRowIndex } = sync
+      const rowIndexDelta = rowList.length - oldRowIndex
+      for (let s = oldRowIndex; s < oldRowList.length; s++) {
+        const oldRow = oldRowList[s]
+        oldRow.startIndex += delta
+        oldRow.rowIndex += rowIndexDelta
+        rowList.push(oldRow)
+        record?.stateList.push(oldStateList[s])
       }
     }
     return rowList
@@ -3005,19 +3189,64 @@ export class Draw {
       const startX = margins[3]
       const startY = margins[0] + extraHeight
       const surroundElementList = pickSurroundElementList(this.elementList)
-      this.rowList = this.computeRowList({
+      // 表格计算缓存键：版面参数变化时缓存整体失效
+      const {
+        scale: cacheScale,
+        defaultSize: cacheDefaultSize,
+        table: { tdPadding: cacheTdPadding }
+      } = this.options
+      const tableComputeCacheKey = [
+        innerWidth,
+        cacheScale,
+        cacheDefaultSize,
+        cacheTdPadding.join(',')
+      ].join('|')
+      if (this.tableComputeCacheKey !== tableComputeCacheKey) {
+        this.tableComputeCacheKey = tableComputeCacheKey
+        this.tdRowListCacheWidth = new WeakMap()
+      }
+      // 优先增量行计算：仅重算变更影响的行，不满足条件时回退全量计算
+      const pendingChange = this.pendingChange
+      this.pendingChange = null
+      const incrementalRowList = this.incrementalRowCompute.computeRowList({
         startX,
         startY,
         pageHeight,
         isPagingMode,
         innerWidth,
         surroundElementList,
-        elementList: this.elementList
+        elementList: this.elementList,
+        rawRowList: this.rawRowList,
+        pendingChange
       })
-      // 分页模式下跨页表格在渲染层拆分为按页片段行
-      if (isPagingMode) {
-        this.rowList = this.tablePaging.splitTableRowAcrossPages(this.rowList)
+      if (incrementalRowList) {
+        this.rawRowList = incrementalRowList
+      } else {
+        // 大文档全量计算时记录行布局快照与复杂特性，供后续增量计算使用
+        const record =
+          this.elementList.length >= INCREMENTAL_COMPUTE_MIN_ELEMENT_COUNT
+            ? this.incrementalRowCompute.createRecord()
+            : null
+        this.rawRowList = this.computeRowList(
+          {
+            startX,
+            startY,
+            pageHeight,
+            isPagingMode,
+            innerWidth,
+            surroundElementList,
+            elementList: this.elementList
+          },
+          record ? { record } : undefined
+        )
+        this.incrementalRowCompute.saveRecord(record, this.elementList)
       }
+      // 表格单元格脏标记随本次计算消费完毕
+      this.dirtyTdValueSet = new WeakSet()
+      // 分页模式下跨页表格在渲染层拆分为按页片段行
+      this.rowList = isPagingMode
+        ? this.tablePaging.splitTableRowAcrossPages(this.rawRowList)
+        : this.rawRowList
       // 页面信息
       this.pageRowList = this._computePageList()
       // 位置信息
