@@ -4,6 +4,7 @@ import { ElementType } from '../dataset/enum/Element'
 import { TraceType } from '../dataset/enum/Trace'
 import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
+import { TextDirection } from '../dataset/enum/TextDirection'
 import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
 import { IArea } from './Area'
@@ -39,6 +40,8 @@ export interface IElementStyle {
   strikeout?: boolean
   rowFlex?: RowFlex
   rowMargin?: number
+  /** Paragraph base direction (stored like rowFlex on span elements) */
+  direction?: TextDirection
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number
@@ -247,6 +250,8 @@ export interface IElementPosition {
   isFirstLetter: boolean
   isLastLetter: boolean
   columnIndex?: number
+  /** Bidi embedding level from text-engine (odd = RTL run) */
+  bidiLevel?: number
   tableFragment?: ITableRowFragment // 表格跨页渲染片段信息
   coordinate: {
     leftTop: number[]

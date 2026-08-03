@@ -38,6 +38,12 @@ import { IMagnifierOption } from './Magnifier'
 import { IAccessibilityOption } from './Accessibility'
 import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
+import {
+  CaretMovement,
+  TextDirection,
+  TextEngineMode
+} from '../dataset/enum/TextDirection'
+import { IEditorFontFace } from './TextEngine'
 
 export interface IEditorData {
   header?: IElement[]
@@ -91,6 +97,14 @@ export interface IEditorOption {
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
+  /** Text layout engine: legacy measureText path or HarfBuzz */
+  textEngine?: TextEngineMode
+  /** Default paragraph direction when element.direction is unset */
+  defaultDirection?: TextDirection
+  /** Arrow-key caret movement semantics */
+  caretMovement?: CaretMovement
+  /** Font binaries registered for HarfBuzz shaping */
+  fonts?: IEditorFontFace[]
   table?: ITableOption
   header?: IHeader
   footer?: IFooter

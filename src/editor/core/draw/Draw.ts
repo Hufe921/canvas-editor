@@ -31,6 +31,13 @@ import { IMarkElementListDeletedOption } from '../../interface/Trace'
 import { IRow, IRowElement } from '../../interface/Row'
 import { IColumnLayout, IColumnOption } from '../../interface/Column'
 import { ColumnManager } from './column/ColumnManager'
+import {
+  LayoutHostAdapter,
+  type ParagraphSpan
+} from '../text-engine-host'
+import { mergeVisualRects } from '../text-engine'
+import { containsShapingScript } from '../text-engine/utils/scriptFont'
+import type { VisualRect } from '../text-engine/types'
 import { deepClone, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -218,6 +225,7 @@ export class Draw {
   private controlMinWidthPlaceholderElementListSet: WeakSet<IElement[]>
   private columnManager: ColumnManager
   private ruler: Ruler
+  private layoutHostAdapter: LayoutHostAdapter
 
   constructor(
     rootContainer: HTMLElement,
@@ -294,6 +302,13 @@ export class Draw {
     this.graffiti = new Graffiti(this, data.graffiti)
     this.columnManager = new ColumnManager(this)
     this.ruler = new Ruler(this)
+    this.layoutHostAdapter = new LayoutHostAdapter(() => this.options)
+    // HarfBuzz path: warm up fonts/WASM without blocking first paint
+    if (this.layoutHostAdapter.isHarfBuzzMode()) {
+      this.layoutHostAdapter.ensureReady().then(() => {
+        this.render({ isSetCursor: false, isSubmitHistory: false })
+      })
+    }
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -747,6 +762,10 @@ export class Draw {
 
   public getPosition(): Position {
     return this.position
+  }
+
+  public getLayoutHostAdapter(): LayoutHostAdapter {
+    return this.layoutHostAdapter
   }
 
   public getZone(): Zone {
@@ -1539,6 +1558,356 @@ export class Draw {
     )
   }
 
+  private _canUseTextEngine(elementList: IElement[]): boolean {
+    // SEPARATOR / PAGE_BREAK 由引擎路径插行处理，不再整篇回退 legacy
+    const blocked = new Set([
+      ElementType.TABLE,
+      ElementType.IMAGE,
+      ElementType.BLOCK,
+      ElementType.LATEX,
+      ElementType.AREA,
+      ElementType.CONTROL
+    ])
+    for (let i = 0; i < elementList.length; i++) {
+      const type = elementList[i].type
+      if (type && blocked.has(type)) return false
+    }
+    return true
+  }
+
+  /** text-engine rows always draw via GlyphRenderer (Arabic run fillText joining). */
+  private rowUsesGlyphRenderer(row: IRow): boolean {
+    return !!row.engineLine?.glyphs?.length
+  }
+
+  /**
+   * text-engine 选区校正：按 engineLine 字形左右边界并集，
+   * 并对复杂文种用与绘制相同的 font 测整段墨迹宽，防止选区短于 fillText。
+   */
+  private _correctEngineSelectionRects(
+    ctx: CanvasRenderingContext2D,
+    curRow: IRow,
+    positionList: import('../../interface/Element').IElementPosition[],
+    rects: VisualRect[],
+    selStart: number,
+    selEnd: number
+  ): VisualRect[] {
+    if (!curRow.engineLine?.glyphs?.length || selStart === selEnd) {
+      return rects
+    }
+    const anchor = curRow.elementList.find(
+      el => el.visualLeft !== undefined && el.value !== ZERO
+    )
+    const anchorPos =
+      curRow.fragmentPosition ||
+      positionList[
+        anchor
+          ? curRow.startIndex + curRow.elementList.indexOf(anchor)
+          : curRow.startIndex
+      ]
+    if (!anchor || !anchorPos) return rects
+    const originX =
+      anchorPos.coordinate.leftTop[0] - (anchor.visualLeft || 0)
+    const y = anchorPos.coordinate.leftTop[1]
+    const height = curRow.height
+    // 编辑器约定：高亮 (selStart, selEnd]
+    const from = selStart + 1
+    const to = selEnd
+    if (from > to) return rects
+
+    const glyphRects: VisualRect[] = []
+    for (const g of curRow.engineLine.glyphs) {
+      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      if (gTo < from || gFrom > to) continue
+      const count = Math.max(1, gTo - gFrom + 1)
+      const boxW = Math.max(g.right - g.left, 0)
+      const odd = (g.bidiLevel & 1) === 1
+      for (let li = Math.max(gFrom, from); li <= Math.min(gTo, to); li++) {
+        const each = boxW > 0.01 ? boxW / count : 0
+        const offset = odd ? gTo - li : li - gFrom
+        const left = originX + g.left + offset * each
+        const right = left + (each > 0.01 ? each : Math.max(boxW, 0))
+        glyphRects.push({ left, right: Math.max(right, left), y, height })
+      }
+    }
+    const base = glyphRects.length ? glyphRects : rects
+
+    // 复杂文种：按选中逻辑子串测宽，把同行选区右缘扩到墨迹宽
+    const para = curRow.engineParagraphText
+    if (!para || !curRow.engineLine) return base
+    let minChar = Infinity
+    let maxChar = -1
+    let paintStyle = curRow.engineLine.glyphs[0]?.style
+    for (const g of curRow.engineLine.glyphs) {
+      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      if (gTo < from || gFrom > to) continue
+      minChar = Math.min(minChar, g.charStart)
+      maxChar = Math.max(maxChar, g.charEnd)
+      paintStyle = g.style
+    }
+    if (minChar === Infinity || maxChar <= minChar || !paintStyle) {
+      return base
+    }
+    const slice = para.slice(minChar, maxChar)
+    if (!slice || !containsShapingScript(slice)) return base
+    ctx.save()
+    ctx.font = `${paintStyle.italic ? 'italic ' : ''}${
+      paintStyle.bold ? 'bold ' : ''
+    }${paintStyle.fontSize}px ${paintStyle.fontFamily}`
+    const measured = ctx.measureText(slice)
+    const inkRight =
+      measured.actualBoundingBoxRight != null &&
+      measured.actualBoundingBoxLeft != null
+        ? Math.max(
+            measured.width,
+            measured.actualBoundingBoxRight - measured.actualBoundingBoxLeft
+          )
+        : measured.width
+    ctx.restore()
+    // 选区在复杂段内的视觉起点
+    let runLeft = Infinity
+    for (const g of curRow.engineLine.glyphs) {
+      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      if (gTo < from || gFrom > to) continue
+      runLeft = Math.min(runLeft, originX + g.left)
+    }
+    if (runLeft === Infinity) return base
+    const needRight = runLeft + inkRight
+    return base.map(r =>
+      Math.abs(r.y - y) < 0.5 && r.right < needRight
+        ? { ...r, left: Math.min(r.left, runLeft), right: needRight }
+        : r
+    )
+  }
+
+  /**
+   * Paint-time overlay of live element styles onto engine glyphs.
+   * Does not mutate the cached LayoutLine (color 等 isCompute:false 依赖此路径).
+   */
+  private _syncEngineLineStyles(
+    line: import('../text-engine/types').LayoutLine,
+    elementList: IElement[]
+  ): import('../text-engine/types').LayoutLine {
+    const { defaultFont, defaultSize, defaultColor, scale } = this.options
+    return {
+      ...line,
+      glyphs: line.glyphs.map(g => {
+        const el = elementList[g.logicalIndexStart]
+        if (!el) return g
+        return {
+          ...g,
+          style: {
+            ...g.style,
+            // 保留整形时按 script 解析的字体，避免 sync 回落 defaultFont 打断阿语连写
+            fontFamily: el.font || g.style.fontFamily || defaultFont,
+            fontSize: el.size
+              ? el.size * scale
+              : g.style.fontSize || defaultSize * scale,
+            bold: el.bold,
+            italic: el.italic,
+            color: el.color || defaultColor,
+            letterSpacing: el.letterSpacing
+          }
+        }
+      })
+    }
+  }
+
+  private _createSpecialEngineRow(
+    element: IElement,
+    index: number,
+    innerWidth: number,
+    rowIndex: number
+  ): IRow {
+    const { scale, defaultSize } = this.options
+    const rowMargin = this.getElementRowMargin(element)
+    if (element.type === ElementType.SEPARATOR) {
+      const {
+        separator: { lineWidth: defaultLineWidth }
+      } = this.options
+      const lineWidth = element.lineWidth || defaultLineWidth
+      element.width = innerWidth / scale
+      // 与 legacy computeRowList 保持同一套 metrics → height/ascent
+      const metrics = {
+        width: innerWidth,
+        height: lineWidth * scale,
+        boundingBoxAscent: -rowMargin,
+        boundingBoxDescent: -rowMargin + lineWidth * scale
+      }
+      const ascent = metrics.boundingBoxAscent + rowMargin
+      const height =
+        rowMargin +
+        metrics.boundingBoxAscent +
+        metrics.boundingBoxDescent +
+        rowMargin
+      return {
+        width: innerWidth,
+        height,
+        ascent,
+        startIndex: index,
+        rowIndex,
+        elementList: [
+          {
+            ...element,
+            metrics,
+            style: ''
+          }
+        ]
+      }
+    }
+    // PAGE_BREAK：legacy 仅设 metrics.height=defaultSize，bbox 为 0
+    element.width = innerWidth / scale
+    const size = element.size || defaultSize
+    const metrics = {
+      width: innerWidth,
+      height: size,
+      boundingBoxAscent: 0,
+      boundingBoxDescent: 0
+    }
+    const ascent = metrics.boundingBoxAscent + rowMargin
+    const height =
+      rowMargin +
+      metrics.boundingBoxAscent +
+      metrics.boundingBoxDescent +
+      rowMargin
+    return {
+      width: innerWidth,
+      height,
+      ascent,
+      startIndex: index,
+      rowIndex,
+      isPageBreak: true,
+      elementList: [
+        {
+          ...element,
+          metrics,
+          style: ''
+        }
+      ]
+    }
+  }
+
+  private _appendParagraphEngineRows(
+    rowList: IRow[],
+    paragraph: ParagraphSpan,
+    elementList: IElement[],
+    innerWidth: number,
+    rowIndex: number
+  ): number {
+    const zeroEl =
+      elementList[paragraph.startIndex]?.value === ZERO
+        ? elementList[paragraph.startIndex]
+        : null
+    const rows = this.layoutHostAdapter.layoutParagraphToRows(
+      paragraph,
+      elementList,
+      innerWidth,
+      rowIndex
+    )
+    if (!rows?.length) {
+      if (!zeroEl) return rowIndex
+      const size = zeroEl.size || this.options.defaultSize
+      rowList.push({
+        width: 0,
+        height: size * this.options.defaultRowMargin,
+        ascent: size,
+        direction: paragraph.direction,
+        rowFlex: paragraph.rowFlex,
+        startIndex: paragraph.startIndex,
+        elementList: [
+          Object.assign(zeroEl, {
+            metrics: {
+              width: 0,
+              height: size,
+              boundingBoxAscent: size,
+              boundingBoxDescent: 0
+            },
+            style: `${size}px ${zeroEl.font || this.options.defaultFont}`,
+            visualLeft: 0,
+            bidiLevel: paragraph.direction === 'rtl' ? 1 : 0
+          }) as IRowElement
+        ],
+        rowIndex: rowIndex++
+      })
+      return rowIndex
+    }
+    if (zeroEl) {
+      const first = rows[0]
+      const lefts = first.elementList.map(el => el.visualLeft ?? 0)
+      const rights = first.elementList.map(
+        el => (el.visualLeft ?? 0) + (el.metrics?.width ?? 0)
+      )
+      const visualLeft =
+        paragraph.direction === 'rtl'
+          ? Math.max(0, ...rights, first.width)
+          : Math.min(...lefts, 0)
+      first.elementList.unshift(
+        Object.assign(zeroEl, {
+          metrics: {
+            width: 0,
+            height: first.height,
+            boundingBoxAscent: first.ascent,
+            boundingBoxDescent: Math.max(0, first.height - first.ascent)
+          },
+          style: `${zeroEl.size || this.options.defaultSize}px ${
+            zeroEl.font || this.options.defaultFont
+          }`,
+          visualLeft,
+          bidiLevel: paragraph.direction === 'rtl' ? 1 : 0
+        }) as IRowElement
+      )
+      first.startIndex = paragraph.startIndex
+    }
+    for (const row of rows) {
+      row.rowIndex = rowIndex++
+      rowList.push(row)
+    }
+    return rowIndex
+  }
+
+  private _computeRowListByTextEngine(
+    elementList: IElement[],
+    innerWidth: number
+  ): IRow[] | null {
+    const paragraphs = this.layoutHostAdapter.scanParagraphs(elementList)
+    const paraByStart = new Map(
+      paragraphs.map(p => [p.startIndex, p] as const)
+    )
+    const rowList: IRow[] = []
+    let rowIndex = 0
+    let i = 0
+    while (i < elementList.length) {
+      const el = elementList[i]
+      if (
+        el.type === ElementType.SEPARATOR ||
+        el.type === ElementType.PAGE_BREAK
+      ) {
+        rowList.push(
+          this._createSpecialEngineRow(el, i, innerWidth, rowIndex++)
+        )
+        i++
+        continue
+      }
+      const paragraph = paraByStart.get(i)
+      if (paragraph) {
+        rowIndex = this._appendParagraphEngineRows(
+          rowList,
+          paragraph,
+          elementList,
+          innerWidth,
+          rowIndex
+        )
+        i = paragraph.endIndex + 1
+        continue
+      }
+      i++
+    }
+    return rowList.length ? rowList : null
+  }
+
   public computeRowList(payload: IComputeRowListPayload) {
     const {
       innerWidth,
@@ -1550,6 +1919,18 @@ export class Draw {
       pageHeight = 0,
       surroundElementList = []
     } = payload
+    // Independent text-engine path (text-only lists; tables stay on legacy)
+    if (
+      !isFromTable &&
+      this.layoutHostAdapter.isReady() &&
+      this._canUseTextEngine(elementList)
+    ) {
+      const engineRows = this._computeRowListByTextEngine(
+        elementList,
+        innerWidth
+      )
+      if (engineRows) return engineRows
+    }
     const {
       defaultSize,
       scale,
@@ -2369,13 +2750,17 @@ export class Draw {
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 选区绘制记录
+      // 选区绘制记录（legacy：单矩形 width+=；text-engine：视觉矩形列表）
       const rangeRecord: IElementFillRect = {
         x: 0,
         y: 0,
         width: 0,
         height: 0
       }
+      const rangeVisualRects: VisualRect[] = []
+      const isTextEngineRow = curRow.elementList.some(
+        el => el.visualLeft !== undefined
+      )
       let tableRangeElement: IElement | null = null
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
@@ -2483,12 +2868,16 @@ export class Draw {
           element.rowFlex === RowFlex.ALIGNMENT ||
           element.rowFlex === RowFlex.JUSTIFY
         ) {
-          // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本
-          this.textParticle.record(ctx, element, x, y + offsetY)
-          this.textParticle.complete()
+          // HarfBuzz path 行交给 GlyphRenderer；否则走 TextParticle
+          if (!this.rowUsesGlyphRenderer(curRow)) {
+            this.textParticle.record(ctx, element, x, y + offsetY)
+            this.textParticle.complete()
+          }
         } else if (element.type === ElementType.BLOCK) {
           this.textParticle.complete()
           this.blockParticle.render(ctx, pageNo, element, x, y + offsetY)
+        } else if (this.rowUsesGlyphRenderer(curRow)) {
+          // Skip TextParticle — drawn via GlyphRenderer below
         } else {
           // 如果当前元素设置左偏移，则上一元素立即绘制
           if (element.left) {
@@ -2552,18 +2941,26 @@ export class Draw {
           // 元素向左偏移量
           const offsetX = element.left || 0
           // 下标元素y轴偏移值
-          let offsetY = 0
+          let subOffsetY = 0
           if (element.type === ElementType.SUBSCRIPT) {
-            offsetY = this.subscriptParticle.getOffsetY(element)
+            subOffsetY = this.subscriptParticle.getOffsetY(element)
           }
           // 占位符不参与颜色计算
           const color = element.control?.underline
             ? this.options.underlineColor
             : element.color
+          // text-engine：基线 + descent（Underline.render 会再 +2*lineWidth）
+          // legacy：贴行底
+          const underlineY = curRow.engineLine
+            ? y +
+              offsetY +
+              Math.max(0, metrics.boundingBoxDescent) +
+              subOffsetY
+            : y + curRow.height - rowMargin + subOffsetY
           this.underline.recordFillInfo(
             ctx,
             x - offsetX,
-            y + curRow.height - rowMargin + offsetY,
+            underlineY,
             metrics.width + offsetX,
             0,
             color,
@@ -2593,12 +2990,13 @@ export class Draw {
               ctx,
               this.getElementFont(element)
             )
-            // 文字渲染位置 + 基线文字下偏移量 - 一半文字高度
-            let adjustY =
-              y +
-              offsetY +
-              standardMetrics.actualBoundingBoxDescent * scale -
-              metrics.height / 2
+            // text-engine：穿过字身中部（相对基线）；legacy：原公式
+            let adjustY = curRow.engineLine
+              ? y + offsetY - metrics.height * 0.3
+              : y +
+                offsetY +
+                standardMetrics.actualBoundingBoxDescent * scale -
+                metrics.height / 2
             // 上下标位置调整
             if (element.type === ElementType.SUBSCRIPT) {
               adjustY += this.subscriptParticle.getOffsetY(element)
@@ -2640,8 +3038,36 @@ export class Draw {
             (!positionContext.isTable && !element.tdId) ||
             positionContext.tdId === element.tdId
           ) {
-            // 从行尾开始-绘制最小宽度
-            if (startIndex === index) {
+            // text-engine：按 visualLeft 字盒收集（行末再用 engineLine 校正墨迹）
+            if (isTextEngineRow) {
+              if (startIndex === index) {
+                const nextElement = elementList[startIndex + 1]
+                if (nextElement && nextElement.value === ZERO) {
+                  const left = x + metrics.width
+                  rangeVisualRects.push({
+                    left,
+                    right: left + this.options.rangeMinWidth,
+                    y,
+                    height: curRow.height
+                  })
+                }
+              } else {
+                // 零宽组合符也要纳入，否则印地/泰文选区盖不住连写
+                const rangeWidth =
+                  metrics.width > 0
+                    ? metrics.width
+                    : curRow.elementList.length === 1
+                      ? this.options.rangeMinWidth
+                      : 0
+                rangeVisualRects.push({
+                  left: x,
+                  right: x + Math.max(rangeWidth, 0),
+                  y,
+                  height: curRow.height
+                })
+              }
+            } else if (startIndex === index) {
+              // 从行尾开始-绘制最小宽度
               const nextElement = elementList[startIndex + 1]
               if (nextElement && nextElement.value === ZERO) {
                 rangeRecord.x = x + metrics.width
@@ -2741,6 +3167,36 @@ export class Draw {
       }
       // 绘制文字、边框、下划线、删除线
       this.textParticle.complete()
+      // 仅在 HarfBuzz 产出 path 时用 GlyphRenderer（连字）；否则 TextParticle 已按 visualLeft 画完
+      if (this.rowUsesGlyphRenderer(curRow) && curRow.engineLine) {
+        const anchor = curRow.elementList.find(
+          el => el.visualLeft !== undefined && el.value !== ZERO
+        )
+        const anchorPos =
+          curRow.fragmentPosition ||
+          positionList[
+            anchor
+              ? curRow.startIndex + curRow.elementList.indexOf(anchor)
+              : curRow.startIndex
+          ]
+        if (anchor && anchorPos) {
+          const originX =
+            anchorPos.coordinate.leftTop[0] - (anchor.visualLeft || 0)
+          const baselineY = anchorPos.coordinate.leftTop[1] + curRow.ascent
+          // isCompute:false（如改颜色）时同步 live 样式，避免画到缓存里的旧 style
+          const liveLine = this._syncEngineLineStyles(
+            curRow.engineLine as import('../text-engine/types').LayoutLine,
+            elementList
+          )
+          this.layoutHostAdapter.getGlyphRenderer().drawLine(
+            ctx,
+            liveLine,
+            originX,
+            baselineY,
+            curRow.engineParagraphText
+          )
+        }
+      }
       this.control.drawBorder(ctx)
       this.underline.render(ctx)
       this.strikeout.render(ctx)
@@ -2750,7 +3206,31 @@ export class Draw {
       this.group.render(ctx)
       // 绘制选区
       if (!isPrintMode && !isGraffitiMode) {
-        if (rangeRecord.width && rangeRecord.height) {
+        if (rangeVisualRects.length) {
+          // 复杂文种：用 engineLine 字形盒 + measureText 墨迹校正，避免选区短于连写
+          const {
+            startIndex: selStart,
+            endIndex: selEnd
+          } = this.range.getRange()
+          const corrected = this._correctEngineSelectionRects(
+            ctx,
+            curRow,
+            positionList,
+            rangeVisualRects,
+            selStart,
+            selEnd
+          )
+          const merged = mergeVisualRects(corrected)
+          for (const rect of merged) {
+            this.range.render(
+              ctx,
+              rect.left,
+              rect.y,
+              rect.right - rect.left,
+              rect.height
+            )
+          }
+        } else if (rangeRecord.width && rangeRecord.height) {
           const { x, y, width, height } = rangeRecord
           this.range.render(ctx, x, y, width, height)
         }

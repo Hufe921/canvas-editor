@@ -132,30 +132,61 @@ export class Cursor {
       metrics,
       coordinate: { leftTop, rightTop },
       ascent,
-      pageNo
+      pageNo,
+      index: cursorIndex
     } = cursorPosition
     const zoneManager = this.draw.getZone()
     const curPageNo = zoneManager.isMainActive()
       ? pageNo
       : this.draw.getPageNo()
     const preY = curPageNo * (height + pageGap)
-    // 默认偏移高度
+    // 光标高度与同行字号一致（text-engine 的 metrics.height 常为行盒，需回退到字号）
+    const element = this.draw.getElementList()[cursorIndex]
+    const fontSize =
+      ((element?.actualSize || element?.size || this.options.defaultSize) *
+        scale) ||
+      metrics.height
+    const rawAscent = metrics.boundingBoxAscent || 0
+    const rawDescent =
+      metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
+    const inflated =
+      metrics.height > fontSize * 1.15 || rawAscent > fontSize * 1.05
+    const inkAscent = inflated ? fontSize * 0.8 : rawAscent || fontSize * 0.8
+    const inkDescent = inflated ? fontSize * 0.2 : rawDescent
+    const textHeight = Math.max(inkAscent + inkDescent, fontSize * 0.5)
+    // 略高于字身：上下各加约 1/8 字号（2px～6px）
+    const pad = Math.min(Math.max(fontSize / 8, 2 * scale), 6 * scale)
+    const cursorHeight = textHeight + pad * 2
     const defaultOffsetHeight = CURSOR_AGENT_OFFSET_HEIGHT * scale
-    // 增加1/4字体大小（最小为defaultOffsetHeight即默认偏移高度）
-    const increaseHeight = Math.min(metrics.height / 4, defaultOffsetHeight)
-    const cursorHeight = metrics.height + increaseHeight * 2
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     if (isFocus) {
       setTimeout(() => {
         this.focus()
       })
     }
-    // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
-    const descent =
-      metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
-    const cursorTop =
-      leftTop[1] + ascent + descent - (cursorHeight - increaseHeight) + preY
-    const cursorLeft = hitLineStartIndex ? leftTop[0] : rightTop[0]
+    // 基线：leftTop + ascent；光标相对字身上下各外扩 pad
+    const cursorTop = leftTop[1] + ascent - inkAscent - pad + preY
+    // Host index = after this element. LTR trailing = rightTop; RTL trailing = leftTop.
+    const isRtlRun = ((cursorPosition.bidiLevel ?? 0) & 1) === 1
+    const cursorLeft = hitLineStartIndex
+      ? isRtlRun
+        ? rightTop[0]
+        : leftTop[0]
+      : isRtlRun
+        ? leftTop[0]
+        : rightTop[0]
+    // Sync IME textarea direction with paragraph
+    try {
+      const adapter = this.draw.getLayoutHostAdapter()
+      const elementList = this.draw.getElementList()
+      const dir = adapter.resolveElementDirection(
+        elementList,
+        cursorPosition.index
+      )
+      this.cursorAgent.syncDirection(dir)
+    } catch {
+      /* adapter may be unavailable during destroy */
+    }
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${
       cursorTop + cursorHeight - defaultOffsetHeight
@@ -167,7 +198,7 @@ export class Cursor {
     }
     // 记录旧光标位置：用于光标移动到可视范围内
     const oldTop = this.cursorDom.style.top
-    // 设置光标位置
+    // 设置光标位置与颜色（options.cursor.color / width）
     const isReadonly = this.draw.isReadonly()
     this.cursorDom.style.width = `${width * scale}px`
     this.cursorDom.style.backgroundColor = color

@@ -25,6 +25,7 @@ import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
 import { MoveDirection } from '../../dataset/enum/Observer'
 import { RowFlex } from '../../dataset/enum/Row'
+import { TextDirection } from '../../dataset/enum/TextDirection'
 import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
@@ -953,15 +954,42 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const rowElementList = this.range.getRangeRowElementList()
-    if (!rowElementList) return
-    rowElementList.forEach(element => {
+    // 与 direction 一致：作用到整段（含段首 ZERO），避免页眉/正文读到的 rowFlex 不一致
+    const paragraphElementList =
+      this.range.getRangeParagraphElementList() ||
+      this.range.getRangeRowElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
       element.rowFlex = payload
     })
     // 光标定位
     const isSetCursor = startIndex === endIndex
     const curIndex = isSetCursor ? endIndex : startIndex
     this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public direction(payload: TextDirection) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const paragraphElementList =
+      this.range.getRangeParagraphElementList() ||
+      this.range.getRangeRowElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
+      element.direction = payload
+    })
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public getRangeParagraphDirection(): TextDirection | null {
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList?.length) return null
+    const defaultDirection = this.draw.getOptions().defaultDirection
+    return paragraphElementList[0].direction || defaultDirection || null
   }
 
   public rowMargin(payload: number) {

@@ -413,7 +413,11 @@ export class ListParticle {
     const indentWidth = startElement.listLevel
       ? this.LIST_INDENT_WIDTH * startElement.listLevel * scale
       : 0
-    const x = startX - offsetX! + indentWidth + tabWidth
+    // RTL paragraphs: place list marker on the right of the content box
+    const isRtl = row.direction === 'rtl'
+    const x = isRtl
+      ? startX + (row.width || 0) + (offsetX || 0) - indentWidth - tabWidth
+      : startX - offsetX! + indentWidth + tabWidth
     const y = startY + ascent
     // 复选框样式特殊处理
     if (startElement.listStyle === ListStyle.CHECKBOX) {

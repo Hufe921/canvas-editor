@@ -4,12 +4,25 @@ import { LocationPosition } from '../../../../dataset/enum/Common'
 import { ControlComponent } from '../../../../dataset/enum/Control'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
+import { CaretMovement } from '../../../../dataset/enum/TextDirection'
 import {
   getIsBlockElement,
   getNonHideElementIndex
 } from '../../../../utils/element'
 import { isApple } from '../../../../utils/ua'
 import { CanvasEvent } from '../../CanvasEvent'
+
+function tryVisualMove(
+  draw: ReturnType<CanvasEvent['getDraw']>,
+  logicalIndex: number,
+  delta: 1 | -1
+): number | null {
+  const options = draw.getOptions()
+  if (options.caretMovement === CaretMovement.LOGICAL) return null
+  const adapter = draw.getLayoutHostAdapter()
+  if (!adapter.isReady()) return null
+  return adapter.visualNeighbor(logicalIndex, delta)
+}
 
 export function left(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
@@ -37,6 +50,16 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
       direction: MoveDirection.UP
     })
     return
+  }
+  // Visual caret movement (RTL / bidi)
+  if (!(isApple ? evt.altKey : evt.ctrlKey) && !evt.shiftKey && isCollapsed) {
+    const visualIndex = tryVisualMove(draw, startIndex, -1)
+    if (visualIndex !== null) {
+      rangeManager.setRange(visualIndex, visualIndex)
+      draw.render({ curIndex: visualIndex, isSubmitHistory: false })
+      evt.preventDefault()
+      return
+    }
   }
   // 单词整体移动
   let moveCount = 1

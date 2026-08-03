@@ -4,6 +4,11 @@ import {
   IEditorOption,
   IElement,
   ListType,
+  RowFlex,
+  CaretMovement,
+  TextDirection,
+  TextEngineMode,
+  TextScript,
   TitleLevel
 } from './editor'
 
@@ -671,7 +676,117 @@ elementList.push(
   ]
 )
 
-export const data: IElement[] = elementList
+/** 原门诊病历 mock（含控件/表格等，会回退 legacy） */
+export const emrData: IElement[] = elementList
+
+/**
+ * HarfBuzz / RTL 演示数据：纯文本，确保走 text-engine。
+ * 恢复病历 demo：将下方 `data` 改回 `emrData`。
+ */
+export const rtlDemoData: IElement[] = [
+  {
+    value: 'HarfBuzz / RTL 演示',
+    size: 22,
+    bold: true,
+    rowFlex: RowFlex.CENTER
+  },
+  {
+    value: '\n'
+  },
+  {
+    value:
+      '当前 options.textEngine = harfbuzz。正文为纯文本段落，可测方向、混排、光标与逻辑删除。',
+    size: 14,
+    color: '#666666',
+    direction: TextDirection.LTR
+  },
+  {
+    value: '\n',
+    direction: TextDirection.LTR
+  },
+  {
+    value: '1. LTR：Hello Canvas Editor — 从左到右。',
+    size: 16,
+    direction: TextDirection.LTR,
+    rowFlex: RowFlex.START
+  },
+  {
+    value: '\n',
+    direction: TextDirection.RTL
+  },
+  {
+    // 阿语字体会由 text-engine 按文种自动套用 options.fonts，勿整段强行 Noto（中文会 .notdef 重叠）
+    value: '2. RTL：مرحبا بالعالم — النص من اليمين إلى اليسار.',
+    size: 18,
+    direction: TextDirection.RTL,
+    rowFlex: RowFlex.START
+  },
+  {
+    value: '\n',
+    direction: TextDirection.RTL
+  },
+  {
+    value: '3. 混排 RTL：Hello مرحبا World سلام 123 ABC',
+    size: 16,
+    direction: TextDirection.RTL,
+    rowFlex: RowFlex.START
+  },
+  {
+    value: '\n',
+    direction: TextDirection.AUTO
+  },
+  {
+    // AUTO 以首个强方向字符判定；勿把拉丁标签放在段首
+    value: 'هذا نص عربي مع English mixed content. （AUTO）',
+    size: 16,
+    direction: TextDirection.AUTO,
+    rowFlex: RowFlex.START
+  },
+  {
+    value: '\n',
+    direction: TextDirection.LTR
+  },
+  {
+    value: '5. 混排 LTR：English ثم العربية then back to Latin.',
+    size: 16,
+    direction: TextDirection.LTR,
+    rowFlex: RowFlex.START
+  },
+  {
+    value: '\n',
+    direction: TextDirection.RTL
+  },
+  {
+    value: '6. RTL + end 对齐：سلام — rowFlex end',
+    size: 16,
+    direction: TextDirection.RTL,
+    rowFlex: RowFlex.END
+  },
+  {
+    value: '\n',
+    direction: TextDirection.LTR
+  },
+  {
+    // 需在 options.fonts 中注册对应 scripts 字体后才会 OT 塑形
+    value: '7. Indic：नमस्ते (Devanagari) / สวัสดี (Thai)',
+    size: 16,
+    direction: TextDirection.LTR,
+    rowFlex: RowFlex.START
+  },
+  {
+    value: '\n',
+    direction: TextDirection.LTR
+  },
+  {
+    value:
+      '提示：连字依赖 options.fonts[].scripts + HarfBuzz。工具栏方向按钮可切换 LTR/RTL；左右为物理对齐（left/right）。',
+    size: 13,
+    color: '#888888',
+    direction: TextDirection.LTR
+  }
+]
+
+export const data: IElement[] = rtlDemoData
 
 interface IComment {
   id: string
@@ -693,6 +808,23 @@ export const commentList: IComment[] = [
 
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
+  textEngine: TextEngineMode.HARFBUZZ,
+  defaultDirection: TextDirection.AUTO,
+  caretMovement: CaretMovement.VISUAL,
+  cursor: {
+    color: '#000000',
+    width: 1
+  },
+  // 按 scripts 自动套用：仅阿语字符用 Noto Naskh，中英仍 defaultFont
+  fonts: [
+    {
+      family: 'Noto Naskh Arabic',
+      url: '/fonts/NotoNaskhArabic-Regular.ttf',
+      weight: 400,
+      style: 'normal',
+      scripts: [TextScript.ARAB]
+    }
+  ],
   trace: {
     author: '游客1'
   },

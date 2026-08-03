@@ -19,6 +19,7 @@ import Editor, {
   PaperDirection,
   RowFlex,
   TextDecorationStyle,
+  TextDirection,
   TitleLevel,
   splitText
 } from './editor'
@@ -38,18 +39,17 @@ window.onload = function () {
     {
       header: [
         {
-          value: '第一人民医院',
-          size: 32,
+          value: 'canvas-editor',
+          size: 22,
           rowFlex: RowFlex.CENTER
         },
         {
-          value: '\n门诊病历',
-          size: 18,
-          rowFlex: RowFlex.CENTER
-        },
-        {
-          value: '\n',
-          type: ElementType.SEPARATOR
+          // 与正文第 2 点对照：同文同 direction/rowFlex，应对齐一致
+          value:
+            '\n2. RTL：مرحبا بالعالم — النص من اليمين إلى اليسار.',
+          size: 16,
+          direction: TextDirection.RTL,
+          rowFlex: RowFlex.START
         }
       ],
       main: <IElement[]>data,
@@ -286,7 +286,8 @@ window.onload = function () {
   }
 
   const leftDom = document.querySelector<HTMLDivElement>('.menu-item__left')!
-  leftDom.title = `左对齐(${isApple ? '⌘' : 'Ctrl'}+L)`
+  // 物理左对齐（RTL 段也靠纸张左侧；逻辑 start/end 请用 API）
+  leftDom.title = `左对齐 left(${isApple ? '⌘' : 'Ctrl'}+L)`
   leftDom.onclick = function () {
     console.log('left')
     instance.command.executeRowFlex(RowFlex.LEFT)
@@ -301,7 +302,7 @@ window.onload = function () {
   }
 
   const rightDom = document.querySelector<HTMLDivElement>('.menu-item__right')!
-  rightDom.title = `右对齐(${isApple ? '⌘' : 'Ctrl'}+R)`
+  rightDom.title = `右对齐 right(${isApple ? '⌘' : 'Ctrl'}+R)`
   rightDom.onclick = function () {
     console.log('right')
     instance.command.executeRowFlex(RowFlex.RIGHT)
@@ -323,6 +324,19 @@ window.onload = function () {
   justifyDom.onclick = function () {
     console.log('justify')
     instance.command.executeRowFlex(RowFlex.JUSTIFY)
+  }
+
+  const directionDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__direction'
+  )!
+  directionDom.title = '切换段落方向 LTR / RTL'
+  directionDom.onclick = function () {
+    const next =
+      directionDom.classList.contains('is-rtl')
+        ? TextDirection.LTR
+        : TextDirection.RTL
+    console.log('direction', next)
+    instance.command.executeDirection(next)
   }
 
   const rowMarginDom = document.querySelector<HTMLDivElement>(
@@ -1788,23 +1802,41 @@ window.onload = function () {
       highlightSpanDom.style.backgroundColor = '#ffff00'
     }
 
-    // 行布局
+    // 行布局高亮：left/right 为物理；start/end 按方向映射到视觉左右
     leftDom.classList.remove('active')
     centerDom.classList.remove('active')
     rightDom.classList.remove('active')
     alignmentDom.classList.remove('active')
     justifyDom.classList.remove('active')
-    if (payload.rowFlex && payload.rowFlex === 'right') {
-      rightDom.classList.add('active')
-    } else if (payload.rowFlex && payload.rowFlex === 'center') {
+    const isRtl = payload.direction === 'rtl'
+    const rowFlex = payload.rowFlex || RowFlex.START
+    if (rowFlex === RowFlex.CENTER) {
       centerDom.classList.add('active')
-    } else if (payload.rowFlex && payload.rowFlex === 'alignment') {
+    } else if (rowFlex === RowFlex.ALIGNMENT) {
       alignmentDom.classList.add('active')
-    } else if (payload.rowFlex && payload.rowFlex === 'justify') {
+    } else if (rowFlex === RowFlex.JUSTIFY) {
       justifyDom.classList.add('active')
+    } else if (rowFlex === RowFlex.LEFT) {
+      leftDom.classList.add('active')
+    } else if (rowFlex === RowFlex.RIGHT) {
+      rightDom.classList.add('active')
+    } else if (
+      (rowFlex === RowFlex.START && isRtl) ||
+      (rowFlex === RowFlex.END && !isRtl)
+    ) {
+      rightDom.classList.add('active')
     } else {
+      // start(LTR) | end(RTL) | 默认
       leftDom.classList.add('active')
     }
+
+    // 段落方向：单按钮，图标随当前 ltr/rtl 切换
+    const isRtlDir = payload.direction === TextDirection.RTL
+    directionDom.classList.toggle('is-rtl', isRtlDir)
+    directionDom.classList.toggle('active', isRtlDir)
+    directionDom.title = isRtlDir
+      ? '当前：从右到左 (RTL)，点击切换为 LTR'
+      : '当前：从左到右 (LTR)，点击切换为 RTL'
 
     // 行间距
     rowOptionDom

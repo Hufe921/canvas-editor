@@ -4,6 +4,7 @@ import { ControlComponent } from '../../../../dataset/enum/Control'
 import { EditorMode } from '../../../../dataset/enum/Editor'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
+import { CaretMovement } from '../../../../dataset/enum/TextDirection'
 import {
   getIsBlockElement,
   getNonHideElementIndex
@@ -38,6 +39,22 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
       direction: MoveDirection.DOWN
     })
     return
+  }
+  if (!(isApple ? evt.altKey : evt.ctrlKey) && !evt.shiftKey && isCollapsed) {
+    const options = draw.getOptions()
+    const adapter = draw.getLayoutHostAdapter()
+    if (
+      options.caretMovement !== CaretMovement.LOGICAL &&
+      adapter.isReady()
+    ) {
+      const visualIndex = adapter.visualNeighbor(startIndex, 1)
+      if (visualIndex !== null) {
+        rangeManager.setRange(visualIndex, visualIndex)
+        draw.render({ curIndex: visualIndex, isSubmitHistory: false })
+        evt.preventDefault()
+        return
+      }
+    }
   }
   // 单词整体移动
   let moveCount = 1

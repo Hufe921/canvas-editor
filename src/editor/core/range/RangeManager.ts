@@ -523,7 +523,28 @@ export class RangeManager {
     const strikeout = !~curElementList.findIndex(el => !el.strikeout)
     const color = curElement.color || null
     const highlight = curElement.highlight || null
-    const rowFlex = curElement.rowFlex || null
+    // 取段内 rowFlex（段首 ZERO / 首文本），避免光标落在无 rowFlex 字元时工具栏误显左对齐
+    const styleElementList = this.draw.getElementList()
+    const styleIndex = ~endIndex ? endIndex : 0
+    let paraStart = styleIndex
+    while (
+      paraStart > 0 &&
+      styleElementList[paraStart].value !== ZERO
+    ) {
+      paraStart--
+    }
+    const rowFlex =
+      styleElementList[paraStart]?.rowFlex ||
+      styleElementList[paraStart + 1]?.rowFlex ||
+      curElement.rowFlex ||
+      null
+    // Resolved ltr|rtl for toolbar (auto → first strong char)
+    const direction = this.draw
+      .getLayoutHostAdapter()
+      .resolveElementDirection(
+        styleElementList,
+        styleIndex
+      ) as IRangeStyle['direction']
     const rowMargin = curElement.rowMargin ?? this.options.defaultRowMargin
     const dashArray = curElement.dashArray || []
     const level = curElement.level || null
@@ -552,6 +573,7 @@ export class RangeManager {
       color,
       highlight,
       rowFlex,
+      direction,
       rowMargin,
       dashArray,
       level,
@@ -594,6 +616,11 @@ export class RangeManager {
       color: null,
       highlight: null,
       rowFlex: null,
+      direction:
+        this.options.defaultDirection === 'rtl' ||
+        this.options.defaultDirection === 'ltr'
+          ? this.options.defaultDirection
+          : null,
       rowMargin,
       dashArray: [],
       level: null,

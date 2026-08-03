@@ -42,8 +42,11 @@ interface IElement {
     CENTER = 'center',
     RIGHT = 'right',
     ALIGNMENT = 'alignment',
-    JUSTIFY = 'justify'
+    JUSTIFY = 'justify',
+    START = 'start', // 逻辑起点（RTL 为右）
+    END = 'end' // 逻辑终点（RTL 为左）
   };
+  direction?: 'ltr' | 'rtl' | 'auto'; // 段落基础方向
   rowMargin?: number;
   letterSpacing?: number;
   textDecoration?: {

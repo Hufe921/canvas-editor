@@ -396,18 +396,38 @@ export class Position {
         inColumn && columnLayout ? columnLayout.width : innerWidth
       x += columnOffset
       // 行存在环绕的可能性均不设置行布局
-      if (!curRow.isSurround) {
+      // text-engine 行：visualLeft 已含引擎对齐，禁止再做一次 rowFlex 偏移
+      const isTextEngineRow = curRow.elementList.some(
+        el => el.visualLeft !== undefined
+      )
+      if (!curRow.isSurround && !isTextEngineRow) {
         // 计算行偏移量（行居中、居右）
         const curRowWidth = curRow.width + (curRow.offsetX || 0)
-        if (curRow.rowFlex === RowFlex.CENTER) {
+        const rowFlex = curRow.rowFlex
+        const resolvedFlex =
+          rowFlex === RowFlex.START
+            ? curRow.direction === 'rtl'
+              ? RowFlex.RIGHT
+              : RowFlex.LEFT
+            : rowFlex === RowFlex.END
+              ? curRow.direction === 'rtl'
+                ? RowFlex.LEFT
+                : RowFlex.RIGHT
+              : rowFlex
+        if (resolvedFlex === RowFlex.CENTER) {
           x += (effectiveInnerWidth - curRowWidth) / 2
-        } else if (curRow.rowFlex === RowFlex.RIGHT) {
+        } else if (resolvedFlex === RowFlex.RIGHT) {
+          x += effectiveInnerWidth - curRowWidth
+        } else if (!resolvedFlex && curRow.direction === 'rtl') {
+          // RTL paragraph default: align to end (right) when no explicit rowFlex
           x += effectiveInnerWidth - curRowWidth
         }
       }
       // 当前行X/Y轴偏移量
       x += curRow.offsetX || 0
       y += curRow.offsetY || 0
+      // Origin of row content after alignment (for text-engine visualLeft)
+      const rowContentStartX = x
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y
@@ -435,6 +455,10 @@ export class Position {
         if (element.translateX) {
           x += element.translateX * scale
         }
+        const drawX =
+          element.visualLeft !== undefined
+            ? rowContentStartX + element.visualLeft
+            : x
         const positionItem: IElementPosition = {
           pageNo,
           index,
@@ -450,11 +474,14 @@ export class Position {
           isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
           columnIndex: curRow.columnIndex,
+          bidiLevel:
+            element.bidiLevel ??
+            (curRow.direction === 'rtl' ? 1 : undefined),
           coordinate: {
-            leftTop: [x, y],
-            leftBottom: [x, y + curRow.height],
-            rightTop: [x + metrics.width, y],
-            rightBottom: [x + metrics.width, y + curRow.height]
+            leftTop: [drawX, y],
+            leftBottom: [drawX, y + curRow.height],
+            rightTop: [drawX + metrics.width, y],
+            rightBottom: [drawX + metrics.width, y + curRow.height]
           }
         }
         // 缓存浮动元素信息
@@ -511,7 +538,12 @@ export class Position {
           positionList.push(positionItem)
         }
         index++
-        x += metrics.width
+        if (element.visualLeft === undefined) {
+          x += metrics.width
+        } else {
+          // Keep accumulator in sync for following legacy elements on mixed rows
+          x = drawX + metrics.width
+        }
         // 计算表格内元素位置
         if (
           element.type === ElementType.TABLE &&
@@ -967,10 +999,16 @@ export class Position {
           }
         }
         let hitLineStartIndex: number | undefined
-        // 判断是否在文字中间前后
+        // 判断是否在文字中间前后（RTL：左半=之后，右半=之前）
         if (elementList[index].value !== ZERO) {
-          const valueWidth = rightTop[0] - leftTop[0]
-          if (x < leftTop[0] + valueWidth / 2) {
+          const mid = (leftTop[0] + rightTop[0]) / 2
+          const isRtlRun =
+            ((positionList[j].bidiLevel ?? 0) & 1) === 1
+          if (isRtlRun) {
+            if (x >= mid) {
+              curPositionIndex = j - 1
+            }
+          } else if (x < mid) {
             curPositionIndex = j - 1
             if (isFirstLetter) {
               hitLineStartIndex = j
@@ -1084,13 +1122,22 @@ export class Position {
           : positionList.findIndex(p => p.rowNo === rowNo)
         const headElement = elementList[headIndex]
         const headPosition = positionList[headIndex]
-        // 是否在头部
-        const headStartX =
-          headElement.listStyle === ListStyle.CHECKBOX
-            ? this.draw.getMargins()[3]
-            : headPosition.coordinate.leftTop[0]
-        if (x < headStartX) {
-          // 头部元素为空元素时无需选中
+        const rowPositions = isMainActive
+          ? positionList.filter(
+              p => p.pageNo === positionNo && p.rowNo === rowNo
+            )
+          : positionList.filter(p => p.rowNo === rowNo)
+        const contentLeft = Math.min(
+          ...rowPositions.map(p => p.coordinate.leftTop[0])
+        )
+        const contentRight = Math.max(
+          ...rowPositions.map(p => p.coordinate.rightTop[0])
+        )
+        const row =
+          this.draw.getRowList()[headPosition.rowIndex] ||
+          this.draw.getOriginalRowList()[headPosition.rowIndex]
+        const isRtlRow = row?.direction === 'rtl'
+        const placeAtLogicalStart = () => {
           if (~headIndex) {
             if (headPosition.value === ZERO) {
               curPositionIndex = headIndex
@@ -1101,16 +1148,40 @@ export class Position {
           } else {
             curPositionIndex = index
           }
-        } else {
-          // 是否是复选框列表
-          if (headElement.listStyle === ListStyle.CHECKBOX && x < leftTop[0]) {
-            return {
-              index: headIndex,
-              isDirectHit: true,
-              isCheckbox: true
+        }
+        if (isRtlRow) {
+          // RTL：段首在右、逻辑尾在左。左侧空白 → 逻辑尾；右侧空白 → 逻辑首
+          if (x < contentLeft) {
+            curPositionIndex = index
+          } else if (x > contentRight) {
+            placeAtLogicalStart()
+          } else {
+            // 落入字间空隙：靠近哪侧跟哪侧
+            const mid = (contentLeft + contentRight) / 2
+            if (x < mid) {
+              curPositionIndex = index
+            } else {
+              placeAtLogicalStart()
             }
           }
-          curPositionIndex = index
+        } else {
+          // LTR：左侧空白 → 行首；否则 → 行尾（逻辑尾）
+          const headStartX =
+            headElement.listStyle === ListStyle.CHECKBOX
+              ? this.draw.getMargins()[3]
+              : headPosition.coordinate.leftTop[0]
+          if (x < headStartX) {
+            placeAtLogicalStart()
+          } else {
+            if (headElement.listStyle === ListStyle.CHECKBOX && x < leftTop[0]) {
+              return {
+                index: headIndex,
+                isDirectHit: true,
+                isCheckbox: true
+              }
+            }
+            curPositionIndex = index
+          }
         }
         isLastArea = true
         break

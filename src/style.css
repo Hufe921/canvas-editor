@@ -343,6 +343,14 @@ ul {
   background-image: url('./assets/images/justify.svg');
 }
 
+.menu-item__direction i {
+  background-image: url('./assets/images/ltr.svg');
+}
+
+.menu-item__direction.is-rtl i {
+  background-image: url('./assets/images/rtl.svg');
+}
+
 .menu-item__row-margin {
   position: relative;
 }

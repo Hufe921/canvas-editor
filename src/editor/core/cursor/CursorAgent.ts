@@ -42,6 +42,11 @@ export class CursorAgent {
     return this.agentCursorDom
   }
 
+  /** Sync textarea dir with current paragraph direction (IME / RTL). */
+  public syncDirection(dir: 'ltr' | 'rtl' | 'auto') {
+    this.agentCursorDom.dir = dir
+  }
+
   private _keyDown(evt: KeyboardEvent) {
     this.canvasEvent.keydown(evt)
   }

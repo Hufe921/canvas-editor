@@ -62,6 +62,10 @@ interface IEditorOption {
   scrollContainerSelector?: string // 滚动区域选择器。默认：document
   pageOuterSelectionDisable?: boolean // 鼠标移出页面时选区禁用。默认：false
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
+  textEngine?: 'legacy' | 'harfbuzz' // 文本排版引擎。默认：legacy；harfbuzz 启用独立 text-engine（需配置 fonts）
+  defaultDirection?: 'ltr' | 'rtl' | 'auto' // 默认段落方向。默认：ltr
+  caretMovement?: 'visual' | 'logical' // 方向键光标移动语义。默认：visual
+  fonts?: { family: string; data?: ArrayBuffer | null; url?: string | null; weight?: number; style?: 'normal' | 'italic' }[] // HarfBuzz 字体注册
   watermark?: IWatermark // 水印配置
   control?: IControlOption // 控件配置
   checkbox?: ICheckboxOption // 复选框配置
