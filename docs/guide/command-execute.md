@@ -1054,7 +1054,13 @@ instance.command.executeUpdateOptions(payload: IUpdateOption)
 
 ## executeUiDirection
 
-功能：设置 LTR/RTL 模式（`options.direction`）。仅影响编辑器 UI 组件方向，以及新建行/表的默认 `element.direction`；不参与存量正文排版、绘制与光标碰撞；切换不重绘文本区。与段落 `executeDirection` 分离。
+功能：设置 UI 的 LTR/RTL **模式**（`options.direction`）。
+
+- 仅镜像编辑器壳层（容器打 `ce-ui-rtl` class；**不要**给画布容器设 `dir=rtl`，否则绝对定位光标碰撞会错位）
+- 新建行/表时写入默认 `element.direction`
+- **不**参与存量正文排版、绘制与光标碰撞；切换**不**重绘文本区
+
+与段落方向命令 `executeDirection`、内容默认 `defaultDirection` **分离，请勿混用**。
 
 用法：
 

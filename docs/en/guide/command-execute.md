@@ -1054,7 +1054,13 @@ instance.command.executeUpdateOptions(payload: IUpdateOption)
 
 ## executeUiDirection
 
-Feature: Set LTR/RTL mode (`options.direction`). Affects editor UI chrome only, plus the default `element.direction` for newly created lines/tables. Does not participate in existing content layout, paint, or hit-testing; toggling does not reflow the text area. Separate from paragraph `executeDirection`.
+Feature: Set UI LTR/RTL **mode** (`options.direction`).
+
+- Mirrors editor chrome only (`ce-ui-rtl` class; **do not** set `dir=rtl` on the canvas container — it breaks absolute caret hit-testing)
+- Seeds `element.direction` for newly created lines/tables
+- Does **not** affect existing content layout, paint, or hit-testing; toggle does **not** reflow the text area
+
+Separate from paragraph `executeDirection` and content `defaultDirection` — do not mix them up.
 
 Usage:
 

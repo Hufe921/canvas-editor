@@ -56,7 +56,8 @@ direction?: TextDirection // 'ltr' | 'rtl' | 'auto'
 同步：
 
 - `EDITOR_ROW_ATTR` / `EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR` / `EDITOR_ELEMENT_ZIP_ATTR`
-- `IEditorOption.defaultDirection`（默认 `auto`）
+- `IEditorOption.defaultDirection`（内容默认，默认 `auto`；命令 `executeDirection`）
+- `IEditorOption.direction`（**UI 模式** `ltr`|`rtl`，默认 `ltr`；命令 `executeUiDirection`；打 `ce-ui-rtl`，不设容器 `dir`）
 - `IEditorOption.textEngine?: 'legacy' | 'harfbuzz'`
 - `IEditorOption.fonts` / `caretMovement?: 'visual' | 'logical'`
 - `IRow.direction?: 'ltr' | 'rtl'`（派生）
@@ -273,7 +274,7 @@ Background、Margin、PageBorder、Graffiti、Magnifier、Ruler、Search 单格�
 
 纯文本 chrome（水印 / 页码格式串 / 分页提示 / 图注）：`textEngine=harfbuzz` 且引擎就绪时走 `layoutPlainText` + `GlyphRenderer`（BiDi 混排、按 `fonts[].scripts` 选脸、阿语连写）；未就绪时回退 `fillText`。共用 `drawPlainText` 辅助。
 
-**LTR/RTL 模式** `options.direction: 'ltr'|'rtl'`（默认 ltr）：仅编辑器 UI 组件方向（容器 `dir`、工具栏/底栏镜像）以及新建行/表写入的默认 `element.direction`；**不**参与存量正文方向解析、光标碰撞与文本区绘制；**切换不得**重排/重绘正文。表框镜像仅看表格自身 `direction`（新建表会带上当前模式）。与段落 `executeDirection` / `defaultDirection` 分离。命令 `executeUiDirection`。模式切换控件由 `uiDirectionToggle`（默认 true）控制是否展示。
+**LTR/RTL 模式** `options.direction: 'ltr'|'rtl'`（默认 ltr）：仅编辑器 UI 壳层方向（容器打 `ce-ui-rtl` class、工具栏/底栏镜像；**不得**给画布容器设 `dir=rtl`，否则绝对定位光标碰撞错位）以及新建行/表写入的默认 `element.direction`；**不**参与存量正文方向解析、光标碰撞与文本区绘制；**切换不得**重排/重绘正文。表框镜像仅看表格自身 `direction`（新建表会带上当前模式）。与段落 `executeDirection` / `defaultDirection` **分离，勿混用**。命令 `executeUiDirection`。模式切换控件由 `uiDirectionToggle`（默认 true）控制是否展示。
 
 ### D — 延期
 

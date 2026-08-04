@@ -5,8 +5,9 @@ import { IElement } from '../interface/Element'
 export type UiDirection = TextDirection.LTR | TextDirection.RTL
 
 /**
- * LTR/RTL 模式（options.direction，默认 LTR）。
- * 只描述编辑器 UI 组件方向；不参与正文排版/光标碰撞。
+ * UI LTR/RTL 模式（options.direction，默认 LTR）。
+ * 只描述编辑器壳层方向（ce-ui-rtl）；不参与正文排版/光标碰撞。
+ * 勿与段落 executeDirection / defaultDirection 混淆。
  */
 export function resolveUiDirection(
   options: Pick<IEditorOption, 'direction'> | null | undefined

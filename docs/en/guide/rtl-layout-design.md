@@ -34,7 +34,7 @@ Pipeline today is LTR-only (`ctx.direction = 'ltr'`, `x += width`). Paragraphs a
 direction?: TextDirection // 'ltr' | 'rtl' | 'auto'
 ```
 
-Add `RowFlex.start` / `end`; keep physical `left`/`right`. Wire into zip/row attrs, `defaultDirection`, `textEngine`, `fonts`, `caretMovement`. Runtime-only: `bidiLevel` / `visualIndex` / `clusterStart` / `clusterEnd`.
+Add `RowFlex.start` / `end`; keep physical `left`/`right`. Wire into zip/row attrs, content `defaultDirection` (`executeDirection`), UI mode `options.direction` (`executeUiDirection`, `ce-ui-rtl` — never canvas `dir=rtl`), `textEngine`, `fonts`, `caretMovement`. Runtime-only: `bidiLevel` / `visualIndex` / `clusterStart` / `clusterEnd`.
 
 `ParagraphScanner` yields logical spans; no persisted `paragraphId`.
 
@@ -94,7 +94,7 @@ GlyphRenderer inside engine; TextParticle becomes a thin delegate under `harfbuz
 
 **A (this phase):** `ctx.direction`, AbstractRichText family, Trace, Group, ControlBorder, Hyperlink/Sub/Superscript (engine rows via GlyphRenderer), basic float surround, DATE segment complete.  
 **B (with P3):** List indent/marker side, LineBreak, Placeholder; LineNumber/PageNumber **side mirroring** → [DEFER-015](./rtl-deferred-todo.md#defer-015).  
-**C:** page-level chrome / print. Plain-text chrome (watermark / page-number format / page-break label / image caption) uses `layoutPlainText` + `GlyphRenderer` via `drawPlainText` when HarfBuzz is ready; otherwise `fillText`. **LTR/RTL mode** `options.direction` (`ltr`|`rtl`, default `ltr`) mirrors editor UI chrome only (container `dir`, toolbar/footer) and supplies the default `element.direction` for **newly created** lines/tables; it must **not** affect hit-testing or body paint, rewrite existing content direction, remirror undeclared tables, or reflow the text area on toggle. Use `executeUiDirection`. Mode toggle visibility is controlled by `uiDirectionToggle` (default true).  
+**C:** page-level chrome / print. Plain-text chrome (watermark / page-number format / page-break label / image caption) uses `layoutPlainText` + `GlyphRenderer` via `drawPlainText` when HarfBuzz is ready; otherwise `fillText`. **LTR/RTL mode** `options.direction` (`ltr`|`rtl`, default `ltr`) mirrors editor UI chrome only (`ce-ui-rtl` class on the container — **never** `dir=rtl` on the canvas root, which breaks absolute caret hit-testing; toolbar/footer may set their own `dir`) and supplies the default `element.direction` for **newly created** lines/tables; it must **not** affect hit-testing or body paint, rewrite existing content direction, remirror undeclared tables, or reflow the text area on toggle. Separate from paragraph `executeDirection` / `defaultDirection`. Use `executeUiDirection`. Mode toggle visibility is controlled by `uiDirectionToggle` (default true).  
 **D:** tables/controls → [deferred TODO](./rtl-deferred-todo.md). Main-path gaps also tracked there: DATE/LABEL vs GlyphRenderer [DEFER-023](./rtl-deferred-todo.md#defer-023); in-paragraph Control embeds [DEFER-024](./rtl-deferred-todo.md#defer-024); surround/column mixed-layout acceptance [DEFER-025](./rtl-deferred-todo.md#defer-025).
 
 ## 9. SVG

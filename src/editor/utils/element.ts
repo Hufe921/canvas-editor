@@ -2093,6 +2093,27 @@ export function deleteSurroundElementList(
   }
 }
 
+/**
+ * 排版/行高折叠用的隐藏判定（与 legacy computeRowList 一致）。
+ * 设计模式下不隐藏。
+ */
+export function isElementLayoutHidden(
+  element: IElement | undefined,
+  ctx?: {
+    isDesignMode?: boolean
+    isAreaHideDisabled?: boolean
+    isTraceHidden?: (el: IElement) => boolean
+  }
+): boolean {
+  if (!element || ctx?.isDesignMode) return false
+  return !!(
+    element.hide ||
+    element.control?.hide ||
+    (element.area?.hide && !ctx?.isAreaHideDisabled) ||
+    ctx?.isTraceHidden?.(element)
+  )
+}
+
 export function getNonHideElementIndex(
   elementList: IElement[],
   index: number,

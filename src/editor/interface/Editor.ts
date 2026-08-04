@@ -100,10 +100,14 @@ export interface IEditorOption {
   /** Text layout engine: legacy measureText path or HarfBuzz */
   textEngine?: TextEngineMode
   /**
-   * LTR/RTL mode for editor UI chrome only (toolbar/shell `dir`, host toggle).
-   * Also used as default `element.direction` when creating new lines/tables.
-   * Does not affect existing content layout, paint, or hit-testing.
-   * Default: ltr. Command: executeUiDirection
+   * UI LTR/RTL **mode** (chrome only): host toolbar/shell mirroring via
+   * `ce-ui-rtl` class — do **not** set `dir=rtl` on the canvas container
+   * (breaks absolute caret hit-testing). Also seeds `element.direction` for
+   * **newly created** lines/tables only.
+   * Not paragraph direction — do not confuse with `executeDirection` or
+   * `defaultDirection`. Does not affect existing content layout, paint, or
+   * hit-testing; toggle must not reflow the body.
+   * Default: ltr. Command: `executeUiDirection`
    */
   direction?: TextDirection.LTR | TextDirection.RTL
   /**
@@ -112,9 +116,10 @@ export interface IEditorOption {
    */
   uiDirectionToggle?: boolean
   /**
-   * Default when resolving existing content without element.direction
-   * (AUTO detects from strong characters). Not the UI mode; not rewritten
-   * by executeUiDirection. Default: auto
+   * Content default when an element has no `direction` (AUTO = detect from
+   * strong characters). Paragraph API: `executeDirection`.
+   * Distinct from UI mode `options.direction` / `executeUiDirection`.
+   * Default: auto
    */
   defaultDirection?: TextDirection
   /** Arrow-key caret movement semantics */

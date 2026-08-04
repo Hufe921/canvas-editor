@@ -72,6 +72,12 @@ export function resolveLayoutScope(params: {
   return DEFAULT_LAYOUT_SCOPE
 }
 
+export interface LayoutHideContext {
+  isDesignMode: boolean
+  isAreaHideDisabled: boolean
+  isTraceHidden: (el: IElement) => boolean
+}
+
 export class LayoutHostAdapter {
   private fontManager = new FontManager()
   private bridge = new ElementBridge()
@@ -82,7 +88,10 @@ export class LayoutHostAdapter {
   private initPromise: Promise<void> | null = null
   private lastLayouts = new Map<string, LayoutResult>()
 
-  constructor(private getOptions: () => DeepRequired<IEditorOption>) {}
+  constructor(
+    private getOptions: () => DeepRequired<IEditorOption>,
+    private getHideContext?: () => LayoutHideContext
+  ) {}
 
   getHitTest(): HitTestAdapter {
     return this.hitTest
@@ -240,6 +249,7 @@ export class LayoutHostAdapter {
 
   scanParagraphs(elementList: IElement[]): ParagraphSpan[] {
     const options = this.getOptions()
+    const hide = this.getHideContext?.()
     return this.bridge.scanParagraphs(elementList, {
       defaultDirection: options.defaultDirection,
       defaultFont: options.defaultFont,
@@ -252,7 +262,10 @@ export class LayoutHostAdapter {
       checkboxWidth: options.checkbox.width,
       checkboxGap: options.checkbox.gap,
       radioWidth: options.radio.width,
-      radioGap: options.radio.gap
+      radioGap: options.radio.gap,
+      isDesignMode: hide?.isDesignMode,
+      isAreaHideDisabled: hide?.isAreaHideDisabled,
+      isTraceHidden: hide?.isTraceHidden
     })
   }
 

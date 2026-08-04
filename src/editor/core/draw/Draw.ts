@@ -303,7 +303,14 @@ export class Draw {
     this.graffiti = new Graffiti(this, data.graffiti)
     this.columnManager = new ColumnManager(this)
     this.ruler = new Ruler(this)
-    this.layoutHostAdapter = new LayoutHostAdapter(() => this.options)
+    this.layoutHostAdapter = new LayoutHostAdapter(
+      () => this.options,
+      () => ({
+        isDesignMode: this.isDesignMode(),
+        isAreaHideDisabled: this.isAreaHideDisabled(),
+        isTraceHidden: (el: IElement) => this.traceParticle.isTraceHidden(el)
+      })
+    )
     // HarfBuzz path: warm up fonts/WASM without blocking first paint
     if (this.layoutHostAdapter.isHarfBuzzMode()) {
       this.layoutHostAdapter.ensureReady().then(() => {
@@ -1630,13 +1637,17 @@ export class Draw {
   }
 
   /**
-   * GlyphRenderer 按整行绘制，须跳过留痕软删（与 TextParticle 一致）。
-   * control.hide / element.hide 仍绘制：级联隐藏在 text-engine 下若整段滤掉，
-   * 会出现「标签还在、{占位} 空白」且下拉可被点开的断裂态；完整折叠留给后续专项。
+   * GlyphRenderer 按整行绘制：跳过留痕软删与 hide（与 TextParticle / #1447 一致）。
+   * hide 须先在 ElementBridge 中零宽占位，再在此跳过绘制，避免只滤 paint 留下空白洞。
    */
   private isGlyphPaintSkipped(element: IElement | undefined): boolean {
     if (!element || this.isDesignMode()) return false
-    return this.traceParticle.isTraceHidden(element)
+    return (
+      !!element.hide ||
+      !!element.control?.hide ||
+      (!!element.area?.hide && !this.isAreaHideDisabled()) ||
+      this.traceParticle.isTraceHidden(element)
+    )
   }
 
   private filterEngineLineForPaint(
@@ -2035,10 +2046,29 @@ export class Draw {
     this.control.applyEngineRowsMinWidth(rows, innerWidth)
     this.labelParticle.applyEngineRowsMetrics(rows)
     for (const row of rows) {
+      this.collapseHiddenEngineRow(row)
       row.rowIndex = rowIndex++
       rowList.push(row)
     }
     return rowIndex
+  }
+
+  /** 与 legacy computeRowList 一致：行内非换行符元素全隐藏时折叠行高 (#1447) */
+  private collapseHiddenEngineRow(row: IRow) {
+    if (this.isDesignMode() || row.height <= 0) return
+    const visibleElements = row.elementList.filter(el => el.value !== ZERO)
+    const isAllHidden =
+      visibleElements.length > 0 &&
+      visibleElements.every(
+        el =>
+          el.hide ||
+          el.control?.hide ||
+          (el.area?.hide && !this.isAreaHideDisabled()) ||
+          this.traceParticle.isTraceHidden(el)
+      )
+    if (isAllHidden) {
+      row.height = 0
+    }
   }
 
   private _computeRowListByTextEngine(

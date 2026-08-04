@@ -2492,10 +2492,10 @@ export class CommandAdapt {
   }
 
   /**
-   * LTR/RTL 模式（options.direction）：仅影响编辑器 UI 组件方向，
+   * UI LTR/RTL 模式（options.direction）：仅镜像壳层（ce-ui-rtl），
    * 以及新建行/表时写入的默认 element.direction。
    * 不参与光标碰撞、正文排版/绘制；切换不得重绘文本区。
-   * 与段落 executeDirection 分离。
+   * 与段落 executeDirection / defaultDirection 分离，勿混用。
    */
   public uiDirection(payload: TextDirection.LTR | TextDirection.RTL) {
     this.options.direction = payload

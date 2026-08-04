@@ -5,6 +5,7 @@ import { ElementType } from '../../dataset/enum/Element'
 import { TextDirection } from '../../dataset/enum/TextDirection'
 import { IElement } from '../../interface/Element'
 import { IEditorFontFace } from '../../interface/TextEngine'
+import { isElementLayoutHidden } from '../../utils/element'
 import { resolveDirection } from '../text-engine'
 import {
   detectScript,
@@ -56,6 +57,10 @@ export interface ScanParagraphOptions {
   checkboxGap?: number
   radioWidth?: number
   radioGap?: number
+  /** 与 legacy 一致：隐藏元素零宽占位，供行高折叠 / 光标跳隐 */
+  isDesignMode?: boolean
+  isAreaHideDisabled?: boolean
+  isTraceHidden?: (el: IElement) => boolean
 }
 
 function isInlineWidget(el: IElement): boolean {
@@ -155,8 +160,12 @@ export class ElementBridge {
       checkboxWidth = 14,
       checkboxGap = 5,
       radioWidth = 14,
-      radioGap = 5
+      radioGap = 5,
+      isDesignMode,
+      isAreaHideDisabled,
+      isTraceHidden
     } = options
+    const hideCtx = { isDesignMode, isAreaHideDisabled, isTraceHidden }
     // 先探测段方向（不含隔离符），LTR 不包 LRI/PDI，避免跨行控件 fillText 半截隔离错乱
     const declared =
       elementList[startIndex]?.direction ||
@@ -166,6 +175,8 @@ export class ElementBridge {
     for (let i = startIndex; i <= endIndex; i++) {
       const el = elementList[i]
       if (el.value === ZERO || !el.value) continue
+      // 隐藏元素不参与方向探测（与不占可见墨迹一致）
+      if (isElementLayoutHidden(el, hideCtx)) continue
       if (isInlineObject(el)) {
         probeText += OBJECT_REPLACEMENT
         continue
@@ -183,6 +194,25 @@ export class ElementBridge {
     for (let i = startIndex; i <= endIndex; i++) {
       const el = elementList[i]
       if (el.value === ZERO) continue
+      // 零宽 object 占位：保留逻辑下标 / Position 连续性，advance=0（对齐 #1447）
+      if (isElementLayoutHidden(el, hideCtx)) {
+        if (!el.value && !isInlineObject(el)) continue
+        const fontSize = (el.size || defaultSize) * scale
+        spans.push({
+          logicalIndex: i,
+          logicalIndices: [i],
+          text: OBJECT_REPLACEMENT,
+          style: {
+            fontFamily: defaultFont,
+            fontSize,
+            color: el.color || defaultColor,
+            objectWidth: 0,
+            objectHeight: 0
+          }
+        })
+        text += OBJECT_REPLACEMENT
+        continue
+      }
       if (isInlineObject(el)) {
         const fontSize = (el.size || defaultSize) * scale
         let objectWidth: number

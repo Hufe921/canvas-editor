@@ -62,9 +62,9 @@ interface IEditorOption {
   scrollContainerSelector?: string // scroll container selector. default: document
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
-  direction?: 'ltr' | 'rtl' // LTR/RTL mode: editor UI chrome only + default element.direction for new lines/tables; no hit-test / body paint effect; toggle does not reflow text. default: ltr. Command: executeUiDirection
+  direction?: 'ltr' | 'rtl' // UI LTR/RTL **mode** (not paragraph direction): mirrors editor chrome via `ce-ui-rtl` only — do not set `dir=rtl` on the canvas container; seeds element.direction for **new** lines/tables; no hit-test / body paint; toggle does not reflow. default: ltr. Command: executeUiDirection. Do not confuse with executeDirection / defaultDirection
   uiDirectionToggle?: boolean // Whether host toolbar may show the LTR/RTL mode toggle. default: true; false hides it
-  defaultDirection?: 'ltr' | 'rtl' | 'auto' // Default paragraph (content) direction. default: auto
+  defaultDirection?: 'ltr' | 'rtl' | 'auto' // Content default paragraph direction when element has no direction (auto = detect). Command: executeDirection. Separate from UI mode options.direction. default: auto
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration
   checkbox?: ICheckboxOption // Checkbox configuration
