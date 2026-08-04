@@ -36,6 +36,10 @@
   English · <a href="https://hufe.club/canvas-editor-docs">中文文档</a>
 </p>
 
+<p align="center">
+  🎉 <strong>Canvas Editor 1.0.0 is released!</strong> See the <a href="https://github.com/Hufe921/canvas-editor/blob/main/docs/RELEASE_NOTES_1.0.0.md"><strong>1.0 Release Notes</strong></a> for highlights and upgrade notes.
+</p>
+
 ---
 
 ## Overview
