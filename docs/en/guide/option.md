@@ -62,6 +62,9 @@ interface IEditorOption {
   scrollContainerSelector?: string // scroll container selector. default: document
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
+  direction?: 'ltr' | 'rtl' // LTR/RTL mode: editor UI chrome only + default element.direction for new lines/tables; no hit-test / body paint effect; toggle does not reflow text. default: ltr. Command: executeUiDirection
+  uiDirectionToggle?: boolean // Whether host toolbar may show the LTR/RTL mode toggle. default: true; false hides it
+  defaultDirection?: 'ltr' | 'rtl' | 'auto' // Default paragraph (content) direction. default: auto
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration
   checkbox?: ICheckboxOption // Checkbox configuration
@@ -353,7 +356,8 @@ interface IPageBorderOption {
 ```typescript
 interface IBadgeOption {
   top?: number // Distance from top. default: 0
-  left?: number // Distance from left. default: 0
+  left?: number // Distance from left. default: 5
+  right?: number // Distance from right; when >= 0, overrides left. default: -1 (unset)
 }
 ```
 

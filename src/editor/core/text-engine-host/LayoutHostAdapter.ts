@@ -1,6 +1,9 @@
 import { WordBreak } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
-import { TextEngineMode } from '../../dataset/enum/TextDirection'
+import {
+  TextDirection,
+  TextEngineMode
+} from '../../dataset/enum/TextDirection'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
 import { IRow } from '../../interface/Row'
@@ -15,7 +18,11 @@ import {
   TextLayoutEngine,
   resolveDirection
 } from '../text-engine'
-import { LayoutResult } from '../text-engine/types'
+import {
+  detectScript,
+  resolveFontForScript
+} from '../text-engine/utils/scriptFont'
+import { LayoutResult, TextSpan } from '../text-engine/types'
 import { ElementBridge, ParagraphSpan } from './ElementBridge'
 import { HitTestAdapter } from './HitTestAdapter'
 import { mapLayoutToRows } from './mapToLegacyRow'
@@ -37,6 +44,32 @@ function resolveAlign(
   if (rowFlex === RowFlex.ALIGNMENT) return 'alignment'
   // Default: align to paragraph start (RTL → right)
   return direction === 'rtl' ? 'right' : 'left'
+}
+
+/** lastLayouts key: `{scope}|p:{start}-{end}` — isolate main / header / footer / td */
+export const DEFAULT_LAYOUT_SCOPE = 'main'
+
+export function layoutLastKey(
+  scope: string,
+  startIndex: number,
+  endIndex: number
+): string {
+  return `${scope || DEFAULT_LAYOUT_SCOPE}|p:${startIndex}-${endIndex}`
+}
+
+/** Resolve layoutScope from editor zone and optional table cell context. */
+export function resolveLayoutScope(params: {
+  zone?: string
+  isTable?: boolean
+  tdId?: string | null
+}): string {
+  if (params.isTable && params.tdId) {
+    return `td:${params.tdId}`
+  }
+  if (params.zone === 'header' || params.zone === 'footer') {
+    return params.zone
+  }
+  return DEFAULT_LAYOUT_SCOPE
 }
 
 export class LayoutHostAdapter {
@@ -64,13 +97,17 @@ export class LayoutHostAdapter {
   }
 
   findLayoutByElementIndex(
-    index: number
+    index: number,
+    layoutScope: string = DEFAULT_LAYOUT_SCOPE
   ): { layout: LayoutResult; paraStart: number; paraEnd: number } | undefined {
+    const scope = layoutScope || DEFAULT_LAYOUT_SCOPE
+    const prefix = `${scope}|p:`
     for (const [key, layout] of this.lastLayouts) {
-      const match = /^p:(\d+)-(\d+)$/.exec(key)
-      if (!match) continue
-      const paraStart = Number(match[1])
-      const paraEnd = Number(match[2])
+      if (!key.startsWith(prefix)) continue
+      const paraMatch = /\|p:(\d+)-(\d+)$/.exec(key)
+      if (!paraMatch) continue
+      const paraStart = Number(paraMatch[1])
+      const paraEnd = Number(paraMatch[2])
       if (index >= paraStart && index <= paraEnd) {
         return { layout, paraStart, paraEnd }
       }
@@ -78,8 +115,12 @@ export class LayoutHostAdapter {
     return undefined
   }
 
-  visualNeighbor(logicalIndex: number, delta: 1 | -1): number | null {
-    const found = this.findLayoutByElementIndex(logicalIndex)
+  visualNeighbor(
+    logicalIndex: number,
+    delta: 1 | -1,
+    layoutScope: string = DEFAULT_LAYOUT_SCOPE
+  ): number | null {
+    const found = this.findLayoutByElementIndex(logicalIndex, layoutScope)
     if (!found) return null
     return this.hitTest.visualNeighbor(
       found.layout,
@@ -126,7 +167,8 @@ export class LayoutHostAdapter {
     paragraph: ParagraphSpan,
     elementList: IElement[],
     availableWidth: number,
-    startRowIndex: number
+    startRowIndex: number,
+    layoutScope: string = DEFAULT_LAYOUT_SCOPE
   ): IRow[] | null {
     if (!this.engine || !paragraph.spans.length) return null
     const options = this.getOptions()
@@ -142,7 +184,7 @@ export class LayoutHostAdapter {
     const align = resolveAlign(paragraph.rowFlex, paragraph.direction)
     const wordBreak =
       options.wordBreak === WordBreak.BREAK_ALL ? 'break-all' : 'break-word'
-    // 须含 bold/italic/color 等，否则切换样式会命中旧字形缓存
+    // 须含 bold/italic/color/object 尺寸等，否则改样式或缩放图片/公式会命中旧缓存（行高不更新重叠）
     const cacheKey = [
       paragraph.text,
       paragraph.direction,
@@ -161,6 +203,9 @@ export class LayoutHostAdapter {
             st.italic ? 1 : 0,
             st.color || '',
             st.letterSpacing || 0,
+            st.scriptShift || '',
+            st.objectWidth ?? '',
+            st.objectHeight ?? '',
             s.text.length
           ].join(':')
         })
@@ -179,7 +224,10 @@ export class LayoutHostAdapter {
       })
       this.cache.set(cacheKey, layout)
     }
-    this.lastLayouts.set(`p:${paragraph.startIndex}-${paragraph.endIndex}`, layout)
+    this.lastLayouts.set(
+      layoutLastKey(layoutScope, paragraph.startIndex, paragraph.endIndex),
+      layout
+    )
     return mapLayoutToRows({
       layout,
       elementList,
@@ -197,9 +245,93 @@ export class LayoutHostAdapter {
       defaultFont: options.defaultFont,
       defaultSize: options.defaultSize,
       defaultColor: options.defaultColor,
+      defaultHyperlinkColor: options.defaultHyperlinkColor,
+      defaultLabelColor: options.label.defaultColor,
       fonts: options.fonts,
-      scale: options.scale
+      scale: options.scale,
+      checkboxWidth: options.checkbox.width,
+      checkboxGap: options.checkbox.gap,
+      radioWidth: options.radio.width,
+      radioGap: options.radio.gap
     })
+  }
+
+  /**
+   * Layout a plain string (watermark / chrome) with BiDi + script fonts.
+   * Returns null when the engine is not ready.
+   */
+  layoutPlainText(params: {
+    text: string
+    fontFamily: string
+    fontSize: number
+    color: string
+    availableWidth?: number
+  }): LayoutResult | null {
+    if (!this.engine || !params.text) return null
+    const spans = this.buildPlainTextSpans(
+      params.text,
+      params.fontFamily,
+      params.fontSize,
+      params.color
+    )
+    if (!spans.length) return null
+    // 水印/页码等画在文本区：按文种 AUTO 探测，不跟 LTR/RTL 模式走
+    // （模式切换不得改变画布绘制结果）
+    const direction = resolveDirection(
+      TextDirection.AUTO,
+      params.text,
+      TextDirection.LTR
+    )
+    const lineHeight = params.fontSize * 1.5
+    return this.engine.layoutParagraph({
+      spans,
+      availableWidth: params.availableWidth ?? 1e9,
+      direction,
+      align: 'left',
+      lineHeight,
+      lineHeightFactor: 1.5,
+      wordBreak: 'break-word'
+    })
+  }
+
+  /** Split plain text by script → registered face (same as ElementBridge). */
+  private buildPlainTextSpans(
+    text: string,
+    fontFamily: string,
+    fontSize: number,
+    color: string
+  ): TextSpan[] {
+    const { fonts } = this.getOptions()
+    const spans: TextSpan[] = []
+    for (let i = 0; i < text.length; ) {
+      const cp = text.codePointAt(i)!
+      const len = cp > 0xffff ? 2 : 1
+      const ch = text.slice(i, i + len)
+      const family = resolveFontForScript(
+        detectScript(ch),
+        fonts,
+        fontFamily
+      )
+      const last = spans[spans.length - 1]
+      const indices = new Array(len).fill(i)
+      if (last && last.style.fontFamily === family) {
+        last.text += ch
+        last.logicalIndices = (last.logicalIndices || []).concat(indices)
+      } else {
+        spans.push({
+          logicalIndex: i,
+          logicalIndices: indices,
+          text: ch,
+          style: {
+            fontFamily: family,
+            fontSize,
+            color
+          }
+        })
+      }
+      i += len
+    }
+    return spans
   }
 
   resolveElementDirection(
@@ -227,7 +359,8 @@ export class LayoutHostAdapter {
       elementList[start]?.direction ||
       elementList[index]?.direction ||
       options.defaultDirection
-    return resolveDirection(declared, text, 'ltr')
+    // 存量正文：不用 UI direction 作回退
+    return resolveDirection(declared ?? TextDirection.AUTO, text, 'ltr')
   }
 
   invalidate() {

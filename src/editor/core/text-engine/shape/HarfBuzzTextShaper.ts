@@ -15,6 +15,9 @@ export class HarfBuzzTextShaper implements ITextShaper {
   constructor(private fontManager: FontManager) {}
 
   shape(run: StyleRun): ShapedGlyph[] {
+    if (run.style.objectWidth != null) {
+      return this.browser.shape(run)
+    }
     const fontInst = this.fontManager.getFont(run.style)
     if (!fontInst || !run.text.length) {
       return this.browser.shape(run)

@@ -1,4 +1,4 @@
-import { commentList, data, options } from './mock'
+import { commentList, data, footer, header, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
 import Editor, {
@@ -37,28 +37,9 @@ window.onload = function () {
   const instance = new Editor(
     container,
     {
-      header: [
-        {
-          value: 'canvas-editor',
-          size: 22,
-          rowFlex: RowFlex.CENTER
-        },
-        {
-          // 与正文第 2 点对照：同文同 direction/rowFlex，应对齐一致
-          value:
-            '\n2. RTL：مرحبا بالعالم — النص من اليمين إلى اليسار.',
-          size: 16,
-          direction: TextDirection.RTL,
-          rowFlex: RowFlex.START
-        }
-      ],
+      header: <IElement[]>header,
       main: <IElement[]>data,
-      footer: [
-        {
-          value: 'canvas-editor',
-          size: 12
-        }
-      ]
+      footer: <IElement[]>footer
     },
     options
   )
@@ -337,6 +318,43 @@ window.onload = function () {
         : TextDirection.RTL
     console.log('direction', next)
     instance.command.executeDirection(next)
+  }
+
+  const appDom = document.querySelector<HTMLDivElement>('#app')!
+  const menuDom = document.querySelector<HTMLDivElement>('.menu')!
+  const footerDom = document.querySelector<HTMLDivElement>('.footer')!
+  const uiDirectionDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__ui-direction'
+  )!
+  /** LTR/RTL 模式：只镜像顶栏/底栏；#app 仅打 class，避免目录/批注继承 dir=rtl 导致中文标点乱序 */
+  const syncUiDirectionChrome = () => {
+    const opts = instance.command.getOptions()
+    const isUiRtl = opts.direction === TextDirection.RTL
+    const dir = isUiRtl ? 'rtl' : 'ltr'
+    const showToggle = opts.uiDirectionToggle !== false
+    uiDirectionDom.hidden = !showToggle
+    uiDirectionDom.classList.toggle('is-rtl', isUiRtl)
+    uiDirectionDom.classList.toggle('active', isUiRtl)
+    uiDirectionDom.title = isUiRtl
+      ? 'RTL 模式（仅 UI），点击切换为 LTR；新建段默认 RTL'
+      : 'LTR 模式（仅 UI），点击切换为 RTL；新建段默认 LTR'
+    appDom.removeAttribute('dir')
+    menuDom.setAttribute('dir', dir)
+    footerDom.setAttribute('dir', dir)
+    appDom.classList.toggle('ui-rtl', isUiRtl)
+    menuDom.classList.toggle('ui-rtl', isUiRtl)
+    footerDom.classList.toggle('ui-rtl', isUiRtl)
+  }
+  syncUiDirectionChrome()
+  uiDirectionDom.onclick = function () {
+    if (uiDirectionDom.hidden) return
+    const next =
+      instance.command.getOptions().direction === TextDirection.RTL
+        ? TextDirection.LTR
+        : TextDirection.RTL
+    console.log('uiDirection', next)
+    instance.command.executeUiDirection(next)
+    syncUiDirectionChrome()
   }
 
   const rowMarginDom = document.querySelector<HTMLDivElement>(

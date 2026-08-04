@@ -896,6 +896,8 @@ Usage:
 
 ```javascript
 instance.command.executeSetMainBadge(payload: IBadge | null)
+// IBadge: { top?, left?, right?, width, height, value }
+// right >= 0 anchors to the page right edge and overrides left
 ```
 
 ## executeSetAreaBadge
@@ -1048,6 +1050,16 @@ Usage:
 
 ```javascript
 instance.command.executeUpdateOptions(payload: IUpdateOption)
+```
+
+## executeUiDirection
+
+Feature: Set LTR/RTL mode (`options.direction`). Affects editor UI chrome only, plus the default `element.direction` for newly created lines/tables. Does not participate in existing content layout, paint, or hit-testing; toggling does not reflow the text area. Separate from paragraph `executeDirection`.
+
+Usage:
+
+```javascript
+instance.command.executeUiDirection(payload: 'ltr' | 'rtl')
 ```
 
 ## executeInsertTitle

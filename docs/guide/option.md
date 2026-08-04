@@ -63,7 +63,9 @@ interface IEditorOption {
   pageOuterSelectionDisable?: boolean // 鼠标移出页面时选区禁用。默认：false
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
   textEngine?: 'legacy' | 'harfbuzz' // 文本排版引擎。默认：legacy；harfbuzz 启用独立 text-engine（需配置 fonts）
-  defaultDirection?: 'ltr' | 'rtl' | 'auto' // 默认段落方向。默认：ltr
+  direction?: 'ltr' | 'rtl' // LTR/RTL 模式：仅编辑器 UI 组件方向；新建行/表写入默认 element.direction；不参与光标碰撞与正文绘制；切换不重排文本区。默认：ltr。命令：executeUiDirection
+  uiDirectionToggle?: boolean // 是否展示 LTR/RTL 模式切换控件（宿主工具栏读取）。默认：true；false 时隐藏
+  defaultDirection?: 'ltr' | 'rtl' | 'auto' // 默认段落方向（内容）。默认：auto
   caretMovement?: 'visual' | 'logical' // 方向键光标移动语义。默认：visual
   fonts?: { family: string; data?: ArrayBuffer | null; url?: string | null; weight?: number; style?: 'normal' | 'italic' }[] // HarfBuzz 字体注册
   watermark?: IWatermark // 水印配置
@@ -357,7 +359,8 @@ interface IPageBorderOption {
 ```typescript
 interface IBadgeOption {
   top?: number // 距离顶部距离。默认：0
-  left?: number // 距离左侧距离。默认：0
+  left?: number // 距离左侧距离。默认：5
+  right?: number // 距离右侧距离；>=0 时优先于 left。默认：-1（未启用）
 }
 ```
 

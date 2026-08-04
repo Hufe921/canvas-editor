@@ -84,4 +84,11 @@ export interface IComputeRowListPayload {
   isPagingMode?: boolean
   pageHeight?: number
   surroundElementList?: IElement[]
+  /** Force legacy compute (used when embedding TABLE/IMAGE rows into text-engine) */
+  forceLegacy?: boolean
+  /**
+   * Isolate lastLayouts for main / header / footer / td:{id}.
+   * Default `main`.
+   */
+  layoutScope?: string
 }

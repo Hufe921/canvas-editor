@@ -39,8 +39,11 @@ export class GlyphRenderer {
     baselineY: number,
     paragraphText?: string
   ) {
+    // Checkbox/radio slots: Particle draws the widget
+    if (glyph.style.objectWidth != null) return
     const x = originX + glyph.left + glyph.dx
-    const y = baselineY - glyph.dy
+    // dy：字形内偏移；baselineShift：上下标相对行基线（与 LTR/RTL 无关）
+    const y = baselineY + (glyph.baselineShift || 0) - glyph.dy
     ctx.save()
     ctx.fillStyle = glyph.style.color || '#000'
     if (glyph.pathData) {
@@ -66,12 +69,17 @@ export class GlyphRenderer {
     type Seg = { glyphs: ShapedGlyph[]; complex: boolean }
     const segs: Seg[] = []
     for (const g of line.glyphs) {
+      if (g.style.objectWidth != null) {
+        segs.push({ glyphs: [g], complex: false })
+        continue
+      }
       const slice = paragraphText.slice(g.charStart, g.charEnd)
       const complex = containsShapingScript(slice)
       const last = segs[segs.length - 1]
       // 与阿语相同：复杂文种分组忽略颜色，避免拆段后 fillText 子串破坏连写
       const same =
         last &&
+        last.glyphs[0].style.objectWidth == null &&
         last.complex === complex &&
         this.sameShapeStyle(last.glyphs[0], g) &&
         (complex || last.glyphs[0].style.color === g.style.color)
@@ -98,18 +106,20 @@ export class GlyphRenderer {
             (g.style.color || '#000') !== (seg.glyphs[0].style.color || '#000')
         )
         const paintStyle = logical[0].style
+        const paintY =
+          baselineY + (seg.glyphs[0].baselineShift || 0)
         if (mixedColor) {
           this.fillJoinedMulticolor(
             ctx,
             text,
             seg.glyphs,
             originX,
-            baselineY,
+            paintY,
             paintLeft,
             paintStyle
           )
         } else {
-          this.fillRaw(ctx, text, paintStyle, originX + paintLeft, baselineY)
+          this.fillRaw(ctx, text, paintStyle, originX + paintLeft, paintY)
         }
       } else {
         for (const g of seg.glyphs) {
@@ -184,13 +194,14 @@ export class GlyphRenderer {
     return ranges
   }
 
-  /** 影响连写/度量的样式（不含 color） */
+  /** 影响连写/度量的样式（不含 color；上下标必须拆段） */
   private sameShapeStyle(a: ShapedGlyph, b: ShapedGlyph): boolean {
     return (
       a.style.fontFamily === b.style.fontFamily &&
       a.style.fontSize === b.style.fontSize &&
       !!a.style.bold === !!b.style.bold &&
-      !!a.style.italic === !!b.style.italic
+      !!a.style.italic === !!b.style.italic &&
+      (a.style.scriptShift || '') === (b.style.scriptShift || '')
     )
   }
 
@@ -210,6 +221,11 @@ export class GlyphRenderer {
     this.fillRaw(ctx, text, glyph.style, x, y)
   }
 
+  /** 去掉 BiDi 隔离符，避免跨行控件半截 LRI/PDI 被 fillText 画乱 */
+  private stripBidiIsolates(text: string): string {
+    return text.replace(/[\u2066-\u2069]/g, '')
+  }
+
   private fillRaw(
     ctx: CanvasRenderingContext2D,
     text: string,
@@ -217,6 +233,8 @@ export class GlyphRenderer {
     x: number,
     y: number
   ) {
+    const paint = this.stripBidiIsolates(text)
+    if (!paint) return
     ctx.save()
     ctx.font = `${style.italic ? 'italic ' : ''}${
       style.bold ? 'bold ' : ''
@@ -224,7 +242,7 @@ export class GlyphRenderer {
     ctx.fillStyle = style.color || '#000'
     ctx.textAlign = 'left'
     ctx.textBaseline = 'alphabetic'
-    ctx.fillText(text, x, y)
+    ctx.fillText(paint, x, y)
     ctx.restore()
   }
 }

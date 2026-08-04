@@ -540,7 +540,7 @@ export class SelectControl implements IControlInstance {
       ul.append(li)
     }
     selectPopupContainer.append(ul)
-    // 定位
+    // 定位（物理 left，不受 UI 模式 dir 影响）
     const {
       coordinate: {
         leftTop: [left, top]
@@ -550,6 +550,10 @@ export class SelectControl implements IControlInstance {
     const preY = this.control.getPreY()
     selectPopupContainer.style.left = `${left}px`
     selectPopupContainer.style.top = `${top + preY + lineHeight}px`
+    // 弹层自身跟随 LTR/RTL 模式；勿依赖画布容器 dir
+    const uiDir =
+      this.control.getDraw().getOptions().direction === 'rtl' ? 'rtl' : 'ltr'
+    selectPopupContainer.setAttribute('dir', uiDir)
     // 追加至container
     const container = this.control.getContainer()
     container.append(selectPopupContainer)

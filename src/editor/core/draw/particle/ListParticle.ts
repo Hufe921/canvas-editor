@@ -413,10 +413,10 @@ export class ListParticle {
     const indentWidth = startElement.listLevel
       ? this.LIST_INDENT_WIDTH * startElement.listLevel * scale
       : 0
-    // RTL paragraphs: place list marker on the right of the content box
+    // RTL：ZERO 已在内容右缘，标记画在其右侧 gutter；勿再 +row.width/+offsetX
     const isRtl = row.direction === 'rtl'
     const x = isRtl
-      ? startX + (row.width || 0) + (offsetX || 0) - indentWidth - tabWidth
+      ? startX - indentWidth - tabWidth
       : startX - offsetX! + indentWidth + tabWidth
     const y = startY + ascent
     // 复选框样式特殊处理

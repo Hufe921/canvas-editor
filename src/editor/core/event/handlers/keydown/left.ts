@@ -10,6 +10,7 @@ import {
   getNonHideElementIndex
 } from '../../../../utils/element'
 import { isApple } from '../../../../utils/ua'
+import { resolveLayoutScope } from '../../../text-engine-host/LayoutHostAdapter'
 import { CanvasEvent } from '../../CanvasEvent'
 
 function tryVisualMove(
@@ -21,7 +22,13 @@ function tryVisualMove(
   if (options.caretMovement === CaretMovement.LOGICAL) return null
   const adapter = draw.getLayoutHostAdapter()
   if (!adapter.isReady()) return null
-  return adapter.visualNeighbor(logicalIndex, delta)
+  const positionContext = draw.getPosition().getPositionContext()
+  const layoutScope = resolveLayoutScope({
+    zone: draw.getZone().getZone(),
+    isTable: positionContext.isTable,
+    tdId: positionContext.tdId
+  })
+  return adapter.visualNeighbor(logicalIndex, delta, layoutScope)
 }
 
 export function left(evt: KeyboardEvent, host: CanvasEvent) {

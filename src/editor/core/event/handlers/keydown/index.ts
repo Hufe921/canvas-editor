@@ -19,8 +19,11 @@ export function keydown(evt: KeyboardEvent, host: CanvasEvent) {
   // 键盘事件逻辑分发
   if (evt.key === KeyMap.Backspace) {
     backspace(evt, host)
+    // 阻止浏览器再派发 beforeinput 删除，避免控件整删后再多删前一字符（如句号）
+    evt.preventDefault()
   } else if (evt.key === KeyMap.Delete) {
     del(evt, host)
+    evt.preventDefault()
   } else if (evt.key === KeyMap.Enter) {
     enter(evt, host)
   } else if (evt.key === KeyMap.Left) {

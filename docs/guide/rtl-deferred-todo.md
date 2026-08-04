@@ -23,7 +23,7 @@
 
 ## 本期范围摘要
 
-正文段落双向混排、HarfBuzz 整形、独立 `text-engine` + host 适配、模拟光标双 DOM、逻辑删除、富文本装饰/列表镜像、start/end 对齐与 surround（P1–P4）。表格/页眉页脚接线、增量历史、字形 atlas 等见下方延期项。
+正文段落双向混排、HarfBuzz 整形、独立 `text-engine` + host 适配、模拟光标双 DOM、逻辑删除、富文本装饰/列表镜像、start/end 对齐与 surround（P1–P4）。表格/页眉页脚接线、增量历史、字形 atlas，以及正文路径上尚未收口的 DATE/LABEL、段内控件、环绕图/分栏混排等见下方延期项。
 
 ## 延期项总表
 
@@ -31,22 +31,24 @@
 
 ### P1
 
-- [ ] [DEFER-001](#defer-001) 表格单元格内文本走 text-engine（P5）
-- [ ] [DEFER-004](#defer-004) Header/Footer zone 文本验收与接线（P5）
+- [x] [DEFER-001](#defer-001) 表格单元格内文本走 text-engine（P5）
+- [x] [DEFER-004](#defer-004) Header/Footer zone 文本验收与接线（P5）
 - [ ] [DEFER-009](#defer-009) 命令式增量 History + 合并 + 快照压缩（P7）
 - [ ] [DEFER-010](#defer-010) 字形 atlas / 脏段缓存 / 大文档性能（P6）
 
 ### P2
 
-- [ ] [DEFER-002](#defer-002) Table 列几何 / 边框 / 斜线 RTL 镜像评估（P5+）
-- [ ] [DEFER-003](#defer-003) TableTool 拖拽与 `style.left`（P5+）
-- [ ] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor`（P5）
+- [x] [DEFER-002](#defer-002) Table 列几何 / 边框 / 斜线 RTL 镜像评估（P5+）
+- [x] [DEFER-003](#defer-003) TableTool 拖拽与 `style.left`（P5+）
+- [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor`（P5）
 - [ ] [DEFER-006](#defer-006) 复杂 Control 内部 flex / ControlIndentation
 - [ ] [DEFER-007](#defer-007) ControlSearch / 嵌套控件 RTL
 - [ ] [DEFER-016](#defer-016) 去掉 legacy 路径与 `mapToLegacyRow`
-- [ ] [DEFER-018](#defer-018) Accessibility 与 RTL 阅读顺序
-- [ ] [DEFER-019](#defer-019) HTML/剪贴板 `dir` 往返完整保真
-- [ ] [DEFER-021](#defer-021) 移动端/`beforeinput` 删除主路径兼容
+- [x] [DEFER-018](#defer-018) Accessibility 与 RTL 阅读顺序
+- [x] [DEFER-019](#defer-019) HTML/剪贴板 `dir` 往返完整保真
+- [x] [DEFER-021](#defer-021) 移动端/`beforeinput` 删除主路径兼容
+- [x] [DEFER-023](#defer-023) DATE / LABEL 与 GlyphRenderer 对齐（同超链接修复模式）
+- [x] [DEFER-024](#defer-024) 段内 Control/Checkbox/Radio 等非文本嵌入与 positionList 同步
 
 ### P3
 
@@ -59,6 +61,7 @@
 - [ ] [DEFER-017](#defer-017) 协同 OT/CRDT（若产品需要）
 - [ ] [DEFER-020](#defer-020) 打印 iframe 内嵌 Block 与 RTL 页边
 - [ ] [DEFER-022](#defer-022) 视觉邻接删除模式
+- [ ] [DEFER-025](#defer-025) 环绕图 / 分栏与 text-engine 混排专项验收
 
 ## 与路线图映射
 
@@ -67,7 +70,7 @@
 | P5 | 001, 002, 003, 004, 005, 008 |
 | P6 | 010 |
 | P7 | 009 |
-| 专项 | 006, 007, 011–022 |
+| 专项 | 006, 007, 011–025 |
 
 ---
 
@@ -75,43 +78,43 @@
 
 ### DEFER-001
 
-- Status: pending
+- Status: done
 - Priority: P1
 - Depends: P2 LayoutHostAdapter 稳定
 - Area: table
-- Notes: 单元格**内容**复用 text-engine Adapter；表框几何可仍 LTR。验收：td 内阿语混排与光标。
+- Notes: 单元格**内容**复用 text-engine Adapter（`layoutScope: td:{id}`）；表框仍 `forceLegacy`。验收：td 内阿语混排与光标。DEFER-009/010 仍 pending。
 
 ### DEFER-002
 
-- Status: pending
+- Status: done
 - Priority: P2
-- Depends: DEFER-001；产品决策「是否镜像整表」
+- Depends: DEFER-001；产品决策「是否镜像整表」→ **镜像整表**
 - Area: table
-- Notes: 列从左累加、边框/斜线是否随文档方向镜像。
+- Notes: 仅表 `element.direction===rtl` 时 `computeRowColInfo` 翻 `td.x`；`colIndex` 逻辑序不变。LTR/RTL 模式不参与。见 `isTableMirrored`。
 
 ### DEFER-003
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: DEFER-002
 - Area: table
-- Notes: TableTool `style.left`、列宽拖拽与 RTL 坐标。
+- Notes: TableTool 行工具/全选锚 start 侧、加列 end 侧；overflow 起始边与 dx 随镜像适配。
 
 ### DEFER-004
 
-- Status: pending
+- Status: done
 - Priority: P1
 - Depends: P2/P3 正文引擎
 - Area: zone
-- Notes: Header/Footer 与正文同一引擎接线与验收。
+- Notes: Header/Footer/`main` 经 `layoutScope` 隔离 `lastLayouts`；左右键按 zone/td 查 `visualNeighbor`。
 
 ### DEFER-005
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: —
 - Area: frame
-- Notes: Badge 目前仅 `left`；增加 `right` 或 `horizontalAnchor`，避免阿语文档签章贴左。
+- Notes: `IBadge` / `IBadgeOption` 增加物理 `right`（>=0 优先于 left；默认 -1 未启用）。未引入 `horizontalAnchor`。
 
 ### DEFER-006
 
@@ -191,7 +194,7 @@
 - Priority: P3
 - Depends: P3 段级镜像（若未做完）
 - Area: frame
-- Notes: LineNumber / PageNumber 默认侧或 rowFlex 随文档方向。
+- Notes: LineNumber / PageNumber 默认侧或 rowFlex 随文档方向。页码**绘制**已走 `drawPlainText`（混排/连写）；本条仅剩物理侧/对齐镜像。
 
 ### DEFER-016
 
@@ -199,7 +202,7 @@
 - Priority: P2
 - Depends: harfbuzz 路径稳定、回归绿
 - Area: architecture
-- Notes: 删除 `textEngine: legacy` 与 `mapToLegacyRow`，降低双路径成本。
+- Notes: 删除 `textEngine: legacy` 与 `mapToLegacyRow`，降低双路径成本。过渡期正文旁 TABLE/IMAGE 已用 `forceLegacy` 插行，彻底拆除前须保证混排回归绿。
 
 ### DEFER-017
 
@@ -211,19 +214,19 @@
 
 ### DEFER-018
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: P3 视觉序稳定
 - Area: a11y
-- Notes: Accessibility 模块与 RTL 阅读/朗读顺序。
+- Notes: live region 设 `dir`（段方向 → defaultDirection → UI `options.direction`）；播报仍逻辑序。
 
 ### DEFER-019
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: P1 direction 字段
 - Area: clipboard
-- Notes: HTML/剪贴板 `dir` 往返边界用例完整保真。
+- Notes: 导出按 `element.direction` 写 `dir`；导入读 `dir`/`style.direction`。与 UI `options.direction` 分离。
 
 ### DEFER-020
 
@@ -235,11 +238,11 @@
 
 ### DEFER-021
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: 移动端实测 keydown 不足时
 - Area: input
-- Notes: 本期以 keydown Backspace/Delete 为准；若仅 `beforeinput` 可达则补适配。
+- Notes: `CursorAgent` `beforeinput` `deleteContentBackward/Forward` → 现有 keydown 删除；防双删。
 
 ### DEFER-022
 
@@ -248,3 +251,27 @@
 - Depends: 产品要求
 - Area: input
 - Notes: 默认逻辑删除；若要求 Delete 跟视觉邻接，另开模式开关。
+
+### DEFER-023
+
+- Status: done
+- Priority: P2
+- Depends: 正文 GlyphRenderer / 超链接修复模式
+- Area: draw
+- Notes: DATE/LABEL 引擎行跳过文字 Particle，GlyphRenderer 绘制；LABEL 保留 `renderBackground`；Bridge/`_syncEngineLineStyles`/`ensureDefaults` 同步 label 色。padding 与 legacy 完全对齐另开 follow-up。
+
+### DEFER-024
+
+- Status: done
+- Priority: P2
+- Depends: ElementBridge 段扫描；与 DEFER-006 相关但范围不同
+- Area: control
+- Notes: CHECKBOX/RADIO 以 `\uFFFC` + `objectWidth` 插槽进引擎；CONTROL 文本 chrome 作 text-like；GlyphRenderer 跳过 object；Particle 仍绘控件。
+
+### DEFER-025
+
+- Status: pending
+- Priority: P3
+- Depends: 正文旁 IMAGE/TABLE `forceLegacy` 插行已落地
+- Area: layout
+- Notes: 环绕图（SURROUND/FLOAT_*）、多栏与 text-engine 混排仅有基础插行，未做专项几何/可用宽度/分页验收。需覆盖：环绕占位与引擎 `availableWidth`、分栏切换后引擎行 `columnIndex`、浮动图命中与重排。

@@ -5,8 +5,10 @@ import {
   EDITOR_ROW_ATTR
 } from '../../../../dataset/constant/Element'
 import { ControlComponent } from '../../../../dataset/enum/Control'
+import { TextDirection } from '../../../../dataset/enum/TextDirection'
 import { IElement } from '../../../../interface/Element'
 import { getUUID, omitObject } from '../../../../utils'
+import { resolveNewContentDirection } from '../../../../utils/direction'
 import { formatElementContext } from '../../../../utils/element'
 import { CanvasEvent } from '../../CanvasEvent'
 
@@ -125,6 +127,15 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
           enterText[attr] = value
         }
       })
+    }
+  }
+  // 无继承方向时，用当前 LTR/RTL 模式作为新行默认值（落盘，不回写旧段）。
+  // 列表换行勿写入：与无 direction 的兄弟在 zip 时 attrs 不一致会拆断项合并（trailing \n）。
+  // LTR 为默认，也不必落盘，避免同样破坏普通段落文本合并。
+  if (enterText.direction === undefined && !enterText.listId) {
+    const nextDir = resolveNewContentDirection(draw.getOptions())
+    if (nextDir === TextDirection.RTL) {
+      enterText.direction = nextDir
     }
   }
   inheritListLevel(elementList, enterText, listAnchorIndex)

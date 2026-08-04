@@ -56,7 +56,7 @@ direction?: TextDirection // 'ltr' | 'rtl' | 'auto'
 同步：
 
 - `EDITOR_ROW_ATTR` / `EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR` / `EDITOR_ELEMENT_ZIP_ATTR`
-- `IEditorOption.defaultDirection`（默认 `ltr`）
+- `IEditorOption.defaultDirection`（默认 `auto`）
 - `IEditorOption.textEngine?: 'legacy' | 'harfbuzz'`
 - `IEditorOption.fonts` / `caretMovement?: 'visual' | 'logical'`
 - `IRow.direction?: 'ltr' | 'rtl'`（派生）
@@ -261,19 +261,23 @@ logicalIndex (+ hitLineStart?)
 
 ### A — 本期
 
-`ctx.direction`；`AbstractRichText` + Underline/Strikeout/Highlight；Trace；Group；ControlBorder；Hyperlink/Sub/Superscript/Label；Float surround；DATE 分段 complete。
+`ctx.direction`；`AbstractRichText` + Underline/Strikeout/Highlight；Trace；Group；ControlBorder；Hyperlink/Sub/Superscript（引擎行走 GlyphRenderer）；Float surround 基础路径；DATE 分段 complete。
 
 ### B — 与 P3 一并
 
-ListParticle 缩进与符号侧；LineBreak；Placeholder；可选 LineNumber/PageNumber（未做完记 [DEFER-015](./rtl-deferred-todo.md#defer-015)）。
+ListParticle 缩进与符号侧；LineBreak；Placeholder；LineNumber / PageNumber **侧边镜像**（未做完记 [DEFER-015](./rtl-deferred-todo.md#defer-015)）。
 
 ### C — 通常不动
 
-Watermark、Background、Margin、PageBorder、Graffiti、Magnifier、Ruler、Search 单格高亮、Print。
+Background、Margin、PageBorder、Graffiti、Magnifier、Ruler、Search 单格高亮、Print。
+
+纯文本 chrome（水印 / 页码格式串 / 分页提示 / 图注）：`textEngine=harfbuzz` 且引擎就绪时走 `layoutPlainText` + `GlyphRenderer`（BiDi 混排、按 `fonts[].scripts` 选脸、阿语连写）；未就绪时回退 `fillText`。共用 `drawPlainText` 辅助。
+
+**LTR/RTL 模式** `options.direction: 'ltr'|'rtl'`（默认 ltr）：仅编辑器 UI 组件方向（容器 `dir`、工具栏/底栏镜像）以及新建行/表写入的默认 `element.direction`；**不**参与存量正文方向解析、光标碰撞与文本区绘制；**切换不得**重排/重绘正文。表框镜像仅看表格自身 `direction`（新建表会带上当前模式）。与段落 `executeDirection` / `defaultDirection` 分离。命令 `executeUiDirection`。模式切换控件由 `uiDirectionToggle`（默认 true）控制是否展示。
 
 ### D — 延期
 
-见表格/控件等 [rtl-deferred-todo](./rtl-deferred-todo.md)。
+见表格/控件等 [rtl-deferred-todo](./rtl-deferred-todo.md)。正文路径收口缺口亦登记于此：DATE/LABEL 与 GlyphRenderer 对齐 [DEFER-023](./rtl-deferred-todo.md#defer-023)；段内 Control 等嵌入 [DEFER-024](./rtl-deferred-todo.md#defer-024)；环绕图/分栏混排验收 [DEFER-025](./rtl-deferred-todo.md#defer-025)。
 
 ### mergeVisualRects
 

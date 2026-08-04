@@ -7,6 +7,7 @@ import { IRow } from '../../../../interface/Row'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
 import { deepClone } from '../../../../utils'
+import { isTableMirrored } from '../../../../utils/direction'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 
@@ -733,6 +734,17 @@ export class TableParticle {
         // 一行中的最后td
         if (isLastRowTd && !isLastTd) {
           preX = 0
+        }
+      }
+    }
+    // UI/表 RTL：镜像列几何（colIndex 逻辑序不变，仅翻 td.x）
+    if (isTableMirrored(element, this.options)) {
+      const tableWidth = colgroup.reduce((sum, col) => sum + col.width, 0)
+      for (let t = 0; t < trList.length; t++) {
+        const tr = trList[t]
+        for (let d = 0; d < tr.tdList.length; d++) {
+          const td = tr.tdList[d]
+          td.x = tableWidth - (td.x || 0) - (td.width || 0)
         }
       }
     }

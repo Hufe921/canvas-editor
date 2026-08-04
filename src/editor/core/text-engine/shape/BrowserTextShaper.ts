@@ -2,6 +2,16 @@ import { containsShapingScript } from '../utils/scriptFont'
 import { ShapedGlyph, StyleRun } from '../types'
 import { ITextShaper } from './ITextShaper'
 
+/** Default-ignorable / bidi format: must not consume layout width */
+function isZeroAdvanceChar(cp: number): boolean {
+  return (
+    (cp >= 0x200b && cp <= 0x200d) || // ZWSP ZWNJ ZWJ
+    cp === 0xfeff ||
+    cp === 0x2060 ||
+    (cp >= 0x2066 && cp <= 0x2069) // LRI RLI FSI PDI
+  )
+}
+
 /**
  * Canvas measureText shaper.
  * Complex scripts use prefix widths on the full string so advances match joined fillText.
@@ -18,6 +28,27 @@ export class BrowserTextShaper implements ITextShaper {
   }
 
   shape(run: StyleRun): ShapedGlyph[] {
+    if (run.style.objectWidth != null && run.text.length) {
+      const charStart = run.textStart
+      const charEnd = run.textStart + run.text.length
+      return [
+        {
+          glyphId: 0,
+          cluster: 0,
+          ax: Math.max(0, run.style.objectWidth),
+          dx: 0,
+          dy: 0,
+          charStart,
+          charEnd,
+          logicalIndexStart: run.logicalIndexAt(charStart),
+          logicalIndexEnd: run.logicalIndexAt(Math.max(charStart, charEnd - 1)),
+          left: 0,
+          right: 0,
+          style: run.style,
+          bidiLevel: run.direction === 'rtl' ? 1 : 0
+        }
+      ]
+    }
     const ctx = this.getCtx()
     const font = `${run.style.italic ? 'italic ' : ''}${
       run.style.bold ? 'bold ' : ''
@@ -35,7 +66,12 @@ export class BrowserTextShaper implements ITextShaper {
       const charStart = run.textStart + i
       const charEnd = charStart + len
       let ax: number
-      if (ctx && joinWidths) {
+      if (isZeroAdvanceChar(cp)) {
+        ax = 0
+        if (ctx && joinWidths) {
+          prevWidth = ctx.measureText(run.text.slice(0, i + len)).width
+        }
+      } else if (ctx && joinWidths) {
         const prefixWidth = ctx.measureText(run.text.slice(0, i + len)).width
         ax = Math.max(0, prefixWidth - prevWidth) + letterSpacing
         prevWidth = prefixWidth

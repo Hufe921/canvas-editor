@@ -10,6 +10,7 @@ import {
   getNonHideElementIndex
 } from '../../../../utils/element'
 import { isApple } from '../../../../utils/ua'
+import { resolveLayoutScope } from '../../../text-engine-host/LayoutHostAdapter'
 import { CanvasEvent } from '../../CanvasEvent'
 
 export function right(evt: KeyboardEvent, host: CanvasEvent) {
@@ -47,7 +48,12 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
       options.caretMovement !== CaretMovement.LOGICAL &&
       adapter.isReady()
     ) {
-      const visualIndex = adapter.visualNeighbor(startIndex, 1)
+      const layoutScope = resolveLayoutScope({
+        zone: draw.getZone().getZone(),
+        isTable: positionContext.isTable,
+        tdId: positionContext.tdId
+      })
+      const visualIndex = adapter.visualNeighbor(startIndex, 1, layoutScope)
       if (visualIndex !== null) {
         rangeManager.setRange(visualIndex, visualIndex)
         draw.render({ curIndex: visualIndex, isSubmitHistory: false })

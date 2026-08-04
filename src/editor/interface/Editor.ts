@@ -99,7 +99,23 @@ export interface IEditorOption {
   wordBreak?: WordBreak
   /** Text layout engine: legacy measureText path or HarfBuzz */
   textEngine?: TextEngineMode
-  /** Default paragraph direction when element.direction is unset */
+  /**
+   * LTR/RTL mode for editor UI chrome only (toolbar/shell `dir`, host toggle).
+   * Also used as default `element.direction` when creating new lines/tables.
+   * Does not affect existing content layout, paint, or hit-testing.
+   * Default: ltr. Command: executeUiDirection
+   */
+  direction?: TextDirection.LTR | TextDirection.RTL
+  /**
+   * Whether host toolbar may show the LTR/RTL mode toggle.
+   * Default: true. Set false to hide the control (demo reads this flag).
+   */
+  uiDirectionToggle?: boolean
+  /**
+   * Default when resolving existing content without element.direction
+   * (AUTO detects from strong characters). Not the UI mode; not rewritten
+   * by executeUiDirection. Default: auto
+   */
   defaultDirection?: TextDirection
   /** Arrow-key caret movement semantics */
   caretMovement?: CaretMovement

@@ -11,6 +11,11 @@ import {
   TextScript,
   TitleLevel
 } from './editor'
+import {
+  arFooter,
+  arHeader,
+  buildArabicEmrElementList
+} from './mock-ar-emr'
 
 const text = `主诉：\n发热三天，咳嗽五天。\n现病史：\n患者于三天前无明显诱因，感冒后发现面部水肿，无皮疹，尿量减少，出现乏力，在外治疗无好转，现来我院就诊。\n既往史：\n有糖尿病10年，有高血压2年，有传染性疾病1年。报告其他既往疾病。\n流行病史：\n否认14天内接触过确诊患者、疑似患者、无症状感染者及其密切接触者；否认14天内去过以下场所：水产、肉类批发市场，农贸市场，集市，大型超市，夜市；否认14天内与以下场所工作人员密切接触：水产、肉类批发市场，农贸市场，集市，大型超市；否认14天内周围（如家庭、办公室）有2例以上聚集性发病；否认14天内接触过有发热或呼吸道症状的人员；否认14天内自身有发热或呼吸道症状；否认14天内接触过纳入隔离观察的人员及其他可能与新冠肺炎关联的情形；陪同家属无以上情况。\n体格检查：\nT：39.5℃，P：80bpm，R：20次/分，BP：120/80mmHg；\n辅助检查：\n2020年6月10日，普放：血细胞比容36.50%（偏低）40～50；单核细胞绝对值0.75*10/L（偏高）参考值：0.1～0.6；\n门诊诊断：处置治疗：电子签名：【】\n其他记录：`
 
@@ -521,7 +526,7 @@ elementList.push(
               {
                 conceptId: 'hypertensionLevel',
                 effects: {
-                  hide: false,
+                  // text-engine 下 hide 会留下「标签在、占位空白」；演示用 required 联动
                   required: true
                 }
               }
@@ -531,10 +536,12 @@ elementList.push(
       }
     },
     {
+      value: '，高血压分级：'
+    },
+    {
       type: ElementType.CONTROL,
       value: '',
       control: {
-        preText: '，高血压分级：',
         conceptId: 'hypertensionLevel',
         type: ControlType.SELECT,
         value: null,
@@ -542,7 +549,6 @@ elementList.push(
         placeholder: '分级',
         prefix: '{',
         postfix: '}',
-        hide: true,
         valueSets: [
           {
             value: 'Ⅰ级',
@@ -572,7 +578,6 @@ elementList.push(
       type: ElementType.CONTROL,
       value: '',
       control: {
-        postText: 'cm',
         conceptId: 'height',
         type: ControlType.NUMBER,
         value: null,
@@ -587,13 +592,15 @@ elementList.push(
       }
     },
     {
+      value: 'cm'
+    },
+    {
       value: '，体重：'
     },
     {
       type: ElementType.CONTROL,
       value: '',
       control: {
-        postText: 'kg',
         conceptId: 'weight',
         type: ControlType.NUMBER,
         value: null,
@@ -601,6 +608,9 @@ elementList.push(
         prefix: '{',
         postfix: '}'
       }
+    },
+    {
+      value: 'kg'
     },
     {
       value: '，BMI：'
@@ -625,7 +635,7 @@ elementList.push(
               {
                 conceptId: 'obesityTip',
                 effects: {
-                  hide: false,
+                  // 同上：演示用 required，避免 hide 在 text-engine 留下空白占位
                   required: true
                 }
               }
@@ -635,17 +645,18 @@ elementList.push(
       }
     },
     {
+      value: '，肥胖干预建议：'
+    },
+    {
       type: ElementType.CONTROL,
       value: '',
       control: {
-        preText: '，肥胖干预建议：',
         conceptId: 'obesityTip',
         type: ControlType.TEXT,
         value: null,
         placeholder: '干预建议',
         prefix: '{',
-        postfix: '}',
-        hide: true
+        postfix: '}'
       }
     }
   ])
@@ -676,117 +687,89 @@ elementList.push(
   ]
 )
 
-/** 原门诊病历 mock（含控件/表格等，会回退 legacy） */
-export const emrData: IElement[] = elementList
+/** 中文官网门诊病历正文（含文末 EOF） */
+export const zhData: IElement[] = elementList
+
+/** 拼接用：去掉文末 EOF，避免中阿两段中间出现结束标记 */
+function stripTrailingEof(list: IElement[]): IElement[] {
+  const out = [...list]
+  while (out.length) {
+    const last = out[out.length - 1]
+    if (
+      last.type === ElementType.TAB ||
+      last.value === 'E' ||
+      last.value === 'O' ||
+      last.value === 'F' ||
+      (last.value === '\n' && !last.type)
+    ) {
+      out.pop()
+      continue
+    }
+    break
+  }
+  return out
+}
+
+const signatureEl = elementList.find(
+  el => el.type === ElementType.IMAGE && el.id === 'signature'
+)
+const signatureSrc = signatureEl?.value || ''
+
+/** 阿语完整病历正文（结构对齐中文，便于翻页对照） */
+export const arData: IElement[] = buildArabicEmrElementList(signatureSrc)
 
 /**
- * HarfBuzz / RTL 演示数据：纯文本，确保走 text-engine。
- * 恢复病历 demo：将下方 `data` 改回 `emrData`。
+ * 当前 demo：前半为简体中文病历，分页后接完整阿语 RTL 病历。
+ * 页眉/页脚保持中文官网样式；阿语段自带 direction=rtl。
  */
-export const rtlDemoData: IElement[] = [
+export const data: IElement[] = [
+  ...stripTrailingEof(zhData),
+  { value: '\n', type: ElementType.PAGE_BREAK },
   {
-    value: 'HarfBuzz / RTL 演示',
-    size: 22,
+    value: 'Arabic EMR (RTL) — السجل الطبي بالعربية',
+    size: 18,
     bold: true,
+    direction: TextDirection.LTR,
+    rowFlex: RowFlex.CENTER
+  },
+  { value: '\n', direction: TextDirection.LTR },
+  {
+    value: '以下页面为与上文结构一致的阿拉伯语对照病历，便于调试 RTL。',
+    size: 13,
+    color: '#666666',
+    direction: TextDirection.LTR,
+    rowFlex: RowFlex.CENTER
+  },
+  { value: '\n', direction: TextDirection.LTR },
+  ...arData
+]
+
+export const header: IElement[] = [
+  {
+    value: '第一人民医院',
+    size: 32,
     rowFlex: RowFlex.CENTER
   },
   {
-    value: '\n'
-  },
-  {
-    value:
-      '当前 options.textEngine = harfbuzz。正文为纯文本段落，可测方向、混排、光标与逻辑删除。',
-    size: 14,
-    color: '#666666',
-    direction: TextDirection.LTR
-  },
-  {
-    value: '\n',
-    direction: TextDirection.LTR
-  },
-  {
-    value: '1. LTR：Hello Canvas Editor — 从左到右。',
-    size: 16,
-    direction: TextDirection.LTR,
-    rowFlex: RowFlex.START
-  },
-  {
-    value: '\n',
-    direction: TextDirection.RTL
-  },
-  {
-    // 阿语字体会由 text-engine 按文种自动套用 options.fonts，勿整段强行 Noto（中文会 .notdef 重叠）
-    value: '2. RTL：مرحبا بالعالم — النص من اليمين إلى اليسار.',
+    value: '\n门诊病历',
     size: 18,
-    direction: TextDirection.RTL,
-    rowFlex: RowFlex.START
+    rowFlex: RowFlex.CENTER
   },
   {
     value: '\n',
-    direction: TextDirection.RTL
-  },
-  {
-    value: '3. 混排 RTL：Hello مرحبا World سلام 123 ABC',
-    size: 16,
-    direction: TextDirection.RTL,
-    rowFlex: RowFlex.START
-  },
-  {
-    value: '\n',
-    direction: TextDirection.AUTO
-  },
-  {
-    // AUTO 以首个强方向字符判定；勿把拉丁标签放在段首
-    value: 'هذا نص عربي مع English mixed content. （AUTO）',
-    size: 16,
-    direction: TextDirection.AUTO,
-    rowFlex: RowFlex.START
-  },
-  {
-    value: '\n',
-    direction: TextDirection.LTR
-  },
-  {
-    value: '5. 混排 LTR：English ثم العربية then back to Latin.',
-    size: 16,
-    direction: TextDirection.LTR,
-    rowFlex: RowFlex.START
-  },
-  {
-    value: '\n',
-    direction: TextDirection.RTL
-  },
-  {
-    value: '6. RTL + end 对齐：سلام — rowFlex end',
-    size: 16,
-    direction: TextDirection.RTL,
-    rowFlex: RowFlex.END
-  },
-  {
-    value: '\n',
-    direction: TextDirection.LTR
-  },
-  {
-    // 需在 options.fonts 中注册对应 scripts 字体后才会 OT 塑形
-    value: '7. Indic：नमस्ते (Devanagari) / สวัสดี (Thai)',
-    size: 16,
-    direction: TextDirection.LTR,
-    rowFlex: RowFlex.START
-  },
-  {
-    value: '\n',
-    direction: TextDirection.LTR
-  },
-  {
-    value:
-      '提示：连字依赖 options.fonts[].scripts + HarfBuzz。工具栏方向按钮可切换 LTR/RTL；左右为物理对齐（left/right）。',
-    size: 13,
-    color: '#888888',
-    direction: TextDirection.LTR
+    type: ElementType.SEPARATOR
   }
 ]
 
-export const data: IElement[] = rtlDemoData
+export const footer: IElement[] = [
+  {
+    value: 'canvas-editor',
+    size: 12
+  }
+]
+
+// 可选：阿语页眉/页脚（不默认使用）
+export { arHeader, arFooter }
 
 interface IComment {
   id: string
@@ -803,19 +786,29 @@ export const commentList: IComment[] = [
     userName: 'Hufe',
     rangeText: '血细胞比容',
     createdDate: '2023-08-20 23:10:55'
+  },
+  {
+    id: '2',
+    content:
+      'الهيماتوكريت (HCT) هو نسبة حجم خلايا الدم الحمراء إلى حجم الدم الكلي، ويُستخدم لتقييم نسبة كريات الدم الحمراء إلى البلازما.',
+    userName: 'Hufe',
+    rangeText: 'هيماتوكريت',
+    createdDate: '2023-08-20 23:10:55'
   }
 ]
 
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
   textEngine: TextEngineMode.HARFBUZZ,
+  // 存量正文：未声明按 AUTO 探测；阿语段在 mock-ar-emr 已写 direction=rtl
+  // LTR/RTL 模式只影响 UI + 新建行/表默认值，不改已有 element.direction
   defaultDirection: TextDirection.AUTO,
+  direction: TextDirection.LTR,
   caretMovement: CaretMovement.VISUAL,
   cursor: {
     color: '#000000',
     width: 1
   },
-  // 按 scripts 自动套用：仅阿语字符用 Noto Naskh，中英仍 defaultFont
   fonts: [
     {
       family: 'Noto Naskh Arabic',

@@ -92,10 +92,10 @@ GlyphRenderer inside engine; TextParticle becomes a thin delegate under `harfbuz
 
 ## 8. Canvas paths beyond the “big five”
 
-**A (this phase):** `ctx.direction`, AbstractRichText family, Trace, Group, ControlBorder, Hyperlink/Sub/Superscript/Label, float surround, DATE segment complete.  
-**B (with P3):** List indent/marker side, LineBreak, Placeholder; optional LineNumber/PageNumber → [DEFER-015](./rtl-deferred-todo.md#defer-015).  
-**C:** page-level chrome / print.  
-**D:** tables/controls → deferred TODO.
+**A (this phase):** `ctx.direction`, AbstractRichText family, Trace, Group, ControlBorder, Hyperlink/Sub/Superscript (engine rows via GlyphRenderer), basic float surround, DATE segment complete.  
+**B (with P3):** List indent/marker side, LineBreak, Placeholder; LineNumber/PageNumber **side mirroring** → [DEFER-015](./rtl-deferred-todo.md#defer-015).  
+**C:** page-level chrome / print. Plain-text chrome (watermark / page-number format / page-break label / image caption) uses `layoutPlainText` + `GlyphRenderer` via `drawPlainText` when HarfBuzz is ready; otherwise `fillText`. **LTR/RTL mode** `options.direction` (`ltr`|`rtl`, default `ltr`) mirrors editor UI chrome only (container `dir`, toolbar/footer) and supplies the default `element.direction` for **newly created** lines/tables; it must **not** affect hit-testing or body paint, rewrite existing content direction, remirror undeclared tables, or reflow the text area on toggle. Use `executeUiDirection`. Mode toggle visibility is controlled by `uiDirectionToggle` (default true).  
+**D:** tables/controls → [deferred TODO](./rtl-deferred-todo.md). Main-path gaps also tracked there: DATE/LABEL vs GlyphRenderer [DEFER-023](./rtl-deferred-todo.md#defer-023); in-paragraph Control embeds [DEFER-024](./rtl-deferred-todo.md#defer-024); surround/column mixed-layout acceptance [DEFER-025](./rtl-deferred-todo.md#defer-025).
 
 ## 9. SVG
 

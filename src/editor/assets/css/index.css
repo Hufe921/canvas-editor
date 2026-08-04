@@ -36,11 +36,16 @@
   background-color: transparent;
 }
 
+.ce-page-container {
+  /* 正文页物理坐标始终 LTR，与 UI 模式无关 */
+  direction: ltr;
+}
+
 .ce-cursor {
   width: 1px;
   height: 20px;
   left: 0;
-  right: 0;
+  /* 勿写 right：父级若为 dir=rtl，left+right+width 会忽略 left，光标/碰撞错位 */
   position: absolute;
   outline: none;
   background-color: #000000;

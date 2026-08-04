@@ -7,6 +7,18 @@ export interface TextStyleProps {
   italic?: boolean
   color?: string
   letterSpacing?: number
+  /**
+   * Superscript / subscript. Vertical shift is independent of LTR/RTL;
+   * horizontal placement still follows bidi / visualLeft.
+   */
+  scriptShift?: 'super' | 'sub'
+  /**
+   * Inline object slot (checkbox/radio/image/latex). When set, shaper emits a
+   * fixed-advance glyph and GlyphRenderer skips painting the replacement char.
+   */
+  objectWidth?: number
+  /** Inline object height (image/latex); raises line box when taller than text */
+  objectHeight?: number
 }
 
 export interface TextSpan {
@@ -48,6 +60,11 @@ export interface ShapedGlyph {
   ax: number
   dx: number
   dy: number
+  /**
+   * Canvas Y delta from line baseline for super/sub (positive = down).
+   * Independent of paragraph direction; set from style.scriptShift.
+   */
+  baselineShift?: number
   charStart: number
   charEnd: number
   logicalIndexStart: number

@@ -8,6 +8,7 @@ import { IColgroup } from '../../../../interface/table/Colgroup'
 import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
 import { cloneProperty, getUUID } from '../../../../utils'
+import { resolveNewContentDirection } from '../../../../utils/direction'
 import {
   formatElementContext,
   formatElementList
@@ -82,7 +83,9 @@ export class TableOperate {
       type: ElementType.TABLE,
       value: '',
       colgroup,
-      trList
+      trList,
+      // 新表写入当前 LTR/RTL 模式；存量表不因切换模式而改镜像
+      direction: resolveNewContentDirection(this.options)
     }
     // 格式化element
     formatElementList([element], {

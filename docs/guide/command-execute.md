@@ -896,6 +896,8 @@ instance.command.executeSetColumns(config: IColumnOption | null)
 
 ```javascript
 instance.command.executeSetMainBadge(payload: IBadge | null)
+// IBadge: { top?, left?, right?, width, height, value }
+// right >= 0 时相对页面右缘定位，优先于 left
 ```
 
 ## executeSetAreaBadge
@@ -1048,6 +1050,16 @@ instance.command.executeSetZone(zone: EditorZone)
 
 ```javascript
 instance.command.executeUpdateOptions(payload: IUpdateOption)
+```
+
+## executeUiDirection
+
+功能：设置 LTR/RTL 模式（`options.direction`）。仅影响编辑器 UI 组件方向，以及新建行/表的默认 `element.direction`；不参与存量正文排版、绘制与光标碰撞；切换不重绘文本区。与段落 `executeDirection` 分离。
+
+用法：
+
+```javascript
+instance.command.executeUiDirection(payload: 'ltr' | 'rtl')
 ```
 
 ## executeInsertTitle

@@ -2478,7 +2478,30 @@ export class CommandAdapt {
     Object.entries(newOption).forEach(([key, value]) => {
       Reflect.set(this.options, key, value)
     })
+    if (payload.direction !== undefined) {
+      // LTR/RTL 模式：只同步编辑器壳层 UI，不 invalidate / 不重排正文
+      this.draw.syncUiDirection()
+    }
+    // 仅改 UI 模式时跳过正文 forceUpdate（见 uiDirection）
+    const keys = Object.keys(payload)
+    if (keys.length === 1 && keys[0] === 'direction') {
+      this.range.setRangeStyle()
+      return
+    }
     this.forceUpdate()
+  }
+
+  /**
+   * LTR/RTL 模式（options.direction）：仅影响编辑器 UI 组件方向，
+   * 以及新建行/表时写入的默认 element.direction。
+   * 不参与光标碰撞、正文排版/绘制；切换不得重绘文本区。
+   * 与段落 executeDirection 分离。
+   */
+  public uiDirection(payload: TextDirection.LTR | TextDirection.RTL) {
+    this.options.direction = payload
+    this.draw.syncUiDirection()
+    // 工具栏「新建段将采用」指示；不 render 正文
+    this.range.setRangeStyle()
   }
 
   public getControlList(): IElement[] {

@@ -12,7 +12,8 @@ import {
   ResolvedDirection,
   ShapedGlyph,
   StyleRun,
-  TextSpan
+  TextSpan,
+  TextStyleProps
 } from '../types'
 
 export class TextLayoutEngine {
@@ -56,6 +57,7 @@ export class TextLayoutEngine {
           a.charStart - b.charStart || a.logicalIndexStart - b.logicalIndexStart
       )
     this.applySpanPaintStyles(logicalGlyphs, spans)
+    this.applyScriptShifts(logicalGlyphs)
 
     // 逻辑序断行（词优先）；视觉重排仅作用于行内
     const lines = this.breakLines(
@@ -155,12 +157,15 @@ export class TextLayoutEngine {
     }
     const sa = a.style
     const sb = b.style
+    // Object slots never merge with text or other objects
+    if (sa.objectWidth != null || sb.objectWidth != null) return false
     return (
       sa.fontFamily === sb.fontFamily &&
       sa.fontSize === sb.fontSize &&
       !!sa.bold === !!sb.bold &&
       !!sa.italic === !!sb.italic &&
-      (sa.letterSpacing || 0) === (sb.letterSpacing || 0)
+      (sa.letterSpacing || 0) === (sb.letterSpacing || 0) &&
+      (sa.scriptShift || '') === (sb.scriptShift || '')
     )
   }
 
@@ -186,15 +191,43 @@ export class TextLayoutEngine {
   private applySpanPaintStyles(glyphs: ShapedGlyph[], spans: TextSpan[]) {
     if (!glyphs.length || !spans.length) return
     const colorAt: Array<string | undefined> = []
+    const shiftAt: Array<TextStyleProps['scriptShift']> = []
     for (const span of spans) {
       for (let i = 0; i < span.text.length; i++) {
         colorAt.push(span.style.color)
+        shiftAt.push(span.style.scriptShift)
       }
     }
     for (const g of glyphs) {
       const color = colorAt[g.charStart]
-      if (color !== undefined && color !== g.style.color) {
-        g.style = { ...g.style, color }
+      const scriptShift = shiftAt[g.charStart]
+      const nextColor =
+        color !== undefined && color !== g.style.color ? color : g.style.color
+      const nextShift =
+        scriptShift !== g.style.scriptShift ? scriptShift : g.style.scriptShift
+      if (nextColor !== g.style.color || nextShift !== g.style.scriptShift) {
+        g.style = {
+          ...g.style,
+          color: nextColor,
+          scriptShift: nextShift
+        }
+      }
+    }
+  }
+
+  /**
+   * 上下标垂直偏移：相对行基线上下各半个绘制字号，与段落 LTR/RTL 无关。
+   * 水平位置仍由 bidi / visualLeft 决定。
+   */
+  private applyScriptShifts(glyphs: ShapedGlyph[]) {
+    for (const g of glyphs) {
+      const fs = g.style.fontSize || 0
+      if (g.style.scriptShift === 'super') {
+        g.baselineShift = -fs / 2
+      } else if (g.style.scriptShift === 'sub') {
+        g.baselineShift = fs / 2
+      } else {
+        g.baselineShift = 0
       }
     }
   }
@@ -232,16 +265,34 @@ export class TextLayoutEngine {
     lineHeight: number,
     lineHeightFactor: number
   ): { height: number; ascent: number; descent: number } {
-    const maxFontSize = glyphs.reduce(
-      (m, g) => Math.max(m, g.style.fontSize || 0),
-      0
-    )
-    const height =
+    // 上下标 fontSize 已是 0.6*原字号，行盒按名义字号估，避免整行被压矮
+    const maxFontSize = glyphs.reduce((m, g) => {
+      const fs = g.style.fontSize || 0
+      const nominal = g.style.scriptShift ? fs / 0.6 : fs
+      return Math.max(m, nominal)
+    }, 0)
+    const baseHeight =
       maxFontSize > 0 ? maxFontSize * lineHeightFactor : lineHeight
+    let ascent = baseHeight * 0.8
+    let descent = baseHeight * 0.2
+    for (const g of glyphs) {
+      const fs = g.style.fontSize || 0
+      const shift = Math.abs(g.baselineShift ?? 0) || fs / 2
+      if (g.style.scriptShift === 'super') {
+        ascent = Math.max(ascent, baseHeight * 0.8 + shift)
+      } else if (g.style.scriptShift === 'sub') {
+        descent = Math.max(descent, baseHeight * 0.2 + shift)
+      }
+      // 行内图/公式：抬高 ascent，与 legacy「底对齐基线」一致
+      const objectHeight = g.style.objectHeight
+      if (objectHeight != null && objectHeight > 0) {
+        ascent = Math.max(ascent, objectHeight)
+      }
+    }
     return {
-      height,
-      ascent: height * 0.8,
-      descent: height * 0.2
+      height: Math.max(baseHeight, ascent + descent),
+      ascent,
+      descent
     }
   }
 
@@ -440,7 +491,8 @@ export class TextLayoutEngine {
   /** 粘在词/字后的收尾标点（与 legacy measurePunctuation 意图一致） */
   private isGluePunct(ch: string): boolean {
     if (!ch || this.isSpaceChar(ch)) return false
-    return /^[,.;:!?…，。、；：？！）】》」』%\u00b0'"”’)]$/.test(ch)
+    // 含阿语标点 ، ؛ ؟ 避免与词拆成独立单元后换行观感异常
+    return /^[,.;:!?…，。、；：？！）】》」』%\u00b0'"”’)،؛؟]$/.test(ch)
   }
 
   private assignGlyphX(glyphs: ShapedGlyph[]) {

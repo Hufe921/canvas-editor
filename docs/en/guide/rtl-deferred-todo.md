@@ -23,28 +23,30 @@
 
 ## Current-phase summary
 
-Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + host adapters, dual DOM caret, logical delete, rich-text decorations/list mirroring, start/end alignment and float surround (P1–P4). Tables/header-footer wiring, incremental history, glyph atlas, etc. are listed below.
+Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + host adapters, dual DOM caret, logical delete, rich-text decorations/list mirroring, start/end alignment and float surround (P1–P4). Tables/header-footer wiring, incremental history, glyph atlas, plus main-path gaps still open (DATE/LABEL, in-paragraph controls, surround/column mixed layout) are listed below.
 
 ## Checklist
 
 ### P1
 
-- [ ] [DEFER-001](#defer-001) Table cell text via text-engine (P5)
-- [ ] [DEFER-004](#defer-004) Header/Footer zone wiring (P5)
+- [x] [DEFER-001](#defer-001) Table cell text via text-engine (P5)
+- [x] [DEFER-004](#defer-004) Header/Footer zone wiring (P5)
 - [ ] [DEFER-009](#defer-009) Incremental command history (P7)
 - [ ] [DEFER-010](#defer-010) Glyph atlas / dirty-span cache / perf (P6)
 
 ### P2
 
-- [ ] [DEFER-002](#defer-002) Table geometry / border / slash RTL mirroring (P5+)
-- [ ] [DEFER-003](#defer-003) TableTool drag and `style.left` (P5+)
-- [ ] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor` (P5)
+- [x] [DEFER-002](#defer-002) Table geometry / border / slash RTL mirroring (P5+)
+- [x] [DEFER-003](#defer-003) TableTool drag and `style.left` (P5+)
+- [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor` (P5)
 - [ ] [DEFER-006](#defer-006) Complex Control flex / ControlIndentation
 - [ ] [DEFER-007](#defer-007) ControlSearch / nested control RTL
 - [ ] [DEFER-016](#defer-016) Remove legacy path and `mapToLegacyRow`
-- [ ] [DEFER-018](#defer-018) Accessibility and RTL reading order
-- [ ] [DEFER-019](#defer-019) Full HTML/clipboard `dir` fidelity
-- [ ] [DEFER-021](#defer-021) Mobile / `beforeinput` delete path
+- [x] [DEFER-018](#defer-018) Accessibility and RTL reading order
+- [x] [DEFER-019](#defer-019) Full HTML/clipboard `dir` fidelity
+- [x] [DEFER-021](#defer-021) Mobile / `beforeinput` delete path
+- [x] [DEFER-023](#defer-023) Align DATE / LABEL with GlyphRenderer (same pattern as hyperlink fix)
+- [x] [DEFER-024](#defer-024) In-paragraph Control/Checkbox/Radio embeds and positionList sync
 
 ### P3
 
@@ -57,6 +59,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - [ ] [DEFER-017](#defer-017) OT/CRDT collaboration (if needed)
 - [ ] [DEFER-020](#defer-020) Print iframe Block + RTL page edges
 - [ ] [DEFER-022](#defer-022) Visual-adjacent delete mode
+- [ ] [DEFER-025](#defer-025) Surround image / multi-column + text-engine mixed-layout acceptance
 
 ## Roadmap mapping
 
@@ -65,7 +68,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 | P5 | 001, 002, 003, 004, 005, 008 |
 | P6 | 010 |
 | P7 | 009 |
-| Special tracks | 006, 007, 011–022 |
+| Special tracks | 006, 007, 011–025 |
 
 ---
 
@@ -73,43 +76,43 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-001
 
-- Status: pending
+- Status: done
 - Priority: P1
 - Depends: Stable P2 LayoutHostAdapter
 - Area: table
-- Notes: Cell **content** reuses text-engine adapter; table chrome may stay LTR. Accept Arabic mixed text and caret inside td.
+- Notes: Cell **content** uses text-engine (`layoutScope: td:{id}`); table chrome stays `forceLegacy`. Accept Arabic mixed text and caret inside td. DEFER-009/010 remain pending.
 
 ### DEFER-002
 
-- Status: pending
+- Status: done
 - Priority: P2
-- Depends: DEFER-001; product decision on full-table mirroring
+- Depends: DEFER-001; product decision → **mirror full table**
 - Area: table
-- Notes: Column accumulation, borders, diagonal lines vs document direction.
+- Notes: Flip `td.x` only when table `element.direction===rtl`; `colIndex` stays logical. LTR/RTL mode does not participate. See `isTableMirrored`.
 
 ### DEFER-003
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: DEFER-002
 - Area: table
-- Notes: TableTool `style.left` and column resize under RTL.
+- Notes: TableTool row tools / select on start side, add-col on end side; overflow start-edge and dx adapted when mirrored.
 
 ### DEFER-004
 
-- Status: pending
+- Status: done
 - Priority: P1
 - Depends: P2/P3 main-body engine
 - Area: zone
-- Notes: Wire and accept Header/Footer with the same engine as main.
+- Notes: Header/Footer/`main` isolate `lastLayouts` via `layoutScope`; left/right arrow `visualNeighbor` scoped by zone/td.
 
 ### DEFER-005
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: —
 - Area: frame
-- Notes: Badge only has `left` today; add `right` or `horizontalAnchor`.
+- Notes: `IBadge` / `IBadgeOption` add physical `right` (>=0 overrides left; default -1 unset). No `horizontalAnchor`.
 
 ### DEFER-006
 
@@ -189,7 +192,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - Priority: P3
 - Depends: P3 paragraph mirroring if unfinished
 - Area: frame
-- Notes: LineNumber / PageNumber default side or rowFlex follows document direction.
+- Notes: LineNumber / PageNumber default side or rowFlex follows document direction. Page-number **drawing** already uses `drawPlainText` (BiDi/joining); this item is only physical side / alignment mirroring.
 
 ### DEFER-016
 
@@ -197,7 +200,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - Priority: P2
 - Depends: Stable harfbuzz path and green regression
 - Area: architecture
-- Notes: Remove `textEngine: legacy` and `mapToLegacyRow`.
+- Notes: Remove `textEngine: legacy` and `mapToLegacyRow`. Interim main-body TABLE/IMAGE rows use `forceLegacy` inserts; keep mixed-layout regressions green before full removal.
 
 ### DEFER-017
 
@@ -209,19 +212,19 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-018
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: Stable P3 visual order
 - Area: a11y
-- Notes: Accessibility module vs RTL reading/speech order.
+- Notes: Live region `dir` from paragraph → defaultDirection → UI `options.direction`; announce text stays logical order.
 
 ### DEFER-019
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: P1 direction field
 - Area: clipboard
-- Notes: Full HTML/clipboard `dir` round-trip edge cases.
+- Notes: Export writes `dir` from `element.direction`; import reads `dir`/`style.direction`. Separate from UI `options.direction`.
 
 ### DEFER-020
 
@@ -233,11 +236,11 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-021
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: Mobile evidence that keydown is insufficient
 - Area: input
-- Notes: Current phase uses keydown Backspace/Delete; add `beforeinput` path if required.
+- Notes: `CursorAgent` `beforeinput` `deleteContentBackward/Forward` → existing keydown delete; dedupe with keydown.
 
 ### DEFER-022
 
@@ -246,3 +249,27 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - Depends: Product request
 - Area: input
 - Notes: Default is logical delete; optional visual-adjacent delete mode.
+
+### DEFER-023
+
+- Status: done
+- Priority: P2
+- Depends: Main-body GlyphRenderer / hyperlink fix pattern
+- Area: draw
+- Notes: DATE/LABEL skip text Particle on engine rows; GlyphRenderer paints text; LABEL keeps `renderBackground`; Bridge/`_syncEngineLineStyles`/`ensureDefaults` sync label color. Full padding parity with legacy is a follow-up.
+
+### DEFER-024
+
+- Status: done
+- Priority: P2
+- Depends: ElementBridge paragraph scan; related to but distinct from DEFER-006
+- Area: control
+- Notes: CHECKBOX/RADIO use `\uFFFC` + `objectWidth` slots; CONTROL chrome is text-like; GlyphRenderer skips objects; Particles still paint widgets.
+
+### DEFER-025
+
+- Status: pending
+- Priority: P3
+- Depends: Main-body IMAGE/TABLE `forceLegacy` insert already landed
+- Area: layout
+- Notes: SURROUND/FLOAT_* images and multi-column + text-engine only have basic inserts; no dedicated geometry/availableWidth/paging acceptance. Cover surround reservation vs engine `availableWidth`, `columnIndex` after column switches, float hit-testing and reflow.

@@ -65,6 +65,16 @@ export class HyperlinkParticle {
     }
   }
 
+  /** 链接默认色/下划线；引擎行跳过 Particle 绘制时也须先调用 */
+  public ensureDefaults(element: IElement) {
+    if (!element.color) {
+      element.color = this.options.defaultHyperlinkColor
+    }
+    if (element.underline === undefined) {
+      element.underline = true
+    }
+  }
+
   public render(
     ctx: CanvasRenderingContext2D,
     element: IRowElement,
@@ -73,13 +83,8 @@ export class HyperlinkParticle {
   ) {
     ctx.save()
     ctx.font = element.style
-    if (!element.color) {
-      element.color = this.options.defaultHyperlinkColor
-    }
-    ctx.fillStyle = element.color
-    if (element.underline === undefined) {
-      element.underline = true
-    }
+    this.ensureDefaults(element)
+    ctx.fillStyle = element.color!
     ctx.fillText(element.value, x, y)
     ctx.restore()
   }

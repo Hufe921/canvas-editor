@@ -396,10 +396,8 @@ export class Position {
         inColumn && columnLayout ? columnLayout.width : innerWidth
       x += columnOffset
       // 行存在环绕的可能性均不设置行布局
-      // text-engine 行：visualLeft 已含引擎对齐，禁止再做一次 rowFlex 偏移
-      const isTextEngineRow = curRow.elementList.some(
-        el => el.visualLeft !== undefined
-      )
+      // text-engine 行：必须以 engineLine 为准（元素上残留的 visualLeft 在回退 legacy 后会误伤表格/图片）
+      const isTextEngineRow = !!curRow.engineLine
       if (!curRow.isSurround && !isTextEngineRow) {
         // 计算行偏移量（行居中、居右）
         const curRowWidth = curRow.width + (curRow.offsetX || 0)
@@ -455,10 +453,14 @@ export class Position {
         if (element.translateX) {
           x += element.translateX * scale
         }
-        const drawX =
-          element.visualLeft !== undefined
-            ? rowContentStartX + element.visualLeft
-            : x
+        const useVisualLeft =
+          isTextEngineRow && element.visualLeft !== undefined
+        // visualLeft 为引擎行内坐标；control.minWidth 的 left 为后缀前额外空隙
+        const drawX = useVisualLeft
+          ? rowContentStartX +
+            (element.visualLeft || 0) +
+            (element.left || 0)
+          : x
         const positionItem: IElementPosition = {
           pageNo,
           index,
@@ -538,7 +540,7 @@ export class Position {
           positionList.push(positionItem)
         }
         index++
-        if (element.visualLeft === undefined) {
+        if (!useVisualLeft) {
           x += metrics.width
         } else {
           // Keep accumulator in sync for following legacy elements on mixed rows
@@ -881,6 +883,27 @@ export class Position {
     return null
   }
 
+  /** 留痕软删：非设计态不参与命中（与 GlyphRenderer 跳过一致） */
+  private isTraceHitSkipped(element: IElement | undefined): boolean {
+    if (!element || this.draw.isDesignMode()) return false
+    return this.draw.getTraceParticle().isTraceHidden(element)
+  }
+
+  /** 行尾/空隙回落时避开留痕软删，落到最近可见元素 */
+  private snapIndexFromTraceHidden(
+    index: number,
+    elementList: IElement[]
+  ): number {
+    if (!~index || !this.isTraceHitSkipped(elementList[index])) {
+      return index
+    }
+    let i = index
+    while (i >= 0 && this.isTraceHitSkipped(elementList[i])) {
+      i--
+    }
+    return i >= 0 ? i : index
+  }
+
   public getPositionByXY(payload: IGetPositionByXYPayload): ICurrentPosition {
     const { x, y, isTable } = payload
     let { elementList, positionList } = payload
@@ -925,6 +948,10 @@ export class Position {
       ) {
         let curPositionIndex = j
         const element = elementList[j]
+        // 留痕软删：不占命中
+        if (this.isTraceHitSkipped(element)) {
+          continue
+        }
         // 表格被命中
         if (element.type === ElementType.TABLE) {
           const tableChildPosition = this._getTableChildPositionByXY({
@@ -1004,14 +1031,20 @@ export class Position {
           const mid = (leftTop[0] + rightTop[0]) / 2
           const isRtlRun =
             ((positionList[j].bidiLevel ?? 0) & 1) === 1
+          const wouldExitControl = (prevIndex: number) =>
+            !!element.controlId &&
+            elementList[prevIndex]?.controlId !== element.controlId
           if (isRtlRun) {
-            if (x >= mid) {
+            // 控件首字右半若会落到控件外，仍停在控件内（否则「：|{」无法激活下拉）
+            if (x >= mid && !wouldExitControl(j - 1)) {
               curPositionIndex = j - 1
             }
           } else if (x < mid) {
-            curPositionIndex = j - 1
-            if (isFirstLetter) {
-              hitLineStartIndex = j
+            if (!wouldExitControl(j - 1)) {
+              curPositionIndex = j - 1
+              if (isFirstLetter) {
+                hitLineStartIndex = j
+              }
             }
           }
         }
@@ -1019,7 +1052,8 @@ export class Position {
           isDirectHit: true,
           hitLineStartIndex,
           index: curPositionIndex,
-          isControl: !!element.controlId
+          // 半盒亲和可能把 index 挪到控件外；isControl 须跟最终 index 一致
+          isControl: !!elementList[curPositionIndex]?.controlId
         }
       }
     }
@@ -1282,10 +1316,14 @@ export class Position {
           positionList.length - 1
       }
     }
+    const snappedIndex = this.snapIndexFromTraceHidden(
+      curPositionIndex,
+      elementList
+    )
     return {
       hitLineStartIndex,
-      index: curPositionIndex,
-      isControl: !!elementList[curPositionIndex]?.controlId
+      index: snappedIndex,
+      isControl: !!elementList[snappedIndex]?.controlId
     }
   }
 
@@ -1361,12 +1399,29 @@ export class Position {
     ) {
       const { index, isTable, trIndex, tdIndex, tdValueIndex } = positionResult
       const control = this.draw.getControl()
+      // 半盒亲和可能把 index 推到控件外；命中控件时仍按控件入口吸附
+      let moveIndex = isTable ? tdValueIndex! : index
+      if (!isTable) {
+        const elementList = this.draw.getOriginalElementList()
+        if (!elementList[moveIndex]?.controlId) {
+          const next = elementList[moveIndex + 1]
+          if (
+            next?.controlId &&
+            (next.controlComponent === ControlComponent.PREFIX ||
+              next.controlComponent === ControlComponent.PRE_TEXT ||
+              next.controlComponent === ControlComponent.PLACEHOLDER ||
+              next.controlComponent === ControlComponent.VALUE)
+          ) {
+            moveIndex = moveIndex + 1
+          }
+        }
+      }
       const { newIndex } = control.moveCursor({
-        index,
+        index: isTable ? index : moveIndex,
         isTable,
         trIndex,
         tdIndex,
-        tdValueIndex
+        tdValueIndex: isTable ? moveIndex : tdValueIndex
       })
       if (isTable) {
         positionResult.tdValueIndex = newIndex

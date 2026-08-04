@@ -449,12 +449,18 @@ export class RangeManager {
       this.setDefaultStyle(null)
     }
     this.range.zone = this.draw.getZone().getZone()
-    // 激活控件
+    // 激活控件（含光标紧贴 PREFIX 前）
     const control = this.draw.getControl()
     if (~startIndex && ~endIndex) {
       const elementList = this.draw.getElementList()
       const element = elementList[startIndex]
-      if (element?.controlId) {
+      const next = elementList[startIndex + 1]
+      const atControlEntrance =
+        !element?.controlId &&
+        !!next?.controlId &&
+        (next.controlComponent === ControlComponent.PREFIX ||
+          next.controlComponent === ControlComponent.PRE_TEXT)
+      if (element?.controlId || atControlEntrance) {
         control.initControl()
         return
       }
@@ -616,10 +622,10 @@ export class RangeManager {
       color: null,
       highlight: null,
       rowFlex: null,
+      // 无选区内容方向时，工具栏展示「新建行将采用」的 LTR/RTL 模式
       direction:
-        this.options.defaultDirection === 'rtl' ||
-        this.options.defaultDirection === 'ltr'
-          ? this.options.defaultDirection
+        this.options.direction === 'rtl' || this.options.direction === 'ltr'
+          ? this.options.direction
           : null,
       rowMargin,
       dashArray: [],

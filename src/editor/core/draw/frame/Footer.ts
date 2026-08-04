@@ -60,7 +60,8 @@ export class Footer {
     const innerWidth = this.draw.getInnerWidth()
     this.rowList = this.draw.computeRowList({
       innerWidth,
-      elementList: this.elementList
+      elementList: this.elementList,
+      layoutScope: 'footer'
     })
   }
 

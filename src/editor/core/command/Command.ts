@@ -124,6 +124,7 @@ export class Command {
   public executeInsertControl: CommandAdapt['insertControl']
   public executeJumpControl: CommandAdapt['jumpControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
+  public executeUiDirection: CommandAdapt['uiDirection']
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
   public executeComputeElementListHeight: CommandAdapt['computeElementListHeight']
@@ -550,6 +551,10 @@ export class Command {
     this.executeUpdateOptions = this.wrap(
       'executeUpdateOptions',
       adapt.updateOptions.bind(adapt)
+    )
+    this.executeUiDirection = this.wrap(
+      'executeUiDirection',
+      adapt.uiDirection.bind(adapt)
     )
     this.executeInsertTitle = this.wrap(
       'executeInsertTitle',
