@@ -94,6 +94,7 @@ export class Command {
   public executeLocationArea: CommandAdapt['locationArea']
   public executeClearGraffiti: CommandAdapt['clearGraffiti']
   public executeToggleTrace: CommandAdapt['toggleTrace']
+  public executeCompare: CommandAdapt['compare']
   public executeToggleRuler: CommandAdapt['toggleRuler']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
@@ -478,6 +479,8 @@ export class Command {
       'executeToggleTrace',
       adapt.toggleTrace.bind(adapt)
     )
+    // 文档对比
+    this.executeCompare = this.wrap('executeCompare', adapt.compare.bind(adapt))
     // 标尺
     this.executeToggleRuler = this.wrap(
       'executeToggleRuler',

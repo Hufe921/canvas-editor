@@ -21,6 +21,7 @@ import {
   scanToOwner,
   getOutermostOwner,
   getNonDeletedElementList,
+  getNonTraceElementList,
   isElementTraceDeleted
 } from '@/editor/utils/element'
 import { ElementType } from '@/editor/dataset/enum/Element'
@@ -427,6 +428,54 @@ describe('trace element filter', () => {
     expect(result[1].control!.value).toHaveLength(1)
     expect(elementList[0].trList![0].tdList[0].value).toHaveLength(2)
     expect(elementList[1].control!.value).toHaveLength(2)
+  })
+})
+
+describe('getNonTraceElementList', () => {
+  it('剥离全部留痕记录并剔除软删除元素', () => {
+    const elementList: IElement[] = [
+      { value: 'kept', trace: [{ type: TraceType.INSERTED }] },
+      { value: 'gone', trace: [{ type: TraceType.DELETED }] },
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          type: ControlType.TEXT,
+          value: [
+            { value: 'inner', trace: [{ type: TraceType.INSERTED }] },
+            { value: 'removed', trace: [{ type: TraceType.DELETED }] }
+          ]
+        }
+      },
+      {
+        type: ElementType.TABLE,
+        value: '',
+        trList: [
+          {
+            height: 30,
+            tdList: [
+              {
+                colspan: 1,
+                rowspan: 1,
+                value: [
+                  { value: 'cell', trace: [{ type: TraceType.INSERTED }] }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+
+    const result = getNonTraceElementList(elementList)
+
+    expect(result).toHaveLength(3)
+    expect(result[0].trace).toBeUndefined()
+    expect(result[1].control!.value).toEqual([{ value: 'inner' }])
+    expect(result[2].trList![0].tdList[0].value).toEqual([{ value: 'cell' }])
+    // 不污染入参
+    expect(elementList[0].trace).toHaveLength(1)
+    expect(elementList[2].control!.value).toHaveLength(2)
   })
 })
 
