@@ -34,19 +34,18 @@ export class HyperlinkParticle {
   }
 
   public drawHyperlinkPopup(element: IElement, position: IElementPosition) {
-    const {
-      coordinate: {
-        leftTop: [left, top]
-      },
-      lineHeight
-    } = position
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = this.draw.getPageNo() * (height + pageGap)
+    // RTL 右对齐元素右缘，LTR 左对齐元素左缘
+    const style = this.draw.getPopupPositionStyle(position)
     // 位置
     this.hyperlinkPopupContainer.style.display = 'block'
-    this.hyperlinkPopupContainer.style.left = `${left}px`
-    this.hyperlinkPopupContainer.style.top = `${top + preY + lineHeight}px`
+    if (style.right !== undefined) {
+      this.hyperlinkPopupContainer.style.left = 'auto'
+      this.hyperlinkPopupContainer.style.right = `${style.right}px`
+    } else {
+      this.hyperlinkPopupContainer.style.right = 'auto'
+      this.hyperlinkPopupContainer.style.left = `${style.left}px`
+    }
+    this.hyperlinkPopupContainer.style.top = `${style.top}px`
     // 标签
     const url = element.url || '#'
     this.hyperlinkDom.href = url

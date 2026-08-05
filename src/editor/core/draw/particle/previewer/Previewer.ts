@@ -1,5 +1,6 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { EditorMode } from '../../../../dataset/enum/Editor'
+import { TextDirection } from '../../../../dataset/enum/TextDirection'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 import { EventBusMap } from '../../../../interface/EventBus'
@@ -214,15 +215,27 @@ export class Previewer {
     evt.preventDefault()
   }
 
+  /** 图片是否处于 RTL 书写上下文：水平方向拖拽逻辑需镜像 */
+  private _isRtlContext(): boolean {
+    if (this.curElement?.direction === TextDirection.RTL) return true
+    if (this.curPosition && ((this.curPosition.bidiLevel ?? 0) & 1) === 1) {
+      return true
+    }
+    return false
+  }
+
   private _mousemove(evt: MouseEvent) {
     if (!this.curElement || this.previewerDrawOption.dragDisable) return
     const { scale } = this.options
+    const isRtl = this._isRtlContext()
+    // RTL 下水平拖拽方向与 LTR 镜像：向右拖 = LTR 的向左拖
+    const mirrorX = isRtl ? -1 : 1
     let dx = 0
     let dy = 0
     switch (this.curHandleIndex) {
       case 0:
         {
-          const offsetX = this.mousedownX - evt.x
+          const offsetX = (this.mousedownX - evt.x) * mirrorX
           const offsetY = this.mousedownY - evt.y
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
@@ -233,7 +246,7 @@ export class Previewer {
         break
       case 2:
         {
-          const offsetX = evt.x - this.mousedownX
+          const offsetX = (evt.x - this.mousedownX) * mirrorX
           const offsetY = this.mousedownY - evt.y
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
@@ -241,28 +254,28 @@ export class Previewer {
         break
       case 4:
         {
-          const offsetX = evt.x - this.mousedownX
+          const offsetX = (evt.x - this.mousedownX) * mirrorX
           const offsetY = evt.y - this.mousedownY
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
         }
         break
       case 3:
-        dx = evt.x - this.mousedownX
+        dx = (evt.x - this.mousedownX) * mirrorX
         break
       case 5:
         dy = evt.y - this.mousedownY
         break
       case 6:
         {
-          const offsetX = this.mousedownX - evt.x
+          const offsetX = (this.mousedownX - evt.x) * mirrorX
           const offsetY = evt.y - this.mousedownY
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
         }
         break
       case 7:
-        dx = this.mousedownX - evt.x
+        dx = (this.mousedownX - evt.x) * mirrorX
         break
     }
     // 图片实际宽高（变化大小除掉缩放比例）

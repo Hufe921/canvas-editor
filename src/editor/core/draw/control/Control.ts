@@ -2025,7 +2025,12 @@ export class Control {
         availableWidth - row.width - rowElement.metrics.width
       const left = Math.min(rowRemainingWidth, extraWidth)
       // 后缀偏移量需减去首字符的偏移量，避免重复偏移
-      rowElement.left = left - controlFirstElementLeft
+      // RTL 引擎行：postfix 在视觉最左，minWidth 空隙应向左延伸到行首空白，
+      // 后缀须左移（负偏移），下划线才能落在标签左侧而非覆盖正文
+      const isRtlEngineRow = row.direction === 'rtl' && !!row.engineLine
+      rowElement.left = isRtlEngineRow
+        ? -(left - controlFirstElementLeft)
+        : left - controlFirstElementLeft
       row.width += left - controlFirstElementLeft
     }
   }
@@ -2064,6 +2069,7 @@ export class Control {
           // 避免 RTL/多字控件把盒内字形拆出空隙
           const postfixVisualLeft = el.visualLeft ?? 0
           const postfixInkRight = postfixVisualLeft + (el.metrics?.width || 0)
+          const postfixLogicalStart = el.sourceIndex ?? -1
           for (let k = j + 1; k < row.elementList.length; k++) {
             const next = row.elementList[k]
             if (
@@ -2076,10 +2082,13 @@ export class Control {
           if (row.engineLine?.glyphs?.length) {
             // 必须拷贝字形再平移：engineLine 可能来自 LayoutCache，
             // 原地改 left 会污染缓存，下次 map 时 visualLeft 累加，签名底线右漂
+            // RTL 中标签字形视觉位于 postfix 右侧、但逻辑序号更小：
+            // 只能平移逻辑上位于 postfix 之后的字形，否则会把签名标签整体推走
             row.engineLine = {
               ...row.engineLine,
               glyphs: row.engineLine.glyphs.map(g =>
-                g.left >= postfixInkRight - 0.01
+                g.left >= postfixInkRight - 0.01 &&
+                g.logicalIndexStart > postfixLogicalStart
                   ? { ...g, left: g.left + shift, right: g.right + shift }
                   : g
               ),

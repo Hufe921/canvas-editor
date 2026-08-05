@@ -152,18 +152,29 @@ export class Group {
   ) {
     const groupIds = element.groupIds
     if (!groupIds) return
+    const left = x
+    const right = x + width
     for (const groupId of groupIds) {
       const fillRect = this.fillRectMap.get(groupId)
       if (!fillRect) {
         this.fillRectMap.set(groupId, {
-          x,
+          x: left,
           y,
           width,
           height
         })
-      } else {
-        fillRect.width += width
+        continue
       }
+      // 视觉区间并集：RTL 逻辑序回扫时不能做 width += 累加，
+      // 否则从首个逻辑元素开始向右越拉越长，覆盖相邻文字
+      const curLeft = fillRect.x
+      const curRight = fillRect.x + fillRect.width
+      const nextLeft = Math.min(curLeft, left)
+      const nextRight = Math.max(curRight, right)
+      fillRect.x = nextLeft
+      fillRect.width = nextRight - nextLeft
+      if (height > fillRect.height) fillRect.height = height
+      if (y < fillRect.y) fillRect.y = y
     }
   }
 

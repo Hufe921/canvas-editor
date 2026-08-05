@@ -388,11 +388,7 @@ export function formatElementList(
         valueSets
       } = el.control
       const {
-        editorOptions: {
-          control: controlOption,
-          checkbox: checkboxOption,
-          radio: radioOption
-        }
+        editorOptions: { control: controlOption }
       } = options
       const controlId = el.controlId || getUUID()
       // 移除父节点
@@ -486,14 +482,12 @@ export function formatElementList(
               const valueStrList = splitText(valueSet.value)
               for (let e = 0; e < valueStrList.length; e++) {
                 const value = valueStrList[e]
-                const isLastLetter = e === valueStrList.length - 1
                 elementList.splice(i, 0, {
                   ...controlContext,
                   ...controlDefaultStyle,
                   ...valueStyleList[valueStyleIndex],
                   controlId,
                   value: value === '\n' ? ZERO : value,
-                  letterSpacing: isLastLetter ? checkboxOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
                 })
@@ -534,14 +528,12 @@ export function formatElementList(
               const valueStrList = splitText(valueSet.value)
               for (let e = 0; e < valueStrList.length; e++) {
                 const value = valueStrList[e]
-                const isLastLetter = e === valueStrList.length - 1
                 elementList.splice(i, 0, {
                   ...controlContext,
                   ...controlDefaultStyle,
                   ...valueStyleList[valueStyleIndex],
                   controlId,
                   value: value === '\n' ? ZERO : value,
-                  letterSpacing: isLastLetter ? radioOption.gap : 0,
                   control: el.control,
                   controlComponent: ControlComponent.VALUE
                 })

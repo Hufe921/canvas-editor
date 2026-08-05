@@ -177,7 +177,8 @@ export class LayoutHostAdapter {
     elementList: IElement[],
     availableWidth: number,
     startRowIndex: number,
-    layoutScope: string = DEFAULT_LAYOUT_SCOPE
+    layoutScope: string = DEFAULT_LAYOUT_SCOPE,
+    defaultAlign?: 'left' | 'right'
   ): IRow[] | null {
     if (!this.engine || !paragraph.spans.length) return null
     const options = this.getOptions()
@@ -190,7 +191,10 @@ export class LayoutHostAdapter {
       ) ||
       options.defaultSize * (options.scale || 1)
     const lineHeight = fallbackFontSize * lineHeightFactor
-    const align = resolveAlign(paragraph.rowFlex, paragraph.direction)
+    const align =
+      paragraph.rowFlex === undefined && defaultAlign
+        ? defaultAlign
+        : resolveAlign(paragraph.rowFlex, paragraph.direction)
     const wordBreak =
       options.wordBreak === WordBreak.BREAK_ALL ? 'break-all' : 'break-word'
     // 须含 bold/italic/color/object 尺寸等，否则改样式或缩放图片/公式会命中旧缓存（行高不更新重叠）
@@ -247,11 +251,14 @@ export class LayoutHostAdapter {
     })
   }
 
-  scanParagraphs(elementList: IElement[]): ParagraphSpan[] {
+  scanParagraphs(
+    elementList: IElement[],
+    defaultDirection?: TextDirection
+  ): ParagraphSpan[] {
     const options = this.getOptions()
     const hide = this.getHideContext?.()
     return this.bridge.scanParagraphs(elementList, {
-      defaultDirection: options.defaultDirection,
+      defaultDirection: defaultDirection || options.defaultDirection,
       defaultFont: options.defaultFont,
       defaultSize: options.defaultSize,
       defaultColor: options.defaultColor,

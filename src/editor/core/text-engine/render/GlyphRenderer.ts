@@ -91,35 +91,47 @@ export class GlyphRenderer {
     }
     for (const seg of segs) {
       if (seg.complex && seg.glyphs.length) {
-        // 阿语逻辑：整段 fillText；多色则整段绘制 + clip，绝不逐字拆绘
-        const logical = [...seg.glyphs].sort(
-          (a, b) => a.charStart - b.charStart
-        )
-        const text = paragraphText.slice(
-          logical[0].charStart,
-          logical[logical.length - 1].charEnd
-        )
-        // 用笔位 left（不含 dx）：dx 是字形内偏移，计入 paintLeft 会把整段拽偏叠字
-        const paintLeft = Math.min(...seg.glyphs.map(g => g.left))
-        const mixedColor = seg.glyphs.some(
-          g =>
-            (g.style.color || '#000') !== (seg.glyphs[0].style.color || '#000')
-        )
-        const paintStyle = logical[0].style
-        const paintY =
-          baselineY + (seg.glyphs[0].baselineShift || 0)
-        if (mixedColor) {
-          this.fillJoinedMulticolor(
-            ctx,
-            text,
-            seg.glyphs,
-            originX,
-            paintY,
-            paintLeft,
-            paintStyle
+        // 视觉相邻的字形可能跨过一个 LTR 控件/数字岛。不能把这种
+        // 不连续的逻辑区间拼成一个 fillText，否则浏览器会再次做 BiDi。
+        for (const group of this.splitComplexGroups(seg.glyphs)) {
+          const logical = [...group].sort(
+            (a, b) => a.charStart - b.charStart
           )
-        } else {
-          this.fillRaw(ctx, text, paintStyle, originX + paintLeft, paintY)
+          const text = paragraphText.slice(
+            logical[0].charStart,
+            logical[logical.length - 1].charEnd
+          )
+          // 用笔位 left（不含 dx）：dx 是字形内偏移，计入 paintLeft 会把整段拽偏叠字
+          const paintLeft = Math.min(...group.map(g => g.left))
+          const mixedColor = group.some(
+            g =>
+              (g.style.color || '#000') !== (group[0].style.color || '#000')
+          )
+          const paintStyle = logical[0].style
+          const paintY =
+            baselineY + (group[0].baselineShift || 0)
+          const direction = group[0].bidiLevel % 2 ? 'rtl' : 'ltr'
+          if (mixedColor) {
+            this.fillJoinedMulticolor(
+              ctx,
+              text,
+              group,
+              originX,
+              paintY,
+              paintLeft,
+              paintStyle,
+              direction
+            )
+          } else {
+            this.fillRaw(
+              ctx,
+              text,
+              paintStyle,
+              originX + paintLeft,
+              paintY,
+              direction
+            )
+          }
         }
       } else {
         for (const g of seg.glyphs) {
@@ -140,7 +152,8 @@ export class GlyphRenderer {
     originX: number,
     baselineY: number,
     paintLeft: number,
-    paintStyle: ShapedGlyph['style']
+    paintStyle: ShapedGlyph['style'],
+    direction: 'ltr' | 'rtl'
   ) {
     const fontSize = paintStyle.fontSize || 16
     const clipTop = baselineY - fontSize * 1.2
@@ -164,10 +177,31 @@ export class GlyphRenderer {
         text,
         { ...paintStyle, color },
         originX + paintLeft,
-        baselineY
+        baselineY,
+        direction
       )
       ctx.restore()
     }
+  }
+
+  private splitComplexGroups(glyphs: ShapedGlyph[]): ShapedGlyph[][] {
+    const logical = [...glyphs].sort((a, b) => a.charStart - b.charStart)
+    const groups: ShapedGlyph[][] = []
+    for (const glyph of logical) {
+      const group = groups[groups.length - 1]
+      const previous = group?.[group.length - 1]
+      if (
+        group &&
+        previous &&
+        previous.charEnd >= glyph.charStart &&
+        (previous.bidiLevel & 1) === (glyph.bidiLevel & 1)
+      ) {
+        group.push(glyph)
+      } else {
+        groups.push([glyph])
+      }
+    }
+    return groups
   }
 
   private mergeGlyphClipRanges(
@@ -218,7 +252,14 @@ export class GlyphRenderer {
         ? paragraphText.slice(glyph.charStart, glyph.charEnd)
         : ''
     if (!text) return
-    this.fillRaw(ctx, text, glyph.style, x, y)
+    this.fillRaw(
+      ctx,
+      text,
+      glyph.style,
+      x,
+      y,
+      glyph.bidiLevel % 2 ? 'rtl' : 'ltr'
+    )
   }
 
   /** 去掉 BiDi 隔离符，避免跨行控件半截 LRI/PDI 被 fillText 画乱 */
@@ -231,7 +272,8 @@ export class GlyphRenderer {
     text: string,
     style: ShapedGlyph['style'],
     x: number,
-    y: number
+    y: number,
+    direction: 'ltr' | 'rtl' = 'ltr'
   ) {
     const paint = this.stripBidiIsolates(text)
     if (!paint) return
@@ -241,6 +283,7 @@ export class GlyphRenderer {
     }${style.fontSize}px ${style.fontFamily}`
     ctx.fillStyle = style.color || '#000'
     ctx.textAlign = 'left'
+    ctx.direction = direction
     ctx.textBaseline = 'alphabetic'
     ctx.fillText(paint, x, y)
     ctx.restore()

@@ -460,10 +460,12 @@ export class Position {
           ? rowContentStartX +
             (element.visualLeft || 0) +
             (element.left || 0)
-          : x
+            : x
+        const sourceIndex = element.sourceIndex
+        const elementIndex = sourceIndex ?? index
         const positionItem: IElementPosition = {
           pageNo,
-          index,
+          index: elementIndex,
           value: element.value,
           rowIndex: startRowIndex + i,
           // 表格单元格内行号为绝对序号（拆分窗口的续排位置与原窗口位置不冲突）；
@@ -534,12 +536,20 @@ export class Position {
             tableFragment.startTrIndex === 0 &&
             !tableFragment.startSplitTrOffset
           ) {
-            positionList.push(positionItem)
+            if (sourceIndex !== undefined) {
+              positionList[sourceIndex] = positionItem
+            } else {
+              positionList.push(positionItem)
+            }
           }
         } else {
-          positionList.push(positionItem)
+          if (sourceIndex !== undefined) {
+            positionList[sourceIndex] = positionItem
+          } else {
+            positionList.push(positionItem)
+          }
         }
-        index++
+        index = Math.max(index + 1, elementIndex + 1)
         if (!useVisualLeft) {
           x += metrics.width
         } else {
@@ -917,6 +927,9 @@ export class Position {
     const curPageNo = payload.pageNo ?? this.draw.getPageNo()
     const isMainActive = zoneManager.isMainActive()
     const positionNo = curPageNo
+    const validPositions = positionList.filter(
+      (position): position is NonNullable<typeof position> => !!position
+    )
     // 验证浮于文字上方元素
     if (!isTable) {
       const floatTopPosition = this.getFloatPositionByXY({
@@ -927,13 +940,15 @@ export class Position {
     }
     // 普通元素
     for (let j = 0; j < positionList.length; j++) {
+      const position = positionList[j]
+      if (!position) continue
       const {
         index,
         pageNo,
         left,
         isFirstLetter,
         coordinate: { leftTop, rightTop, leftBottom }
-      } = positionList[j]
+      } = position
       // 页眉/页脚的 positionList 跨页共享，坐标是页内的，按坐标命中即可
       if (isMainActive) {
         if (positionNo !== pageNo) continue
@@ -946,8 +961,8 @@ export class Position {
         leftTop[1] <= y &&
         leftBottom[1] >= y
       ) {
-        let curPositionIndex = j
-        const element = elementList[j]
+        let curPositionIndex = index
+        const element = elementList[index]
         // 留痕软删：不占命中
         if (this.isTraceHitSkipped(element)) {
           continue
@@ -960,7 +975,7 @@ export class Position {
             pageNo: curPageNo,
             element,
             index,
-            tablePosition: positionList[j]
+            tablePosition: position
           })
           if (tableChildPosition) return tableChildPosition
         }
@@ -1029,18 +1044,17 @@ export class Position {
         // 判断是否在文字中间前后（RTL：左半=之后，右半=之前）
         if (elementList[index].value !== ZERO) {
           const mid = (leftTop[0] + rightTop[0]) / 2
-          const isRtlRun =
-            ((positionList[j].bidiLevel ?? 0) & 1) === 1
+            const isRtlRun = ((position.bidiLevel ?? 0) & 1) === 1
           const wouldExitControl = (prevIndex: number) =>
             !!element.controlId &&
             elementList[prevIndex]?.controlId !== element.controlId
           if (isRtlRun) {
             // 控件首字右半若会落到控件外，仍停在控件内（否则「：|{」无法激活下拉）
-            if (x >= mid && !wouldExitControl(j - 1)) {
+            if (x >= mid && !wouldExitControl(curPositionIndex - 1)) {
               curPositionIndex = j - 1
             }
           } else if (x < mid) {
-            if (!wouldExitControl(j - 1)) {
+            if (!wouldExitControl(curPositionIndex - 1)) {
               curPositionIndex = j - 1
               if (isFirstLetter) {
                 hitLineStartIndex = j
@@ -1131,8 +1145,8 @@ export class Position {
     }
     // 判断所属行是否存在元素
     const matchedLastLetterList = isMainActive
-      ? positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
-      : positionList.filter(p => p.isLastLetter)
+      ? validPositions.filter(p => p.isLastLetter && p.pageNo === positionNo)
+      : validPositions.filter(p => p.isLastLetter)
     // 分栏场景下，只保留与点击栏一致的行，避免误命中同 y 的其他栏
     const clickColumnIndex = this._getColumnIndexByX(x)
     const lastLetterList =
@@ -1150,17 +1164,19 @@ export class Position {
       } = lastLetterList[j]
       if (y > leftTop[1] && y <= leftBottom[1]) {
         const headIndex = isMainActive
-          ? positionList.findIndex(
+          ? validPositions.findIndex(
               p => p.pageNo === positionNo && p.rowNo === rowNo
             )
-          : positionList.findIndex(p => p.rowNo === rowNo)
-        const headElement = elementList[headIndex]
-        const headPosition = positionList[headIndex]
+          : validPositions.findIndex(p => p.rowNo === rowNo)
+        const headPosition = validPositions[headIndex]
+        const headElement = headPosition
+          ? elementList[headPosition.index]
+          : undefined
         const rowPositions = isMainActive
-          ? positionList.filter(
+          ? validPositions.filter(
               p => p.pageNo === positionNo && p.rowNo === rowNo
             )
-          : positionList.filter(p => p.rowNo === rowNo)
+          : validPositions.filter(p => p.rowNo === rowNo)
         const contentLeft = Math.min(
           ...rowPositions.map(p => p.coordinate.leftTop[0])
         )
@@ -1172,12 +1188,12 @@ export class Position {
           this.draw.getOriginalRowList()[headPosition.rowIndex]
         const isRtlRow = row?.direction === 'rtl'
         const placeAtLogicalStart = () => {
-          if (~headIndex) {
+          if (headPosition) {
             if (headPosition.value === ZERO) {
-              curPositionIndex = headIndex
+              curPositionIndex = headPosition.index
             } else {
-              curPositionIndex = headIndex - 1
-              hitLineStartIndex = headIndex
+              curPositionIndex = headPosition.index - 1
+              hitLineStartIndex = headPosition.index
             }
           } else {
             curPositionIndex = index
@@ -1201,15 +1217,15 @@ export class Position {
         } else {
           // LTR：左侧空白 → 行首；否则 → 行尾（逻辑尾）
           const headStartX =
-            headElement.listStyle === ListStyle.CHECKBOX
+              headElement?.listStyle === ListStyle.CHECKBOX
               ? this.draw.getMargins()[3]
               : headPosition.coordinate.leftTop[0]
           if (x < headStartX) {
             placeAtLogicalStart()
           } else {
-            if (headElement.listStyle === ListStyle.CHECKBOX && x < leftTop[0]) {
-              return {
-                index: headIndex,
+            if (headElement?.listStyle === ListStyle.CHECKBOX && x < leftTop[0]) {
+                return {
+                index: headPosition.index,
                 isDirectHit: true,
                 isCheckbox: true
               }
@@ -1267,15 +1283,18 @@ export class Position {
       // 正文上-循环首行
       const margins = this.draw.getMargins()
       if (y <= margins[0]) {
-        for (let p = 0; p < positionList.length; p++) {
-          const position = positionList[p]
+        const firstRowPositions = validPositions.filter(
+          position => position.pageNo === positionNo && position.rowNo === 0
+        )
+        for (let p = 0; p < firstRowPositions.length; p++) {
+          const position = firstRowPositions[p]
           if (position.pageNo !== positionNo || position.rowNo !== 0) continue
           const { leftTop, rightTop } = position.coordinate
           // 小于左页边距 || 命中文字 || 首行最后元素
           if (
             x <= margins[3] ||
             (x >= leftTop[0] && x <= rightTop[0]) ||
-            positionList[p + 1]?.rowNo !== 0
+              firstRowPositions[p + 1]?.rowNo !== 0
           ) {
             return {
               index: position.index
@@ -1287,20 +1306,19 @@ export class Position {
         const lastLetter = lastLetterList[lastLetterList.length - 1]
         if (lastLetter) {
           const lastRowNo = lastLetter.rowNo
-          for (let p = 0; p < positionList.length; p++) {
-            const position = positionList[p]
-            if (
-              position.pageNo !== positionNo ||
-              position.rowNo !== lastRowNo
-            ) {
-              continue
-            }
+          const lastRowPositions = validPositions.filter(
+            position =>
+              (!isMainActive || position.pageNo === positionNo) &&
+              position.rowNo === lastRowNo
+          )
+          for (let p = 0; p < lastRowPositions.length; p++) {
+            const position = lastRowPositions[p]
             const { leftTop, rightTop } = position.coordinate
             // 小于左页边距 || 命中文字 || 尾行最后元素
             if (
               x <= margins[3] ||
               (x >= leftTop[0] && x <= rightTop[0]) ||
-              positionList[p + 1]?.rowNo !== lastRowNo
+              lastRowPositions[p + 1]?.rowNo !== lastRowNo
             ) {
               return {
                 index: position.index

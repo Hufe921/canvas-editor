@@ -51,6 +51,50 @@ describe('control bracket LRI isolate', () => {
     expect(paragraph.text).toContain('{干预建议}')
   })
 
+  it('isolates braces when LTR paragraph contains Arabic text', () => {
+    const control = {
+      type: ControlType.TEXT,
+      value: null,
+      placeholder: 'ملاحظات'
+    }
+    const elementList: IElement[] = [
+      // 声明 LTR，但正文含阿语 → 仍需隔离，否则 }ملاحظات{
+      { value: 'Note: ', direction: TextDirection.LTR },
+      {
+        value: '{',
+        direction: TextDirection.LTR,
+        type: ElementType.CONTROL,
+        control,
+        controlComponent: ControlComponent.PREFIX
+      },
+      ...'ملاحظات'.split('').map(value => ({
+        value,
+        direction: TextDirection.LTR,
+        type: ElementType.CONTROL,
+        control,
+        controlComponent: ControlComponent.PLACEHOLDER,
+        color: '#ccc'
+      })),
+      {
+        value: '}',
+        direction: TextDirection.LTR,
+        type: ElementType.CONTROL,
+        control,
+        controlComponent: ControlComponent.POSTFIX
+      }
+    ]
+    const bridge = new ElementBridge()
+    const [paragraph] = bridge.scanParagraphs(elementList, {
+      defaultDirection: TextDirection.LTR,
+      defaultFont: 'sans-serif',
+      defaultSize: 16,
+      defaultColor: '#000'
+    })
+    expect(paragraph.direction).toBe('ltr')
+    expect(paragraph.text).toContain('\u2066{')
+    expect(paragraph.text).toContain('}\u2069')
+  })
+
   it('keeps {value} brace order inside RTL paragraph', () => {
     const control = {
       type: ControlType.TEXT,

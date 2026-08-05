@@ -14,18 +14,54 @@ import type { IElement } from '../../../src/editor/interface/Element'
 import type { DeepRequired } from '../../../src/editor/interface/Common'
 import type { IEditorOption } from '../../../src/editor/interface/Editor'
 
-function options(): DeepRequired<IEditorOption> {
+function options(defaultDirection: TextDirection = TextDirection.LTR) {
   return {
     textEngine: TextEngineMode.HARFBUZZ,
     defaultFont: 'sans-serif',
     defaultSize: 16,
     defaultColor: '#000',
     defaultRowMargin: 1,
-    defaultDirection: TextDirection.LTR,
-    direction: TextDirection.LTR,
+    defaultDirection,
+    direction: defaultDirection,
     scale: 1,
     fonts: []
   } as unknown as DeepRequired<IEditorOption>
+}
+
+function buildRtlSignatureElements(): IElement[] {
+  const controlMeta = {
+    type: ControlType.TEXT,
+    value: null,
+    minWidth: 160,
+    underline: true,
+    prefix: '\u200c',
+    postfix: '\u200c'
+  }
+  return [
+    { value: ZERO, direction: TextDirection.RTL },
+    {
+      value: 'توقيع المريض: ',
+      size: 16,
+      direction: TextDirection.RTL,
+      rowFlex: 'start' as any
+    },
+    {
+      value: '\u200c',
+      type: ElementType.CONTROL,
+      control: controlMeta,
+      controlId: 'sig',
+      controlComponent: ControlComponent.PREFIX,
+      direction: TextDirection.RTL
+    },
+    {
+      value: '\u200c',
+      type: ElementType.CONTROL,
+      control: controlMeta,
+      controlId: 'sig',
+      controlComponent: ControlComponent.POSTFIX,
+      direction: TextDirection.RTL
+    }
+  ]
 }
 
 function stubControl(): Control {
@@ -141,6 +177,44 @@ describe('signature minWidth during input', () => {
 
     expect(postfix.left).toBeGreaterThan(0)
     expect(Math.abs(underlineStart - valueRight)).toBeLessThan(1.5)
+  })
+
+  it('RTL signature: postfix shifts left so underline stays left of label', async () => {
+    const elementList = buildRtlSignatureElements()
+    const bridge = new ElementBridge()
+    const [paragraph] = bridge.scanParagraphs(elementList, {
+      defaultDirection: TextDirection.RTL,
+      defaultFont: 'sans-serif',
+      defaultSize: 16,
+      defaultColor: '#000'
+    })
+    expect(paragraph.direction).toBe('rtl')
+    const adapter = new LayoutHostAdapter(() => options(TextDirection.RTL))
+    await adapter.ensureReady()
+    const rows = adapter.layoutParagraphToRows(
+      paragraph,
+      elementList,
+      500,
+      0,
+      'main'
+    )
+    expect(rows?.length).toBeGreaterThan(0)
+    stubControl().applyEngineRowsMinWidth(rows!, 500)
+
+    const row = rows![0]
+    expect(row.direction).toBe('rtl')
+    const postfix = row.elementList.find(
+      e => e.controlComponent === ControlComponent.POSTFIX
+    )!
+    expect(postfix.left).toBeLessThan(0)
+    const prefix = row.elementList.find(
+      e => e.controlComponent === ControlComponent.PREFIX
+    )!
+    const underlineX = (postfix.visualLeft || 0) + (postfix.left || 0)
+    const underlineRight =
+      (prefix.visualLeft || 0) + (prefix.metrics?.width || 0)
+    // 底线从 postfix 画到内容右缘，且整体位于标签左侧
+    expect(underlineRight - underlineX).toBeCloseTo(160, 0)
   })
 
   it('applyEngineRowsMinWidth must not poison layout cache glyphs', async () => {

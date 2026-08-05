@@ -284,6 +284,11 @@ export class TableTool {
     colContainer.style.transform = `translateY(-${
       this.ROW_COL_OFFSET * scale
     }px)`
+    if (mirrored) {
+      // colgroup uses logical order while the table geometry is mirrored.
+      // Reverse only the tool items so active column c overlays its td.
+      colContainer.style.flexDirection = 'row-reverse'
+    }
     for (let c = 0; c < colWidthList.length; c++) {
       const colWidth = colWidthList[c] * scale
       const colItem = document.createElement('div')
@@ -324,6 +329,10 @@ export class TableTool {
       }
       const colItemAnchor = document.createElement('div')
       colItemAnchor.classList.add(`${EDITOR_PREFIX}-table-tool__anchor`)
+      if (mirrored) {
+        colItemAnchor.style.left = '-5px'
+        colItemAnchor.style.right = 'auto'
+      }
       // 列高度拖拽开始
       colItemAnchor.onmousedown = evt => {
         this._mousedown({

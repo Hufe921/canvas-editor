@@ -138,16 +138,16 @@ export class Calculator {
     calculatorPopupContainer.appendChild(display)
     calculatorPopupContainer.appendChild(buttonContainer)
 
-    // 定位
-    const {
-      coordinate: {
-        leftTop: [left, top]
-      },
-      lineHeight
-    } = position
-    const preY = this.control.getPreY()
-    calculatorPopupContainer.style.left = `${left}px`
-    calculatorPopupContainer.style.top = `${top + preY + lineHeight}px`
+    // 定位（RTL 右对齐元素右缘，LTR 左对齐元素左缘）
+    const style = this.control.getDraw().getPopupPositionStyle(position)
+    if (style.right !== undefined) {
+      calculatorPopupContainer.style.left = 'auto'
+      calculatorPopupContainer.style.right = `${style.right}px`
+    } else {
+      calculatorPopupContainer.style.right = 'auto'
+      calculatorPopupContainer.style.left = `${style.left}px`
+    }
+    calculatorPopupContainer.style.top = `${style.top}px`
 
     // 追加至container
     const container = this.control.getContainer()

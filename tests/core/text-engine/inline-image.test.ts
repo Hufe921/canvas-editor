@@ -154,6 +154,61 @@ describe('inline IMAGE / control segment start', () => {
     expect(rows80![0].height).toBeGreaterThanOrEqual(80)
   })
 
+  it('keeps explicit INLINE image on the same row as RTL brackets', () => {
+    const bridge = new ElementBridge()
+    const elementList: IElement[] = [
+      { value: '\u200B', direction: TextDirection.RTL },
+      { value: '【', direction: TextDirection.RTL },
+      {
+        value: '',
+        type: ElementType.IMAGE,
+        width: 89,
+        height: 32,
+        imgDisplay: ImageDisplay.INLINE,
+        direction: TextDirection.RTL
+      },
+      { value: '】', direction: TextDirection.RTL }
+    ]
+    const paras = bridge.scanParagraphs(elementList, {
+      defaultDirection: TextDirection.RTL,
+      defaultFont: 'sans-serif',
+      defaultSize: 16,
+      defaultColor: '#000',
+      scale: 1
+    })
+    expect(paras).toHaveLength(1)
+    const para = paras[0]
+    expect(para.text.includes('\uFFFC')).toBe(true)
+    const engine = new TextLayoutEngine(
+      new BidiResolver(),
+      new BrowserTextShaper()
+    )
+    const layout = engine.layoutParagraph({
+      spans: para.spans,
+      availableWidth: 500,
+      direction: para.direction,
+      align: 'right',
+      lineHeight: 24,
+      lineHeightFactor: 1.5
+    })
+    expect(layout.lines).toHaveLength(1)
+    const rows = mapLayoutToRows({
+      layout,
+      elementList,
+      startRowIndex: 0,
+      defaultFont: 'sans-serif',
+      defaultSize: 16
+    })
+    expect(rows).toHaveLength(1)
+    const img = rows[0].elementList.find(el => el.type === ElementType.IMAGE)!
+    const hasOpen = rows[0].elementList.some(el => el.value === '【')
+    const hasClose = rows[0].elementList.some(el => el.value === '】')
+    // 图片与【】处于同一行（引擎内联），不拆成独立行
+    expect(hasOpen).toBe(true)
+    expect(hasClose).toBe(true)
+    expect(img.metrics.width).toBe(89)
+  })
+
   it('still breaks paragraph for floating IMAGE', () => {
     const bridge = new ElementBridge()
     const elementList: IElement[] = [

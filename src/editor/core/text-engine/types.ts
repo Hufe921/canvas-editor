@@ -69,6 +69,8 @@ export interface ShapedGlyph {
   charEnd: number
   logicalIndexStart: number
   logicalIndexEnd: number
+  /** Host element indices covered by visible characters in this glyph cluster. */
+  logicalIndices?: number[]
   left: number
   right: number
   style: TextStyleProps

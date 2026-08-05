@@ -1,11 +1,12 @@
 import { ZERO } from '../../dataset/constant/Common'
 import { ImageDisplay } from '../../dataset/enum/Common'
-import { ControlComponent } from '../../dataset/enum/Control'
+import { ControlComponent, ControlType } from '../../dataset/enum/Control'
 import { ElementType } from '../../dataset/enum/Element'
 import { TextDirection } from '../../dataset/enum/TextDirection'
 import { IElement } from '../../interface/Element'
 import { IEditorFontFace } from '../../interface/TextEngine'
 import { isElementLayoutHidden } from '../../utils/element'
+import { getBidiApi } from '../text-engine/bidi/bidiApi'
 import { resolveDirection } from '../text-engine'
 import {
   detectScript,
@@ -27,6 +28,47 @@ const FORMAT_ONLY_BRACKET = /^[\u200B-\u200D\uFEFF\u2060]*$/
 
 function shouldIsolateControlBracket(value: string): boolean {
   return !!value && !FORMAT_ONLY_BRACKET.test(value)
+}
+
+/**
+ * 是否存在 RTL 强字符。基于 bidi-js 的字符类型判断，覆盖全部 RTL 书写系统：
+ * 阿拉伯、希伯来、叙利亚、他拿、N'Ko、撒玛利亚、曼达等（不限于阿拉伯语）。
+ */
+function textHasRtlDirection(text: string): boolean {
+  const { getBidiCharTypeName } = getBidiApi()
+  for (let i = 0; i < text.length; ) {
+    const cp = text.codePointAt(i)!
+    const name = getBidiCharTypeName(String.fromCodePoint(cp))
+    // 只要存在任一 R/AL 强字符即判定含 RTL 内容；
+    // 不能因首个字符为 L 提前返回（段落可能以 LTR 前缀开头）
+    if (name === 'R' || name === 'AL') return true
+    i += cp > 0xffff ? 2 : 1
+  }
+  return false
+}
+
+function controlContentIsRtl(control: IElement['control']): boolean {
+  if (!control) return false
+  if (
+    control.type === ControlType.CHECKBOX ||
+    control.type === ControlType.RADIO
+  ) {
+    return true
+  }
+  if (control.placeholder && textHasRtlDirection(control.placeholder)) {
+    return true
+  }
+  const value = control.value
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (item?.value && textHasRtlDirection(String(item.value))) {
+        return true
+      }
+    }
+  } else if (typeof value === 'string' && textHasRtlDirection(value)) {
+    return true
+  }
+  return false
 }
 
 export interface ParagraphSpan {
@@ -72,14 +114,13 @@ function isInlineWidget(el: IElement): boolean {
   )
 }
 
-/** 浮层 / 独占行图：仍作段分隔；默认与 BLOCK 显示为行内 object */
+/** 浮层 / 独占行图：仍作段分隔；默认与 INLINE 显示为行内 object */
 function isParagraphBreakImage(el: IElement): boolean {
   if (el.type !== ElementType.IMAGE && el.type !== ElementType.LATEX) {
     return false
   }
   const d = el.imgDisplay
   return (
-    d === ImageDisplay.INLINE ||
     d === ImageDisplay.SURROUND ||
     d === ImageDisplay.FLOAT_TOP ||
     d === ImageDisplay.FLOAT_BOTTOM
@@ -166,11 +207,17 @@ export class ElementBridge {
       isTraceHidden
     } = options
     const hideCtx = { isDesignMode, isAreaHideDisabled, isTraceHidden }
-    // 先探测段方向（不含隔离符），LTR 不包 LRI/PDI，避免跨行控件 fillText 半截隔离错乱
-    const declared =
-      elementList[startIndex]?.direction ||
-      elementList[startIndex + 1]?.direction ||
-      defaultDirection
+    // 先探测段方向（不含隔离符），LTR 不包 LRI/PDI，避免跨行控件 fillText 半截隔离错乱。
+    // 跳过段首 ZERO：标题后的 RTL 换行不应盖住后随 LTR 正文（如生命体征 T:/P:）。
+    let declared = defaultDirection
+    for (let i = startIndex; i <= endIndex; i++) {
+      const el = elementList[i]
+      if (!el || el.value === ZERO) continue
+      if (el.direction) {
+        declared = el.direction
+        break
+      }
+    }
     let probeText = ''
     for (let i = startIndex; i <= endIndex; i++) {
       const el = elementList[i]
@@ -188,7 +235,11 @@ export class ElementBridge {
       probeText,
       'ltr'
     )
-    const isolateBrackets = direction === 'rtl'
+    // LTR 段若含 RTL 脚本文字，同样需要隔离控件括号，
+    // 否则 BiDi 会把 {value} 重排成 }value{ 导致渲染错乱
+    const hasRtlContent =
+      direction === 'ltr' && textHasRtlDirection(probeText)
+    const isolateBrackets = direction === 'rtl' || hasRtlContent
     const spans: TextSpan[] = []
     let text = ''
     for (let i = startIndex; i <= endIndex; i++) {
@@ -283,14 +334,21 @@ export class ElementBridge {
       }
       // 仅 RTL 段：可见括号包 LRI/PDI，避免 `{10}` 被排成 `}10{`；
       // LTR 不加，防止跨行控件半截隔离导致选中后叠字 / 点不进
+      // RTL 段内内容为 RTL 的控件（阿拉伯文本/选择/checkbox/radio）不隔离：
+      // 隔离会把盒与值整体按 LTR 排，使 checkbox 盒落文本左侧、空值光标落左侧；
+      // RTL 应盒在右侧、光标右对齐（与 LTR 相反）。数字/日期等 LTR 内容仍隔离保括号。
+      const skipIsolateForRtlContent =
+        direction === 'rtl' && controlContentIsRtl(el.control)
       const isolatePrefix =
         isolateBrackets &&
+        !skipIsolateForRtlContent &&
         el.controlComponent === ControlComponent.PREFIX &&
         shouldIsolateControlBracket(el.value)
           ? LRI
           : ''
       const isolatePostfix =
         isolateBrackets &&
+        !skipIsolateForRtlContent &&
         el.controlComponent === ControlComponent.POSTFIX &&
         shouldIsolateControlBracket(el.value)
           ? PDI

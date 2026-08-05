@@ -20,6 +20,7 @@ export interface IEngineLayoutLine {
     charEnd: number
     logicalIndexStart: number
     logicalIndexEnd: number
+    logicalIndices?: number[]
     bidiLevel: number
     style: {
       fontFamily: string
@@ -45,6 +46,8 @@ export type IRowElement = IElement & {
   visualIndex?: number
   clusterStart?: number
   clusterEnd?: number
+  /** Original element index; unlike visual order, this remains stable. */
+  sourceIndex?: number
 }
 
 export interface IRow {

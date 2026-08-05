@@ -42,6 +42,7 @@ export class BrowserTextShaper implements ITextShaper {
           charEnd,
           logicalIndexStart: run.logicalIndexAt(charStart),
           logicalIndexEnd: run.logicalIndexAt(Math.max(charStart, charEnd - 1)),
+          logicalIndices: [run.logicalIndexAt(charStart)],
           left: 0,
           right: 0,
           style: run.style,
@@ -90,6 +91,7 @@ export class BrowserTextShaper implements ITextShaper {
         charEnd,
         logicalIndexStart: run.logicalIndexAt(charStart),
         logicalIndexEnd: run.logicalIndexAt(charEnd - 1),
+        logicalIndices: this.getVisibleLogicalIndices(run, i, i + len),
         left: 0,
         right: 0,
         style: run.style,
@@ -98,5 +100,18 @@ export class BrowserTextShaper implements ITextShaper {
       i += len
     }
     return glyphs
+  }
+
+  private getVisibleLogicalIndices(
+    run: StyleRun,
+    start: number,
+    end: number
+  ): number[] {
+    const indices: number[] = []
+    for (let i = start; i < end; i++) {
+      if (/^[\u2066-\u2069]$/u.test(run.text[i])) continue
+      indices.push(run.logicalIndexAt(run.textStart + i))
+    }
+    return indices
   }
 }

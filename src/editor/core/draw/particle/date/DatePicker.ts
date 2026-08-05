@@ -348,22 +348,16 @@ export class DatePicker {
 
   private _setPosition() {
     if (!this.renderOptions) return
-    const {
-      position: {
-        coordinate: {
-          leftTop: [left, top]
-        },
-        lineHeight,
-        pageNo
-      }
-    } = this.renderOptions
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const currentPageNo = pageNo ?? this.draw.getPageNo()
-    const preY = currentPageNo * (height + pageGap)
-    // 位置
-    this.dom.container.style.left = `${left}px`
-    this.dom.container.style.top = `${top + preY + lineHeight}px`
+    // 位置（RTL 右对齐元素右缘，LTR 左对齐元素左缘）
+    const style = this.draw.getPopupPositionStyle(this.renderOptions.position)
+    if (style.right !== undefined) {
+      this.dom.container.style.left = 'auto'
+      this.dom.container.style.right = `${style.right}px`
+    } else {
+      this.dom.container.style.right = 'auto'
+      this.dom.container.style.left = `${style.left}px`
+    }
+    this.dom.container.style.top = `${style.top}px`
   }
 
   public isInvalidDate(value: Date): boolean {

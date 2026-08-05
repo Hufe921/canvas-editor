@@ -12,7 +12,7 @@ const RTL = TextDirection.RTL
 const LTR = TextDirection.LTR
 const START = RowFlex.START
 
-/** RTL 正文段落（段末换行） */
+/** RTL 正文片段；调用方在完整段落结束处显式换行。 */
 function p(value: string, extra: Partial<IElement> = {}): IElement[] {
   return [
     {
@@ -21,8 +21,7 @@ function p(value: string, extra: Partial<IElement> = {}): IElement[] {
       direction: RTL,
       rowFlex: START,
       ...extra
-    },
-    { value: '\n', direction: RTL }
+    }
   ]
 }
 
@@ -34,21 +33,28 @@ function tableNum(label: string): IElement[] {
   return [{ value: label, size: 16, direction: LTR }]
 }
 
-function title(value: string): IElement {
-  return {
-    value: '',
-    type: ElementType.TITLE,
-    level: TitleLevel.FIRST,
-    direction: RTL,
-    valueList: [
-      {
-        value,
-        size: 18,
-        direction: RTL,
-        rowFlex: START
-      }
-    ]
-  }
+/**
+ * 标题 + 段末换行（对齐中文 mock：`标题：\\n正文`）。
+ * 若标题后不换行，会与后随正文/控件拼进同一 BiDi 段落，导致 RTL 混排错乱。
+ */
+function title(value: string): IElement[] {
+  return [
+    {
+      value: '',
+      type: ElementType.TITLE,
+      level: TitleLevel.FIRST,
+      direction: RTL,
+      valueList: [
+        {
+          value,
+          size: 18,
+          direction: RTL,
+          rowFlex: START
+        }
+      ]
+    },
+    { value: '\n', direction: RTL }
+  ]
 }
 
 /**
@@ -60,7 +66,7 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
   const list: IElement[] = []
 
   // —— 主诉 ——
-  list.push(title('الشكوى الرئيسية:'))
+  list.push(...title('الشكوى الرئيسية:'))
   list.push(
     ...p('حمى لمدة ثلاثة أيام وسعال لمدة خمسة أيام. '),
     {
@@ -80,15 +86,16 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
   )
 
   // —— 现病史 ——
-  list.push(title('التاريخ المرضي الحالي:'))
+  list.push(...title('التاريخ المرضي الحالي:'))
   list.push(
     ...p(
       'بدأ المريض قبل ثلاثة أيام دون سبب واضح بأعراض زكام، ثم ظهر وذمة في الوجه دون طفح جلدي، مع قلة البول وإرهاق. لم يتحسن بالعلاج الخارجي، فحضر إلى مستشفانا.'
-    )
+    ),
+    { value: '\n', direction: RTL }
   )
 
   // —— 既往史 ——
-  list.push(title('التاريخ المرضي السابق:'))
+  list.push(...title('التاريخ المرضي السابق:'))
   list.push(
     ...p('سكري منذ ١٠ سنوات، وارتفاع ضغط الدم منذ سنتين، و'),
     {
@@ -122,7 +129,7 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
   )
 
   // —— 流行病史 ——
-  list.push(title('التاريخ الوبائي:'))
+  list.push(...title('التاريخ الوبائي:'))
   list.push(
     ...p(
       'ينفي خلال ١٤ يوماً مخالطة مرضى مؤكدين أو مشتبهين أو عديمي الأعراض ومخالطيهم؛ وينفي زيارة الأسواق أو المتاجر الكبرى؛ وينفي أعراض حمى أو تنفسية. المرافقون كذلك. بخصوص '
@@ -147,13 +154,20 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
   )
 
   // —— 体格检查 ——
-  list.push(title('الفحص السريري:'))
+  // 生命体征含拉丁缩写/单位：整段 LTR，避免 RTL 段内被排成「℃٣٩.٥ :T」
+  list.push(...title('الفحص السريري:'))
   list.push(
-    ...p('T: ٣٩.٥℃، P: ٨٠bpm، R: ٢٠/د، BP: ١٢٠/٨٠mmHg؛')
+    {
+      value: 'T: ٣٩.٥℃، P: ٨٠bpm، R: ٢٠/د، BP: ١٢٠/٨٠mmHg؛',
+      size: 16,
+      direction: LTR,
+      rowFlex: START
+    },
+    { value: '\n', direction: RTL }
   )
 
   // —— 辅助检查 ——
-  list.push(title('الفحوصات المساعدة:'))
+  list.push(...title('الفحوصات المساعدة:'))
   list.push(
     ...p('٢٠٢٠-٠٦-١٠، الدم: '),
     {
@@ -183,7 +197,7 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
   )
 
   // —— 门诊诊断 ——
-  list.push(title('تشخيص العيادة:'))
+  list.push(...title('تشخيص العيادة:'))
   list.push(
     {
       value: '',
@@ -204,7 +218,7 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
   )
 
   // —— 处置治疗 ——
-  list.push(title('الخطة العلاجية:'))
+  list.push(...title('الخطة العلاجية:'))
   list.push(
     {
       value: '',
@@ -604,11 +618,12 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
         prefix: '{',
         postfix: '}'
       }
-    }
+    },
+    { value: '\n', direction: RTL }
   )
 
   // —— 电子签名（结构同中文：【签名图】同行） / 其他记录 ——
-  list.push(title('التوقيع الإلكتروني:'))
+  list.push(...title('التوقيع الإلكتروني:'))
   list.push(
     {
       value: '【',
@@ -632,7 +647,7 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
     },
     { value: '\n', direction: RTL }
   )
-  list.push(title('سجلات أخرى:'))
+  list.push(...title('سجلات أخرى:'))
   list.push(
     ...p(
       'ملخص التواصل: أشعر بالحمى والسعال منذ ثلاثة أيام. Fever / حمى — T ٣٩.٥℃.'

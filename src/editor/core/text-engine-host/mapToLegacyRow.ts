@@ -103,12 +103,18 @@ function mapLineToRow(payload: {
     }
     const from = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
     const to = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
-    const count = Math.max(1, to - from + 1)
+    // Prefer the visible cluster mapping. The old logical range includes
+    // bidi isolates and can make a control prefix/postfix absorb its value.
+    const logicalIndices = g.logicalIndices?.length
+      ? [...new Set(g.logicalIndices)]
+      : Array.from({ length: Math.max(1, to - from + 1) }, (_, i) => from + i)
+    const count = Math.max(1, logicalIndices.length)
     // 组合符 advance 可为 0：仍占逻辑位，挂到 cluster 盒上
     const boxW = Math.max(g.right - g.left, 0)
     const eachWidth = boxW > 0.01 ? boxW / count : 0
     const odd = (g.bidiLevel & 1) === 1
-    for (let li = from; li <= to; li++) {
+    for (let mapped = 0; mapped < logicalIndices.length; mapped++) {
+      const li = logicalIndices[mapped]
       const el = elementList[li]
       if (!el) continue
       const fontSize = g.style.fontSize || el.size || defaultSize
@@ -128,11 +134,11 @@ function mapLineToRow(payload: {
           }
         : metricsForGlyph(fontSize, g.style.scriptShift)
       let visualLeft = odd
-        ? g.left + (to - li) * eachWidth
-        : g.left + (li - from) * eachWidth
+        ? g.left + (count - mapped - 1) * eachWidth
+        : g.left + mapped * eachWidth
       let width = isObject ? g.style.objectWidth! : eachWidth
-      if (!isObject && width <= 0.01 && byLogical.has(from)) {
-        const base = byLogical.get(from)!
+      if (!isObject && width <= 0.01 && byLogical.has(li)) {
+        const base = byLogical.get(li)!
         visualLeft = base.visualLeft ?? g.left
         width = base.metrics?.width ?? 0
       }
@@ -174,6 +180,7 @@ function mapLineToRow(payload: {
           left: 0,
           bidiLevel: g.bidiLevel,
           visualIndex: visualOrder++,
+          sourceIndex: li,
           clusterStart: from,
           clusterEnd: to
         }) as IRowElement
@@ -216,6 +223,7 @@ function mapLineToRow(payload: {
           left: 0,
           bidiLevel: neighbor?.bidiLevel ?? (direction === 'rtl' ? 1 : 0),
           visualIndex: visualOrder++,
+          sourceIndex: li,
           clusterStart: li,
           clusterEnd: li
         }) as IRowElement

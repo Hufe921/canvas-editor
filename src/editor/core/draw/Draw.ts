@@ -1595,8 +1595,9 @@ export class Draw {
     }
     if (type === ElementType.IMAGE || type === ElementType.LATEX) {
       const d = el.imgDisplay
+      // INLINE 与默认一致走引擎内联（与周边文本同行，RTL 下不分离）；
+      // 仅浮层/环绕图强制 legacy 单独处理
       return (
-        d === ImageDisplay.INLINE ||
         d === ImageDisplay.SURROUND ||
         d === ImageDisplay.FLOAT_TOP ||
         d === ImageDisplay.FLOAT_BOTTOM
@@ -1634,6 +1635,77 @@ export class Draw {
   /** text-engine rows always draw via GlyphRenderer (Arabic run fillText joining). */
   private rowUsesGlyphRenderer(row: IRow): boolean {
     return !!row.engineLine?.glyphs?.length
+  }
+
+  private getRowElementPosition(
+    row: IRow,
+    positionList: import('../../interface/Element').IElementPosition[],
+    element: IElement & { sourceIndex?: number },
+    elementOffset: number
+  ) {
+    if (row.fragmentPosition) return row.fragmentPosition
+    const sourceIndex = element.sourceIndex
+    const fallbackIndex = row.startIndex + elementOffset
+    return (
+      (sourceIndex !== undefined ? positionList[sourceIndex] : undefined) ||
+      positionList[fallbackIndex] ||
+      (sourceIndex !== undefined
+        ? positionList.find(item => item?.index === sourceIndex)
+        : undefined)
+    )
+  }
+
+  /**
+   * 弹层（超链接/下拉/日期/计算器）DOM 定位样式。
+   * RTL（bidiLevel 为奇）时右对齐元素右缘，LTR 时左对齐元素左缘，
+   * 与书写方向镜像；top 统一在元素基线下方。
+   */
+  public getPopupPositionStyle(
+    position: import('../../interface/Element').IElementPosition,
+    topOffset = 0
+  ): { left?: number; right?: number; top: number } {
+    const {
+      coordinate: { leftTop, rightTop },
+      lineHeight,
+      pageNo,
+      bidiLevel
+    } = position
+    const isRtl = ((bidiLevel ?? 0) & 1) === 1
+    const height = this.getHeight()
+    const pageGap = this.getPageGap()
+    const currentPageNo = pageNo ?? this.getPageNo()
+    const preY = currentPageNo * (height + pageGap)
+    const top = leftTop[1] + preY + lineHeight + topOffset
+    if (isRtl) {
+      const right = this.getWidth() - rightTop[0]
+      return { right, top }
+    }
+    return { left: leftTop[0], top }
+  }
+
+  private getEngineHighlightRect(
+    row: IRow,
+    element: IRowElement,
+    position: import('../../interface/Element').IElementPosition
+  ): { x: number; width: number } | undefined {
+    if (!row.engineLine || element.sourceIndex === undefined) return
+    const sourceIndex = element.sourceIndex
+    const glyphs = row.engineLine.glyphs.filter(g => {
+      if (g.logicalIndices?.length) {
+        return g.logicalIndices.includes(sourceIndex)
+      }
+      const from = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const to = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      return sourceIndex >= from && sourceIndex <= to
+    })
+    if (!glyphs.length) return
+    const left = Math.min(...glyphs.map(g => g.left))
+    const right = Math.max(...glyphs.map(g => g.right))
+    const originX =
+      position.coordinate.leftTop[0] -
+      (element.visualLeft || 0) -
+      (element.left || 0)
+    return { x: originX + left, width: Math.max(0, right - left) }
   }
 
   /**
@@ -1688,7 +1760,8 @@ export class Draw {
       curRow.fragmentPosition ||
       positionList[
         anchor
-          ? curRow.startIndex + curRow.elementList.indexOf(anchor)
+          ? anchor.sourceIndex ??
+            curRow.startIndex + curRow.elementList.indexOf(anchor)
           : curRow.startIndex
       ]
     if (!anchor || !anchorPos) return rects
@@ -1967,7 +2040,8 @@ export class Draw {
     elementList: IElement[],
     innerWidth: number,
     rowIndex: number,
-    layoutScope: string
+    layoutScope: string,
+    defaultAlign?: 'left' | 'right'
   ): number {
     const zeroEl =
       elementList[paragraph.startIndex]?.value === ZERO
@@ -1978,7 +2052,8 @@ export class Draw {
       elementList,
       innerWidth,
       rowIndex,
-      layoutScope
+      layoutScope,
+      defaultAlign
     )
     if (!rows?.length) {
       if (!zeroEl) return rowIndex
@@ -2074,9 +2149,14 @@ export class Draw {
   private _computeRowListByTextEngine(
     elementList: IElement[],
     innerWidth: number,
-    layoutScope: string
+    layoutScope: string,
+    defaultDirection?: TextDirection,
+    defaultAlign?: 'left' | 'right'
   ): IRow[] | null {
-    const paragraphs = this.layoutHostAdapter.scanParagraphs(elementList)
+    const paragraphs = this.layoutHostAdapter.scanParagraphs(
+      elementList,
+      defaultDirection
+    )
     const paraByStart = new Map(
       paragraphs.map(p => [p.startIndex, p] as const)
     )
@@ -2136,10 +2216,11 @@ export class Draw {
         rowIndex = this._appendParagraphEngineRows(
           rowList,
           paragraph,
-          elementList,
-          Math.max(1, innerWidth - listOffset),
-          rowIndex,
-          layoutScope
+        elementList,
+        Math.max(1, innerWidth - listOffset),
+        rowIndex,
+        layoutScope,
+        defaultAlign
         )
         this._applyEngineListMetaToRows(
           rowList.slice(paraRowStart),
@@ -2165,14 +2246,18 @@ export class Draw {
       pageHeight = 0,
       surroundElementList = [],
       forceLegacy = false,
-      layoutScope = 'main'
+      layoutScope = 'main',
+      defaultDirection,
+      defaultAlign
     } = payload
     // text-engine：段落走引擎（含单元格）；TABLE/浮层图等在引擎循环内 forceLegacy
     if (!forceLegacy && this.layoutHostAdapter.isReady()) {
       const engineRows = this._computeRowListByTextEngine(
         elementList,
         innerWidth,
-        layoutScope
+        layoutScope,
+        defaultDirection,
+        defaultAlign
       )
       if (engineRows) return engineRows
     }
@@ -2342,6 +2427,9 @@ export class Draw {
               elementList: td.value,
               isFromTable: true,
               isPagingMode,
+              defaultDirection: element.direction || TextDirection.AUTO,
+              defaultAlign:
+                element.direction === TextDirection.RTL ? 'right' : 'left',
               layoutScope: td.id ? `td:${td.id}` : `td:anon-${t}-${d}`
             })
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
@@ -2933,9 +3021,12 @@ export class Draw {
         const element = curRow.elementList[j]
         const preElement = curRow.elementList[j - 1]
         // 高亮配置：元素 > 控件配置
-        const highlight =
-          element.highlight ||
-          this.control.getControlHighlight(elementList, curRow.startIndex + j)
+          const highlight =
+            element.highlight ||
+            this.control.getControlHighlight(
+              elementList,
+              element.sourceIndex ?? curRow.startIndex + j
+            )
         if (highlight) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (
@@ -2946,18 +3037,30 @@ export class Draw {
             this.highlight.render(ctx)
           }
           // 当前元素位置信息记录（表格跨页片段行优先使用片段位置）
+          const position = this.getRowElementPosition(
+            curRow,
+            positionList,
+            element,
+            j
+          )
+          if (!position) continue
           const {
             coordinate: {
               leftTop: [x, y]
             }
-          } = curRow.fragmentPosition || positionList[curRow.startIndex + j]
+          } = position
           // 元素向左偏移量
           const offsetX = element.left || 0
+          const engineRect = this.getEngineHighlightRect(
+            curRow,
+            element,
+            position
+          )
           this.highlight.recordFillInfo(
             ctx,
-            x - offsetX,
+            engineRect?.x ?? x - offsetX,
             y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
-            element.metrics.width + offsetX,
+            engineRect?.width ?? element.metrics.width + offsetX,
             curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
             highlight
           )
@@ -3017,12 +3120,19 @@ export class Draw {
         }
         const metrics = element.metrics
         // 当前元素位置信息（表格跨页片段行优先使用片段位置）
+        const position = this.getRowElementPosition(
+          curRow,
+          positionList,
+          element,
+          j
+        )
+        if (!position) continue
         const {
           ascent: offsetY,
           coordinate: {
             leftTop: [x, y]
           }
-        } = curRow.fragmentPosition || positionList[curRow.startIndex + j]
+        } = position
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
         if (
@@ -3212,8 +3322,12 @@ export class Draw {
           const rowMargin = this.getElementRowMargin(element)
           // 优先用 position.left：text-engine 的 position.x 已含 left，
           // 若 element.left 在定位后被清掉，用 element.left 会使 x-offsetX 失效、底线右漂
-          const posItem =
-            curRow.fragmentPosition || positionList[curRow.startIndex + j]
+          const posItem = this.getRowElementPosition(
+            curRow,
+            positionList,
+            element,
+            j
+          )
           const offsetX = posItem?.left || element.left || 0
           // 下标元素y轴偏移值
           let subOffsetY = 0
@@ -3234,11 +3348,15 @@ export class Draw {
             : y + curRow.height - rowMargin + subOffsetY
           let underlineX = x - offsetX
           let underlineW = metrics.width + offsetX
+          if (underlineW < 0) {
+            underlineX = x
+            underlineW = -underlineW
+          }
           // minWidth 后缀空隙：从控件内上一内容右缘接到 postfix 位，避免输入后底线断层右漂
           if (
             curRow.engineLine &&
             element.controlComponent === ControlComponent.POSTFIX &&
-            offsetX > 0 &&
+            offsetX !== 0 &&
             element.control?.minWidth
           ) {
             let gapStart = underlineX
@@ -3250,7 +3368,12 @@ export class Draw {
                 prev.controlComponent === ControlComponent.PREFIX ||
                 prev.controlComponent === ControlComponent.PLACEHOLDER
               ) {
-                const prevPos = positionList[curRow.startIndex + k]
+                const prevPos = this.getRowElementPosition(
+                  curRow,
+                  positionList,
+                  prev,
+                  k
+                )
                 if (prevPos) {
                   gapStart =
                     prevPos.coordinate.leftTop[0] + (prev.metrics?.width || 0)
@@ -3258,8 +3381,14 @@ export class Draw {
                 break
               }
             }
-            underlineX = gapStart
-            underlineW = Math.max(0, x - gapStart)
+            if (curRow.direction === 'rtl') {
+              // RTL：postfix 已左移，空隙在标签左侧，底线从 postfix 向右接到内容
+              underlineX = x
+              underlineW = Math.max(0, gapStart - x)
+            } else {
+              underlineX = gapStart
+              underlineW = Math.max(0, x - gapStart)
+            }
           }
           this.underline.recordFillInfo(
             ctx,
@@ -3397,7 +3526,18 @@ export class Draw {
         }
         // 组信息记录
         if (!group.disabled && element.groupIds) {
-          this.group.recordFillInfo(element, x, y, metrics.width, curRow.height)
+          const engineRect = this.getEngineHighlightRect(curRow, element, {
+            coordinate: {
+              leftTop: [x, y]
+            }
+          } as import('../../interface/Element').IElementPosition)
+          this.group.recordFillInfo(
+            element,
+            engineRect?.x ?? x,
+            y,
+            engineRect?.width ?? metrics.width,
+            curRow.height
+          )
         }
         index++
         // 绘制表格内元素
@@ -3463,10 +3603,12 @@ export class Draw {
       }
       // 绘制列表样式
       if (curRow.isList && curRow.height > 0) {
-        this.listParticle.drawListStyle(
-          ctx,
-          curRow,
-          positionList[curRow.startIndex]
+          this.listParticle.drawListStyle(
+            ctx,
+            curRow,
+            positionList[
+              curRow.elementList[0]?.sourceIndex ?? curRow.startIndex
+            ]
         )
       }
       // 绘制文字、边框、下划线、删除线
@@ -3479,13 +3621,14 @@ export class Draw {
             el.value !== ZERO &&
             !this.isGlyphPaintSkipped(el)
         )
-        const anchorPos =
-          curRow.fragmentPosition ||
-          positionList[
-            anchor
-              ? curRow.startIndex + curRow.elementList.indexOf(anchor)
-              : curRow.startIndex
-          ]
+          const anchorPos =
+            curRow.fragmentPosition ||
+            positionList[
+              anchor
+                ? anchor.sourceIndex ??
+                  curRow.startIndex + curRow.elementList.indexOf(anchor)
+                : curRow.startIndex
+            ]
         if (anchor && anchorPos) {
           // leftTop = rowOrigin + visualLeft + left；原点须回到 rowOrigin
           const originX =
@@ -3553,11 +3696,18 @@ export class Draw {
           tableRangeElement &&
           tableRangeElement.id === tableId
         ) {
+          const position = this.getRowElementPosition(
+            curRow,
+            positionList,
+            tableRangeElement,
+            0
+          )
+          if (!position) continue
           const {
             coordinate: {
               leftTop: [x, y]
             }
-          } = curRow.fragmentPosition || positionList[curRow.startIndex]
+          } = position
           this.tableParticle.drawRange(
             ctx,
             tableRangeElement,
