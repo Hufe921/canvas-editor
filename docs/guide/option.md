@@ -62,7 +62,7 @@ interface IEditorOption {
   scrollContainerSelector?: string // 滚动区域选择器。默认：document
   pageOuterSelectionDisable?: boolean // 鼠标移出页面时选区禁用。默认：false
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
-  textEngine?: 'legacy' | 'harfbuzz' // 文本排版引擎。默认：legacy；harfbuzz 启用独立 text-engine（需配置 fonts）
+  textEngine?: 'legacy' | 'harfbuzz' // 文本排版引擎。默认：legacy（仅支持原有 LTR 渲染，不做 Bidi/连字整形，RTL 内容无法正确渲染，出现 RTL 内容时控制台会告警）；harfbuzz 启用独立 text-engine（需配置 fonts），支持 RTL/Bidi/阿语连写。RTL 场景必须用 harfbuzz
   direction?: 'ltr' | 'rtl' // UI 的 LTR/RTL「模式」（非段落方向）：仅镜像编辑器壳层（ce-ui-rtl class，勿给画布容器设 dir=rtl）；新建行/表写入默认 element.direction；不参与存量正文/光标碰撞/绘制；切换不重排。默认：ltr。命令：executeUiDirection。勿与 executeDirection / defaultDirection 混用
   uiDirectionToggle?: boolean // 是否展示 LTR/RTL 模式切换控件（宿主工具栏读取）。默认：true；false 时隐藏
   defaultDirection?: 'ltr' | 'rtl' | 'auto' // 内容默认段落方向（元素无 direction 时；auto 按强字符探测）。命令：executeDirection。与 UI 模式 options.direction 分离。默认：auto

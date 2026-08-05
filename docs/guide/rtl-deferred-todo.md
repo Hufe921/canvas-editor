@@ -41,7 +41,7 @@
 - [x] [DEFER-002](#defer-002) Table 列几何 / 边框 / 斜线 RTL 镜像评估（P5+）
 - [x] [DEFER-003](#defer-003) TableTool 拖拽与 `style.left`（P5+）
 - [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor`（P5）
-- [ ] [DEFER-006](#defer-006) 复杂 Control 内部 flex / ControlIndentation
+- [x] [DEFER-006](#defer-006) 复杂 Control 内部 flex / ControlIndentation
 - [ ] [DEFER-007](#defer-007) ControlSearch / 嵌套控件 RTL
 - [ ] [DEFER-016](#defer-016) 去掉 legacy 路径与 `mapToLegacyRow`
 - [x] [DEFER-018](#defer-018) Accessibility 与 RTL 阅读顺序
@@ -118,11 +118,11 @@
 
 ### DEFER-006
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: 正文 ControlBorder（本期）
 - Area: control
-- Notes: 控件内部 flex、`ControlIndentation.VALUE_START` 等强 LTR 缩进。
+- Notes: text-engine（harfbuzz）行补齐 `ControlIndentation.VALUE_START`：续行按值起始侧对齐（LTR 左缘 / RTL 右缘），自动方向探测；checkbox/radio `flexDirection: ROW` 的 RTL 盒在右侧经 bidi 验证符合预期。legacy 路径保持原样，随 DEFER-016 移除。
 
 ### DEFER-007
 

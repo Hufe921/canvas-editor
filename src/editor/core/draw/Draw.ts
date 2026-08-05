@@ -227,6 +227,7 @@ export class Draw {
   private columnManager: ColumnManager
   private ruler: Ruler
   private layoutHostAdapter: LayoutHostAdapter
+  private legacyRtlWarned: boolean
 
   constructor(
     rootContainer: HTMLElement,
@@ -303,6 +304,7 @@ export class Draw {
     this.graffiti = new Graffiti(this, data.graffiti)
     this.columnManager = new ColumnManager(this)
     this.ruler = new Ruler(this)
+    this.legacyRtlWarned = false
     this.layoutHostAdapter = new LayoutHostAdapter(
       () => this.options,
       () => ({
@@ -2037,6 +2039,82 @@ export class Draw {
     }
   }
 
+  /**
+   * text-engine 行补齐 ControlIndentation.VALUE_START：
+   * 控件值换行时，续行从「值起始侧」对齐（LTR 值左缘、RTL 值右缘），
+   * 与 legacy computeRowList 的 offsetX 语义一致。仅平移本行 visualLeft，
+   * 不写 offsetX，避免与引擎行右对齐 / 列表 offsetX 二次叠加。
+   */
+  private _applyEngineControlIndentation(rows: IRow[]) {
+    if (!rows.length) return
+    const valueStartByControl = new Map<string, number>()
+    const seenByControl = new Set<string>()
+    for (const row of rows) {
+      const isRtl = row.direction === 'rtl'
+      // 本行出现且带视觉坐标的 VALUE_START 控件值
+      const rowValueStart = new Map<string, number>()
+      for (const el of row.elementList) {
+        if (
+          !el.controlId ||
+          el.control?.indentation !== ControlIndentation.VALUE_START ||
+          el.visualLeft === undefined
+        ) {
+          continue
+        }
+        // 值起点 = 首个非 PREFIX 元素（PRE_TEXT / PLACEHOLDER / VALUE），与 legacy 一致
+        if (
+          el.controlComponent !== ControlComponent.PRE_TEXT &&
+          el.controlComponent !== ControlComponent.PLACEHOLDER &&
+          el.controlComponent !== ControlComponent.VALUE
+        ) {
+          continue
+        }
+        const right = (el.visualLeft || 0) + (el.metrics?.width || 0)
+        const cur = rowValueStart.get(el.controlId)
+        const next =
+          cur === undefined
+            ? (isRtl ? right : el.visualLeft || 0)
+            : isRtl
+              ? Math.max(cur, right)
+              : Math.min(cur, el.visualLeft || 0)
+        rowValueStart.set(el.controlId, next)
+      }
+      for (const [controlId, thisRowStart] of rowValueStart) {
+        if (!seenByControl.has(controlId)) {
+          seenByControl.add(controlId)
+          valueStartByControl.set(controlId, thisRowStart)
+          continue
+        }
+        const firstRowStart = valueStartByControl.get(controlId)!
+        const delta = firstRowStart - thisRowStart
+        if (Math.abs(delta) < 0.01) continue
+        this._shiftEngineRowVisual(row, delta)
+      }
+    }
+  }
+
+  /**
+   * 平移 text-engine 行内全部元素的 visualLeft 与 engineLine 字形（拷贝，避免污染
+   * LayoutCache），不改变行宽。与 LabelParticle.applyEngineRowsMetrics 一致。
+   */
+  private _shiftEngineRowVisual(row: IRow, delta: number) {
+    for (const el of row.elementList) {
+      if (el.visualLeft !== undefined) {
+        el.visualLeft += delta
+      }
+    }
+    if (row.engineLine?.glyphs?.length) {
+      row.engineLine = {
+        ...row.engineLine,
+        glyphs: row.engineLine.glyphs.map(g => ({
+          ...g,
+          left: g.left + delta,
+          right: g.right + delta
+        }))
+      }
+    }
+  }
+
   private _appendParagraphEngineRows(
     rowList: IRow[],
     paragraph: ParagraphSpan,
@@ -2123,6 +2201,7 @@ export class Draw {
     }
     this.control.applyEngineRowsMinWidth(rows, innerWidth)
     this.labelParticle.applyEngineRowsMetrics(rows)
+    this._applyEngineControlIndentation(rows)
     for (const row of rows) {
       this.collapseHiddenEngineRow(row)
       row.rowIndex = rowIndex++
@@ -2238,6 +2317,28 @@ export class Draw {
     return rowList.length ? rowList : null
   }
 
+  /**
+   * legacy 渲染器为逐字符 LTR，不做 Bidi/连字整形；声明 textEngine=legacy 时
+   * RTL 内容无法正确渲染。此处仅对「显式 legacy」模式给出一次性警告，
+   * harfbuzz 模式下的 forceLegacy（表格外壳/浮层图）不触发。
+   */
+  private _warnLegacyRtlIfNeeded(elementList: IElement[]) {
+    if (this.legacyRtlWarned) return
+    if (this.layoutHostAdapter.isHarfBuzzMode()) return
+    const hasRtl = elementList.some(el => {
+      if (el.direction === TextDirection.RTL) return true
+      const value = el.value
+      return !!value && /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(value)
+    })
+    if (hasRtl) {
+      this.legacyRtlWarned = true
+      console.warn(
+        '[canvas-editor] textEngine 为 legacy，无法正确渲染 RTL 内容，' +
+          '请将 textEngine 改为 "harfbuzz"'
+      )
+    }
+  }
+
   public computeRowList(payload: IComputeRowListPayload) {
     const {
       innerWidth,
@@ -2264,6 +2365,7 @@ export class Draw {
       )
       if (engineRows) return engineRows
     }
+    this._warnLegacyRtlIfNeeded(elementList)
     // legacy 前清掉引擎残留 visualLeft，防止表格/图片行定位错乱
     this._clearStaleEngineLayout(elementList)
     const {

@@ -39,7 +39,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - [x] [DEFER-002](#defer-002) Table geometry / border / slash RTL mirroring (P5+)
 - [x] [DEFER-003](#defer-003) TableTool drag and `style.left` (P5+)
 - [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor` (P5)
-- [ ] [DEFER-006](#defer-006) Complex Control flex / ControlIndentation
+- [x] [DEFER-006](#defer-006) Complex Control flex / ControlIndentation
 - [ ] [DEFER-007](#defer-007) ControlSearch / nested control RTL
 - [ ] [DEFER-016](#defer-016) Remove legacy path and `mapToLegacyRow`
 - [x] [DEFER-018](#defer-018) Accessibility and RTL reading order
@@ -116,11 +116,11 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-006
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: Main-body ControlBorder (current phase)
 - Area: control
-- Notes: Inner control flex and `ControlIndentation.VALUE_START` LTR assumptions.
+- Notes: text-engine (harfbuzz) rows now honor `ControlIndentation.VALUE_START`: continuation lines align to the value start side (left edge LTR / right edge RTL) with auto direction detection; checkbox/radio `flexDirection: ROW` RTL box-on-right verified via bidi. The legacy path is unchanged and removed with DEFER-016.
 
 ### DEFER-007
 
