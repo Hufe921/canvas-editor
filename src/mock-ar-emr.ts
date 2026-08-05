@@ -26,7 +26,7 @@ function p(value: string, extra: Partial<IElement> = {}): IElement[] {
 }
 
 /**
- * 表格示例序号：数字+句点按 LTR 岛排版，避免 RTL 段内变成「.١」。
+ * 表格示例序号按 LTR 岛排版，避免 RTL 段内数字顺序错乱。
  * 表外壳仍可 direction:RTL 做列镜像，与中文 demo 结构对照。
  */
 function tableNum(label: string): IElement[] {
@@ -154,13 +154,14 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
   )
 
   // —— 体格检查 ——
-  // 生命体征含拉丁缩写/单位：整段 LTR，避免 RTL 段内被排成「℃٣٩.٥ :T」
+  // 生命体征使用完整阿拉伯语字段和单位
   list.push(...title('الفحص السريري:'))
   list.push(
     {
-      value: 'T: ٣٩.٥℃، P: ٨٠bpm، R: ٢٠/د، BP: ١٢٠/٨٠mmHg؛',
+      value:
+        'درجة الحرارة: ٣٩.٥°م، النبض: ٨٠ نبضة/دقيقة، معدل التنفس: ٢٠ نفسًا/دقيقة، ضغط الدم: ١٢٠/٨٠ ملم زئبق؛',
       size: 16,
-      direction: LTR,
+      direction: RTL,
       rowFlex: START
     },
     { value: '\n', direction: RTL }
@@ -256,17 +257,17 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
           {
             colspan: 1,
             rowspan: 2,
-            value: tableNum('١.')
+            value: tableNum('١')
           },
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('٢.')
+            value: tableNum('٢')
           },
           {
             colspan: 2,
             rowspan: 1,
-            value: tableNum('٣.')
+            value: tableNum('٣')
           }
         ]
       },
@@ -276,17 +277,17 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('٤.')
+            value: tableNum('٤')
           },
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('٥.')
+            value: tableNum('٥')
           },
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('٦.')
+            value: tableNum('٦')
           }
         ]
       },
@@ -296,22 +297,22 @@ export function buildArabicEmrElementList(signatureSrc: string): IElement[] {
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('٧.')
+            value: tableNum('٧')
           },
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('٨.')
+            value: tableNum('٨')
           },
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('٩.')
+            value: tableNum('٩')
           },
           {
             colspan: 1,
             rowspan: 1,
-            value: tableNum('١٠.')
+            value: tableNum('١٠')
           }
         ]
       }

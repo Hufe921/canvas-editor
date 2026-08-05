@@ -23,7 +23,7 @@
 
 ## Current-phase summary
 
-Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + host adapters, dual DOM caret, logical delete, rich-text decorations/list mirroring, start/end alignment and float surround (P1–P4). Tables/header-footer wiring, incremental history, glyph atlas, plus main-path gaps still open (DATE/LABEL, in-paragraph controls, surround/column mixed layout) are listed below.
+Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + host adapters, dual DOM caret, logical delete, rich-text decorations/list mirroring, start/end alignment and float surround (P1–P4). Tables/header-footer wiring, incremental history, glyph atlas, and surround/column mixed-layout acceptance remain listed below; DATE/LABEL and in-paragraph controls are complete under DEFER-023/024.
 
 ## Checklist
 
@@ -54,7 +54,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - [ ] [DEFER-011](#defer-011) Arabic kashida for justify
 - [ ] [DEFER-012](#defer-012) ICU ubidi WASM if JS bidi is insufficient
 - [ ] [DEFER-013](#defer-013) `feature/svg` branch RTL review
-- [ ] [DEFER-014](#defer-014) Demo/toolbar directional icon mirroring
+- [x] [DEFER-014](#defer-014) Demo/toolbar directional icon mirroring
 - [ ] [DEFER-015](#defer-015) LineNumber / PageNumber side follows document direction
 - [ ] [DEFER-017](#defer-017) OT/CRDT collaboration (if needed)
 - [ ] [DEFER-020](#defer-020) Print iframe Block + RTL page edges
@@ -180,11 +180,11 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-014
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: —
 - Area: svg-ui
-- Notes: Mirror directional toolbar/menu SVG icons via logical CSS or `scaleX(-1)`.
+- Notes: RTL toolbar spacing uses logical direction rules; the context menu sets `dir`, uses logical spacing, opens submenus to the left, and flips directional arrows with `scaleX(-1)`. Decoupled from the text engine.
 
 ### DEFER-015
 

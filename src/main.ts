@@ -335,9 +335,11 @@ window.onload = function () {
     uiDirectionDom.hidden = !showToggle
     uiDirectionDom.classList.toggle('is-rtl', isUiRtl)
     uiDirectionDom.classList.toggle('active', isUiRtl)
-    uiDirectionDom.title = isUiRtl
-      ? 'RTL 模式（仅 UI），点击切换为 LTR；新建段默认 RTL'
-      : 'LTR 模式（仅 UI），点击切换为 RTL；新建段默认 LTR'
+    const uiDirectionLabel = uiDirectionDom.querySelector('em')
+    if (uiDirectionLabel) {
+      uiDirectionLabel.textContent = isUiRtl ? 'RTL 模式' : 'LTR 模式'
+    }
+    uiDirectionDom.title = isUiRtl ? 'RTL 模式' : 'LTR 模式'
     appDom.removeAttribute('dir')
     menuDom.setAttribute('dir', dir)
     footerDom.setAttribute('dir', dir)

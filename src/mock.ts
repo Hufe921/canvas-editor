@@ -804,6 +804,7 @@ export const options: IEditorOption = {
   // LTR/RTL 模式只影响 UI + 新建行/表默认值，不改已有 element.direction
   defaultDirection: TextDirection.AUTO,
   direction: TextDirection.LTR,
+  uiDirectionToggle: true,
   caretMovement: CaretMovement.VISUAL,
   cursor: {
     color: '#000000',

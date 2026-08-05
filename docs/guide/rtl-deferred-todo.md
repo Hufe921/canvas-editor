@@ -23,7 +23,7 @@
 
 ## 本期范围摘要
 
-正文段落双向混排、HarfBuzz 整形、独立 `text-engine` + host 适配、模拟光标双 DOM、逻辑删除、富文本装饰/列表镜像、start/end 对齐与 surround（P1–P4）。表格/页眉页脚接线、增量历史、字形 atlas，以及正文路径上尚未收口的 DATE/LABEL、段内控件、环绕图/分栏混排等见下方延期项。
+正文段落双向混排、HarfBuzz 整形、独立 `text-engine` + host 适配、模拟光标双 DOM、逻辑删除、富文本装饰/列表镜像、start/end 对齐与 surround（P1–P4）。表格/页眉页脚接线、增量历史、字形 atlas，以及环绕图/分栏混排验收等见下方延期项；DATE/LABEL 与段内控件已完成，详见 DEFER-023/024。
 
 ## 延期项总表
 
@@ -56,7 +56,7 @@
 - [ ] [DEFER-011](#defer-011) justify 阿语 kashida 拉伸
 - [ ] [DEFER-012](#defer-012) ICU ubidi WASM（若 JS bidi 不够）
 - [ ] [DEFER-013](#defer-013) `feature/svg` DOM 渲染分支 RTL 评估
-- [ ] [DEFER-014](#defer-014) Demo/工具栏方向性图标逻辑属性镜像
+- [x] [DEFER-014](#defer-014) Demo/工具栏方向性图标逻辑属性镜像
 - [ ] [DEFER-015](#defer-015) LineNumber / PageNumber 默认侧随文档方向
 - [ ] [DEFER-017](#defer-017) 协同 OT/CRDT（若产品需要）
 - [ ] [DEFER-020](#defer-020) 打印 iframe 内嵌 Block 与 RTL 页边
@@ -182,11 +182,11 @@
 
 ### DEFER-014
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: —
 - Area: svg-ui
-- Notes: 工具栏/菜单方向性 SVG 图标用逻辑属性或 `scaleX(-1)`，与引擎解耦。
+- Notes: 工具栏 RTL 间距使用逻辑方向调整；右键菜单使用 `dir`、逻辑间距，子菜单向左展开，方向箭头使用 `scaleX(-1)`。与引擎解耦。
 
 ### DEFER-015
 

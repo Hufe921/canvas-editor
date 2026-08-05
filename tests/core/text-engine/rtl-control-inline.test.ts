@@ -63,7 +63,7 @@ describe('rtl controls', () => {
     )
     const bodyPara = paragraphs.find(p => p.text.includes('حمى لمدة ثلاثة أيام'))
     const examTitle = paragraphs.find(p => p.text.includes('الفحص السريري'))
-    const vitals = paragraphs.find(p => p.text.includes('T:'))
+    const vitals = paragraphs.find(p => p.text.includes('درجة الحرارة:'))
 
     expect(titlePara).toBeTruthy()
     expect(bodyPara).toBeTruthy()
@@ -74,7 +74,7 @@ describe('rtl controls', () => {
     expect(examTitle).toBeTruthy()
     expect(vitals).toBeTruthy()
     expect(examTitle).not.toBe(vitals)
-    expect(vitals!.direction).toBe('ltr')
+    expect(vitals!.direction).toBe('rtl')
   })
 
   it('keeps {placeholder} brace order for Arabic SELECT control', () => {

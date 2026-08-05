@@ -191,6 +191,7 @@ export class RangeManager {
     const rowElementList: IElement[] = []
     for (let p = 0; p < positionList.length; p++) {
       const position = positionList[p]
+      if (!position || !elementList[p]) continue
       const rowSet = rangeRow.get(position.pageNo)
       if (!rowSet) continue
       if (rowSet.has(position.rowNo)) {
@@ -206,11 +207,19 @@ export class RangeManager {
     if (!~startIndex && !~endIndex) return null
     const positionList = this.position.getPositionList()
     const elementList = this.draw.getElementList()
+    const positionAt = (index: number) =>
+      positionList[index] || positionList.find(p => p?.index === index)
     const rangeRow: RangeRowArray = new Map()
     // 向上查找
     let start = startIndex
     while (start >= 0) {
-      const { pageNo, rowNo } = positionList[start]
+      const position = positionAt(start)
+      const element = elementList[start]
+      if (!position || !element) {
+        start--
+        continue
+      }
+      const { pageNo, rowNo } = position
       let rowArray = rangeRow.get(pageNo)
       if (!rowArray) {
         rowArray = []
@@ -219,7 +228,6 @@ export class RangeManager {
       if (!rowArray.includes(rowNo)) {
         rowArray.unshift(rowNo)
       }
-      const element = elementList[start]
       const preElement = elementList[start - 1]
       if (
         (element.value === ZERO && !element.listWrap) ||
@@ -235,7 +243,12 @@ export class RangeManager {
     if (!isCollapsed) {
       let middle = startIndex + 1
       while (middle < endIndex) {
-        const { pageNo, rowNo } = positionList[middle]
+        const position = positionAt(middle)
+        if (!position) {
+          middle++
+          continue
+        }
+        const { pageNo, rowNo } = position
         let rowArray = rangeRow.get(pageNo)
         if (!rowArray) {
           rowArray = []
@@ -250,12 +263,17 @@ export class RangeManager {
     // 向下查找
     let end = endIndex
     // 闭合选区&&首字符为换行符时继续向下查找
-    if (isCollapsed && elementList[startIndex].value === ZERO) {
+    if (isCollapsed && elementList[startIndex]?.value === ZERO) {
       end += 1
     }
     while (end < positionList.length) {
       const element = elementList[end]
       const nextElement = elementList[end + 1]
+      const position = positionAt(end)
+      if (!element || !position) {
+        end++
+        continue
+      }
       if (
         (element.value === ZERO && !element.listWrap) ||
         element.listId !== nextElement?.listId ||
@@ -263,7 +281,7 @@ export class RangeManager {
       ) {
         break
       }
-      const { pageNo, rowNo } = positionList[end]
+      const { pageNo, rowNo } = position
       let rowArray = rangeRow.get(pageNo)
       if (!rowArray) {
         rowArray = []
@@ -292,6 +310,7 @@ export class RangeManager {
     const positionList = this.position.getPositionList()
     for (let p = 0; p < positionList.length; p++) {
       const position = positionList[p]
+      if (!position || !elementList[p]) continue
       const rowArray = rangeRow.get(position.pageNo)
       if (!rowArray) continue
       if (rowArray.includes(position.rowNo)) {

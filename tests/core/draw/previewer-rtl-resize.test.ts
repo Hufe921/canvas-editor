@@ -39,6 +39,8 @@ function drag(
   p.curHandleIndex = handleIndex
   p.mousedownX = startX
   p.mousedownY = 100
+  p.resizerStartLeft = 100
+  p.resizerStartTop = 200
   p.width = element.width!
   p.height = element.height!
   p._mousemove({ x: endX, y: 100, preventDefault: () => {} } as any)
@@ -46,7 +48,7 @@ function drag(
 }
 
 describe('Previewer RTL resize mirror', () => {
-  it('right-middle handle: RTL drag right shrinks (mirrored from LTR)', () => {
+  it('right-middle handle keeps physical drag direction in RTL', () => {
     const previewer = new Previewer(mockDraw())
     const rtlEl = {
       width: 100,
@@ -59,12 +61,12 @@ describe('Previewer RTL resize mirror', () => {
       height: 50
     } as IElement)
     expect(ltr).toBe(150)
-    // RTL: drag right (+50) mirrors to shrink to 50
+    // RTL: physical right drag also grows to 150
     const rtl = drag(previewer, 3, 200, 250, rtlEl)
-    expect(rtl).toBe(50)
+    expect(rtl).toBe(150)
   })
 
-  it('left-middle handle: RTL drag left grows (mirrored from LTR)', () => {
+  it('left-middle handle keeps physical drag direction in RTL', () => {
     const previewer = new Previewer(mockDraw())
     // LTR: drag left (-50) grows to 150
     const ltr = drag(previewer, 7, 200, 150, {
@@ -72,12 +74,35 @@ describe('Previewer RTL resize mirror', () => {
       height: 50
     } as IElement)
     expect(ltr).toBe(150)
-    // RTL: drag left (-50) shrinks to 50
+    // RTL: physical left drag also grows to 150
     const rtl = drag(previewer, 7, 200, 150, {
       width: 100,
       height: 50,
       direction: TextDirection.RTL
     } as IElement)
-    expect(rtl).toBe(50)
+    expect(rtl).toBe(150)
+  })
+
+  it('top handle moves the top edge with the vertical resize', () => {
+    const previewer = new Previewer(mockDraw())
+    const p = previewer as any
+    p.curElement = { width: 100, height: 50 }
+    p.previewerDrawOption = {}
+    p.curHandleIndex = 1
+    p.mousedownX = 200
+    p.mousedownY = 100
+    p.resizerStartLeft = 100
+    p.resizerStartTop = 200
+    p.width = 100
+    p.height = 50
+    p._mousemove({
+      x: 200,
+      y: 80,
+      preventDefault: () => {}
+    } as any)
+
+    expect(p.height).toBe(70)
+    expect(p.resizerSelection.style.top).toBe('180px')
+    expect(p.resizerImageContainer.style.top).toBe('180px')
   })
 })

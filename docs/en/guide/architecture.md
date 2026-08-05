@@ -105,7 +105,7 @@ Modules: `particle/`, `control/`, `frame/`, `richtext/`, `interactive/`, `graffi
 - Storage may be nested (`valueList`); runtime layout is a **flat one-char-per-`IElement` list**
 - Paragraphs are implicit via `ZERO` (`\u200B`) and `listId` / `titleId` boundaries — **no `Paragraph` node**
 - Paragraph styles such as `rowFlex` live on elements
-- **No** `direction` / bidi fields today; canvas context forces `ctx.direction = 'ltr'`
+- `IElement.direction` and paragraph bidi direction are resolved by the text-engine host; GlyphRenderer paints HarfBuzz glyphs, while tables/controls enter through adapters
 
 ## Position / Range / Cursor
 
@@ -134,4 +134,4 @@ Modules: `particle/`, `control/`, `frame/`, `richtext/`, `interactive/`, `graffi
 
 ## Relation to RTL work
 
-The current text pipeline is LTR-only. RTL/LTR mixed layout will live in an independent `text-engine` (HarfBuzz + Bidi) behind a thin host adapter. See [RTL layout design](./rtl-layout-design.md).
+RTL/LTR mixed layout is implemented by the independent `text-engine` (HarfBuzz + Bidi) behind a thin host adapter. Legacy and composite-layout paths that remain, plus follow-up work, are tracked in [RTL deferred TODO](./rtl-deferred-todo.md).

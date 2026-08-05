@@ -1,6 +1,5 @@
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { EditorMode } from '../../../../dataset/enum/Editor'
-import { TextDirection } from '../../../../dataset/enum/TextDirection'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../../interface/Element'
 import { EventBusMap } from '../../../../interface/EventBus'
@@ -38,6 +37,8 @@ export class Previewer {
   private height: number
   private mousedownX: number
   private mousedownY: number
+  private resizerStartLeft: number
+  private resizerStartTop: number
   private curHandleIndex: number
   // 预览选区
   private previewerContainer: HTMLDivElement | null
@@ -75,6 +76,8 @@ export class Previewer {
     this.height = 0
     this.mousedownX = 0
     this.mousedownY = 0
+    this.resizerStartLeft = 0
+    this.resizerStartTop = 0
     this.curHandleIndex = 0 // 默认右下角
     this.previewerContainer = null
     this.previewerImage = null
@@ -183,6 +186,8 @@ export class Previewer {
       this.curElement,
       this.curPosition
     )
+    this.resizerStartLeft = resizerLeft
+    this.resizerStartTop = resizerTop
     this.resizerImageContainer.style.left = `${resizerLeft}px`
     this.resizerImageContainer.style.top = `${resizerTop}px`
     this.resizerImage.style.width = `${this.curElement.width! * scale}px`
@@ -215,21 +220,11 @@ export class Previewer {
     evt.preventDefault()
   }
 
-  /** 图片是否处于 RTL 书写上下文：水平方向拖拽逻辑需镜像 */
-  private _isRtlContext(): boolean {
-    if (this.curElement?.direction === TextDirection.RTL) return true
-    if (this.curPosition && ((this.curPosition.bidiLevel ?? 0) & 1) === 1) {
-      return true
-    }
-    return false
-  }
-
   private _mousemove(evt: MouseEvent) {
     if (!this.curElement || this.previewerDrawOption.dragDisable) return
     const { scale } = this.options
-    const isRtl = this._isRtlContext()
-    // RTL 下水平拖拽方向与 LTR 镜像：向右拖 = LTR 的向左拖
-    const mirrorX = isRtl ? -1 : 1
+    // 缩放手柄是物理边界交互，RTL 不改变左右拖拽的增减方向。
+    const mirrorX = 1
     let dx = 0
     let dy = 0
     switch (this.curHandleIndex) {
@@ -284,6 +279,20 @@ export class Previewer {
     if (dw <= 0 || dh <= 0) return
     this.width = dw
     this.height = dh
+    const movesLeft =
+      this.curHandleIndex === 0 ||
+      this.curHandleIndex === 6 ||
+      this.curHandleIndex === 7
+    const movesTop =
+      this.curHandleIndex === 0 ||
+      this.curHandleIndex === 1 ||
+      this.curHandleIndex === 2
+    const previewLeft = this.resizerStartLeft + (movesLeft ? -dx : 0)
+    const previewTop = this.resizerStartTop + (movesTop ? -dy : 0)
+    this.resizerSelection.style.left = `${previewLeft}px`
+    this.resizerSelection.style.top = `${previewTop}px`
+    this.resizerImageContainer.style.left = `${previewLeft}px`
+    this.resizerImageContainer.style.top = `${previewTop}px`
     // 图片显示宽高
     const elementWidth = dw * scale
     const elementHeight = dh * scale

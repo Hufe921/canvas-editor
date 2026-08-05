@@ -1726,12 +1726,14 @@ export class CommandAdapt {
       let currentX = 0
       let rangeRect: RangeRect | null = null
       for (let p = 0; p < selectionPositionList.length; p++) {
+        const position = selectionPositionList[p]
+        if (!position) continue
         const {
           rowNo,
           pageNo,
           coordinate: { leftTop, rightTop },
           lineHeight
-        } = selectionPositionList[p]
+        } = position
         // 起始行变化追加选区信息
         if (currentRowNo === null || currentRowNo !== rowNo) {
           if (rangeRect) {
@@ -1755,7 +1757,9 @@ export class CommandAdapt {
       }
     } else {
       const positionList = this.position.getPositionList()
-      const position = positionList[endIndex]
+      const position =
+        positionList[endIndex] || positionList.find(p => p?.index === endIndex)
+      if (!position) return null
       const {
         coordinate: { rightTop },
         pageNo,
@@ -1790,7 +1794,13 @@ export class CommandAdapt {
       const preElement = elementList[start - 1]
       if (curElement.titleId && curElement.titleId !== preElement?.titleId) {
         titleId = curElement.titleId
-        titleStartPageNo = positionList[start].pageNo
+        const titlePosition =
+          positionList[start] || positionList.find(p => p?.index === start)
+        if (!titlePosition) {
+          start--
+          continue
+        }
+        titleStartPageNo = titlePosition.pageNo
         break
       }
       start--

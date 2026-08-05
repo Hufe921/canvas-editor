@@ -109,7 +109,7 @@ flowchart TB
 - 持久化可为嵌套（`valueList`）；运行时布局为**扁平一字一 `IElement`**
 - 段落由 `ZERO`（`\u200B`，由 `\n` 归一）及 `listId` / `titleId` 边界隐式界定，**无独立 Paragraph 节点**
 - 段落样式（如 `rowFlex` / `rowMargin`）挂在元素上，命令写到选区行内元素
-- **当前无** `direction` / bidi 字段；Canvas 上下文写死 `ctx.direction = 'ltr'`
+- `IElement.direction` / 段落 bidi 方向由 text-engine host 解析；GlyphRenderer 负责 HarfBuzz 字形绘制，表格/控件通过适配层接入
 
 ## Position / Range / Cursor
 
@@ -143,4 +143,4 @@ flowchart TB
 
 ## 与 RTL 改造的关系
 
-当前文本管线为全 LTR 单字符累加。RTL/LTR 混排将在**独立 `text-engine`** 中实现 HarfBuzz 整形与 Bidi，经薄适配层接入 Draw，详见 [RTL 排版设计](./rtl-layout-design.md)。
+正文 RTL/LTR 混排已由独立 `text-engine` 通过 HarfBuzz 整形与 Bidi 实现，并经薄适配层接入 Draw；未迁移的 legacy/复合布局路径及后续事项见 [RTL 延期 TODO](./rtl-deferred-todo.md)。

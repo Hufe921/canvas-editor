@@ -319,6 +319,10 @@ ul {
   background-image: url('./assets/images/title.svg');
 }
 
+.menu.ui-rtl .menu-item__title i {
+  transform: translateX(5px);
+}
+
 .menu-item__title .options {
   width: 80px;
 }

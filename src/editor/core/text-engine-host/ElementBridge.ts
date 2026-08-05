@@ -49,6 +49,8 @@ function textHasRtlDirection(text: string): boolean {
 
 function controlContentIsRtl(control: IElement['control']): boolean {
   if (!control) return false
+  // 日期值始终按 yyyy-MM-dd HH:mm:ss 的 LTR 字符串排版；RTL 仅影响弹层定位
+  if (control.type === ControlType.DATE) return false
   if (
     control.type === ControlType.CHECKBOX ||
     control.type === ControlType.RADIO

@@ -1662,7 +1662,8 @@ export class Draw {
    */
   public getPopupPositionStyle(
     position: import('../../interface/Element').IElementPosition,
-    topOffset = 0
+    topOffset = 0,
+    direction?: 'ltr' | 'rtl'
   ): { left?: number; right?: number; top: number } {
     const {
       coordinate: { leftTop, rightTop },
@@ -1670,7 +1671,9 @@ export class Draw {
       pageNo,
       bidiLevel
     } = position
-    const isRtl = ((bidiLevel ?? 0) & 1) === 1
+    const isRtl = direction
+      ? direction === 'rtl'
+      : ((bidiLevel ?? 0) & 1) === 1
     const height = this.getHeight()
     const pageGap = this.getPageGap()
     const currentPageNo = pageNo ?? this.getPageNo()

@@ -80,6 +80,7 @@ interface IRenderOption {
   value: string
   position: IElementPosition
   dateFormat?: string
+  popupDirection?: 'ltr' | 'rtl'
 }
 
 export class DatePicker {
@@ -349,7 +350,11 @@ export class DatePicker {
   private _setPosition() {
     if (!this.renderOptions) return
     // 位置（RTL 右对齐元素右缘，LTR 左对齐元素左缘）
-    const style = this.draw.getPopupPositionStyle(this.renderOptions.position)
+    const style = this.draw.getPopupPositionStyle(
+      this.renderOptions.position,
+      0,
+      this.renderOptions.popupDirection
+    )
     if (style.right !== undefined) {
       this.dom.container.style.left = 'auto'
       this.dom.container.style.right = `${style.right}px`
