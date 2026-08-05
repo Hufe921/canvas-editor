@@ -40,6 +40,7 @@ import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
 import {
   CaretMovement,
+  DeleteMovement,
   TextDirection,
   TextEngineMode
 } from '../dataset/enum/TextDirection'
@@ -124,6 +125,8 @@ export interface IEditorOption {
   defaultDirection?: TextDirection
   /** Arrow-key caret movement semantics */
   caretMovement?: CaretMovement
+  /** Backspace/Delete target semantics */
+  deleteMovement?: DeleteMovement
   /** Font binaries registered for HarfBuzz shaping */
   fonts?: IEditorFontFace[]
   table?: ITableOption

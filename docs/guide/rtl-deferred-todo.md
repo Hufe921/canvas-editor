@@ -42,7 +42,7 @@
 - [x] [DEFER-003](#defer-003) TableTool 拖拽与 `style.left`（P5+）
 - [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor`（P5）
 - [x] [DEFER-006](#defer-006) 复杂 Control 内部 flex / ControlIndentation
-- [ ] [DEFER-007](#defer-007) ControlSearch / 嵌套控件 RTL
+- [x] [DEFER-007](#defer-007) ControlSearch / 嵌套控件 RTL
 - [ ] [DEFER-016](#defer-016) 去掉 legacy 路径与 `mapToLegacyRow`
 - [x] [DEFER-018](#defer-018) Accessibility 与 RTL 阅读顺序
 - [x] [DEFER-019](#defer-019) HTML/剪贴板 `dir` 往返完整保真
@@ -52,16 +52,16 @@
 
 ### P3
 
-- [ ] [DEFER-008](#defer-008) 表内 Area 背景与命中
-- [ ] [DEFER-011](#defer-011) justify 阿语 kashida 拉伸
+- [x] [DEFER-008](#defer-008) 表内 Area 背景与命中
+- [x] [DEFER-011](#defer-011) justify 阿语 kashida 拉伸
 - [ ] [DEFER-012](#defer-012) ICU ubidi WASM（若 JS bidi 不够）
 - [ ] [DEFER-013](#defer-013) `feature/svg` DOM 渲染分支 RTL 评估
 - [x] [DEFER-014](#defer-014) Demo/工具栏方向性图标逻辑属性镜像
-- [ ] [DEFER-015](#defer-015) LineNumber / PageNumber 默认侧随文档方向
+- [x] [DEFER-015](#defer-015) LineNumber / PageNumber 默认侧随文档方向
 - [ ] [DEFER-017](#defer-017) 协同 OT/CRDT（若产品需要）
 - [ ] [DEFER-020](#defer-020) 打印 iframe 内嵌 Block 与 RTL 页边
-- [ ] [DEFER-022](#defer-022) 视觉邻接删除模式
-- [ ] [DEFER-025](#defer-025) 环绕图 / 分栏与 text-engine 混排专项验收
+- [x] [DEFER-022](#defer-022) 视觉邻接删除模式
+- [x] [DEFER-025](#defer-025) 环绕图 / 分栏与 text-engine 混排专项验收
 
 ## 与路线图映射
 
@@ -126,19 +126,19 @@
 
 ### DEFER-007
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: DEFER-006
 - Area: control
-- Notes: ControlSearch 高亮与嵌套控件内双向文本。
+- Notes: 保持外层/内层控件独立搜索语义；正文与表格单元格 text-engine 命中均使用 glyph 视觉矩形；覆盖 RTL、混排换行、表格单元格和嵌套控件的 `ControlSearch.renderHighlightList` 集成验收。
 
 ### DEFER-008
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: DEFER-001
 - Area: table
-- Notes: 表内 Area 背景与命中几何。
+- Notes: 表内 Area 背景与命中几何已按 td 内容盒计算（LTR/RTL 镜像一致）；点击命中 td 内 area 元素并正确激活区域。
 
 ### DEFER-009
 
@@ -158,11 +158,11 @@
 
 ### DEFER-011
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: P4 Alignment
 - Area: layout
-- Notes: justify 时阿语 kashida；引擎预留扩展点。
+- Notes: justify/alignment 的非末行若含阿语且有余白，在相邻阿语字母间插入 TATWEEL 重新整形得到 kashida 笔画；其余行优先拉伸词间空格。段末行不拉伸。
 
 ### DEFER-012
 
@@ -178,7 +178,7 @@
 - Priority: P3
 - Depends: 合入 `feature/svg` 时
 - Area: svg-ui
-- Notes: 当前主干无 DOM 文档 SVG；分支合入需单独评估 `dir`/坐标。
+- Notes: 当前渲染引擎暂未支持 SVG 渲染实现 RTL；主干也无 DOM 文档 SVG。分支合入需单独评估 `dir`/坐标。
 
 ### DEFER-014
 
@@ -190,11 +190,11 @@
 
 ### DEFER-015
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: P3 段级镜像（若未做完）
 - Area: frame
-- Notes: LineNumber / PageNumber 默认侧或 rowFlex 随文档方向。页码**绘制**已走 `drawPlainText`（混排/连写）；本条仅剩物理侧/对齐镜像。
+- Notes: RTL 行号绘制到右页边外侧；页码 `LEFT` / `RIGHT` 在 RTL 下交换物理侧，CENTER 保持居中。页码文本继续使用 `drawPlainText`。
 
 ### DEFER-016
 
@@ -246,11 +246,11 @@
 
 ### DEFER-022
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: 产品要求
 - Area: input
-- Notes: 默认逻辑删除；若要求 Delete 跟视觉邻接，另开模式开关。
+- Notes: 新增 `deleteMovement: logical | visual`，默认 logical 保持兼容；visual 模式对正文 RTL 文本按屏幕邻接处理 Backspace/Delete，控件与表格特殊删除路径保持原规则。
 
 ### DEFER-023
 
@@ -270,8 +270,8 @@
 
 ### DEFER-025
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: 正文旁 IMAGE/TABLE `forceLegacy` 插行已落地
 - Area: layout
-- Notes: 环绕图（SURROUND/FLOAT_*）、多栏与 text-engine 混排仅有基础插行，未做专项几何/可用宽度/分页验收。需覆盖：环绕占位与引擎 `availableWidth`、分栏切换后引擎行 `columnIndex`、浮动图命中与重排。
+- Notes: 引擎行按行累计高度补齐分栏 `columnIndex` 与环绕图偏移：与 SURROUND 图纵向相交的正文行平移至图片右缘不再重叠；多栏下引擎行带 `columnIndex`，翻栏后位置按栏偏移。表格单元格/页眉页脚子布局不参与。浮动图命中沿用原路径。

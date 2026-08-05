@@ -42,6 +42,12 @@ export class FontManager {
     let buffer = face.data
     if (!buffer && face.url) {
       const res = await fetch(face.url)
+      if (!res.ok) {
+        console.warn(
+          `[text-engine] Font fetch failed ${face.family}: ${res.status} ${res.statusText}`
+        )
+        return
+      }
       buffer = await res.arrayBuffer()
     }
     if (!buffer) return
@@ -49,13 +55,20 @@ export class FontManager {
     const style = face.style ?? 'normal'
     const cacheKey = `${face.family}_${weight}_${style}`
     if (this.faceCache.has(cacheKey)) return
-    const blob = new HbBlob(buffer)
-    const hbFace = new HbFace(blob, 0)
     let ot: OtFont | null = null
     try {
       ot = opentype.parse(buffer)
     } catch {
-      ot = null
+      console.warn(`[text-engine] Invalid font data: ${face.family}`)
+      return
+    }
+    let hbFace: HbFace
+    try {
+      const blob = new HbBlob(buffer)
+      hbFace = new HbFace(blob, 0)
+    } catch {
+      console.warn(`[text-engine] HarfBuzz rejected font data: ${face.family}`)
+      return
     }
     this.faceCache.set(cacheKey, { face: hbFace, ot, buffer })
     // Register with document so canvas fillText can join Arabic with this family

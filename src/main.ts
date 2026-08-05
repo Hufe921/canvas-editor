@@ -326,6 +326,38 @@ window.onload = function () {
   const uiDirectionDom = document.querySelector<HTMLDivElement>(
     '.menu-item__ui-direction'
   )!
+  const repositionSearchCollapse = () => {
+    const searchDom = document.querySelector<HTMLDivElement>(
+      '.menu-item__search'
+    )
+    const searchCollapseDom = document.querySelector<HTMLDivElement>(
+      '.menu-item__search__collapse'
+    )
+    if (
+      !searchDom ||
+      !searchCollapseDom ||
+      searchCollapseDom.style.display === 'none'
+    ) {
+      return
+    }
+    const searchRect = searchDom.getBoundingClientRect()
+    const collapseRect = searchCollapseDom.getBoundingClientRect()
+    const viewportWidth =
+      window.innerWidth || document.documentElement.clientWidth
+    const isUiRtl = menuDom.getAttribute('dir') === 'rtl'
+    const preferredLeft = isUiRtl
+      ? searchRect.right - collapseRect.width
+      : searchRect.left
+    const maxLeft = Math.max(0, viewportWidth - collapseRect.width)
+    const left = Math.min(Math.max(0, preferredLeft), maxLeft)
+    const collapseStyle = searchCollapseDom.style
+    collapseStyle.position = 'fixed'
+    collapseStyle.top = `${searchRect.bottom + 1}px`
+    collapseStyle.left = `${left}px`
+    collapseStyle.right = 'unset'
+    collapseStyle.insetInlineStart = 'unset'
+    collapseStyle.insetInlineEnd = 'unset'
+  }
   /** LTR/RTL 模式：只镜像顶栏/底栏；#app 仅打 class，避免目录/批注继承 dir=rtl 导致中文标点乱序 */
   const syncUiDirectionChrome = () => {
     const opts = instance.command.getOptions()
@@ -346,6 +378,7 @@ window.onload = function () {
     appDom.classList.toggle('ui-rtl', isUiRtl)
     menuDom.classList.toggle('ui-rtl', isUiRtl)
     footerDom.classList.toggle('ui-rtl', isUiRtl)
+    repositionSearchCollapse?.()
   }
   syncUiDirectionChrome()
   uiDirectionDom.onclick = function () {
@@ -1226,18 +1259,11 @@ window.onload = function () {
       searchResultDom.innerText = ''
     }
   }
+
   searchDom.onclick = function () {
     console.log('search')
     searchCollapseDom.style.display = 'block'
-    const bodyRect = document.body.getBoundingClientRect()
-    const searchRect = searchDom.getBoundingClientRect()
-    const searchCollapseRect = searchCollapseDom.getBoundingClientRect()
-    if (searchRect.left + searchCollapseRect.width > bodyRect.width) {
-      searchCollapseDom.style.right = '0px'
-      searchCollapseDom.style.left = 'unset'
-    } else {
-      searchCollapseDom.style.right = 'unset'
-    }
+    repositionSearchCollapse()
     searchInputDom.focus()
   }
   searchCollapseDom.querySelector<HTMLSpanElement>('span')!.onclick =

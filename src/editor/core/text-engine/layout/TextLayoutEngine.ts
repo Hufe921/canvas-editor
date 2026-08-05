@@ -16,18 +16,36 @@ import {
   TextStyleProps
 } from '../types'
 
+const TATWEEL = '\u0640'
+
 export class TextLayoutEngine {
   constructor(
     private bidi: BidiResolver,
     private shaper: ITextShaper
   ) {}
 
+  /**
+   * Layout a paragraph. For justified Arabic lines with leftover space, insert
+   * kashida (TATWEEL) and re-layout once so the strokes are part of the text.
+   */
   layoutParagraph(input: LayoutParagraphInput): LayoutResult {
+    const natural = this.layoutPass(input)
+    const kashidaInput = this.buildKashidaInput(input, natural)
+    const result = kashidaInput ? this.layoutPass(kashidaInput) : natural
+    this.applyAlignment(
+      result.lines,
+      input.align,
+      input.availableWidth,
+      result.paragraphText
+    )
+    return result
+  }
+
+  private layoutPass(input: LayoutParagraphInput): LayoutResult {
     const {
       spans,
       availableWidth,
       direction,
-      align,
       lineHeight,
       wordBreak = 'break-word'
     } = input
@@ -89,8 +107,141 @@ export class TextLayoutEngine {
         )
       }
     }
-    this.applyAlignment(lines, align, availableWidth)
     return { lines, direction, paragraphText }
+  }
+
+  /** 阿拉伯字母（不含 TATWEEL、变音符号、数字、标点） */
+  private isArabicLetter(ch: string): boolean {
+    return /^[\u0621-\u063A\u0641-\u064A\u0671-\u06D3\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]$/u.test(
+      ch
+    )
+  }
+
+  /** 行内可插入 kashida 的逻辑偏移：位于两个相邻阿语字母之间 */
+  private kashidaPoints(
+    text: string,
+    start: number,
+    end: number
+  ): number[] {
+    const points: number[] = []
+    for (let o = start; o < end - 1; o++) {
+      if (this.isArabicLetter(text[o]) && this.isArabicLetter(text[o + 1])) {
+        points.push(o + 1)
+      }
+    }
+    return points
+  }
+
+  private measureTatweel(
+    style: TextStyleProps,
+    direction: ResolvedDirection
+  ): number {
+    const run: StyleRun = {
+      text: TATWEEL,
+      direction,
+      style,
+      textStart: 0,
+      textEnd: 1,
+      logicalIndexAt: () => 0
+    }
+    return this.shaper
+      .shape(run)
+      .reduce((m, g) => m + Math.max(g.ax, 0), 0)
+  }
+
+  /**
+   * Build a re-layout input with kashida (TATWEEL) inserted into justified
+   * Arabic lines that have leftover space. Returns null when no kashida is
+   * needed, leaving justify to the space-stretch path.
+   */
+  private buildKashidaInput(
+    input: LayoutParagraphInput,
+    result: LayoutResult
+  ): LayoutParagraphInput | null {
+    const { spans, availableWidth, align } = input
+    const paragraphText = result.paragraphText
+    const insertions = new Map<number, number>()
+    let changed = false
+    for (let i = 0; i < result.lines.length; i++) {
+      const line = result.lines[i]
+      // 段末行不参与 kashida 拉伸（与两端对齐惯例一致，单行段也不拉）
+      const isLast = i === result.lines.length - 1
+      const shouldJustify =
+        !isLast &&
+        (align === 'justify' || (align === 'alignment'))
+      if (!shouldJustify) continue
+      const extra = availableWidth - line.width
+      if (extra <= 0.5) continue
+      const arabicGlyph = line.glyphs.find(g =>
+        containsShapingScript(paragraphText.slice(g.charStart, g.charEnd))
+      )
+      if (!arabicGlyph) continue
+      const points = this.kashidaPoints(
+        paragraphText,
+        line.textStart,
+        line.textEnd
+      )
+      if (!points.length) continue
+      const advance = this.measureTatweel(
+        arabicGlyph.style,
+        line.direction
+      )
+      if (advance <= 0) continue
+      const count = Math.min(
+        points.length,
+        Math.max(1, Math.round(extra / advance))
+      )
+      for (let k = 0; k < count; k++) {
+        const off = points[k]
+        insertions.set(off, (insertions.get(off) || 0) + 1)
+      }
+      changed = true
+    }
+    if (!changed) return null
+    return {
+      ...input,
+      spans: this.insertTatweel(spans, insertions)
+    }
+  }
+
+  /** Splice TATWEEL into spans; kashida chars inherit the preceding letter. */
+  private insertTatweel(
+    spans: TextSpan[],
+    insertions: Map<number, number>
+  ): TextSpan[] {
+    const result: TextSpan[] = []
+    let offset = 0
+    for (const span of spans) {
+      const spanStart = offset
+      const spanEnd = offset + span.text.length
+      offset = spanEnd
+      const local: Array<{ at: number; count: number }> = []
+      for (const [charOffset, count] of insertions) {
+        if (charOffset >= spanStart && charOffset <= spanEnd) {
+          local.push({ at: charOffset - spanStart, count })
+        }
+      }
+      if (!local.length) {
+        result.push(span)
+        continue
+      }
+      local.sort((a, b) => a.at - b.at)
+      let text = span.text
+      const indices = span.logicalIndices
+        ? [...span.logicalIndices]
+        : text.split('').map(() => span.logicalIndex)
+      for (const { at, count } of local) {
+        const logicalBefore =
+          at > 0 ? indices[at - 1] : indices.length ? indices[0] : span.logicalIndex
+        text =
+          text.slice(0, at) +
+          TATWEEL.repeat(count) +
+          text.slice(at)
+        indices.splice(at, 0, ...new Array<number>(count).fill(logicalBefore))
+      }
+      result.push({ ...span, text, logicalIndices: indices })
+    }
+    return result
   }
 
   private buildOffsetMap(spans: TextSpan[]): (offset: number) => number {
@@ -509,7 +660,8 @@ export class TextLayoutEngine {
   private applyAlignment(
     lines: LayoutLine[],
     align: LayoutParagraphInput['align'],
-    availableWidth: number
+    availableWidth: number,
+    paragraphText: string
   ) {
     const isLast = (i: number) => i === lines.length - 1
     // 分散对齐：所有行拉伸；两端对齐：仅非末行（与 legacy Draw 一致）
@@ -521,6 +673,27 @@ export class TextLayoutEngine {
       if (shouldJustify(i) && line.glyphs.length > 1) {
         const extra = availableWidth - line.width
         if (extra > 0.5) {
+          // 优先拉伸词间空格，避免在连写阿语/拉丁词内部拉出断口
+          const spaceSet = new Set<number>()
+          line.glyphs.forEach((g, idx) => {
+            if (this.isSpaceChar(paragraphText.slice(g.charStart, g.charEnd))) {
+              spaceSet.add(idx)
+            }
+          })
+          if (spaceSet.size) {
+            const per = extra / spaceSet.size
+            let x = 0
+            for (let g = 0; g < line.glyphs.length; g++) {
+              const glyph = line.glyphs[g]
+              const adv = Math.max(glyph.ax, 0)
+              glyph.left = x
+              glyph.right = x + adv
+              x += adv + (spaceSet.has(g) ? per : 0)
+            }
+            line.width = availableWidth
+            line.shiftX = 0
+            continue
+          }
           const gaps = line.glyphs.length - 1
           const each = extra / gaps
           let x = 0

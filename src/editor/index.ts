@@ -9,6 +9,7 @@ import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
 import {
   CaretMovement,
+  DeleteMovement,
   TextDirection,
   TextEngineMode
 } from './dataset/enum/TextDirection'
@@ -200,6 +201,7 @@ export {
   TextEngineMode,
   TextScript,
   CaretMovement,
+  DeleteMovement,
   VerticalAlign,
   EditorZone,
   EditorMode,

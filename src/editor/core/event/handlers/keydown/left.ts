@@ -28,6 +28,18 @@ function tryVisualMove(
     isTable: positionContext.isTable,
     tdId: positionContext.tdId
   })
+  // RTL 段：方向键跟随阅读方向（右=前进=逻辑+1，左=后退=逻辑-1）。
+  // 视觉槽在 RTL/LTR 岛边界会回退跳跃，逻辑步进才能与 LTR 一致的单调前进/后退。
+  const dir = adapter.resolveElementDirection(
+    draw.getElementList(),
+    logicalIndex
+  )
+  if (dir === 'rtl') {
+    const target = logicalIndex + delta
+    const elementList = draw.getElementList()
+    if (target < 0 || target >= elementList.length) return null
+    return target
+  }
   return adapter.visualNeighbor(logicalIndex, delta, layoutScope)
 }
 

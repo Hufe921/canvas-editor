@@ -20,7 +20,7 @@ import {
 
 /** Object Replacement Character — inline widget slot in paragraph text */
 const OBJECT_REPLACEMENT = '\uFFFC'
-/** LTR isolate: keep control `{value}` brace order inside RTL paragraphs */
+/** LTR isolate: keep control `{value}` / LTR units together inside RTL paragraphs */
 const LRI = '\u2066'
 const PDI = '\u2069'
 /** 零宽/格式字符前后缀（如签名线 U+200C）不包隔离，避免占宽挤开 minWidth 下划线 */
@@ -47,6 +47,21 @@ function textHasRtlDirection(text: string): boolean {
   return false
 }
 
+function textHasLtrDirection(text: string): boolean {
+  const { getBidiCharTypeName } = getBidiApi()
+  for (let i = 0; i < text.length; ) {
+    const cp = text.codePointAt(i)!
+    const name = getBidiCharTypeName(String.fromCodePoint(cp))
+    if (name === 'L' || name === 'EN') return true
+    i += cp > 0xffff ? 2 : 1
+  }
+  return false
+}
+
+function isLtrIsolateBoundary(text: string): boolean {
+  return /^[،؛؟,，、]$/.test(text)
+}
+
 function controlContentIsRtl(control: IElement['control']): boolean {
   if (!control) return false
   // 日期值始终按 yyyy-MM-dd HH:mm:ss 的 LTR 字符串排版；RTL 仅影响弹层定位
@@ -57,17 +72,19 @@ function controlContentIsRtl(control: IElement['control']): boolean {
   ) {
     return true
   }
-  if (control.placeholder && textHasRtlDirection(control.placeholder)) {
-    return true
-  }
+  // 优先看实际值：用户输入的数值是 LTR，应保持 LRI；空值时看占位符。
   const value = control.value
-  if (Array.isArray(value)) {
+  if (Array.isArray(value) && value.some(item => item?.value)) {
     for (const item of value) {
       if (item?.value && textHasRtlDirection(String(item.value))) {
         return true
       }
     }
-  } else if (typeof value === 'string' && textHasRtlDirection(value)) {
+    return false
+  } else if (typeof value === 'string' && value) {
+    return textHasRtlDirection(value)
+  }
+  if (control.placeholder && textHasRtlDirection(control.placeholder)) {
     return true
   }
   return false
@@ -244,6 +261,7 @@ export class ElementBridge {
     const isolateBrackets = direction === 'rtl' || hasRtlContent
     const spans: TextSpan[] = []
     let text = ''
+    let ltrIsolateOpen = false
     for (let i = startIndex; i <= endIndex; i++) {
       const el = elementList[i]
       if (el.value === ZERO) continue
@@ -334,11 +352,10 @@ export class ElementBridge {
         letterSpacing: el.letterSpacing,
         scriptShift: isSuper ? 'super' : isSub ? 'sub' : undefined
       }
-      // 仅 RTL 段：可见括号包 LRI/PDI，避免 `{10}` 被排成 `}10{`；
-      // LTR 不加，防止跨行控件半截隔离导致选中后叠字 / 点不进
-      // RTL 段内内容为 RTL 的控件（阿拉伯文本/选择/checkbox/radio）不隔离：
-      // 隔离会把盒与值整体按 LTR 排，使 checkbox 盒落文本左侧、空值光标落左侧；
-      // RTL 应盒在右侧、光标右对齐（与 LTR 相反）。数字/日期等 LTR 内容仍隔离保括号。
+      // RTL 段：LTR 单位（cm/kg/BMI:）按字符拆分为独立的 LRI…PDI 岛，
+      // 避免 `kg، BMI` 等被 bidi 合并成一个 LTR 单位后穿入相邻控件。
+      // 阿拉伯内容控件保持不隔离（checkbox/radio 盒按 RTL 落右侧），
+      // 随段自然 RTL 排布；LTR 内容控件仍包 LRI 保括号顺序。
       const skipIsolateForRtlContent =
         direction === 'rtl' && controlContentIsRtl(el.control)
       const isolatePrefix =
@@ -355,7 +372,30 @@ export class ElementBridge {
         shouldIsolateControlBracket(el.value)
           ? PDI
           : ''
-      const chunk = isolatePrefix + el.value + isolatePostfix
+      let ltrPrefix = ''
+      if (direction === 'rtl') {
+        const isControlElement = !!el.controlComponent || !!el.controlId
+        if (isControlElement) {
+          // 控件自带方向：先关闭前方未闭合的 LTR 岛
+          if (ltrIsolateOpen) {
+            ltrPrefix = PDI
+            ltrIsolateOpen = false
+          }
+        } else {
+          const hasRtl = textHasRtlDirection(el.value)
+          const hasLtr = textHasLtrDirection(el.value)
+          if (ltrIsolateOpen && (hasRtl || isLtrIsolateBoundary(el.value))) {
+            ltrPrefix = PDI
+            ltrIsolateOpen = false
+          }
+          if (!ltrIsolateOpen && hasLtr) {
+            ltrPrefix += LRI
+            ltrIsolateOpen = true
+          }
+        }
+      }
+      const chunk =
+        ltrPrefix + isolatePrefix + el.value + isolatePostfix
       const styleKey = this.styleKey(style)
       const last = spans[spans.length - 1]
       // 元素内每个 UTF-16 单元都映射到该元素下标（含 isolate；grapheme 可能多码元）
@@ -375,6 +415,12 @@ export class ElementBridge {
         })
       }
       text += chunk
+    }
+    if (ltrIsolateOpen && spans.length) {
+      const last = spans[spans.length - 1]
+      last.text += PDI
+      last.logicalIndices = (last.logicalIndices || []).concat(endIndex)
+      text += PDI
     }
     return {
       startIndex,

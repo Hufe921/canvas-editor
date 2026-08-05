@@ -128,6 +128,7 @@ import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableOperate } from '../draw/particle/table/TableOperate'
 import { CanvasEvent } from '../event/CanvasEvent'
+import { getVisualDeleteTarget } from '../event/handlers/keydown/visualDelete'
 import { pasteByApi } from '../event/handlers/paste'
 import { HistoryManager } from '../history/HistoryManager'
 import { I18n } from '../i18n/I18n'
@@ -215,6 +216,9 @@ export class CommandAdapt {
     ) {
       return
     }
+    const visualTarget = isCollapsed
+      ? getVisualDeleteTarget(this.canvasEvent, startIndex, true)
+      : null
     if (!isCollapsed) {
       this.draw.deleteElementList(
         elementList,
@@ -222,9 +226,14 @@ export class CommandAdapt {
         endIndex - startIndex
       )
     } else {
-      this.draw.deleteElementList(elementList, startIndex, 1)
+      this.draw.deleteElementList(
+        elementList,
+        visualTarget?.index ?? startIndex,
+        1
+      )
     }
-    const curIndex = isCollapsed ? startIndex - 1 : startIndex
+    const curIndex = visualTarget?.cursorIndex ??
+      (isCollapsed ? startIndex - 1 : startIndex)
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }

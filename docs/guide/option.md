@@ -67,6 +67,7 @@ interface IEditorOption {
   uiDirectionToggle?: boolean // 是否展示 LTR/RTL 模式切换控件（宿主工具栏读取）。默认：true；false 时隐藏
   defaultDirection?: 'ltr' | 'rtl' | 'auto' // 内容默认段落方向（元素无 direction 时；auto 按强字符探测）。命令：executeDirection。与 UI 模式 options.direction 分离。默认：auto
   caretMovement?: 'visual' | 'logical' // 方向键光标移动语义。默认：visual
+  deleteMovement?: 'visual' | 'logical' // Backspace/Delete 删除语义；visual 按屏幕邻接删除。默认：logical
   fonts?: { family: string; data?: ArrayBuffer | null; url?: string | null; weight?: number; style?: 'normal' | 'italic' }[] // HarfBuzz 字体注册
   watermark?: IWatermark // 水印配置
   control?: IControlOption // 控件配置

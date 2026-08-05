@@ -1,6 +1,7 @@
 import { FORMAT_PLACEHOLDER } from '../../../dataset/constant/PageNumber'
 import { NumberType } from '../../../dataset/enum/Common'
 import { RowFlex } from '../../../dataset/enum/Row'
+import { TextDirection } from '../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { convertNumberToChinese } from '../../../utils'
@@ -80,13 +81,28 @@ export class PageNumber {
     }
     const margins = this.draw.getMargins()
     const adapter = this.draw.getLayoutHostAdapter()
+    const pageRows = this.draw.getPageRowList()[pageNo] || []
+    const firstRow = pageRows.find(row => row.direction)
+    const firstElement = this.draw
+      .getOriginalMainElementList()
+      .find(element => element.direction)
+    const isRtl =
+      firstRow?.direction === TextDirection.RTL ||
+      firstElement?.direction === TextDirection.RTL ||
+      this.options.defaultDirection === TextDirection.RTL
+    const resolvedRowFlex =
+      isRtl && rowFlex === RowFlex.LEFT
+        ? RowFlex.RIGHT
+        : isRtl && rowFlex === RowFlex.RIGHT
+          ? RowFlex.LEFT
+          : rowFlex
     ctx.save()
     const metrics = measurePlainText(adapter, style)
     if (metrics) {
       let x = margins[3]
-      if (rowFlex === RowFlex.CENTER) {
+      if (resolvedRowFlex === RowFlex.CENTER) {
         x = (width - metrics.width) / 2
-      } else if (rowFlex === RowFlex.RIGHT) {
+      } else if (resolvedRowFlex === RowFlex.RIGHT) {
         x = width - metrics.width - margins[1]
       }
       drawPlainText(adapter, ctx, style, x, y)
@@ -95,9 +111,9 @@ export class PageNumber {
       ctx.font = `${fontSize}px ${font}`
       const { width: textWidth } = ctx.measureText(text)
       let x = margins[3]
-      if (rowFlex === RowFlex.CENTER) {
+      if (resolvedRowFlex === RowFlex.CENTER) {
         x = (width - textWidth) / 2
-      } else if (rowFlex === RowFlex.RIGHT) {
+      } else if (resolvedRowFlex === RowFlex.RIGHT) {
         x = width - textWidth - margins[1]
       }
       ctx.fillText(text, x, y)

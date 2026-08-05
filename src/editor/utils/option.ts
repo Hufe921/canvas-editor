@@ -61,6 +61,7 @@ import {
 } from '../dataset/enum/Editor'
 import {
   CaretMovement,
+  DeleteMovement,
   TextDirection,
   TextEngineMode
 } from '../dataset/enum/TextDirection'
@@ -255,6 +256,7 @@ export function mergeOption(
     uiDirectionToggle: true,
     defaultDirection: TextDirection.AUTO,
     caretMovement: CaretMovement.VISUAL,
+    deleteMovement: DeleteMovement.LOGICAL,
     printPixelRatio: 3,
     maskMargin: [0, 0, 0, 0],
     letterClass: [LETTER_CLASS.ENGLISH],

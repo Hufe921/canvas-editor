@@ -66,6 +66,8 @@ interface IEditorOption {
   direction?: 'ltr' | 'rtl' // UI LTR/RTL **mode** (not paragraph direction): mirrors editor chrome via `ce-ui-rtl` only — do not set `dir=rtl` on the canvas container; seeds element.direction for **new** lines/tables; no hit-test / body paint; toggle does not reflow. default: ltr. Command: executeUiDirection. Do not confuse with executeDirection / defaultDirection
   uiDirectionToggle?: boolean // Whether host toolbar may show the LTR/RTL mode toggle. default: true; false hides it
   defaultDirection?: 'ltr' | 'rtl' | 'auto' // Content default paragraph direction when element has no direction (auto = detect). Command: executeDirection. Separate from UI mode options.direction. default: auto
+  caretMovement?: 'visual' | 'logical' // Arrow-key caret movement semantics. default: visual
+  deleteMovement?: 'visual' | 'logical' // Backspace/Delete target semantics; visual deletes the screen-adjacent element. default: logical
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration
   checkbox?: ICheckboxOption // Checkbox configuration

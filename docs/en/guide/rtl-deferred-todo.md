@@ -40,7 +40,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - [x] [DEFER-003](#defer-003) TableTool drag and `style.left` (P5+)
 - [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor` (P5)
 - [x] [DEFER-006](#defer-006) Complex Control flex / ControlIndentation
-- [ ] [DEFER-007](#defer-007) ControlSearch / nested control RTL
+- [x] [DEFER-007](#defer-007) ControlSearch / nested control RTL
 - [ ] [DEFER-016](#defer-016) Remove legacy path and `mapToLegacyRow`
 - [x] [DEFER-018](#defer-018) Accessibility and RTL reading order
 - [x] [DEFER-019](#defer-019) Full HTML/clipboard `dir` fidelity
@@ -50,16 +50,16 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### P3
 
-- [ ] [DEFER-008](#defer-008) In-table Area background and hit-testing
-- [ ] [DEFER-011](#defer-011) Arabic kashida for justify
+- [x] [DEFER-008](#defer-008) In-table Area background and hit-testing
+- [x] [DEFER-011](#defer-011) Arabic kashida for justify
 - [ ] [DEFER-012](#defer-012) ICU ubidi WASM if JS bidi is insufficient
 - [ ] [DEFER-013](#defer-013) `feature/svg` branch RTL review
 - [x] [DEFER-014](#defer-014) Demo/toolbar directional icon mirroring
-- [ ] [DEFER-015](#defer-015) LineNumber / PageNumber side follows document direction
+- [x] [DEFER-015](#defer-015) LineNumber / PageNumber side follows document direction
 - [ ] [DEFER-017](#defer-017) OT/CRDT collaboration (if needed)
 - [ ] [DEFER-020](#defer-020) Print iframe Block + RTL page edges
-- [ ] [DEFER-022](#defer-022) Visual-adjacent delete mode
-- [ ] [DEFER-025](#defer-025) Surround image / multi-column + text-engine mixed-layout acceptance
+- [x] [DEFER-022](#defer-022) Visual-adjacent delete mode
+- [x] [DEFER-025](#defer-025) Surround image / multi-column + text-engine mixed-layout acceptance
 
 ## Roadmap mapping
 
@@ -124,19 +124,19 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-007
 
-- Status: pending
+- Status: done
 - Priority: P2
 - Depends: DEFER-006
 - Area: control
-- Notes: ControlSearch highlights and nested bidirectional text.
+- Notes: Preserves independent outer/inner control-search semantics; main-body and table-cell text-engine matches use visual glyph rectangles. `ControlSearch.renderHighlightList` integration is covered for RTL, mixed-direction wrapping, table cells, and nested control boundaries.
 
 ### DEFER-008
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: DEFER-001
 - Area: table
-- Notes: In-table Area background and hit geometry.
+- Notes: In-table Area background geometry follows the td content box (consistent under LTR/RTL table mirroring); clicking an area element inside a td hit-tests and activates the area.
 
 ### DEFER-009
 
@@ -156,11 +156,11 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-011
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: P4 Alignment
 - Area: layout
-- Notes: Arabic kashida for justify; keep an extension point in the engine.
+- Notes: For justified/alignment non-last lines containing Arabic, TATWEEL is inserted between adjacent Arabic letters and re-shaped to produce kashida strokes; remaining lines stretch word spaces first. The last line is never stretched.
 
 ### DEFER-012
 
@@ -176,7 +176,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - Priority: P3
 - Depends: Merging `feature/svg`
 - Area: svg-ui
-- Notes: Trunk has no DOM document SVG; evaluate `dir`/coords when that branch lands.
+- Notes: The current rendering engine does not yet support an SVG rendering implementation for RTL, and trunk has no DOM document SVG; evaluate `dir`/coords when that branch lands.
 
 ### DEFER-014
 
@@ -188,11 +188,11 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-015
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: P3 paragraph mirroring if unfinished
 - Area: frame
-- Notes: LineNumber / PageNumber default side or rowFlex follows document direction. Page-number **drawing** already uses `drawPlainText` (BiDi/joining); this item is only physical side / alignment mirroring.
+- Notes: RTL line numbers render outside the right page margin; page-number `LEFT` / `RIGHT` swap physical sides in RTL while CENTER remains centered. Page-number text continues to use `drawPlainText`.
 
 ### DEFER-016
 
@@ -244,11 +244,11 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-022
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: Product request
 - Area: input
-- Notes: Default is logical delete; optional visual-adjacent delete mode.
+- Notes: Adds `deleteMovement: logical | visual`, defaulting to logical for compatibility. Visual mode applies screen-adjacent Backspace/Delete to main RTL text; control and table special deletion paths keep their existing rules.
 
 ### DEFER-023
 
@@ -268,8 +268,8 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-025
 
-- Status: pending
+- Status: done
 - Priority: P3
 - Depends: Main-body IMAGE/TABLE `forceLegacy` insert already landed
 - Area: layout
-- Notes: SURROUND/FLOAT_* images and multi-column + text-engine only have basic inserts; no dedicated geometry/availableWidth/paging acceptance. Cover surround reservation vs engine `availableWidth`, `columnIndex` after column switches, float hit-testing and reflow.
+- Notes: Engine rows now get a running page/column cursor and surround offsets: main-body rows vertically intersecting a SURROUND image are shifted to start after the image (no overlap), and engine rows carry `columnIndex` so column switches place them at the correct column offset. Table-cell and header/footer sub-layouts are excluded. Float hit-testing keeps the existing path.

@@ -1502,6 +1502,9 @@ export class Draw {
     const isRtl = this.options.direction === TextDirection.RTL
     this.container.removeAttribute('dir')
     this.container.classList.toggle(`${EDITOR_PREFIX}-ui-rtl`, isRtl)
+    // 标尺是壳层 chrome，切换方向后需立即按新方向镜像重绘
+    // （构造期 _formatContainer 早于 ruler 初始化，用可选链跳过）
+    this.ruler?.refresh()
   }
 
   private _createPageContainer(): HTMLDivElement {
@@ -1711,6 +1714,27 @@ export class Draw {
       (element.visualLeft || 0) -
       (element.left || 0)
     return { x: originX + left, width: Math.max(0, right - left) }
+  }
+
+  /**
+   * Resolve a text-engine element to its visual highlight rectangle.
+   * Search results use source indexes, while engine rows may reorder those
+   * elements visually for bidi layout.
+   */
+  public getEngineHighlightRectByIndex(
+    sourceIndex: number,
+    position: import('../../interface/Element').IElementPosition,
+    rowList: IRow[] = this.getOriginalRowList()
+  ): { x: number; width: number } | undefined {
+    for (const row of rowList) {
+      if (!row.engineLine) continue
+      const element = row.elementList.find(
+        item => item.sourceIndex === sourceIndex
+      )
+      if (!element) continue
+      return this.getEngineHighlightRect(row, element, position)
+    }
+    return
   }
 
   /**
@@ -2119,7 +2143,7 @@ export class Draw {
     rowList: IRow[],
     paragraph: ParagraphSpan,
     elementList: IElement[],
-    innerWidth: number,
+    width: number,
     rowIndex: number,
     layoutScope: string,
     defaultAlign?: 'left' | 'right'
@@ -2131,7 +2155,7 @@ export class Draw {
     const rows = this.layoutHostAdapter.layoutParagraphToRows(
       paragraph,
       elementList,
-      innerWidth,
+      width,
       rowIndex,
       layoutScope,
       defaultAlign
@@ -2199,7 +2223,7 @@ export class Draw {
       )
       first.startIndex = paragraph.startIndex
     }
-    this.control.applyEngineRowsMinWidth(rows, innerWidth)
+    this.control.applyEngineRowsMinWidth(rows, width)
     this.labelParticle.applyEngineRowsMetrics(rows)
     this._applyEngineControlIndentation(rows)
     for (const row of rows) {
@@ -2230,7 +2254,7 @@ export class Draw {
 
   private _computeRowListByTextEngine(
     elementList: IElement[],
-    innerWidth: number,
+    width: number,
     layoutScope: string,
     defaultDirection?: TextDirection,
     defaultAlign?: 'left' | 'right'
@@ -2256,7 +2280,7 @@ export class Draw {
         el.type === ElementType.PAGE_BREAK
       ) {
         rowList.push(
-          this._createSpecialEngineRow(el, i, innerWidth, rowIndex++)
+          this._createSpecialEngineRow(el, i, width, rowIndex++)
         )
         i++
         continue
@@ -2265,7 +2289,7 @@ export class Draw {
       if (this._isEngineHostBlockedElement(el)) {
         this._clearStaleEngineLayout([el])
         const subRows = this.computeRowList({
-          innerWidth,
+          innerWidth: width,
           elementList: [el],
           forceLegacy: true,
           layoutScope
@@ -2299,7 +2323,7 @@ export class Draw {
           rowList,
           paragraph,
         elementList,
-        Math.max(1, innerWidth - listOffset),
+        Math.max(1, width - listOffset),
         rowIndex,
         layoutScope,
         defaultAlign
@@ -2339,6 +2363,101 @@ export class Draw {
     }
   }
 
+  /**
+   * 引擎行补齐分栏 columnIndex 与环绕图偏移。
+   * 引擎按整段以 innerWidth 排版，这里按行累计高度模拟 legacy 的分栏游标，
+   * 并对与环绕图纵向相交的行设置 offsetX，使正文从图片右侧开始而非重叠。
+   */
+  private _applyEngineRowGeometry(
+    rows: IRow[],
+    p: {
+      startX: number
+      startY: number
+      pageHeight: number
+      isPagingMode: boolean
+      innerWidth: number
+      surroundElementList: IElement[]
+    }
+  ) {
+    const {
+      startX,
+      startY,
+      pageHeight,
+      isPagingMode,
+      surroundElementList
+    } = p
+    const { scale } = this.options
+    const layout =
+      isPagingMode ? this.columnManager.getLayout() : null
+    const isColumnEnabled = !!layout && layout.count > 1
+    let y = startY
+    let pageNo = 0
+    let currentColumn = 0
+    for (const row of rows) {
+      const rowOffsetY = row.offsetY || 0
+      if (isPagingMode && pageHeight) {
+        const curMainOuterHeight = this.getMainOuterHeight(pageNo)
+        const isOverflow =
+          y - startY + curMainOuterHeight + row.height + rowOffsetY > pageHeight
+        if (isOverflow) {
+          if (
+            isColumnEnabled &&
+            layout &&
+            currentColumn < layout.count - 1
+          ) {
+            currentColumn += 1
+            y = startY
+          } else {
+            pageNo += 1
+            currentColumn = 0
+            y = startY
+          }
+        }
+      }
+      if (isColumnEnabled) {
+        row.columnIndex = currentColumn
+      }
+      // 环绕图：与行纵向相交时，正文从图片右侧开始
+      if (surroundElementList.length) {
+        const columnOffset = isColumnEnabled
+          ? (layout!.offsets[currentColumn] || 0)
+          : 0
+        const rowStartX = startX + columnOffset
+        for (const s of surroundElementList) {
+          const floatPosition = s.imgFloatPosition
+          if (
+            !floatPosition ||
+            floatPosition.pageNo !== pageNo ||
+            !s.width ||
+            !s.height
+          ) {
+            continue
+          }
+          const rect = {
+            x: floatPosition.x * scale,
+            y: floatPosition.y * scale,
+            width: s.width * scale,
+            height: s.height * scale
+          }
+          if (
+            y >= rect.y + rect.height ||
+            y + row.height <= rect.y ||
+            rect.x >= rowStartX + row.width
+          ) {
+            continue
+          }
+          // 图片在正文行起点左侧 → 平移整行到图片右侧
+          if (rect.x + rect.width > rowStartX + 0.01) {
+            const offset = rect.x + rect.width - rowStartX
+            row.offsetX = (row.offsetX || 0) + offset
+            row.isSurround = true
+          }
+        }
+      }
+      y += row.height + rowOffsetY
+    }
+  }
+
   public computeRowList(payload: IComputeRowListPayload) {
     const {
       innerWidth,
@@ -2356,14 +2475,32 @@ export class Draw {
     } = payload
     // text-engine：段落走引擎（含单元格）；TABLE/浮层图等在引擎循环内 forceLegacy
     if (!forceLegacy && this.layoutHostAdapter.isReady()) {
+      // 分栏时按列宽排版，避免整段以整行宽换行后套栏偏移导致列间覆盖
+      const layout =
+        isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
+      const isColumnEnabled = !!layout && layout.count > 1
+      const engineWidth = isColumnEnabled ? layout!.width : innerWidth
       const engineRows = this._computeRowListByTextEngine(
         elementList,
-        innerWidth,
+        engineWidth,
         layoutScope,
         defaultDirection,
         defaultAlign
       )
-      if (engineRows) return engineRows
+      if (engineRows) {
+        // 表格单元格/页眉页脚等子布局不做分栏与环绕处理
+        if (!isFromTable && layoutScope === 'main') {
+          this._applyEngineRowGeometry(engineRows, {
+            startX,
+            startY,
+            pageHeight,
+            isPagingMode,
+            innerWidth,
+            surroundElementList
+          })
+        }
+        return engineRows
+      }
     }
     this._warnLegacyRtlIfNeeded(elementList)
     // legacy 前清掉引擎残留 visualLeft，防止表格/图片行定位错乱

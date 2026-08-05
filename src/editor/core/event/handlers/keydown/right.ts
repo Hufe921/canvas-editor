@@ -53,7 +53,15 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
         isTable: positionContext.isTable,
         tdId: positionContext.tdId
       })
-      const visualIndex = adapter.visualNeighbor(startIndex, 1, layoutScope)
+      // RTL 段：右箭头 = 前进 = 逻辑 +1（跟随阅读方向，与 LTR 一致）
+      const dir = adapter.resolveElementDirection(elementList, startIndex)
+      let visualIndex: number | null
+      if (dir === 'rtl') {
+        visualIndex =
+          startIndex + 1 < elementList.length ? startIndex + 1 : null
+      } else {
+        visualIndex = adapter.visualNeighbor(startIndex, 1, layoutScope)
+      }
       if (visualIndex !== null) {
         rangeManager.setRange(visualIndex, visualIndex)
         draw.render({ curIndex: visualIndex, isSubmitHistory: false })

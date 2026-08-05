@@ -20,17 +20,18 @@ export class HitTestAdapter {
     hitLineStart = false
   ): CaretMetrics | null {
     for (const line of layout.lines) {
-      if (hitLineStart && line.glyphs.length) {
+      const glyphs = this.visibleGlyphs(line, layout)
+      if (hitLineStart && glyphs.length) {
         return {
-          x: this.visualLineStartX(line),
+          x: this.visualLineStartX(glyphs, line.direction),
           y: 0,
           height: line.height,
           affinity: 'before'
         }
       }
-      if (!this.lineTouchesIndex(line, hostAfterIndex)) continue
+      if (!this.lineTouchesIndex(glyphs, line, hostAfterIndex)) continue
 
-      for (const g of line.glyphs) {
+      for (const g of glyphs) {
         if (
           hostAfterIndex < g.logicalIndexStart ||
           hostAfterIndex > g.logicalIndexEnd
@@ -48,9 +49,10 @@ export class HitTestAdapter {
     // Paragraph / line end: place after last visual glyph of last matching line
     for (let i = layout.lines.length - 1; i >= 0; i--) {
       const line = layout.lines[i]
-      if (!line.glyphs.length) continue
+      const glyphs = this.visibleGlyphs(line, layout)
+      if (!glyphs.length) continue
       if (hostAfterIndex >= line.logicalEnd) {
-        const last = line.glyphs[line.glyphs.length - 1]
+        const last = glyphs[glyphs.length - 1]
         const odd = (last.bidiLevel & 1) === 1
         return {
           x: odd ? last.left : last.right,
@@ -64,6 +66,22 @@ export class HitTestAdapter {
   }
 
   /**
+   * Bidi isolate characters (LRI/RLI/FSI/PDI) are zero-width layout markers,
+   * not ink. Exclude them so caret slots and hit-testing never land on them.
+   */
+  private isIsolateGlyph(g: ShapedGlyph, layout: LayoutResult): boolean {
+    const text = layout.paragraphText?.slice(g.charStart, g.charEnd)
+    return !!text && /^[\u2066-\u2069]+$/u.test(text)
+  }
+
+  private visibleGlyphs(
+    line: LayoutLine,
+    layout: LayoutResult
+  ): ShapedGlyph[] {
+    return line.glyphs.filter(g => !this.isIsolateGlyph(g, layout))
+  }
+
+  /**
    * Map line-local x to host after-index (caret after that element).
    */
   pointToLogicalIndex(
@@ -73,9 +91,10 @@ export class HitTestAdapter {
   ): number | null {
     const line = layout.lines[lineIndex]
     if (!line) return null
-    if (!line.glyphs.length) return line.logicalStart
-    const minLeft = Math.min(...line.glyphs.map(g => g.left))
-    const maxRight = Math.max(...line.glyphs.map(g => g.right))
+    const glyphs = this.visibleGlyphs(line, layout)
+    if (!glyphs.length) return line.logicalStart
+    const minLeft = Math.min(...glyphs.map(g => g.left))
+    const maxRight = Math.max(...glyphs.map(g => g.right))
     // 行外空白：RTL 左侧→逻辑尾、右侧→逻辑首；LTR 相反
     if (line.direction === 'rtl') {
       if (x < minLeft) return line.logicalEnd
@@ -84,7 +103,7 @@ export class HitTestAdapter {
       if (x < minLeft) return line.logicalStart
       if (x > maxRight) return line.logicalEnd
     }
-    for (const g of line.glyphs) {
+    for (const g of glyphs) {
       if (x < g.right) {
         return this.offsetInGlyph(g, x)
       }
@@ -125,19 +144,26 @@ export class HitTestAdapter {
     return layout.lines[layout.lines.length - 1] || null
   }
 
-  private lineTouchesIndex(line: LayoutLine, index: number): boolean {
-    if (!line.glyphs.length) return false
+  private lineTouchesIndex(
+    glyphs: ShapedGlyph[],
+    line: LayoutLine,
+    index: number
+  ): boolean {
+    if (!glyphs.length) return false
     if (index >= line.logicalStart && index <= line.logicalEnd) return true
     // allow after last of line
     return index === line.logicalEnd
   }
 
-  private visualLineStartX(line: LayoutLine): number {
-    if (!line.glyphs.length) return 0
-    if (line.direction === 'rtl') {
-      return Math.max(...line.glyphs.map(g => g.right))
+  private visualLineStartX(
+    glyphs: ShapedGlyph[],
+    direction: 'ltr' | 'rtl'
+  ): number {
+    if (!glyphs.length) return 0
+    if (direction === 'rtl') {
+      return Math.max(...glyphs.map(g => g.right))
     }
-    return line.glyphs[0].left
+    return glyphs[0].left
   }
 
   /** Trailing edge for "after hostAfterIndex" within glyph */
@@ -197,7 +223,7 @@ export class HitTestAdapter {
   ): Array<{ index: number; x: number }> {
     const slots: Array<{ index: number; x: number }> = []
     for (const line of layout.lines) {
-      for (const g of line.glyphs) {
+      for (const g of this.visibleGlyphs(line, layout)) {
         for (let li = g.logicalIndexStart; li <= g.logicalIndexEnd; li++) {
           slots.push({ index: li, x: this.afterEdgeX(g, li) })
         }
@@ -210,10 +236,16 @@ export class HitTestAdapter {
     ) {
       slots.push({
         index: paraStartIndex,
-        x: this.visualLineStartX(layout.lines[0])
+        x: this.visualLineStartX(
+          this.visibleGlyphs(layout.lines[0], layout),
+          layout.lines[0].direction
+        )
       })
     }
-    slots.sort((a, b) => a.x - b.x || a.index - b.index)
+    // Stable sort keeps visual (insertion) order for glyphs that share the
+    // exact same caret x (e.g. an LTR glyph's right edge meeting an RTL
+    // glyph's left edge); tie-breaking by index would reorder them wrongly.
+    slots.sort((a, b) => a.x - b.x)
     return slots
   }
 }
