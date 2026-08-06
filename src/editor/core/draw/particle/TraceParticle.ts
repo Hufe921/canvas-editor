@@ -76,12 +76,10 @@ export class TraceParticle {
       },
       lineHeight
     } = position
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = pageNo * (height + pageGap)
+    const { x: pageLeft, y: preY } = this.draw.getPageOffset(pageNo)
     // 位置
     this.tracePopupContainer.style.display = 'block'
-    this.tracePopupContainer.style.left = `${left}px`
+    this.tracePopupContainer.style.left = `${left + pageLeft}px`
     this.tracePopupContainer.style.top = `${top + preY + lineHeight}px`
     // 时间线：按时间顺序自上而下逐条渲染（先插入后删除会显示两条）
     const { insertColor, deleteColor } = this.options.trace

@@ -1,5 +1,5 @@
 import { maxHeightRadioMapping } from '../../../dataset/constant/Common'
-import { EditorZone } from '../../../dataset/enum/Editor'
+import { EditorZone, PaperDirection } from '../../../dataset/enum/Editor'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -16,8 +16,7 @@ export class Header {
   private options: DeepRequired<IEditorOption>
 
   private elementList: IElement[]
-  private rowList: IRow[]
-  private positionList: IElementPosition[]
+  private layoutMap: Map<PaperDirection, [IRow[], IElementPosition[]]>
 
   constructor(draw: Draw, data?: IElement[]) {
     this.draw = draw
@@ -26,12 +25,11 @@ export class Header {
     this.options = draw.getOptions()
 
     this.elementList = data || []
-    this.rowList = []
-    this.positionList = []
+    this.layoutMap = new Map()
   }
 
   public getRowList(): IRow[] {
-    return this.rowList
+    return this._getLayoutByDirection(this.options.paperDirection)[0]
   }
 
   public setElementList(elementList: IElement[]) {
@@ -42,26 +40,41 @@ export class Header {
     return this.elementList
   }
 
-  public getPositionList(): IElementPosition[] {
-    return this.positionList
+  public getPositionList(
+    direction = this.options.paperDirection
+  ): IElementPosition[] {
+    return this._getLayoutByDirection(direction)[1]
   }
 
   public compute() {
     this.recovery()
-    this._computeRowList()
-    this._computePositionList()
+    // 主方向立即计算，其余方向按需懒计算
+    this._getLayoutByDirection(this.options.paperDirection)
   }
 
   public recovery() {
-    this.rowList = []
-    this.positionList = []
+    this.layoutMap.clear()
   }
 
-  private _computeRowList() {
-    const innerWidth = this.draw.getInnerWidth()
-    const margins = this.draw.getMargins()
+  private _getLayoutByDirection(
+    direction: PaperDirection
+  ): [IRow[], IElementPosition[]] {
+    let layout = this.layoutMap.get(direction)
+    if (!layout) {
+      const rowList = this._computeRowList(direction)
+      // 先登记 rowList，避免位置计算中的高度查询递归触发重复布局
+      layout = [rowList, []]
+      this.layoutMap.set(direction, layout)
+      layout[1] = this._computePositionList(direction, rowList)
+    }
+    return layout
+  }
+
+  private _computeRowList(direction: PaperDirection): IRow[] {
+    const margins = this.draw.getMargins(direction)
+    const innerWidth = this.draw.getInnerWidth(direction)
     const surroundElementList = pickSurroundElementList(this.elementList)
-    this.rowList = this.draw.computeRowList({
+    return this.draw.computeRowList({
       startX: margins[3],
       startY: this.getHeaderTop(),
       innerWidth,
@@ -70,23 +83,24 @@ export class Header {
     })
   }
 
-  private _computePositionList() {
-    const headerTop = this.getHeaderTop()
-    const innerWidth = this.draw.getInnerWidth()
-    const margins = this.draw.getMargins()
-    const startX = margins[3]
-    const startY = headerTop
+  private _computePositionList(
+    direction: PaperDirection,
+    rowList: IRow[]
+  ): IElementPosition[] {
+    const margins = this.draw.getMargins(direction)
+    const positionList: IElementPosition[] = []
     this.position.computePageRowPosition({
-      positionList: this.positionList,
-      rowList: this.rowList,
+      positionList,
+      rowList,
       pageNo: 0,
       startRowIndex: 0,
       startIndex: 0,
-      startX,
-      startY,
-      innerWidth,
+      startX: margins[3],
+      startY: this.getHeaderTop(),
+      innerWidth: this.draw.getInnerWidth(direction),
       zone: EditorZone.HEADER
     })
+    return positionList
   }
 
   public getHeaderTop(pageNo?: number): number {
@@ -98,32 +112,49 @@ export class Header {
     return Math.floor(top * scale)
   }
 
-  public getMaxHeight(): number {
+  public getMaxHeight(direction?: PaperDirection): number {
     const {
       header: { maxHeightRadio }
     } = this.options
-    const height = this.draw.getHeight()
+    const height = this.draw.getHeight(direction)
     return Math.floor(height * maxHeightRadioMapping[maxHeightRadio])
   }
 
-  public getHeight(pageNo?: number): number {
+  public getHeight(pageNo?: number, direction?: PaperDirection): number {
     if (this.isDisabled(pageNo)) return 0
-    const maxHeight = this.getMaxHeight()
-    const rowHeight = this.getRowHeight()
+    const curDirection = this._resolveDirection(pageNo, direction)
+    const maxHeight = this.getMaxHeight(curDirection)
+    const rowHeight = this.getRowHeight(curDirection)
     return rowHeight > maxHeight ? maxHeight : rowHeight
   }
 
-  public getRowHeight(): number {
-    return this.rowList.reduce((pre, cur) => pre + cur.height, 0)
+  public getRowHeight(direction = this.options.paperDirection): number {
+    return this._getLayoutByDirection(direction)[0].reduce(
+      (pre, cur) => pre + cur.height,
+      0
+    )
   }
 
-  public getExtraHeight(pageNo?: number): number {
+  public getExtraHeight(pageNo?: number, direction?: PaperDirection): number {
+    const curDirection = this._resolveDirection(pageNo, direction)
     // 页眉上边距 + 实际高 - 页面上边距
-    const margins = this.draw.getMargins()
-    const headerHeight = this.getHeight(pageNo)
+    const margins = this.draw.getMargins(curDirection)
+    const headerHeight = this.getHeight(pageNo, curDirection)
     const headerTop = this.getHeaderTop(pageNo)
     const extraHeight = headerTop + headerHeight - margins[0]
     return extraHeight <= 0 ? 0 : extraHeight
+  }
+
+  private _resolveDirection(
+    pageNo?: number,
+    direction?: PaperDirection
+  ): PaperDirection {
+    return (
+      direction ??
+      (pageNo !== undefined
+        ? this.draw.getPageDirection(pageNo)
+        : this.options.paperDirection)
+    )
   }
 
   public isDisabled(pageNo?: number): boolean {
@@ -143,13 +174,15 @@ export class Header {
     ctx.globalAlpha = this.zone.isHeaderActive()
       ? 1
       : this.options.header.inactiveAlpha
-    const innerWidth = this.draw.getInnerWidth()
-    const maxHeight = this.getMaxHeight()
+    const direction = this.draw.getPageDirection(pageNo)
+    const innerWidth = this.draw.getInnerWidth(direction)
+    const maxHeight = this.getMaxHeight(direction)
     // 超出最大高度不渲染
+    const [allRowList, positionList] = this._getLayoutByDirection(direction)
     const rowList: IRow[] = []
     let curRowHeight = 0
-    for (let r = 0; r < this.rowList.length; r++) {
-      const row = this.rowList[r]
+    for (let r = 0; r < allRowList.length; r++) {
+      const row = allRowList[r]
       if (curRowHeight + row.height > maxHeight) {
         break
       }
@@ -158,7 +191,7 @@ export class Header {
     }
     this.draw.drawRow(ctx, {
       elementList: this.elementList,
-      positionList: this.positionList,
+      positionList,
       rowList,
       pageNo,
       startIndex: 0,

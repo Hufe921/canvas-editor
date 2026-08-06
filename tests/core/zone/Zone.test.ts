@@ -13,9 +13,16 @@ function createMockDraw(optionOverrides: Partial<IEditorOption> = {}) {
   })
   const draw: any = {
     getOptions: () => options,
-    getPosition: () => ({}),
+    getPosition: () => ({ computePageRowPosition: () => {} }),
     getZone: () => null,
     getHeight: () => 1123,
+    getPageSize: () => ({
+      width: 794,
+      height: 1123,
+      margins: [100, 120, 100, 120],
+      innerWidth: 554
+    }),
+    getPageOffset: () => ({ x: 0, y: 0 }),
     getPageNo: () => 0,
     getMargins: () => [100, 120, 100, 120] as [number, number, number, number],
     getInnerWidth: () => 554,
@@ -26,7 +33,10 @@ function createMockDraw(optionOverrides: Partial<IEditorOption> = {}) {
     render: () => {},
     getListener: () => ({}),
     getEventBus: () => ({ isSubscribe: () => false }),
-    getPageList: () => [] as HTMLCanvasElement[]
+    getPageList: () => [] as HTMLCanvasElement[],
+    computeRowList: () => [],
+    getPageDirection: () => options.paperDirection,
+    getWidth: () => 794
   }
   draw.getHeader = () => new Header(draw)
   draw.getFooter = () => new Footer(draw)

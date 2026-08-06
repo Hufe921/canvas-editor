@@ -88,14 +88,12 @@ export class ImageParticle {
     floatImage.style.width = `${element.width! * scale}px`
     floatImage.style.height = `${element.height! * scale}px`
     // 浮动图片初始信息
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = this.draw.getPageNo() * (height + pageGap)
+    const { x: preX, y: preY } = this.draw.getPageOffset(this.draw.getPageNo())
     const position = this.draw.getPosition()
     const floatPosition = position.getFloatPositionByElement(element)
     if (!floatPosition) return
     const { x, y } = position.getFloatPositionCoordinate(floatPosition)
-    floatImageContainer.style.left = `${x}px`
+    floatImageContainer.style.left = `${x + preX}px`
     floatImageContainer.style.top = `${preY + y}px`
     floatImage.src = element.value
   }

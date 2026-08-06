@@ -88,6 +88,7 @@ interface IElement {
   // Dividing line
   dashArray?: number[]; // Array for dashed line style
   lineWidth?: number; // Line width of the separator
+  paperDirection?: PaperDirection; // Orientation after a page break
   // control
   control?: IControl; // Control data structure, see: Control-Options
   controlComponent?: {

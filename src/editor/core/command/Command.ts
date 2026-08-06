@@ -83,6 +83,7 @@ export class Command {
   public executePageScaleAdd: CommandAdapt['pageScaleAdd']
   public executePaperSize: CommandAdapt['paperSize']
   public executePaperDirection: CommandAdapt['paperDirection']
+  public executePageDirection: CommandAdapt['pageDirection']
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
   public executeSetMainBadge: CommandAdapt['setMainBadge']
   public executeSetAreaBadge: CommandAdapt['setAreaBadge']
@@ -433,6 +434,10 @@ export class Command {
     this.executePaperDirection = this.wrap(
       'executePaperDirection',
       adapt.paperDirection.bind(adapt)
+    )
+    this.executePageDirection = this.wrap(
+      'executePageDirection',
+      adapt.pageDirection.bind(adapt)
     )
     this.executeSetPaperMargin = this.wrap(
       'executeSetPaperMargin',

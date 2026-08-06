@@ -127,9 +127,7 @@ export class Search {
       coordinate: { leftTop, leftBottom, rightTop },
       pageNo
     } = position
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = pageNo * (height + pageGap)
+    const { x: pageLeft, y: preY } = this.draw.getPageOffset(pageNo)
     // 创建定位锚点
     const anchor = document.createElement('div')
     anchor.style.position = 'absolute'
@@ -139,7 +137,7 @@ export class Search {
     anchor.style.height = `${
       leftBottom[1] - leftTop[1] + ANCHOR_OVERFLOW_SIZE
     }px`
-    anchor.style.left = `${leftTop[0]}px`
+    anchor.style.left = `${leftTop[0] + pageLeft}px`
     anchor.style.top = `${leftTop[1] + preY}px`
     this.draw.getContainer().append(anchor)
     // 移动到可视范围

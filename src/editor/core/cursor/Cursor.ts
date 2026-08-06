@@ -120,8 +120,6 @@ export class Cursor {
       hitLineStartIndex
     } = { ...cursor, ...payload }
     // 设置光标代理
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     // 光标位置
     this.hitLineStartIndex = hitLineStartIndex
     if (hitLineStartIndex) {
@@ -138,7 +136,7 @@ export class Cursor {
     const curPageNo = zoneManager.isMainActive()
       ? pageNo
       : this.draw.getPageNo()
-    const preY = curPageNo * (height + pageGap)
+    const { x: preX, y: preY } = this.draw.getPageOffset(curPageNo)
     // 默认偏移高度
     const defaultOffsetHeight = CURSOR_AGENT_OFFSET_HEIGHT * scale
     // 增加1/4字体大小（最小为defaultOffsetHeight即默认偏移高度）
@@ -155,7 +153,7 @@ export class Cursor {
       metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop =
       leftTop[1] + ascent + descent - (cursorHeight - increaseHeight) + preY
-    const cursorLeft = hitLineStartIndex ? leftTop[0] : rightTop[0]
+    const cursorLeft = (hitLineStartIndex ? leftTop[0] : rightTop[0]) + preX
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${
       cursorTop + cursorHeight - defaultOffsetHeight
@@ -231,7 +229,7 @@ export class Cursor {
     }
     // 当前页面距离滚动容器顶部距离
     const prePageY =
-      pageNo * (this.draw.getHeight() + this.draw.getPageGap()) +
+      this.draw.getPageOffset(pageNo).y +
       this.container.getBoundingClientRect().top
     // 向上移动时：以顶部距离为准，向下移动时：以底部位置为准
     const isUp = direction === MoveDirection.UP
