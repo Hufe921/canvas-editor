@@ -372,7 +372,7 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 
 ## executeRowFlex
 
-Feature: Line alignment
+Feature: Paragraph alignment
 
 Usage:
 
@@ -382,7 +382,7 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 
 ## executeRowMargin
 
-Feature: Line spacing
+Feature: Paragraph line spacing
 
 Usage:
 
