@@ -144,12 +144,11 @@ export class TableTool {
     if (anchorKey === this.lastAnchorKey) return
     // 销毁之前工具
     this.dispose()
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     // 按锚点位置所在页计算纵向偏移（而非当前视图页码）
     this.anchorPageNo = position.pageNo
-    const prePageHeight = position.pageNo * (height + pageGap)
-    const tableX = leftTop[0]
+    const { x: pageLeft, y: pageTop } = this.draw.getPageOffset(position.pageNo)
+    const prePageHeight = pageTop
+    const tableX = leftTop[0] + pageLeft
     const tableY = leftTop[1] + prePageHeight
     const td = this.draw.getTd()
     if (!td) return
@@ -454,11 +453,11 @@ export class TableTool {
       scale,
       table: { overflow }
     } = this.options
-    const width = this.draw.getWidth()
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
+    const { width, height } = this.draw.getPageSize(this.anchorPageNo)
     // 拖拽线与表格工具同页（锚定片段的页码）
-    const prePageHeight = this.anchorPageNo * (height + pageGap)
+    const { x: prePageLeft, y: prePageHeight } = this.draw.getPageOffset(
+      this.anchorPageNo
+    )
     this.mousedownX = evt.x
     this.mousedownY = evt.y
     const target = evt.target as HTMLDivElement
@@ -475,7 +474,7 @@ export class TableTool {
     if (order === TableOrder.ROW) {
       anchorLine.classList.add(`${EDITOR_PREFIX}-table-anchor__line__row`)
       anchorLine.style.width = `${width}px`
-      startX = 0
+      startX = prePageLeft
       startY = prePageHeight + this.mousedownY - canvasRect.top
     } else {
       anchorLine.classList.add(`${EDITOR_PREFIX}-table-anchor__line__col`)

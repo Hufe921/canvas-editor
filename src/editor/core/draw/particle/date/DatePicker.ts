@@ -357,12 +357,10 @@ export class DatePicker {
         pageNo
       }
     } = this.renderOptions
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     const currentPageNo = pageNo ?? this.draw.getPageNo()
-    const preY = currentPageNo * (height + pageGap)
+    const { x: pageLeft, y: preY } = this.draw.getPageOffset(currentPageNo)
     // 位置
-    this.dom.container.style.left = `${left}px`
+    this.dom.container.style.left = `${left + pageLeft}px`
     this.dom.container.style.top = `${top + preY + lineHeight}px`
   }
 

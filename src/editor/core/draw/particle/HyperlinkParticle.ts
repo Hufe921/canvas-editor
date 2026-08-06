@@ -40,12 +40,10 @@ export class HyperlinkParticle {
       },
       lineHeight
     } = position
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = this.draw.getPageNo() * (height + pageGap)
+    const { x: preX, y: preY } = this.draw.getPageOffset(this.draw.getPageNo())
     // 位置
     this.hyperlinkPopupContainer.style.display = 'block'
-    this.hyperlinkPopupContainer.style.left = `${left}px`
+    this.hyperlinkPopupContainer.style.left = `${left + preX}px`
     this.hyperlinkPopupContainer.style.top = `${top + preY + lineHeight}px`
     // 标签
     const url = element.url || '#'

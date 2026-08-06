@@ -146,7 +146,7 @@ export class Calculator {
       lineHeight
     } = position
     const preY = this.control.getPreY()
-    calculatorPopupContainer.style.left = `${left}px`
+    calculatorPopupContainer.style.left = `${left + this.control.getPreX()}px`
     calculatorPopupContainer.style.top = `${top + preY + lineHeight}px`
 
     // 追加至container

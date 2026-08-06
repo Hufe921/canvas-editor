@@ -868,6 +868,16 @@ Usage:
 instance.command.executePaperDirection(paperDirection: PaperDirection)
 ```
 
+## executePageDirection
+
+Feature: Set the paper orientation of the current section. Page breaks delimit sections; the first section changes the global orientation, and `null` restores the global orientation.
+
+Usage:
+
+```javascript
+instance.command.executePageDirection(paperDirection: PaperDirection | null)
+```
+
 ## executeSetPaperMargin
 
 Feature: Set the paper margins

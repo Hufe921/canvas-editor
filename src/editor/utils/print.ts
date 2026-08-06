@@ -35,6 +35,8 @@ interface IPrintOption {
   width: number
   height: number
   direction?: PaperDirection
+  // 混排横竖版：各页纸张方向（缺省页回退到 direction）
+  pageDirections?: PaperDirection[]
   iframeInfoList?: IIframeInfo[][]
 }
 
@@ -43,6 +45,7 @@ export async function print(base64List: string[], options: IPrintOption) {
     width,
     height,
     direction = PaperDirection.VERTICAL,
+    pageDirections,
     iframeInfoList = []
   } = options
   const iframe = document.createElement('iframe')
@@ -60,17 +63,35 @@ export async function print(base64List: string[], options: IPrintOption) {
   doc.open()
   const container = document.createElement('div')
   const paperSize = convertPxToPaperSize(width, height)
+  const getPageDirection = (pageIndex: number) =>
+    pageDirections?.[pageIndex] || direction
+  const firstPageDirection = getPageDirection(0)
+  const lastPageDirection = getPageDirection(base64List.length - 1)
+  const isMixedDirection = base64List.some(
+    (_, pageIndex) => getPageDirection(pageIndex) !== firstPageDirection
+  )
   base64List.forEach((base64, pageIndex) => {
+    const pageDirection = getPageDirection(pageIndex)
     const pageWrapper = document.createElement('div')
     pageWrapper.style.position = 'relative'
     pageWrapper.style.width =
-      direction === PaperDirection.HORIZONTAL
+      pageDirection === PaperDirection.HORIZONTAL
         ? paperSize.height
         : paperSize.width
     pageWrapper.style.height =
-      direction === PaperDirection.HORIZONTAL
+      pageDirection === PaperDirection.HORIZONTAL
         ? paperSize.width
         : paperSize.height
+    // 混排时为前 N-1 页指定命名页；最后一页沿用匿名 @page，避免命名页与匿名页
+    // 在文档末尾发生 name 切换而触发额外的 forced break（多出一页空白页）
+    if (isMixedDirection && pageIndex < base64List.length - 1) {
+      pageWrapper.style.setProperty(
+        'page',
+        pageDirection === PaperDirection.HORIZONTAL
+          ? 'canvas-editor-landscape'
+          : 'canvas-editor-portrait'
+      )
+    }
     // 背景图片
     const image = document.createElement('img')
     image.style.width = '100%'
@@ -112,17 +133,36 @@ export async function print(base64List: string[], options: IPrintOption) {
     container.append(pageWrapper)
   })
   const style = document.createElement('style')
+  const pageRule = isMixedDirection
+    ? `
+  @page {
+    margin: 0;
+    size: ${paperSize.size} ${
+      lastPageDirection === PaperDirection.HORIZONTAL ? 'landscape' : 'portrait'
+    };
+  }
+  @page canvas-editor-portrait {
+    margin: 0;
+    size: ${paperSize.size} portrait;
+  }
+  @page canvas-editor-landscape {
+    margin: 0;
+    size: ${paperSize.size} landscape;
+  }`
+    : `
+  @page {
+    margin: 0;
+    size: ${paperSize.size} ${
+      firstPageDirection === PaperDirection.HORIZONTAL
+        ? 'landscape'
+        : 'portrait'
+    };
+  }`
   const stylesheet = `
   * {
     margin: 0;
     padding: 0;
-  }
-  @page {
-    margin: 0;
-    size: ${paperSize.size} ${
-      direction === PaperDirection.HORIZONTAL ? `landscape` : `portrait`
-    };
-  }`
+  }${pageRule}`
   style.append(document.createTextNode(stylesheet))
   doc.write(`${style.outerHTML}${container.innerHTML}`)
 
