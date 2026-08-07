@@ -28,6 +28,7 @@ describe('checkbox interaction', () => {
   function setup() {
     const main: any[] = [
       { value: '\u200B' },
+      { value: '普通文本' },
       {
         type: ElementType.CONTROL,
         value: '',
@@ -88,7 +89,7 @@ describe('checkbox interaction', () => {
     expect(draw!.getCursor().getCursorDom().style.display).toBe('none')
   })
 
-  it('shows pointer cursor when hovering a checkbox', () => {
+  it('shows pointer cursor when hovering the checkbox box', () => {
     setup()
     const { x, y } = boxPosition()
     const canvas = draw!.getPageList()[0]
@@ -98,7 +99,7 @@ describe('checkbox interaction', () => {
     expect(canvas.style.cursor).toBe('pointer')
   })
 
-  it('keeps text cursor over normal text', () => {
+  it('shows pointer cursor when hovering the checkbox label', () => {
     setup()
     const elList = draw!.getOriginalElementList()
     const posList = draw!.getPosition().getOriginalPositionList()
@@ -112,6 +113,38 @@ describe('checkbox interaction', () => {
     canvas.dispatchEvent(
       withOffset(new MouseEvent('mousemove', { bubbles: true }), x, y)
     )
+    expect(canvas.style.cursor).toBe('pointer')
+  })
+
+  it('keeps text cursor over normal text', () => {
+    setup()
+    const elList = draw!.getOriginalElementList()
+    const posList = draw!.getPosition().getOriginalPositionList()
+    const textIndex = elList.findIndex((el: any) => el.value === '普')
+    const pos = posList[textIndex]
+    const x = pos.coordinate.leftTop[0] + 1
+    const y = pos.coordinate.leftTop[1] + 1
+    const canvas = draw!.getPageList()[0]
+    canvas.dispatchEvent(
+      withOffset(new MouseEvent('mousemove', { bubbles: true }), x, y)
+    )
     expect(canvas.style.cursor).toBe('text')
+  })
+
+  it('does not draw the caret when clicking the checkbox label', () => {
+    setup()
+    const elList = draw!.getOriginalElementList()
+    const posList = draw!.getPosition().getOriginalPositionList()
+    const valueIndex = elList.findIndex(
+      (el: any) => el.controlComponent === ControlComponent.VALUE
+    )
+    const pos = posList[valueIndex]
+    const x = pos.coordinate.leftTop[0] + 1
+    const y = pos.coordinate.leftTop[1] + 1
+    const canvas = draw!.getPageList()[0]
+    canvas.dispatchEvent(
+      withOffset(new MouseEvent('mousedown', { bubbles: true }), x, y)
+    )
+    expect(draw!.getCursor().getCursorDom().style.display).toBe('none')
   })
 })

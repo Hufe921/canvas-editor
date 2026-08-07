@@ -1,8 +1,23 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
-import { ControlComponent } from '../../../dataset/enum/Control'
+import { ControlComponent, ControlType } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
+import { IElement } from '../../../interface/Element'
+import type { ICurrentPosition } from '../../../interface/Position'
 import { Draw } from '../../draw/Draw'
 import { CanvasEvent } from '../CanvasEvent'
+
+function hitElement(
+  draw: Draw,
+  r: ICurrentPosition
+): IElement | undefined {
+  if (r.isTable) {
+    return draw
+      .getOriginalElementList()[r.index]?.trList?.[r.trIndex!]?.tdList?.[
+      r.tdIndex!
+    ]?.value?.[r.tdValueIndex!]
+  }
+  return draw.getOriginalElementList()[r.index]
+}
 
 function updateHoverCursor(evt: MouseEvent, draw: Draw) {
   const target = evt.target as HTMLDivElement
@@ -13,10 +28,15 @@ function updateHoverCursor(evt: MouseEvent, draw: Draw) {
     y: evt.offsetY,
     pageNo
   })
+  // checkbox/radio 控件内任意元素（盒或 label 文本）都显示 pointer
+  const el = positionResult ? hitElement(draw, positionResult) : undefined
   const isWidgetHit =
     !!positionResult &&
     !!positionResult.isDirectHit &&
-    (positionResult.isCheckbox || positionResult.isRadio)
+    (!!positionResult.isCheckbox ||
+      !!positionResult.isRadio ||
+      el?.control?.type === ControlType.CHECKBOX ||
+      el?.control?.type === ControlType.RADIO)
   const page = draw.getPage(pageNo)
   if (page) {
     page.style.cursor = isWidgetHit ? 'pointer' : 'text'
