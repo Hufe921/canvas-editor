@@ -1,12 +1,36 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ControlComponent } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
+import { Draw } from '../../draw/Draw'
 import { CanvasEvent } from '../CanvasEvent'
+
+function updateHoverCursor(evt: MouseEvent, draw: Draw) {
+  const target = evt.target as HTMLDivElement
+  const pageIndex = target?.dataset?.index
+  const pageNo = pageIndex !== undefined ? Number(pageIndex) : draw.getPageNo()
+  const positionResult = draw.getPosition().getPositionByXY({
+    x: evt.offsetX,
+    y: evt.offsetY,
+    pageNo
+  })
+  const isWidgetHit =
+    !!positionResult &&
+    !!positionResult.isDirectHit &&
+    (positionResult.isCheckbox || positionResult.isRadio)
+  const page = draw.getPage(pageNo)
+  if (page) {
+    page.style.cursor = isWidgetHit ? 'pointer' : 'text'
+  }
+}
 
 export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   // 留痕模式：hover 到带 trace 标记的元素时显示作者/时间浮窗
   draw.getTraceParticle().handleMouseMove(evt)
+  // hover 到复选框/单选框时显示 pointer（拖拽时保持默认光标）
+  if (!host.isAllowDrag) {
+    updateHoverCursor(evt, draw)
+  }
   // 是否是拖拽文字
   if (host.isAllowDrag) {
     // 是否允许拖拽到选区
