@@ -69,7 +69,7 @@ export class TraceParticle {
       this.clearTracePopup()
       return
     }
-    // 位置（RTL 右对齐元素右缘，LTR 左对齐元素左缘）
+    // 位置（RTL 右对齐元素右缘，LTR 左对齐元素左缘；混合纸张方向按页偏移）
     const style = this.draw.getPopupPositionStyle(position)
     this.tracePopupContainer.style.display = 'block'
     if (style.right !== undefined) {

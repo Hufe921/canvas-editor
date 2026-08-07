@@ -68,8 +68,8 @@ export class PageNumber {
         numberType
       )
     }
-    const width = this.draw.getWidth()
-    const height = this.draw.getHeight()
+    // 混合纸张方向：按页取尺寸
+    const { width, height, margins } = this.draw.getPageSize(pageNo)
     const pageNumberBottom = this.draw.getPageNumberBottom()
     const y = height - pageNumberBottom
     const fontSize = size * scale
@@ -79,8 +79,8 @@ export class PageNumber {
       fontSize,
       color
     }
-    const margins = this.draw.getMargins()
     const adapter = this.draw.getLayoutHostAdapter()
+    // RTL：LEFT/RIGHT 物理侧互换，CENTER 保持居中
     const pageRows = this.draw.getPageRowList()[pageNo] || []
     const firstRow = pageRows.find(row => row.direction)
     const firstElement = this.draw

@@ -1,3 +1,4 @@
+import { PaperDirection } from '../dataset/enum/Editor'
 import { RowFlex } from '../dataset/enum/Row'
 import {
   IElement,
@@ -59,6 +60,8 @@ export interface IRow {
   direction?: 'ltr' | 'rtl'
   startIndex: number
   isPageBreak?: boolean
+  // 分页符行携带的后续页纸张方向（排版期从分页符元素拷贝）
+  paperDirection?: PaperDirection
   isList?: boolean
   listIndex?: number
   offsetX?: number

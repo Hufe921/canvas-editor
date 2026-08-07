@@ -372,7 +372,7 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 
 ## executeRowFlex
 
-功能：行对齐
+功能：段落对齐
 
 用法：
 
@@ -382,7 +382,7 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 
 ## executeRowMargin
 
-功能：行间距
+功能：段落行间距
 
 用法：
 
@@ -866,6 +866,16 @@ instance.command.executePaperSize(width: number, height: number)
 
 ```javascript
 instance.command.executePaperDirection(paperDirection: PaperDirection)
+```
+
+## executePageDirection
+
+功能：设置光标所在节的纸张方向。分页符作为分节边界；首节修改全局方向，传 `null` 恢复全局方向。
+
+用法：
+
+```javascript
+instance.command.executePageDirection(paperDirection: PaperDirection | null)
 ```
 
 ## executeSetPaperMargin

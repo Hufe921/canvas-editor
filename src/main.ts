@@ -1458,8 +1458,16 @@ window.onload = function () {
   }
   paperDirectionDomOptionsDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
-    const paperDirection = li.dataset.paperDirection!
-    instance.command.executePaperDirection(<PaperDirection>paperDirection)
+    if (li.tagName !== 'LI' || li.classList.contains('option-caption')) return
+    const { paperDirection, sectionDirection } = li.dataset
+    if (sectionDirection) {
+      // 指定页面方向（本节）
+      instance.command.executePageDirection(
+        sectionDirection === 'inherit' ? null : <PaperDirection>sectionDirection
+      )
+    } else if (paperDirection) {
+      instance.command.executePaperDirection(<PaperDirection>paperDirection)
+    }
     // 纸张方向状态回显
     paperDirectionDomOptionsDom
       .querySelectorAll('li')

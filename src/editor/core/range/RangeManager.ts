@@ -329,6 +329,9 @@ export class RangeManager {
 
   // 获取选区段落元素列表
   public getRangeParagraphElementList(): IElement[] | null {
+    if (this.range.isCrossRowCol) {
+      return this.getSelectionElementList()
+    }
     return this.getRangeParagraphInfo()?.elementList || null
   }
 

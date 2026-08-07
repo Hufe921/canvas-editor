@@ -372,7 +372,7 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 
 ## executeRowFlex
 
-Feature: Line alignment
+Feature: Paragraph alignment
 
 Usage:
 
@@ -382,7 +382,7 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 
 ## executeRowMargin
 
-Feature: Line spacing
+Feature: Paragraph line spacing
 
 Usage:
 
@@ -866,6 +866,16 @@ Usage:
 
 ```javascript
 instance.command.executePaperDirection(paperDirection: PaperDirection)
+```
+
+## executePageDirection
+
+Feature: Set the paper orientation of the current section. Page breaks delimit sections; the first section changes the global orientation, and `null` restores the global orientation.
+
+Usage:
+
+```javascript
+instance.command.executePageDirection(paperDirection: PaperDirection | null)
 ```
 
 ## executeSetPaperMargin

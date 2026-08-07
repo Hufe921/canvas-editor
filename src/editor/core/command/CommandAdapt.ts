@@ -1006,9 +1006,9 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const rowElementList = this.range.getRangeRowElementList()
-    if (!rowElementList) return
-    rowElementList.forEach(element => {
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
       element.rowMargin = payload
     })
     // 光标定位
@@ -1473,6 +1473,7 @@ export class CommandAdapt {
       width,
       height,
       direction: paperDirection,
+      pageDirections: this.draw.getPageDirectionList(),
       iframeInfoList: this.draw.getBlockParticle().pickIframeInfo()
     })
     if (scale !== 1) {
@@ -1726,8 +1727,6 @@ export class CommandAdapt {
 
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
-    const height = this.draw.getOriginalHeight()
-    const pageGap = this.draw.getOriginalPageGap()
     const selectionPositionList = this.position.getSelectionPositionList()
     if (selectionPositionList) {
       // 起始信息及x坐标
@@ -1743,14 +1742,15 @@ export class CommandAdapt {
           coordinate: { leftTop, rightTop },
           lineHeight
         } = position
+        const pageOffset = this.draw.getPageOffset(pageNo, true)
         // 起始行变化追加选区信息
         if (currentRowNo === null || currentRowNo !== rowNo) {
           if (rangeRect) {
             rangeRects.push(rangeRect)
           }
           rangeRect = {
-            x: leftTop[0],
-            y: leftTop[1] + pageNo * (height + pageGap),
+            x: leftTop[0] + pageOffset.x,
+            y: leftTop[1] + pageOffset.y,
             width: rightTop[0] - leftTop[0],
             height: lineHeight
           }
@@ -1774,9 +1774,10 @@ export class CommandAdapt {
         pageNo,
         lineHeight
       } = position
+      const pageOffset = this.draw.getPageOffset(pageNo, true)
       rangeRects.push({
-        x: rightTop[0],
-        y: rightTop[1] + pageNo * (height + pageGap),
+        x: rightTop[0] + pageOffset.x,
+        y: rightTop[1] + pageOffset.y,
         width: 0,
         height: lineHeight
       })
@@ -1954,6 +1955,10 @@ export class CommandAdapt {
 
   public paperDirection(payload: PaperDirection) {
     this.draw.setPaperDirection(payload)
+  }
+
+  public pageDirection(payload: PaperDirection | null) {
+    this.draw.setPageDirection(payload)
   }
 
   public getPaperMargin(): number[] {
@@ -2804,11 +2809,10 @@ export class CommandAdapt {
         coordinate: { leftTop, rightTop },
         lineHeight
       } = position
-      const height = this.draw.getOriginalHeight()
-      const pageGap = this.draw.getOriginalPageGap()
+      const pageOffset = this.draw.getPageOffset(pageNo, true)
       rangeRect = {
-        x: leftTop[0],
-        y: leftTop[1] + pageNo * (height + pageGap),
+        x: leftTop[0] + pageOffset.x,
+        y: leftTop[1] + pageOffset.y,
         width: rightTop[0] - leftTop[0],
         height: lineHeight
       }

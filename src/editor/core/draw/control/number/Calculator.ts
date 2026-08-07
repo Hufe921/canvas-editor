@@ -138,7 +138,7 @@ export class Calculator {
     calculatorPopupContainer.appendChild(display)
     calculatorPopupContainer.appendChild(buttonContainer)
 
-    // 定位（RTL 右对齐元素右缘，LTR 左对齐元素左缘）
+    // 定位（RTL 右对齐元素右缘，LTR 左对齐元素左缘；混合纸张方向按页偏移）
     const style = this.control.getDraw().getPopupPositionStyle(position)
     if (style.right !== undefined) {
       calculatorPopupContainer.style.left = 'auto'

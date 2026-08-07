@@ -132,14 +132,15 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
         return
       }
     }
-    //  替换当前行对齐方式
+    // 替换当前段落布局方式
     const startElement = elementList[startIndex]
-    if (isCollapsed && startElement.rowFlex && startElement.value === ZERO) {
-      const rowFlexElementList = rangeManager.getRangeRowElementList()
-      if (rowFlexElementList) {
+    if (isCollapsed && startElement.value === ZERO && !startElement.listWrap) {
+      const paragraphElementList = rangeManager.getRangeParagraphElementList()
+      if (paragraphElementList) {
         const preElement = elementList[startIndex - 1]
-        rowFlexElementList.forEach(element => {
+        paragraphElementList.forEach(element => {
           element.rowFlex = preElement?.rowFlex
+          element.rowMargin = preElement?.rowMargin
         })
       }
     }

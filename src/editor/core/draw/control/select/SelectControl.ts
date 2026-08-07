@@ -540,7 +540,7 @@ export class SelectControl implements IControlInstance {
       ul.append(li)
     }
     selectPopupContainer.append(ul)
-    // 定位（RTL 右对齐元素右缘，LTR 左对齐元素左缘）
+    // 定位（RTL 右对齐元素右缘，LTR 左对齐元素左缘；混合纸张方向按页偏移）
     const style = this.control.getDraw().getPopupPositionStyle(position)
     if (style.right !== undefined) {
       selectPopupContainer.style.left = 'auto'

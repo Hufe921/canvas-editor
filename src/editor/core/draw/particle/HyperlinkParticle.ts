@@ -34,7 +34,7 @@ export class HyperlinkParticle {
   }
 
   public drawHyperlinkPopup(element: IElement, position: IElementPosition) {
-    // RTL 右对齐元素右缘，LTR 左对齐元素左缘
+    // RTL 右对齐元素右缘，LTR 左对齐元素左缘（混合纸张方向按页偏移）
     const style = this.draw.getPopupPositionStyle(position)
     // 位置
     this.hyperlinkPopupContainer.style.display = 'block'

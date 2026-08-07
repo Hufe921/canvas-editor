@@ -1223,6 +1223,18 @@ ul {
   inset-inline-start: unset;
 }
 
+.footer .paper-direction .options .option-caption {
+  color: #a0a4ab;
+  font-size: 12px;
+  cursor: default;
+  border-top: 1px solid #e2e6ed;
+  padding-top: 8px;
+}
+
+.footer .paper-direction .options .option-caption:hover {
+  background-color: transparent;
+}
+
 .ce-contextmenu-signature {
   background-image: url('./assets/images/signature.svg');
 }

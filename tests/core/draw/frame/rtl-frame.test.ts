@@ -34,7 +34,11 @@ describe('RTL line and page number placement', () => {
       getTextParticle: () => ({
         measureText: () => ({ width: 10, actualBoundingBoxAscent: 8 })
       }),
-      getMargins: () => [100, 120, 100, 120],
+      getPageSize: () => ({
+        width: 794,
+        height: 1123,
+        margins: [100, 120, 100, 120]
+      }),
       getWidth: () => 794,
       getPosition: () => ({
         getOriginalMainPositionList: () => [
@@ -79,6 +83,11 @@ describe('RTL line and page number placement', () => {
       getWidth: () => 794,
       getHeight: () => 1123,
       getPageNumberBottom: () => 60,
+      getPageSize: () => ({
+        width: 794,
+        height: 1123,
+        margins: [100, 120, 100, 120]
+      }),
       getMargins: () => [100, 120, 100, 120],
       getPageCount: () => 3,
       getPageRowList: () => [[{ direction: TextDirection.RTL }]],

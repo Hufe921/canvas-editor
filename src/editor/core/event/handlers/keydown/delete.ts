@@ -1,3 +1,4 @@
+import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
 import { getVisualDeleteTarget } from './visualDelete'
 
@@ -134,7 +135,25 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
           endIndex - startIndex
         )
       } else {
-        if (!elementList[index + 1]) return
+        const nextElement = elementList[index + 1]
+        if (!nextElement) return
+        // 合并新行时继承行 flex / margin（#605）
+        if (nextElement.value === ZERO && !nextElement.listWrap) {
+          const { rowFlex, rowMargin } = elementList[index]
+          for (let i = index + 1; i < elementList.length; i++) {
+            const element = elementList[i]
+            if (
+              i > index + 1 &&
+              ((element.value === ZERO && !element.listWrap) ||
+                element.listId !== nextElement.listId ||
+                element.titleId !== nextElement.titleId)
+            ) {
+              break
+            }
+            element.rowFlex = rowFlex
+            element.rowMargin = rowMargin
+          }
+        }
         const visualTarget = getVisualDeleteTarget(host, index, false)
         draw.deleteElementList(
           elementList,

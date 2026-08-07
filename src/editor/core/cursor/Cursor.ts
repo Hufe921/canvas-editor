@@ -163,8 +163,6 @@ export class Cursor {
       hitLineStartIndex
     } = { ...cursor, ...payload }
     // 设置光标代理
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     // 光标位置
     this.hitLineStartIndex = hitLineStartIndex
     if (hitLineStartIndex) {
@@ -182,7 +180,8 @@ export class Cursor {
     const curPageNo = zoneManager.isMainActive()
       ? pageNo
       : this.draw.getPageNo()
-    const preY = curPageNo * (height + pageGap)
+    // 混合纸张方向：按页累计偏移
+    const { x: preX, y: preY } = this.draw.getPageOffset(curPageNo)
     // 光标高度与同行字号一致（text-engine 的 metrics.height 常为行盒，需回退到字号）
     const element = this.draw.getElementList()[cursorIndex]
     const { fontSize, inkAscent, inkDescent } = resolveCursorInkMetrics({
@@ -211,13 +210,14 @@ export class Cursor {
     const cursorTop = leftTop[1] + baselineOffset - inkAscent - pad + preY
     // Host index = after this element. LTR trailing = rightTop; RTL trailing = leftTop.
     const isRtlRun = ((cursorPosition.bidiLevel ?? 0) & 1) === 1
-    const cursorLeft = hitLineStartIndex
-      ? isRtlRun
-        ? rightTop[0]
-        : leftTop[0]
-      : isRtlRun
-        ? leftTop[0]
-        : rightTop[0]
+    const cursorLeft =
+      (hitLineStartIndex
+        ? isRtlRun
+          ? rightTop[0]
+          : leftTop[0]
+        : isRtlRun
+          ? leftTop[0]
+          : rightTop[0]) + preX
     // Sync IME textarea direction with paragraph
     try {
       const adapter = this.draw.getLayoutHostAdapter()
@@ -305,7 +305,7 @@ export class Cursor {
     }
     // 当前页面距离滚动容器顶部距离
     const prePageY =
-      pageNo * (this.draw.getHeight() + this.draw.getPageGap()) +
+      this.draw.getPageOffset(pageNo).y +
       this.container.getBoundingClientRect().top
     // 向上移动时：以顶部距离为准，向下移动时：以底部位置为准
     const isUp = direction === MoveDirection.UP
