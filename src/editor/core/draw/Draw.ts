@@ -2083,6 +2083,10 @@ export class Draw {
       startIndex: index,
       rowIndex,
       isPageBreak: true,
+      // 混排横竖版：分页符携带的 paperDirection 决定新节方向（与 legacy 一致）
+      ...(element.paperDirection
+        ? { paperDirection: element.paperDirection }
+        : {}),
       elementList: [
         {
           ...element,
