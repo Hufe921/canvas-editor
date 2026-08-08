@@ -1,0 +1,277 @@
+# RTL 延期 TODO
+
+> 防止遗漏：凡本期（正文 RTL + 独立 text-engine + HarfBuzz）**不做**、后续必做或需评估的事项统一登记于此。  
+> 本期范围见 [RTL 排版设计](./rtl-layout-design.md)。架构基线见 [架构分析](./architecture.md)。
+
+## 维护规则
+
+1. 新发现的「本期不做」必须新增 `DEFER-xxx`，禁止只留在聊天/PR。
+2. 完成：勾选总表 + 条目 Status=`done` + 链到 PR/提交。
+3. 从本期挪出：更新本文件，并在设计文档用 DEFER 编号交叉引用。
+4. **以本文为准**，不在其它文件维护第二份延期列表。
+
+## 条目模板
+
+```markdown
+### DEFER-xxx 标题
+- Status: pending | in-progress | done | cancelled
+- Priority: P1 | P2 | P3
+- Depends: ...
+- Area: table | control | history | performance | svg-ui | a11y | input | ...
+- Notes: ...
+```
+
+## 本期范围摘要
+
+正文段落双向混排、HarfBuzz 整形、独立 `text-engine` + host 适配、模拟光标双 DOM、逻辑删除、富文本装饰/列表镜像、start/end 对齐与 surround（P1–P4）。表格/页眉页脚接线、增量历史、字形 atlas，以及环绕图/分栏混排验收等见下方延期项；DATE/LABEL 与段内控件已完成，详见 DEFER-023/024。
+
+## 延期项总表
+
+按 Priority 排序：
+
+### P1
+
+- [x] [DEFER-001](#defer-001) 表格单元格内文本走 text-engine（P5）
+- [x] [DEFER-004](#defer-004) Header/Footer zone 文本验收与接线（P5）
+- [ ] [DEFER-009](#defer-009) 命令式增量 History + 合并 + 快照压缩（P7）
+- [ ] [DEFER-010](#defer-010) 字形 atlas / 脏段缓存 / 大文档性能（P6）
+
+### P2
+
+- [x] [DEFER-002](#defer-002) Table 列几何 / 边框 / 斜线 RTL 镜像评估（P5+）
+- [x] [DEFER-003](#defer-003) TableTool 拖拽与 `style.left`（P5+）
+- [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor`（P5）
+- [x] [DEFER-006](#defer-006) 复杂 Control 内部 flex / ControlIndentation
+- [x] [DEFER-007](#defer-007) ControlSearch / 嵌套控件 RTL
+- [ ] [DEFER-016](#defer-016) 去掉 legacy 路径与 `mapToLegacyRow`
+- [x] [DEFER-018](#defer-018) Accessibility 与 RTL 阅读顺序
+- [x] [DEFER-019](#defer-019) HTML/剪贴板 `dir` 往返完整保真
+- [x] [DEFER-021](#defer-021) 移动端/`beforeinput` 删除主路径兼容
+- [x] [DEFER-023](#defer-023) DATE / LABEL 与 GlyphRenderer 对齐（同超链接修复模式）
+- [x] [DEFER-024](#defer-024) 段内 Control/Checkbox/Radio 等非文本嵌入与 positionList 同步
+
+### P3
+
+- [x] [DEFER-008](#defer-008) 表内 Area 背景与命中
+- [x] [DEFER-011](#defer-011) justify 阿语 kashida 拉伸
+- [ ] [DEFER-012](#defer-012) ICU ubidi WASM（若 JS bidi 不够）
+- [ ] [DEFER-013](#defer-013) `feature/svg` DOM 渲染分支 RTL 评估
+- [x] [DEFER-014](#defer-014) Demo/工具栏方向性图标逻辑属性镜像
+- [x] [DEFER-015](#defer-015) LineNumber / PageNumber 默认侧随文档方向
+- [ ] [DEFER-017](#defer-017) 协同 OT/CRDT（若产品需要）
+- [ ] [DEFER-020](#defer-020) 打印 iframe 内嵌 Block 与 RTL 页边
+- [x] [DEFER-022](#defer-022) 视觉邻接删除模式
+- [x] [DEFER-025](#defer-025) 环绕图 / 分栏与 text-engine 混排专项验收
+
+## 与路线图映射
+
+| 路线图 | 主要 DEFER |
+|--------|------------|
+| P5 | 001, 002, 003, 004, 005, 008 |
+| P6 | 010 |
+| P7 | 009 |
+| 专项 | 006, 007, 011–025 |
+
+---
+
+## 明细
+
+### DEFER-001
+
+- Status: done
+- Priority: P1
+- Depends: P2 LayoutHostAdapter 稳定
+- Area: table
+- Notes: 单元格**内容**复用 text-engine Adapter（`layoutScope: td:{id}`）；表框仍 `forceLegacy`。验收：td 内阿语混排与光标。DEFER-009/010 仍 pending。
+
+### DEFER-002
+
+- Status: done
+- Priority: P2
+- Depends: DEFER-001；产品决策「是否镜像整表」→ **镜像整表**
+- Area: table
+- Notes: 仅表 `element.direction===rtl` 时 `computeRowColInfo` 翻 `td.x`；`colIndex` 逻辑序不变。LTR/RTL 模式不参与。见 `isTableMirrored`。
+
+### DEFER-003
+
+- Status: done
+- Priority: P2
+- Depends: DEFER-002
+- Area: table
+- Notes: TableTool 行工具/全选锚 start 侧、加列 end 侧；overflow 起始边与 dx 随镜像适配。
+
+### DEFER-004
+
+- Status: done
+- Priority: P1
+- Depends: P2/P3 正文引擎
+- Area: zone
+- Notes: Header/Footer/`main` 经 `layoutScope` 隔离 `lastLayouts`；左右键按 zone/td 查 `visualNeighbor`。
+
+### DEFER-005
+
+- Status: done
+- Priority: P2
+- Depends: —
+- Area: frame
+- Notes: `IBadge` / `IBadgeOption` 增加物理 `right`（>=0 优先于 left；默认 -1 未启用）。未引入 `horizontalAnchor`。
+
+### DEFER-006
+
+- Status: done
+- Priority: P2
+- Depends: 正文 ControlBorder（本期）
+- Area: control
+- Notes: text-engine（harfbuzz）行补齐 `ControlIndentation.VALUE_START`：续行按值起始侧对齐（LTR 左缘 / RTL 右缘），自动方向探测；checkbox/radio `flexDirection: ROW` 的 RTL 盒在右侧经 bidi 验证符合预期。legacy 路径保持原样，随 DEFER-016 移除。
+
+### DEFER-007
+
+- Status: done
+- Priority: P2
+- Depends: DEFER-006
+- Area: control
+- Notes: 保持外层/内层控件独立搜索语义；正文与表格单元格 text-engine 命中均使用 glyph 视觉矩形；覆盖 RTL、混排换行、表格单元格和嵌套控件的 `ControlSearch.renderHighlightList` 集成验收。
+
+### DEFER-008
+
+- Status: done
+- Priority: P3
+- Depends: DEFER-001
+- Area: table
+- Notes: 表内 Area 背景与命中几何已按 td 内容盒计算（LTR/RTL 镜像一致）；点击命中 td 内 area 元素并正确激活区域。
+
+### DEFER-009
+
+- Status: pending
+- Priority: P1
+- Depends: —
+- Area: history
+- Notes: `ICommand` execute/undo/merge、连续输入合并、pako 基线压缩；`historyMode: snapshot | command`。与 RTL 解耦但勿遗漏。
+
+### DEFER-010
+
+- Status: pending
+- Priority: P1
+- Depends: P2 GlyphRenderer
+- Area: performance
+- Notes: 常用字形 atlas、脏段 LayoutCache、大文档帧率/内存指标。
+
+### DEFER-011
+
+- Status: done
+- Priority: P3
+- Depends: P4 Alignment
+- Area: layout
+- Notes: justify/alignment 的非末行若含阿语且有余白，在相邻阿语字母间插入 TATWEEL 重新整形得到 kashida 笔画；其余行优先拉伸词间空格。段末行不拉伸。
+
+### DEFER-012
+
+- Status: pending
+- Priority: P3
+- Depends: 首期 bidi-js 边界不足时
+- Area: bidi
+- Notes: 编译 ICU ubidi WASM 替换/加强 BidiResolver。
+
+### DEFER-013
+
+- Status: pending
+- Priority: P3
+- Depends: 合入 `feature/svg` 时
+- Area: svg-ui
+- Notes: 当前渲染引擎暂未支持 SVG 渲染实现 RTL；主干也无 DOM 文档 SVG。分支合入需单独评估 `dir`/坐标。
+
+### DEFER-014
+
+- Status: done
+- Priority: P3
+- Depends: —
+- Area: svg-ui
+- Notes: 工具栏 RTL 间距使用逻辑方向调整；右键菜单使用 `dir`、逻辑间距，子菜单向左展开，方向箭头使用 `scaleX(-1)`。与引擎解耦。
+
+### DEFER-015
+
+- Status: done
+- Priority: P3
+- Depends: P3 段级镜像（若未做完）
+- Area: frame
+- Notes: RTL 行号绘制到右页边外侧；页码 `LEFT` / `RIGHT` 在 RTL 下交换物理侧，CENTER 保持居中。页码文本继续使用 `drawPlainText`。
+
+### DEFER-016
+
+- Status: pending
+- Priority: P2
+- Depends: harfbuzz 路径稳定、回归绿
+- Area: architecture
+- Notes: 删除 `textEngine: legacy` 与 `mapToLegacyRow`，降低双路径成本。过渡期正文旁 TABLE/IMAGE 已用 `forceLegacy` 插行，彻底拆除前须保证混排回归绿。
+
+### DEFER-017
+
+- Status: pending
+- Priority: P3
+- Depends: 产品需求
+- Area: collab
+- Notes: 协同 OT/CRDT；方案未要求，可按需改为 cancelled。
+
+### DEFER-018
+
+- Status: done
+- Priority: P2
+- Depends: P3 视觉序稳定
+- Area: a11y
+- Notes: live region 设 `dir`（段方向 → defaultDirection → UI `options.direction`）；播报仍逻辑序。
+
+### DEFER-019
+
+- Status: done
+- Priority: P2
+- Depends: P1 direction 字段
+- Area: clipboard
+- Notes: 导出按 `element.direction` 写 `dir`；导入读 `dir`/`style.direction`。与 UI `options.direction` 分离。
+
+### DEFER-020
+
+- Status: pending
+- Priority: P3
+- Depends: —
+- Area: print
+- Notes: 打印 iframe 内嵌 Block 与 RTL 页边叠加。
+
+### DEFER-021
+
+- Status: done
+- Priority: P2
+- Depends: 移动端实测 keydown 不足时
+- Area: input
+- Notes: `CursorAgent` `beforeinput` `deleteContentBackward/Forward` → 现有 keydown 删除；防双删。
+
+### DEFER-022
+
+- Status: done
+- Priority: P3
+- Depends: 产品要求
+- Area: input
+- Notes: 新增 `deleteMovement: logical | visual`，默认 logical 保持兼容；visual 模式对正文 RTL 文本按屏幕邻接处理 Backspace/Delete，控件与表格特殊删除路径保持原规则。
+
+### DEFER-023
+
+- Status: done
+- Priority: P2
+- Depends: 正文 GlyphRenderer / 超链接修复模式
+- Area: draw
+- Notes: DATE/LABEL 引擎行跳过文字 Particle，GlyphRenderer 绘制；LABEL 保留 `renderBackground`；Bridge/`_syncEngineLineStyles`/`ensureDefaults` 同步 label 色。padding 与 legacy 完全对齐另开 follow-up。
+
+### DEFER-024
+
+- Status: done
+- Priority: P2
+- Depends: ElementBridge 段扫描；与 DEFER-006 相关但范围不同
+- Area: control
+- Notes: CHECKBOX/RADIO 以 `\uFFFC` + `objectWidth` 插槽进引擎；CONTROL 文本 chrome 作 text-like；GlyphRenderer 跳过 object；Particle 仍绘控件。
+
+### DEFER-025
+
+- Status: done
+- Priority: P3
+- Depends: 正文旁 IMAGE/TABLE `forceLegacy` 插行已落地
+- Area: layout
+- Notes: 引擎行按行累计高度补齐分栏 `columnIndex` 与环绕图偏移：与 SURROUND 图纵向相交的正文行平移至图片右缘不再重叠；多栏下引擎行带 `columnIndex`，翻栏后位置按栏偏移。表格单元格/页眉页脚子布局不参与。浮动图命中沿用原路径。

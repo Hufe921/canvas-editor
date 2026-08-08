@@ -187,11 +187,12 @@ export class ControlSearch {
     for (let s = 0; s < this.highlightMatchResult.length; s++) {
       const searchMatch = this.highlightMatchResult[s]
       let position: IElementPosition | null = null
+      let rowList
       if (searchMatch.tableId) {
         const { tableIndex, trIndex, tdIndex, index } = searchMatch
-        position =
-          elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]
-            ?.positionList![index]
+        const td = elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]
+        position = td?.positionList![index]
+        rowList = td?.rowList
       } else {
         position = positionList[searchMatch.index]
       }
@@ -203,9 +204,14 @@ export class ControlSearch {
       if (pageNo !== pageIndex) continue
       ctx.fillStyle = searchMatch.backgroundColor || searchMatchColor
       ctx.globalAlpha = searchMatch.alpha || searchMatchAlpha
-      const x = leftTop[0]
+      const engineRect = this.draw.getEngineHighlightRectByIndex(
+        searchMatch.index,
+        position,
+        rowList
+      )
+      const x = engineRect?.x ?? leftTop[0]
       const y = leftTop[1]
-      const width = rightTop[0] - leftTop[0]
+      const width = engineRect?.width ?? rightTop[0] - leftTop[0]
       const height = leftBottom[1] - leftTop[1]
       ctx.fillRect(x, y, width, height)
     }

@@ -2,6 +2,10 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
 import { I18n } from '../../i18n/I18n'
+import {
+  drawPlainText,
+  measurePlainText
+} from '../../text-engine-host/drawPlainText'
 import { Draw } from '../Draw'
 
 export class PageBreakParticle {
@@ -30,25 +34,48 @@ export class PageBreakParticle {
     const elementWidth = element.width! * scale
     const offsetY =
       this.draw.getDefaultBasicRowMarginHeight() * defaultRowMargin
+    const style = {
+      text: displayName,
+      fontFamily: font,
+      fontSize: size,
+      color: this.options.defaultColor
+    }
+    const adapter = this.draw.getLayoutHostAdapter()
     ctx.save()
-    ctx.font = `${size}px ${font}`
-    const textMeasure = ctx.measureText(displayName)
-    const halfX = (elementWidth - textMeasure.width) / 2
-    // 线段
-    ctx.setLineDash(lineDash)
     ctx.translate(0, 0.5 + offsetY)
-    ctx.beginPath()
-    ctx.moveTo(x, y)
-    ctx.lineTo(x + halfX, y)
-    ctx.moveTo(x + halfX + textMeasure.width, y)
-    ctx.lineTo(x + elementWidth, y)
-    ctx.stroke()
-    // 文字
-    ctx.fillText(
-      displayName,
-      x + halfX,
-      y + textMeasure.actualBoundingBoxAscent - size / 2
-    )
+    ctx.setLineDash(lineDash)
+    const metrics = measurePlainText(adapter, style)
+    if (metrics) {
+      const halfX = (elementWidth - metrics.width) / 2
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(x + halfX, y)
+      ctx.moveTo(x + halfX + metrics.width, y)
+      ctx.lineTo(x + elementWidth, y)
+      ctx.stroke()
+      drawPlainText(
+        adapter,
+        ctx,
+        style,
+        x + halfX,
+        y + metrics.ascent - size / 2
+      )
+    } else {
+      ctx.font = `${size}px ${font}`
+      const textMeasure = ctx.measureText(displayName)
+      const halfX = (elementWidth - textMeasure.width) / 2
+      ctx.beginPath()
+      ctx.moveTo(x, y)
+      ctx.lineTo(x + halfX, y)
+      ctx.moveTo(x + halfX + textMeasure.width, y)
+      ctx.lineTo(x + elementWidth, y)
+      ctx.stroke()
+      ctx.fillText(
+        displayName,
+        x + halfX,
+        y + textMeasure.actualBoundingBoxAscent - size / 2
+      )
+    }
     ctx.restore()
   }
 }

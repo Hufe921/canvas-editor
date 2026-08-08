@@ -192,6 +192,10 @@ export class ContextMenu {
     const contextMenuContainer = document.createElement('div')
     contextMenuContainer.classList.add(`${EDITOR_PREFIX}-contextmenu-container`)
     contextMenuContainer.setAttribute(
+      'dir',
+      this.options.direction === 'rtl' ? 'rtl' : 'ltr'
+    )
+    contextMenuContainer.setAttribute(
       EDITOR_COMPONENT,
       EditorComponent.CONTEXTMENU
     )
@@ -201,6 +205,7 @@ export class ContextMenu {
 
   private _render(payload: IRenderPayload): HTMLDivElement {
     const { contextMenuList, left, top, parentMenuContainer } = payload
+    const isRtl = this.options.direction === 'rtl'
     const contextMenuContainer = this._createContextMenuContainer()
     const contextMenuContent = document.createElement('div')
     contextMenuContent.classList.add(`${EDITOR_PREFIX}-contextmenu-content`)
@@ -240,7 +245,10 @@ export class ContextMenu {
               this._removeSubMenu(contextMenuContainer)
               // 子菜单
               const subMenuRect = menuItem.getBoundingClientRect()
-              const left = subMenuRect.left + subMenuRect.width
+              // In RTL the submenu opens to the left; `left` is its right edge.
+              const left = isRtl
+                ? subMenuRect.left
+                : subMenuRect.left + subMenuRect.width
               const top = subMenuRect.top
               childMenuContainer = this._render({
                 contextMenuList: childMenus,
@@ -303,14 +311,24 @@ export class ContextMenu {
     const innerWidth = window.innerWidth
     const contextmenuRect = contextMenuContainer.getBoundingClientRect()
     const contextMenuWidth = contextmenuRect.width
-    const adjustLeft =
-      left + contextMenuWidth > innerWidth ? left - contextMenuWidth : left
+    const desiredLeft = isRtl ? left - contextMenuWidth : left
+    const adjustLeft = Math.min(
+      Math.max(desiredLeft, 0),
+      Math.max(innerWidth - contextMenuWidth, 0)
+    )
     contextMenuContainer.style.left = `${adjustLeft}px`
     // 下侧空间不足时，以菜单底部作为起始点
     const innerHeight = window.innerHeight
     const contextMenuHeight = contextmenuRect.height
-    const adjustTop =
-      top + contextMenuHeight > innerHeight ? top - contextMenuHeight : top
+    const adjustTop = Math.min(
+      Math.max(
+        top + contextMenuHeight > innerHeight
+          ? top - contextMenuHeight
+          : top,
+        0
+      ),
+      Math.max(innerHeight - contextMenuHeight, 0)
+    )
     contextMenuContainer.style.top = `${adjustTop}px`
     this.contextMenuContainerList.push(contextMenuContainer)
     return contextMenuContainer

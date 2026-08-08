@@ -117,7 +117,7 @@ ul {
   top: 11px;
   width: 0;
   height: 0;
-  right: 2px;
+  inset-inline-end: 2px;
   border-color: #767c85 transparent transparent;
   border-style: solid solid none;
   border-width: 3px 3px 0;
@@ -126,7 +126,7 @@ ul {
 .menu-item .options {
   width: 70px;
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 25px;
   padding: 10px;
   background: #fff;
@@ -319,6 +319,10 @@ ul {
   background-image: url('./assets/images/title.svg');
 }
 
+.menu.ui-rtl .menu-item__title i {
+  transform: translateX(5px);
+}
+
 .menu-item__title .options {
   width: 80px;
 }
@@ -341,6 +345,66 @@ ul {
 
 .menu-item__justify i {
   background-image: url('./assets/images/justify.svg');
+}
+
+.menu-item__direction i {
+  background-image: url('./assets/images/ltr.svg');
+}
+
+.menu-item__direction.is-rtl i {
+  background-image: url('./assets/images/rtl.svg');
+}
+
+/* LTR/RTL 模式：与段落方向图标区分，带文案芯片样式 */
+.menu-item > div.menu-item__ui-direction {
+  width: auto;
+  min-width: 52px;
+  height: 24px;
+  padding: 0 6px;
+  gap: 3px;
+  border: 1px solid #c5cdd8;
+  border-radius: 4px;
+  box-sizing: border-box;
+  margin-inline-start: 6px;
+}
+
+.menu-item > div.menu-item__ui-direction:hover {
+  background: rgba(25, 118, 210, 0.06);
+  border-color: #90a4c4;
+}
+
+.menu-item__ui-direction i {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  background-image: url('./assets/images/ui-ltr.svg');
+}
+
+.menu-item__ui-direction.is-rtl i {
+  background-image: url('./assets/images/ui-rtl.svg');
+}
+
+.menu-item__ui-direction em {
+  font-style: normal;
+  font-size: 11px;
+  line-height: 1;
+  color: #3d4757;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.menu-item__ui-direction.active {
+  background: rgba(25, 118, 210, 0.12);
+  border-color: #1976d2;
+}
+
+.menu-item__ui-direction.active em {
+  color: #1565c0;
+  font-weight: 600;
+}
+
+.menu-item__ui-direction[hidden] {
+  display: none;
 }
 
 .menu-item__row-margin {
@@ -584,11 +648,9 @@ ul {
   width: 260px;
   height: 108px;
   box-sizing: border-box;
-  position: absolute;
+  position: fixed;
   display: none;
   z-index: 99;
-  top: 25px;
-  left: 0;
   background: #ffffff;
   box-shadow: 0px 5px 5px #e3dfdf;
 }
@@ -598,13 +660,14 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse > div {
-  width: 250px;
+  width: 100%;
   height: 36px;
-  padding: 0 5px;
+  padding-inline: 5px;
   line-height: 36px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  box-sizing: border-box;
   border-radius: 4px;
 }
 
@@ -641,7 +704,7 @@ ul {
   line-height: 22px;
   padding: 0 6px;
   white-space: nowrap;
-  margin-left: 4px;
+  margin-inline-start: 4px;
   cursor: pointer;
   font-size: 12px;
 }
@@ -655,14 +718,14 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse__search label {
-  right: 110px;
+  inset-inline-end: 110px;
   font-size: 12px;
   color: #3d4757;
   position: absolute;
 }
 
 .menu-item .menu-item__search__collapse__search > input {
-  padding: 5px 90px 5px 5px !important;
+  padding-inline: 5px 90px !important;
 }
 
 .menu-item .menu-item__search__collapse__search > div {
@@ -672,7 +735,7 @@ ul {
   justify-content: center;
   align-items: center;
   position: absolute;
-  border-left: 1px solid #e2e6ed;
+  border-inline-start: 1px solid #e2e6ed;
   transition: all 0.5s;
 }
 
@@ -687,7 +750,7 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse__search .arrow-left {
-  right: 76px;
+  inset-inline-end: 76px;
 }
 
 .menu-item .menu-item__search__collapse__search .arrow-left i {
@@ -695,7 +758,7 @@ ul {
 }
 
 .menu-item .menu-item__search__collapse__search .arrow-right {
-  right: 48px;
+  inset-inline-end: 48px;
 }
 
 .menu-item .menu-item__search__collapse__search .arrow-right i {
@@ -704,17 +767,18 @@ ul {
 
 .menu-item__search__collapse__option {
   justify-content: flex-start !important;
+  flex-wrap: wrap;
 }
 
 .menu-item .menu-item__search__collapse__option .search-option-item {
   display: flex;
   align-items: center;
-  margin-right: 10px;
+  margin-inline-end: 10px;
 }
 
 .menu-item .menu-item__search__collapse__option label {
   font-size: 12px;
-  margin-left: 4px;
+  margin-inline-start: 4px;
   cursor: pointer;
 }
 
@@ -729,6 +793,14 @@ ul {
   bottom: 0;
   top: 100px;
   padding: 0 20px 40px 20px;
+  direction: ltr;
+}
+
+/* RTL 模式：目录贴右侧（start），内部 flex/缩进镜像；条目 plaintext 按首强字符定基向 */
+#app.ui-rtl .catalog {
+  left: auto;
+  right: 0;
+  direction: rtl;
 }
 
 .catalog .catalog__header {
@@ -767,12 +839,12 @@ ul {
 
 .catalog__main .catalog-item {
   width: 100%;
-  padding-left: 10px;
+  padding-inline-start: 10px;
   box-sizing: border-box;
 }
 
 .catalog__main > .catalog-item {
-  padding-left: 0;
+  padding-inline-start: 0;
 }
 
 .catalog__main .catalog-item .catalog-item__content {
@@ -780,6 +852,7 @@ ul {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  text-align: start;
 }
 
 .catalog__main .catalog-item .catalog-item__content:hover > span {
@@ -793,6 +866,8 @@ ul {
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
+  /* 中文行 LTR、阿语行 RTL，避免 UI rtl 把「主诉：」渲成「: 主诉」 */
+  unicode-bidi: plaintext;
 }
 
 .editor > div {
@@ -816,6 +891,13 @@ ul {
   top: 200px;
   left: 50%;
   overflow-y: auto;
+  direction: ltr;
+}
+
+/* RTL 模式：批注镜像到纸张左侧 */
+#app.ui-rtl .comment {
+  transform: translateX(calc(-100% - 420px));
+  direction: rtl;
 }
 
 .comment-item {
@@ -852,7 +934,7 @@ ul {
   background-color: #dbdbdb;
   width: 4px;
   height: 16px;
-  margin-right: 5px;
+  margin-inline-end: 5px;
   display: inline-block;
   border-radius: 999px;
 }
@@ -862,6 +944,7 @@ ul {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  unicode-bidi: plaintext;
 }
 
 .comment-item__title i {
@@ -869,7 +952,7 @@ ul {
   height: 16px;
   cursor: pointer;
   position: absolute;
-  right: -8px;
+  inset-inline-end: -8px;
   top: -8px;
   background: url(./assets/images/close.svg) no-repeat;
 }
@@ -895,6 +978,9 @@ ul {
 
 .comment-item__content {
   line-height: 22px;
+  /* 中文批注按内容基向排，避免句号被 rtl 容器拽到行首 */
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 .footer {
@@ -907,9 +993,10 @@ ul {
   z-index: 9;
   position: fixed;
   bottom: 0;
-  left: 0;
+  inset-inline-start: 0;
   font-size: 12px;
-  padding: 0 4px 0 20px;
+  padding-block: 0;
+  padding-inline: 20px 4px;
   box-sizing: border-box;
 }
 
@@ -926,7 +1013,7 @@ ul {
 .footer .catalog-mode i {
   width: 16px;
   height: 16px;
-  margin-right: 5px;
+  margin-inline-end: 5px;
   cursor: pointer;
   display: inline-block;
   background-image: url('./assets/images/catalog.svg');
@@ -940,7 +1027,7 @@ ul {
 .footer .page-mode i {
   width: 16px;
   height: 16px;
-  margin-right: 5px;
+  margin-inline-end: 5px;
   cursor: pointer;
   display: inline-block;
   background-image: url('./assets/images/page-mode.svg');
@@ -949,7 +1036,7 @@ ul {
 .footer .options {
   width: 70px;
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   bottom: 25px;
   padding: 10px;
   background: #fff;
@@ -983,8 +1070,16 @@ ul {
 
 .footer > div:first-child > span {
   display: inline-block;
-  margin-right: 5px;
+  margin-inline-end: 5px;
   letter-spacing: 1px;
+}
+
+/* RTL 模式：顶栏/底栏随 dir 镜像（flex 顺序 + 逻辑边距） */
+.menu[dir='rtl'],
+.footer[dir='rtl'],
+#app[dir='rtl'] .menu,
+#app[dir='rtl'] .footer {
+  direction: rtl;
 }
 
 .footer > div:last-child {
@@ -1111,8 +1206,8 @@ ul {
 }
 
 .footer .paper-size .options {
-  right: 0;
-  left: unset;
+  inset-inline-end: 0;
+  inset-inline-start: unset;
 }
 
 .footer .paper-direction {
@@ -1124,8 +1219,8 @@ ul {
 }
 
 .footer .paper-direction .options {
-  right: 0;
-  left: unset;
+  inset-inline-end: 0;
+  inset-inline-start: unset;
 }
 
 .footer .paper-direction .options .option-caption {

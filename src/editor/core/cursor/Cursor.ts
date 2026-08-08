@@ -1,16 +1,59 @@
 import { CURSOR_AGENT_OFFSET_HEIGHT } from '../../dataset/constant/Cursor'
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
+import { ElementType } from '../../dataset/enum/Element'
 import { MoveDirection } from '../../dataset/enum/Observer'
 import { DeepRequired } from '../../interface/Common'
 import { ICursorOption } from '../../interface/Cursor'
 import { IEditorOption } from '../../interface/Editor'
-import { IElementPosition } from '../../interface/Element'
+import { IElement, IElementPosition } from '../../interface/Element'
 import { findScrollContainer, nextTick } from '../../utils'
 import { isMobile } from '../../utils/ua'
 import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { Position } from '../position/Position'
 import { CursorAgent } from './CursorAgent'
+
+/** 光标墨迹盒：上下标用名义字号，避免 actualSize/垫高 metrics 把光标算矮、算飘 */
+export function resolveCursorInkMetrics(payload: {
+  element?: Pick<IElement, 'type' | 'size' | 'actualSize'> | null
+  metrics: {
+    height: number
+    boundingBoxAscent: number
+    boundingBoxDescent: number
+  }
+  defaultSize: number
+  scale: number
+}): { fontSize: number; inkAscent: number; inkDescent: number } {
+  const { element, metrics, defaultSize, scale } = payload
+  const isScript =
+    element?.type === ElementType.SUPERSCRIPT ||
+    element?.type === ElementType.SUBSCRIPT
+  // 上下标绘制用 actualSize，光标高度仍跟正文名义字号一致
+  const fontSize =
+    ((isScript
+      ? element?.size || defaultSize
+      : element?.actualSize || element?.size || defaultSize) *
+      scale) ||
+    metrics.height ||
+    defaultSize * scale
+  if (isScript) {
+    return {
+      fontSize,
+      inkAscent: fontSize * 0.8,
+      inkDescent: fontSize * 0.2
+    }
+  }
+  const rawAscent = metrics.boundingBoxAscent || 0
+  const rawDescent =
+    metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
+  const inflated =
+    metrics.height > fontSize * 1.15 || rawAscent > fontSize * 1.05
+  return {
+    fontSize,
+    inkAscent: inflated ? fontSize * 0.8 : rawAscent || fontSize * 0.8,
+    inkDescent: inflated ? fontSize * 0.2 : rawDescent
+  }
+}
 
 export type IDrawCursorOption = ICursorOption & {
   isShow?: boolean
@@ -130,30 +173,63 @@ export class Cursor {
       metrics,
       coordinate: { leftTop, rightTop },
       ascent,
-      pageNo
+      pageNo,
+      index: cursorIndex
     } = cursorPosition
     const zoneManager = this.draw.getZone()
     const curPageNo = zoneManager.isMainActive()
       ? pageNo
       : this.draw.getPageNo()
+    // 混合纸张方向：按页累计偏移
     const { x: preX, y: preY } = this.draw.getPageOffset(curPageNo)
-    // 默认偏移高度
+    // 光标高度与同行字号一致（text-engine 的 metrics.height 常为行盒，需回退到字号）
+    const element = this.draw.getElementList()[cursorIndex]
+    const { fontSize, inkAscent, inkDescent } = resolveCursorInkMetrics({
+      element,
+      metrics,
+      defaultSize: this.options.defaultSize,
+      scale
+    })
+    const textHeight = Math.max(inkAscent + inkDescent, fontSize * 0.5)
+    // 略高于字身：上下各加约 1/8 字号（2px～6px）
+    const pad = Math.min(Math.max(fontSize / 8, 2 * scale), 6 * scale)
+    const cursorHeight = textHeight + pad * 2
     const defaultOffsetHeight = CURSOR_AGENT_OFFSET_HEIGHT * scale
-    // 增加1/4字体大小（最小为defaultOffsetHeight即默认偏移高度）
-    const increaseHeight = Math.min(metrics.height / 4, defaultOffsetHeight)
-    const cursorHeight = metrics.height + increaseHeight * 2
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     if (isFocus) {
       setTimeout(() => {
         this.focus()
       })
     }
-    // fillText位置 + 文字基线到底部距离 - 模拟光标偏移量
-    const descent =
-      metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
-    const cursorTop =
-      leftTop[1] + ascent + descent - (cursorHeight - increaseHeight) + preY
-    const cursorLeft = (hitLineStartIndex ? leftTop[0] : rightTop[0]) + preX
+    // 基线：leftTop + ascent；光标相对字身上下各外扩 pad。
+    // 图片/公式的 position.ascent 是顶对齐偏移（row.ascent - height），不是行基线
+    const isImageLike =
+      element?.type === ElementType.IMAGE ||
+      element?.type === ElementType.LATEX
+    const baselineOffset = isImageLike ? ascent + metrics.height : ascent
+    const cursorTop = leftTop[1] + baselineOffset - inkAscent - pad + preY
+    // Host index = after this element. LTR trailing = rightTop; RTL trailing = leftTop.
+    const isRtlRun = ((cursorPosition.bidiLevel ?? 0) & 1) === 1
+    const cursorLeft =
+      (hitLineStartIndex
+        ? isRtlRun
+          ? rightTop[0]
+          : leftTop[0]
+        : isRtlRun
+          ? leftTop[0]
+          : rightTop[0]) + preX
+    // Sync IME textarea direction with paragraph
+    try {
+      const adapter = this.draw.getLayoutHostAdapter()
+      const elementList = this.draw.getElementList()
+      const dir = adapter.resolveElementDirection(
+        elementList,
+        cursorPosition.index
+      )
+      this.cursorAgent.syncDirection(dir)
+    } catch {
+      /* adapter may be unavailable during destroy */
+    }
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${
       cursorTop + cursorHeight - defaultOffsetHeight
@@ -165,7 +241,7 @@ export class Cursor {
     }
     // 记录旧光标位置：用于光标移动到可视范围内
     const oldTop = this.cursorDom.style.top
-    // 设置光标位置
+    // 设置光标位置与颜色（options.cursor.color / width）
     const isReadonly = this.draw.isReadonly()
     this.cursorDom.style.width = `${width * scale}px`
     this.cursorDom.style.backgroundColor = color

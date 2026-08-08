@@ -46,11 +46,32 @@ export abstract class AbstractRichText {
     if (isFirstRecord) {
       this.fillRect.x = x
       this.fillRect.y = y
+      if (height) this.fillRect.height = height
+      this.fillRect.width = width
+      this.fillColor = color
+      this.fillDecorationStyle = decorationStyle
+      return
+    }
+    // 视觉区间合并：左右相邻/重叠均可并入（兼容 RTL 逻辑序回扫）
+    const curLeft = this.fillRect.x
+    const curRight = this.fillRect.x + this.fillRect.width
+    const nextLeft = x
+    const nextRight = x + width
+    const adjacent =
+      nextLeft <= curRight + 1 && nextRight >= curLeft - 1
+    if (!adjacent) {
+      this.render(ctx)
+      this.clearFillInfo()
+      this.recordFillInfo(ctx, x, y, width, height, color, decorationStyle)
+      return
     }
     if (height && this.fillRect.height < height) {
       this.fillRect.height = height
     }
-    this.fillRect.width += width
+    const mergedLeft = Math.min(curLeft, nextLeft)
+    const mergedRight = Math.max(curRight, nextRight)
+    this.fillRect.x = mergedLeft
+    this.fillRect.width = mergedRight - mergedLeft
     this.fillColor = color
     this.fillDecorationStyle = decorationStyle
   }

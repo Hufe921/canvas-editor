@@ -1,0 +1,117 @@
+import { containsShapingScript } from '../utils/scriptFont'
+import { ShapedGlyph, StyleRun } from '../types'
+import { ITextShaper } from './ITextShaper'
+
+/** Default-ignorable / bidi format: must not consume layout width */
+function isZeroAdvanceChar(cp: number): boolean {
+  return (
+    (cp >= 0x200b && cp <= 0x200d) || // ZWSP ZWNJ ZWJ
+    cp === 0xfeff ||
+    cp === 0x2060 ||
+    (cp >= 0x2066 && cp <= 0x2069) // LRI RLI FSI PDI
+  )
+}
+
+/**
+ * Canvas measureText shaper.
+ * Complex scripts use prefix widths on the full string so advances match joined fillText.
+ */
+export class BrowserTextShaper implements ITextShaper {
+  private ctx: CanvasRenderingContext2D | null = null
+
+  private getCtx(): CanvasRenderingContext2D | null {
+    if (this.ctx) return this.ctx
+    if (typeof document === 'undefined') return null
+    const canvas = document.createElement('canvas')
+    this.ctx = canvas.getContext('2d')
+    return this.ctx
+  }
+
+  shape(run: StyleRun): ShapedGlyph[] {
+    if (run.style.objectWidth != null && run.text.length) {
+      const charStart = run.textStart
+      const charEnd = run.textStart + run.text.length
+      return [
+        {
+          glyphId: 0,
+          cluster: 0,
+          ax: Math.max(0, run.style.objectWidth),
+          dx: 0,
+          dy: 0,
+          charStart,
+          charEnd,
+          logicalIndexStart: run.logicalIndexAt(charStart),
+          logicalIndexEnd: run.logicalIndexAt(Math.max(charStart, charEnd - 1)),
+          logicalIndices: [run.logicalIndexAt(charStart)],
+          left: 0,
+          right: 0,
+          style: run.style,
+          bidiLevel: run.direction === 'rtl' ? 1 : 0
+        }
+      ]
+    }
+    const ctx = this.getCtx()
+    const font = `${run.style.italic ? 'italic ' : ''}${
+      run.style.bold ? 'bold ' : ''
+    }${run.style.fontSize}px ${run.style.fontFamily}`
+    if (ctx) ctx.font = font
+    const letterSpacing = run.style.letterSpacing || 0
+    // 与阿语相同：复杂文种用整串前缀宽，保证与整段 fillText 连写一致
+    const joinWidths = containsShapingScript(run.text)
+    const glyphs: ShapedGlyph[] = []
+    let prevWidth = 0
+    for (let i = 0; i < run.text.length; ) {
+      const cp = run.text.codePointAt(i)!
+      const len = cp > 0xffff ? 2 : 1
+      const ch = run.text.slice(i, i + len)
+      const charStart = run.textStart + i
+      const charEnd = charStart + len
+      let ax: number
+      if (isZeroAdvanceChar(cp)) {
+        ax = 0
+        if (ctx && joinWidths) {
+          prevWidth = ctx.measureText(run.text.slice(0, i + len)).width
+        }
+      } else if (ctx && joinWidths) {
+        const prefixWidth = ctx.measureText(run.text.slice(0, i + len)).width
+        ax = Math.max(0, prefixWidth - prevWidth) + letterSpacing
+        prevWidth = prefixWidth
+      } else {
+        ax =
+          (ctx ? ctx.measureText(ch).width : run.style.fontSize * 0.5) +
+          letterSpacing
+      }
+      glyphs.push({
+        glyphId: 0,
+        cluster: i,
+        ax,
+        dx: 0,
+        dy: 0,
+        charStart,
+        charEnd,
+        logicalIndexStart: run.logicalIndexAt(charStart),
+        logicalIndexEnd: run.logicalIndexAt(charEnd - 1),
+        logicalIndices: this.getVisibleLogicalIndices(run, i, i + len),
+        left: 0,
+        right: 0,
+        style: run.style,
+        bidiLevel: run.direction === 'rtl' ? 1 : 0
+      })
+      i += len
+    }
+    return glyphs
+  }
+
+  private getVisibleLogicalIndices(
+    run: StyleRun,
+    start: number,
+    end: number
+  ): number[] {
+    const indices: number[] = []
+    for (let i = start; i < end; i++) {
+      if (/^[\u2066-\u2069]$/u.test(run.text[i])) continue
+      indices.push(run.logicalIndexAt(run.textStart + i))
+    }
+    return indices
+  }
+}

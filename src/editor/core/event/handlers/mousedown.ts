@@ -148,14 +148,15 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       }
     }
     rangeManager.setRange(startIndex, endIndex)
-    position.setCursorPosition(positionList[curIndex])
     // 更新只读状态
     isReadonly = draw.isReadonly()
-    // 复选框
+    // 复选框/单选框：点击切换时不定位光标、不绘制光标
     if (isDirectHitCheckbox && !isReadonly) {
       hitCheckbox(curElement, draw)
+      draw.getCursor().recoveryCursor()
     } else if (isDirectHitRadio && !isReadonly) {
       hitRadio(curElement, draw)
+      draw.getCursor().recoveryCursor()
     } else if (
       curElement.controlComponent === ControlComponent.VALUE &&
       (curElement.control?.type === ControlType.CHECKBOX ||
@@ -174,7 +175,9 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
         }
         preIndex--
       }
+      draw.getCursor().recoveryCursor()
     } else {
+      position.setCursorPosition(positionList[curIndex])
       draw.render({
         curIndex,
         isCompute: false,

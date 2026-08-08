@@ -79,7 +79,8 @@ export class Header {
       startY: this.getHeaderTop(),
       innerWidth,
       elementList: this.elementList,
-      surroundElementList
+      surroundElementList,
+      layoutScope: 'header'
     })
   }
 

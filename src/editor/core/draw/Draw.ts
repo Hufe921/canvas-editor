@@ -31,6 +31,13 @@ import { IMarkElementListDeletedOption } from '../../interface/Trace'
 import { IRow, IRowElement } from '../../interface/Row'
 import { IColumnLayout, IColumnOption } from '../../interface/Column'
 import { ColumnManager } from './column/ColumnManager'
+import {
+  LayoutHostAdapter,
+  type ParagraphSpan
+} from '../text-engine-host'
+import { mergeVisualRects } from '../text-engine'
+import { containsShapingScript } from '../text-engine/utils/scriptFont'
+import type { VisualRect } from '../text-engine/types'
 import { deepClone, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -67,6 +74,7 @@ import { SeparatorParticle } from './particle/SeparatorParticle'
 import { PageBreakParticle } from './particle/PageBreakParticle'
 import { Watermark } from './frame/Watermark'
 import { WatermarkLayer } from '../../dataset/enum/Watermark'
+import { TextDirection } from '../../dataset/enum/TextDirection'
 import {
   EditorComponent,
   EditorMode,
@@ -219,6 +227,8 @@ export class Draw {
   private controlMinWidthPlaceholderElementListSet: WeakSet<IElement[]>
   private columnManager: ColumnManager
   private ruler: Ruler
+  private layoutHostAdapter: LayoutHostAdapter
+  private legacyRtlWarned: boolean
 
   constructor(
     rootContainer: HTMLElement,
@@ -296,6 +306,21 @@ export class Draw {
     this.graffiti = new Graffiti(this, data.graffiti)
     this.columnManager = new ColumnManager(this)
     this.ruler = new Ruler(this)
+    this.legacyRtlWarned = false
+    this.layoutHostAdapter = new LayoutHostAdapter(
+      () => this.options,
+      () => ({
+        isDesignMode: this.isDesignMode(),
+        isAreaHideDisabled: this.isAreaHideDisabled(),
+        isTraceHidden: (el: IElement) => this.traceParticle.isTraceHidden(el)
+      })
+    )
+    // HarfBuzz path: warm up fonts/WASM without blocking first paint
+    if (this.layoutHostAdapter.isHarfBuzzMode()) {
+      this.layoutHostAdapter.ensureReady().then(() => {
+        this.render({ isSetCursor: false, isSubmitHistory: false })
+      })
+    }
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -809,6 +834,10 @@ export class Draw {
 
   public getPosition(): Position {
     return this.position
+  }
+
+  public getLayoutHostAdapter(): LayoutHostAdapter {
+    return this.layoutHostAdapter
   }
 
   public getZone(): Zone {
@@ -1515,11 +1544,28 @@ export class Draw {
     this.container.style.position = 'relative'
     this.container.style.width = `${this.getWidth()}px`
     this.container.setAttribute(EDITOR_COMPONENT, EditorComponent.MAIN)
+    this.syncUiDirection()
+  }
+
+  /**
+   * Sync LTR/RTL mode class for chrome that opts in via CSS.
+   * 不得给画布容器设 dir=rtl：绝对定位光标（left+right）在 RTL 包含块下会忽略 left，
+   * 导致光标绘制/碰撞与正文物理坐标错位。正文命中只认 canvas 坐标。
+   */
+  public syncUiDirection() {
+    const isRtl = this.options.direction === TextDirection.RTL
+    this.container.removeAttribute('dir')
+    this.container.classList.toggle(`${EDITOR_PREFIX}-ui-rtl`, isRtl)
+    // 标尺是壳层 chrome，切换方向后需立即按新方向镜像重绘
+    // （构造期 _formatContainer 早于 ruler 初始化，用可选链跳过）
+    this.ruler?.refresh()
   }
 
   private _createPageContainer(): HTMLDivElement {
     const pageContainer = document.createElement('div')
     pageContainer.classList.add(`${EDITOR_PREFIX}-page-container`)
+    // 锁定物理方向，避免祖先 dir 影响页内绝对定位与点击坐标
+    pageContainer.setAttribute('dir', 'ltr')
     this.container.append(pageContainer)
     return pageContainer
   }
@@ -1622,6 +1668,883 @@ export class Draw {
     )
   }
 
+  /**
+   * 块级/浮层嵌入：引擎段扫描会跳过，须单独走 legacy 插行。
+   * 默认 IMAGE/LATEX、已展开 CONTROL chrome 走段内 object/text，勿列入。
+   */
+  private _isEngineHostBlockedElement(el: IElement): boolean {
+    const type = el.type
+    if (
+      type === ElementType.TABLE ||
+      type === ElementType.BLOCK ||
+      type === ElementType.AREA
+    ) {
+      return true
+    }
+    if (type === ElementType.IMAGE || type === ElementType.LATEX) {
+      const d = el.imgDisplay
+      // INLINE 与默认一致走引擎内联（与周边文本同行，RTL 下不分离）；
+      // 仅浮层/环绕图强制 legacy 单独处理
+      return (
+        d === ImageDisplay.SURROUND ||
+        d === ImageDisplay.FLOAT_TOP ||
+        d === ImageDisplay.FLOAT_BOTTOM
+      )
+    }
+    return false
+  }
+
+  /** 清除引擎投影到 IElement 上的布局字段，避免回退 legacy 后误用 visualLeft / left */
+  private _clearStaleEngineLayout(elementList: IElement[]) {
+    for (let i = 0; i < elementList.length; i++) {
+      const el = elementList[i] as IElement & {
+        visualLeft?: number
+        visualIndex?: number
+        clusterStart?: number
+        clusterEnd?: number
+        left?: number
+      }
+      delete el.visualLeft
+      delete el.visualIndex
+      delete el.clusterStart
+      delete el.clusterEnd
+      // legacy minWidth 残留的 left 会让下划线 x-left 落到边距
+      delete el.left
+      if (el.type === ElementType.TABLE && el.trList) {
+        for (const tr of el.trList) {
+          for (const td of tr.tdList) {
+            if (td.value?.length) this._clearStaleEngineLayout(td.value)
+          }
+        }
+      }
+    }
+  }
+
+  /** text-engine rows always draw via GlyphRenderer (Arabic run fillText joining). */
+  private rowUsesGlyphRenderer(row: IRow): boolean {
+    return !!row.engineLine?.glyphs?.length
+  }
+
+  private getRowElementPosition(
+    row: IRow,
+    positionList: import('../../interface/Element').IElementPosition[],
+    element: IElement & { sourceIndex?: number },
+    elementOffset: number
+  ) {
+    if (row.fragmentPosition) return row.fragmentPosition
+    const sourceIndex = element.sourceIndex
+    const fallbackIndex = row.startIndex + elementOffset
+    return (
+      (sourceIndex !== undefined ? positionList[sourceIndex] : undefined) ||
+      positionList[fallbackIndex] ||
+      (sourceIndex !== undefined
+        ? positionList.find(item => item?.index === sourceIndex)
+        : undefined)
+    )
+  }
+
+  /**
+   * 弹层（超链接/下拉/日期/计算器）DOM 定位样式。
+   * RTL（bidiLevel 为奇）时右对齐元素右缘，LTR 时左对齐元素左缘，
+   * 与书写方向镜像；top 统一在元素基线下方。
+   */
+  public getPopupPositionStyle(
+    position: import('../../interface/Element').IElementPosition,
+    topOffset = 0,
+    direction?: 'ltr' | 'rtl'
+  ): { left?: number; right?: number; top: number } {
+    const {
+      coordinate: { leftTop, rightTop },
+      lineHeight,
+      pageNo,
+      bidiLevel
+    } = position
+    const isRtl = direction
+      ? direction === 'rtl'
+      : ((bidiLevel ?? 0) & 1) === 1
+    // 混合纸张方向：按页累计实际高度/宽度偏移（统一纸张时退化为 pageNo*(h+gap)）
+    const currentPageNo = pageNo ?? this.getPageNo()
+    const { x: pageLeft, y: preY } = this.getPageOffset(currentPageNo)
+    const top = leftTop[1] + preY + lineHeight + topOffset
+    if (isRtl) {
+      const containerWidth = this._getPageMaxWidth()
+      const right = containerWidth - pageLeft - rightTop[0]
+      return { right, top }
+    }
+    return { left: leftTop[0] + pageLeft, top }
+  }
+
+  private getEngineHighlightRect(
+    row: IRow,
+    element: IRowElement,
+    position: import('../../interface/Element').IElementPosition
+  ): { x: number; width: number } | undefined {
+    if (!row.engineLine || element.sourceIndex === undefined) return
+    const sourceIndex = element.sourceIndex
+    const glyphs = row.engineLine.glyphs.filter(g => {
+      if (g.logicalIndices?.length) {
+        return g.logicalIndices.includes(sourceIndex)
+      }
+      const from = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const to = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      return sourceIndex >= from && sourceIndex <= to
+    })
+    if (!glyphs.length) return
+    const left = Math.min(...glyphs.map(g => g.left))
+    const right = Math.max(...glyphs.map(g => g.right))
+    const originX =
+      position.coordinate.leftTop[0] -
+      (element.visualLeft || 0) -
+      (element.left || 0)
+    return { x: originX + left, width: Math.max(0, right - left) }
+  }
+
+  /**
+   * Resolve a text-engine element to its visual highlight rectangle.
+   * Search results use source indexes, while engine rows may reorder those
+   * elements visually for bidi layout.
+   */
+  public getEngineHighlightRectByIndex(
+    sourceIndex: number,
+    position: import('../../interface/Element').IElementPosition,
+    rowList: IRow[] = this.getOriginalRowList()
+  ): { x: number; width: number } | undefined {
+    for (const row of rowList) {
+      if (!row.engineLine) continue
+      const element = row.elementList.find(
+        item => item.sourceIndex === sourceIndex
+      )
+      if (!element) continue
+      return this.getEngineHighlightRect(row, element, position)
+    }
+    return
+  }
+
+  /**
+   * GlyphRenderer 按整行绘制：跳过留痕软删与 hide（与 TextParticle / #1447 一致）。
+   * hide 须先在 ElementBridge 中零宽占位，再在此跳过绘制，避免只滤 paint 留下空白洞。
+   */
+  private isGlyphPaintSkipped(element: IElement | undefined): boolean {
+    if (!element || this.isDesignMode()) return false
+    return (
+      !!element.hide ||
+      !!element.control?.hide ||
+      (!!element.area?.hide && !this.isAreaHideDisabled()) ||
+      this.traceParticle.isTraceHidden(element)
+    )
+  }
+
+  private filterEngineLineForPaint(
+    line: import('../text-engine/types').LayoutLine,
+    elementList: IElement[]
+  ): import('../text-engine/types').LayoutLine {
+    if (this.isDesignMode()) return line
+    const glyphs = line.glyphs.filter(g => {
+      const from = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const to = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      for (let li = from; li <= to; li++) {
+        if (this.isGlyphPaintSkipped(elementList[li])) return false
+      }
+      return true
+    })
+    return glyphs.length === line.glyphs.length ? line : { ...line, glyphs }
+  }
+
+  /**
+   * text-engine 选区校正：按 engineLine 字形左右边界并集，
+   * 并对复杂文种用与绘制相同的 font 测整段墨迹宽，防止选区短于 fillText。
+   */
+  private _correctEngineSelectionRects(
+    ctx: CanvasRenderingContext2D,
+    curRow: IRow,
+    positionList: import('../../interface/Element').IElementPosition[],
+    rects: VisualRect[],
+    selStart: number,
+    selEnd: number
+  ): VisualRect[] {
+    if (!curRow.engineLine?.glyphs?.length || selStart === selEnd) {
+      return rects
+    }
+    const anchor = curRow.elementList.find(
+      el => el.visualLeft !== undefined && el.value !== ZERO
+    )
+    const anchorPos =
+      curRow.fragmentPosition ||
+      positionList[
+        anchor
+          ? anchor.sourceIndex ??
+            curRow.startIndex + curRow.elementList.indexOf(anchor)
+          : curRow.startIndex
+      ]
+    if (!anchor || !anchorPos) return rects
+    const originX =
+      anchorPos.coordinate.leftTop[0] -
+      (anchor.visualLeft || 0) -
+      (anchor.left || 0)
+    const y = anchorPos.coordinate.leftTop[1]
+    const height = curRow.height
+    // 编辑器约定：高亮 (selStart, selEnd]
+    const from = selStart + 1
+    const to = selEnd
+    if (from > to) return rects
+
+    const glyphRects: VisualRect[] = []
+    for (const g of curRow.engineLine.glyphs) {
+      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      if (gTo < from || gFrom > to) continue
+      const count = Math.max(1, gTo - gFrom + 1)
+      const boxW = Math.max(g.right - g.left, 0)
+      const odd = (g.bidiLevel & 1) === 1
+      for (let li = Math.max(gFrom, from); li <= Math.min(gTo, to); li++) {
+        const each = boxW > 0.01 ? boxW / count : 0
+        const offset = odd ? gTo - li : li - gFrom
+        const left = originX + g.left + offset * each
+        const right = left + (each > 0.01 ? each : Math.max(boxW, 0))
+        glyphRects.push({ left, right: Math.max(right, left), y, height })
+      }
+    }
+    const base = glyphRects.length ? glyphRects : rects
+
+    // 复杂文种：按选中逻辑子串测宽，把同行选区右缘扩到墨迹宽
+    const para = curRow.engineParagraphText
+    if (!para || !curRow.engineLine) return base
+    let minChar = Infinity
+    let maxChar = -1
+    let paintStyle = curRow.engineLine.glyphs[0]?.style
+    for (const g of curRow.engineLine.glyphs) {
+      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      if (gTo < from || gFrom > to) continue
+      minChar = Math.min(minChar, g.charStart)
+      maxChar = Math.max(maxChar, g.charEnd)
+      paintStyle = g.style
+    }
+    if (minChar === Infinity || maxChar <= minChar || !paintStyle) {
+      return base
+    }
+    const slice = para.slice(minChar, maxChar)
+    if (!slice || !containsShapingScript(slice)) return base
+    ctx.save()
+    ctx.font = `${paintStyle.italic ? 'italic ' : ''}${
+      paintStyle.bold ? 'bold ' : ''
+    }${paintStyle.fontSize}px ${paintStyle.fontFamily}`
+    const measured = ctx.measureText(slice)
+    const inkRight =
+      measured.actualBoundingBoxRight != null &&
+      measured.actualBoundingBoxLeft != null
+        ? Math.max(
+            measured.width,
+            measured.actualBoundingBoxRight - measured.actualBoundingBoxLeft
+          )
+        : measured.width
+    ctx.restore()
+    // 选区在复杂段内的视觉起点
+    let runLeft = Infinity
+    for (const g of curRow.engineLine.glyphs) {
+      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
+      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
+      if (gTo < from || gFrom > to) continue
+      runLeft = Math.min(runLeft, originX + g.left)
+    }
+    if (runLeft === Infinity) return base
+    const needRight = runLeft + inkRight
+    return base.map(r =>
+      Math.abs(r.y - y) < 0.5 && r.right < needRight
+        ? { ...r, left: Math.min(r.left, runLeft), right: needRight }
+        : r
+    )
+  }
+
+  /**
+   * Paint-time overlay of live element styles onto engine glyphs.
+   * Does not mutate the cached LayoutLine (color 等 isCompute:false 依赖此路径).
+   */
+  private _syncEngineLineStyles(
+    line: import('../text-engine/types').LayoutLine,
+    elementList: IElement[]
+  ): import('../text-engine/types').LayoutLine {
+    const {
+      defaultFont,
+      defaultSize,
+      defaultColor,
+      defaultHyperlinkColor,
+      label: { defaultColor: defaultLabelColor },
+      scale
+    } = this.options
+    return {
+      ...line,
+      glyphs: line.glyphs.map(g => {
+        const el = elementList[g.logicalIndexStart]
+        if (!el) return g
+        if (el.type === ElementType.HYPERLINK) {
+          this.hyperlinkParticle.ensureDefaults(el)
+        }
+        if (el.type === ElementType.LABEL) {
+          this.labelParticle.ensureDefaults(el)
+        }
+        const isSuper = el.type === ElementType.SUPERSCRIPT
+        const isSub = el.type === ElementType.SUBSCRIPT
+        const baseSize = el.size || defaultSize
+        const paintSize =
+          (isSuper || isSub ? Math.ceil(baseSize * 0.6) : baseSize) * scale
+        const scriptShift = isSuper ? 'super' : isSub ? 'sub' : undefined
+        const baselineShift = isSuper
+          ? -paintSize / 2
+          : isSub
+            ? paintSize / 2
+            : 0
+        const fallbackColor =
+          el.type === ElementType.HYPERLINK
+            ? defaultHyperlinkColor
+            : el.type === ElementType.LABEL
+              ? defaultLabelColor
+              : defaultColor
+        return {
+          ...g,
+          baselineShift,
+          style: {
+            ...g.style,
+            // 保留整形时按 script 解析的字体，避免 sync 回落 defaultFont 打断阿语连写
+            fontFamily: el.font || g.style.fontFamily || defaultFont,
+            fontSize: paintSize,
+            bold: el.bold,
+            italic: el.italic,
+            color: el.color || fallbackColor,
+            letterSpacing: el.letterSpacing,
+            scriptShift
+          }
+        }
+      })
+    }
+  }
+
+  private _createSpecialEngineRow(
+    element: IElement,
+    index: number,
+    innerWidth: number,
+    rowIndex: number
+  ): IRow {
+    const { scale, defaultSize } = this.options
+    const rowMargin = this.getElementRowMargin(element)
+    if (element.type === ElementType.SEPARATOR) {
+      const {
+        separator: { lineWidth: defaultLineWidth }
+      } = this.options
+      const lineWidth = element.lineWidth || defaultLineWidth
+      element.width = innerWidth / scale
+      // 与 legacy computeRowList 保持同一套 metrics → height/ascent
+      const metrics = {
+        width: innerWidth,
+        height: lineWidth * scale,
+        boundingBoxAscent: -rowMargin,
+        boundingBoxDescent: -rowMargin + lineWidth * scale
+      }
+      const ascent = metrics.boundingBoxAscent + rowMargin
+      const height =
+        rowMargin +
+        metrics.boundingBoxAscent +
+        metrics.boundingBoxDescent +
+        rowMargin
+      return {
+        width: innerWidth,
+        height,
+        ascent,
+        startIndex: index,
+        rowIndex,
+        elementList: [
+          {
+            ...element,
+            metrics,
+            style: ''
+          }
+        ]
+      }
+    }
+    // PAGE_BREAK：legacy 仅设 metrics.height=defaultSize，bbox 为 0
+    element.width = innerWidth / scale
+    const size = element.size || defaultSize
+    const metrics = {
+      width: innerWidth,
+      height: size,
+      boundingBoxAscent: 0,
+      boundingBoxDescent: 0
+    }
+    const ascent = metrics.boundingBoxAscent + rowMargin
+    const height =
+      rowMargin +
+      metrics.boundingBoxAscent +
+      metrics.boundingBoxDescent +
+      rowMargin
+    return {
+      width: innerWidth,
+      height,
+      ascent,
+      startIndex: index,
+      rowIndex,
+      isPageBreak: true,
+      // 混排横竖版：分页符携带的 paperDirection 决定新节方向（与 legacy 一致）
+      ...(element.paperDirection
+        ? { paperDirection: element.paperDirection }
+        : {}),
+      elementList: [
+        {
+          ...element,
+          metrics,
+          style: ''
+        }
+      ]
+    }
+  }
+
+  /** Paragraph list indent (marker width + nested level), same as legacy offsetX. */
+  private _getEngineParagraphListOffset(
+    paragraph: ParagraphSpan,
+    elementList: IElement[],
+    listStyleMap: Map<string, number>
+  ): number {
+    const { scale } = this.options
+    const anchor =
+      elementList[paragraph.startIndex]?.listId
+        ? elementList[paragraph.startIndex]
+        : elementList[paragraph.startIndex + 1]
+    if (!anchor?.listId) return 0
+    const indent = anchor.listLevel
+      ? this.listParticle.LIST_INDENT_WIDTH * anchor.listLevel * scale
+      : 0
+    return (listStyleMap.get(anchor.listId) || 0) + indent
+  }
+
+  /**
+   * text-engine 行补齐列表元数据（isList/offsetX/listIndex），
+   * 否则工具栏 setList 虽写入 listId，却不缩进、不绘项目符号。
+   */
+  private _applyEngineListMetaToRows(
+    rows: IRow[],
+    listStyleMap: Map<string, number>,
+    listIndexMap: Map<string, number>
+  ) {
+    const { scale } = this.options
+    for (const row of rows) {
+      const listAnchor =
+        row.elementList.find(el => el.listId && el.value === ZERO) ||
+        row.elementList.find(el => !!el.listId)
+      if (!listAnchor?.listId) continue
+      const listId = listAnchor.listId
+      if (listAnchor.value === ZERO && !listAnchor.listWrap) {
+        if (listIndexMap.has(listId)) {
+          listIndexMap.set(listId, (listIndexMap.get(listId) ?? 0) + 1)
+        } else {
+          listIndexMap.set(listId, 0)
+        }
+      }
+      const indent = listAnchor.listLevel
+        ? this.listParticle.LIST_INDENT_WIDTH * listAnchor.listLevel * scale
+        : 0
+      row.isList = true
+      // RTL：左侧不再套 offsetX，gutter 留在内容区右侧（布局宽已减 listOffset）
+      const isRtl =
+        row.direction === 'rtl' || listAnchor.direction === TextDirection.RTL
+      row.offsetX = isRtl ? 0 : (listStyleMap.get(listId) || 0) + indent
+      row.listIndex = listIndexMap.get(listId) ?? 0
+    }
+  }
+
+  /**
+   * text-engine 行补齐 ControlIndentation.VALUE_START：
+   * 控件值换行时，续行从「值起始侧」对齐（LTR 值左缘、RTL 值右缘），
+   * 与 legacy computeRowList 的 offsetX 语义一致。仅平移本行 visualLeft，
+   * 不写 offsetX，避免与引擎行右对齐 / 列表 offsetX 二次叠加。
+   */
+  private _applyEngineControlIndentation(rows: IRow[]) {
+    if (!rows.length) return
+    const valueStartByControl = new Map<string, number>()
+    const seenByControl = new Set<string>()
+    for (const row of rows) {
+      const isRtl = row.direction === 'rtl'
+      // 本行出现且带视觉坐标的 VALUE_START 控件值
+      const rowValueStart = new Map<string, number>()
+      for (const el of row.elementList) {
+        if (
+          !el.controlId ||
+          el.control?.indentation !== ControlIndentation.VALUE_START ||
+          el.visualLeft === undefined
+        ) {
+          continue
+        }
+        // 值起点 = 首个非 PREFIX 元素（PRE_TEXT / PLACEHOLDER / VALUE），与 legacy 一致
+        if (
+          el.controlComponent !== ControlComponent.PRE_TEXT &&
+          el.controlComponent !== ControlComponent.PLACEHOLDER &&
+          el.controlComponent !== ControlComponent.VALUE
+        ) {
+          continue
+        }
+        const right = (el.visualLeft || 0) + (el.metrics?.width || 0)
+        const cur = rowValueStart.get(el.controlId)
+        const next =
+          cur === undefined
+            ? (isRtl ? right : el.visualLeft || 0)
+            : isRtl
+              ? Math.max(cur, right)
+              : Math.min(cur, el.visualLeft || 0)
+        rowValueStart.set(el.controlId, next)
+      }
+      for (const [controlId, thisRowStart] of rowValueStart) {
+        if (!seenByControl.has(controlId)) {
+          seenByControl.add(controlId)
+          valueStartByControl.set(controlId, thisRowStart)
+          continue
+        }
+        const firstRowStart = valueStartByControl.get(controlId)!
+        const delta = firstRowStart - thisRowStart
+        if (Math.abs(delta) < 0.01) continue
+        this._shiftEngineRowVisual(row, delta)
+      }
+    }
+  }
+
+  /**
+   * 平移 text-engine 行内全部元素的 visualLeft 与 engineLine 字形（拷贝，避免污染
+   * LayoutCache），不改变行宽。与 LabelParticle.applyEngineRowsMetrics 一致。
+   */
+  private _shiftEngineRowVisual(row: IRow, delta: number) {
+    for (const el of row.elementList) {
+      if (el.visualLeft !== undefined) {
+        el.visualLeft += delta
+      }
+    }
+    if (row.engineLine?.glyphs?.length) {
+      row.engineLine = {
+        ...row.engineLine,
+        glyphs: row.engineLine.glyphs.map(g => ({
+          ...g,
+          left: g.left + delta,
+          right: g.right + delta
+        }))
+      }
+    }
+  }
+
+  private _appendParagraphEngineRows(
+    rowList: IRow[],
+    paragraph: ParagraphSpan,
+    elementList: IElement[],
+    width: number,
+    rowIndex: number,
+    layoutScope: string,
+    defaultAlign?: 'left' | 'right'
+  ): number {
+    const zeroEl =
+      elementList[paragraph.startIndex]?.value === ZERO
+        ? elementList[paragraph.startIndex]
+        : null
+    const rows = this.layoutHostAdapter.layoutParagraphToRows(
+      paragraph,
+      elementList,
+      width,
+      rowIndex,
+      layoutScope,
+      defaultAlign
+    )
+    if (!rows?.length) {
+      if (!zeroEl) return rowIndex
+      // 与正文引擎行一致：fontSize * defaultRowMargin * 1.5（勿用 size*margin 压成半行）
+      const { defaultSize, defaultFont, defaultRowMargin, scale } =
+        this.options
+      const fontSize = (zeroEl.size || defaultSize) * (scale || 1)
+      const lineHeightFactor = (defaultRowMargin || 1) * 1.5
+      const height = fontSize * lineHeightFactor
+      const ascent = height * 0.8
+      rowList.push({
+        width: 0,
+        height,
+        ascent,
+        direction: paragraph.direction,
+        rowFlex: paragraph.rowFlex,
+        startIndex: paragraph.startIndex,
+        elementList: [
+          Object.assign(zeroEl, {
+            metrics: {
+              width: 0,
+              height: fontSize,
+              boundingBoxAscent: ascent,
+              boundingBoxDescent: Math.max(0, height - ascent)
+            },
+            style: `${zeroEl.size || defaultSize}px ${
+              zeroEl.font || defaultFont
+            }`,
+            visualLeft: 0,
+            bidiLevel: paragraph.direction === 'rtl' ? 1 : 0
+          }) as IRowElement
+        ],
+        rowIndex: rowIndex++
+      })
+      return rowIndex
+    }
+    if (zeroEl) {
+      const first = rows[0]
+      const lefts = first.elementList.map(el => el.visualLeft ?? 0)
+      const rights = first.elementList.map(
+        el => (el.visualLeft ?? 0) + (el.metrics?.width ?? 0)
+      )
+      const visualLeft =
+        paragraph.direction === 'rtl'
+          ? Math.max(0, ...rights, first.width)
+          : Math.min(...lefts, 0)
+      first.elementList.unshift(
+        Object.assign(zeroEl, {
+          metrics: {
+            width: 0,
+            height: first.height,
+            boundingBoxAscent: first.ascent,
+            boundingBoxDescent: Math.max(0, first.height - first.ascent)
+          },
+          style: `${zeroEl.size || this.options.defaultSize}px ${
+            zeroEl.font || this.options.defaultFont
+          }`,
+          visualLeft,
+          left: 0,
+          bidiLevel: paragraph.direction === 'rtl' ? 1 : 0
+        }) as IRowElement
+      )
+      first.startIndex = paragraph.startIndex
+    }
+    this.control.applyEngineRowsMinWidth(rows, width)
+    this.labelParticle.applyEngineRowsMetrics(rows)
+    this._applyEngineControlIndentation(rows)
+    for (const row of rows) {
+      this.collapseHiddenEngineRow(row)
+      row.rowIndex = rowIndex++
+      rowList.push(row)
+    }
+    return rowIndex
+  }
+
+  /** 与 legacy computeRowList 一致：行内非换行符元素全隐藏时折叠行高 (#1447) */
+  private collapseHiddenEngineRow(row: IRow) {
+    if (this.isDesignMode() || row.height <= 0) return
+    const visibleElements = row.elementList.filter(el => el.value !== ZERO)
+    const isAllHidden =
+      visibleElements.length > 0 &&
+      visibleElements.every(
+        el =>
+          el.hide ||
+          el.control?.hide ||
+          (el.area?.hide && !this.isAreaHideDisabled()) ||
+          this.traceParticle.isTraceHidden(el)
+      )
+    if (isAllHidden) {
+      row.height = 0
+    }
+  }
+
+  private _computeRowListByTextEngine(
+    elementList: IElement[],
+    width: number,
+    layoutScope: string,
+    defaultDirection?: TextDirection,
+    defaultAlign?: 'left' | 'right'
+  ): IRow[] | null {
+    const paragraphs = this.layoutHostAdapter.scanParagraphs(
+      elementList,
+      defaultDirection
+    )
+    const paraByStart = new Map(
+      paragraphs.map(p => [p.startIndex, p] as const)
+    )
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
+    const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
+    const listIndexMap: Map<string, number> = new Map()
+    const rowList: IRow[] = []
+    let rowIndex = 0
+    let i = 0
+    while (i < elementList.length) {
+      const el = elementList[i]
+      if (
+        el.type === ElementType.SEPARATOR ||
+        el.type === ElementType.PAGE_BREAK
+      ) {
+        rowList.push(
+          this._createSpecialEngineRow(el, i, width, rowIndex++)
+        )
+        i++
+        continue
+      }
+      // 表格/浮层图/Block 等：legacy 单元素插行（forceLegacy 避免递归进引擎）
+      if (this._isEngineHostBlockedElement(el)) {
+        this._clearStaleEngineLayout([el])
+        const subRows = this.computeRowList({
+          innerWidth: width,
+          elementList: [el],
+          forceLegacy: true,
+          layoutScope
+        })
+        for (const row of subRows) {
+          row.startIndex = i
+          row.rowIndex = rowIndex++
+          // 行内元素对齐到主列表引用，保留 legacy 算好的 metrics/style
+          if (row.elementList.length === 1) {
+            const computed = row.elementList[0]
+            row.elementList[0] = Object.assign(el, {
+              metrics: computed.metrics,
+              style: computed.style,
+              left: computed.left
+            }) as import('../../interface/Row').IRowElement
+          }
+          rowList.push(row)
+        }
+        i++
+        continue
+      }
+      const paragraph = paraByStart.get(i)
+      if (paragraph) {
+        const listOffset = this._getEngineParagraphListOffset(
+          paragraph,
+          elementList,
+          listStyleMap
+        )
+        const paraRowStart = rowList.length
+        rowIndex = this._appendParagraphEngineRows(
+          rowList,
+          paragraph,
+        elementList,
+        Math.max(1, width - listOffset),
+        rowIndex,
+        layoutScope,
+        defaultAlign
+        )
+        this._applyEngineListMetaToRows(
+          rowList.slice(paraRowStart),
+          listStyleMap,
+          listIndexMap
+        )
+        i = paragraph.endIndex + 1
+        continue
+      }
+      i++
+    }
+    return rowList.length ? rowList : null
+  }
+
+  /**
+   * legacy 渲染器为逐字符 LTR，不做 Bidi/连字整形；声明 textEngine=legacy 时
+   * RTL 内容无法正确渲染。此处仅对「显式 legacy」模式给出一次性警告，
+   * harfbuzz 模式下的 forceLegacy（表格外壳/浮层图）不触发。
+   */
+  private _warnLegacyRtlIfNeeded(elementList: IElement[]) {
+    if (this.legacyRtlWarned) return
+    if (this.layoutHostAdapter.isHarfBuzzMode()) return
+    const hasRtl = elementList.some(el => {
+      if (el.direction === TextDirection.RTL) return true
+      const value = el.value
+      return !!value && /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(value)
+    })
+    if (hasRtl) {
+      this.legacyRtlWarned = true
+      console.warn(
+        '[canvas-editor] textEngine 为 legacy，无法正确渲染 RTL 内容，' +
+          '请将 textEngine 改为 "harfbuzz"'
+      )
+    }
+  }
+
+  /**
+   * 引擎行补齐分栏 columnIndex 与环绕图偏移。
+   * 引擎按整段以 innerWidth 排版，这里按行累计高度模拟 legacy 的分栏游标，
+   * 并对与环绕图纵向相交的行设置 offsetX，使正文从图片右侧开始而非重叠。
+   */
+  private _applyEngineRowGeometry(
+    rows: IRow[],
+    p: {
+      startX: number
+      startY: number
+      pageHeight: number
+      isPagingMode: boolean
+      innerWidth: number
+      surroundElementList: IElement[]
+    }
+  ) {
+    const {
+      startX,
+      startY,
+      pageHeight,
+      isPagingMode,
+      surroundElementList
+    } = p
+    const { scale } = this.options
+    const layout =
+      isPagingMode ? this.columnManager.getLayout() : null
+    const isColumnEnabled = !!layout && layout.count > 1
+    let y = startY
+    let pageNo = 0
+    let currentColumn = 0
+    for (const row of rows) {
+      const rowOffsetY = row.offsetY || 0
+      if (isPagingMode && pageHeight) {
+        const curMainOuterHeight = this.getMainOuterHeight(pageNo)
+        const isOverflow =
+          y - startY + curMainOuterHeight + row.height + rowOffsetY > pageHeight
+        if (isOverflow) {
+          if (
+            isColumnEnabled &&
+            layout &&
+            currentColumn < layout.count - 1
+          ) {
+            currentColumn += 1
+            y = startY
+          } else {
+            pageNo += 1
+            currentColumn = 0
+            y = startY
+          }
+        }
+      }
+      if (isColumnEnabled) {
+        row.columnIndex = currentColumn
+      }
+      // 环绕图：与行纵向相交时，正文从图片右侧开始
+      if (surroundElementList.length) {
+        const columnOffset = isColumnEnabled
+          ? (layout!.offsets[currentColumn] || 0)
+          : 0
+        const rowStartX = startX + columnOffset
+        for (const s of surroundElementList) {
+          const floatPosition = s.imgFloatPosition
+          if (
+            !floatPosition ||
+            floatPosition.pageNo !== pageNo ||
+            !s.width ||
+            !s.height
+          ) {
+            continue
+          }
+          const rect = {
+            x: floatPosition.x * scale,
+            y: floatPosition.y * scale,
+            width: s.width * scale,
+            height: s.height * scale
+          }
+          if (
+            y >= rect.y + rect.height ||
+            y + row.height <= rect.y ||
+            rect.x >= rowStartX + row.width
+          ) {
+            continue
+          }
+          // 图片在正文行起点左侧 → 平移整行到图片右侧
+          if (rect.x + rect.width > rowStartX + 0.01) {
+            const offset = rect.x + rect.width - rowStartX
+            row.offsetX = (row.offsetX || 0) + offset
+            row.isSurround = true
+          }
+        }
+      }
+      y += row.height + rowOffsetY
+    }
+  }
+
   public computeRowList(payload: IComputeRowListPayload) {
     const {
       innerWidth,
@@ -1631,8 +2554,44 @@ export class Draw {
       startX = 0,
       startY = 0,
       pageHeight = 0,
-      surroundElementList = []
+      surroundElementList = [],
+      forceLegacy = false,
+      layoutScope = 'main',
+      defaultDirection,
+      defaultAlign
     } = payload
+    // text-engine：段落走引擎（含单元格）；TABLE/浮层图等在引擎循环内 forceLegacy
+    if (!forceLegacy && this.layoutHostAdapter.isReady()) {
+      // 分栏时按列宽排版，避免整段以整行宽换行后套栏偏移导致列间覆盖
+      const layout =
+        isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
+      const isColumnEnabled = !!layout && layout.count > 1
+      const engineWidth = isColumnEnabled ? layout!.width : innerWidth
+      const engineRows = this._computeRowListByTextEngine(
+        elementList,
+        engineWidth,
+        layoutScope,
+        defaultDirection,
+        defaultAlign
+      )
+      if (engineRows) {
+        // 表格单元格/页眉页脚等子布局不做分栏与环绕处理
+        if (!isFromTable && layoutScope === 'main') {
+          this._applyEngineRowGeometry(engineRows, {
+            startX,
+            startY,
+            pageHeight,
+            isPagingMode,
+            innerWidth,
+            surroundElementList
+          })
+        }
+        return engineRows
+      }
+    }
+    this._warnLegacyRtlIfNeeded(elementList)
+    // legacy 前清掉引擎残留 visualLeft，防止表格/图片行定位错乱
+    this._clearStaleEngineLayout(elementList)
     const {
       defaultSize,
       scale,
@@ -1803,7 +2762,11 @@ export class Draw {
               innerWidth: (td.width! - tdPaddingWidth) * scale,
               elementList: td.value,
               isFromTable: true,
-              isPagingMode
+              isPagingMode,
+              defaultDirection: element.direction || TextDirection.AUTO,
+              defaultAlign:
+                element.direction === TextDirection.RTL ? 'right' : 'left',
+              layoutScope: td.id ? `td:${td.id}` : `td:anon-${t}-${d}`
             })
             const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
             td.rowList = rowList
@@ -2431,9 +3394,12 @@ export class Draw {
         const element = curRow.elementList[j]
         const preElement = curRow.elementList[j - 1]
         // 高亮配置：元素 > 控件配置
-        const highlight =
-          element.highlight ||
-          this.control.getControlHighlight(elementList, curRow.startIndex + j)
+          const highlight =
+            element.highlight ||
+            this.control.getControlHighlight(
+              elementList,
+              element.sourceIndex ?? curRow.startIndex + j
+            )
         if (highlight) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (
@@ -2444,18 +3410,30 @@ export class Draw {
             this.highlight.render(ctx)
           }
           // 当前元素位置信息记录（表格跨页片段行优先使用片段位置）
+          const position = this.getRowElementPosition(
+            curRow,
+            positionList,
+            element,
+            j
+          )
+          if (!position) continue
           const {
             coordinate: {
               leftTop: [x, y]
             }
-          } = curRow.fragmentPosition || positionList[curRow.startIndex + j]
+          } = position
           // 元素向左偏移量
           const offsetX = element.left || 0
+          const engineRect = this.getEngineHighlightRect(
+            curRow,
+            element,
+            position
+          )
           this.highlight.recordFillInfo(
             ctx,
-            x - offsetX,
+            engineRect?.x ?? x - offsetX,
             y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
-            element.metrics.width + offsetX,
+            engineRect?.width ?? element.metrics.width + offsetX,
             curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
             highlight
           )
@@ -2496,13 +3474,15 @@ export class Draw {
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 选区绘制记录
+      // 选区绘制记录（legacy：单矩形 width+=；text-engine：视觉矩形列表）
       const rangeRecord: IElementFillRect = {
         x: 0,
         y: 0,
         width: 0,
         height: 0
       }
+      const rangeVisualRects: VisualRect[] = []
+      const isTextEngineRow = !!curRow.engineLine
       let tableRangeElement: IElement | null = null
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
@@ -2513,12 +3493,19 @@ export class Draw {
         }
         const metrics = element.metrics
         // 当前元素位置信息（表格跨页片段行优先使用片段位置）
+        const position = this.getRowElementPosition(
+          curRow,
+          positionList,
+          element,
+          j
+        )
+        if (!position) continue
         const {
           ascent: offsetY,
           coordinate: {
             leftTop: [x, y]
           }
-        } = curRow.fragmentPosition || positionList[curRow.startIndex + j]
+        } = position
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
         if (
@@ -2552,28 +3539,54 @@ export class Draw {
           this.tableParticle.render(ctx, element, x, y, curRow.tableFragment)
         } else if (element.type === ElementType.HYPERLINK) {
           this.textParticle.complete()
-          this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+          // text-engine：与正文一致走 GlyphRenderer（RTL 连写/visualLeft）；Particle 仅 legacy
+          this.hyperlinkParticle.ensureDefaults(element)
+          if (!this.rowUsesGlyphRenderer(curRow)) {
+            this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+          }
         } else if (element.type === ElementType.LABEL) {
           this.textParticle.complete()
-          this.labelParticle.render(ctx, element, x, y + offsetY)
-        } else if (element.type === ElementType.DATE) {
-          const nextElement = curRow.elementList[j + 1]
-          // 释放之前的
-          if (!preElement || preElement.dateId !== element.dateId) {
-            this.textParticle.complete()
+          // text-engine：文字走 GlyphRenderer；背景仍画，避免 RTL 双绘
+          this.labelParticle.ensureDefaults(element)
+          if (this.rowUsesGlyphRenderer(curRow)) {
+            // positionList 已是绝对坐标；勿用行内 visualLeft 当 canvas x
+            this.labelParticle.renderBackground(
+              ctx,
+              element,
+              x,
+              y + offsetY
+            )
+          } else {
+            this.labelParticle.render(ctx, element, x, y + offsetY)
           }
-          this.textParticle.record(ctx, element, x, y + offsetY)
-          if (!nextElement || nextElement.dateId !== element.dateId) {
-            // 手动触发渲染
+        } else if (element.type === ElementType.DATE) {
+          // text-engine：与正文一致走 GlyphRenderer，避免 TextParticle 双绘
+          if (this.rowUsesGlyphRenderer(curRow)) {
             this.textParticle.complete()
+          } else {
+            const nextElement = curRow.elementList[j + 1]
+            // 释放之前的
+            if (!preElement || preElement.dateId !== element.dateId) {
+              this.textParticle.complete()
+            }
+            this.textParticle.record(ctx, element, x, y + offsetY)
+            if (!nextElement || nextElement.dateId !== element.dateId) {
+              // 手动触发渲染
+              this.textParticle.complete()
+            }
           }
         } else if (element.type === ElementType.SUPERSCRIPT) {
           this.textParticle.complete()
-          this.superscriptParticle.render(ctx, element, x, y + offsetY)
+          // text-engine：上下标由 GlyphRenderer（baselineShift）绘制，避免与 Particle 双绘
+          if (!this.rowUsesGlyphRenderer(curRow)) {
+            this.superscriptParticle.render(ctx, element, x, y + offsetY)
+          }
         } else if (element.type === ElementType.SUBSCRIPT) {
           this.underline.render(ctx)
           this.textParticle.complete()
-          this.subscriptParticle.render(ctx, element, x, y + offsetY)
+          if (!this.rowUsesGlyphRenderer(curRow)) {
+            this.subscriptParticle.render(ctx, element, x, y + offsetY)
+          }
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
@@ -2610,12 +3623,16 @@ export class Draw {
           element.rowFlex === RowFlex.ALIGNMENT ||
           element.rowFlex === RowFlex.JUSTIFY
         ) {
-          // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本
-          this.textParticle.record(ctx, element, x, y + offsetY)
-          this.textParticle.complete()
+          // HarfBuzz path 行交给 GlyphRenderer；否则走 TextParticle
+          if (!this.rowUsesGlyphRenderer(curRow)) {
+            this.textParticle.record(ctx, element, x, y + offsetY)
+            this.textParticle.complete()
+          }
         } else if (element.type === ElementType.BLOCK) {
           this.textParticle.complete()
           this.blockParticle.render(ctx, pageNo, element, x, y + offsetY)
+        } else if (this.rowUsesGlyphRenderer(curRow)) {
+          // Skip TextParticle — drawn via GlyphRenderer below
         } else {
           // 如果当前元素设置左偏移，则上一元素立即绘制
           if (element.left) {
@@ -2676,22 +3693,81 @@ export class Draw {
           }
           // 行间距
           const rowMargin = this.getElementRowMargin(element)
-          // 元素向左偏移量
-          const offsetX = element.left || 0
+          // 优先用 position.left：text-engine 的 position.x 已含 left，
+          // 若 element.left 在定位后被清掉，用 element.left 会使 x-offsetX 失效、底线右漂
+          const posItem = this.getRowElementPosition(
+            curRow,
+            positionList,
+            element,
+            j
+          )
+          const offsetX = posItem?.left || element.left || 0
           // 下标元素y轴偏移值
-          let offsetY = 0
+          let subOffsetY = 0
           if (element.type === ElementType.SUBSCRIPT) {
-            offsetY = this.subscriptParticle.getOffsetY(element)
+            subOffsetY = this.subscriptParticle.getOffsetY(element)
           }
           // 占位符不参与颜色计算
           const color = element.control?.underline
             ? this.options.underlineColor
             : element.color
+          // text-engine：基线 + descent（Underline.render 会再 +2*lineWidth）
+          // legacy：贴行底
+          const underlineY = curRow.engineLine
+            ? y +
+              offsetY +
+              Math.max(0, metrics.boundingBoxDescent) +
+              subOffsetY
+            : y + curRow.height - rowMargin + subOffsetY
+          let underlineX = x - offsetX
+          let underlineW = metrics.width + offsetX
+          if (underlineW < 0) {
+            underlineX = x
+            underlineW = -underlineW
+          }
+          // minWidth 后缀空隙：从控件内上一内容右缘接到 postfix 位，避免输入后底线断层右漂
+          if (
+            curRow.engineLine &&
+            element.controlComponent === ControlComponent.POSTFIX &&
+            offsetX !== 0 &&
+            element.control?.minWidth
+          ) {
+            let gapStart = underlineX
+            for (let k = j - 1; k >= 0; k--) {
+              const prev = curRow.elementList[k]
+              if (prev.controlId !== element.controlId) break
+              if (
+                prev.controlComponent === ControlComponent.VALUE ||
+                prev.controlComponent === ControlComponent.PREFIX ||
+                prev.controlComponent === ControlComponent.PLACEHOLDER
+              ) {
+                const prevPos = this.getRowElementPosition(
+                  curRow,
+                  positionList,
+                  prev,
+                  k
+                )
+                if (prevPos) {
+                  gapStart =
+                    prevPos.coordinate.leftTop[0] + (prev.metrics?.width || 0)
+                }
+                break
+              }
+            }
+            if (curRow.direction === 'rtl') {
+              // RTL：postfix 已左移，空隙在标签左侧，底线从 postfix 向右接到内容
+              underlineX = x
+              underlineW = Math.max(0, gapStart - x)
+            } else {
+              underlineX = gapStart
+              underlineW = Math.max(0, x - gapStart)
+            }
+          }
           this.underline.recordFillInfo(
             ctx,
-            x - offsetX,
-            y + curRow.height - rowMargin + offsetY,
-            metrics.width + offsetX,
+            underlineX,
+            underlineY,
+            underlineW,
             0,
             color,
             element.textDecoration?.style
@@ -2720,12 +3796,13 @@ export class Draw {
               ctx,
               this.getElementFont(element)
             )
-            // 文字渲染位置 + 基线文字下偏移量 - 一半文字高度
-            let adjustY =
-              y +
-              offsetY +
-              standardMetrics.actualBoundingBoxDescent * scale -
-              metrics.height / 2
+            // text-engine：穿过字身中部（相对基线）；legacy：原公式
+            let adjustY = curRow.engineLine
+              ? y + offsetY - metrics.height * 0.3
+              : y +
+                offsetY +
+                standardMetrics.actualBoundingBoxDescent * scale -
+                metrics.height / 2
             // 上下标位置调整
             if (element.type === ElementType.SUBSCRIPT) {
               adjustY += this.subscriptParticle.getOffsetY(element)
@@ -2767,8 +3844,36 @@ export class Draw {
             (!positionContext.isTable && !element.tdId) ||
             positionContext.tdId === element.tdId
           ) {
-            // 从行尾开始-绘制最小宽度
-            if (startIndex === index) {
+            // text-engine：按 visualLeft 字盒收集（行末再用 engineLine 校正墨迹）
+            if (isTextEngineRow) {
+              if (startIndex === index) {
+                const nextElement = elementList[startIndex + 1]
+                if (nextElement && nextElement.value === ZERO) {
+                  const left = x + metrics.width
+                  rangeVisualRects.push({
+                    left,
+                    right: left + this.options.rangeMinWidth,
+                    y,
+                    height: curRow.height
+                  })
+                }
+              } else {
+                // 零宽组合符也要纳入，否则印地/泰文选区盖不住连写
+                const rangeWidth =
+                  metrics.width > 0
+                    ? metrics.width
+                    : curRow.elementList.length === 1
+                      ? this.options.rangeMinWidth
+                      : 0
+                rangeVisualRects.push({
+                  left: x,
+                  right: x + Math.max(rangeWidth, 0),
+                  y,
+                  height: curRow.height
+                })
+              }
+            } else if (startIndex === index) {
+              // 从行尾开始-绘制最小宽度
               const nextElement = elementList[startIndex + 1]
               if (nextElement && nextElement.value === ZERO) {
                 rangeRecord.x = x + metrics.width
@@ -2794,7 +3899,18 @@ export class Draw {
         }
         // 组信息记录
         if (!group.disabled && element.groupIds) {
-          this.group.recordFillInfo(element, x, y, metrics.width, curRow.height)
+          const engineRect = this.getEngineHighlightRect(curRow, element, {
+            coordinate: {
+              leftTop: [x, y]
+            }
+          } as import('../../interface/Element').IElementPosition)
+          this.group.recordFillInfo(
+            element,
+            engineRect?.x ?? x,
+            y,
+            engineRect?.width ?? metrics.width,
+            curRow.height
+          )
         }
         index++
         // 绘制表格内元素
@@ -2860,14 +3976,56 @@ export class Draw {
       }
       // 绘制列表样式
       if (curRow.isList && curRow.height > 0) {
-        this.listParticle.drawListStyle(
-          ctx,
-          curRow,
-          positionList[curRow.startIndex]
+          this.listParticle.drawListStyle(
+            ctx,
+            curRow,
+            positionList[
+              curRow.elementList[0]?.sourceIndex ?? curRow.startIndex
+            ]
         )
       }
       // 绘制文字、边框、下划线、删除线
       this.textParticle.complete()
+      // 仅在 HarfBuzz 产出 path 时用 GlyphRenderer（连字）；否则 TextParticle 已按 visualLeft 画完
+      if (this.rowUsesGlyphRenderer(curRow) && curRow.engineLine) {
+        const anchor = curRow.elementList.find(
+          el =>
+            el.visualLeft !== undefined &&
+            el.value !== ZERO &&
+            !this.isGlyphPaintSkipped(el)
+        )
+          const anchorPos =
+            curRow.fragmentPosition ||
+            positionList[
+              anchor
+                ? anchor.sourceIndex ??
+                  curRow.startIndex + curRow.elementList.indexOf(anchor)
+                : curRow.startIndex
+            ]
+        if (anchor && anchorPos) {
+          // leftTop = rowOrigin + visualLeft + left；原点须回到 rowOrigin
+          const originX =
+            anchorPos.coordinate.leftTop[0] -
+            (anchor.visualLeft || 0) -
+            (anchor.left || 0)
+          const baselineY = anchorPos.coordinate.leftTop[1] + curRow.ascent
+          // isCompute:false（如改颜色）时同步 live 样式，避免画到缓存里的旧 style
+          const liveLine = this._syncEngineLineStyles(
+            curRow.engineLine as import('../text-engine/types').LayoutLine,
+            elementList
+          )
+          const paintLine = this.filterEngineLineForPaint(liveLine, elementList)
+          if (paintLine.glyphs.length) {
+            this.layoutHostAdapter.getGlyphRenderer().drawLine(
+              ctx,
+              paintLine,
+              originX,
+              baselineY,
+              curRow.engineParagraphText
+            )
+          }
+        }
+      }
       this.control.drawBorder(ctx)
       this.underline.render(ctx)
       this.strikeout.render(ctx)
@@ -2877,7 +4035,31 @@ export class Draw {
       this.group.render(ctx)
       // 绘制选区
       if (!isPrintMode && !isGraffitiMode) {
-        if (rangeRecord.width && rangeRecord.height) {
+        if (rangeVisualRects.length) {
+          // 复杂文种：用 engineLine 字形盒 + measureText 墨迹校正，避免选区短于连写
+          const {
+            startIndex: selStart,
+            endIndex: selEnd
+          } = this.range.getRange()
+          const corrected = this._correctEngineSelectionRects(
+            ctx,
+            curRow,
+            positionList,
+            rangeVisualRects,
+            selStart,
+            selEnd
+          )
+          const merged = mergeVisualRects(corrected)
+          for (const rect of merged) {
+            this.range.render(
+              ctx,
+              rect.left,
+              rect.y,
+              rect.right - rect.left,
+              rect.height
+            )
+          }
+        } else if (rangeRecord.width && rangeRecord.height) {
           const { x, y, width, height } = rangeRecord
           this.range.render(ctx, x, y, width, height)
         }
@@ -2887,11 +4069,18 @@ export class Draw {
           tableRangeElement &&
           tableRangeElement.id === tableId
         ) {
+          const position = this.getRowElementPosition(
+            curRow,
+            positionList,
+            tableRangeElement,
+            0
+          )
+          if (!position) continue
           const {
             coordinate: {
               leftTop: [x, y]
             }
-          } = curRow.fragmentPosition || positionList[curRow.startIndex]
+          } = position
           this.tableParticle.drawRange(
             ctx,
             tableRangeElement,
@@ -3140,7 +4329,8 @@ export class Draw {
         isPagingMode,
         innerWidth,
         surroundElementList,
-        elementList: this.elementList
+        elementList: this.elementList,
+        layoutScope: 'main'
       })
       // 分页模式下跨页表格在渲染层拆分为按页片段行
       if (isPagingMode) {

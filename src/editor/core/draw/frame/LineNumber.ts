@@ -1,4 +1,5 @@
 import { LineNumberType } from '../../../dataset/enum/LineNumber'
+import { TextDirection } from '../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
@@ -34,7 +35,14 @@ export class LineNumber {
       const textMetrics = textParticle.measureText(ctx, {
         value: `${seq}`
       })
-      const x = margins[3] - (textMetrics.width + right) * scale
+      const element = this.draw.getOriginalMainElementList()[row.startIndex]
+      const isRtl =
+        row.direction === TextDirection.RTL ||
+        element?.direction === TextDirection.RTL ||
+        this.options.defaultDirection === TextDirection.RTL
+      const x = isRtl
+        ? this.draw.getWidth() - margins[1] + right * scale
+        : margins[3] - (textMetrics.width + right) * scale
       const y = leftBottom[1] - textMetrics.actualBoundingBoxAscent * scale
       ctx.fillText(`${seq}`, x, y)
     }

@@ -3,6 +3,7 @@ import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
+import { isTableMirrored } from '../../../../utils/direction'
 import { Position } from '../../../position/Position'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
@@ -158,14 +159,22 @@ export class TableTool {
     // 片段（或整表）像素高度（metrics 已含缩放，勿再乘 scale）
     const tableHeight = position.metrics.height
     const tableWidth = element.width! * scale
+    const mirrored = isTableMirrored(element, this.options)
+    // start 侧：LTR=左，RTL=右
+    const startSideX = mirrored ? tableX + tableWidth : tableX
+    const endSideX = mirrored ? tableX : tableX + tableWidth
     // 表格选择工具（尺寸由 CSS 类固定，无需设置高度）
     const tableSelectBtn = document.createElement('div')
     tableSelectBtn.classList.add(`${EDITOR_PREFIX}-table-tool__select`)
-    tableSelectBtn.style.left = `${tableX}px`
+    tableSelectBtn.style.left = `${startSideX}px`
     tableSelectBtn.style.top = `${tableY}px`
-    tableSelectBtn.style.transform = `translate(-${
-      this.TABLE_SELECT_OFFSET * scale
-    }px, ${-this.TABLE_SELECT_OFFSET * scale}px)`
+    tableSelectBtn.style.transform = mirrored
+      ? `translate(${this.TABLE_SELECT_OFFSET * scale}px, ${
+          -this.TABLE_SELECT_OFFSET * scale
+        }px)`
+      : `translate(-${this.TABLE_SELECT_OFFSET * scale}px, ${
+          -this.TABLE_SELECT_OFFSET * scale
+        }px)`
     // 快捷全选
     tableSelectBtn.onclick = () => {
       this.draw.getTableOperate().tableSelectAll()
@@ -175,9 +184,9 @@ export class TableTool {
     // 渲染行工具（跨页片段仅渲染当前片段的行）
     const rowContainer = document.createElement('div')
     rowContainer.classList.add(`${EDITOR_PREFIX}-table-tool__row`)
-    rowContainer.style.transform = `translateX(-${
-      this.ROW_COL_OFFSET * scale
-    }px)`
+    rowContainer.style.transform = mirrored
+      ? `translateX(${this.ROW_COL_OFFSET * scale}px)`
+      : `translateX(-${this.ROW_COL_OFFSET * scale}px)`
     for (let r = fragmentStartTrIndex; r < fragmentEndTrIndex; r++) {
       const rowHeight =
         this.draw
@@ -234,7 +243,7 @@ export class TableTool {
       rowItem.style.height = `${rowHeight}px`
       rowContainer.append(rowItem)
     }
-    rowContainer.style.left = `${tableX}px`
+    rowContainer.style.left = `${startSideX}px`
     // 续页回显表头占据片段顶部，正文行工具起点需下移回显高度
     rowContainer.style.top = `${
       tableY + (fragment?.repeatHeight || 0) * scale
@@ -244,11 +253,15 @@ export class TableTool {
     // 添加行按钮（尺寸由 CSS 类固定，无需设置高度）
     const rowAddBtn = document.createElement('div')
     rowAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
-    rowAddBtn.style.left = `${tableX}px`
+    rowAddBtn.style.left = `${startSideX}px`
     rowAddBtn.style.top = `${tableY + tableHeight}px`
-    rowAddBtn.style.transform = `translate(-${
-      this.ROW_COL_QUICK_POSITION * scale
-    }px, ${this.ROW_COL_QUICK_OFFSET * scale}px)`
+    rowAddBtn.style.transform = mirrored
+      ? `translate(${this.ROW_COL_QUICK_POSITION * scale}px, ${
+          this.ROW_COL_QUICK_OFFSET * scale
+        }px)`
+      : `translate(-${this.ROW_COL_QUICK_POSITION * scale}px, ${
+          this.ROW_COL_QUICK_OFFSET * scale
+        }px)`
     // 快捷添加行
     rowAddBtn.onclick = () => {
       this.position.setPositionContext(
@@ -270,6 +283,11 @@ export class TableTool {
     colContainer.style.transform = `translateY(-${
       this.ROW_COL_OFFSET * scale
     }px)`
+    if (mirrored) {
+      // colgroup uses logical order while the table geometry is mirrored.
+      // Reverse only the tool items so active column c overlays its td.
+      colContainer.style.flexDirection = 'row-reverse'
+    }
     for (let c = 0; c < colWidthList.length; c++) {
       const colWidth = colWidthList[c] * scale
       const colItem = document.createElement('div')
@@ -310,6 +328,10 @@ export class TableTool {
       }
       const colItemAnchor = document.createElement('div')
       colItemAnchor.classList.add(`${EDITOR_PREFIX}-table-tool__anchor`)
+      if (mirrored) {
+        colItemAnchor.style.left = '-5px'
+        colItemAnchor.style.right = 'auto'
+      }
       // 列高度拖拽开始
       colItemAnchor.onmousedown = evt => {
         this._mousedown({
@@ -330,11 +352,16 @@ export class TableTool {
     // 添加列按钮（尺寸由 CSS 类固定，无需设置高度）
     const colAddBtn = document.createElement('div')
     colAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
-    colAddBtn.style.left = `${tableX + tableWidth}px`
+    // end 侧加列：LTR=右，RTL=左（仍 insertTableRightCol=colgroup 末尾）
+    colAddBtn.style.left = `${endSideX}px`
     colAddBtn.style.top = `${tableY}px`
-    colAddBtn.style.transform = `translate(${
-      this.ROW_COL_QUICK_OFFSET * scale
-    }px, -${this.ROW_COL_QUICK_POSITION * scale}px)`
+    colAddBtn.style.transform = mirrored
+      ? `translate(-${this.ROW_COL_QUICK_OFFSET * scale}px, -${
+          this.ROW_COL_QUICK_POSITION * scale
+        }px)`
+      : `translate(${this.ROW_COL_QUICK_OFFSET * scale}px, -${
+          this.ROW_COL_QUICK_POSITION * scale
+        }px)`
     // 快捷添加列
     colAddBtn.onclick = () => {
       this.position.setPositionContext(
@@ -409,15 +436,17 @@ export class TableTool {
         })
       }
       borderContainer.appendChild(colBorder)
-      // 首列开头拖拽（配置表格可以超出正文区域宽度时）
+      // 逻辑首列起始边拖拽（LTR=左缘，RTL 镜像后=右缘）
       if (overflow && td.colIndex === 0) {
         const colBorder = document.createElement('div')
         colBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__col`)
         colBorder.style.width = `${this.BORDER_VALUE}px`
         colBorder.style.height = `${tdHeight * scale}px`
         colBorder.style.top = `${td.y! * scale + tdOffsetY}px`
-        colBorder.style.left = `${td.x! * scale - this.BORDER_VALUE / 2}px`
-        // 首列拖拽
+        const startEdgeX = mirrored
+          ? (td.x! + td.width!) * scale
+          : td.x! * scale
+        colBorder.style.left = `${startEdgeX - this.BORDER_VALUE / 2}px`
         colBorder.onmousedown = evt => {
           this._mousedown({
             evt,
@@ -520,13 +549,14 @@ export class TableTool {
           if (colgroup && dx) {
             // 第一列特殊处理：更改表格宽度并移动位置
             if (overflow && isLeftStartBorder) {
-              // 列减少宽度不能小于最小宽度
-              if (colgroup[index].width - dx / scale <= this.MIN_TD_WIDTH) {
-                dx = (colgroup[index].width - this.MIN_TD_WIDTH) * scale
+              // RTL 镜像：起始边在视觉右侧，dx 取反
+              let applyDx = isTableMirrored(element, this.options) ? -dx : dx
+              if (colgroup[index].width - applyDx / scale <= this.MIN_TD_WIDTH) {
+                applyDx = (colgroup[index].width - this.MIN_TD_WIDTH) * scale
               }
-              colgroup[index].width -= dx / scale
-              element.width! -= dx / scale
-              element.translateX = (element.translateX || 0) + dx / scale
+              colgroup[index].width -= applyDx / scale
+              element.width! -= applyDx / scale
+              element.translateX = (element.translateX || 0) + applyDx / scale
               isChangeSize = true
             } else {
               // 宽度分配

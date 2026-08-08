@@ -1,5 +1,6 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
+import { getVisualDeleteTarget } from './visualDelete'
 
 // 删除光标后隐藏元素，跳过留痕删除元素（痕迹不可移除）
 function deleteHideElement(host: CanvasEvent) {
@@ -85,7 +86,7 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
     endIndex = range.endIndex
   }
   // 删除操作
-  let curIndex: number | null
+  let curIndex: number | null | undefined
   if (isCrossRowCol) {
     // 表格跨行列选中时清空单元格内容
     const rowCol = draw.getTableParticle().getRangeRowCol()
@@ -136,6 +137,7 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
       } else {
         const nextElement = elementList[index + 1]
         if (!nextElement) return
+        // 合并新行时继承行 flex / margin（#605）
         if (nextElement.value === ZERO && !nextElement.listWrap) {
           const { rowFlex, rowMargin } = elementList[index]
           for (let i = index + 1; i < elementList.length; i++) {
@@ -152,9 +154,17 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
             element.rowMargin = rowMargin
           }
         }
-        draw.deleteElementList(elementList, index + 1, 1)
+        const visualTarget = getVisualDeleteTarget(host, index, false)
+        draw.deleteElementList(
+          elementList,
+          visualTarget?.index ?? index + 1,
+          1
+        )
+        if (visualTarget) curIndex = visualTarget.cursorIndex
       }
-      curIndex = isCollapsed ? index : startIndex
+      if (curIndex === undefined) {
+        curIndex = isCollapsed ? index : startIndex
+      }
     }
   }
   draw.getGlobalEvent().setCanvasEventAbility()

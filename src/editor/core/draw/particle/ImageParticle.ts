@@ -5,6 +5,11 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
+import {
+  drawPlainText,
+  measurePlainText,
+  truncatePlainText
+} from '../../text-engine-host/drawPlainText'
 import { Draw } from '../Draw'
 
 export class ImageParticle {
@@ -192,32 +197,31 @@ export class ImageParticle {
     const fontSize = (element.imgCaption.size || imgCaption.size) * scale
     const fontFamily = element.imgCaption.font || imgCaption.font
     const color = element.imgCaption.color || imgCaption.color
-    ctx.save()
-    ctx.font = `${fontSize}px ${fontFamily}`
-    ctx.fillStyle = color
-    ctx.textAlign = 'center'
-    // 超出图片宽度后省略
-    let displayText = captionText
-    const textMetrics = ctx.measureText(captionText)
-    if (textMetrics.width > width) {
-      let left = 0
-      let right = captionText.length
-      while (left < right) {
-        const mid = Math.ceil((left + right) / 2)
-        const truncated = captionText.substring(0, mid)
-        if (ctx.measureText(truncated + '...').width <= width) {
-          left = mid
-        } else {
-          right = mid - 1
-        }
-      }
-      displayText = captionText.substring(0, left) + '...'
+    const style = {
+      text: captionText,
+      fontFamily,
+      fontSize,
+      color
     }
+    const adapter = this.draw.getLayoutHostAdapter()
+    const displayText = truncatePlainText(adapter, ctx, style, width)
+    const drawStyle = { ...style, text: displayText }
     const captionTop = (element.imgCaption.top ?? imgCaption.top) * scale
-    const captionY =
-      y + height + captionTop + textMetrics.actualBoundingBoxAscent
-    const captionX = x + width / 2
-    ctx.fillText(displayText, captionX, captionY)
+    ctx.save()
+    const engineMetrics = measurePlainText(adapter, drawStyle)
+    if (engineMetrics) {
+      const captionY = y + height + captionTop + engineMetrics.ascent
+      const originX = x + (width - engineMetrics.width) / 2
+      drawPlainText(adapter, ctx, drawStyle, originX, captionY)
+    } else {
+      ctx.font = `${fontSize}px ${fontFamily}`
+      ctx.fillStyle = color
+      ctx.textAlign = 'center'
+      const textMetrics = ctx.measureText(displayText)
+      const captionY =
+        y + height + captionTop + textMetrics.actualBoundingBoxAscent
+      ctx.fillText(displayText, x + width / 2, captionY)
+    }
     ctx.restore()
   }
 

@@ -37,6 +37,8 @@ export class Previewer {
   private height: number
   private mousedownX: number
   private mousedownY: number
+  private resizerStartLeft: number
+  private resizerStartTop: number
   private curHandleIndex: number
   // 预览选区
   private previewerContainer: HTMLDivElement | null
@@ -74,6 +76,8 @@ export class Previewer {
     this.height = 0
     this.mousedownX = 0
     this.mousedownY = 0
+    this.resizerStartLeft = 0
+    this.resizerStartTop = 0
     this.curHandleIndex = 0 // 默认右下角
     this.previewerContainer = null
     this.previewerImage = null
@@ -180,6 +184,8 @@ export class Previewer {
       this.curElement,
       this.curPosition
     )
+    this.resizerStartLeft = resizerLeft
+    this.resizerStartTop = resizerTop
     this.resizerImageContainer.style.left = `${resizerLeft}px`
     this.resizerImageContainer.style.top = `${resizerTop}px`
     this.resizerImage.style.width = `${this.curElement.width! * scale}px`
@@ -215,12 +221,14 @@ export class Previewer {
   private _mousemove(evt: MouseEvent) {
     if (!this.curElement || this.previewerDrawOption.dragDisable) return
     const { scale } = this.options
+    // 缩放手柄是物理边界交互，RTL 不改变左右拖拽的增减方向。
+    const mirrorX = 1
     let dx = 0
     let dy = 0
     switch (this.curHandleIndex) {
       case 0:
         {
-          const offsetX = this.mousedownX - evt.x
+          const offsetX = (this.mousedownX - evt.x) * mirrorX
           const offsetY = this.mousedownY - evt.y
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
@@ -231,7 +239,7 @@ export class Previewer {
         break
       case 2:
         {
-          const offsetX = evt.x - this.mousedownX
+          const offsetX = (evt.x - this.mousedownX) * mirrorX
           const offsetY = this.mousedownY - evt.y
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
@@ -239,28 +247,28 @@ export class Previewer {
         break
       case 4:
         {
-          const offsetX = evt.x - this.mousedownX
+          const offsetX = (evt.x - this.mousedownX) * mirrorX
           const offsetY = evt.y - this.mousedownY
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
         }
         break
       case 3:
-        dx = evt.x - this.mousedownX
+        dx = (evt.x - this.mousedownX) * mirrorX
         break
       case 5:
         dy = evt.y - this.mousedownY
         break
       case 6:
         {
-          const offsetX = this.mousedownX - evt.x
+          const offsetX = (this.mousedownX - evt.x) * mirrorX
           const offsetY = evt.y - this.mousedownY
           dx = Math.cbrt(offsetX ** 3 + offsetY ** 3)
           dy = (this.curElement.height! * dx) / this.curElement.width!
         }
         break
       case 7:
-        dx = this.mousedownX - evt.x
+        dx = (this.mousedownX - evt.x) * mirrorX
         break
     }
     // 图片实际宽高（变化大小除掉缩放比例）
@@ -269,6 +277,20 @@ export class Previewer {
     if (dw <= 0 || dh <= 0) return
     this.width = dw
     this.height = dh
+    const movesLeft =
+      this.curHandleIndex === 0 ||
+      this.curHandleIndex === 6 ||
+      this.curHandleIndex === 7
+    const movesTop =
+      this.curHandleIndex === 0 ||
+      this.curHandleIndex === 1 ||
+      this.curHandleIndex === 2
+    const previewLeft = this.resizerStartLeft + (movesLeft ? -dx : 0)
+    const previewTop = this.resizerStartTop + (movesTop ? -dy : 0)
+    this.resizerSelection.style.left = `${previewLeft}px`
+    this.resizerSelection.style.top = `${previewTop}px`
+    this.resizerImageContainer.style.left = `${previewLeft}px`
+    this.resizerImageContainer.style.top = `${previewTop}px`
     // 图片显示宽高
     const elementWidth = dw * scale
     const elementHeight = dh * scale

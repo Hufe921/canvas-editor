@@ -906,6 +906,8 @@ instance.command.executeSetColumns(config: IColumnOption | null)
 
 ```javascript
 instance.command.executeSetMainBadge(payload: IBadge | null)
+// IBadge: { top?, left?, right?, width, height, value }
+// right >= 0 时相对页面右缘定位，优先于 left
 ```
 
 ## executeSetAreaBadge
@@ -1058,6 +1060,22 @@ instance.command.executeSetZone(zone: EditorZone)
 
 ```javascript
 instance.command.executeUpdateOptions(payload: IUpdateOption)
+```
+
+## executeUiDirection
+
+功能：设置 UI 的 LTR/RTL **模式**（`options.direction`）。
+
+- 仅镜像编辑器壳层（容器打 `ce-ui-rtl` class；**不要**给画布容器设 `dir=rtl`，否则绝对定位光标碰撞会错位）
+- 新建行/表时写入默认 `element.direction`
+- **不**参与存量正文排版、绘制与光标碰撞；切换**不**重绘文本区
+
+与段落方向命令 `executeDirection`、内容默认 `defaultDirection` **分离，请勿混用**。
+
+用法：
+
+```javascript
+instance.command.executeUiDirection(payload: 'ltr' | 'rtl')
 ```
 
 ## executeInsertTitle

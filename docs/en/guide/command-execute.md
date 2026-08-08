@@ -906,6 +906,8 @@ Usage:
 
 ```javascript
 instance.command.executeSetMainBadge(payload: IBadge | null)
+// IBadge: { top?, left?, right?, width, height, value }
+// right >= 0 anchors to the page right edge and overrides left
 ```
 
 ## executeSetAreaBadge
@@ -1058,6 +1060,22 @@ Usage:
 
 ```javascript
 instance.command.executeUpdateOptions(payload: IUpdateOption)
+```
+
+## executeUiDirection
+
+Feature: Set UI LTR/RTL **mode** (`options.direction`).
+
+- Mirrors editor chrome only (`ce-ui-rtl` class; **do not** set `dir=rtl` on the canvas container — it breaks absolute caret hit-testing)
+- Seeds `element.direction` for newly created lines/tables
+- Does **not** affect existing content layout, paint, or hit-testing; toggle does **not** reflow the text area
+
+Separate from paragraph `executeDirection` and content `defaultDirection` — do not mix them up.
+
+Usage:
+
+```javascript
+instance.command.executeUiDirection(payload: 'ltr' | 'rtl')
 ```
 
 ## executeInsertTitle

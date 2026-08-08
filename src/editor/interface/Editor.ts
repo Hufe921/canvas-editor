@@ -38,6 +38,13 @@ import { IMagnifierOption } from './Magnifier'
 import { IAccessibilityOption } from './Accessibility'
 import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
+import {
+  CaretMovement,
+  DeleteMovement,
+  TextDirection,
+  TextEngineMode
+} from '../dataset/enum/TextDirection'
+import { IEditorFontFace } from './TextEngine'
 
 export interface IEditorData {
   header?: IElement[]
@@ -91,6 +98,37 @@ export interface IEditorOption {
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
+  /** Text layout engine: legacy measureText path or HarfBuzz */
+  textEngine?: TextEngineMode
+  /**
+   * UI LTR/RTL **mode** (chrome only): host toolbar/shell mirroring via
+   * `ce-ui-rtl` class — do **not** set `dir=rtl` on the canvas container
+   * (breaks absolute caret hit-testing). Also seeds `element.direction` for
+   * **newly created** lines/tables only.
+   * Not paragraph direction — do not confuse with `executeDirection` or
+   * `defaultDirection`. Does not affect existing content layout, paint, or
+   * hit-testing; toggle must not reflow the body.
+   * Default: ltr. Command: `executeUiDirection`
+   */
+  direction?: TextDirection.LTR | TextDirection.RTL
+  /**
+   * Whether host toolbar may show the LTR/RTL mode toggle.
+   * Default: true. Set false to hide the control (demo reads this flag).
+   */
+  uiDirectionToggle?: boolean
+  /**
+   * Content default when an element has no `direction` (AUTO = detect from
+   * strong characters). Paragraph API: `executeDirection`.
+   * Distinct from UI mode `options.direction` / `executeUiDirection`.
+   * Default: auto
+   */
+  defaultDirection?: TextDirection
+  /** Arrow-key caret movement semantics */
+  caretMovement?: CaretMovement
+  /** Backspace/Delete target semantics */
+  deleteMovement?: DeleteMovement
+  /** Font binaries registered for HarfBuzz shaping */
+  fonts?: IEditorFontFace[]
   table?: ITableOption
   header?: IHeader
   footer?: IFooter

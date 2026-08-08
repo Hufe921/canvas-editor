@@ -80,6 +80,7 @@ interface IRenderOption {
   value: string
   position: IElementPosition
   dateFormat?: string
+  popupDirection?: 'ltr' | 'rtl'
 }
 
 export class DatePicker {
@@ -348,20 +349,20 @@ export class DatePicker {
 
   private _setPosition() {
     if (!this.renderOptions) return
-    const {
-      position: {
-        coordinate: {
-          leftTop: [left, top]
-        },
-        lineHeight,
-        pageNo
-      }
-    } = this.renderOptions
-    const currentPageNo = pageNo ?? this.draw.getPageNo()
-    const { x: pageLeft, y: preY } = this.draw.getPageOffset(currentPageNo)
-    // 位置
-    this.dom.container.style.left = `${left + pageLeft}px`
-    this.dom.container.style.top = `${top + preY + lineHeight}px`
+    // 位置（RTL 右对齐元素右缘，LTR 左对齐元素左缘；混合纸张方向按页偏移）
+    const style = this.draw.getPopupPositionStyle(
+      this.renderOptions.position,
+      0,
+      this.renderOptions.popupDirection
+    )
+    if (style.right !== undefined) {
+      this.dom.container.style.left = 'auto'
+      this.dom.container.style.right = `${style.right}px`
+    } else {
+      this.dom.container.style.right = 'auto'
+      this.dom.container.style.left = `${style.left}px`
+    }
+    this.dom.container.style.top = `${style.top}px`
   }
 
   public isInvalidDate(value: Date): boolean {

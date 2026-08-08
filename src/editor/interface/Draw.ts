@@ -1,5 +1,6 @@
 import { ImageDisplay } from '../dataset/enum/Common'
 import { EditorMode, EditorZone } from '../dataset/enum/Editor'
+import { TextDirection } from '../dataset/enum/TextDirection'
 import { IElement, IElementPosition } from './Element'
 import { IRow } from './Row'
 
@@ -84,4 +85,15 @@ export interface IComputeRowListPayload {
   isPagingMode?: boolean
   pageHeight?: number
   surroundElementList?: IElement[]
+  /** Direction inherited by text inside a table cell when not explicitly set. */
+  defaultDirection?: TextDirection
+  /** Alignment inherited by text inside a table cell. */
+  defaultAlign?: 'left' | 'right'
+  /** Force legacy compute (used when embedding TABLE/IMAGE rows into text-engine) */
+  forceLegacy?: boolean
+  /**
+   * Isolate lastLayouts for main / header / footer / td:{id}.
+   * Default `main`.
+   */
+  layoutScope?: string
 }

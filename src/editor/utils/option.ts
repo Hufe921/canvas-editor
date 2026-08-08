@@ -59,6 +59,12 @@ import {
   RenderMode,
   WordBreak
 } from '../dataset/enum/Editor'
+import {
+  CaretMovement,
+  DeleteMovement,
+  TextDirection,
+  TextEngineMode
+} from '../dataset/enum/TextDirection'
 import { defaultBadgeOption } from '../dataset/constant/Badge'
 import { IBadgeOption } from '../interface/Badge'
 import { defaultModeRuleOption } from '../dataset/constant/Editor'
@@ -245,6 +251,12 @@ export function mergeOption(
     inactiveAlpha: 0.6,
     historyMaxRecordCount: 100,
     wordBreak: WordBreak.BREAK_WORD,
+    textEngine: TextEngineMode.LEGACY,
+    direction: TextDirection.LTR,
+    uiDirectionToggle: true,
+    defaultDirection: TextDirection.AUTO,
+    caretMovement: CaretMovement.VISUAL,
+    deleteMovement: DeleteMovement.LOGICAL,
     printPixelRatio: 3,
     maskMargin: [0, 0, 0, 0],
     letterClass: [LETTER_CLASS.ENGLISH],
@@ -253,6 +265,14 @@ export function mergeOption(
     scrollContainerSelector: '',
     pageOuterSelectionDisable: false,
     ...options,
+    fonts: (options.fonts || []).map(f => ({
+      family: f.family,
+      data: f.data ?? null,
+      url: f.url ?? null,
+      weight: f.weight ?? 400,
+      style: f.style ?? ('normal' as const),
+      scripts: f.scripts ? [...f.scripts] : []
+    })),
     table: tableOptions,
     header: headerOptions,
     footer: footerOptions,

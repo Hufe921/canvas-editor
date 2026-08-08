@@ -34,17 +34,18 @@ export class HyperlinkParticle {
   }
 
   public drawHyperlinkPopup(element: IElement, position: IElementPosition) {
-    const {
-      coordinate: {
-        leftTop: [left, top]
-      },
-      lineHeight
-    } = position
-    const { x: preX, y: preY } = this.draw.getPageOffset(this.draw.getPageNo())
+    // RTL 右对齐元素右缘，LTR 左对齐元素左缘（混合纸张方向按页偏移）
+    const style = this.draw.getPopupPositionStyle(position)
     // 位置
     this.hyperlinkPopupContainer.style.display = 'block'
-    this.hyperlinkPopupContainer.style.left = `${left + preX}px`
-    this.hyperlinkPopupContainer.style.top = `${top + preY + lineHeight}px`
+    if (style.right !== undefined) {
+      this.hyperlinkPopupContainer.style.left = 'auto'
+      this.hyperlinkPopupContainer.style.right = `${style.right}px`
+    } else {
+      this.hyperlinkPopupContainer.style.right = 'auto'
+      this.hyperlinkPopupContainer.style.left = `${style.left}px`
+    }
+    this.hyperlinkPopupContainer.style.top = `${style.top}px`
     // 标签
     const url = element.url || '#'
     this.hyperlinkDom.href = url
@@ -63,6 +64,16 @@ export class HyperlinkParticle {
     }
   }
 
+  /** 链接默认色/下划线；引擎行跳过 Particle 绘制时也须先调用 */
+  public ensureDefaults(element: IElement) {
+    if (!element.color) {
+      element.color = this.options.defaultHyperlinkColor
+    }
+    if (element.underline === undefined) {
+      element.underline = true
+    }
+  }
+
   public render(
     ctx: CanvasRenderingContext2D,
     element: IRowElement,
@@ -71,13 +82,8 @@ export class HyperlinkParticle {
   ) {
     ctx.save()
     ctx.font = element.style
-    if (!element.color) {
-      element.color = this.options.defaultHyperlinkColor
-    }
-    ctx.fillStyle = element.color
-    if (element.underline === undefined) {
-      element.underline = true
-    }
+    this.ensureDefaults(element)
+    ctx.fillStyle = element.color!
     ctx.fillText(element.value, x, y)
     ctx.restore()
   }

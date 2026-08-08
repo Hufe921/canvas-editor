@@ -413,7 +413,13 @@ export class ListParticle {
     const indentWidth = startElement.listLevel
       ? this.LIST_INDENT_WIDTH * startElement.listLevel * scale
       : 0
-    const x = startX - offsetX! + indentWidth + tabWidth
+    // RTL：ZERO 已在内容右缘，标记画在其右侧 gutter（宽=listStyleWidth），
+    // 右对齐使间距落在标记左侧（标记与内容之间）；LTR 标记在左 gutter 左对齐
+    const isRtl = row.direction === 'rtl'
+    const listStyleWidth = this.getListStyleWidth(ctx, elementList)
+    const x = isRtl
+      ? startX + listStyleWidth - indentWidth - tabWidth
+      : startX - offsetX! + indentWidth + tabWidth
     const y = startY + ascent
     // 复选框样式特殊处理
     if (startElement.listStyle === ListStyle.CHECKBOX) {
@@ -456,6 +462,10 @@ export class ListParticle {
       if (!text) return
       ctx.save()
       ctx.font = this.getListFontStyle(elementList, scale)
+      // 序号遵循书写方向：RTL 下句点落数字左侧（读作 "١."），LTR 下 "1."
+      // RTL 右对齐标记（间距在标记左侧与内容之间），LTR 左对齐
+      ctx.direction = isRtl ? 'rtl' : 'ltr'
+      ctx.textAlign = isRtl ? 'right' : 'left'
       ctx.fillText(text, x, y)
       ctx.restore()
     }

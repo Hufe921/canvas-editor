@@ -70,7 +70,7 @@ import {
   LIST_CONTEXT_ATTR,
   TITLE_CONTEXT_ATTR
 } from '../../../dataset/constant/Element'
-import { IRowElement } from '../../../interface/Row'
+import { IRow, IRowElement } from '../../../interface/Row'
 import { RowFlex } from '../../../dataset/enum/Row'
 import { ZERO } from '../../../dataset/constant/Common'
 
@@ -246,6 +246,16 @@ export class Control {
     if (!~startIndex && !~endIndex) return false
     const elementList = this.getElementList()
     const endElement = elementList[endIndex]
+    // 光标紧贴 PREFIX 前（：|{）视为在控件内，便于激活下拉
+    const startAtControlEntrance =
+      startIndex === endIndex &&
+      !elementList[startIndex]?.controlId &&
+      !!elementList[startIndex + 1]?.controlId &&
+      (elementList[startIndex + 1]?.controlComponent ===
+        ControlComponent.PREFIX ||
+        elementList[startIndex + 1]?.controlComponent ===
+          ControlComponent.PRE_TEXT)
+    if (startAtControlEntrance) return true
     // 嵌套下，选区起止可能属于同一最外层控件的不同子控件
     const startOuter = getOutermostOwner(elementList, startIndex)
     const endOuter = getOutermostOwner(elementList, endIndex)
@@ -535,7 +545,19 @@ export class Control {
   public initControl() {
     const elementList = this.getElementList()
     const range = this.getRange()
-    const element = elementList[range.startIndex]
+    // 光标在 PREFIX 前时，用控件入口元素激活（与 getIsRangeWithinControl 一致）
+    let element = elementList[range.startIndex]
+    if (
+      !element?.controlId &&
+      elementList[range.startIndex + 1]?.controlId &&
+      (elementList[range.startIndex + 1]?.controlComponent ===
+        ControlComponent.PREFIX ||
+        elementList[range.startIndex + 1]?.controlComponent ===
+          ControlComponent.PRE_TEXT)
+    ) {
+      element = elementList[range.startIndex + 1]
+    }
+    if (!element?.controlId) return
     // 判断控件是否已经激活
     if (this.activeControl) {
       // 弹窗类控件唤醒弹窗，后缀处移除弹窗
@@ -793,6 +815,29 @@ export class Control {
         newElement: element
       }
     } else if (element.controlComponent === ControlComponent.POSTFIX) {
+      // 仅占位符（无 VALUE）时点后缀 → 进 PREFIX 后以便输入，而非落到控件外
+      let hasValue = false
+      let prefixEnd = -1
+      for (let i = newIndex; i >= 0; i--) {
+        const cur = elementList[i]
+        if (cur.controlId !== element.controlId) break
+        if (cur.controlComponent === ControlComponent.VALUE) {
+          hasValue = true
+          break
+        }
+        if (
+          cur.controlComponent === ControlComponent.PREFIX ||
+          cur.controlComponent === ControlComponent.PRE_TEXT
+        ) {
+          if (prefixEnd < 0) prefixEnd = i
+        }
+      }
+      if (!hasValue && ~prefixEnd) {
+        return {
+          newIndex: prefixEnd,
+          newElement: elementList[prefixEnd]
+        }
+      }
       // POSTFIX-移动到最后一个后缀字符后
       let startIndex = newIndex + 1
       while (startIndex < elementList.length) {
@@ -1983,8 +2028,80 @@ export class Control {
         availableWidth - row.width - rowElement.metrics.width
       const left = Math.min(rowRemainingWidth, extraWidth)
       // 后缀偏移量需减去首字符的偏移量，避免重复偏移
-      rowElement.left = left - controlFirstElementLeft
+      // RTL 引擎行：postfix 在视觉最左，minWidth 空隙应向左延伸到行首空白，
+      // 后缀须左移（负偏移），下划线才能落在标签左侧而非覆盖正文
+      const isRtlEngineRow = row.direction === 'rtl' && !!row.engineLine
+      rowElement.left = isRtlEngineRow
+        ? -(left - controlFirstElementLeft)
+        : left - controlFirstElementLeft
       row.width += left - controlFirstElementLeft
+    }
+  }
+
+  /**
+   * text-engine 行补齐 control.minWidth：清残留 left，写后缀空隙，
+   * 并平移后续 visualLeft / engineLine 字形。
+   */
+  public applyEngineRowsMinWidth(rows: IRow[], availableWidth: number) {
+    for (const row of rows) {
+      let controlRealWidth = 0
+      let activeControlId: string | undefined
+      for (let j = 0; j < row.elementList.length; j++) {
+        const el = row.elementList[j]
+        el.left = 0
+        if (!el.control?.minWidth || el.isControlMinWidthPlaceholder) {
+          continue
+        }
+        if (el.controlComponent) {
+          if (el.controlId !== activeControlId) {
+            activeControlId = el.controlId
+            controlRealWidth = 0
+          }
+          controlRealWidth += el.metrics.width
+        }
+        if (el.controlComponent !== ControlComponent.POSTFIX) continue
+        this.setMinWidthControlInfo({
+          row,
+          rowElement: el,
+          availableWidth,
+          controlRealWidth
+        })
+        const shift = el.left || 0
+        if (shift > 0) {
+          // 与 LABEL padding 一致：只平移 postfix ink 盒右侧之外的内容，
+          // 避免 RTL/多字控件把盒内字形拆出空隙
+          const postfixVisualLeft = el.visualLeft ?? 0
+          const postfixInkRight = postfixVisualLeft + (el.metrics?.width || 0)
+          const postfixLogicalStart = el.sourceIndex ?? -1
+          for (let k = j + 1; k < row.elementList.length; k++) {
+            const next = row.elementList[k]
+            if (
+              next.visualLeft !== undefined &&
+              next.visualLeft >= postfixInkRight - 0.01
+            ) {
+              next.visualLeft += shift
+            }
+          }
+          if (row.engineLine?.glyphs?.length) {
+            // 必须拷贝字形再平移：engineLine 可能来自 LayoutCache，
+            // 原地改 left 会污染缓存，下次 map 时 visualLeft 累加，签名底线右漂
+            // RTL 中标签字形视觉位于 postfix 右侧、但逻辑序号更小：
+            // 只能平移逻辑上位于 postfix 之后的字形，否则会把签名标签整体推走
+            row.engineLine = {
+              ...row.engineLine,
+              glyphs: row.engineLine.glyphs.map(g =>
+                g.left >= postfixInkRight - 0.01 &&
+                g.logicalIndexStart > postfixLogicalStart
+                  ? { ...g, left: g.left + shift, right: g.right + shift }
+                  : g
+              ),
+              width: row.engineLine.width + shift
+            }
+          }
+        }
+        controlRealWidth = 0
+        activeControlId = undefined
+      }
     }
   }
 }

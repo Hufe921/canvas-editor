@@ -603,7 +603,8 @@ export class TablePaging {
         innerWidth: (td.width! - (tdPadding[1] + tdPadding[3])) * scale,
         elementList: td.value,
         isFromTable: true,
-        isPagingMode: this.draw.getIsPagingMode()
+        isPagingMode: this.draw.getIsPagingMode(),
+        layoutScope: td.id ? `td:${td.id}` : 'td:anon-paging'
       })
       return true
     }

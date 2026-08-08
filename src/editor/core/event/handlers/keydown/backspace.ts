@@ -1,5 +1,6 @@
 import { ZERO } from '../../../../dataset/constant/Common'
 import { CanvasEvent } from '../../CanvasEvent'
+import { getVisualDeleteTarget } from './visualDelete'
 
 // 删除光标前隐藏元素，跳过留痕删除元素（痕迹不可移除）
 function backspaceHideElement(host: CanvasEvent) {
@@ -78,7 +79,7 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
   // 删除操作
   const control = draw.getControl()
   const { startIndex, endIndex, isCrossRowCol } = rangeManager.getRange()
-  let curIndex: number | null
+  let curIndex: number | null | undefined
   if (isCrossRowCol) {
     // 表格跨行列选中时清空单元格内容
     const rowCol = draw.getTableParticle().getRangeRowCol()
@@ -168,9 +169,13 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     if (!isCollapsed) {
       draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
-      draw.deleteElementList(elementList, index, 1)
+      const visualTarget = getVisualDeleteTarget(host, index, true)
+      draw.deleteElementList(elementList, visualTarget?.index ?? index, 1)
+      if (visualTarget) curIndex = visualTarget.cursorIndex
     }
-    curIndex = isCollapsed ? index - 1 : startIndex
+    if (curIndex === undefined) {
+      curIndex = isCollapsed ? index - 1 : startIndex
+    }
   }
   draw.getGlobalEvent().setCanvasEventAbility()
   if (curIndex === null) {
