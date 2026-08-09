@@ -19,6 +19,8 @@ export const EDITOR_ROW_ATTR: Array<keyof IElement> = ['rowFlex', 'rowMargin']
 
 export const EDITOR_TRACE_ATTR: Array<keyof IElement> = ['trace']
 
+export const EDITOR_HINT_ATTR: Array<keyof IElement> = ['hint']
+
 export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
@@ -99,7 +101,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'labelId',
   'lineWidth',
   'trace',
-  'paperDirection'
+  'paperDirection',
+  'hint'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [

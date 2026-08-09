@@ -89,6 +89,7 @@ interface IEditorOption {
   column?: IColumnOption // Column configuration. default: disabled
   trace?: ITraceOption // Trace configuration. default: disabled
   ruler?: IRulerOption // Ruler configuration. default: disabled
+  hint?: IHintOption // Hover hint configuration. default: disabled
 }
 ```
 
@@ -464,5 +465,17 @@ interface ITraceOption {
 interface IRulerOption {
   disabled?: boolean // Whether to disable the ruler initially. default: true
   height?: number // Ruler height. default: 26
+}
+```
+
+## Hover Hint Configuration
+
+```typescript
+interface IHintOption {
+  disabled?: boolean // Master switch. default: true (disabled by default; set to false to enable)
+  backgroundColor?: string // Popup background color. default: #fff
+  color?: string // Popup text color. default: #000000
+  fontSize?: number // Popup font size. default: 12
+  maxWidth?: number // Popup max width; wraps when exceeded. default: 280
 }
 ```

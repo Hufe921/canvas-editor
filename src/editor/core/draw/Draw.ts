@@ -58,6 +58,7 @@ import { TablePaging } from './particle/table/TablePaging'
 import { TableTool } from './particle/table/TableTool'
 import { Ruler } from './ruler/Ruler'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
+import { HintParticle } from './particle/HintParticle'
 import { TraceParticle } from './particle/TraceParticle'
 import { LabelParticle } from './particle/LabelParticle'
 import { Header } from './frame/Header'
@@ -181,6 +182,7 @@ export class Draw {
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
+  private hintParticle: HintParticle
   private traceParticle: TraceParticle
   private labelParticle: LabelParticle
   private dateParticle: DateParticle
@@ -276,6 +278,7 @@ export class Draw {
     this.header = new Header(this, data.header)
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.hintParticle = new HintParticle(this)
     this.traceParticle = new TraceParticle(this)
     this.labelParticle = new LabelParticle(this)
     this.dateParticle = new DateParticle(this)
@@ -1141,6 +1144,10 @@ export class Draw {
 
   public getHyperlinkParticle(): HyperlinkParticle {
     return this.hyperlinkParticle
+  }
+
+  public getHintParticle(): HintParticle {
+    return this.hintParticle
   }
 
   public getTraceParticle(): TraceParticle {
@@ -3354,6 +3361,8 @@ export class Draw {
     this.getTableTool().dispose()
     // 超链接弹窗
     this.getHyperlinkParticle().clearHyperlinkPopup()
+    // 悬浮提示弹窗
+    this.getHintParticle().clearHintPopup()
     // 留痕悬浮弹窗
     this.getTraceParticle().clearTracePopup()
     // 日期控件

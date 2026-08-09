@@ -5,6 +5,7 @@ import { Cursor } from '../cursor/Cursor'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
+import { HintParticle } from '../draw/particle/HintParticle'
 import { DateParticle } from '../draw/particle/date/DateParticle'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { TableTool } from '../draw/particle/table/TableTool'
@@ -23,6 +24,7 @@ export class GlobalEvent {
   private previewer: Previewer
   private tableTool: TableTool
   private hyperlinkParticle: HyperlinkParticle
+  private hintParticle: HintParticle
   private control: Control
   private magnifier: Magnifier
   private dateParticle: DateParticle
@@ -38,6 +40,7 @@ export class GlobalEvent {
     this.previewer = draw.getPreviewer()
     this.tableTool = draw.getTableTool()
     this.hyperlinkParticle = draw.getHyperlinkParticle()
+    this.hintParticle = draw.getHintParticle()
     this.dateParticle = draw.getDateParticle()
     this.imageParticle = draw.getImageParticle()
     this.control = draw.getControl()
@@ -100,6 +103,7 @@ export class GlobalEvent {
     this.previewer.clearResizer()
     this.tableTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
+    this.hintParticle.clearHintPopup()
     this.control.destroyControl()
     this.dateParticle.clearDatePicker()
     this.imageParticle.destroyFloatImage()

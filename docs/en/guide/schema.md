@@ -26,6 +26,7 @@ interface IElement {
   extension?: unknown;
   externalId?: string;
   hide?: boolean;
+  hint?: string; // Hover hint text (requires the hint option to be enabled)
   // style
   font?: string;
   size?: number;
@@ -74,6 +75,7 @@ interface IElement {
       externalId?: string;
       disabled?: boolean;
       deletable?: boolean;
+      hint?: string; // Cell hover hint text: shown when the cursor enters any element in the cell
     }[];
   }[];
   borderType?: TableBorder;

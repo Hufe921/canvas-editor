@@ -26,6 +26,7 @@ interface IElement {
   extension?: unknown;
   externalId?: string;
   hide?: boolean;
+  hint?: string; // 悬浮提示文案：（需在配置中开启 hint 总开关）
   // 样式
   font?: string;
   size?: number;
@@ -74,6 +75,7 @@ interface IElement {
       externalId?: string;
       disabled?: boolean;
       deletable?: boolean;
+      hint?: string; // 单元格悬浮提示文案：鼠标移入单元格内任意元素时展示
     }[];
   }[];
   borderType?: TableBorder;

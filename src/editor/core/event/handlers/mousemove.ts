@@ -7,6 +7,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   // 留痕模式：hover 到带 trace 标记的元素时显示作者/时间浮窗
   draw.getTraceParticle().handleMouseMove(evt)
+  // 悬浮提示：hover 到配置了 hint 的元素时显示提示浮窗
+  draw.getHintParticle().handleMouseMove(evt)
   // 是否是拖拽文字
   if (host.isAllowDrag) {
     // 是否允许拖拽到选区

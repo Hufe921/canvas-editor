@@ -38,6 +38,7 @@ import { IMagnifierOption } from './Magnifier'
 import { IAccessibilityOption } from './Accessibility'
 import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
+import { IHintOption } from './Hint'
 
 export interface IEditorData {
   header?: IElement[]
@@ -122,6 +123,7 @@ export interface IEditorOption {
   column?: IColumnOption
   trace?: ITraceOption
   ruler?: IRulerOption
+  hint?: IHintOption
 }
 
 export interface IEditorResult {

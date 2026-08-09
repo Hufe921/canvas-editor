@@ -25,6 +25,7 @@ export interface IElementBasic {
   value: string
   extension?: unknown
   externalId?: string
+  hint?: string // 悬浮提示文案
 }
 
 export interface IElementStyle {

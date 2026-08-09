@@ -1,0 +1,19 @@
+.ce-hint-popup {
+  background: #fff;
+  box-shadow: 0 2px 12px 0 rgb(98 107 132 / 20%);
+  border-radius: 4px;
+  color: #000000;
+  padding: 6px 10px;
+  position: absolute;
+  z-index: 1;
+  font-size: 12px;
+  line-height: 1.6;
+  max-width: 280px;
+  word-break: break-word;
+  display: none;
+  pointer-events: none;
+}
+
+.ce-hint-popup__text {
+  white-space: pre-wrap;
+}

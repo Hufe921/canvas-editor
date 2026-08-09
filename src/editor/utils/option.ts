@@ -33,6 +33,8 @@ import { ICursorOption } from '../interface/Cursor'
 import { IEditorOption, IModeRule } from '../interface/Editor'
 import { ITraceOption } from '../interface/Trace'
 import { IRulerOption } from '../interface/Ruler'
+import { IHintOption } from '../interface/Hint'
+import { defaultHintOption } from '../dataset/constant/Hint'
 import { IMagnifierOption } from '../interface/Magnifier'
 import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
@@ -192,6 +194,10 @@ export function mergeOption(
     ...defaultRulerOption,
     ...options.ruler
   }
+  const hintOptions: Required<IHintOption> = {
+    ...defaultHintOption,
+    ...options.hint
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -283,6 +289,7 @@ export function mergeOption(
     accessibility: accessibilityOptions,
     column: columnOptions,
     trace: traceOptions,
-    ruler: rulerOptions
+    ruler: rulerOptions,
+    hint: hintOptions
   }
 }

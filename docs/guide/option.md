@@ -89,6 +89,7 @@ interface IEditorOption {
   column?: IColumnOption // 分栏配置。默认：关闭
   trace?: ITraceOption // 留痕配置。默认：禁用
   ruler?: IRulerOption // 标尺配置。默认：禁用
+  hint?: IHintOption // 悬浮提示配置。默认：禁用
 }
 ```
 
@@ -464,5 +465,17 @@ interface ITraceOption {
 interface IRulerOption {
   disabled?: boolean // 初始是否禁用标尺。默认：true
   height?: number // 标尺高度。默认：26
+}
+```
+
+## 悬浮提示配置
+
+```typescript
+interface IHintOption {
+  disabled?: boolean // 总开关。默认：true（默认关闭，设为 false 开启）
+  backgroundColor?: string // 浮窗背景色。默认：#fff
+  color?: string // 浮窗文字颜色。默认：#000000
+  fontSize?: number // 浮窗字号。默认：12
+  maxWidth?: number // 浮窗最大宽度，超出自动换行。默认：280
 }
 ```
