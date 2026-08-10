@@ -212,4 +212,94 @@ describe('表达式 evaluator', () => {
       })
     ).toBe(false)
   })
+
+  it('now() 与日期比较、参与算术', () => {
+    expect(
+      run("getValue('future') > now()", {
+        future: { text: '2999-01-01', isDate: true }
+      })
+    ).toBe(true)
+    expect(
+      run("getValue('past') < now()", {
+        past: { text: '2000-01-01', isDate: true }
+      })
+    ).toBe(true)
+    expect(typeof runValue('round(now() / 1000)', {})).toBe('number')
+  })
+
+  it('datediff 日期差', () => {
+    const v = {
+      end: { text: '2024-06-10', isDate: true },
+      start: { text: '2024-06-01', isDate: true }
+    }
+    expect(runValue("datediff(getValue('end'), getValue('start'))", v)).toBe(9)
+    expect(run("datediff(getValue('end'), getValue('start')) > 7", v)).toBe(
+      true
+    )
+    expect(runValue("datediff('2024-06-01', '2024-06-10')", {})).toBe(-9)
+    expect(runValue("datediff('2024-06-02', '2024-06-01', 'h')", {})).toBe(24)
+    expect(runValue("datediff('2999-01-01', 'today')", {})).toBeGreaterThan(0)
+    expect(runValue("datediff('2024-01-01', '2000-01-01')", {})).toBeCloseTo(
+      8766,
+      -2
+    )
+  })
+
+  it('datediff 空值或非法日期返回 null', () => {
+    expect(
+      runValue("datediff(getValue('a'), getValue('b'))", {
+        a: { text: null },
+        b: { text: '2024-06-01' }
+      })
+    ).toBeNull()
+    expect(runValue("datediff(getValue('x'), '2024-06-01')", {})).toBeNull()
+  })
+
+  it('floor / ceil / abs', () => {
+    expect(runValue('floor(3.7)', {})).toBe(3)
+    expect(runValue('ceil(3.2)', {})).toBe(4)
+    expect(runValue('abs(-5)', {})).toBe(5)
+    expect(runValue('abs(5)', {})).toBe(5)
+    expect(runValue("floor(getValue('x'))", { x: { text: 'abc' } })).toBeNull()
+  })
+
+  it('min / max', () => {
+    expect(runValue('min(3, 7, 1)', {})).toBe(1)
+    expect(runValue('max(3, 7, 1)', {})).toBe(7)
+    expect(
+      runValue("max(getValue('a'), getValue('b'))", {
+        a: { text: '120' },
+        b: { text: '80' }
+      })
+    ).toBe(120)
+    expect(runValue('min()', {})).toBeNull()
+  })
+
+  it('power / sqrt', () => {
+    expect(runValue('power(2, 10)', {})).toBe(1024)
+    expect(runValue('sqrt(9)', {})).toBe(3)
+    expect(runValue('sqrt(-1)', {})).toBeNull()
+    expect(
+      runValue("power(getValue('x'), 2)", { x: { text: null } })
+    ).toBeNull()
+  })
+
+  it('if 条件表达式（短路求值）', () => {
+    expect(runValue("if(1 > 2, 'a', 'b')", {})).toBe('b')
+    expect(
+      runValue("if(getValue('age') >= 18, '成年', '未成年')", {
+        age: { text: '20' }
+      })
+    ).toBe('成年')
+    expect(
+      runValue(
+        "if(getValue('bmi') < 18.5, '偏瘦', if(getValue('bmi') < 28, '正常', '肥胖'))",
+        { bmi: { text: '30' } }
+      )
+    ).toBe('肥胖')
+    // 短路：cond 为假时不求值 b 分支
+    expect(runValue("if(empty(getValue('x')), '空', getValue('x'))", {})).toBe(
+      '空'
+    )
+  })
 })

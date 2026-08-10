@@ -1340,11 +1340,28 @@ export class Control {
           if (nextElement.controlId !== element.controlId) break
           currentEndIndex++
         }
-        // 模拟光标选区上下文
-        const fakeRange = {
-          startIndex: i - 1,
-          endIndex: currentEndIndex - 2
+        // 按 VALUE 组件定位选区，避免固定偏移在带 POST_TEXT 时失准
+        const controlStart = i - 1
+        let firstValueIndex = -1
+        let lastValueIndex = -1
+        for (let k = controlStart; k < currentEndIndex; k++) {
+          if (elementList[k].controlComponent === ControlComponent.VALUE) {
+            if (firstValueIndex === -1) {
+              firstValueIndex = k
+            }
+            lastValueIndex = k
+          }
         }
+        const fakeRange =
+          firstValueIndex !== -1
+            ? {
+                startIndex: firstValueIndex - 1,
+                endIndex: lastValueIndex
+              }
+            : {
+                startIndex: controlStart,
+                endIndex: controlStart
+              }
         const controlContext: IControlContext = {
           range: fakeRange,
           elementList

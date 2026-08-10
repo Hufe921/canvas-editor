@@ -36,6 +36,10 @@ contains(getValue('allergy'), '1') && count(getValue('allergy')) >= 2
 getValue('operationDate') > 'today'
 getValue('dischargeDate') < getValue('admissionDate')
 round(getValue('weight') / (getValue('height') * getValue('height')), 1)
+getValue('endTime') < now()
+datediff(getValue('end'), getValue('start')) > 7
+round(datediff('today', getValue('birthdate')) / 365)
+if(getValue('bmi') < 18.5, '偏瘦', if(getValue('bmi') < 28, '正常', '肥胖'))
 ```
 
 ### 取值函数 getValue
@@ -45,7 +49,7 @@ round(getValue('weight') / (getValue('height') * getValue('height')), 1)
 - `getValue('conceptId或controlId')`：按 id 取实时值，controlId 精确优先，conceptId 批量命中时取第一个有值的
 - `getValue(@self)`：取规则所在控件自身的值（`@self` 仅允许作为 `getValue` 参数）
 
-归一化规则：SELECT/RADIO 取选中项 `code`；CHECKBOX 取 `code` 数组；TEXT/NUMBER/DATE 取实时纯文本（NUMBER 自动转数值，DATE 支持 `'YYYY-MM-DD'` 与 `'today'` 比较）。
+归一化规则：SELECT/RADIO 取选中项 `code`；CHECKBOX 取 `code` 数组；TEXT/NUMBER/DATE 取实时纯文本（NUMBER 自动转数值，DATE 支持 `'YYYY-MM-DD'` 与 `'today'` / `now()` 比较）。算日期差用 `datediff`，不要直接对日期值做算术（`now() - getValue('birthdate')` 会因日期字符串无法转数值而失败）。
 
 ### 运算符与字面量
 
@@ -60,13 +64,21 @@ round(getValue('weight') / (getValue('height') * getValue('height')), 1)
 
 ### 内置函数
 
-| 函数                       | 说明                                 |
-| -------------------------- | ------------------------------------ |
-| `empty(x)` / `notEmpty(x)` | 判空                                 |
-| `len(x)`                   | 文本字符长度                         |
-| `count(x)`                 | checkbox 选中项数量                  |
-| `contains(x, v)`           | checkbox 包含某 code；或文本包含子串 |
-| `round(x, digits?)`        | 四舍五入，`digits` 缺省为 0          |
+| 函数                                | 说明                                                                       |
+| ----------------------------------- | -------------------------------------------------------------------------- |
+| `empty(x)` / `notEmpty(x)`          | 判空                                                                       |
+| `len(x)`                            | 文本字符长度                                                               |
+| `count(x)`                          | checkbox 选中项数量                                                        |
+| `contains(x, v)`                    | checkbox 包含某 code；或文本包含子串                                       |
+| `round(x, digits?)`                 | 四舍五入，`digits` 缺省为 0                                                |
+| `floor(x)` / `ceil(x)`              | 向下 / 向上取整                                                            |
+| `abs(x)`                            | 绝对值                                                                     |
+| `min(a, b, ...)` / `max(a, b, ...)` | 最小 / 最大值，参数为空或非数值返回 `null`                                 |
+| `power(x, n)`                       | 幂运算 `xⁿ`                                                                |
+| `sqrt(x)`                           | 开方，负数返回 `null`                                                      |
+| `if(cond, a, b)`                    | 条件：`cond` 真→`a`，否则 `b`，仅求值命中分支（短路）                      |
+| `now()`                             | 当前时间的毫秒时间戳（含时分秒），可与日期控件比较                         |
+| `datediff(end, start, unit?)`       | 日期差（`end - start`），`unit`：`d`(天,默认)/`h`/`m`/`s`，非法返回 `null` |
 
 表达式解析或求值失败时按 `false` 处理并 `console.warn`，不打断编辑。
 
