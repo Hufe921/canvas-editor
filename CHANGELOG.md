@@ -1,3 +1,29 @@
+## [1.0.1](https://github.com/Hufe921/canvas-editor/compare/v1.0.0...v1.0.1) (2026-08-15)
+
+
+### Bug Fixes
+
+* apply row layout by paragraph #605 ([21bed9b](https://github.com/Hufe921/canvas-editor/commit/21bed9ba33f281aebf9346128957748a6d3e0567)), closes [#605](https://github.com/Hufe921/canvas-editor/issues/605)
+
+
+### Chores
+
+* update dependabot.yml ([f1d3f52](https://github.com/Hufe921/canvas-editor/commit/f1d3f52223e2b10234ccdc8f3c54729d31d3d7d6))
+
+
+### Documentation
+
+* add features overview page ([561fb3f](https://github.com/Hufe921/canvas-editor/commit/561fb3fc3ff3a0601167344b82f236a91252b72f))
+
+
+### Features
+
+* expand cascade expression functions ([6a554b4](https://github.com/Hufe921/canvas-editor/commit/6a554b4f81082fc2ebcec52c84fdce9e83fee3f2))
+* support hover hint for elements #762 ([1855372](https://github.com/Hufe921/canvas-editor/commit/1855372ca1734ac674e0d66a865cd4f15a0b2660)), closes [#762](https://github.com/Hufe921/canvas-editor/issues/762)
+* support mixed page orientations by section #718 #866 ([499c239](https://github.com/Hufe921/canvas-editor/commit/499c239d3651f3d5d80f78cffb6fa3b1bff31fb4)), closes [#718](https://github.com/Hufe921/canvas-editor/issues/718) [#866](https://github.com/Hufe921/canvas-editor/issues/866)
+
+
+
 # [1.0.0](https://github.com/Hufe921/canvas-editor/compare/v0.9.137...v1.0.0) (2026-08-01)
 
 
