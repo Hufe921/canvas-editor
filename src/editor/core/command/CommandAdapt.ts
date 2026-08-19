@@ -2376,6 +2376,70 @@ export class CommandAdapt {
     return this.draw.getWorkerManager().getGroupIds()
   }
 
+  public getGroupRectList(groupId: string): RangeRect[] | null {
+    const elementList = this.draw.getOriginalMainElementList()
+    const context = this.draw
+      .getGroup()
+      .getContextByGroupId(elementList, groupId)
+    if (!context) return null
+    const { isTable, index, trIndex, tdIndex, endIndex } = context
+    // 组所在的元素列表（主体或表格单元格内）
+    const groupElementList = isTable
+      ? elementList[index!].trList![trIndex!].tdList[tdIndex!].value
+      : elementList
+    // 组的起始索引
+    let startIndex = endIndex
+    while (
+      startIndex > 0 &&
+      groupElementList[startIndex - 1]?.groupIds?.includes(groupId)
+    ) {
+      startIndex--
+    }
+    // 组的位置信息列表
+    const positionList = isTable
+      ? this.position.getTableTdByContext(elementList, context)?.positionList ||
+        []
+      : this.position.getOriginalMainPositionList()
+    const groupPositionList = positionList.slice(startIndex, endIndex + 1)
+    if (!groupPositionList.length) return null
+    // 坐标信息（相对编辑器书写区，与 getRangeContext 的 rangeRects 坐标基准一致），
+    // 跨行/跨页拆分为多个矩形
+    const rectList: RangeRect[] = []
+    let currentRowNo: number | null = null
+    let currentPageNo: number | null = null
+    let currentX = 0
+    let rect: RangeRect | null = null
+    for (let p = 0; p < groupPositionList.length; p++) {
+      const {
+        rowNo,
+        pageNo,
+        coordinate: { leftTop, rightTop },
+        lineHeight
+      } = groupPositionList[p]
+      if (currentRowNo !== rowNo || currentPageNo !== pageNo) {
+        if (rect) {
+          rectList.push(rect)
+        }
+        const pageOffset = this.draw.getPageOffset(pageNo, true)
+        rect = {
+          x: leftTop[0] + pageOffset.x,
+          y: leftTop[1] + pageOffset.y,
+          width: rightTop[0] - leftTop[0],
+          height: lineHeight
+        }
+        currentRowNo = rowNo
+        currentPageNo = pageNo
+        currentX = leftTop[0]
+      } else {
+        rect!.width = rightTop[0] - currentX
+      }
+    }
+    if (rect) {
+      rectList.push(rect)
+    }
+    return rectList
+  }
+
   public locationGroup(groupId: string) {
     const elementList = this.draw.getOriginalMainElementList()
     const context = this.draw

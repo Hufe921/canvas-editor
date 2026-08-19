@@ -818,6 +818,80 @@ ul {
   overflow-y: auto;
 }
 
+/* 批注连接线 */
+.comment-line-toggle {
+  width: 250px;
+  position: fixed;
+  transform: translateX(420px);
+  top: 172px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 12px;
+  color: #475266;
+  user-select: none;
+}
+
+.comment-line-toggle__switch {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+}
+
+.comment-line-toggle__switch input {
+  display: none;
+}
+
+.comment-line-toggle__switch i {
+  position: absolute;
+  inset: 0;
+  background: #c0c6cf;
+  border-radius: 8px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.comment-line-toggle__switch i::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: 2px;
+  top: 2px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.comment-line-toggle__switch input:checked + i {
+  background: #e99d00;
+}
+
+.comment-line-toggle__switch input:checked + i::before {
+  transform: translateX(12px);
+}
+
+.comment-line {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.comment-line path {
+  fill: none;
+  stroke: #c0c6cf;
+  stroke-width: 1;
+}
+
+.comment-line path.active {
+  stroke: #e99d00;
+}
+
 .comment-item {
   background: #ffffff;
   border: 1px solid #e2e6ed;

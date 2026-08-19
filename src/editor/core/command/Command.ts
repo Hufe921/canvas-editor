@@ -150,6 +150,7 @@ export class Command {
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
+  public getGroupRectList: CommandAdapt['getGroupRectList']
   public getControlValue: CommandAdapt['getControlValue']
   public getControlList: CommandAdapt['getControlList']
   public getContainer: CommandAdapt['getContainer']
@@ -582,6 +583,7 @@ export class Command {
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
+    this.getGroupRectList = adapt.getGroupRectList.bind(adapt)
     this.getContainer = adapt.getContainer.bind(adapt)
     this.getTitleValue = adapt.getTitleValue.bind(adapt)
     this.getPositionContextByEvent = adapt.getPositionContextByEvent.bind(adapt)

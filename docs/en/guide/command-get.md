@@ -261,6 +261,16 @@ Usage:
 const groupIds = await instance.command.getGroupIds()
 ```
 
+## getGroupRectList
+
+Feature: Get the rect list of grouped elements (split into multiple rects across rows or pages), which can be used to draw annotation connection lines, etc.
+
+Usage:
+
+```javascript
+const rectList = instance.command.getGroupRectList(groupId)
+```
+
 Control-related commands have moved to [Control-Commands](./control/command.md).
 
 ## getContainer

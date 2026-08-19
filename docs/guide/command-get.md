@@ -261,7 +261,15 @@ const locale = await instance.command.getLocale()
 const groupIds = await instance.command.getGroupIds()
 ```
 
-控件相关命令已迁移至[控件-方法](./control/command.md)。
+## getGroupRectList
+
+功能：获取成组元素的矩形坐标列表（跨行、跨页时拆分为多个矩形），可用于实现批注连接线等场景
+
+用法：
+
+```javascript
+const rectList = instance.command.getGroupRectList(groupId)
+```
 
 ## getContainer
 
