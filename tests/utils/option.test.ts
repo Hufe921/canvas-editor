@@ -57,4 +57,18 @@ describe('mergeOption', () => {
     expect(options.hint.color).toBe('#ff0000')
     expect(options.hint.maxWidth).toBe(200)
   })
+
+  it('spellcheck 使用默认配置', () => {
+    const options = mergeOption()
+    expect(options.spellcheck.disabled).toBe(true)
+    expect(options.spellcheck.color).toBe('#FF0000')
+  })
+
+  it('spellcheck 配置可覆盖默认值', () => {
+    const options = mergeOption({
+      spellcheck: { disabled: false, color: '#00FF00' }
+    })
+    expect(options.spellcheck.disabled).toBe(false)
+    expect(options.spellcheck.color).toBe('#00FF00')
+  })
 })

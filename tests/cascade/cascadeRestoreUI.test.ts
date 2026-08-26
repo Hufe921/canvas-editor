@@ -180,19 +180,6 @@ describe('UI 路径二次联动', () => {
     // 3. 再选"无" → 分级应隐藏
     activateAndPick('c1', '无')
     await tick()
-    console.log(
-      'c1Code:',
-      draw
-        .getOriginalMainElementList()
-        .find(el => el.type === 'table')
-        ?.trList?.[0].tdList[0].value.find(
-          el => el.control?.conceptId === 'hypertension'
-        )?.control?.code,
-      'c2Hide:',
-      c2()?.control?.hide,
-      'c2Required:',
-      c2()?.control?.required
-    )
     expect(c2()?.control?.hide).toBe(true)
     // 全成员隐藏（基线逐元素记录：共享对象去重写入、发散后逐元素还原）
     const td = draw.getOriginalMainElementList().find(el => el.type === 'table')

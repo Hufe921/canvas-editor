@@ -718,6 +718,22 @@ Usage:
 instance.command.executeSearch(keyword: string, options?: ISearchOption)
 ```
 
+## executeSetSpellcheckRangeList
+
+Feature: Set spell check misspelled word ranges, rendering a wavy line under the ranges (overlay rendering, does not modify document data). Pass `null` to clear
+
+Usage:
+
+```javascript
+instance.command.executeSetSpellcheckRangeList([
+  {
+    startIndex: 5,
+    endIndex: 8,
+    data: { word: 'Helo' }
+  }
+])
+```
+
 ## executeSearchNavigatePre
 
 Feature: Search Navigation - Previous

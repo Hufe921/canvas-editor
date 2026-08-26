@@ -1131,6 +1131,35 @@ ul {
   background-image: url('./assets/images/ruler.svg');
 }
 
+.footer .spellcheck {
+  position: relative;
+  cursor: pointer;
+}
+
+.footer .spellcheck > i {
+  background-image: url('./assets/images/spellcheck.svg');
+}
+
+.footer .spellcheck .options {
+  right: 0;
+  left: unset;
+  width: 112px;
+  padding: 8px;
+}
+
+.footer .spellcheck-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.footer .spellcheck-toggle__input {
+  margin: 0;
+  cursor: pointer;
+}
+
 .footer .editor-mode {
   cursor: pointer;
   user-select: none;
@@ -1220,4 +1249,43 @@ ul {
 
 .ce-contextmenu-word-tool {
   background-image: url('./assets/images/word-tool.svg');
+}
+
+.spellcheck-popup {
+  position: fixed;
+  z-index: 100;
+  min-width: 120px;
+  padding: 4px 0;
+  color: #3b4351;
+  font-size: 12px;
+  background: #ffffff;
+  border: 1px solid #e3e6eb;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(30, 35, 43, 0.12);
+}
+
+.spellcheck-popup__title,
+.spellcheck-popup__item {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 5px 12px;
+  text-align: left;
+}
+
+.spellcheck-popup__title {
+  color: #7c8494;
+  border-bottom: 1px solid #f0f1f4;
+}
+
+.spellcheck-popup__item {
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.spellcheck-popup__item:hover {
+  background: #f5f6f8;
 }

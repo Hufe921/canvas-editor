@@ -66,6 +66,7 @@ export class Command {
   public executeAddWatermark: CommandAdapt['addWatermark']
   public executeDeleteWatermark: CommandAdapt['deleteWatermark']
   public executeSearch: CommandAdapt['search']
+  public executeSetSpellcheckRangeList: CommandAdapt['setSpellcheckRangeList']
   public executeSearchNavigatePre: CommandAdapt['searchNavigatePre']
   public executeSearchNavigateNext: CommandAdapt['searchNavigateNext']
   public executeReplace: CommandAdapt['replace']
@@ -135,6 +136,7 @@ export class Command {
   public getAreaValue: CommandAdapt['getAreaValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
+  public getSpellcheckWordList: CommandAdapt['getSpellcheckWordList']
   public getWordCount: CommandAdapt['getWordCount']
   public getCursorPosition: CommandAdapt['getCursorPosition']
   public getRemainingContentHeight: CommandAdapt['getRemainingContentHeight']
@@ -373,6 +375,10 @@ export class Command {
       adapt.deleteWatermark.bind(adapt)
     )
     this.executeSearch = this.wrap('executeSearch', adapt.search.bind(adapt))
+    this.executeSetSpellcheckRangeList = this.wrap(
+      'executeSetSpellcheckRangeList',
+      adapt.setSpellcheckRangeList.bind(adapt)
+    )
     this.executeSearchNavigatePre = this.wrap(
       'executeSearchNavigatePre',
       adapt.searchNavigatePre.bind(adapt)
@@ -567,6 +573,7 @@ export class Command {
     this.getValueAsync = adapt.getValueAsync.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
+    this.getSpellcheckWordList = adapt.getSpellcheckWordList.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getCursorPosition = adapt.getCursorPosition.bind(adapt)
     this.getRemainingContentHeight = adapt.getRemainingContentHeight.bind(adapt)

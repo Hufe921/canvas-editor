@@ -37,6 +37,7 @@ interface IEditorOption {
   searchMatchColor?: string // Search for highlight color. default: #FFFF00
   searchNavigateMatchColor?: string // Search navigation highlighted color.default: #AAD280
   searchMatchAlpha?: number // Search for highlight transparency. default: 0.6
+  spellcheck?: ISpellcheckOption // Spell check configuration
   highlightAlpha?: number //  Highlight element transparency. default: 0.6
   highlightMarginHeight?: number // Highlight element margin height. default: 8
   resizerColor?: string // Image sizer color. default: #4182D9
@@ -477,5 +478,14 @@ interface IHintOption {
   color?: string // Popup text color. default: #000000
   fontSize?: number // Popup font size. default: 12
   maxWidth?: number // Popup max width; wraps when exceeded. default: 280
+}
+```
+
+## Spell Check Configuration
+
+```typescript
+interface ISpellcheckOption {
+  disabled?: boolean // Whether disabled. default: true
+  color?: string // Misspelled word wavy line color. default: #FF0000
 }
 ```

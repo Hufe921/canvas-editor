@@ -1661,6 +1661,52 @@ window.onload = function () {
     modeOptionsElement.classList.remove('visible')
   }
 
+  const spellcheckDom = document.querySelector<HTMLDivElement>('.spellcheck')!
+  const spellcheckOptionsDom =
+    spellcheckDom.querySelector<HTMLDivElement>('.options')!
+  const spellcheckToggleDom = spellcheckDom.querySelector<HTMLInputElement>(
+    '.spellcheck-toggle__input'
+  )!
+  spellcheckToggleDom.checked =
+    !instance.command.getOptions().spellcheck.disabled
+  spellcheckDom.onclick = function (evt) {
+    const target = evt.target as HTMLElement
+    if (target.closest('.spellcheck-toggle')) return
+    spellcheckOptionsDom.classList.toggle('visible')
+  }
+  let spellcheckPluginPromise: Promise<void> | null = null
+  const loadSpellcheckPlugin = () => {
+    if (!spellcheckPluginPromise) {
+      spellcheckPluginPromise = import('./plugins/spellcheck')
+        .then(({ spellcheckPlugin }) => {
+          instance.use(spellcheckPlugin)
+        })
+        .catch(error => {
+          spellcheckPluginPromise = null
+          throw error
+        })
+    }
+    return spellcheckPluginPromise
+  }
+  spellcheckToggleDom.onchange = async function () {
+    if (spellcheckToggleDom.checked) {
+      try {
+        await loadSpellcheckPlugin()
+      } catch {
+        spellcheckToggleDom.checked = false
+      }
+    }
+    const currentOptions = instance.command.getOptions()
+    instance.command.executeUpdateOptions({
+      ...currentOptions,
+      spellcheck: {
+        ...currentOptions.spellcheck,
+        disabled: !spellcheckToggleDom.checked
+      }
+    })
+    spellcheckOptionsDom.classList.remove('visible')
+  }
+
   // 模拟批注
   const commentDom = document.querySelector<HTMLDivElement>('.comment')!
   async function updateComment() {

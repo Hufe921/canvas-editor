@@ -159,6 +159,18 @@ Usage:
 const keywordContextList = instance.command.getKeywordContext(payload: string)
 ```
 
+## getSpellcheckWordList
+
+Feature: Get words and element indexes from the main document and table
+cells for external spellcheck plugins such as Typo.js or nspell. The editor
+only provides tokenization and index mapping; it does not bundle a dictionary.
+
+Usage:
+
+```javascript
+const wordList = instance.command.getSpellcheckWordList()
+```
+
 ## getRangeParagraph
 
 Feature: Get range paragraph element list

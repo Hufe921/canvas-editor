@@ -718,6 +718,16 @@ instance.command.executeDeleteWatermark()
 instance.command.executeSearch(keyword: string, options?: ISearchOption)
 ```
 
+## executeSetSpellcheckRangeList
+
+功能：设置拼写检查错词区间，在区间下方渲染波浪线（叠加层渲染，不修改文档数据）。传`null`清空
+
+用法：
+
+```javascript
+instance.command.executeSetSpellcheckRangeList(payload: ISpellcheckRange[] | null)
+```
+
 ## executeSearchNavigatePre
 
 功能：搜索导航-上一个

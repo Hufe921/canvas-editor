@@ -14,11 +14,13 @@ import {
   IPageSizeChange,
   IPositionContextChange,
   IRangeChange,
+  IRenderChange,
   IRangeStyleChange,
   ISaved,
   IVisiblePageNoListChange,
   IZoneChange
 } from './Listener'
+import type { ISpellcheckClick } from './Spellcheck'
 
 export interface EventBusMap {
   rangeStyleChange: IRangeStyleChange
@@ -45,4 +47,6 @@ export interface EventBusMap {
   imageDblclick: IImageDblclick
   labelMousedown: ILabelMousedown
   rangeChange: IRangeChange
+  renderChange: IRenderChange
+  spellcheckClick: ISpellcheckClick
 }

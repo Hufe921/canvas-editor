@@ -111,6 +111,10 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     isImage,
     isLabel,
     isTable,
+    tableId,
+    trIndex,
+    tdIndex,
+    tablePath,
     tdValueIndex,
     hitLineStartIndex
   } = positionResult
@@ -253,6 +257,25 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       hyperlinkParticle.openHyperlink(curElement)
     } else {
       hyperlinkParticle.drawHyperlinkPopup(curElement, positionList[curIndex])
+    }
+  }
+  // 拼写检查错词点击事件
+  if (
+    draw.getZone().isMainActive() &&
+    isDirectHit &&
+    eventBus.isSubscribe('spellcheckClick')
+  ) {
+    const spellcheckContext = isTable
+      ? { tableId, tableIndex: index, trIndex, tdIndex, tablePath }
+      : undefined
+    const spellcheckRange = draw
+      .getSpellcheck()
+      .getRangeByIndex(curIndex, spellcheckContext)
+    if (spellcheckRange) {
+      eventBus.emit('spellcheckClick', {
+        evt,
+        range: spellcheckRange
+      })
     }
   }
   // 日期控件

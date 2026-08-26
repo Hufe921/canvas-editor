@@ -89,6 +89,7 @@ import {
   ISearchOption,
   ISearchResultContext
 } from '../../interface/Search'
+import type { ISpellcheckRange } from '../../interface/Spellcheck'
 import { ITextDecoration } from '../../interface/Text'
 import {
   IGetTitleValueOption,
@@ -1369,6 +1370,26 @@ export class CommandAdapt {
     this.draw.render({
       isSubmitHistory: false
     })
+  }
+
+  public setSpellcheckRangeList(payload: ISpellcheckRange[] | null) {
+    const shouldRender = this.draw
+      .getSpellcheck()
+      .setSpellcheckRangeList(payload)
+    if (!shouldRender) return
+    // 折叠光标原位恢复，选区则保持焦点避免选区被光标覆盖
+    const cursorPosition = this.position.getCursorPosition()
+    const isCollapsed = this.range.getIsCollapsed()
+    this.draw.render({
+      isCompute: false,
+      isSubmitHistory: false,
+      isSetCursor: isCollapsed && !!cursorPosition,
+      curIndex: cursorPosition?.index
+    })
+  }
+
+  public getSpellcheckWordList() {
+    return this.draw.getSpellcheck().getSpellcheckWordList()
   }
 
   public searchNavigatePre() {

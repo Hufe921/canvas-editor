@@ -37,6 +37,7 @@ interface IEditorOption {
   searchMatchColor?: string // 搜索高亮颜色。默认：#FFFF00
   searchNavigateMatchColor?: string // 搜索导航高亮颜色。默认：#AAD280
   searchMatchAlpha?: number // 搜索高亮透明度。默认：0.6
+  spellcheck?: ISpellcheckOption // 拼写检查配置
   highlightAlpha?: number // 高亮元素透明度。默认：0.6
   highlightMarginHeight?: number // 高亮元素边距高度。默认：8
   resizerColor?: string // 图片尺寸器颜色。默认：#4182D9
@@ -477,5 +478,14 @@ interface IHintOption {
   color?: string // 浮窗文字颜色。默认：#000000
   fontSize?: number // 浮窗字号。默认：12
   maxWidth?: number // 浮窗最大宽度，超出自动换行。默认：280
+}
+```
+
+## 拼写检查配置
+
+```typescript
+interface ISpellcheckOption {
+  disabled?: boolean // 是否禁用。默认：true
+  color?: string // 错词波浪线颜色。默认：#FF0000
 }
 ```

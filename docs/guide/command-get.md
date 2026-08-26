@@ -159,6 +159,17 @@ const rangeList = instance.command.getKeywordRangeList()
 const keywordContextList = instance.command.getKeywordContext(payload: string)
 ```
 
+## getSpellcheckWordList
+
+功能：获取正文及表格单元格中的单词和元素索引，供 Typo.js、nspell
+等外部拼写检查插件使用。编辑器只负责分词和索引映射，不包含词典。
+
+用法：
+
+```javascript
+const wordList = instance.command.getSpellcheckWordList()
+```
+
 ## getRangeParagraph
 
 功能：获取选区所在段落元素列表

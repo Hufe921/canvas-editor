@@ -77,6 +77,8 @@
     "vue": "^3.5.41"
   },
   "dependencies": {
+    "@cspell/dict-en_us": "^4.4.37",
+    "cspell-trie-lib": "^10.1.1",
     "prismjs": "^1.27.0"
   },
   "simple-git-hooks": {

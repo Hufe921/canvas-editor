@@ -70,6 +70,8 @@ import { IWhiteSpaceOption } from '../interface/WhiteSpace'
 import { defaultWhiteSpaceOption } from '../dataset/constant/WhiteSpace'
 import { defaultTraceOption } from '../dataset/constant/Trace'
 import { defaultRulerOption } from '../dataset/constant/Ruler'
+import { defaultSpellcheckOption } from '../dataset/constant/Spellcheck'
+import type { ISpellcheckOption } from '../interface/Spellcheck'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -198,6 +200,10 @@ export function mergeOption(
     ...defaultHintOption,
     ...options.hint
   }
+  const spellcheckOptions: Required<ISpellcheckOption> = {
+    ...defaultSpellcheckOption,
+    ...options.spellcheck
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -290,6 +296,7 @@ export function mergeOption(
     column: columnOptions,
     trace: traceOptions,
     ruler: rulerOptions,
-    hint: hintOptions
+    hint: hintOptions,
+    spellcheck: spellcheckOptions
   }
 }

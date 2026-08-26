@@ -43,6 +43,7 @@ import { Background } from './frame/Background'
 import { Highlight } from './richtext/Highlight'
 import { Margin } from './frame/Margin'
 import { Search } from './interactive/Search'
+import { Spellcheck } from './interactive/Spellcheck'
 import { Strikeout } from './richtext/Strikeout'
 import { Underline } from './richtext/Underline'
 import { ElementType } from '../../dataset/enum/Element'
@@ -161,6 +162,7 @@ export class Draw {
   private badge: Badge
   private magnifier: Magnifier
   private search: Search
+  private spellcheck: Spellcheck
   private group: Group
   private area: Area
   private underline: Underline
@@ -258,6 +260,7 @@ export class Draw {
     this.badge = new Badge(this)
     this.magnifier = new Magnifier(this)
     this.search = new Search(this)
+    this.spellcheck = new Spellcheck(this)
     this.group = new Group(this)
     this.area = new Area(this)
     this.underline = new Underline(this)
@@ -788,6 +791,10 @@ export class Draw {
 
   public getSearch(): Search {
     return this.search
+  }
+
+  public getSpellcheck(): Spellcheck {
+    return this.spellcheck
   }
 
   public getGroup(): Group {
@@ -3032,6 +3039,10 @@ export class Draw {
     if (!isPrintMode && this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
     }
+    // 拼写检查错词绘制
+    if (!isPrintMode && this.spellcheck.getSpellcheckRangeList().length) {
+      this.spellcheck.render(ctx, pageNo)
+    }
     // 绘制空白占位符
     if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
       this.placeholder.render(ctx)
@@ -3119,6 +3130,8 @@ export class Draw {
     const oldPageDirectionList = this.pageDirectionList
     // 计算文档信息
     if (isCompute) {
+      // 清空拼写检查错词信息
+      this.spellcheck.setSpellcheckRangeList(null)
       // 清空浮动元素位置信息
       this.position.setFloatPositionList([])
       if (isPagingMode) {
@@ -3220,6 +3233,9 @@ export class Draw {
       (curIndex !== undefined && this.historyManager.isStackEmpty())
     ) {
       this.submitHistory(curIndex)
+    }
+    if (isCompute && this.eventBus.isSubscribe('renderChange')) {
+      this.eventBus.emit('renderChange')
     }
     // 信息变动回调
     nextTick(() => {
