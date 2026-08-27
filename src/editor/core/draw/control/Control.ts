@@ -1340,12 +1340,17 @@ export class Control {
           if (nextElement.controlId !== element.controlId) break
           currentEndIndex++
         }
-        // 按 VALUE 组件定位选区，避免固定偏移在带 POST_TEXT 时失准
+        // 按 VALUE 组件定位选区，避免固定偏移在带 POST_TEXT 时失准。
+        // 无值时需覆盖 PLACEHOLDER 组件，否则清空值时旧占位符残留导致重复渲染
         const controlStart = i - 1
         let firstValueIndex = -1
         let lastValueIndex = -1
         for (let k = controlStart; k < currentEndIndex; k++) {
-          if (elementList[k].controlComponent === ControlComponent.VALUE) {
+          const component = elementList[k].controlComponent
+          if (
+            component === ControlComponent.VALUE ||
+            component === ControlComponent.PLACEHOLDER
+          ) {
             if (firstValueIndex === -1) {
               firstValueIndex = k
             }
