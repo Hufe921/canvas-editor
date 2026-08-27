@@ -2673,7 +2673,8 @@ export class CommandAdapt {
     if (
       anchorElement?.controlId &&
       anchorElement.control?.type !== ControlType.TEXT &&
-      cloneElement.type === ElementType.CONTROL
+      cloneElement.type === ElementType.CONTROL &&
+      elementList[startIndex + 1]?.controlId === anchorElement.controlId
     ) {
       return
     }
