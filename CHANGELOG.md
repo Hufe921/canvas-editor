@@ -1,3 +1,19 @@
+## [1.0.2](https://github.com/Hufe921/canvas-editor/compare/v1.0.1...v1.0.2) (2026-08-28)
+
+
+### Bug Fixes
+
+* insert multiple controls in one line #1474 ([099b94e](https://github.com/Hufe921/canvas-editor/commit/099b94e18257ae8d48cd7a88e127c52eb56546ac)), closes [#1474](https://github.com/Hufe921/canvas-editor/issues/1474)
+* placeholder duplicated when setting empty control value #1473 ([86aa51c](https://github.com/Hufe921/canvas-editor/commit/86aa51cce918f392407dad7490aacae3d3a8e69b)), closes [#1473](https://github.com/Hufe921/canvas-editor/issues/1473)
+
+
+### Features
+
+* add configurable spellcheck support #1106 ([04e3735](https://github.com/Hufe921/canvas-editor/commit/04e37352f7cdbee327462a1c168c0ed489c9a6c0)), closes [#1106](https://github.com/Hufe921/canvas-editor/issues/1106)
+* add getGroupRectList api #362 ([fde11fa](https://github.com/Hufe921/canvas-editor/commit/fde11fa6388ce14614d2fb9528c284ed503a597a)), closes [#362](https://github.com/Hufe921/canvas-editor/issues/362)
+
+
+
 ## [1.0.1](https://github.com/Hufe921/canvas-editor/compare/v1.0.0...v1.0.1) (2026-08-15)
 
 
