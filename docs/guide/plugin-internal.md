@@ -123,3 +123,72 @@ command.executeUpperCase()
 
 command.executeLowerCase()
 ```
+
+## Markdown
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import markdownPlugin from '@hufe921/canvas-editor-plugin-markdown'
+
+const instance = new Editor()
+instance.use(markdownPlugin)
+
+instance.command.executeImportMarkdown({
+  value: string
+})
+
+instance.command.executeExportMarkdown() // => string
+```
+
+## 特殊字符
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import specialCharactersPlugin from '@hufe921/canvas-editor-plugin-special-characters'
+
+const instance = new Editor()
+instance.use(specialCharactersPlugin)
+
+instance.command.executeOpenSpecialCharactersDialog({
+  characters?: ISpecialCharacterGroup[], // 自定义特殊字符分组
+  onSelect?: (char: string) => void // 选中字符回调
+})
+```
+
+## 月经史
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import menstrualHistoryPlugin from '@hufe921/canvas-editor-plugin-menstrual-history'
+
+const instance = new Editor()
+instance.use(menstrualHistoryPlugin)
+
+instance.command.executeLoadMenstrualHistory({
+  data?: IMenstrualHistoryData, // 初始数据（用于二次编辑）
+  onConfirm?: (
+    data: IMenstrualHistoryData & { svg: string; width: number; height: number }
+  ) => void, // 确认回调，返回月经史 SVG 图
+  onCancel?: () => void // 取消回调
+})
+```
+
+## 拼写检查
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import spellcheckPlugin from '@hufe921/canvas-editor-plugin-spellcheck'
+
+const instance = new Editor()
+instance.use(spellcheckPlugin, {
+  disabled?: boolean, // 是否禁用拼写检查
+  suggestionCount?: number, // 建议词候选个数
+  suggestionTimeout?: number, // 建议词生成超时时间（毫秒）
+  ignoreWords?: string[], // 忽略词列表（不区分大小写）
+  minWordLength?: number, // 参与检查的最小单词长度
+  locale?: string, // 弹窗语言（内置 zhCN、en）
+  lang?: Partial<ISpellcheckLang> // 覆盖对应语言的弹窗文案
+})
+
+instance.command.executeSpellcheckIgnoreWord(word: string)
+```

@@ -123,3 +123,72 @@ command.executeUpperCase()
 
 command.executeLowerCase()
 ```
+
+## Markdown
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import markdownPlugin from '@hufe921/canvas-editor-plugin-markdown'
+
+const instance = new Editor()
+instance.use(markdownPlugin)
+
+instance.command.executeImportMarkdown({
+  value: string
+})
+
+instance.command.executeExportMarkdown() // => string
+```
+
+## Special characters
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import specialCharactersPlugin from '@hufe921/canvas-editor-plugin-special-characters'
+
+const instance = new Editor()
+instance.use(specialCharactersPlugin)
+
+instance.command.executeOpenSpecialCharactersDialog({
+  characters?: ISpecialCharacterGroup[], // custom character groups
+  onSelect?: (char: string) => void // character selection callback
+})
+```
+
+## Menstrual history
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import menstrualHistoryPlugin from '@hufe921/canvas-editor-plugin-menstrual-history'
+
+const instance = new Editor()
+instance.use(menstrualHistoryPlugin)
+
+instance.command.executeLoadMenstrualHistory({
+  data?: IMenstrualHistoryData, // initial data (for re-editing)
+  onConfirm?: (
+    data: IMenstrualHistoryData & { svg: string; width: number; height: number }
+  ) => void, // confirm callback, returns the menstrual history SVG
+  onCancel?: () => void // cancel callback
+})
+```
+
+## Spellcheck
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import spellcheckPlugin from '@hufe921/canvas-editor-plugin-spellcheck'
+
+const instance = new Editor()
+instance.use(spellcheckPlugin, {
+  disabled?: boolean, // disable spellcheck
+  suggestionCount?: number, // number of suggested words
+  suggestionTimeout?: number, // suggestion generation timeout (ms)
+  ignoreWords?: string[], // ignored words (case-insensitive)
+  minWordLength?: number, // minimum word length to check
+  locale?: string, // dialog language (built-in zhCN, en)
+  lang?: Partial<ISpellcheckLang> // override dialog text for the locale
+})
+
+instance.command.executeSpellcheckIgnoreWord(word: string)
+```
