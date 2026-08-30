@@ -192,3 +192,91 @@ instance.use(spellcheckPlugin, {
 
 instance.command.executeSpellcheckIgnoreWord(word: string)
 ```
+
+## 签名
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import signaturePlugin from '@hufe921/canvas-editor-plugin-signature'
+
+const instance = new Editor()
+instance.use(signaturePlugin)
+
+instance.command.executeSignature({
+  width?: number, // 画板宽度
+  height?: number, // 画板高度
+  exportType?: 'png' | 'svg', // 导出图片格式，默认 svg
+  locale?: string, // 弹窗语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<ISignatureLang>, // 覆盖对应语言的弹窗文案
+  onClose?: () => void, // 关闭回调
+  onCancel?: () => void, // 取消回调
+  onConfirm?: (payload: ISignatureResult | null) => void // 确认回调，默认将签名图片插入编辑器
+})
+```
+
+## 查找替换
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import findReplacePlugin from '@hufe921/canvas-editor-plugin-find-replace'
+
+const instance = new Editor()
+instance.use(findReplacePlugin, {
+  locale?: string, // 面板语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<IFindReplaceLang>, // 覆盖对应语言的面板文案
+  shortcut?: boolean // 是否启用全局快捷键 Ctrl/Cmd + F 唤起面板，默认启用
+})
+
+instance.command.executeFindReplace({
+  locale?: string, // 面板语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<IFindReplaceLang>, // 覆盖对应语言的面板文案
+  onClose?: () => void // 面板关闭回调
+})
+```
+
+## @提及
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import mentionPlugin from '@hufe921/canvas-editor-plugin-mention'
+
+const instance = new Editor()
+instance.use(mentionPlugin, {
+  trigger?: string, // 触发符，默认 @
+  dataList: IMentionItem[] | (() => IMentionItem[]), // 候选数据
+  max?: number, // 候选最多显示条数，默认 5
+  label?: IMentionLabelStyle, // 提及标签样式覆盖
+  locale?: string, // 面板语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<IMentionLang>, // 覆盖对应语言的面板文案
+  onSelect?: (item: IMentionItem) => void, // 选中候选项回调
+  onClick?: (element: IElement) => void // 点击已插入提及标签回调
+})
+
+// 程序化在光标处唤起候选浮层
+instance.command.executeMention()
+```
+
+## 批注
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import commentPlugin from '@hufe921/canvas-editor-plugin-comment'
+
+const instance = new Editor()
+instance.use(commentPlugin, {
+  highlightColor?: string, // 批注高亮色，默认 #fde7e9
+  railWidth?: number, // 右侧批注栏宽度（px），默认 220
+  lineColor?: string, // 连接线颜色，默认 #f54a45
+  userColor?: string, // 批注卡片作者名颜色，默认 #f54a45
+  user?: string, // 当前用户名
+  locale?: string, // 弹层语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<ICommentLang>, // 覆盖对应语言的弹层文案
+  onAdd?: (comment: IComment) => void, // 批注新增回调
+  onRemove?: (id: string) => void // 批注删除回调
+})
+
+instance.command.executeAddComment() // 对当前选区添加批注
+instance.command.executeRemoveComment(id?: string) // 删除批注
+instance.command.executeGetCommentList() // 获取批注列表
+instance.command.executeSetCommentList(list) // 恢复批注列表
+```

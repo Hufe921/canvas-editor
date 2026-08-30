@@ -192,3 +192,91 @@ instance.use(spellcheckPlugin, {
 
 instance.command.executeSpellcheckIgnoreWord(word: string)
 ```
+
+## Signature
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import signaturePlugin from '@hufe921/canvas-editor-plugin-signature'
+
+const instance = new Editor()
+instance.use(signaturePlugin)
+
+instance.command.executeSignature({
+  width?: number, // board width
+  height?: number, // board height
+  exportType?: 'png' | 'svg', // exported image format, default svg
+  locale?: string, // dialog language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<ISignatureLang>, // override dialog text for the locale
+  onClose?: () => void, // close callback
+  onCancel?: () => void, // cancel callback
+  onConfirm?: (payload: ISignatureResult | null) => void // confirm callback, inserts the signature image into the editor by default
+})
+```
+
+## Find and replace
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import findReplacePlugin from '@hufe921/canvas-editor-plugin-find-replace'
+
+const instance = new Editor()
+instance.use(findReplacePlugin, {
+  locale?: string, // panel language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<IFindReplaceLang>, // override panel text for the locale
+  shortcut?: boolean // whether to enable the global shortcut Ctrl/Cmd + F, enabled by default
+})
+
+instance.command.executeFindReplace({
+  locale?: string, // panel language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<IFindReplaceLang>, // override panel text for the locale
+  onClose?: () => void // panel close callback
+})
+```
+
+## Mention
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import mentionPlugin from '@hufe921/canvas-editor-plugin-mention'
+
+const instance = new Editor()
+instance.use(mentionPlugin, {
+  trigger?: string, // trigger character, default @
+  dataList: IMentionItem[] | (() => IMentionItem[]), // candidate data
+  max?: number, // maximum number of candidates shown, default 5
+  label?: IMentionLabelStyle, // mention label style override
+  locale?: string, // panel language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<IMentionLang>, // override panel text for the locale
+  onSelect?: (item: IMentionItem) => void, // candidate select callback
+  onClick?: (element: IElement) => void // inserted mention label click callback
+})
+
+// programmatically open the candidate panel at the cursor
+instance.command.executeMention()
+```
+
+## Comment
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import commentPlugin from '@hufe921/canvas-editor-plugin-comment'
+
+const instance = new Editor()
+instance.use(commentPlugin, {
+  highlightColor?: string, // comment highlight color, default #fde7e9
+  railWidth?: number, // width of the right comment rail (px), default 220
+  lineColor?: string, // connector line color, default #f54a45
+  userColor?: string, // author name color on the comment card, default #f54a45
+  user?: string, // current user name
+  locale?: string, // popup language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<ICommentLang>, // override popup text for the locale
+  onAdd?: (comment: IComment) => void, // comment add callback
+  onRemove?: (id: string) => void // comment remove callback
+})
+
+instance.command.executeAddComment() // add a comment to the current selection
+instance.command.executeRemoveComment(id?: string) // remove a comment
+instance.command.executeGetCommentList() // get the comment list
+instance.command.executeSetCommentList(list) // restore the comment list
+```
