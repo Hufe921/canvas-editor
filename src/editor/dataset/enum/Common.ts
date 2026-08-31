@@ -24,6 +24,11 @@ export enum LocationPosition {
   OUTER_AFTER = 'outer-after'
 }
 
+export enum SurroundPosition {
+  BEFORE = 'before',
+  AFTER = 'after'
+}
+
 export enum FlexDirection {
   ROW = 'row',
   COLUMN = 'column'

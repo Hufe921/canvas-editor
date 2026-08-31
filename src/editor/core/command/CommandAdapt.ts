@@ -12,7 +12,11 @@ import {
   titleSizeMapping
 } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
-import { ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
+import {
+  ImageDisplay,
+  LocationPosition,
+  SurroundPosition
+} from '../../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../../dataset/enum/Control'
 import {
   EditorMode,
@@ -83,7 +87,12 @@ import {
 } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition, IPositionContext } from '../../interface/Position'
-import { IRange, RangeContext, RangeRect } from '../../interface/Range'
+import {
+  IGetSurroundElementListOption,
+  IRange,
+  RangeContext,
+  RangeRect
+} from '../../interface/Range'
 import {
   IReplaceOption,
   ISearchOption,
@@ -1836,6 +1845,29 @@ export class CommandAdapt {
           isClone: false
         })
       : null
+  }
+
+  public getSurroundElementList(
+    option: IGetSurroundElementListOption = {}
+  ): IElement[] | null {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return null
+    const { direction = SurroundPosition.BEFORE, length = 1 } = option
+    const elementList = this.draw.getElementList()
+    // 光标位于元素startIndex与startIndex+1之间，前方向含startIndex自身
+    let surroundElementList: IElement[]
+    if (direction === SurroundPosition.BEFORE) {
+      const end = startIndex + 1
+      surroundElementList = elementList.slice(Math.max(0, end - length), end)
+    } else {
+      surroundElementList = elementList.slice(
+        endIndex + 1,
+        endIndex + 1 + length
+      )
+    }
+    return zipElementList(getNonDeletedElementList(surroundElementList), {
+      isClone: false
+    })
   }
 
   public getKeywordRangeList(payload: string): IRange[] {

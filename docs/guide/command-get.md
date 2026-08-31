@@ -180,6 +180,16 @@ const wordList = instance.command.getSpellcheckWordList()
 const paragraphElementList = instance.command.getRangeParagraph()
 ```
 
+## getSurroundElementList
+
+功能：获取光标前或光标后指定数量的元素列表（按文档顺序返回，常用于输入联想场景）。`direction` 为 `SurroundPosition.BEFORE`（光标前，默认）或 `SurroundPosition.AFTER`（光标后），`length` 为元素数量（默认 `1`）。光标未激活时返回 `null`。
+
+用法：
+
+```javascript
+const beforeElementList = instance.command.getSurroundElementList(option: IGetSurroundElementListOption)
+```
+
 ## getPaperMargin
 
 功能：获取页边距

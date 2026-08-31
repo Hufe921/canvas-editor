@@ -145,6 +145,7 @@ export class Command {
   public getRangeContext: CommandAdapt['getRangeContext']
   public getRangeRow: CommandAdapt['getRangeRow']
   public getRangeParagraph: CommandAdapt['getRangeParagraph']
+  public getSurroundElementList: CommandAdapt['getSurroundElementList']
   public getKeywordRangeList: CommandAdapt['getKeywordRangeList']
   public getKeywordContext: CommandAdapt['getKeywordContext']
   public getPaperMargin: CommandAdapt['getPaperMargin']
@@ -582,6 +583,7 @@ export class Command {
     this.getRangeContext = adapt.getRangeContext.bind(adapt)
     this.getRangeRow = adapt.getRangeRow.bind(adapt)
     this.getRangeParagraph = adapt.getRangeParagraph.bind(adapt)
+    this.getSurroundElementList = adapt.getSurroundElementList.bind(adapt)
     this.getKeywordRangeList = adapt.getKeywordRangeList.bind(adapt)
     this.getKeywordContext = adapt.getKeywordContext.bind(adapt)
     this.getCatalog = adapt.getCatalog.bind(adapt)

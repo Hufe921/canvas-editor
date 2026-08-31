@@ -10,7 +10,8 @@ import { RowFlex } from './dataset/enum/Row'
 import {
   FlexDirection,
   ImageDisplay,
-  LocationPosition
+  LocationPosition,
+  SurroundPosition
 } from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
@@ -220,6 +221,7 @@ export {
   TextDecorationStyle,
   LineNumberType,
   LocationPosition,
+  SurroundPosition,
   AreaMode,
   ControlState,
   FlexDirection,

@@ -181,6 +181,16 @@ Usage:
 const paragraphElementList = instance.command.getRangeParagraph()
 ```
 
+## getSurroundElementList
+
+Feature: Get a specified number of elements before or after the cursor (returned in document order, useful for text input prediction). `direction` is `SurroundPosition.BEFORE` (default) or `SurroundPosition.AFTER`, and `length` is the number of elements (default `1`). `null` is returned when the cursor is inactive.
+
+Usage:
+
+```javascript
+const beforeElementList = instance.command.getSurroundElementList(option: IGetSurroundElementListOption)
+```
+
 ## getPaperMargin
 
 Feature: Gets the margins
