@@ -280,3 +280,66 @@ instance.command.executeRemoveComment(id?: string) // remove a comment
 instance.command.executeGetCommentList() // get the comment list
 instance.command.executeSetCommentList(list) // restore the comment list
 ```
+
+## Formula
+
+LaTeX inline formula plugin based on [KaTeX](https://katex.org/). Formulas are inserted as SVG images, with the LaTeX source persisted inside the image, and can be re-edited via the context menu.
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import formulaPlugin from '@hufe921/canvas-editor-plugin-formula'
+
+const instance = new Editor()
+instance.use(formulaPlugin, {
+  isRegisterEditContextMenu?: boolean, // whether to register the formula edit context menu, default true
+  locale?: string, // popup language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<IFormulaLang> // override popup text for the locale
+})
+
+instance.command.executeInsertFormula(latex: string) // insert an inline formula
+```
+
+## Suggestion
+
+Automatically extracts the query word before the cursor while typing, matches candidate phrases in a dropdown panel, and replaces the typed query with the selected phrase.
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import suggestionPlugin from '@hufe921/canvas-editor-plugin-suggestion'
+
+const instance = new Editor()
+instance.use(suggestionPlugin, {
+  dataList: ISuggestionItem[] | (() => ISuggestionItem[]), // candidate data
+  minLength?: number, // minimum query length to trigger suggestion, default 1
+  max?: number, // maximum number of candidates shown, default 5
+  match?: 'prefix' | 'contains' | ((query, item) => boolean), // match mode, default prefix
+  locale?: string, // panel language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<ISuggestionLang>, // override panel text for the locale
+  onSelect?: (item: ISuggestionItem) => void // candidate select callback
+})
+
+instance.command.executeSuggestion(options?) // programmatically open the candidate panel
+```
+
+## Chart
+
+Data chart plugin based on ECharts. Supports template-based configuration of bar, line, and pie charts. Charts are inserted as images, and an inserted chart image can be re-edited by double-clicking it or via the context menu.
+
+> Note: echarts is a peer dependency and must be installed separately.
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import chartPlugin from '@hufe921/canvas-editor-plugin-chart'
+
+const instance = new Editor()
+instance.use(chartPlugin)
+
+instance.command.executeChart({
+  width?: number, // inserted image width, default 600
+  height?: number, // inserted image height, default 400
+  defaultOption?: object, // ECharts option prefilled when the dialog opens (enters advanced mode directly)
+  locale?: string, // dialog language (built-in zhCN, en), defaults to the editor locale
+  lang?: Partial<IChartLang>, // override dialog text for the locale
+  onInsert?: (option: object) => void // chart insert callback
+})
+```

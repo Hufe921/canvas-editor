@@ -280,3 +280,66 @@ instance.command.executeRemoveComment(id?: string) // 删除批注
 instance.command.executeGetCommentList() // 获取批注列表
 instance.command.executeSetCommentList(list) // 恢复批注列表
 ```
+
+## 公式
+
+基于 [KaTeX](https://katex.org/) 的 LaTeX 行内公式插件，公式以 SVG 图片形式插入文档，LaTeX 源码随图片持久化，支持通过右键菜单二次编辑。
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import formulaPlugin from '@hufe921/canvas-editor-plugin-formula'
+
+const instance = new Editor()
+instance.use(formulaPlugin, {
+  isRegisterEditContextMenu?: boolean, // 是否注册公式编辑右键菜单，默认 true
+  locale?: string, // 弹窗语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<IFormulaLang> // 覆盖对应语言的弹窗文案
+})
+
+instance.command.executeInsertFormula(latex: string) // 插入行内公式
+```
+
+## 输入联想
+
+输入时自动提取光标前的查询词，实时匹配候选短语并以下拉面板提醒，选中后替换已输入的查询词。
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import suggestionPlugin from '@hufe921/canvas-editor-plugin-suggestion'
+
+const instance = new Editor()
+instance.use(suggestionPlugin, {
+  dataList: ISuggestionItem[] | (() => ISuggestionItem[]), // 候选数据
+  minLength?: number, // 触发联想的最小查询词长度，默认 1
+  max?: number, // 候选最多显示条数，默认 5
+  match?: 'prefix' | 'contains' | ((query, item) => boolean), // 匹配方式，默认 prefix
+  locale?: string, // 面板语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<ISuggestionLang>, // 覆盖对应语言的面板文案
+  onSelect?: (item: ISuggestionItem) => void // 选中候选项回调
+})
+
+instance.command.executeSuggestion(options?) // 程序化打开候选面板
+```
+
+## 图表
+
+基于 ECharts 的数据图表插件，支持柱状图、折线图、饼图模板化配置，图表以图片形式插入文档，双击或右键已插入的图表图片可二次编辑。
+
+> 注意：echarts 为 peerDependencies，需自行安装。
+
+```javascript
+import Editor from '@hufe921/canvas-editor'
+import chartPlugin from '@hufe921/canvas-editor-plugin-chart'
+
+const instance = new Editor()
+instance.use(chartPlugin)
+
+instance.command.executeChart({
+  width?: number, // 插入图片宽度，默认 600
+  height?: number, // 插入图片高度，默认 400
+  defaultOption?: object, // 打开弹窗时预填的 ECharts option（直接进入高级模式）
+  locale?: string, // 弹窗语言（内置 zhCN、en），默认取编辑器 locale 配置
+  lang?: Partial<IChartLang>, // 覆盖对应语言的弹窗文案
+  onInsert?: (option: object) => void // 插入图表回调
+})
+```
