@@ -1,7 +1,7 @@
 # 自定义插件
 
 ::: tip
-官方维护插件仓库：https://github.com/Hufe921/canvas-editor-plugin
+官方维护插件文档：https://hufe.club/canvas-editor-plugin
 :::
 
 ## 开发插件

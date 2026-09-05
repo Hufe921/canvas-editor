@@ -14,7 +14,7 @@ const host = ref<HTMLElement>()
 
 function mountIntoNavLink() {
   const target = document.querySelector<HTMLAnchorElement>(
-    '.VPNavBarMenu .VPNavBarMenuLink[href*="plugin-internal"]'
+    '.VPNavBarMenu .VPNavBarMenuLink[href*="hufe.club/canvas-editor-plugin"]'
   )
   if (target && host.value) {
     target.appendChild(host.value)
