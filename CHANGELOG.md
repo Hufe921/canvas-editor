@@ -1,3 +1,26 @@
+## [1.0.3](https://github.com/Hufe921/canvas-editor/compare/v1.0.2...v1.0.3) (2026-09-11)
+
+
+### Bug Fixes
+
+* table slash pollutes page corner color #1476 ([ad68454](https://github.com/Hufe921/canvas-editor/commit/ad684544241fda474274d95664911372f7835c75)), closes [#1476](https://github.com/Hufe921/canvas-editor/issues/1476)
+
+
+### Documentation
+
+* update official plugin list ([165885f](https://github.com/Hufe921/canvas-editor/commit/165885f220046ef5dc60a58ec7553173f6b5ebc0))
+* update plugin markdown ([0d9d8b7](https://github.com/Hufe921/canvas-editor/commit/0d9d8b7c677ac9eacd488a6119666ae73af04907))
+* update plugin markdown ([3db6563](https://github.com/Hufe921/canvas-editor/commit/3db6563a8c49a67bcf92ed1c0dfd4ebfeaa0d285))
+* update plugin markdown ([7adb602](https://github.com/Hufe921/canvas-editor/commit/7adb602bacf10b5d8f85f859b88a7662ae400887))
+
+
+### Features
+
+* add getSurroundElementList command api ([480cd95](https://github.com/Hufe921/canvas-editor/commit/480cd9510bca23ca9702ca38d39a812184ef931c))
+* add isOverwrite option to set control value api #1478 ([3f61e23](https://github.com/Hufe921/canvas-editor/commit/3f61e23c2247bca762525610fe7bb3d60f0b63bc)), closes [#1478](https://github.com/Hufe921/canvas-editor/issues/1478)
+
+
+
 ## [1.0.2](https://github.com/Hufe921/canvas-editor/compare/v1.0.1...v1.0.2) (2026-08-28)
 
 
