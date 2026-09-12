@@ -8,7 +8,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="stat"><b>8</b><span>编辑模式</span></div>
   <div class="stat"><b>154+</b><span>命令式 API</span></div>
   <div class="stat"><b>16+</b><span>事件</span></div>
-  <div class="stat"><b>8</b><span>官方插件</span></div>
+  <div class="stat"><b>20+</b><span>官方插件</span></div>
 </div>
 
 <style>
@@ -357,14 +357,11 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 
 <div class="feat">
   <div class="it"><b>插件机制</b><span><code>instance.use(plugin)</code> 注册自定义插件</span></div>
-  <div class="it"><b>条形码</b><span>barcode1d 插件</span></div>
-  <div class="it"><b>二维码</b><span>barcode2d 插件</span></div>
-  <div class="it"><b>代码块</b><span>codeblock 插件</span></div>
-  <div class="it"><b>Word 导入导出</b><span>docx 插件</span></div>
-  <div class="it"><b>Excel 导入</b><span>excel 插件</span></div>
-  <div class="it"><b>悬浮工具栏</b><span>floating-toolbar 插件</span></div>
-  <div class="it"><b>流程图</b><span>diagram 插件</span></div>
-  <div class="it"><b>大小写转换</b><span>case 插件</span></div>
+  <div class="it"><b>文档互导</b><span>Word / Excel 导入导出</span></div>
+  <div class="it"><b>内容增强</b><span>公式、代码块、图表、流程图</span></div>
+  <div class="it"><b>协同批注</b><span>批注、修订、提及</span></div>
+  <div class="it"><b>拼写检查</b><span>错词下划线、候选建议、忽略词</span></div>
+  <div class="it"><b>更多能力</b><span><a href="https://hufe.club/canvas-editor-plugin" target="_blank" rel="noreferrer">20+ 官方插件</a></span></div>
 </div>
 
 ### 配置与定制
@@ -394,7 +391,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>HTML 导入导出</b><span>HTML 导入 / 导出</span></div>
   <div class="it"><b>纯文本导出</b><span>纯文本与数据序列化</span></div>
   <div class="it"><b>字数统计</b><span>Web Worker 异步统计</span></div>
-  <div class="it"><b>插件扩展</b><span>Word(docx)、Excel、PDF</span></div>
+  <div class="it"><b>插件扩展</b><span>Word、Excel、PDF，<a href="https://hufe.club/canvas-editor-plugin" target="_blank" rel="noreferrer">查看官方插件</a></span></div>
 </div>
 
 ### 性能

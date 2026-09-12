@@ -101,6 +101,10 @@ export default defineConfig({
       {
         text: '插件',
         items: [
+          {
+            text: '官方插件',
+            link: 'https://hufe.club/canvas-editor-plugin'
+          },
           { text: '自定义插件', link: '/guide/plugin-custom' },
           { text: '开发调试工具', link: '/guide/devtools' }
         ]
@@ -216,6 +220,10 @@ export default defineConfig({
           {
             text: 'Plugin',
             items: [
+              {
+                text: 'official',
+                link: 'https://hufe.club/canvas-editor-plugin'
+              },
               { text: 'custom', link: '/en/guide/plugin-custom' },
               { text: 'devtools', link: '/en/guide/devtools' }
             ]

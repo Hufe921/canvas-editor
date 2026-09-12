@@ -28,7 +28,7 @@ The official only provides the editor core layer npm package, the menu bar or ot
 - Drag and Drop: Text, Element, Control
 - Search and Replace: Keyword search, navigation, replace
 - Internationalization (i18n): Built-in Chinese and English, extensible to other languages
-- [Plugin](https://github.com/Hufe921/canvas-editor-plugin)
+- Plugin ecosystem: [20+ official plugins — Word/Excel import-export, formula, comments, spellcheck and more](https://github.com/Hufe921/canvas-editor-plugin)
 
 ## Step. 1: Download NPM Package
 

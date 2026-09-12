@@ -28,7 +28,7 @@
 - 拖拽：文字、元素、控件
 - 搜索与替换：关键字搜索、上下导航、替换
 - 国际化（i18n）：内置中、英文，支持扩展其他语言
-- [插件](https://github.com/Hufe921/canvas-editor-plugin)
+- 插件生态：[Word / Excel 导入导出、公式、批注、拼写检查等 20+ 官方插件](https://github.com/Hufe921/canvas-editor-plugin)
 
 ## Step. 1: 下载 npm 包
 
