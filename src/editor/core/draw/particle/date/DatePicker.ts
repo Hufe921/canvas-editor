@@ -641,8 +641,8 @@ export class DatePicker {
     const localDate = new Date()
     const localYear = localDate.getFullYear()
     const localMonth = localDate.getMonth()
-    const pickYear = this.pickDate?.getFullYear() || null
-    const pickMonth = this.pickDate?.getMonth() || null
+    const pickYear = this.pickDate?.getFullYear() ?? null
+    const pickMonth = this.pickDate?.getMonth() ?? null
     for (let i = 0; i < 12; i++) {
       const monthDom = document.createElement('div')
       monthDom.innerText = monthNames[i]

@@ -43,7 +43,8 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   } = draw.getOptions()
   // 拖拽图片是否定位光标
   if (dragFloatImageDisabled) {
-    const dragElement = host.cacheElementList?.[host.cacheRange!.startIndex]
+    const dragElement =
+      host.cacheRange && host.cacheElementList?.[host.cacheRange.startIndex]
     if (
       dragElement?.type === ElementType.IMAGE &&
       (dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||

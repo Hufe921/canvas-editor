@@ -1787,7 +1787,7 @@ export class CommandAdapt {
     // 标题信息
     let titleId: string | null = null
     let titleStartPageNo: number | null = null
-    let start = startIndex - 1
+    let start = startIndex
     while (start > 0) {
       const curElement = elementList[start]
       const preElement = elementList[start - 1]
@@ -2135,9 +2135,15 @@ export class CommandAdapt {
           (conceptId && element.conceptId === conceptId)
         ) {
           isExistDelete = true
+          const length = elementList.length
           this.draw.deleteElementList(elementList, i, 1, {
             isIgnoreDeletedRule: true
           })
+          // 硬删除splice后下一元素滑入当前位置，i保持不变；软删除（留痕）元素保留原位才推进
+          if (elementList.length === length) {
+            i++
+          }
+          continue
         }
         i++
       }
@@ -2603,9 +2609,9 @@ export class CommandAdapt {
                     index: i - 1,
                     trIndex: r,
                     tdIndex: d,
-                    tdId: element.tdId,
-                    trId: element.trId,
-                    tableId: element.tableId
+                    tdId: td.id,
+                    trId: tr.id,
+                    tableId: element.id
                   }
                 }
               }

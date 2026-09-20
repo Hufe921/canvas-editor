@@ -581,7 +581,9 @@ export class Draw {
     if (positionContext.isTable) {
       const elementList = this.getOriginalElementList()
       const td = this.position.getTableTdByContext(elementList, positionContext)
-      const tdPadding = this.getTdPadding()
+      const {
+        table: { tdPadding }
+      } = this.options
       return td!.width! - tdPadding[1] - tdPadding[3]
     }
     // 分栏布局下按栏宽计算可用宽度（栏宽为缩放值，还原为未缩放单位）
@@ -1286,7 +1288,7 @@ export class Draw {
     this.options.pageMode = payload
     // 纸张大小重置
     if (payload === PageMode.PAGING) {
-      const { height } = this.options
+      const height = this.getHeight()
       const dpr = this.getPagePixelRatio()
       const canvas = this.pageList[0]
       canvas.style.height = `${height}px`

@@ -34,8 +34,8 @@ export class LineNumber {
       const textMetrics = textParticle.measureText(ctx, {
         value: `${seq}`
       })
-      const x = margins[3] - (textMetrics.width + right) * scale
-      const y = leftBottom[1] - textMetrics.actualBoundingBoxAscent * scale
+      const x = margins[3] - textMetrics.width - right * scale
+      const y = leftBottom[1] - textMetrics.actualBoundingBoxAscent
       ctx.fillText(`${seq}`, x, y)
     }
     ctx.restore()
