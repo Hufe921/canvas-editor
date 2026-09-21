@@ -47,18 +47,28 @@ export class ImageParticle {
     return imageList
   }
 
+  // 返回-1表示已命中目标，上层收到后立即终止计数
   private _countImagesBeforeTarget(
     elementList: IElement[],
     targetElement: IElement
   ): number {
     let count = 0
     for (const element of elementList) {
-      if (element === targetElement) break
+      if (element === targetElement) {
+        return -1
+      }
       if (element.type === ElementType.TABLE) {
         const trList = element.trList!
         for (const tr of trList) {
           for (const td of tr.tdList) {
-            count += this._countImagesBeforeTarget(td.value, targetElement)
+            const subCount = this._countImagesBeforeTarget(
+              td.value,
+              targetElement
+            )
+            if (subCount < 0) {
+              return -1
+            }
+            count += subCount
           }
         }
       } else if (element.type === ElementType.IMAGE) {
@@ -186,7 +196,8 @@ export class ImageParticle {
     // 替换特殊字符
     if (captionText.includes('{imageNo}')) {
       const elementList = this.draw.getOriginalMainElementList()
-      const imageNo = this._countImagesBeforeTarget(elementList, element) + 1
+      const imageNo =
+        Math.max(this._countImagesBeforeTarget(elementList, element), 0) + 1
       captionText = captionText.replace(/\{imageNo\}/g, String(imageNo))
     }
     const fontSize = (element.imgCaption.size || imgCaption.size) * scale

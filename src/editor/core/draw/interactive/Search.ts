@@ -445,9 +445,11 @@ export class Search {
         const tableElement = tableElementList[curIndex]
         // 非设计模式下设置元素不可删除 || 控件结构元素 => 禁止替换
         if (
-          !isDesignMode &&
-          (tableElement?.control?.deletable === false ||
-            tableElement?.title?.deletable === false)
+          (!isDesignMode &&
+            (tableElement?.control?.deletable === false ||
+              tableElement?.title?.deletable === false)) ||
+          (tableElement.type === ElementType.CONTROL &&
+            tableElement.controlComponent !== ControlComponent.VALUE)
         ) {
           continue
         }

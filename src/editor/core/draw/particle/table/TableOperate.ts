@@ -111,7 +111,8 @@ export class TableOperate {
     const curTr = curTrList[trIndex!]
     // 之前跨行的增加跨行数
     if (curTr.tdList.length < element.colgroup!.length) {
-      const curTrNo = curTr.tdList[0].rowIndex!
+      // 空行（被rowspan完全覆盖）无首格，直接用当前行号
+      const curTrNo = curTr.tdList.length ? curTr.tdList[0].rowIndex! : trIndex!
       for (let t = 0; t < trIndex!; t++) {
         const tr = curTrList[t]
         for (let d = 0; d < tr.tdList.length; d++) {
@@ -154,7 +155,7 @@ export class TableOperate {
       index,
       trIndex,
       tdIndex: 0,
-      tdId: newTr.tdList[0].id,
+      tdId: newTr.tdList[0]?.id,
       trId: newTr.id,
       tableId
     })
@@ -176,7 +177,12 @@ export class TableOperate {
       curTrList.length - 1 === trIndex ? curTr : curTrList[trIndex! + 1]
     // 之前/当前行跨行的增加跨行数
     if (anchorTr.tdList.length < element.colgroup!.length) {
-      const curTrNo = anchorTr.tdList[0].rowIndex!
+      // 空行（被rowspan完全覆盖）无首格，直接用锚定行号
+      const curTrNo = anchorTr.tdList.length
+        ? anchorTr.tdList[0].rowIndex!
+        : anchorTr === curTr
+          ? trIndex!
+          : trIndex! + 1
       for (let t = 0; t < trIndex! + 1; t++) {
         const tr = curTrList[t]
         for (let d = 0; d < tr.tdList.length; d++) {
@@ -219,7 +225,7 @@ export class TableOperate {
       index,
       trIndex: trIndex! + 1,
       tdIndex: 0,
-      tdId: newTr.tdList[0].id,
+      tdId: newTr.tdList[0]?.id,
       trId: newTr.id,
       tableId: element.id
     })
@@ -1044,8 +1050,11 @@ export class TableOperate {
     const { startIndex, endIndex } = this.range.getRange()
     const originalElementList = this.draw.getOriginalElementList()
     const trList = originalElementList[index!].trList!
-    // 最后单元格位置
-    const endTrIndex = trList.length - 1
+    // 最后单元格位置（跳过被rowspan完全覆盖的空行，避免末格索引为-1）
+    let endTrIndex = trList.length - 1
+    while (endTrIndex > 0 && !trList[endTrIndex].tdList.length) {
+      endTrIndex--
+    }
     const endTdIndex = trList[endTrIndex].tdList.length - 1
     this.range.replaceRange({
       startIndex,

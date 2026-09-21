@@ -251,11 +251,16 @@ export class TableTool {
     }px, ${this.ROW_COL_QUICK_OFFSET * scale}px)`
     // 快捷添加行
     rowAddBtn.onclick = () => {
+      // 空行（被rowspan全覆盖）无格子可定位，锚定到最后一个非空行
+      let lastTrIndex = trList!.length - 1
+      while (lastTrIndex > 0 && !trList![lastTrIndex].tdList.length) {
+        lastTrIndex--
+      }
       this.position.setPositionContext(
         this.position.buildTablePositionContext(
           positionContext,
           element,
-          trList!.length - 1,
+          lastTrIndex,
           0
         )
       )

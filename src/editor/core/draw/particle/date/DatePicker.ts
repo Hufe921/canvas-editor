@@ -520,10 +520,8 @@ export class DatePicker {
     // 日期补差
     const curDate = new Date(year, month, 0) // 当月日期
     const curDay = curDate.getDate() // 当月总天数
-    let curWeek = new Date(year, month - 1, 1).getDay() // 当月第一天星期几
-    if (curWeek === 0) {
-      curWeek = 7
-    }
+    // 表头周日开头，getDay()直接即前置补位数（周日为0格）
+    const curWeek = new Date(year, month - 1, 1).getDay() // 当月第一天星期几
     const preDay = new Date(year, month - 1, 0).getDate() // 上个月天数
     this.dom.day.innerHTML = ''
     // 渲染上个月日期
@@ -600,9 +598,19 @@ export class DatePicker {
         yearDom.classList.add('select')
       }
       yearDom.onclick = () => {
-        this.now.setFullYear(i)
+        this.now = this._createDate(
+          i,
+          this.now.getMonth(),
+          this.now.getDate(),
+          this.now
+        )
         if (this.pickDate) {
-          this.pickDate.setFullYear(i)
+          this.pickDate = this._createDate(
+            i,
+            this.pickDate.getMonth(),
+            this.pickDate.getDate(),
+            this.pickDate
+          )
         }
         if (this.datePickerType === DatePickerMode.YEAR) {
           // 年份选择器直接提交
@@ -653,9 +661,19 @@ export class DatePicker {
         monthDom.classList.add('select')
       }
       monthDom.onclick = () => {
-        this.now.setMonth(i)
+        this.now = this._createDate(
+          this.now.getFullYear(),
+          i,
+          this.now.getDate(),
+          this.now
+        )
         if (this.pickDate) {
-          this.pickDate.setMonth(i)
+          this.pickDate = this._createDate(
+            this.pickDate.getFullYear(),
+            i,
+            this.pickDate.getDate(),
+            this.pickDate
+          )
         }
         if (this.datePickerType === DatePickerMode.MONTH) {
           // 月份选择器直接提交
@@ -715,11 +733,29 @@ export class DatePicker {
     }
   }
 
+  private _createDate(
+    year: number,
+    month: number,
+    day: number,
+    timeDate?: Date
+  ): Date {
+    // 夹取到目标月最大天数，避免setMonth在31号等场景滚动到下月
+    const maxDay = new Date(year, month + 1, 0).getDate()
+    return new Date(
+      year,
+      month,
+      Math.min(day, maxDay),
+      timeDate?.getHours() || 0,
+      timeDate?.getMinutes() || 0,
+      timeDate?.getSeconds() || 0
+    )
+  }
+
   private _setDatePick(year: number, month: number, day: number) {
     this.now = new Date(year, month, day)
-    this.pickDate?.setFullYear(year)
-    this.pickDate?.setMonth(month)
-    this.pickDate?.setDate(day)
+    if (this.pickDate) {
+      this.pickDate = this._createDate(year, month, day, this.pickDate)
+    }
     this._update()
   }
 
@@ -754,22 +790,42 @@ export class DatePicker {
   }
 
   private _preMonth() {
-    this.now.setMonth(this.now.getMonth() - 1)
+    this.now = this._createDate(
+      this.now.getFullYear(),
+      this.now.getMonth() - 1,
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 
   private _nextMonth() {
-    this.now.setMonth(this.now.getMonth() + 1)
+    this.now = this._createDate(
+      this.now.getFullYear(),
+      this.now.getMonth() + 1,
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 
   private _preYear() {
-    this.now.setFullYear(this.now.getFullYear() - 1)
+    this.now = this._createDate(
+      this.now.getFullYear() - 1,
+      this.now.getMonth(),
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 
   private _nextYear() {
-    this.now.setFullYear(this.now.getFullYear() + 1)
+    this.now = this._createDate(
+      this.now.getFullYear() + 1,
+      this.now.getMonth(),
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 
