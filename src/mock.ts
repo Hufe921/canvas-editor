@@ -608,7 +608,6 @@ elementList.push(
         type: ControlType.NUMBER,
         value: null,
         placeholder: '自动计算',
-        disabled: true,
         prefix: '{',
         postfix: '}',
         compute:
