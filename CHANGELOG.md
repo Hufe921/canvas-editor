@@ -1,3 +1,23 @@
+## [1.0.4](https://github.com/Hufe921/canvas-editor/compare/v1.0.3...v1.0.4) (2026-09-27)
+
+
+### Bug Fixes
+
+* resolve date picker, image caption and empty table row bugs ([b4bea50](https://github.com/Hufe921/canvas-editor/commit/b4bea50454d364d8d48f0c79e060462b81753679))
+* resolve misc editor bugs in controls, table tools and range handling ([0111a98](https://github.com/Hufe921/canvas-editor/commit/0111a98f9a1997bcb9ae51ef5f20ad08b293801e))
+
+
+### Chores
+
+* update mock.ts ([f5d6837](https://github.com/Hufe921/canvas-editor/commit/f5d6837be53b70c04549557d371c6fb10fe76cab))
+
+
+### Documentation
+
+* update plugin markdown ([bd59011](https://github.com/Hufe921/canvas-editor/commit/bd590116f2aea6db0fd5300e6d09b103e7f77e1e))
+
+
+
 ## [1.0.3](https://github.com/Hufe921/canvas-editor/compare/v1.0.2...v1.0.3) (2026-09-11)
 
 
