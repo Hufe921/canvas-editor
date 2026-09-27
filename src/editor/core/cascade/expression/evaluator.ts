@@ -100,7 +100,8 @@ function compare(op: string, left: IEvalValue, right: IEvalValue): boolean {
     (typeof b === 'string' && DATE_REG.test(b))
   if (leftIsDate) {
     const timeA = toDateTimestamp(a)
-    const timeB = toDateTimestamp(b)
+    const timeB =
+      typeof b === 'number' && Number.isFinite(b) ? b : toDateTimestamp(b)
     if (timeA === null || timeB === null) return false
     return compareNumber(op, timeA, timeB)
   }
@@ -224,6 +225,76 @@ function evalCall(name: string, args: IEvalValue[]): IEvalValue {
       const factor = 10 ** (Number.isFinite(digits) ? digits : 0)
       return { kind: 'plain', value: Math.round(num * factor) / factor }
     }
+    case 'floor':
+    case 'ceil':
+    case 'abs': {
+      const primitive = toPrimitive(args[0])
+      if (primitive === null) return { kind: 'plain', value: null }
+      const num = Number(primitive)
+      if (!Number.isFinite(num)) return { kind: 'plain', value: null }
+      return {
+        kind: 'plain',
+        value:
+          name === 'floor'
+            ? Math.floor(num)
+            : name === 'ceil'
+              ? Math.ceil(num)
+              : Math.abs(num)
+      }
+    }
+    case 'min':
+    case 'max': {
+      const nums = args
+        .map(a => Number(toPrimitive(a)))
+        .filter(n => Number.isFinite(n))
+      if (!nums.length) return { kind: 'plain', value: null }
+      return {
+        kind: 'plain',
+        value: name === 'min' ? Math.min(...nums) : Math.max(...nums)
+      }
+    }
+    case 'power': {
+      const basePrimitive = toPrimitive(args[0])
+      const expPrimitive = args[1] ? toPrimitive(args[1]) : null
+      if (basePrimitive === null || expPrimitive === null) {
+        return { kind: 'plain', value: null }
+      }
+      const base = Number(basePrimitive)
+      const exp = Number(expPrimitive)
+      if (!Number.isFinite(base) || !Number.isFinite(exp)) {
+        return { kind: 'plain', value: null }
+      }
+      return { kind: 'plain', value: Math.pow(base, exp) }
+    }
+    case 'sqrt': {
+      const primitive = toPrimitive(args[0])
+      if (primitive === null) return { kind: 'plain', value: null }
+      const num = Number(primitive)
+      if (!Number.isFinite(num) || num < 0)
+        return { kind: 'plain', value: null }
+      return { kind: 'plain', value: Math.sqrt(num) }
+    }
+    case 'now': {
+      return { kind: 'plain', value: Date.now() }
+    }
+    case 'datediff': {
+      // datediff(end, start [, unit])，unit: d(默认)/h/m/s，任一日期非法返回 null
+      const end = toDateTimestamp(toPrimitive(args[0]))
+      const start = toDateTimestamp(toPrimitive(args[1]))
+      if (end === null || start === null) {
+        return { kind: 'plain', value: null }
+      }
+      const unit = args[2] ? String(toPrimitive(args[2])) : 'd'
+      const divisor =
+        unit === 'h'
+          ? 3600 * 1000
+          : unit === 'm'
+            ? 60 * 1000
+            : unit === 's'
+              ? 1000
+              : 24 * 3600 * 1000
+      return { kind: 'plain', value: (end - start) / divisor }
+    }
     default:
       throw new Error(`未知函数: ${name}`)
   }
@@ -288,6 +359,15 @@ function evalNode(node: IAstNode, context: IEvalContext): IEvalValue {
         )
       }
     case 'call':
+      // if(cond, a, b) 短路求值：只算命中分支，避免副作用与无效运算
+      if (node.name === 'if') {
+        const cond = node.args[0]
+        const result = cond ? toBoolean(evalNode(cond, context)) : false
+        const branch = node.args[result ? 1 : 2]
+        return branch
+          ? evalNode(branch, context)
+          : { kind: 'plain', value: null }
+      }
       return evalCall(
         node.name,
         node.args.map(arg => evalNode(arg, context))

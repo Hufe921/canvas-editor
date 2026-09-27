@@ -144,12 +144,11 @@ export class TableTool {
     if (anchorKey === this.lastAnchorKey) return
     // 销毁之前工具
     this.dispose()
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     // 按锚点位置所在页计算纵向偏移（而非当前视图页码）
     this.anchorPageNo = position.pageNo
-    const prePageHeight = position.pageNo * (height + pageGap)
-    const tableX = leftTop[0]
+    const { x: pageLeft, y: pageTop } = this.draw.getPageOffset(position.pageNo)
+    const prePageHeight = pageTop
+    const tableX = leftTop[0] + pageLeft
     const tableY = leftTop[1] + prePageHeight
     const td = this.draw.getTd()
     if (!td) return
@@ -252,11 +251,16 @@ export class TableTool {
     }px, ${this.ROW_COL_QUICK_OFFSET * scale}px)`
     // 快捷添加行
     rowAddBtn.onclick = () => {
+      // 空行（被rowspan全覆盖）无格子可定位，锚定到最后一个非空行
+      let lastTrIndex = trList!.length - 1
+      while (lastTrIndex > 0 && !trList![lastTrIndex].tdList.length) {
+        lastTrIndex--
+      }
       this.position.setPositionContext(
         this.position.buildTablePositionContext(
           positionContext,
           element,
-          trList!.length - 1,
+          lastTrIndex,
           0
         )
       )
@@ -454,11 +458,11 @@ export class TableTool {
       scale,
       table: { overflow }
     } = this.options
-    const width = this.draw.getWidth()
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
+    const { width, height } = this.draw.getPageSize(this.anchorPageNo)
     // 拖拽线与表格工具同页（锚定片段的页码）
-    const prePageHeight = this.anchorPageNo * (height + pageGap)
+    const { x: prePageLeft, y: prePageHeight } = this.draw.getPageOffset(
+      this.anchorPageNo
+    )
     this.mousedownX = evt.x
     this.mousedownY = evt.y
     const target = evt.target as HTMLDivElement
@@ -475,7 +479,7 @@ export class TableTool {
     if (order === TableOrder.ROW) {
       anchorLine.classList.add(`${EDITOR_PREFIX}-table-anchor__line__row`)
       anchorLine.style.width = `${width}px`
-      startX = 0
+      startX = prePageLeft
       startY = prePageHeight + this.mousedownY - canvasRect.top
     } else {
       anchorLine.classList.add(`${EDITOR_PREFIX}-table-anchor__line__col`)
@@ -502,51 +506,54 @@ export class TableTool {
       'mouseup',
       () => {
         let isChangeSize = false
+        // dx/dy为屏幕像素，tr/colgroup等表格度量均为未缩放单位，统一换算后计算
+        let moveDx = dx / scale
+        let moveDy = dy / scale
         // 改变尺寸
         if (order === TableOrder.ROW) {
           const trList = element.trList!
           const tr = trList[index] || trList[index - 1]
           // 最大移动高度-向上移动超出最小高度限定，则减少移动量
           const { defaultTrMinHeight } = this.options.table
-          if (dy < 0 && tr.height + dy < defaultTrMinHeight) {
-            dy = defaultTrMinHeight - tr.height
+          if (moveDy < 0 && tr.height + moveDy < defaultTrMinHeight) {
+            moveDy = defaultTrMinHeight - tr.height
           }
-          if (dy) {
-            tr.height += dy
+          if (moveDy) {
+            tr.height += moveDy
             tr.minHeight = tr.height
             isChangeSize = true
           }
         } else {
           const { colgroup } = element
-          if (colgroup && dx) {
+          if (colgroup && moveDx) {
             // 第一列特殊处理：更改表格宽度并移动位置
             if (overflow && isLeftStartBorder) {
               // 列减少宽度不能小于最小宽度
-              if (colgroup[index].width - dx / scale <= this.MIN_TD_WIDTH) {
-                dx = (colgroup[index].width - this.MIN_TD_WIDTH) * scale
+              if (colgroup[index].width - moveDx <= this.MIN_TD_WIDTH) {
+                moveDx = colgroup[index].width - this.MIN_TD_WIDTH
               }
-              colgroup[index].width -= dx / scale
-              element.width! -= dx / scale
-              element.translateX = (element.translateX || 0) + dx / scale
+              colgroup[index].width -= moveDx
+              element.width! -= moveDx
+              element.translateX = (element.translateX || 0) + moveDx
               isChangeSize = true
             } else {
               // 宽度分配
-              const innerWidth = this.draw.getInnerWidth()
+              const innerWidth = this.draw.getOriginalInnerWidth()
               const curColWidth = colgroup[index].width
               // 最小移动距离计算-如果向左移动：使单元格小于最小宽度，则减少移动量
-              if (dx < 0 && curColWidth + dx < this.MIN_TD_WIDTH) {
-                dx = this.MIN_TD_WIDTH - curColWidth
+              if (moveDx < 0 && curColWidth + moveDx < this.MIN_TD_WIDTH) {
+                moveDx = this.MIN_TD_WIDTH - curColWidth
               }
               // 最大移动距离计算-如果向右移动：使后面一个单元格小于最小宽度，则减少移动量
               const nextColWidth = colgroup[index + 1]?.width
               if (
-                dx > 0 &&
+                moveDx > 0 &&
                 nextColWidth &&
-                nextColWidth - dx < this.MIN_TD_WIDTH
+                nextColWidth - moveDx < this.MIN_TD_WIDTH
               ) {
-                dx = nextColWidth - this.MIN_TD_WIDTH
+                moveDx = nextColWidth - this.MIN_TD_WIDTH
               }
-              const moveColWidth = curColWidth + dx
+              const moveColWidth = curColWidth + moveDx
               // 开始移动，只有表格的最后一列线才会改变表格的宽度，其他场景不用计算表格超出
               if (!overflow && index === colgroup.length - 1) {
                 let moveTableWidth = 0
@@ -554,7 +561,7 @@ export class TableTool {
                   const group = colgroup[c]
                   // 下一列减去偏移量
                   if (c === index + 1) {
-                    moveTableWidth -= dx
+                    moveTableWidth -= moveDx
                   }
                   // 当前列加上偏移量
                   if (c === index) {
@@ -566,15 +573,15 @@ export class TableTool {
                 }
                 if (moveTableWidth > innerWidth) {
                   const tableWidth = element.width!
-                  dx = innerWidth - tableWidth
+                  moveDx = innerWidth - tableWidth
                 }
               }
-              if (dx) {
+              if (moveDx) {
                 // 当前列增加，后列减少
                 if (colgroup.length - 1 !== index) {
-                  colgroup[index + 1].width -= dx / scale
+                  colgroup[index + 1].width -= moveDx
                 }
-                colgroup[index].width += dx / scale
+                colgroup[index].width += moveDx
                 isChangeSize = true
               }
             }

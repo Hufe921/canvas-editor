@@ -159,6 +159,18 @@ Usage:
 const keywordContextList = instance.command.getKeywordContext(payload: string)
 ```
 
+## getSpellcheckWordList
+
+Feature: Get words and element indexes from the main document and table
+cells for external spellcheck plugins such as Typo.js or nspell. The editor
+only provides tokenization and index mapping; it does not bundle a dictionary.
+
+Usage:
+
+```javascript
+const wordList = instance.command.getSpellcheckWordList()
+```
+
 ## getRangeParagraph
 
 Feature: Get range paragraph element list
@@ -167,6 +179,16 @@ Usage:
 
 ```javascript
 const paragraphElementList = instance.command.getRangeParagraph()
+```
+
+## getSurroundElementList
+
+Feature: Get a specified number of elements before or after the cursor (returned in document order, useful for text input prediction). `direction` is `SurroundPosition.BEFORE` (default) or `SurroundPosition.AFTER`, and `length` is the number of elements (default `1`). `null` is returned when the cursor is inactive.
+
+Usage:
+
+```javascript
+const beforeElementList = instance.command.getSurroundElementList(option: IGetSurroundElementListOption)
 ```
 
 ## getPaperMargin
@@ -259,6 +281,16 @@ Usage:
 
 ```javascript
 const groupIds = await instance.command.getGroupIds()
+```
+
+## getGroupRectList
+
+Feature: Get the rect list of grouped elements (split into multiple rects across rows or pages), which can be used to draw annotation connection lines, etc.
+
+Usage:
+
+```javascript
+const rectList = instance.command.getGroupRectList(groupId)
 ```
 
 Control-related commands have moved to [Control-Commands](./control/command.md).

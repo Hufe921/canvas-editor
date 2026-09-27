@@ -32,6 +32,9 @@ import { IControlOption } from '../interface/Control'
 import { ICursorOption } from '../interface/Cursor'
 import { IEditorOption, IModeRule } from '../interface/Editor'
 import { ITraceOption } from '../interface/Trace'
+import { IRulerOption } from '../interface/Ruler'
+import { IHintOption } from '../interface/Hint'
+import { defaultHintOption } from '../dataset/constant/Hint'
 import { IMagnifierOption } from '../interface/Magnifier'
 import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
@@ -66,6 +69,9 @@ import { defaultGraffitiOption } from '../dataset/constant/Graffiti'
 import { IWhiteSpaceOption } from '../interface/WhiteSpace'
 import { defaultWhiteSpaceOption } from '../dataset/constant/WhiteSpace'
 import { defaultTraceOption } from '../dataset/constant/Trace'
+import { defaultRulerOption } from '../dataset/constant/Ruler'
+import { defaultSpellcheckOption } from '../dataset/constant/Spellcheck'
+import type { ISpellcheckOption } from '../interface/Spellcheck'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -186,6 +192,18 @@ export function mergeOption(
     ...defaultTraceOption,
     ...options.trace
   }
+  const rulerOptions: Required<IRulerOption> = {
+    ...defaultRulerOption,
+    ...options.ruler
+  }
+  const hintOptions: Required<IHintOption> = {
+    ...defaultHintOption,
+    ...options.hint
+  }
+  const spellcheckOptions: Required<ISpellcheckOption> = {
+    ...defaultSpellcheckOption,
+    ...options.spellcheck
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -276,6 +294,9 @@ export function mergeOption(
     magnifier: magnifierOptions,
     accessibility: accessibilityOptions,
     column: columnOptions,
-    trace: traceOptions
+    trace: traceOptions,
+    ruler: rulerOptions,
+    hint: hintOptions,
+    spellcheck: spellcheckOptions
   }
 }

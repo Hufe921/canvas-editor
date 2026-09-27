@@ -63,9 +63,8 @@ export class PageNumber {
         numberType
       )
     }
-    const width = this.draw.getWidth()
+    const { width, height, margins } = this.draw.getPageSize(pageNo)
     // 计算y位置
-    const height = this.draw.getHeight()
     const pageNumberBottom = this.draw.getPageNumberBottom()
     const y = height - pageNumberBottom
     ctx.save()
@@ -73,7 +72,6 @@ export class PageNumber {
     ctx.font = `${size * scale}px ${font}`
     // 计算x位置-居左、居中、居右
     let x = 0
-    const margins = this.draw.getMargins()
     const { width: textWidth } = ctx.measureText(text)
     if (rowFlex === RowFlex.CENTER) {
       x = (width - textWidth) / 2

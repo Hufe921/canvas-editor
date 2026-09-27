@@ -10,7 +10,8 @@ import { RowFlex } from './dataset/enum/Row'
 import {
   FlexDirection,
   ImageDisplay,
-  LocationPosition
+  LocationPosition,
+  SurroundPosition
 } from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
 import { formatElementList } from './utils/element'
@@ -59,7 +60,7 @@ import { IRangeStyle } from './interface/Listener'
 import { Override } from './core/override/Override'
 import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
-import { IRange } from './interface/Range'
+import { IRange, RangeRect } from './interface/Range'
 import { deepClone, splitText } from './utils'
 import {
   createDomFromElementList,
@@ -220,6 +221,7 @@ export {
   TextDecorationStyle,
   LineNumberType,
   LocationPosition,
+  SurroundPosition,
   AreaMode,
   ControlState,
   FlexDirection,
@@ -243,6 +245,7 @@ export type {
   ICatalogItem,
   IRange,
   IRangeStyle,
+  RangeRect,
   IBadge,
   IGetElementListByHTMLOption
 }

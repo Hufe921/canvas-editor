@@ -45,7 +45,7 @@ export class LabelParticle {
       x,
       y - boundingBoxAscent,
       width,
-      height + (padding[0] + padding[3]) * scale,
+      height + (padding[0] + padding[2]) * scale,
       borderRadius * scale
     )
     ctx.fill()

@@ -390,10 +390,13 @@ export class Control {
   }
 
   public getPreY(): number {
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     const pageNo = this.getPosition()?.pageNo ?? this.draw.getPageNo()
-    return pageNo * (height + pageGap)
+    return this.draw.getPageOffset(pageNo).y
+  }
+
+  public getPreX(): number {
+    const pageNo = this.getPosition()?.pageNo ?? this.draw.getPageNo()
+    return this.draw.getPageOffset(pageNo).x
   }
 
   public getRange(): IRange {
@@ -1146,8 +1149,8 @@ export class Control {
       }
       preIndex = next
     }
-    // 向右查找
-    let nextIndex = startIndex + 1
+    // 向右查找（scanToOwner 从给定索引的下一位开始扫描，
+    let nextIndex = startIndex
     while (nextIndex < elementList.length) {
       const next = scanToOwner(
         elementList,
@@ -1323,12 +1326,11 @@ export class Control {
               (p.areaId && element.areaId === p.areaId))
         )
         if (!payloadItem) continue
-        const { value, isSubmitHistory = true } = payloadItem
-        // 只要存在一次保存历史均记录
-        isExistSet = true
-        if (isSubmitHistory) {
-          isExistSubmitHistory = true
-        }
+        const {
+          value,
+          isSubmitHistory = true,
+          isOverwrite = true
+        } = payloadItem
         const { type } = element.control!
         // 当前控件结束索引
         let currentEndIndex = i
@@ -1337,11 +1339,65 @@ export class Control {
           if (nextElement.controlId !== element.controlId) break
           currentEndIndex++
         }
-        // 模拟光标选区上下文
-        const fakeRange = {
-          startIndex: i - 1,
-          endIndex: currentEndIndex - 2
+        // 按 VALUE 组件定位选区，避免固定偏移在带 POST_TEXT 时失准。
+        // 无值时需覆盖 PLACEHOLDER 组件，否则清空值时旧占位符残留导致重复渲染
+        const controlStart = i - 1
+        // 不覆盖旧值时跳过已有值的控件
+        if (!isOverwrite) {
+          let isExistValue = false
+          if (
+            type === ControlType.SELECT ||
+            type === ControlType.CHECKBOX ||
+            type === ControlType.RADIO
+          ) {
+            isExistValue = !!element.control!.code
+          } else {
+            for (let k = controlStart; k < currentEndIndex; k++) {
+              const valueElement = elementList[k]
+              if (
+                valueElement.controlComponent === ControlComponent.VALUE &&
+                !isElementTraceDeleted(valueElement) &&
+                valueElement.value
+              ) {
+                isExistValue = true
+                break
+              }
+            }
+          }
+          if (isExistValue) {
+            i = currentEndIndex
+            continue
+          }
         }
+        // 只要存在一次保存历史均记录
+        isExistSet = true
+        if (isSubmitHistory) {
+          isExistSubmitHistory = true
+        }
+        let firstValueIndex = -1
+        let lastValueIndex = -1
+        for (let k = controlStart; k < currentEndIndex; k++) {
+          const component = elementList[k].controlComponent
+          if (
+            component === ControlComponent.VALUE ||
+            component === ControlComponent.PLACEHOLDER
+          ) {
+            if (firstValueIndex === -1) {
+              firstValueIndex = k
+            }
+            lastValueIndex = k
+          }
+        }
+        const fakeRange =
+          firstValueIndex !== -1
+            ? {
+                startIndex: firstValueIndex - 1,
+                endIndex: lastValueIndex
+              }
+            : {
+                startIndex: controlStart,
+                endIndex: controlStart
+              }
         const controlContext: IControlContext = {
           range: fakeRange,
           elementList

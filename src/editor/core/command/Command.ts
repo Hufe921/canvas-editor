@@ -66,6 +66,7 @@ export class Command {
   public executeAddWatermark: CommandAdapt['addWatermark']
   public executeDeleteWatermark: CommandAdapt['deleteWatermark']
   public executeSearch: CommandAdapt['search']
+  public executeSetSpellcheckRangeList: CommandAdapt['setSpellcheckRangeList']
   public executeSearchNavigatePre: CommandAdapt['searchNavigatePre']
   public executeSearchNavigateNext: CommandAdapt['searchNavigateNext']
   public executeReplace: CommandAdapt['replace']
@@ -83,6 +84,7 @@ export class Command {
   public executePageScaleAdd: CommandAdapt['pageScaleAdd']
   public executePaperSize: CommandAdapt['paperSize']
   public executePaperDirection: CommandAdapt['paperDirection']
+  public executePageDirection: CommandAdapt['pageDirection']
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
   public executeSetMainBadge: CommandAdapt['setMainBadge']
   public executeSetAreaBadge: CommandAdapt['setAreaBadge']
@@ -94,6 +96,8 @@ export class Command {
   public executeLocationArea: CommandAdapt['locationArea']
   public executeClearGraffiti: CommandAdapt['clearGraffiti']
   public executeToggleTrace: CommandAdapt['toggleTrace']
+  public executeCompare: CommandAdapt['compare']
+  public executeToggleRuler: CommandAdapt['toggleRuler']
   public executeAppendElementList: CommandAdapt['appendElementList']
   public executeUpdateElementById: CommandAdapt['updateElementById']
   public executeDeleteElementById: CommandAdapt['deleteElementById']
@@ -132,6 +136,7 @@ export class Command {
   public getAreaValue: CommandAdapt['getAreaValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
+  public getSpellcheckWordList: CommandAdapt['getSpellcheckWordList']
   public getWordCount: CommandAdapt['getWordCount']
   public getCursorPosition: CommandAdapt['getCursorPosition']
   public getRemainingContentHeight: CommandAdapt['getRemainingContentHeight']
@@ -140,6 +145,7 @@ export class Command {
   public getRangeContext: CommandAdapt['getRangeContext']
   public getRangeRow: CommandAdapt['getRangeRow']
   public getRangeParagraph: CommandAdapt['getRangeParagraph']
+  public getSurroundElementList: CommandAdapt['getSurroundElementList']
   public getKeywordRangeList: CommandAdapt['getKeywordRangeList']
   public getKeywordContext: CommandAdapt['getKeywordContext']
   public getPaperMargin: CommandAdapt['getPaperMargin']
@@ -147,6 +153,7 @@ export class Command {
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
+  public getGroupRectList: CommandAdapt['getGroupRectList']
   public getControlValue: CommandAdapt['getControlValue']
   public getControlList: CommandAdapt['getControlList']
   public getContainer: CommandAdapt['getContainer']
@@ -369,6 +376,10 @@ export class Command {
       adapt.deleteWatermark.bind(adapt)
     )
     this.executeSearch = this.wrap('executeSearch', adapt.search.bind(adapt))
+    this.executeSetSpellcheckRangeList = this.wrap(
+      'executeSetSpellcheckRangeList',
+      adapt.setSpellcheckRangeList.bind(adapt)
+    )
     this.executeSearchNavigatePre = this.wrap(
       'executeSearchNavigatePre',
       adapt.searchNavigatePre.bind(adapt)
@@ -432,6 +443,10 @@ export class Command {
       'executePaperDirection',
       adapt.paperDirection.bind(adapt)
     )
+    this.executePageDirection = this.wrap(
+      'executePageDirection',
+      adapt.pageDirection.bind(adapt)
+    )
     this.executeSetPaperMargin = this.wrap(
       'executeSetPaperMargin',
       adapt.setPaperMargin.bind(adapt)
@@ -476,6 +491,13 @@ export class Command {
     this.executeToggleTrace = this.wrap(
       'executeToggleTrace',
       adapt.toggleTrace.bind(adapt)
+    )
+    // 文档对比
+    this.executeCompare = this.wrap('executeCompare', adapt.compare.bind(adapt))
+    // 标尺
+    this.executeToggleRuler = this.wrap(
+      'executeToggleRuler',
+      adapt.toggleRuler.bind(adapt)
     )
     // 通用
     this.executeInsertElementList = this.wrap(
@@ -552,6 +574,7 @@ export class Command {
     this.getValueAsync = adapt.getValueAsync.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
+    this.getSpellcheckWordList = adapt.getSpellcheckWordList.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getCursorPosition = adapt.getCursorPosition.bind(adapt)
     this.getRemainingContentHeight = adapt.getRemainingContentHeight.bind(adapt)
@@ -560,6 +583,7 @@ export class Command {
     this.getRangeContext = adapt.getRangeContext.bind(adapt)
     this.getRangeRow = adapt.getRangeRow.bind(adapt)
     this.getRangeParagraph = adapt.getRangeParagraph.bind(adapt)
+    this.getSurroundElementList = adapt.getSurroundElementList.bind(adapt)
     this.getKeywordRangeList = adapt.getKeywordRangeList.bind(adapt)
     this.getKeywordContext = adapt.getKeywordContext.bind(adapt)
     this.getCatalog = adapt.getCatalog.bind(adapt)
@@ -568,6 +592,7 @@ export class Command {
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
+    this.getGroupRectList = adapt.getGroupRectList.bind(adapt)
     this.getContainer = adapt.getContainer.bind(adapt)
     this.getTitleValue = adapt.getTitleValue.bind(adapt)
     this.getPositionContextByEvent = adapt.getPositionContextByEvent.bind(adapt)

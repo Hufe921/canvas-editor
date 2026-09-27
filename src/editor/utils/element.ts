@@ -20,6 +20,7 @@ import {
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
   EDITOR_TRACE_ATTR,
+  EDITOR_HINT_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -80,6 +81,23 @@ export function getNonDeletedElementList(elementList: IElement[]): IElement[] {
       return true
     })
   return filter(result)
+}
+
+// 获取剔除软删除元素且剥离全部留痕记录的元素列表（对比前清洗，保证幂等）
+export function getNonTraceElementList(elementList: IElement[]): IElement[] {
+  const result = getNonDeletedElementList(elementList)
+  const clean = (payload: IElement[]) => {
+    for (const element of payload) {
+      delete element.trace
+      if (element.valueList) clean(element.valueList)
+      if (element.control?.value) clean(element.control.value)
+      for (const tr of element.trList || []) {
+        for (const td of tr.tdList) clean(td.value)
+      }
+    }
+  }
+  clean(result)
+  return result
 }
 
 export function unzipElementList(elementList: IElement[]): IElement[] {
@@ -143,6 +161,10 @@ export function formatElementList(
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
           value.title = el.title
+          // 标题容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           if (el.level) {
             value.titleId = titleId
             value.level = el.level
@@ -191,6 +213,10 @@ export function formatElementList(
           value.listType = value.listType || el.listType
           value.listStyle = value.listStyle || el.listStyle
           value.listLevel = listLevel
+          // 列表容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -225,6 +251,10 @@ export function formatElementList(
           value.areaId = el.areaId || areaId
           value.area = el.area
           value.areaIndex = v
+          // 区域容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           if (value.type === ElementType.TABLE) {
             const trList = value.trList!
             for (let r = 0; r < trList.length; r++) {
@@ -315,6 +345,10 @@ export function formatElementList(
           value.type = el.type
           value.url = el.url
           value.hyperlinkId = hyperlinkId
+          // 超链接容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -369,7 +403,8 @@ export function formatElementList(
       const controlContext = pickObject(el, [
         ...EDITOR_ELEMENT_CONTEXT_ATTR,
         ...EDITOR_ROW_ATTR,
-        ...EDITOR_TRACE_ATTR
+        ...EDITOR_TRACE_ATTR,
+        ...EDITOR_HINT_ATTR
       ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(

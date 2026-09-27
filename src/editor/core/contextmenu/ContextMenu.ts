@@ -328,7 +328,7 @@ export class ContextMenu {
   private _setHoverStatus(payload: HTMLDivElement, status: boolean) {
     if (status) {
       payload.parentNode
-        ?.querySelectorAll(`${EDITOR_PREFIX}-contextmenu-item`)
+        ?.querySelectorAll(`.${EDITOR_PREFIX}-contextmenu-item`)
         .forEach(child => child.classList.remove('hover'))
       payload.classList.add('hover')
     } else {

@@ -48,6 +48,8 @@ export type ISaved = (payload: IEditorResult) => void
 
 export type IContentChange = () => void
 
+export type IRenderChange = () => void
+
 export type IControlChange = (payload: IControlChangeResult) => void
 
 export type IControlContentChange = (

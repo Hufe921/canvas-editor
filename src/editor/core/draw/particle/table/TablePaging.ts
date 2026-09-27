@@ -26,15 +26,17 @@ export class TablePaging {
   // 仅将跨页表格的行记录拆分为按页片段（超高单元格按内容行行内拆分）
   public splitTableRowAcrossPages(rowList: IRow[]): IRow[] {
     const { scale } = this.options
-    const height = this.draw.getHeight()
     // 分栏布局：行落位以（页码, 栏索引）槽位推进，与 _computePageList 规则一致
-    const columnLayout = this.draw.getColumnLayout()
+    const columnLayout = this.draw.getColumnLayout(this.options.paperDirection)
     const columnCount = columnLayout?.count || 1
     const isColumnEnabled = columnCount > 1
+    // 分页结果尚未生成，按分页符跟踪方向
+    let curDirection = this.options.paperDirection
+    let curPageLimit = this.draw.getHeight(curDirection)
     let pageNo = 0
     let currentColumn = 0
     // 与 _computePageList 保持一致的页面填充累计语义
-    let pageHeight = this.draw.getMainOuterHeight(0)
+    let pageHeight = this.draw.getMainOuterHeight(0, curDirection)
     const newRowList: IRow[] = []
     // 是否已发生表格拆分（之后行的栏索引需按实际填充重新推导）
     let hasSplitTable = false
@@ -44,6 +46,10 @@ export class TablePaging {
       const trList = element?.trList
       // 上一行是分页符则当前行另起新页
       const isPrePageBreak = !!rowList[i - 1]?.isPageBreak
+      // 上一行为分页符时进入下一节
+      const preBreakDirection = isPrePageBreak
+        ? rowList[i - 1].paperDirection || this.options.paperDirection
+        : null
       // 推进到下一个槽位：分栏时优先换栏，否则换页
       const advanceSlot = () => {
         if (isColumnEnabled && currentColumn < columnCount - 1) {
@@ -52,7 +58,7 @@ export class TablePaging {
           pageNo++
           currentColumn = 0
         }
-        pageHeight = this.draw.getMainOuterHeight(pageNo)
+        pageHeight = this.draw.getMainOuterHeight(pageNo, curDirection)
       }
       // 非表格行透传（与 _computePageList 一致：显式换栏重置页高，溢出换槽）
       const passThrough = () => {
@@ -63,12 +69,16 @@ export class TablePaging {
           !hasSplitTable
         ) {
           currentColumn = row.columnIndex
-          pageHeight = this.draw.getMainOuterHeight(pageNo)
+          pageHeight = this.draw.getMainOuterHeight(pageNo, curDirection)
         }
         if (
-          row.height + (row.offsetY || 0) + pageHeight > height ||
+          row.height + (row.offsetY || 0) + pageHeight > curPageLimit ||
           isPrePageBreak
         ) {
+          if (preBreakDirection) {
+            curDirection = preBreakDirection
+            curPageLimit = this.draw.getHeight(curDirection)
+          }
           advanceSlot()
         }
         // 拆分后行的栏索引按实际填充重新推导
@@ -176,7 +186,7 @@ export class TablePaging {
         row.columnIndex > currentColumn
       ) {
         fragColumn = row.columnIndex
-        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo)
+        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo, curDirection)
       }
       // 片段槽位推进：分栏时优先换栏，否则换页
       const advanceFragSlot = () => {
@@ -186,15 +196,19 @@ export class TablePaging {
           fragPageNo++
           fragColumn = 0
         }
-        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo)
+        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo, curDirection)
       }
       if (isPrePageBreak) {
+        if (preBreakDirection) {
+          curDirection = preBreakDirection
+          curPageLimit = this.draw.getHeight(curDirection)
+        }
         advanceFragSlot()
       } else if (
         fragPageHeight + trList![0].height! * scale + rowMarginHeight >
-        height
+        curPageLimit
       ) {
-        const firstTrAvailable = height - fragPageHeight - rowMarginHeight
+        const firstTrAvailable = curPageLimit - fragPageHeight - rowMarginHeight
         const { fit, hasRemaining, consumedHeight } = canSplitMidRow(0)
           ? getSplitFitInfo(0, firstTrAvailable / scale, 0)
           : { fit: 0, hasRemaining: false, consumedHeight: 0 }
@@ -219,7 +233,7 @@ export class TablePaging {
       }
       // 整表未超出当前页时不拆分
       const tableHeight = element.height! * scale
-      if (fragPageHeight + rowMarginHeight + tableHeight <= height) {
+      if (fragPageHeight + rowMarginHeight + tableHeight <= curPageLimit) {
         passThrough()
         continue
       }
@@ -251,7 +265,7 @@ export class TablePaging {
             slotPageNo++
             slotColumn = 0
           }
-          cutPageHeight = this.draw.getMainOuterHeight(slotPageNo)
+          cutPageHeight = this.draw.getMainOuterHeight(slotPageNo, curDirection)
           if (fragments.length === 1) {
             // 续页回显表头：首页片段范围内的分页重复行
             for (let r = 0; r < fragments[0].endTrIndex; r++) {
@@ -265,7 +279,10 @@ export class TablePaging {
             // 保证每页至少容纳一行内容，避免续排行拆分无法推进
             if (
               repeatTrIndexes.length &&
-              height - cutPageHeight - rowMarginHeight - repeatHeight * scale <
+              curPageLimit -
+                cutPageHeight -
+                rowMarginHeight -
+                repeatHeight * scale <
                 minContinuationHeight * scale
             ) {
               repeatTrIndexes.length = 0
@@ -276,7 +293,7 @@ export class TablePaging {
         const reserved =
           rowMarginHeight + (isFirstFragment ? 0 : repeatHeight * scale)
         // 本页可用于表格内容的高度
-        const availableTotal = height - cutPageHeight - reserved
+        const availableTotal = curPageLimit - cutPageHeight - reserved
         // 可用高度不足一行内容（极端页高/页边距）：
         // 放弃拆分，整表按原行透出，避免续排行拆分循环无法推进
         if (availableTotal < minContinuationHeight * scale) {
@@ -469,7 +486,7 @@ export class TablePaging {
       currentColumn = slotColumn
       const lastFragRow = newRowList[newRowList.length - 1]
       pageHeight =
-        this.draw.getMainOuterHeight(pageNo) +
+        this.draw.getMainOuterHeight(pageNo, curDirection) +
         lastFragRow.height +
         (lastFragRow.offsetY || 0)
     }

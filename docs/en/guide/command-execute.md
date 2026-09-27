@@ -42,6 +42,26 @@ Usage:
 instance.command.executeToggleTrace(payload?: boolean)
 ```
 
+## executeCompare
+
+Feature: Compare two versions of document data and switch to trace mode to show content differences.
+
+Usage:
+
+```javascript
+instance.command.executeCompare(payload: IComparePayload)
+```
+
+## executeToggleRuler
+
+Feature: Toggle ruler visibility.
+
+Usage:
+
+```javascript
+instance.command.executeToggleRuler(payload?: boolean)
+```
+
 ## executeCut
 
 Feature: Cut
@@ -352,7 +372,7 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 
 ## executeRowFlex
 
-Feature: Line alignment
+Feature: Paragraph alignment
 
 Usage:
 
@@ -362,7 +382,7 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 
 ## executeRowMargin
 
-Feature: Line spacing
+Feature: Paragraph line spacing
 
 Usage:
 
@@ -698,6 +718,22 @@ Usage:
 instance.command.executeSearch(keyword: string, options?: ISearchOption)
 ```
 
+## executeSetSpellcheckRangeList
+
+Feature: Set spell check misspelled word ranges, rendering a wavy line under the ranges (overlay rendering, does not modify document data). Pass `null` to clear
+
+Usage:
+
+```javascript
+instance.command.executeSetSpellcheckRangeList([
+  {
+    startIndex: 5,
+    endIndex: 8,
+    data: { word: 'Helo' }
+  }
+])
+```
+
 ## executeSearchNavigatePre
 
 Feature: Search Navigation - Previous
@@ -846,6 +882,16 @@ Usage:
 
 ```javascript
 instance.command.executePaperDirection(paperDirection: PaperDirection)
+```
+
+## executePageDirection
+
+Feature: Set the paper orientation of the current section. Page breaks delimit sections; the first section changes the global orientation, and `null` restores the global orientation.
+
+Usage:
+
+```javascript
+instance.command.executePageDirection(paperDirection: PaperDirection | null)
 ```
 
 ## executeSetPaperMargin

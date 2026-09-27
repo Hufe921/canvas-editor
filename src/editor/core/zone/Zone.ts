@@ -95,7 +95,10 @@ export class Zone {
     // 页脚上部距离页面顶部距离
     const footer = this.draw.getFooter()
     const footerDisabled = footer.isDisabled(pageNo)
-    const pageHeight = this.draw.getHeight()
+    const pageHeight =
+      pageNo !== undefined
+        ? this.draw.getPageSize(pageNo).height
+        : this.draw.getHeight()
     const footerTopY = footerDisabled
       ? pageHeight
       : pageHeight - (footer.getFooterBottom(pageNo) + footer.getHeight(pageNo))
@@ -117,11 +120,6 @@ export class Zone {
     const isHeaderActive = this.isHeaderActive()
     const [offsetX, offsetY] = this.INDICATOR_TITLE_TRANSLATE
     const pageList = this.draw.getPageList()
-    const margins = this.draw.getMargins()
-    const innerWidth = this.draw.getInnerWidth()
-    const pageHeight = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = pageHeight + pageGap
     // 创建指示器容器
     this.indicatorContainer = document.createElement('div')
     this.indicatorContainer.classList.add(`${EDITOR_PREFIX}-zone-indicator`)
@@ -131,15 +129,23 @@ export class Zone {
     for (let p = 0; p < pageList.length; p++) {
       // 禁用页不绘制指示器
       if (isHeaderActive ? header.isDisabled(p) : footer.isDisabled(p)) continue
+      // 混排横竖版：各页尺寸/边距/水平偏移按页计算
+      const {
+        margins,
+        innerWidth,
+        height: pageHeight
+      } = this.draw.getPageSize(p)
+      const { x: pageLeft, y: pageTop } = this.draw.getPageOffset(p)
       const indicatorHeight = isHeaderActive
         ? header.getHeight(p)
         : footer.getHeight(p)
       const indicatorTop = isHeaderActive
         ? header.getHeaderTop(p)
         : pageHeight - footer.getFooterBottom(p) - indicatorHeight
-      const startY = preY * p + indicatorTop
-      const indicatorLeftX = margins[3] - this.INDICATOR_PADDING
-      const indicatorRightX = margins[3] + innerWidth + this.INDICATOR_PADDING
+      const startY = pageTop + indicatorTop
+      const indicatorLeftX = pageLeft + margins[3] - this.INDICATOR_PADDING
+      const indicatorRightX =
+        pageLeft + margins[3] + innerWidth + this.INDICATOR_PADDING
       const indicatorTopY = isHeaderActive
         ? startY - this.INDICATOR_PADDING
         : startY + indicatorHeight + this.INDICATOR_PADDING
@@ -162,7 +168,7 @@ export class Zone {
       lineTop.classList.add(`${EDITOR_PREFIX}-zone-indicator-border__top`)
       lineTop.style.top = `${indicatorTopY}px`
       lineTop.style.width = `${innerWidth}px`
-      lineTop.style.marginLeft = `${margins[3]}px`
+      lineTop.style.marginLeft = `${pageLeft + margins[3]}px`
       this.indicatorContainer.append(lineTop)
 
       // 左边线

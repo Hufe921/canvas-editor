@@ -144,6 +144,9 @@ export class BaseBlock {
     this.isAllowResize = true
     const target = evt.target as HTMLDivElement
     this.curHandleIndex = Number(target.dataset.index)
+    // 预置当前尺寸，未拖动直接松开时保持原值
+    this.width = this.getBlockWidth()
+    this.height = this.element.height!
     // 显示遮盖元素
     this.resizerMask.style.display = 'block'
     // 改变光标样式
@@ -278,16 +281,14 @@ export class BaseBlock {
   }
 
   public setClientRects(pageNo: number, x: number, y: number) {
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = pageNo * (height + pageGap)
+    const { x: preX, y: preY } = this.draw.getPageOffset(pageNo)
     // 尺寸
     const { metrics } = this.element
     this.blockItem.style.display = 'block'
     this.blockItem.style.width = `${metrics.width}px`
     this.blockItem.style.height = `${metrics.height}px`
     // 位置
-    this.blockItem.style.left = `${x}px`
+    this.blockItem.style.left = `${x + preX}px`
     this.blockItem.style.top = `${preY + y}px`
     // 缓存位置信息
     this.positionInfo = { pageNo, x, y }

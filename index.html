@@ -361,6 +361,13 @@
       <div class="catalog__main"></div>
     </div>
     <div class="editor"></div>
+    <div class="comment-line-toggle" editor-component="comment-line-toggle">
+      <span>连接线</span>
+      <label class="comment-line-toggle__switch" title="显示/隐藏批注连接线">
+        <input type="checkbox" id="comment-line-switch" />
+        <i></i>
+      </label>
+    </div>
     <div class="comment" editor-component="comment"></div>
     <div class="footer" editor-component="footer">
       <div>
@@ -432,6 +439,10 @@
             <ul>
               <li data-paper-direction="vertical" class="active">纵向</li>
               <li data-paper-direction="horizontal">横向</li>
+              <li class="option-caption">指定页面</li>
+              <li data-section-direction="horizontal">本节横向</li>
+              <li data-section-direction="vertical">本节纵向</li>
+              <li data-section-direction="inherit">跟随全局</li>
             </ul>
           </div>
         </div>
@@ -440,6 +451,18 @@
         </div>
         <div class="column-config" title="分栏">
           <i></i>
+        </div>
+        <div class="ruler-toggle" title="标尺">
+          <i></i>
+        </div>
+        <div class="spellcheck" title="拼写检查">
+          <i></i>
+          <div class="options">
+            <label class="spellcheck-toggle">
+              <input type="checkbox" class="spellcheck-toggle__input" />
+              <span>启用拼写检查</span>
+            </label>
+          </div>
         </div>
         <div class="fullscreen" title="全屏显示">
           <i></i>

@@ -252,6 +252,7 @@ export class TableParticle {
     const width = td.width! * scale
     const x = Math.round(td.x! * scale + startX)
     const y = Math.round(td.y! * scale + startY + offsetY)
+    ctx.beginPath()
     // 正斜线 /
     if (td.slashTypes?.includes(TdSlash.FORWARD)) {
       ctx.moveTo(x + width, y)

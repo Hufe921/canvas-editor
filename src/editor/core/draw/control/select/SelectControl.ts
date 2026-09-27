@@ -548,7 +548,7 @@ export class SelectControl implements IControlInstance {
       lineHeight
     } = position
     const preY = this.control.getPreY()
-    selectPopupContainer.style.left = `${left}px`
+    selectPopupContainer.style.left = `${left + this.control.getPreX()}px`
     selectPopupContainer.style.top = `${top + preY + lineHeight}px`
     // 追加至container
     const container = this.control.getContainer()

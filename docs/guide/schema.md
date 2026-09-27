@@ -26,6 +26,7 @@ interface IElement {
   extension?: unknown;
   externalId?: string;
   hide?: boolean;
+  hint?: string; // 悬浮提示文案：（需在配置中开启 hint 总开关）
   // 样式
   font?: string;
   size?: number;
@@ -74,6 +75,7 @@ interface IElement {
       externalId?: string;
       disabled?: boolean;
       deletable?: boolean;
+      hint?: string; // 单元格悬浮提示文案：鼠标移入单元格内任意元素时展示
     }[];
   }[];
   borderType?: TableBorder;
@@ -88,6 +90,7 @@ interface IElement {
   // 分割线
   dashArray?: number[]; // 分割线的虚线样式数组
   lineWidth?: number; // 分割线的线宽
+  paperDirection?: PaperDirection; // 分页符之后页面的纸张方向
   // 控件
   control?: IControl; // 控件数据结构详见：控件-配置
   controlComponent?: {

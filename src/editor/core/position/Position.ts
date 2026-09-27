@@ -267,13 +267,15 @@ export class Position {
 
   public getOriginalPositionList(): IElementPosition[] {
     const zoneManager = this.draw.getZone()
+    // 混排横竖版：页眉/页脚按当前页方向取布局
+    const direction = this.draw.getPageDirection(this.draw.getPageNo())
     if (zoneManager.isHeaderActive()) {
       const header = this.draw.getHeader()
-      return header.getPositionList()
+      return header.getPositionList(direction)
     }
     if (zoneManager.isFooterActive()) {
       const footer = this.draw.getFooter()
-      return footer.getPositionList()
+      return footer.getPositionList(direction)
     }
     return this.positionList
   }
@@ -316,10 +318,13 @@ export class Position {
     const { index, isTable, zone } = floatPosition
     if (isTable && index !== undefined) {
       let positionList: IElementPosition[]
+      const zoneDirection = this.draw.getPageDirection(
+        floatPosition.pageNo ?? this.draw.getPageNo()
+      )
       if (zone === EditorZone.HEADER) {
-        positionList = this.draw.getHeader().getPositionList()
+        positionList = this.draw.getHeader().getPositionList(zoneDirection)
       } else if (zone === EditorZone.FOOTER) {
-        positionList = this.draw.getFooter().getPositionList()
+        positionList = this.draw.getFooter().getPositionList(zoneDirection)
       } else {
         positionList = this.positionList
       }
@@ -670,11 +675,8 @@ export class Position {
     this.positionList = []
     this.tablePagingPositionList = []
     this.tablePagingPositionMap.clear()
-    // 按每页行计算
-    const innerWidth = this.draw.getInnerWidth()
+    // 按每页行计算（混排横竖版时每页宽度/边距可能不同，按页取值）
     const pageRowList = this.draw.getPageRowList()
-    const margins = this.draw.getMargins()
-    const startX = margins[3]
     // 起始位置受页眉影响
     const header = this.draw.getHeader()
     let startRowIndex = 0
@@ -682,6 +684,8 @@ export class Position {
       const rowList = pageRowList[i]
       if (!rowList?.length) continue
       const startIndex = rowList[0].startIndex
+      const { margins, innerWidth } = this.draw.getPageSize(i)
+      const startX = margins[3]
       // 每页页眉禁用状态不同，startY 需按页计算
       const startY = margins[0] + header.getExtraHeight(i)
       this.computePageRowPosition({
@@ -1128,7 +1132,7 @@ export class Position {
         // 页脚上部距离页面顶部距离
         const footer = this.draw.getFooter()
         const footerDisabled = footer.isDisabled(curPageNo)
-        const pageHeight = this.draw.getHeight()
+        const { height: pageHeight } = this.draw.getPageSize(curPageNo)
         const footerTopY = footerDisabled
           ? pageHeight
           : pageHeight -

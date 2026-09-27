@@ -21,12 +21,15 @@ import {
   scanToOwner,
   getOutermostOwner,
   getNonDeletedElementList,
+  getNonTraceElementList,
   isElementTraceDeleted
 } from '@/editor/utils/element'
 import { ElementType } from '@/editor/dataset/enum/Element'
 import { TraceType } from '@/editor/dataset/enum/Trace'
 import { RowFlex } from '@/editor/dataset/enum/Row'
 import { ControlType, ControlComponent } from '@/editor/dataset/enum/Control'
+import { ListType, ListStyle } from '@/editor/dataset/enum/List'
+import { TitleLevel } from '@/editor/dataset/enum/Title'
 import type { IElement } from '@/editor/interface/Element'
 
 const mockOptions = {
@@ -430,6 +433,54 @@ describe('trace element filter', () => {
   })
 })
 
+describe('getNonTraceElementList', () => {
+  it('剥离全部留痕记录并剔除软删除元素', () => {
+    const elementList: IElement[] = [
+      { value: 'kept', trace: [{ type: TraceType.INSERTED }] },
+      { value: 'gone', trace: [{ type: TraceType.DELETED }] },
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          type: ControlType.TEXT,
+          value: [
+            { value: 'inner', trace: [{ type: TraceType.INSERTED }] },
+            { value: 'removed', trace: [{ type: TraceType.DELETED }] }
+          ]
+        }
+      },
+      {
+        type: ElementType.TABLE,
+        value: '',
+        trList: [
+          {
+            height: 30,
+            tdList: [
+              {
+                colspan: 1,
+                rowspan: 1,
+                value: [
+                  { value: 'cell', trace: [{ type: TraceType.INSERTED }] }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+
+    const result = getNonTraceElementList(elementList)
+
+    expect(result).toHaveLength(3)
+    expect(result[0].trace).toBeUndefined()
+    expect(result[1].control!.value).toEqual([{ value: 'inner' }])
+    expect(result[2].trList![0].tdList[0].value).toEqual([{ value: 'cell' }])
+    // 不污染入参
+    expect(elementList[0].trace).toHaveLength(1)
+    expect(elementList[2].control!.value).toHaveLength(2)
+  })
+})
+
 describe('pickElementAttr', () => {
   it('返回默认压缩属性', () => {
     const el = { value: 'hello', bold: true, size: 16, color: '#f00' }
@@ -825,5 +876,102 @@ describe('zipElementList - 嵌套控件', () => {
     expect(outerValue[3].control!.value!.length).toBe(1)
     expect(outerValue[3].control!.value![0].value).toBe('y')
     expect(outerValue[4].value).toBe('c')
+  })
+})
+
+describe('formatElementList - 容器 hint 继承', () => {
+  it('列表容器 hint 向下继承到子元素', () => {
+    const list: any[] = [
+      {
+        type: ElementType.LIST,
+        listType: ListType.UL,
+        listStyle: ListStyle.DISC,
+        hint: '这是一个列表项提示',
+        valueList: [{ value: 'a' }]
+      }
+    ]
+    formatElementList(list, { editorOptions: mockOptions })
+    // 父 LIST 节点被展开后，子元素应继承 hint（文本被拆为单字）
+    const child = list.find(el => el.value === 'a')
+    expect(child?.hint).toBe('这是一个列表项提示')
+  })
+
+  it('超链接容器 hint 向下继承到子元素', () => {
+    const list: any[] = [
+      {
+        type: ElementType.HYPERLINK,
+        url: 'https://example.com',
+        hint: '点击跳转',
+        valueList: [{ value: 'a' }]
+      }
+    ]
+    formatElementList(list, { editorOptions: mockOptions })
+    const child = list.find(el => el.value === 'a')
+    expect(child?.hint).toBe('点击跳转')
+  })
+
+  it('标题容器 hint 向下继承到子元素', () => {
+    const list: any[] = [
+      {
+        type: ElementType.TITLE,
+        level: TitleLevel.FIRST,
+        hint: '标题说明',
+        valueList: [{ value: 'a' }]
+      }
+    ]
+    formatElementList(list, { editorOptions: mockOptions })
+    const child = list.find(el => el.value === 'a')
+    expect(child?.hint).toBe('标题说明')
+  })
+
+  it('子元素自身 hint 优先于容器 hint', () => {
+    const list: any[] = [
+      {
+        type: ElementType.LIST,
+        listType: ListType.UL,
+        listStyle: ListStyle.DISC,
+        hint: '容器提示',
+        valueList: [{ value: 'a', hint: '子元素提示' }]
+      }
+    ]
+    formatElementList(list, { editorOptions: mockOptions })
+    const child = list.find(el => el.value === 'a')
+    expect(child?.hint).toBe('子元素提示')
+  })
+
+  it('未配置 hint 的容器不污染子元素', () => {
+    const list: any[] = [
+      {
+        type: ElementType.LIST,
+        listType: ListType.UL,
+        listStyle: ListStyle.DISC,
+        valueList: [{ value: 'a' }]
+      }
+    ]
+    formatElementList(list, { editorOptions: mockOptions })
+    const child = list.find(el => el.value === 'a')
+    expect(child?.hint).toBeUndefined()
+  })
+
+  it('控件元素 hint 向下继承到展开后的子元素', () => {
+    const list: any[] = [
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        hint: '请输入姓名',
+        control: {
+          type: ControlType.TEXT,
+          value: null,
+          placeholder: '姓名'
+        }
+      }
+    ]
+    formatElementList(list, { editorOptions: mockOptions as any })
+    // 控件父节点展开为 prefix/placeholder/postfix 等子元素，均应继承 hint
+    const controlChildren = list.filter(el => el.controlId)
+    expect(controlChildren.length).toBeGreaterThan(0)
+    for (const child of controlChildren) {
+      expect(child.hint).toBe('请输入姓名')
+    }
   })
 })

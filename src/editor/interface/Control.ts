@@ -182,6 +182,7 @@ export interface ISetControlValueOption {
   areaId?: string
   value: string | IElement[] | null
   isSubmitHistory?: boolean
+  isOverwrite?: boolean
 }
 
 export interface ISetControlExtensionOption {

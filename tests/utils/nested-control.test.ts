@@ -89,9 +89,7 @@ describe('嵌套控件 format + zip 往返', () => {
     ]
     const formatted = [...input] as IElement[]
     formatElementList(formatted, { editorOptions })
-    console.log('AFTER FORMAT:', JSON.stringify(formatted, null, 2))
     const zipped = zipElementList(formatted)
-    console.log('AFTER ZIP:', JSON.stringify(zipped, null, 2))
     expect(zipped.length).toBe(1)
     expect(zipped[0].type).toBe(ElementType.CONTROL)
     const outerValue = zipped[0].control!.value!

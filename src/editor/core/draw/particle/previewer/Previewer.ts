@@ -85,17 +85,15 @@ export class Previewer {
   ): { x: number; y: number } {
     let x = 0
     let y = 0
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     const pageNo = position?.pageNo ?? this.draw.getPageNo()
-    const preY = pageNo * (height + pageGap)
+    const { x: preX, y: preY } = this.draw.getPageOffset(pageNo)
     // 优先使用浮动位置
     if (element.imgFloatPosition) {
       const position = this.draw.getPosition()
       const floatPosition = position.getFloatPositionByElement(element)
       if (floatPosition) {
         const coordinate = position.getFloatPositionCoordinate(floatPosition)
-        x = coordinate.x
+        x = coordinate.x + preX
         y = coordinate.y + preY
       }
     } else if (position) {
@@ -105,7 +103,7 @@ export class Previewer {
         },
         ascent
       } = position
-      x = left
+      x = left + preX
       y = top + preY + ascent
     }
     return { x, y }

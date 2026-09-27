@@ -12,7 +12,11 @@ import {
   titleSizeMapping
 } from '../../dataset/constant/Title'
 import { defaultWatermarkOption } from '../../dataset/constant/Watermark'
-import { ImageDisplay, LocationPosition } from '../../dataset/enum/Common'
+import {
+  ImageDisplay,
+  LocationPosition,
+  SurroundPosition
+} from '../../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../../dataset/enum/Control'
 import {
   EditorMode,
@@ -30,6 +34,7 @@ import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { ICatalog } from '../../interface/Catalog'
 import { DeepRequired } from '../../interface/Common'
+import { IComparePayload } from '../../interface/Compare'
 import {
   IControlValidateResult,
   IGetControlValueOption,
@@ -82,12 +87,18 @@ import {
 } from '../../interface/Event'
 import { IMargin } from '../../interface/Margin'
 import { ILocationPosition, IPositionContext } from '../../interface/Position'
-import { IRange, RangeContext, RangeRect } from '../../interface/Range'
+import {
+  IGetSurroundElementListOption,
+  IRange,
+  RangeContext,
+  RangeRect
+} from '../../interface/Range'
 import {
   IReplaceOption,
   ISearchOption,
   ISearchResultContext
 } from '../../interface/Search'
+import type { ISpellcheckRange } from '../../interface/Spellcheck'
 import { ITextDecoration } from '../../interface/Text'
 import {
   IGetTitleValueOption,
@@ -112,6 +123,7 @@ import {
   getElementListByHTML,
   getTextFromElementList,
   getNonDeletedElementList,
+  getNonTraceElementList,
   isElementTraceDeleted,
   zipElementList,
   getAnchorElement,
@@ -119,6 +131,7 @@ import {
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
 import { print } from '../../utils/print'
+import { compareElementList } from '../../utils/diff'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
@@ -950,9 +963,9 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const rowElementList = this.range.getRangeRowElementList()
-    if (!rowElementList) return
-    rowElementList.forEach(element => {
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
       element.rowFlex = payload
     })
     // 光标定位
@@ -966,9 +979,9 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const rowElementList = this.range.getRangeRowElementList()
-    if (!rowElementList) return
-    rowElementList.forEach(element => {
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
       element.rowMargin = payload
     })
     // 光标定位
@@ -1368,6 +1381,26 @@ export class CommandAdapt {
     })
   }
 
+  public setSpellcheckRangeList(payload: ISpellcheckRange[] | null) {
+    const shouldRender = this.draw
+      .getSpellcheck()
+      .setSpellcheckRangeList(payload)
+    if (!shouldRender) return
+    // 折叠光标原位恢复，选区则保持焦点避免选区被光标覆盖
+    const cursorPosition = this.position.getCursorPosition()
+    const isCollapsed = this.range.getIsCollapsed()
+    this.draw.render({
+      isCompute: false,
+      isSubmitHistory: false,
+      isSetCursor: isCollapsed && !!cursorPosition,
+      curIndex: cursorPosition?.index
+    })
+  }
+
+  public getSpellcheckWordList() {
+    return this.draw.getSpellcheck().getSpellcheckWordList()
+  }
+
   public searchNavigatePre() {
     const index = this.searchManager.searchNavigatePre()
     if (index === null) return
@@ -1433,6 +1466,7 @@ export class CommandAdapt {
       width,
       height,
       direction: paperDirection,
+      pageDirections: this.draw.getPageDirectionList(),
       iframeInfoList: this.draw.getBlockParticle().pickIframeInfo()
     })
     if (scale !== 1) {
@@ -1686,8 +1720,6 @@ export class CommandAdapt {
 
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
-    const height = this.draw.getOriginalHeight()
-    const pageGap = this.draw.getOriginalPageGap()
     const selectionPositionList = this.position.getSelectionPositionList()
     if (selectionPositionList) {
       // 起始信息及x坐标
@@ -1701,14 +1733,15 @@ export class CommandAdapt {
           coordinate: { leftTop, rightTop },
           lineHeight
         } = selectionPositionList[p]
+        const pageOffset = this.draw.getPageOffset(pageNo, true)
         // 起始行变化追加选区信息
         if (currentRowNo === null || currentRowNo !== rowNo) {
           if (rangeRect) {
             rangeRects.push(rangeRect)
           }
           rangeRect = {
-            x: leftTop[0],
-            y: leftTop[1] + pageNo * (height + pageGap),
+            x: leftTop[0] + pageOffset.x,
+            y: leftTop[1] + pageOffset.y,
             width: rightTop[0] - leftTop[0],
             height: lineHeight
           }
@@ -1730,9 +1763,10 @@ export class CommandAdapt {
         pageNo,
         lineHeight
       } = position
+      const pageOffset = this.draw.getPageOffset(pageNo, true)
       rangeRects.push({
-        x: rightTop[0],
-        y: rightTop[1] + pageNo * (height + pageGap),
+        x: rightTop[0] + pageOffset.x,
+        y: rightTop[1] + pageOffset.y,
         width: 0,
         height: lineHeight
       })
@@ -1753,7 +1787,7 @@ export class CommandAdapt {
     // 标题信息
     let titleId: string | null = null
     let titleStartPageNo: number | null = null
-    let start = startIndex - 1
+    let start = startIndex
     while (start > 0) {
       const curElement = elementList[start]
       const preElement = elementList[start - 1]
@@ -1811,6 +1845,29 @@ export class CommandAdapt {
           isClone: false
         })
       : null
+  }
+
+  public getSurroundElementList(
+    option: IGetSurroundElementListOption = {}
+  ): IElement[] | null {
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return null
+    const { direction = SurroundPosition.BEFORE, length = 1 } = option
+    const elementList = this.draw.getElementList()
+    // 光标位于元素startIndex与startIndex+1之间，前方向含startIndex自身
+    let surroundElementList: IElement[]
+    if (direction === SurroundPosition.BEFORE) {
+      const end = startIndex + 1
+      surroundElementList = elementList.slice(Math.max(0, end - length), end)
+    } else {
+      surroundElementList = elementList.slice(
+        endIndex + 1,
+        endIndex + 1 + length
+      )
+    }
+    return zipElementList(getNonDeletedElementList(surroundElementList), {
+      isClone: false
+    })
   }
 
   public getKeywordRangeList(payload: string): IRange[] {
@@ -1904,6 +1961,10 @@ export class CommandAdapt {
 
   public paperDirection(payload: PaperDirection) {
     this.draw.setPaperDirection(payload)
+  }
+
+  public pageDirection(payload: PaperDirection | null) {
+    this.draw.setPageDirection(payload)
   }
 
   public getPaperMargin(): number[] {
@@ -2074,9 +2135,15 @@ export class CommandAdapt {
           (conceptId && element.conceptId === conceptId)
         ) {
           isExistDelete = true
+          const length = elementList.length
           this.draw.deleteElementList(elementList, i, 1, {
             isIgnoreDeletedRule: true
           })
+          // 硬删除splice后下一元素滑入当前位置，i保持不变；软删除（留痕）元素保留原位才推进
+          if (elementList.length === length) {
+            i++
+          }
+          continue
         }
         i++
       }
@@ -2368,6 +2435,70 @@ export class CommandAdapt {
     return this.draw.getWorkerManager().getGroupIds()
   }
 
+  public getGroupRectList(groupId: string): RangeRect[] | null {
+    const elementList = this.draw.getOriginalMainElementList()
+    const context = this.draw
+      .getGroup()
+      .getContextByGroupId(elementList, groupId)
+    if (!context) return null
+    const { isTable, index, trIndex, tdIndex, endIndex } = context
+    // 组所在的元素列表（主体或表格单元格内）
+    const groupElementList = isTable
+      ? elementList[index!].trList![trIndex!].tdList[tdIndex!].value
+      : elementList
+    // 组的起始索引
+    let startIndex = endIndex
+    while (
+      startIndex > 0 &&
+      groupElementList[startIndex - 1]?.groupIds?.includes(groupId)
+    ) {
+      startIndex--
+    }
+    // 组的位置信息列表
+    const positionList = isTable
+      ? this.position.getTableTdByContext(elementList, context)?.positionList ||
+        []
+      : this.position.getOriginalMainPositionList()
+    const groupPositionList = positionList.slice(startIndex, endIndex + 1)
+    if (!groupPositionList.length) return null
+    // 坐标信息（相对编辑器书写区，与 getRangeContext 的 rangeRects 坐标基准一致），
+    // 跨行/跨页拆分为多个矩形
+    const rectList: RangeRect[] = []
+    let currentRowNo: number | null = null
+    let currentPageNo: number | null = null
+    let currentX = 0
+    let rect: RangeRect | null = null
+    for (let p = 0; p < groupPositionList.length; p++) {
+      const {
+        rowNo,
+        pageNo,
+        coordinate: { leftTop, rightTop },
+        lineHeight
+      } = groupPositionList[p]
+      if (currentRowNo !== rowNo || currentPageNo !== pageNo) {
+        if (rect) {
+          rectList.push(rect)
+        }
+        const pageOffset = this.draw.getPageOffset(pageNo, true)
+        rect = {
+          x: leftTop[0] + pageOffset.x,
+          y: leftTop[1] + pageOffset.y,
+          width: rightTop[0] - leftTop[0],
+          height: lineHeight
+        }
+        currentRowNo = rowNo
+        currentPageNo = pageNo
+        currentX = leftTop[0]
+      } else {
+        rect!.width = rightTop[0] - currentX
+      }
+    }
+    if (rect) {
+      rectList.push(rect)
+    }
+    return rectList
+  }
+
   public locationGroup(groupId: string) {
     const elementList = this.draw.getOriginalMainElementList()
     const context = this.draw
@@ -2478,9 +2609,9 @@ export class CommandAdapt {
                     index: i - 1,
                     trIndex: r,
                     tdIndex: d,
-                    tdId: element.tdId,
-                    trId: element.trId,
-                    tableId: element.tableId
+                    tdId: td.id,
+                    trId: tr.id,
+                    tableId: element.id
                   }
                 }
               }
@@ -2580,7 +2711,8 @@ export class CommandAdapt {
     if (
       anchorElement?.controlId &&
       anchorElement.control?.type !== ControlType.TEXT &&
-      cloneElement.type === ElementType.CONTROL
+      cloneElement.type === ElementType.CONTROL &&
+      elementList[startIndex + 1]?.controlId === anchorElement.controlId
     ) {
       return
     }
@@ -2731,11 +2863,10 @@ export class CommandAdapt {
         coordinate: { leftTop, rightTop },
         lineHeight
       } = position
-      const height = this.draw.getOriginalHeight()
-      const pageGap = this.draw.getOriginalPageGap()
+      const pageOffset = this.draw.getPageOffset(pageNo, true)
       rangeRect = {
-        x: leftTop[0],
-        y: leftTop[1] + pageNo * (height + pageGap),
+        x: leftTop[0] + pageOffset.x,
+        y: leftTop[1] + pageOffset.y,
         width: rightTop[0] - leftTop[0],
         height: lineHeight
       }
@@ -2885,5 +3016,22 @@ export class CommandAdapt {
     const next =
       payload === undefined ? this.draw.getOptions().trace.disabled : payload
     this.draw.setTraceEnabled(next)
+  }
+
+  // 对比两个版本的文档数据，切换到留痕模式展示内容差异
+  public compare(payload: IComparePayload) {
+    // 缺省取当前编辑器内容时先清洗：剔除软删除元素、剥离留痕记录，保证幂等
+    const newData =
+      payload.newData ?? getNonTraceElementList(this.getValue().data.main)
+    const merged = compareElementList(payload.oldData, newData)
+    this.draw.setValue({ main: merged })
+    this.draw.setMode(EditorMode.TRACE)
+  }
+
+  // 切换标尺显示；payload 省略时切换当前状态
+  public toggleRuler(payload?: boolean) {
+    const next =
+      payload === undefined ? this.draw.getOptions().ruler.disabled : payload
+    this.draw.setRulerEnabled(next)
   }
 }

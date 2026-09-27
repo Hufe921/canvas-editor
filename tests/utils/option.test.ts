@@ -41,4 +41,34 @@ describe('mergeOption', () => {
     mergeOption(malicious)
     expect(({} as any).polluted).toBeUndefined()
   })
+
+  it('hint 总开关默认关闭', () => {
+    const options = mergeOption()
+    expect(options.hint.disabled).toBe(true)
+    expect(options.hint.color).toBeDefined()
+    expect(options.hint.maxWidth).toBeGreaterThan(0)
+  })
+
+  it('hint 配置可覆盖默认值', () => {
+    const options = mergeOption({
+      hint: { disabled: false, color: '#ff0000', maxWidth: 200 }
+    })
+    expect(options.hint.disabled).toBe(false)
+    expect(options.hint.color).toBe('#ff0000')
+    expect(options.hint.maxWidth).toBe(200)
+  })
+
+  it('spellcheck 使用默认配置', () => {
+    const options = mergeOption()
+    expect(options.spellcheck.disabled).toBe(true)
+    expect(options.spellcheck.color).toBe('#FF0000')
+  })
+
+  it('spellcheck 配置可覆盖默认值', () => {
+    const options = mergeOption({
+      spellcheck: { disabled: false, color: '#00FF00' }
+    })
+    expect(options.spellcheck.disabled).toBe(false)
+    expect(options.spellcheck.color).toBe('#00FF00')
+  })
 })

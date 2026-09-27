@@ -37,6 +37,9 @@ import { IWhiteSpaceOption } from './WhiteSpace'
 import { IMagnifierOption } from './Magnifier'
 import { IAccessibilityOption } from './Accessibility'
 import { ITraceOption } from './Trace'
+import { IRulerOption } from './Ruler'
+import { IHintOption } from './Hint'
+import type { ISpellcheckOption } from './Spellcheck'
 
 export interface IEditorData {
   header?: IElement[]
@@ -69,6 +72,7 @@ export interface IEditorOption {
   searchMatchColor?: string
   searchNavigateMatchColor?: string
   searchMatchAlpha?: number
+  spellcheck?: ISpellcheckOption
   highlightAlpha?: number
   highlightMarginHeight?: number
   resizerColor?: string
@@ -120,6 +124,8 @@ export interface IEditorOption {
   accessibility?: IAccessibilityOption
   column?: IColumnOption
   trace?: ITraceOption
+  ruler?: IRulerOption
+  hint?: IHintOption
 }
 
 export interface IEditorResult {

@@ -1,5 +1,6 @@
 import { IColumnLayout, IColumnOption } from '../../../interface/Column'
 import { DeepRequired } from '../../../interface/Common'
+import { PaperDirection } from '../../../dataset/enum/Editor'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
 
@@ -7,12 +8,12 @@ import { Draw } from '../Draw'
 export class ColumnManager {
   private draw: Draw
   private options: DeepRequired<IEditorOption>
-  private layout: IColumnLayout | null
+  private layoutMap: Map<PaperDirection, IColumnLayout | null>
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
-    this.layout = null
+    this.layoutMap = new Map()
   }
 
   // 根据可用宽度和分栏配置计算布局；count<=1 或无配置时返回 null
@@ -37,16 +38,28 @@ export class ColumnManager {
     return { count, width, gap, separator: config.separator ?? false, offsets }
   }
 
-  // 重算布局
+  // 重算布局（两种方向各算一份，混排横竖版时按页方向取用）
   public compute() {
-    this.layout = this.computeLayout(
-      this.draw.getInnerWidth(),
-      this.options.column
+    this.layoutMap.set(
+      PaperDirection.VERTICAL,
+      this.computeLayout(
+        this.draw.getInnerWidth(PaperDirection.VERTICAL),
+        this.options.column
+      )
+    )
+    this.layoutMap.set(
+      PaperDirection.HORIZONTAL,
+      this.computeLayout(
+        this.draw.getInnerWidth(PaperDirection.HORIZONTAL),
+        this.options.column
+      )
     )
   }
 
-  public getLayout(): IColumnLayout | null {
-    return this.layout
+  public getLayout(
+    direction = this.options.paperDirection
+  ): IColumnLayout | null {
+    return this.layoutMap.get(direction) || null
   }
 
   // 设置分栏配置
@@ -63,26 +76,29 @@ export class ColumnManager {
   }
 
   // 根据栏索引获取 X 偏移；无布局或索引非法时返回 0
-  public getOffset(columnIndex: number | undefined): number {
-    if (!this.layout) return 0
+  public getOffset(
+    columnIndex: number | undefined,
+    direction?: PaperDirection
+  ): number {
+    const layout = this.getLayout(direction)
+    if (!layout) return 0
     if (columnIndex === undefined || columnIndex < 0) return 0
-    if (columnIndex >= this.layout.count) return 0
-    return this.layout.offsets[columnIndex]
+    if (columnIndex >= layout.count) return 0
+    return layout.offsets[columnIndex]
   }
 
   // 绘制栏间分隔线；仅在 separator 开启且 count>=2 时实际绘制
   public drawSeparator(ctx: CanvasRenderingContext2D, pageNo: number): void {
-    const layout = this.layout
+    const direction = this.draw.getPageDirection(pageNo)
+    const layout = this.getLayout(direction)
     if (!layout || !layout.separator || layout.count < 2) return
     const { column, scale } = this.options
-    const margins = this.draw.getMargins()
+    const { margins, height } = this.draw.getPageSize(pageNo)
     const startX = margins[3]
     // 纵向覆盖正文区域：上边界算上当前页页眉额外高度，下边界扣除页脚额外高度
     const top = margins[0] + this.draw.getHeader().getExtraHeight(pageNo)
     const bottom =
-      this.draw.getHeight() -
-      margins[2] -
-      this.draw.getFooter().getExtraHeight(pageNo)
+      height - margins[2] - this.draw.getFooter().getExtraHeight(pageNo)
     ctx.save()
     ctx.strokeStyle = column.separatorColor
     ctx.lineWidth = column.separatorWidth * scale

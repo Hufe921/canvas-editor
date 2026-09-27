@@ -37,6 +37,7 @@ interface IEditorOption {
   searchMatchColor?: string // 搜索高亮颜色。默认：#FFFF00
   searchNavigateMatchColor?: string // 搜索导航高亮颜色。默认：#AAD280
   searchMatchAlpha?: number // 搜索高亮透明度。默认：0.6
+  spellcheck?: ISpellcheckOption // 拼写检查配置
   highlightAlpha?: number // 高亮元素透明度。默认：0.6
   highlightMarginHeight?: number // 高亮元素边距高度。默认：8
   resizerColor?: string // 图片尺寸器颜色。默认：#4182D9
@@ -88,6 +89,8 @@ interface IEditorOption {
   accessibility?: IAccessibilityOption // 无障碍配置
   column?: IColumnOption // 分栏配置。默认：关闭
   trace?: ITraceOption // 留痕配置。默认：禁用
+  ruler?: IRulerOption // 标尺配置。默认：禁用
+  hint?: IHintOption // 悬浮提示配置。默认：禁用
 }
 ```
 
@@ -454,5 +457,35 @@ interface ITraceOption {
   deleteColor?: string // 删除痕迹中划线颜色。默认：#E03F3F
   author?: string // 留痕记录作者标识。默认：''
   lineWidth?: number // 留痕线条宽度。默认：2
+}
+```
+
+## 标尺配置
+
+```typescript
+interface IRulerOption {
+  disabled?: boolean // 初始是否禁用标尺。默认：true
+  height?: number // 标尺高度。默认：26
+}
+```
+
+## 悬浮提示配置
+
+```typescript
+interface IHintOption {
+  disabled?: boolean // 总开关。默认：true（默认关闭，设为 false 开启）
+  backgroundColor?: string // 浮窗背景色。默认：#fff
+  color?: string // 浮窗文字颜色。默认：#000000
+  fontSize?: number // 浮窗字号。默认：12
+  maxWidth?: number // 浮窗最大宽度，超出自动换行。默认：280
+}
+```
+
+## 拼写检查配置
+
+```typescript
+interface ISpellcheckOption {
+  disabled?: boolean // 是否禁用。默认：true
+  color?: string // 错词波浪线颜色。默认：#FF0000
 }
 ```

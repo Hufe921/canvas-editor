@@ -24,7 +24,7 @@ export default defineConfig({
       },
       {
         text: '官方插件',
-        link: '/guide/plugin-internal.html'
+        link: 'https://hufe.club/canvas-editor-plugin'
       },
       {
         text: '调试工具',
@@ -42,7 +42,8 @@ export default defineConfig({
           { text: '入门', link: '/guide/start' },
           { text: '配置', link: '/guide/option' },
           { text: '国际化', link: '/guide/i18n' },
-          { text: '数据结构', link: '/guide/schema' }
+          { text: '数据结构', link: '/guide/schema' },
+          { text: '功能总览', link: '/guide/features' }
         ]
       },
       {
@@ -100,8 +101,11 @@ export default defineConfig({
       {
         text: '插件',
         items: [
+          {
+            text: '官方插件',
+            link: 'https://hufe.club/canvas-editor-plugin'
+          },
           { text: '自定义插件', link: '/guide/plugin-custom' },
-          { text: '官方插件', link: '/guide/plugin-internal' },
           { text: '开发调试工具', link: '/guide/devtools' }
         ]
       }
@@ -139,7 +143,7 @@ export default defineConfig({
           },
           {
             text: 'Official plugin',
-            link: '/en/guide/plugin-internal.html'
+            link: 'https://hufe.club/canvas-editor-plugin'
           },
           {
             text: 'DevTools',
@@ -157,7 +161,8 @@ export default defineConfig({
               { text: 'start', link: '/en/guide/start' },
               { text: 'option', link: '/en/guide/option' },
               { text: 'i18n', link: '/en/guide/i18n' },
-              { text: 'schema', link: '/en/guide/schema' }
+              { text: 'schema', link: '/en/guide/schema' },
+              { text: 'features', link: '/en/guide/features' }
             ]
           },
           {
@@ -215,8 +220,11 @@ export default defineConfig({
           {
             text: 'Plugin',
             items: [
+              {
+                text: 'official',
+                link: 'https://hufe.club/canvas-editor-plugin'
+              },
               { text: 'custom', link: '/en/guide/plugin-custom' },
-              { text: 'official', link: '/en/guide/plugin-internal' },
               { text: 'devtools', link: '/en/guide/devtools' }
             ]
           }

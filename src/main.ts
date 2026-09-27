@@ -1468,8 +1468,16 @@ function initEditorInstance(
   }
   paperDirectionDomOptionsDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
-    const paperDirection = li.dataset.paperDirection!
-    instance.command.executePaperDirection(<PaperDirection>paperDirection)
+    if (li.tagName !== 'LI' || li.classList.contains('option-caption')) return
+    const { paperDirection, sectionDirection } = li.dataset
+    if (sectionDirection) {
+      // 指定页面方向（本节）
+      instance.command.executePageDirection(
+        sectionDirection === 'inherit' ? null : <PaperDirection>sectionDirection
+      )
+    } else if (paperDirection) {
+      instance.command.executePaperDirection(<PaperDirection>paperDirection)
+    }
     // 纸张方向状态回显
     paperDirectionDomOptionsDom
       .querySelectorAll('li')
@@ -1599,6 +1607,13 @@ function initEditorInstance(
     })
   }
 
+  // 标尺开关
+  const rulerToggleDom =
+    document.querySelector<HTMLDivElement>('.ruler-toggle')!
+  rulerToggleDom.onclick = function () {
+    instance.command.executeToggleRuler()
+  }
+
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen
@@ -1716,7 +1731,54 @@ function initEditorInstance(
     modeOptionsElement.classList.remove('visible')
   }
 
+  const spellcheckDom = document.querySelector<HTMLDivElement>('.spellcheck')!
+  const spellcheckOptionsDom =
+    spellcheckDom.querySelector<HTMLDivElement>('.options')!
+  const spellcheckToggleDom = spellcheckDom.querySelector<HTMLInputElement>(
+    '.spellcheck-toggle__input'
+  )!
+  spellcheckToggleDom.checked =
+    !instance.command.getOptions().spellcheck.disabled
+  spellcheckDom.onclick = function (evt) {
+    const target = evt.target as HTMLElement
+    if (target.closest('.spellcheck-toggle')) return
+    spellcheckOptionsDom.classList.toggle('visible')
+  }
+  let spellcheckPluginPromise: Promise<void> | null = null
+  const loadSpellcheckPlugin = () => {
+    if (!spellcheckPluginPromise) {
+      spellcheckPluginPromise = import('./plugins/spellcheck')
+        .then(({ spellcheckPlugin }) => {
+          instance.use(spellcheckPlugin)
+        })
+        .catch(error => {
+          spellcheckPluginPromise = null
+          throw error
+        })
+    }
+    return spellcheckPluginPromise
+  }
+  spellcheckToggleDom.onchange = async function () {
+    if (spellcheckToggleDom.checked) {
+      try {
+        await loadSpellcheckPlugin()
+      } catch {
+        spellcheckToggleDom.checked = false
+      }
+    }
+    const currentOptions = instance.command.getOptions()
+    instance.command.executeUpdateOptions({
+      ...currentOptions,
+      spellcheck: {
+        ...currentOptions.spellcheck,
+        disabled: !spellcheckToggleDom.checked
+      }
+    })
+    spellcheckOptionsDom.classList.remove('visible')
+  }
+
   // 模拟批注
+  const commentList = options.comment!
   const commentDom = document.querySelector<HTMLDivElement>('.comment')!
   async function updateComment() {
     const groupIds = await instance.command.getGroupIds()
@@ -1770,7 +1832,90 @@ function initEditorInstance(
         activeCommentDom?.remove()
       }
     }
+    // 按批注文字在文档中的位置排序批注卡片，避免连接线交叉
+    const orderedCommentItemList = commentList
+      .map(comment => {
+        const commentItemDom = commentDom.querySelector<HTMLDivElement>(
+          `.comment-item[data-id='${comment.id}']`
+        )
+        const rectList = instance.command.getGroupRectList(comment.id)
+        return commentItemDom && rectList?.length
+          ? { commentItemDom, anchor: rectList[0] }
+          : null
+      })
+      .filter(item => !!item)
+      .sort((a, b) => a.anchor.y - b.anchor.y || a.anchor.x - b.anchor.x)
+    orderedCommentItemList.forEach(item =>
+      commentDom.append(item.commentItemDom)
+    )
+    drawCommentLines()
   }
+  // 批注连接线（在编辑器外绘制：通过 getGroupRectList 获取成组坐标）
+  const commentLineSvg = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    'svg'
+  )
+  commentLineSvg.classList.add('comment-line')
+  document.body.append(commentLineSvg)
+  // 连接线开关（默认关闭）
+  let isCommentLineVisible = false
+  const commentLineSwitch = document.querySelector<HTMLInputElement>(
+    '#comment-line-switch'
+  )!
+  commentLineSwitch.onchange = () => {
+    isCommentLineVisible = commentLineSwitch.checked
+    drawCommentLines()
+  }
+  function drawCommentLines() {
+    // 清空已有连线
+    while (commentLineSvg.firstChild) {
+      commentLineSvg.firstChild.remove()
+    }
+    if (!isCommentLineVisible) return
+    const pageContainer =
+      container.querySelector<HTMLDivElement>('.ce-page-container')
+    if (!pageContainer) return
+    const pageRect = pageContainer.getBoundingClientRect()
+    for (const comment of commentList) {
+      const commentItemDom = commentDom.querySelector<HTMLDivElement>(
+        `.comment-item[data-id='${comment.id}']`
+      )
+      if (!commentItemDom) continue
+      // 成组元素矩形信息（相对编辑器书写区，已包含缩放）
+      const rectList = instance.command.getGroupRectList(comment.id)
+      if (!rectList?.length) continue
+      const firstRect = rectList[0]
+      // 起点：批注文字首行右端中点；终点：批注卡片左端中点
+      const startX = pageRect.left + firstRect.x + firstRect.width
+      const startY = pageRect.top + firstRect.y + firstRect.height / 2
+      const itemRect = commentItemDom.getBoundingClientRect()
+      const endX = itemRect.left
+      const endY = itemRect.top + itemRect.height / 2
+      const controlOffset = Math.max((endX - startX) / 2, 0)
+      const path = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      )
+      path.setAttribute(
+        'd',
+        `M ${startX} ${startY} C ${startX + controlOffset} ${startY}, ${
+          endX - controlOffset
+        } ${endY}, ${endX} ${endY}`
+      )
+      if (commentItemDom.classList.contains('active')) {
+        path.classList.add('active')
+      }
+      commentLineSvg.append(path)
+    }
+  }
+  // 滚动/缩放时实时重绘（requestAnimationFrame 节流）
+  let commentLineRafId = 0
+  function requestDrawCommentLines() {
+    cancelAnimationFrame(commentLineRafId)
+    commentLineRafId = requestAnimationFrame(drawCommentLines)
+  }
+  window.addEventListener('scroll', requestDrawCommentLines, true)
+  window.addEventListener('resize', requestDrawCommentLines)
   // 8. 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
     // 控件类型
@@ -1939,6 +2084,8 @@ function initEditorInstance(
         scrollIntoView(commentDom, activeCommentDom)
       }
     }
+    // 批注激活状态变化时重绘连接线
+    requestDrawCommentLines()
 
     // 行列信息
     const rangeContext = instance.command.getRangeContext()
@@ -1972,6 +2119,7 @@ function initEditorInstance(
     document.querySelector<HTMLSpanElement>(
       '.page-scale-percentage'
     )!.innerText = `${Math.floor(payload * 10 * 10)}%`
+    requestDrawCommentLines()
   }
 
   instance.listener.controlChange = function (payload) {
