@@ -2443,20 +2443,16 @@ export class Draw {
     const highlightMarginHeight = this.getHighlightMarginHeight()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
+      let preHighlight = ''
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
-        const preElement = curRow.elementList[j - 1]
         // 高亮配置：元素 > 控件配置
         const highlight =
           element.highlight ||
           this.control.getControlHighlight(elementList, curRow.startIndex + j)
         if (highlight) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
-          if (
-            preElement &&
-            preElement.highlight &&
-            preElement.highlight !== element.highlight
-          ) {
+          if (preHighlight && preHighlight !== highlight) {
             this.highlight.render(ctx)
           }
           // 当前元素位置信息记录（表格跨页片段行优先使用片段位置）
@@ -2475,10 +2471,11 @@ export class Draw {
             curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
             highlight
           )
-        } else if (preElement?.highlight) {
+        } else if (preHighlight) {
           // 之前是高亮元素，当前不是需立即绘制
           this.highlight.render(ctx)
         }
+        preHighlight = highlight
       }
       this.highlight.render(ctx)
     }
