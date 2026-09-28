@@ -29,6 +29,10 @@ The control's properties in document data (`IElement.control`), organized by con
 | `cascade`       | `IControlCascadeRule[]`                                             | Cascade rules, see: Control-Cascade                                |
 | `validation`    | `IControlValidation`                                                | Validation rules, see: Control-Validation                          |
 | `compute`       | `string`                                                            | Compute expression, see: Control-Cascade                           |
+| `activeBackgroundColor` | `string`                                                      | Background color when active (overrides the global option)         |
+| `disabledBackgroundColor` | `string`                                                    | Background color when disabled (overrides the global option)       |
+| `existValueBackgroundColor` | `string`                                                  | Background color when has value (overrides the global option)      |
+| `noValueBackgroundColor` | `string`                                                      | Background color when no value (overrides the global option)       |
 | `font`          | `string`                                                            | Value font                                                         |
 | `size`          | `number`                                                            | Value size                                                         |
 | `bold`          | `boolean`                                                           | Value bold                                                         |

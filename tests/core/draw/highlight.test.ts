@@ -10,22 +10,55 @@ import type { IElement, IElementFillRect } from '@/editor/interface/Element'
 import { formatElementList } from '@/editor/utils/element'
 import { mergeOption } from '@/editor/utils/option'
 
+type IHighlightRect = IElementFillRect & { color?: string }
+
 describe('高亮背景绘制', () => {
   afterEach(() => {
     vi.restoreAllMocks()
     document.body.innerHTML = ''
   })
 
+  function buildTwoControlMain(
+    control4: Record<string, unknown> = {},
+    control5: Record<string, unknown> = {}
+  ): IElement[] {
+    return [
+      { value: 'control4: ' },
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          conceptId: 'control4',
+          type: ControlType.TEXT,
+          value: [{ value: 'Comparison' }],
+          ...control4
+        }
+      },
+      { value: '  control5: ' },
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          conceptId: 'control5',
+          type: ControlType.TEXT,
+          value: [{ value: 'Findings' }],
+          ...control5
+        }
+      },
+      { value: '\n' }
+    ]
+  }
+
   function renderWithHighlightSpy(
     main: IElement[],
     optionOverrides: Record<string, unknown> = {}
   ) {
-    const rects: IElementFillRect[] = []
+    const rects: IHighlightRect[] = []
     vi.spyOn(Highlight.prototype, 'render').mockImplementation(function (
       this: any
     ) {
       if (this.fillRect?.width) {
-        rects.push({ ...this.fillRect })
+        rects.push({ ...this.fillRect, color: this.fillColor })
       }
       this.clearFillInfo()
     })
@@ -55,40 +88,51 @@ describe('高亮背景绘制', () => {
   }
 
   it('同行多个控件穿插普通文本时控件背景色不错位', () => {
+    const { rects } = renderWithHighlightSpy(buildTwoControlMain(), {
+      control: {
+        existValueBackgroundColor: '#eaf3fd'
+      }
+    })
+    // 每个控件独立绘制一个高亮区域
+    expect(rects.length).toBe(2)
+    // 两个高亮区域不相交：中间普通文本不被高亮覆盖
+    const [first, second] = rects
+    expect(second.x).toBeGreaterThanOrEqual(first.x + first.width)
+  })
+
+  it('控件级背景色优先于全局配置', () => {
     const { rects } = renderWithHighlightSpy(
-      [
-        { value: 'control4: ' },
-        {
-          type: ElementType.CONTROL,
-          value: '',
-          control: {
-            conceptId: 'control4',
-            type: ControlType.TEXT,
-            value: [{ value: 'Comparison' }]
-          }
-        },
-        { value: '  control5: ' },
-        {
-          type: ElementType.CONTROL,
-          value: '',
-          control: {
-            conceptId: 'control5',
-            type: ControlType.TEXT,
-            value: [{ value: 'Findings' }]
-          }
-        },
-        { value: '\n' }
-      ],
+      buildTwoControlMain({ existValueBackgroundColor: '#ff0000' }),
       {
         control: {
           existValueBackgroundColor: '#eaf3fd'
         }
       }
     )
-    // 每个控件独立绘制一个高亮区域
     expect(rects.length).toBe(2)
-    // 两个高亮区域不相交：中间普通文本不被高亮覆盖
-    const [first, second] = rects
-    expect(second.x).toBeGreaterThanOrEqual(first.x + first.width)
+    expect(rects[0].color).toBe('#ff0000')
+    expect(rects[1].color).toBe('#eaf3fd')
+  })
+
+  it('setControlProperties 实时更新单个控件背景色', () => {
+    const { draw, rects } = renderWithHighlightSpy(buildTwoControlMain(), {
+      control: {
+        existValueBackgroundColor: '#eaf3fd'
+      }
+    })
+    expect(rects.every(rect => rect.color === '#eaf3fd')).toBe(true)
+    rects.length = 0
+    draw.getControl().setPropertiesListById([
+      {
+        conceptId: 'control4',
+        properties: { existValueBackgroundColor: '#00ff00' },
+        isSubmitHistory: false
+      }
+    ])
+    // 强制立即渲染（绕过测试环境懒渲染桩）
+    draw.render({ isLazy: false, isSubmitHistory: false })
+    expect(rects.length).toBe(2)
+    expect(rects[0].color).toBe('#00ff00')
+    expect(rects[1].color).toBe('#eaf3fd')
   })
 })
