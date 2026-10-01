@@ -43,7 +43,8 @@ export default defineConfig({
           { text: '配置', link: '/guide/option' },
           { text: '国际化', link: '/guide/i18n' },
           { text: '数据结构', link: '/guide/schema' },
-          { text: '功能总览', link: '/guide/features' }
+          { text: '功能总览', link: '/guide/features' },
+          { text: '实验特性', link: '/guide/lab' }
         ]
       },
       {
@@ -162,7 +163,8 @@ export default defineConfig({
               { text: 'option', link: '/en/guide/option' },
               { text: 'i18n', link: '/en/guide/i18n' },
               { text: 'schema', link: '/en/guide/schema' },
-              { text: 'features', link: '/en/guide/features' }
+              { text: 'features', link: '/en/guide/features' },
+              { text: 'lab', link: '/en/guide/lab' }
             ]
           },
           {

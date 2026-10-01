@@ -137,7 +137,11 @@ export function removeComposingInput(host: CanvasEvent) {
   if (!host.compositionInfo) return
   const { elementList, startIndex, endIndex } = host.compositionInfo
   elementList.splice(startIndex + 1, endIndex - startIndex)
-  const rangeManager = host.getDraw().getRange()
+  const draw = host.getDraw()
+  draw
+    .getIncrementalRowComputer()
+    .markRangeDirty(elementList, startIndex + 1, endIndex - startIndex, 0)
+  const rangeManager = draw.getRange()
   rangeManager.setRange(startIndex, startIndex)
   host.compositionInfo = null
 }

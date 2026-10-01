@@ -138,19 +138,23 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
         if (!nextElement) return
         if (nextElement.value === ZERO && !nextElement.listWrap) {
           const { rowFlex, rowMargin } = elementList[index]
-          for (let i = index + 1; i < elementList.length; i++) {
-            const element = elementList[i]
+          let end = index + 1
+          while (end < elementList.length) {
+            const element = elementList[end]
             if (
-              i > index + 1 &&
+              end > index + 1 &&
               ((element.value === ZERO && !element.listWrap) ||
                 element.listId !== nextElement.listId ||
                 element.titleId !== nextElement.titleId)
             ) {
               break
             }
-            element.rowFlex = rowFlex
-            element.rowMargin = rowMargin
+            end++
           }
+          draw.setElementProperty(elementList.slice(index + 1, end), {
+            rowFlex,
+            rowMargin
+          })
         }
         draw.deleteElementList(elementList, index + 1, 1)
       }

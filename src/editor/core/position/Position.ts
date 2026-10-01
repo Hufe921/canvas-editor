@@ -4,6 +4,7 @@ import { ControlComponent } from '../../dataset/enum/Control'
 import {
   IComputePageRowPositionPayload,
   IComputePageRowPositionResult,
+  IComputePositionListPayload,
   IComputeRowPositionPayload,
   IFloatPosition,
   IGetFloatPositionByXYPayload,
@@ -27,6 +28,13 @@ import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { getIsBlockElement } from '../../utils/element'
 
+// 单页新增位置信息的缓存切片
+interface IPagePositionCache {
+  positionList: IElementPosition[]
+  floatPositionList: IFloatPosition[]
+  tablePagingPositionList: IElementPosition[]
+}
+
 export class Position {
   private cursorPosition: IElementPosition | null
   private positionContext: IPositionContext
@@ -36,6 +44,8 @@ export class Position {
   // 片段位置按页索引（命中与片段查找只扫当前页，避免全表线性扫描）
   private tablePagingPositionMap: Map<number, IElementPosition[]>
   private floatPositionList: IFloatPosition[]
+  // 每页新增位置信息的缓存：行级增量计算后首个变动页之前的页可直接复用
+  private pagePositionCacheList: IPagePositionCache[]
 
   private draw: Draw
   private eventBus: EventBus<EventBusMap>
@@ -46,6 +56,7 @@ export class Position {
     this.tablePagingPositionList = []
     this.tablePagingPositionMap = new Map()
     this.floatPositionList = []
+    this.pagePositionCacheList = []
     this.cursorPosition = null
     this.positionContext = {
       isTable: false,
@@ -670,17 +681,48 @@ export class Position {
     }
   }
 
-  public computePositionList() {
-    // 置空原位置信息
-    this.positionList = []
-    this.tablePagingPositionList = []
-    this.tablePagingPositionMap.clear()
+  public computePositionList(payload?: IComputePositionListPayload) {
     // 按每页行计算（混排横竖版时每页宽度/边距可能不同，按页取值）
     const pageRowList = this.draw.getPageRowList()
+    const fromPageNo = payload?.fromPageNo ?? 0
+    // 增量复用：首个变动页之前的页位置/浮动/跨页表格片段信息完全未变
+    const cache = this.pagePositionCacheList
+    const isResume =
+      fromPageNo > 0 &&
+      cache.length >= fromPageNo &&
+      pageRowList.length > fromPageNo
+    if (isResume) {
+      const keptCache = cache.slice(0, fromPageNo)
+      this.positionList = keptCache.flatMap(c => c.positionList)
+      // 页眉页脚浮动信息已在本次渲染重新追加（当前列表前部），正文按页恢复
+      this.floatPositionList = [
+        ...this.floatPositionList,
+        ...keptCache.flatMap(c => c.floatPositionList)
+      ]
+      this.tablePagingPositionList = keptCache.flatMap(
+        c => c.tablePagingPositionList
+      )
+      for (const key of [...this.tablePagingPositionMap.keys()]) {
+        if (key >= fromPageNo) {
+          this.tablePagingPositionMap.delete(key)
+        }
+      }
+      this.pagePositionCacheList = keptCache
+    } else {
+      // 置空原位置信息
+      this.positionList = []
+      this.tablePagingPositionList = []
+      this.tablePagingPositionMap.clear()
+      this.pagePositionCacheList = []
+    }
+    const startPageNo = isResume ? fromPageNo : 0
     // 起始位置受页眉影响
     const header = this.draw.getHeader()
     let startRowIndex = 0
-    for (let i = 0; i < pageRowList.length; i++) {
+    for (let i = 0; i < startPageNo; i++) {
+      startRowIndex += pageRowList[i]?.length || 0
+    }
+    for (let i = startPageNo; i < pageRowList.length; i++) {
       const rowList = pageRowList[i]
       if (!rowList?.length) continue
       const startIndex = rowList[0].startIndex
@@ -688,6 +730,9 @@ export class Position {
       const startX = margins[3]
       // 每页页眉禁用状态不同，startY 需按页计算
       const startY = margins[0] + header.getExtraHeight(i)
+      const markPosition = this.positionList.length
+      const markFloat = this.floatPositionList.length
+      const markTablePaging = this.tablePagingPositionList.length
       this.computePageRowPosition({
         positionList: this.positionList,
         rowList,
@@ -699,6 +744,13 @@ export class Position {
         innerWidth
       })
       startRowIndex += rowList.length
+      // 记录本页新增的位置信息，供增量复用
+      this.pagePositionCacheList.push({
+        positionList: this.positionList.slice(markPosition),
+        floatPositionList: this.floatPositionList.slice(markFloat),
+        tablePagingPositionList:
+          this.tablePagingPositionList.slice(markTablePaging)
+      })
     }
   }
 

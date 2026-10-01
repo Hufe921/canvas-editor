@@ -930,20 +930,21 @@ export class CommandAdapt {
     changeElementList.forEach(el => {
       if (!el.type && el.value === ZERO) return
       if (payload) {
-        el.level = payload
-        el.titleId = titleId
+        this.draw.setElementProperty(el, { level: payload, titleId })
         if (isTextLikeElement(el)) {
-          el.size = titleOptions[titleSizeMapping[payload]]
-          el.bold = true
+          this.draw.setElementProperty(el, {
+            size: titleOptions[titleSizeMapping[payload]],
+            bold: true
+          })
         }
       } else {
-        if (el.titleId) {
-          delete el.titleId
-          delete el.title
-          delete el.level
-          delete el.size
-          delete el.bold
-        }
+        this.draw.deleteElementProperty(el, [
+          'titleId',
+          'title',
+          'level',
+          'size',
+          'bold'
+        ])
       }
     })
     // 光标定位
@@ -965,9 +966,7 @@ export class CommandAdapt {
     if (!~startIndex && !~endIndex) return
     const paragraphElementList = this.range.getRangeParagraphElementList()
     if (!paragraphElementList) return
-    paragraphElementList.forEach(element => {
-      element.rowFlex = payload
-    })
+    this.draw.setElementProperty(paragraphElementList, { rowFlex: payload })
     // 光标定位
     const isSetCursor = startIndex === endIndex
     const curIndex = isSetCursor ? endIndex : startIndex
@@ -981,9 +980,7 @@ export class CommandAdapt {
     if (!~startIndex && !~endIndex) return
     const paragraphElementList = this.range.getRangeParagraphElementList()
     if (!paragraphElementList) return
-    paragraphElementList.forEach(element => {
-      element.rowMargin = payload
-    })
+    this.draw.setElementProperty(paragraphElementList, { rowMargin: payload })
     // 光标定位
     const isSetCursor = startIndex === endIndex
     const curIndex = isSetCursor ? endIndex : startIndex

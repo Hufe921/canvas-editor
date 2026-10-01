@@ -63,6 +63,7 @@ interface IEditorOption {
   scrollContainerSelector?: string // 滚动区域选择器。默认：document
   pageOuterSelectionDisable?: boolean // 鼠标移出页面时选区禁用。默认：false
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
+  lab?: ILabOption // 实验性功能配置
   watermark?: IWatermark // 水印配置
   control?: IControlOption // 控件配置
   checkbox?: ICheckboxOption // 复选框配置
@@ -91,6 +92,16 @@ interface IEditorOption {
   trace?: ITraceOption // 留痕配置。默认：禁用
   ruler?: IRulerOption // 标尺配置。默认：禁用
   hint?: IHintOption // 悬浮提示配置。默认：禁用
+}
+```
+
+## 实验性功能配置
+
+实验特性（`lab`）详见 [实验特性](./lab.md) 章节。
+
+```typescript
+interface ILabOption {
+  incrementalCompute?: boolean // 行级增量行计算。默认：false
 }
 ```
 
