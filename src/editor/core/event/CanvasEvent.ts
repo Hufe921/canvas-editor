@@ -139,19 +139,22 @@ export class CanvasEvent {
       rangeParagraphElementList.every(element => selection.includes(element))
     if (isFullParagraphSelection) {
       const titleId = painterStyle.level ? getUUID() : null
-      for (let e = 0; e < rangeParagraphElementList.length; e++) {
-        const element = rangeParagraphElementList[e]
-        element.rowFlex = painterStyle.rowFlex
-        element.rowMargin = painterStyle.rowMargin
-        if (painterStyle.level && titleId) {
-          element.level = painterStyle.level
-          element.title = painterStyle.title
-          element.titleId = titleId
-        } else {
-          delete element.level
-          delete element.title
-          delete element.titleId
-        }
+      this.draw.setElementProperty(rangeParagraphElementList, {
+        rowFlex: painterStyle.rowFlex,
+        rowMargin: painterStyle.rowMargin
+      })
+      if (painterStyle.level && titleId) {
+        this.draw.setElementProperty(rangeParagraphElementList, {
+          level: painterStyle.level,
+          title: painterStyle.title,
+          titleId
+        })
+      } else {
+        this.draw.deleteElementProperty(rangeParagraphElementList, [
+          'level',
+          'title',
+          'titleId'
+        ])
       }
     }
     this.draw.render({ isSetCursor: false })

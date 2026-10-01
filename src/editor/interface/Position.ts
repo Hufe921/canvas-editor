@@ -97,6 +97,11 @@ export interface IComputePageRowPositionResult {
   index: number
 }
 
+export interface IComputePositionListPayload {
+  // 首个变动页码：该页之前的页位置/浮动/跨页表格片段可复用缓存
+  fromPageNo?: number
+}
+
 export interface IFloatPosition {
   pageNo: number
   element: IElement

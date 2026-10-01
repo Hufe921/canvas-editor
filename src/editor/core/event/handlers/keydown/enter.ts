@@ -38,8 +38,9 @@ function inheritListLevel(
   for (let i = anchorIndex; i >= 0; i--) {
     const prevElement = elementList[i]
     if (prevElement.listId !== targetElement.listId) break
-    // 普通样式复制不会兜底 listLevel，这里补齐新增列表项层级
     if (prevElement.listLevel !== undefined) {
+      // 普通样式复制不会兜底 listLevel，这里补齐新增列表项层级。
+      // targetElement 是尚未入库的新元素，其变化由随后的插入 splice 覆盖
       targetElement.listLevel = prevElement.listLevel
       break
     }
@@ -75,6 +76,7 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
     value: ZERO
   }
   if (evt.shiftKey && startElement.listId) {
+    // enterText 是尚未入库的新元素，其变化由随后的插入 splice 覆盖
     enterText.listWrap = true
   }
   const listAnchorIndex = getListBoundaryAnchorIndex(
@@ -154,24 +156,24 @@ export function enter(evt: KeyboardEvent, host: CanvasEvent) {
         const newTitleId = getUUID()
         // 循环处理换行符后面的标题元素
         let nextIndex = spliceIndex + 1
+        const start = nextIndex
         while (
           nextIndex < elementList.length &&
           elementList[nextIndex]?.titleId === endElement.titleId
         ) {
-          elementList[nextIndex].titleId = newTitleId
           nextIndex++
         }
+        draw.setElementProperty(elementList.slice(start, nextIndex), {
+          titleId: newTitleId
+        })
       }
+      curIndex = isListBoundary ? endIndex : index + 1
     } else {
       const start = startIndex + 1
       draw.deleteElementList(elementList, start, endIndex - startIndex)
       draw.spliceElementList(elementList, start, 0, [enterText])
+      curIndex = startIndex + 1
     }
-    curIndex = isCollapsed
-      ? isListBoundary
-        ? endIndex
-        : index + 1
-      : startIndex + 1
   }
   if (~curIndex) {
     rangeManager.setRange(curIndex, curIndex)

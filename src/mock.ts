@@ -692,6 +692,10 @@ export const commentList: IComment[] = [
 
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
+  // 行级增量行计算（实验性，大文档打字提速）
+  lab: {
+    incrementalCompute: true
+  },
   trace: {
     author: '游客1'
   },

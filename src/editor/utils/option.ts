@@ -30,7 +30,7 @@ import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
 import { ICursorOption } from '../interface/Cursor'
-import { IEditorOption, IModeRule } from '../interface/Editor'
+import { IEditorOption, ILabOption, IModeRule } from '../interface/Editor'
 import { ITraceOption } from '../interface/Trace'
 import { IRulerOption } from '../interface/Ruler'
 import { IHintOption } from '../interface/Hint'
@@ -76,6 +76,10 @@ import type { ISpellcheckOption } from '../interface/Spellcheck'
 export function mergeOption(
   options: IEditorOption = {}
 ): DeepRequired<IEditorOption> {
+  const labOptions: Required<ILabOption> = {
+    incrementalCompute: false,
+    ...options.lab
+  }
   const tableOptions: Required<ITableOption> = {
     ...defaultTableOption,
     ...options.table
@@ -265,6 +269,7 @@ export function mergeOption(
     scrollContainerSelector: '',
     pageOuterSelectionDisable: false,
     ...options,
+    lab: labOptions,
     table: tableOptions,
     header: headerOptions,
     footer: footerOptions,

@@ -63,6 +63,7 @@ interface IEditorOption {
   scrollContainerSelector?: string // scroll container selector. default: document
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
+  lab?: ILabOption // Experimental features configuration
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration
   checkbox?: ICheckboxOption // Checkbox configuration
@@ -91,6 +92,16 @@ interface IEditorOption {
   trace?: ITraceOption // Trace configuration. default: disabled
   ruler?: IRulerOption // Ruler configuration. default: disabled
   hint?: IHintOption // Hover hint configuration. default: disabled
+}
+```
+
+## Lab Configuration
+
+See the [Lab](./lab.md) chapter for experimental features (`lab`).
+
+```typescript
+interface ILabOption {
+  incrementalCompute?: boolean // Row-level incremental layout. default: false
 }
 ```
 
