@@ -3550,6 +3550,7 @@ export class Draw {
   }
 
   public submitHistory(curIndex: number | undefined) {
+    if (this.options.historyMaxRecordCount === 0) return
     const positionContext = this.position.getPositionContext()
     const oldElementList = getSlimCloneElementList(this.elementList)
     const oldHeaderElementList = getSlimCloneElementList(

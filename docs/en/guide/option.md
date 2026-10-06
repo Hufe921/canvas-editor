@@ -54,7 +54,7 @@ interface IEditorOption {
   pageNumber?: IPageNumber // Page number configuration
   paperDirection?: PaperDirection // Paper orientation: portrait, landscape
   inactiveAlpha?: number // When the body content is out of focus, transparency. default: 0.6
-  historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100
+  historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100; 0 disables snapshot allocation
   printPixelRatio?: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
   maskMargin?: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
   letterClass?: string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
