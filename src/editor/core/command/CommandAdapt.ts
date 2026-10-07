@@ -609,7 +609,7 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        bold: enterElement.bold ? false : !this.range.getDefaultStyle()?.bold
+        bold: !(this.range.getDefaultStyle()?.bold ?? enterElement.bold)
       })
       if (enterElement?.value === ZERO) {
         enterElement.bold = !enterElement.bold
@@ -644,9 +644,7 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        italic: enterElement.italic
-          ? false
-          : !this.range.getDefaultStyle()?.italic
+        italic: !(this.range.getDefaultStyle()?.italic ?? enterElement.italic)
       })
       if (enterElement?.value === ZERO) {
         enterElement.italic = !enterElement.italic
@@ -701,9 +699,7 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        underline: enterElement?.underline
-          ? false
-          : !this.range.getDefaultStyle()?.underline
+        underline: !(this.range.getDefaultStyle()?.underline ?? enterElement?.underline)
       })
       if (enterElement?.value === ZERO) {
         enterElement.underline = !enterElement.underline
@@ -741,9 +737,7 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        strikeout: enterElement.strikeout
-          ? false
-          : !this.range.getDefaultStyle()?.strikeout
+        strikeout: !(this.range.getDefaultStyle()?.strikeout ?? enterElement.strikeout)
       })
       if (enterElement?.value === ZERO) {
         enterElement.strikeout = !enterElement.strikeout
