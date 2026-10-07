@@ -54,7 +54,7 @@ interface IEditorOption {
   pageNumber?: IPageNumber // 页码配置
   paperDirection?: PaperDirection // 纸张方向：纵向、横向
   inactiveAlpha?: number // 正文内容失焦时透明度。默认值：0.6
-  historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次
+  historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次；0 禁用历史快照分配
   printPixelRatio?: number // 打印像素比率（值越大越清晰，但尺寸越大）。默认：3
   maskMargin?: IMargin // 编辑器上的遮盖边距（如悬浮到编辑器上的菜单栏、底部工具栏）。默认：[0, 0, 0, 0]
   letterClass?: string[] // 排版支持的字母类。默认：a-zA-Z。内置可选择的字母表类：LETTER_CLASS
