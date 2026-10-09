@@ -102,7 +102,8 @@ export class Cursor {
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     // 光标不聚焦时重新定位
     if (document.activeElement !== agentCursorDom) {
-      agentCursorDom.focus()
+      // 阻止浏览器滚动：光标代理可能位于可视范围外（如选区锚点），滚动统一由moveCursorToVisible处理
+      agentCursorDom.focus({ preventScroll: true })
       agentCursorDom.setSelectionRange(0, 0)
     }
   }
