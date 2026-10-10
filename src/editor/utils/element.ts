@@ -22,6 +22,7 @@ import {
   EDITOR_HINT_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
+  TABLE_TR_ZIP_EXCLUDE_ATTR,
   TABLE_TD_ZIP_ATTR,
   TEXTLIKE_ELEMENT_TYPE,
   TITLE_CONTEXT_ATTR
@@ -742,6 +743,22 @@ export function pickElementAttr(
   return element
 }
 
+function hasOwnAttribute<T extends object>(
+  payload: T,
+  attr: PropertyKey
+): attr is keyof T {
+  return Object.prototype.hasOwnProperty.call(payload, attr)
+}
+
+function copyDefinedAttribute<T, K extends keyof T>(
+  source: T,
+  target: T,
+  attr: K
+) {
+  const value = source[attr]
+  if (value !== undefined) target[attr] = value
+}
+
 interface IZipElementListOption {
   extraPickAttrs?: Array<keyof IElement>
   isClassifyArea?: boolean
@@ -868,7 +885,9 @@ export function zipElementList(
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
-          delete tr.id
+          TABLE_TR_ZIP_EXCLUDE_ATTR.forEach(attr => {
+            if (!extraPickAttrs?.includes(attr)) delete tr[attr]
+          })
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const zipTd: ITd = {
@@ -881,9 +900,12 @@ export function zipElementList(
             }
             // 压缩单元格属性
             TABLE_TD_ZIP_ATTR.forEach(attr => {
-              const value = td[attr] as never
-              if (value !== undefined) {
-                zipTd[attr] = value
+              copyDefinedAttribute(td, zipTd, attr)
+            })
+            extraPickAttrs?.forEach(attr => {
+              // Do not overwrite recursively serialized cell content.
+              if (attr !== 'value' && hasOwnAttribute(td, attr)) {
+                copyDefinedAttribute(td, zipTd, attr)
               }
             })
             tr.tdList[d] = zipTd

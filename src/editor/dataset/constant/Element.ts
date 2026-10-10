@@ -1,6 +1,7 @@
 import { ElementType } from '../enum/Element'
 import { IElement } from '../../interface/Element'
 import { ITd } from '../../interface/table/Td'
+import { ITr } from '../../interface/table/Tr'
 import { IControlStyle } from '../../interface/Control'
 
 export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
@@ -103,6 +104,10 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'trace',
   'paperDirection',
   'hint'
+]
+
+export const TABLE_TR_ZIP_EXCLUDE_ATTR: Array<keyof ITr & keyof IElement> = [
+  'id'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
