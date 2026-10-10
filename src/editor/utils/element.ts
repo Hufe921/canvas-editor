@@ -739,6 +739,9 @@ export function pickElementAttr(
       element[attr] = value
     }
   })
+  if ((payload.type === ElementType.IMAGE || payload.type === ElementType.TABLE) && payload.id) {
+    element.id = payload.id
+  }
   return element
 }
 
@@ -868,7 +871,6 @@ export function zipElementList(
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
-          delete tr.id
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const zipTd: ITd = {
