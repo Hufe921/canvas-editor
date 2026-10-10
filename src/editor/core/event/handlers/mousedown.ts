@@ -137,22 +137,35 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   if (~index) {
     let startIndex = curIndex
     let endIndex = curIndex
+    // 选区锚点（固定端）：光标位置作为锚点，点击位置作为活动端
+    let anchorIndex = curIndex
     // shift激活时进行选区处理
     if (evt.shiftKey) {
-      const { startIndex: oldStartIndex } = rangeManager.getRange()
+      const { startIndex: oldStartIndex, endIndex: oldEndIndex } =
+        rangeManager.getRange()
       if (~oldStartIndex) {
         const newPositionContext = position.getPositionContext()
         if (newPositionContext.tdId === oldPositionContext.tdId) {
-          if (curIndex > oldStartIndex) {
-            startIndex = oldStartIndex
+          // 沿用原选区锚点：光标在选区结束位置时锚点为结束位置
+          const oldCursorIndex = position.getCursorPosition()?.index
+          const oldAnchorIndex =
+            oldStartIndex !== oldEndIndex && oldCursorIndex === oldEndIndex
+              ? oldEndIndex
+              : oldStartIndex
+          anchorIndex = oldAnchorIndex
+          if (curIndex > oldAnchorIndex) {
+            startIndex = oldAnchorIndex
           } else {
-            endIndex = oldStartIndex
+            endIndex = oldAnchorIndex
           }
+          // 按住shift拖拽时从锚点开始扩展选区
+          host.mouseDownStartPosition.index = oldAnchorIndex
         }
       }
     }
     rangeManager.setRange(startIndex, endIndex)
-    position.setCursorPosition(positionList[curIndex])
+    const isShiftSelection = startIndex !== endIndex
+    position.setCursorPosition(positionList[anchorIndex])
     // 更新只读状态
     isReadonly = draw.isReadonly()
     // 复选框
@@ -183,12 +196,22 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
         curIndex,
         isCompute: false,
         isSubmitHistory: false,
+        // shift选区时保持光标在锚点（与键盘扩展选区一致）
         isSetCursor:
-          !isDirectHitImage && !isDirectHitCheckbox && !isDirectHitRadio
+          !isShiftSelection &&
+          !isDirectHitImage &&
+          !isDirectHitCheckbox &&
+          !isDirectHitRadio
+      })
+    }
+    // shift选区未设置光标：重新定位光标代理并聚焦，避免键盘事件丢失
+    if (isShiftSelection) {
+      draw.getCursor().drawCursor({
+        isShow: false
       })
     }
     // 首字需定位到行首，非上一行最后一个字后
-    if (hitLineStartIndex) {
+    if (hitLineStartIndex && !isShiftSelection) {
       host.getDraw().getCursor().drawCursor({
         hitLineStartIndex
       })
