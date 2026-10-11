@@ -699,7 +699,9 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        underline: !(this.range.getDefaultStyle()?.underline ?? enterElement?.underline)
+        underline: !(
+          this.range.getDefaultStyle()?.underline ?? enterElement?.underline
+        )
       })
       if (enterElement?.value === ZERO) {
         enterElement.underline = !enterElement.underline
@@ -737,7 +739,9 @@ export class CommandAdapt {
       const elementList = this.draw.getElementList()
       const enterElement = elementList[endIndex]
       this.range.setDefaultStyle({
-        strikeout: !(this.range.getDefaultStyle()?.strikeout ?? enterElement.strikeout)
+        strikeout: !(
+          this.range.getDefaultStyle()?.strikeout ?? enterElement.strikeout
+        )
       })
       if (enterElement?.value === ZERO) {
         enterElement.strikeout = !enterElement.strikeout

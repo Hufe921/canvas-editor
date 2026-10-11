@@ -1,3 +1,20 @@
+## [1.0.5](https://github.com/Hufe921/canvas-editor/compare/v1.0.4...v1.0.5) (2026-10-11)
+
+
+### Bug Fixes
+
+* control background highlight overflow with multiple controls in a row #1483 ([93599da](https://github.com/Hufe921/canvas-editor/commit/93599dab33d8bfd206ae4b776eced8e64112c46d)), closes [#1483](https://github.com/Hufe921/canvas-editor/issues/1483)
+* keep selection anchor on shift+click and shift+up/down #1489 ([a68c0e4](https://github.com/Hufe921/canvas-editor/commit/a68c0e466320555811784cf7f6a861a25e351be6)), closes [#1489](https://github.com/Hufe921/canvas-editor/issues/1489)
+* respect pending caret formatting during toggles #1487 ([bc4fcd7](https://github.com/Hufe921/canvas-editor/commit/bc4fcd70bbf28ab9c9317d436eed2f53a9461679)), closes [#1487](https://github.com/Hufe921/canvas-editor/issues/1487)
+
+
+### Features
+
+* add row-level incremental layout for large documents #837 ([ffa18f9](https://github.com/Hufe921/canvas-editor/commit/ffa18f9cb7140ceb6d87c43c9a1bfe9a14e4d5a9)), closes [#837](https://github.com/Hufe921/canvas-editor/issues/837)
+* per-control background colors overriding global control options #1484 ([921e924](https://github.com/Hufe921/canvas-editor/commit/921e9243ae9d7dcd14d0802a2de066f61ca6faa0)), closes [#1484](https://github.com/Hufe921/canvas-editor/issues/1484)
+
+
+
 ## [1.0.4](https://github.com/Hufe921/canvas-editor/compare/v1.0.3...v1.0.4) (2026-09-27)
 
 
