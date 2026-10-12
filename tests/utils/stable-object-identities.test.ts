@@ -76,8 +76,8 @@ function identities(elements: IElement[]): string[] {
   return result
 }
 
-describe('opt-in serialized object identities', () => {
-  it('strips table, row, cell and image ids by default', () => {
+describe('按需保留序列化对象 id', () => {
+  it('默认剥离表格、行、单元格及图片的 id', () => {
     const source = fixture()
     const before = structuredClone(source)
     const serialized = zipElementList(source)
@@ -90,7 +90,7 @@ describe('opt-in serialized object identities', () => {
     expect(zipElementList(source, { extraPickAttrs: [] })).toEqual(serialized)
   })
 
-  it('preserves all four levels only when ids are requested', () => {
+  it('仅在请求 id 时保留四个层级的 id', () => {
     const source = fixture()
     const options = mergeOption()
     formatElementList(source, { editorOptions: options })
@@ -106,7 +106,7 @@ describe('opt-in serialized object identities', () => {
     )
   })
 
-  it('retains existing row and cell binding metadata without opting in', () => {
+  it('未请求时保留行与单元格的既有绑定元数据', () => {
     const { table, row, cell } = tableParts(zipElementList(fixture()))
     expect(table.externalId).toBe('application-table')
     expect(row.externalId).toBe('application-row')
@@ -117,7 +117,7 @@ describe('opt-in serialized object identities', () => {
     expect(Object.hasOwn(cell, 'width')).toBe(false)
   })
 
-  it('allows other shared cell attributes without inventing absent keys', () => {
+  it('允许保留其他单元格属性且不虚构缺失的键', () => {
     const { cell } = tableParts(zipElementList(fixture(), {
       extraPickAttrs: ['hint', 'width', 'italic']
     }))
@@ -127,7 +127,7 @@ describe('opt-in serialized object identities', () => {
     expect(Object.hasOwn(cell, 'id')).toBe(false)
   })
 
-  it('keeps recursively zipped cell content when value is requested', () => {
+  it('请求 value 时保留递归压缩的单元格内容', () => {
     const source = fixture()
     formatElementList(source, { editorOptions: mergeOption() })
     const before = structuredClone(source)
@@ -141,7 +141,7 @@ describe('opt-in serialized object identities', () => {
     expect(cell.value[0]?.value).toBe('Bell 🔔 é')
   })
 
-  it('propagates opt-in retention through nested tables', () => {
+  it('嵌套表格同样按需保留 id', () => {
     const source = fixture()
     tableParts(source).cell.value.push(...fixture('nested-'))
     const serialized = zipElementList(source, { extraPickAttrs: ['id'] })
@@ -149,13 +149,18 @@ describe('opt-in serialized object identities', () => {
     expect(identities(zipElementList(source))).toEqual([])
   })
 
-  it('does not invent missing or undefined identities', () => {
+  it('不虚构缺失或为 undefined 的 id', () => {
     const source = fixture()
     for (const object of Object.values(tableParts(source))) object.id = undefined
-    const serialized = zipElementList(source, { extraPickAttrs: ['id'] })
-    for (const object of Object.values(tableParts(serialized))) {
-      expect(object.id).toBeUndefined()
+    const { table, row, cell, image } = tableParts(
+      zipElementList(source, { extraPickAttrs: ['id'] })
+    )
+    // 表格、单元格及嵌套元素是重建对象，不保留值为 undefined 的 id 键
+    for (const object of [table, cell, image]) {
+      expect(Object.hasOwn(object, 'id')).toBe(false)
     }
+    // 行对象原样透传，保留显式设置的 undefined id 键
+    expect(row.id).toBeUndefined()
     const missing = fixture()
     for (const object of Object.values(tableParts(missing))) delete object.id
     for (const object of Object.values(tableParts(zipElementList(missing, {
@@ -163,7 +168,7 @@ describe('opt-in serialized object identities', () => {
     })))) expect(Object.hasOwn(object, 'id')).toBe(false)
   })
 
-  it('supports the in-place serialization used by the clipboard', () => {
+  it('支持剪贴板使用的原地序列化', () => {
     const source = fixture()
     const expected = zipElementList(source)
     expect(zipElementList(source, { isClone: false })).toEqual(expected)
@@ -175,7 +180,7 @@ describe('opt-in serialized object identities', () => {
     })).toEqual(zipElementList(fixture(), { extraPickAttrs: ['id'] }))
   })
 
-  it('regenerates distinct ids for repeated clipboard-style inserts', () => {
+  it('重复粘贴时重新生成不同的 id', () => {
     const source = fixture()
     const options = mergeOption()
     formatElementList(source, { editorOptions: options })
@@ -198,7 +203,7 @@ describe('opt-in serialized object identities', () => {
     expect(identities(clipboard)).toEqual([])
   })
 
-  it('keeps opt-in identities on equal-looking images independently', () => {
+  it('相同图片的 id 各自独立保留', () => {
     const source: IElement[] = ['first', 'second'].map(id => ({
       type: ElementType.IMAGE, id,
       value: 'data:image/png;base64,AA==', width: 60, height: 30

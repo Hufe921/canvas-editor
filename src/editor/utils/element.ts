@@ -22,7 +22,6 @@ import {
   EDITOR_HINT_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
-  TABLE_TR_ZIP_EXCLUDE_ATTR,
   TABLE_TD_ZIP_ATTR,
   TEXTLIKE_ELEMENT_TYPE,
   TITLE_CONTEXT_ATTR
@@ -743,22 +742,6 @@ export function pickElementAttr(
   return element
 }
 
-function hasOwnAttribute<T extends object>(
-  payload: T,
-  attr: PropertyKey
-): attr is keyof T {
-  return Object.prototype.hasOwnProperty.call(payload, attr)
-}
-
-function copyDefinedAttribute<T, K extends keyof T>(
-  source: T,
-  target: T,
-  attr: K
-) {
-  const value = source[attr]
-  if (value !== undefined) target[attr] = value
-}
-
 interface IZipElementListOption {
   extraPickAttrs?: Array<keyof IElement>
   isClassifyArea?: boolean
@@ -885,9 +868,7 @@ export function zipElementList(
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
-          TABLE_TR_ZIP_EXCLUDE_ATTR.forEach(attr => {
-            if (!extraPickAttrs?.includes(attr)) delete tr[attr]
-          })
+          if (!extraPickAttrs?.includes('id')) delete tr.id
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const zipTd: ITd = {
@@ -900,12 +881,17 @@ export function zipElementList(
             }
             // 压缩单元格属性
             TABLE_TD_ZIP_ATTR.forEach(attr => {
-              copyDefinedAttribute(td, zipTd, attr)
+              const value = td[attr] as never
+              if (value !== undefined) {
+                zipTd[attr] = value
+              }
             })
+            // 按需保留单元格额外属性，value 为递归压缩内容不可覆盖
             extraPickAttrs?.forEach(attr => {
-              // Do not overwrite recursively serialized cell content.
-              if (attr !== 'value' && hasOwnAttribute(td, attr)) {
-                copyDefinedAttribute(td, zipTd, attr)
+              if (attr === 'value') return
+              const value = td[attr as keyof ITd] as never
+              if (value !== undefined) {
+                zipTd[attr as keyof ITd] = value
               }
             })
             tr.tdList[d] = zipTd
