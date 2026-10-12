@@ -868,7 +868,7 @@ export function zipElementList(
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
-          delete tr.id
+          if (!extraPickAttrs?.includes('id')) delete tr.id
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const zipTd: ITd = {
@@ -884,6 +884,14 @@ export function zipElementList(
               const value = td[attr] as never
               if (value !== undefined) {
                 zipTd[attr] = value
+              }
+            })
+            // 按需保留单元格额外属性，value 为递归压缩内容不可覆盖
+            extraPickAttrs?.forEach(attr => {
+              if (attr === 'value') return
+              const value = td[attr as keyof ITd] as never
+              if (value !== undefined) {
+                zipTd[attr as keyof ITd] = value
               }
             })
             tr.tdList[d] = zipTd
