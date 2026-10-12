@@ -65,7 +65,6 @@ export interface IPainterOption {
 
 export interface IGetValueOption {
   pageNo?: number
-  // 额外保留默认会被压缩剔除的元素属性（含表格行、单元格的 id）
   extraPickAttrs?: Array<keyof IElement>
 }
 
