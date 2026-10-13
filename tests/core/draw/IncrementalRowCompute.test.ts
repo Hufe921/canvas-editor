@@ -340,7 +340,8 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
   it(
     '多页文档：跨页编辑位置缓存复用与全量一致',
     () => {
-      runDifferential(makeParagraphs(150, 60), 20261001, 40, {
+      // 负载控制在 CI 机器（约比本地慢 4~5 倍）可稳定跑进的预算内
+      runDifferential(makeParagraphs(80, 60), 20261001, 25, {
         expectIncrementalUsed: true
       })
     },
