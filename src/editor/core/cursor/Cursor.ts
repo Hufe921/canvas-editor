@@ -44,7 +44,7 @@ export class Cursor {
 
     this.cursorDom = document.createElement('div')
     this.cursorDom.classList.add(`${EDITOR_PREFIX}-cursor`)
-    this.container.append(this.cursorDom)
+    if (!this.options.displayOnly) this.container.append(this.cursorDom)
     this.cursorAgent = new CursorAgent(draw, canvasEvent)
     this.blinkTimeout = null
   }

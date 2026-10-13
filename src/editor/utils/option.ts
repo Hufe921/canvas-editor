@@ -268,6 +268,7 @@ export function mergeOption(
     shortcutDisableKeys: [],
     scrollContainerSelector: '',
     pageOuterSelectionDisable: false,
+    displayOnly: false,
     ...options,
     lab: labOptions,
     table: tableOptions,

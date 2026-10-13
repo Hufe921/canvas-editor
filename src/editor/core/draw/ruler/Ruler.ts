@@ -73,6 +73,7 @@ export class Ruler {
     rulerContainer.addEventListener('mousedown', evt => {
       evt.preventDefault()
       evt.stopPropagation()
+      if (this.options.displayOnly) return
       if (evt.target === canvasY) {
         this._mousedownY(evt)
       } else {
@@ -81,6 +82,7 @@ export class Ruler {
     })
     // 注意：此处不可阻止冒泡，拖动边距依赖document上的mousemove事件
     rulerContainer.addEventListener('mousemove', evt => {
+      if (this.options.displayOnly) return
       if (evt.target === canvasY) {
         this._updateCursorY(evt)
       } else {
