@@ -15,6 +15,7 @@ export class Shortcut {
     this.command = command
     this.globalShortcutList = []
     this.agentShortcutList = []
+    if (draw.getOptions().displayOnly || draw.isReadonly()) return
     // 内部快捷键
     this._addShortcutList([...richtextKeys, ...titleKeys, ...listKeys])
     // 全局快捷键

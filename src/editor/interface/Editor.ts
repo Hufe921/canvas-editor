@@ -135,6 +135,7 @@ export interface IEditorOption {
   accessibility?: IAccessibilityOption
   column?: IColumnOption
   trace?: ITraceOption
+  displayOnly?: boolean
   ruler?: IRulerOption
   hint?: IHintOption
 }
