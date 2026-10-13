@@ -390,6 +390,26 @@ Usage:
 instance.command.executeRowMargin(rowMargin: number)
 ```
 
+## executeSpacingBefore
+
+Feature: Paragraph spacing before
+
+Usage:
+
+```javascript
+instance.command.executeSpacingBefore(spacingBefore: number)
+```
+
+## executeSpacingAfter
+
+Feature: Paragraph spacing after
+
+Usage:
+
+```javascript
+instance.command.executeSpacingAfter(spacingAfter: number)
+```
+
 ## executeInsertTable
 
 Feature: Insert table

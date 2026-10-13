@@ -87,6 +87,7 @@ Character-level and inline text capabilities.
   <div class="it"><b>Decoration style</b><span>Underline / strikethrough styles (solid, double, dashed, dotted, wavy)</span></div>
   <div class="it"><b>Alignment</b><span>Left, center, right, justified, distributed</span></div>
   <div class="it"><b>Line spacing</b><span>Paragraph line spacing (rowMargin)</span></div>
+  <div class="it"><b>Paragraph spacing</b><span>Spacing before (spacingBefore), spacing after (spacingAfter)</span></div>
   <div class="it"><b>Indent</b><span>First-line indent, Tab indent</span></div>
   <div class="it"><b>Word break</b><span>break-all / break-word</span></div>
   <div class="it"><b>Heading</b><span>H1 – H6, per-level size</span></div>
@@ -493,7 +494,7 @@ Developer command interface (<code>instance.command.\*</code>), grouped by respo
   <div class="it"><b>Font & size</b><span><code>executeFont</code>, <code>executeSize</code>, <code>executeSizeAdd</code>, <code>executeSizeMinus</code></span></div>
   <div class="it"><b>Typeface</b><span><code>executeBold</code>, <code>executeItalic</code>, <code>executeUnderline</code>, <code>executeStrikeout</code>, <code>executeSuperscript</code>, <code>executeSubscript</code></span></div>
   <div class="it"><b>Color</b><span><code>executeColor</code>, <code>executeHighlight</code></span></div>
-  <div class="it"><b>Paragraph</b><span><code>executeTitle</code>, <code>executeList</code>, <code>executeRowFlex</code>, <code>executeRowMargin</code></span></div>
+  <div class="it"><b>Paragraph</b><span><code>executeTitle</code>, <code>executeList</code>, <code>executeRowFlex</code>, <code>executeRowMargin</code>, <code>executeSpacingBefore</code>, <code>executeSpacingAfter</code></span></div>
 </div>
 
 ### Insert Commands

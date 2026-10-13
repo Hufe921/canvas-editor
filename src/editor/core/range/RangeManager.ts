@@ -528,6 +528,8 @@ export class RangeManager {
     const highlight = curElement.highlight || null
     const rowFlex = curElement.rowFlex || null
     const rowMargin = curElement.rowMargin ?? this.options.defaultRowMargin
+    const spacingBefore = curElement.spacingBefore ?? 0
+    const spacingAfter = curElement.spacingAfter ?? 0
     const dashArray = curElement.dashArray || []
     const level = curElement.level || null
     const listType = curElement.listType || null
@@ -556,6 +558,8 @@ export class RangeManager {
       highlight,
       rowFlex,
       rowMargin,
+      spacingBefore,
+      spacingAfter,
       dashArray,
       level,
       listType,
@@ -598,6 +602,8 @@ export class RangeManager {
       highlight: null,
       rowFlex: null,
       rowMargin,
+      spacingBefore: 0,
+      spacingAfter: 0,
       dashArray: [],
       level: null,
       listType: null,

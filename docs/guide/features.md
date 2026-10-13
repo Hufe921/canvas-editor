@@ -87,6 +87,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>装饰样式</b><span>下划线 / 删除线样式(实线、双线、虚线、点线、波浪线)</span></div>
   <div class="it"><b>对齐</b><span>左、中、右、两端、分散</span></div>
   <div class="it"><b>行间距</b><span>段落行间距(rowMargin)</span></div>
+  <div class="it"><b>段落间距</b><span>段前距(spacingBefore)、段后距(spacingAfter)</span></div>
   <div class="it"><b>缩进</b><span>首行缩进、Tab 缩进</span></div>
   <div class="it"><b>换行规则</b><span>break-all / break-word</span></div>
   <div class="it"><b>标题</b><span>H1 – H6、per-level 字号</span></div>
@@ -493,7 +494,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>字体字号</b><span><code>executeFont</code>、<code>executeSize</code>、<code>executeSizeAdd</code>、<code>executeSizeMinus</code></span></div>
   <div class="it"><b>字形</b><span><code>executeBold</code>、<code>executeItalic</code>、<code>executeUnderline</code>、<code>executeStrikeout</code>、<code>executeSuperscript</code>、<code>executeSubscript</code></span></div>
   <div class="it"><b>颜色</b><span><code>executeColor</code>、<code>executeHighlight</code></span></div>
-  <div class="it"><b>段落</b><span><code>executeTitle</code>、<code>executeList</code>、<code>executeRowFlex</code>、<code>executeRowMargin</code></span></div>
+  <div class="it"><b>段落</b><span><code>executeTitle</code>、<code>executeList</code>、<code>executeRowFlex</code>、<code>executeRowMargin</code>、<code>executeSpacingBefore</code>、<code>executeSpacingAfter</code></span></div>
 </div>
 
 ### 插入命令

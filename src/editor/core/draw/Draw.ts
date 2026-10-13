@@ -2364,6 +2364,13 @@ export class Draw {
           element.areaId !== elementList[i - 1]?.areaId
             ? element.area.top * scale
             : 0
+        // 段前间距：换行符引领的行为新段落首行
+        // 换行符归属于新段落元素集合，优先从换行符自身读取
+        if (element.value === ZERO && !element.listWrap) {
+          row.offsetY +=
+            (element.spacingBefore || elementList[i + 1]?.spacingBefore || 0) *
+            scale
+        }
         rowList.push(row)
       } else {
         // 断点续算：种子行吸收行首元素时补齐行出生属性（列表缩进/序号、区域偏移），
@@ -2403,6 +2410,15 @@ export class Draw {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
+        // 段后间距：段落末行增加高度
+        // 换行符归属于下一段落元素集合，需从当前段落末尾元素读取
+        if (isWrap && element.value === ZERO && !element.listWrap) {
+          const spacingAfter = (elementList[i - 1]?.spacingAfter || 0) * scale
+          if (spacingAfter) {
+            curRow.spacingAfter = spacingAfter
+            curRow.height += spacingAfter
+          }
+        }
         // 行内全部为隐藏元素时 => 行高折叠（仅当行内不止换行符一个元素时）
         if (!this.isDesignMode() && curRow.height > 0) {
           const visibleElements = curRow.elementList.filter(
@@ -2988,7 +3004,7 @@ export class Draw {
               if (nextElement && nextElement.value === ZERO) {
                 rangeRecord.x = x + metrics.width
                 rangeRecord.y = y
-                rangeRecord.height = curRow.height
+                rangeRecord.height = curRow.height - (curRow.spacingAfter || 0)
                 rangeRecord.width += this.options.rangeMinWidth
               }
             } else {
@@ -3001,7 +3017,7 @@ export class Draw {
               if (!rangeRecord.width) {
                 rangeRecord.x = x
                 rangeRecord.y = y
-                rangeRecord.height = curRow.height
+                rangeRecord.height = curRow.height - (curRow.spacingAfter || 0)
               }
               rangeRecord.width += rangeWidth
             }
@@ -3009,7 +3025,13 @@ export class Draw {
         }
         // 组信息记录
         if (!group.disabled && element.groupIds) {
-          this.group.recordFillInfo(element, x, y, metrics.width, curRow.height)
+          this.group.recordFillInfo(
+            element,
+            x,
+            y,
+            metrics.width,
+            curRow.height - (curRow.spacingAfter || 0)
+          )
         }
         index++
         // 绘制表格内元素

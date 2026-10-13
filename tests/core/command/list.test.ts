@@ -111,4 +111,34 @@ describe('列表与排版命令', () => {
     expect(first.rowFlex).toBeUndefined()
     expect(second.rowFlex).toBe(RowFlex.RIGHT)
   })
+
+  it('executeSpacingBefore 设置段前间距', () => {
+    ctx = createTestEditor({
+      data: [{ value: 'first' }, { value: '\n' }, { value: 'second' }]
+    })
+    ctx.editor.command.executeSetRange(8, 8)
+    ctx.editor.command.executeSpacingBefore(20)
+
+    const data = ctx.editor.command.getValue().data.main
+    const first = data.find(element => element.value.includes('first'))!
+    const second = data.find(element => element.value.includes('second'))!
+
+    expect(first.spacingBefore).toBeUndefined()
+    expect(second.spacingBefore).toBe(20)
+  })
+
+  it('executeSpacingAfter 设置段后间距', () => {
+    ctx = createTestEditor({
+      data: [{ value: 'first' }, { value: '\n' }, { value: 'second' }]
+    })
+    ctx.editor.command.executeSetRange(2, 2)
+    ctx.editor.command.executeSpacingAfter(10)
+
+    const data = ctx.editor.command.getValue().data.main
+    const first = data.find(element => element.value.includes('first'))!
+    const second = data.find(element => element.value.includes('second'))!
+
+    expect(first.spacingAfter).toBe(10)
+    expect(second.spacingAfter).toBeUndefined()
+  })
 })

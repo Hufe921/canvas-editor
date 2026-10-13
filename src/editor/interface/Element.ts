@@ -41,6 +41,8 @@ export interface IElementStyle {
   strikeout?: boolean
   rowFlex?: RowFlex
   rowMargin?: number
+  spacingBefore?: number
+  spacingAfter?: number
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number

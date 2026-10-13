@@ -1126,13 +1126,17 @@ export class Position {
             p =>
               p.columnIndex === undefined || clickColumnIndex === p.columnIndex
           )
+    const zoneRowList = this.draw.getOriginalRowList()
     for (let j = 0; j < lastLetterList.length; j++) {
       const {
         index,
         rowNo,
+        rowIndex,
         coordinate: { leftTop, leftBottom }
       } = lastLetterList[j]
-      if (y > leftTop[1] && y <= leftBottom[1]) {
+      // 段前间距等行偏移区域（行内容上方offsetY空白）归属当前行
+      const rowOffsetY = zoneRowList[rowIndex]?.offsetY || 0
+      if (y > leftTop[1] - rowOffsetY && y <= leftBottom[1]) {
         const headIndex = isMainActive
           ? positionList.findIndex(
               p => p.pageNo === positionNo && p.rowNo === rowNo
@@ -1140,12 +1144,13 @@ export class Position {
           : positionList.findIndex(p => p.rowNo === rowNo)
         const headElement = elementList[headIndex]
         const headPosition = positionList[headIndex]
-        // 是否在头部
+        // 是否在头部（点击行内容上方空白视为点击行首）
+        const isHitOffsetArea = y <= leftTop[1]
         const headStartX =
           headElement.listStyle === ListStyle.CHECKBOX
             ? this.draw.getMargins()[3]
             : headPosition.coordinate.leftTop[0]
-        if (x < headStartX) {
+        if (isHitOffsetArea || x < headStartX) {
           // 头部元素为空元素时无需选中
           if (~headIndex) {
             if (headPosition.value === ZERO) {
