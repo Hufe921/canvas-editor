@@ -338,6 +338,54 @@ window.onload = function () {
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
   }
 
+  const spacingDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__spacing'
+  )!
+  const spacingIconDom = spacingDom.querySelector<HTMLElement>('i')!
+  const spacingOptionDom =
+    spacingDom.querySelector<HTMLDivElement>('.options')!
+  const spacingBeforeInputDom =
+    spacingOptionDom.querySelector<HTMLInputElement>(
+      '[data-spacingbefore-input]'
+    )!
+  const spacingAfterInputDom =
+    spacingOptionDom.querySelector<HTMLInputElement>(
+      '[data-spacingafter-input]'
+    )!
+  spacingIconDom.onclick = function () {
+    console.log('spacing')
+    spacingOptionDom.classList.toggle('visible')
+  }
+  spacingOptionDom.onclick = function (evt) {
+    evt.stopPropagation()
+  }
+  const changeSpacingBefore = (value: number) => {
+    const spacing = Math.max(0, Math.round(value) || 0)
+    spacingBeforeInputDom.value = `${spacing}`
+    instance.command.executeSpacingBefore(spacing)
+  }
+  const changeSpacingAfter = (value: number) => {
+    const spacing = Math.max(0, Math.round(value) || 0)
+    spacingAfterInputDom.value = `${spacing}`
+    instance.command.executeSpacingAfter(spacing)
+  }
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingbefore-decrease]'
+  )!.onclick = () => changeSpacingBefore(Number(spacingBeforeInputDom.value) - 6)
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingbefore-increase]'
+  )!.onclick = () => changeSpacingBefore(Number(spacingBeforeInputDom.value) + 6)
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingafter-decrease]'
+  )!.onclick = () => changeSpacingAfter(Number(spacingAfterInputDom.value) - 6)
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingafter-increase]'
+  )!.onclick = () => changeSpacingAfter(Number(spacingAfterInputDom.value) + 6)
+  spacingBeforeInputDom.onchange = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value))
+  spacingAfterInputDom.onchange = () =>
+    changeSpacingAfter(Number(spacingAfterInputDom.value))
+
   const listDom = document.querySelector<HTMLDivElement>('.menu-item__list')!
   listDom.title = `列表(${isApple ? '⌘' : 'Ctrl'}+Shift+U)`
   const listOptionDom = listDom.querySelector<HTMLDivElement>('.options')!
@@ -1951,6 +1999,14 @@ window.onload = function () {
       `[data-rowmargin='${payload.rowMargin}']`
     )!
     curRowMarginDom.classList.add('active')
+
+    // 段落间距
+    if (document.activeElement !== spacingBeforeInputDom) {
+      spacingBeforeInputDom.value = `${payload.spacingBefore ?? 0}`
+    }
+    if (document.activeElement !== spacingAfterInputDom) {
+      spacingAfterInputDom.value = `${payload.spacingAfter ?? 0}`
+    }
 
     // 功能
     payload.undo

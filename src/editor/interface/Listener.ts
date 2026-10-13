@@ -25,6 +25,8 @@ export interface IRangeStyle {
   highlight: string | null
   rowFlex: RowFlex | null
   rowMargin: number
+  spacingBefore: number
+  spacingAfter: number
   dashArray: number[]
   level: TitleLevel | null
   listType: ListType | null

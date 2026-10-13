@@ -27,6 +27,8 @@ export interface IRow {
   listIndex?: number
   offsetX?: number
   offsetY?: number
+  // 段后间距（已计入height，绘制选区等视觉效果时需剔除）
+  spacingAfter?: number
   elementList: IRowElement[]
   isWidthNotEnough?: boolean
   rowIndex: number

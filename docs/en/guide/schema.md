@@ -46,6 +46,8 @@ interface IElement {
     JUSTIFY = 'justify'
   };
   rowMargin?: number;
+  spacingBefore?: number;
+  spacingAfter?: number;
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;

@@ -351,6 +351,80 @@ ul {
   background-image: url('./assets/images/row-margin.svg');
 }
 
+.menu-item__spacing {
+  position: relative;
+}
+
+.menu-item__spacing i {
+  background-image: url('./assets/images/spacing.svg');
+}
+
+.menu-item__spacing .options {
+  width: 190px;
+  padding: 12px;
+}
+
+.menu-item__spacing .options .spacing-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.menu-item__spacing .options .spacing-option:last-child {
+  margin-bottom: 0;
+}
+
+.menu-item__spacing .options .spacing-option__label {
+  color: #3d4757;
+  user-select: none;
+}
+
+.menu-item__spacing .options .spacing-option__stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.menu-item__spacing .options .spacing-option__stepper button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: #f5f6f7;
+  color: #3d4757;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.menu-item__spacing .options .spacing-option__stepper button:hover {
+  background: #ebecef;
+}
+
+.menu-item__spacing .options .spacing-option__stepper input {
+  width: 46px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-left: 1px solid #e2e6ed;
+  border-right: 1px solid #e2e6ed;
+  outline: none;
+  text-align: center;
+  font-size: 12px;
+  color: #3d4757;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.menu-item__spacing .options .spacing-option__stepper input::-webkit-outer-spin-button,
+.menu-item__spacing .options .spacing-option__stepper input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
 .menu-item__list {
   position: relative;
 }
