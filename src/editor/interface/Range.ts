@@ -19,6 +19,8 @@ export interface IRange {
 export interface ILocatedRange {
   zone: EditorZone
   tablePath: { tableId: string; rowId: string; cellId: string }[]
+  /** Header/footer page; main-story pages come from their element positions. */
+  pageNo?: number
   startIndex: number
   endIndex: number
   sourceText: string
