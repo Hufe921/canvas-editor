@@ -423,10 +423,11 @@ export class RangeManager {
     startTdIndex?: number,
     endTdIndex?: number,
     startTrIndex?: number,
-    endTrIndex?: number
+    endTrIndex?: number,
+    forceChange = false
   ) {
     // 判断光标是否改变
-    const isChange = this.getIsRangeChange(
+    const isChange = forceChange || this.getIsRangeChange(
       startIndex,
       endIndex,
       tableId,

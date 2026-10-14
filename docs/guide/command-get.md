@@ -367,3 +367,20 @@ const {
   endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
 ```
+
+## getLocatedElementRects
+
+Get cloned element rectangles for an exact located range, without selecting it:
+
+```typescript
+const rects: ILocatedElementRect[] = instance.command.getLocatedElementRects(range)
+// { pageNo, index, rowNo, columnIndex?, x, y, width, height }[]
+```
+
+`range` has the same ownership path, complete runtime `sourceText`, transient
+indices and Unicode validation as `executeRestoreRange`. Coordinates use the
+editor's document page units, before viewport zoom. Header/footer rectangles
+refer to the current page; main-story rectangles retain their paginated page
+numbers. A caret returns an empty array. Returned values never alias the
+engine's mutable position objects. These are rendered element boxes, not a
+persisted paragraph layout or a replacement for application selection bindings.

@@ -1157,3 +1157,41 @@ instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOpti
 ```js
 instance.command.executeClearGraffiti()
 ```
+
+## executeRestoreRange
+
+Restore a range in an exact main/header/footer container, including a nested
+cell, without changing document content or adding a selection history entry.
+The first successful restoration also retains the initial undo baseline when
+selection occurs before the first caret focus.
+
+```typescript
+instance.command.executeRestoreRange({
+  zone: EditorZone.MAIN,
+  tablePath: [
+    { tableId: 'outer', rowId: 'outer-row', cellId: 'outer-cell' },
+    { tableId: 'inner', rowId: 'inner-row', cellId: 'inner-cell' }
+  ],
+  startIndex: 0,
+  endIndex: 1,
+  sourceText: '\u200bExact container text'
+})
+```
+
+`tablePath` contains every owning table/row/cell, outermost first, to a maximum
+of eight levels. Use an empty path for a root story. Identities must be unique
+within each owning container. `sourceText` is the **entire current runtime
+container's element values joined together**, including zero-width paragraph
+markers. It is bounded to 4,194,304 UTF-16 code units.
+
+Indices follow the existing `executeSetRange` element-index convention; they
+are transient runtime positions, not persisted document offsets. Equal indices
+restore a caret. Boundaries must be complete Unicode graphemes, including those
+split across formatting elements. Resolve persisted selections against current
+application bindings before calling this command.
+
+Invalid zones/paths/indices, disabled or noneditable header/footer zones,
+ambiguous ownership, stale source text and split graphemes throw before changing
+content, selection, zone, focus or history. The command never falls back to a
+neighboring cell containing the same quote. Restoration emits the range event
+even when a different container has the same range indices.
