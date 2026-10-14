@@ -1,3 +1,7 @@
+import type {
+  IExternalElementBinding,
+  IExternalElementContainer
+} from './interface/ExternalBinding'
 import './assets/css/index.css'
 import { version } from '../../package.json'
 import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
@@ -247,5 +251,7 @@ export type {
   IRangeStyle,
   RangeRect,
   IBadge,
-  IGetElementListByHTMLOption
+  IGetElementListByHTMLOption,
+  IExternalElementBinding,
+  IExternalElementContainer
 }
