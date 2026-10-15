@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
+import { Underline } from '@/editor/core/draw/richtext/Underline'
+import { Highlight } from '@/editor/core/draw/richtext/Highlight'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
@@ -88,5 +90,36 @@ describe('段落间距', () => {
     })
     // 命中段落 b 行首的换行符（b 的前一个元素），而非页面最后一行
     expect(result.index).toBe(bPosition.index - 1)
+  })
+
+  describe('段后间距不影响行内装饰绘制', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    function recordDecorations(spacingAfter?: number) {
+      const underlineSpy = vi.spyOn(Underline.prototype, 'recordFillInfo')
+      const highlightSpy = vi.spyOn(Highlight.prototype, 'recordFillInfo')
+      const draw = renderMain([
+        { value: 'a', underline: true, highlight: '#ff0', spacingAfter },
+        { value: '\n' },
+        { value: 'b' },
+        { value: '\n' }
+      ])
+      // 默认懒渲染依赖 IntersectionObserver，需立即绘制页面
+      draw.render({ isLazy: false, isSubmitHistory: false, isSetCursor: false })
+      // recordFillInfo(ctx, x, y, width, height, ...)
+      const underlineY = underlineSpy.mock.calls[0][2]
+      const highlightHeight = highlightSpy.mock.calls[0][4]!
+      vi.restoreAllMocks()
+      return { underlineY, highlightHeight }
+    }
+
+    it('下划线与高亮仅基于内容高度，不延伸至段后间距', () => {
+      const base = recordDecorations()
+      const spaced = recordDecorations(30)
+      expect(spaced.underlineY).toBeCloseTo(base.underlineY)
+      expect(spaced.highlightHeight).toBeCloseTo(base.highlightHeight)
+    })
   })
 })
