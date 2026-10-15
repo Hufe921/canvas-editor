@@ -321,11 +321,18 @@ export class TableParticle {
       })
     }
     // 渲染单元格
+    // 单独设置边框颜色/宽度的单元格延后绘制，避免共边被默认边框线覆盖
+    const customBorderTdList: IFragmentDrawTd[] = []
     for (const drawTd of drawTdList) {
       const { td, offsetY, height } = drawTd
       // 单元格内斜线
       if (td.slashTypes?.length) {
         this._drawSlash(ctx, drawTd, startX, startY)
+      }
+      // 单元格设置边框颜色/宽度时延后单独绘制
+      if (td.borderColor !== undefined || td.borderWidth !== undefined) {
+        customBorderTdList.push(drawTd)
+        continue
       }
       // 没有设置单元格边框 && 没有设置表格边框则忽略
       if (
@@ -418,6 +425,40 @@ export class TableParticle {
         ctx.stroke()
       }
       ctx.translate(-0.5, -0.5)
+    }
+    // 绘制单独设置边框颜色/宽度的单元格
+    for (const drawTd of customBorderTdList) {
+      const { td, offsetY, height } = drawTd
+      const width = td.width! * scale
+      const x = Math.round(td.x! * scale + startX + width)
+      const y = Math.round(td.y! * scale + startY + offsetY)
+      ctx.save()
+      ctx.lineWidth = (td.borderWidth ?? borderWidth) * scale
+      ctx.strokeStyle = td.borderColor || borderColor || defaultBorderColor
+      ctx.translate(0.5, 0.5)
+      ctx.beginPath()
+      if (td.borderTypes?.length) {
+        if (td.borderTypes.includes(TdBorder.TOP)) {
+          ctx.moveTo(x - width, y)
+          ctx.lineTo(x, y)
+        }
+        if (td.borderTypes.includes(TdBorder.RIGHT)) {
+          ctx.moveTo(x, y)
+          ctx.lineTo(x, y + height)
+        }
+        if (td.borderTypes.includes(TdBorder.BOTTOM)) {
+          ctx.moveTo(x, y + height)
+          ctx.lineTo(x - width, y + height)
+        }
+        if (td.borderTypes.includes(TdBorder.LEFT)) {
+          ctx.moveTo(x - width, y)
+          ctx.lineTo(x - width, y + height)
+        }
+      } else {
+        ctx.rect(x - width, y, width, height)
+      }
+      ctx.stroke()
+      ctx.restore()
     }
     ctx.restore()
   }

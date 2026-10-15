@@ -53,6 +53,8 @@ export class Command {
   public executeTableBorderType: CommandAdapt['tableBorderType']
   public executeTableBorderColor: CommandAdapt['tableBorderColor']
   public executeTableTdBorderType: CommandAdapt['tableTdBorderType']
+  public executeTableTdBorderColor: CommandAdapt['tableTdBorderColor']
+  public executeTableTdBorderWidth: CommandAdapt['tableTdBorderWidth']
   public executeTableTdSlashType: CommandAdapt['tableTdSlashType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
   public executeTableAutoFitToContent: CommandAdapt['tableAutoFitToContent']
@@ -331,6 +333,14 @@ export class Command {
     this.executeTableTdBorderType = this.wrap(
       'executeTableTdBorderType',
       adapt.tableTdBorderType.bind(adapt)
+    )
+    this.executeTableTdBorderColor = this.wrap(
+      'executeTableTdBorderColor',
+      adapt.tableTdBorderColor.bind(adapt)
+    )
+    this.executeTableTdBorderWidth = this.wrap(
+      'executeTableTdBorderWidth',
+      adapt.tableTdBorderWidth.bind(adapt)
     )
     this.executeTableTdSlashType = this.wrap(
       'executeTableTdSlashType',

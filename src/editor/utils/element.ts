@@ -1352,7 +1352,9 @@ export function createDomFromElementList(
         tableDom.setAttribute('cellSpacing', '0')
         tableDom.setAttribute('cellpadding', '0')
         tableDom.setAttribute('border', '0')
-        const borderStyle = '1px solid #000000'
+        const borderStyle = `${element.borderWidth ?? 1}px solid ${
+          element.borderColor || editorOptions.table.defaultBorderColor
+        }`
         // 表格边框
         if (!element.borderType || element.borderType === TableBorder.ALL) {
           tableDom.style.borderTop = borderStyle
@@ -1378,25 +1380,35 @@ export function createDomFromElementList(
           trDom.style.height = `${tr.height}px`
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
-            if (!element.borderType || element.borderType === TableBorder.ALL) {
-              tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
-            }
             const td = tr.tdList[d]
+            // 单元格单独设置边框颜色/宽度时优先使用
+            const tdBorderStyle =
+              td.borderColor || td.borderWidth
+                ? `${td.borderWidth ?? element.borderWidth ?? 1}px solid ${
+                    td.borderColor ||
+                    element.borderColor ||
+                    editorOptions.table.defaultBorderColor
+                  }`
+                : borderStyle
+            if (!element.borderType || element.borderType === TableBorder.ALL) {
+              tdDom.style.borderBottom = tdDom.style.borderRight =
+                tdBorderStyle
+            }
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
             tdDom.style.verticalAlign = td.verticalAlign || 'top'
             // 单元格边框
             if (td.borderTypes?.includes(TdBorder.TOP)) {
-              tdDom.style.borderTop = borderStyle
+              tdDom.style.borderTop = tdBorderStyle
             }
             if (td.borderTypes?.includes(TdBorder.RIGHT)) {
-              tdDom.style.borderRight = borderStyle
+              tdDom.style.borderRight = tdBorderStyle
             }
             if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
-              tdDom.style.borderBottom = borderStyle
+              tdDom.style.borderBottom = tdBorderStyle
             }
             if (td.borderTypes?.includes(TdBorder.LEFT)) {
-              tdDom.style.borderLeft = borderStyle
+              tdDom.style.borderLeft = tdBorderStyle
             }
             const childDom = createDomFromElementList(td.value!, options)
             tdDom.innerHTML = childDom.innerHTML

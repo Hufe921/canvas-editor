@@ -70,6 +70,8 @@ interface IElement {
       conceptId?: string;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
+      borderColor?: string;
+      borderWidth?: number;
       borderTypes?: TdBorder[];
       slashTypes?: TdSlash[];
       value: IElement[];

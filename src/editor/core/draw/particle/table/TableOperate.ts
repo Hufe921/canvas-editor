@@ -913,6 +913,42 @@ export class TableOperate {
     })
   }
 
+  public tableTdBorderColor(payload: string) {
+    const rowCol = this.tableParticle.getRangeRowCol()
+    if (!rowCol) return
+    const tdList = rowCol.flat()
+    tdList.forEach(td => {
+      if (payload) {
+        td.borderColor = payload
+      } else {
+        delete td.borderColor
+      }
+    })
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex,
+      isCompute: false
+    })
+  }
+
+  public tableTdBorderWidth(payload: number) {
+    const rowCol = this.tableParticle.getRangeRowCol()
+    if (!rowCol) return
+    const tdList = rowCol.flat()
+    tdList.forEach(td => {
+      if (payload) {
+        td.borderWidth = payload
+      } else {
+        delete td.borderWidth
+      }
+    })
+    const { endIndex } = this.range.getRange()
+    this.draw.render({
+      curIndex: endIndex,
+      isCompute: false
+    })
+  }
+
   public tableTdSlashType(payload: TdSlash) {
     const rowCol = this.tableParticle.getRangeRowCol()
     if (!rowCol) return
