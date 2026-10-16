@@ -62,25 +62,24 @@ export class TraceParticle {
   // 绘制痕迹 hover 浮窗（按时间顺序展示 insert/delete 记录）
   public drawTracePopup(
     element: IElement,
-    position: IElementPosition | undefined,
-    pageNo: number
+    position: IElementPosition | undefined
   ) {
     const records = element.trace
     if (!records?.length || !position) {
       this.clearTracePopup()
       return
     }
-    const {
-      coordinate: {
-        leftTop: [left, top]
-      },
-      lineHeight
-    } = position
-    const { x: pageLeft, y: preY } = this.draw.getPageOffset(pageNo)
-    // 位置
+    // 位置（RTL 右对齐元素右缘，LTR 左对齐元素左缘；混合纸张方向按页偏移）
+    const style = this.draw.getPopupPositionStyle(position)
     this.tracePopupContainer.style.display = 'block'
-    this.tracePopupContainer.style.left = `${left + pageLeft}px`
-    this.tracePopupContainer.style.top = `${top + preY + lineHeight}px`
+    if (style.right !== undefined) {
+      this.tracePopupContainer.style.left = 'auto'
+      this.tracePopupContainer.style.right = `${style.right}px`
+    } else {
+      this.tracePopupContainer.style.right = 'auto'
+      this.tracePopupContainer.style.left = `${style.left}px`
+    }
+    this.tracePopupContainer.style.top = `${style.top}px`
     // 时间线：按时间顺序自上而下逐条渲染（先插入后删除会显示两条）
     const { insertColor, deleteColor } = this.options.trace
     const i18n = this.draw.getI18n()
@@ -163,7 +162,7 @@ export class TraceParticle {
       return
     }
     if (this.lastHoverKey === hoverKey) return
-    this.drawTracePopup(element, elementPosition, this.draw.getPageNo())
+    this.drawTracePopup(element, elementPosition)
     this.lastHoverKey = hoverKey
   }
 

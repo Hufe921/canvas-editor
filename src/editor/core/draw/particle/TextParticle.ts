@@ -141,6 +141,16 @@ export class TextParticle {
       this.complete()
       return
     }
+    // text-engine 行：visualLeft 非逻辑连续，禁止拼接 fillText（RTL/混排会重叠）
+    if (element.visualLeft !== undefined) {
+      this.complete()
+      this._setCurXY(x, y)
+      this.text = element.value
+      this.curStyle = element.style
+      this.curColor = element.color
+      this.complete()
+      return
+    }
     // 主动完成的重设起始点
     if (!this.text) {
       this._setCurXY(x, y)

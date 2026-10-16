@@ -2,7 +2,9 @@ import { Draw } from '../draw/Draw'
 import { I18n } from '../i18n/I18n'
 import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { ZERO } from '../../dataset/constant/Common'
+import { TextDirection } from '../../dataset/enum/TextDirection'
 import { IRange } from '../../interface/Range'
+import { resolveUiDirection } from '../../utils/direction'
 
 // 屏幕阅读器播报管理器
 // 通过 aria-live 区域向辅助技术播报编辑器状态变更
@@ -42,12 +44,36 @@ export class Accessibility {
     this.selection()
   }
 
+  /** Paragraph direction → defaultDirection → LTR/RTL mode (UI fallback) */
+  private resolveAnnounceDir(): 'ltr' | 'rtl' {
+    const range = this.draw.getRange()
+    const paragraphList = range.getRangeParagraphElementList?.()
+    const declared = paragraphList?.[0]?.direction
+    if (declared === TextDirection.RTL || declared === TextDirection.LTR) {
+      return declared
+    }
+    const options = this.draw.getOptions()
+    if (
+      options.defaultDirection === TextDirection.RTL ||
+      options.defaultDirection === TextDirection.LTR
+    ) {
+      return options.defaultDirection
+    }
+    return resolveUiDirection(options)
+  }
+
+  private syncLiveDir() {
+    if (!this.assertiveDom) return
+    this.assertiveDom.setAttribute('dir', this.resolveAnnounceDir())
+  }
+
   // 播报选区文本
   public selection(): void {
     if (this.disabled) return
     const text = this.draw.getRange().toString()
     if (!text.trim()) return
     const prefix = this.i18n.t('accessibility.selected')
+    this.syncLiveDir()
     this.assertive(`${prefix}${text}`)
   }
 
@@ -57,6 +83,7 @@ export class Accessibility {
     const text = data.replace(new RegExp(ZERO, 'g'), '').replace(/\n/g, '')
     if (!text.trim()) return
     const prefix = this.i18n.t('accessibility.input')
+    this.syncLiveDir()
     this.assertive(`${prefix}${text}`)
   }
 

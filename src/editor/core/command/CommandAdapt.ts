@@ -29,6 +29,7 @@ import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
 import { MoveDirection } from '../../dataset/enum/Observer'
 import { RowFlex } from '../../dataset/enum/Row'
+import { TextDirection } from '../../dataset/enum/TextDirection'
 import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
@@ -137,6 +138,7 @@ import { Draw } from '../draw/Draw'
 import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableOperate } from '../draw/particle/table/TableOperate'
 import { CanvasEvent } from '../event/CanvasEvent'
+import { getVisualDeleteTarget } from '../event/handlers/keydown/visualDelete'
 import { pasteByApi } from '../event/handlers/paste'
 import { HistoryManager } from '../history/HistoryManager'
 import { I18n } from '../i18n/I18n'
@@ -224,6 +226,9 @@ export class CommandAdapt {
     ) {
       return
     }
+    const visualTarget = isCollapsed
+      ? getVisualDeleteTarget(this.canvasEvent, startIndex, true)
+      : null
     if (!isCollapsed) {
       this.draw.deleteElementList(
         elementList,
@@ -231,9 +236,14 @@ export class CommandAdapt {
         endIndex - startIndex
       )
     } else {
-      this.draw.deleteElementList(elementList, startIndex, 1)
+      this.draw.deleteElementList(
+        elementList,
+        visualTarget?.index ?? startIndex,
+        1
+      )
     }
-    const curIndex = isCollapsed ? startIndex - 1 : startIndex
+    const curIndex = visualTarget?.cursorIndex ??
+      (isCollapsed ? startIndex - 1 : startIndex)
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }
@@ -962,13 +972,40 @@ export class CommandAdapt {
     if (isReadonly) return
     const { startIndex, endIndex } = this.range.getRange()
     if (!~startIndex && !~endIndex) return
-    const paragraphElementList = this.range.getRangeParagraphElementList()
+    // 与 direction 一致：作用到整段（含段首 ZERO），避免页眉/正文读到的 rowFlex 不一致
+    const paragraphElementList =
+      this.range.getRangeParagraphElementList() ||
+      this.range.getRangeRowElementList()
     if (!paragraphElementList) return
     this.draw.setElementProperty(paragraphElementList, { rowFlex: payload })
     // 光标定位
     const isSetCursor = startIndex === endIndex
     const curIndex = isSetCursor ? endIndex : startIndex
     this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public direction(payload: TextDirection) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const paragraphElementList =
+      this.range.getRangeParagraphElementList() ||
+      this.range.getRangeRowElementList()
+    if (!paragraphElementList) return
+    paragraphElementList.forEach(element => {
+      element.direction = payload
+    })
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public getRangeParagraphDirection(): TextDirection | null {
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList?.length) return null
+    const defaultDirection = this.draw.getOptions().defaultDirection
+    return paragraphElementList[0].direction || defaultDirection || null
   }
 
   public rowMargin(payload: number) {
@@ -1766,12 +1803,14 @@ export class CommandAdapt {
       let currentX = 0
       let rangeRect: RangeRect | null = null
       for (let p = 0; p < selectionPositionList.length; p++) {
+        const position = selectionPositionList[p]
+        if (!position) continue
         const {
           rowNo,
           pageNo,
           coordinate: { leftTop, rightTop },
           lineHeight
-        } = selectionPositionList[p]
+        } = position
         const pageOffset = this.draw.getPageOffset(pageNo, true)
         // 起始行变化追加选区信息
         if (currentRowNo === null || currentRowNo !== rowNo) {
@@ -1796,7 +1835,9 @@ export class CommandAdapt {
       }
     } else {
       const positionList = this.position.getPositionList()
-      const position = positionList[endIndex]
+      const position =
+        positionList[endIndex] || positionList.find(p => p?.index === endIndex)
+      if (!position) return null
       const {
         coordinate: { rightTop },
         pageNo,
@@ -1832,7 +1873,13 @@ export class CommandAdapt {
       const preElement = elementList[start - 1]
       if (curElement.titleId && curElement.titleId !== preElement?.titleId) {
         titleId = curElement.titleId
-        titleStartPageNo = positionList[start].pageNo
+        const titlePosition =
+          positionList[start] || positionList.find(p => p?.index === start)
+        if (!titlePosition) {
+          start--
+          continue
+        }
+        titleStartPageNo = titlePosition.pageNo
         break
       }
       start--
@@ -2617,7 +2664,30 @@ export class CommandAdapt {
     Object.entries(newOption).forEach(([key, value]) => {
       Reflect.set(this.options, key, value)
     })
+    if (payload.direction !== undefined) {
+      // LTR/RTL 模式：只同步编辑器壳层 UI，不 invalidate / 不重排正文
+      this.draw.syncUiDirection()
+    }
+    // 仅改 UI 模式时跳过正文 forceUpdate（见 uiDirection）
+    const keys = Object.keys(payload)
+    if (keys.length === 1 && keys[0] === 'direction') {
+      this.range.setRangeStyle()
+      return
+    }
     this.forceUpdate()
+  }
+
+  /**
+   * UI LTR/RTL 模式（options.direction）：仅镜像壳层（ce-ui-rtl），
+   * 以及新建行/表时写入的默认 element.direction。
+   * 不参与光标碰撞、正文排版/绘制；切换不得重绘文本区。
+   * 与段落 executeDirection / defaultDirection 分离，勿混用。
+   */
+  public uiDirection(payload: TextDirection.LTR | TextDirection.RTL) {
+    this.options.direction = payload
+    this.draw.syncUiDirection()
+    // 工具栏「新建段将采用」指示；不 render 正文
+    this.range.setRangeStyle()
   }
 
   public getControlList(): IElement[] {

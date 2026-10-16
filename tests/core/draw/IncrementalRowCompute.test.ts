@@ -210,12 +210,24 @@ interface ComputeSnapshot {
 const TABLE_ID_KEY_REG = /^(tdId|trId|tableId)$/
 const UUID_REG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 function normalizeStringify(value: unknown): string {
-  return JSON.stringify(value, (key, val) =>
-    TABLE_ID_KEY_REG.test(key) ||
-    (key === 'id' && typeof val === 'string' && UUID_REG.test(val))
-      ? 'ID'
-      : val
-  )
+  return JSON.stringify(value, (key, val) => {
+    if (
+      TABLE_ID_KEY_REG.test(key) ||
+      (key === 'id' && typeof val === 'string' && UUID_REG.test(val))
+    ) {
+      return 'ID'
+    }
+    // Recomputed elements may reinsert layout fields in a different order.
+    // Compare their values while keeping array (row/element) order intact.
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      return Object.fromEntries(
+        Object.keys(val)
+          .sort()
+          .map(key => [key, val[key]])
+      )
+    }
+    return val
+  })
 }
 
 function snapshotCompute(draw: Draw): ComputeSnapshot {

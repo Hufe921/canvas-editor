@@ -1,7 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { Accessibility } from '@/editor/core/accessibility/Accessibility'
 
-function createMockDraw(options: { disabled: boolean }) {
+function createMockDraw(options: {
+  disabled: boolean
+  direction?: 'ltr' | 'rtl'
+  paragraphDirection?: 'ltr' | 'rtl' | null
+}) {
   const container = document.createElement('div')
   const eventBus = {
     on: vi.fn(),
@@ -9,7 +13,12 @@ function createMockDraw(options: { disabled: boolean }) {
     emit: vi.fn()
   }
   const rangeManager = {
-    toString: vi.fn()
+    toString: vi.fn(),
+    getRangeParagraphElementList: vi.fn(() =>
+      options.paragraphDirection
+        ? [{ direction: options.paragraphDirection }]
+        : null
+    )
   }
   const i18n = {
     t: vi.fn((key: string) => {
@@ -19,7 +28,11 @@ function createMockDraw(options: { disabled: boolean }) {
     })
   }
   return {
-    getOptions: () => ({ accessibility: { disabled: options.disabled } }),
+    getOptions: () => ({
+      accessibility: { disabled: options.disabled },
+      direction: options.direction || 'ltr',
+      defaultDirection: 'auto'
+    }),
     getContainer: () => container,
     getEventBus: () => eventBus,
     getRange: () => rangeManager,
@@ -59,6 +72,34 @@ describe('Accessibility', () => {
       a11y.selection()
       const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
       expect(liveDom.textContent).toBe('选中：hello world')
+      a11y.destroy()
+    })
+
+    it('UI RTL 时 live region 设置 dir=rtl', () => {
+      const draw = createMockDraw({ disabled: false, direction: 'rtl' })
+      const a11y = new Accessibility(draw)
+      draw._rangeManager.toString.mockReturnValue('مرحبا')
+      a11y.selection()
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
+      expect(liveDom.getAttribute('dir')).toBe('rtl')
+      a11y.destroy()
+    })
+
+    it('段落方向优先于 UI direction', () => {
+      const draw = createMockDraw({
+        disabled: false,
+        direction: 'ltr',
+        paragraphDirection: 'rtl'
+      })
+      const a11y = new Accessibility(draw)
+      draw._rangeManager.toString.mockReturnValue('مرحبا')
+      a11y.selection()
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
+      expect(liveDom.getAttribute('dir')).toBe('rtl')
       a11y.destroy()
     })
 

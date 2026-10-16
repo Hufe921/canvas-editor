@@ -34,6 +34,7 @@ export class Command {
   public executeTitle: CommandAdapt['title']
   public executeList: CommandAdapt['list']
   public executeRowFlex: CommandAdapt['rowFlex']
+  public executeDirection: CommandAdapt['direction']
   public executeRowMargin: CommandAdapt['rowMargin']
   public executeSpacingBefore: CommandAdapt['spacingBefore']
   public executeSpacingAfter: CommandAdapt['spacingAfter']
@@ -129,6 +130,7 @@ export class Command {
   public executeInsertControl: CommandAdapt['insertControl']
   public executeJumpControl: CommandAdapt['jumpControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
+  public executeUiDirection: CommandAdapt['uiDirection']
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
   public executeComputeElementListHeight: CommandAdapt['computeElementListHeight']
@@ -149,6 +151,7 @@ export class Command {
   public getRangeContext: CommandAdapt['getRangeContext']
   public getRangeRow: CommandAdapt['getRangeRow']
   public getRangeParagraph: CommandAdapt['getRangeParagraph']
+  public getRangeParagraphDirection: CommandAdapt['getRangeParagraphDirection']
   public getSurroundElementList: CommandAdapt['getSurroundElementList']
   public getKeywordRangeList: CommandAdapt['getKeywordRangeList']
   public getKeywordContext: CommandAdapt['getKeywordContext']
@@ -257,6 +260,10 @@ export class Command {
     this.executeTitle = this.wrap('executeTitle', adapt.title.bind(adapt))
     this.executeList = this.wrap('executeList', adapt.list.bind(adapt))
     this.executeRowFlex = this.wrap('executeRowFlex', adapt.rowFlex.bind(adapt))
+    this.executeDirection = this.wrap(
+      'executeDirection',
+      adapt.direction.bind(adapt)
+    )
     this.executeRowMargin = this.wrap(
       'executeRowMargin',
       adapt.rowMargin.bind(adapt)
@@ -578,6 +585,10 @@ export class Command {
       'executeUpdateOptions',
       adapt.updateOptions.bind(adapt)
     )
+    this.executeUiDirection = this.wrap(
+      'executeUiDirection',
+      adapt.uiDirection.bind(adapt)
+    )
     this.executeInsertTitle = this.wrap(
       'executeInsertTitle',
       adapt.insertTitle.bind(adapt)
@@ -603,6 +614,8 @@ export class Command {
     this.getRangeContext = adapt.getRangeContext.bind(adapt)
     this.getRangeRow = adapt.getRangeRow.bind(adapt)
     this.getRangeParagraph = adapt.getRangeParagraph.bind(adapt)
+    this.getRangeParagraphDirection =
+      adapt.getRangeParagraphDirection.bind(adapt)
     this.getSurroundElementList = adapt.getSurroundElementList.bind(adapt)
     this.getKeywordRangeList = adapt.getKeywordRangeList.bind(adapt)
     this.getKeywordContext = adapt.getKeywordContext.bind(adapt)

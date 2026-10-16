@@ -1,4 +1,5 @@
 import { ZERO } from '../../dataset/constant/Common'
+import { TextEngineMode } from '../../dataset/enum/TextDirection'
 import { ElementType } from '../../dataset/enum/Element'
 import type {
   IComputeRange,
@@ -151,6 +152,8 @@ export class IncrementalRowComputer {
     const rawRowList = this.draw.getRawRowList()
     // 全局门控
     if (
+      // HarfBuzz uses IncrementalParagraphComputer instead of legacy snapshots.
+      this.draw.getOptions().textEngine === TextEngineMode.HARFBUZZ ||
       !range ||
       !this.draw.getOptions().lab.incrementalCompute ||
       positionContext?.isTable ||
@@ -284,6 +287,7 @@ export class IncrementalRowComputer {
     const header = this.draw.getHeader()
     const footer = this.draw.getFooter()
     return JSON.stringify({
+      textEngine: options.textEngine,
       scale: options.scale,
       defaultSize: options.defaultSize,
       defaultTabWidth: options.defaultTabWidth,

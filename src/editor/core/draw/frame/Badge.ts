@@ -29,6 +29,21 @@ export class Badge {
     })
   }
 
+  private _resolveX(
+    badgeItem: IBadge,
+    scale: number,
+    width: number
+  ): number {
+    const { badge } = this.options
+    const right = badgeItem.right ?? badge.right
+    if (right >= 0) {
+      const pageW = this.draw.getOriginalWidth() * scale
+      return pageW - right * scale - width * scale
+    }
+    const left = badgeItem.left ?? badge.left
+    return left * scale
+  }
+
   private _drawImage(
     ctx: CanvasRenderingContext2D,
     x: number,
@@ -55,12 +70,12 @@ export class Badge {
     // 文档签章
     if (pageNo === 0 && this.mainBadge) {
       const { scale, badge } = this.options
-      const { left, top, width, height, value } = this.mainBadge
+      const { top, width, height, value } = this.mainBadge
       // 默认从页眉下开始
       const headerTop =
         this.draw.getMargins()[0] + this.draw.getHeader().getExtraHeight()
-      const x = (left || badge.left) * scale
-      const y = (top || badge.top) * scale + headerTop
+      const x = this._resolveX(this.mainBadge, scale, width)
+      const y = (top ?? badge.top) * scale + headerTop
       this._drawImage(ctx, x, y, width * scale, height * scale, value)
     }
     // 区域签章
@@ -76,10 +91,10 @@ export class Badge {
           // 忽略未设置签章区域
           const badgeItem = this.areaBadgeMap.get(areaItem[0])
           if (!badgeItem) continue
-          const { left, top, width, height, value } = badgeItem
-          const x = (left || badge.left) * scale
+          const { top, width, height, value } = badgeItem
+          const x = this._resolveX(badgeItem, scale, width)
           const y =
-            (top || badge.top) * scale + firstPosition.coordinate.leftTop[1]
+            (top ?? badge.top) * scale + firstPosition.coordinate.leftTop[1]
           this._drawImage(ctx, x, y, width * scale, height * scale, value)
         }
       }

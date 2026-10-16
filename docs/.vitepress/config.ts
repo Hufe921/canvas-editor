@@ -43,6 +43,9 @@ export default defineConfig({
           { text: '配置', link: '/guide/option' },
           { text: '国际化', link: '/guide/i18n' },
           { text: '数据结构', link: '/guide/schema' },
+          { text: '架构', link: '/guide/architecture' },
+          { text: 'RTL 排版设计', link: '/guide/rtl-layout-design' },
+          { text: 'RTL 延期 TODO', link: '/guide/rtl-deferred-todo' },
           { text: '功能总览', link: '/guide/features' },
           { text: '实验特性', link: '/guide/lab' }
         ]
@@ -163,6 +166,9 @@ export default defineConfig({
               { text: 'option', link: '/en/guide/option' },
               { text: 'i18n', link: '/en/guide/i18n' },
               { text: 'schema', link: '/en/guide/schema' },
+              { text: 'architecture', link: '/en/guide/architecture' },
+              { text: 'RTL layout design', link: '/en/guide/rtl-layout-design' },
+              { text: 'RTL deferred TODO', link: '/en/guide/rtl-deferred-todo' },
               { text: 'features', link: '/en/guide/features' },
               { text: 'lab', link: '/en/guide/lab' }
             ]

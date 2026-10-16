@@ -1,5 +1,6 @@
 import { ImageDisplay } from '../dataset/enum/Common'
 import { EditorMode, EditorZone } from '../dataset/enum/Editor'
+import { TextDirection } from '../dataset/enum/TextDirection'
 import { IElement, IElementPosition } from './Element'
 import { IRow, IRowComputeState, IRowElement } from './Row'
 
@@ -90,6 +91,19 @@ export interface IComputeRowListPayload {
   isPagingMode?: boolean
   pageHeight?: number
   surroundElementList?: IElement[]
+  /** Direction inherited by text inside a table cell when not explicitly set. */
+  defaultDirection?: TextDirection
+  /** Alignment inherited by text inside a table cell. */
+  defaultAlign?: 'left' | 'right'
+  /** Force legacy compute (used when embedding TABLE/IMAGE rows into text-engine) */
+  forceLegacy?: boolean
+  /**
+   * Isolate lastLayouts for main / header / footer / td:{id}.
+   * Default `main`.
+   */
+  layoutScope?: string
+  /** Main-document dirty interval for paragraph-safe HarfBuzz reuse. */
+  dirtyRange?: IComputeRange
   /**
    * 断点续算：从 state 对应的行首元素（startIndex）重新参与断行，
    * 到与某个旧行状态收敛（converge 返回 true）或文档末尾即止，

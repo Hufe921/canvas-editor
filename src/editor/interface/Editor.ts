@@ -38,6 +38,13 @@ import { IMagnifierOption } from './Magnifier'
 import { IAccessibilityOption } from './Accessibility'
 import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
+import {
+  CaretMovement,
+  DeleteMovement,
+  TextDirection,
+  TextEngineMode
+} from '../dataset/enum/TextDirection'
+import { IEditorFontFace } from './TextEngine'
 import { IHintOption } from './Hint'
 import type { ISpellcheckOption } from './Spellcheck'
 
@@ -45,6 +52,7 @@ export interface ILabOption {
   /**
    * 行级增量行计算：编辑时仅从受影响行断点续算，区间外行复用。
    * 复杂结构（表格/控件/浮动图/分栏/minWidth 控件占位等）自动退化全量。
+   * HarfBuzz 纯文本按段落重排并复用未变段落的行，不使用 legacy 行快照。
    * 默认：false
    */
   incrementalCompute?: boolean
@@ -103,6 +111,37 @@ export interface IEditorOption {
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
+  /** Text layout engine: legacy measureText path or HarfBuzz */
+  textEngine?: TextEngineMode
+  /**
+   * UI LTR/RTL **mode** (chrome only): host toolbar/shell mirroring via
+   * `ce-ui-rtl` class — do **not** set `dir=rtl` on the canvas container
+   * (breaks absolute caret hit-testing). Also seeds `element.direction` for
+   * **newly created** lines/tables only.
+   * Not paragraph direction — do not confuse with `executeDirection` or
+   * `defaultDirection`. Does not affect existing content layout, paint, or
+   * hit-testing; toggle must not reflow the body.
+   * Default: ltr. Command: `executeUiDirection`
+   */
+  direction?: TextDirection.LTR | TextDirection.RTL
+  /**
+   * Whether host toolbar may show the LTR/RTL mode toggle.
+   * Default: true. Set false to hide the control (demo reads this flag).
+   */
+  uiDirectionToggle?: boolean
+  /**
+   * Content default when an element has no `direction` (AUTO = detect from
+   * strong characters). Paragraph API: `executeDirection`.
+   * Distinct from UI mode `options.direction` / `executeUiDirection`.
+   * Default: auto
+   */
+  defaultDirection?: TextDirection
+  /** Arrow-key caret movement semantics */
+  caretMovement?: CaretMovement
+  /** Backspace/Delete target semantics */
+  deleteMovement?: DeleteMovement
+  /** Font binaries registered for HarfBuzz shaping */
+  fonts?: IEditorFontFace[]
   // 实验性功能（逐项默认关闭，未来可能调整或移除）
   lab?: ILabOption
   table?: ITableOption

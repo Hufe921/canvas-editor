@@ -6,6 +6,7 @@ import { formatElementContext } from '../../../../utils/element'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
 import { DatePicker } from './DatePicker'
+import { TextDirection } from '../../../../dataset/enum/TextDirection'
 
 export class DateParticle {
   private draw: Draw
@@ -105,7 +106,12 @@ export class DateParticle {
     this.datePicker.render({
       value,
       position,
-      dateFormat: element.dateFormat
+      dateFormat: element.dateFormat,
+      popupDirection:
+        element.direction === TextDirection.RTL ||
+        (position.bidiLevel ?? 0) % 2 === 1
+          ? 'rtl'
+          : 'ltr'
     })
   }
 }

@@ -282,6 +282,9 @@ export class Spellcheck {
         continue
       }
       // 错词可能换行，按行分段绘制
+      // Logical order may run right-to-left. Merge visual intervals on each
+      // baseline so waves cover the word without crossing BiDi gaps.
+      const intervals: { left: number; right: number; y: number }[] = []
       let segmentX = -1
       let segmentY = 0
       let segmentEndX = 0
@@ -292,29 +295,32 @@ export class Spellcheck {
       }
       for (let i = range.startIndex; i <= endIndex; i++) {
         const position = positionList[i]
-        if (!position) continue
+        if (!position || position.pageNo !== pageIndex) continue
         const {
-          pageNo,
           ascent,
           metrics: { boundingBoxDescent },
           coordinate: { leftTop, rightTop }
         } = position
-        if (pageNo !== pageIndex) {
+        intervals.push({
+          left: Math.min(leftTop[0], rightTop[0]),
+          right: Math.max(leftTop[0], rightTop[0]),
+          y: leftTop[1] + ascent + boundingBoxDescent
+        })
+      }
+      intervals.sort((a, b) => a.y - b.y || a.left - b.left)
+      for (const interval of intervals) {
+        if (
+          ~segmentX &&
+          (interval.y !== segmentY || interval.left > segmentEndX + 0.5)
+        ) {
           drawSegment()
-          continue
         }
-        const baselineY = leftTop[1] + ascent + boundingBoxDescent
         if (!~segmentX) {
-          segmentX = leftTop[0]
-          segmentY = baselineY
-          segmentEndX = rightTop[0]
-        } else if (baselineY !== segmentY) {
-          drawSegment()
-          segmentX = leftTop[0]
-          segmentY = baselineY
-          segmentEndX = rightTop[0]
+          segmentX = interval.left
+          segmentY = interval.y
+          segmentEndX = interval.right
         } else {
-          segmentEndX = rightTop[0]
+          segmentEndX = Math.max(segmentEndX, interval.right)
         }
       }
       drawSegment()

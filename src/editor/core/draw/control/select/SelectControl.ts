@@ -540,16 +540,20 @@ export class SelectControl implements IControlInstance {
       ul.append(li)
     }
     selectPopupContainer.append(ul)
-    // 定位
-    const {
-      coordinate: {
-        leftTop: [left, top]
-      },
-      lineHeight
-    } = position
-    const preY = this.control.getPreY()
-    selectPopupContainer.style.left = `${left + this.control.getPreX()}px`
-    selectPopupContainer.style.top = `${top + preY + lineHeight}px`
+    // 定位（RTL 右对齐元素右缘，LTR 左对齐元素左缘；混合纸张方向按页偏移）
+    const style = this.control.getDraw().getPopupPositionStyle(position)
+    if (style.right !== undefined) {
+      selectPopupContainer.style.left = 'auto'
+      selectPopupContainer.style.right = `${style.right}px`
+    } else {
+      selectPopupContainer.style.right = 'auto'
+      selectPopupContainer.style.left = `${style.left}px`
+    }
+    selectPopupContainer.style.top = `${style.top}px`
+    // 弹层自身跟随 LTR/RTL 模式；勿依赖画布容器 dir
+    const uiDir =
+      this.control.getDraw().getOptions().direction === 'rtl' ? 'rtl' : 'ltr'
+    selectPopupContainer.setAttribute('dir', uiDir)
     // 追加至container
     const container = this.control.getContainer()
     container.append(selectPopupContainer)

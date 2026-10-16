@@ -9,10 +9,47 @@ import {
 import { IMargin } from './Margin'
 import { ITd } from './table/Td'
 
+/** Minimal line handle from text-engine (avoid interface→core cycle at runtime) */
+export interface IEngineLayoutLine {
+  glyphs: Array<{
+    left: number
+    right: number
+    ax: number
+    dx: number
+    dy: number
+    pathData?: string
+    charStart: number
+    charEnd: number
+    logicalIndexStart: number
+    logicalIndexEnd: number
+    logicalIndices?: number[]
+    bidiLevel: number
+    style: {
+      fontFamily: string
+      fontSize: number
+      bold?: boolean
+      italic?: boolean
+      color?: string
+    }
+  }>
+  width: number
+  height: number
+  ascent: number
+  direction: 'ltr' | 'rtl'
+}
+
 export type IRowElement = IElement & {
   metrics: IElementMetrics
   style: string
   left?: number
+  /** Absolute x within the row content box (text-engine visual placement) */
+  visualLeft?: number
+  bidiLevel?: number
+  visualIndex?: number
+  clusterStart?: number
+  clusterEnd?: number
+  /** Original element index; unlike visual order, this remains stable. */
+  sourceIndex?: number
 }
 
 export interface IRow {
@@ -20,6 +57,8 @@ export interface IRow {
   height: number
   ascent: number
   rowFlex?: RowFlex
+  /** Resolved paragraph direction for this row (ltr | rtl) */
+  direction?: 'ltr' | 'rtl'
   startIndex: number
   isPageBreak?: boolean
   // 分页符行携带的后续页纸张方向（排版期从分页符元素拷贝）
@@ -40,6 +79,10 @@ export interface IRow {
   fragmentPosition?: IElementPosition
   // 续页回显表头单元格的一次性位置列表（仅用于绘制，不参与命中）
   repeatTdPositionList?: { td: ITd; positionList: IElementPosition[] }[]
+  /** text-engine layout line for joined-script rendering */
+  engineLine?: IEngineLayoutLine
+  /** Full paragraph text (for cluster → string when drawing runs) */
+  engineParagraphText?: string
 }
 
 // 行计算跨行携带状态的快照：行起始时刻的完整状态，增量续算用它恢复

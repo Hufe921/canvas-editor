@@ -4,6 +4,7 @@ import {
   PageMode,
   PaperDirection
 } from '../../../dataset/enum/Editor'
+import { TextDirection } from '../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IMargin } from '../../../interface/Margin'
@@ -100,6 +101,12 @@ export class Ruler {
     this.render()
   }
 
+  /** 仅当标尺已创建时按当前方向重绘（切换 LTR/RTL 模式时调用，不重建 DOM） */
+  public refresh() {
+    if (!this.rulerContainer) return
+    this.render()
+  }
+
   public dispose() {
     this._stopDrag()
     this.rulerContainer?.remove()
@@ -146,13 +153,19 @@ export class Ruler {
     // 背景
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, width, height)
-    // 页边距阴影区域
+    // 页边距阴影区域（RTL 镜像：左页边距在右侧、右页边距在左侧）
     const margins = this.draw.getMargins()
     const scale = this.options.scale
+    const isRtl = this.options.direction === TextDirection.RTL
     ctx.fillStyle = '#f2f2f2'
-    ctx.fillRect(0, 0, margins[3], height)
-    ctx.fillRect(width - margins[1], 0, margins[1], height)
-    // 刻度（以毫米为单位，数字按厘米显示）
+    if (isRtl) {
+      ctx.fillRect(width - margins[3], 0, margins[3], height)
+      ctx.fillRect(0, 0, margins[1], height)
+    } else {
+      ctx.fillRect(0, 0, margins[3], height)
+      ctx.fillRect(width - margins[1], 0, margins[1], height)
+    }
+    // 刻度（以毫米为单位，数字按厘米显示）；RTL 从右缘向内计数
     ctx.strokeStyle = '#999999'
     ctx.fillStyle = '#666666'
     ctx.font = '8px sans-serif'
@@ -161,7 +174,9 @@ export class Ruler {
     const mmPx = this.MM_PX * scale
     const tickCount = Math.floor(width / mmPx)
     for (let i = 0; i <= tickCount; i++) {
-      const x = Math.round(i * mmPx) + 0.5
+      const x = isRtl
+        ? width - Math.round(i * mmPx) + 0.5
+        : Math.round(i * mmPx) + 0.5
       const isCm = i % 10 === 0
       const tickHeight = isCm ? 10 : i % 5 === 0 ? 7 : 4
       ctx.moveTo(x, height)
@@ -179,8 +194,13 @@ export class Ruler {
     ctx.lineTo(width, height - 0.5)
     ctx.stroke()
     // 左右边距手柄
-    this._drawXHandle(ctx, margins[3], height)
-    this._drawXHandle(ctx, width - margins[1], height)
+    if (isRtl) {
+      this._drawXHandle(ctx, width - margins[3], height)
+      this._drawXHandle(ctx, margins[1], height)
+    } else {
+      this._drawXHandle(ctx, margins[3], height)
+      this._drawXHandle(ctx, width - margins[1], height)
+    }
   }
 
   private _renderY() {
@@ -276,10 +296,13 @@ export class Ruler {
   private _getHitMarginSideX(x: number): RulerMarginSide | null {
     const width = this.draw.getWidth()
     const margins = this.draw.getMargins()
-    if (Math.abs(x - margins[3]) <= this.HANDLE_HIT_TOLERANCE) {
+    const isRtl = this.options.direction === TextDirection.RTL
+    const leftX = isRtl ? width - margins[3] : margins[3]
+    const rightX = isRtl ? margins[1] : width - margins[1]
+    if (Math.abs(x - leftX) <= this.HANDLE_HIT_TOLERANCE) {
       return RulerMarginSide.LEFT
     }
-    if (Math.abs(x - (width - margins[1])) <= this.HANDLE_HIT_TOLERANCE) {
+    if (Math.abs(x - rightX) <= this.HANDLE_HIT_TOLERANCE) {
       return RulerMarginSide.RIGHT
     }
     return null
@@ -370,16 +393,18 @@ export class Ruler {
       this.dragSide === RulerMarginSide.RIGHT
     ) {
       const originalWidth = this.draw.getOriginalWidth()
-      // 基于拖拽起点的位移增量（还原为原始尺寸）
+      // 基于拖拽起点的位移增量（还原为原始尺寸）；RTL 下手柄位置镜像，方向取反
       const delta = (evt.clientX - this.dragStartPosition) / scale
+      const rtlDelta =
+        this.options.direction === TextDirection.RTL ? -delta : delta
       if (this.dragSide === RulerMarginSide.LEFT) {
         displayed[3] = this.clampMargin(
-          displayed[3] + delta,
+          displayed[3] + rtlDelta,
           originalWidth - displayed[1] - this.MIN_INNER_SIZE
         )
       } else {
         displayed[1] = this.clampMargin(
-          displayed[1] - delta,
+          displayed[1] - rtlDelta,
           originalWidth - displayed[3] - this.MIN_INNER_SIZE
         )
       }

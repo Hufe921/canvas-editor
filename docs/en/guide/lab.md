@@ -12,6 +12,18 @@ new Editor(container, data, {
 
 ## incrementalCompute: Row-Level Incremental Layout
 
+With `textEngine: 'harfbuzz'`, the same option enables paragraph-level reuse.
+Joining and BiDi can affect the entire edited paragraph, so that paragraph is
+recomputed in full while clean paragraphs reuse their rows and glyphs. Logical
+indices and caret layouts are rebased after insertion or deletion.
+
+This currently supports main-document plain text, superscripts, subscripts and
+paragraph spacing. Pagination and positions are still computed in full. A single
+very long paragraph still requires full paragraph layout on each edit. Documents
+with lists, controls, tables, images, areas, columns or other complex structures
+fall back to full layout. Formatting, configuration and cache changes also
+invalidate reuse.
+
 ### What it solves
 
 By default, every edit (e.g. typing a character) re-lays out the entire document from scratch: row computation, pagination, element coordinates and history snapshots are all full-document operations. At tens of thousands of elements, a single keystroke can exceed the 16ms frame budget and typing feels laggy.

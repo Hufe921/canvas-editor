@@ -172,4 +172,25 @@ describe('Spellcheck', () => {
 
     expect(() => spellcheck.getSpellcheckWordList()).not.toThrow()
   })
+
+  it('draws RTL word waves in visual order without bridging BiDi gaps', () => {
+    const positions = [30, 20, 10, 70].map(x => ({
+      pageNo: 0,
+      ascent: 10,
+      metrics: { boundingBoxDescent: 2 },
+      coordinate: { leftTop: [x, 0], rightTop: [x + 10, 0] }
+    })) as IElementPosition[]
+    const spellcheck = createSpellcheck(
+      [{ value: 'مرحبا' }],
+      { getOriginalMainPositionList: () => positions } as unknown as Position
+    )
+    spellcheck.setSpellcheckRangeList([{ startIndex: 0, endIndex: 3 }])
+    const ctx = document.createElement('canvas').getContext('2d')!
+    const move = vi.spyOn(ctx, 'moveTo')
+    const wave = vi.spyOn(ctx, 'quadraticCurveTo')
+    spellcheck.render(ctx, 0)
+    expect(move.mock.calls.map(call => call[0])).toEqual([10, 70])
+    expect(wave.mock.calls.at(-1)?.[2]).toBe(80)
+  })
+
 })
