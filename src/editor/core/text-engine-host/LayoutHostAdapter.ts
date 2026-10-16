@@ -87,6 +87,7 @@ export class LayoutHostAdapter {
   private engine: TextLayoutEngine | null = null
   private initPromise: Promise<void> | null = null
   private lastLayouts = new Map<string, LayoutResult>()
+  private revision = 0
 
   constructor(
     private getOptions: () => DeepRequired<IEditorOption>,
@@ -103,6 +104,22 @@ export class LayoutHostAdapter {
 
   getLayout(key: string): LayoutResult | undefined {
     return this.lastLayouts.get(key) || this.cache.get(key)
+  }
+
+  getRevision(): number {
+    return this.revision
+  }
+
+  replaceParagraphLayouts(
+    scope: string,
+    layouts: { startIndex: number; endIndex: number; layout: LayoutResult }[]
+  ) {
+    for (const key of this.lastLayouts.keys()) {
+      if (key.startsWith(`${scope}|p:`)) this.lastLayouts.delete(key)
+    }
+    for (const { startIndex, endIndex, layout } of layouts) {
+      this.lastLayouts.set(layoutLastKey(scope, startIndex, endIndex), layout)
+    }
   }
 
   findLayoutByElementIndex(
@@ -253,27 +270,34 @@ export class LayoutHostAdapter {
 
   scanParagraphs(
     elementList: IElement[],
-    defaultDirection?: TextDirection
+    defaultDirection?: TextDirection,
+    startIndex = 0,
+    endIndex = elementList.length
   ): ParagraphSpan[] {
     const options = this.getOptions()
     const hide = this.getHideContext?.()
-    return this.bridge.scanParagraphs(elementList, {
-      defaultDirection: defaultDirection || options.defaultDirection,
-      defaultFont: options.defaultFont,
-      defaultSize: options.defaultSize,
-      defaultColor: options.defaultColor,
-      defaultHyperlinkColor: options.defaultHyperlinkColor,
-      defaultLabelColor: options.label.defaultColor,
-      fonts: options.fonts,
-      scale: options.scale,
-      checkboxWidth: options.checkbox.width,
-      checkboxGap: options.checkbox.gap,
-      radioWidth: options.radio.width,
-      radioGap: options.radio.gap,
-      isDesignMode: hide?.isDesignMode,
-      isAreaHideDisabled: hide?.isAreaHideDisabled,
-      isTraceHidden: hide?.isTraceHidden
-    })
+    return this.bridge.scanParagraphs(
+      elementList,
+      {
+        defaultDirection: defaultDirection || options.defaultDirection,
+        defaultFont: options.defaultFont,
+        defaultSize: options.defaultSize,
+        defaultColor: options.defaultColor,
+        defaultHyperlinkColor: options.defaultHyperlinkColor,
+        defaultLabelColor: options.label.defaultColor,
+        fonts: options.fonts,
+        scale: options.scale,
+        checkboxWidth: options.checkbox.width,
+        checkboxGap: options.checkbox.gap,
+        radioWidth: options.radio.width,
+        radioGap: options.radio.gap,
+        isDesignMode: hide?.isDesignMode,
+        isAreaHideDisabled: hide?.isAreaHideDisabled,
+        isTraceHidden: hide?.isTraceHidden
+      },
+      startIndex,
+      endIndex
+    )
   }
 
   /**
@@ -384,6 +408,7 @@ export class LayoutHostAdapter {
   }
 
   invalidate() {
+    this.revision++
     this.cache.invalidate()
     this.lastLayouts.clear()
   }

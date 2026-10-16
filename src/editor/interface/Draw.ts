@@ -102,6 +102,8 @@ export interface IComputeRowListPayload {
    * Default `main`.
    */
   layoutScope?: string
+  /** Main-document dirty interval for paragraph-safe HarfBuzz reuse. */
+  dirtyRange?: IComputeRange
   /**
    * 断点续算：从 state 对应的行首元素（startIndex）重新参与断行，
    * 到与某个旧行状态收敛（converge 返回 true）或文档末尾即止，

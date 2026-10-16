@@ -175,14 +175,16 @@ function isTextLike(el: IElement): boolean {
 export class ElementBridge {
   scanParagraphs(
     elementList: IElement[],
-    options: ScanParagraphOptions
+    options: ScanParagraphOptions,
+    startIndex = 0,
+    endIndex = elementList.length
   ): ParagraphSpan[] {
     const paragraphs: ParagraphSpan[] = []
-    let start = 0
-    for (let i = 0; i <= elementList.length; i++) {
+    let start = startIndex
+    for (let i = startIndex; i <= endIndex; i++) {
       const el = elementList[i]
       const isBreak =
-        i === elementList.length ||
+        i === endIndex ||
         el.value === ZERO ||
         el.type === ElementType.PAGE_BREAK ||
         el.type === ElementType.SEPARATOR ||
@@ -193,7 +195,7 @@ export class ElementBridge {
       if (i > start) {
         paragraphs.push(this.buildParagraph(elementList, start, i - 1, options))
       }
-      if (i < elementList.length && el.value === ZERO) {
+      if (i < endIndex && el.value === ZERO) {
         start = i
       } else {
         start = i + 1

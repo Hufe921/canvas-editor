@@ -26,6 +26,9 @@
 
 ## 兼容性边界
 
+以下为 main 合并时的状态。后续已加入 HarfBuzz 段落级增量适配，
+当前能力及限制见 [HarfBuzz 增量排版](./harfbuzz-incremental-layout.md)。
+
 `lab.incrementalCompute` 默认关闭。打开后，legacy 简单文本使用上游增量算法；
 `textEngine: 'harfbuzz'` 始终完整排版，因此不会获得本次上游增量算法的性能收益。
 HarfBuzz 段落整形与 BiDi 重排不满足 legacy 行快照的恢复条件，需要独立设计增量策略。

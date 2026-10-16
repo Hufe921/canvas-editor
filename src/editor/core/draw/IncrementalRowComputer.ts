@@ -152,7 +152,7 @@ export class IncrementalRowComputer {
     const rawRowList = this.draw.getRawRowList()
     // 全局门控
     if (
-      // Legacy row snapshots cannot resume shaped paragraphs or BiDi layouts.
+      // HarfBuzz uses IncrementalParagraphComputer instead of legacy snapshots.
       this.draw.getOptions().textEngine === TextEngineMode.HARFBUZZ ||
       !range ||
       !this.draw.getOptions().lab.incrementalCompute ||

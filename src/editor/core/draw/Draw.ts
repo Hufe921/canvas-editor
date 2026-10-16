@@ -39,6 +39,7 @@ import { mergeVisualRects } from '../text-engine'
 import { containsShapingScript } from '../text-engine/utils/scriptFont'
 import type { VisualRect } from '../text-engine/types'
 import { IncrementalRowComputer } from './IncrementalRowComputer'
+import { IncrementalParagraphComputer } from './IncrementalParagraphComputer'
 import { deepClone, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -224,6 +225,7 @@ export class Draw {
   // 跨页表格拆分前的原始行列表：增量计算以其为基准（片段行不参与复用定位）
   private rawRowList: IRow[]
   private incrementalRowComputer: IncrementalRowComputer
+  private incrementalParagraphComputer: IncrementalParagraphComputer
   // maxPageNo 截断发生过（elementList 被裁剪导致行/元素失配），禁用增量
   private isElementListTruncated: boolean
   private pageRowList: IRow[][]
@@ -291,6 +293,7 @@ export class Draw {
     this.rawRowList = []
     this.isElementListTruncated = false
     this.incrementalRowComputer = new IncrementalRowComputer(this)
+    this.incrementalParagraphComputer = new IncrementalParagraphComputer()
     this.tableTool = new TableTool(this)
     this.tableOperate = new TableOperate(this)
     this.pageNumber = new PageNumber(this)
@@ -2459,11 +2462,16 @@ export class Draw {
     width: number,
     layoutScope: string,
     defaultDirection?: TextDirection,
-    defaultAlign?: 'left' | 'right'
+    defaultAlign?: 'left' | 'right',
+    startIndex = 0,
+    endIndex = elementList.length,
+    startRowIndex = 0
   ): IRow[] | null {
     const paragraphs = this.layoutHostAdapter.scanParagraphs(
       elementList,
-      defaultDirection
+      defaultDirection,
+      startIndex,
+      endIndex
     )
     const paraByStart = new Map(
       paragraphs.map(p => [p.startIndex, p] as const)
@@ -2473,9 +2481,9 @@ export class Draw {
     const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
     const listIndexMap: Map<string, number> = new Map()
     const rowList: IRow[] = []
-    let rowIndex = 0
-    let i = 0
-    while (i < elementList.length) {
+    let rowIndex = startRowIndex
+    let i = startIndex
+    while (i < endIndex) {
       const el = elementList[i]
       if (
         el.type === ElementType.SEPARATOR ||
@@ -2524,11 +2532,11 @@ export class Draw {
         rowIndex = this._appendParagraphEngineRows(
           rowList,
           paragraph,
-        elementList,
-        Math.max(1, width - listOffset),
-        rowIndex,
-        layoutScope,
-        defaultAlign
+          elementList,
+          Math.max(1, width - listOffset),
+          rowIndex,
+          layoutScope,
+          defaultAlign
         )
         const paragraphRows = rowList.slice(paraRowStart)
         const firstRow = paragraphRows[0]
@@ -2699,6 +2707,11 @@ export class Draw {
       defaultDirection,
       defaultAlign
     } = payload
+    const isMainLayout =
+      !isFromTable && layoutScope === 'main' && elementList === this.elementList
+    if (isMainLayout && !this.layoutHostAdapter.isReady()) {
+      this.incrementalParagraphComputer.reset()
+    }
     // text-engine：段落走引擎（含单元格）；TABLE/浮层图等在引擎循环内 forceLegacy
     if (!forceLegacy && this.layoutHostAdapter.isReady()) {
       // 分栏时按列宽排版，避免整段以整行宽换行后套栏偏移导致列间覆盖
@@ -2706,13 +2719,46 @@ export class Draw {
         isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
       const isColumnEnabled = !!layout && layout.count > 1
       const engineWidth = isColumnEnabled ? layout!.width : innerWidth
-      const engineRows = this._computeRowListByTextEngine(
-        elementList,
-        engineWidth,
-        layoutScope,
-        defaultDirection,
-        defaultAlign
-      )
+      const computeEngineRows = (
+        from = 0,
+        to = elementList.length,
+        rowIndex = 0
+      ) =>
+        this._computeRowListByTextEngine(
+          elementList,
+          engineWidth,
+          layoutScope,
+          defaultDirection,
+          defaultAlign,
+          from,
+          to,
+          rowIndex
+        )
+      const canReuseParagraphs =
+        isMainLayout &&
+        this.options.lab.incrementalCompute &&
+        !isColumnEnabled &&
+        !surroundElementList.length &&
+        !this.isElementListTruncated
+      let engineRows: IRow[] | null = null
+      if (canReuseParagraphs) {
+        engineRows = this.incrementalParagraphComputer.compute(
+          payload,
+          JSON.stringify([
+            this.options,
+            this.getMode(),
+            this.layoutHostAdapter.getRevision()
+          ]),
+          this.layoutHostAdapter,
+          computeEngineRows
+        )
+      } else if (isMainLayout) {
+        this.incrementalParagraphComputer.reset()
+      }
+      if (!engineRows) {
+        this.layoutHostAdapter.replaceParagraphLayouts(layoutScope, [])
+        engineRows = computeEngineRows()
+      }
       if (engineRows) {
         // 表格单元格/页眉页脚等子布局不做分栏与环绕处理
         if (!isFromTable && layoutScope === 'main') {
@@ -4607,12 +4653,13 @@ export class Draw {
         innerWidth,
         surroundElementList,
         elementList: this.elementList,
-        layoutScope: 'main'
+        layoutScope: 'main',
+        dirtyRange: this.incrementalRowComputer.consumeDirtyRange()
       }
       // 行级增量行计算：消费本次编辑的脏区间，从受影响行续算至收敛；
       // 无脏区间或门控不满足时退回全量，行为与未开启时一致
       const incrementalResult = this.incrementalRowComputer.tryCompute(
-        this.incrementalRowComputer.consumeDirtyRange(),
+        rowComputePayload.dirtyRange,
         rowComputePayload
       )
       this.rawRowList =
