@@ -26,6 +26,7 @@ export interface IElementBasic {
   value: string
   extension?: unknown
   externalId?: string
+  hint?: string // 悬浮提示文案
 }
 
 export interface IElementStyle {
@@ -43,6 +44,8 @@ export interface IElementStyle {
   rowMargin?: number
   /** Paragraph base direction (stored like rowFlex on span elements) */
   direction?: TextDirection
+  spacingBefore?: number
+  spacingAfter?: number
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number

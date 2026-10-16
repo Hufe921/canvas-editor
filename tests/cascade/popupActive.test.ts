@@ -83,30 +83,10 @@ describe('select 弹窗高亮（真实点击路径）', () => {
     li.click()
     // 等待 render nextTick（reAwakeControl）
     await new Promise(r => setTimeout(r, 0))
-    // 检查 model：活列表成员状态
-    const members = draw
-      .getOriginalMainElementList()
-      .filter(el => el.controlId === 'c1')
-    console.log(
-      'members:',
-      members
-        .map(
-          m =>
-            `${m.controlComponent ?? m.value}[code=${String(m.control?.code)},hasControl=${Boolean(m.control)}]`
-        )
-        .join(' ')
-    )
     // 重新唤起弹窗
     activeControl.awake()
-    const lis = container.querySelectorAll('.ce-select-control-popup li')
     const actives = container.querySelectorAll(
       '.ce-select-control-popup li.active'
-    )
-    console.log(
-      'lis:',
-      [...lis].map(li => `${li.textContent}[${li.className}]`).join(','),
-      '| instanceElement:',
-      JSON.stringify(activeControl.getElement()?.control?.code)
     )
     expect(actives.length).toBe(1)
     expect(actives[0].textContent).toBe('有')

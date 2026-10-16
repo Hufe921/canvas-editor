@@ -30,9 +30,11 @@ import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
 import { ICursorOption } from '../interface/Cursor'
-import { IEditorOption, IModeRule } from '../interface/Editor'
+import { IEditorOption, ILabOption, IModeRule } from '../interface/Editor'
 import { ITraceOption } from '../interface/Trace'
 import { IRulerOption } from '../interface/Ruler'
+import { IHintOption } from '../interface/Hint'
+import { defaultHintOption } from '../dataset/constant/Hint'
 import { IMagnifierOption } from '../interface/Magnifier'
 import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
@@ -74,10 +76,16 @@ import { IWhiteSpaceOption } from '../interface/WhiteSpace'
 import { defaultWhiteSpaceOption } from '../dataset/constant/WhiteSpace'
 import { defaultTraceOption } from '../dataset/constant/Trace'
 import { defaultRulerOption } from '../dataset/constant/Ruler'
+import { defaultSpellcheckOption } from '../dataset/constant/Spellcheck'
+import type { ISpellcheckOption } from '../interface/Spellcheck'
 
 export function mergeOption(
   options: IEditorOption = {}
 ): DeepRequired<IEditorOption> {
+  const labOptions: Required<ILabOption> = {
+    incrementalCompute: false,
+    ...options.lab
+  }
   const tableOptions: Required<ITableOption> = {
     ...defaultTableOption,
     ...options.table
@@ -198,6 +206,14 @@ export function mergeOption(
     ...defaultRulerOption,
     ...options.ruler
   }
+  const hintOptions: Required<IHintOption> = {
+    ...defaultHintOption,
+    ...options.hint
+  }
+  const spellcheckOptions: Required<ISpellcheckOption> = {
+    ...defaultSpellcheckOption,
+    ...options.spellcheck
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -273,6 +289,7 @@ export function mergeOption(
       style: f.style ?? ('normal' as const),
       scripts: f.scripts ? [...f.scripts] : []
     })),
+    lab: labOptions,
     table: tableOptions,
     header: headerOptions,
     footer: footerOptions,
@@ -303,6 +320,8 @@ export function mergeOption(
     accessibility: accessibilityOptions,
     column: columnOptions,
     trace: traceOptions,
-    ruler: rulerOptions
+    ruler: rulerOptions,
+    hint: hintOptions,
+    spellcheck: spellcheckOptions
   }
 }

@@ -26,6 +26,7 @@ interface IElement {
   extension?: unknown;
   externalId?: string;
   hide?: boolean;
+  hint?: string; // 悬浮提示文案：（需在配置中开启 hint 总开关）
   // 样式
   font?: string;
   size?: number;
@@ -48,6 +49,8 @@ interface IElement {
   };
   direction?: 'ltr' | 'rtl' | 'auto'; // 段落基础方向
   rowMargin?: number;
+  spacingBefore?: number;
+  spacingAfter?: number;
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;
@@ -70,6 +73,8 @@ interface IElement {
       conceptId?: string;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
+      borderColor?: string;
+      borderWidth?: number;
       borderTypes?: TdBorder[];
       slashTypes?: TdSlash[];
       value: IElement[];
@@ -77,6 +82,7 @@ interface IElement {
       externalId?: string;
       disabled?: boolean;
       deletable?: boolean;
+      hint?: string; // 单元格悬浮提示文案：鼠标移入单元格内任意元素时展示
     }[];
   }[];
   borderType?: TableBorder;

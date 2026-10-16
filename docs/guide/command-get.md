@@ -159,6 +159,17 @@ const rangeList = instance.command.getKeywordRangeList()
 const keywordContextList = instance.command.getKeywordContext(payload: string)
 ```
 
+## getSpellcheckWordList
+
+功能：获取正文及表格单元格中的单词和元素索引，供 Typo.js、nspell
+等外部拼写检查插件使用。编辑器只负责分词和索引映射，不包含词典。
+
+用法：
+
+```javascript
+const wordList = instance.command.getSpellcheckWordList()
+```
+
 ## getRangeParagraph
 
 功能：获取选区所在段落元素列表
@@ -167,6 +178,16 @@ const keywordContextList = instance.command.getKeywordContext(payload: string)
 
 ```javascript
 const paragraphElementList = instance.command.getRangeParagraph()
+```
+
+## getSurroundElementList
+
+功能：获取光标前或光标后指定数量的元素列表（按文档顺序返回，常用于输入联想场景）。`direction` 为 `SurroundPosition.BEFORE`（光标前，默认）或 `SurroundPosition.AFTER`（光标后），`length` 为元素数量（默认 `1`）。光标未激活时返回 `null`。
+
+用法：
+
+```javascript
+const beforeElementList = instance.command.getSurroundElementList(option: IGetSurroundElementListOption)
 ```
 
 ## getPaperMargin
@@ -261,7 +282,15 @@ const locale = await instance.command.getLocale()
 const groupIds = await instance.command.getGroupIds()
 ```
 
-控件相关命令已迁移至[控件-方法](./control/command.md)。
+## getGroupRectList
+
+功能：获取成组元素的矩形坐标列表（跨行、跨页时拆分为多个矩形），可用于实现批注连接线等场景
+
+用法：
+
+```javascript
+const rectList = instance.command.getGroupRectList(groupId)
+```
 
 ## getContainer
 

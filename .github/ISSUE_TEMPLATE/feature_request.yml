@@ -1,20 +1,23 @@
 name: "\U0001F680 New feature proposal"
 description: Suggest an idea for this project
-labels: [":sparkles: feature request"]
+labels: [':sparkles: feature request']
 body:
   - type: markdown
     attributes:
       value: |
-       **Before You Start...**
+        **Before You Start...**
 
-        This form is only for submitting feature requests. If you have a usage question
-        or are unsure if this is really a bug, make sure to:
+         This form is only for submitting feature requests. If you have a usage question
+         or are unsure if this is really a bug, make sure to:
 
-        - Read the [docs](https://hufe.club/canvas-editor-docs/)
+         - Read the [docs](https://hufe.club/canvas-editor-docs/)
+         - Check the [official plugins](https://github.com/Hufe921/canvas-editor-plugin) — capabilities like
+           Word/Excel import-export, formulas, comments, spellcheck or find & replace may already be available as a plugin
 
-        Also try to search for your issue - another user may have already requested something similar!
+         Also try to search for your issue - another user may have already requested something similar!
 
-        作者牺牲业余时间，非全职开发此项目。您的[赞助](https://hufe.club/donate.jpg)不仅能支持项目的持续发展，还能激励作者加快此功能的完善。赞助时可以备注需求id
+         作者牺牲业余时间，非全职开发此项目。您的[赞助](https://hufe.club/donate.jpg)不仅能支持项目的持续发展，还能激励作者加快此功能的完善。赞助时可以备注需求id
+         常见能力（Word/Excel 导入导出、公式、批注、拼写检查、查找替换等）可能已由官方插件提供，提交前请先查看 [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)
   - type: textarea
     id: problem-description
     attributes:

@@ -24,7 +24,7 @@ export default defineConfig({
       },
       {
         text: '官方插件',
-        link: '/guide/plugin-internal.html'
+        link: 'https://hufe.club/canvas-editor-plugin'
       },
       {
         text: '调试工具',
@@ -45,7 +45,9 @@ export default defineConfig({
           { text: '数据结构', link: '/guide/schema' },
           { text: '架构', link: '/guide/architecture' },
           { text: 'RTL 排版设计', link: '/guide/rtl-layout-design' },
-          { text: 'RTL 延期 TODO', link: '/guide/rtl-deferred-todo' }
+          { text: 'RTL 延期 TODO', link: '/guide/rtl-deferred-todo' },
+          { text: '功能总览', link: '/guide/features' },
+          { text: '实验特性', link: '/guide/lab' }
         ]
       },
       {
@@ -103,8 +105,11 @@ export default defineConfig({
       {
         text: '插件',
         items: [
+          {
+            text: '官方插件',
+            link: 'https://hufe.club/canvas-editor-plugin'
+          },
           { text: '自定义插件', link: '/guide/plugin-custom' },
-          { text: '官方插件', link: '/guide/plugin-internal' },
           { text: '开发调试工具', link: '/guide/devtools' }
         ]
       }
@@ -142,7 +147,7 @@ export default defineConfig({
           },
           {
             text: 'Official plugin',
-            link: '/en/guide/plugin-internal.html'
+            link: 'https://hufe.club/canvas-editor-plugin'
           },
           {
             text: 'DevTools',
@@ -163,7 +168,9 @@ export default defineConfig({
               { text: 'schema', link: '/en/guide/schema' },
               { text: 'architecture', link: '/en/guide/architecture' },
               { text: 'RTL layout design', link: '/en/guide/rtl-layout-design' },
-              { text: 'RTL deferred TODO', link: '/en/guide/rtl-deferred-todo' }
+              { text: 'RTL deferred TODO', link: '/en/guide/rtl-deferred-todo' },
+              { text: 'features', link: '/en/guide/features' },
+              { text: 'lab', link: '/en/guide/lab' }
             ]
           },
           {
@@ -221,8 +228,11 @@ export default defineConfig({
           {
             text: 'Plugin',
             items: [
+              {
+                text: 'official',
+                link: 'https://hufe.club/canvas-editor-plugin'
+              },
               { text: 'custom', link: '/en/guide/plugin-custom' },
-              { text: 'official', link: '/en/guide/plugin-internal' },
               { text: 'devtools', link: '/en/guide/devtools' }
             ]
           }

@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { EditorMode } from '../../../src/editor/dataset/enum/Editor'
 import { createTestEditor } from '../../factories/editor'
 import { TraceType } from '../../../src/editor/dataset/enum/Trace'
@@ -36,9 +36,17 @@ describe('文档级命令', () => {
     expect(ctx.editor.command.getOptions().scale).toBe(before)
   })
 
-  it('executePrint 不抛错', () => {
+  it('executePrint 不抛错', async () => {
     ctx = createTestEditor()
-    expect(() => ctx.editor.command.executePrint()).not.toThrow()
+    await ctx.editor.command.executePrint()
+    const iframeList = document.querySelectorAll('iframe')
+    const iframe = iframeList[iframeList.length - 1]
+    const contentWindow = iframe.contentWindow!
+    const print = vi.fn()
+    contentWindow.print = print
+    await new Promise(resolve => setTimeout(resolve))
+    expect(print).toHaveBeenCalledOnce()
+    iframe.remove()
   })
 
   it('留痕开启时按 id 删除元素保留删除记录', () => {

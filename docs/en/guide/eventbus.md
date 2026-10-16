@@ -268,3 +268,27 @@ instance.eventBus.on('labelMousedown', (payload: {
   element: IElement
 }) => void)
 ```
+
+## renderChange
+
+Feature: Fires after editor computation and rendering are complete, allowing
+plugins that depend on the latest content to refresh
+
+Usage:
+
+```javascript
+instance.eventBus.on('renderChange', () => void)
+```
+
+## spellcheckClick
+
+Feature: The spell check misspelled word click event
+
+Usage:
+
+```javascript
+instance.eventBus.on('spellcheckClick', (payload: {
+  evt: MouseEvent
+  range: ISpellcheckRange
+}) => void)
+```

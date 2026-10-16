@@ -37,6 +37,7 @@ interface IEditorOption {
   searchMatchColor?: string // Search for highlight color. default: #FFFF00
   searchNavigateMatchColor?: string // Search navigation highlighted color.default: #AAD280
   searchMatchAlpha?: number // Search for highlight transparency. default: 0.6
+  spellcheck?: ISpellcheckOption // Spell check configuration
   highlightAlpha?: number //  Highlight element transparency. default: 0.6
   highlightMarginHeight?: number // Highlight element margin height. default: 8
   resizerColor?: string // Image sizer color. default: #4182D9
@@ -53,7 +54,7 @@ interface IEditorOption {
   pageNumber?: IPageNumber // Page number configuration
   paperDirection?: PaperDirection // Paper orientation: portrait, landscape
   inactiveAlpha?: number // When the body content is out of focus, transparency. default: 0.6
-  historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100
+  historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100; 0 disables snapshot allocation
   printPixelRatio?: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
   maskMargin?: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
   letterClass?: string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
@@ -68,6 +69,7 @@ interface IEditorOption {
   defaultDirection?: 'ltr' | 'rtl' | 'auto' // Content default paragraph direction when element has no direction (auto = detect). Command: executeDirection. Separate from UI mode options.direction. default: auto
   caretMovement?: 'visual' | 'logical' // Arrow-key caret movement semantics. default: visual
   deleteMovement?: 'visual' | 'logical' // Backspace/Delete target semantics; visual deletes the screen-adjacent element. default: logical
+  lab?: ILabOption // Experimental features configuration
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration
   checkbox?: ICheckboxOption // Checkbox configuration
@@ -95,6 +97,17 @@ interface IEditorOption {
   column?: IColumnOption // Column configuration. default: disabled
   trace?: ITraceOption // Trace configuration. default: disabled
   ruler?: IRulerOption // Ruler configuration. default: disabled
+  hint?: IHintOption // Hover hint configuration. default: disabled
+}
+```
+
+## Lab Configuration
+
+See the [Lab](./lab.md) chapter for experimental features (`lab`).
+
+```typescript
+interface ILabOption {
+  incrementalCompute?: boolean // Row-level incremental layout. default: false
 }
 ```
 
@@ -471,5 +484,26 @@ interface ITraceOption {
 interface IRulerOption {
   disabled?: boolean // Whether to disable the ruler initially. default: true
   height?: number // Ruler height. default: 26
+}
+```
+
+## Hover Hint Configuration
+
+```typescript
+interface IHintOption {
+  disabled?: boolean // Master switch. default: true (disabled by default; set to false to enable)
+  backgroundColor?: string // Popup background color. default: #fff
+  color?: string // Popup text color. default: #000000
+  fontSize?: number // Popup font size. default: 12
+  maxWidth?: number // Popup max width; wraps when exceeded. default: 280
+}
+```
+
+## Spell Check Configuration
+
+```typescript
+interface ISpellcheckOption {
+  disabled?: boolean // Whether disabled. default: true
+  color?: string // Misspelled word wavy line color. default: #FF0000
 }
 ```

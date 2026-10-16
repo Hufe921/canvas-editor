@@ -37,6 +37,7 @@ interface IEditorOption {
   searchMatchColor?: string // 搜索高亮颜色。默认：#FFFF00
   searchNavigateMatchColor?: string // 搜索导航高亮颜色。默认：#AAD280
   searchMatchAlpha?: number // 搜索高亮透明度。默认：0.6
+  spellcheck?: ISpellcheckOption // 拼写检查配置
   highlightAlpha?: number // 高亮元素透明度。默认：0.6
   highlightMarginHeight?: number // 高亮元素边距高度。默认：8
   resizerColor?: string // 图片尺寸器颜色。默认：#4182D9
@@ -53,7 +54,7 @@ interface IEditorOption {
   pageNumber?: IPageNumber // 页码配置
   paperDirection?: PaperDirection // 纸张方向：纵向、横向
   inactiveAlpha?: number // 正文内容失焦时透明度。默认值：0.6
-  historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次
+  historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次；0 禁用历史快照分配
   printPixelRatio?: number // 打印像素比率（值越大越清晰，但尺寸越大）。默认：3
   maskMargin?: IMargin // 编辑器上的遮盖边距（如悬浮到编辑器上的菜单栏、底部工具栏）。默认：[0, 0, 0, 0]
   letterClass?: string[] // 排版支持的字母类。默认：a-zA-Z。内置可选择的字母表类：LETTER_CLASS
@@ -69,6 +70,7 @@ interface IEditorOption {
   caretMovement?: 'visual' | 'logical' // 方向键光标移动语义。默认：visual
   deleteMovement?: 'visual' | 'logical' // Backspace/Delete 删除语义；visual 按屏幕邻接删除。默认：logical
   fonts?: { family: string; data?: ArrayBuffer | null; url?: string | null; weight?: number; style?: 'normal' | 'italic' }[] // HarfBuzz 字体注册
+  lab?: ILabOption // 实验性功能配置
   watermark?: IWatermark // 水印配置
   control?: IControlOption // 控件配置
   checkbox?: ICheckboxOption // 复选框配置
@@ -96,6 +98,17 @@ interface IEditorOption {
   column?: IColumnOption // 分栏配置。默认：关闭
   trace?: ITraceOption // 留痕配置。默认：禁用
   ruler?: IRulerOption // 标尺配置。默认：禁用
+  hint?: IHintOption // 悬浮提示配置。默认：禁用
+}
+```
+
+## 实验性功能配置
+
+实验特性（`lab`）详见 [实验特性](./lab.md) 章节。
+
+```typescript
+interface ILabOption {
+  incrementalCompute?: boolean // 行级增量行计算。默认：false
 }
 ```
 
@@ -472,5 +485,26 @@ interface ITraceOption {
 interface IRulerOption {
   disabled?: boolean // 初始是否禁用标尺。默认：true
   height?: number // 标尺高度。默认：26
+}
+```
+
+## 悬浮提示配置
+
+```typescript
+interface IHintOption {
+  disabled?: boolean // 总开关。默认：true（默认关闭，设为 false 开启）
+  backgroundColor?: string // 浮窗背景色。默认：#fff
+  color?: string // 浮窗文字颜色。默认：#000000
+  fontSize?: number // 浮窗字号。默认：12
+  maxWidth?: number // 浮窗最大宽度，超出自动换行。默认：280
+}
+```
+
+## 拼写检查配置
+
+```typescript
+interface ISpellcheckOption {
+  disabled?: boolean // 是否禁用。默认：true
+  color?: string // 错词波浪线颜色。默认：#FF0000
 }
 ```

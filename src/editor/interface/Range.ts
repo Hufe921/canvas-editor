@@ -1,4 +1,5 @@
 import { EditorZone } from '../dataset/enum/Editor'
+import { SurroundPosition } from '../dataset/enum/Common'
 import { IElement, IElementFillRect, IElementStyle } from './Element'
 
 export interface IRange {
@@ -59,3 +60,8 @@ export type IRangeElementStyle = Pick<
   | 'underline'
   | 'strikeout'
 >
+
+export interface IGetSurroundElementListOption {
+  direction?: SurroundPosition
+  length?: number
+}

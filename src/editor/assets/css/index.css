@@ -11,6 +11,7 @@
 @import './magnifier/magnifier.css';
 @import './accessibility/accessibility.css';
 @import './trace/trace.css';
+@import './hint/hint.css';
 @import './ruler/ruler.css';
 
 .ce-inputarea {

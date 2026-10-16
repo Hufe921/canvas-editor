@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach } from 'vitest'
+import { describe, it, expect, afterEach, vi } from 'vitest'
 import { createTestEditor, TestEditorContext } from '../factories/editor'
 import { buildData } from '../factories/cascade'
 
@@ -41,10 +41,16 @@ describe('CascadeManager', () => {
   })
 
   it('非法表达式不抛错且按 false 处理', () => {
-    const data = buildData()
-    data[0].control!.cascade![0].expression = "getValue(@self) === '1'"
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
-    const list = ctx.editor.command.getControlList()
-    expect(list.find(el => el.controlId === 'c2')?.control?.hide).toBe(true)
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    try {
+      const data = buildData()
+      data[0].control!.cascade![0].expression = "getValue(@self) === '1'"
+      ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+      const list = ctx.editor.command.getControlList()
+      expect(list.find(el => el.controlId === 'c2')?.control?.hide).toBe(true)
+      expect(warn).toHaveBeenCalled()
+    } finally {
+      warn.mockRestore()
+    }
   })
 })

@@ -1,6 +1,15 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
-import { ControlType } from '../../../src/editor/dataset/enum/Control'
+import {
+  ControlComponent,
+  ControlType
+} from '../../../src/editor/dataset/enum/Control'
 import { ElementType } from '../../../src/editor/dataset/enum/Element'
+import { Draw } from '../../../src/editor/core/draw/Draw'
+import { EventBus } from '../../../src/editor/core/event/eventbus/EventBus'
+import { Listener } from '../../../src/editor/core/listener/Listener'
+import { Override } from '../../../src/editor/core/override/Override'
+import { mergeOption } from '../../../src/editor/utils/option'
+import { formatElementList } from '../../../src/editor/utils/element'
 import { createTestEditor } from '../../factories/editor'
 import { CheckboxControl } from '../../../src/editor/core/draw/control/checkbox/CheckboxControl'
 import { hitCheckbox } from '../../../src/editor/core/event/handlers/mousedown'
@@ -46,6 +55,46 @@ describe('控件命令', () => {
         value: 'val'
       })
     }).not.toThrow()
+  })
+
+  it('executeSetControlValue isOverwrite 为 false 时不覆盖已有值', () => {
+    ctx = createTestEditor({
+      data: [
+        {
+          type: ElementType.CONTROL,
+          value: '',
+          control: {
+            conceptId: 'overwrite-filled',
+            type: ControlType.TEXT,
+            value: [{ value: '旧值' }]
+          }
+        },
+        {
+          type: ElementType.CONTROL,
+          value: '',
+          control: {
+            conceptId: 'overwrite-empty',
+            type: ControlType.TEXT,
+            value: null
+          }
+        }
+      ]
+    })
+
+    ctx.editor.command.executeSetControlValueList([
+      { conceptId: 'overwrite-filled', value: '新值', isOverwrite: false },
+      { conceptId: 'overwrite-empty', value: '默认值', isOverwrite: false }
+    ])
+
+    const [filled] = ctx.editor.command.getControlValue({
+      conceptId: 'overwrite-filled'
+    })!
+    const [empty] = ctx.editor.command.getControlValue({
+      conceptId: 'overwrite-empty'
+    })!
+
+    expect(filled.value).toBe('旧值')
+    expect(empty.value).toBe('默认值')
   })
 
   it('executeSetControlHighlight 空操作不抛错', () => {
@@ -174,5 +223,60 @@ describe('控件命令', () => {
     })!
 
     expect(controlValue.value).toBe('2026-03-03')
+  })
+
+  it('executeSetControlValue 空值清空控件时 placeholder 不重复', () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const options = mergeOption({ width: 794, height: 1123 })
+    const placeholder = '门诊编号'
+    const main: IElement[] = [
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          conceptId: 'OutpatientId',
+          groupId: 'ChestPainTimeManagement',
+          type: ControlType.TEXT,
+          value: null,
+          placeholder
+        }
+      }
+    ]
+    formatElementList(main, {
+      editorOptions: options,
+      isForceCompensation: true
+    })
+    const draw = new Draw(
+      container,
+      options,
+      { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
+      new Listener(),
+      new EventBus(),
+      new Override()
+    )
+    draw.render()
+
+    const countPlaceholder = () =>
+      draw
+        .getOriginalElementList()
+        .filter(
+          element => element.controlComponent === ControlComponent.PLACEHOLDER
+        ).length
+
+    expect(countPlaceholder()).toBe(placeholder.length)
+
+    // 空值清空（issue #1473）：旧 placeholder 应被替换而非叠加
+    draw.getControl().setValueListById([
+      {
+        conceptId: 'OutpatientId',
+        groupId: 'ChestPainTimeManagement',
+        value: ''
+      }
+    ])
+
+    expect(countPlaceholder()).toBe(placeholder.length)
+
+    container.parentNode?.removeChild(container)
   })
 })

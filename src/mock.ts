@@ -625,7 +625,6 @@ elementList.push(
         type: ControlType.NUMBER,
         value: null,
         placeholder: '自动计算',
-        disabled: true,
         prefix: '{',
         postfix: '}',
         compute:
@@ -821,6 +820,10 @@ export const options: IEditorOption = {
       scripts: [TextScript.ARAB]
     }
   ],
+  // 行级增量行计算（实验性，大文档打字提速）
+  lab: {
+    incrementalCompute: true
+  },
   trace: {
     author: '游客1'
   },

@@ -140,19 +140,23 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
         // 合并新行时继承行 flex / margin（#605）
         if (nextElement.value === ZERO && !nextElement.listWrap) {
           const { rowFlex, rowMargin } = elementList[index]
-          for (let i = index + 1; i < elementList.length; i++) {
-            const element = elementList[i]
+          let end = index + 1
+          while (end < elementList.length) {
+            const element = elementList[end]
             if (
-              i > index + 1 &&
+              end > index + 1 &&
               ((element.value === ZERO && !element.listWrap) ||
                 element.listId !== nextElement.listId ||
                 element.titleId !== nextElement.titleId)
             ) {
               break
             }
-            element.rowFlex = rowFlex
-            element.rowMargin = rowMargin
+            end++
           }
+          draw.setElementProperty(elementList.slice(index + 1, end), {
+            rowFlex,
+            rowMargin
+          })
         }
         const visualTarget = getVisualDeleteTarget(host, index, false)
         draw.deleteElementList(

@@ -223,9 +223,10 @@ export class TraceParticle {
         traceUY = this.draw.getSubscriptParticle().getOffsetY(element)
       }
       const startX = x - traceOffsetX
-      // 与标准下划线一致：curRow.height - rowMargin 为文本内容底部，再加 2 * scale 腾出与文字的间距
+      // 与标准下划线一致：内容高度（不含段后间距）- rowMargin 为文本内容底部，再加 2 * scale 腾出与文字的间距
+      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
       const startY =
-        Math.floor(y + curRow.height - traceRowMargin + traceUY + 2 * scale) +
+        Math.floor(y + rowContentHeight - traceRowMargin + traceUY + 2 * scale) +
         0.5
       if (!this.underlineState) {
         this.underlineState = {

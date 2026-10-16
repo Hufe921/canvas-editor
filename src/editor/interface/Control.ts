@@ -91,6 +91,11 @@ export interface IControlBasic {
   cascade?: IControlCascadeRule[]
   validation?: IControlValidation
   compute?: string // 计算表达式：结果自动回写本控件值（如 BMI）
+  // 控件级背景色（优先级高于全局 control 配置同名属性）
+  activeBackgroundColor?: string
+  disabledBackgroundColor?: string
+  existValueBackgroundColor?: string
+  noValueBackgroundColor?: string
 }
 
 export interface IControlStyle {
@@ -182,6 +187,7 @@ export interface ISetControlValueOption {
   areaId?: string
   value: string | IElement[] | null
   isSubmitHistory?: boolean
+  isOverwrite?: boolean
 }
 
 export interface ISetControlExtensionOption {

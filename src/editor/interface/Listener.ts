@@ -28,6 +28,8 @@ export interface IRangeStyle {
   /** Resolved paragraph direction for start/end ↔ physical align in UI */
   direction: TextDirection.LTR | TextDirection.RTL | null
   rowMargin: number
+  spacingBefore: number
+  spacingAfter: number
   dashArray: number[]
   level: TitleLevel | null
   listType: ListType | null
@@ -50,6 +52,8 @@ export type IPageScaleChange = (payload: number) => void
 export type ISaved = (payload: IEditorResult) => void
 
 export type IContentChange = () => void
+
+export type IRenderChange = () => void
 
 export type IControlChange = (payload: IControlChangeResult) => void
 

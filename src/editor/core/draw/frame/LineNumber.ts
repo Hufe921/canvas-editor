@@ -42,8 +42,8 @@ export class LineNumber {
         this.options.defaultDirection === TextDirection.RTL
       const x = isRtl
         ? this.draw.getWidth() - margins[1] + right * scale
-        : margins[3] - (textMetrics.width + right) * scale
-      const y = leftBottom[1] - textMetrics.actualBoundingBoxAscent * scale
+        : margins[3] - textMetrics.width - right * scale
+      const y = leftBottom[1] - textMetrics.actualBoundingBoxAscent
       ctx.fillText(`${seq}`, x, y)
     }
     ctx.restore()

@@ -298,7 +298,7 @@ export class CascadeManager {
     const oldValue = baseline[key]
     if (key === 'elementHide') {
       if (element.hide === oldValue) return false
-      element.hide = oldValue as boolean
+      this.draw.setElementProperty(element, { hide: oldValue as boolean })
     } else {
       if (element.control?.[key] === oldValue) return false
       const control = element.control as Record<string, unknown> | undefined
@@ -398,7 +398,7 @@ export class CascadeManager {
               'elementHide',
               () => element.hide,
               v => {
-                element.hide = v as boolean
+                this.draw.setElementProperty(element, { hide: v as boolean })
               },
               effects.hide
             ) || changed

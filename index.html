@@ -177,6 +177,27 @@
             </ul>
           </div>
         </div>
+        <div class="menu-item__spacing">
+          <i title="段落间距"></i>
+          <div class="options">
+            <div class="spacing-option">
+              <span class="spacing-option__label">段前距</span>
+              <div class="spacing-option__stepper">
+                <button type="button" data-spacingbefore-decrease>-</button>
+                <input type="number" min="0" step="6" value="0" data-spacingbefore-input />
+                <button type="button" data-spacingbefore-increase>+</button>
+              </div>
+            </div>
+            <div class="spacing-option">
+              <span class="spacing-option__label">段后距</span>
+              <div class="spacing-option__stepper">
+                <button type="button" data-spacingafter-decrease>-</button>
+                <input type="number" min="0" step="6" value="0" data-spacingafter-input />
+                <button type="button" data-spacingafter-increase>+</button>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="menu-item__list">
           <i></i>
           <div class="options">
@@ -368,6 +389,13 @@
       <div class="catalog__main"></div>
     </div>
     <div class="editor"></div>
+    <div class="comment-line-toggle" editor-component="comment-line-toggle">
+      <span>连接线</span>
+      <label class="comment-line-toggle__switch" title="显示/隐藏批注连接线">
+        <input type="checkbox" id="comment-line-switch" />
+        <i></i>
+      </label>
+    </div>
     <div class="comment" editor-component="comment"></div>
     <div class="footer" editor-component="footer">
       <div>
@@ -454,6 +482,15 @@
         </div>
         <div class="ruler-toggle" title="标尺">
           <i></i>
+        </div>
+        <div class="spellcheck" title="拼写检查">
+          <i></i>
+          <div class="options">
+            <label class="spellcheck-toggle">
+              <input type="checkbox" class="spellcheck-toggle__input" />
+              <span>启用拼写检查</span>
+            </label>
+          </div>
         </div>
         <div class="fullscreen" title="全屏显示">
           <i></i>

@@ -51,6 +51,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   if (!host.isAllowDrag) {
     updateHoverCursor(evt, draw)
   }
+  // 悬浮提示：hover 到配置了 hint 的元素时显示提示浮窗
+  draw.getHintParticle().handleMouseMove(evt)
   // 是否是拖拽文字
   if (host.isAllowDrag) {
     // 是否允许拖拽到选区

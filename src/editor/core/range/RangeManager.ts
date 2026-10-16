@@ -574,6 +574,8 @@ export class RangeManager {
         styleIndex
       ) as IRangeStyle['direction']
     const rowMargin = curElement.rowMargin ?? this.options.defaultRowMargin
+    const spacingBefore = curElement.spacingBefore ?? 0
+    const spacingAfter = curElement.spacingAfter ?? 0
     const dashArray = curElement.dashArray || []
     const level = curElement.level || null
     const listType = curElement.listType || null
@@ -603,6 +605,8 @@ export class RangeManager {
       rowFlex,
       direction,
       rowMargin,
+      spacingBefore,
+      spacingAfter,
       dashArray,
       level,
       listType,
@@ -650,6 +654,8 @@ export class RangeManager {
           ? this.options.direction
           : null,
       rowMargin,
+      spacingBefore: 0,
+      spacingAfter: 0,
       dashArray: [],
       level: null,
       listType: null,

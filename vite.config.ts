@@ -9,7 +9,13 @@ export default defineConfig(({ mode }) => {
   const resolve = {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url)),
-      '@tests': fileURLToPath(new URL('./tests', import.meta.url))
+      '@tests': fileURLToPath(new URL('./tests', import.meta.url)),
+      '@cspell-en-us-dictionary': `${fileURLToPath(
+        new URL(
+          './node_modules/@cspell/dict-en_us/en_US.trie.gz',
+          import.meta.url
+        )
+      )}?url`
     }
   }
   const test = {

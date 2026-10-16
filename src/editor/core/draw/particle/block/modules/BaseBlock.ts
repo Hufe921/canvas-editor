@@ -144,6 +144,9 @@ export class BaseBlock {
     this.isAllowResize = true
     const target = evt.target as HTMLDivElement
     this.curHandleIndex = Number(target.dataset.index)
+    // 预置当前尺寸，未拖动直接松开时保持原值
+    this.width = this.getBlockWidth()
+    this.height = this.element.height!
     // 显示遮盖元素
     this.resizerMask.style.display = 'block'
     // 改变光标样式

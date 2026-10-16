@@ -415,6 +415,80 @@ ul {
   background-image: url('./assets/images/row-margin.svg');
 }
 
+.menu-item__spacing {
+  position: relative;
+}
+
+.menu-item__spacing i {
+  background-image: url('./assets/images/spacing.svg');
+}
+
+.menu-item__spacing .options {
+  width: 190px;
+  padding: 12px;
+}
+
+.menu-item__spacing .options .spacing-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.menu-item__spacing .options .spacing-option:last-child {
+  margin-bottom: 0;
+}
+
+.menu-item__spacing .options .spacing-option__label {
+  color: #3d4757;
+  user-select: none;
+}
+
+.menu-item__spacing .options .spacing-option__stepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid #e2e6ed;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.menu-item__spacing .options .spacing-option__stepper button {
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  background: #f5f6f7;
+  color: #3d4757;
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.menu-item__spacing .options .spacing-option__stepper button:hover {
+  background: #ebecef;
+}
+
+.menu-item__spacing .options .spacing-option__stepper input {
+  width: 46px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-left: 1px solid #e2e6ed;
+  border-right: 1px solid #e2e6ed;
+  outline: none;
+  text-align: center;
+  font-size: 12px;
+  color: #3d4757;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.menu-item__spacing .options .spacing-option__stepper input::-webkit-outer-spin-button,
+.menu-item__spacing .options .spacing-option__stepper input::-webkit-inner-spin-button {
+  margin: 0;
+  -webkit-appearance: none;
+}
+
 .menu-item__list {
   position: relative;
 }
@@ -900,6 +974,80 @@ ul {
   direction: rtl;
 }
 
+/* 批注连接线 */
+.comment-line-toggle {
+  width: 250px;
+  position: fixed;
+  transform: translateX(420px);
+  top: 172px;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 12px;
+  color: #475266;
+  user-select: none;
+}
+
+.comment-line-toggle__switch {
+  position: relative;
+  display: inline-block;
+  width: 28px;
+  height: 16px;
+}
+
+.comment-line-toggle__switch input {
+  display: none;
+}
+
+.comment-line-toggle__switch i {
+  position: absolute;
+  inset: 0;
+  background: #c0c6cf;
+  border-radius: 8px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+
+.comment-line-toggle__switch i::before {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  left: 2px;
+  top: 2px;
+  background: #ffffff;
+  border-radius: 50%;
+  transition: 0.2s;
+}
+
+.comment-line-toggle__switch input:checked + i {
+  background: #e99d00;
+}
+
+.comment-line-toggle__switch input:checked + i::before {
+  transform: translateX(12px);
+}
+
+.comment-line {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.comment-line path {
+  fill: none;
+  stroke: #c0c6cf;
+  stroke-width: 1;
+}
+
+.comment-line path.active {
+  stroke: #e99d00;
+}
+
 .comment-item {
   background: #ffffff;
   border: 1px solid #e2e6ed;
@@ -1152,6 +1300,35 @@ ul {
   background-image: url('./assets/images/ruler.svg');
 }
 
+.footer .spellcheck {
+  position: relative;
+  cursor: pointer;
+}
+
+.footer .spellcheck > i {
+  background-image: url('./assets/images/spellcheck.svg');
+}
+
+.footer .spellcheck .options {
+  right: 0;
+  left: unset;
+  width: 112px;
+  padding: 8px;
+}
+
+.footer .spellcheck-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.footer .spellcheck-toggle__input {
+  margin: 0;
+  cursor: pointer;
+}
+
 .footer .editor-mode {
   cursor: pointer;
   user-select: none;
@@ -1241,4 +1418,43 @@ ul {
 
 .ce-contextmenu-word-tool {
   background-image: url('./assets/images/word-tool.svg');
+}
+
+.spellcheck-popup {
+  position: fixed;
+  z-index: 100;
+  min-width: 120px;
+  padding: 4px 0;
+  color: #3b4351;
+  font-size: 12px;
+  background: #ffffff;
+  border: 1px solid #e3e6eb;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(30, 35, 43, 0.12);
+}
+
+.spellcheck-popup__title,
+.spellcheck-popup__item {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  padding: 5px 12px;
+  text-align: left;
+}
+
+.spellcheck-popup__title {
+  color: #7c8494;
+  border-bottom: 1px solid #f0f1f4;
+}
+
+.spellcheck-popup__item {
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+}
+
+.spellcheck-popup__item:hover {
+  background: #f5f6f8;
 }

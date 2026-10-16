@@ -164,8 +164,15 @@ export class Calculator {
   }
 
   private calculate(expression: string): number {
+    if (!expression.trim()) return Number.NaN
     // 安全计算，使用Function而不是eval
-    const result = Function('return ' + expression)()
+    let result: unknown
+    try {
+      result = Function('return ' + expression)()
+    } catch {
+      return Number.NaN
+    }
+    if (typeof result !== 'number') return Number.NaN
 
     // 无限循环数，直接返回 1/0
     if (!Number.isFinite(result)) {

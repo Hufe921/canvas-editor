@@ -390,6 +390,26 @@ Usage:
 instance.command.executeRowMargin(rowMargin: number)
 ```
 
+## executeSpacingBefore
+
+Feature: Paragraph spacing before
+
+Usage:
+
+```javascript
+instance.command.executeSpacingBefore(spacingBefore: number)
+```
+
+## executeSpacingAfter
+
+Feature: Paragraph spacing after
+
+Usage:
+
+```javascript
+instance.command.executeSpacingAfter(spacingAfter: number)
+```
+
 ## executeInsertTable
 
 Feature: Insert table
@@ -548,6 +568,26 @@ Usage:
 
 ```javascript
 instance.command.executeTableTdBorderType(payload: TdBorder)
+```
+
+## executeTableTdBorderColor
+
+Feature: Table td border color (pass an empty string to restore the table border color)
+
+Usage:
+
+```javascript
+instance.command.executeTableTdBorderColor(payload: string)
+```
+
+## executeTableTdBorderWidth
+
+Feature: Table td border width (pass 0 to restore the table border width)
+
+Usage:
+
+```javascript
+instance.command.executeTableTdBorderWidth(payload: number)
 ```
 
 ## executeTableTdSlashType
@@ -716,6 +756,22 @@ Usage:
 
 ```javascript
 instance.command.executeSearch(keyword: string, options?: ISearchOption)
+```
+
+## executeSetSpellcheckRangeList
+
+Feature: Set spell check misspelled word ranges, rendering a wavy line under the ranges (overlay rendering, does not modify document data). Pass `null` to clear
+
+Usage:
+
+```javascript
+instance.command.executeSetSpellcheckRangeList([
+  {
+    startIndex: 5,
+    endIndex: 8,
+    data: { word: 'Helo' }
+  }
+])
 ```
 
 ## executeSearchNavigatePre

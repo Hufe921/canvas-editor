@@ -18,15 +18,21 @@ export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
 export const EDITOR_ROW_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
-  'direction'
+  'direction',
+  'spacingBefore',
+  'spacingAfter'
 ]
 
 export const EDITOR_TRACE_ATTR: Array<keyof IElement> = ['trace']
+
+export const EDITOR_HINT_ATTR: Array<keyof IElement> = ['hint']
 
 export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'direction',
+  'spacingBefore',
+  'spacingAfter',
   'level',
   'title'
 ]
@@ -50,6 +56,8 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'dateFormat',
   'groupIds',
   'rowMargin',
+  'spacingBefore',
+  'spacingAfter',
   'textDecoration'
 ]
 
@@ -66,6 +74,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'direction',
   'rowMargin',
+  'spacingBefore',
+  'spacingAfter',
   'dashArray',
   'trList',
   'tableToolDisabled',
@@ -106,7 +116,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'labelId',
   'lineWidth',
   'trace',
-  'paperDirection'
+  'paperDirection',
+  'hint'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
@@ -115,6 +126,8 @@ export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
   'externalId',
   'verticalAlign',
   'backgroundColor',
+  'borderColor',
+  'borderWidth',
   'borderTypes',
   'slashTypes',
   'disabled',

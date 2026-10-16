@@ -28,7 +28,7 @@ import {
   IInsertElementListOption
 } from '../../interface/Element'
 import { IMarkElementListDeletedOption } from '../../interface/Trace'
-import { IRow, IRowElement } from '../../interface/Row'
+import { IRow, IRowComputeState, IRowElement } from '../../interface/Row'
 import { IColumnLayout, IColumnOption } from '../../interface/Column'
 import { ColumnManager } from './column/ColumnManager'
 import {
@@ -38,6 +38,7 @@ import {
 import { mergeVisualRects } from '../text-engine'
 import { containsShapingScript } from '../text-engine/utils/scriptFont'
 import type { VisualRect } from '../text-engine/types'
+import { IncrementalRowComputer } from './IncrementalRowComputer'
 import { deepClone, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -50,6 +51,7 @@ import { Background } from './frame/Background'
 import { Highlight } from './richtext/Highlight'
 import { Margin } from './frame/Margin'
 import { Search } from './interactive/Search'
+import { Spellcheck } from './interactive/Spellcheck'
 import { Strikeout } from './richtext/Strikeout'
 import { Underline } from './richtext/Underline'
 import { ElementType } from '../../dataset/enum/Element'
@@ -65,6 +67,7 @@ import { TablePaging } from './particle/table/TablePaging'
 import { TableTool } from './particle/table/TableTool'
 import { Ruler } from './ruler/Ruler'
 import { HyperlinkParticle } from './particle/HyperlinkParticle'
+import { HintParticle } from './particle/HintParticle'
 import { TraceParticle } from './particle/TraceParticle'
 import { LabelParticle } from './particle/LabelParticle'
 import { Header } from './frame/Header'
@@ -168,6 +171,7 @@ export class Draw {
   private badge: Badge
   private magnifier: Magnifier
   private search: Search
+  private spellcheck: Spellcheck
   private group: Group
   private area: Area
   private underline: Underline
@@ -189,6 +193,7 @@ export class Draw {
   private header: Header
   private footer: Footer
   private hyperlinkParticle: HyperlinkParticle
+  private hintParticle: HintParticle
   private traceParticle: TraceParticle
   private labelParticle: LabelParticle
   private dateParticle: DateParticle
@@ -216,6 +221,11 @@ export class Draw {
   private LETTER_REG: RegExp
   private WORD_LIKE_REG: RegExp
   private rowList: IRow[]
+  // 跨页表格拆分前的原始行列表：增量计算以其为基准（片段行不参与复用定位）
+  private rawRowList: IRow[]
+  private incrementalRowComputer: IncrementalRowComputer
+  // maxPageNo 截断发生过（elementList 被裁剪导致行/元素失配），禁用增量
+  private isElementListTruncated: boolean
   private pageRowList: IRow[][]
   private pageDirectionList: PaperDirection[]
   private painterStyle: IElementStyle | null
@@ -266,6 +276,7 @@ export class Draw {
     this.badge = new Badge(this)
     this.magnifier = new Magnifier(this)
     this.search = new Search(this)
+    this.spellcheck = new Spellcheck(this)
     this.group = new Group(this)
     this.area = new Area(this)
     this.underline = new Underline(this)
@@ -277,6 +288,9 @@ export class Draw {
     this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
     this.tablePaging = new TablePaging(this)
+    this.rawRowList = []
+    this.isElementListTruncated = false
+    this.incrementalRowComputer = new IncrementalRowComputer(this)
     this.tableTool = new TableTool(this)
     this.tableOperate = new TableOperate(this)
     this.pageNumber = new PageNumber(this)
@@ -286,6 +300,7 @@ export class Draw {
     this.header = new Header(this, data.header)
     this.footer = new Footer(this, data.footer)
     this.hyperlinkParticle = new HyperlinkParticle(this)
+    this.hintParticle = new HintParticle(this)
     this.traceParticle = new TraceParticle(this)
     this.labelParticle = new LabelParticle(this)
     this.dateParticle = new DateParticle(this)
@@ -514,6 +529,8 @@ export class Draw {
     options?: IMarkElementListDeletedOption
   ) {
     if (!this.options.trace.disabled) {
+      // 留痕删除不移除元素但改变可见性，同样影响布局
+      this.incrementalRowComputer.markRangeDirty(elementList, index, count, 0)
       return this.traceParticle.markElementListDeleted(
         elementList.slice(index, index + count),
         options
@@ -600,7 +617,9 @@ export class Draw {
     if (positionContext.isTable) {
       const elementList = this.getOriginalElementList()
       const td = this.position.getTableTdByContext(elementList, positionContext)
-      const tdPadding = this.getTdPadding()
+      const {
+        table: { tdPadding }
+      } = this.options
       return td!.width! - tdPadding[1] - tdPadding[3]
     }
     // 分栏布局下按栏宽计算可用宽度（栏宽为缩放值，还原为未缩放单位）
@@ -812,6 +831,10 @@ export class Draw {
     return this.search
   }
 
+  public getSpellcheck(): Spellcheck {
+    return this.spellcheck
+  }
+
   public getGroup(): Group {
     return this.group
   }
@@ -903,6 +926,22 @@ export class Draw {
       : this.elementList
   }
 
+  public getRawRowList(): IRow[] {
+    return this.rawRowList
+  }
+
+  public getIncrementalRowComputer(): IncrementalRowComputer {
+    return this.incrementalRowComputer
+  }
+
+  public getIsElementListTruncated(): boolean {
+    return this.isElementListTruncated
+  }
+
+  public getIsControlMinWidthPlaceholder(): boolean {
+    return this.controlMinWidthPlaceholderElementListSet.has(this.elementList)
+  }
+
   public getOriginalElementList() {
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
@@ -976,6 +1015,12 @@ export class Draw {
         (!preElement.type || preElement.type === ElementType.TEXT)
       ) {
         elementList.splice(startIndex, 1)
+        this.incrementalRowComputer.markRangeDirty(
+          elementList,
+          startIndex,
+          1,
+          0
+        )
         curIndex -= 1
       }
     }
@@ -1002,9 +1047,22 @@ export class Draw {
     const { isPrepend, isSubmitHistory = true } = options
     if (isPrepend) {
       this.elementList.splice(1, 0, ...elementList)
+      this.incrementalRowComputer.markRangeDirty(
+        this.elementList,
+        1,
+        0,
+        elementList.length
+      )
       curIndex = elementList.length
     } else {
+      const appendStart = this.elementList.length
       this.elementList.push(...elementList)
+      this.incrementalRowComputer.markRangeDirty(
+        this.elementList,
+        appendStart,
+        0,
+        elementList.length
+      )
       curIndex = this.elementList.length - 1
     }
     this.range.setRange(curIndex, curIndex)
@@ -1014,6 +1072,41 @@ export class Draw {
     })
   }
 
+  // 原地修改元素字段的唯一入口（支持多元素、多字段）：
+  // 任一值发生变化时自动标记下次渲染全量计算，调用方无需关心脏区间
+  public setElementProperty(
+    elementList: IElement | IElement[],
+    properties: Partial<IElement>
+  ) {
+    const list = Array.isArray(elementList) ? elementList : [elementList]
+    const keys = Object.keys(properties) as (keyof IElement)[]
+    for (const element of list) {
+      for (const key of keys) {
+        const value = properties[key]
+        if (element[key] !== value) {
+          element[key] = value as never
+          this.incrementalRowComputer.markFullDirty()
+        }
+      }
+    }
+  }
+
+  // 原地删除元素字段（同 setElementProperty，支持多元素、多字段）
+  public deleteElementProperty(
+    elementList: IElement | IElement[],
+    keys: (keyof IElement)[]
+  ) {
+    const list = Array.isArray(elementList) ? elementList : [elementList]
+    for (const element of list) {
+      for (const key of keys) {
+        if (key in element) {
+          delete element[key]
+          this.incrementalRowComputer.markFullDirty()
+        }
+      }
+    }
+  }
+
   public spliceElementList(
     elementList: IElement[],
     start: number,
@@ -1021,6 +1114,12 @@ export class Draw {
     items?: IElement[],
     options?: ISpliceElementListOption
   ) {
+    this.incrementalRowComputer.markRangeDirty(
+      elementList,
+      start,
+      deleteCount,
+      items?.length ?? 0
+    )
     const { isIgnoreDeletedRule = false } = options || {}
     const { group, modeRule } = this.options
     if (deleteCount > 0) {
@@ -1041,10 +1140,22 @@ export class Draw {
           ) {
             break
           }
+          // 此处的清理区间已由下方 markRangeDirty 精确覆盖，
+          // 不走访问器（避免退化为整页全量计算）
           delete curElement.listId
           delete curElement.listType
           delete curElement.listStyle
           startIndex++
+        }
+        // 列表信息清理改写了主删除区间之外的元素，扩展脏区间覆盖，
+        // 防止增量续算复用到丢失列表缩进/序号的陈旧行
+        if (startIndex > endIndex) {
+          this.incrementalRowComputer.markRangeDirty(
+            elementList,
+            endIndex,
+            startIndex - endIndex,
+            0
+          )
         }
       }
       // 非明确忽略删除规则 && 非设计模式 && 非光标在控件内(控件内控制) =》 校验删除规则
@@ -1170,6 +1281,10 @@ export class Draw {
 
   public getHyperlinkParticle(): HyperlinkParticle {
     return this.hyperlinkParticle
+  }
+
+  public getHintParticle(): HintParticle {
+    return this.hintParticle
   }
 
   public getTraceParticle(): TraceParticle {
@@ -1301,7 +1416,7 @@ export class Draw {
     this.options.pageMode = payload
     // 纸张大小重置
     if (payload === PageMode.PAGING) {
-      const { height } = this.options
+      const height = this.getHeight()
       const dpr = this.getPagePixelRatio()
       const canvas = this.pageList[0]
       canvas.style.height = `${height}px`
@@ -2415,8 +2530,32 @@ export class Draw {
         layoutScope,
         defaultAlign
         )
+        const paragraphRows = rowList.slice(paraRowStart)
+        const firstRow = paragraphRows[0]
+        const lastRow = paragraphRows[paragraphRows.length - 1]
+        const firstElement = elementList[paragraph.startIndex]
+        const lastElement = elementList[paragraph.endIndex]
+        const scale = this.options.scale
+        if (firstRow && firstElement.value === ZERO && !firstElement.listWrap) {
+          firstRow.offsetY =
+            (firstRow.offsetY || 0) +
+            (firstElement.spacingBefore ||
+              elementList[paragraph.startIndex + 1]?.spacingBefore ||
+              0) * scale
+        }
+        // Match legacy: a following paragraph break closes this paragraph.
+        const nextElement = elementList[paragraph.endIndex + 1]
+        if (
+          lastRow &&
+          lastRow.height > 0 &&
+          nextElement?.value === ZERO &&
+          !nextElement.listWrap
+        ) {
+          lastRow.spacingAfter = (lastElement.spacingAfter || 0) * scale
+          lastRow.height += lastRow.spacingAfter
+        }
         this._applyEngineListMetaToRows(
-          rowList.slice(paraRowStart),
+          paragraphRows,
           listStyleMap,
           listIndexMap
         )
@@ -2591,7 +2730,9 @@ export class Draw {
     }
     this._warnLegacyRtlIfNeeded(elementList)
     // legacy 前清掉引擎残留 visualLeft，防止表格/图片行定位错乱
-    this._clearStaleEngineLayout(elementList)
+    // A resumed legacy layout reuses rows outside the dirty interval. Clearing
+    // their metrics offsets would mutate the rows we are about to reuse.
+    if (!payload.resume) this._clearStaleEngineLayout(elementList)
     const {
       defaultSize,
       scale,
@@ -2617,15 +2758,19 @@ export class Draw {
     let layout =
       isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
     let isColumnEnabled = !!layout && layout.count > 1
+    const resumeStartIndex = payload.resume?.startIndex ?? 0
+    // 断点续算：种子行从恢复点重新参与断行（行首换行符将独立成行，空种子行随后被丢弃）
     if (elementList.length) {
       rowList.push({
         width: 0,
         height: 0,
         ascent: 0,
         elementList: [],
-        startIndex: 0,
-        rowIndex: 0,
-        rowFlex: elementList?.[0]?.rowFlex || elementList?.[1]?.rowFlex,
+        startIndex: resumeStartIndex,
+        rowIndex: payload.resume?.state.rowIndex ?? 0,
+        rowFlex:
+          elementList[resumeStartIndex]?.rowFlex ||
+          elementList[resumeStartIndex + 1]?.rowFlex,
         ...(isColumnEnabled ? { columnIndex: 0 } : {})
       })
     }
@@ -2652,9 +2797,64 @@ export class Draw {
     let controlRealWidth = 0
     // 分栏游标
     let currentColumn = 0
-    for (let i = 0; i < elementList.length; i++) {
+    // 断点续算：恢复快照时刻的跨行状态
+    if (payload.resume) {
+      const state = payload.resume.state
+      x = state.x
+      y = state.y
+      pageNo = state.pageNo
+      pageStartY = state.pageStartY
+      currentDirection = state.direction
+      currentMargins = state.margins
+      currentInnerWidth = state.innerWidth
+      currentStartX = state.startX
+      currentPageHeight = state.pageHeight
+      currentColumn = state.column
+      controlRealWidth = state.controlRealWidth
+      for (const [listId, count] of state.listIndexMap) {
+        listIndexMap.set(listId, count)
+      }
+      layout = this.columnManager.getLayout(currentDirection)
+      isColumnEnabled = !!layout && layout.count > 1
+    }
+    // 行快照：仅主文档且开启行级增量时记录（未开启时无额外开销）。
+    // 闭包捕获的是调用时刻的跨行状态，两个记录点（首行/换行诞生新行）共用
+    const isRecordRowSnapshot =
+      this.options.lab.incrementalCompute &&
+      !isFromTable &&
+      elementList === this.elementList
+    const buildRowComputeState = (
+      rowIndex: number,
+      x: number,
+      controlWidth: number
+    ): IRowComputeState => ({
+      rowIndex,
+      x,
+      y,
+      pageNo,
+      pageStartY,
+      direction: currentDirection,
+      margins: currentMargins,
+      innerWidth: currentInnerWidth,
+      startX: currentStartX,
+      pageHeight: currentPageHeight,
+      column: currentColumn,
+      controlRealWidth: controlWidth,
+      listIndexMap: new Map(listIndexMap)
+    })
+    if (isRecordRowSnapshot && rowList.length) {
+      this.incrementalRowComputer.recordSnapshot(
+        rowList[0],
+        buildRowComputeState(rowList[0].rowIndex, x, controlRealWidth)
+      )
+    }
+    for (let i = resumeStartIndex; i < elementList.length; i++) {
       const curRow: IRow = rowList[rowList.length - 1]
       const element = elementList[i]
+      // 断点续算：复杂结构元素不参与增量，由调用方退化为全量计算
+      if (payload.resume?.shouldAbort?.(element, i)) break
+      // 元素参与计算前的控件最小宽度累计（行快照需要描述行首元素消费前的状态）
+      const preControlRealWidth = controlRealWidth
       const rowMargin = this.getElementRowMargin(element)
       const metrics: IElementMetrics = {
         width: 0,
@@ -2685,7 +2885,12 @@ export class Draw {
           this.traceParticle.isTraceHidden(element)) &&
         !this.isDesignMode()
       ) {
-        const preElement = curRow.elementList[curRow.elementList.length - 1]
+        // 断点续算：行首隐藏元素的高度继承自上一行末元素（续算点上一行由调用方传入）
+        const preElement =
+          curRow.elementList[curRow.elementList.length - 1] ||
+          (i === resumeStartIndex
+            ? payload.resume?.preRowLastElement
+            : undefined)
         metrics.height =
           preElement?.metrics.height || this.options.defaultSize * scale
         metrics.boundingBoxAscent = preElement?.metrics.boundingBoxAscent || 0
@@ -3148,8 +3353,36 @@ export class Draw {
           element.areaId !== elementList[i - 1]?.areaId
             ? element.area.top * scale
             : 0
+        // 段前间距：换行符引领的行为新段落首行
+        // 换行符归属于新段落元素集合，优先从换行符自身读取
+        if (element.value === ZERO && !element.listWrap) {
+          row.offsetY +=
+            (element.spacingBefore || elementList[i + 1]?.spacingBefore || 0) *
+            scale
+        }
         rowList.push(row)
       } else {
+        // 断点续算：种子行吸收行首元素时补齐行出生属性（列表缩进/序号、区域偏移），
+        // 与换行分支诞生新行时的赋值保持一致（文档首行与全量计算一致不补齐）
+        if (payload.resume && curRow.elementList.length === 0 && i !== 0) {
+          if (element.listId) {
+            curRow.isList = true
+            curRow.offsetX =
+              (listStyleMap.get(element.listId) || 0) +
+              (element.listLevel
+                ? this.listParticle.LIST_INDENT_WIDTH *
+                  element.listLevel *
+                  scale
+                : 0)
+            curRow.listIndex = listIndexMap.get(element.listId) ?? 0
+          }
+          curRow.offsetY =
+            !isFromTable &&
+            element.area?.top &&
+            element.areaId !== elementList[i - 1]?.areaId
+              ? element.area.top * scale
+              : 0
+        }
         curRow.width += metrics.width
         // 减小块元素前第一行空行行高
         if (
@@ -3166,6 +3399,15 @@ export class Draw {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
+        // 段后间距：段落末行增加高度
+        // 换行符归属于下一段落元素集合，需从当前段落末尾元素读取
+        if (isWrap && element.value === ZERO && !element.listWrap) {
+          const spacingAfter = (elementList[i - 1]?.spacingAfter || 0) * scale
+          if (spacingAfter) {
+            curRow.spacingAfter = spacingAfter
+            curRow.height += spacingAfter
+          }
+        }
         // 行内全部为隐藏元素时 => 行高折叠（仅当行内不止换行符一个元素时）
         if (!this.isDesignMode() && curRow.height > 0) {
           const visibleElements = curRow.elementList.filter(
@@ -3280,6 +3522,22 @@ export class Draw {
         })
         x = surroundPosition.x
         x += metrics.width
+        // 行快照：每个新行的起始状态都是增量续算的恢复点。
+        // 快照描述行首元素参与计算前的状态（x 不含行首元素宽度）
+        if (isRecordRowSnapshot && nextRow) {
+          const snapshot = buildRowComputeState(
+            nextRow.rowIndex,
+            surroundPosition.x,
+            preControlRealWidth
+          )
+          this.incrementalRowComputer.recordSnapshot(
+            nextRow,
+            snapshot,
+            rowElement
+          )
+          // 断点续算：新行与旧行结构状态收敛即提前结束，其后旧行原样复用
+          if (payload.resume?.converge?.(snapshot, rowElement, i)) break
+        }
       }
     }
     return rowList
@@ -3358,6 +3616,8 @@ export class Draw {
             } else {
               this.elementList = this.elementList.slice(0, row.startIndex)
             }
+            // elementList 被裁剪，行列表与元素失配，禁用后续增量计算
+            this.isElementListTruncated = true
             break
           }
           pageNo++
@@ -3390,9 +3650,11 @@ export class Draw {
     const highlightMarginHeight = this.getHighlightMarginHeight()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
+      // 内容高度：不含段后间距
+      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
+      let preHighlight = ''
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
-        const preElement = curRow.elementList[j - 1]
         // 高亮配置：元素 > 控件配置
           const highlight =
             element.highlight ||
@@ -3402,11 +3664,7 @@ export class Draw {
             )
         if (highlight) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
-          if (
-            preElement &&
-            preElement.highlight &&
-            preElement.highlight !== element.highlight
-          ) {
+          if (preHighlight && preHighlight !== highlight) {
             this.highlight.render(ctx)
           }
           // 当前元素位置信息记录（表格跨页片段行优先使用片段位置）
@@ -3434,13 +3692,14 @@ export class Draw {
             engineRect?.x ?? x - offsetX,
             y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
             engineRect?.width ?? element.metrics.width + offsetX,
-            curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
+            rowContentHeight - 2 * marginHeight + 2 * highlightMarginHeight,
             highlight
           )
-        } else if (preElement?.highlight) {
+        } else if (preHighlight) {
           // 之前是高亮元素，当前不是需立即绘制
           this.highlight.render(ctx)
         }
+        preHighlight = highlight
       }
       this.highlight.render(ctx)
     }
@@ -3474,6 +3733,8 @@ export class Draw {
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
+      // 内容高度：不含段后间距
+      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
       // 选区绘制记录（legacy：单矩形 width+=；text-engine：视觉矩形列表）
       const rangeRecord: IElementFillRect = {
         x: 0,
@@ -3656,11 +3917,21 @@ export class Draw {
           !curRow.isWidthNotEnough &&
           j === curRow.elementList.length - 1
         ) {
-          this.lineBreakParticle.render(ctx, element, x, y + curRow.height / 2)
+          this.lineBreakParticle.render(
+            ctx,
+            element,
+            x,
+            y + rowContentHeight / 2
+          )
         }
         // 空白符绘制
         if (isDrawWhiteSpace && WHITE_SPACE_REG.test(element.value)) {
-          this.whiteSpaceParticle.render(ctx, element, x, y + curRow.height / 2)
+          this.whiteSpaceParticle.render(
+            ctx,
+            element,
+            x,
+            y + rowContentHeight / 2
+          )
         }
         // 边框绘制（目前仅支持控件）
         if (element.control?.border) {
@@ -3677,7 +3948,7 @@ export class Draw {
             x,
             y + rowMargin,
             element.metrics.width,
-            curRow.height - 2 * rowMargin
+            rowContentHeight - 2 * rowMargin
           )
         } else if (preElement?.control?.border) {
           this.control.drawBorder(ctx)
@@ -3718,7 +3989,7 @@ export class Draw {
               offsetY +
               Math.max(0, metrics.boundingBoxDescent) +
               subOffsetY
-            : y + curRow.height - rowMargin + subOffsetY
+            : y + rowContentHeight - rowMargin + subOffsetY
           let underlineX = x - offsetX
           let underlineW = metrics.width + offsetX
           if (underlineW < 0) {
@@ -3854,7 +4125,7 @@ export class Draw {
                     left,
                     right: left + this.options.rangeMinWidth,
                     y,
-                    height: curRow.height
+                    height: rowContentHeight
                   })
                 }
               } else {
@@ -3869,7 +4140,7 @@ export class Draw {
                   left: x,
                   right: x + Math.max(rangeWidth, 0),
                   y,
-                  height: curRow.height
+                  height: rowContentHeight
                 })
               }
             } else if (startIndex === index) {
@@ -3878,7 +4149,7 @@ export class Draw {
               if (nextElement && nextElement.value === ZERO) {
                 rangeRecord.x = x + metrics.width
                 rangeRecord.y = y
-                rangeRecord.height = curRow.height
+                rangeRecord.height = rowContentHeight
                 rangeRecord.width += this.options.rangeMinWidth
               }
             } else {
@@ -3891,7 +4162,7 @@ export class Draw {
               if (!rangeRecord.width) {
                 rangeRecord.x = x
                 rangeRecord.y = y
-                rangeRecord.height = curRow.height
+                rangeRecord.height = rowContentHeight
               }
               rangeRecord.width += rangeWidth
             }
@@ -3909,7 +4180,7 @@ export class Draw {
             engineRect?.x ?? x,
             y,
             engineRect?.width ?? metrics.width,
-            curRow.height
+            rowContentHeight
           )
         }
         index++
@@ -4214,6 +4485,10 @@ export class Draw {
     if (!isPrintMode && this.search.getSearchKeyword()) {
       this.search.render(ctx, pageNo)
     }
+    // 拼写检查错词绘制
+    if (!isPrintMode && this.spellcheck.getSpellcheckRangeList().length) {
+      this.spellcheck.render(ctx, pageNo)
+    }
     // 绘制空白占位符
     if (this.elementList.length <= 1 && !this.elementList[0]?.listId) {
       this.placeholder.render(ctx)
@@ -4301,6 +4576,8 @@ export class Draw {
     const oldPageDirectionList = this.pageDirectionList
     // 计算文档信息
     if (isCompute) {
+      // 清空拼写检查错词信息
+      this.spellcheck.setSpellcheckRangeList(null)
       // 清空浮动元素位置信息
       this.position.setFloatPositionList([])
       if (isPagingMode) {
@@ -4322,7 +4599,7 @@ export class Draw {
       const startX = margins[3]
       const startY = margins[0] + extraHeight
       const surroundElementList = pickSurroundElementList(this.elementList)
-      this.rowList = this.computeRowList({
+      const rowComputePayload: IComputeRowListPayload = {
         startX,
         startY,
         pageHeight,
@@ -4331,15 +4608,34 @@ export class Draw {
         surroundElementList,
         elementList: this.elementList,
         layoutScope: 'main'
-      })
+      }
+      // 行级增量行计算：消费本次编辑的脏区间，从受影响行续算至收敛；
+      // 无脏区间或门控不满足时退回全量，行为与未开启时一致
+      const incrementalResult = this.incrementalRowComputer.tryCompute(
+        this.incrementalRowComputer.consumeDirtyRange(),
+        rowComputePayload
+      )
+      this.rawRowList =
+        incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
+      this.incrementalRowComputer.observeLayout()
       // 分页模式下跨页表格在渲染层拆分为按页片段行
       if (isPagingMode) {
-        this.rowList = this.tablePaging.splitTableRowAcrossPages(this.rowList)
+        this.rowList = this.tablePaging.splitTableRowAcrossPages(
+          this.rawRowList
+        )
+      } else {
+        this.rowList = this.rawRowList
       }
-      // 页面信息
+      // 页面信息（maxPageNo 截断会重置该标志）
+      this.isElementListTruncated = false
       this.pageRowList = this._computePageList()
-      // 位置信息
-      this.position.computePositionList()
+      // 位置信息（增量行计算成功时，首个变动行之前的页位置可复用缓存）
+      const fromPageNo = incrementalResult
+        ? this.incrementalRowComputer.findPageNoOfRow(
+            incrementalResult.firstChangedRow
+          )
+        : undefined
+      this.position.computePositionList({ fromPageNo })
       // 区域信息
       this.area.compute()
       if (!this.isPrintMode()) {
@@ -4403,6 +4699,9 @@ export class Draw {
       (curIndex !== undefined && this.historyManager.isStackEmpty())
     ) {
       this.submitHistory(curIndex)
+    }
+    if (isCompute && this.eventBus.isSubscribe('renderChange')) {
+      this.eventBus.emit('renderChange')
     }
     // 信息变动回调
     nextTick(() => {
@@ -4497,6 +4796,7 @@ export class Draw {
   }
 
   public submitHistory(curIndex: number | undefined) {
+    if (this.options.historyMaxRecordCount === 0) return
     const positionContext = this.position.getPositionContext()
     const oldElementList = getSlimCloneElementList(this.elementList)
     const oldHeaderElementList = getSlimCloneElementList(
@@ -4544,6 +4844,8 @@ export class Draw {
     this.getTableTool().dispose()
     // 超链接弹窗
     this.getHyperlinkParticle().clearHyperlinkPopup()
+    // 悬浮提示弹窗
+    this.getHintParticle().clearHintPopup()
     // 留痕悬浮弹窗
     this.getTraceParticle().clearTracePopup()
     // 日期控件
