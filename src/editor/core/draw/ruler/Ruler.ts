@@ -31,8 +31,9 @@ export class Ruler {
   private rulerContainer: HTMLDivElement | null
   private canvasX: HTMLCanvasElement | null
   private ctxX: CanvasRenderingContext2D | null
-  private canvasY: HTMLCanvasElement | null
-  private ctxY: CanvasRenderingContext2D | null
+  // 垂直标尺按页维护，每页一个画布
+  private canvasYList: HTMLCanvasElement[]
+  private ctxYList: CanvasRenderingContext2D[]
   private dragSide: RulerMarginSide | null
   private dragStartPosition: number
   private dragOriginMargins: IMargin | null
@@ -46,8 +47,8 @@ export class Ruler {
     this.rulerContainer = null
     this.canvasX = null
     this.ctxX = null
-    this.canvasY = null
-    this.ctxY = null
+    this.canvasYList = []
+    this.ctxYList = []
     this.dragSide = null
     this.dragStartPosition = 0
     this.dragOriginMargins = null
@@ -60,29 +61,28 @@ export class Ruler {
   }
 
   private _createDOM() {
-    // 垂直标尺画布（先创建，水平标尺画布覆盖于左上角交汇区之上）
-    const canvasY = document.createElement('canvas')
-    canvasY.classList.add(`${EDITOR_PREFIX}-ruler-y`)
-    // 水平标尺画布
+    // 水平标尺画布（最后插入，覆盖于左上角与垂直标尺的交汇区之上）
     const canvasX = document.createElement('canvas')
     canvasX.classList.add(`${EDITOR_PREFIX}-ruler-x`)
     const rulerContainer = document.createElement('div')
     rulerContainer.classList.add(`${EDITOR_PREFIX}-ruler`)
-    rulerContainer.append(canvasY, canvasX)
+    rulerContainer.append(canvasX)
     // 阻止事件冒泡至编辑器容器，避免影响选区等交互
     rulerContainer.addEventListener('mousedown', evt => {
       evt.preventDefault()
       evt.stopPropagation()
-      if (evt.target === canvasY) {
-        this._mousedownY(evt)
+      const canvasY = this._getTargetCanvasY(evt)
+      if (canvasY) {
+        this._mousedownY(evt, canvasY)
       } else {
         this._mousedownX(evt)
       }
     })
     // 注意：此处不可阻止冒泡，拖动边距依赖document上的mousemove事件
     rulerContainer.addEventListener('mousemove', evt => {
-      if (evt.target === canvasY) {
-        this._updateCursorY(evt)
+      const canvasY = this._getTargetCanvasY(evt)
+      if (canvasY) {
+        this._updateCursorY(evt, canvasY)
       } else {
         this._updateCursorX(evt)
       }
@@ -91,8 +91,14 @@ export class Ruler {
     this.rulerContainer = rulerContainer
     this.canvasX = canvasX
     this.ctxX = canvasX.getContext('2d')
-    this.canvasY = canvasY
-    this.ctxY = canvasY.getContext('2d')
+  }
+
+  // 事件目标命中的垂直标尺画布（不存在则视为水平标尺）
+  private _getTargetCanvasY(evt: MouseEvent): HTMLCanvasElement | null {
+    const target = evt.target
+    return this.canvasYList.includes(<HTMLCanvasElement>target)
+      ? <HTMLCanvasElement>target
+      : null
   }
 
   public setEnabled(enabled: boolean) {
@@ -106,8 +112,8 @@ export class Ruler {
     this.rulerContainer = null
     this.canvasX = null
     this.ctxX = null
-    this.canvasY = null
-    this.ctxY = null
+    this.canvasYList = []
+    this.ctxYList = []
   }
 
   public render() {
@@ -183,14 +189,46 @@ export class Ruler {
     this._drawXHandle(ctx, width - margins[1], height)
   }
 
+  // 垂直标尺按页绘制，画布数量与纸张数量保持一致
   private _renderY() {
-    const canvasY = this.canvasY!
-    const ctx = this.ctxY!
+    const pageCount = this.draw.getPageList().length
+    this._syncCanvasYCount(pageCount)
+    for (let p = 0; p < pageCount; p++) {
+      this._renderYPage(p)
+    }
+  }
+
+  private _syncCanvasYCount(pageCount: number) {
+    const rulerContainer = this.rulerContainer!
+    const canvasX = this.canvasX!
+    // 补齐缺少的页（插入于水平标尺之前，保证交汇区被水平标尺覆盖）
+    for (let p = this.canvasYList.length; p < pageCount; p++) {
+      const canvasY = document.createElement('canvas')
+      canvasY.classList.add(`${EDITOR_PREFIX}-ruler-y`)
+      canvasY.setAttribute('data-index', String(p))
+      rulerContainer.insertBefore(canvasY, canvasX)
+      this.canvasYList.push(canvasY)
+      this.ctxYList.push(canvasY.getContext('2d')!)
+    }
+    // 移除多余页
+    if (this.canvasYList.length > pageCount) {
+      const deleteCount = this.canvasYList.length - pageCount
+      this.ctxYList.splice(pageCount, deleteCount)
+      this.canvasYList
+        .splice(pageCount, deleteCount)
+        .forEach(canvasY => canvasY.remove())
+    }
+  }
+
+  private _renderYPage(pageNo: number) {
+    const canvasY = this.canvasYList[pageNo]
+    const ctx = this.ctxYList[pageNo]
     // 垂直标尺宽度与水平标尺高度一致
     const rulerSize = this.options.ruler.height
-    // 仅对齐第一页
     const pageHeight = this.draw.getHeight()
     const dpr = this.draw.getPagePixelRatio()
+    // 对齐所在页：页间距参与偏移计算
+    canvasY.style.top = `${pageNo * (pageHeight + this.draw.getPageGap())}px`
     canvasY.style.width = `${rulerSize}px`
     canvasY.style.height = `${pageHeight}px`
     canvasY.width = rulerSize * dpr
@@ -304,9 +342,9 @@ export class Ruler {
     return evt.clientX - rect.left
   }
 
-  private _getRelativeY(evt: MouseEvent): number {
-    if (!this.canvasY) return 0
-    const rect = this.canvasY.getBoundingClientRect()
+  // 相对所在页垂直标尺的纵坐标
+  private _getRelativeY(evt: MouseEvent, canvasY: HTMLCanvasElement): number {
+    const rect = canvasY.getBoundingClientRect()
     return evt.clientY - rect.top
   }
 
@@ -339,9 +377,9 @@ export class Ruler {
     this._startDrag(side, evt.clientX)
   }
 
-  private _mousedownY(evt: MouseEvent) {
+  private _mousedownY(evt: MouseEvent, canvasY: HTMLCanvasElement) {
     if (this._isMarginDragDisabled()) return
-    const side = this._getHitMarginSideY(this._getRelativeY(evt))
+    const side = this._getHitMarginSideY(this._getRelativeY(evt, canvasY))
     if (!side) return
     this._startDrag(side, evt.clientY)
   }
@@ -352,10 +390,9 @@ export class Ruler {
     this.canvasX.style.cursor = side ? 'col-resize' : 'default'
   }
 
-  private _updateCursorY(evt: MouseEvent) {
-    if (!this.canvasY) return
-    const side = this._getHitMarginSideY(this._getRelativeY(evt))
-    this.canvasY.style.cursor = side ? 'row-resize' : 'default'
+  private _updateCursorY(evt: MouseEvent, canvasY: HTMLCanvasElement) {
+    const side = this._getHitMarginSideY(this._getRelativeY(evt, canvasY))
+    canvasY.style.cursor = side ? 'row-resize' : 'default'
   }
 
   private _dragMargin(evt: MouseEvent) {
