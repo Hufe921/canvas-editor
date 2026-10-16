@@ -2000,7 +2000,8 @@ export class Draw {
       (anchor.visualLeft || 0) -
       (anchor.left || 0)
     const y = anchorPos.coordinate.leftTop[1]
-    const height = curRow.height
+    // Paragraph spacing participates in layout, not selection painting.
+    const height = curRow.height - (curRow.spacingAfter || 0)
     // 编辑器约定：高亮 (selStart, selEnd]
     const from = selStart + 1
     const to = selEnd

@@ -99,6 +99,58 @@ function splice(draw: Draw, start: number, count: number, text: string) {
 }
 
 describe('HarfBuzz paragraph incremental layout', () => {
+  it.each([
+    [TextDirection.LTR, false],
+    [TextDirection.LTR, true],
+    [TextDirection.RTL, false],
+    [TextDirection.RTL, true]
+  ] as const)(
+    'excludes paragraph spacing from %s selections (incremental: %s)',
+    async (direction, incremental) => {
+      const text =
+        direction === TextDirection.RTL
+          ? 'مرحبا بالعالم اللغة العربية '.repeat(4)
+          : 'Hello world '.repeat(4)
+      const data = (spacingAfter: number): IElement[] => [
+        { value: 'intro' },
+        { value: '\n' },
+        { value: text, direction, spacingAfter },
+        { value: '\n' },
+        { value: 'tail' }
+      ]
+      const base = await setup(data(0), incremental, { scale: 1.5 })
+      const spaced = await setup(data(30), incremental, { scale: 1.5 })
+      const selectionRects = (draw: Draw) => {
+        const elements = draw.getOriginalMainElementList()
+        const start = elements.findIndex((el, i) => i > 0 && el.value === ZERO)
+        let end = start + 1
+        while (end < elements.length && elements[end].value !== ZERO) end++
+        draw.getRange().setRange(start, end - 1)
+        const range = draw.getRange()
+        const paint = vi.spyOn(range, 'render')
+        draw.render({
+          isCompute: false,
+          isLazy: false,
+          isSetCursor: false,
+          isSubmitHistory: false
+        })
+        const rects = paint.mock.calls.map(call => call.slice(1))
+        paint.mockRestore()
+        expect(rects.length).toBeGreaterThan(0)
+        return rects
+      }
+      const lastParagraphRow = (draw: Draw) =>
+        draw.getRowList().find(row => row.spacingAfter === 45)!
+      expect(lastParagraphRow(spaced)).toBeDefined()
+      expect(selectionRects(spaced)).toEqual(selectionRects(base))
+      // The selected paragraph is reused after an edit in the preceding one.
+      splice(base, 2, 0, 'Z')
+      splice(spaced, 2, 0, 'Z')
+      expect(lastParagraphRow(spaced)).toBeDefined()
+      expect(selectionRects(spaced)).toEqual(selectionRects(base))
+    }
+  )
+
   it('reuses clean paragraphs and rebases glyphs and carets', async () => {
     const draw = await setup(documentData(30), true)
     const full = await setup(documentData(30), false)
