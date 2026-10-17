@@ -724,7 +724,15 @@ export class Position {
     }
     for (let i = startPageNo; i < pageRowList.length; i++) {
       const rowList = pageRowList[i]
-      if (!rowList?.length) continue
+      if (!rowList?.length) {
+        // 空白页（区域补高跨页延续页）同样占位，保持页位置缓存与页码对齐
+        this.pagePositionCacheList.push({
+          positionList: [],
+          floatPositionList: [],
+          tablePagingPositionList: []
+        })
+        continue
+      }
       const startIndex = rowList[0].startIndex
       const { margins, innerWidth } = this.draw.getPageSize(i)
       const startX = margins[3]

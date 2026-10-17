@@ -272,6 +272,12 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   if (isTable && !isReadonly && draw.getMode() !== EditorMode.FORM) {
     tableTool.render()
   }
+  // 区域工具组件
+  const areaTool = draw.getAreaTool()
+  areaTool.dispose()
+  if (!isReadonly && draw.getMode() !== EditorMode.FORM) {
+    areaTool.render()
+  }
   // 超链接
   const hyperlinkParticle = draw.getHyperlinkParticle()
   hyperlinkParticle.clearHyperlinkPopup()

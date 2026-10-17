@@ -175,11 +175,13 @@ interface IElement {
   area?: {
     extension?: unknown;
     top?: number;
+    minHeight?: number;
     hide?: boolean;
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;
     deletable?: boolean;
+    resizable?: boolean;
     placeholder?: IPlaceholder;
   };
   // 标签
