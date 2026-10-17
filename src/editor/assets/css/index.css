@@ -3,6 +3,7 @@
 @import './date/datePicker.css';
 @import './block/block.css';
 @import './table/table.css';
+@import './area/area.css';
 @import './resizer/resizer.css';
 @import './previewer/previewer.css';
 @import './contextmenu/contextmenu.css';

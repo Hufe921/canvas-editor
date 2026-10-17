@@ -131,6 +131,7 @@ import { ITd } from '../../interface/table/Td'
 import { Actuator } from '../actuator/Actuator'
 import { TableOperate } from './particle/table/TableOperate'
 import { Area } from './interactive/Area'
+import { AreaTool } from './interactive/AreaTool'
 import { Badge } from './frame/Badge'
 import { Graffiti } from './graffiti/Graffiti'
 import { Magnifier } from './interactive/Magnifier'
@@ -166,6 +167,7 @@ export class Draw {
   private spellcheck: Spellcheck
   private group: Group
   private area: Area
+  private areaTool: AreaTool
   private underline: Underline
   private strikeout: Strikeout
   private highlight: Highlight
@@ -269,6 +271,7 @@ export class Draw {
     this.spellcheck = new Spellcheck(this)
     this.group = new Group(this)
     this.area = new Area(this)
+    this.areaTool = new AreaTool(this)
     this.underline = new Underline(this)
     this.strikeout = new Strikeout(this)
     this.highlight = new Highlight(this)
@@ -818,6 +821,10 @@ export class Draw {
     return this.area
   }
 
+  public getAreaTool(): AreaTool {
+    return this.areaTool
+  }
+
   public getBadge(): Badge {
     return this.badge
   }
@@ -899,6 +906,10 @@ export class Draw {
 
   public getRawRowList(): IRow[] {
     return this.rawRowList
+  }
+
+  public getMainRowList(): IRow[] {
+    return this.rowList
   }
 
   public getIncrementalRowComputer(): IncrementalRowComputer {
@@ -2551,6 +2562,8 @@ export class Draw {
         }
       }
     }
+    // 区域最小高度：内容高度不足时向区域末行补充高度（内容超出时由行高自然撑开）
+    this.area.applyMinHeight(rowList)
     return rowList
   }
 
@@ -2609,6 +2622,47 @@ export class Draw {
           row.height + rowOffsetY + pageHeight > pageLimit ||
           this.rowList[i - 1]?.isPageBreak
         ) {
+          // 区域补高跨页顺延：内容能留在当前页时，本页补高截断至页底
+          // （避免末行被推入下一页），剩余补高顺延至下一页
+          const areaPadding = row.areaPadding
+          if (areaPadding && !this.rowList[i - 1]?.isPageBreak) {
+            const contentHeight = row.height - areaPadding.height
+            const remainHeight = pageLimit - pageHeight - rowOffsetY
+            if (contentHeight <= remainHeight) {
+              const carryHeight = row.height - remainHeight
+              const nextRow = this.rowList[i + 1]
+              if (carryHeight > 0) {
+                if (nextRow) {
+                  // 结转为下一行顶部间距，随分页流入下一页
+                  nextRow.offsetY = (nextRow.offsetY || 0) + carryHeight
+                  nextRow.areaPaddingCarry = {
+                    areaId: areaPadding.areaId,
+                    height: carryHeight
+                  }
+                } else if (
+                  !Number.isInteger(maxPageNo) ||
+                  pageNo < maxPageNo!
+                ) {
+                  // 区域位于文档末尾无后续行：以空白页延续（结转标记在末行自身）
+                  row.areaPaddingCarry = {
+                    areaId: areaPadding.areaId,
+                    height: carryHeight
+                  }
+                  pageDirectionList[pageNo + 1] = direction
+                  pageRowList.push([])
+                }
+              }
+              const inPagePadding = remainHeight - contentHeight
+              row.height = remainHeight
+              row.areaPadding = inPagePadding
+                ? { areaId: areaPadding.areaId, height: inPagePadding }
+                : undefined
+              pageHeight = pageLimit
+              pageRowList[pageNo].push(row)
+              prevColumnIndex = row.columnIndex
+              continue
+            }
+          }
           if (Number.isInteger(maxPageNo) && pageNo >= maxPageNo!) {
             // 跨页表格片段共享元素索引：按片段边界裁剪表格，
             // 保留已展示片段内容，不能直接按共享索引整体截断
@@ -2686,7 +2740,10 @@ export class Draw {
             x - offsetX,
             y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
             element.metrics.width + offsetX,
-            curRow.height - 2 * marginHeight + 2 * highlightMarginHeight,
+            curRow.height -
+              (curRow.areaPadding?.height || 0) -
+              2 * marginHeight +
+              2 * highlightMarginHeight,
             highlight
           )
         } else if (preHighlight) {
@@ -2870,11 +2927,21 @@ export class Draw {
           !curRow.isWidthNotEnough &&
           j === curRow.elementList.length - 1
         ) {
-          this.lineBreakParticle.render(ctx, element, x, y + curRow.height / 2)
+          this.lineBreakParticle.render(
+            ctx,
+            element,
+            x,
+            y + (curRow.height - (curRow.areaPadding?.height || 0)) / 2
+          )
         }
         // 空白符绘制
         if (isDrawWhiteSpace && WHITE_SPACE_REG.test(element.value)) {
-          this.whiteSpaceParticle.render(ctx, element, x, y + curRow.height / 2)
+          this.whiteSpaceParticle.render(
+            ctx,
+            element,
+            x,
+            y + (curRow.height - (curRow.areaPadding?.height || 0)) / 2
+          )
         }
         // 边框绘制（目前仅支持控件）
         if (element.control?.border) {
@@ -2891,7 +2958,7 @@ export class Draw {
             x,
             y + rowMargin,
             element.metrics.width,
-            curRow.height - 2 * rowMargin
+            curRow.height - (curRow.areaPadding?.height || 0) - 2 * rowMargin
           )
         } else if (preElement?.control?.border) {
           this.control.drawBorder(ctx)
@@ -2921,7 +2988,11 @@ export class Draw {
           this.underline.recordFillInfo(
             ctx,
             x - offsetX,
-            y + curRow.height - rowMargin + offsetY,
+            y +
+              curRow.height -
+              (curRow.areaPadding?.height || 0) -
+              rowMargin +
+              offsetY,
             metrics.width + offsetX,
             0,
             color,
@@ -3004,7 +3075,10 @@ export class Draw {
               if (nextElement && nextElement.value === ZERO) {
                 rangeRecord.x = x + metrics.width
                 rangeRecord.y = y
-                rangeRecord.height = curRow.height - (curRow.spacingAfter || 0)
+                rangeRecord.height =
+                  curRow.height -
+                  (curRow.spacingAfter || 0) -
+                  (curRow.areaPadding?.height || 0)
                 rangeRecord.width += this.options.rangeMinWidth
               }
             } else {
@@ -3017,7 +3091,10 @@ export class Draw {
               if (!rangeRecord.width) {
                 rangeRecord.x = x
                 rangeRecord.y = y
-                rangeRecord.height = curRow.height - (curRow.spacingAfter || 0)
+                rangeRecord.height =
+                  curRow.height -
+                  (curRow.spacingAfter || 0) -
+                  (curRow.areaPadding?.height || 0)
               }
               rangeRecord.width += rangeWidth
             }
@@ -3030,7 +3107,9 @@ export class Draw {
             x,
             y,
             metrics.width,
-            curRow.height - (curRow.spacingAfter || 0)
+            curRow.height -
+              (curRow.spacingAfter || 0) -
+              (curRow.areaPadding?.height || 0)
           )
         }
         index++
@@ -3495,6 +3574,10 @@ export class Draw {
       ) {
         this.tableTool.render()
       }
+      // 区域工具重新渲染
+      if (isCompute && !this.isReadonly()) {
+        this.areaTool.render()
+      }
       // 页眉指示器重新渲染
       if (isCompute && !this.zone.isMainActive()) {
         this.zone.drawZoneIndicator()
@@ -3550,6 +3633,8 @@ export class Draw {
         curIndex !== undefined ? positionList[curIndex] : null
       )
     }
+    // 光标位置确定后重新锚定区域工具
+    this.areaTool.render()
     // 定位到图片元素并且位置发生变化
     let isShowCursor = true
     if (
@@ -3618,6 +3703,8 @@ export class Draw {
     this.getPreviewer().clearResizer()
     // 表格工具组件
     this.getTableTool().dispose()
+    // 区域工具组件
+    this.getAreaTool().dispose()
     // 超链接弹窗
     this.getHyperlinkParticle().clearHyperlinkPopup()
     // 悬浮提示弹窗

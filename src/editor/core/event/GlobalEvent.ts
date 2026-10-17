@@ -9,6 +9,7 @@ import { HintParticle } from '../draw/particle/HintParticle'
 import { DateParticle } from '../draw/particle/date/DateParticle'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { TableTool } from '../draw/particle/table/TableTool'
+import { AreaTool } from '../draw/interactive/AreaTool'
 import { RangeManager } from '../range/RangeManager'
 import { CanvasEvent } from './CanvasEvent'
 import { ImageParticle } from '../draw/particle/ImageParticle'
@@ -23,6 +24,7 @@ export class GlobalEvent {
   private range: RangeManager
   private previewer: Previewer
   private tableTool: TableTool
+  private areaTool: AreaTool
   private hyperlinkParticle: HyperlinkParticle
   private hintParticle: HintParticle
   private control: Control
@@ -39,6 +41,7 @@ export class GlobalEvent {
     this.range = draw.getRange()
     this.previewer = draw.getPreviewer()
     this.tableTool = draw.getTableTool()
+    this.areaTool = draw.getAreaTool()
     this.hyperlinkParticle = draw.getHyperlinkParticle()
     this.hintParticle = draw.getHintParticle()
     this.dateParticle = draw.getDateParticle()
@@ -102,6 +105,7 @@ export class GlobalEvent {
     this.range.recoveryRangeStyle()
     this.previewer.clearResizer()
     this.tableTool.dispose()
+    this.areaTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
     this.hintParticle.clearHintPopup()
     this.control.destroyControl()
