@@ -14,6 +14,29 @@ export interface IRange {
   zone?: EditorZone
 }
 
+/** Runtime indices are temporary. Stable table ownership and exact container
+ * text must be revalidated before restoring a range into another context. */
+export interface ILocatedRange {
+  zone: EditorZone
+  tablePath: { tableId: string; rowId: string; cellId: string }[]
+  /** Header/footer page; main-story pages come from their element positions. */
+  pageNo?: number
+  startIndex: number
+  endIndex: number
+  sourceText: string
+}
+
+export interface ILocatedElementRect {
+  pageNo: number
+  index: number
+  rowNo: number
+  columnIndex?: number
+  x: number
+  y: number
+  width: number
+  height: number
+}
+
 export type RangeRowArray = Map<number, number[]>
 
 export type RangeRowMap = Map<number, Set<number>>

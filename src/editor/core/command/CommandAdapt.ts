@@ -90,6 +90,8 @@ import { ILocationPosition, IPositionContext } from '../../interface/Position'
 import {
   IGetSurroundElementListOption,
   IRange,
+  ILocatedRange,
+  ILocatedElementRect,
   RangeContext,
   RangeRect
 } from '../../interface/Range'
@@ -114,6 +116,7 @@ import {
   isObjectEqual
 } from '../../utils'
 import { getParagraphNo } from '../../utils/paragraph'
+import { resolveLocatedRange } from '../../utils/locatedRange'
 import {
   createDomFromElementList,
   formatElementContext,
@@ -276,6 +279,62 @@ export class CommandAdapt {
       range.startTrIndex,
       range.endTrIndex
     )
+  }
+
+  public restoreRange(input: ILocatedRange) {
+    const resolved = resolveLocatedRange(this.draw, input)
+    const options = this.draw.getOptions()
+    const pageNo = resolved.pageNo
+    if (input.zone === EditorZone.HEADER &&
+      (!options.header.editable || this.draw.getHeader().isDisabled(pageNo)) ||
+      input.zone === EditorZone.FOOTER &&
+      (!options.footer.editable || this.draw.getFooter().isDisabled(pageNo))) {
+      throw new Error('Located range zone is unavailable for selection')
+    }
+    const previous = this.position.getPositionContext()
+    const oldPath = previous.tablePath?.length ? previous.tablePath
+      : previous.isTable ? [previous] : []
+    const newPath = resolved.context.tablePath ?? []
+    const changedOwner = previous.isTable !== resolved.context.isTable ||
+      oldPath.length !== newPath.length || oldPath.some((path, index) => {
+        const next = newPath[index]
+        return !next || path.index !== next.index || path.trIndex !== next.trIndex ||
+          path.tdIndex !== next.tdIndex || path.tableId !== next.tableId ||
+          path.trId !== next.trId || path.tdId !== next.tdId
+      })
+    const forceChange = changedOwner || this.draw.getPageNo() !== pageNo ||
+      this.draw.getZone().getZone() !== input.zone ||
+      this.range.getIsRangeChange(input.startIndex, input.endIndex)
+    // A selection may be restored before the first caret focus. Retain the
+    // initial baseline once, so the first subsequent edit can still be undone.
+    if (this.historyManager.isStackEmpty()) this.draw.submitHistory(undefined)
+    // Zone changes render immediately. Clear only the old table context before
+    // that successful transition, after all input/ownership validation passed.
+    if (this.draw.getZone().getZone() !== input.zone) {
+      this.position.setPositionContext({ isTable: false })
+      this.draw.setPageNo(pageNo)
+      this.draw.getZone().setZone(input.zone)
+    }
+    this.draw.setPageNo(pageNo)
+    this.position.setPositionContext(resolved.context)
+    this.range.setRange(input.startIndex, input.endIndex,
+      undefined, undefined, undefined, undefined, undefined, forceChange)
+    this.draw.render({ curIndex: input.startIndex === input.endIndex
+      ? input.startIndex : undefined, isCompute: false,
+      isSubmitHistory: false, isSetCursor: input.startIndex === input.endIndex })
+  }
+
+  public getLocatedElementRects(input: ILocatedRange): ILocatedElementRect[] {
+    const { positions, first, pageNo, scale } = resolveLocatedRange(this.draw, input)
+    if (input.startIndex === input.endIndex) return []
+    return positions.slice(first, input.endIndex + 1).map(position => ({
+      pageNo: input.zone === EditorZone.MAIN ? position.pageNo : pageNo,
+      index: position.index, rowNo: position.rowNo,
+      ...(position.columnIndex === undefined ? {} : { columnIndex: position.columnIndex }),
+      x: position.coordinate.leftTop[0] / scale, y: position.coordinate.leftTop[1] / scale,
+      width: (position.coordinate.rightTop[0] - position.coordinate.leftTop[0]) / scale,
+      height: (position.coordinate.leftBottom[1] - position.coordinate.leftTop[1]) / scale
+    }))
   }
 
   public setPositionContext(range: IRange) {
