@@ -2715,6 +2715,8 @@ export class Draw {
     const highlightMarginHeight = this.getHighlightMarginHeight()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
+      // 内容高度：不含段后间距
+      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
       let preHighlight = ''
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
@@ -2740,10 +2742,7 @@ export class Draw {
             x - offsetX,
             y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
             element.metrics.width + offsetX,
-            curRow.height -
-              (curRow.areaPadding?.height || 0) -
-              2 * marginHeight +
-              2 * highlightMarginHeight,
+            rowContentHeight - 2 * marginHeight + 2 * highlightMarginHeight,
             highlight
           )
         } else if (preHighlight) {
@@ -2784,6 +2783,8 @@ export class Draw {
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
+      // 内容高度：不含段后间距
+      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
       // 选区绘制记录
       const rangeRecord: IElementFillRect = {
         x: 0,
@@ -2931,7 +2932,7 @@ export class Draw {
             ctx,
             element,
             x,
-            y + (curRow.height - (curRow.areaPadding?.height || 0)) / 2
+            y + rowContentHeight / 2
           )
         }
         // 空白符绘制
@@ -2940,7 +2941,7 @@ export class Draw {
             ctx,
             element,
             x,
-            y + (curRow.height - (curRow.areaPadding?.height || 0)) / 2
+            y + rowContentHeight / 2
           )
         }
         // 边框绘制（目前仅支持控件）
@@ -2958,7 +2959,7 @@ export class Draw {
             x,
             y + rowMargin,
             element.metrics.width,
-            curRow.height - (curRow.areaPadding?.height || 0) - 2 * rowMargin
+            rowContentHeight - 2 * rowMargin
           )
         } else if (preElement?.control?.border) {
           this.control.drawBorder(ctx)
@@ -2988,11 +2989,7 @@ export class Draw {
           this.underline.recordFillInfo(
             ctx,
             x - offsetX,
-            y +
-              curRow.height -
-              (curRow.areaPadding?.height || 0) -
-              rowMargin +
-              offsetY,
+            y + rowContentHeight - rowMargin + offsetY,
             metrics.width + offsetX,
             0,
             color,
@@ -3075,10 +3072,7 @@ export class Draw {
               if (nextElement && nextElement.value === ZERO) {
                 rangeRecord.x = x + metrics.width
                 rangeRecord.y = y
-                rangeRecord.height =
-                  curRow.height -
-                  (curRow.spacingAfter || 0) -
-                  (curRow.areaPadding?.height || 0)
+                rangeRecord.height = rowContentHeight
                 rangeRecord.width += this.options.rangeMinWidth
               }
             } else {
@@ -3091,10 +3085,7 @@ export class Draw {
               if (!rangeRecord.width) {
                 rangeRecord.x = x
                 rangeRecord.y = y
-                rangeRecord.height =
-                  curRow.height -
-                  (curRow.spacingAfter || 0) -
-                  (curRow.areaPadding?.height || 0)
+                rangeRecord.height = rowContentHeight
               }
               rangeRecord.width += rangeWidth
             }
@@ -3107,9 +3098,7 @@ export class Draw {
             x,
             y,
             metrics.width,
-            curRow.height -
-              (curRow.spacingAfter || 0) -
-              (curRow.areaPadding?.height || 0)
+            rowContentHeight
           )
         }
         index++
