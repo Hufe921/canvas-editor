@@ -2715,8 +2715,11 @@ export class Draw {
     const highlightMarginHeight = this.getHighlightMarginHeight()
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 内容高度：不含段后间距
-      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
+      // 内容高度：不含段后间距与区域补高
+      const rowContentHeight =
+        curRow.height -
+        (curRow.spacingAfter || 0) -
+        (curRow.areaPadding?.height || 0)
       let preHighlight = ''
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
@@ -2783,8 +2786,11 @@ export class Draw {
     let index = startIndex
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
-      // 内容高度：不含段后间距
-      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
+      // 内容高度：不含段后间距与区域补高
+      const rowContentHeight =
+        curRow.height -
+        (curRow.spacingAfter || 0) -
+        (curRow.areaPadding?.height || 0)
       // 选区绘制记录
       const rangeRecord: IElementFillRect = {
         x: 0,
