@@ -1,263 +1,158 @@
-<h1 align="center">Canvas Editor</h1>
+# @herberthe/canvas-editor
 
-<p align="center">
-  <strong>A Canvas/SVG-based rich text editor.</strong>
-</p>
+A HarfBuzz-powered rich text editor with **Canvas-only page rendering**,
+maintained by **Herbert He**. The independent package release line starts at
+**0.1.0** and distributes **ES modules and TypeScript declarations only**.
 
-<p align="center">
-  <a href="https://trendshift.io/repositories/8401" target="_blank">
-    <img src="https://trendshift.io/api/badge/repositories/8401" alt="Hufe921%2Fcanvas-editor | Trendshift" style="width: 250px; height: 55px;" width="250" height="55"/>
-  </a>
-</p>
+## Project origin and relationship
 
-<p align="center">
-<a href="https://www.npmjs.com/package/@hufe921/canvas-editor" target="_blank"><img src="https://img.shields.io/npm/v/@hufe921/canvas-editor.svg?sanitize=true" alt="Version"></a>
- <a href="https://github.com/hufe921/canvas-editor/actions" target="_blank">
-  <img alt="Cypress Passing" src="https://github.com/hufe921/canvas-editor/workflows/cypress/badge.svg" />
-</a>
-<a href="https://github.com/hufe921/canvas-editor/graphs/contributors" target="_blank">
-  <img alt="GitHub Contributors" src="https://img.shields.io/github/contributors/hufe921/canvas-editor" />
-</a>
-<a href="https://www.npmjs.com/package/@hufe921/canvas-editor" target="_blank"><img src="https://img.shields.io/npm/l/@hufe921/canvas-editor.svg?sanitize=true" alt="License"></a>
-<a href="https://github.com/Hufe921/canvas-editor/issues/new/choose" target="_blank"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg" alt="PRs"></a>
-<a href="https://zread.ai/Hufe921/canvas-editor" target="_blank"><img src="https://img.shields.io/badge/Ask_Zread-_.svg?style=flat&color=00b0aa&labelColor=000000&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAxNiAxNiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTQuOTYxNTYgMS42MDAxSDIuMjQxNTZDMS44ODgxIDEuNjAwMSAxLjYwMTU2IDEuODg2NjQgMS42MDE1NiAyLjI0MDFWNC45NjAxQzEuNjAxNTYgNS4zMTM1NiAxLjg4ODEgNS42MDAxIDIuMjQxNTYgNS42MDAxSDQuOTYxNTZDNS4zMTUwMiA1LjYwMDEgNS42MDE1NiA1LjMxMzU2IDUuNjAxNTYgNC45NjAxVjIuMjQwMUM1LjYwMTU2IDEuODg2NjQgNS4zMTUwMiAxLjYwMDEgNC45NjE1NiAxLjYwMDFaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00Ljk2MTU2IDEwLjM5OTlIMi4yNDE1NkMxLjg4ODEgMTAuMzk5OSAxLjYwMTU2IDEwLjY4NjQgMS42MDE1NiAxMS4wMzk5VjEzLjc1OTlDMS42MDE1NiAxNC4xMTM0IDEuODg4MSAxNC4zOTk5IDIuMjQxNTYgMTQuMzk5OUg0Ljk2MTU2QzUuMzE1MDIgMTQuMzk5OSA1LjYwMTU2IDE0LjExMzQgNS42MDE1NiAxMy43NTk5VjExLjAzOTlDNS42MDE1NiAxMC42ODY0IDUuMzE1MDIgMTAuMzk5OSA0Ljk2MTU2IDEwLjM5OTlaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik0xMy43NTg0IDEuNjAwMUgxMS4wMzg0QzEwLjY4NSAxLjYwMDEgMTAuMzk4NCAxLjg4NjY0IDEwLjM5ODQgMi4yNDAxVjQuOTYwMUMxMC4zOTg0IDUuMzEzNTYgMTAuNjg1IDUuNjAwMSAxMS4wMzg0IDUuNjAwMUgxMy43NTg0QzE0LjExMTkgNS42MDAxIDE0LjM5ODQgNS4zMTM1NiAxNC4zOTg0IDQuOTYwMVYyLjI0MDFDMTQuMzk4NCAxLjg4NjY0IDE0LjExMTkgMS42MDAxIDEzLjc1ODQgMS42MDAxWiIgZmlsbD0iI2ZmZiIvPgo8cGF0aCBkPSJNNCAxMkwxMiA0TDQgMTJaIiBmaWxsPSIjZmZmIi8%2BCjxwYXRoIGQ9Ik00IDEyTDEyIDQiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSIxLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgo8L3N2Zz4K&logoColor=ffffff" alt="zread"/></a>
-<a href="https://deepwiki.com/Hufe921/canvas-editor" target="_blank"><img src="https://img.shields.io/badge/Ask_DeepWiki-_.svg?style=flat&color=0094de&labelColor=000000&logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGNsYXNzPSJzaXplLTQgdHJhbnNmb3JtIHRyYW5zaXRpb24tdHJhbnNmb3JtIGR1cmF0aW9uLTcwMCBncm91cC1ob3Zlcjpyb3RhdGUtMTgwIFsmYW1wO19wYXRoXTpzdHJva2UtMCIgdmlld0JveD0iMTEwIDExMCA0NjAgNTAwIj48cGF0aCBkPSJNNDE5IDMzMnExNi03IDMyIDBsMjUgMTUgMyAxIDMgMSAzLTEgMy0xIDUxLTI5cTYtMyA2LTExdi01OHEwLTgtNi0xMWwtNTEtMjlxLTYtMy0xMiAwbC01MSAyOXYxbC0yIDEtMiAydjFsLTEgMnYxbC0xIDN2MjlhMzIgMzIgMCAwIDEtNDggMjhsLTI1LTE1LTMtMS0zLTEtMyAxLTMgMS01MSAyOXEtNSAzLTYgMTF2NThxMSA4IDYgMTFsNTEgMjkgMyAxIDMgMSAzLTEgMy0xIDI1LTE1YTMyIDMyIDAgMCAxIDQ4IDI4djI5bDEgM3YxbDEgMnYxbDIgMiAyIDIgNTEgMjkgNiAyIDYtMiA1MS0yOXE2LTMgNi0xMXYtNThxMC04LTYtMTFsLTUxLTI5LTMtMS0zLTEtMyAxLTMgMS0yNSAxNWEzMiAzMiAwIDAgMS00OC0yOHExLTE4IDE2LTI4IiBzdHlsZT0iZmlsbDojMjFjMTlhIi8+PHBhdGggZD0ibTE0MSAzMTggNTEgMjkgNiAyIDYtMiA1MS0yOXYtMWwyLTEgMi0ydi0xbDEtMnYtMWwxLTN2LTI5YTMyIDMyIDAgMCAxIDQ4LTI4bDI1IDE1IDMgMSAzIDEgMy0xIDMtMSA1MS0yOXE2LTMgNi0xMXYtNThxMC04LTYtMTFsLTUxLTI5cS02LTMtMTIgMGwtNTEgMjktMiAyaC0xbC0xIDJ2MWwtMSAydjFsLTEgM3YyOWEzMiAzMiAwIDAgMS00OCAyOGwtMjUtMTUtMy0xLTMtMS0zIDEtMyAxLTUxIDI5cS02IDMtNiAxMXY1OHEwIDggNiAxMSIgc3R5bGU9ImZpbGw6IzM5NjljYSIvPjxwYXRoIGQ9Im0zOTcgNDg0LTUxLTI5LTMtMS0zLTEtMyAxLTMgMS0yNSAxNWEzMiAzMiAwIDAgMS00OC0yOHYtMjlsLTEtM3YtMWwtMS0ydi0xbC0yLTItMi0xdi0xbC01MS0yOXEtNi0zLTEyIDBsLTUxIDI5cS02IDMtNiAxMXY1OHEwIDggNiAxMWw1MSAyOSAzIDEgMyAxIDMtMSAzLTEgMjUtMTVhMzIgMzIgMCAwIDEgNDggMjh2MjlsMSAzdjFsMSAydjFsMiAyIDIgMiA1MSAyOSA2IDIgNi0yIDUxLTI5cTYtMyA2LTExdi01OHEwLTgtNi0xMSIgc3R5bGU9ImZpbGw6IzAyOTRkZSIvPjwvc3ZnPg==&logoColor=ffffff" alt="DeepWiki"/></a>
-</p>
+This project is an independently maintained fork of
+[Hufe921/canvas-editor](https://github.com/Hufe921/canvas-editor), originally
+created by Hufe and its contributors. Thank you to the upstream community for
+the original editor and its document features.
 
-<p align="center">
-  <a href="https://hufe.club/canvas-editor" target="_blank"><strong>Live Demo</strong></a> ·
-  <a href="https://hufe.club/canvas-editor-docs" target="_blank"><strong>Documentation</strong></a> ·
-  <a href="https://github.com/Hufe921/canvas-editor/issues/new?assignees=&labels=&projects=&template=bug_report.yml" target="_blank">Report Bug</a> ·
-  <a href="https://github.com/Hufe921/canvas-editor/issues/new?assignees=&labels=%3Asparkles%3A+feature+request&projects=&template=feature_request.yml" target="_blank">Request Feature</a> ·
-  <a href="https://github.com/Hufe921/canvas-editor/discussions" target="_blank">Discussions</a>
-</p>
+- Fork repository: [HerbertHe/canvas-editor](https://github.com/HerbertHe/canvas-editor)
+- Fork npm package: `@herberthe/canvas-editor`
+- Upstream npm package: `@hufe921/canvas-editor`
+- This is not an official upstream release and is not endorsed by or affiliated
+  with the upstream maintainers. Versions, releases, support and roadmap are independent.
+- `0.1.0` starts the fork's version series; it is not an upstream downgrade or a
+  promise of drop-in compatibility. The upstream package is not a dependency.
 
-<p align="center">
-  English · <a href="https://hufe.club/canvas-editor-docs">中文文档</a>
-</p>
+## Differences from upstream
 
-<p align="center">
-  🎉 <strong>Canvas Editor 1.0.0 is released!</strong> See the <a href="https://github.com/Hufe921/canvas-editor/blob/main/docs/RELEASE_NOTES_1.0.0.md"><strong>1.0 Release Notes</strong></a> for highlights and upgrade notes.
-</p>
+The comparison below is scoped to upstream **1.0.5**, at
+[main commit 1d7cd1a7](https://github.com/Hufe921/canvas-editor/tree/1d7cd1a7742f3e8af1f67536a5157d03b2945de7).
+It does not assert that future upstream versions will lack these features.
 
----
+| Capability                                                   | Upstream baseline                             | This fork 0.1.0                                                                                  |
+| ------------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Text layout and painting                                     | Browser Canvas text measurement/painting      | HarfBuzz-only shaping and native layout; Canvas glyph outlines                                   |
+| Font files used by layout                                    | Browser font selection                        | Explicit TTF/OTF/WOFF/WOFF2 registration and actual font-face tracking                           |
+| Missing-font handling                                        | Browser fallback                              | Coverage reports/events, explicit missing-glyph boxes and page/console hints                     |
+| Automatic basic fonts                                        | No equivalent Bunny download pipeline         | Default-enabled Bunny downloads, runtime switch, retry and manual/offline mode                   |
+| Bidirectional and complex-script geometry                    | No equivalent HarfBuzz cluster/caret pipeline | Native glyph/cluster/caret geometry, visual navigation and logical deletion                      |
+| Initialization                                               | Synchronous editor construction               | `Editor.create()` or `await editor.ready`, with failure/cleanup states                           |
+| Incremental layout                                           | Row-level incremental layout already exists   | Native paragraph layout reuse adapted to HarfBuzz, followed by pagination/position recomputation |
+| Distribution                                                 | ESM and UMD                                   | ESM-only root exports and declarations; no UMD/CommonJS                                          |
+| SVG pages                                                    | Separate upstream experimental branch         | Deferred and unavailable; Canvas is the only page renderer                                       |
+| Rich text, tables, controls, pagination, annotations, macros | Existing upstream capabilities                | Inherited and adapted; not claimed as fork inventions                                            |
 
-## Overview
+See [项目关系与差异（中文）](docs/guide/fork-and-differences.md) /
+[full comparison and migration notes](docs/en/guide/fork-and-differences.md).
+The font pipeline still has limits: basic downloads do not guarantee rare
+characters, every language/style or color emoji support. Final performance and
+removal audits T23/T24 remain deferred; no performance speedup is promised.
 
-**Canvas Editor** is a feature-rich, WYSIWYG document editor built on top of the HTML `<canvas>` API. It is designed for use cases that demand pixel-perfect rendering, advanced typography, complex layouts, and Word-like document experiences in the browser — including EMR (Electronic Medical Records), legal contracts, reports, and other document-centric applications.
+## Rendering support
 
-Unlike traditional `contenteditable`-based editors, Canvas Editor takes full control of the rendering pipeline, providing consistent typography across browsers, precise pagination, and a uniform export experience.
+**Canvas is the default and only supported document page renderer.** There is
+no renderer selector. SVG page rendering and standalone SVG document export
+are deferred; the SVG assessment is a future design, not a shipped feature.
+SVG images, formula resources, glyph path data and UI icons remain usable as
+resources and do not constitute an SVG page backend.
 
-## Features
-
-- **Rich Text** — Undo / Redo, Font, Size, Bold, Italic, Underline, Strikeout, Superscript, Alignment, Headings, Lists, and more
-- **Insertable Elements** — Tables, Images, Hyperlinks, Code Blocks, Page Breaks, Math Formulas (LaTeX), Date Pickers, Block elements
-- **Form Controls** — Select, Text, Date, Radio, Checkbox controls
-- **Pagination** — Native pagination with headers, footers, and page numbers
-- **Page Layout** — Configurable page margins, watermarks, backgrounds
-- **Document Structure** — Catalog (TOC) generation, comments, group annotations
-- **Print & Export** — Print-ready output via canvas-to-image / PDF rendering
-- **Interaction** — Custom context menus, customizable shortcut keys, drag-and-drop for text, elements, and controls
-- **Extensibility** — Plugin system (`instance.use`); official plugins cover Word/Excel import-export, formulas, code blocks, comments, spell checking, and more
-- **Performance** — Web Workers for word counting, catalog generation, and async value retrieval
-
-## Why Canvas Editor?
-
-|                         | Canvas Editor                    | contenteditable Editors     |
-| ----------------------- | -------------------------------- | --------------------------- |
-| Cross-browser rendering | Pixel-perfect, identical         | Varies by browser           |
-| Pagination              | Native, document-style           | Manual / unsupported        |
-| Print fidelity          | Matches on-screen output         | Often diverges              |
-| Typography control      | Full control                     | Limited by the browser      |
-| Document features       | TOC, headers/footers, watermarks | Requires heavy custom logic |
+All editor text uses HarfBuzz. The removed `textEngine` / `renderMode` options
+and their enums are unsupported. Do not configure `renderer: 'svg'`.
 
 ## Installation
 
-```bash
-# npm
-npm install @hufe921/canvas-editor
-
-# pnpm
-pnpm add @hufe921/canvas-editor
-
-# yarn
-yarn add @hufe921/canvas-editor
+```sh
+npm install @herberthe/canvas-editor@0.1.0
+# or
+pnpm add @herberthe/canvas-editor@0.1.0
+# or
+yarn add @herberthe/canvas-editor@0.1.0
 ```
 
-### ESM-only distribution
+The metadata in this repository prepares the 0.1.0 release; it does not by
+itself confirm npm publication. To try the prepared package before publication,
+run `npm run lib` and `npm pack`, then install the generated tarball.
 
-This branch publishes ES modules and TypeScript declarations only. Import from
-`@hufe921/canvas-editor`; `require()`, UMD script tags and undocumented
-`dist/*` / `src/*` deep imports are unsupported. The only public subpath is
-`@hufe921/canvas-editor/package.json`. Use the documented runtime APIs and types from the root; removed engine enums
-are no longer exported.
-
-Use a browser with WebAssembly, Web Workers and top-level await support. When
-bundling, preserve top-level await (for example Vite `build.target: 'esnext'`).
-Deploy all generated chunks together. The library includes its workers and
-HarfBuzz WASM. All text uses HarfBuzz; no engine selector is required.
-`autoDownloadFonts` defaults to true and downloads basic fonts from Bunny Fonts.
-Disable it with `autoDownloadFonts: false` for offline/manual font integration.
-Basic fonts do not guarantee rare-character, emoji/ZWJ or all style coverage.
-The removed `textEngine` / `renderMode` options now throw migration errors.
-
-## Quick Start
+## Quick start
 
 ```html
 <div class="canvas-editor"></div>
 ```
 
-```javascript
-import Editor from '@hufe921/canvas-editor'
+```typescript
+import Editor from '@herberthe/canvas-editor'
 
-const container = document.querySelector('.canvas-editor')
-
+const container = document.querySelector<HTMLDivElement>('.canvas-editor')!
 const editor = await Editor.create(container, {
-  main: [
-    {
-      value: 'Hello, Canvas Editor!'
-    }
-  ]
+  main: [{ value: 'Weekend plans · 周末计划 · خطة نهاية الأسبوع' }]
 })
 ```
 
-Alternatively, use `new Editor(...)` and `await editor.ready`. The state is
-`initializing`, `ready`, `failed` or `destroyed`; `initializationError` preserves
-the failure cause. Mutation and geometry commands require readiness. Synchronous
-measurement remains synchronous after readiness; use
-`executeComputeElementListHeightAsync()` to wait explicitly. Destroying a pending
-instance rejects `ready` and prevents late initialization from mounting UI.
+Alternatively, construct with `new Editor(...)` and then `await editor.ready`.
+Mutation and geometry commands require readiness. Initialization states are
+`initializing`, `ready`, `failed` and `destroyed`; `initializationError` retains
+the failure cause. Destroying a pending editor rejects readiness and cleans up.
 
-Register additional TTF/OTF/WOFF/WOFF2 bytes with
-`await editor.register.fonts([{ family, data, weight: 400, style: 'normal' }])`.
-Read `editor.getFontCoverageReport()` and subscribe to
-`editor.eventBus.on('fontCoverageChange', callback)` for current coverage;
-`editor.retryFontDownloads()` retries outstanding failures after readiness.
-Readiness does not wait for background downloads. Download failures retain
-editable placeholders and show page/console hints.
+`autoDownloadFonts` defaults to `true`: uncovered text triggers basic-font
+requests to Bunny Fonts. Set it to `false` for offline/manual integration.
+Readiness waits for WASM, explicitly configured fonts and first layout, but
+not background font downloads. Missing-font placeholders and hints remain if
+coverage is incomplete or a download fails.
 
-See the [migration guide](docs/en/guide/font-and-esm-migration.md)
-([中文](docs/guide/font-and-esm-migration.md)) and the
-[standalone ESM font example](examples/esm-fonts/README.md) for default downloads,
-offline mode, recovery and manual font registration.
+```typescript
+await editor.register.fonts([
+  { family: 'My Font', data: fontBytes, weight: 400, style: 'normal' }
+])
+const coverage = editor.getFontCoverageReport()
+editor.eventBus.on('fontCoverageChange', report => console.log(report))
+await editor.retryFontDownloads()
+```
 
-For complete API documentation, see the [official docs](https://hufe.club/canvas-editor-docs).
+`fontBytes` must contain actual TTF/OTF/WOFF/WOFF2 font bytes. See the runnable
+[ESM font example](examples/esm-fonts/README.md) and
+[font/migration guide](docs/en/guide/font-and-esm-migration.md)
+([中文](docs/guide/font-and-esm-migration.md)).
 
-## Ecosystem
+## Package and migration contract
 
-| Project                                                                    | Description                                                                         |
-| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
-| [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)    | Official plugins: Word/Excel import-export, formula, comment, spellcheck & 20+ more |
-| [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)   | SVG render layer (in development)                                                   |
-| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)   | PDF export feature                                                                  |
-| [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)     | AI-powered text processing demo                                                     |
-| [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT) | CRDT-based collaboration (experimental)                                             |
+Import from `@herberthe/canvas-editor`. `require()`, UMD scripts and internal
+`dist/*` / `src/*` imports are unsupported. The only public subpath is
+`@herberthe/canvas-editor/package.json`.
 
-## Development
+Use a browser with WebAssembly, Web Workers and top-level await. Preserve
+top-level await in your bundler (for Vite, use `build.target: 'esnext'`) and
+deploy all generated chunks together, including workers and HarfBuzz WASM.
 
-### Prerequisites
+When migrating, replace the upstream package dependency and imports, remove
+old engine options, await readiness and provide fonts for the required text.
+Revalidate pagination and plugins: font metrics and initialization differ from
+upstream. Upstream Word/Excel and other plugins are external projects whose
+compatibility with this fork must be tested individually.
 
-- Node.js `>= 24.13.1`
-- pnpm (recommended)
+## Features and development
 
-### Setup
+Inherited document features include rich text, tables, images, links, LaTeX,
+form controls, headers/footers, pagination, watermarks, comments, search,
+track changes, macros and plugins. Printing uses the Canvas image pipeline;
+standalone SVG and native PDF export are not provided by this package.
 
-```bash
-# Install dependencies
+Use Node.js `>=24.13.1` and pnpm 10:
+
+```sh
 pnpm install
-
-# Start the development server
-npm run dev
+npm run dev           # local everyday multilingual demo
+npm run lib           # lint, types, unit tests and ESM library build
+npm run build         # demo build with checks
+npm run docs:dev      # local bilingual documentation
+npm run docs:build
+npm run test:package  # packed ESM consumer and documented example checks
 ```
 
-### Build
+Documentation: [中文指南](docs/guide/start.md) / [English guide](docs/en/guide/start.md).
+Run the local demo and documentation rather than using the upstream hosted
+sites, which describe a different package. Report fork issues at
+[HerbertHe/canvas-editor/issues](https://github.com/HerbertHe/canvas-editor/issues).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution instructions.
 
-```bash
-# Build the application (demo)
-npm run build
+## License and attribution
 
-# Build the library (publishable package)
-npm run lib
-```
-
-### Quality Checks
-
-```bash
-# Lint
-npm run lint
-
-# Type check
-npm run type:check
-
-# Unit tests (Vitest)
-npm run test:unit
-
-# E2E tests (Cypress)
-npm run cypress:open    # interactive
-npm run cypress:run     # headless
-```
-
-### Documentation
-
-```bash
-npm run docs:dev        # Start VitePress docs locally
-npm run docs:build      # Build the documentation site
-```
-
-## Project Structure
-
-```
-src/editor/
-├── core/
-│   ├── draw/           # Rendering engine (canvas drawing)
-│   │   ├── particle/   # Element renderers (text, image, table, latex, ...)
-│   │   ├── control/    # Form control rendering
-│   │   ├── frame/      # Frame elements (margin, background, borders)
-│   │   ├── richtext/   # Decorations (underline, highlight)
-│   │   └── interactive/# Interactive features (search, graffiti)
-│   ├── command/        # Command pattern (executeBold, executeUndo, ...)
-│   ├── event/          # Canvas and global event handling
-│   ├── observer/       # Mouse, selection, image observers
-│   ├── worker/         # Web Workers for async operations
-│   └── plugin/         # Plugin system
-├── interface/          # TypeScript interfaces
-├── dataset/            # Enums and constants
-└── utils/              # Utility helpers
-```
-
-## Contributing
-
-Contributions are what make the open-source community such an amazing place. **Any contributions you make are greatly appreciated** — bug reports, feature requests, documentation improvements, or pull requests.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feat/amazing-feature`)
-3. Commit your changes following [Conventional Commits](https://www.conventionalcommits.org/) (`git commit -m 'feat: add amazing feature'`)
-4. Push to the branch (`git push origin feat/amazing-feature`)
-5. Open a Pull Request
-
-> Pre-commit hooks automatically run `lint` and `type:check`. Commit messages must follow Conventional Commits format (`feat:`, `fix:`, `docs:`, `refactor:`, ...).
-
-### Contributors
-
-Thanks to all the people who have contributed to Canvas Editor!
-
-<a href="https://github.com/Hufe921/canvas-editor/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Hufe921/canvas-editor" />
-</a>
-
-## Community & Support
-
-- **Documentation** — [hufe.club/canvas-editor-docs](https://hufe.club/canvas-editor-docs)
-- **Discussions** — [GitHub Discussions](https://github.com/Hufe921/canvas-editor/discussions)
-- **Bug Reports** — [GitHub Issues](https://github.com/Hufe921/canvas-editor/issues)
-- **AI-Assisted Q&A** — [Zread](https://zread.ai/Hufe921/canvas-editor) · [DeepWiki](https://deepwiki.com/Hufe921/canvas-editor)
-
-## Sponsors
-
-If you find this project useful, please consider [sponsoring](https://hufe.club/donate.jpg) to support its continued development.
-
-## License
-
-This project is licensed under the [MIT License](./LICENSE).
-
-Copyright © 2022–present, [Hufe921](https://github.com/Hufe921).
+[MIT](LICENSE). Fork modifications: Copyright © 2026–present **Herbert He**.
+Original project: Copyright © 2021–present **hufe**; the original notice and MIT
+permission are retained. See [NOTICE](NOTICE) for provenance. Dependencies,
+fonts and other third-party assets retain their respective licenses.

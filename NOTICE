@@ -1,0 +1,24 @@
+@herberthe/canvas-editor — independent fork
+
+Maintained by Herbert He. Fork package version: 0.1.0.
+Repository: https://github.com/HerbertHe/canvas-editor
+
+Based on Canvas Editor by Hufe and the upstream contributors:
+https://github.com/Hufe921/canvas-editor
+Original npm package: @hufe921/canvas-editor
+Comparison baseline: upstream main 1d7cd1a7742f3e8af1f67536a5157d03b2945de7
+(upstream package version 1.0.5).
+
+This fork is independently maintained and versioned. It is not an official
+upstream release and is not endorsed by or affiliated with the upstream
+maintainers. The 0.1.0 version starts this fork's own release series.
+
+Fork modifications are Copyright (c) 2026-present Herbert He.
+Original code is Copyright (c) 2021-present hufe and its contributors.
+The original copyright and MIT permission notice are retained in LICENSE.
+Third-party dependencies, fonts and other assets retain their own licenses.
+
+All document text uses HarfBuzz layout and Canvas glyph-outline painting.
+Canvas is the only page renderer in this release. SVG page rendering and
+standalone SVG document export are deferred and unavailable. SVG images,
+formula resources and UI icons are not SVG page rendering.

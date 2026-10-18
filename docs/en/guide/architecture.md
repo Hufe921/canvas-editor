@@ -1,10 +1,12 @@
 # Architecture
 
+> Canvas is the default and only page renderer; SVG implementation is deferred. See [fork relationship](./fork-and-differences.md).
+
 > Based on a static review of the codebase (around v0.9.137). This document describes the current trunk architecture as the baseline for RTL mixed-script work. See [RTL layout design](./rtl-layout-design.md) and [RTL deferred TODO](./rtl-deferred-todo.md).
 
 ## Summary
 
-`@hufe921/canvas-editor` is a Canvas/SVG rich-text engine aimed at EMR / forms / print layouts:
+`@herberthe/canvas-editor` is a Canvas-only rich-text engine aimed at EMR / forms / print layouts:
 
 > **Draw (runtime core) + Command (facade) + IElement[] (model) + Particle (view) + Zone/Control/Cascade (EMR layer)**
 
@@ -12,16 +14,16 @@ Runtime dependencies are minimal (mainly `prismjs`). Build: Vite 8 → UMD + ESM
 
 ## Repository layout
 
-| Path | Role |
-|------|------|
-| `src/editor/` | Library core |
-| `src/editor/core/` | ~22 runtime subsystems |
-| `src/editor/interface/` | TypeScript interfaces |
-| `src/editor/dataset/` | Enums and constants |
-| `src/editor/utils/` | `formatElementList` / zip / HTML conversion |
-| `src/main.ts` + `plugins/` | Demo and sample plugins |
-| `tests/` + `cypress/` | Unit and E2E tests |
-| `docs/` | VitePress docs |
+| Path                       | Role                                        |
+| -------------------------- | ------------------------------------------- |
+| `src/editor/`              | Library core                                |
+| `src/editor/core/`         | ~22 runtime subsystems                      |
+| `src/editor/interface/`    | TypeScript interfaces                       |
+| `src/editor/dataset/`      | Enums and constants                         |
+| `src/editor/utils/`        | `formatElementList` / zip / HTML conversion |
+| `src/main.ts` + `plugins/` | Demo and sample plugins                     |
+| `tests/` + `cypress/`      | Unit and E2E tests                          |
+| `docs/`                    | VitePress docs                              |
 
 Largest modules: `Draw.ts`, `CommandAdapt.ts`, `utils/element.ts`.
 
@@ -77,16 +79,16 @@ Typical paths:
 
 ## Editor public API
 
-| Member | Role |
-|--------|------|
-| `command` | Mutate / query API |
-| `listener` | Single-slot callbacks |
-| `eventBus` | Multi-subscriber pub/sub |
-| `override` | paste / copy / drop hooks |
+| Member     | Role                            |
+| ---------- | ------------------------------- |
+| `command`  | Mutate / query API              |
+| `listener` | Single-slot callbacks           |
+| `eventBus` | Multi-subscriber pub/sub        |
+| `override` | paste / copy / drop hooks       |
 | `register` | Context menu / shortcuts / i18n |
-| `macro` | Macro orchestration |
-| `use` | Plugins |
-| `destroy` | Teardown |
+| `macro`    | Macro orchestration             |
+| `use`      | Plugins                         |
+| `destroy`  | Teardown                        |
 
 ## Draw
 
@@ -125,12 +127,12 @@ Modules: `particle/`, `control/`, `frame/`, `richtext/`, `interactive/`, `graffi
 
 ## Trade-offs
 
-| Strength | Cost |
-|----------|------|
-| Real paging / headers / print control | Large Draw surface |
-| Canvas consistency for EMR | Custom selection / a11y |
-| Rich API, few deps | No OT/CRDT; snapshot history |
-| Workers for heavy jobs | Still clones element lists on the main thread |
+| Strength                              | Cost                                          |
+| ------------------------------------- | --------------------------------------------- |
+| Real paging / headers / print control | Large Draw surface                            |
+| Canvas consistency for EMR            | Custom selection / a11y                       |
+| Rich API, few deps                    | No OT/CRDT; snapshot history                  |
+| Workers for heavy jobs                | Still clones element lists on the main thread |
 
 ## Relation to RTL work
 

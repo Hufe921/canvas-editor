@@ -1,6 +1,9 @@
 # ESM 字体示例 / ESM font example
 
-这个示例仅导入 `@hufe921/canvas-editor` 包根入口，演示初始化、默认自动下载、
+本示例消费独立 fork `@herberthe/canvas-editor@0.1.0`，维护者 Herbert He。
+默认且仅 Canvas 页面绘制，SVG 页面与 SVG 导出暂缓；与上游包不共享版本线。
+
+这个示例仅导入 `@herberthe/canvas-editor` 包根入口，演示初始化、默认自动下载、
 关闭下载、失败提示、重试和选择本地文件补字体。无需选择排版引擎。
 
 在仓库根目录先构建本分支的库，再安装示例依赖并启动：

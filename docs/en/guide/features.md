@@ -8,7 +8,7 @@ canvas-editor provides a complete Word-like document editing experience, organiz
   <div class="stat"><b>8</b><span>Editor modes</span></div>
   <div class="stat"><b>154+</b><span>Command APIs</span></div>
   <div class="stat"><b>16+</b><span>Events</span></div>
-  <div class="stat"><b>20+</b><span>Official plugins</span></div>
+  <div class="stat"><b>20+</b><span>Upstream plugins (verify compatibility)</span></div>
 </div>
 
 <style>
@@ -362,7 +362,7 @@ Developer integration, extension mechanisms, and runtime capabilities.
   <div class="it"><b>Content blocks</b><span>formula, code block, chart, diagram</span></div>
   <div class="it"><b>Collaboration</b><span>comment, suggestion, mention</span></div>
   <div class="it"><b>Spell checking</b><span>Error underline, correction suggestions, ignore list</span></div>
-  <div class="it"><b>More</b><span><a href="https://hufe.club/canvas-editor-plugin" target="_blank" rel="noreferrer">20+ official plugins</a></span></div>
+  <div class="it"><b>More</b><span><a href="https://hufe.club/canvas-editor-plugin" target="_blank" rel="noreferrer">upstream plugins (verify compatibility)</a></span></div>
 </div>
 
 ### Configuration & Customization
@@ -392,7 +392,7 @@ Developer integration, extension mechanisms, and runtime capabilities.
   <div class="it"><b>HTML import/export</b><span>HTML import / export</span></div>
   <div class="it"><b>Plain text export</b><span>Plain text and data serialization</span></div>
   <div class="it"><b>Word count</b><span>Async via Web Worker</span></div>
-  <div class="it"><b>Plugin extensions</b><span>Word, Excel, PDF — <a href="https://hufe.club/canvas-editor-plugin" target="_blank" rel="noreferrer">see official plugins</a></span></div>
+  <div class="it"><b>Plugin extensions</b><span>Word, Excel, PDF — <a href="https://hufe.club/canvas-editor-plugin" target="_blank" rel="noreferrer">see upstream plugins (verify compatibility)</a></span></div>
 </div>
 
 ### Performance

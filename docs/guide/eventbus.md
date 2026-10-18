@@ -3,7 +3,7 @@
 ## 使用方式
 
 ```javascript
-import Editor from "@hufe921/canvas-editor"
+import Editor from "@herberthe/canvas-editor"
 
 const instance = await Editor.create(container, data, options)
 
@@ -298,7 +298,7 @@ instance.eventBus.on('spellcheckClick', (payload: {
 首次订阅后主动读取快照，避免依赖首次事件时序。内建页面提示无需订阅。
 
 ```typescript
-import type { FontCoverageReport } from '@hufe921/canvas-editor'
+import type { FontCoverageReport } from '@herberthe/canvas-editor'
 
 const onCoverage = (report: FontCoverageReport) => console.log(report.issues)
 instance.eventBus.on('fontCoverageChange', onCoverage)

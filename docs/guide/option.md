@@ -1,9 +1,11 @@
 # 配置
 
+> `@herberthe/canvas-editor@0.1.0`：默认且仅 Canvas 页面绘制；SVG 实现与导出暂缓，无 renderer 切换配置。参见[项目关系与差异](./fork-and-differences.md)。
+
 ## 使用方式
 
 ```javascript
-import Editor from "@hufe921/canvas-editor"
+import Editor from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(container, data, {
   // 配置项

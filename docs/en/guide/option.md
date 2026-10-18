@@ -1,9 +1,11 @@
 # Configuration
 
+> `@herberthe/canvas-editor@0.1.0`: Canvas is the default and only page renderer. SVG implementation/export is deferred; no renderer selector exists. See [fork differences](./fork-and-differences.md).
+
 ## How to Use?
 
 ```javascript
-import Editor from "@hufe921/canvas-editor"
+import Editor from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(container, data, {
   // option

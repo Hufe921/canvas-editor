@@ -80,6 +80,12 @@ import type { ISpellcheckOption } from '../interface/Spellcheck'
 export function mergeOption(
   options: IEditorOption = {}
 ): DeepRequired<IEditorOption> {
+  if ('renderer' in options) {
+    throw new TypeError(
+      'renderer is not configurable. Only Canvas page rendering is supported; ' +
+        'SVG page rendering is deferred.'
+    )
+  }
   for (const name of ['textEngine', 'renderMode']) {
     if (name in options) {
       throw new TypeError(

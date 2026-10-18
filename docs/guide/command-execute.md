@@ -3,7 +3,7 @@
 ## 使用方式
 
 ```javascript
-import Editor from "@hufe921/canvas-editor"
+import Editor from '@herberthe/canvas-editor'
 
 const instance = await Editor.create(container, data, options)
 instance.command.commandName()
@@ -13,7 +13,7 @@ instance.command.commandName()
 某些命令的执行，会使光标从文档中移出（比如：点击自定义工具栏-加粗文字）。此时可以设置一个标识(EDITOR_COMPONENT)给编辑器，让编辑器将其识别为内部组件。如：
 
 ```js
-import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
+import { EDITOR_COMPONENT, EditorComponent } from '@herberthe/canvas-editor'
 
 <div class="menu" :[EDITOR_COMPONENT]="EditorComponent.MENU">
   <button class="bold"></button>
@@ -1203,7 +1203,8 @@ instance.command.executeClearGraffiti()
 
 ```typescript
 const height = instance.command.executeComputeElementListHeight(elements)
-const awaitedHeight = await instance.command.executeComputeElementListHeightAsync(elements)
+const awaitedHeight =
+  await instance.command.executeComputeElementListHeightAsync(elements)
 ```
 
 运行时用 `executeUpdateOptions({ autoDownloadFonts: false })` 切换自动补字体。

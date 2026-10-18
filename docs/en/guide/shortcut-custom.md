@@ -3,7 +3,7 @@
 ## How to use?
 
 ```javascript
-import Editor from "@hufe921/canvas-editor"
+import Editor from "@herberthe/canvas-editor"
 
 const instance = await Editor.create(container, data, options)
 instance.register.shortcutList([

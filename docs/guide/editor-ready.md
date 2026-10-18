@@ -3,7 +3,7 @@
 ## 使用方式
 
 ```typescript
-import Editor, { EditorRuntimeError } from '@hufe921/canvas-editor'
+import Editor, { EditorRuntimeError } from '@herberthe/canvas-editor'
 
 const editor = new Editor(container, data, {
   fonts: configuredFonts
@@ -29,12 +29,12 @@ const readyEditor = await Editor.create(container, data, options)
 
 ## 状态与错误
 
-| state | 行为 |
-| --- | --- |
+| state        | 行为                                                                         |
+| ------------ | ---------------------------------------------------------------------------- |
 | initializing | 构造模型和界面；不先用旧文字循环做 HarfBuzz 首屏；编辑代理只读，坐标交互暂停 |
-| ready | 首次布局完成；命令、交互和同步测量可用 |
-| failed | ready 拒绝；initializationError 保存初始化错误及 cause；不降级处理 WASM 失败 |
-| destroyed | 生命周期终态；待完成 ready 立即拒绝，晚到结果不能重新激活实例 |
+| ready        | 首次布局完成；命令、交互和同步测量可用                                       |
+| failed       | ready 拒绝；initializationError 保存初始化错误及 cause；不降级处理 WASM 失败 |
+| destroyed    | 生命周期终态；待完成 ready 立即拒绝，晚到结果不能重新激活实例                |
 
 公开错误类为 `EditorRuntimeError`，code 为：
 
@@ -95,7 +95,7 @@ TypeScript、相关 ESLint、ESM 库构建和 tarball 静态消费检查。
 本次执行结果（2026-10-16）：
 
 - `vitest run tests/editor/ready.test.ts tests/core/text-engine/harfbuzz-runtime.test.ts
-  tests/core/text-engine/font-lifecycle.test.ts --maxWorkers=2`：3 个文件、21 项通过。
+tests/core/text-engine/font-lifecycle.test.ts --maxWorkers=2`：3 个文件、21 项通过。
 - `tsc --noEmit`、T04 修改文件的 ESLint、`git diff --check`：通过。
 - `vite build --mode lib --logLevel warn`：通过。保留已有 Node 分支外部化、分块提示。
 - `npm run test:package`：tarball 入口、CommonJS 拒绝、严格消费类型、独立打包和相对 chunk 检查通过。

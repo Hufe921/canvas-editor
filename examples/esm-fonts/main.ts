@@ -4,7 +4,7 @@ import Editor, {
   type FontRegistrationResult,
   type IEditorOption,
   type IUpdateOption
-} from '@hufe921/canvas-editor'
+} from '@herberthe/canvas-editor'
 
 function element<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id)

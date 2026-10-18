@@ -3,7 +3,7 @@
 ## How to Use
 
 ```javascript
-import Editor from "@hufe921/canvas-editor"
+import Editor from '@herberthe/canvas-editor'
 
 const instance = await Editor.create(container, data, options)
 instance.command.commandName()
@@ -13,7 +13,7 @@ instance.command.commandName()
 The execution of certain commands may cause the cursor to move out of the document (e.g., clicking the "Bold" button on the custom toolbar). In such cases, you can assign an identifier (EDITOR_COMPONENT) to the editor, allowing it to recognize the component as internal. For example:
 
 ```js
-import { EDITOR_COMPONENT, EditorComponent } from '@hufe921/canvas-editor'
+import { EDITOR_COMPONENT, EditorComponent } from '@herberthe/canvas-editor'
 
 <div class="menu" :[EDITOR_COMPONENT]="EditorComponent.MENU">
   <button class="bold"></button>
@@ -1221,7 +1221,8 @@ waits for ready, rejecting on failure/destruction without queuing mutations.
 
 ```typescript
 const height = instance.command.executeComputeElementListHeight(elements)
-const awaitedHeight = await instance.command.executeComputeElementListHeightAsync(elements)
+const awaitedHeight =
+  await instance.command.executeComputeElementListHeightAsync(elements)
 ```
 
 Toggle downloads with `executeUpdateOptions({ autoDownloadFonts: false })`.

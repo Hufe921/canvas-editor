@@ -2,10 +2,16 @@
 
 > 所见即所得的富文本编辑器。
 
-得益于光标及文字排版的完全自行实现。绘制底层也可由 svg 渲染，详见代码：[feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)；或借助 pdfjs 可以完成 pdf 的绘制，详见代码：[feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)。
+本项目是 Herbert He 独立维护的 `Hufe921/canvas-editor` fork，包名
+`@herberthe/canvas-editor`，从 `0.1.0` 开始独立版本线。
+文字统一使用 HarfBuzz 排版，**默认且仅支持 Canvas 页面绘制**。
+SVG 页面绘制与独立 SVG 导出暂缓，当前没有 SVG 后端选项。
+SVG 图片、公式和图标资源仍可使用，不代表支持 SVG 页面引擎。
 
 ::: warning
-官方仅提供编辑器核心层 npm 包，菜单栏或其他外部工具可自行参考文档扩展，或直接参考[官方](https://github.com/Hufe921/canvas-editor)实现，详见[demo](https://hufe.club/canvas-editor/)。
+本 fork 与上游独立维护，并非上游官方版本；不保证原插件无需适配。
+菜单栏与工具栏可参考本仓库 Demo（`npm run dev`），文档可用 `npm run docs:dev` 启动。
+[项目关系、功能差异与迁移](./fork-and-differences.md)说明了继承能力和新增管线。
 :::
 
 ## 功能点
@@ -13,7 +19,7 @@
 - 富文本操作：撤销、重做、格式刷、清除格式、字体、字号、加粗、斜体、下划线、删除线、上下标、文本颜色、高亮、对齐方式、行高、段前段后间距、标题、列表、首行缩进
 - 插入元素：表格、图片、超链接、分割线、分页符、LaTeX 公式、日期选择器、Tab、内容块、标签、区域（Area）
 - 表格：行列增删、单元格合并与拆分、边框样式、背景色、垂直对齐、跨行跨列、跨页分页
-- 打印：基于 canvas 转图片、pdf 绘制
+- 打印：基于 Canvas 转图片打印；本包不提供独立 SVG 或原生 PDF 导出
 - 控件：文本、数字、下拉选择、单选框组、复选框组、日期，支持占位符、前后缀、默认值、禁用与缩进对齐规则，支持控件嵌套
 - 级联表达式：控件值变化时自动联动其他控件或标题的显隐、必填、可编辑、可删除，支持计算表达式
 - 留痕：插入、删除修订的记录与可视化标记
@@ -28,12 +34,12 @@
 - 拖拽：文字、元素、控件
 - 搜索与替换：关键字搜索、上下导航、替换
 - 国际化（i18n）：内置中、英文，支持扩展其他语言
-- 插件生态：[Word / Excel 导入导出、公式、批注、拼写检查等 20+ 官方插件](https://github.com/Hufe921/canvas-editor-plugin)
+- 插件生态：[Word / Excel 导入导出、公式、批注、拼写检查等 上游插件（需验证本 fork 兼容性）](https://github.com/Hufe921/canvas-editor-plugin)
 
 ## Step. 1: 下载 npm 包
 
 ```sh
-npm i @hufe921/canvas-editor --save
+npm i @herberthe/canvas-editor@0.1.0 --save
 ```
 
 ## Step. 2: 准备一个容器
@@ -47,7 +53,7 @@ npm i @hufe921/canvas-editor --save
 - 仅包含正文内容
 
 ```javascript
-import Editor from '@hufe921/canvas-editor'
+import Editor from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(
   document.querySelector('.canvas-editor'),
@@ -63,7 +69,7 @@ const editor = await Editor.create(
 - 包含正文、页眉、页脚内容
 
 ```javascript
-import Editor, { RowFlex } from '@hufe921/canvas-editor'
+import Editor, { RowFlex } from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(
   document.querySelector('.canvas-editor'),

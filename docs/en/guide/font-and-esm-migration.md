@@ -1,18 +1,20 @@
 # HarfBuzz, fonts and ESM migration
 
+> `@herberthe/canvas-editor@0.1.0`: Canvas is the default and only page renderer. SVG implementation/export is deferred; no renderer selector exists. See [fork differences](./fork-and-differences.md).
+
 All text now uses HarfBuzz, including auxiliary text. There is no engine selector
 or Canvas text fallback. Images, formulas, tables and Blocks retain dedicated
 object layout and painting.
 
 ## Migrate existing integrations
 
-| Previous integration | Current integration |
-| --- | --- |
-| `textEngine`, `renderMode`, `TextEngineMode`, `RenderMode` | Remove the options and imports; no replacement selector |
-| Commands immediately after construction | `await Editor.create(...)`, or `new Editor(...)` followed by `await editor.ready` |
-| UMD script, `require()`, internal deep imports | ESM imports from `@hufe921/canvas-editor` |
-| System fonts or CSS @font-face alone | Automatic basic fonts, configured font binaries/URLs, or `register.fonts` |
-| Mutating options.fonts to load a face | Configure initial fonts; use `await editor.register.fonts(...)` at runtime |
+| Previous integration                                       | Current integration                                                               |
+| ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `textEngine`, `renderMode`, `TextEngineMode`, `RenderMode` | Remove the options and imports; no replacement selector                           |
+| Commands immediately after construction                    | `await Editor.create(...)`, or `new Editor(...)` followed by `await editor.ready` |
+| UMD script, `require()`, internal deep imports             | ESM imports from `@herberthe/canvas-editor`                                       |
+| System fonts or CSS @font-face alone                       | Automatic basic fonts, configured font binaries/URLs, or `register.fonts`         |
+| Mutating options.fonts to load a face                      | Configure initial fonts; use `await editor.register.fonts(...)` at runtime        |
 
 Construction and `executeUpdateOptions` reject either removed option with a
 TypeError, even if its value is undefined. Explicitly remove these keys from
@@ -20,7 +22,7 @@ persisted options before constructing an editor. Document content does not need
 to be rewritten for this migration.
 
 ```typescript
-import Editor, { RowFlex } from '@hufe921/canvas-editor'
+import Editor, { RowFlex } from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(container, {
   header: [{ value: 'Header', rowFlex: RowFlex.CENTER }],
@@ -77,7 +79,7 @@ OS installation does not give HarfBuzz the font bytes. For an offline deployment
 disable downloads and ship matching font files with your application.
 
 ```typescript
-import Editor from '@hufe921/canvas-editor'
+import Editor from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(container, [{ value: 'مرحبا' }], {
   autoDownloadFonts: false,
@@ -86,9 +88,14 @@ const editor = await Editor.create(container, [{ value: 'مرحبا' }], {
 })
 
 // file can come from <input type="file">, with no font network request.
-const results = await editor.register.fonts([{
-  family: 'My Arabic', data: await file.arrayBuffer(), weight: 400, style: 'normal'
-}])
+const results = await editor.register.fonts([
+  {
+    family: 'My Arabic',
+    data: await file.arrayBuffer(),
+    weight: 400,
+    style: 'normal'
+  }
+])
 for (const result of results) {
   if (result.status === 'failed') {
     console.warn(result.failure.stage, result.failure.message)
@@ -108,7 +115,7 @@ failures. CSS/FontFace registration alone cannot replace binary registration.
 ## Observe coverage
 
 ```typescript
-import type { FontCoverageReport } from '@hufe921/canvas-editor'
+import type { FontCoverageReport } from '@herberthe/canvas-editor'
 
 const onCoverage = (report: FontCoverageReport) => {
   for (const issue of report.issues) {

@@ -35,11 +35,14 @@ try {
     )
   )
   const files = packed[0].files.map(file => file.path)
+  assert.equal(packed[0].name, '@herberthe/canvas-editor')
+  assert(files.includes('LICENSE'))
+  assert(files.includes('NOTICE'))
   assert(files.includes('dist/canvas-editor.js'))
   assert(files.includes('dist/src/editor/index.d.ts'))
   assert(!files.some(file => /(?:umd|\.cjs(?:\.map)?$)/i.test(file)))
   const consumer = join(temp, 'consumer')
-  const pkgDir = join(consumer, 'node_modules/@hufe921/canvas-editor')
+  const pkgDir = join(consumer, 'node_modules/@herberthe/canvas-editor')
   mkdirSync(pkgDir, { recursive: true })
   execFileSync('tar', [
     '-xzf',
@@ -49,6 +52,18 @@ try {
     '--strip-components=1'
   ])
   const pkg = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'))
+  const sourcePkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'))
+  assert.equal(pkg.name, '@herberthe/canvas-editor')
+  assert.equal(pkg.version, sourcePkg.version)
+  assert.equal(pkg.author, 'Herbert He')
+  assert.equal(pkg.license, 'MIT')
+  assert.equal(pkg.dependencies['@hufe921/canvas-editor'], undefined)
+  const license = readFileSync(join(pkgDir, 'LICENSE'), 'utf8')
+  assert(license.includes('Herbert He'))
+  assert(license.includes('2021-present, hufe'))
+  assert(
+    readFileSync(join(pkgDir, 'NOTICE'), 'utf8').includes('independent fork')
+  )
   assert.equal(pkg.main, undefined)
   assert.equal(pkg.type, 'module')
   assert.deepEqual(pkg.exports['.'], {
@@ -105,6 +120,9 @@ import type { IEditorOption, IUpdateOption } from '${pkg.name}'
 import { TextEngineMode, RenderMode } from '${pkg.name}'
 // @ts-expect-error Removed engine configuration cannot be persisted anew.
 const oldEngine: IEditorOption = { textEngine: 'legacy' }
+// @ts-expect-error SVG rendering is not a public configuration option.
+const svgRenderer: IEditorOption = { renderer: 'svg' }
+void svgRenderer
 // @ts-expect-error Runtime updates cannot select an old renderer.
 const oldRender: IUpdateOption = { renderMode: 'speed' }
 void oldEngine

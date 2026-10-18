@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: docs
-    url: https://hufe.club/canvas-editor-docs/
+    url: https://github.com/HerbertHe/canvas-editor/tree/HEAD/docs
     about: Official documents
-  - name: official plugins
+  - name: upstream plugins (compatibility must be verified)
     url: https://github.com/Hufe921/canvas-editor-plugin
-    about: Word/Excel import-export, formula, comment, spellcheck and 20+ more official plugins
+    about: Word/Excel import-export, formula, comment, spellcheck and 20+ more upstream plugins (compatibility must be verified)

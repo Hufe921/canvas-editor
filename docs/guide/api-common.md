@@ -7,7 +7,7 @@
 用法：
 
 ```javascript
-import { splitText } from '@hufe921/canvas-editor'
+import { splitText } from '@herberthe/canvas-editor'
 
 splitText(text: string): string[]
 ```
@@ -19,7 +19,7 @@ splitText(text: string): string[]
 用法：
 
 ```javascript
-import { createDomFromElementList } from '@hufe921/canvas-editor'
+import { createDomFromElementList } from '@herberthe/canvas-editor'
 
 createDomFromElementList(elementList: IElement[], options?: IEditorOption): HTMLDivElement
 ```
@@ -31,7 +31,7 @@ createDomFromElementList(elementList: IElement[], options?: IEditorOption): HTML
 用法：
 
 ```javascript
-import { getElementListByHTML } from '@hufe921/canvas-editor'
+import { getElementListByHTML } from '@herberthe/canvas-editor'
 
 getElementListByHTML(htmlText: string, options: IGetElementListByHTMLOption): IElement[]
 ```
@@ -43,7 +43,7 @@ getElementListByHTML(htmlText: string, options: IGetElementListByHTMLOption): IE
 用法：
 
 ```javascript
-import { getTextFromElementList } from '@hufe921/canvas-editor'
+import { getTextFromElementList } from '@herberthe/canvas-editor'
 
 getTextFromElementList(elementList: IElement[]): string
 ```

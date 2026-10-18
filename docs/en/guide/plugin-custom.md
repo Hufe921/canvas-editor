@@ -1,7 +1,9 @@
 # Custom Plugin
 
+> Linked plugins belong to upstream external projects. This fork does not maintain them; verify async initialization, font and API compatibility.
+
 ::: tip
-Official plugin documentation: https://hufe.club/canvas-editor-plugin
+Upstream plugin documentation (verify compatibility): https://hufe.club/canvas-editor-plugin
 :::
 
 ## Write a Plugin

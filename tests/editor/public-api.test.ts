@@ -10,6 +10,30 @@ afterEach(() => {
 })
 
 describe('public options migration', () => {
+  it('rejects SVG page selection before mounting or fetching', () => {
+    const fetch = vi.spyOn(globalThis, 'fetch')
+    const container = document.createElement('div')
+    expect(
+      () => new Editor(container, [], { renderer: 'svg' } as IEditorOption)
+    ).toThrow('Only Canvas page rendering is supported')
+    expect(container.childElementCount).toBe(0)
+    expect(fetch).not.toHaveBeenCalled()
+  })
+
+  it('rejects runtime SVG selection and keeps Canvas pages intact', async () => {
+    const container = document.createElement('div')
+    document.body.append(container)
+    editor = await Editor.create(container, [], { autoDownloadFonts: false })
+    const previous = editor.command.getOptions()
+    expect(container.querySelector('canvas')).not.toBeNull()
+    expect(() =>
+      editor!.command.executeUpdateOptions({ renderer: 'svg' } as IUpdateOption)
+    ).toThrow('Only Canvas page rendering is supported')
+    expect(editor.command.getOptions()).toBe(previous)
+    expect(editor.state).toBe('ready')
+    expect(container.querySelector('canvas')).not.toBeNull()
+  })
+
   it.each(['textEngine', 'renderMode'])(
     'rejects persisted %s before mounting or fetching',
     name => {

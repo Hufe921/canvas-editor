@@ -181,7 +181,7 @@
 
 - Status: pending
 - Priority: P3
-- Depends: 合入 `feature/svg` 时
+- Depends: SVG 实现已暂缓；仅在明确恢复并完成独立 SVG 方案时评估，不自动合入上游分支
 - Area: svg-ui
 - Notes: 当前渲染引擎暂未支持 SVG 渲染实现 RTL；主干也无 DOM 文档 SVG。分支合入需单独评估 `dir`/坐标。
 

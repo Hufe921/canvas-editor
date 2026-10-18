@@ -1,3 +1,20 @@
+# Changelog
+
+## 0.1.0 — Independent fork release line
+
+- Publish under `@herberthe/canvas-editor`, maintained by Herbert He.
+- Use HarfBuzz-only text layout and Canvas glyph-outline painting.
+- Add explicit font registration, coverage diagnostics and default-enabled
+  Bunny basic-font downloads with an offline/manual option.
+- Add native cluster/caret geometry and paragraph layout reuse.
+- Provide asynchronous readiness and an ESM-only public package.
+- Support Canvas page rendering only; defer SVG implementation and export.
+- Retain inherited rich-text, table, control and document capabilities.
+
+This entry describes the prepared fork release; it does not confirm publication
+on npm. Versions below belong to the upstream `@hufe921/canvas-editor` project,
+not this fork. Their original issue, commit and release links are preserved.
+
 ## [1.0.5](https://github.com/Hufe921/canvas-editor/compare/v1.0.4...v1.0.5) (2026-10-11)
 
 

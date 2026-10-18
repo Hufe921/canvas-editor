@@ -1,24 +1,26 @@
 # HarfBuzz、字体与 ESM 迁移
 
+> `@herberthe/canvas-editor@0.1.0`：默认且仅 Canvas 页面绘制；SVG 实现与导出暂缓，无 renderer 切换配置。参见[项目关系与差异](./fork-and-differences.md)。
+
 当前文字排版统一使用 HarfBuzz。无需选择引擎，正文和辅助文字都不使用浏览器
 `fillText` / `measureText` 回退。图片、公式、表格和 Block 保留专用对象布局。
 
 ## 迁移已有代码
 
-| 原用法 | 当前用法 |
-| --- | --- |
-| `textEngine`、`renderMode`、`TextEngineMode`、`RenderMode` | 删除配置及对应导入；没有替代的模式开关 |
-| 构造后立即执行修改/几何命令 | `await Editor.create(...)` 或 `new Editor(...)` 后 `await editor.ready` |
-| UMD script、`require()`、内部深路径导入 | 从 `@hufe921/canvas-editor` 包根使用 ESM import |
-| 仅指定字体家族/系统安装字体/CSS @font-face | 自动下载基本字体，或提供 `fonts` 二进制/URL、调用 `register.fonts` |
-| 修改 options.fonts 数组以为已加载字体 | 初始字体放进构造选项；运行期使用 `await editor.register.fonts(...)` |
+| 原用法                                                     | 当前用法                                                                |
+| ---------------------------------------------------------- | ----------------------------------------------------------------------- |
+| `textEngine`、`renderMode`、`TextEngineMode`、`RenderMode` | 删除配置及对应导入；没有替代的模式开关                                  |
+| 构造后立即执行修改/几何命令                                | `await Editor.create(...)` 或 `new Editor(...)` 后 `await editor.ready` |
+| UMD script、`require()`、内部深路径导入                    | 从 `@herberthe/canvas-editor` 包根使用 ESM import                       |
+| 仅指定字体家族/系统安装字体/CSS @font-face                 | 自动下载基本字体，或提供 `fonts` 二进制/URL、调用 `register.fonts`      |
+| 修改 options.fonts 数组以为已加载字体                      | 初始字体放进构造选项；运行期使用 `await editor.register.fonts(...)`     |
 
 JavaScript 构造选项或 `executeUpdateOptions` 只要含 `textEngine` / `renderMode`，
 即使值为 undefined，也会抛出 TypeError 并提示移除。已持久化 options 应由宿主显式
 去掉这两个键再创建实例，文档正文无需因引擎迁移改写。不要把删除选项理解成可恢复旧引擎。
 
 ```typescript
-import Editor, { RowFlex } from '@hufe921/canvas-editor'
+import Editor, { RowFlex } from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(container, {
   header: [{ value: 'Header', rowFlex: RowFlex.CENTER }],
@@ -68,7 +70,7 @@ editor.retryFontDownloads() // ready 后使用；关闭状态下不会发起自�
 将所需字体随应用同源部署，提供真实家族/字重/样式与二进制数据。
 
 ```typescript
-import Editor from '@hufe921/canvas-editor'
+import Editor from '@herberthe/canvas-editor'
 
 const editor = await Editor.create(container, [{ value: 'مرحبا' }], {
   autoDownloadFonts: false,
@@ -77,9 +79,14 @@ const editor = await Editor.create(container, [{ value: 'مرحبا' }], {
 })
 
 // 也可从 <input type="file"> 获取 File；此时没有字体网络请求。
-const results = await editor.register.fonts([{
-  family: 'My Arabic', data: await file.arrayBuffer(), weight: 400, style: 'normal'
-}])
+const results = await editor.register.fonts([
+  {
+    family: 'My Arabic',
+    data: await file.arrayBuffer(),
+    weight: 400,
+    style: 'normal'
+  }
+])
 for (const result of results) {
   if (result.status === 'failed') {
     console.warn(result.failure.stage, result.failure.message)
@@ -96,7 +103,7 @@ const report = editor.getFontCoverageReport() // 注册成功后仍需验证实�
 ## 诊断订阅
 
 ```typescript
-import type { FontCoverageReport } from '@hufe921/canvas-editor'
+import type { FontCoverageReport } from '@herberthe/canvas-editor'
 
 const onCoverage = (report: FontCoverageReport) => {
   for (const issue of report.issues) {

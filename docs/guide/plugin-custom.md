@@ -1,7 +1,9 @@
 # 自定义插件
 
+> 此处链接指向上游外部插件；它们并非本 fork 维护的插件，需验证异步初始化、字体与 API 兼容性。
+
 ::: tip
-官方维护插件文档：https://hufe.club/canvas-editor-plugin
+上游维护的插件文档（需验证兼容性）：https://hufe.club/canvas-editor-plugin
 :::
 
 ## 开发插件

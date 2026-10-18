@@ -2,15 +2,10 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
   base: '/canvas-editor-docs/',
-  title: 'canvas-editor',
-  description: 'A Canvas/SVG-based rich text editor',
+  title: '@herberthe/canvas-editor',
+  description: 'A HarfBuzz-powered Canvas-only rich text editor',
   themeConfig: {
     i18nRouting: false,
-    algolia: {
-      appId: 'RWSVW6F3S5',
-      apiKey: 'e462fffb4d2e9ab4a78c29e0b457ab33',
-      indexName: 'hufe'
-    },
     logo: '/favicon.png',
     nav: [
       {
@@ -19,11 +14,11 @@ export default defineConfig({
         activeMatch: '/guide/'
       },
       {
-        text: 'Demo',
-        link: 'https://hufe.club/canvas-editor'
+        text: 'Demo source',
+        link: 'https://github.com/HerbertHe/canvas-editor#features-and-development'
       },
       {
-        text: '官方插件',
+        text: '上游插件（需验证兼容性）',
         link: 'https://hufe.club/canvas-editor-plugin'
       },
       {
@@ -31,8 +26,8 @@ export default defineConfig({
         link: '/guide/devtools.html'
       },
       {
-        text: '赞助',
-        link: 'https://hufe.club/donate.jpg'
+        text: '项目关系与差异',
+        link: '/guide/fork-and-differences'
       }
     ],
     sidebar: [
@@ -40,6 +35,7 @@ export default defineConfig({
         text: '开始',
         items: [
           { text: '入门', link: '/guide/start' },
+          { text: '项目关系与差异', link: '/guide/fork-and-differences' },
           { text: '配置', link: '/guide/option' },
           { text: '字体与 ESM 迁移', link: '/guide/font-and-esm-migration' },
           { text: '国际化', link: '/guide/i18n' },
@@ -107,7 +103,7 @@ export default defineConfig({
         text: '插件',
         items: [
           {
-            text: '官方插件',
+            text: '上游插件（需验证兼容性）',
             link: 'https://hufe.club/canvas-editor-plugin'
           },
           { text: '自定义插件', link: '/guide/plugin-custom' },
@@ -118,12 +114,13 @@ export default defineConfig({
     socialLinks: [
       {
         icon: 'github',
-        link: 'https://github.com/Hufe921/canvas-editor'
+        link: 'https://github.com/HerbertHe/canvas-editor'
       }
     ],
     footer: {
-      message: 'Released under the MIT License.',
-      copyright: 'Copyright © 2021-present Hufe'
+      message: 'MIT · Independent fork of Hufe921/canvas-editor · Canvas-only',
+      copyright:
+        'Copyright © 2026-present Herbert He; original © 2021-present hufe'
     }
   },
   locales: {
@@ -143,11 +140,11 @@ export default defineConfig({
             activeMatch: '/en/guide/'
           },
           {
-            text: 'Demo',
-            link: 'https://hufe.club/canvas-editor'
+            text: 'Demo source',
+            link: 'https://github.com/HerbertHe/canvas-editor#features-and-development'
           },
           {
-            text: 'Official plugin',
+            text: 'Upstream plugins',
             link: 'https://hufe.club/canvas-editor-plugin'
           },
           {
@@ -155,8 +152,8 @@ export default defineConfig({
             link: '/en/guide/devtools.html'
           },
           {
-            text: 'Donate',
-            link: 'https://hufe.club/donate.jpg'
+            text: 'Fork and differences',
+            link: '/en/guide/fork-and-differences'
           }
         ],
         sidebar: [
@@ -164,6 +161,10 @@ export default defineConfig({
             text: 'Start',
             items: [
               { text: 'start', link: '/en/guide/start' },
+              {
+                text: 'Fork and differences',
+                link: '/en/guide/fork-and-differences'
+              },
               { text: 'option', link: '/en/guide/option' },
               {
                 text: 'Fonts and ESM migration',
@@ -240,7 +241,7 @@ export default defineConfig({
             text: 'Plugin',
             items: [
               {
-                text: 'official',
+                text: 'upstream (verify compatibility)',
                 link: 'https://hufe.club/canvas-editor-plugin'
               },
               { text: 'custom', link: '/en/guide/plugin-custom' },

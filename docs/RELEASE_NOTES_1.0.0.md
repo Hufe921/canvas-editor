@@ -1,3 +1,9 @@
+> **上游历史文档 / Upstream historical document**
+> 本文保留 Hufe921/canvas-editor 的 1.0.0 发布记录及原始链接，
+> 不代表本 fork 的版本或已验证能力。本项目从 `@herberthe/canvas-editor@0.1.0`
+> 独立版本线开始，当前仅支持 Canvas 页面绘制，SVG 实现暂缓。
+> 参见[项目关系与差异](./guide/fork-and-differences.md)。
+
 # Canvas Editor 1.0.0 正式发布 🎉
 
 > **历时 1723 天、139 个发布版本、1460 次提交之后,Canvas Editor 正式进入 1.0 时代。**

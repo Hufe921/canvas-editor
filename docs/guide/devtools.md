@@ -1,5 +1,7 @@
 # 开发调试工具
 
+> 此处链接指向上游外部插件；它们并非本 fork 维护的插件，需验证异步初始化、字体与 API 兼容性。
+
 Canvas Editor DevTools 是一个浏览器扩展插件，用于调试和分析 Canvas Editor 实例。
 
 ::: tip
@@ -59,4 +61,5 @@ Canvas Editor DevTools 是一个浏览器扩展插件，用于调试和分析 Ca
 // 将编辑器实例挂载到 window 对象
 window.__CANVAS_EDITOR_INSTANCE__ = editor
 ```
+
 :::

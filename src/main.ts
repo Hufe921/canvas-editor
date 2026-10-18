@@ -2288,7 +2288,7 @@ window.onload = async function () {
             commentList.push({
               id: groupId,
               content: value,
-              userName: 'Hufe',
+              userName: 'Herbert He',
               rangeText: command.getRangeText(),
               createdDate: new Date().toLocaleString()
             })

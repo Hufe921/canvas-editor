@@ -1,5 +1,7 @@
 # DevTools
 
+> Linked plugins belong to upstream external projects. This fork does not maintain them; verify async initialization, font and API compatibility.
+
 Canvas Editor DevTools is a browser extension for debugging and analyzing Canvas Editor instances.
 
 ::: tip
@@ -59,4 +61,5 @@ The editor instance can be exposed as follows:
 // Mount the editor instance to the window object
 window.__CANVAS_EDITOR_INSTANCE__ = editor
 ```
+
 :::

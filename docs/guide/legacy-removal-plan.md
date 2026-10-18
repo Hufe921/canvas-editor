@@ -3,7 +3,6 @@
 > 历史方案/基线记录，保留当时结论供审计。旧引擎、模式选择与浏览器文字回退
 > 已由 T20 删除；当前 API、字体能力与示例以[迁移指南](./font-and-esm-migration.md)为准。
 
-
 ## 1. 结论与范围
 
 评估基线：`refactor/canvas-render-engine`，`fd11752e`。
@@ -26,32 +25,32 @@
 3. 文字绘制消费同一份 HarfBuzz 字形结果，不再让 `fillText` 对正文重新整形。
 4. 表格、图片、公式、复选框、分隔线和嵌入块是非文本布局对象，由专用布局器处理；
    它们的存在不能触发旧文本引擎。公式自身的数学渲染器不改造成 HarfBuzz。
-5. 保留 Canvas/SVG 图形绘制、正常 DOM 工具栏和输入法代理；它们不是 legacy 引擎。
+5. 保留 Canvas 图形绘制（SVG 页面实现暂缓；SVG 图像等资源仍可使用）、正常 DOM 工具栏和输入法代理；它们不是 legacy 引擎。
 
 最终形态为一条排版路径、一个布局结果和一套命中/光标几何。
 纯文本增量与复杂文档全量计算可以并存，但两者必须使用相同的 HarfBuzz 引擎。
 
 ## 2. 当前真实依赖
 
-| 层级 | 当前代码 | 移除影响 |
-| --- | --- | --- |
-| 公共模式 | `dataset/enum/TextDirection.ts`、`interface/Editor.ts`、`interface/TextEngine.ts`、`index.ts`、`utils/option.ts` | 默认仍是 `LEGACY`；需要移除 `TextEngineMode`、`textEngine` 和重复的模式选项 |
-| 初始化 | `index.ts`、`core/draw/Draw.ts`、`text-engine-host/LayoutHostAdapter.ts` | 同步构造先排版，异步初始化后重排；初始化失败还能使用浏览器 shaper |
-| 主入口 | `Draw.computeRowList` | HarfBuzz 未就绪、没有返回行、`forceLegacy` 时进入旧逐元素布局循环 |
-| 对象插行 | `Draw._computeRowListByTextEngine`、`_isEngineHostBlockedElement` | TABLE/BLOCK/AREA 和浮动图片仍通过 `forceLegacy: true` 插行 |
-| 表格几何 | `Draw.computeRowList` 的 TABLE 分支 | 列宽压缩、单元格递归布局、rowspan 高度传递等仍放在旧循环内，不能直接删除 |
-| 旧增量 | `core/draw/IncrementalRowComputer.ts` | 同时负责旧行快照和通用脏区间追踪；当前 HarfBuzz 仍依赖后者 |
-| 旧类型 | `interface/Draw.ts`、`interface/Row.ts` | `resume`、`forceLegacy`、`IRowComputeState` 与双路径行结构需要重构 |
-| 行投影 | `text-engine-host/mapToLegacyRow.ts` | 当前新引擎结果仍投影到旧 `IRow`，并写入元素的 metrics/visualLeft/sourceIndex 等字段 |
-| 旧文字粒子 | `draw/particle/TextParticle.ts`、Draw 中的实例/访问器 | 逐元素测宽、缓存、词与标点测量、拼接文字、逐字兼容绘制 |
-| 特殊文字绘制 | Hyperlink/Label/Date/Superscript/Subscript 分支 | 按 `engineLine` 是否存在决定走新绘制还是旧 Particle；需保留背景/交互，移除旧文字绘制 |
-| 隐性浏览器整形 | `text-engine/shape/BrowserTextShaper.ts`、`HarfBuzzTextShaper.ts` | 拉丁/CJK、缺字体、无轮廓等会回退；HB advance 还会按浏览器测宽重新缩放 |
-| 隐性二次整形 | `text-engine/render/GlyphRenderer.ts` | 有段落原文时优先使用视觉分段 `fillText`，复杂脚本最终仍由浏览器重整形 |
-| 额外文字测绘 | frame 的 LineNumber/PageNumber/Watermark；particle 的 List/Image/PageBreak/Trace；ruler/Ruler | 保留了直接测宽/绘字路径，不能只清理正文 |
-| 表格自动列宽 | `particle/table/TableOperate._measureTdContentWidth` | 逐元素相加，不能作为整形文字的真实内在宽度 |
-| 命中与坐标 | `core/position/Position.ts`、`core/cursor/Cursor.ts`、`text-engine-host/HitTestAdapter.ts` | 累加 x 与 visualLeft 并存；光标需要区分文字基线与图片顶对齐偏移 |
-| 测量 API | `CommandAdapt.computeElementListHeight`、Header/Footer/Placeholder、TablePaging | 依赖同步行计算及布局 scope；需要统一 readiness 和测量上下文 |
-| 配置/文档/测试 | mock、选项文档、RTL 设计文档、测试工厂与 Cypress | 默认行为、字体资源、ready 等待和旧固定度量断言都会受影响 |
+| 层级           | 当前代码                                                                                                         | 移除影响                                                                             |
+| -------------- | ---------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| 公共模式       | `dataset/enum/TextDirection.ts`、`interface/Editor.ts`、`interface/TextEngine.ts`、`index.ts`、`utils/option.ts` | 默认仍是 `LEGACY`；需要移除 `TextEngineMode`、`textEngine` 和重复的模式选项          |
+| 初始化         | `index.ts`、`core/draw/Draw.ts`、`text-engine-host/LayoutHostAdapter.ts`                                         | 同步构造先排版，异步初始化后重排；初始化失败还能使用浏览器 shaper                    |
+| 主入口         | `Draw.computeRowList`                                                                                            | HarfBuzz 未就绪、没有返回行、`forceLegacy` 时进入旧逐元素布局循环                    |
+| 对象插行       | `Draw._computeRowListByTextEngine`、`_isEngineHostBlockedElement`                                                | TABLE/BLOCK/AREA 和浮动图片仍通过 `forceLegacy: true` 插行                           |
+| 表格几何       | `Draw.computeRowList` 的 TABLE 分支                                                                              | 列宽压缩、单元格递归布局、rowspan 高度传递等仍放在旧循环内，不能直接删除             |
+| 旧增量         | `core/draw/IncrementalRowComputer.ts`                                                                            | 同时负责旧行快照和通用脏区间追踪；当前 HarfBuzz 仍依赖后者                           |
+| 旧类型         | `interface/Draw.ts`、`interface/Row.ts`                                                                          | `resume`、`forceLegacy`、`IRowComputeState` 与双路径行结构需要重构                   |
+| 行投影         | `text-engine-host/mapToLegacyRow.ts`                                                                             | 当前新引擎结果仍投影到旧 `IRow`，并写入元素的 metrics/visualLeft/sourceIndex 等字段  |
+| 旧文字粒子     | `draw/particle/TextParticle.ts`、Draw 中的实例/访问器                                                            | 逐元素测宽、缓存、词与标点测量、拼接文字、逐字兼容绘制                               |
+| 特殊文字绘制   | Hyperlink/Label/Date/Superscript/Subscript 分支                                                                  | 按 `engineLine` 是否存在决定走新绘制还是旧 Particle；需保留背景/交互，移除旧文字绘制 |
+| 隐性浏览器整形 | `text-engine/shape/BrowserTextShaper.ts`、`HarfBuzzTextShaper.ts`                                                | 拉丁/CJK、缺字体、无轮廓等会回退；HB advance 还会按浏览器测宽重新缩放                |
+| 隐性二次整形   | `text-engine/render/GlyphRenderer.ts`                                                                            | 有段落原文时优先使用视觉分段 `fillText`，复杂脚本最终仍由浏览器重整形                |
+| 额外文字测绘   | frame 的 LineNumber/PageNumber/Watermark；particle 的 List/Image/PageBreak/Trace；ruler/Ruler                    | 保留了直接测宽/绘字路径，不能只清理正文                                              |
+| 表格自动列宽   | `particle/table/TableOperate._measureTdContentWidth`                                                             | 逐元素相加，不能作为整形文字的真实内在宽度                                           |
+| 命中与坐标     | `core/position/Position.ts`、`core/cursor/Cursor.ts`、`text-engine-host/HitTestAdapter.ts`                       | 累加 x 与 visualLeft 并存；光标需要区分文字基线与图片顶对齐偏移                      |
+| 测量 API       | `CommandAdapt.computeElementListHeight`、Header/Footer/Placeholder、TablePaging                                  | 依赖同步行计算及布局 scope；需要统一 readiness 和测量上下文                          |
+| 配置/文档/测试 | mock、选项文档、RTL 设计文档、测试工厂与 Cypress                                                                 | 默认行为、字体资源、ready 等待和旧固定度量断言都会受影响                             |
 
 当前 `public/fonts` 中只有 Arabic、Devanagari、Thai 三份字体。
 没有足够证据证明已覆盖默认中文字体、Latin/CJK 全字符、所有字重和 emoji。
@@ -303,17 +302,17 @@ Superscript/Subscript 等仍有使用者的纯几何 helper 应先迁出，再�
 建议每个工作包形成独立可审查提交，并使用固定样本文档验证结果。
 以下为阶段概览；实际执行按 [24 个主任务与 2 个下载子任务](./legacy-removal-tasks.md) 推进。
 
-| 顺序 | 工作包 | 完成门槛 |
-| --- | --- | --- |
-| P0 | 冻结行为清单和基线 | 覆盖全部元素、容器、模式和公开 API；记录旧布局、图像及交互结果 |
-| P1 | ESM、FontResolver、Bunny 下载开关、缺字诊断、HarfBuzzRuntime 与 ready | 默认自动补基本字体；关闭/失败时手动提示；仅 ESM 发布 |
-| P2 | 全脚本整形与字形绘制 | Latin/CJK/复杂脚本不绕行；去掉浏览器宽度校准；布局与绘制字形一致 |
-| P3 | 统一布局节点、文字测量与辅助文字 | 行盒/间距规范明确；辅助文字、列宽和测高不再依赖 TextParticle |
-| P4 | 表格/块/浮动/控件等对象布局 | 替换全部 forceLegacy 调用；嵌套表格、混合方向、环绕/分栏通过专项验收 |
-| P5 | Position/Cursor/选区消费统一布局 | 去除行模型投影；命中、编辑、打印和装饰使用同一几何 |
-| P6 | DirtyRangeTracker 与新模型增量 | 删除旧快照算法，完整 HB 与增量 HB 差分通过 |
-| P7 | 删除旧入口、类型、粒子、配置与兼容分支 | 生产代码和构建图无旧引擎；新 API/文档/测试工厂完成迁移 |
-| P8 | 全量验收、发布迁移与性能复核 | 功能、视觉、交互、性能、离线与消费端验收全部完成 |
+| 顺序 | 工作包                                                                | 完成门槛                                                             |
+| ---- | --------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| P0   | 冻结行为清单和基线                                                    | 覆盖全部元素、容器、模式和公开 API；记录旧布局、图像及交互结果       |
+| P1   | ESM、FontResolver、Bunny 下载开关、缺字诊断、HarfBuzzRuntime 与 ready | 默认自动补基本字体；关闭/失败时手动提示；仅 ESM 发布                 |
+| P2   | 全脚本整形与字形绘制                                                  | Latin/CJK/复杂脚本不绕行；去掉浏览器宽度校准；布局与绘制字形一致     |
+| P3   | 统一布局节点、文字测量与辅助文字                                      | 行盒/间距规范明确；辅助文字、列宽和测高不再依赖 TextParticle         |
+| P4   | 表格/块/浮动/控件等对象布局                                           | 替换全部 forceLegacy 调用；嵌套表格、混合方向、环绕/分栏通过专项验收 |
+| P5   | Position/Cursor/选区消费统一布局                                      | 去除行模型投影；命中、编辑、打印和装饰使用同一几何                   |
+| P6   | DirtyRangeTracker 与新模型增量                                        | 删除旧快照算法，完整 HB 与增量 HB 差分通过                           |
+| P7   | 删除旧入口、类型、粒子、配置与兼容分支                                | 生产代码和构建图无旧引擎；新 API/文档/测试工厂完成迁移               |
+| P8   | 全量验收、发布迁移与性能复核                                          | 功能、视觉、交互、性能、离线与消费端验收全部完成                     |
 
 P2 依赖 P1；P4 依赖 P3 的布局协议；P5 依赖 P4 的对象几何；
 P6/P7 必须在所有依赖都迁出后执行。不能先删旧循环，再靠功能缺失来缩小范围。
@@ -336,18 +335,18 @@ P6/P7 必须在所有依赖都迁出后执行。不能先删旧循环，再靠�
 
 ### 必测组合
 
-| 维度 | 必测内容 |
-| --- | --- |
-| 文字与字体 | 中文、Latin、Arabic、Hebrew、Devanagari、Thai、组合符、emoji/ZWJ；多字体、粗斜体、缺字与字体失败 |
-| 段落 | 空段、混排、断词/标点、所有对齐、kashida、tab、行距、段距、显式宽度、上下标 |
-| 控件 | 各控件类型、空值/占位、minWidth、flex、嵌套、值缩进、隐藏/只读、背景/边框 |
-| 表格 | 嵌套、合并、空行、自动列宽、RTL 镜像、跨页、重复表头、截断、工具条拖拽与单元格段距 |
-| 对象与文档流 | 行内/浮动/环绕图片、公式、题注、Block、Area、分栏、横竖混排、连续/分页模式 |
-| 辅助文字 | 页眉页脚、页码、行号、占位、列表编号、单次/平铺水印、分页提示、标尺刻度 |
-| 编辑交互 | 点击/拖选、Shift 锚点、上下左右、词移动、逻辑/视觉删除、IME、移动端 beforeinput、撤销重做 |
-| 装饰与 API | 选区不覆盖段距、高亮、批注、拼写检查、留痕、组矩形、环绕 API、控件赋值、测高、HTML 往返 |
-| 生命周期 | ready 前调用、慢字体、Bunny 成功/失败、下载开关及关闭零请求、缓存、重试、destroy、字体更新、容器大小/DPR/缩放变化 |
-| 发布与输出 | ESM 实际消费、发行包无 UMD/CJS、WASM/字体路径、离线、CSP 场景、图片导出、打印与嵌入块 |
+| 维度         | 必测内容                                                                                                          |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- |
+| 文字与字体   | 中文、Latin、Arabic、Hebrew、Devanagari、Thai、组合符、emoji/ZWJ；多字体、粗斜体、缺字与字体失败                  |
+| 段落         | 空段、混排、断词/标点、所有对齐、kashida、tab、行距、段距、显式宽度、上下标                                       |
+| 控件         | 各控件类型、空值/占位、minWidth、flex、嵌套、值缩进、隐藏/只读、背景/边框                                         |
+| 表格         | 嵌套、合并、空行、自动列宽、RTL 镜像、跨页、重复表头、截断、工具条拖拽与单元格段距                                |
+| 对象与文档流 | 行内/浮动/环绕图片、公式、题注、Block、Area、分栏、横竖混排、连续/分页模式                                        |
+| 辅助文字     | 页眉页脚、页码、行号、占位、列表编号、单次/平铺水印、分页提示、标尺刻度                                           |
+| 编辑交互     | 点击/拖选、Shift 锚点、上下左右、词移动、逻辑/视觉删除、IME、移动端 beforeinput、撤销重做                         |
+| 装饰与 API   | 选区不覆盖段距、高亮、批注、拼写检查、留痕、组矩形、环绕 API、控件赋值、测高、HTML 往返                           |
+| 生命周期     | ready 前调用、慢字体、Bunny 成功/失败、下载开关及关闭零请求、缓存、重试、destroy、字体更新、容器大小/DPR/缩放变化 |
+| 发布与输出   | ESM 实际消费、发行包无 UMD/CJS、WASM/字体路径、离线、CSP 场景、图片导出、打印与嵌入块                             |
 
 必须有真实浏览器绘制与交互验证，不能仅以 jsdom 的行数据一致作为通过。
 在可用环境执行 Chromium/Firefox 自动回归，并单独验证 Safari/WebKit 的字体、

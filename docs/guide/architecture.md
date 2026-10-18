@@ -1,10 +1,12 @@
 # 架构分析
 
+> 当前默认且仅支持 Canvas 页面绘制；SVG 实现暂缓。项目来源与差异见[独立 fork 说明](./fork-and-differences.md)。
+
 > 基于源码静态分析（约 v0.9.137）。本文描述当前主干架构，作为 RTL 混排改造的基线。相关设计见 [RTL 排版设计](./rtl-layout-design.md)，延期事项见 [RTL 延期 TODO](./rtl-deferred-todo.md)。
 
 ## 核心结论
 
-`@hufe921/canvas-editor` 是一套自研 Canvas/SVG 富文本引擎，面向 EMR / 表单 / 套打。架构可概括为：
+`@herberthe/canvas-editor` 是一套基于上游 fork 的 HarfBuzz + Canvas 富文本引擎，面向日常文档 / 表单 / 套打。架构可概括为：
 
 > **Draw（内核）+ Command（门面）+ IElement[]（模型）+ Particle（视图）+ Zone/Control/Cascade（EMR 能力层）**
 
@@ -12,16 +14,16 @@
 
 ## 工程骨架
 
-| 路径 | 职责 |
-|------|------|
-| `src/editor/` | 库核心：Draw / Command / 事件 / 粒子 / 接口 |
-| `src/editor/core/` | 约 22 个运行时子系统 |
-| `src/editor/interface/` | TypeScript 接口 |
-| `src/editor/dataset/` | 枚举与常量 |
-| `src/editor/utils/` | `formatElementList` / zip / HTML 转换等 |
-| `src/main.ts` + `plugins/` | Demo 与示例插件 |
-| `tests/` + `cypress/` | 单元测试与 E2E |
-| `docs/` | VitePress 中英文档 |
+| 路径                       | 职责                                        |
+| -------------------------- | ------------------------------------------- |
+| `src/editor/`              | 库核心：Draw / Command / 事件 / 粒子 / 接口 |
+| `src/editor/core/`         | 约 22 个运行时子系统                        |
+| `src/editor/interface/`    | TypeScript 接口                             |
+| `src/editor/dataset/`      | 枚举与常量                                  |
+| `src/editor/utils/`        | `formatElementList` / zip / HTML 转换等     |
+| `src/main.ts` + `plugins/` | Demo 与示例插件                             |
+| `tests/` + `cypress/`      | 单元测试与 E2E                              |
+| `docs/`                    | VitePress 中英文档                          |
 
 体量上，`Draw.ts`、`CommandAdapt.ts`、`utils/element.ts` 是三大核心文件。
 
@@ -79,16 +81,16 @@ flowchart TB
 
 构造：`mergeOption` → 拆分 header/main/footer → `formatElementList` → Listener/EventBus/Override → Draw → Command → Macro/ContextMenu/Shortcut/Register。
 
-| 成员 | 作用 |
-|------|------|
-| `command` | 全部 mutate / query（`execute*` / `get*`） |
-| `listener` | 单回调槽位（旧式） |
-| `eventBus` | 多订阅 pub/sub |
-| `override` | 覆盖 paste / copy / drop |
-| `register` | 右键菜单 / 快捷键 / i18n |
-| `macro` | 宏命令编排 |
-| `use` | 插件安装 |
-| `destroy` | 释放资源 |
+| 成员       | 作用                                       |
+| ---------- | ------------------------------------------ |
+| `command`  | 全部 mutate / query（`execute*` / `get*`） |
+| `listener` | 单回调槽位（旧式）                         |
+| `eventBus` | 多订阅 pub/sub                             |
+| `override` | 覆盖 paste / copy / drop                   |
+| `register` | 右键菜单 / 快捷键 / i18n                   |
+| `macro`    | 宏命令编排                                 |
+| `use`      | 插件安装                                   |
+| `destroy`  | 释放资源                                   |
 
 ## Draw 引擎
 
@@ -134,12 +136,12 @@ flowchart TB
 
 ## 取舍
 
-| 优势 | 代价 |
-|------|------|
-| 真分页 / 页眉页脚 / 打印像素可控 | Draw 体量大，改动牵连面广 |
-| Canvas 一致性适合套打/EMR | 选区与可访问性需自研 |
-| API 面完整、依赖极少 | 无协同 OT/CRDT；历史全量克隆 |
-| Worker 卸载部分重计算 | 仍需主线程克隆元素列表 |
+| 优势                             | 代价                         |
+| -------------------------------- | ---------------------------- |
+| 真分页 / 页眉页脚 / 打印像素可控 | Draw 体量大，改动牵连面广    |
+| Canvas 一致性适合套打/EMR        | 选区与可访问性需自研         |
+| API 面完整、依赖极少             | 无协同 OT/CRDT；历史全量克隆 |
+| Worker 卸载部分重计算            | 仍需主线程克隆元素列表       |
 
 ## 与 RTL 改造的关系
 

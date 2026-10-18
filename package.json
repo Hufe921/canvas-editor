@@ -1,9 +1,9 @@
 {
-  "name": "@hufe921/canvas-editor",
-  "author": "Hufe",
+  "name": "@herberthe/canvas-editor",
+  "author": "Herbert He",
   "license": "MIT",
-  "version": "1.0.5",
-  "description": "A Canvas/SVG-based rich text editor",
+  "version": "0.1.0",
+  "description": "A HarfBuzz-powered, Canvas-only rich text editor; an independent fork of Hufe921/canvas-editor",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/",
     "access": "public"
@@ -13,19 +13,22 @@
     "README.md",
     "CHANGELOG.md",
     "LICENSE",
-    "package.json"
+    "package.json",
+    "NOTICE"
   ],
   "module": "./dist/canvas-editor.js",
-  "homepage": "https://github.com/Hufe921/canvas-editor",
+  "homepage": "https://github.com/HerbertHe/canvas-editor",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Hufe921/canvas-editor.git"
+    "url": "https://github.com/HerbertHe/canvas-editor.git"
   },
   "keywords": [
     "canvas-editor",
     "editor",
     "wysiwyg",
-    "emr"
+    "harfbuzz",
+    "typography",
+    "rtl"
   ],
   "engines": {
     "node": ">=24.13.1"
@@ -99,5 +102,8 @@
       "import": "./dist/canvas-editor.js"
     },
     "./package.json": "./package.json"
+  },
+  "bugs": {
+    "url": "https://github.com/HerbertHe/canvas-editor/issues"
   }
 }

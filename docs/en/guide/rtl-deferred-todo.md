@@ -179,7 +179,7 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 - Status: pending
 - Priority: P3
-- Depends: Merging `feature/svg`
+- Depends: SVG implementation is deferred; review only after explicit resumption of the fork SVG plan, not automatic upstream branch merging
 - Area: svg-ui
 - Notes: The current rendering engine does not yet support an SVG rendering implementation for RTL, and trunk has no DOM document SVG; evaluate `dir`/coords when that branch lands.
 

@@ -6,13 +6,13 @@ Thank you for your interest in Canvas Editor! We welcome contributions in any fo
 
 ### Report a Bug
 
-1. Search [existing Issues](https://github.com/Hufe921/canvas-editor/issues) to make sure it hasn't been reported
-2. Use the [Bug Report template](https://github.com/Hufe921/canvas-editor/issues/new?template=bug_report.yml) to create an Issue
+1. Search [existing Issues](https://github.com/HerbertHe/canvas-editor/issues) to make sure it hasn't been reported
+2. Use the [Bug Report template](https://github.com/HerbertHe/canvas-editor/issues/new?template=bug_report.yml) to create an Issue
 3. Provide clear reproduction steps, expected behavior, and actual behavior
 
 ### Suggest a Feature
 
-1. Use the [Feature Request template](https://github.com/Hufe921/canvas-editor/issues/new?template=feature_request.yml) to create an Issue
+1. Use the [Feature Request template](https://github.com/HerbertHe/canvas-editor/issues/new?template=feature_request.yml) to create an Issue
 2. Describe the use case and expected behavior
 
 ### Submit a Pull Request

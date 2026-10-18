@@ -4,7 +4,7 @@ This guide provides essential information for agentic coding agents working on t
 
 ## Project Overview
 
-Canvas Editor is a TypeScript-based rich text editor library that renders content using HTML5 Canvas/SVG. It's built as an ES module with comprehensive TypeScript support and follows modern development practices.
+Canvas Editor is a TypeScript-based rich text editor library that renders content using HTML5 Canvas with HarfBuzz-only text layout. It's built as an ES module with comprehensive TypeScript support and follows modern development practices.
 
 ## Development Commands
 
@@ -81,8 +81,8 @@ src/
 
 ### Key Files
 - **Main entry**: `src/editor/index.ts` - Exports Editor class and utilities
-- **Package exports**: ES module and UMD builds with TypeScript definitions
-- **Node requirement**: `>=16.9.1`
+- **Package exports**: ES module builds only with TypeScript definitions
+- **Node requirement**: `>=24.13.1`
 
 ## Import Conventions
 
@@ -140,7 +140,7 @@ src/
 
 ### Library Build
 - TypeScript compilation with strict checking
-- Vite bundling for ES module and UMD outputs
+- Vite bundling for ES module output only
 - Automatic CSS-in-JS injection via plugin
 - Source maps generated for debugging
 
@@ -180,7 +180,7 @@ src/
 
 ## Security Notes
 
-- No external network requests in core library
+- Basic-font downloads from Bunny are enabled by default; use autoDownloadFonts: false for offline integration
 - Sanitize all user input before rendering
 - Avoid eval() and Function constructor usage
 - Validate configuration options in public API
