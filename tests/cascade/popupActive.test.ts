@@ -1,3 +1,4 @@
+import { createTestDraw } from '../factories/draw'
 import { describe, it, expect, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -12,17 +13,17 @@ import type { IElement } from '@/editor/interface/Element'
 
 const options = mergeOption({ width: 794, height: 1123 })
 
-function createDraw(main: IElement[]): {
+async function createDraw(main: IElement[]): Promise<{
   draw: Draw
   container: HTMLDivElement
-} {
+}> {
   formatElementList(main, {
     editorOptions: options,
     isForceCompensation: true
   })
   const container = document.createElement('div')
   document.body.appendChild(container)
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -68,7 +69,7 @@ describe('select 弹窗高亮（真实点击路径）', () => {
   })
 
   it('选择后重开弹窗应高亮已选项', async () => {
-    ;({ draw, container } = createDraw(buildData()))
+    ;({ draw, container } = await createDraw(buildData()))
     // 激活控件并唤起弹窗
     const elementList = draw.getOriginalMainElementList()
     const controlIndex = elementList.findIndex(el => el.controlId === 'c1')

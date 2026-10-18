@@ -3,6 +3,7 @@ import Editor from '@/editor'
 import type { IEditorData, IEditorOption } from '@/editor/interface/Editor'
 import type { IElement } from '@/editor/interface/Element'
 import { createOptions } from './options'
+import { testFonts } from './fonts'
 
 vi.mock('@/editor/core/worker/WorkerManager', () => {
   return {
@@ -47,9 +48,9 @@ export interface TestEditorContext {
   destroy: () => void
 }
 
-export function createTestEditor(
+export async function createTestEditor(
   params: CreateTestEditorParams = {}
-): TestEditorContext {
+): Promise<TestEditorContext> {
   const container = params.container ?? document.createElement('div')
   if (!container.isConnected) document.body.appendChild(container)
 
@@ -58,8 +59,13 @@ export function createTestEditor(
     main: [{ value: '\n' }],
     footer: []
   }
-  const options = createOptions(params.options)
-  const editor = new Editor(container, data as any, options as IEditorOption)
+  const options = createOptions({
+    autoDownloadFonts: false,
+    defaultFont: 'Noto Sans',
+    fonts: testFonts(),
+    ...params.options
+  })
+  const editor = await Editor.create(container, data, options as IEditorOption)
 
   let destroyed = false
   const destroy = () => {

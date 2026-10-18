@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -9,47 +10,63 @@ import {
   ControlComponent,
   ControlType,
   ElementType,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import type { IElement } from '@/editor/interface/Element'
 
-function stubMeasureText() {
-  vi.spyOn(CanvasRenderingContext2D.prototype, 'measureText').mockImplementation(function (text: string) {
-    let width = 0
-    for (const ch of text) {
-      const cp = ch.codePointAt(0)!
-      if ((cp >= 0x200b && cp <= 0x200d) || cp === 0xfeff || cp === 0x2060 || (cp >= 0x2066 && cp <= 0x2069)) continue
-      width += cp > 0xff ? 16 : 8
-    }
-    return { width, actualBoundingBoxAscent: 12.8, actualBoundingBoxDescent: 3.2, fontBoundingBoxAscent: 12.8, fontBoundingBoxDescent: 3.2 } as TextMetrics
-  })
-}
-
-function createDraw(main: IElement[], opts: Record<string, unknown> = {}) {
+async function createDraw(
+  main: IElement[],
+  opts: Record<string, unknown> = {}
+) {
   const container = document.createElement('div')
   document.body.appendChild(container)
-  const options = mergeOption({ defaultDirection: TextDirection.AUTO, textEngine: TextEngineMode.HARFBUZZ, header: { disabled: true }, footer: { disabled: true }, ...opts })
+  const options = mergeOption({
+    defaultDirection: TextDirection.AUTO,
+
+    header: { disabled: true },
+    footer: { disabled: true },
+    ...opts
+  })
   formatElementList(main, { editorOptions: options, isForceCompensation: true })
-  const draw = new Draw(container, options, { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] }, new Listener(), new EventBus(), new Override())
+  const draw = await createTestDraw(
+    container,
+    options,
+    { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
+    new Listener(),
+    new EventBus(),
+    new Override()
+  )
   return { draw, container }
 }
 
 describe('RTL Arabic EMR e2e position', () => {
   let draw: Draw | undefined
   let container: HTMLDivElement | undefined
-  afterEach(() => { draw?.destroy(); container?.remove(); draw = undefined; container = undefined; vi.restoreAllMocks() })
+  afterEach(() => {
+    draw?.destroy()
+    container?.remove()
+    draw = undefined
+    container = undefined
+    vi.restoreAllMocks()
+  })
 
   it('Arabic text + SELECT control: visualLeft monotonic, no overlap', async () => {
-    stubMeasureText()
     const RTL = TextDirection.RTL
     const main: IElement[] = [
       { value: ZERO },
       // Simulated既往史 paragraph
-      { value: 'سكري منذ ١٠ سنوات، وارتفاع ضغط الدم منذ سنتين، و', size: 16, direction: RTL },
+      {
+        value: 'سكري منذ ١٠ سنوات، وارتفاع ضغط الدم منذ سنتين، و',
+        size: 16,
+        direction: RTL
+      },
       { value: 'مرض معدٍ', color: '#FF0000', size: 16, direction: RTL },
-      { value: ' منذ سنة. يرجى ذكر أمراض سابقة أخرى. ', size: 16, direction: RTL },
+      {
+        value: ' منذ سنة. يرجى ذكر أمراض سابقة أخرى. ',
+        size: 16,
+        direction: RTL
+      },
       {
         type: ElementType.CONTROL,
         value: '',
@@ -62,12 +79,15 @@ describe('RTL Arabic EMR e2e position', () => {
           placeholder: 'نعم/لا',
           prefix: '{',
           postfix: '}',
-          valueSets: [{ value: 'نعم', code: '98175' }, { value: 'لا', code: '98176' }]
+          valueSets: [
+            { value: 'نعم', code: '98175' },
+            { value: 'لا', code: '98176' }
+          ]
         }
       },
       { value: '\n', direction: RTL }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
 
     await (draw as any).layoutHostAdapter.ensureReady()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
@@ -82,15 +102,24 @@ describe('RTL Arabic EMR e2e position', () => {
 
     for (const row of rtlRows) {
       // All text-bearing rows must use text-engine
-      if (row.elementList.some(e => e.value && e.value !== ZERO && e.value !== '\n')) {
+      if (
+        row.elementList.some(
+          e => e.value && e.value !== ZERO && e.value !== '\n'
+        )
+      ) {
         expect(row.engineLine).toBeTruthy()
       }
 
       // Check visualLeft monotonicity within each row
-      const els = row.elementList.filter(e => e.visualLeft !== undefined && (e.metrics?.width ?? 0) > 0.01)
-      const sorted = [...els].sort((a, b) => (a.visualLeft ?? 0) - (b.visualLeft ?? 0))
+      const els = row.elementList.filter(
+        e => e.visualLeft !== undefined && (e.metrics?.width ?? 0) > 0.01
+      )
+      const sorted = [...els].sort(
+        (a, b) => (a.visualLeft ?? 0) - (b.visualLeft ?? 0)
+      )
       for (let i = 1; i < sorted.length; i++) {
-        const prevRight = (sorted[i - 1].visualLeft ?? 0) + (sorted[i - 1].metrics?.width ?? 0)
+        const prevRight =
+          (sorted[i - 1].visualLeft ?? 0) + (sorted[i - 1].metrics?.width ?? 0)
         const curLeft = sorted[i].visualLeft ?? 0
         expect(curLeft).toBeGreaterThanOrEqual(prevRight - 1)
       }
@@ -105,13 +134,14 @@ describe('RTL Arabic EMR e2e position', () => {
         // position x should be close to visualLeft + row origin
         // (We can't compute exact row origin here, but we can check relative consistency)
         expect(posLeft).toBeGreaterThanOrEqual(0)
-        expect(pos.coordinate.rightTop[0]).toBeGreaterThan(pos.coordinate.leftTop[0])
+        expect(pos.coordinate.rightTop[0]).toBeGreaterThan(
+          pos.coordinate.leftTop[0]
+        )
       }
     }
   })
 
   it('RTL paragraph with批注 groupIds: highlight positions correct', async () => {
-    stubMeasureText()
     const RTL = TextDirection.RTL
     const main: IElement[] = [
       { value: ZERO },
@@ -127,7 +157,7 @@ describe('RTL Arabic EMR e2e position', () => {
       { value: ' ٣٦.٥٠٪ ', size: 16, direction: RTL },
       { value: '\n', direction: RTL }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
 
     await (draw as any).layoutHostAdapter.ensureReady()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
@@ -147,11 +177,12 @@ describe('RTL Arabic EMR e2e position', () => {
     expect(hlPos.coordinate.leftTop[0]).toBeGreaterThan(0)
     expect(hlPos.coordinate.rightTop[0]).toBeLessThanOrEqual(pageWidth)
     // The highlight element should have positive width
-    expect(hlPos.coordinate.rightTop[0]).toBeGreaterThan(hlPos.coordinate.leftTop[0])
+    expect(hlPos.coordinate.rightTop[0]).toBeGreaterThan(
+      hlPos.coordinate.leftTop[0]
+    )
   })
 
   it('RTL text control: clicking empty value area places caret on the right', async () => {
-    stubMeasureText()
     const RTL = TextDirection.RTL
     const main: IElement[] = [
       { value: ZERO },
@@ -170,7 +201,7 @@ describe('RTL Arabic EMR e2e position', () => {
       },
       { value: '\n', direction: RTL }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
 
     await (draw as any).layoutHostAdapter.ensureReady()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
@@ -191,7 +222,7 @@ describe('RTL Arabic EMR e2e position', () => {
     // 点击值区域右侧 → 光标吸附到 prefix（RTL 起始），落在右侧
     const hit = draw!.getPosition().getPositionByXY({
       x: prefixX + 2,
-      y: 130,
+      y: posList[prefix].coordinate.leftTop[1] + posList[prefix].lineHeight / 2,
       pageNo: 0
     })
     const caretPos = posList[hit.index]
@@ -199,8 +230,7 @@ describe('RTL Arabic EMR e2e position', () => {
   })
 
   it('popup position mirrors right edge for RTL bidi level', async () => {
-    stubMeasureText()
-    ;({ draw, container } = createDraw([
+    ;({ draw, container } = await createDraw([
       { value: ZERO },
       { value: '\u0645', direction: TextDirection.RTL }
     ]))

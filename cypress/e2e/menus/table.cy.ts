@@ -3,6 +3,7 @@ import Editor, { ElementType } from '../../../src/editor'
 describe('菜单-表格', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
@@ -27,6 +28,7 @@ describe('菜单-表格', () => {
 describe('菜单-表格操作', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
@@ -112,10 +114,7 @@ describe('菜单-表格操作', () => {
               ]
             }
           ],
-          colgroup: [
-            { width: 200 },
-            { width: 200 }
-          ]
+          colgroup: [{ width: 200 }, { width: 200 }]
         }
       ])
 
@@ -196,10 +195,7 @@ describe('菜单-表格操作', () => {
               ]
             }
           ],
-          colgroup: [
-            { width: 100 },
-            { width: 300 }
-          ]
+          colgroup: [{ width: 100 }, { width: 300 }]
         }
       ])
 

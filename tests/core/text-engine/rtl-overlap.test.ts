@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
-import { BrowserTextShaper } from '../../../src/editor/core/text-engine/shape/BrowserTextShaper'
 import { TextLayoutEngine } from '../../../src/editor/core/text-engine/layout/TextLayoutEngine'
 
 describe('rtl cjk overlap', () => {
@@ -39,7 +38,7 @@ describe('rtl cjk overlap', () => {
     }
     const engine = new TextLayoutEngine(
       bidi,
-      fixedShaper as unknown as BrowserTextShaper
+      fixedShaper as unknown as import('@/editor/core/text-engine/shape/ITextShaper').ITextShaper
     )
     const spans = [...text].map((ch, i) => ({
       logicalIndex: i + 1,
@@ -59,9 +58,9 @@ describe('rtl cjk overlap', () => {
       const chars = gs.map(g => text.slice(g.charStart, g.charEnd)).join('')
       // Logical-contiguous: first glyph charStart <= last
       const starts = gs.map(g => g.charStart)
-      expect(Math.max(...starts) - Math.min(...starts) + 1).toBeGreaterThanOrEqual(
-        gs.length
-      )
+      expect(
+        Math.max(...starts) - Math.min(...starts) + 1
+      ).toBeGreaterThanOrEqual(gs.length)
       // Must not start with the paragraph-final '。' pulled from the end
       if (line === layout.lines[0]) {
         expect(chars.startsWith('。')).toBe(false)

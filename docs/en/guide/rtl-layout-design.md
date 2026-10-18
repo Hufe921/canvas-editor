@@ -1,5 +1,10 @@
 # RTL Layout & Rendering Engine Design
 
+> Historical design/migration record: T20 removed the legacy engine, mode selectors
+> and browser text fallback. Follow [Fonts and ESM migration](./font-and-esm-migration.md)
+> for current integration; old paths below are not current APIs.
+
+
 > Goal: support Arabic and other RTL/LTR mixed layout on the existing flat `IElement[]` model; **HarfBuzz is required for this phase**; keep the layout/paint engine relatively independent to reduce Draw invasiveness.  
 > Baseline: [Architecture](./architecture.md). Deferred work: [RTL deferred TODO](./rtl-deferred-todo.md).
 

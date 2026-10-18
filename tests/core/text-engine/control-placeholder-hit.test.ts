@@ -1,4 +1,6 @@
-import { describe, expect, it, vi } from 'vitest'
+import { layoutNativeSnapshot } from '../../factories/native-row'
+import { createTestTextShaper } from '../../factories/text-shaper'
+import { describe, expect, it } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
@@ -9,49 +11,21 @@ import {
   ControlComponent,
   ControlType,
   ElementType,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import type { IElement } from '@/editor/interface/Element'
 import { ElementBridge } from '@/editor/core/text-engine-host/ElementBridge'
 import { BidiResolver } from '@/editor/core/text-engine/bidi/BidiResolver'
-import { BrowserTextShaper } from '@/editor/core/text-engine/shape/BrowserTextShaper'
 import { TextLayoutEngine } from '@/editor/core/text-engine/layout/TextLayoutEngine'
-import { mapLayoutToRows } from '@/editor/core/text-engine-host/mapToLegacyRow'
 
-function stubMeasureText() {
-  const proto = CanvasRenderingContext2D.prototype
-  vi.spyOn(proto, 'measureText').mockImplementation(function (text: string) {
-    let width = 0
-    for (const ch of text) {
-      const cp = ch.codePointAt(0)!
-      if (
-        (cp >= 0x200b && cp <= 0x200d) ||
-        cp === 0xfeff ||
-        cp === 0x2060 ||
-        (cp >= 0x2066 && cp <= 0x2069)
-      ) {
-        continue
-      }
-      width += cp > 0xff ? 16 : 8
-    }
-    return {
-      width,
-      actualBoundingBoxAscent: 12.8,
-      actualBoundingBoxDescent: 3.2,
-      fontBoundingBoxAscent: 12.8,
-      fontBoundingBoxDescent: 3.2
-    } as TextMetrics
-  })
-}
-
-function renderMain(main: IElement[]): Draw {
+async function renderMain(main: IElement[]): Promise<Draw> {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const options = mergeOption({
+    autoDownloadFonts: false,
     defaultDirection: TextDirection.AUTO,
-    textEngine: TextEngineMode.LEGACY,
+
     header: { disabled: true },
     footer: { disabled: true }
   })
@@ -67,13 +41,13 @@ function renderMain(main: IElement[]): Draw {
     new EventBus(),
     new Override()
   )
+  await draw.ready
   draw.render()
   return draw
 }
 
 describe('control placeholder hit-test', () => {
-  it('LTR control braces stay contiguous without LRI', () => {
-    stubMeasureText()
+  it('LTR control braces stay contiguous without LRI', async () => {
     const control = {
       type: ControlType.SELECT,
       value: null,
@@ -108,7 +82,7 @@ describe('control placeholder hit-test', () => {
 
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: para.spans,
@@ -118,7 +92,7 @@ describe('control placeholder hit-test', () => {
       lineHeight: 24,
       lineHeightFactor: 1.5
     })
-    const rows = mapLayoutToRows({
+    const rows = await layoutNativeSnapshot({
       layout,
       elementList: raw,
       startRowIndex: 0,
@@ -146,8 +120,7 @@ describe('control placeholder hit-test', () => {
     }
   })
 
-  it('click left half of PREFIX stays inside control (activatable)', () => {
-    stubMeasureText()
+  it('click left half of PREFIX stays inside control (activatable)', async () => {
     const main: IElement[] = [
       { value: ZERO },
       { value: '高血压分级：' },
@@ -165,7 +138,7 @@ describe('control placeholder hit-test', () => {
         }
       }
     ]
-    const draw = renderMain(main)
+    const draw = await renderMain(main)
     try {
       const elementList = draw.getOriginalElementList()
       const positionList = draw.getPosition().getOriginalPositionList()
@@ -187,8 +160,7 @@ describe('control placeholder hit-test', () => {
         (prefixPos.coordinate.rightTop[0] - prefixPos.coordinate.leftTop[0]) *
           0.25
       const y =
-        (prefixPos.coordinate.leftTop[1] +
-          prefixPos.coordinate.leftBottom[1]) /
+        (prefixPos.coordinate.leftTop[1] + prefixPos.coordinate.leftBottom[1]) /
         2
 
       const byXY = draw.getPosition().getPositionByXY({

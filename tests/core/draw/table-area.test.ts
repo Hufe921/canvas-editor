@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -5,11 +6,7 @@ import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
-import {
-  ElementType,
-  TextEngineMode,
-  TextDirection
-} from '@/editor'
+import { ElementType, TextDirection } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 
 describe('DEFER-008 table-cell Area', () => {
@@ -52,14 +49,17 @@ describe('DEFER-008 table-cell Area', () => {
 
   async function setup(main: any[]) {
     const options = mergeOption({
-      textEngine: TextEngineMode.HARFBUZZ,
       defaultDirection: TextDirection.AUTO,
+      autoDownloadFonts: false,
       fonts: []
     })
-    formatElementList(main, { editorOptions: options, isForceCompensation: true })
+    formatElementList(main, {
+      editorOptions: options,
+      isForceCompensation: true
+    })
     container = document.createElement('div')
     document.body.appendChild(container)
-    draw = new Draw(
+    draw = await createTestDraw(
       container,
       options,
       { main, header: [{ value: '\n' }], footer: [{ value: '\n' }] },
@@ -67,7 +67,7 @@ describe('DEFER-008 table-cell Area', () => {
       new EventBus(),
       new Override()
     )
-    await draw.getLayoutHostAdapter().ensureReady()
+    await draw.ready
     draw.render({ isSubmitHistory: false, isSetCursor: false, isLazy: false })
     return draw
   }
@@ -114,12 +114,15 @@ describe('DEFER-008 table-cell Area', () => {
   it('mirrors the area background into the right td for an rtl table', async () => {
     const tdValue = [
       { value: ZERO },
-      { value: 'نص', areaId: 'a1', area: { backgroundColor: '#FF0000' }, direction: TextDirection.RTL },
+      {
+        value: 'نص',
+        areaId: 'a1',
+        area: { backgroundColor: '#FF0000' },
+        direction: TextDirection.RTL
+      },
       { value: '\n' }
     ]
-    const d = await setup(
-      buildTable(tdValue, TextDirection.RTL)
-    )
+    const d = await setup(buildTable(tdValue, TextDirection.RTL))
     const fillSpy = vi
       .spyOn(CanvasRenderingContext2D.prototype, 'fillRect')
       .mockImplementation(() => {})

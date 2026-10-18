@@ -89,10 +89,7 @@ describe('Spellcheck', () => {
       { value: ZERO },
       { value: 'Helo' }
     ])
-    const outerTable = createTable('outer-table', [
-      { value: ZERO },
-      innerTable
-    ])
+    const outerTable = createTable('outer-table', [{ value: ZERO }, innerTable])
     const elementList = [{ value: ZERO }, outerTable]
     const wordPosition = {
       pageNo: 0,
@@ -180,10 +177,9 @@ describe('Spellcheck', () => {
       metrics: { boundingBoxDescent: 2 },
       coordinate: { leftTop: [x, 0], rightTop: [x + 10, 0] }
     })) as IElementPosition[]
-    const spellcheck = createSpellcheck(
-      [{ value: 'مرحبا' }],
-      { getOriginalMainPositionList: () => positions } as unknown as Position
-    )
+    const spellcheck = createSpellcheck([{ value: 'مرحبا' }], {
+      getOriginalMainPositionList: () => positions
+    } as unknown as Position)
     spellcheck.setSpellcheckRangeList([{ startIndex: 0, endIndex: 3 }])
     const ctx = document.createElement('canvas').getContext('2d')!
     const move = vi.spyOn(ctx, 'moveTo')
@@ -192,5 +188,4 @@ describe('Spellcheck', () => {
     expect(move.mock.calls.map(call => call[0])).toEqual([10, 70])
     expect(wave.mock.calls.at(-1)?.[2]).toBe(80)
   })
-
 })

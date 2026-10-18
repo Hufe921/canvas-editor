@@ -1,10 +1,11 @@
+import type { IElement, IElementMetrics } from '../../../../interface/Element'
+import { isElementLayoutHidden } from '../../../../utils/element'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { BlockType } from '../../../../dataset/enum/Block'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { IIframeInfo } from '../../../../interface/Block'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
-import { IRowElement } from '../../../../interface/Row'
 import { loadImage } from '../../../../utils'
 import { Draw } from '../../Draw'
 import { BaseBlock } from './modules/BaseBlock'
@@ -42,18 +43,25 @@ export class BlockParticle {
   public render(
     ctx: CanvasRenderingContext2D,
     pageNo: number,
-    element: IRowElement,
+    element: IElement,
     x: number,
-    y: number
+    y: number,
+    metrics: IElementMetrics
   ) {
     // 优先使用缓存block
     const id = element.id!
     let cacheBlock = this.blockMap.get(id)
+    if (cacheBlock && cacheBlock.getBlockElement() !== element) {
+      cacheBlock.remove()
+      this.blockMap.delete(id)
+      cacheBlock = undefined
+    }
     if (!cacheBlock) {
-      cacheBlock = new BaseBlock(this, element)
+      cacheBlock = new BaseBlock(this, element, metrics)
       cacheBlock.render()
       this.blockMap.set(id, cacheBlock)
     }
+    cacheBlock.setMetrics(metrics)
     // 打印模式截图，其他模式更新位置
     if (this.draw.isPrintMode()) {
       cacheBlock.snapshot(ctx, pageNo, x, y)
@@ -66,17 +74,28 @@ export class BlockParticle {
 
   public clear() {
     if (!this.blockMap.size) return
-    const elementList = this.draw.getOriginalMainElementList()
-    const blockElementIds: string[] = []
-    for (let e = 0; e < elementList.length; e++) {
-      const element = elementList[e]
-      if (element.type === ElementType.BLOCK) {
-        blockElementIds.push(element.id!)
+    const blockElementIds = new Set<string>()
+    const visit = (elements: IElement[]) => {
+      for (const element of elements) {
+        if (
+          isElementLayoutHidden(element, {
+            isDesignMode: this.draw.isDesignMode(),
+            isAreaHideDisabled: this.draw.isAreaHideDisabled(),
+            isTraceHidden: el => this.draw.getTraceParticle().isTraceHidden(el)
+          })
+        )
+          continue
+        if (element.type === ElementType.BLOCK) blockElementIds.add(element.id!)
+        for (const row of element.trList || [])
+          for (const cell of row.tdList) visit(cell.value)
       }
     }
+    visit(this.draw.getOriginalMainElementList())
+    visit(this.draw.getHeaderElementList())
+    visit(this.draw.getFooterElementList())
     this.blockMap.forEach(block => {
       const id = block.getBlockElement().id!
-      if (!blockElementIds.includes(id)) {
+      if (!blockElementIds.has(id)) {
         block.remove()
         this.blockMap.delete(id)
       }
@@ -114,7 +133,7 @@ export class BlockParticle {
       const { pageNo, x, y } = positionInfo
       const ctx = pageList[pageNo]?.getContext('2d')
       if (!ctx) return
-      const { width, height } = cacheBlock.getBlockElement().metrics
+      const { width, height } = cacheBlock.getMetrics()
       tasks.push(
         snapDomFunction(iframe)
           .then(base64 => loadImage(base64))
@@ -149,8 +168,8 @@ export class BlockParticle {
       result[pageNo].push({
         x,
         y,
-        width: element.metrics.width / scale,
-        height: element.metrics.height / scale,
+        width: cacheBlock.getMetrics().width / scale,
+        height: cacheBlock.getMetrics().height / scale,
         src: element.block.iframeBlock.src,
         srcdoc: element.block.iframeBlock.srcdoc
       })

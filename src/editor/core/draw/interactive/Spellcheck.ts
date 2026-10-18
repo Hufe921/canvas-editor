@@ -275,10 +275,21 @@ export class Spellcheck {
       const startPageNo = positionList[range.startIndex]?.pageNo
       const endPageNo = positionList[endIndex]?.pageNo
       if (
+        !this.position.getNativeLines?.(positionList).length &&
         isNumber(startPageNo) &&
         isNumber(endPageNo) &&
         (pageIndex < startPageNo || pageIndex > endPageNo)
       ) {
+        continue
+      }
+      if (this.position.getNativeLines?.(positionList).length) {
+        for (const rect of this.position.getNativeRangeRects(
+          range.startIndex,
+          endIndex + 1,
+          positionList,
+          pageIndex
+        ))
+          this._drawWave(ctx, rect.x, rect.y + rect.height, rect.width)
         continue
       }
       // 错词可能换行，按行分段绘制

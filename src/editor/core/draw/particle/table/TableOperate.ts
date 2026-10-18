@@ -1,3 +1,5 @@
+import type { TextDirection } from '../../../../dataset/enum/TextDirection'
+import { fitTableColumns } from '../../../layout/TableLayout'
 import { ElementType, IElement, TableBorder, VerticalAlign } from '../../../..'
 import { ZERO } from '../../../../dataset/constant/Common'
 import { TABLE_CONTEXT_ATTR } from '../../../../dataset/constant/Element'
@@ -11,7 +13,8 @@ import { cloneProperty, getUUID } from '../../../../utils'
 import { resolveNewContentDirection } from '../../../../utils/direction'
 import {
   formatElementContext,
-  formatElementList
+  formatElementList,
+  isElementLayoutHidden
 } from '../../../../utils/element'
 import {
   scaleColgroupToWidth,
@@ -49,7 +52,7 @@ export class TableOperate {
     if (elementList[startIndex]?.listId) {
       const positionList = this.position.getPositionList()
       const { rowIndex } = positionList[startIndex]
-      const rowList = this.draw.getRowList()
+      const rowList = this.draw.getLayoutRowList()
       const row = rowList[rowIndex]
       offsetX = row?.offsetX || 0
     }
@@ -244,7 +247,7 @@ export class TableOperate {
     if (overflow) return
     const colgroup = element.colgroup!
     const colgroupWidth = colgroup.reduce((pre, cur) => pre + cur.width, 0)
-    const width = this.draw.getOriginalInnerWidth()
+    const width = this.draw.getTableContainerWidth(element)
     if (colgroupWidth > width) {
       // 过滤大于最小宽度的列（可能减少宽度的列）
       const greaterMinWidthCol = colgroup.filter(
@@ -1003,61 +1006,81 @@ export class TableOperate {
   }
 
   // 测量单元格内容最大行宽度（未缩放，不含内边距）
-  private _measureTdContentWidth(td: ITd): number {
-    const ctx = document.createElement('canvas').getContext('2d')!
-    const textParticle = this.draw.getTextParticle()
-    let maxWidth = 0
-    let curWidth = 0
-    for (let i = 0; i < td.value.length; i++) {
-      const el = td.value[i]
-      // 换行结算当前行宽度
-      if (el.value === ZERO) {
-        maxWidth = Math.max(maxWidth, curWidth)
-        curWidth = 0
+  private _measureTdContentWidth(td: ITd, direction?: TextDirection): number {
+    const host = this.draw.getLayoutHostAdapter()
+    let width = Math.max(
+      0,
+      ...host
+        .scanParagraphs(td.value, direction)
+        .map(paragraph => host.measureParagraph(paragraph).width)
+    )
+    for (const element of td.value) {
+      if (
+        element.type !== ElementType.TABLE ||
+        isElementLayoutHidden(element, {
+          isDesignMode: this.draw.isDesignMode(),
+          isAreaHideDisabled: this.draw.isAreaHideDisabled(),
+          isTraceHidden: el => this.draw.getTraceParticle().isTraceHidden(el)
+        })
+      )
         continue
-      }
-      // 仅统计文本元素宽度
-      if (el.type && el.type !== ElementType.TEXT) continue
-      ctx.font = this.draw.getElementFont(el)
-      curWidth += textParticle.measureText(ctx, el).width
+      const constraints = element.trList!.flatMap(row =>
+        row.tdList.map(cell => ({
+          column: cell.colIndex!,
+          colspan: cell.colspan,
+          width:
+            this._measureTdContentWidth(cell, element.direction) +
+            this.options.table.tdPadding[1] +
+            this.options.table.tdPadding[3]
+        }))
+      )
+      const intrinsic = fitTableColumns(
+        element.colgroup!.map(col => col.width),
+        constraints,
+        this.options.table.defaultColMinWidth
+      )
+      width = Math.max(
+        width,
+        intrinsic.reduce((sum, value) => sum + value, 0)
+      )
     }
-    return Math.max(maxWidth, curWidth)
+    return width
   }
 
   public tableAutoFitToContent() {
+    this.draw.getLifecycle().assertReady()
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
+    const element = this.position.getTableElementByContext(
+      originalElementList,
+      positionContext
+    )
     if (element?.type !== ElementType.TABLE) return
     const { defaultColMinWidth, tdPadding, overflow } = this.options.table
     const tdPaddingWidth = tdPadding[1] + tdPadding[3]
     const colgroup = element.colgroup!
-    // 每列内容最大宽度（跨列单元格跳过：简单策略，不参与列宽计算）
-    const contentWidthList: number[] = colgroup.map(() => 0)
-    for (let t = 0; t < element.trList!.length; t++) {
-      const tdList = element.trList![t].tdList
-      for (let d = 0; d < tdList.length; d++) {
-        const td = tdList[d]
-        if (td.colspan > 1) continue
-        const colIndex = td.colIndex!
-        const contentWidth = this._measureTdContentWidth(td) + tdPaddingWidth
-        if (contentWidth > contentWidthList[colIndex]) {
-          contentWidthList[colIndex] = contentWidth
-        }
-      }
-    }
-    for (let c = 0; c < colgroup.length; c++) {
-      if (contentWidthList[c]) {
-        colgroup[c].width = Math.max(defaultColMinWidth, contentWidthList[c])
-      }
-    }
+    const constraints = element.trList!.flatMap(row =>
+      row.tdList.map(cell => ({
+        column: cell.colIndex!,
+        colspan: cell.colspan,
+        width:
+          this._measureTdContentWidth(cell, element.direction) + tdPaddingWidth
+      }))
+    )
+    const widths = fitTableColumns(
+      colgroup.map(col => col.width),
+      constraints,
+      defaultColMinWidth
+    )
+    colgroup.forEach((col, index) => {
+      col.width = widths[index]
+    })
     // 不允许超出正文区域时压缩至内容区内
     if (!overflow) {
       shrinkColgroupToWidth(
         colgroup,
-        this.draw.getOriginalInnerWidth(),
+        this.draw.getTableContainerWidth(element),
         defaultColMinWidth
       )
       element.translateX = 0
@@ -1070,12 +1093,17 @@ export class TableOperate {
   public tableAutoFitToPage() {
     const positionContext = this.position.getPositionContext()
     if (!positionContext.isTable) return
-    const { index } = positionContext
     const originalElementList = this.draw.getOriginalElementList()
-    const element = originalElementList[index!]
+    const element = this.position.getTableElementByContext(
+      originalElementList,
+      positionContext
+    )
     if (element?.type !== ElementType.TABLE) return
     // 表格总宽等比缩放（放大或缩小）至页面内容区宽度
-    scaleColgroupToWidth(element.colgroup!, this.draw.getOriginalInnerWidth())
+    scaleColgroupToWidth(
+      element.colgroup!,
+      this.draw.getTableContainerWidth(element)
+    )
     element.translateX = 0
     const { endIndex } = this.range.getRange()
     this.draw.render({ curIndex: endIndex })

@@ -45,6 +45,7 @@ describe('菜单-标题', () => {
 describe('菜单-标题级别', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
@@ -103,10 +104,7 @@ describe('菜单-标题级别', () => {
 
       cy.get('.menu-item__title').as('title').click()
 
-      cy.get('@title')
-        .find('li')
-        .eq(1)
-        .click()
+      cy.get('@title').find('li').eq(1).click()
 
       cy.get('@title').click()
 

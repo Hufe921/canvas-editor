@@ -1,3 +1,5 @@
+import type { Position } from '../../../position/Position'
+import { moveNativeCaret } from './nativeCaret'
 import { ElementType } from '../../../../dataset/enum/Element'
 import { KeyMap } from '../../../../dataset/enum/KeyMap'
 import { MoveDirection } from '../../../../dataset/enum/Observer'
@@ -5,6 +7,7 @@ import { IElementPosition } from '../../../../interface/Element'
 import { CanvasEvent } from '../../CanvasEvent'
 
 interface IGetNextPositionIndexPayload {
+  nativePosition?: Position
   positionList: IElementPosition[]
   index: number
   rowNo: number
@@ -57,6 +60,16 @@ function getNextPositionIndex(payload: IGetNextPositionIndexPayload) {
     nextIndex = nextPosition.index
     break
   }
+  const native = payload.nativePosition?.getNativeCaretAtX(
+    positionList,
+    nextIndex,
+    cursorX,
+    probablePosition[0]?.pageNo
+  )
+  if (native) {
+    payload.nativePosition!.setNativeCaretHint(native)
+    return native.index
+  }
   return nextIndex
 }
 
@@ -73,6 +86,7 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
   const { startIndex, endIndex } = rangeManager.getRange()
   let positionList = position.getPositionList()
   const isUp = evt.key === KeyMap.Up
+  if (moveNativeCaret(evt, host, isUp ? -1 : 1, true)) return
   // 新的光标开始结束位置
   let anchorStartIndex = -1
   let anchorEndIndex = -1
@@ -200,9 +214,10 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
       rowNo,
       rowIndex,
       coordinate: {
-        rightTop: [curRightX]
+        rightTop: [legacyRightX]
       }
     } = anchorPosition
+    const curRightX = position.getNativeCaret(index)?.x ?? legacyRightX
     // 向上时在首行、向下时在尾行则忽略
     if (
       (isUp && rowIndex === 0) ||
@@ -212,6 +227,7 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
     }
     // 查找下一行位置列表
     const nextIndex = getNextPositionIndex({
+      nativePosition: position,
       positionList,
       index,
       rowNo,
@@ -266,6 +282,7 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
               const lastPosition = tdPositionList[tdPositionList.length - 1]
               const nextPositionIndex =
                 getNextPositionIndex({
+                  nativePosition: position,
                   positionList: tdPositionList,
                   index: lastPosition.index + 1, // 虚拟起始位置+1（从左往右找）
                   rowNo: lastPosition.rowNo - 1, // 虚拟起始行号-1（从下往上找）
@@ -291,6 +308,7 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
               const tdPositionList = td.positionList!
               const nextPositionIndex =
                 getNextPositionIndex({
+                  nativePosition: position,
                   positionList: tdPositionList,
                   index: -1, // 虚拟起始位置-1（从右往左找）
                   rowNo: -1, // 虚拟起始行号-1（从上往下找）

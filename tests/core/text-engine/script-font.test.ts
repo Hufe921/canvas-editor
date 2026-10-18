@@ -12,7 +12,7 @@ describe('scriptFont', () => {
     expect(detectScript('न')).toBe(TextScript.DEVA)
     expect(detectScript('ก')).toBe(TextScript.THAI)
     expect(detectScript('A')).toBe(TextScript.LATN)
-    expect(detectScript('中')).toBe(TextScript.HANS)
+    expect(detectScript('中')).toBe(TextScript.HANI)
   })
 
   it('marks complex scripts as needing OT shaping', () => {
@@ -58,5 +58,26 @@ describe('scriptFont', () => {
     expect(resolveFontForScript(TextScript.THAI, fonts, 'sans-serif')).toBe(
       'sans-serif'
     )
+  })
+
+  it('recognizes supplementary scripts and distinguishes unknown from common', () => {
+    expect(detectScript('𠀀')).toBe(TextScript.HANI)
+    expect(detectScript('𞸀')).toBe(TextScript.ARAB)
+    expect(detectScript('あ')).toBe(TextScript.HIRA)
+    expect(detectScript('カ')).toBe(TextScript.KANA)
+    expect(detectScript('한')).toBe(TextScript.HANG)
+    expect(detectScript('😀')).toBe(TextScript.ZSYE)
+    expect(detectScript('Ա')).toBe(TextScript.ZZZZ)
+    expect(detectScript('123 !')).toBe(TextScript.ZYYY)
+  })
+
+  it('keeps the legacy hans font tag usable for language-neutral Han', () => {
+    expect(
+      resolveFontForScript(
+        TextScript.HANI,
+        [{ family: 'Han face', scripts: [TextScript.HANS] }],
+        'default'
+      )
+    ).toBe('Han face')
   })
 })

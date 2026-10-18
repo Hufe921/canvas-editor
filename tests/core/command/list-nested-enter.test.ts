@@ -26,7 +26,9 @@ function dispatchKey(key: string) {
   }
 }
 
-function insertNestedListFixture(ctx: ReturnType<typeof createTestEditor>) {
+function insertNestedListFixture(
+  ctx: Awaited<ReturnType<typeof createTestEditor>>
+) {
   ctx.editor.command.executeFocus()
   ctx.editor.command.executeInsertElementList([
     { value: '高血压' },
@@ -50,7 +52,7 @@ function insertNestedListFixture(ctx: ReturnType<typeof createTestEditor>) {
 }
 
 describe('Nested sublist Enter reproduction', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
   function getListValueList(data: any[] = []) {
@@ -58,8 +60,8 @@ describe('Nested sublist Enter reproduction', () => {
     return list?.valueList || []
   }
 
-  it('inserts a new empty item at the same sublist level after Enter', () => {
-    ctx = createTestEditor()
+  it('inserts a new empty item at the same sublist level after Enter', async () => {
+    ctx = await createTestEditor()
     insertNestedListFixture(ctx)
 
     ctx.editor.command.executeSetRange(12, 12)
@@ -72,8 +74,8 @@ describe('Nested sublist Enter reproduction', () => {
     expect(subItem?.value).toMatch(/\n$/)
   })
 
-  it('keeps inserted empty sublist row visually indented', () => {
-    ctx = createTestEditor()
+  it('keeps inserted empty sublist row visually indented', async () => {
+    ctx = await createTestEditor()
     insertNestedListFixture(ctx)
 
     ctx.editor.command.executeSetRange(12, 12)
@@ -92,8 +94,8 @@ describe('Nested sublist Enter reproduction', () => {
     )
   })
 
-  it('promotes an empty sublist item to a parent item after Enter', () => {
-    ctx = createTestEditor()
+  it('promotes an empty sublist item to a parent item after Enter', async () => {
+    ctx = await createTestEditor()
     insertNestedListFixture(ctx)
 
     ctx.editor.command.executeSetRange(12, 12)
@@ -120,8 +122,8 @@ describe('Nested sublist Enter reproduction', () => {
     )
   })
 
-  it('starts each child list under a different parent from one', () => {
-    ctx = createTestEditor()
+  it('starts each child list under a different parent from one', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([
       { value: '父1' },
@@ -152,8 +154,8 @@ describe('Nested sublist Enter reproduction', () => {
     })
   })
 
-  it('promotes the empty item after the last child list back to parent list', () => {
-    ctx = createTestEditor()
+  it('promotes the empty item after the last child list back to parent list', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([
       { value: '高血压' },
@@ -194,8 +196,8 @@ describe('Nested sublist Enter reproduction', () => {
     expect(parentItems[1]?.listId).not.toBe(childItems[0]?.listId)
   })
 
-  it('exports a nested list as one list element', () => {
-    ctx = createTestEditor()
+  it('exports a nested list as one list element', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([
       { value: '高血压' },
@@ -229,8 +231,8 @@ describe('Nested sublist Enter reproduction', () => {
     ).toBe(true)
   })
 
-  it('restores a nested list value with independent child numbering', () => {
-    ctx = createTestEditor({
+  it('restores a nested list value with independent child numbering', async () => {
+    ctx = await createTestEditor({
       data: {
         header: [],
         main: [

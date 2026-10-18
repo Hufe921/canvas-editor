@@ -1,3 +1,5 @@
+import { createTestTextShaper } from '../../factories/text-shaper'
+import { layoutNativeSnapshot } from '../../factories/native-row'
 import { describe, expect, it } from 'vitest'
 import { ElementType } from '../../../src/editor/dataset/enum/Element'
 import { ImageDisplay } from '../../../src/editor/dataset/enum/Common'
@@ -6,13 +8,11 @@ import { ControlType } from '../../../src/editor/dataset/enum/Control'
 import { TextDirection } from '../../../src/editor/dataset/enum/TextDirection'
 import { ElementBridge } from '../../../src/editor/core/text-engine-host/ElementBridge'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
-import { BrowserTextShaper } from '../../../src/editor/core/text-engine/shape/BrowserTextShaper'
 import { TextLayoutEngine } from '../../../src/editor/core/text-engine/layout/TextLayoutEngine'
-import { mapLayoutToRows } from '../../../src/editor/core/text-engine-host/mapToLegacyRow'
 import type { IElement } from '../../../src/editor/interface/Element'
 
 describe('inline IMAGE / control segment start', () => {
-  it('keeps default IMAGE in the same paragraph as surrounding text', () => {
+  it('keeps default IMAGE in the same paragraph as surrounding text', async () => {
     const bridge = new ElementBridge()
     const elementList: IElement[] = [
       { value: '\u200B' },
@@ -41,7 +41,7 @@ describe('inline IMAGE / control segment start', () => {
     expect(obj?.logicalIndex).toBe(3)
   })
 
-  it('maps IMAGE metrics into one row with neighbors', () => {
+  it('maps IMAGE metrics into one row with neighbors', async () => {
     const bridge = new ElementBridge()
     const elementList: IElement[] = [
       { value: '\u200B' },
@@ -63,7 +63,7 @@ describe('inline IMAGE / control segment start', () => {
     })[0]
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: para.spans,
@@ -75,7 +75,7 @@ describe('inline IMAGE / control segment start', () => {
     })
     expect(layout.lines).toHaveLength(1)
     expect(layout.lines[0].ascent).toBeGreaterThanOrEqual(32)
-    const rows = mapLayoutToRows({
+    const rows = await layoutNativeSnapshot({
       layout,
       elementList,
       startRowIndex: 0,
@@ -94,9 +94,6 @@ describe('inline IMAGE / control segment start', () => {
     const { LayoutHostAdapter } = await import(
       '../../../src/editor/core/text-engine-host/LayoutHostAdapter'
     )
-    const { TextEngineMode } = await import(
-      '../../../src/editor/dataset/enum/TextDirection'
-    )
     const { WordBreak } = await import(
       '../../../src/editor/dataset/enum/Editor'
     )
@@ -114,7 +111,6 @@ describe('inline IMAGE / control segment start', () => {
     const host = new LayoutHostAdapter(
       () =>
         ({
-          textEngine: TextEngineMode.HARFBUZZ,
           defaultFont: 'sans-serif',
           defaultSize: 16,
           defaultColor: '#000',
@@ -128,10 +124,7 @@ describe('inline IMAGE / control segment start', () => {
           label: { defaultColor: '#1976d2' }
         }) as any
     )
-    ;(host as any).engine = new TextLayoutEngine(
-      new BidiResolver(),
-      new BrowserTextShaper()
-    )
+    await host.ensureReady()
 
     const layoutRows = (h: number) => {
       elementList[2].height = h
@@ -152,9 +145,10 @@ describe('inline IMAGE / control segment start', () => {
     expect(rows20![0].height).toBeLessThan(rows80![0].height)
     expect(rows80![0].ascent).toBeGreaterThanOrEqual(80)
     expect(rows80![0].height).toBeGreaterThanOrEqual(80)
+    host.destroy()
   })
 
-  it('keeps explicit INLINE image on the same row as RTL brackets', () => {
+  it('keeps explicit INLINE image on the same row as RTL brackets', async () => {
     const bridge = new ElementBridge()
     const elementList: IElement[] = [
       { value: '\u200B', direction: TextDirection.RTL },
@@ -181,7 +175,7 @@ describe('inline IMAGE / control segment start', () => {
     expect(para.text.includes('\uFFFC')).toBe(true)
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: para.spans,
@@ -192,7 +186,7 @@ describe('inline IMAGE / control segment start', () => {
       lineHeightFactor: 1.5
     })
     expect(layout.lines).toHaveLength(1)
-    const rows = mapLayoutToRows({
+    const rows = await layoutNativeSnapshot({
       layout,
       elementList,
       startRowIndex: 0,
@@ -209,7 +203,7 @@ describe('inline IMAGE / control segment start', () => {
     expect(img.metrics.width).toBe(89)
   })
 
-  it('still breaks paragraph for floating IMAGE', () => {
+  it('still breaks paragraph for floating IMAGE', async () => {
     const bridge = new ElementBridge()
     const elementList: IElement[] = [
       { value: '\u200B' },
@@ -232,7 +226,7 @@ describe('inline IMAGE / control segment start', () => {
     expect(paras.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('keeps control chrome starting a segment in one paragraph', () => {
+  it('keeps control chrome starting a segment in one paragraph', async () => {
     const bridge = new ElementBridge()
     const control = {
       type: ControlType.SELECT,
@@ -290,8 +284,6 @@ describe('inline IMAGE / control segment start', () => {
     // LTR 段不包 LRI/PDI（避免跨行半截隔离）；括号与 preText 仍逻辑相邻
     expect(paras[0].text).not.toContain('\u2066')
     expect(paras[0].text).toContain('，')
-    expect(paras[0].text.indexOf('{')).toBeLessThan(
-      paras[0].text.indexOf('，')
-    )
+    expect(paras[0].text.indexOf('{')).toBeLessThan(paras[0].text.indexOf('，'))
   })
 })

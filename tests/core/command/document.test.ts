@@ -4,19 +4,19 @@ import { createTestEditor } from '../../factories/editor'
 import { TraceType } from '../../../src/editor/dataset/enum/Trace'
 
 describe('文档级命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeSetValue 替换全部内容', () => {
-    ctx = createTestEditor()
+  it('executeSetValue 替换全部内容', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSetValue({ main: [{ value: 'world' }] })
     expect(ctx.editor.command.getText().main).toContain('world')
   })
 
-  it('executeMode readonly 后 executeBold 被忽略', () => {
-    ctx = createTestEditor()
+  it('executeMode readonly 后 executeBold 被忽略', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()
@@ -26,8 +26,8 @@ describe('文档级命令', () => {
     expect(data?.some((e: any) => e.bold)).toBe(false)
   })
 
-  it('executePageScaleAdd / Recovery 改变 scale', () => {
-    ctx = createTestEditor()
+  it('executePageScaleAdd / Recovery 改变 scale', async () => {
+    ctx = await createTestEditor()
     const before = ctx.editor.command.getOptions().scale
     ctx.editor.command.executePageScaleAdd()
     const after = ctx.editor.command.getOptions().scale
@@ -37,7 +37,7 @@ describe('文档级命令', () => {
   })
 
   it('executePrint 不抛错', async () => {
-    ctx = createTestEditor()
+    ctx = await createTestEditor()
     await ctx.editor.command.executePrint()
     const iframeList = document.querySelectorAll('iframe')
     const iframe = iframeList[iframeList.length - 1]
@@ -49,8 +49,8 @@ describe('文档级命令', () => {
     iframe.remove()
   })
 
-  it('留痕开启时按 id 删除元素保留删除记录', () => {
-    ctx = createTestEditor({
+  it('留痕开启时按 id 删除元素保留删除记录', async () => {
+    ctx = await createTestEditor({
       data: [{ id: 'trace-delete', value: 'A' }],
       options: { trace: { disabled: false } }
     })
@@ -63,8 +63,8 @@ describe('文档级命令', () => {
     expect(element?.trace?.at(-1)?.type).toBe(TraceType.DELETED)
   })
 
-  it('#1406 readonly 下 setGroup / deleteGroup 仍生效', () => {
-    ctx = createTestEditor()
+  it('#1406 readonly 下 setGroup / deleteGroup 仍生效', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()

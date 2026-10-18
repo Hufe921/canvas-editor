@@ -49,7 +49,7 @@ npm i @hufe921/canvas-editor --save
 ```javascript
 import Editor from '@hufe921/canvas-editor'
 
-new Editor(
+const editor = await Editor.create(
   document.querySelector('.canvas-editor'),
   [
     {
@@ -63,9 +63,9 @@ new Editor(
 - 包含正文、页眉、页脚内容
 
 ```javascript
-import Editor from '@hufe921/canvas-editor'
+import Editor, { RowFlex } from '@hufe921/canvas-editor'
 
-new Editor(
+const editor = await Editor.create(
   document.querySelector('.canvas-editor'),
   {
     header: [
@@ -93,3 +93,20 @@ new Editor(
 ## Step. 4: 配置编辑器
 
 详见下一节
+
+## 初始化、字体与 ESM 迁移
+
+文字统一使用 HarfBuzz，无需配置引擎。`autoDownloadFonts` 默认 true，
+缺字时自动从 Bunny Fonts 下载基本字体；ready 等待 WASM、显式字体和首次布局，
+不等待后台下载。罕见字、emoji 和特殊样式可能仍需额外字体。
+
+关闭自动下载时传入 `{ autoDownloadFonts: false }`；缺字提示仍保留，
+可用 `await editor.register.fonts([{ family, data }])` 手动补字体。
+WASM/首排失败时 `Editor.create` 拒绝并清理实例；同步构造后须 `await editor.ready`。
+
+仅支持 ESM 包根导入，不支持 UMD、require 或内部深路径。旧 `textEngine` /
+`renderMode` 配置和对应枚举已删除，传入旧键会抛出明确迁移错误。
+Vite 构建使用 `build.target: 'esnext'`，部署时保留所有生成的相对 chunk。
+
+完整接口、覆盖边界、离线示例和迁移步骤见[字体与 ESM 迁移](./font-and-esm-migration.md)。
+独立可运行示例位于仓库 `examples/esm-fonts`。

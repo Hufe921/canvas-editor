@@ -1,8 +1,13 @@
-import Editor, { PaperDirection, PageMode } from '../../../src/editor'
+import type Editor from '../../../src/editor'
+import {
+  PaperDirection,
+  PageMode
+} from '../../../src/editor/dataset/enum/Editor'
 
 describe('菜单-页面布局', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
@@ -60,7 +65,10 @@ describe('菜单-页面布局', () => {
 
   it('页面模式切换', () => {
     cy.getEditor().then((editor: Editor) => {
-      editor.command.executePageMode(<PageMode>'PAGING')
+      editor.command.executePageMode(PageMode.CONTINUITY)
+      expect(editor.command.getOptions().pageMode).to.eq(PageMode.CONTINUITY)
+      editor.command.executePageMode(PageMode.PAGING)
+      expect(editor.command.getOptions().pageMode).to.eq(PageMode.PAGING)
 
       // 验证无异常
       const options = editor.command.getOptions()

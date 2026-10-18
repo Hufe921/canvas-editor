@@ -1,12 +1,13 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { buildArabicEmrElementList } from '@/../src/mock-ar-emr'
+import { buildArabicEmrElementList } from '../../fixtures/arabic-emr'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
-import { TextEngineMode, TextDirection } from '@/editor'
+import { CaretMovement, TextDirection } from '@/editor'
 
 describe('RTL caret navigation on the BMI line', () => {
   let draw: Draw | undefined
@@ -22,14 +23,16 @@ describe('RTL caret navigation on the BMI line', () => {
   async function setup() {
     const main = buildArabicEmrElementList('')
     const options = mergeOption({
-      textEngine: TextEngineMode.HARFBUZZ,
       defaultDirection: TextDirection.AUTO,
       fonts: []
     })
-    formatElementList(main, { editorOptions: options, isForceCompensation: true })
+    formatElementList(main, {
+      editorOptions: options,
+      isForceCompensation: true
+    })
     container = document.createElement('div')
     document.body.appendChild(container)
-    draw = new Draw(
+    draw = await createTestDraw(
       container,
       options,
       { main, header: [{ value: '\n' }], footer: [{ value: '\n' }] },
@@ -99,6 +102,7 @@ describe('RTL caret navigation on the BMI line', () => {
 
   it('right arrow advances in reading order on RTL rows (left arrow goes back)', async () => {
     const d = await setup()
+    d.getOptions().caretMovement = CaretMovement.LOGICAL
     const elements = d.getOriginalElementList()
     const bmiPrefix = elements.findIndex(
       el =>

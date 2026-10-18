@@ -1,17 +1,13 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
-import { buildArabicEmrElementList } from '@/../src/mock-ar-emr'
+import { buildArabicEmrElementList } from '../../fixtures/arabic-emr'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
-import {
-  ElementType,
-  PaperDirection,
-  TextEngineMode,
-  TextDirection
-} from '@/editor'
+import { ElementType, PaperDirection, TextDirection } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 
 describe('post-merge RTL verification', () => {
@@ -25,37 +21,9 @@ describe('post-merge RTL verification', () => {
     vi.restoreAllMocks()
   })
 
-  function stubMeasureText() {
-    vi.spyOn(CanvasRenderingContext2D.prototype, 'measureText').mockImplementation(
-      function (text: string) {
-        let width = 0
-        for (const ch of text) {
-          const cp = ch.codePointAt(0)!
-          if (
-            (cp >= 0x200b && cp <= 0x200d) ||
-            cp === 0xfeff ||
-            cp === 0x2060 ||
-            (cp >= 0x2066 && cp <= 0x2069)
-          ) {
-            continue
-          }
-          width += cp > 0xff ? 16 : 8
-        }
-        return {
-          width,
-          actualBoundingBoxAscent: 12.8,
-          actualBoundingBoxDescent: 3.2,
-          fontBoundingBoxAscent: 12.8,
-          fontBoundingBoxDescent: 3.2
-        } as TextMetrics
-      }
-    )
-  }
-
   async function setup(opts: Record<string, unknown> = {}) {
     const main = buildArabicEmrElementList('')
     const options = mergeOption({
-      textEngine: TextEngineMode.HARFBUZZ,
       defaultDirection: TextDirection.AUTO,
       fonts: [],
       width: 600,
@@ -69,7 +37,7 @@ describe('post-merge RTL verification', () => {
     })
     container = document.createElement('div')
     document.body.appendChild(container)
-    draw = new Draw(
+    draw = await createTestDraw(
       container,
       options,
       { main, header: [{ value: '\n' }], footer: [{ value: '\n' }] },
@@ -83,15 +51,16 @@ describe('post-merge RTL verification', () => {
   }
 
   it('BMI row reading order stays right-to-left after merge', async () => {
-    stubMeasureText()
     const d = await setup()
     const bmiRow = d
       .getOriginalRowList()
       .find(r => r.elementList.some(el => el.control?.conceptId === 'height'))!
     expect(bmiRow.direction).toBe('rtl')
     // 屏幕从左到右：{تلقائي} BMI: ، kg {الوزن} …
-    const visual = bmiRow.engineLine!.glyphs
-      .map(g => bmiRow.engineParagraphText!.slice(g.charStart, g.charEnd))
+    const visual = bmiRow
+      .engineLine!.glyphs.map(g =>
+        bmiRow.engineParagraphText!.slice(g.charStart, g.charEnd)
+      )
       .join('')
     expect(visual.indexOf('BMI')).toBeGreaterThan(-1)
     expect(visual.indexOf('kg')).toBeGreaterThan(-1)
@@ -100,7 +69,6 @@ describe('post-merge RTL verification', () => {
   })
 
   it('RTL caret navigation still follows reading order', async () => {
-    stubMeasureText()
     const d = await setup()
     const elements = d.getOriginalElementList()
     const bmiPrefix = elements.findIndex(
@@ -111,7 +79,12 @@ describe('post-merge RTL verification', () => {
     const canvasEvent = d.getCanvasEvent()
     const range = d.getRange()
     range.setRange(bmiPrefix, bmiPrefix)
-    d.render({ curIndex: bmiPrefix, isCompute: false, isSetCursor: true, isSubmitHistory: false })
+    d.render({
+      curIndex: bmiPrefix,
+      isCompute: false,
+      isSetCursor: true,
+      isSubmitHistory: false
+    })
     canvasEvent.keydown(
       new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
     )
@@ -119,7 +92,6 @@ describe('post-merge RTL verification', () => {
   })
 
   it('mixed page orientations still position RTL text correctly', async () => {
-    stubMeasureText()
     const main: any[] = [
       { value: ZERO },
       { value: 'نص عربي صفحة أولى عمودي', direction: TextDirection.RTL },
@@ -134,7 +106,6 @@ describe('post-merge RTL verification', () => {
       { value: '\n', direction: TextDirection.RTL }
     ]
     const options = mergeOption({
-      textEngine: TextEngineMode.HARFBUZZ,
       defaultDirection: TextDirection.AUTO,
       fonts: [],
       width: 600,
@@ -147,7 +118,7 @@ describe('post-merge RTL verification', () => {
     })
     container = document.createElement('div')
     document.body.appendChild(container)
-    draw = new Draw(
+    draw = await createTestDraw(
       container,
       options,
       { main, header: [{ value: '\n' }], footer: [{ value: '\n' }] },
@@ -163,9 +134,14 @@ describe('post-merge RTL verification', () => {
     expect(draw.getPageDirection(1)).toBe(PaperDirection.HORIZONTAL)
 
     const posList = draw.getPosition().getOriginalPositionList()
-    for (const el of draw.getOriginalElementList().filter(
-      (el: any) => el.direction === TextDirection.RTL && el.value !== ZERO && el.value !== '\n'
-    )) {
+    for (const el of draw
+      .getOriginalElementList()
+      .filter(
+        (el: any) =>
+          el.direction === TextDirection.RTL &&
+          el.value !== ZERO &&
+          el.value !== '\n'
+      )) {
       const pos = posList[draw.getOriginalElementList().indexOf(el)]
       expect(pos).toBeTruthy()
       expect(pos.coordinate.rightTop[0]).toBeGreaterThan(

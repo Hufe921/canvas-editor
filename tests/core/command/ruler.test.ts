@@ -3,18 +3,18 @@ import { PageMode } from '../../../src/editor/dataset/enum/Editor'
 import { createTestEditor, waitMacroTask } from '../../factories/editor'
 
 describe('标尺命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
   it('默认不开启标尺', async () => {
-    ctx = createTestEditor()
+    ctx = await createTestEditor()
     await waitMacroTask()
     expect(ctx.editor.command.getOptions().ruler.disabled).toBe(true)
     expect(ctx.container.querySelector('.ce-ruler')).toBeNull()
   })
 
-  it('executeToggleRuler 开启标尺', () => {
-    ctx = createTestEditor()
+  it('executeToggleRuler 开启标尺', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeToggleRuler()
     expect(ctx.editor.command.getOptions().ruler.disabled).toBe(false)
     expect(ctx.container.querySelector('.ce-ruler')).not.toBeNull()
@@ -22,7 +22,7 @@ describe('标尺命令', () => {
   })
 
   it('executeToggleRuler(false) 关闭并隐藏标尺', async () => {
-    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    ctx = await createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     expect(ctx.container.querySelector('.ce-ruler')).not.toBeNull()
     ctx.editor.command.executeToggleRuler(false)
@@ -32,7 +32,7 @@ describe('标尺命令', () => {
   })
 
   it('连页模式下隐藏标尺，恢复分页后显示', async () => {
-    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    ctx = await createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
     expect(rulerDom.style.display).toBe('block')
@@ -46,7 +46,7 @@ describe('标尺命令', () => {
   })
 
   it('拖动左边距手柄修改页边距', async () => {
-    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    ctx = await createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
     // 默认左边距 120，命中手柄后开始拖动
@@ -61,7 +61,7 @@ describe('标尺命令', () => {
   })
 
   it('拖动边距受正文最小宽度约束', async () => {
-    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    ctx = await createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
     const down = new MouseEvent('mousedown', { bubbles: true, clientX: 120 })
@@ -75,7 +75,7 @@ describe('标尺命令', () => {
   })
 
   it('偏心按下手柄按位移增量计算边距（不发生跳变）', async () => {
-    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    ctx = await createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
     // 在手柄中心右侧 3px 处按下（命中容差内）
@@ -90,7 +90,7 @@ describe('标尺命令', () => {
   })
 
   it('拖动垂直标尺手柄修改顶边距', async () => {
-    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    ctx = await createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerYDom =
       ctx.container.querySelector<HTMLCanvasElement>('.ce-ruler-y')!
@@ -105,7 +105,7 @@ describe('标尺命令', () => {
   })
 
   it('拖动垂直标尺底边距受正文最小尺寸约束', async () => {
-    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    ctx = await createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerYDom =
       ctx.container.querySelector<HTMLCanvasElement>('.ce-ruler-y')!

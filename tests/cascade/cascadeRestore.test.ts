@@ -58,7 +58,7 @@ describe('二次联动：目标选值后再还原', () => {
   afterEach(() => ctx?.destroy())
 
   it('目标控件选值后，触发控件改"无"目标仍应隐藏', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildData(), footer: [] }
     })
     const findC2 = () =>

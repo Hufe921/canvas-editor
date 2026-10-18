@@ -356,9 +356,35 @@ export class RangeManager {
   public getIsPointInRange(x: number, y: number): boolean {
     const { startIndex, endIndex } = this.range
     const positionList = this.position.getPositionList()
+    if (this.position.getNativeLines?.(positionList).length) {
+      const hit = this.position
+        .getNativeRangeRects(
+          startIndex + 1,
+          endIndex + 1,
+          positionList,
+          this.draw.getPageNo()
+        )
+        .some(
+          rect =>
+            x >= rect.x &&
+            x <= rect.x + rect.width &&
+            y >= rect.y &&
+            y <= rect.y + rect.height
+        )
+      if (hit) return true
+    }
     for (let p = startIndex + 1; p <= endIndex; p++) {
       const position = positionList[p]
       if (!position) break
+      if (
+        this.position
+          .getNativeLines?.(positionList)
+          .some(
+            placed =>
+              p >= placed.line.source.start && p < placed.line.source.end
+          )
+      )
+        continue
       const {
         coordinate: { leftTop, rightBottom }
       } = positionList[p]
@@ -555,10 +581,7 @@ export class RangeManager {
     const styleElementList = this.draw.getElementList()
     const styleIndex = ~endIndex ? endIndex : 0
     let paraStart = styleIndex
-    while (
-      paraStart > 0 &&
-      styleElementList[paraStart].value !== ZERO
-    ) {
+    while (paraStart > 0 && styleElementList[paraStart].value !== ZERO) {
       paraStart--
     }
     const rowFlex =

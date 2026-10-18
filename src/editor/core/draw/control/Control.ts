@@ -26,7 +26,6 @@ import {
   IRepaintControlOption,
   ISetControlExtensionOption,
   ISetControlProperties,
-  ISetControlRowFlexOption,
   ISetControlValueOption
 } from '../../../interface/Control'
 import { IEditorData, IEditorOption } from '../../../interface/Editor'
@@ -70,8 +69,6 @@ import {
   LIST_CONTEXT_ATTR,
   TITLE_CONTEXT_ATTR
 } from '../../../dataset/constant/Element'
-import { IRow, IRowElement } from '../../../interface/Row'
-import { RowFlex } from '../../../dataset/enum/Row'
 import { ZERO } from '../../../dataset/constant/Common'
 
 interface IMoveCursorResult {
@@ -2028,133 +2025,5 @@ export class Control {
       isSetCursor: true,
       isSubmitHistory: false
     })
-  }
-
-  public setMinWidthControlInfo(option: ISetControlRowFlexOption) {
-    const { row, rowElement, controlRealWidth, availableWidth } = option
-    if (!rowElement.control?.minWidth) return
-    const { scale } = this.options
-    const controlMinWidth = rowElement.control.minWidth * scale
-    // 设置首字符偏移量：如果控件内设置对齐方式&&存在设置最小宽度
-    let controlFirstElement: IRowElement | null = null
-    if (
-      rowElement.control?.minWidth &&
-      (rowElement.control?.rowFlex === RowFlex.CENTER ||
-        rowElement.control?.rowFlex === RowFlex.RIGHT)
-    ) {
-      // 计算当前控件内容宽度是否超出最小宽度设置
-      let controlContentWidth = rowElement.metrics.width
-      let controlElementIndex = row.elementList.length - 1
-      while (controlElementIndex >= 0) {
-        const controlRowElement = row.elementList[controlElementIndex]
-        controlContentWidth += controlRowElement.metrics.width
-        // 找到首字符结束循环
-        if (
-          row.elementList[controlElementIndex - 1]?.controlComponent ===
-          ControlComponent.PREFIX
-        ) {
-          controlFirstElement = controlRowElement
-          break
-        }
-        controlElementIndex--
-      }
-      // 计算首字符偏移量
-      if (controlFirstElement) {
-        if (controlContentWidth < controlMinWidth) {
-          if (rowElement.control.rowFlex === RowFlex.CENTER) {
-            controlFirstElement.left =
-              (controlMinWidth - controlContentWidth) / 2
-          } else if (rowElement.control.rowFlex === RowFlex.RIGHT) {
-            // 最小宽度 - 实际宽度 - 后缀元素宽度
-            controlFirstElement.left =
-              controlMinWidth - controlContentWidth - rowElement.metrics.width
-          }
-        }
-      }
-    }
-    // 设置后缀偏移量：消费小于实际最小宽度
-    const extraWidth = controlMinWidth - controlRealWidth
-    if (extraWidth > 0) {
-      const controlFirstElementLeft = controlFirstElement?.left || 0
-      // 超出行宽时截断
-      const rowRemainingWidth =
-        availableWidth - row.width - rowElement.metrics.width
-      const left = Math.min(rowRemainingWidth, extraWidth)
-      // 后缀偏移量需减去首字符的偏移量，避免重复偏移
-      // RTL 引擎行：postfix 在视觉最左，minWidth 空隙应向左延伸到行首空白，
-      // 后缀须左移（负偏移），下划线才能落在标签左侧而非覆盖正文
-      const isRtlEngineRow = row.direction === 'rtl' && !!row.engineLine
-      rowElement.left = isRtlEngineRow
-        ? -(left - controlFirstElementLeft)
-        : left - controlFirstElementLeft
-      row.width += left - controlFirstElementLeft
-    }
-  }
-
-  /**
-   * text-engine 行补齐 control.minWidth：清残留 left，写后缀空隙，
-   * 并平移后续 visualLeft / engineLine 字形。
-   */
-  public applyEngineRowsMinWidth(rows: IRow[], availableWidth: number) {
-    for (const row of rows) {
-      let controlRealWidth = 0
-      let activeControlId: string | undefined
-      for (let j = 0; j < row.elementList.length; j++) {
-        const el = row.elementList[j]
-        el.left = 0
-        if (!el.control?.minWidth || el.isControlMinWidthPlaceholder) {
-          continue
-        }
-        if (el.controlComponent) {
-          if (el.controlId !== activeControlId) {
-            activeControlId = el.controlId
-            controlRealWidth = 0
-          }
-          controlRealWidth += el.metrics.width
-        }
-        if (el.controlComponent !== ControlComponent.POSTFIX) continue
-        this.setMinWidthControlInfo({
-          row,
-          rowElement: el,
-          availableWidth,
-          controlRealWidth
-        })
-        const shift = el.left || 0
-        if (shift > 0) {
-          // 与 LABEL padding 一致：只平移 postfix ink 盒右侧之外的内容，
-          // 避免 RTL/多字控件把盒内字形拆出空隙
-          const postfixVisualLeft = el.visualLeft ?? 0
-          const postfixInkRight = postfixVisualLeft + (el.metrics?.width || 0)
-          const postfixLogicalStart = el.sourceIndex ?? -1
-          for (let k = j + 1; k < row.elementList.length; k++) {
-            const next = row.elementList[k]
-            if (
-              next.visualLeft !== undefined &&
-              next.visualLeft >= postfixInkRight - 0.01
-            ) {
-              next.visualLeft += shift
-            }
-          }
-          if (row.engineLine?.glyphs?.length) {
-            // 必须拷贝字形再平移：engineLine 可能来自 LayoutCache，
-            // 原地改 left 会污染缓存，下次 map 时 visualLeft 累加，签名底线右漂
-            // RTL 中标签字形视觉位于 postfix 右侧、但逻辑序号更小：
-            // 只能平移逻辑上位于 postfix 之后的字形，否则会把签名标签整体推走
-            row.engineLine = {
-              ...row.engineLine,
-              glyphs: row.engineLine.glyphs.map(g =>
-                g.left >= postfixInkRight - 0.01 &&
-                g.logicalIndexStart > postfixLogicalStart
-                  ? { ...g, left: g.left + shift, right: g.right + shift }
-                  : g
-              ),
-              width: row.engineLine.width + shift
-            }
-          }
-        }
-        controlRealWidth = 0
-        activeControlId = undefined
-      }
-    }
   }
 }

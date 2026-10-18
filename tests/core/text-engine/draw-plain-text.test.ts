@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { TextEngineMode } from '../../../src/editor/dataset/enum/TextDirection'
 import { TextScript } from '../../../src/editor/dataset/enum/TextScript'
 import { WordBreak } from '../../../src/editor/dataset/enum/Editor'
 import { LayoutHostAdapter } from '../../../src/editor/core/text-engine-host/LayoutHostAdapter'
@@ -13,7 +12,6 @@ import type { DeepRequired } from '../../../src/editor/interface/Common'
 
 function mockOptions(): DeepRequired<IEditorOption> {
   return {
-    textEngine: TextEngineMode.HARFBUZZ,
     defaultFont: 'sans-serif',
     defaultSize: 16,
     defaultColor: '#000',

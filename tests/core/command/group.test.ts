@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 
 describe('成组命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('getGroupRectList 返回组矩形列表', () => {
-    ctx = createTestEditor()
+  it('getGroupRectList 返回组矩形列表', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello group' }])
     ctx.editor.command.executeSelectAll()
@@ -24,8 +24,8 @@ describe('成组命令', () => {
     }
   })
 
-  it('getGroupRectList 组跨行时按行拆分矩形', () => {
-    ctx = createTestEditor({
+  it('getGroupRectList 组跨行时按行拆分矩形', async () => {
+    ctx = await createTestEditor({
       data: [
         { value: 'a', groupIds: ['g1'] },
         { value: 'b', groupIds: ['g1'] },
@@ -42,8 +42,8 @@ describe('成组命令', () => {
     expect(rectList![1].y).toBeGreaterThan(rectList![0].y)
   })
 
-  it('getGroupRectList 不存在的 groupId 返回 null', () => {
-    ctx = createTestEditor()
+  it('getGroupRectList 不存在的 groupId 返回 null', async () => {
+    ctx = await createTestEditor()
     expect(ctx.editor.command.getGroupRectList('not-exist')).toBeNull()
   })
 })

@@ -130,5 +130,42 @@
     "maxDate": "日期不能晚于 {date}",
     "minChecked": "至少选择 {count} 项",
     "maxChecked": "最多选择 {count} 项"
+  },
+  "fontCoverage": {
+    "locate": "定位缺字",
+    "loading": "正在补充缺失文字的基础字体…",
+    "resolved": "缺失字体覆盖已补全。",
+    "manual": "请安装覆盖缺失文字及字重、样式的字体包。",
+    "failed": "字体下载失败，请手动补充字体包。",
+    "unsupported": "无适用的基础字体，请手动补充字体包。",
+    "details": "展开字体覆盖详情",
+    "characters": "个不同字符／序列",
+    "samples": "样例（最多 16 个）",
+    "codePoints": "码点（最多 32 个）",
+    "reason": {
+      "missingFace": "缺少字体",
+      "missingGlyph": "缺少字形",
+      "missingSequence": "缺少字符序列",
+      "loadFailed": "字体资源加载失败",
+      "unsupportedGlyphFormat": "不支持的字形格式",
+      "missingStyle": "缺少字重或样式"
+    },
+    "script": {
+      "hani": "汉字 / CJK",
+      "arab": "阿拉伯文字",
+      "latn": "拉丁文字",
+      "cyrl": "西里尔文字",
+      "grek": "希腊文字",
+      "hebr": "希伯来文字",
+      "deva": "天城文字",
+      "thai": "泰文字",
+      "hang": "韩文",
+      "kana": "假名",
+      "zyyy": "符号／通用文字",
+      "zinh": "组合附加符号",
+      "zzzz": "未知文字"
+    },
+    "style": "所需字重／样式",
+    "format": "请使用渲染器支持的轮廓字体；重复安装不支持的字体格式无法解决。"
   }
 }

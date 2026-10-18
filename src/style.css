@@ -483,8 +483,14 @@ ul {
   -moz-appearance: textfield;
 }
 
-.menu-item__spacing .options .spacing-option__stepper input::-webkit-outer-spin-button,
-.menu-item__spacing .options .spacing-option__stepper input::-webkit-inner-spin-button {
+.menu-item__spacing
+  .options
+  .spacing-option__stepper
+  input::-webkit-outer-spin-button,
+.menu-item__spacing
+  .options
+  .spacing-option__stepper
+  input::-webkit-inner-spin-button {
   margin: 0;
   -webkit-appearance: none;
 }
@@ -1457,4 +1463,14 @@ ul {
 
 .spellcheck-popup__item:hover {
   background: #f5f6f8;
+}
+
+/* Keep the complete toolbar reachable at common laptop viewport widths. */
+@media (max-width: 1500px) {
+  .menu-item > div {
+    margin-inline: 0;
+  }
+  .menu-divider {
+    margin-inline: 4px;
+  }
 }

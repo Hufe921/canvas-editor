@@ -1,0 +1,342 @@
+{
+  "date": "2026-10-16",
+  "browserEnvironment": "Cypress 15.21.1 / Electron 138",
+  "browser": [
+    {
+      "script": "latn",
+      "covered": true,
+      "faceCount": 1,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "3703-9c1e1de26dfeb1f6"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "latin",
+          "url": "https://fonts.bunny.net/noto-sans/files/noto-sans-latin-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 28132,
+          "contentType": "font/woff2",
+          "etag": null,
+          "lastModified": "Wed, 07 Oct 2026 02:51:33 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "13120-cfb6017086bb8818"
+        }
+      ]
+    },
+    {
+      "script": "hani",
+      "covered": true,
+      "faceCount": 2,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans-sc%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "35854-b16efb89a5f42532"
+      },
+      "warnings": [
+        "providerRangesIncomplete"
+      ],
+      "resources": [
+        {
+          "subset": "chinese-simplified",
+          "url": "https://fonts.bunny.net/noto-sans-sc/files/noto-sans-sc-chinese-simplified-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 2534728,
+          "contentType": "font/woff2",
+          "etag": null,
+          "lastModified": "Sun, 20 Sep 2026 08:53:27 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "1142552-ba178992852f1f29"
+        },
+        {
+          "subset": "latin",
+          "url": "https://fonts.bunny.net/noto-sans-sc/files/noto-sans-sc-latin-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 34868,
+          "contentType": "font/woff2",
+          "etag": null,
+          "lastModified": "Tue, 13 Oct 2026 09:41:38 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "13304-8174b37df93d1627"
+        }
+      ]
+    },
+    {
+      "script": "arab",
+      "covered": true,
+      "faceCount": 2,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-naskh-arabic%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "5102-24486f1ed35850ca"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "arabic",
+          "url": "https://fonts.bunny.net/noto-naskh-arabic/files/noto-naskh-arabic-arabic-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 155284,
+          "contentType": "font/woff2",
+          "etag": null,
+          "lastModified": "Thu, 15 Oct 2026 11:45:31 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "52668-1254803ffd1c04a"
+        },
+        {
+          "subset": "arabic",
+          "url": "https://fonts.bunny.net/noto-naskh-arabic/files/noto-naskh-arabic-arabic-400-normal.woff",
+          "sourceFormat": "woff",
+          "format": "ttf",
+          "bytes": 336300,
+          "contentType": "font/woff",
+          "etag": null,
+          "lastModified": "Thu, 15 Oct 2026 11:45:31 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "87400-f87eb0d110263f17"
+        }
+      ]
+    },
+    {
+      "script": "deva",
+      "covered": true,
+      "faceCount": 1,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans-devanagari%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "1694-d1d460499eba6c97"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "devanagari",
+          "url": "https://fonts.bunny.net/noto-sans-devanagari/files/noto-sans-devanagari-devanagari-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 189564,
+          "contentType": "font/woff2",
+          "etag": null,
+          "lastModified": "Tue, 13 Oct 2026 06:27:43 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "50416-5eff5faa798b69f1"
+        }
+      ]
+    },
+    {
+      "script": "thai",
+      "covered": true,
+      "faceCount": 1,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans-thai%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "1536-5a9eb9be92da8c4a"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "thai",
+          "url": "https://fonts.bunny.net/noto-sans-thai/files/noto-sans-thai-thai-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 20488,
+          "contentType": "font/woff2",
+          "etag": null,
+          "lastModified": "Tue, 13 Oct 2026 10:43:03 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "9112-78a654864ae87644"
+        }
+      ]
+    }
+  ],
+  "browserResult": "passed",
+  "nodeResult": "passed",
+  "node": [
+    {
+      "script": "latn",
+      "covered": true,
+      "faceCount": 1,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "3703-9c1e1de26dfeb1f6"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "latin",
+          "url": "https://fonts.bunny.net/noto-sans/files/noto-sans-latin-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 28132,
+          "contentType": "font/woff2",
+          "etag": "\"6aacce7e-3340\"",
+          "lastModified": "Fri, 18 Sep 2026 05:39:10 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "13120-cfb6017086bb8818"
+        }
+      ]
+    },
+    {
+      "script": "hani",
+      "covered": true,
+      "faceCount": 2,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans-sc%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "35854-b16efb89a5f42532"
+      },
+      "warnings": [
+        "providerRangesIncomplete"
+      ],
+      "resources": [
+        {
+          "subset": "chinese-simplified",
+          "url": "https://fonts.bunny.net/noto-sans-sc/files/noto-sans-sc-chinese-simplified-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 2534728,
+          "contentType": "font/woff2",
+          "etag": "\"6acdfca0-116f18\"",
+          "lastModified": "Tue, 13 Oct 2026 09:40:48 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "1142552-ba178992852f1f29"
+        },
+        {
+          "subset": "latin",
+          "url": "https://fonts.bunny.net/noto-sans-sc/files/noto-sans-sc-latin-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 34868,
+          "contentType": "font/woff2",
+          "etag": "\"6acdfcd2-33f8\"",
+          "lastModified": "Tue, 13 Oct 2026 09:41:38 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "13304-8174b37df93d1627"
+        }
+      ]
+    },
+    {
+      "script": "arab",
+      "covered": true,
+      "faceCount": 2,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-naskh-arabic%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "5102-24486f1ed35850ca"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "arabic",
+          "url": "https://fonts.bunny.net/noto-naskh-arabic/files/noto-naskh-arabic-arabic-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 155284,
+          "contentType": "font/woff2",
+          "etag": "\"6ad0bcdb-cdbc\"",
+          "lastModified": "Thu, 15 Oct 2026 11:45:31 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "52668-1254803ffd1c04a"
+        },
+        {
+          "subset": "arabic",
+          "url": "https://fonts.bunny.net/noto-naskh-arabic/files/noto-naskh-arabic-arabic-400-normal.woff",
+          "sourceFormat": "woff",
+          "format": "ttf",
+          "bytes": 336300,
+          "contentType": "font/woff",
+          "etag": "\"6ad0bcdb-15568\"",
+          "lastModified": "Thu, 15 Oct 2026 11:45:31 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "87400-f87eb0d110263f17"
+        }
+      ]
+    },
+    {
+      "script": "deva",
+      "covered": true,
+      "faceCount": 1,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans-devanagari%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "1694-d1d460499eba6c97"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "devanagari",
+          "url": "https://fonts.bunny.net/noto-sans-devanagari/files/noto-sans-devanagari-devanagari-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 189564,
+          "contentType": "font/woff2",
+          "etag": "\"6acdcf5f-c4f0\"",
+          "lastModified": "Tue, 13 Oct 2026 06:27:43 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "50416-5eff5faa798b69f1"
+        }
+      ]
+    },
+    {
+      "script": "thai",
+      "covered": true,
+      "faceCount": 1,
+      "css": {
+        "url": "https://fonts.bunny.net/css?family=noto-sans-thai%3A400&display=swap",
+        "contentType": "text/css",
+        "etag": null,
+        "lastModified": null,
+        "cacheControl": "public, max-age=2592000",
+        "version": "1536-5a9eb9be92da8c4a"
+      },
+      "warnings": [],
+      "resources": [
+        {
+          "subset": "thai",
+          "url": "https://fonts.bunny.net/noto-sans-thai/files/noto-sans-thai-thai-400-normal.woff2",
+          "sourceFormat": "woff2",
+          "format": "ttf",
+          "bytes": 20488,
+          "contentType": "font/woff2",
+          "etag": "\"6ace0b37-2398\"",
+          "lastModified": "Tue, 13 Oct 2026 10:43:03 GMT",
+          "cacheControl": "public, max-age=2592000",
+          "version": "9112-78a654864ae87644"
+        }
+      ]
+    }
+  ]
+}

@@ -5,10 +5,16 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-new Editor(container, IEditorData | IElement[], {
+const editor = await Editor.create(container, data, {
   // option
 })
 ```
+
+All text uses HarfBuzz. `textEngine`, `renderMode` and their enums have been
+removed; passing old keys throws a migration error. `autoDownloadFonts` defaults
+to true. Disabling it retains missing-font hints. Supply bytes/URLs through
+`fonts`, and use `register.fonts` at runtime; system fonts alone are insufficient.
+See [Fonts and ESM migration](./font-and-esm-migration.md).
 
 ## Complete Configuration
 
@@ -46,7 +52,6 @@ interface IEditorOption {
   marginIndicatorColor?: string // The margin indicator color. default: #BABABA
   margins?: IMargin // Page margins. default: [100, 120, 100, 120]
   pageMode?: PageMode // Paper mode: Linkage, Pagination. default: Pagination
-  renderMode?: RenderMode // Render mode: speed(multi words combination rendering), compatibility(word by word rendering:avoid environmental differences such as browse,fonts...). default: speed
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF
   table?: ITableOption // Table configuration
   header?: IHeader // Header configuration
@@ -63,9 +68,10 @@ interface IEditorOption {
   scrollContainerSelector?: string // scroll container selector. default: document
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
-  textEngine?: 'legacy' | 'harfbuzz' // Text layout engine. default: legacy (LTR-only original renderer, no BiDi / Arabic shaping — RTL content is not rendered correctly and triggers a console warning); harfbuzz enables the independent text-engine (requires fonts) with RTL/BiDi/Arabic joining. RTL content requires harfbuzz
   direction?: 'ltr' | 'rtl' // UI LTR/RTL **mode** (not paragraph direction): mirrors editor chrome via `ce-ui-rtl` only — do not set `dir=rtl` on the canvas container; seeds element.direction for **new** lines/tables; no hit-test / body paint; toggle does not reflow. default: ltr. Command: executeUiDirection. Do not confuse with executeDirection / defaultDirection
   uiDirectionToggle?: boolean // Whether host toolbar may show the LTR/RTL mode toggle. default: true; false hides it
+  autoDownloadFonts?: boolean // Automatically download basic fonts. Default: true
+  fonts?: IEditorFontFace[] // Explicit binary/URL, real weight/style, scripts, fallback, resourceId
   defaultDirection?: 'ltr' | 'rtl' | 'auto' // Content default paragraph direction when element has no direction (auto = detect). Command: executeDirection. Separate from UI mode options.direction. default: auto
   caretMovement?: 'visual' | 'logical' // Arrow-key caret movement semantics. default: visual
   deleteMovement?: 'visual' | 'logical' // Backspace/Delete target semantics; visual deletes the screen-adjacent element. default: logical

@@ -20,7 +20,14 @@ export enum TextScript {
   KHMR = 'khmr',
   HEBR = 'hebr',
   LATN = 'latn',
+  /** Legacy font-tag alias. Han detection itself does not infer a language. */
   HANS = 'hans',
+  HANI = 'hani',
+  HIRA = 'hira',
+  KANA = 'kana',
+  HANG = 'hang',
+  ZSYE = 'zsye',
+  ZZZZ = 'zzzz',
   GREK = 'grek',
   CYRL = 'cyrl',
   ZYYY = 'zyyy'

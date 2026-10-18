@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -10,52 +11,27 @@ import {
   ControlIndentation,
   ControlType,
   ElementType,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import type { IElement } from '@/editor/interface/Element'
 import type { IRow, IRowElement } from '@/editor/interface/Row'
 
-function stubMeasureText() {
-  vi.spyOn(CanvasRenderingContext2D.prototype, 'measureText').mockImplementation(
-    function (text: string) {
-      let width = 0
-      for (const ch of text) {
-        const cp = ch.codePointAt(0)!
-        if (
-          (cp >= 0x200b && cp <= 0x200d) ||
-          cp === 0xfeff ||
-          cp === 0x2060 ||
-          (cp >= 0x2066 && cp <= 0x2069)
-        ) {
-          continue
-        }
-        width += cp > 0xff ? 16 : 8
-      }
-      return {
-        width,
-        actualBoundingBoxAscent: 12.8,
-        actualBoundingBoxDescent: 3.2,
-        fontBoundingBoxAscent: 12.8,
-        fontBoundingBoxDescent: 3.2
-      } as TextMetrics
-    }
-  )
-}
-
-function createDraw(main: IElement[], opts: Record<string, unknown> = {}) {
+async function createDraw(
+  main: IElement[],
+  opts: Record<string, unknown> = {}
+) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const options = mergeOption({
     defaultDirection: TextDirection.AUTO,
-    textEngine: TextEngineMode.HARFBUZZ,
+
     header: { disabled: true },
     footer: { disabled: true },
     ...opts
   })
   formatElementList(main, { editorOptions: options, isForceCompensation: true })
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -66,10 +42,7 @@ function createDraw(main: IElement[], opts: Record<string, unknown> = {}) {
   return { draw, container }
 }
 
-function buildControlMain(
-  value: string,
-  direction: TextDirection
-): IElement[] {
+function buildControlMain(value: string, direction: TextDirection): IElement[] {
   return [
     { value: ZERO },
     {
@@ -124,9 +97,8 @@ describe('DEFER-006 control indentation (VALUE_START) text-engine rows', () => {
   })
 
   it('LTR: continuation rows align to the value left edge', async () => {
-    stubMeasureText()
     const longValue = 'This is a very long value '.repeat(20)
-    ;({ draw, container } = createDraw(
+    ;({ draw, container } = await createDraw(
       buildControlMain(longValue, TextDirection.LTR)
     ))
     await (draw as any).layoutHostAdapter.ensureReady()
@@ -142,10 +114,9 @@ describe('DEFER-006 control indentation (VALUE_START) text-engine rows', () => {
   })
 
   it('RTL: continuation rows align to the value right edge (start side)', async () => {
-    stubMeasureText()
     const longValue =
       'قيمة طويلة جدًا من أجل اختبار التفاف السطر داخل حقل الإدخال '.repeat(8)
-    ;({ draw, container } = createDraw(
+    ;({ draw, container } = await createDraw(
       buildControlMain(longValue, TextDirection.RTL)
     ))
     await (draw as any).layoutHostAdapter.ensureReady()
@@ -163,12 +134,11 @@ describe('DEFER-006 control indentation (VALUE_START) text-engine rows', () => {
   })
 
   it('auto direction: Arabic value resolves rtl and continuation aligns to right edge', async () => {
-    stubMeasureText()
     const longValue =
       'نص عربي طويل جدًا لاختبار محاذاة الاستمرار تلقائيًا وفق اتجاه الفقرة '.repeat(
         6
       )
-    ;({ draw, container } = createDraw(
+    ;({ draw, container } = await createDraw(
       buildControlMain(longValue, TextDirection.AUTO)
     ))
     await (draw as any).layoutHostAdapter.ensureReady()

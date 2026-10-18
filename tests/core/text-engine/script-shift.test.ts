@@ -1,13 +1,13 @@
+import { createTestTextShaper } from '../../factories/text-shaper'
 import { describe, expect, it } from 'vitest'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
-import { BrowserTextShaper } from '../../../src/editor/core/text-engine/shape/BrowserTextShaper'
 import { TextLayoutEngine } from '../../../src/editor/core/text-engine/layout/TextLayoutEngine'
 
 describe('superscript / subscript scriptShift', () => {
   it('applies vertical baselineShift independent of RTL, keeps LTR order inside run', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const text = '对齐ab'
     // RTL paragraph; "ab" is superscript — horizontal still follows bidi
@@ -50,7 +50,7 @@ describe('superscript / subscript scriptShift', () => {
   it('subscript shifts down and expands line descent', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: [

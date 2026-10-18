@@ -6,8 +6,8 @@ describe('CascadeManager', () => {
   let ctx: TestEditorContext
   afterEach(() => ctx?.destroy())
 
-  it('初始化后表达式成立 → 目标显示且必填', () => {
-    ctx = createTestEditor({
+  it('初始化后表达式成立 → 目标显示且必填', async () => {
+    ctx = await createTestEditor({
       data: { header: [], main: buildData(), footer: [] }
     })
     const list = ctx.editor.command.getControlList()
@@ -16,13 +16,15 @@ describe('CascadeManager', () => {
     expect(target?.control?.required).toBe(true)
   })
 
-  it('conceptId 批量命中', () => {
+  it('conceptId 批量命中', async () => {
     const data = buildData()
     // 复制一个 c3 同 conceptId 目标
     const clone = JSON.parse(JSON.stringify(data[1]))
     clone.controlId = 'c3'
     data.push(clone)
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     const list = ctx.editor.command.getControlList()
     for (const id of ['c2', 'c3']) {
       const target = list.find(el => el.controlId === id)
@@ -30,8 +32,8 @@ describe('CascadeManager', () => {
     }
   })
 
-  it('表达式不成立 → 保持基线（初始隐藏不变）', () => {
-    ctx = createTestEditor({
+  it('表达式不成立 → 保持基线（初始隐藏不变）', async () => {
+    ctx = await createTestEditor({
       data: { header: [], main: buildData('0'), footer: [] }
     })
     const list = ctx.editor.command.getControlList()
@@ -40,12 +42,14 @@ describe('CascadeManager', () => {
     expect(target?.control?.required).toBeFalsy()
   })
 
-  it('非法表达式不抛错且按 false 处理', () => {
+  it('非法表达式不抛错且按 false 处理', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     try {
       const data = buildData()
       data[0].control!.cascade![0].expression = "getValue(@self) === '1'"
-      ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+      ctx = await createTestEditor({
+        data: { header: [], main: data, footer: [] }
+      })
       const list = ctx.editor.command.getControlList()
       expect(list.find(el => el.controlId === 'c2')?.control?.hide).toBe(true)
       expect(warn).toHaveBeenCalled()

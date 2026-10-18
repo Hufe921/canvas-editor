@@ -1,3 +1,4 @@
+import { moveNativeCaret } from './nativeCaret'
 import { ZERO } from '../../../../dataset/constant/Common'
 import { LocationPosition } from '../../../../dataset/enum/Common'
 import { ControlComponent } from '../../../../dataset/enum/Control'
@@ -41,17 +42,20 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
     })
     return
   }
+  if (moveNativeCaret(evt, host, 1)) return
   if (!(isApple ? evt.altKey : evt.ctrlKey) && !evt.shiftKey && isCollapsed) {
     const options = draw.getOptions()
     const adapter = draw.getLayoutHostAdapter()
     if (
       options.caretMovement !== CaretMovement.LOGICAL &&
-      adapter.isReady()
+      adapter.isReady() &&
+      !position.getNativeCaret?.(startIndex)
     ) {
       const layoutScope = resolveLayoutScope({
         zone: draw.getZone().getZone(),
         isTable: positionContext.isTable,
-        tdId: positionContext.tdId
+        tdId: positionContext.tdId,
+        paperDirection: draw.getPageDirection(draw.getPageNo())
       })
       // RTL 段：右箭头 = 前进 = 逻辑 +1（跟随阅读方向，与 LTR 一致）
       const dir = adapter.resolveElementDirection(elementList, startIndex)
@@ -203,6 +207,11 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
     LocationPosition.AFTER,
     el => traceParticle.isTraceHidden(el)
   )
+  anchorStartIndex =
+    position.normalizeNativeIndex?.(anchorStartIndex, 'after') ??
+    anchorStartIndex
+  anchorEndIndex =
+    position.normalizeNativeIndex?.(anchorEndIndex, 'after') ?? anchorEndIndex
   // 设置上下文
   rangeManager.setRange(anchorStartIndex, anchorEndIndex)
   const isAnchorCollapsed = anchorStartIndex === anchorEndIndex

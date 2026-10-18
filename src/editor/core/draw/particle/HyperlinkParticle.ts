@@ -2,7 +2,6 @@ import { IElement } from '../../..'
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElementPosition } from '../../../interface/Element'
-import { IRowElement } from '../../../interface/Row'
 import { Draw } from '../Draw'
 
 export class HyperlinkParticle {
@@ -72,19 +71,5 @@ export class HyperlinkParticle {
     if (element.underline === undefined) {
       element.underline = true
     }
-  }
-
-  public render(
-    ctx: CanvasRenderingContext2D,
-    element: IRowElement,
-    x: number,
-    y: number
-  ) {
-    ctx.save()
-    ctx.font = element.style
-    this.ensureDefaults(element)
-    ctx.fillStyle = element.color!
-    ctx.fillText(element.value, x, y)
-    ctx.restore()
   }
 }

@@ -3,6 +3,7 @@ import Editor from '../../../src/editor'
 describe('菜单-撤销&重做', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
@@ -51,6 +52,7 @@ describe('菜单-撤销&重做', () => {
 describe('菜单-撤销重做-高级', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })

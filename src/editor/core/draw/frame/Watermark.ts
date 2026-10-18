@@ -17,7 +17,7 @@ export class Watermark {
     this.imageCache = new Map()
   }
 
-  private formatText(data: string, pageNo: number): string {
+  public formatText(data: string, pageNo: number): string {
     let text = data
     const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
     if (pageNoReg.test(text)) {
@@ -64,10 +64,11 @@ export class Watermark {
       )
       const patternWidth = diagonalLength + 2 * gap[0] * scale
       const patternHeight = diagonalLength + 2 * gap[1] * scale
-      temporaryCanvas.width = patternWidth
-      temporaryCanvas.height = patternHeight
-      temporaryCanvas.style.width = `${patternWidth * dpr}px`
-      temporaryCanvas.style.height = `${patternHeight * dpr}px`
+      temporaryCanvas.width = Math.max(1, Math.ceil(patternWidth * dpr))
+      temporaryCanvas.height = Math.max(1, Math.ceil(patternHeight * dpr))
+      temporaryCanvas.style.width = `${patternWidth}px`
+      temporaryCanvas.style.height = `${patternHeight}px`
+      temporaryCtx.scale(dpr, dpr)
       temporaryCtx.translate(patternWidth / 2, patternHeight / 2)
       temporaryCtx.rotate((-45 * Math.PI) / 180)
       temporaryCtx.translate(-patternWidth / 2, -patternHeight / 2)
@@ -80,80 +81,19 @@ export class Watermark {
       )
       const pattern = ctx.createPattern(temporaryCanvas, 'repeat')
       if (pattern) {
+        pattern.setTransform(new DOMMatrix().scale(1 / dpr))
         ctx.fillStyle = pattern
         ctx.fillRect(0, 0, width, height)
       }
     } else {
       ctx.translate(width / 2, height / 2)
       ctx.rotate((-45 * Math.PI) / 180)
-      // Match legacy vertical centering around page mid-point
-      const fontSize = line.glyphs[0]?.style.fontSize || textHeight
       renderer.drawLine(
         ctx,
         line,
         -textWidth / 2,
-        line.ascent - fontSize / 2,
+        line.ascent - textHeight / 2,
         layout.paragraphText
-      )
-    }
-  }
-
-  private renderTextLegacy(
-    ctx: CanvasRenderingContext2D,
-    text: string,
-    font: string,
-    size: number,
-    color: string,
-    repeat: boolean,
-    gap: [number, number],
-    scale: number,
-    width: number,
-    height: number
-  ) {
-    ctx.font = `${size * scale}px ${font}`
-    const measureText = ctx.measureText(text)
-    if (repeat) {
-      const dpr = this.draw.getPagePixelRatio()
-      const temporaryCanvas = document.createElement('canvas')
-      const temporaryCtx = temporaryCanvas.getContext('2d')!
-      const textWidth = measureText.width
-      const textHeight =
-        measureText.actualBoundingBoxAscent +
-        measureText.actualBoundingBoxDescent
-      const diagonalLength = Math.sqrt(
-        Math.pow(textWidth, 2) + Math.pow(textHeight, 2)
-      )
-      const patternWidth = diagonalLength + 2 * gap[0] * scale
-      const patternHeight = diagonalLength + 2 * gap[1] * scale
-      temporaryCanvas.width = patternWidth
-      temporaryCanvas.height = patternHeight
-      temporaryCanvas.style.width = `${patternWidth * dpr}px`
-      temporaryCanvas.style.height = `${patternHeight * dpr}px`
-      temporaryCtx.translate(patternWidth / 2, patternHeight / 2)
-      temporaryCtx.rotate((-45 * Math.PI) / 180)
-      temporaryCtx.translate(-patternWidth / 2, -patternHeight / 2)
-      temporaryCtx.font = `${size * scale}px ${font}`
-      temporaryCtx.fillStyle = color
-      temporaryCtx.fillText(
-        text,
-        (patternWidth - textWidth) / 2,
-        (patternHeight - textHeight) / 2 + measureText.actualBoundingBoxAscent
-      )
-      const pattern = ctx.createPattern(temporaryCanvas, 'repeat')
-      if (pattern) {
-        ctx.fillStyle = pattern
-        ctx.fillRect(0, 0, width, height)
-      }
-    } else {
-      const x = width / 2
-      const y = height / 2
-      ctx.fillStyle = color
-      ctx.translate(x, y)
-      ctx.rotate((-45 * Math.PI) / 180)
-      ctx.fillText(
-        text,
-        -measureText.width / 2,
-        measureText.actualBoundingBoxAscent - (size * scale) / 2
       )
     }
   }
@@ -178,28 +118,7 @@ export class Watermark {
         })
       : null
     if (layout?.lines[0]?.glyphs.length) {
-      this.renderTextEngine(
-        ctx,
-        layout,
-        repeat,
-        gap,
-        scale,
-        width,
-        height
-      )
-    } else {
-      this.renderTextLegacy(
-        ctx,
-        text,
-        font,
-        size,
-        color,
-        repeat,
-        gap,
-        scale,
-        width,
-        height
-      )
+      this.renderTextEngine(ctx, layout, repeat, gap, scale, width, height)
     }
     ctx.restore()
   }
@@ -241,11 +160,12 @@ export class Watermark {
       const patternWidth = diagonalLength + 2 * gap[0] * scale
       const patternHeight = diagonalLength + 2 * gap[1] * scale
       // 宽高设置
-      temporaryCanvas.width = patternWidth
-      temporaryCanvas.height = patternHeight
-      temporaryCanvas.style.width = `${patternWidth * dpr}px`
-      temporaryCanvas.style.height = `${patternHeight * dpr}px`
+      temporaryCanvas.width = Math.max(1, Math.ceil(patternWidth * dpr))
+      temporaryCanvas.height = Math.max(1, Math.ceil(patternHeight * dpr))
+      temporaryCanvas.style.width = `${patternWidth}px`
+      temporaryCanvas.style.height = `${patternHeight}px`
       // 旋转45度
+      temporaryCtx.scale(dpr, dpr)
       temporaryCtx.translate(patternWidth / 2, patternHeight / 2)
       temporaryCtx.rotate((-45 * Math.PI) / 180)
       temporaryCtx.translate(-patternWidth / 2, -patternHeight / 2)
@@ -260,6 +180,7 @@ export class Watermark {
       // 创建平铺模式
       const pattern = ctx.createPattern(temporaryCanvas, 'repeat')
       if (pattern) {
+        pattern.setTransform(new DOMMatrix().scale(1 / dpr))
         ctx.fillStyle = pattern
         ctx.fillRect(0, 0, docWidth, docHeight)
       }

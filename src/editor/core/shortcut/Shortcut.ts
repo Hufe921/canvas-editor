@@ -11,7 +11,10 @@ export class Shortcut {
   private globalShortcutList: IRegisterShortcut[]
   private agentShortcutList: IRegisterShortcut[]
 
-  constructor(draw: Draw, command: Command) {
+  constructor(
+    private draw: Draw,
+    command: Command
+  ) {
     this.command = command
     this.globalShortcutList = []
     this.agentShortcutList = []
@@ -58,6 +61,7 @@ export class Shortcut {
   }
 
   private _execute(evt: KeyboardEvent, shortCutList: IRegisterShortcut[]) {
+    if (!this.draw.isReady()) return
     for (let s = 0; s < shortCutList.length; s++) {
       const shortCut = shortCutList[s]
       if (

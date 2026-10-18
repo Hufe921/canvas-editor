@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi } from 'vitest'
 import { TextDirection } from '../../../src/editor/dataset/enum/TextDirection'
 import { ElementBridge } from '../../../src/editor/core/text-engine-host/ElementBridge'
@@ -56,7 +57,7 @@ describe('executeUiDirection', () => {
     )
     const forceSpy = vi.spyOn(CommandAdapt.prototype, 'forceUpdate')
     const invalidateSpy = vi.spyOn(LayoutHostAdapter.prototype, 'invalidate')
-    const { editor, destroy } = createTestEditor({
+    const { editor, destroy } = await createTestEditor({
       data: {
         header: [],
         main: [{ value: ZERO }, { value: 'hello' }],
@@ -73,9 +74,7 @@ describe('executeUiDirection', () => {
       expect(editor.command.getOptions().direction).toBe(TextDirection.RTL)
       // 画布容器不得设 dir=rtl，否则绝对定位光标碰撞错位
       expect(container.getAttribute('dir')).toBeNull()
-      expect(container.classList.contains(`${EDITOR_PREFIX}-ui-rtl`)).toBe(
-        true
-      )
+      expect(container.classList.contains(`${EDITOR_PREFIX}-ui-rtl`)).toBe(true)
       expect(invalidateSpy).not.toHaveBeenCalled()
       expect(forceSpy).not.toHaveBeenCalled()
 
@@ -92,7 +91,6 @@ describe('executeUiDirection', () => {
   })
 
   it('hit-test index unchanged after toggling UI RTL mode', async () => {
-    const { Draw } = await import('../../../src/editor/core/draw/Draw')
     const { EventBus } = await import(
       '../../../src/editor/core/event/eventbus/EventBus'
     )
@@ -106,29 +104,12 @@ describe('executeUiDirection', () => {
     const { formatElementList } = await import(
       '../../../src/editor/utils/element'
     )
-    const { TextEngineMode } = await import('../../../src/editor')
-
-    const proto = CanvasRenderingContext2D.prototype
-    vi.spyOn(proto, 'measureText').mockImplementation(function (text: string) {
-      let width = 0
-      for (const ch of text) {
-        width += (ch.codePointAt(0) || 0) > 0xff ? 16 : 8
-      }
-      return {
-        width,
-        actualBoundingBoxAscent: 12.8,
-        actualBoundingBoxDescent: 3.2,
-        fontBoundingBoxAscent: 12.8,
-        fontBoundingBoxDescent: 3.2
-      } as TextMetrics
-    })
 
     const main = [{ value: ZERO }, { value: '主诉发热咳嗽' }]
     const container = document.createElement('div')
     document.body.appendChild(container)
     const options = mergeOption({
       defaultDirection: TextDirection.AUTO,
-      textEngine: TextEngineMode.HARFBUZZ,
       header: { disabled: true },
       footer: { disabled: true }
     })
@@ -136,7 +117,7 @@ describe('executeUiDirection', () => {
       editorOptions: options,
       isForceCompensation: true
     })
-    const draw = new Draw(
+    const draw = await createTestDraw(
       container,
       options,
       {

@@ -28,21 +28,33 @@ import { formatPrismToken } from './utils/prism'
 import { Signature } from './components/signature/Signature'
 import { debounce, nextTick, scrollIntoView } from './utils'
 
-window.onload = function () {
+window.onload = async function () {
   const isApple =
     typeof navigator !== 'undefined' && /Mac OS X/.test(navigator.userAgent)
 
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
-  const instance = new Editor(
-    container,
-    {
-      header: <IElement[]>header,
-      main: <IElement[]>data,
-      footer: <IElement[]>footer
-    },
-    options
-  )
+  const startupStatus = document.createElement('p')
+  startupStatus.setAttribute('role', 'status')
+  startupStatus.textContent = '正在初始化编辑器…'
+  container.before(startupStatus)
+  let instance: Editor
+  try {
+    instance = await Editor.create(
+      container,
+      {
+        header: <IElement[]>header,
+        main: <IElement[]>data,
+        footer: <IElement[]>footer
+      },
+      options
+    )
+  } catch (error) {
+    startupStatus.textContent = '编辑器初始化失败，请刷新页面重试。'
+    console.error('编辑器初始化失败', error)
+    return
+  }
+  startupStatus.remove()
   console.log('实例: ', instance)
   // cypress使用
   Reflect.set(window, 'editor', instance)
@@ -312,10 +324,9 @@ window.onload = function () {
   )!
   directionDom.title = '切换段落方向 LTR / RTL'
   directionDom.onclick = function () {
-    const next =
-      directionDom.classList.contains('is-rtl')
-        ? TextDirection.LTR
-        : TextDirection.RTL
+    const next = directionDom.classList.contains('is-rtl')
+      ? TextDirection.LTR
+      : TextDirection.RTL
     console.log('direction', next)
     instance.command.executeDirection(next)
   }
@@ -327,9 +338,8 @@ window.onload = function () {
     '.menu-item__ui-direction'
   )!
   const repositionSearchCollapse = () => {
-    const searchDom = document.querySelector<HTMLDivElement>(
-      '.menu-item__search'
-    )
+    const searchDom =
+      document.querySelector<HTMLDivElement>('.menu-item__search')
     const searchCollapseDom = document.querySelector<HTMLDivElement>(
       '.menu-item__search__collapse'
     )
@@ -353,10 +363,12 @@ window.onload = function () {
     const collapseStyle = searchCollapseDom.style
     collapseStyle.position = 'fixed'
     collapseStyle.top = `${searchRect.bottom + 1}px`
-    collapseStyle.left = `${left}px`
-    collapseStyle.right = 'unset'
+    // Reset logical aliases before setting physical coordinates: setting
+    // insetInlineStart afterwards would clear left in LTR (right in RTL).
     collapseStyle.insetInlineStart = 'unset'
     collapseStyle.insetInlineEnd = 'unset'
+    collapseStyle.left = `${left}px`
+    collapseStyle.right = 'unset'
   }
   /** LTR/RTL 模式：只镜像顶栏/底栏；#app 仅打 class，避免目录/批注继承 dir=rtl 导致中文标点乱序 */
   const syncUiDirectionChrome = () => {
@@ -409,16 +421,14 @@ window.onload = function () {
     '.menu-item__spacing'
   )!
   const spacingIconDom = spacingDom.querySelector<HTMLElement>('i')!
-  const spacingOptionDom =
-    spacingDom.querySelector<HTMLDivElement>('.options')!
+  const spacingOptionDom = spacingDom.querySelector<HTMLDivElement>('.options')!
   const spacingBeforeInputDom =
     spacingOptionDom.querySelector<HTMLInputElement>(
       '[data-spacingbefore-input]'
     )!
-  const spacingAfterInputDom =
-    spacingOptionDom.querySelector<HTMLInputElement>(
-      '[data-spacingafter-input]'
-    )!
+  const spacingAfterInputDom = spacingOptionDom.querySelector<HTMLInputElement>(
+    '[data-spacingafter-input]'
+  )!
   spacingIconDom.onclick = function () {
     console.log('spacing')
     spacingOptionDom.classList.toggle('visible')
@@ -438,10 +448,12 @@ window.onload = function () {
   }
   spacingOptionDom.querySelector<HTMLButtonElement>(
     '[data-spacingbefore-decrease]'
-  )!.onclick = () => changeSpacingBefore(Number(spacingBeforeInputDom.value) - 6)
+  )!.onclick = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value) - 6)
   spacingOptionDom.querySelector<HTMLButtonElement>(
     '[data-spacingbefore-increase]'
-  )!.onclick = () => changeSpacingBefore(Number(spacingBeforeInputDom.value) + 6)
+  )!.onclick = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value) + 6)
   spacingOptionDom.querySelector<HTMLButtonElement>(
     '[data-spacingafter-decrease]'
   )!.onclick = () => changeSpacingAfter(Number(spacingAfterInputDom.value) - 6)

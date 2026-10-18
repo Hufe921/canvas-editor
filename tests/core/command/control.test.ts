@@ -1,10 +1,10 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import {
   ControlComponent,
   ControlType
 } from '../../../src/editor/dataset/enum/Control'
 import { ElementType } from '../../../src/editor/dataset/enum/Element'
-import { Draw } from '../../../src/editor/core/draw/Draw'
 import { EventBus } from '../../../src/editor/core/event/eventbus/EventBus'
 import { Listener } from '../../../src/editor/core/listener/Listener'
 import { Override } from '../../../src/editor/core/override/Override'
@@ -16,11 +16,11 @@ import { hitCheckbox } from '../../../src/editor/core/event/handlers/mousedown'
 import { IElement } from '../../../src/editor/interface/Element'
 
 describe('控件命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeInsertControl 插入文本控件不抛错', () => {
-    ctx = createTestEditor()
+  it('executeInsertControl 插入文本控件不抛错', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     expect(() => {
       ctx.editor.command.executeInsertControl({
@@ -33,8 +33,8 @@ describe('控件命令', () => {
     }).not.toThrow()
   })
 
-  it('executeInsertControl 插入带值的文本控件', () => {
-    ctx = createTestEditor()
+  it('executeInsertControl 插入带值的文本控件', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     expect(() => {
       ctx.editor.command.executeInsertControl({
@@ -47,8 +47,8 @@ describe('控件命令', () => {
     }).not.toThrow()
   })
 
-  it('executeSetControlValue 空操作不抛错', () => {
-    ctx = createTestEditor()
+  it('executeSetControlValue 空操作不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => {
       ctx.editor.command.executeSetControlValue({
         id: 'nonexistent',
@@ -57,8 +57,8 @@ describe('控件命令', () => {
     }).not.toThrow()
   })
 
-  it('executeSetControlValue isOverwrite 为 false 时不覆盖已有值', () => {
-    ctx = createTestEditor({
+  it('executeSetControlValue isOverwrite 为 false 时不覆盖已有值', async () => {
+    ctx = await createTestEditor({
       data: [
         {
           type: ElementType.CONTROL,
@@ -97,8 +97,8 @@ describe('控件命令', () => {
     expect(empty.value).toBe('默认值')
   })
 
-  it('executeSetControlHighlight 空操作不抛错', () => {
-    ctx = createTestEditor()
+  it('executeSetControlHighlight 空操作不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => {
       ctx.editor.command.executeSetControlHighlight([
         { ruleList: [{ keyword: 'test' }] }
@@ -106,8 +106,8 @@ describe('控件命令', () => {
     }).not.toThrow()
   })
 
-  it('control.minWidth 大于行宽时按多行计算高度', () => {
-    ctx = createTestEditor({
+  it('control.minWidth 大于行宽时按多行计算高度', async () => {
+    ctx = await createTestEditor({
       options: {
         width: 240,
         margins: [20, 20, 20, 20]
@@ -138,8 +138,8 @@ describe('控件命令', () => {
     expect(wrappedHeight).toBeGreaterThan(oneLineHeight)
   })
 
-  it('control.minWidth 跨行占位不写入控件值', () => {
-    ctx = createTestEditor({
+  it('control.minWidth 跨行占位不写入控件值', async () => {
+    ctx = await createTestEditor({
       data: [
         {
           type: ElementType.CONTROL,
@@ -193,8 +193,8 @@ describe('控件命令', () => {
     expect(setSelect).toHaveBeenCalledWith(['a', 'b'])
   })
 
-  it('留痕开启时日期控件连续改值不残留旧值字符', () => {
-    ctx = createTestEditor({
+  it('留痕开启时日期控件连续改值不残留旧值字符', async () => {
+    ctx = await createTestEditor({
       data: [
         {
           type: ElementType.CONTROL,
@@ -225,7 +225,7 @@ describe('控件命令', () => {
     expect(controlValue.value).toBe('2026-03-03')
   })
 
-  it('executeSetControlValue 空值清空控件时 placeholder 不重复', () => {
+  it('executeSetControlValue 空值清空控件时 placeholder 不重复', async () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
     const options = mergeOption({ width: 794, height: 1123 })
@@ -247,7 +247,7 @@ describe('控件命令', () => {
       editorOptions: options,
       isForceCompensation: true
     })
-    const draw = new Draw(
+    const draw = await createTestDraw(
       container,
       options,
       { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },

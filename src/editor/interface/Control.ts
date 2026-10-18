@@ -11,7 +11,6 @@ import { IDrawOption } from './Draw'
 import { IElement } from './Element'
 import { IPositionContext } from './Position'
 import { IRange } from './Range'
-import { IRow, IRowElement } from './Row'
 
 export interface IValueSet {
   value: string
@@ -231,13 +230,6 @@ export interface IInitNextControlOption {
 
 export interface ILocationControlOption {
   position: LocationPosition
-}
-
-export interface ISetControlRowFlexOption {
-  row: IRow
-  rowElement: IRowElement
-  availableWidth: number
-  controlRealWidth: number
 }
 
 export interface IControlChangeResult {

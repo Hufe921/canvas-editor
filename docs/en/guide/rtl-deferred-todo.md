@@ -1,5 +1,10 @@
 # RTL Deferred TODO
 
+> Historical design/migration record: T20 removed the legacy engine, mode selectors
+> and browser text fallback. Follow [Fonts and ESM migration](./font-and-esm-migration.md)
+> for current integration; old paths below are not current APIs.
+
+
 > Track work **not** in the current phase (main-body RTL + independent text-engine + HarfBuzz) so nothing is lost.  
 > Current scope: [RTL layout design](./rtl-layout-design.md). Baseline: [Architecture](./architecture.md).
 

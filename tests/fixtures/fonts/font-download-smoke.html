@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Automatic font download integration</title>
+<div id="editors"></div>
+<script type="module">
+  import Editor from '../../../src/editor/index.ts'
+  const editors = []
+  window.fontSmoke = {
+    editors,
+    async create(autoDownloadFonts, bold = false, configured = false) {
+      const container = document.createElement('div')
+      document.querySelector('#editors').append(container)
+      const editor = await Editor.create(
+        container,
+        [
+          {
+            value: 'مرحبا',
+            font: configured ? 'Primary Arabic' : 'Missing Arabic',
+            bold
+          }
+        ],
+        {
+          pageNumber: { disabled: true },
+          fonts: configured
+            ? [
+                {
+                  family: 'Primary Arabic',
+                  url: '/canvas-editor/fonts/NotoNaskhArabic-Regular.ttf'
+                }
+              ]
+            : [],
+          ...(autoDownloadFonts === undefined ? {} : { autoDownloadFonts })
+        }
+      )
+      editors.push(editor)
+      return editor
+    }
+  }
+</script>

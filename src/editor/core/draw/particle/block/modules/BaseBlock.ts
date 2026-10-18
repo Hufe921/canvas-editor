@@ -1,7 +1,10 @@
+import type {
+  IElement,
+  IElementMetrics
+} from '../../../../../interface/Element'
 import { EDITOR_PREFIX } from '../../../../../dataset/constant/Editor'
 import { BlockType } from '../../../../../dataset/enum/Block'
 import { IEditorOption } from '../../../../../interface/Editor'
-import { IRowElement } from '../../../../../interface/Row'
 import { Draw } from '../../../Draw'
 import { BlockParticle } from '../BlockParticle'
 import { IFrameBlock } from './IFrameBlock'
@@ -10,7 +13,8 @@ import { VideoBlock } from './VideoBlock'
 export class BaseBlock {
   private draw: Draw
   private options: Required<IEditorOption>
-  private element: IRowElement
+  private metrics: IElementMetrics
+  private element: IElement
   private block: IFrameBlock | VideoBlock | null
   private blockContainer: HTMLDivElement
   private blockItem: HTMLDivElement
@@ -27,11 +31,16 @@ export class BaseBlock {
   private curHandleIndex: number
   private isAllowResize: boolean
 
-  constructor(blockParticle: BlockParticle, element: IRowElement) {
+  constructor(
+    blockParticle: BlockParticle,
+    element: IElement,
+    metrics: IElementMetrics
+  ) {
     this.draw = blockParticle.getDraw()
     this.options = this.draw.getOptions()
     this.blockContainer = blockParticle.getBlockContainer()
     this.element = element
+    this.metrics = metrics
     this.block = null
     const { blockItem, resizerMask, resizerSelection, resizerHandleList } =
       this._createBlockItem()
@@ -49,12 +58,20 @@ export class BaseBlock {
     this.isAllowResize = false
   }
 
-  public getBlockElement(): IRowElement {
+  public getBlockElement(): IElement {
     return this.element
   }
 
+  public setMetrics(metrics: IElementMetrics) {
+    this.metrics = metrics
+  }
+
+  public getMetrics() {
+    return this.metrics
+  }
+
   public getBlockWidth(): number {
-    return this.element.width || this.element.metrics.width
+    return this.metrics.width / this.options.scale!
   }
 
   public getIFrameBlock(): IFrameBlock | null {
@@ -96,7 +113,7 @@ export class BaseBlock {
     blockItem.onmouseenter = () => {
       const isReadonly = this.draw.isReadonly()
       if (isReadonly) return
-      const { width, height } = this.element.metrics
+      const { width, height } = this.metrics
       this._updateResizerRect(width, height)
       resizerSelection.style.display = 'block'
     }
@@ -160,7 +177,10 @@ export class BaseBlock {
     document.addEventListener(
       'mouseup',
       () => {
-        this.element.width = Math.min(this.width, this.draw.getInnerWidth())
+        this.element.width = Math.min(
+          this.width,
+          this.draw.getObjectContainerWidth(this.element)
+        )
         this.element.height = this.height
         this.isAllowResize = false
         this.resizerSelection.style.display = 'none'
@@ -258,7 +278,7 @@ export class BaseBlock {
         const videoBlock = <VideoBlock>this.blockCache.get(this.element.id!)
         videoBlock.snapshot(ctx, x, y)
       } else {
-        this.block = new VideoBlock(this.element)
+        this.block = new VideoBlock(this.element, this.metrics)
         const promise = this.block.snapshot(ctx, x, y)
         this.draw.getImageObserver().add(promise)
         this.blockCache.set(this.element.id!, this.block)
@@ -275,7 +295,7 @@ export class BaseBlock {
       this.block = new IFrameBlock(this.element)
       this.block.render(this.blockItem)
     } else if (block.type === BlockType.VIDEO) {
-      this.block = new VideoBlock(this.element)
+      this.block = new VideoBlock(this.element, this.metrics)
       this.block.render(this.blockItem)
     }
   }
@@ -283,7 +303,7 @@ export class BaseBlock {
   public setClientRects(pageNo: number, x: number, y: number) {
     const { x: preX, y: preY } = this.draw.getPageOffset(pageNo)
     // 尺寸
-    const { metrics } = this.element
+    const metrics = this.metrics
     this.blockItem.style.display = 'block'
     this.blockItem.style.width = `${metrics.width}px`
     this.blockItem.style.height = `${metrics.height}px`

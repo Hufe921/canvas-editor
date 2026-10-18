@@ -1,7 +1,7 @@
+import type { LayoutRow } from '../LayoutRow'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { IElement, IElementPosition } from '../Element'
-import { IRow } from '../Row'
 
 export interface ITd {
   conceptId?: string
@@ -22,7 +22,7 @@ export interface ITd {
   isLastTd?: boolean
   rowIndex?: number
   colIndex?: number
-  rowList?: IRow[]
+  rowList?: LayoutRow[]
   positionList?: IElementPosition[]
   verticalAlign?: VerticalAlign
   backgroundColor?: string

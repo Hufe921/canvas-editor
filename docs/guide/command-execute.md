@@ -5,7 +5,7 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = await Editor.create(container, data, options)
 instance.command.commandName()
 ```
 
@@ -1195,3 +1195,17 @@ instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOpti
 ```js
 instance.command.executeClearGraffiti()
 ```
+
+## executeComputeElementListHeight / executeComputeElementListHeightAsync
+
+同步版本需在 ready 后使用；异步版本允许初始化期间显式等待 ready。
+失败或销毁时异步版本拒绝，不排队修改内容。
+
+```typescript
+const height = instance.command.executeComputeElementListHeight(elements)
+const awaitedHeight = await instance.command.executeComputeElementListHeightAsync(elements)
+```
+
+运行时用 `executeUpdateOptions({ autoDownloadFonts: false })` 切换自动补字体。
+补充字体使用 `await instance.register.fonts(faces)`；`textEngine` / `renderMode`
+旧配置已删除，传入旧键会抛出迁移错误。详见[迁移指南](./font-and-esm-migration.md)。

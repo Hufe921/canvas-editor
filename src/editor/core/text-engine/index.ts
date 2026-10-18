@@ -1,20 +1,32 @@
-export * from './types'
 export { BidiResolver } from './bidi/BidiResolver'
-export { FontManager } from './font/FontManager'
-export { HarfBuzzTextShaper } from './shape/HarfBuzzTextShaper'
-export { BrowserTextShaper } from './shape/BrowserTextShaper'
-export type { ITextShaper } from './shape/ITextShaper'
-export { TextLayoutEngine } from './layout/TextLayoutEngine'
-export { GlyphRenderer } from './render/GlyphRenderer'
 export { LayoutCache } from './cache/LayoutCache'
+export { FontManager } from './font/FontManager'
+export { TextLayoutEngine } from './layout/TextLayoutEngine'
+export { TextLayoutService } from './layout/TextLayoutService'
+export type {
+  NativeParagraphInput,
+  NativeParagraphLayout,
+  ParagraphSourcePosition
+} from './layout/TextLayoutService'
+export { GlyphRenderer } from './render/GlyphRenderer'
+export { HarfBuzzTextShaper } from './shape/HarfBuzzTextShaper'
+export type { ITextShaper } from './shape/ITextShaper'
+export * from './types'
 export { mergeVisualRects } from './utils/mergeVisualRects'
 export {
   detectParagraphDirection,
   resolveDirection
 } from './utils/resolveDirection'
 export {
+  containsShapingScript,
   detectScript,
   needsOpenTypeShaping,
-  resolveFontForScript,
-  containsShapingScript
+  resolveFontForScript
 } from './utils/scriptFont'
+
+export {
+  getLayoutBaseline,
+  getLayoutFlowHeight,
+  getLayoutSourceKey,
+  isCurrentLayoutRevision
+} from './layout/layoutProtocol'

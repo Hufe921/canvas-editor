@@ -159,11 +159,12 @@ function findByType(list: IElement[], type: ElementType): IElement {
 }
 
 describe('getSlimCloneElementList', () => {
-  it('与 deepCloneOmitKeys 历史实现结果完全一致', () => {
+  it('保留文档内容并剔除历史渲染几何', () => {
     const list = createComplexElementList()
     const expected = deepCloneOmitKeys<IElement[], any>(list, [
       'metrics',
-      'style'
+      'style',
+      'left'
     ])
     expect(getSlimCloneElementList(list)).toEqual(expected)
   })
@@ -174,8 +175,8 @@ describe('getSlimCloneElementList', () => {
     const table = findByType(snapshot, ElementType.TABLE) as any
     expect(table.metrics).toBeUndefined()
     expect(table.style).toBeUndefined()
-    // 排版时 left 字段也会被回填，历史实现保留该字段
-    expect(table.left).toBe(0)
+    // 原生文档快照不保留旧渲染引擎的 left 回填字段
+    expect(table.left).toBeUndefined()
     const cellText = table.trList[0].tdList[0].value[0]
     expect(cellText.metrics).toBeUndefined()
     expect(cellText.style).toBeUndefined()
@@ -189,7 +190,8 @@ describe('getSlimCloneElementList', () => {
     const snapshot = getSlimCloneElementList(list)
     const expected = deepCloneOmitKeys<IElement[], any>(list, [
       'metrics',
-      'style'
+      'style',
+      'left'
     ])
     // 快照完成后继续编辑：原地修改各种嵌套可变结构
     list[0].value = 'MUTATED'
@@ -232,12 +234,8 @@ describe('getSlimCloneElementList', () => {
     // 快照与原列表不共享任何嵌套引用
     const snapshotTable = findByType(snapshot, ElementType.TABLE)
     expect(snapshotTable.trList).not.toBe(table.trList)
-    expect(snapshotTable.trList![0].tdList).not.toBe(
-      table.trList![0].tdList
-    )
-    expect(findByType(snapshot, ElementType.CONTROL).control).not.toBe(
-      control
-    )
+    expect(snapshotTable.trList![0].tdList).not.toBe(table.trList![0].tdList)
+    expect(findByType(snapshot, ElementType.CONTROL).control).not.toBe(control)
     expect(findByType(snapshot, ElementType.CHECKBOX).checkbox).not.toBe(
       checkbox.checkbox
     )
@@ -301,7 +299,7 @@ describe('getSlimCloneElementList', () => {
         )
       }
     }
-    const omitKeys = ['metrics', 'style']
+    const omitKeys = ['metrics', 'style', 'left']
     // 预热，避免 JIT 编译计入单次耗时
     deepCloneOmitKeys(list, omitKeys)
     getSlimCloneElementList(list)

@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 
 describe('样式命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeBold 设置选中文本粗体', () => {
-    ctx = createTestEditor()
+  it('executeBold 设置选中文本粗体', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()
@@ -15,8 +15,8 @@ describe('样式命令', () => {
     expect(data?.some((e: any) => e.bold)).toBe(true)
   })
 
-  it('executeColor 设置颜色', () => {
-    ctx = createTestEditor()
+  it('executeColor 设置颜色', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()
@@ -25,8 +25,8 @@ describe('样式命令', () => {
     expect(data?.some((e: any) => e.color === '#f00')).toBe(true)
   })
 
-  it('executeSize 设置字号', () => {
-    ctx = createTestEditor()
+  it('executeSize 设置字号', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()
@@ -35,8 +35,8 @@ describe('样式命令', () => {
     expect(data?.some((e: any) => e.size === 24)).toBe(true)
   })
 
-  it('cfa6ae0 回归:越界 endIndex 调用不抛错', () => {
-    ctx = createTestEditor()
+  it('cfa6ae0 回归:越界 endIndex 调用不抛错', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     expect(() => {

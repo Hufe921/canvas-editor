@@ -3,6 +3,7 @@ import Editor, { ElementType } from '../../../src/editor'
 describe('菜单-复选框', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })

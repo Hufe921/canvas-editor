@@ -1,11 +1,12 @@
+import type { LayoutRow } from './LayoutRow'
 import { ImageDisplay } from '../dataset/enum/Common'
 import { EditorZone } from '../dataset/enum/Editor'
-import { IElement, IElementFillRect, IElementPosition } from './Element'
+import { IElement, IElementPosition } from './Element'
 import { IRange } from './Range'
-import { IRow, IRowElement } from './Row'
 import { ITd } from './table/Td'
 
 export interface ICurrentPosition {
+  nativeCaret?: import('../core/layout/InteractionGeometry').NativeCaret
   index: number
   x?: number
   y?: number
@@ -69,13 +70,14 @@ export interface ITablePositionContext {
 }
 
 export interface IComputeRowPositionPayload {
-  row: IRow
+  row: LayoutRow
   innerWidth: number
 }
 
 export interface IComputePageRowPositionPayload {
+  clip?: import('./Layout').LayoutRect
   positionList: IElementPosition[]
-  rowList: IRow[]
+  rowList: LayoutRow[]
   pageNo: number
   startRowIndex: number
   startIndex: number
@@ -118,13 +120,4 @@ export interface ILocationPosition {
   zone: EditorZone
   range: IRange
   positionContext: IPositionContext
-}
-
-export interface ISetSurroundPositionPayload {
-  row: IRow
-  rowElement: IRowElement
-  rowElementRect: IElementFillRect
-  pageNo: number
-  availableWidth: number
-  surroundElementList: IElement[]
 }

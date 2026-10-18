@@ -1,5 +1,5 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, it, expect, afterEach } from 'vitest'
-import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
@@ -10,27 +10,27 @@ import { TraceType } from '@/editor/dataset/enum/Trace'
 import { ElementType } from '@/editor/dataset/enum/Element'
 
 describe('表格与分隔命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeInsertTable 传入行列参数不抛错', () => {
-    ctx = createTestEditor()
+  it('executeInsertTable 传入行列参数不抛错', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     expect(() => {
       ctx.editor.command.executeInsertTable(2, 2)
     }).not.toThrow()
   })
 
-  it('executeSeparator 插入分隔符', () => {
-    ctx = createTestEditor()
+  it('executeSeparator 插入分隔符', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeSeparator([1, 1])
     const data = ctx.editor.command.getValue().data.main
     expect(data?.some((e: any) => e.type === 'separator')).toBe(true)
   })
 
-  it('留痕开启时表格和分隔符标记为新增', () => {
-    ctx = createTestEditor({
+  it('留痕开启时表格和分隔符标记为新增', async () => {
+    ctx = await createTestEditor({
       options: { trace: { disabled: false } }
     })
     ctx.editor.command.executeFocus()
@@ -47,15 +47,15 @@ describe('表格与分隔命令', () => {
     expect(separator?.trace?.at(-1)?.type).toBe(TraceType.INSERTED)
   })
 
-  it('executePageBreak 插入分页符', () => {
-    ctx = createTestEditor()
+  it('executePageBreak 插入分页符', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executePageBreak()
     const data = ctx.editor.command.getValue().data.main
     expect(data?.some((e: any) => e.type === 'pageBreak')).toBe(true)
   })
 
-  it('嵌套表格点击可定位到最内层单元格', () => {
+  it('嵌套表格点击可定位到最内层单元格', async () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
     const options = mergeOption({ width: 794, height: 1123 })
@@ -101,7 +101,7 @@ describe('表格与分隔命令', () => {
       editorOptions: options,
       isForceCompensation: true
     })
-    const draw = new Draw(
+    const draw = await createTestDraw(
       container,
       options,
       { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -143,7 +143,7 @@ describe('表格与分隔命令', () => {
     container.remove()
   })
 
-  it('嵌套表格合并单元格只作用于当前内层表格', () => {
+  it('嵌套表格合并单元格只作用于当前内层表格', async () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
     const options = mergeOption({ width: 794, height: 1123 })
@@ -194,7 +194,7 @@ describe('表格与分隔命令', () => {
       editorOptions: options,
       isForceCompensation: true
     })
-    const draw = new Draw(
+    const draw = await createTestDraw(
       container,
       options,
       { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -265,7 +265,7 @@ describe('表格与分隔命令', () => {
     container.remove()
   })
 
-  it('单元格边框颜色与宽度可单独设置与恢复', () => {
+  it('单元格边框颜色与宽度可单独设置与恢复', async () => {
     const container = document.createElement('div')
     document.body.appendChild(container)
     const options = mergeOption({ width: 794, height: 1123 })
@@ -298,7 +298,7 @@ describe('表格与分隔命令', () => {
       editorOptions: options,
       isForceCompensation: true
     })
-    const draw = new Draw(
+    const draw = await createTestDraw(
       container,
       options,
       { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },

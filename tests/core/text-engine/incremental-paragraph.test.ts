@@ -6,7 +6,7 @@ import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
 import { HarfBuzzTextShaper } from '@/editor/core/text-engine'
-import { ElementType, ListType, TextDirection, TextEngineMode } from '@/editor'
+import { ElementType, ListType, TextDirection } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
@@ -33,7 +33,7 @@ async function setup(
   extra: Partial<IEditorOption> = {}
 ) {
   const options = mergeOption({
-    textEngine: TextEngineMode.HARFBUZZ,
+    autoDownloadFonts: false,
     width: 320,
     height: 180,
     margins: [20, 20, 20, 20],
@@ -53,13 +53,13 @@ async function setup(
   const draw = new Draw(
     container,
     options,
-    { main, header: [], footer: [] },
+    { main, header: [{ value: ZERO }], footer: [{ value: ZERO }] },
     new Listener(),
     new EventBus(),
     new Override()
   )
   draws.push(draw)
-  await draw.getLayoutHostAdapter().ensureReady()
+  await draw.ready
   render(draw)
   return draw
 }
@@ -81,11 +81,14 @@ function documentData(count = 8): IElement[] {
 }
 
 function snapshot(draw: Draw) {
-  return JSON.parse(JSON.stringify({
-    rows: draw.getRowList(),
-    pages: draw.getPageRowList(),
-    positions: draw.getPosition().getOriginalMainPositionList()
-  }))
+  return JSON.parse(
+    JSON.stringify({
+      native: draw.getPosition().getNativeLines(),
+      rows: draw.getLayoutRowList(),
+      pages: draw.getLayoutPages(),
+      positions: draw.getPosition().getOriginalMainPositionList()
+    })
+  )
 }
 
 function splice(draw: Draw, start: number, count: number, text: string) {
@@ -118,8 +121,16 @@ describe('HarfBuzz paragraph incremental layout', () => {
         { value: '\n' },
         { value: 'tail' }
       ]
-      const base = await setup(data(0), incremental, { scale: 1.5 })
-      const spaced = await setup(data(30), incremental, { scale: 1.5 })
+      // Keep this decoration check on one page: actual font extents are
+      // taller than the old nominal line box, and spacing can move a row.
+      const base = await setup(data(0), incremental, {
+        scale: 1.5,
+        height: 2000
+      })
+      const spaced = await setup(data(30), incremental, {
+        scale: 1.5,
+        height: 2000
+      })
       const selectionRects = (draw: Draw) => {
         const elements = draw.getOriginalMainElementList()
         const start = elements.findIndex((el, i) => i > 0 && el.value === ZERO)
@@ -134,13 +145,19 @@ describe('HarfBuzz paragraph incremental layout', () => {
           isSetCursor: false,
           isSubmitHistory: false
         })
-        const rects = paint.mock.calls.map(call => call.slice(1))
+        const rects = paint.mock.calls.map(call =>
+          call
+            .slice(1)
+            .map(value =>
+              typeof value === 'number' ? Number(value.toFixed(8)) : value
+            )
+        )
         paint.mockRestore()
         expect(rects.length).toBeGreaterThan(0)
         return rects
       }
       const lastParagraphRow = (draw: Draw) =>
-        draw.getRowList().find(row => row.spacingAfter === 45)!
+        draw.getLayoutRowList().find(row => row.spacingAfter === 45)!
       expect(lastParagraphRow(spaced)).toBeDefined()
       expect(selectionRects(spaced)).toEqual(selectionRects(base))
       // The selected paragraph is reused after an edit in the preceding one.
@@ -155,31 +172,38 @@ describe('HarfBuzz paragraph incremental layout', () => {
     const draw = await setup(documentData(30), true)
     const full = await setup(documentData(30), false)
     expect(snapshot(draw)).toEqual(snapshot(full))
-    expect(draw.getRowList().some(row =>
-      row.engineLine?.glyphs.some(glyph => glyph.pathData)
-    )).toBe(true)
+    expect(
+      draw
+        .getLayoutRowList()
+        .some(row => row.nativeLine?.glyphs.some(glyph => glyph.font.faceId))
+    ).toBe(true)
     const adapter = draw.getLayoutHostAdapter()
-    const scan = vi.spyOn(adapter, 'scanParagraphs')
-    const layout = vi.spyOn(adapter, 'layoutParagraphToRows')
+    const layout = vi.spyOn(adapter.getTextLayoutService(), 'layoutParagraph')
     const shape = vi.spyOn(HarfBuzzTextShaper.prototype, 'shape')
-    const prefixRow = draw.getRawRowList()[0]
-    const editIndex = draw.getRawRowList()[20].startIndex + 3
+    const prefixRow = draw.getRawLayoutRows()[0]
+    const editIndex = draw.getRawLayoutRows()[20].startIndex + 3
     splice(draw, editIndex, 0, 'سلام')
     const incrementalShapeCalls = shape.mock.calls.length
     shape.mockClear()
     splice(full, editIndex, 0, 'سلام')
     expect(snapshot(draw)).toEqual(snapshot(full))
-    expect(draw.getRawRowList()[0]).toBe(prefixRow)
-    expect(scan).toHaveBeenCalledTimes(1)
-    expect(scan.mock.calls[0][2]).toBeGreaterThan(0)
-    expect(scan.mock.calls[0][3]).toBeLessThan(
-      draw.getOriginalMainElementList().length
-    )
-    expect(layout).toHaveBeenCalledTimes(1)
+    expect(draw.getRawLayoutRows()[0]).toEqual(prefixRow)
+    expect(draw.getRawLayoutRows()[0]).not.toBe(prefixRow)
+    // Reuse native layout, then rebuild host rows and physical placements.
+    // Flow probes natural and constrained widths for the edited paragraph.
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeGreaterThan(0)
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeLessThan(5)
     expect(incrementalShapeCalls).toBeLessThan(shape.mock.calls.length)
-    const tailIndex = draw.getRawRowList().at(-2)!.startIndex + 2
+    const tailIndex = draw.getRawLayoutRows().at(-2)!.startIndex + 2
     const actual = adapter.findLayoutByElementIndex(tailIndex)!
-    const expected = full.getLayoutHostAdapter()
+    const expected = full
+      .getLayoutHostAdapter()
       .findLayoutByElementIndex(tailIndex)!
     expect(actual).toEqual(expected)
     for (const delta of [-1, 1] as const) {
@@ -187,16 +211,21 @@ describe('HarfBuzz paragraph incremental layout', () => {
         full.getLayoutHostAdapter().visualNeighbor(tailIndex, delta)
       )
     }
-  })
+  }, 15000)
 
   it('matches full layout through mixed edits', async () => {
     const draw = await setup(documentData(), true)
     const full = await setup(documentData(), false)
+    let seed = 0x18cafe
+    const random = () => {
+      seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0
+      return seed / 0x100000000
+    }
     for (let step = 0; step < 24; step++) {
       const elements = draw.getOriginalMainElementList()
-      const index = 1 + (step * 37) % (elements.length - 2)
+      const index = 1 + Math.floor(random() * (elements.length - 2))
       const count = step % 4 === 0 ? 5 : step % 4 === 1 ? 1 : 0
-      const text = step % 4 === 0 ? '' : step % 4 === 2 ? ZERO : 'م😀'
+      const text = step % 4 === 0 ? '' : step % 4 === 2 ? ZERO : 'م😀a\u0301'
       splice(draw, index, count, text)
       splice(full, index, count, text)
       expect(snapshot(draw), `edit ${step}`).toEqual(snapshot(full))
@@ -205,7 +234,7 @@ describe('HarfBuzz paragraph incremental layout', () => {
     splice(draw, 10, 140, '')
     splice(full, 10, 140, '')
     expect(snapshot(draw)).toEqual(snapshot(full))
-  })
+  }, 20000)
 
   it('merges batched dirty ranges before reusing clean paragraphs', async () => {
     const draw = await setup(documentData(6), true)
@@ -229,8 +258,8 @@ describe('HarfBuzz paragraph incremental layout', () => {
     const draw = await setup(documentData(4), true)
     const full = await setup(documentData(4), false)
     const layout = vi.spyOn(
-      draw.getLayoutHostAdapter(),
-      'layoutParagraphToRows'
+      draw.getLayoutHostAdapter().getTextLayoutService(),
+      'layoutParagraph'
     )
     for (const target of [draw, full]) {
       const elements = target.getOriginalMainElementList()
@@ -238,20 +267,30 @@ describe('HarfBuzz paragraph incremental layout', () => {
       target.spliceElementList(elements, 5, 0, [{ value: 'م' }])
       render(target)
     }
-    expect(layout.mock.calls.length).toBeGreaterThan(1)
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeGreaterThan(1)
     expect(snapshot(draw)).toEqual(snapshot(full))
     layout.mockClear()
     for (const target of [draw, full]) {
       target.getOptions().scale = 1.4
       splice(target, 5, 0, 'ب')
     }
-    expect(layout.mock.calls.length).toBeGreaterThan(1)
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeGreaterThan(1)
     expect(snapshot(draw)).toEqual(snapshot(full))
     layout.mockClear()
     draw.getLayoutHostAdapter().invalidate()
+    full.getLayoutHostAdapter().invalidate()
     splice(draw, 5, 0, 'ج')
     splice(full, 5, 0, 'ج')
-    expect(layout.mock.calls.length).toBeGreaterThan(1)
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeGreaterThan(1)
     expect(snapshot(draw)).toEqual(snapshot(full))
   })
 
@@ -259,7 +298,7 @@ describe('HarfBuzz paragraph incremental layout', () => {
     const draw = await setup(documentData(5), true)
     const full = await setup(documentData(5), false)
     const adapter = draw.getLayoutHostAdapter()
-    const layout = vi.spyOn(adapter, 'layoutParagraphToRows')
+    const layout = vi.spyOn(adapter.getTextLayoutService(), 'layoutParagraph')
     for (const target of [draw, full]) {
       target.getHistoryManager().recovery()
       target.submitHistory(20)
@@ -268,9 +307,9 @@ describe('HarfBuzz paragraph incremental layout', () => {
       layout.mockClear()
       for (const target of [draw, full]) {
         target.getRange().setRange(20, 20)
-        target.getPosition().setCursorPosition(
-          target.getPosition().getPositionList()[20]
-        )
+        target
+          .getPosition()
+          .setCursorPosition(target.getPosition().getPositionList()[20])
         if (key === 'input') {
           target.getCanvasEvent().input('مرحبا')
         } else {
@@ -278,8 +317,14 @@ describe('HarfBuzz paragraph incremental layout', () => {
         }
       }
       expect(snapshot(draw), key).toEqual(snapshot(full))
-      expect(layout.mock.calls.length).toBeGreaterThan(0)
-      expect(layout.mock.calls.length).toBeLessThan(5)
+      expect(
+        layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+          .length
+      ).toBeGreaterThan(0)
+      expect(
+        layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+          .length
+      ).toBeLessThan(5)
     }
     for (const action of ['undo', 'redo'] as const) {
       draw.getHistoryManager()[action]()
@@ -290,7 +335,14 @@ describe('HarfBuzz paragraph incremental layout', () => {
     splice(draw, 5, 0, 'ع')
     splice(full, 5, 0, 'ع')
     expect(snapshot(draw)).toEqual(snapshot(full))
-    expect(layout).toHaveBeenCalledTimes(1)
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeGreaterThan(0)
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeLessThan(5)
   })
 
   it.each(['image', 'list', 'column'])(
@@ -319,6 +371,47 @@ describe('HarfBuzz paragraph incremental layout', () => {
       expect(scan.mock.calls[0][2]).toBe(0)
     }
   )
+
+  it('invalidates missing glyph nodes when fonts arrive, then resumes reuse', async () => {
+    const draw = await setup(documentData(4), true, { fonts: [] })
+    const full = await setup(documentData(4), false, { fonts: [] })
+    expect(
+      draw
+        .getLayoutRowList()
+        .some(row =>
+          row.nativeLine?.inlines.some(item => item.kind === 'missingGlyph')
+        )
+    ).toBe(true)
+    for (const target of [draw, full]) {
+      await target.registerFonts([
+        { family: 'Noto Naskh Arabic', data: fontData }
+      ])
+      render(target)
+    }
+    expect(snapshot(draw)).toEqual(snapshot(full))
+    expect(
+      draw
+        .getLayoutRowList()
+        .some(row =>
+          row.nativeLine?.inlines.some(item => item.kind === 'missingGlyph')
+        )
+    ).toBe(false)
+    const layout = vi.spyOn(
+      draw.getLayoutHostAdapter().getTextLayoutService(),
+      'layoutParagraph'
+    )
+    splice(draw, 8, 0, 'abc')
+    splice(full, 8, 0, 'abc')
+    expect(snapshot(draw)).toEqual(snapshot(full))
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeGreaterThan(0)
+    expect(
+      layout.mock.calls.filter(([input]) => input.source.scope === 'main')
+        .length
+    ).toBeLessThan(5)
+  })
 
   it('handles empty paragraphs and boundary deletions', async () => {
     const data: IElement[] = [

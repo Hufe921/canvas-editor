@@ -84,6 +84,23 @@ pnpm add @hufe921/canvas-editor
 yarn add @hufe921/canvas-editor
 ```
 
+### ESM-only distribution
+
+This branch publishes ES modules and TypeScript declarations only. Import from
+`@hufe921/canvas-editor`; `require()`, UMD script tags and undocumented
+`dist/*` / `src/*` deep imports are unsupported. The only public subpath is
+`@hufe921/canvas-editor/package.json`. Use the documented runtime APIs and types from the root; removed engine enums
+are no longer exported.
+
+Use a browser with WebAssembly, Web Workers and top-level await support. When
+bundling, preserve top-level await (for example Vite `build.target: 'esnext'`).
+Deploy all generated chunks together. The library includes its workers and
+HarfBuzz WASM. All text uses HarfBuzz; no engine selector is required.
+`autoDownloadFonts` defaults to true and downloads basic fonts from Bunny Fonts.
+Disable it with `autoDownloadFonts: false` for offline/manual font integration.
+Basic fonts do not guarantee rare-character, emoji/ZWJ or all style coverage.
+The removed `textEngine` / `renderMode` options now throw migration errors.
+
 ## Quick Start
 
 ```html
@@ -95,7 +112,7 @@ import Editor from '@hufe921/canvas-editor'
 
 const container = document.querySelector('.canvas-editor')
 
-const editor = new Editor(container, {
+const editor = await Editor.create(container, {
   main: [
     {
       value: 'Hello, Canvas Editor!'
@@ -103,6 +120,26 @@ const editor = new Editor(container, {
   ]
 })
 ```
+
+Alternatively, use `new Editor(...)` and `await editor.ready`. The state is
+`initializing`, `ready`, `failed` or `destroyed`; `initializationError` preserves
+the failure cause. Mutation and geometry commands require readiness. Synchronous
+measurement remains synchronous after readiness; use
+`executeComputeElementListHeightAsync()` to wait explicitly. Destroying a pending
+instance rejects `ready` and prevents late initialization from mounting UI.
+
+Register additional TTF/OTF/WOFF/WOFF2 bytes with
+`await editor.register.fonts([{ family, data, weight: 400, style: 'normal' }])`.
+Read `editor.getFontCoverageReport()` and subscribe to
+`editor.eventBus.on('fontCoverageChange', callback)` for current coverage;
+`editor.retryFontDownloads()` retries outstanding failures after readiness.
+Readiness does not wait for background downloads. Download failures retain
+editable placeholders and show page/console hints.
+
+See the [migration guide](docs/en/guide/font-and-esm-migration.md)
+([中文](docs/guide/font-and-esm-migration.md)) and the
+[standalone ESM font example](examples/esm-fonts/README.md) for default downloads,
+offline mode, recovery and manual font registration.
 
 For complete API documentation, see the [official docs](https://hufe.club/canvas-editor-docs).
 

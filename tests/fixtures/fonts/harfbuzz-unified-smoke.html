@@ -1,0 +1,103 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Unified HarfBuzz shaping</title>
+<script type="module">
+  import { FontManager } from '../../../src/editor/core/text-engine/font/FontManager.ts'
+  import { HarfBuzzTextShaper } from '../../../src/editor/core/text-engine/shape/HarfBuzzTextShaper.ts'
+  import { TextLayoutEngine } from '../../../src/editor/core/text-engine/layout/TextLayoutEngine.ts'
+  import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver.ts'
+  import { harfBuzzRuntime } from '../../../src/editor/core/text-engine/HarfBuzzRuntime.ts'
+  window.unifiedReady = (async () => {
+    const fm = new FontManager()
+    try {
+      await fm.init([
+        { family: 'Latin', url: './NotoSans-Latin-Regular.woff2' },
+        { family: 'CJK', url: './NotoSansSC-Regular.woff2' },
+        {
+          family: 'Arabic',
+          url: '/canvas-editor/fonts/NotoNaskhArabic-Regular.ttf'
+        },
+        {
+          family: 'Deva',
+          url: '/canvas-editor/fonts/NotoSansDevanagari-Regular.ttf'
+        },
+        { family: 'Thai', url: '/canvas-editor/fonts/NotoSansThai-Regular.ttf' }
+      ])
+      const originalMeasure = CanvasRenderingContext2D.prototype.measureText
+      CanvasRenderingContext2D.prototype.measureText = () => {
+        throw new Error('Browser metrics used')
+      }
+      try {
+        const shaper = new HarfBuzzTextShaper(fm)
+        const cases = [
+          ['Latin', 'office AV', 'latn'],
+          ['CJK', '中文汉字', 'hani'],
+          ['Arabic', 'مرحبا', 'arab'],
+          ['Deva', 'नमस्ते', 'deva'],
+          ['Thai', 'สวัสดี', 'thai'],
+          ['Latin', 'q\u0301', 'latn']
+        ].map(([family, text, script]) => {
+          const run = {
+            text,
+            script,
+            direction: script === 'arab' ? 'rtl' : 'ltr',
+            style: { fontFamily: family, fontSize: 20 },
+            textStart: 0,
+            textEnd: text.length,
+            logicalIndexAt: o => o
+          }
+          const font = fm.resolve(run.style, text, run).font
+          const hb = harfBuzzRuntime.getModule()
+          const buffer = new hb.Buffer()
+          buffer.addText(text)
+          buffer.setFlags(hb.BufferFlag.REMOVE_DEFAULT_IGNORABLES)
+          buffer.setDirection(
+            script === 'arab' ? hb.Direction.RTL : hb.Direction.LTR
+          )
+          buffer.setScript(script)
+          buffer.guessSegmentProperties()
+          hb.shape(font.hbFont, buffer)
+          const expected = buffer
+            .getGlyphInfosAndPositions()
+            .map(g => [
+              g.codepoint,
+              g.xAdvance * font.pxPerUnit,
+              g.xOffset * font.pxPerUnit,
+              g.yOffset * font.pxPerUnit
+            ])
+          buffer.clearContents()
+          const actual = shaper
+            .shape(run)
+            .map(g => [g.glyphId, g.ax, g.dx, g.dy])
+          return { script, expected, actual }
+        })
+        const engine = new TextLayoutEngine(new BidiResolver(), shaper)
+        const text = 'office 中文 नमस्ते สวัสดี'
+        const layout = engine.layoutParagraph({
+          spans: [...text].map((ch, i) => ({
+            text: ch,
+            logicalIndex: i,
+            style: {
+              fontFamily: 'Latin',
+              fontSize: 20,
+              color: i % 2 ? '#f00' : '#000'
+            }
+          })),
+          availableWidth: 500,
+          direction: 'ltr',
+          align: 'left',
+          lineHeight: 30
+        })
+        return {
+          cases,
+          glyphs: layout.lines.flatMap(line => line.glyphs),
+          width: layout.lines[0].width
+        }
+      } finally {
+        CanvasRenderingContext2D.prototype.measureText = originalMeasure
+      }
+    } finally {
+      fm.destroy()
+    }
+  })()
+</script>

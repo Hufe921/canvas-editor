@@ -9,3 +9,7 @@ cache
 !src/editor/core/text-engine/cache/*.ts
 .temp
 coverage
+
+cypress/screenshots/
+cypress/videos/
+cypress/results/

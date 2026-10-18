@@ -1,0 +1,19 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Bunny font provider integration check</title>
+<button id="run">Verify Bunny Fonts</button>
+<pre id="result">Ready. No font requests until the check starts.</pre>
+<script type="module">
+  import { verifyBunnyFonts } from './bunny-smoke.ts'
+  document.querySelector('#run').onclick = async () => {
+    const output = document.querySelector('#result')
+    output.textContent = 'Running'
+    try {
+      output.textContent = JSON.stringify(await verifyBunnyFonts(), null, 2)
+      output.dataset.status = 'passed'
+    } catch (error) {
+      output.textContent = String(error.stack || error)
+      output.dataset.status = 'failed'
+    }
+  }
+</script>

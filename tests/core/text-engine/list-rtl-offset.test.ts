@@ -43,7 +43,12 @@ describe('RTL list geometry helpers', () => {
           listId: 'L1',
           listType: ListType.OL,
           visualLeft: zeroVisualLeft,
-          metrics: { width: 0, height: 16, boundingBoxAscent: 12, boundingBoxDescent: 4 }
+          metrics: {
+            width: 0,
+            height: 16,
+            boundingBoxAscent: 12,
+            boundingBoxDescent: 4
+          }
         } as IRowElement
       ]
     } satisfies Partial<IRow>

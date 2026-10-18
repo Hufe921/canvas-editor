@@ -5,7 +5,7 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = await Editor.create(container, data, options)
 
 // 注册
 instance.eventBus.on<K keyof EventMap>(
@@ -291,3 +291,19 @@ instance.eventBus.on('spellcheckClick', (payload: {
   range: ISpellcheckRange
 }) => void)
 ```
+
+## fontCoverageChange
+
+字体覆盖或下载状态变化时发送当前 `FontCoverageReport` 快照；已解决项移除。
+首次订阅后主动读取快照，避免依赖首次事件时序。内建页面提示无需订阅。
+
+```typescript
+import type { FontCoverageReport } from '@hufe921/canvas-editor'
+
+const onCoverage = (report: FontCoverageReport) => console.log(report.issues)
+instance.eventBus.on('fontCoverageChange', onCoverage)
+// instance.eventBus.off('fontCoverageChange', onCoverage)
+const current = instance.getFontCoverageReport()
+```
+
+[完整字体接口与覆盖边界](./font-and-esm-migration.md)。

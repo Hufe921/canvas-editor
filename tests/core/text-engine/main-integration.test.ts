@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -6,7 +7,7 @@ import { Override } from '@/editor/core/override/Override'
 import { Highlight } from '@/editor/core/draw/richtext/Highlight'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
-import { TextDirection, TextEngineMode } from '@/editor'
+import { TextDirection } from '@/editor'
 import type { IElement } from '@/editor/interface/Element'
 
 const draws: Draw[] = []
@@ -19,7 +20,6 @@ afterEach(() => {
 
 async function setup(main: IElement[], scale = 1) {
   const options = mergeOption({
-    textEngine: TextEngineMode.HARFBUZZ,
     scale,
     width: 400,
     margins: [20, 20, 20, 20],
@@ -33,7 +33,7 @@ async function setup(main: IElement[], scale = 1) {
   })
   const container = document.createElement('div')
   document.body.appendChild(container)
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     { main, header: [], footer: [] },

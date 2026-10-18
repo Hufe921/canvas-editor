@@ -1,6 +1,14 @@
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
-import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
+import {
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi
+} from 'vitest'
 import type Editor from '../../src/editor'
 import {
   checkWordList,
@@ -13,10 +21,15 @@ vi.mock('@cspell-en-us-dictionary', () => ({
 }))
 
 describe('spellcheck plugin', () => {
+  let dictionary: ArrayBuffer
   beforeAll(async () => {
-    const dictionary = await readFile(
-      resolve(process.cwd(), 'node_modules/@cspell/dict-en_us/en_US.trie.gz')
-    )
+    dictionary = new Uint8Array(
+      await readFile(
+        resolve(process.cwd(), 'node_modules/@cspell/dict-en_us/en_US.trie.gz')
+      )
+    ).buffer
+  })
+  beforeEach(() => {
     vi.stubGlobal(
       'fetch',
       async () => new Response(dictionary, { status: 200 })

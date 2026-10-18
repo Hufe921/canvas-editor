@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest'
 import { getVisualDeleteTarget } from '@/editor/core/event/handlers/keydown/visualDelete'
-import { DeleteMovement, TextDirection } from '@/editor/dataset/enum/TextDirection'
+import {
+  DeleteMovement,
+  TextDirection
+} from '@/editor/dataset/enum/TextDirection'
 
 function createHost(
   isRtl: boolean,
@@ -19,14 +22,20 @@ function createHost(
       getCursorPosition: () => ({ index: 2, bidiLevel: isRtl ? 1 : 0 }),
       getPositionContext: () => ({ isTable: false })
     }),
-    getOriginalRowList: () => [
-      { direction: isRtl ? TextDirection.RTL : TextDirection.LTR, elementList: [] }
+    getLayoutRows: () => [
+      {
+        direction: isRtl ? TextDirection.RTL : TextDirection.LTR,
+        elementList: [],
+        sourceIndices: [0, 1, 2, 3]
+      }
     ],
     getLayoutHostAdapter: () => ({
       isReady: () => true,
       visualNeighbor: vi.fn(visualNeighbor)
     }),
-    getZone: () => ({ getZone: () => 'main' })
+    getZone: () => ({ getZone: () => 'main' }),
+    getPageNo: () => 0,
+    getPageDirection: () => 'vertical'
   }
   return { getDraw: () => draw }
 }

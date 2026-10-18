@@ -2,21 +2,23 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 
 describe('格式化命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeFormat 清除样式', () => {
-    ctx = createTestEditor()
+  it('executeFormat 清除样式', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
-    ctx.editor.command.executeInsertElementList([{ value: 'hello', bold: true, italic: true }])
+    ctx.editor.command.executeInsertElementList([
+      { value: 'hello', bold: true, italic: true }
+    ])
     ctx.editor.command.executeSelectAll()
     ctx.editor.command.executeFormat()
     const data = ctx.editor.command.getValue().data.main
     expect(data?.some((e: any) => e.bold || e.italic)).toBe(false)
   })
 
-  it('executeFont 改变字体', () => {
-    ctx = createTestEditor()
+  it('executeFont 改变字体', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()
@@ -25,8 +27,8 @@ describe('格式化命令', () => {
     expect(data?.some((e: any) => e.font === 'Arial')).toBe(true)
   })
 
-  it('executeSize 改变字号', () => {
-    ctx = createTestEditor()
+  it('executeSize 改变字号', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()
@@ -35,8 +37,8 @@ describe('格式化命令', () => {
     expect(data?.some((e: any) => e.size === 20)).toBe(true)
   })
 
-  it('executeColor 改变颜色', () => {
-    ctx = createTestEditor()
+  it('executeColor 改变颜色', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()
@@ -45,8 +47,8 @@ describe('格式化命令', () => {
     expect(data?.some((e: any) => e.color === '#ff0000')).toBe(true)
   })
 
-  it('executeHighlight 改变高亮', () => {
-    ctx = createTestEditor()
+  it('executeHighlight 改变高亮', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'hello' }])
     ctx.editor.command.executeSelectAll()

@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 
 describe('HistoryManager', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('undo 后回到上一个快照', () => {
-    ctx = createTestEditor()
+  it('undo 后回到上一个快照', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'a' }])
     ctx.editor.command.executeInsertElementList([{ value: 'b' }])
@@ -15,8 +15,8 @@ describe('HistoryManager', () => {
     expect(text).not.toContain('b')
   })
 
-  it('redo 后恢复撤销的内容', () => {
-    ctx = createTestEditor()
+  it('redo 后恢复撤销的内容', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'a' }])
     ctx.editor.command.executeInsertElementList([{ value: 'b' }])
@@ -26,18 +26,18 @@ describe('HistoryManager', () => {
     expect(text).toContain('b')
   })
 
-  it('空栈 undo 不抛错', () => {
-    ctx = createTestEditor()
+  it('空栈 undo 不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => ctx.editor.command.executeUndo()).not.toThrow()
   })
 
-  it('空栈 redo 不抛错', () => {
-    ctx = createTestEditor()
+  it('空栈 redo 不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => ctx.editor.command.executeRedo()).not.toThrow()
   })
 
-  it('多步 undo 逐步还原', () => {
-    ctx = createTestEditor()
+  it('多步 undo 逐步还原', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'a' }])
     ctx.editor.command.executeInsertElementList([{ value: 'b' }])

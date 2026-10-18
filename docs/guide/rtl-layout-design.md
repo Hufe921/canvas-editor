@@ -1,5 +1,9 @@
 # RTL 排版与渲染引擎设计
 
+> 历史设计/迁移记录：旧引擎、模式选择和浏览器文字回退已在 T20 删除。
+> 当前集成请使用[字体与 ESM 迁移](./font-and-esm-migration.md)，下文旧路径不作为现行 API。
+
+
 > 目标：在现有扁平 `IElement[]` 模型上支持阿拉伯语等 RTL 与 LTR 混排；**HarfBuzz 为本期必选整形路径**；排版/绘制引擎相对独立，降低对 `Draw` 的侵入。  
 > 基线架构见 [架构分析](./architecture.md)；延期事项见 [RTL 延期 TODO](./rtl-deferred-todo.md)。
 

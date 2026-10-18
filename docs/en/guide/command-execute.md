@@ -5,7 +5,7 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = await Editor.create(container, data, options)
 instance.command.commandName()
 ```
 
@@ -1213,3 +1213,18 @@ Usage:
 ```javascript
 instance.command.executeClearGraffiti()
 ```
+
+## executeComputeElementListHeight / executeComputeElementListHeightAsync
+
+Use the synchronous version after ready. The asynchronous version explicitly
+waits for ready, rejecting on failure/destruction without queuing mutations.
+
+```typescript
+const height = instance.command.executeComputeElementListHeight(elements)
+const awaitedHeight = await instance.command.executeComputeElementListHeightAsync(elements)
+```
+
+Toggle downloads with `executeUpdateOptions({ autoDownloadFonts: false })`.
+Register fonts using `await instance.register.fonts(faces)`. Removed
+`textEngine` / `renderMode` keys throw migration errors. See the
+[migration guide](./font-and-esm-migration.md).

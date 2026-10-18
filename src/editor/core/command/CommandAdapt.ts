@@ -1,3 +1,5 @@
+import type { LayoutRow } from '../../interface/LayoutRow'
+import { IPrintOption } from '../../interface/Print'
 import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
 import {
   AREA_CONTEXT_ATTR,
@@ -158,7 +160,6 @@ import {
 import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
 import { WatermarkType } from '../../dataset/enum/Watermark'
-import { IPrintOption } from '@/editor/interface/Print'
 
 export class CommandAdapt {
   private draw: Draw
@@ -239,11 +240,11 @@ export class CommandAdapt {
       this.draw.deleteElementList(
         elementList,
         visualTarget?.index ?? startIndex,
-        1
+        visualTarget?.count ?? 1
       )
     }
-    const curIndex = visualTarget?.cursorIndex ??
-      (isCollapsed ? startIndex - 1 : startIndex)
+    const curIndex =
+      visualTarget?.cursorIndex ?? (isCollapsed ? startIndex - 1 : startIndex)
     this.range.setRange(curIndex, curIndex)
     this.draw.render({ curIndex })
   }
@@ -1522,6 +1523,7 @@ export class CommandAdapt {
       let tempEditor: InstanceType<typeof Editor> | null = null
       try {
         tempEditor = new Editor(container, data, options)
+        await tempEditor.ready
         await tempEditor.command.executePrint()
       } finally {
         tempEditor?.destroy()
@@ -1698,7 +1700,7 @@ export class CommandAdapt {
 
   public getRemainingContentHeight(): number {
     if (!this.draw.getIsPagingMode()) return 0
-    const pageRowList = this.draw.getPageRowList()
+    const pageRowList = this.draw.getLayoutPages()
     const lastPageIndex = pageRowList.length - 1
     const rowList = pageRowList[lastPageIndex] || []
     const usedHeight = rowList.reduce(
@@ -1711,9 +1713,20 @@ export class CommandAdapt {
     return remaining > 0 ? remaining : 0
   }
 
+  public async computeElementListHeightAsync(
+    elementList: IElement[]
+  ): Promise<number> {
+    await this.draw.ready
+    this.draw.getLifecycle().assertReady()
+    return this.computeElementListHeight(elementList)
+  }
+
   public computeElementListHeight(elementList: IElement[]): number {
+    this.draw.getLifecycle().assertReady()
     if (!elementList.length) return 0
-    const innerWidth = this.draw.getInnerWidth()
+    const innerWidth = this.draw.getInnerWidth(
+      this.draw.getPageDirection(this.draw.getPageNo())
+    )
     if (innerWidth <= 0) return 0
     const targetElementList = deepClone(elementList)
     formatElementList(targetElementList, {
@@ -1721,15 +1734,23 @@ export class CommandAdapt {
       editorOptions: this.options
     })
     const surroundElementList = pickSurroundElementList(targetElementList)
-    const rowList = this.draw.computeRowList({
-      innerWidth,
-      elementList: targetElementList,
-      surroundElementList
-    })
-    return rowList.reduce(
-      (pre, cur) => pre + cur.height + (cur.offsetY || 0),
-      0
-    )
+    let rowList: LayoutRow[]
+    try {
+      rowList = this.draw.computeRowList({
+        innerWidth,
+        elementList: targetElementList,
+        surroundElementList,
+        layoutScope: 'measurement'
+      })
+    } finally {
+      this.draw.getLayoutHostAdapter().releaseScope('measurement')
+    }
+    let height = 0
+    for (const row of rowList) {
+      const top = row.flow ? row.flow.y * this.options.scale : height
+      height = Math.max(height, top + row.height + (row.offsetY || 0))
+    }
+    return height
   }
 
   public getRange(): IRange {
@@ -1763,7 +1784,7 @@ export class CommandAdapt {
       extraPickAttrs: ['id', 'controlComponent']
     })
     // 页码信息、行信息
-    const rowList = this.draw.getRowList()
+    const rowList = this.draw.getLayoutRowList()
     const positionList = this.position.getPositionList()
     const startPosition = positionList[startIndex]
     const endPosition = positionList[endIndex]
@@ -1797,7 +1818,67 @@ export class CommandAdapt {
     // 坐标信息（相对编辑器书写区）
     const rangeRects: RangeRect[] = []
     const selectionPositionList = this.position.getSelectionPositionList()
-    if (selectionPositionList) {
+    const nativeLines = this.position.getNativeLines(positionList)
+    const nativeCaret = isCollapsed
+      ? this.position.getNativeCaret(endIndex)
+      : null
+    if (nativeLines.length && !this.range.getRange().isCrossRowCol) {
+      if (nativeCaret) {
+        const pageNo = this.draw.getZone().isMainActive()
+          ? nativeCaret.pageNo
+          : this.draw.getPageNo()
+        const offset = this.draw.getPageOffset(pageNo)
+        rangeRects.push({
+          x: nativeCaret.x + offset.x,
+          y: nativeCaret.y + offset.y,
+          width: 0,
+          height: nativeCaret.height
+        })
+      } else if (isCollapsed) {
+        const offset = this.draw.getPageOffset(endPosition.pageNo)
+        rangeRects.push({
+          x: endPosition.coordinate.rightTop[0] + offset.x,
+          y: endPosition.coordinate.rightTop[1] + offset.y,
+          width: 0,
+          height: endPosition.lineHeight
+        })
+      } else {
+        for (const rect of this.position.getNativeRangeRects(
+          startIndex + 1,
+          endIndex + 1,
+          positionList
+        )) {
+          const pageNo = this.draw.getZone().isMainActive()
+            ? rect.pageNo
+            : this.draw.getPageNo()
+          const offset = this.draw.getPageOffset(pageNo)
+          rangeRects.push({
+            x: rect.x + offset.x,
+            y: rect.y + offset.y,
+            width: rect.width,
+            height: rect.height
+          })
+        }
+        for (const position of selectionPositionList || []) {
+          if (
+            nativeLines.some(
+              p =>
+                position.index >= p.line.source.start &&
+                position.index < p.line.source.end
+            )
+          )
+            continue
+          const offset = this.draw.getPageOffset(position.pageNo)
+          rangeRects.push({
+            x: position.coordinate.leftTop[0] + offset.x,
+            y: position.coordinate.leftTop[1] + offset.y,
+            width:
+              position.coordinate.rightTop[0] - position.coordinate.leftTop[0],
+            height: position.lineHeight
+          })
+        }
+      }
+    } else if (selectionPositionList) {
       // 起始信息及x坐标
       let currentRowNo: number | null = null
       let currentX = 0
@@ -2527,10 +2608,10 @@ export class CommandAdapt {
       .getGroup()
       .getContextByGroupId(elementList, groupId)
     if (!context) return null
-    const { isTable, index, trIndex, tdIndex, endIndex } = context
+    const { isTable, endIndex } = context
     // 组所在的元素列表（主体或表格单元格内）
     const groupElementList = isTable
-      ? elementList[index!].trList![trIndex!].tdList[tdIndex!].value
+      ? this.position.getTableTdByContext(elementList, context)?.value || []
       : elementList
     // 组的起始索引
     let startIndex = endIndex
@@ -2545,6 +2626,41 @@ export class CommandAdapt {
       ? this.position.getTableTdByContext(elementList, context)?.positionList ||
         []
       : this.position.getOriginalMainPositionList()
+    if (this.position.getNativeLines(positionList).length) {
+      const nativeRects = this.position
+        .getNativeRangeRects(startIndex, endIndex + 1, positionList)
+        .map(rect => {
+          const offset = this.draw.getPageOffset(rect.pageNo)
+          return {
+            x: rect.x + offset.x,
+            y: rect.y + offset.y,
+            width: rect.width,
+            height: rect.height
+          }
+        })
+      for (const position of positionList.slice(startIndex, endIndex + 1)) {
+        if (
+          !position ||
+          this.position
+            .getNativeLines(positionList)
+            .some(
+              p =>
+                position.index >= p.line.source.start &&
+                position.index < p.line.source.end
+            )
+        )
+          continue
+        const offset = this.draw.getPageOffset(position.pageNo)
+        nativeRects.push({
+          x: position.coordinate.leftTop[0] + offset.x,
+          y: position.coordinate.leftTop[1] + offset.y,
+          width:
+            position.coordinate.rightTop[0] - position.coordinate.leftTop[0],
+          height: position.lineHeight
+        })
+      }
+      return nativeRects
+    }
     const groupPositionList = positionList.slice(startIndex, endIndex + 1)
     if (!groupPositionList.length) return null
     // 坐标信息（相对编辑器书写区，与 getRangeContext 的 rangeRects 坐标基准一致），
@@ -2591,8 +2707,18 @@ export class CommandAdapt {
       .getGroup()
       .getContextByGroupId(elementList, groupId)
     if (!context) return
-    const { isTable, index, trIndex, tdIndex, tdId, trId, tableId, endIndex } =
-      context
+    const {
+      isTable,
+      index,
+      trIndex,
+      tdIndex,
+      tdId,
+      trId,
+      tableId,
+      tablePath,
+      endIndex
+    } = context
+    this.draw.getZone().setZone(EditorZone.MAIN)
     this.position.setPositionContext({
       isTable,
       index,
@@ -2600,7 +2726,8 @@ export class CommandAdapt {
       tdIndex,
       tdId,
       trId,
-      tableId
+      tableId,
+      tablePath
     })
     this.range.setRange(endIndex, endIndex)
     this.draw.render({
@@ -2660,7 +2787,14 @@ export class CommandAdapt {
   }
 
   public updateOptions(payload: IUpdateOption) {
-    const newOption = mergeOption(payload)
+    const newOption = mergeOption({
+      ...this.options,
+      ...payload,
+      autoDownloadFonts:
+        payload.autoDownloadFonts === undefined
+          ? this.options.autoDownloadFonts
+          : payload.autoDownloadFonts
+    })
     Object.entries(newOption).forEach(([key, value]) => {
       Reflect.set(this.options, key, value)
     })
@@ -3025,7 +3159,7 @@ export class CommandAdapt {
         position === LocationPosition.BEFORE ? range.startIndex : range.endIndex
     } else if (isNumber(rowNo)) {
       // 根据行号定位
-      const rowList = this.draw.getOriginalRowList()
+      const rowList = this.draw.getLayoutRows()
       curIndex =
         position === LocationPosition.BEFORE
           ? rowList[rowNo]?.startIndex

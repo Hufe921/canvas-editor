@@ -1,3 +1,4 @@
+import { createTestDraw } from '../factories/draw'
 import { describe, it, expect, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -12,17 +13,17 @@ import type { IElement } from '@/editor/interface/Element'
 
 const options = mergeOption({ width: 794, height: 1123 })
 
-function createDraw(main: IElement[]): {
+async function createDraw(main: IElement[]): Promise<{
   draw: Draw
   container: HTMLDivElement
-} {
+}> {
   formatElementList(main, {
     editorOptions: options,
     isForceCompensation: true
   })
   const container = document.createElement('div')
   document.body.appendChild(container)
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -167,7 +168,7 @@ describe('UI 路径二次联动', () => {
   }
 
   it('有→Ⅰ级→无：分级应隐藏', async () => {
-    ;({ draw, container } = createDraw(buildData()))
+    ;({ draw, container } = await createDraw(buildData()))
     // 1. 选"有" → 分级显示
     activateAndPick('c1', '有')
     await tick()

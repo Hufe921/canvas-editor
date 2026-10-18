@@ -34,7 +34,7 @@ describe('compute 回写保留 postText', () => {
   afterEach(() => ctx?.destroy())
 
   it('首次计算与改源值重算', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: {
         header: [],
         main: [

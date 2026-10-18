@@ -1,3 +1,4 @@
+import type { ITablePositionContext } from '../../../interface/Position'
 import { ZERO } from '../../../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../../../dataset/constant/Element'
 import { ControlComponent } from '../../../dataset/enum/Control'
@@ -11,7 +12,7 @@ import {
   ISearchResult,
   ISearchResultRestArgs
 } from '../../../interface/Search'
-import { getUUID, indexOf, isNumber } from '../../../utils'
+import { getUUID, indexOf, isNumber, splitText } from '../../../utils'
 import { Position } from '../../position/Position'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -197,126 +198,121 @@ export class Search {
       this.searchOptions || {}
     const keyword = isIgnoreCase ? payload.toLocaleLowerCase() : payload
     const searchMatchList: ISearchResult[] = []
-    // 分组
-    const elementListGroup: {
-      type: EditorContext
-      elementList: IElement[]
-      index: number
-    }[] = []
-    const originalElementListLength = originalElementList.length
-    // 查找表格所在位置
-    const tableIndexList = []
-    for (let e = 0; e < originalElementListLength; e++) {
-      const element = originalElementList[e]
-      if (element.type === ElementType.TABLE) {
-        tableIndexList.push(e)
+    const hidden = (element: IElement) =>
+      element.hide ||
+      element.control?.hide ||
+      element.area?.hide ||
+      this.draw.getTraceParticle().isTraceHidden(element)
+    const search = (
+      elements: IElement[],
+      start: number,
+      end: number,
+      path: ITablePositionContext[]
+    ) => {
+      let text = ''
+      const sources: number[] = []
+      for (let index = start; index < end; index++) {
+        const element = elements[index]
+        const visible =
+          !hidden(element) &&
+          (!element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)) &&
+          element.controlComponent !== ControlComponent.CHECKBOX &&
+          element.controlComponent !== ControlComponent.RADIO
+        let value = visible ? element.value : ZERO
+        if (isIgnoreCase) value = value.toLocaleLowerCase()
+        text += value
+        sources.push(...Array.from({ length: value.length }, () => index))
       }
-    }
-    let i = 0
-    let elementIndex = 0
-    while (elementIndex < originalElementListLength - 1) {
-      const endIndex = tableIndexList.length
-        ? tableIndexList[i]
-        : originalElementListLength
-      const pageElement = originalElementList.slice(elementIndex, endIndex)
-      if (pageElement.length) {
-        elementListGroup.push({
-          index: elementIndex,
-          type: EditorContext.PAGE,
-          elementList: pageElement
-        })
-      }
-      const tableElement = originalElementList[endIndex]
-      if (tableElement) {
-        elementListGroup.push({
-          index: endIndex,
-          type: EditorContext.TABLE,
-          elementList: [tableElement]
-        })
-      }
-      elementIndex = endIndex + 1
-      i++
-    }
-    // 搜索文本
-    const traceParticle = this.draw.getTraceParticle()
-    function searchClosure(
-      payload: string | null,
-      type: EditorContext,
-      elementList: IElement[],
-      restArgs?: ISearchResultRestArgs
-    ) {
-      if (!payload) return
-      let text = elementList
-        .map(e =>
-          !e.type ||
-          (TEXTLIKE_ELEMENT_TYPE.includes(e.type) &&
-            e.controlComponent !== ControlComponent.CHECKBOX &&
-            e.controlComponent !== ControlComponent.RADIO &&
-            !e.hide &&
-            !e.control?.hide &&
-            !e.area?.hide &&
-            !traceParticle.isTraceHidden(e))
-            ? e.value
-            : ZERO
-        )
-        .filter(Boolean)
-        .join('')
-      if (isIgnoreCase) {
-        text = text.toLocaleLowerCase()
-      }
-      // 匹配的结果列表
-      const matchList: { index: number; length: number }[] = []
-      // 从索引0开始依次匹配
-      const searchStr = isRegEnable ? new RegExp(payload) : payload
-      let { index, length } = indexOf(text, searchStr)
-      while (index !== -1 && length !== 0) {
-        matchList.push({
-          index,
-          length
-        })
-        const matchResult = indexOf(text, searchStr, index + length)
-        index = matchResult.index
-        length = matchResult.length
-      }
-      for (let m = 0; m < matchList.length; m++) {
-        const { index: startIndex, length: matchLength } = matchList[m]
+      const pattern = isRegEnable ? new RegExp(keyword) : keyword
+      const claimed = new Set<number>()
+      let match = indexOf(text, pattern)
+      while (match.index >= 0 && match.length > 0) {
         const groupId = getUUID()
-        for (let i = 0; i < matchLength; i++) {
-          const index = startIndex + i + (restArgs?.startIndex || 0)
-          searchMatchList.push({
-            type,
-            index,
-            groupId,
-            ...restArgs
-          })
-        }
-      }
-    }
-    for (let e = 0; e < elementListGroup.length; e++) {
-      const group = elementListGroup[e]
-      if (group.type === EditorContext.TABLE) {
-        const tableElement = group.elementList[0]
-        for (let t = 0; t < tableElement.trList!.length; t++) {
-          const tr = tableElement.trList![t]
-          for (let d = 0; d < tr.tdList.length; d++) {
-            const td = tr.tdList[d]
-            const restArgs: ISearchResultRestArgs = {
-              tableId: tableElement.id,
-              tableIndex: group.index,
-              trIndex: t,
-              tdIndex: d,
-              tdId: td.id
+        const indices = [
+          ...new Set(sources.slice(match.index, match.index + match.length))
+        ]
+        const last = path.at(-1)
+        const context: ISearchResultRestArgs = last
+          ? {
+              tableIndex: path[0].index,
+              tableId: last.tableId,
+              trIndex: last.trIndex,
+              tdIndex: last.tdIndex,
+              tdId: last.tdId,
+              tablePath: path.map(item => ({ ...item }))
             }
-            searchClosure(keyword, group.type, td.value, restArgs)
+          : {}
+        if (!indices.some(index => claimed.has(index))) {
+          for (const index of indices) {
+            claimed.add(index)
+            searchMatchList.push({
+              type: last ? EditorContext.TABLE : EditorContext.PAGE,
+              index,
+              groupId,
+              ...context
+            })
           }
         }
-      } else {
-        searchClosure(keyword, group.type, group.elementList, {
-          startIndex: group.index
-        })
+        match = indexOf(text, pattern, match.index + match.length)
       }
     }
+    const visit = (
+      elements: IElement[],
+      path: ITablePositionContext[] = []
+    ) => {
+      let start = 0
+      for (let index = 0; index < elements.length; index++) {
+        const element = elements[index]
+        if (element.type !== ElementType.TABLE) continue
+        search(elements, start, index, path)
+        if (!hidden(element))
+          for (const [trIndex, row] of element.trList!.entries())
+            for (const [tdIndex, td] of row.tdList.entries())
+              visit(td.value, [
+                ...path,
+                {
+                  index,
+                  trIndex,
+                  tdIndex,
+                  tdId: td.id,
+                  trId: row.id,
+                  tableId: element.id
+                }
+              ])
+        start = index + 1
+      }
+      search(elements, start, elements.length, path)
+    }
+    visit(originalElementList)
     return searchMatchList
+  }
+
+  private matchCell(elements: IElement[], match: ISearchResult) {
+    return this.position.getTableTdByContext(elements, {
+      isTable: true,
+      index: match.tableIndex,
+      trIndex: match.trIndex,
+      tdIndex: match.tdIndex,
+      tableId: match.tableId,
+      tablePath: match.tablePath
+    })
+  }
+
+  private setMatchContext(match: ISearchResult) {
+    this.position.setPositionContext(
+      match.type === EditorContext.TABLE
+        ? {
+            isTable: true,
+            index: match.tableIndex,
+            trIndex: match.trIndex,
+            tdIndex: match.tdIndex,
+            tdId: match.tdId,
+            tableId: match.tableId,
+            trId: match.tablePath?.at(-1)?.trId,
+            tablePath: match.tablePath
+          }
+        : { isTable: false }
+    )
   }
 
   public compute(payload: string) {
@@ -326,7 +322,10 @@ export class Search {
     const searchElementList = isPickSelectionElementList
       ? this.range.getSelectionElementList()
       : this.draw.getOriginalElementList()
-    if (!searchElementList?.length) return
+    if (!searchElementList?.length) {
+      this.searchMatchList = []
+      return
+    }
     this.searchMatchList = this.getMatchList(payload, searchElementList)
     // 根据选区位置index/tableIndex往后移动
     if (!isPickSelectionElementList || !this.searchMatchList.length) return
@@ -336,6 +335,8 @@ export class Search {
     for (const searchMatch of this.searchMatchList) {
       if (searchMatch.type === EditorContext.TABLE) {
         searchMatch.tableIndex! += offset
+        if (searchMatch.tablePath?.length)
+          searchMatch.tablePath[0].index += offset
       } else {
         searchMatch.index += offset
       }
@@ -352,18 +353,18 @@ export class Search {
     }
     const { searchMatchAlpha, searchMatchColor, searchNavigateMatchColor } =
       this.options
-    const positionList = this.position.getOriginalPositionList()
+    const positionList = this.position.getOriginalPositionList(pageIndex)
     const elementList = this.draw.getOriginalElementList()
     ctx.save()
     ctx.globalAlpha = searchMatchAlpha
     for (let s = 0; s < this.searchMatchList.length; s++) {
       const searchMatch = this.searchMatchList[s]
       let position: IElementPosition | null = null
+      let targetPositions = positionList
       if (searchMatch.type === EditorContext.TABLE) {
-        const { tableIndex, trIndex, tdIndex, index } = searchMatch
-        position =
-          elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]
-            ?.positionList![index]
+        targetPositions =
+          this.matchCell(elementList, searchMatch)?.positionList || []
+        position = targetPositions[searchMatch.index]
       } else {
         position = positionList[searchMatch.index]
       }
@@ -372,7 +373,16 @@ export class Search {
         coordinate: { leftTop, leftBottom, rightTop },
         pageNo
       } = position
-      if (pageNo !== pageIndex) continue
+      const native = this.position.getNativeLines?.(targetPositions)
+      const nativeRects = native?.length
+        ? this.position.getNativeRangeRects(
+            searchMatch.index,
+            searchMatch.index + 1,
+            targetPositions,
+            pageIndex
+          )
+        : null
+      if (nativeRects ? !nativeRects.length : pageNo !== pageIndex) continue
       // 高亮并定位当前搜索词
       const searchMatchIndexList = this.getSearchNavigateIndexList()
       if (searchMatchIndexList.includes(s)) {
@@ -389,7 +399,10 @@ export class Search {
       const y = leftTop[1]
       const width = rightTop[0] - leftTop[0]
       const height = leftBottom[1] - leftTop[1]
-      ctx.fillRect(x, y, width, height)
+      if (nativeRects) {
+        for (const rect of nativeRects)
+          ctx.fillRect(rect.x, rect.y, rect.width, rect.height)
+      } else ctx.fillRect(x, y, width, height)
     }
     ctx.restore()
   }
@@ -414,148 +427,60 @@ export class Search {
       matchList = matchGroup[replaceIndex]
     }
     if (!matchList?.length) return
-    const isDesignMode = this.draw.isDesignMode()
     if (!this.draw.getOptions().trace.disabled) {
       this.replaceWithTrace(payload, matchList)
       return
     }
-    // 匹配index变化的差值
-    let pageDiffCount = 0
-    let tableDiffCount = 0
-    // 匹配搜索词的组标识
-    let curGroupId = ''
-    // 表格上下文
-    let curTdId = ''
-    // 搜索值 > 替换值：增加元素；搜索值 < 替换值：减少元素
-    let firstMatchIndex = -1
-    const elementList = this.draw.getOriginalElementList()
-    for (let m = 0; m < matchList.length; m++) {
-      const match = matchList[m]
-      if (match.type === EditorContext.TABLE) {
-        const { tableIndex, trIndex, tdIndex, index, tdId } = match
-        if (curTdId && tdId !== curTdId) {
-          tableDiffCount = 0
-        }
-        curTdId = tdId!
-        const curTableIndex = tableIndex! + pageDiffCount
-        const tableElementList =
-          elementList[curTableIndex].trList![trIndex!].tdList[tdIndex!].value
-        // 表格内元素
-        const curIndex = index + tableDiffCount
-        const tableElement = tableElementList[curIndex]
-        // 非设计模式下设置元素不可删除 || 控件结构元素 => 禁止替换
-        if (
-          (!isDesignMode &&
-            (tableElement?.control?.deletable === false ||
-              tableElement?.title?.deletable === false)) ||
-          (tableElement.type === ElementType.CONTROL &&
-            tableElement.controlComponent !== ControlComponent.VALUE)
-        ) {
-          continue
-        }
-        if (payload === '') {
-          this.draw.spliceElementList(tableElementList, curIndex, 1)
-          tableDiffCount--
-          if (!~firstMatchIndex) {
-            firstMatchIndex = m
-          }
-          continue
-        }
-        if (curGroupId === match.groupId) {
-          this.draw.spliceElementList(tableElementList, curIndex, 1)
-          tableDiffCount--
-          continue
-        }
-        if (!~firstMatchIndex) {
-          firstMatchIndex = m
-        }
-        for (let p = 0; p < payload.length; p++) {
-          const value = payload[p]
-          if (p === 0) {
-            tableElement.value = value
-          } else {
-            this.draw.spliceElementList(tableElementList, curIndex + p, 0, [
-              {
-                ...tableElement,
-                value
-              }
-            ])
-            tableDiffCount++
-          }
-        }
-      } else {
-        const curIndex = match.index + pageDiffCount
-        const element = elementList[curIndex]
-        // 非设计模式下设置元素不可删除 || 控件结构元素 => 禁止替换
-        if (
-          (!isDesignMode &&
-            (element?.control?.deletable === false ||
-              element?.title?.deletable === false)) ||
-          (element.type === ElementType.CONTROL &&
-            element.controlComponent !== ControlComponent.VALUE)
-        ) {
-          continue
-        }
-        if (payload === '') {
-          this.draw.spliceElementList(elementList, curIndex, 1)
-          pageDiffCount--
-          if (!~firstMatchIndex) {
-            firstMatchIndex = m
-          }
-          continue
-        }
-        if (!~firstMatchIndex) {
-          firstMatchIndex = m
-        }
-        if (curGroupId === match.groupId) {
-          this.draw.spliceElementList(elementList, curIndex, 1)
-          pageDiffCount--
-          continue
-        }
-        for (let p = 0; p < payload.length; p++) {
-          const value = payload[p]
-          if (p === 0) {
-            element.value = value
-          } else {
-            this.draw.spliceElementList(elementList, curIndex + p, 0, [
-              {
-                ...element,
-                value
-              }
-            ])
-            pageDiffCount++
-          }
-        }
-      }
-      curGroupId = match.groupId
+    const groups: ISearchResult[][] = []
+    for (const match of matchList) {
+      const last = groups.at(-1)
+      if (last?.[0].groupId === match.groupId) last.push(match)
+      else groups.push([match])
     }
-    if (!~firstMatchIndex) return
-    // 定位-首个被匹配关键词后
-    const firstMatch = matchList[firstMatchIndex]
-    const firstIndex = firstMatch.index + (payload.length - 1)
-    if (firstMatch.type === EditorContext.TABLE) {
-      const { tableIndex, trIndex, tdIndex, index } = firstMatch
-      const element =
-        elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!].value[index]
-      this.position.setPositionContext({
-        isTable: true,
-        index: tableIndex,
-        trIndex,
-        tdIndex,
-        tdId: element.tdId,
-        trId: element.trId,
-        tableId: element.tableId
+    const root = this.draw.getOriginalElementList()
+    const values = splitText(payload)
+    let first: ISearchResult | undefined
+    let cursor = -1
+    for (const group of groups.reverse()) {
+      const match = group[0]
+      const cell =
+        match.type === EditorContext.TABLE
+          ? this.matchCell(root, match)
+          : undefined
+      const elements = cell?.value || root
+      const selected = elements.slice(match.index, match.index + group.length)
+      if (
+        !selected.length ||
+        selected.some(
+          element =>
+            (!this.draw.isDesignMode() &&
+              (element.control?.deletable === false ||
+                element.title?.deletable === false)) ||
+            (element.type === ElementType.CONTROL &&
+              element.controlComponent !== ControlComponent.VALUE)
+        )
+      )
+        continue
+      if (!this.draw.isDesignMode() && cell?.deletable === false) continue
+      const source = selected[0]
+      const length = elements.length
+      this.draw.deleteElementList(elements, match.index, group.length, {
+        tdDeletable: cell?.deletable !== false
       })
-    } else {
-      this.position.setPositionContext({
-        isTable: false
-      })
+      if (elements.length !== length - group.length) continue
+      this.draw.spliceElementList(
+        elements,
+        match.index,
+        0,
+        values.map(value => ({ ...source, value }))
+      )
+      first = match
+      cursor = Math.max(0, match.index + values.length - 1)
     }
-    this.draw.getRange().setRange(firstIndex, firstIndex)
-    // 重新渲染
-    this.draw.render({
-      curIndex: firstIndex
-    })
+    if (!first) return
+    this.setMatchContext(first)
+    this.range.setRange(cursor, cursor)
+    this.draw.render({ curIndex: cursor })
   }
 
   private replaceWithTrace(payload: string, matchList: ISearchResult[]) {
@@ -577,8 +502,8 @@ export class Search {
       let targetElementList: IElement[]
       let tdDeletable = true
       if (firstMatch.type === EditorContext.TABLE) {
-        const { tableIndex, trIndex, tdIndex } = firstMatch
-        const td = elementList[tableIndex!].trList![trIndex!].tdList[tdIndex!]
+        const td = this.matchCell(elementList, firstMatch)
+        if (!td) continue
         targetElementList = td.value
         tdDeletable = td.deletable !== false
       } else {
@@ -609,7 +534,7 @@ export class Search {
       if (!sourceElement) continue
       const replaceIndex = targetElementList.indexOf(sourceElement, startIndex)
       if (payload) {
-        const insertElementList = payload.split('').map(value => {
+        const insertElementList = splitText(payload).map(value => {
           const element: IElement = {
             ...sourceElement,
             value
@@ -627,26 +552,11 @@ export class Search {
       }
       firstReplacedMatch = firstMatch
       firstReplacedIndex = payload
-        ? replaceIndex + payload.length - 1
+        ? replaceIndex + splitText(payload).length - 1
         : Math.max(replaceIndex - 1, 0)
     }
     if (!firstReplacedMatch) return
-    if (firstReplacedMatch.type === EditorContext.TABLE) {
-      const { tableIndex, trIndex, tdIndex, tdId, tableId } = firstReplacedMatch
-      this.position.setPositionContext({
-        isTable: true,
-        index: tableIndex,
-        trIndex,
-        tdIndex,
-        tdId,
-        trId: elementList[tableIndex!].trList![trIndex!].id,
-        tableId
-      })
-    } else {
-      this.position.setPositionContext({
-        isTable: false
-      })
-    }
+    this.setMatchContext(firstReplacedMatch)
     this.draw.getRange().setRange(firstReplacedIndex, firstReplacedIndex)
     this.draw.render({
       curIndex: firstReplacedIndex

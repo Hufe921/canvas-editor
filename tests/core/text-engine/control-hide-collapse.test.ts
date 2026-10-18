@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -9,45 +10,18 @@ import {
   ControlComponent,
   ControlType,
   ElementType,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import type { IElement } from '@/editor/interface/Element'
 import { ElementBridge } from '@/editor/core/text-engine-host/ElementBridge'
 
-function stubMeasureText() {
-  const proto = CanvasRenderingContext2D.prototype
-  vi.spyOn(proto, 'measureText').mockImplementation(function (text: string) {
-    let width = 0
-    for (const ch of text) {
-      const cp = ch.codePointAt(0)!
-      if (
-        (cp >= 0x200b && cp <= 0x200d) ||
-        cp === 0xfeff ||
-        cp === 0x2060 ||
-        (cp >= 0x2066 && cp <= 0x2069)
-      ) {
-        continue
-      }
-      width += cp > 0xff ? 16 : 8
-    }
-    return {
-      width,
-      actualBoundingBoxAscent: 12.8,
-      actualBoundingBoxDescent: 3.2,
-      fontBoundingBoxAscent: 12.8,
-      fontBoundingBoxDescent: 3.2
-    } as TextMetrics
-  })
-}
-
-function createDraw(main: IElement[]) {
+async function createDraw(main: IElement[]) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const options = mergeOption({
     defaultDirection: TextDirection.AUTO,
-    textEngine: TextEngineMode.HARFBUZZ,
+
     header: { disabled: true },
     footer: { disabled: true }
   })
@@ -55,7 +29,7 @@ function createDraw(main: IElement[]) {
     editorOptions: options,
     isForceCompensation: true
   })
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     {
@@ -136,7 +110,6 @@ describe('control.hide collapse (text-engine / #1447)', () => {
   })
 
   it('collapses row height when entire line is hidden', async () => {
-    stubMeasureText()
     const main: IElement[] = [
       { value: ZERO },
       {
@@ -144,20 +117,19 @@ describe('control.hide collapse (text-engine / #1447)', () => {
         hide: true
       }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
     await (draw as any).layoutHostAdapter.ensureReady()
     ;(draw as any).layoutHostAdapter.invalidate()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
 
-    const row = draw!.getOriginalRowList().find(r =>
-      r.elementList.some(e => e.value === '整行隐藏' || e.hide)
-    )
+    const row = draw!
+      .getOriginalRowList()
+      .find(r => r.elementList.some(e => e.value === '整行隐藏' || e.hide))
     expect(row).toBeTruthy()
     expect(row!.height).toBe(0)
   })
 
   it('keeps label visible and drops hidden control ink without blank hole', async () => {
-    stubMeasureText()
     const main: IElement[] = [
       { value: ZERO },
       { value: '高血压分级：' },
@@ -181,14 +153,14 @@ describe('control.hide collapse (text-engine / #1447)', () => {
       },
       { value: '。' }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
     await (draw as any).layoutHostAdapter.ensureReady()
     ;(draw as any).layoutHostAdapter.invalidate()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
 
-    const row = draw!.getOriginalRowList().find(r =>
-      r.engineParagraphText?.includes('高血压分级')
-    )
+    const row = draw!
+      .getOriginalRowList()
+      .find(r => r.engineParagraphText?.includes('高血压分级'))
     expect(row).toBeTruthy()
     expect(row!.height).toBeGreaterThan(0)
 
@@ -206,10 +178,7 @@ describe('control.hide collapse (text-engine / #1447)', () => {
       (lastLabel.visualLeft ?? 0) + (lastLabel.metrics?.width ?? 0)
     expect(Math.abs((period.visualLeft ?? 0) - labelRight)).toBeLessThan(1)
 
-    const paintLine = (draw as any).filterEngineLineForPaint(
-      row!.engineLine,
-      draw!.getOriginalElementList()
-    )
+    const paintLine = row!.engineLine!
     const painted = paintLine.glyphs
       .map((g: { charStart: number; charEnd: number }) =>
         row!.engineParagraphText!.slice(g.charStart, g.charEnd)

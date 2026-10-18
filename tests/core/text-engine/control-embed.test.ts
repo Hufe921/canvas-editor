@@ -1,3 +1,5 @@
+import { layoutNativeSnapshot } from '../../factories/native-row'
+import { createTestTextShaper } from '../../factories/text-shaper'
 import { describe, expect, it } from 'vitest'
 import { ElementType } from '../../../src/editor/dataset/enum/Element'
 import {
@@ -7,13 +9,11 @@ import {
 import { TextDirection } from '../../../src/editor/dataset/enum/TextDirection'
 import { ElementBridge } from '../../../src/editor/core/text-engine-host/ElementBridge'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
-import { BrowserTextShaper } from '../../../src/editor/core/text-engine/shape/BrowserTextShaper'
 import { TextLayoutEngine } from '../../../src/editor/core/text-engine/layout/TextLayoutEngine'
-import { mapLayoutToRows } from '../../../src/editor/core/text-engine-host/mapToLegacyRow'
 import type { IElement } from '../../../src/editor/interface/Element'
 
 describe('DEFER-024 inline control slots', () => {
-  it('inserts object-replacement span for checkbox between arabic', () => {
+  it('inserts object-replacement span for checkbox between arabic', async () => {
     const bridge = new ElementBridge()
     const elementList: IElement[] = [
       { value: '\u200B' },
@@ -44,7 +44,7 @@ describe('DEFER-024 inline control slots', () => {
     expect(obj!.logicalIndex).toBe(2)
   })
 
-  it('maps checkbox metrics into legacy row without neighbor width steal', () => {
+  it('maps checkbox metrics into legacy row without neighbor width steal', async () => {
     const bridge = new ElementBridge()
     const elementList: IElement[] = [
       { value: '\u200B' },
@@ -64,7 +64,10 @@ describe('DEFER-024 inline control slots', () => {
       checkboxWidth: 14,
       checkboxGap: 5
     })[0]
-    const engine = new TextLayoutEngine(new BidiResolver(), new BrowserTextShaper())
+    const engine = new TextLayoutEngine(
+      new BidiResolver(),
+      createTestTextShaper()
+    )
     const layout = engine.layoutParagraph({
       spans: para.spans,
       availableWidth: 500,
@@ -73,21 +76,21 @@ describe('DEFER-024 inline control slots', () => {
       lineHeight: 24,
       lineHeightFactor: 1.5
     })
-    const rows = mapLayoutToRows({
+    const rows = await layoutNativeSnapshot({
       layout,
       elementList,
       startRowIndex: 0,
       defaultFont: 'sans-serif',
       defaultSize: 16
     })
-    expect(rows[0].elementList.some(el => el.type === ElementType.CHECKBOX)).toBe(
-      true
-    )
+    expect(
+      rows[0].elementList.some(el => el.type === ElementType.CHECKBOX)
+    ).toBe(true)
     const cb = rows[0].elementList.find(el => el.type === ElementType.CHECKBOX)!
     expect(cb.metrics.width).toBe(24)
   })
 
-  it('RTL checkbox: box sits on the right of its value text (opposite of LTR)', () => {
+  it('RTL checkbox: box sits on the right of its value text (opposite of LTR)', async () => {
     const bridge = new ElementBridge()
     const checkboxMeta = {
       type: ControlType.CHECKBOX,
@@ -148,7 +151,7 @@ describe('DEFER-024 inline control slots', () => {
 
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: para.spans,
@@ -158,7 +161,7 @@ describe('DEFER-024 inline control slots', () => {
       lineHeight: 24,
       lineHeightFactor: 1.5
     })
-    const rows = mapLayoutToRows({
+    const rows = await layoutNativeSnapshot({
       layout,
       elementList,
       startRowIndex: 0,

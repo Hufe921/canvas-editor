@@ -13,7 +13,7 @@ export class Group {
   private draw: Draw
   private options: DeepRequired<IEditorOption>
   private range: RangeManager
-  private fillRectMap: Map<string, IElementFillRect>
+  private fillRectMap: Map<string, IElementFillRect[]>
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -114,11 +114,22 @@ export class Group {
                 ...range,
                 isTable: true,
                 index: e,
-                trIndex: r,
-                tdIndex: d,
-                tdId: td.id,
-                trId: tr.id,
-                tableId: element.tableId
+                trIndex: range.isTable ? range.trIndex : r,
+                tdIndex: range.isTable ? range.tdIndex : d,
+                tdId: range.isTable ? range.tdId : td.id,
+                trId: range.isTable ? range.trId : tr.id,
+                tableId: range.isTable ? range.tableId : element.id,
+                tablePath: [
+                  {
+                    index: e,
+                    trIndex: r,
+                    tdIndex: d,
+                    tdId: td.id,
+                    trId: tr.id,
+                    tableId: element.id
+                  },
+                  ...(range.tablePath || [])
+                ]
               }
             }
           }
@@ -155,26 +166,9 @@ export class Group {
     const left = x
     const right = x + width
     for (const groupId of groupIds) {
-      const fillRect = this.fillRectMap.get(groupId)
-      if (!fillRect) {
-        this.fillRectMap.set(groupId, {
-          x: left,
-          y,
-          width,
-          height
-        })
-        continue
-      }
-      // 视觉区间并集：RTL 逻辑序回扫时不能做 width += 累加，
-      // 否则从首个逻辑元素开始向右越拉越长，覆盖相邻文字
-      const curLeft = fillRect.x
-      const curRight = fillRect.x + fillRect.width
-      const nextLeft = Math.min(curLeft, left)
-      const nextRight = Math.max(curRight, right)
-      fillRect.x = nextLeft
-      fillRect.width = nextRight - nextLeft
-      if (height > fillRect.height) fillRect.height = height
-      if (y < fillRect.y) fillRect.y = y
+      const rects = this.fillRectMap.get(groupId) || []
+      rects.push({ x: left, y, width: right - left, height })
+      this.fillRectMap.set(groupId, rects)
     }
   }
 
@@ -188,8 +182,7 @@ export class Group {
       group: { backgroundColor, opacity, activeOpacity, activeBackgroundColor }
     } = this.options
     ctx.save()
-    this.fillRectMap.forEach((fillRect, groupId) => {
-      const { x, y, width, height } = fillRect
+    this.fillRectMap.forEach((rects, groupId) => {
       if (anchorGroupIds?.includes(groupId)) {
         ctx.globalAlpha = activeOpacity
         ctx.fillStyle = activeBackgroundColor
@@ -197,7 +190,23 @@ export class Group {
         ctx.globalAlpha = opacity
         ctx.fillStyle = backgroundColor
       }
-      ctx.fillRect(x, y, width, height)
+      const sorted = [...rects].sort((a, b) => a.y - b.y || a.x - b.x)
+      const merged: IElementFillRect[] = []
+      for (const rect of sorted) {
+        const previous = merged.at(-1)
+        if (
+          previous &&
+          previous.y === rect.y &&
+          previous.height === rect.height &&
+          rect.x <= previous.x + previous.width + 0.01
+        )
+          previous.width =
+            Math.max(previous.x + previous.width, rect.x + rect.width) -
+            previous.x
+        else merged.push({ ...rect })
+      }
+      for (const rect of merged)
+        ctx.fillRect(rect.x, rect.y, rect.width, rect.height)
     })
     ctx.restore()
     this.clearFillInfo()

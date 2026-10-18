@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { Underline } from '@/editor/core/draw/richtext/Underline'
@@ -17,7 +18,7 @@ const PAGE_OPTION = {
   footer: { disabled: true }
 }
 
-function renderMain(main: IElement[]): Draw {
+async function renderMain(main: IElement[]): Promise<Draw> {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const options = mergeOption({ ...PAGE_OPTION })
@@ -25,7 +26,7 @@ function renderMain(main: IElement[]): Draw {
     editorOptions: options,
     isForceCompensation: true
   })
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -38,8 +39,8 @@ function renderMain(main: IElement[]): Draw {
 }
 
 describe('段落间距', () => {
-  it('段后间距增加段落末行高度，段前间距增加段落首行偏移', () => {
-    const baseDraw = renderMain([
+  it('段后间距增加段落末行高度，段前间距增加段落首行偏移', async () => {
+    const baseDraw = await renderMain([
       { value: 'a' },
       { value: '\n' },
       { value: 'b' },
@@ -49,7 +50,7 @@ describe('段落间距', () => {
 
     // 段落属性真实归属：换行符归属于其后段落
     // 段落 a = [a]，段落 b = [换行符, b]
-    const spacedDraw = renderMain([
+    const spacedDraw = await renderMain([
       { value: 'a', spacingAfter: 10 },
       { value: '\n', spacingBefore: 20, spacingAfter: 30 },
       { value: 'b', spacingBefore: 20, spacingAfter: 30 },
@@ -69,12 +70,13 @@ describe('段落间距', () => {
     // 段后间距记录在行上，供选区等视觉绘制剔除
     expect(spacedRowList[0].spacingAfter || 0).toBeCloseTo(10)
     expect(spacedRowList[1].spacingAfter || 0).toBeCloseTo(30)
-    expect(spacedRowList[1].height - (spacedRowList[1].spacingAfter || 0))
-      .toBeCloseTo(baseRowList[1].height)
+    expect(
+      spacedRowList[1].height - (spacedRowList[1].spacingAfter || 0)
+    ).toBeCloseTo(baseRowList[1].height)
   })
 
-  it('点击段前间距空白应定位到该段落，而非页面最后一行', () => {
-    const draw = renderMain([
+  it('点击段前间距空白应定位到该段落，而非页面最后一行', async () => {
+    const draw = await renderMain([
       { value: 'a' },
       { value: '\n', spacingBefore: 20 },
       { value: 'b', spacingBefore: 20 },
@@ -97,10 +99,10 @@ describe('段落间距', () => {
       vi.restoreAllMocks()
     })
 
-    function recordDecorations(spacingAfter?: number) {
+    async function recordDecorations(spacingAfter?: number) {
       const underlineSpy = vi.spyOn(Underline.prototype, 'recordFillInfo')
       const highlightSpy = vi.spyOn(Highlight.prototype, 'recordFillInfo')
-      const draw = renderMain([
+      const draw = await renderMain([
         { value: 'a', underline: true, highlight: '#ff0', spacingAfter },
         { value: '\n' },
         { value: 'b' },
@@ -115,9 +117,9 @@ describe('段落间距', () => {
       return { underlineY, highlightHeight }
     }
 
-    it('下划线与高亮仅基于内容高度，不延伸至段后间距', () => {
-      const base = recordDecorations()
-      const spaced = recordDecorations(30)
+    it('下划线与高亮仅基于内容高度，不延伸至段后间距', async () => {
+      const base = await recordDecorations()
+      const spaced = await recordDecorations(30)
       expect(spaced.underlineY).toBeCloseTo(base.underlineY)
       expect(spaced.highlightHeight).toBeCloseTo(base.highlightHeight)
     })

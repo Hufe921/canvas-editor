@@ -130,6 +130,7 @@ export class GlobalEvent {
   }
 
   public setPageScale = (evt: WheelEvent) => {
+    if (!this.draw.isReady()) return
     // 设置禁用快捷键
     if (
       this.options.shortcutDisableKeys.includes(

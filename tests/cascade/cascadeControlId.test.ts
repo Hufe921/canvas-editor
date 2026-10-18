@@ -69,7 +69,7 @@ describe('级联按 controlId 精确控制', () => {
   afterEach(() => ctx?.destroy())
 
   it('仅禁用 controlId 命中的控件，同 conceptId 控件不受影响', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildData('1'), footer: [] }
     })
     const list = ctx.editor.command.getControlList()
@@ -80,7 +80,7 @@ describe('级联按 controlId 精确控制', () => {
   })
 
   it('表达式不成立：还原基线（可编辑）', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildData('1'), footer: [] }
     })
     ctx.editor.command.executeSetControlValue({ id: 'c1', value: '0' })

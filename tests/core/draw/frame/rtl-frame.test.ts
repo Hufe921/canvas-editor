@@ -8,17 +8,32 @@ function createContext() {
   return {
     save: vi.fn(),
     restore: vi.fn(),
-    fillText: vi.fn(),
-    measureText: vi.fn(() => ({
-      width: 50,
-      actualBoundingBoxAscent: 10
-    }))
+    fillText: vi.fn(() => {
+      throw new Error('Unexpected Canvas text')
+    }),
+    measureText: vi.fn(() => {
+      throw new Error('Unexpected Canvas text')
+    })
   } as unknown as CanvasRenderingContext2D
+}
+
+function createAdapter(width: number, descent: number) {
+  const drawLine = vi.fn()
+  return {
+    isReady: () => true,
+    layoutPlainText: () => ({
+      paragraphText: '1',
+      lines: [{ width, ascent: 10, descent, glyphs: [] }]
+    }),
+    getGlyphRenderer: () => ({ drawLine }),
+    drawLine
+  }
 }
 
 describe('RTL line and page number placement', () => {
   it('places line numbers outside the right page margin for RTL rows', () => {
     const ctx = createContext()
+    const adapter = createAdapter(10, 8)
     const draw = {
       getOptions: () => ({
         scale: 1,
@@ -31,9 +46,7 @@ describe('RTL line and page number placement', () => {
           type: 'continuity'
         }
       }),
-      getTextParticle: () => ({
-        measureText: () => ({ width: 10, actualBoundingBoxAscent: 8 })
-      }),
+      getLayoutHostAdapter: () => adapter,
       getPageSize: () => ({
         width: 794,
         height: 1123,
@@ -47,24 +60,34 @@ describe('RTL line and page number placement', () => {
           }
         ]
       }),
-      getPageRowList: () => [
-        [{
-          startIndex: 0,
-          rowIndex: 0,
-          direction: TextDirection.RTL,
-          fragmentPosition: null
-        }]
+      getLayoutPages: () => [
+        [
+          {
+            startIndex: 0,
+            rowIndex: 0,
+            direction: TextDirection.RTL,
+            fragmentPosition: null
+          }
+        ]
       ],
       getOriginalMainElementList: () => [{ value: 'ن' }]
     } as any
 
     new LineNumber(draw).render(ctx, 0)
 
-    expect(ctx.fillText).toHaveBeenCalledWith('1', 694, 132)
+    expect(adapter.drawLine).toHaveBeenCalledWith(
+      ctx,
+      expect.anything(),
+      694,
+      132,
+      '1'
+    )
+    expect(ctx.fillText).not.toHaveBeenCalled()
   })
 
   it('maps LEFT page-number alignment to the physical right in RTL', () => {
     const ctx = createContext()
+    const adapter = createAdapter(50, 2)
     const draw = {
       getOptions: () => ({
         scale: 1,
@@ -90,13 +113,22 @@ describe('RTL line and page number placement', () => {
       }),
       getMargins: () => [100, 120, 100, 120],
       getPageCount: () => 3,
-      getPageRowList: () => [[{ direction: TextDirection.RTL }]],
-      getOriginalMainElementList: () => [{ value: 'ن', direction: TextDirection.RTL }],
-      getLayoutHostAdapter: () => ({ isReady: () => false })
+      getLayoutPages: () => [[{ direction: TextDirection.RTL }]],
+      getOriginalMainElementList: () => [
+        { value: 'ن', direction: TextDirection.RTL }
+      ],
+      getLayoutHostAdapter: () => adapter
     } as any
 
     new PageNumber(draw).render(ctx, 0)
 
-    expect(ctx.fillText).toHaveBeenCalledWith('1', 624, 1063)
+    expect(adapter.drawLine).toHaveBeenCalledWith(
+      ctx,
+      expect.anything(),
+      624,
+      1063,
+      '1'
+    )
+    expect(ctx.fillText).not.toHaveBeenCalled()
   })
 })

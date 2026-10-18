@@ -1,7 +1,7 @@
+import ts from 'typescript'
 import { defineConfig } from 'vite'
 import typescript from '@rollup/plugin-typescript'
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js'
-import * as path from 'path'
 import { fileURLToPath } from 'node:url'
 
 export default defineConfig(({ mode }) => {
@@ -44,25 +44,43 @@ export default defineConfig(({ mode }) => {
       test,
       plugins: [
         cssInjectedByJsPlugin({
-          styleId: `${name}-style`,
+          attributes: { id: `${name}-style` },
           topExecutionPriority: true
         }),
-        {
-          ...typescript({
-            tsconfig: './tsconfig.json',
-            include: ['./src/editor/**']
-          }),
-          apply: 'build',
-          declaration: true,
-          declarationDir: 'types/',
-          rootDir: '/'
-        }
+        typescript({
+          tsconfig: './tsconfig.json',
+          include: ['./src/editor/**/*.ts', './src/vite-env.d.ts'],
+          transformers: {
+            afterDeclarations: [
+              context => source =>
+                ts.visitEachChild(
+                  source,
+                  node => {
+                    // CSS is injected into JS; declarations must not import a
+                    // nonexistent stylesheet in a standalone consumer.
+                    if (
+                      ts.isImportDeclaration(node) &&
+                      ts.isStringLiteral(node.moduleSpecifier) &&
+                      node.moduleSpecifier.text.endsWith('.css')
+                    )
+                      return undefined
+                    return node
+                  },
+                  context
+                )
+            ]
+          }
+        })
       ],
       build: {
+        emptyOutDir: true,
         lib: {
           name,
           fileName: name,
-          entry: path.resolve(__dirname, 'src/editor/index.ts')
+          formats: ['es'],
+          entry: fileURLToPath(
+            new URL('./src/editor/index.ts', import.meta.url)
+          )
         },
         sourcemap: true
       }

@@ -76,7 +76,7 @@ describe('compute 计算字段', () => {
   afterEach(() => ctx?.destroy())
 
   it('初始化即自动计算 BMI', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildBmiData(), footer: [] }
     })
     expect(getControlValue(ctx, 'bmi')).toBe('22.9')
@@ -84,7 +84,7 @@ describe('compute 计算字段', () => {
   })
 
   it('源值变化 → 重算；BMI 超阈值 → @self 级联显示提示', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildBmiData(), footer: [] }
     })
     ctx.editor.command.executeSetControlValue({ id: 'cWeight', value: '90' })
@@ -100,7 +100,7 @@ describe('compute 计算字段', () => {
   })
 
   it('任一输入为空 → 计算结果清空', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildBmiData(), footer: [] }
     })
     expect(getControlValue(ctx, 'bmi')).toBe('22.9')
@@ -120,7 +120,7 @@ describe('compute 计算字段', () => {
         compute: "getValue('total') * 2"
       })
     ]
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: data, footer: [] }
     })
     expect(getControlValue(ctx, 'total')).toBe('3')
@@ -137,7 +137,7 @@ describe('compute 计算字段', () => {
       numberControl('cA', 'a', '1', { compute: "getValue('b') + 1" }),
       numberControl('cB', 'b', '1', { compute: "getValue('a') + 1" })
     ]
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: data, footer: [] }
     })
     expect(warn.mock.calls.some(args => String(args[0]).includes('循环'))).toBe(
@@ -147,7 +147,7 @@ describe('compute 计算字段', () => {
   })
 
   it('compute 回写不产生 undo 记录：undo 回退的是用户输入', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildBmiData(), footer: [] }
     })
     // 两次用户输入（首次记录为基线，undo 需要栈长 > 1）
@@ -205,7 +205,7 @@ describe('@self 保留字', () => {
         } as IElement['control']
       }
     ]
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: data, footer: [] }
     })
     expect(isHidden(ctx, 'c2')).toBe(false)

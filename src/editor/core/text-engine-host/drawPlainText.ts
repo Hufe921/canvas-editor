@@ -16,7 +16,7 @@ export interface IPlainTextMetrics {
 
 /**
  * Layout plain chrome text when HarfBuzz path is ready.
- * Returns null so callers can fall back to measureText / fillText.
+ * Before ready, chrome is deferred. Missing glyphs retain native boxes.
  */
 export function measurePlainText(
   adapter: LayoutHostAdapter,
@@ -25,7 +25,7 @@ export function measurePlainText(
   if (!adapter.isReady()) return null
   const layout = adapter.layoutPlainText(style)
   const line = layout?.lines[0]
-  if (!line?.glyphs.length) return null
+  if (!line) return null
   return {
     width: line.width,
     ascent: line.ascent,
@@ -43,38 +43,37 @@ export function truncatePlainText(
   style: IPlainTextStyle,
   maxWidth: number
 ): string {
-  const full = measurePlainText(adapter, style)
-  if (full) {
-    if (full.width <= maxWidth) return style.text
-    let left = 0
-    let right = style.text.length
-    while (left < right) {
-      const mid = Math.ceil((left + right) / 2)
-      const truncated = style.text.substring(0, mid) + '...'
-      const m = measurePlainText(adapter, { ...style, text: truncated })
-      if (m && m.width <= maxWidth) {
-        left = mid
-      } else {
-        right = mid - 1
-      }
-    }
-    return style.text.substring(0, left) + '...'
+  // Keep the context parameter for callers; native measurement never uses it.
+  void ctx
+  const layout = adapter.layoutPlainText(style)
+  if (!layout) return ''
+  if ((layout.lines[0]?.width || 0) <= maxWidth) return style.text
+  if (maxWidth <= 0) return ''
+  const suffix = '...'
+  if (
+    (measurePlainText(adapter, { ...style, text: suffix })?.width || 0) >
+    maxWidth
+  )
+    return ''
+  const glyphs = layout.lines.flatMap(line => line.glyphs)
+  const boundaries = [
+    0,
+    ...[
+      ...new Intl.Segmenter('und', { granularity: 'grapheme' }).segment(
+        style.text
+      )
+    ]
+      .map(item => item.index + item.segment.length)
+      .filter(end => !glyphs.some(g => g.charStart < end && end < g.charEnd))
+  ]
+  // Contextual shaping can change advances non-monotonically. Verify each
+  // candidate from the longest complete grapheme/cluster to the shortest.
+  for (let index = boundaries.length - 1; index >= 0; index--) {
+    const candidate = style.text.slice(0, boundaries[index]) + suffix
+    const metrics = measurePlainText(adapter, { ...style, text: candidate })
+    if (metrics && metrics.width <= maxWidth) return candidate
   }
-  // Legacy measureText path
-  ctx.font = `${style.fontSize}px ${style.fontFamily}`
-  if (ctx.measureText(style.text).width <= maxWidth) return style.text
-  let left = 0
-  let right = style.text.length
-  while (left < right) {
-    const mid = Math.ceil((left + right) / 2)
-    const truncated = style.text.substring(0, mid)
-    if (ctx.measureText(truncated + '...').width <= maxWidth) {
-      left = mid
-    } else {
-      right = mid - 1
-    }
-  }
-  return style.text.substring(0, left) + '...'
+  return ''
 }
 
 /**
@@ -91,7 +90,7 @@ export function drawPlainText(
   if (!adapter.isReady()) return null
   const layout = adapter.layoutPlainText(style)
   const line = layout?.lines[0]
-  if (!line?.glyphs.length) return null
+  if (!line) return null
   adapter
     .getGlyphRenderer()
     .drawLine(ctx, line, originX, baselineY, layout!.paragraphText)

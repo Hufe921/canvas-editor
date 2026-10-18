@@ -1,14 +1,14 @@
+import { createTestTextShaper } from '../../factories/text-shaper'
 import { describe, expect, it } from 'vitest'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
-import { BrowserTextShaper } from '../../../src/editor/core/text-engine/shape/BrowserTextShaper'
 import { TextLayoutEngine } from '../../../src/editor/core/text-engine/layout/TextLayoutEngine'
 import { HitTestAdapter } from '../../../src/editor/core/text-engine-host/HitTestAdapter'
 
 describe('TextLayoutEngine', () => {
-  it('layouts ltr paragraph with browser shaper', () => {
+  it('layouts ltr paragraph with HarfBuzz', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const result = engine.layoutParagraph({
       spans: [
@@ -28,10 +28,10 @@ describe('TextLayoutEngine', () => {
     expect(result.lines[0].glyphs[0].left).toBe(0)
   })
 
-  it('places rtl glyphs in visual order with browser shaper', () => {
+  it('places rtl glyphs in visual order with HarfBuzz', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const result = engine.layoutParagraph({
       spans: [
@@ -52,17 +52,17 @@ describe('TextLayoutEngine', () => {
       lineHeight: 24
     })
     const glyphs = result.lines[0].glyphs
-    expect(glyphs.length).toBe(2)
+    expect(new Set(glyphs.map(g => g.logicalIndexStart)).size).toBe(2)
     // Visual order: ب then ا (logical index 2 then 1)
     expect(glyphs[0].logicalIndexStart).toBe(2)
-    expect(glyphs[1].logicalIndexStart).toBe(1)
-    expect(glyphs[0].left).toBeLessThan(glyphs[1].left)
+    expect(glyphs.at(-1)!.logicalIndexStart).toBe(1)
+    expect(glyphs[0].left).toBeLessThan(glyphs.at(-1)!.left)
   })
 
   it('caret after-index uses trailing edge; hit-test matches', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: [
@@ -89,7 +89,7 @@ describe('TextLayoutEngine', () => {
   it('rtl caret after-index is on glyph left; visualNeighbor moves by screen x', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: [
@@ -150,7 +150,7 @@ describe('TextLayoutEngine', () => {
     }
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      fixedShaper as unknown as BrowserTextShaper
+      fixedShaper as unknown as import('@/editor/core/text-engine/shape/ITextShaper').ITextShaper
     )
     const text = 'abcdefghij'
     const spans = [...text].map((ch, i) => ({
@@ -179,7 +179,7 @@ describe('TextLayoutEngine', () => {
   it('justify stretches every line including the last', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const text = 'abcd'
     const spans = [...text].map((ch, i) => ({
@@ -204,7 +204,7 @@ describe('TextLayoutEngine', () => {
   it('rtl alignment last/only line aligns to the right, not left', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: [
@@ -233,7 +233,7 @@ describe('TextLayoutEngine', () => {
   it('mixed ltr/rtl in rtl paragraph has continuous visual x', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const chars = 'Hi مرحبا'
     const spans = [...chars].map((ch, i) => ({
@@ -249,7 +249,10 @@ describe('TextLayoutEngine', () => {
       lineHeight: 24
     })
     const glyphs = layout.lines[0].glyphs
-    expect(glyphs.length).toBe(chars.length)
+    expect(
+      new Set(glyphs.flatMap(g => g.logicalIndices || [g.logicalIndexStart]))
+        .size
+    ).toBe(chars.length)
     for (let i = 1; i < glyphs.length; i++) {
       expect(glyphs[i].left).toBeGreaterThanOrEqual(glyphs[i - 1].left - 0.01)
     }
@@ -258,7 +261,7 @@ describe('TextLayoutEngine', () => {
   it('line height follows max font size on the line', () => {
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: [

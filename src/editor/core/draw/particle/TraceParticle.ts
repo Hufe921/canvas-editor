@@ -1,3 +1,4 @@
+import type { LayoutRow } from '../../../interface/LayoutRow'
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import { EditorMode } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
@@ -9,7 +10,7 @@ import {
   IElementMetrics,
   IElementPosition
 } from '../../../interface/Element'
-import { IRow, IRowElement } from '../../../interface/Row'
+import { IRowElement } from '../../../interface/Row'
 import { IMarkElementListDeletedOption } from '../../../interface/Trace'
 import { visitElementTree } from '../../../utils/element'
 import { Draw } from '../Draw'
@@ -19,7 +20,7 @@ interface ITraceRenderContext {
   element: IRowElement
   x: number
   y: number
-  curRow: IRow
+  curRow: LayoutRow
   metrics: IElementMetrics
   offsetY: number
   scale: number
@@ -35,7 +36,7 @@ export class TraceParticle {
   // 留痕线条累积器：同色 run 内合并为一次 stroke
   private strikeoutState: { x: number; y: number; width: number } | null = null
   private underlineState: { x: number; y: number; width: number } | null = null
-  private currentRow: IRow | null = null
+  private currentRow: LayoutRow | null = null
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -189,14 +190,7 @@ export class TraceParticle {
     const { hasInsert, hasDelete } = this._getTraceFlags(element)
     // 删除痕迹：累积中划线段
     if (hasDelete) {
-      const standardMetrics = this.draw
-        .getTextParticle()
-        .measureBasisWord(ctx, this.draw.getElementFont(element))
-      let traceAdjustY =
-        y +
-        offsetY +
-        standardMetrics.actualBoundingBoxDescent * scale -
-        metrics.height / 2
+      let traceAdjustY = y + offsetY - metrics.height * 0.3
       if (element.type === ElementType.SUBSCRIPT) {
         traceAdjustY += this.draw.getSubscriptParticle().getOffsetY(element)
       } else if (element.type === ElementType.SUPERSCRIPT) {
@@ -209,7 +203,12 @@ export class TraceParticle {
           width: metrics.width
         }
       } else {
-        this.strikeoutState.width += metrics.width
+        const right = Math.max(
+          this.strikeoutState.x + this.strikeoutState.width,
+          x + metrics.width
+        )
+        this.strikeoutState.x = Math.min(this.strikeoutState.x, x)
+        this.strikeoutState.width = right - this.strikeoutState.x
       }
     } else if (this.strikeoutState) {
       this._flushStrikeout(ctx, scale)
@@ -226,8 +225,13 @@ export class TraceParticle {
       // 与标准下划线一致：内容高度（不含段后间距）- rowMargin 为文本内容底部，再加 2 * scale 腾出与文字的间距
       const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
       const startY =
-        Math.floor(y + rowContentHeight - traceRowMargin + traceUY + 2 * scale) +
-        0.5
+        Math.floor(
+          (curRow.nativeLine
+            ? y + offsetY + metrics.boundingBoxDescent
+            : y + rowContentHeight - traceRowMargin) +
+            traceUY +
+            2 * scale
+        ) + 0.5
       if (!this.underlineState) {
         this.underlineState = {
           x: startX,
@@ -235,7 +239,12 @@ export class TraceParticle {
           width: metrics.width + traceOffsetX
         }
       } else {
-        this.underlineState.width += metrics.width + traceOffsetX
+        const right = Math.max(
+          this.underlineState.x + this.underlineState.width,
+          startX + metrics.width + traceOffsetX
+        )
+        this.underlineState.x = Math.min(this.underlineState.x, startX)
+        this.underlineState.width = right - this.underlineState.x
       }
     } else if (this.underlineState) {
       this._flushUnderline(ctx, scale)

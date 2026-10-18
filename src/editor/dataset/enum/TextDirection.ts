@@ -4,11 +4,6 @@ export enum TextDirection {
   AUTO = 'auto'
 }
 
-export enum TextEngineMode {
-  LEGACY = 'legacy',
-  HARFBUZZ = 'harfbuzz'
-}
-
 export enum CaretMovement {
   VISUAL = 'visual',
   LOGICAL = 'logical'

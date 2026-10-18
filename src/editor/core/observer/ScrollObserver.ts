@@ -21,11 +21,12 @@ export class ScrollObserver {
     this.options = draw.getOptions()
     this.scrollContainer = this.getScrollContainer()
     // 监听滚轮
-    setTimeout(() => {
-      if (!window.scrollY) {
-        this._observer()
-      }
-    })
+    void draw.ready.then(
+      () => {
+        if (draw.isReady() && !window.scrollY) this._observer()
+      },
+      () => {}
+    )
     this._addEvent()
   }
 
@@ -81,6 +82,7 @@ export class ScrollObserver {
   }
 
   private _observer = debounce(() => {
+    if (!this.draw.isReady()) return
     const { intersectionPageNo, visiblePageNoList } = this.getPageVisibleInfo()
     this.draw.setIntersectionPageNo(intersectionPageNo)
     this.draw.setVisiblePageNoList(visiblePageNoList)

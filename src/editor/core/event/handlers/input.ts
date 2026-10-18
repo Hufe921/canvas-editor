@@ -139,7 +139,7 @@ export function removeComposingInput(host: CanvasEvent) {
   elementList.splice(startIndex + 1, endIndex - startIndex)
   const draw = host.getDraw()
   draw
-    .getIncrementalRowComputer()
+    .getDirtyRangeTracker()
     .markRangeDirty(elementList, startIndex + 1, endIndex - startIndex, 0)
   const rangeManager = draw.getRange()
   rangeManager.setRange(startIndex, startIndex)

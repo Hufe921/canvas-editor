@@ -1,5 +1,9 @@
 # RTL 延期 TODO
 
+> 历史设计/迁移记录：旧引擎、模式选择和浏览器文字回退已在 T20 删除。
+> 当前集成请使用[字体与 ESM 迁移](./font-and-esm-migration.md)，下文旧路径不作为现行 API。
+
+
 > 防止遗漏：凡本期（正文 RTL + 独立 text-engine + HarfBuzz）**不做**、后续必做或需评估的事项统一登记于此。  
 > 本期范围见 [RTL 排版设计](./rtl-layout-design.md)。架构基线见 [架构分析](./architecture.md)。
 
@@ -44,6 +48,7 @@
 - [x] [DEFER-006](#defer-006) 复杂 Control 内部 flex / ControlIndentation
 - [x] [DEFER-007](#defer-007) ControlSearch / 嵌套控件 RTL
 - [ ] [DEFER-016](#defer-016) 去掉 legacy 路径与 `mapToLegacyRow`
+- [ ] [DEFER-026](#defer-026) 默认开启 Bunny Fonts 自动补字体及关闭/失败提示
 - [x] [DEFER-018](#defer-018) Accessibility 与 RTL 阅读顺序
 - [x] [DEFER-019](#defer-019) HTML/剪贴板 `dir` 往返完整保真
 - [x] [DEFER-021](#defer-021) 移动端/`beforeinput` 删除主路径兼容
@@ -203,6 +208,8 @@
 - Depends: harfbuzz 路径稳定、回归绿
 - Area: architecture
 - Notes: 删除 `textEngine: legacy` 与 `mapToLegacyRow`，降低双路径成本。过渡期正文旁 TABLE/IMAGE 已用 `forceLegacy` 插行，彻底拆除前须保证混排回归绿。
+- 实施方案：[彻底移除 legacy、统一 HarfBuzz 排版](./legacy-removal-plan.md)。范围同时覆盖浏览器整形回退、对象布局、字体/初始化、字形绘制和公共接口迁移；当前仍为 pending。
+- 执行清单：[24 个主任务与 2 个字体下载子任务](./legacy-removal-tasks.md)。只支持 ESM；autoDownloadFonts 默认开启，从 Bunny Fonts 自动补基本字体，关闭/失败时页面与控制台提示手动补字体包。下载由 DEFER-026 跟踪并纳入本轮验收。
 
 ### DEFER-017
 
@@ -275,3 +282,16 @@
 - Depends: 正文旁 IMAGE/TABLE `forceLegacy` 插行已落地
 - Area: layout
 - Notes: 引擎行按行累计高度补齐分栏 `columnIndex` 与环绕图偏移：与 SURROUND 图纵向相交的正文行平移至图片右缘不再重叠；多栏下引擎行带 `columnIndex`，翻栏后位置按栏偏移。表格单元格/页眉页脚子布局不参与。浮动图命中沿用原路径。
+
+### DEFER-026
+
+- Status: pending
+- Priority: P2
+- Depends: DEFER-016 的字体覆盖诊断、缺字集合与运行时字体注册入口
+- Area: font
+- Notes: 用户已将原后续 TODO 调整为本轮必做：autoDownloadFonts 默认 true，
+  从 Bunny Fonts 按实际文种补基本字体；false 时不发自动请求，缺字在页面与控制台提示。
+  纳入 CSS 元数据、字体二进制/WOFF2 解码、unicode-range 多片段、请求合并与缓存、
+  有限重试、运行期切换、失败转手动补字体及字体注册后的重排。
+  当前仅完成方案调整，尚未实现；完成 T06A/T06B/T07 和自动/关闭/失败验收后再标 done。
+- 实施边界见 [执行任务清单](./legacy-removal-tasks.md#bunny-fonts-字体选择与传输协议)。

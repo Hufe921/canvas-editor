@@ -1,14 +1,14 @@
-import { IRowElement } from '../../../../../interface/Row'
+import type { IElement } from '../../../../../interface/Element'
 
 export class IFrameBlock {
   public static readonly sandbox = ['allow-scripts', 'allow-same-origin']
   public static readonly allow = ['fullscreen']
 
-  private element: IRowElement
+  private element: IElement
   private iframe: HTMLIFrameElement | null = null
   private isReadonly: boolean
 
-  constructor(element: IRowElement) {
+  constructor(element: IElement) {
     this.element = element
     this.isReadonly = false
   }

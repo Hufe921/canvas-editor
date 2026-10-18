@@ -15,7 +15,7 @@ describe('executeValidate', () => {
   let ctx: TestEditorContext
   afterEach(() => ctx?.destroy())
 
-  it('必填未填 → 返回错误并高亮；clearValidate 清除', () => {
+  it('必填未填 → 返回错误并高亮；clearValidate 清除', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -25,7 +25,9 @@ describe('executeValidate', () => {
         preText: '姓名'
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     const result = ctx.editor.command.executeValidate()
     expect(result).toHaveLength(1)
     expect(result[0].controlId).toBe('c1')
@@ -34,7 +36,7 @@ describe('executeValidate', () => {
     ctx.editor.command.executeClearValidate()
   })
 
-  it('必填已填 → 通过', () => {
+  it('必填已填 → 通过', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -43,11 +45,13 @@ describe('executeValidate', () => {
         value: [{ value: '张' }, { value: '三' }]
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     expect(ctx.editor.command.executeValidate()).toHaveLength(0)
   })
 
-  it('隐藏控件豁免必填', () => {
+  it('隐藏控件豁免必填', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -56,11 +60,13 @@ describe('executeValidate', () => {
         hide: true
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     expect(ctx.editor.command.executeValidate()).toHaveLength(0)
   })
 
-  it('文本长度规则', () => {
+  it('文本长度规则', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -69,12 +75,14 @@ describe('executeValidate', () => {
         validation: { minLength: 2, maxLength: 5 }
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     const result = ctx.editor.command.executeValidate()
     expect(result[0].errors[0]).toContain('2')
   })
 
-  it('数值范围', () => {
+  it('数值范围', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -83,11 +91,13 @@ describe('executeValidate', () => {
         validation: { max: 100 }
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     expect(ctx.editor.command.executeValidate()).toHaveLength(1)
   })
 
-  it('日期范围（含 today 关键字）', () => {
+  it('日期范围（含 today 关键字）', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -102,11 +112,13 @@ describe('executeValidate', () => {
         validation: { maxDate: 'today' }
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     expect(ctx.editor.command.executeValidate()).toHaveLength(2)
   })
 
-  it('多选数量', () => {
+  it('多选数量', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -119,11 +131,13 @@ describe('executeValidate', () => {
         validation: { minChecked: 2 }
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     expect(ctx.editor.command.executeValidate()).toHaveLength(1)
   })
 
-  it('select 必填校验基于 code', () => {
+  it('select 必填校验基于 code', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -133,11 +147,13 @@ describe('executeValidate', () => {
         valueSets: [{ value: '有', code: '1' }]
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     expect(ctx.editor.command.executeValidate()).toHaveLength(1)
   })
 
-  it('校验文案支持国际化覆盖（register.langMap）', () => {
+  it('校验文案支持国际化覆盖（register.langMap）', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -146,7 +162,9 @@ describe('executeValidate', () => {
         validation: { minLength: 2 }
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     ctx.editor.register.langMap('zhCN', {
       validate: {
         required: 'CUSTOM_REQUIRED',
@@ -161,7 +179,7 @@ describe('executeValidate', () => {
     expect(result2[0].errors[0]).toBe('CUSTOM_MIN_2')
   })
 
-  it('validation.message 优先级高于国际化文案', () => {
+  it('validation.message 优先级高于国际化文案', async () => {
     const data = [
       control({
         controlId: 'c1',
@@ -170,7 +188,9 @@ describe('executeValidate', () => {
         validation: { message: '请填写此字段' }
       })
     ]
-    ctx = createTestEditor({ data: { header: [], main: data, footer: [] } })
+    ctx = await createTestEditor({
+      data: { header: [], main: data, footer: [] }
+    })
     const result = ctx.editor.command.executeValidate()
     expect(result[0].errors[0]).toBe('请填写此字段')
   })

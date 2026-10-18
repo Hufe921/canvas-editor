@@ -128,14 +128,25 @@ export class ControlSearch {
             const tr = trList[r]
             for (let d = 0; d < tr.tdList.length; d++) {
               const td = tr.tdList[d]
-              const restArgs: ISearchResultRestArgs = {
+              const tablePath = [
+                ...(restArgs?.tablePath || []),
+                {
+                  index: i - 1,
+                  trIndex: r,
+                  tdIndex: d,
+                  tdId: td.id,
+                  trId: tr.id,
+                  tableId: element.id
+                }
+              ]
+              computeHighlight(td.value, {
                 tableId: element.id,
-                tableIndex: i - 1,
+                tableIndex: tablePath[0].index,
                 trIndex: r,
                 tdIndex: d,
-                tdId: td.id
-              }
-              computeHighlight(td.value, restArgs)
+                tdId: td.id,
+                tablePath
+              })
             }
           }
         }
@@ -197,11 +208,19 @@ export class ControlSearch {
     for (let s = 0; s < this.highlightMatchResult.length; s++) {
       const searchMatch = this.highlightMatchResult[s]
       let position: IElementPosition | null = null
+      let targetPositions = positionList
       let rowList
       if (searchMatch.tableId) {
-        const { tableIndex, trIndex, tdIndex, index } = searchMatch
-        const td = elementList[tableIndex!]?.trList![trIndex!].tdList[tdIndex!]
-        position = td?.positionList![index]
+        const { tableIndex, trIndex, tdIndex, index, tablePath } = searchMatch
+        const td = this.draw.getPosition().getTableTdByContext(elementList, {
+          isTable: true,
+          index: tableIndex,
+          trIndex,
+          tdIndex,
+          tablePath
+        })
+        targetPositions = td?.positionList || []
+        position = targetPositions[index]
         rowList = td?.rowList
       } else {
         position = positionList[searchMatch.index]
@@ -211,19 +230,34 @@ export class ControlSearch {
         coordinate: { leftTop, leftBottom, rightTop },
         pageNo
       } = position
-      if (pageNo !== pageIndex) continue
+      const native = this.draw.getPosition().getNativeLines?.(targetPositions)
+      const nativeRects = native?.length
+        ? this.draw
+            .getPosition()
+            .getNativeRangeRects(
+              searchMatch.index,
+              searchMatch.index + 1,
+              targetPositions,
+              pageIndex
+            )
+        : null
+      if (nativeRects ? !nativeRects.length : pageNo !== pageIndex) continue
       ctx.fillStyle = searchMatch.backgroundColor || searchMatchColor
       ctx.globalAlpha = searchMatch.alpha || searchMatchAlpha
       const engineRect = this.draw.getEngineHighlightRectByIndex(
         searchMatch.index,
         position,
-        rowList
+        rowList,
+        targetPositions
       )
       const x = engineRect?.x ?? leftTop[0]
       const y = leftTop[1]
       const width = engineRect?.width ?? rightTop[0] - leftTop[0]
       const height = leftBottom[1] - leftTop[1]
-      ctx.fillRect(x, y, width, height)
+      if (nativeRects) {
+        for (const rect of nativeRects)
+          ctx.fillRect(rect.x, rect.y, rect.width, rect.height)
+      } else ctx.fillRect(x, y, width, height)
     }
     ctx.restore()
   }

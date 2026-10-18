@@ -1,17 +1,19 @@
+import type { LayoutRow } from '../../../interface/LayoutRow'
+import { rowElementMetrics } from '../../layout/rowGeometry'
 import { NBSP, ZERO } from '../../../dataset/constant/Common'
 import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
-import { IElement } from '../../../interface/Element'
-import { IRow, IRowElement } from '../../../interface/Row'
+import { IElement, IElementMetrics } from '../../../interface/Element'
 import { Draw } from '../Draw'
 
 interface ICheckboxRenderOption {
   ctx: CanvasRenderingContext2D
   x: number
   y: number
-  row: IRow
+  row: LayoutRow
   index: number
+  metrics?: IElementMetrics
 }
 
 export class CheckboxParticle {
@@ -54,14 +56,17 @@ export class CheckboxParticle {
       },
       scale
     } = this.options
-    const { metrics, checkbox } = row.elementList[index]
+    const { checkbox } = row.elementList[index]
+    const metrics =
+      payload.metrics ||
+      rowElementMetrics(row, index, scale, this.options.defaultSize)
     // 垂直布局设置
     if (
       verticalAlign === VerticalAlign.TOP ||
       verticalAlign === VerticalAlign.MIDDLE
     ) {
       let nextIndex = index + 1
-      let nextElement: IRowElement | null = null
+      let nextElement: IElement | null = null
       while (nextIndex < row.elementList.length) {
         nextElement = row.elementList[nextIndex]
         if (nextElement.value !== ZERO && nextElement.value !== NBSP) break
@@ -69,9 +74,12 @@ export class CheckboxParticle {
       }
       // 以后一个非空格元素为基准
       if (nextElement) {
-        const {
-          metrics: { boundingBoxAscent, boundingBoxDescent }
-        } = nextElement
+        const { boundingBoxAscent, boundingBoxDescent } = rowElementMetrics(
+          row,
+          nextIndex,
+          scale,
+          this.options.defaultSize
+        )
         const textHeight = boundingBoxAscent + boundingBoxDescent
         if (textHeight > metrics.height) {
           if (verticalAlign === VerticalAlign.TOP) {

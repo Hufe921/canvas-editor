@@ -30,10 +30,9 @@ export function resolveCursorInkMetrics(payload: {
     element?.type === ElementType.SUBSCRIPT
   // 上下标绘制用 actualSize，光标高度仍跟正文名义字号一致
   const fontSize =
-    ((isScript
+    (isScript
       ? element?.size || defaultSize
-      : element?.actualSize || element?.size || defaultSize) *
-      scale) ||
+      : element?.actualSize || element?.size || defaultSize) * scale ||
     metrics.height ||
     defaultSize * scale
   if (isScript) {
@@ -177,9 +176,13 @@ export class Cursor {
       pageNo,
       index: cursorIndex
     } = cursorPosition
+    const nativeCaret = this.position.getNativeCaret?.(
+      hitLineStartIndex !== undefined ? hitLineStartIndex - 1 : cursorIndex,
+      hitLineStartIndex
+    )
     const zoneManager = this.draw.getZone()
     const curPageNo = zoneManager.isMainActive()
-      ? pageNo
+      ? (nativeCaret?.pageNo ?? pageNo)
       : this.draw.getPageNo()
     // 混合纸张方向：按页累计偏移
     const { x: preX, y: preY } = this.draw.getPageOffset(curPageNo)
@@ -194,7 +197,7 @@ export class Cursor {
     const textHeight = Math.max(inkAscent + inkDescent, fontSize * 0.5)
     // 略高于字身：上下各加约 1/8 字号（2px～6px）
     const pad = Math.min(Math.max(fontSize / 8, 2 * scale), 6 * scale)
-    const cursorHeight = textHeight + pad * 2
+    const cursorHeight = nativeCaret?.height ?? textHeight + pad * 2
     const defaultOffsetHeight = CURSOR_AGENT_OFFSET_HEIGHT * scale
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     if (isFocus) {
@@ -205,20 +208,21 @@ export class Cursor {
     // 基线：leftTop + ascent；光标相对字身上下各外扩 pad。
     // 图片/公式的 position.ascent 是顶对齐偏移（row.ascent - height），不是行基线
     const isImageLike =
-      element?.type === ElementType.IMAGE ||
-      element?.type === ElementType.LATEX
+      element?.type === ElementType.IMAGE || element?.type === ElementType.LATEX
     const baselineOffset = isImageLike ? ascent + metrics.height : ascent
-    const cursorTop = leftTop[1] + baselineOffset - inkAscent - pad + preY
+    const cursorTop =
+      (nativeCaret?.y ?? leftTop[1] + baselineOffset - inkAscent - pad) + preY
     // Host index = after this element. LTR trailing = rightTop; RTL trailing = leftTop.
     const isRtlRun = ((cursorPosition.bidiLevel ?? 0) & 1) === 1
     const cursorLeft =
-      (hitLineStartIndex
-        ? isRtlRun
-          ? rightTop[0]
-          : leftTop[0]
-        : isRtlRun
-          ? leftTop[0]
-          : rightTop[0]) + preX
+      (nativeCaret?.x ??
+        (hitLineStartIndex
+          ? isRtlRun
+            ? rightTop[0]
+            : leftTop[0]
+          : isRtlRun
+            ? leftTop[0]
+            : rightTop[0])) + preX
     // Sync IME textarea direction with paragraph
     try {
       const adapter = this.draw.getLayoutHostAdapter()
@@ -278,8 +282,9 @@ export class Cursor {
     if (!cursorPosition || !direction) return
     const zoneManager = this.draw.getZone()
     // 页眉/页脚 positionList 跨页共享，pageNo 不能代表光标实际所在页，用当前页
+    const nativeCaret = this.position.getNativeCaret?.(cursorPosition.index)
     const pageNo = zoneManager.isMainActive()
-      ? cursorPosition.pageNo
+      ? (nativeCaret?.pageNo ?? cursorPosition.pageNo)
       : this.draw.getPageNo()
     const {
       coordinate: { leftTop, leftBottom }
@@ -310,8 +315,13 @@ export class Cursor {
       this.container.getBoundingClientRect().top
     // 向上移动时：以顶部距离为准，向下移动时：以底部位置为准
     const isUp = direction === MoveDirection.UP
-    const x = leftBottom[0] + (isDocumentScroll ? 0 : rect.left)
-    const y = isUp ? leftTop[1] + prePageY : leftBottom[1] + prePageY
+    const x =
+      (nativeCaret?.x ?? leftBottom[0]) + (isDocumentScroll ? 0 : rect.left)
+    const y = nativeCaret
+      ? nativeCaret.y + (isUp ? 0 : nativeCaret.height) + prePageY
+      : isUp
+        ? leftTop[1] + prePageY
+        : leftBottom[1] + prePageY
     // 可视范围根据参数调整
     const { maskMargin } = this.options
     rect.top += maskMargin[0]

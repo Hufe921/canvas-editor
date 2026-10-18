@@ -121,8 +121,8 @@ export class Area {
   public render(ctx: CanvasRenderingContext2D, pageNo: number) {
     if (!this.areaInfoMap.size) return
     ctx.save()
-    const margins = this.draw.getMargins()
-    const width = this.draw.getInnerWidth()
+    const { margins } = this.draw.getPageSize(pageNo)
+    const width = this.draw.getInnerWidth(this.draw.getPageDirection(pageNo))
     for (const areaInfoItem of this.areaInfoMap) {
       const { area, positionList } = areaInfoItem[1]
       if (
@@ -168,7 +168,11 @@ export class Area {
             ...defaultPlaceholderOption,
             ...area.placeholder
           },
-          startY: firstPosition.coordinate.leftTop[1]
+          startY: firstPosition.coordinate.leftTop[1],
+          startX: x,
+          innerWidth: areaWidth,
+          layoutScope: `placeholder:area:${areaInfoItem[0]}`,
+          pageNo
         })
       }
       ctx.translate(-0.5, -0.5)

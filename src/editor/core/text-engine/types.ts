@@ -19,11 +19,28 @@ export interface TextStyleProps {
   objectWidth?: number
   /** Inline object height (image/latex); raises line box when taller than text */
   objectHeight?: number
+  /** Space below the image baseline reserved for its caption. */
+  objectCaptionHeight?: number
+  /** CSS padding for an atomic label, included before wrapping. */
+  padding?: number[]
+  control?: {
+    id: string
+    minWidth: number
+    flex?: string
+    valueStart: boolean
+    component: string
+  }
+  rowMargin?: number
+  explicitWidth?: number
+  hidden?: boolean
+  objectType?: import('../../interface/Layout').InlineObject['objectType']
 }
 
 export interface TextSpan {
   /** Logical index into host element list (start of this span) */
   logicalIndex: number
+  /** Original paragraph offsets for generated justification characters. */
+  sourceOffsets?: number[]
   /**
    * Per UTF-16 unit → host element index. Required when a single IElement
    * holds a multi-code-unit grapheme (Intl.Segmenter) or spans were merged.
@@ -56,6 +73,18 @@ export interface StyleRun {
 
 export interface ShapedGlyph {
   glyphId: number
+  /** Unbreakable source span without changing its text/cluster offsets. */
+  atomic?: { start: number; end: number }
+  /** Explicit no-ink placeholder for ignored text when no face is registered. */
+  inkless?: boolean
+  missing?: {
+    kind: 'missingGlyph'
+    text: string
+    diagnosticId: string
+    metrics: import('../../interface/TextEngine').FontPlaceholderMetrics
+  }
+  /** Actual registered face used by HarfBuzz; absent on transitional browser glyphs. */
+  font?: import('../../interface/Layout').LayoutFontRef
   cluster: number
   ax: number
   dx: number
@@ -90,6 +119,7 @@ export interface LayoutLine {
   logicalEnd: number
   direction: ResolvedDirection
   shiftX: number
+  inset?: number
 }
 
 export interface LayoutResult {
@@ -101,6 +131,9 @@ export interface LayoutResult {
 export interface LayoutParagraphInput {
   spans: TextSpan[]
   availableWidth: number
+  /** Per-line scope constraints from document flow, before zoom. */
+  lineWidths?: number[]
+  lineOffsets?: number[]
   direction: ResolvedDirection
   /** Alignment after resolve: left | right | center | justify | alignment */
   align: 'left' | 'right' | 'center' | 'justify' | 'alignment'
@@ -134,3 +167,39 @@ export interface VisualRect {
   y: number
   height: number
 }
+
+export type {
+  FontCodePoint,
+  FontCoverageChange,
+  FontCoverageIssue,
+  FontCoverageIssueBase,
+  FontCoverageLocation,
+  FontCoverageReason,
+  FontCoverageReport,
+  FontDownloadAttempt,
+  FontDownloadStatus,
+  FontFailureStage
+} from '../../interface/FontCoverage'
+export type {
+  BlockBox,
+  BreakNode,
+  DocumentLayout,
+  InlineObject,
+  LayoutCaret,
+  LayoutCluster,
+  LayoutFontRef,
+  LayoutGlyph,
+  LayoutNode,
+  LayoutNodeBase,
+  LayoutPage,
+  LayoutRect,
+  LayoutRevision,
+  LayoutScope,
+  LayoutScopeId,
+  LayoutSource,
+  LayoutTextPosition,
+  MissingGlyphBox,
+  TableCellLayout,
+  TableFragment,
+  TextLine
+} from '../../interface/Layout'

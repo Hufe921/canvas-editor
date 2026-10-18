@@ -1,10 +1,16 @@
-import { IRowElement } from '../../../../../interface/Row'
+import type {
+  IElement,
+  IElementMetrics
+} from '../../../../../interface/Element'
 
 export class VideoBlock {
-  private element: IRowElement
+  private element: IElement
   protected videoCache: Map<string, HTMLVideoElement>
 
-  constructor(element: IRowElement) {
+  constructor(
+    element: IElement,
+    private metrics: IElementMetrics
+  ) {
     this.element = element
     this.videoCache = new Map()
   }
@@ -14,13 +20,7 @@ export class VideoBlock {
       const src = this.element.block?.videoBlock?.src || ''
       if (this.videoCache.has(src)) {
         const video = this.videoCache.get(src)!
-        ctx.drawImage(
-          video,
-          x,
-          y,
-          this.element.metrics.width,
-          this.element.metrics.height
-        )
+        ctx.drawImage(video, x, y, this.metrics.width, this.metrics.height)
         resolve(this.element)
       } else {
         const video = document.createElement('video')
@@ -28,13 +28,7 @@ export class VideoBlock {
         video.muted = true
         video.crossOrigin = 'anonymous'
         video.onloadeddata = () => {
-          ctx.drawImage(
-            video,
-            x,
-            y,
-            this.element.metrics.width,
-            this.element.metrics.height
-          )
+          ctx.drawImage(video, x, y, this.metrics.width, this.metrics.height)
           this.videoCache.set(src, video)
           resolve(this.element)
         }

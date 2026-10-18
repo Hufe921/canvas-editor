@@ -33,21 +33,9 @@ export class PageNumber {
     return text.replace(replaceReg, pageNoText)
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
-    const {
-      scale,
-      pageNumber: {
-        size,
-        font,
-        color,
-        rowFlex,
-        numberType,
-        format,
-        startPageNo,
-        fromPageNo
-      }
-    } = this.options
-    if (pageNo < fromPageNo) return
+  public getText(pageNo: number): string {
+    const { numberType, format, startPageNo, fromPageNo } =
+      this.options.pageNumber
     // 处理页码格式
     let text = format
     const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
@@ -68,6 +56,16 @@ export class PageNumber {
         numberType
       )
     }
+    return text
+  }
+
+  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+    const {
+      scale,
+      pageNumber: { size, font, color, rowFlex, fromPageNo }
+    } = this.options
+    if (pageNo < fromPageNo) return
+    const text = this.getText(pageNo)
     // 混合纸张方向：按页取尺寸
     const { width, height, margins } = this.draw.getPageSize(pageNo)
     const pageNumberBottom = this.draw.getPageNumberBottom()
@@ -81,7 +79,7 @@ export class PageNumber {
     }
     const adapter = this.draw.getLayoutHostAdapter()
     // RTL：LEFT/RIGHT 物理侧互换，CENTER 保持居中
-    const pageRows = this.draw.getPageRowList()[pageNo] || []
+    const pageRows = this.draw.getLayoutPages()[pageNo] || []
     const firstRow = pageRows.find(row => row.direction)
     const firstElement = this.draw
       .getOriginalMainElementList()
@@ -106,17 +104,6 @@ export class PageNumber {
         x = width - metrics.width - margins[1]
       }
       drawPlainText(adapter, ctx, style, x, y)
-    } else {
-      ctx.fillStyle = color
-      ctx.font = `${fontSize}px ${font}`
-      const { width: textWidth } = ctx.measureText(text)
-      let x = margins[3]
-      if (resolvedRowFlex === RowFlex.CENTER) {
-        x = (width - textWidth) / 2
-      } else if (resolvedRowFlex === RowFlex.RIGHT) {
-        x = width - textWidth - margins[1]
-      }
-      ctx.fillText(text, x, y)
     }
     ctx.restore()
   }

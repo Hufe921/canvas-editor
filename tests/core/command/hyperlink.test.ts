@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 
 describe('超链接命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeHyperlink 插入超链接', () => {
-    ctx = createTestEditor()
+  it('executeHyperlink 插入超链接', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'link' }])
     ctx.editor.command.executeSelectAll()
@@ -18,13 +18,13 @@ describe('超链接命令', () => {
     }).not.toThrow()
   })
 
-  it('executeDeleteHyperlink 空操作不抛错', () => {
-    ctx = createTestEditor()
+  it('executeDeleteHyperlink 空操作不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => ctx.editor.command.executeDeleteHyperlink()).not.toThrow()
   })
 
-  it('executeCancelHyperlink 空操作不抛错', () => {
-    ctx = createTestEditor()
+  it('executeCancelHyperlink 空操作不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => ctx.editor.command.executeCancelHyperlink()).not.toThrow()
   })
 })

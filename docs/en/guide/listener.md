@@ -9,7 +9,7 @@ The listener can only respond to one method, and no new listening methods will b
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = await Editor.create(container, data, options)
 instance.listener.eventName = ()=>{}
 ```
 
@@ -124,3 +124,18 @@ Usage:
 ```javascript
 instance.listener.zoneChange = (payload: EditorZone) => {}
 ```
+
+## fontCoverageChange
+
+Receives the current `FontCoverageReport` when coverage/download state changes;
+resolved issues are removed. Query once after subscribing to avoid depending on
+initial event timing. Built-in hints need no subscription.
+
+```typescript
+instance.listener.fontCoverageChange = report => {
+  console.log(report.issues)
+}
+const current = instance.getFontCoverageReport()
+```
+
+[Font APIs and coverage limits](./font-and-esm-migration.md).

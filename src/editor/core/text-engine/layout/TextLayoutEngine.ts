@@ -1,10 +1,8 @@
+import { shapeInlineObject } from '../shape/InlineObjectShaper'
 import { BidiResolver } from '../bidi/BidiResolver'
 import { ITextShaper } from '../shape/ITextShaper'
 import { TextScript } from '../../../dataset/enum/TextScript'
-import {
-  containsShapingScript,
-  detectScript
-} from '../utils/scriptFont'
+import { containsShapingScript, detectScript } from '../utils/scriptFont'
 import {
   LayoutLine,
   LayoutParagraphInput,
@@ -17,6 +15,7 @@ import {
 } from '../types'
 
 const TATWEEL = '\u0640'
+const scriptSegmenter = new Intl.Segmenter('und', { granularity: 'grapheme' })
 
 export class TextLayoutEngine {
   constructor(
@@ -36,9 +35,38 @@ export class TextLayoutEngine {
       result.lines,
       input.align,
       input.availableWidth,
-      result.paragraphText
+      result.paragraphText,
+      input.lineWidths,
+      input.lineOffsets
     )
+    if (kashidaInput) {
+      const offsets = kashidaInput.spans.flatMap(
+        span => span.sourceOffsets || []
+      )
+      for (const line of result.lines) {
+        for (const glyph of line.glyphs) {
+          glyph.charStart = offsets[glyph.charStart] ?? glyph.charStart
+          glyph.charEnd = (offsets[glyph.charEnd - 1] ?? glyph.charEnd - 1) + 1
+        }
+        line.textStart = Math.min(...line.glyphs.map(g => g.charStart))
+        line.textEnd = Math.max(...line.glyphs.map(g => g.charEnd))
+      }
+      result.paragraphText = natural.paragraphText
+    }
     return result
+  }
+
+  /** Shared by coverage scanning and layout so style/BiDi boundaries agree. */
+  getShapingRuns(spans: TextSpan[], direction: ResolvedDirection): StyleRun[] {
+    const text = spans.map(span => span.text).join('')
+    return this.mergeRunsForShaping(
+      this.splitStyleRuns(
+        text,
+        this.bidi.getLevelRuns(text, direction),
+        spans,
+        this.buildOffsetMap(spans)
+      )
+    ).flatMap(run => this.itemizeScript(run))
   }
 
   private layoutPass(input: LayoutParagraphInput): LayoutResult {
@@ -57,37 +85,109 @@ export class TextLayoutEngine {
       input.lineHeightFactor ??
       (refFontSize > 0 ? lineHeight / refFontSize : 1.5)
 
-    const levelRuns = this.bidi.getLevelRuns(paragraphText, direction)
-    const styleRuns = this.splitStyleRuns(
-      paragraphText,
-      levelRuns,
-      spans,
-      offsetToLogical
-    )
-    // 颜色不参与整形边界：阿语等连写脚本跨颜色仍整段 HB，避免连字被拆断
-    const shapeRuns = this.mergeRunsForShaping(styleRuns)
+    const shapeRuns = this.getShapingRuns(spans, direction)
 
-    // Shape by (level × shape-style) so HB gets correct run direction; keep logical order
-    const logicalGlyphs = shapeRuns
-      .flatMap(run => this.shaper.shape(run))
-      .sort(
-        (a, b) =>
-          a.charStart - b.charStart || a.logicalIndexStart - b.logicalIndexStart
+    const shapeRange = (start: number, end: number) => {
+      const glyphs = shapeRuns
+        .flatMap(run => {
+          const from = Math.max(start, run.textStart)
+          const to = Math.min(end, run.textEnd)
+          if (from >= to) return []
+          const slice = {
+            ...run,
+            text: paragraphText.slice(from, to),
+            textStart: from,
+            textEnd: to
+          }
+          return slice.style.objectWidth != null
+            ? shapeInlineObject(slice)
+            : this.shaper.shape(slice)
+        })
+        .sort(
+          (a, b) =>
+            a.charStart - b.charStart ||
+            a.logicalIndexStart - b.logicalIndexStart
+        )
+      // Explicit widths belong to source spans, not individual fallback-font runs.
+      let offset = 0
+      for (const span of spans) {
+        const from = offset
+        offset += span.text.length
+        if (span.style.explicitWidth == null && !span.style.padding) continue
+        const members = glyphs.filter(
+          g => g.charStart >= from && g.charStart < offset
+        )
+        const natural = members.reduce((sum, g) => sum + Math.max(0, g.ax), 0)
+        const padding = span.style.padding || [0, 0, 0, 0]
+        const target =
+          span.style.explicitWidth == null
+            ? natural + padding[1] + padding[3]
+            : Math.max(0, span.style.explicitWidth)
+        const visual = this.reorderLineVisual(members, paragraphText, direction)
+        for (const [i, g] of members.entries()) {
+          // Host explicit widths describe an atomic element slot.
+          if (span.style.padding) {
+            // Preserve HB pen positions inside one atomic padded label.
+            g.atomic = { start: from, end: offset }
+            g.dx += g === visual[0] ? padding[3] : 0
+            g.ax +=
+              (g === visual[0] ? padding[3] : 0) +
+              (g === visual[visual.length - 1] ? padding[1] : 0)
+          } else {
+            g.charStart = from
+            g.charEnd = offset
+            g.ax = natural
+              ? (Math.max(0, g.ax) * target) / natural
+              : i === 0
+                ? target
+                : 0
+          }
+        }
+      }
+      this.applySpanPaintStyles(glyphs, spans)
+      this.applyScriptShifts(glyphs)
+      return glyphs
+    }
+    const controlOrigins = new Map<string, { start: number; inset: number }>()
+    const split = (glyphs: ShapedGlyph[], startLine = 0) =>
+      this.breakLines(
+        glyphs,
+        availableWidth,
+        direction,
+        lineHeight,
+        lineHeightFactor,
+        offsetToLogical,
+        paragraphText,
+        wordBreak,
+        controlOrigins,
+        input.lineWidths,
+        startLine
       )
-    this.applySpanPaintStyles(logicalGlyphs, spans)
-    this.applyScriptShifts(logicalGlyphs)
-
-    // 逻辑序断行（词优先）；视觉重排仅作用于行内
-    const lines = this.breakLines(
-      logicalGlyphs,
-      availableWidth,
-      direction,
-      lineHeight,
-      lineHeightFactor,
-      offsetToLogical,
-      paragraphText,
-      wordBreak
-    )
+    const initial = shapeRange(0, paragraphText.length)
+    const candidates = split(initial)
+    const lines: LayoutLine[] = []
+    // Reshape at actual line boundaries: Arabic joining and ligatures cannot
+    // retain forms shaped with characters that moved to the following line.
+    // Refinement only splits source intervals, so it terminates without a fallback.
+    const queue = [...candidates]
+    while (queue.length) {
+      const candidate = queue.shift()!
+      const glyphs =
+        candidate.textStart === 0 && candidate.textEnd === paragraphText.length
+          ? initial
+          : shapeRange(candidate.textStart, candidate.textEnd)
+      const refined = split(glyphs, lines.length)
+      if (refined.length > 1) {
+        queue.unshift(...refined)
+      } else {
+        lines.push({
+          ...candidate,
+          ...refined[0],
+          textStart: candidate.textStart,
+          textEnd: candidate.textEnd
+        })
+      }
+    }
     for (const line of lines) {
       line.glyphs = this.reorderLineVisual(
         line.glyphs,
@@ -118,11 +218,7 @@ export class TextLayoutEngine {
   }
 
   /** 行内可插入 kashida 的逻辑偏移：位于两个相邻阿语字母之间 */
-  private kashidaPoints(
-    text: string,
-    start: number,
-    end: number
-  ): number[] {
+  private kashidaPoints(text: string, start: number, end: number): number[] {
     const points: number[] = []
     for (let o = start; o < end - 1; o++) {
       if (this.isArabicLetter(text[o]) && this.isArabicLetter(text[o + 1])) {
@@ -144,9 +240,9 @@ export class TextLayoutEngine {
       textEnd: 1,
       logicalIndexAt: () => 0
     }
-    return this.shaper
-      .shape(run)
-      .reduce((m, g) => m + Math.max(g.ax, 0), 0)
+    const glyphs = this.shaper.shape(run)
+    if (glyphs.some(g => g.missing || g.inkless)) return 0
+    return glyphs.reduce((m, g) => m + Math.max(g.ax, 0), 0)
   }
 
   /**
@@ -158,6 +254,7 @@ export class TextLayoutEngine {
     input: LayoutParagraphInput,
     result: LayoutResult
   ): LayoutParagraphInput | null {
+    if (result.lines.some(line => line.glyphs.some(g => g.missing))) return null
     const { spans, availableWidth, align } = input
     const paragraphText = result.paragraphText
     const insertions = new Map<number, number>()
@@ -167,10 +264,12 @@ export class TextLayoutEngine {
       // 段末行不参与 kashida 拉伸（与两端对齐惯例一致，单行段也不拉）
       const isLast = i === result.lines.length - 1
       const shouldJustify =
-        !isLast &&
-        (align === 'justify' || (align === 'alignment'))
+        !isLast && (align === 'justify' || align === 'alignment')
       if (!shouldJustify) continue
-      const extra = availableWidth - line.width
+      const extra =
+        (input.lineWidths?.[i] ?? availableWidth) -
+        (line.inset || 0) -
+        line.width
       if (extra <= 0.5) continue
       const arabicGlyph = line.glyphs.find(g =>
         containsShapingScript(paragraphText.slice(g.charStart, g.charEnd))
@@ -182,10 +281,7 @@ export class TextLayoutEngine {
         line.textEnd
       )
       if (!points.length) continue
-      const advance = this.measureTatweel(
-        arabicGlyph.style,
-        line.direction
-      )
+      const advance = this.measureTatweel(arabicGlyph.style, line.direction)
       if (advance <= 0) continue
       const count = Math.min(
         points.length,
@@ -217,29 +313,41 @@ export class TextLayoutEngine {
       offset = spanEnd
       const local: Array<{ at: number; count: number }> = []
       for (const [charOffset, count] of insertions) {
-        if (charOffset >= spanStart && charOffset <= spanEnd) {
+        if (charOffset > spanStart && charOffset <= spanEnd) {
           local.push({ at: charOffset - spanStart, count })
         }
       }
+      const sourceOffsets = Array.from(
+        { length: span.text.length },
+        (_, i) => spanStart + i
+      )
       if (!local.length) {
-        result.push(span)
+        result.push({ ...span, sourceOffsets })
         continue
       }
-      local.sort((a, b) => a.at - b.at)
+      local.sort((a, b) => b.at - a.at)
       let text = span.text
       const indices = span.logicalIndices
         ? [...span.logicalIndices]
         : text.split('').map(() => span.logicalIndex)
       for (const { at, count } of local) {
         const logicalBefore =
-          at > 0 ? indices[at - 1] : indices.length ? indices[0] : span.logicalIndex
-        text =
-          text.slice(0, at) +
-          TATWEEL.repeat(count) +
-          text.slice(at)
+          at > 0
+            ? indices[at - 1]
+            : indices.length
+              ? indices[0]
+              : span.logicalIndex
+        text = text.slice(0, at) + TATWEEL.repeat(count) + text.slice(at)
         indices.splice(at, 0, ...new Array<number>(count).fill(logicalBefore))
+        sourceOffsets.splice(
+          at,
+          0,
+          ...new Array<number>(count).fill(
+            Math.max(spanStart, spanStart + at - 1)
+          )
+        )
       }
-      result.push({ ...span, text, logicalIndices: indices })
+      result.push({ ...span, text, logicalIndices: indices, sourceOffsets })
     }
     return result
   }
@@ -302,14 +410,19 @@ export class TextLayoutEngine {
   private sameShapeStyle(a: StyleRun, b: StyleRun): boolean {
     if (a.direction !== b.direction) return false
     if (a.textEnd !== b.textStart) return false
-    // 拉丁等与阿/印地/泰不可合并，否则前缀宽与分段 fillText 不一致，选区偏短
-    if (containsShapingScript(a.text) !== containsShapingScript(b.text)) {
-      return false
-    }
     const sa = a.style
     const sb = b.style
     // Object slots never merge with text or other objects
-    if (sa.objectWidth != null || sb.objectWidth != null) return false
+    if (
+      sa.padding ||
+      sb.padding ||
+      JSON.stringify(sa.control) !== JSON.stringify(sb.control) ||
+      sa.objectWidth != null ||
+      sb.objectWidth != null ||
+      sa.explicitWidth != null ||
+      sb.explicitWidth != null
+    )
+      return false
     return (
       sa.fontFamily === sb.fontFamily &&
       sa.fontSize === sb.fontSize &&
@@ -318,6 +431,36 @@ export class TextLayoutEngine {
       (sa.letterSpacing || 0) === (sb.letterSpacing || 0) &&
       (sa.scriptShift || '') === (sb.scriptShift || '')
     )
+  }
+
+  /** Common/inherited graphemes follow their surrounding script, never split a mark. */
+  private itemizeScript(run: StyleRun): StyleRun[] {
+    if (run.style.objectWidth != null || !run.text) return [run]
+    const result: StyleRun[] = []
+    let start = 0
+    let script: TextScript | undefined
+    for (const { segment, index } of scriptSegmenter.segment(run.text)) {
+      const next = detectScript(segment)
+      if (next === TextScript.ZYYY || /^\p{Mark}+$/u.test(segment)) continue
+      if (script && next !== script) {
+        result.push({
+          ...run,
+          text: run.text.slice(start, index),
+          textStart: run.textStart + start,
+          textEnd: run.textStart + index,
+          script
+        })
+        start = index
+      }
+      script = next
+    }
+    result.push({
+      ...run,
+      text: run.text.slice(start),
+      textStart: run.textStart + start,
+      script
+    })
+    return result
   }
 
   private mergeRunsForShaping(runs: StyleRun[]): StyleRun[] {
@@ -343,23 +486,31 @@ export class TextLayoutEngine {
     if (!glyphs.length || !spans.length) return
     const colorAt: Array<string | undefined> = []
     const shiftAt: Array<TextStyleProps['scriptShift']> = []
+    const marginAt: number[] = []
     for (const span of spans) {
       for (let i = 0; i < span.text.length; i++) {
         colorAt.push(span.style.color)
         shiftAt.push(span.style.scriptShift)
+        marginAt.push(span.style.rowMargin || 0)
       }
     }
     for (const g of glyphs) {
+      const rowMargin = Math.max(0, ...marginAt.slice(g.charStart, g.charEnd))
       const color = colorAt[g.charStart]
       const scriptShift = shiftAt[g.charStart]
       const nextColor =
         color !== undefined && color !== g.style.color ? color : g.style.color
       const nextShift =
         scriptShift !== g.style.scriptShift ? scriptShift : g.style.scriptShift
-      if (nextColor !== g.style.color || nextShift !== g.style.scriptShift) {
+      if (
+        nextColor !== g.style.color ||
+        nextShift !== g.style.scriptShift ||
+        rowMargin !== g.style.rowMargin
+      ) {
         g.style = {
           ...g.style,
           color: nextColor,
+          rowMargin,
           scriptShift: nextShift
         }
       }
@@ -427,6 +578,10 @@ export class TextLayoutEngine {
     let ascent = baseHeight * 0.8
     let descent = baseHeight * 0.2
     for (const g of glyphs) {
+      if (g.missing) {
+        ascent = Math.max(ascent, g.missing.metrics.ascent)
+        descent = Math.max(descent, g.missing.metrics.descent)
+      }
       const fs = g.style.fontSize || 0
       const shift = Math.abs(g.baselineShift ?? 0) || fs / 2
       if (g.style.scriptShift === 'super') {
@@ -455,7 +610,10 @@ export class TextLayoutEngine {
     lineHeightFactor: number,
     offsetToLogical: (o: number) => number,
     paragraphText: string,
-    wordBreak: 'break-word' | 'break-all'
+    wordBreak: 'break-word' | 'break-all',
+    origins: Map<string, { start: number; inset: number }>,
+    widths?: number[],
+    startLine = 0
   ): LayoutLine[] {
     const lines: LayoutLine[] = []
     if (!glyphs.length) {
@@ -477,17 +635,32 @@ export class TextLayoutEngine {
     }
 
     let lineGlyphs: ShapedGlyph[] = []
+    const limit = () => widths?.[startLine + lines.length] ?? availableWidth
     let lineWidth = 0
+    const insetFor = (glyph: ShapedGlyph) => {
+      const control = glyph.style.control
+      const origin = control && origins.get(control.id)
+      return control?.valueStart && origin && glyph.charStart > origin.start
+        ? Math.min(origin.inset, Math.max(0, limit() - 1))
+        : 0
+    }
+    let inset = insetFor(glyphs[0])
+    const remember = (glyph: ShapedGlyph) => {
+      const c = glyph.style.control
+      if (
+        c?.valueStart &&
+        !origins.has(c.id) &&
+        ['value', 'placeholder', 'preText'].includes(c.component)
+      ) {
+        origins.set(c.id, { start: glyph.charStart, inset: inset + lineWidth })
+      }
+    }
     const flush = () => {
       if (!lineGlyphs.length) return
       // 行尾空白可留在行末；行首空白在新行丢弃由调用方处理
       const textStart = lineGlyphs[0].charStart
       const textEnd = lineGlyphs[lineGlyphs.length - 1].charEnd
-      const box = this.measureLineBox(
-        lineGlyphs,
-        lineHeight,
-        lineHeightFactor
-      )
+      const box = this.measureLineBox(lineGlyphs, lineHeight, lineHeightFactor)
       lines.push({
         glyphs: lineGlyphs,
         width: lineWidth,
@@ -499,23 +672,43 @@ export class TextLayoutEngine {
         logicalStart: offsetToLogical(textStart),
         logicalEnd: offsetToLogical(Math.max(textStart, textEnd - 1)),
         direction,
-        shiftX: 0
+        shiftX: 0,
+        inset
       })
       lineGlyphs = []
       lineWidth = 0
     }
 
-    const appendGlyph = (g: ShapedGlyph) => {
-      const adv = Math.max(g.ax, 0)
-      if (lineWidth + adv > availableWidth && lineGlyphs.length) {
-        flush()
+    // HarfBuzz can emit several glyphs for one cluster. Never wrap between them.
+    const appendClusters = (items: ShapedGlyph[]) => {
+      for (let i = 0; i < items.length; ) {
+        const first = items[i]
+        const cluster: ShapedGlyph[] = []
+        let advance = 0
+        do {
+          const glyph = items[i++]
+          cluster.push({ ...glyph })
+          advance += Math.max(glyph.ax, 0)
+        } while (
+          i < items.length &&
+          ((first.atomic &&
+            items[i].atomic?.start === first.atomic.start &&
+            items[i].atomic?.end === first.atomic.end) ||
+            (items[i].charStart === first.charStart &&
+              items[i].charEnd === first.charEnd))
+        )
+        if (lineWidth + advance > limit() - inset && lineGlyphs.length) {
+          flush()
+          inset = insetFor(first)
+        }
+        remember(first)
+        lineGlyphs.push(...cluster)
+        lineWidth += advance
       }
-      lineGlyphs.push({ ...g })
-      lineWidth += adv
     }
 
     if (wordBreak === 'break-all') {
-      for (const g of glyphs) appendGlyph(g)
+      appendClusters(glyphs)
       flush()
       return lines
     }
@@ -523,17 +716,18 @@ export class TextLayoutEngine {
     // break-word：按空格/词/CJK 单元装箱，避免 Hello、مرحبا 被从中间切断
     const units = this.buildWrapUnits(glyphs, paragraphText)
     for (const unit of units) {
-      if (lineWidth + unit.width > availableWidth && lineGlyphs.length) {
+      if (lineWidth + unit.width > limit() - inset && lineGlyphs.length) {
         flush()
-        // 新行丢弃前导空白
-        if (unit.isSpaceOnly) continue
+        inset = insetFor(unit.glyphs[0])
+        // Retain whitespace source positions on the following line.
       }
-      if (unit.width > availableWidth && !lineGlyphs.length) {
+      if (unit.width > limit() - inset && !lineGlyphs.length) {
         // 单词本身宽于行宽：回退为硬切
-        for (const g of unit.glyphs) appendGlyph(g)
+        appendClusters(unit.glyphs)
         continue
       }
       for (const g of unit.glyphs) {
+        remember(g)
         lineGlyphs.push({ ...g })
       }
       lineWidth += unit.width
@@ -556,6 +750,22 @@ export class TextLayoutEngine {
 
     while (i < glyphs.length) {
       const ch = glyphChar(glyphs[i])
+      const atomic = glyphs[i].atomic
+      if (atomic) {
+        const items: ShapedGlyph[] = []
+        while (
+          i < glyphs.length &&
+          glyphs[i].atomic?.start === atomic.start &&
+          glyphs[i].atomic?.end === atomic.end
+        )
+          items.push(glyphs[i++])
+        units.push({
+          glyphs: items,
+          width: items.reduce((w, g) => w + Math.max(0, g.ax), 0),
+          isSpaceOnly: false
+        })
+        continue
+      }
       // 空白
       if (this.isSpaceChar(ch)) {
         const gs: ShapedGlyph[] = []
@@ -661,7 +871,9 @@ export class TextLayoutEngine {
     lines: LayoutLine[],
     align: LayoutParagraphInput['align'],
     availableWidth: number,
-    paragraphText: string
+    paragraphText: string,
+    widths?: number[],
+    offsets?: number[]
   ) {
     const isLast = (i: number) => i === lines.length - 1
     // 分散对齐：所有行拉伸；两端对齐：仅非末行（与 legacy Draw 一致）
@@ -670,8 +882,11 @@ export class TextLayoutEngine {
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i]
+      const lineWidth = (widths?.[i] ?? availableWidth) - (line.inset || 0)
+      const origin =
+        (offsets?.[i] || 0) + (line.direction === 'ltr' ? line.inset || 0 : 0)
       if (shouldJustify(i) && line.glyphs.length > 1) {
-        const extra = availableWidth - line.width
+        const extra = lineWidth - line.width
         if (extra > 0.5) {
           // 优先拉伸词间空格，避免在连写阿语/拉丁词内部拉出断口
           const spaceSet = new Set<number>()
@@ -682,7 +897,7 @@ export class TextLayoutEngine {
           })
           if (spaceSet.size) {
             const per = extra / spaceSet.size
-            let x = 0
+            let x = origin
             for (let g = 0; g < line.glyphs.length; g++) {
               const glyph = line.glyphs[g]
               const adv = Math.max(glyph.ax, 0)
@@ -690,22 +905,33 @@ export class TextLayoutEngine {
               glyph.right = x + adv
               x += adv + (spaceSet.has(g) ? per : 0)
             }
-            line.width = availableWidth
-            line.shiftX = 0
+            line.width = lineWidth
+            line.shiftX = origin
             continue
           }
-          const gaps = line.glyphs.length - 1
+          const gapAfter = new Set<number>()
+          line.glyphs.forEach((glyph, index) => {
+            const next = line.glyphs[index + 1]
+            if (
+              next &&
+              (next.charStart !== glyph.charStart ||
+                next.charEnd !== glyph.charEnd)
+            )
+              gapAfter.add(index)
+          })
+          const gaps = gapAfter.size
+          if (!gaps) continue
           const each = extra / gaps
-          let x = 0
+          let x = origin
           for (let g = 0; g < line.glyphs.length; g++) {
             const glyph = line.glyphs[g]
             const adv = Math.max(glyph.ax, 0)
             glyph.left = x
             glyph.right = x + adv
-            x += adv + (g < gaps ? each : 0)
+            x += adv + (gapAfter.has(g) ? each : 0)
           }
-          line.width = availableWidth
-          line.shiftX = 0
+          line.width = lineWidth
+          line.shiftX = origin
           continue
         }
       }
@@ -713,14 +939,14 @@ export class TextLayoutEngine {
       // 未拉伸时：两端/分散的末行（及单行）按段方向靠齐，RTL 不能落成物理左
       let shift = 0
       if (align === 'right') {
-        shift = availableWidth - line.width
+        shift = lineWidth - line.width
       } else if (align === 'center') {
-        shift = (availableWidth - line.width) / 2
+        shift = (lineWidth - line.width) / 2
       } else if (
         (align === 'alignment' || align === 'justify') &&
         line.direction === 'rtl'
       ) {
-        shift = availableWidth - line.width
+        shift = lineWidth - line.width
       } else if (
         align === 'left' ||
         align === 'alignment' ||
@@ -729,9 +955,10 @@ export class TextLayoutEngine {
         shift = 0
       } else if (line.direction === 'rtl') {
         // start 已在 resolveAlign 映射为 left/right；兜底按方向
-        shift = availableWidth - line.width
+        shift = lineWidth - line.width
       }
 
+      shift += origin
       if (shift) {
         line.shiftX = shift
         for (const g of line.glyphs) {

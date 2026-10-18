@@ -5,7 +5,7 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = await Editor.create(container, data, options)
 
 // register
 instance.eventBus.on<K keyof EventMap>(
@@ -292,3 +292,20 @@ instance.eventBus.on('spellcheckClick', (payload: {
   range: ISpellcheckRange
 }) => void)
 ```
+
+## fontCoverageChange
+
+Receives the current `FontCoverageReport` when coverage/download state changes;
+resolved issues are removed. Query once after subscribing to avoid depending on
+initial event timing. Built-in hints need no subscription.
+
+```typescript
+import type { FontCoverageReport } from '@hufe921/canvas-editor'
+
+const onCoverage = (report: FontCoverageReport) => console.log(report.issues)
+instance.eventBus.on('fontCoverageChange', onCoverage)
+// instance.eventBus.off('fontCoverageChange', onCoverage)
+const current = instance.getFontCoverageReport()
+```
+
+[Font APIs and coverage limits](./font-and-esm-migration.md).

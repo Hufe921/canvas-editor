@@ -1,3 +1,4 @@
+import type { FontCoverageChange } from '../../interface/FontCoverage'
 import {
   IContentChange,
   IControlChange,
@@ -13,6 +14,7 @@ import {
 } from '../../interface/Listener'
 
 export class Listener {
+  public fontCoverageChange: FontCoverageChange | null = null
   public rangeStyleChange: IRangeStyleChange | null
   public visiblePageNoListChange: IVisiblePageNoListChange | null
   public intersectionPageNoChange: IIntersectionPageNoChange | null

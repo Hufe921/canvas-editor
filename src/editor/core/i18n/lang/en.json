@@ -130,5 +130,42 @@
     "maxDate": "Date cannot be later than {date}",
     "minChecked": "Select at least {count} item(s)",
     "maxChecked": "Select at most {count} item(s)"
+  },
+  "fontCoverage": {
+    "locate": "Locate missing text",
+    "loading": "Downloading basic fonts…",
+    "resolved": "Missing font coverage resolved.",
+    "manual": "Install a font package covering the missing characters and styles.",
+    "failed": "Font download failed. Please install a font package.",
+    "unsupported": "No suitable basic font. Please install a font package.",
+    "details": "Font coverage details",
+    "characters": "distinct characters/sequences",
+    "samples": "Samples (up to 16)",
+    "codePoints": "Code points (up to 32)",
+    "reason": {
+      "missingFace": "No font face",
+      "missingGlyph": "Missing glyphs",
+      "missingSequence": "Missing character sequence",
+      "loadFailed": "Font resource failed to load",
+      "unsupportedGlyphFormat": "Unsupported glyph format",
+      "missingStyle": "Missing font weight/style"
+    },
+    "script": {
+      "hani": "Han / CJK",
+      "arab": "Arabic",
+      "latn": "Latin",
+      "cyrl": "Cyrillic",
+      "grek": "Greek",
+      "hebr": "Hebrew",
+      "deva": "Devanagari",
+      "thai": "Thai",
+      "hang": "Hangul",
+      "kana": "Kana",
+      "zyyy": "Symbols / common",
+      "zinh": "Combining marks",
+      "zzzz": "Unknown script"
+    },
+    "style": "Requested weight/style",
+    "format": "Use a font with a supported outline format; adding the same unsupported font cannot resolve this."
   }
 }

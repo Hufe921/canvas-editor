@@ -3,6 +3,7 @@ import Editor, { RowFlex } from '../../../src/editor'
 describe('菜单-清除格式', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
@@ -42,6 +43,7 @@ describe('菜单-清除格式', () => {
 describe('菜单-高级格式', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })

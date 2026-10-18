@@ -1,3 +1,11 @@
+import type { LayoutRow } from '../../../interface/LayoutRow'
+import { rowElementMetrics } from '../../layout/rowGeometry'
+import {
+  collectListMarkers,
+  listMarkerText
+} from '../../text-engine-host/ListMarker'
+import { scaleShapedLine } from '../../text-engine-host/scaleShapedLine'
+import type { LayoutLine } from '../../text-engine/types'
 import { ZERO } from '../../../dataset/constant/Common'
 import { ulStyleMapping } from '../../../dataset/constant/List'
 import { ElementType } from '../../../dataset/enum/Element'
@@ -6,7 +14,6 @@ import { ListStyle, ListType, UlStyle } from '../../../dataset/enum/List'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
-import { IRow, IRowElement } from '../../../interface/Row'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -17,11 +24,14 @@ export class ListParticle {
   private options: DeepRequired<IEditorOption>
 
   // 非递增样式直接返回默认值
-  private readonly UN_COUNT_STYLE_WIDTH = 20
-  private readonly MEASURE_BASE_TEXT = '0'
   private readonly LIST_GAP = 10
   public readonly LIST_INDENT_WIDTH = 30
   private readonly MAX_LEVEL = 8
+  private nativeWidths = new WeakMap<IElement, number>()
+  private nativeMarkers = new WeakMap<
+    IElement,
+    { ltr: LayoutLine; rtl: LayoutLine }
+  >()
 
   constructor(draw: Draw) {
     this.draw = draw
@@ -297,104 +307,48 @@ export class ListParticle {
     return segments.filter(seg => seg.some(el => el.listId))
   }
 
-  public computeListStyle(
-    ctx: CanvasRenderingContext2D,
-    elementList: IElement[]
-  ): Map<string, number> {
-    const listStyleMap = new Map<string, number>()
-    let start = 0
-    let curListId = elementList[start].listId
-    let curElementList: IElement[] = []
-    const elementLength = elementList.length
-    while (start < elementLength) {
-      const curElement = elementList[start]
-      if (curListId && curListId === curElement.listId) {
-        curElementList.push(curElement)
-      } else {
-        if (curElement.listId && curElement.listId !== curListId) {
-          // 列表结束
-          if (curElementList.length) {
-            const width = this.getListStyleWidth(ctx, curElementList)
-            listStyleMap.set(curListId!, width)
-          }
-          curListId = curElement.listId
-          curElementList = curListId ? [curElement] : []
-        }
-      }
-      start++
-    }
-    if (curElementList.length) {
-      const width = this.getListStyleWidth(ctx, curElementList)
-      listStyleMap.set(curListId!, width)
-    }
-    return listStyleMap
-  }
-
-  private findStyledElement(elementList: IElement[]): IElement {
-    let styleElement = elementList[0]
-    for (let i = 1; i < elementList.length; i++) {
-      const element = elementList[i]
-      if (element.font || element.size || element.bold || element.italic) {
-        styleElement = element
-        break
-      }
-    }
-    return styleElement
-  }
-
-  private getListFontStyle(elementList: IElement[], scale: number): string {
-    if (this.options.list.inheritStyle) {
-      const styleElement = this.findStyledElement(elementList)
-      return this.draw.getElementFont(styleElement, scale)
-    } else {
-      const { defaultFont, defaultSize } = this.options
-      return `${defaultSize * scale}px ${defaultFont}`
-    }
-  }
-
-  public getListStyleWidth(
-    ctx: CanvasRenderingContext2D,
-    listElementList: IElement[]
-  ): number {
+  public computeNativeListStyle(elements: IElement[]): Map<string, number> {
+    const widths = new Map<string, number>()
     const { scale, checkbox } = this.options
-    const startElement = listElementList[0]
-    // 非递增样式返回固定值
-    if (
-      startElement.listStyle &&
-      startElement.listStyle !== ListStyle.DECIMAL
-    ) {
-      if (startElement.listStyle === ListStyle.CHECKBOX) {
-        return (checkbox.width + this.LIST_GAP) * scale
-      }
-      return this.UN_COUNT_STYLE_WIDTH * scale
+    const adapter = this.draw.getLayoutHostAdapter()
+    const markers = collectListMarkers(elements)
+    for (const { anchor, text } of markers) {
+      const native = text
+        ? adapter.layoutListMarker(elements, anchor, text, 'ltr')
+        : undefined
+      if (native)
+        this.nativeMarkers.set(anchor, {
+          ltr: native.shaped.lines[0],
+          rtl: adapter.layoutListMarker(elements, anchor, text, 'rtl').shaped
+            .lines[0]
+        })
+      const width =
+        anchor.listStyle === ListStyle.CHECKBOX
+          ? checkbox.width + this.LIST_GAP
+          : (native?.lines[0].rect.width || 0) + this.LIST_GAP
+      widths.set(
+        anchor.listId!,
+        Math.max(widths.get(anchor.listId!) || 0, width * scale)
+      )
     }
-    // 计算列表数量
-    const count = listElementList.reduce((pre, cur) => {
-      if (cur.value === ZERO) {
-        pre += 1
-      }
-      return pre
-    }, 0)
-    if (!count) return 0
-    ctx.save()
-    ctx.font = this.getListFontStyle(listElementList, scale)
-    // 以递增样式最大宽度为准
-    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length - 1 || 1)}${
-      KeyMap.PERIOD
-    }`
-    const textMetrics = ctx.measureText(text)
-    ctx.restore()
-    return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
+    for (const { anchor } of markers)
+      this.nativeWidths.set(anchor, widths.get(anchor.listId!) || 0)
+    return widths
   }
 
   public drawListStyle(
     ctx: CanvasRenderingContext2D,
-    row: IRow,
+    row: LayoutRow,
     position: IElementPosition
   ) {
     const { elementList, offsetX, listIndex, ascent } = row
     const startElement = elementList[0]
-    if (startElement.value !== ZERO || startElement.listWrap) return
+    if (
+      startElement.value !== ZERO ||
+      startElement.listWrap ||
+      (row.nativeLine && row.height <= 0)
+    )
+      return
     // tab width
     let tabWidth = 0
     const { defaultTabWidth, scale } = this.options
@@ -409,39 +363,32 @@ export class ListParticle {
         leftTop: [startX, startY]
       }
     } = position
-    const indentWidth = startElement.listLevel
+    let indentWidth = startElement.listLevel
       ? this.LIST_INDENT_WIDTH * startElement.listLevel * scale
       : 0
     // RTL：ZERO 已在内容右缘，标记画在其右侧 gutter（宽=listStyleWidth），
     // 右对齐使间距落在标记左侧（标记与内容之间）；LTR 标记在左 gutter 左对齐
     const isRtl = row.direction === 'rtl'
-    const listStyleWidth = this.getListStyleWidth(ctx, elementList)
+    const listStyleWidth = this.nativeWidths.get(startElement) || 0
+    if (row.flow?.indent != null)
+      indentWidth = Math.max(0, row.flow.indent * scale - listStyleWidth)
     const x = isRtl
-      ? startX + listStyleWidth - indentWidth - tabWidth
+      ? startX + listStyleWidth - tabWidth
       : startX - offsetX! + indentWidth + tabWidth
     const y = startY + ascent
     // 复选框样式特殊处理
     if (startElement.listStyle === ListStyle.CHECKBOX) {
       const { width, height, gap } = this.options.checkbox
-      const checkboxRowElement: IRowElement = {
-        ...startElement,
-        checkbox: {
-          value: !!startElement.checkbox?.value
-        },
-        metrics: {
-          ...startElement.metrics,
-          width: (width + gap * 2) * scale,
-          height: height * scale
-        }
-      }
       this.draw.getCheckboxParticle().render({
         ctx,
         x: x - gap * scale,
         y,
         index: 0,
-        row: {
-          ...row,
-          elementList: [checkboxRowElement, ...row.elementList]
+        row,
+        metrics: {
+          ...rowElementMetrics(row, 0, scale, this.options.defaultSize),
+          width: (width + gap * 2) * scale,
+          height: height * scale
         }
       })
     } else {
@@ -459,14 +406,22 @@ export class ListParticle {
         text = `${listIndex! + 1}${KeyMap.PERIOD}`
       }
       if (!text) return
-      ctx.save()
-      ctx.font = this.getListFontStyle(elementList, scale)
-      // 序号遵循书写方向：RTL 下句点落数字左侧（读作 "١."），LTR 下 "1."
-      // RTL 右对齐标记（间距在标记左侧与内容之间），LTR 左对齐
-      ctx.direction = isRtl ? 'rtl' : 'ltr'
-      ctx.textAlign = isRtl ? 'right' : 'left'
-      ctx.fillText(text, x, y)
-      ctx.restore()
+      const adapter = this.draw.getLayoutHostAdapter()
+      const cached = this.nativeMarkers.get(startElement)
+      const direction = isRtl ? 'rtl' : 'ltr'
+      const shaped =
+        cached?.[direction] ||
+        adapter.layoutListMarker(
+          elementList,
+          startElement,
+          listMarkerText(startElement, listIndex || 0),
+          direction
+        ).shaped.lines[0]
+      const line = scaleShapedLine(shaped, scale)
+      adapter
+        .getGlyphRenderer()
+        .drawLine(ctx, line, isRtl ? x - line.width : x, y)
+      return
     }
   }
 }

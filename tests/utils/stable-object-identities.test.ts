@@ -97,7 +97,11 @@ describe('按需保留序列化对象 id', () => {
     const before = structuredClone(source)
     const serialized = zipElementList(source, { extraPickAttrs: ['id'] })
     expect(identities(serialized)).toEqual([
-      'table-owned', 'row-owned', 'cell-owned', 'image-owned', 'standalone-image'
+      'table-owned',
+      'row-owned',
+      'cell-owned',
+      'image-owned',
+      'standalone-image'
     ])
     expect(source).toEqual(before)
     formatElementList(serialized, { editorOptions: options })
@@ -118,9 +122,11 @@ describe('按需保留序列化对象 id', () => {
   })
 
   it('允许保留其他单元格属性且不虚构缺失的键', () => {
-    const { cell } = tableParts(zipElementList(fixture(), {
-      extraPickAttrs: ['hint', 'width', 'italic']
-    }))
+    const { cell } = tableParts(
+      zipElementList(fixture(), {
+        extraPickAttrs: ['hint', 'width', 'italic']
+      })
+    )
     expect(cell.hint).toBe('Cell hint')
     expect(cell.width).toBe(120)
     expect(Object.hasOwn(cell, 'italic')).toBe(false)
@@ -132,9 +138,11 @@ describe('按需保留序列化对象 id', () => {
     formatElementList(source, { editorOptions: mergeOption() })
     const before = structuredClone(source)
     const expected = zipElementList(source, { extraPickAttrs: ['id'] })
-    expect(zipElementList(source, {
-      extraPickAttrs: ['id', 'value']
-    })).toEqual(expected)
+    expect(
+      zipElementList(source, {
+        extraPickAttrs: ['id', 'value']
+      })
+    ).toEqual(expected)
     expect(source).toEqual(before)
     const { cell } = tableParts(expected)
     expect(cell.value.some(element => element.tdId !== undefined)).toBe(false)
@@ -151,7 +159,8 @@ describe('按需保留序列化对象 id', () => {
 
   it('不虚构缺失或为 undefined 的 id', () => {
     const source = fixture()
-    for (const object of Object.values(tableParts(source))) object.id = undefined
+    for (const object of Object.values(tableParts(source)))
+      object.id = undefined
     const { table, row, cell, image } = tableParts(
       zipElementList(source, { extraPickAttrs: ['id'] })
     )
@@ -163,9 +172,14 @@ describe('按需保留序列化对象 id', () => {
     expect(row.id).toBeUndefined()
     const missing = fixture()
     for (const object of Object.values(tableParts(missing))) delete object.id
-    for (const object of Object.values(tableParts(zipElementList(missing, {
-      extraPickAttrs: ['id']
-    })))) expect(Object.hasOwn(object, 'id')).toBe(false)
+    for (const object of Object.values(
+      tableParts(
+        zipElementList(missing, {
+          extraPickAttrs: ['id']
+        })
+      )
+    ))
+      expect(Object.hasOwn(object, 'id')).toBe(false)
   })
 
   it('支持剪贴板使用的原地序列化', () => {
@@ -174,10 +188,12 @@ describe('按需保留序列化对象 id', () => {
     expect(zipElementList(source, { isClone: false })).toEqual(expected)
     expect(identities(source)).toEqual(['table-owned', 'standalone-image'])
     const retained = fixture()
-    expect(zipElementList(retained, {
-      isClone: false,
-      extraPickAttrs: ['id']
-    })).toEqual(zipElementList(fixture(), { extraPickAttrs: ['id'] }))
+    expect(
+      zipElementList(retained, {
+        isClone: false,
+        extraPickAttrs: ['id']
+      })
+    ).toEqual(zipElementList(fixture(), { extraPickAttrs: ['id'] }))
   })
 
   it('重复粘贴时重新生成不同的 id', () => {
@@ -190,7 +206,9 @@ describe('按需保留序列化对象 id', () => {
     formatElementList(firstPaste, { editorOptions: options })
     formatElementList(secondPaste, { editorOptions: options })
     const ids = [
-      ...identities(source), ...identities(firstPaste), ...identities(secondPaste)
+      ...identities(source),
+      ...identities(firstPaste),
+      ...identities(secondPaste)
     ]
     expect(ids).toHaveLength(15)
     expect(new Set(ids).size).toBe(ids.length)
@@ -205,12 +223,19 @@ describe('按需保留序列化对象 id', () => {
 
   it('相同图片的 id 各自独立保留', () => {
     const source: IElement[] = ['first', 'second'].map(id => ({
-      type: ElementType.IMAGE, id,
-      value: 'data:image/png;base64,AA==', width: 60, height: 30
+      type: ElementType.IMAGE,
+      id,
+      value: 'data:image/png;base64,AA==',
+      width: 60,
+      height: 30
     }))
-    expect(identities(zipElementList(source, {
-      extraPickAttrs: ['id', 'id']
-    }))).toEqual(['first', 'second'])
+    expect(
+      identities(
+        zipElementList(source, {
+          extraPickAttrs: ['id', 'id']
+        })
+      )
+    ).toEqual(['first', 'second'])
     expect(identities(zipElementList(source))).toEqual([])
   })
 })

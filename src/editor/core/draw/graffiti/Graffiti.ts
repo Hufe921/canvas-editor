@@ -88,7 +88,7 @@ export class Graffiti {
 
   // 页面减少时清空对应页面涂鸦信息
   public compute() {
-    const pageSize = this.draw.getPageRowList().length
+    const pageSize = this.draw.getLayoutPages().length
     for (let d = this.data.length - 1; d >= 0; d--) {
       const pageNo = this.data[d].pageNo
       if (pageNo > pageSize - 1) {

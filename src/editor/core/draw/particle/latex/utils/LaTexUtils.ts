@@ -275,17 +275,17 @@ function group(exprs: Expr[]): Expr {
 
 function align(exprs: Expr[], alignment = 'center'): void {
   for (let i = 0; i < exprs.length; i++) {
-    if (exprs[i].text == '^' || exprs[i].text == '\'') {
+    if (exprs[i].text == '^' || exprs[i].text == "'") {
       let h = 0
       let j = i
       while (
         j > 0 &&
-        (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == '\'')
+        (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == "'")
       ) {
         j--
       }
       h = exprs[j].bbox.y
-      if (exprs[i].text == '\'') {
+      if (exprs[i].text == "'") {
         exprs[i].bbox.y = h
       } else {
         // @ts-ignore
@@ -303,7 +303,7 @@ function align(exprs: Expr[], alignment = 'center'): void {
       let j = i
       while (
         j > 0 &&
-        (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == '\'')
+        (exprs[j].text == '^' || exprs[j].text == '_' || exprs[j].text == "'")
       ) {
         j--
       }
@@ -646,23 +646,23 @@ function plan(expr: Expr, mode = 'math'): void {
         plan(c, tmd)
         // @ts-ignore
         transform(c, 1, null, dx, dy)
-        if (c.text == '^' || c.text == '_' || c.text == '\'') {
+        if (c.text == '^' || c.text == '_' || c.text == "'") {
           let j: number = i
           while (
             j > 0 &&
             (expr.chld[j].text == '^' ||
               expr.chld[j].text == '_' ||
-              expr.chld[j].text == '\'')
+              expr.chld[j].text == "'")
           ) {
             j--
           }
           const wasBig =
             SYMB[expr.chld[j].text] && SYMB[expr.chld[j].text].flags.big
-          if (c.text == '\'') {
+          if (c.text == "'") {
             let k = j + 1
             let nth = 0
             while (k < i) {
-              if (expr.chld[k].text == '\'') {
+              if (expr.chld[k].text == "'") {
                 nth++
               }
               k++
@@ -1104,8 +1104,8 @@ export class LaTexUtils {
       xmlns="http://www.w3.org/2000/svg"
       width="${w}" height="${h}"
       fill="none" stroke="${opt.FG_COLOR ?? 'black'}" stroke-width="${
-      opt.STROKE_W ?? 1
-    }"
+        opt.STROKE_W ?? 1
+      }"
       stroke-linecap="round" stroke-linejoin="round"
     >`
     if (opt.BG_COLOR) {

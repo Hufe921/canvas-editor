@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import { TextEngineMode } from '../../../src/editor/dataset/enum/TextDirection'
 import { WordBreak } from '../../../src/editor/dataset/enum/Editor'
 import type { ParagraphSpan } from '../../../src/editor/core/text-engine-host/ElementBridge'
 import {
@@ -13,7 +12,6 @@ import type { DeepRequired } from '../../../src/editor/interface/Common'
 
 function mockOptions(): DeepRequired<IEditorOption> {
   return {
-    textEngine: TextEngineMode.HARFBUZZ,
     defaultFont: 'sans-serif',
     defaultSize: 16,
     defaultColor: '#000',

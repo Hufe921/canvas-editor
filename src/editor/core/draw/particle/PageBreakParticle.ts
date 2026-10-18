@@ -58,22 +58,7 @@ export class PageBreakParticle {
         ctx,
         style,
         x + halfX,
-        y + metrics.ascent - size / 2
-      )
-    } else {
-      ctx.font = `${size}px ${font}`
-      const textMeasure = ctx.measureText(displayName)
-      const halfX = (elementWidth - textMeasure.width) / 2
-      ctx.beginPath()
-      ctx.moveTo(x, y)
-      ctx.lineTo(x + halfX, y)
-      ctx.moveTo(x + halfX + textMeasure.width, y)
-      ctx.lineTo(x + elementWidth, y)
-      ctx.stroke()
-      ctx.fillText(
-        displayName,
-        x + halfX,
-        y + textMeasure.actualBoundingBoxAscent - size / 2
+        y + metrics.ascent - metrics.height / 2
       )
     }
     ctx.restore()

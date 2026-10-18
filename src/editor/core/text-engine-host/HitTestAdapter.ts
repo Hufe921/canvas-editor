@@ -74,11 +74,28 @@ export class HitTestAdapter {
     return !!text && /^[\u2066-\u2069]+$/u.test(text)
   }
 
-  private visibleGlyphs(
-    line: LayoutLine,
-    layout: LayoutResult
-  ): ShapedGlyph[] {
-    return line.glyphs.filter(g => !this.isIsolateGlyph(g, layout))
+  private visibleGlyphs(line: LayoutLine, layout: LayoutResult): ShapedGlyph[] {
+    // HarfBuzz may emit several glyphs for one logical cluster (e.g. Arabic
+    // dots/marks). Navigation has one caret per source slot, not per glyph.
+    const clusters = new Map<string, ShapedGlyph>()
+    for (const glyph of line.glyphs) {
+      if (this.isIsolateGlyph(glyph, layout)) continue
+      const key =
+        `${glyph.charStart}:${glyph.charEnd}:` +
+        `${glyph.logicalIndexStart}:${glyph.logicalIndexEnd}`
+      const previous = clusters.get(key)
+      clusters.set(
+        key,
+        previous
+          ? {
+              ...previous,
+              left: Math.min(previous.left, glyph.left),
+              right: Math.max(previous.right, glyph.right)
+            }
+          : { ...glyph }
+      )
+    }
+    return [...clusters.values()]
   }
 
   /**
@@ -199,14 +216,13 @@ export class HitTestAdapter {
       if (odd) {
         return x < mid ? from : from - 1 >= 0 ? from - 1 : from
       }
-      return x < mid ? from - 1 >= 0 ? from - 1 : from : from
+      return x < mid ? (from - 1 >= 0 ? from - 1 : from) : from
     }
     const ratio = Math.max(0, Math.min(1, (x - g.left) / width))
     if (odd) {
       const slot = Math.floor((1 - ratio) * count)
       const li = from + Math.min(count - 1, Math.max(0, slot))
-      const localMid =
-        g.left + (to - li) * (width / count) + width / count / 2
+      const localMid = g.left + (to - li) * (width / count) + width / count / 2
       // Refine with half: keep li as after-index when on trailing side
       return x < localMid ? li : li - 1
     }
@@ -222,9 +238,15 @@ export class HitTestAdapter {
     paraStartIndex?: number
   ): Array<{ index: number; x: number }> {
     const slots: Array<{ index: number; x: number }> = []
+    const seen = new Set<number>()
     for (const line of layout.lines) {
       for (const g of this.visibleGlyphs(line, layout)) {
         for (let li = g.logicalIndexStart; li <= g.logicalIndexEnd; li++) {
+          // Reserved control space shares its source index with chrome.
+          // Keep the same first edge used by caretMetrics; duplicate slots
+          // otherwise jump backwards and can trap visual arrow navigation.
+          if (seen.has(li)) continue
+          seen.add(li)
           slots.push({ index: li, x: this.afterEdgeX(g, li) })
         }
       }

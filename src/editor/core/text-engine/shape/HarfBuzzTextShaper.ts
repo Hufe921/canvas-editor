@@ -1,37 +1,140 @@
-import { Buffer as HbBuffer, Direction, shape } from 'harfbuzzjs'
-import { FontManager } from '../font/FontManager'
-import { containsShapingScript } from '../utils/scriptFont'
+import {
+  fontContextUnits,
+  isCoverageIgnorable,
+  textScript
+} from '../font/fontCoverage'
+import { coverageIssueId } from '../font/FontCoverageTracker'
+import { harfBuzzRuntime } from '../HarfBuzzRuntime'
+import { shapeInlineObject } from './InlineObjectShaper'
+import { FontManager, type FontInstance } from '../font/FontManager'
 import { ShapedGlyph, StyleRun } from '../types'
-import { BrowserTextShaper } from './BrowserTextShaper'
 import { ITextShaper } from './ITextShaper'
 
 /**
- * HarfBuzz shaping for complex scripts (Arabic / Indic / SEA …).
- * Outlines from opentype.js (canvas Y-down). Falls back to BrowserTextShaper.
+ * All covered text uses HarfBuzz glyph IDs, advances and offsets.
+ * Uncovered text uses explicit diagnostics/placeholders; never browser shaping.
  */
 export class HarfBuzzTextShaper implements ITextShaper {
-  private browser = new BrowserTextShaper()
-
   constructor(private fontManager: FontManager) {}
 
   shape(run: StyleRun): ShapedGlyph[] {
     if (run.style.objectWidth != null) {
-      return this.browser.shape(run)
+      return shapeInlineObject(run)
     }
-    const fontInst = this.fontManager.getFont(run.style)
-    if (!fontInst || !run.text.length) {
-      return this.browser.shape(run)
-    }
-    // Never HB-shape simple scripts (CJK/Latin) — wrong face → .notdef ax≈0 重叠
-    if (!containsShapingScript(run.text)) {
-      return this.browser.shape(run)
-    }
+    return this.fontManager
+      .resolveText(run.style, run.text, {
+        direction: run.direction,
+        script: run.script,
+        language: run.language
+      })
+      .flatMap(segment => {
+        if (segment.resolution.status === 'missing') {
+          return this.shapeMissing(
+            {
+              ...run,
+              text: segment.text,
+              textStart: run.textStart + segment.start,
+              textEnd: run.textStart + segment.end
+            },
+            segment.resolution.reason!
+          )
+        }
+        const font = segment.resolution.font
+        const style = font
+          ? {
+              ...run.style,
+              fontFamily: font.ref.family,
+              bold: font.ref.weight >= 600,
+              italic: font.ref.style === 'italic'
+            }
+          : run.style
+        return this.shapeResolved(
+          {
+            ...run,
+            text: segment.text,
+            style,
+            textStart: run.textStart + segment.start,
+            textEnd: run.textStart + segment.end
+          },
+          font
+        )
+      })
+  }
 
+  private shapeMissing(
+    run: StyleRun,
+    reason: import('../../../interface/FontCoverage').FontCoverageReason
+  ): ShapedGlyph[] {
+    return fontContextUnits(run.text).map(unit => {
+      const metrics = this.fontManager.getPlaceholderMetrics(run.style)
+      const invisible = isCoverageIgnorable(unit.text)
+      const charStart = run.textStart + unit.start
+      const charEnd = run.textStart + unit.end
+      const font = this.fontManager.getFont(run.style)
+      const outline =
+        !invisible && metrics.source === 'notdef' && font
+          ? this.fontManager.getGlyphOutline(font, 0)
+          : undefined
+      return {
+        glyphId: 0,
+        inkless: invisible || undefined,
+        font: metrics.font || undefined,
+        missing: invisible
+          ? undefined
+          : {
+              kind: 'missingGlyph',
+              text: unit.text,
+              metrics,
+              diagnosticId: coverageIssueId(
+                run.style.fontFamily,
+                run.style,
+                textScript(unit.text),
+                reason
+              )
+            },
+        cluster: unit.start,
+        ax: invisible ? 0 : metrics.advance + (run.style.letterSpacing || 0),
+        dx: 0,
+        dy: 0,
+        charStart,
+        charEnd,
+        logicalIndexStart: run.logicalIndexAt(charStart),
+        logicalIndexEnd: run.logicalIndexAt(charEnd - 1),
+        logicalIndices: this.getVisibleLogicalIndices(
+          run,
+          unit.start,
+          unit.end
+        ),
+        left: 0,
+        right: 0,
+        style: run.style,
+        bidiLevel: run.direction === 'rtl' ? 1 : 0,
+        pathData: outline?.pathData
+      }
+    })
+  }
+
+  private shapeResolved(
+    run: StyleRun,
+    fontInst: FontInstance | null
+  ): ShapedGlyph[] {
+    if (!run.text.length) return []
+    if (!fontInst) return this.shapeMissing(run, 'missingFace')
+
+    const {
+      Buffer: HbBuffer,
+      BufferFlag,
+      Direction,
+      shape
+    } = harfBuzzRuntime.getModule()
     const buffer = new HbBuffer()
     buffer.addText(run.text)
-    buffer.setDirection(
-      run.direction === 'rtl' ? Direction.RTL : Direction.LTR
-    )
+    buffer.setFlags(BufferFlag.REMOVE_DEFAULT_IGNORABLES)
+    buffer.setDirection(run.direction === 'rtl' ? Direction.RTL : Direction.LTR)
+    const script = run.script === 'hans' ? 'hani' : run.script
+    if (script && !['zyyy', 'zzzz', 'zsye'].includes(script))
+      buffer.setScript(script)
+    if (run.language) buffer.setLanguage(run.language)
     buffer.guessSegmentProperties()
     shape(fontInst.hbFont, buffer)
     const paired = buffer.getGlyphInfosAndPositions() as Array<{
@@ -42,16 +145,40 @@ export class HarfBuzzTextShaper implements ITextShaper {
       yOffset: number
     }>
     buffer.clearContents()
-    if (!paired?.length) return this.browser.shape(run)
+    // Reused by all glyphs and marks in a cluster, avoiding quadratic scans.
+    const clusters = [...new Set(paired.map(g => g.cluster))].sort(
+      (a, b) => a - b
+    )
+    const clusterEnds = new Map(
+      clusters.map((cluster, index) => [
+        cluster,
+        clusters[index + 1] ?? run.text.length
+      ])
+    )
+    if (!paired?.length && !isCoverageIgnorable(run.text))
+      return this.shapeMissing(run, 'missingSequence')
+    if (
+      paired.some(
+        g =>
+          g.codepoint === 0 &&
+          !isCoverageIgnorable(
+            run.text.slice(
+              g.cluster,
+              clusterEnds.get(g.cluster) ?? run.text.length
+            )
+          )
+      )
+    )
+      return this.shapeMissing(run, 'missingGlyph')
 
     const scale = fontInst.pxPerUnit
-    const textLen = run.text.length
-    const glyphs = paired.map((g, i) => {
-      const clusterEnd = this.clusterEnd(paired, i, textLen)
+    const glyphs = paired.map(g => {
+      const clusterEnd = clusterEnds.get(g.cluster) ?? run.text.length
       const charStart = run.textStart + g.cluster
       const charEnd = run.textStart + Math.max(clusterEnd, g.cluster + 1)
       const shaped: ShapedGlyph = {
         glyphId: g.codepoint,
+        font: { ...fontInst.ref },
         cluster: g.cluster,
         ax: g.xAdvance * scale,
         dx: g.xOffset * scale,
@@ -59,9 +186,7 @@ export class HarfBuzzTextShaper implements ITextShaper {
         charStart,
         charEnd,
         logicalIndexStart: run.logicalIndexAt(charStart),
-        logicalIndexEnd: run.logicalIndexAt(
-          Math.max(charStart, charEnd - 1)
-        ),
+        logicalIndexEnd: run.logicalIndexAt(Math.max(charStart, charEnd - 1)),
         logicalIndices: this.getVisibleLogicalIndices(
           run,
           g.cluster,
@@ -72,50 +197,26 @@ export class HarfBuzzTextShaper implements ITextShaper {
         style: run.style,
         bidiLevel: run.direction === 'rtl' ? 1 : 0
       }
-      try {
-        const otGlyph = fontInst.otFont?.glyphs.get(g.codepoint)
-        if (otGlyph) {
-          shaped.pathData = otGlyph
-            .getPath(0, 0, fontInst.size)
-            .toPathData(1)
-        }
-      } catch {
-        /* optional */
-      }
+      shaped.pathData = this.fontManager.getGlyphOutline(
+        fontInst,
+        g.codepoint
+      ).pathData
       return shaped
     })
 
-    // 与阿语相同：复杂文种无可用轮廓时回退浏览器前缀宽整形
-    if (
-      containsShapingScript(run.text) &&
-      !glyphs.some(g => !!g.pathData && g.ax > 0.01)
-    ) {
-      return this.browser.shape(run)
-    }
-    // 绘制走整段 fillText，布局宽须与 measureText 一致，否则墨迹溢出叠到邻段
-    return this.alignAdvancesToBrowser(glyphs, run)
-  }
-
-  /**
-   * Scale HB advances so sum(ax) matches BrowserTextShaper (fillText) width.
-   * Skip when browser metrics look unreliable (missing face in Node / vitest).
-   */
-  private alignAdvancesToBrowser(
-    glyphs: ShapedGlyph[],
-    run: StyleRun
-  ): ShapedGlyph[] {
-    if (!glyphs.length) return glyphs
-    const browserGlyphs = this.browser.shape(run)
-    const target = browserGlyphs.reduce((s, g) => s + Math.max(g.ax, 0), 0)
-    const sum = glyphs.reduce((s, g) => s + Math.max(g.ax, 0), 0)
-    if (target <= 0.01 || sum <= 0.01) return glyphs
-    // 浏览器测宽远小于 HB：多半未加载对应字体，保持 HB 避免行宽被压扁叠字
-    if (target < sum * 0.5 || target > sum * 2) return glyphs
-    const k = target / sum
-    if (Math.abs(k - 1) < 0.001) return glyphs
-    for (const g of glyphs) {
-      g.ax *= k
-      g.dx *= k
+    // Tracking is a layout addition, once per cluster (never per mark glyph).
+    const spacing = run.style.letterSpacing || 0
+    if (spacing) {
+      for (let i = 0; i < glyphs.length; i++) {
+        const glyph = glyphs[i]
+        if (glyphs[i + 1]?.cluster === glyph.cluster) continue
+        if (
+          !/^[\p{Default_Ignorable_Code_Point}]*$/u.test(
+            run.text.slice(glyph.cluster, glyph.charEnd - run.textStart)
+          )
+        )
+          glyph.ax += spacing
+      }
     }
     return glyphs
   }
@@ -131,20 +232,5 @@ export class HarfBuzzTextShaper implements ITextShaper {
       indices.push(run.logicalIndexAt(run.textStart + i))
     }
     return indices
-  }
-
-  /** Next greater cluster in input order (RTL-safe). */
-  private clusterEnd(
-    paired: Array<{ cluster: number }>,
-    index: number,
-    textLen: number
-  ): number {
-    const cluster = paired[index].cluster
-    let end = textLen
-    for (let j = 0; j < paired.length; j++) {
-      const c = paired[j].cluster
-      if (c > cluster && c < end) end = c
-    }
-    return end
   }
 }

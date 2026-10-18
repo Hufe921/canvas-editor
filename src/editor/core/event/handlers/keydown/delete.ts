@@ -162,7 +162,7 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
         draw.deleteElementList(
           elementList,
           visualTarget?.index ?? index + 1,
-          1
+          visualTarget?.count ?? 1
         )
         if (visualTarget) curIndex = visualTarget.cursorIndex
       }

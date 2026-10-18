@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Canvas Editor 字体示例</title>
+    <style>
+      body {
+        margin: 24px;
+        font:
+          16px/1.6 system-ui,
+          sans-serif;
+        background: #f5f6f8;
+        color: #20242b;
+      }
+      main {
+        max-width: 900px;
+        margin: auto;
+      }
+      fieldset {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        margin: 16px 0;
+        background: white;
+      }
+      input,
+      button {
+        font: inherit;
+      }
+      #editor {
+        overflow: auto;
+      }
+      #coverage {
+        padding: 12px;
+        background: white;
+        white-space: pre-wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>自动下载与手动补字体</h1>
+      <p>
+        默认从 Bunny Fonts
+        下载缺失文字的基本字体。关闭后可选择本地字体文件补齐；罕见字、emoji
+        和特殊样式可能仍需额外字体。
+      </p>
+      <fieldset id="actions" disabled>
+        <legend>字体设置</legend>
+        <label
+          ><input
+            id="automatic"
+            type="checkbox"
+            checked
+          />自动下载基本字体</label
+        >
+        <button id="retry" type="button">重试下载</button>
+        <label
+          >字体家族 <input id="family" value="Noto Naskh Arabic" required
+        /></label>
+        <label
+          >字重 <input id="weight" type="number" min="1" max="1000" value="400"
+        /></label>
+        <label
+          >样式
+          <select id="font-style">
+            <option value="normal">normal</option>
+            <option value="italic">italic</option>
+          </select></label
+        >
+        <label
+          >补充字体
+          <input id="font-file" type="file" accept=".ttf,.otf,.woff,.woff2"
+        /></label>
+      </fieldset>
+      <p id="status" role="status" aria-live="polite">正在初始化…</p>
+      <p id="registration" role="status" aria-live="polite"></p>
+      <pre id="coverage" aria-label="字体覆盖报告"></pre>
+      <div id="editor"></div>
+    </main>
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

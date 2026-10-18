@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, it, expect } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -36,10 +37,10 @@ function buildTable(colWidthList: number[]): IElement {
   } as IElement
 }
 
-function renderMain(
+async function renderMain(
   main: IElement[],
   optionOverrides: Record<string, unknown> = {}
-): Draw {
+): Promise<Draw> {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const options = mergeOption({ ...PAGE_OPTION, ...optionOverrides })
@@ -47,7 +48,7 @@ function renderMain(
     editorOptions: options,
     isForceCompensation: true
   })
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -75,16 +76,16 @@ describe('表格宽度布局', () => {
     draw.getRange().setRange(0, 0)
   }
 
-  it('overflow 为 true 时表格可超出正文区域', () => {
-    const draw = renderMain([buildTable([400, 400])], {
+  it('overflow 为 true 时表格可超出正文区域', async () => {
+    const draw = await renderMain([buildTable([400, 400])], {
       table: { overflow: true }
     })
     const table = getTable(draw)
     expect(table.width).toBe(800)
   })
 
-  it('overflow 为 false 时表格总宽被等比例压缩至正文区域内', () => {
-    const draw = renderMain([buildTable([400, 400])], {
+  it('overflow 为 false 时表格总宽被等比例压缩至正文区域内', async () => {
+    const draw = await renderMain([buildTable([400, 400])], {
       table: { overflow: false }
     })
     const table = getTable(draw)
@@ -92,8 +93,8 @@ describe('表格宽度布局', () => {
     expect(table.colgroup!.map(col => col.width)).toEqual([277, 277])
   })
 
-  it('overflow 为 false 时低于最小列宽的列保持，可压缩列继续分摊', () => {
-    const draw = renderMain([buildTable([1000, 30])], {
+  it('overflow 为 false 时低于最小列宽的列保持，可压缩列继续分摊', async () => {
+    const draw = await renderMain([buildTable([1000, 30])], {
       table: { overflow: false }
     })
     const table = getTable(draw)
@@ -102,15 +103,15 @@ describe('表格宽度布局', () => {
     expect(table.width!).toBeLessThanOrEqual(INNER_WIDTH)
   })
 
-  it('overflow 为 false 时清除表格横向偏移', () => {
+  it('overflow 为 false 时清除表格横向偏移', async () => {
     const table = buildTable([400, 400])
     table.translateX = 50
-    const draw = renderMain([table], { table: { overflow: false } })
+    const draw = await renderMain([table], { table: { overflow: false } })
     expect(getTable(draw).translateX).toBe(0)
   })
 
-  it('tableAutoFitToPage 表格总宽等比缩小至正文宽度', () => {
-    const draw = renderMain([buildTable([400, 400])])
+  it('tableAutoFitToPage 表格总宽等比缩小至正文宽度', async () => {
+    const draw = await renderMain([buildTable([400, 400])])
     setTableContext(draw)
     draw.getTableOperate().tableAutoFitToPage()
     const table = getTable(draw)
@@ -118,10 +119,10 @@ describe('表格宽度布局', () => {
     expect(table.width).toBe(INNER_WIDTH)
   })
 
-  it('tableAutoFitToPage 表格总宽等比放大至正文宽度并清除横向偏移', () => {
+  it('tableAutoFitToPage 表格总宽等比放大至正文宽度并清除横向偏移', async () => {
     const table = buildTable([100, 100])
     table.translateX = 20
-    const draw = renderMain([table])
+    const draw = await renderMain([table])
     setTableContext(draw)
     draw.getTableOperate().tableAutoFitToPage()
     const curTable = getTable(draw)
@@ -129,8 +130,8 @@ describe('表格宽度布局', () => {
     expect(curTable.translateX).toBe(0)
   })
 
-  it('tableAutoFitToContent 按内容宽度调整列宽且不低于最小列宽', () => {
-    const draw = renderMain([buildTable([400, 400])])
+  it('tableAutoFitToContent 按内容宽度调整列宽且不低于最小列宽', async () => {
+    const draw = await renderMain([buildTable([400, 400])])
     setTableContext(draw)
     draw.getTableOperate().tableAutoFitToContent()
     const table = getTable(draw)
@@ -138,8 +139,8 @@ describe('表格宽度布局', () => {
     expect(table.colgroup!.map(col => col.width)).toEqual([40, 40])
   })
 
-  it('tableAutoFitToContent 在 overflow 为 false 时结果压缩至正文区域内', () => {
-    const draw = renderMain([buildTable([400, 400])], {
+  it('tableAutoFitToContent 在 overflow 为 false 时结果压缩至正文区域内', async () => {
+    const draw = await renderMain([buildTable([400, 400])], {
       table: { overflow: false }
     })
     setTableContext(draw)

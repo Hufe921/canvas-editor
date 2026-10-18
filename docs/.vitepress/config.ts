@@ -41,6 +41,7 @@ export default defineConfig({
         items: [
           { text: '入门', link: '/guide/start' },
           { text: '配置', link: '/guide/option' },
+          { text: '字体与 ESM 迁移', link: '/guide/font-and-esm-migration' },
           { text: '国际化', link: '/guide/i18n' },
           { text: '数据结构', link: '/guide/schema' },
           { text: '架构', link: '/guide/architecture' },
@@ -164,11 +165,21 @@ export default defineConfig({
             items: [
               { text: 'start', link: '/en/guide/start' },
               { text: 'option', link: '/en/guide/option' },
+              {
+                text: 'Fonts and ESM migration',
+                link: '/en/guide/font-and-esm-migration'
+              },
               { text: 'i18n', link: '/en/guide/i18n' },
               { text: 'schema', link: '/en/guide/schema' },
               { text: 'architecture', link: '/en/guide/architecture' },
-              { text: 'RTL layout design', link: '/en/guide/rtl-layout-design' },
-              { text: 'RTL deferred TODO', link: '/en/guide/rtl-deferred-todo' },
+              {
+                text: 'RTL layout design',
+                link: '/en/guide/rtl-layout-design'
+              },
+              {
+                text: 'RTL deferred TODO',
+                link: '/en/guide/rtl-deferred-todo'
+              },
               { text: 'features', link: '/en/guide/features' },
               { text: 'lab', link: '/en/guide/lab' }
             ]

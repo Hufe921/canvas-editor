@@ -1,15 +1,31 @@
+import type { LayoutRow } from '../../interface/LayoutRow'
+import type { IEditorFontFace } from '../../interface/TextEngine'
+import { isElementLayoutHidden } from '../../utils/element'
+import { EditorRuntimeError } from '../EditorLifecycle'
+import { IncrementalParagraphComputer } from '../draw/IncrementalParagraphComputer'
+import { measureInlineImage } from '../layout/InlineObjectMeasure'
+import {
+  resolveRowMargin,
+  resolveSpacingAfter,
+  resolveSpacingBefore
+} from '../layout/ParagraphStyleResolver'
+import { snapshotRows } from '../layout/rowSnapshot'
+import { translateLayout } from '../layout/translateLayout'
+import type { FontCoverageInput } from '../text-engine/font/FontCoverageTracker'
+import {
+  NativeParagraphLayout,
+  TextLayoutService
+} from '../text-engine/layout/TextLayoutService'
+import { collectListMarkers } from './ListMarker'
+import { createTextRows } from './createTextRows'
+import { scaleShapedLine } from './scaleShapedLine'
 import { WordBreak } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
-import {
-  TextDirection,
-  TextEngineMode
-} from '../../dataset/enum/TextDirection'
+import { TextDirection } from '../../dataset/enum/TextDirection'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
-import { IRow } from '../../interface/Row'
 import { DeepRequired } from '../../interface/Common'
 import {
-  BrowserTextShaper,
   BidiResolver,
   FontManager,
   GlyphRenderer,
@@ -22,10 +38,9 @@ import {
   detectScript,
   resolveFontForScript
 } from '../text-engine/utils/scriptFont'
-import { LayoutResult, TextSpan } from '../text-engine/types'
+import { LayoutResult, TextSpan, TextStyleProps } from '../text-engine/types'
 import { ElementBridge, ParagraphSpan } from './ElementBridge'
 import { HitTestAdapter } from './HitTestAdapter'
-import { mapLayoutToRows } from './mapToLegacyRow'
 
 function resolveAlign(
   rowFlex: RowFlex | undefined,
@@ -62,12 +77,18 @@ export function resolveLayoutScope(params: {
   zone?: string
   isTable?: boolean
   tdId?: string | null
+  paperDirection?: string
 }): string {
   if (params.isTable && params.tdId) {
-    return `td:${params.tdId}`
+    return params.paperDirection &&
+      (params.zone === 'header' || params.zone === 'footer')
+      ? `${params.zone}:${params.paperDirection}/td:${params.tdId}`
+      : `td:${params.tdId}`
   }
   if (params.zone === 'header' || params.zone === 'footer') {
-    return params.zone
+    return params.paperDirection
+      ? `${params.zone}:${params.paperDirection}`
+      : params.zone
   }
   return DEFAULT_LAYOUT_SCOPE
 }
@@ -79,20 +100,191 @@ export interface LayoutHideContext {
 }
 
 export class LayoutHostAdapter {
-  private fontManager = new FontManager()
+  private sourceIds = new WeakMap<object, string>()
+  private sourceSequence = 0
+
+  private sourceId(node: object): string {
+    let id = this.sourceIds.get(node)
+    if (!id) {
+      id = `font-source-${++this.sourceSequence}`
+      this.sourceIds.set(node, id)
+    }
+    return id
+  }
+
+  matchesSource(element: IElement, nodeId: string) {
+    return this.sourceIds.get(element) === nodeId
+  }
+
+  private fontManager = new FontManager(() => this.invalidate())
   private bridge = new ElementBridge()
   private hitTest = new HitTestAdapter()
   private cache = new LayoutCache()
-  private glyphRenderer = new GlyphRenderer()
+  private glyphRenderer = new GlyphRenderer(this.fontManager)
   private engine: TextLayoutEngine | null = null
+  private nativeCache = new IncrementalParagraphComputer()
+  private service: TextLayoutService | null = null
   private initPromise: Promise<void> | null = null
   private lastLayouts = new Map<string, LayoutResult>()
   private revision = 0
+  private destroyed = false
 
   constructor(
     private getOptions: () => DeepRequired<IEditorOption>,
     private getHideContext?: () => LayoutHideContext
   ) {}
+
+  private sourcePositions(
+    paragraph: ParagraphSpan,
+    elements: IElement[],
+    scope: string
+  ): import('../../interface/FontCoverage').FontCoverageLocation[] {
+    const offsets = new Map<number, number>()
+    return paragraph.spans.flatMap(span =>
+      Array.from({ length: span.text.length }, (_, i) => {
+        const index = span.logicalIndices?.[i] ?? span.logicalIndex
+        const element = elements[index]
+        const offset = offsets.get(index) || 0
+        const synthetic =
+          /^[\u2066-\u2069]$/.test(span.text[i]) &&
+          !element.value.includes(span.text[i])
+        if (!synthetic) offsets.set(index, offset + 1)
+        return {
+          scope,
+          nodeId: this.sourceId(element),
+          start: index,
+          end: index + 1,
+          textStart: offset,
+          textEnd: offset + (synthetic ? 0 : 1)
+        }
+      })
+    )
+  }
+
+  /** Configuration chrome has no selectable document range (start === end). */
+  collectPlainTextCoverage(
+    params: {
+      text: string
+      fontFamily: string
+      fontSize: number
+      color: string
+    },
+    source: import('../../interface/Layout').LayoutSource
+  ): FontCoverageInput[] {
+    const spans = this.buildPlainTextSpans(
+      params.text,
+      params.fontFamily,
+      params.fontSize,
+      params.color
+    )
+    const direction = resolveDirection(TextDirection.AUTO, params.text, 'ltr')
+    const positions = Array.from(
+      { length: params.text.length },
+      (_, index) => ({
+        ...source,
+        textStart: index,
+        textEnd: index + 1
+      })
+    )
+    return (this.engine?.getShapingRuns(spans, direction) || []).map(run => ({
+      text: run.text,
+      style: run.style,
+      direction: run.direction,
+      positions: positions.slice(run.textStart, run.textEnd)
+    }))
+  }
+
+  collectFontCoverage(
+    roots: { scope: string; elements: IElement[] }[],
+    auxiliary?: (
+      element: IElement
+    ) => { text: string; fontFamily: string; fontSize: number; color: string }[]
+  ): FontCoverageInput[] {
+    const inputs: FontCoverageInput[] = []
+    const hide = this.getHideContext?.()
+    const visit = (elements: IElement[], scope: string) => {
+      for (const marker of collectListMarkers(elements)) {
+        if (!marker.text || isElementLayoutHidden(marker.anchor, hide || {}))
+          continue
+        const native = this.layoutListMarker(
+          elements,
+          marker.anchor,
+          marker.text,
+          'ltr'
+        )
+        const style = native.shaped.lines[0]?.glyphs[0]?.style
+        if (style)
+          inputs.push({
+            text: marker.text,
+            style,
+            direction: 'ltr',
+            positions: Array.from({ length: marker.text.length }, () => ({
+              scope,
+              nodeId: this.sourceId(marker.anchor),
+              start: marker.sourceIndex,
+              end: marker.sourceIndex + 1,
+              textStart: 0,
+              textEnd: 0
+            }))
+          })
+      }
+      for (const paragraph of this.scanParagraphs(elements)) {
+        const positions = this.sourcePositions(paragraph, elements, scope)
+        const runs =
+          this.engine?.getShapingRuns(paragraph.spans, paragraph.direction) ||
+          []
+        for (const run of runs) {
+          if (run.style.objectWidth != null) continue
+          inputs.push({
+            text: run.text,
+            style: run.style,
+            direction: run.direction,
+            positions: positions.slice(run.textStart, run.textEnd)
+          })
+        }
+      }
+      for (const [index, element] of elements.entries()) {
+        if (
+          isElementLayoutHidden(element, {
+            isDesignMode: hide?.isDesignMode,
+            isAreaHideDisabled: hide?.isAreaHideDisabled,
+            isTraceHidden: hide?.isTraceHidden
+          })
+        )
+          continue
+        for (const text of auxiliary?.(element) || []) {
+          inputs.push(
+            ...this.collectPlainTextCoverage(text, {
+              scope,
+              nodeId: this.sourceId(element),
+              start: index,
+              end: index + 1
+            })
+          )
+        }
+        for (const row of element.trList || []) {
+          for (const cell of row.tdList) {
+            visit(cell.value, `td:${cell.id || this.sourceId(cell)}`)
+          }
+        }
+      }
+    }
+    for (const root of roots) visit(root.elements, root.scope)
+    return inputs
+  }
+
+  getFontManager(): FontManager {
+    return this.fontManager
+  }
+
+  async registerFonts(faces: IEditorFontFace[]) {
+    if (this.destroyed) throw new EditorRuntimeError('EDITOR_DESTROYED')
+    await this.ensureReady()
+    const results = []
+    for (const face of faces)
+      results.push(await this.fontManager.registerFace(face))
+    return results
+  }
 
   getHitTest(): HitTestAdapter {
     return this.hitTest
@@ -120,6 +312,13 @@ export class LayoutHostAdapter {
     for (const { startIndex, endIndex, layout } of layouts) {
       this.lastLayouts.set(layoutLastKey(scope, startIndex, endIndex), layout)
     }
+  }
+
+  releaseScope(scope: string) {
+    for (const key of this.lastLayouts.keys())
+      if (key.startsWith(`${scope}|`) || key.startsWith(`${scope}/`))
+        this.lastLayouts.delete(key)
+    this.nativeCache.releaseScope(scope)
   }
 
   findLayoutByElementIndex(
@@ -156,116 +355,360 @@ export class LayoutHostAdapter {
     )
   }
 
-  isHarfBuzzMode(): boolean {
-    return this.getOptions().textEngine === TextEngineMode.HARFBUZZ
-  }
-
   isReady(): boolean {
-    if (!this.isHarfBuzzMode()) return false
-    // Browser shaper allows ready without fonts; HB prefers fonts
     return !!this.engine
   }
 
   async ensureReady(): Promise<void> {
+    if (this.destroyed) throw new EditorRuntimeError('EDITOR_DESTROYED')
     if (this.engine) return
     if (this.initPromise) return this.initPromise
     this.initPromise = (async () => {
       const options = this.getOptions()
-      try {
-        await this.fontManager.init(options.fonts || [], options.defaultFont)
-      } catch (e) {
-        console.warn('[text-engine] FontManager init failed, using fallback', e)
-      }
-      // HB when OT fonts registered; Browser measureText otherwise
-      const shaper = this.fontManager.isReady()
-        ? new HarfBuzzTextShaper(this.fontManager)
-        : new BrowserTextShaper()
+      await this.fontManager.init(options.fonts || [], options.defaultFont)
+      if (this.destroyed) throw new EditorRuntimeError('EDITOR_DESTROYED')
+      const shaper = new HarfBuzzTextShaper(this.fontManager)
       this.engine = new TextLayoutEngine(new BidiResolver(), shaper)
+      this.service = new TextLayoutService(this.engine, this.fontManager)
       this.invalidate()
     })()
     return this.initPromise
   }
 
-  /**
-   * Layout a paragraph span list into legacy rows (HarfBuzz path).
-   */
-  layoutParagraphToRows(
+  getTextLayoutService(): TextLayoutService {
+    if (!this.service) throw new EditorRuntimeError('EDITOR_NOT_READY')
+    return this.service
+  }
+
+  private unscaledSpans(spans: TextSpan[], scale: number): TextSpan[] {
+    return spans.map(span => ({
+      ...span,
+      style: {
+        ...span.style,
+        fontSize: span.style.fontSize / scale,
+        padding: span.style.padding?.map(v => v / scale),
+        letterSpacing: (span.style.letterSpacing || 0) / scale,
+        rowMargin: (span.style.rowMargin || 0) / scale,
+        explicitWidth:
+          span.style.explicitWidth == null
+            ? undefined
+            : span.style.explicitWidth / scale,
+        objectWidth:
+          span.style.objectWidth == null
+            ? undefined
+            : span.style.objectWidth / scale,
+        objectHeight:
+          span.style.objectHeight == null
+            ? undefined
+            : span.style.objectHeight / scale
+      }
+    }))
+  }
+
+  /** Intrinsic measurement without replacing the painted paragraph handles. */
+  measureParagraph(paragraph: ParagraphSpan) {
+    const options = this.getOptions()
+    return this.getTextLayoutService().measureText({
+      spans: this.unscaledSpans(paragraph.spans, options.scale || 1),
+      availableWidth: Infinity,
+      direction: paragraph.direction,
+      align: 'left',
+      lineHeight: options.defaultSize,
+      lineHeightFactor: 1
+    })
+  }
+
+  layoutListMarker(
+    elements: IElement[],
+    anchor: IElement,
+    text: string,
+    direction: 'ltr' | 'rtl'
+  ) {
+    const options = this.getOptions()
+    const styled = options.list.inheritStyle
+      ? elements.find(
+          el =>
+            el.listId === anchor.listId &&
+            (el.font || el.size || el.bold || el.italic)
+        ) || anchor
+      : undefined
+    const style: TextStyleProps = {
+      fontFamily: styled?.font || options.defaultFont,
+      fontSize: styled?.size || options.defaultSize,
+      bold: styled?.bold,
+      italic: styled?.italic,
+      color: styled?.color || options.defaultColor
+    }
+    return this.getTextLayoutService().layoutParagraph({
+      spans: [{ text, style, logicalIndex: 0 }],
+      availableWidth: 1e9,
+      direction,
+      align: 'left',
+      lineHeight: style.fontSize,
+      lineHeightFactor: 1,
+      source: {
+        scope: 'listMarker',
+        nodeId: this.sourceId(anchor),
+        start: 0,
+        end: 1
+      },
+      revision: {
+        documentRevision: this.revision,
+        fontRevision: this.fontManager.getRevision()
+      },
+      positions: Array.from({ length: text.length }, () => ({
+        start: 0,
+        textStart: 0,
+        textEnd: 0
+      })),
+      emptyStyle: style
+    })
+  }
+
+  /** Caption geometry shares the exact font line box used by its painter. */
+  layoutCaption(element: IElement, text: string): LayoutResult {
+    const options = this.getOptions()
+    const caption = element.imgCaption
+    const size = caption?.size || options.imgCaption.size
+    const family = caption?.font || options.imgCaption.font
+    const spans = this.buildPlainTextSpans(
+      text,
+      family,
+      size,
+      caption?.color || options.imgCaption.color
+    )
+    return this.getTextLayoutService().layoutSingleLine({
+      spans,
+      availableWidth: Infinity,
+      direction: resolveDirection(TextDirection.AUTO, text, 'ltr'),
+      align: 'left',
+      lineHeight: size,
+      lineHeightFactor: 1,
+      source: {
+        scope: 'caption',
+        nodeId: this.sourceId(element),
+        start: 0,
+        end: 1
+      },
+      revision: {
+        documentRevision: this.revision,
+        fontRevision: this.fontManager.getRevision()
+      },
+      positions: Array.from({ length: text.length }, (_, i) => ({
+        start: 0,
+        textStart: i,
+        textEnd: i + 1
+      })),
+      emptyStyle: { fontFamily: family, fontSize: size }
+    }).shaped
+  }
+
+  /** Native entry: no LayoutRow construction and no legacy row mapper. */
+  layoutParagraph(
+    paragraph: ParagraphSpan,
+    elementList: IElement[],
+    availableWidth: number,
+    layoutScope: string = DEFAULT_LAYOUT_SCOPE,
+    defaultAlign?: 'left' | 'right',
+    markerGutter?: number,
+    constraints?: { widths: number[]; offsets: number[] }
+  ): NativeParagraphLayout {
+    const options = this.getOptions()
+    const scale = options.scale || 1
+    const first = elementList[paragraph.startIndex]
+    const last = elementList[paragraph.endIndex]
+    const next = elementList[paragraph.endIndex + 1]
+    const spans = this.unscaledSpans(paragraph.spans, scale)
+    for (const span of spans) {
+      const style = span.style
+      if (
+        style.hidden ||
+        (style.objectType !== 'image' && style.objectType !== 'latex')
+      )
+        continue
+      const element = elementList[span.logicalIndex]
+      const measured = measureInlineImage(
+        {
+          width: element.width || 0,
+          height: element.height || 0,
+          display: element.imgDisplay
+        },
+        {
+          availableWidth: availableWidth / scale,
+          scale: 1,
+          caption: options.imgCaption
+        }
+      )
+      if (measured.adaptedSize) Object.assign(element, measured.adaptedSize)
+      style.objectWidth = measured.metrics.width
+      style.objectHeight = measured.metrics.height
+      style.objectCaptionHeight = element.imgCaption?.value
+        ? (element.imgCaption.top ?? options.imgCaption.top) +
+          this.layoutCaption(element, element.imgCaption.value).lines[0].height
+        : 0
+    }
+    const emptyStyle = {
+      fontFamily: first?.font || options.defaultFont,
+      fontSize: first?.size || options.defaultSize,
+      bold: first?.bold,
+      italic: first?.italic,
+      hidden: first
+        ? isElementLayoutHidden(first, this.getHideContext?.() || {})
+        : false,
+      rowMargin: resolveRowMargin(first || {}, { ...options, scale: 1 })
+    }
+    const input: import('../text-engine/layout/TextLayoutService').NativeParagraphInput =
+      {
+        spans,
+        availableWidth: availableWidth / scale,
+        lineWidths: constraints?.widths,
+        lineOffsets: constraints?.offsets,
+        direction: paragraph.direction,
+        align:
+          paragraph.rowFlex === undefined && defaultAlign
+            ? defaultAlign
+            : resolveAlign(paragraph.rowFlex, paragraph.direction),
+        lineHeight: emptyStyle.fontSize,
+        lineHeightFactor: 1,
+        wordBreak:
+          options.wordBreak === WordBreak.BREAK_ALL
+            ? ('break-all' as const)
+            : ('break-word' as const),
+        source: {
+          scope: layoutScope,
+          nodeId: this.sourceId(first || paragraph),
+          start: paragraph.startIndex,
+          end: paragraph.endIndex + 1
+        },
+        revision: {
+          documentRevision: this.revision,
+          fontRevision: this.fontManager.getRevision()
+        },
+        positions: this.sourcePositions(paragraph, elementList, layoutScope),
+        emptyStyle,
+        spacingBefore: first
+          ? resolveSpacingBefore(
+              first,
+              elementList[paragraph.startIndex + 1],
+              1
+            )
+          : 0,
+        spacingAfter:
+          next?.value === '\u200B' && !next.listWrap
+            ? resolveSpacingAfter(last, 1)
+            : 0
+      }
+    let result = options.lab?.incrementalCompute
+      ? this.nativeCache.compute(input, value =>
+          this.getTextLayoutService().layoutParagraph(value)
+        )
+      : this.getTextLayoutService().layoutParagraph(input)
+    const marker = collectListMarkers(elementList).find(
+      item => item.sourceIndex === paragraph.startIndex
+    )
+    if (marker?.text && !result.lines[0].hidden) {
+      const markerLayout = this.layoutListMarker(
+        elementList,
+        marker.anchor,
+        marker.text,
+        paragraph.direction
+      )
+      const markerLine = markerLayout.lines[0]
+      const markerAvailable = constraints?.widths[0] ?? availableWidth / scale
+      const markerOffset = constraints?.offsets[0] || 0
+      const offset =
+        markerOffset +
+        (paragraph.direction === 'rtl'
+          ? markerAvailable +
+            (markerGutter || markerLine.rect.width + 10) -
+            markerLine.rect.width
+          : -(markerGutter || markerLine.rect.width + 10))
+      const nativeMarker = translateLayout(
+        [markerLine],
+        offset,
+        result.lines[0].rect.y + result.lines[0].baseline - markerLine.baseline
+      )[0] as typeof markerLine
+      nativeMarker.source = {
+        ...result.lines[0].source,
+        start: marker.sourceIndex,
+        end: marker.sourceIndex + 1
+      }
+      const remapCaret = (caret: (typeof nativeMarker.carets)[number]) => ({
+        ...caret,
+        position: { elementIndex: marker.sourceIndex, offset: 0 }
+      })
+      nativeMarker.carets = nativeMarker.carets.map(remapCaret)
+      nativeMarker.clusters = nativeMarker.clusters.map(c => ({
+        ...c,
+        logicalIndices: [marker.sourceIndex],
+        carets: c.carets.map(remapCaret)
+      }))
+      nativeMarker.inlines = nativeMarker.inlines.map(item => ({
+        ...item,
+        source: { ...nativeMarker.source },
+        ...(item.kind === 'missingGlyph'
+          ? { carets: item.carets.map(remapCaret) }
+          : { anchor: remapCaret(item.anchor) })
+      }))
+
+      result = {
+        ...result,
+        lines: [
+          { ...result.lines[0], marker: nativeMarker },
+          ...result.lines.slice(1)
+        ]
+      }
+    }
+    this.lastLayouts.set(
+      layoutLastKey(layoutScope, paragraph.startIndex, paragraph.endIndex),
+      {
+        ...result.shaped,
+        lines: result.shaped.lines.map(line => scaleShapedLine(line, scale))
+      }
+    )
+    return result
+  }
+
+  /** Native flow records, without per-element metrics or model writes. */
+  layoutParagraphRows(
     paragraph: ParagraphSpan,
     elementList: IElement[],
     availableWidth: number,
     startRowIndex: number,
     layoutScope: string = DEFAULT_LAYOUT_SCOPE,
-    defaultAlign?: 'left' | 'right'
-  ): IRow[] | null {
-    if (!this.engine || !paragraph.spans.length) return null
+    defaultAlign?: 'left' | 'right',
+    onLayout?: (result: NativeParagraphLayout) => void,
+    markerGutter?: number
+  ): LayoutRow[] {
     const options = this.getOptions()
-    const lineHeightFactor = (options.defaultRowMargin || 1) * 1.5
-    // 空行回退；实际行高由引擎按行内最大字号 * factor 计算
-    const fallbackFontSize =
-      Math.max(
-        0,
-        ...paragraph.spans.map(s => s.style.fontSize || 0)
-      ) ||
-      options.defaultSize * (options.scale || 1)
-    const lineHeight = fallbackFontSize * lineHeightFactor
-    const align =
-      paragraph.rowFlex === undefined && defaultAlign
-        ? defaultAlign
-        : resolveAlign(paragraph.rowFlex, paragraph.direction)
-    const wordBreak =
-      options.wordBreak === WordBreak.BREAK_ALL ? 'break-all' : 'break-word'
-    // 须含 bold/italic/color/object 尺寸等，否则改样式或缩放图片/公式会命中旧缓存（行高不更新重叠）
-    const cacheKey = [
-      paragraph.text,
-      paragraph.direction,
-      align,
+    const native = this.layoutParagraph(
+      paragraph,
+      elementList,
       availableWidth,
-      wordBreak,
-      lineHeightFactor,
-      paragraph.spans
-        .map(s => {
-          const st = s.style
-          return [
-            s.logicalIndex,
-            st.fontFamily,
-            st.fontSize,
-            st.bold ? 1 : 0,
-            st.italic ? 1 : 0,
-            st.color || '',
-            st.letterSpacing || 0,
-            st.scriptShift || '',
-            st.objectWidth ?? '',
-            st.objectHeight ?? '',
-            s.text.length
-          ].join(':')
-        })
-        .join(',')
-    ].join('|')
-    let layout = this.cache.get(cacheKey)
-    if (!layout) {
-      layout = this.engine.layoutParagraph({
-        spans: paragraph.spans,
-        availableWidth,
-        direction: paragraph.direction,
-        align,
-        lineHeight,
-        lineHeightFactor,
-        wordBreak
-      })
-      this.cache.set(cacheKey, layout)
-    }
-    this.lastLayouts.set(
-      layoutLastKey(layoutScope, paragraph.startIndex, paragraph.endIndex),
-      layout
+      layoutScope,
+      defaultAlign,
+      markerGutter
     )
-    return mapLayoutToRows({
-      layout,
+    onLayout?.(native)
+    return createTextRows(
+      native.lines,
       elementList,
       startRowIndex,
-      rowFlex: paragraph.rowFlex,
-      defaultFont: options.defaultFont,
-      defaultSize: options.defaultSize
-    })
+      options.scale || 1,
+      paragraph.rowFlex
+    )
+  }
+
+  /** Compatibility output only. No runtime layout calls this method. */
+  layoutParagraphToRows(
+    ...args: Parameters<LayoutHostAdapter['layoutParagraphRows']>
+  ) {
+    return snapshotRows(
+      this.layoutParagraphRows(...args),
+      this.getOptions().scale,
+      row => this.findLayoutByElementIndex(row.startIndex, args[4])?.layout,
+      this.getOptions()
+    )
   }
 
   scanParagraphs(
@@ -285,12 +728,16 @@ export class LayoutHostAdapter {
         defaultColor: options.defaultColor,
         defaultHyperlinkColor: options.defaultHyperlinkColor,
         defaultLabelColor: options.label.defaultColor,
+        defaultLabelPadding: options.label.defaultPadding,
         fonts: options.fonts,
         scale: options.scale,
         checkboxWidth: options.checkbox.width,
         checkboxGap: options.checkbox.gap,
         radioWidth: options.radio.width,
         radioGap: options.radio.gap,
+        defaultTabWidth: options.defaultTabWidth,
+        defaultRowMargin: options.defaultRowMargin,
+        defaultBasicRowMarginHeight: options.defaultBasicRowMarginHeight,
         isDesignMode: hide?.isDesignMode,
         isAreaHideDisabled: hide?.isAreaHideDisabled,
         isTraceHidden: hide?.isTraceHidden
@@ -311,14 +758,13 @@ export class LayoutHostAdapter {
     color: string
     availableWidth?: number
   }): LayoutResult | null {
-    if (!this.engine || !params.text) return null
+    if (!this.isReady()) return null
     const spans = this.buildPlainTextSpans(
       params.text,
       params.fontFamily,
       params.fontSize,
       params.color
     )
-    if (!spans.length) return null
     // 水印/页码等画在文本区：按文种 AUTO 探测，不跟 LTR/RTL 模式走
     // （模式切换不得改变画布绘制结果）
     const direction = resolveDirection(
@@ -326,16 +772,25 @@ export class LayoutHostAdapter {
       params.text,
       TextDirection.LTR
     )
-    const lineHeight = params.fontSize * 1.5
-    return this.engine.layoutParagraph({
+    return this.getTextLayoutService().layoutSingleLine({
       spans,
-      availableWidth: params.availableWidth ?? 1e9,
+      availableWidth: Infinity,
       direction,
       align: 'left',
-      lineHeight,
-      lineHeightFactor: 1.5,
-      wordBreak: 'break-word'
-    })
+      lineHeight: params.fontSize,
+      lineHeightFactor: 1,
+      source: { scope: 'auxiliary', nodeId: 'plain', start: 0, end: 0 },
+      revision: {
+        documentRevision: this.revision,
+        fontRevision: this.fontManager.getRevision()
+      },
+      positions: Array.from({ length: params.text.length }, (_, index) => ({
+        start: index,
+        textStart: index,
+        textEnd: index + 1
+      })),
+      emptyStyle: { fontFamily: params.fontFamily, fontSize: params.fontSize }
+    }).shaped
   }
 
   /** Split plain text by script → registered face (same as ElementBridge). */
@@ -351,11 +806,7 @@ export class LayoutHostAdapter {
       const cp = text.codePointAt(i)!
       const len = cp > 0xffff ? 2 : 1
       const ch = text.slice(i, i + len)
-      const family = resolveFontForScript(
-        detectScript(ch),
-        fonts,
-        fontFamily
-      )
+      const family = resolveFontForScript(detectScript(ch), fonts, fontFamily)
       const last = spans[spans.length - 1]
       const indices = new Array(len).fill(i)
       if (last && last.style.fontFamily === family) {
@@ -407,9 +858,23 @@ export class LayoutHostAdapter {
     return resolveDirection(declared ?? TextDirection.AUTO, text, 'ltr')
   }
 
+  destroy() {
+    if (this.destroyed) return
+    this.destroyed = true
+    this.fontManager.destroy()
+    this.engine = null
+    this.service = null
+    this.invalidate()
+  }
+
+  clearParagraphCache() {
+    this.nativeCache.reset()
+  }
+
   invalidate() {
     this.revision++
     this.cache.invalidate()
+    this.nativeCache.reset()
     this.lastLayouts.clear()
   }
 }

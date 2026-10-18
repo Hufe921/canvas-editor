@@ -1,10 +1,12 @@
 # HarfBuzz 增量排版
 
+> 当前增量实现见[原生段落增量布局](./native-incremental-layout.md)。
+> 下文是早期实现记录；旧行恢复算法和引擎选择已在 T20 删除。
+
 ## 配置与重排边界
 
 ```typescript
 {
-  textEngine: 'harfbuzz',
   lab: { incrementalCompute: true }
 }
 ```

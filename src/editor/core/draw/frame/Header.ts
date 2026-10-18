@@ -1,9 +1,10 @@
+import type { LayoutRow } from '../../../interface/LayoutRow'
+import { activateFrameGeometry } from '../../text-engine-host/FrameLayoutHost'
 import { maxHeightRadioMapping } from '../../../dataset/constant/Common'
 import { EditorZone, PaperDirection } from '../../../dataset/enum/Editor'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
-import { IRow } from '../../../interface/Row'
 import { pickSurroundElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
 import { Zone } from '../../zone/Zone'
@@ -16,7 +17,7 @@ export class Header {
   private options: DeepRequired<IEditorOption>
 
   private elementList: IElement[]
-  private layoutMap: Map<PaperDirection, [IRow[], IElementPosition[]]>
+  private layoutMap: Map<PaperDirection, [LayoutRow[], IElementPosition[]]>
 
   constructor(draw: Draw, data?: IElement[]) {
     this.draw = draw
@@ -28,7 +29,11 @@ export class Header {
     this.layoutMap = new Map()
   }
 
-  public getRowList(): IRow[] {
+  public getRowList() {
+    return this.draw.snapshotRows(this.getLayoutRowList())
+  }
+
+  public getLayoutRowList(): LayoutRow[] {
     return this._getLayoutByDirection(this.options.paperDirection)[0]
   }
 
@@ -43,7 +48,9 @@ export class Header {
   public getPositionList(
     direction = this.options.paperDirection
   ): IElementPosition[] {
-    return this._getLayoutByDirection(direction)[1]
+    const layout = this._getLayoutByDirection(direction)
+    activateFrameGeometry(this.elementList, layout[0])
+    return layout[1]
   }
 
   public compute() {
@@ -58,7 +65,7 @@ export class Header {
 
   private _getLayoutByDirection(
     direction: PaperDirection
-  ): [IRow[], IElementPosition[]] {
+  ): [LayoutRow[], IElementPosition[]] {
     let layout = this.layoutMap.get(direction)
     if (!layout) {
       const rowList = this._computeRowList(direction)
@@ -70,7 +77,7 @@ export class Header {
     return layout
   }
 
-  private _computeRowList(direction: PaperDirection): IRow[] {
+  private _computeRowList(direction: PaperDirection): LayoutRow[] {
     const margins = this.draw.getMargins(direction)
     const innerWidth = this.draw.getInnerWidth(direction)
     const surroundElementList = pickSurroundElementList(this.elementList)
@@ -80,13 +87,13 @@ export class Header {
       innerWidth,
       elementList: this.elementList,
       surroundElementList,
-      layoutScope: 'header'
+      layoutScope: `header:${direction}`
     })
   }
 
   private _computePositionList(
     direction: PaperDirection,
-    rowList: IRow[]
+    rowList: LayoutRow[]
   ): IElementPosition[] {
     const margins = this.draw.getMargins(direction)
     const positionList: IElementPosition[] = []
@@ -131,7 +138,7 @@ export class Header {
 
   public getRowHeight(direction = this.options.paperDirection): number {
     return this._getLayoutByDirection(direction)[0].reduce(
-      (pre, cur) => pre + cur.height,
+      (pre, cur) => pre + cur.height + (cur.offsetY || 0),
       0
     )
   }
@@ -180,15 +187,15 @@ export class Header {
     const maxHeight = this.getMaxHeight(direction)
     // 超出最大高度不渲染
     const [allRowList, positionList] = this._getLayoutByDirection(direction)
-    const rowList: IRow[] = []
+    const rowList: LayoutRow[] = []
     let curRowHeight = 0
     for (let r = 0; r < allRowList.length; r++) {
       const row = allRowList[r]
-      if (curRowHeight + row.height > maxHeight) {
+      if (curRowHeight + row.height + (row.offsetY || 0) > maxHeight) {
         break
       }
       rowList.push(row)
-      curRowHeight += row.height
+      curRowHeight += row.height + (row.offsetY || 0)
     }
     this.draw.drawRow(ctx, {
       elementList: this.elementList,

@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  ControlComponent,
-  ControlType,
-  ElementType
-} from '../../../src/editor'
+import { ControlComponent, ControlType, ElementType } from '../../../src/editor'
 import { Control } from '../../../src/editor/core/draw/control/Control'
 import type { IElement } from '../../../src/editor/interface/Element'
 

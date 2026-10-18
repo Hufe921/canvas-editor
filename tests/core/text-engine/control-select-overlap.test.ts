@@ -1,3 +1,6 @@
+import { createTestDraw } from '../../factories/draw'
+import { layoutNativeSnapshot } from '../../factories/native-row'
+import { createTestTextShaper } from '../../factories/text-shaper'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -9,50 +12,24 @@ import {
   ControlComponent,
   ControlType,
   ElementType,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import { SelectControl } from '@/editor/core/draw/control/select/SelectControl'
 import { ElementBridge } from '@/editor/core/text-engine-host/ElementBridge'
 import { BidiResolver } from '@/editor/core/text-engine/bidi/BidiResolver'
-import { BrowserTextShaper } from '@/editor/core/text-engine/shape/BrowserTextShaper'
 import { TextLayoutEngine } from '@/editor/core/text-engine/layout/TextLayoutEngine'
-import { mapLayoutToRows } from '@/editor/core/text-engine-host/mapToLegacyRow'
 import type { IElement } from '@/editor/interface/Element'
 
-function stubMeasureText() {
-  const proto = CanvasRenderingContext2D.prototype
-  vi.spyOn(proto, 'measureText').mockImplementation(function (text: string) {
-    let width = 0
-    for (const ch of text) {
-      const cp = ch.codePointAt(0)!
-      if (
-        (cp >= 0x200b && cp <= 0x200d) ||
-        cp === 0xfeff ||
-        cp === 0x2060 ||
-        (cp >= 0x2066 && cp <= 0x2069)
-      ) {
-        continue
-      }
-      width += cp > 0xff ? 16 : 8
-    }
-    return {
-      width,
-      actualBoundingBoxAscent: 12.8,
-      actualBoundingBoxDescent: 3.2,
-      fontBoundingBoxAscent: 12.8,
-      fontBoundingBoxDescent: 3.2
-    } as TextMetrics
-  })
-}
-
-function createDraw(main: IElement[], opts: Record<string, unknown> = {}) {
+async function createDraw(
+  main: IElement[],
+  opts: Record<string, unknown> = {}
+) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const options = mergeOption({
     defaultDirection: TextDirection.AUTO,
-    textEngine: TextEngineMode.HARFBUZZ,
+
     header: { disabled: true },
     footer: { disabled: true },
     ...opts
@@ -61,7 +38,7 @@ function createDraw(main: IElement[], opts: Record<string, unknown> = {}) {
     editorOptions: options,
     isForceCompensation: true
   })
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -86,7 +63,6 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
   })
 
   it('hypertensionLevel setSelect(Ⅱ级): placeholder gone, no visualLeft overlap', async () => {
-    stubMeasureText()
     const main: IElement[] = [
       { value: ZERO },
       { value: '高血压分级：' },
@@ -109,7 +85,7 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
         }
       }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
 
     const elementList = draw!.getOriginalElementList()
     const prefixIdx = elementList.findIndex(
@@ -157,7 +133,7 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
 
     const engine = new TextLayoutEngine(
       new BidiResolver(),
-      new BrowserTextShaper()
+      createTestTextShaper()
     )
     const layout = engine.layoutParagraph({
       spans: para.spans,
@@ -167,7 +143,7 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
       lineHeight: 24,
       lineHeightFactor: 1.5
     })
-    const rows = mapLayoutToRows({
+    const rows = await layoutNativeSnapshot({
       layout,
       elementList: after,
       startRowIndex: 0,
@@ -190,9 +166,11 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
     await adapter.ensureReady()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
 
-    const liveRow = draw!.getOriginalRowList().find(r =>
-      r.elementList.some(e => e.control?.conceptId === 'hypertensionLevel')
-    )!
+    const liveRow = draw!
+      .getOriginalRowList()
+      .find(r =>
+        r.elementList.some(e => e.control?.conceptId === 'hypertensionLevel')
+      )!
     const liveOrdered = liveRow.elementList.filter(
       e => e.control?.conceptId === 'hypertensionLevel'
     )
@@ -207,7 +185,6 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
   })
 
   it('obesityTip wrapped placeholder: second-line chars enter control', async () => {
-    stubMeasureText()
     // `{干预建议}` stub 宽 = 8+16*4+8=80；innerWidth=56 强制控件中段换行
     const main: IElement[] = [
       { value: ZERO },
@@ -225,7 +202,7 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
         }
       }
     ]
-    ;({ draw, container } = createDraw(main, {
+    ;({ draw, container } = await createDraw(main, {
       width: 88,
       pageWidth: 88,
       margins: [10, 16, 10, 16]
@@ -284,7 +261,6 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
   })
 
   it('RTL LRI/PDI must not inflate POSTFIX box over {value}', async () => {
-    stubMeasureText()
     const main: IElement[] = [
       { value: ZERO, direction: TextDirection.RTL },
       { value: 'الدرجة: ', direction: TextDirection.RTL },
@@ -307,7 +283,7 @@ describe('SELECT setSelect vs PLACEHOLDER overlap / TEXT wrap hit', () => {
         }
       }
     ]
-    ;({ draw, container } = createDraw(main, {
+    ;({ draw, container } = await createDraw(main, {
       defaultDirection: TextDirection.AUTO
     }))
     const adapter = (draw as any).layoutHostAdapter

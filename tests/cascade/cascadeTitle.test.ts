@@ -75,7 +75,7 @@ describe('级联控制标题显隐', () => {
   afterEach(() => ctx?.destroy())
 
   it('初始隐藏：多字符标题的全部字符元素均保持隐藏', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildTitleData(null), footer: [] }
     })
     const titleChars = getTitleChars(ctx)
@@ -86,7 +86,7 @@ describe('级联控制标题显隐', () => {
   })
 
   it('表达式成立：标题整行及内容全部显示；还原后重新隐藏', async () => {
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildTitleData('1'), footer: [] }
     })
     // 修复前：仅首字符被显示，其余字符被跳过

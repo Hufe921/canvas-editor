@@ -134,6 +134,7 @@ export class Command {
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
   public executeComputeElementListHeight: CommandAdapt['computeElementListHeight']
+  public executeComputeElementListHeightAsync: CommandAdapt['computeElementListHeightAsync']
   public getCatalog: CommandAdapt['getCatalog']
   public getImage: CommandAdapt['getImage']
   public getOptions: CommandAdapt['getOptions']
@@ -181,7 +182,7 @@ export class Command {
     }) as T
   }
 
-  constructor(adapt: CommandAdapt) {
+  constructor(adapt: CommandAdapt, guard?: (name: string) => void) {
     // 全局命令
     this.executeMode = this.wrap('executeMode', adapt.mode.bind(adapt))
     this.executeCut = this.wrap('executeCut', adapt.cut.bind(adapt))
@@ -598,6 +599,10 @@ export class Command {
       'executeComputeElementListHeight',
       adapt.computeElementListHeight.bind(adapt)
     )
+    this.executeComputeElementListHeightAsync = this.wrap(
+      'executeComputeElementListHeightAsync',
+      adapt.computeElementListHeightAsync.bind(adapt)
+    )
     // 获取
     this.getImage = adapt.getImage.bind(adapt)
     this.getOptions = adapt.getOptions.bind(adapt)
@@ -681,5 +686,33 @@ export class Command {
       'executeJumpControl',
       adapt.jumpControl.bind(adapt)
     )
+    if (guard) {
+      const asyncCommands = new Set([
+        'executeCut',
+        'executeCopy',
+        'executePrint',
+        'getImage',
+        'getValueAsync',
+        'getWordCount',
+        'getCatalog',
+        'getGroupIds',
+        'executeComputeElementListHeightAsync'
+      ])
+      // Guard every command/query binding without changing its public signature
+      // or allowing setInterceptor() to replace the lifecycle check.
+      for (const name of Object.keys(this)) {
+        const fn = Reflect.get(this, name)
+        if (typeof fn !== 'function') continue
+        Reflect.set(this, name, (...args: unknown[]) => {
+          try {
+            guard(name)
+          } catch (error) {
+            if (asyncCommands.has(name)) return Promise.reject(error)
+            throw error
+          }
+          return Reflect.apply(fn, this, args)
+        })
+      }
+    }
   }
 }

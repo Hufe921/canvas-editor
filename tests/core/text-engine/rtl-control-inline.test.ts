@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ControlComponent } from '../../../src/editor/dataset/enum/Control'
 import { TextDirection } from '../../../src/editor/dataset/enum/TextDirection'
-import { buildArabicEmrElementList } from '../../../src/mock-ar-emr'
+import { buildArabicEmrElementList } from '../../fixtures/arabic-emr'
 import { ElementBridge } from '../../../src/editor/core/text-engine-host/ElementBridge'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
 import { mergeOption } from '../../../src/editor/utils/option'
@@ -58,10 +58,10 @@ describe('rtl controls', () => {
       defaultColor: '#000'
     })
 
-    const titlePara = paragraphs.find(p =>
-      p.text.includes('الشكوى الرئيسية')
+    const titlePara = paragraphs.find(p => p.text.includes('الشكوى الرئيسية'))
+    const bodyPara = paragraphs.find(p =>
+      p.text.includes('حمى لمدة ثلاثة أيام')
     )
-    const bodyPara = paragraphs.find(p => p.text.includes('حمى لمدة ثلاثة أيام'))
     const examTitle = paragraphs.find(p => p.text.includes('الفحص السريري'))
     const vitals = paragraphs.find(p => p.text.includes('درجة الحرارة:'))
 

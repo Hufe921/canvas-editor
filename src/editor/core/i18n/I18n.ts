@@ -12,13 +12,17 @@ export class I18n {
     ['en', en]
   ])
 
-  constructor(locale: string) {
+  constructor(
+    locale: string,
+    private onChange?: () => void
+  ) {
     this.currentLocale = locale
   }
 
   public registerLangMap(locale: string, lang: DeepPartial<ILang>) {
     const sourceLang = this.langMap.get(locale)
     this.langMap.set(locale, <ILang>mergeObject(sourceLang || zhCN, lang))
+    this.onChange?.()
   }
 
   public getLocale(): string {
@@ -27,6 +31,7 @@ export class I18n {
 
   public setLocale(locale: string) {
     this.currentLocale = locale
+    this.onChange?.()
   }
 
   public getLang(): ILang {

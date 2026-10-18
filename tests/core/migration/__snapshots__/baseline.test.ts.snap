@@ -1,0 +1,1125 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`migration baseline: harfbuzz > 'emr-controls' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​بيانات المريض",
+          "width": 81.888,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 14,
+          "text": "​{محمد}",
+          "width": 120,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 21,
+          "text": "​{42}",
+          "width": 4,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 26,
+          "text": "​{التشخيص}",
+          "width": 100,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 36,
+    "missing": [],
+    "sha256": "77b3b0449928e5d25c6a57b018f55783dead37530d71b62ed7621812257be85a",
+  },
+}
+`;
+
+exports[`migration baseline: harfbuzz > 'mixed-paper' 1`] = `
+{
+  "directions": [
+    "vertical",
+    "horizontal",
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​عمودي",
+          "width": 38.688,
+        },
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 6,
+          "text": "​",
+          "width": 0,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 7,
+          "text": "",
+          "width": 416,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 8,
+          "text": "أفقي",
+          "width": 27.712,
+        },
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 12,
+          "text": "​",
+          "width": 0,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 13,
+          "text": "",
+          "width": 416,
+        },
+      ],
+      "size": {
+        "height": 480,
+        "innerWidth": 576,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 640,
+      },
+    },
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 14,
+          "text": "عمودي آخر",
+          "width": 62.672,
+        },
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 23,
+          "text": "​",
+          "width": 0,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 24,
+    "missing": [],
+    "sha256": "2883bb7477e63394112e1c60b206d5e4488dbbefd12288989b5ed73a5182569e",
+  },
+}
+`;
+
+exports[`migration baseline: harfbuzz > 'nested-table' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​",
+          "width": 0,
+        },
+        {
+          "ascent": 0,
+          "engine": false,
+          "height": 0,
+          "spacingAfter": 0,
+          "start": 1,
+          "text": "",
+          "width": 0,
+        },
+        {
+          "ascent": 0,
+          "engine": false,
+          "height": 146,
+          "spacingAfter": 0,
+          "start": 1,
+          "text": "",
+          "width": 360,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 2,
+    "missing": [],
+    "sha256": "3de042dbf5b6c935d063837e8799b02b9795820b0e89ce195c9fc8a3db34524b",
+  },
+}
+`;
+
+exports[`migration baseline: harfbuzz > 'paragraphs' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello",
+          "width": 415.4,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 40,
+          "spacingAfter": 16,
+          "start": 117,
+          "text": "123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 ",
+          "width": 256.24,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 193,
+          "text": "​Latin العربية 42",
+          "width": 49.216,
+        },
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 210,
+          "text": "​",
+          "width": 0,
+        },
+        {
+          "ascent": 25,
+          "engine": true,
+          "height": 30,
+          "spacingAfter": 0,
+          "start": 211,
+          "text": "​2",
+          "width": 1,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 213,
+    "missing": [
+      116,
+    ],
+    "sha256": "83b8b79e2914849075421838ad8da8b9075750b0d684a7bd3272fae10eb2322c",
+  },
+}
+`;
+
+exports[`migration baseline: harfbuzz > 'print' 1`] = `
+{
+  "directions": [
+    "vertical",
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ",
+          "width": 386.928,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 46,
+          "text": "ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ",
+          "width": 386.928,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 91,
+          "text": "ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ",
+          "width": 386.928,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 136,
+          "text": "ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ",
+          "width": 386.928,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 181,
+          "text": "ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ",
+          "width": 386.928,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 226,
+          "text": "ملخص ملخص ملخص ملخص ملخص ",
+          "width": 214.96,
+        },
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 251,
+          "text": "​",
+          "width": 0,
+        },
+        {
+          "ascent": 0,
+          "engine": false,
+          "height": 0,
+          "spacingAfter": 0,
+          "start": 252,
+          "text": "",
+          "width": 0,
+        },
+        {
+          "ascent": 0,
+          "engine": false,
+          "height": 61,
+          "spacingAfter": 0,
+          "start": 252,
+          "text": "",
+          "width": 360,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 253,
+          "text": "",
+          "width": 416,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 254,
+          "text": "نهاية",
+          "width": 27.264,
+        },
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 259,
+          "text": "​",
+          "width": 0,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 260,
+    "missing": [],
+    "sha256": "2af53e9fad526599443c6afa098791275c4f522a5f5e91c545db334a13295fd7",
+  },
+}
+`;
+
+exports[`migration baseline: harfbuzz > 'surround-columns' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​",
+          "width": 0,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 1,
+          "text": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%3E%3Crect%20width%3D%2248%22%20height%3D%2248%22%20fill%3D%22%234682b4%22%2F%3E%3C%2Fsvg%3E",
+          "width": 0,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 2,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 66,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 130,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 194,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 258,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 322,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 386,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 450,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 514,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": true,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 578,
+          "text": "مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 184.768,
+        },
+        {
+          "ascent": 19.2,
+          "engine": false,
+          "height": 24,
+          "spacingAfter": 0,
+          "start": 642,
+          "text": "​",
+          "width": 0,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 643,
+    "missing": [],
+    "sha256": "56dd0edc5ea45a11ab3338ee520e18fc944269b108738c5726db5917c3acb1e1",
+  },
+}
+`;
+
+exports[`migration baseline: legacy > 'emr-controls' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​بيانات المريض",
+          "width": 14,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 14,
+          "text": "​{محمد}",
+          "width": 121,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 21,
+          "text": "​{42}",
+          "width": 5,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 26,
+          "text": "​{التشخيص}",
+          "width": 101,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 36,
+    "missing": [],
+    "sha256": "02f050c7f31ac3195da0a6b4550cc1c1e3963ca5a2ea437d530f14ade65273cb",
+  },
+}
+`;
+
+exports[`migration baseline: legacy > 'mixed-paper' 1`] = `
+{
+  "directions": [
+    "vertical",
+    "horizontal",
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​عمودي",
+          "width": 6,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 6,
+          "text": "​",
+          "width": 1,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 7,
+          "text": "",
+          "width": 416,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 8,
+          "text": "أفقي",
+          "width": 4,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 12,
+          "text": "​",
+          "width": 1,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 13,
+          "text": "",
+          "width": 576,
+        },
+      ],
+      "size": {
+        "height": 480,
+        "innerWidth": 576,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 640,
+      },
+    },
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 14,
+          "text": "عمودي آخر",
+          "width": 9,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 23,
+          "text": "​",
+          "width": 1,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 24,
+    "missing": [],
+    "sha256": "d86e210a132164ed552380c6248f6fde3bafe0a74332a7df2d7e41a58ecd54a2",
+  },
+}
+`;
+
+exports[`migration baseline: legacy > 'nested-table' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 8,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​",
+          "width": 1,
+        },
+        {
+          "ascent": 0,
+          "engine": false,
+          "height": 111,
+          "spacingAfter": 0,
+          "start": 1,
+          "text": "",
+          "width": 360,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 2,
+    "missing": [],
+    "sha256": "395f70922b8fe467bc90c623715cb3a892bc8e13d018fe261b0c231c21abef65",
+  },
+}
+`;
+
+exports[`migration baseline: legacy > 'paragraphs' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 32,
+          "spacingAfter": 16,
+          "start": 0,
+          "text": "​مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 مرحبا بالعالم Hello 123 ",
+          "width": 193,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 193,
+          "text": "​Latin العربية 42",
+          "width": 17,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 210,
+          "text": "​",
+          "width": 1,
+        },
+        {
+          "ascent": 13,
+          "engine": false,
+          "height": 21,
+          "spacingAfter": 0,
+          "start": 211,
+          "text": "​2",
+          "width": 2,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 213,
+    "missing": [],
+    "sha256": "00c618a91096c976e93b870d3f8cc6a6f47882c8c08a2e5793ee4d14c5960217",
+  },
+}
+`;
+
+exports[`migration baseline: legacy > 'print' 1`] = `
+{
+  "directions": [
+    "vertical",
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ملخص ",
+          "width": 251,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 251,
+          "text": "​",
+          "width": 1,
+        },
+        {
+          "ascent": 0,
+          "engine": false,
+          "height": 50,
+          "spacingAfter": 0,
+          "start": 252,
+          "text": "",
+          "width": 360,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 253,
+          "text": "",
+          "width": 416,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 254,
+          "text": "نهاية",
+          "width": 5,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 259,
+          "text": "​",
+          "width": 1,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 260,
+    "missing": [],
+    "sha256": "3e6d9b856a2c448c43ceaa128346bd3be1c5f782645b170b47c1046ff6517f62",
+  },
+}
+`;
+
+exports[`migration baseline: legacy > 'surround-columns' 1`] = `
+{
+  "directions": [
+    "vertical",
+  ],
+  "pages": [
+    {
+      "rows": [
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 0,
+          "text": "​data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2248%22%20height%3D%2248%22%3E%3Crect%20width%3D%2248%22%20height%3D%2248%22%20fill%3D%22%234682b4%22%2F%3E%3C%2Fsvg%3Eمرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا ",
+          "width": 199,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 152,
+          "text": "Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 12",
+          "width": 200,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 304,
+          "text": "3 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا ",
+          "width": 200,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 456,
+          "text": "Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 مرحبا Hello 123 ",
+          "width": 186,
+        },
+        {
+          "ascent": 8,
+          "engine": false,
+          "height": 16,
+          "spacingAfter": 0,
+          "start": 642,
+          "text": "​",
+          "width": 1,
+        },
+      ],
+      "size": {
+        "height": 640,
+        "innerWidth": 416,
+        "margins": [
+          32,
+          32,
+          32,
+          32,
+        ],
+        "width": 480,
+      },
+    },
+  ],
+  "positions": {
+    "count": 643,
+    "missing": [],
+    "sha256": "889cd915bb3246f40c7f8d45c123969ff17478e9bfc69ea36968bb569bb146ae",
+  },
+}
+`;

@@ -1,0 +1,37 @@
+.ce-font-diagnostics {
+  position: absolute;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  z-index: 2;
+  max-width: min(360px, calc(100% - 16px));
+  max-height: 160px;
+  overflow: auto;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  border: 1px solid #d5b766;
+  border-radius: 4px;
+  background: #fffbea;
+  color: #463b1a;
+  font: 12px/1.5 sans-serif;
+  text-align: start;
+  overflow-wrap: anywhere;
+}
+
+.ce-font-diagnostics[hidden] {
+  display: none;
+}
+
+.ce-font-diagnostics summary {
+  cursor: pointer;
+}
+
+.ce-font-diagnostics ul {
+  padding-inline-start: 20px;
+  margin: 4px 0;
+}
+
+@media print {
+  .ce-font-diagnostics {
+    display: none !important;
+  }
+}

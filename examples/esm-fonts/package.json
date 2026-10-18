@@ -1,0 +1,17 @@
+{
+  "name": "canvas-editor-esm-fonts-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@hufe921/canvas-editor": "file:../.."
+  },
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vite": "^8.3.3"
+  }
+}

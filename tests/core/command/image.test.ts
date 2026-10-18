@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 
 describe('图片命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeImage 插入图片不抛错', () => {
-    ctx = createTestEditor()
+  it('executeImage 插入图片不抛错', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     expect(() => {
       ctx.editor.command.executeImage({
@@ -17,15 +17,15 @@ describe('图片命令', () => {
     }).not.toThrow()
   })
 
-  it('executeReplaceImageElement 空操作不抛错', () => {
-    ctx = createTestEditor()
+  it('executeReplaceImageElement 空操作不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => {
       ctx.editor.command.executeReplaceImageElement('data:image/png;base64,new')
     }).not.toThrow()
   })
 
-  it('executeSetImageCaption 空操作不抛错', () => {
-    ctx = createTestEditor()
+  it('executeSetImageCaption 空操作不抛错', async () => {
+    ctx = await createTestEditor()
     expect(() => {
       ctx.editor.command.executeSetImageCaption({ value: 'caption' })
     }).not.toThrow()

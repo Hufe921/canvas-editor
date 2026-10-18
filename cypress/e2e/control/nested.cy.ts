@@ -4,6 +4,7 @@ import { MoveDirection } from '../../../src/editor/dataset/enum/Observer'
 describe('控件嵌套 - 基础', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
@@ -195,6 +196,7 @@ describe('控件嵌套 - 基础', () => {
 describe('控件嵌套 - 6 种内层类型', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 
@@ -261,6 +263,7 @@ describe('控件嵌套 - 6 种内层类型', () => {
 describe('控件嵌套 - 删除决策', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 
@@ -359,11 +362,12 @@ describe('控件嵌套 - 删除决策', () => {
 describe('控件嵌套 - 覆盖决策', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 
   // 决策 #2：外层 setValue 覆盖到内层段时连带替换
-  it.skip('外层 setValue 覆盖到内层段时连带替换', () => {
+  it('外层 setValue 覆盖到内层段时连带替换', () => {
     cy.getEditor().then((editor: Editor) => {
       editor.command.executeSelectAll()
       editor.command.executeBackspace()
@@ -391,21 +395,25 @@ describe('控件嵌套 - 覆盖决策', () => {
         }
       ])
 
-      // 决策 #2：外层 setValue 选区覆盖到内层控件段时，连同内层一起替换。
-      //
-      // 实现验证（静态）：TextControl.setValue (text/TextControl.ts:96-175) 在
-      // 选区 startIndex !== endIndex 时：
-      //   1) 若 activeControl 的 controlId 落在选区内，先 destroyControl（115-133 行）
-      //   2) spliceElementList 一次性移除 (startIndex+1 .. endIndex) 的全部元素（135-144 行）
-      // 该 splice 由 Task 17 的"跨段 backspace 统一删除"测试动态覆盖了相同的跨段删除路径。
-      //
-      // 动态触发限制：Cypress 合成的 `.ce-inputarea.type('Z')` 在非折叠选区下，
-      // 因 Position.getCursorPosition() 返回 null（CommandAdapt.setRange 仅在折叠时
-      // 传入 curIndex），input handler 在 input.ts:18 提前 return，无法进入
-      // control.setValue 分支。真实浏览器中鼠标选区会同步渲染光标并设置 cursorPosition，
-      // 但合成事件无法复现该副作用。Command API 也不暴露 Control.setValue 直调入口。
-      // 因此本用例 skip，决策 #2 的正确性由静态代码审查 + Task 17 动态覆盖共同保证。
-      cy.log('决策 #2 由 TextControl.setValue 静态审查 + Task 17 动态覆盖保证')
+      // Focus establishes a real native caret before extending the selection.
+      editor.command.executeFocus({ range: { startIndex: 2, endIndex: 2 } })
+      editor.command.executeSetRange(2, 6)
+      const input = editor.command.getContainer().querySelector('textarea')!
+      input.dispatchEvent(
+        new InputEvent('input', {
+          data: 'Z',
+          inputType: 'insertText',
+          bubbles: true
+        })
+      )
+      const outer = editor.command
+        .getValue()
+        .data.main.find(el => el.control?.placeholder === '外层')!
+      expect(outer).not.to.eq(undefined)
+      expect(outer.control!.value!.some(el => el.type === 'control')).to.eq(
+        false
+      )
+      expect(outer.control!.value!.map(el => el.value).join('')).to.eq('AZ')
     })
   })
 })
@@ -414,6 +422,7 @@ describe('控件嵌套 - 覆盖决策', () => {
 describe('控件嵌套 - 持久化与递归', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })
 

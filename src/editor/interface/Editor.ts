@@ -2,7 +2,6 @@ import {
   EditorMode,
   PageMode,
   PaperDirection,
-  RenderMode,
   WordBreak
 } from '../dataset/enum/Editor'
 import { IColumnOption } from './Column'
@@ -15,7 +14,6 @@ import { IFooter } from './Footer'
 import { IGroup } from './Group'
 import { IHeader } from './Header'
 import { ILabelOption } from './Label'
-import { IImgCaptionOption, IListOption } from './Element'
 import { ILineBreakOption } from './LineBreak'
 import { IMargin } from './Margin'
 import { IPageBreak } from './PageBreak'
@@ -29,7 +27,7 @@ import { ITableOption } from './table/Table'
 import { ILineNumberOption } from './LineNumber'
 import { IPageBorderOption } from './PageBorder'
 import { IBadgeOption } from './Badge'
-import { IElement } from './Element'
+import { IElement, IImgCaptionOption, IListOption } from './Element'
 import { LocationPosition } from '../dataset/enum/Common'
 import { IRange } from './Range'
 import { IGraffitiData, IGraffitiOption } from './Graffiti'
@@ -41,8 +39,7 @@ import { IRulerOption } from './Ruler'
 import {
   CaretMovement,
   DeleteMovement,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '../dataset/enum/TextDirection'
 import { IEditorFontFace } from './TextEngine'
 import { IHintOption } from './Hint'
@@ -98,7 +95,6 @@ export interface IEditorOption {
   marginIndicatorColor?: string
   margins?: IMargin
   pageMode?: PageMode
-  renderMode?: RenderMode
   defaultHyperlinkColor?: string
   paperDirection?: PaperDirection
   inactiveAlpha?: number
@@ -111,8 +107,6 @@ export interface IEditorOption {
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
-  /** Text layout engine: legacy measureText path or HarfBuzz */
-  textEngine?: TextEngineMode
   /**
    * UI LTR/RTL **mode** (chrome only): host toolbar/shell mirroring via
    * `ce-ui-rtl` class — do **not** set `dir=rtl` on the canvas container
@@ -140,7 +134,9 @@ export interface IEditorOption {
   caretMovement?: CaretMovement
   /** Backspace/Delete target semantics */
   deleteMovement?: DeleteMovement
-  /** Font binaries registered for HarfBuzz shaping */
+  /** Automatically fetch missing basic fonts from Bunny. Defaults to true. */
+  autoDownloadFonts?: boolean
+  /** Explicit binaries/URLs. System fonts and CSS alone cannot supply HB data. */
   fonts?: IEditorFontFace[]
   // 实验性功能（逐项默认关闭，未来可能调整或移除）
   lab?: ILabOption

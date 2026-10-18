@@ -5,7 +5,7 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = await Editor.create(container, data, options)
 const value = instance.command.commandName()
 ```
 
@@ -371,3 +371,5 @@ const {
   endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
 ```
+
+Geometry queries require ready; see [Instance API](./api-instance.md) for pre-ready queries.

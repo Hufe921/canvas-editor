@@ -1,31 +1,32 @@
+import { readFileSync } from 'node:fs'
+import { mergeOption } from '../../../src/editor/utils/option'
 import { describe, expect, it } from 'vitest'
 import {
   ControlComponent,
   ControlType,
   ElementType,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '../../../src/editor'
 import { ZERO } from '../../../src/editor/dataset/constant/Common'
-import { Control } from '../../../src/editor/core/draw/control/Control'
 import { ElementBridge } from '../../../src/editor/core/text-engine-host/ElementBridge'
 import { LayoutHostAdapter } from '../../../src/editor/core/text-engine-host/LayoutHostAdapter'
 import type { IElement } from '../../../src/editor/interface/Element'
-import type { DeepRequired } from '../../../src/editor/interface/Common'
-import type { IEditorOption } from '../../../src/editor/interface/Editor'
 
 function options(defaultDirection: TextDirection = TextDirection.LTR) {
-  return {
-    textEngine: TextEngineMode.HARFBUZZ,
-    defaultFont: 'sans-serif',
+  return mergeOption({
+    defaultFont: 'Arabic',
+    autoDownloadFonts: false,
     defaultSize: 16,
-    defaultColor: '#000',
-    defaultRowMargin: 1,
     defaultDirection,
-    direction: defaultDirection,
-    scale: 1,
-    fonts: []
-  } as unknown as DeepRequired<IEditorOption>
+    fonts: [
+      {
+        family: 'Arabic',
+        data: new Uint8Array(
+          readFileSync('public/fonts/NotoNaskhArabic-Regular.ttf')
+        ).buffer
+      }
+    ]
+  })
 }
 
 function buildRtlSignatureElements(): IElement[] {
@@ -62,15 +63,6 @@ function buildRtlSignatureElements(): IElement[] {
       direction: TextDirection.RTL
     }
   ]
-}
-
-function stubControl(): Control {
-  return new Control({
-    getOptions: () => ({ scale: 1, control: {} }),
-    getRange: () => ({}),
-    getListener: () => ({}),
-    getEventBus: () => ({})
-  } as any)
 }
 
 function buildSignatureElements(withValue: boolean): IElement[] {
@@ -141,7 +133,7 @@ describe('signature minWidth during input', () => {
     expect(paragraph.text).not.toContain('\u2069')
   })
 
-  it('VALUE right edge should meet postfix underline start (no gap)', async () => {
+  it('native VALUE right edge meets the reserved postfix underline slot', async () => {
     const elementList = buildSignatureElements(true)
     const bridge = new ElementBridge()
     const [paragraph] = bridge.scanParagraphs(elementList, {
@@ -161,7 +153,6 @@ describe('signature minWidth during input', () => {
       'main'
     )
     expect(rows?.length).toBeGreaterThan(0)
-    stubControl().applyEngineRowsMinWidth(rows!, 500)
 
     const els = rows![0].elementList
     const valueEls = els.filter(
@@ -175,11 +166,12 @@ describe('signature minWidth during input', () => {
       (lastValue.visualLeft || 0) + (lastValue.metrics?.width || 0)
     const underlineStart = postfix.visualLeft || 0
 
-    expect(postfix.left).toBeGreaterThan(0)
+    expect(postfix.left).toBe(0)
+    expect(postfix.metrics.width).toBeGreaterThan(0)
     expect(Math.abs(underlineStart - valueRight)).toBeLessThan(1.5)
   })
 
-  it('RTL signature: postfix shifts left so underline stays left of label', async () => {
+  it('RTL signature reserves an unshifted underline box left of the label', async () => {
     const elementList = buildRtlSignatureElements()
     const bridge = new ElementBridge()
     const [paragraph] = bridge.scanParagraphs(elementList, {
@@ -199,25 +191,22 @@ describe('signature minWidth during input', () => {
       'main'
     )
     expect(rows?.length).toBeGreaterThan(0)
-    stubControl().applyEngineRowsMinWidth(rows!, 500)
 
     const row = rows![0]
     expect(row.direction).toBe('rtl')
     const postfix = row.elementList.find(
       e => e.controlComponent === ControlComponent.POSTFIX
     )!
-    expect(postfix.left).toBeLessThan(0)
-    const prefix = row.elementList.find(
-      e => e.controlComponent === ControlComponent.PREFIX
-    )!
+    expect(postfix.left).toBe(0)
     const underlineX = (postfix.visualLeft || 0) + (postfix.left || 0)
-    const underlineRight =
-      (prefix.visualLeft || 0) + (prefix.metrics?.width || 0)
+    const underlineRight = (postfix.visualLeft || 0) + postfix.metrics.width
     // 底线从 postfix 画到内容右缘，且整体位于标签左侧
     expect(underlineRight - underlineX).toBeCloseTo(160, 0)
+    const label = row.elementList.find(e => !e.controlId && e.value !== ZERO)!
+    expect(underlineRight).toBeCloseTo(label.visualLeft!, 6)
   })
 
-  it('applyEngineRowsMinWidth must not poison layout cache glyphs', async () => {
+  it('native minimum-width projection does not poison cached glyphs', async () => {
     const elementList = buildSignatureElements(true)
     const bridge = new ElementBridge()
     const [paragraph] = bridge.scanParagraphs(elementList, {
@@ -228,7 +217,6 @@ describe('signature minWidth during input', () => {
     })
     const adapter = new LayoutHostAdapter(() => options())
     await adapter.ensureReady()
-    const control = stubControl()
 
     const rows1 = adapter.layoutParagraphToRows(
       paragraph,
@@ -238,7 +226,6 @@ describe('signature minWidth during input', () => {
       'main'
     )!
     const cachedGlyphLeft = rows1[0].engineLine!.glyphs.map(g => g.left)
-    control.applyEngineRowsMinWidth(rows1, 500)
 
     // 再次布局应命中同一 cache；若上次原地改了 glyphs，postfix.visualLeft 会累加漂走
     const rows2 = adapter.layoutParagraphToRows(
@@ -251,7 +238,6 @@ describe('signature minWidth during input', () => {
     expect(rows2[0].engineLine!.glyphs.map(g => g.left)).toEqual(
       cachedGlyphLeft
     )
-    control.applyEngineRowsMinWidth(rows2, 500)
 
     const els = rows2[0].elementList
     const values = els.filter(

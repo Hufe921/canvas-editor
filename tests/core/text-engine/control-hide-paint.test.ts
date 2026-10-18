@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -9,45 +10,18 @@ import {
   ControlComponent,
   ControlType,
   ElementType,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import { SelectControl } from '@/editor/core/draw/control/select/SelectControl'
 import type { IElement } from '@/editor/interface/Element'
 
-function stubMeasureText() {
-  const proto = CanvasRenderingContext2D.prototype
-  vi.spyOn(proto, 'measureText').mockImplementation(function (text: string) {
-    let width = 0
-    for (const ch of text) {
-      const cp = ch.codePointAt(0)!
-      if (
-        (cp >= 0x200b && cp <= 0x200d) ||
-        cp === 0xfeff ||
-        cp === 0x2060 ||
-        (cp >= 0x2066 && cp <= 0x2069)
-      ) {
-        continue
-      }
-      width += cp > 0xff ? 16 : 8
-    }
-    return {
-      width,
-      actualBoundingBoxAscent: 12.8,
-      actualBoundingBoxDescent: 3.2,
-      fontBoundingBoxAscent: 12.8,
-      fontBoundingBoxDescent: 3.2
-    } as TextMetrics
-  })
-}
-
-function createDraw(main: IElement[]) {
+async function createDraw(main: IElement[]) {
   const container = document.createElement('div')
   document.body.appendChild(container)
   const options = mergeOption({
     defaultDirection: TextDirection.AUTO,
-    textEngine: TextEngineMode.HARFBUZZ,
+
     header: { disabled: true },
     footer: { disabled: true }
   })
@@ -55,7 +29,7 @@ function createDraw(main: IElement[]) {
     editorOptions: options,
     isForceCompensation: true
   })
-  const draw = new Draw(
+  const draw = await createTestDraw(
     container,
     options,
     {
@@ -83,7 +57,6 @@ describe('control placeholder paint (text-engine)', () => {
   })
 
   it('obesityTip placeholder stays in paint glyphs', async () => {
-    stubMeasureText()
     const main: IElement[] = [
       { value: ZERO },
       { value: '肥胖干预建议：' },
@@ -100,19 +73,16 @@ describe('control placeholder paint (text-engine)', () => {
         }
       }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
     await (draw as any).layoutHostAdapter.ensureReady()
     ;(draw as any).layoutHostAdapter.invalidate()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
 
-    const row = draw!.getOriginalRowList().find(r =>
-      r.engineParagraphText?.includes('肥胖')
-    )
+    const row = draw!
+      .getOriginalRowList()
+      .find(r => r.engineParagraphText?.includes('肥胖'))
     expect(row?.engineParagraphText).toContain('{干预建议}')
-    const paintLine = (draw as any).filterEngineLineForPaint(
-      row!.engineLine,
-      draw!.getOriginalElementList()
-    )
+    const paintLine = row!.engineLine!
     const painted = paintLine.glyphs
       .map((g: { charStart: number; charEnd: number }) =>
         row!.engineParagraphText!.slice(g.charStart, g.charEnd)
@@ -124,7 +94,6 @@ describe('control placeholder paint (text-engine)', () => {
   })
 
   it('hypertensionLevel paints {分级} and {Ⅱ级} after setSelect', async () => {
-    stubMeasureText()
     const main: IElement[] = [
       { value: ZERO },
       { value: '有无高血压：' },
@@ -164,7 +133,7 @@ describe('control placeholder paint (text-engine)', () => {
         }
       }
     ]
-    ;({ draw, container } = createDraw(main))
+    ;({ draw, container } = await createDraw(main))
     await (draw as any).layoutHostAdapter.ensureReady()
     ;(draw as any).layoutHostAdapter.invalidate()
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
@@ -174,20 +143,16 @@ describe('control placeholder paint (text-engine)', () => {
       engineParagraphText?: string
     }) => {
       expect(row.engineLine).toBeTruthy()
-      return (draw as any)
-        .filterEngineLineForPaint(
-          row.engineLine!,
-          draw!.getOriginalElementList()
-        )
-        .glyphs.map((g: { charStart: number; charEnd: number }) =>
+      return row
+        .engineLine!.glyphs.map((g: { charStart: number; charEnd: number }) =>
           row.engineParagraphText!.slice(g.charStart, g.charEnd)
         )
         .join('')
     }
 
-    const beforeRow = draw!.getOriginalRowList().find(r =>
-      r.engineParagraphText?.includes('有无高血压')
-    )!
+    const beforeRow = draw!
+      .getOriginalRowList()
+      .find(r => r.engineParagraphText?.includes('有无高血压'))!
     expect(slicePaint(beforeRow)).toMatch(/\{分级\}/)
 
     const els0 = draw!.getOriginalElementList()
@@ -201,9 +166,11 @@ describe('control placeholder paint (text-engine)', () => {
     ;(draw!.getControl().getActiveControl() as SelectControl).setSelect('2')
     draw!.render({ isSubmitHistory: false, isSetCursor: false })
 
-    const afterRow = draw!.getOriginalRowList().find(r =>
-      r.elementList.some(e => e.control?.conceptId === 'hypertensionLevel')
-    )!
+    const afterRow = draw!
+      .getOriginalRowList()
+      .find(r =>
+        r.elementList.some(e => e.control?.conceptId === 'hypertensionLevel')
+      )!
     const painted = slicePaint(afterRow)
     expect(painted).toMatch(/\{Ⅱ级\}/)
     expect(painted).not.toMatch(/\{分级\}/)

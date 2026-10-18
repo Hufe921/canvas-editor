@@ -9,6 +9,7 @@ export interface ISearchResultBasic {
 }
 
 export interface ISearchResultRestArgs {
+  tablePath?: import('./Position').ITablePositionContext[]
   tableId?: string
   tableIndex?: number
   trIndex?: number

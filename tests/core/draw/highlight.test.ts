@@ -1,7 +1,7 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import { ControlType } from '@/editor/dataset/enum/Control'
 import { ElementType } from '@/editor/dataset/enum/Element'
-import { Draw } from '@/editor/core/draw/Draw'
 import { Highlight } from '@/editor/core/draw/richtext/Highlight'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
@@ -49,7 +49,7 @@ describe('高亮背景绘制', () => {
     ]
   }
 
-  function renderWithHighlightSpy(
+  async function renderWithHighlightSpy(
     main: IElement[],
     optionOverrides: Record<string, unknown> = {}
   ) {
@@ -74,7 +74,7 @@ describe('高亮背景绘制', () => {
       editorOptions: options,
       isForceCompensation: true
     })
-    const draw = new Draw(
+    const draw = await createTestDraw(
       container,
       options,
       { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
@@ -87,8 +87,8 @@ describe('高亮背景绘制', () => {
     return { draw, rects }
   }
 
-  it('同行多个控件穿插普通文本时控件背景色不错位', () => {
-    const { rects } = renderWithHighlightSpy(buildTwoControlMain(), {
+  it('同行多个控件穿插普通文本时控件背景色不错位', async () => {
+    const { rects } = await renderWithHighlightSpy(buildTwoControlMain(), {
       control: {
         existValueBackgroundColor: '#eaf3fd'
       }
@@ -100,8 +100,8 @@ describe('高亮背景绘制', () => {
     expect(second.x).toBeGreaterThanOrEqual(first.x + first.width)
   })
 
-  it('控件级背景色优先于全局配置', () => {
-    const { rects } = renderWithHighlightSpy(
+  it('控件级背景色优先于全局配置', async () => {
+    const { rects } = await renderWithHighlightSpy(
       buildTwoControlMain({ existValueBackgroundColor: '#ff0000' }),
       {
         control: {
@@ -114,12 +114,15 @@ describe('高亮背景绘制', () => {
     expect(rects[1].color).toBe('#eaf3fd')
   })
 
-  it('setControlProperties 实时更新单个控件背景色', () => {
-    const { draw, rects } = renderWithHighlightSpy(buildTwoControlMain(), {
-      control: {
-        existValueBackgroundColor: '#eaf3fd'
+  it('setControlProperties 实时更新单个控件背景色', async () => {
+    const { draw, rects } = await renderWithHighlightSpy(
+      buildTwoControlMain(),
+      {
+        control: {
+          existValueBackgroundColor: '#eaf3fd'
+        }
       }
-    })
+    )
     expect(rects.every(rect => rect.color === '#eaf3fd')).toBe(true)
     rects.length = 0
     draw.getControl().setPropertiesListById([

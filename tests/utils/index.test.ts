@@ -146,7 +146,10 @@ describe('deepCloneOmitKeys', () => {
   })
 
   it('数组被处理', () => {
-    const obj = [{ a: 1, b: 2 }, { a: 3, b: 4 }]
+    const obj = [
+      { a: 1, b: 2 },
+      { a: 3, b: 4 }
+    ]
     const cloned = deepCloneOmitKeys(obj, ['b'])
     expect(cloned).toEqual([{ a: 1 }, { a: 3 }])
   })
@@ -155,7 +158,9 @@ describe('deepCloneOmitKeys', () => {
 describe('getUUID', () => {
   it('返回符合 UUID 格式的字符串', () => {
     const uuid = getUUID()
-    expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+    expect(uuid).toMatch(
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+    )
   })
 
   it('多次调用返回不同值', () => {
@@ -222,11 +227,18 @@ describe('mergeObject', () => {
 
   it('constructor 和 prototype 键被忽略', () => {
     const target: any = {}
-    mergeObject({ constructor: { evil: true }, prototype: { evil: true } }, target)
+    mergeObject(
+      { constructor: { evil: true }, prototype: { evil: true } },
+      target
+    )
     // target.constructor 是对象原型链上的 Object，mergeObject 不会覆盖原型链属性
     // 但 mergeObject 会跳过这些键，不会给 target 添加新的 own property
-    expect(Object.prototype.hasOwnProperty.call(target, 'constructor')).toBe(false)
-    expect(Object.prototype.hasOwnProperty.call(target, 'prototype')).toBe(false)
+    expect(Object.prototype.hasOwnProperty.call(target, 'constructor')).toBe(
+      false
+    )
+    expect(Object.prototype.hasOwnProperty.call(target, 'prototype')).toBe(
+      false
+    )
   })
 })
 
@@ -357,15 +369,30 @@ describe('convertStringToBase64', () => {
 
 describe('isRectIntersect', () => {
   it('重叠矩形返回 true', () => {
-    expect(isRectIntersect({ x: 0, y: 0, width: 10, height: 10 }, { x: 5, y: 5, width: 10, height: 10 })).toBe(true)
+    expect(
+      isRectIntersect(
+        { x: 0, y: 0, width: 10, height: 10 },
+        { x: 5, y: 5, width: 10, height: 10 }
+      )
+    ).toBe(true)
   })
 
   it('不重叠矩形返回 false', () => {
-    expect(isRectIntersect({ x: 0, y: 0, width: 10, height: 10 }, { x: 20, y: 20, width: 10, height: 10 })).toBe(false)
+    expect(
+      isRectIntersect(
+        { x: 0, y: 0, width: 10, height: 10 },
+        { x: 20, y: 20, width: 10, height: 10 }
+      )
+    ).toBe(false)
   })
 
   it('边缘接触返回 true', () => {
-    expect(isRectIntersect({ x: 0, y: 0, width: 10, height: 10 }, { x: 10, y: 0, width: 10, height: 10 })).toBe(true)
+    expect(
+      isRectIntersect(
+        { x: 0, y: 0, width: 10, height: 10 },
+        { x: 10, y: 0, width: 10, height: 10 }
+      )
+    ).toBe(true)
   })
 })
 
@@ -427,7 +454,11 @@ describe('findParent', () => {
     parent.id = 'parent'
     const child = document.createElement('span')
     parent.appendChild(child)
-    const result = findParent(child, (node: Element) => node.id === 'parent', false)
+    const result = findParent(
+      child,
+      (node: Element) => node.id === 'parent',
+      false
+    )
     expect(result).toBe(parent)
   })
 })

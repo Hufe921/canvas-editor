@@ -126,6 +126,10 @@ export function formatElementList(
     isForceCompensation = false,
     editorOptions
   } = options
+  // Old saved documents may contain pagination-only minWidth filler nodes.
+  for (let i = elementList.length - 1; i >= 0; i--) {
+    if (elementList[i].isControlMinWidthPlaceholder) elementList.splice(i, 1)
+  }
   const startElement = elementList[0]
   // 非首字符零宽节点文本元素则补偿-列表元素内部会补偿此处忽略
   if (
@@ -277,8 +281,10 @@ export function formatElementList(
                 const tdValueList = td.value
                 for (let t = 0; t < tdValueList.length; t++) {
                   const tdValue = tdValueList[t]
-                  tdValue.areaId = el.areaId || areaId
-                  tdValue.area = el.area
+                  if (!tdValue.areaId) {
+                    tdValue.areaId = el.areaId || areaId
+                    tdValue.area = el.area
+                  }
                 }
               }
             }
@@ -770,6 +776,10 @@ export function zipElementList(
   let e = 0
   while (e < elementList.length) {
     let element = elementList[e]
+    if (element.isControlMinWidthPlaceholder) {
+      e++
+      continue
+    }
     // 上下文首字符（占位符）-列表首字符要保留避免是复选框
     if (
       e === 0 &&
@@ -1418,8 +1428,7 @@ export function createDomFromElementList(
                   }`
                 : borderStyle
             if (!element.borderType || element.borderType === TableBorder.ALL) {
-              tdDom.style.borderBottom = tdDom.style.borderRight =
-                tdBorderStyle
+              tdDom.style.borderBottom = tdDom.style.borderRight = tdBorderStyle
             }
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
@@ -2070,36 +2079,61 @@ export function getTextFromElementList(
   )
 }
 
+const HISTORY_LAYOUT_KEYS = new Set([
+  'metrics',
+  'style',
+  'visualLeft',
+  'visualIndex',
+  'sourceIndex',
+  'clusterStart',
+  'clusterEnd',
+  'bidiLevel',
+  'actualSize',
+  'left',
+  'rowList',
+  'positionList',
+  'mainHeight',
+  'realHeight',
+  'realMinHeight',
+  'rowIndex',
+  'colIndex',
+  'trIndex',
+  'tdIndex',
+  'isLastRowTd',
+  'isLastColTd',
+  'isLastTd'
+])
+
 // 历史快照专用克隆：与 deepCloneOmitKeys(obj, ['metrics', 'style']) 语义一致，
 // 但标量字段直接赋值不再递归，仅深拷贝实际存在的嵌套可变结构
-function cloneOmitRenderKeys<T>(value: T): T {
-  if (!value || typeof value !== 'object') {
-    return value
+function cloneOmitRenderKeys<T>(
+  value: T,
+  seen: WeakMap<object, unknown>,
+  omitLayout = true
+): T {
+  if (!value || typeof value !== 'object') return value
+  if (seen.has(value)) return seen.get(value) as T
+  if (!omitLayout) {
+    const cloned = deepClone(value)
+    seen.set(value, cloned)
+    return cloned
   }
-  if (Array.isArray(value)) {
-    const list = value as unknown[]
-    const clonedArray: unknown[] = new Array(list.length)
-    for (let i = 0; i < list.length; i++) {
-      clonedArray[i] = cloneOmitRenderKeys(list[i])
-    }
-    return clonedArray as T
-  }
-  const cloned: Record<string, unknown> = {}
-  for (const key in value) {
-    if (key === 'metrics' || key === 'style') continue
+  const cloned: any = Array.isArray(value) ? [] : {}
+  seen.set(value, cloned)
+  for (const key of Object.keys(value)) {
+    if (omitLayout && HISTORY_LAYOUT_KEYS.has(key)) continue
     const item = (value as Record<string, unknown>)[key]
-    cloned[key] =
-      item && typeof item === 'object' ? cloneOmitRenderKeys(item) : item
+    cloned[key] = cloneOmitRenderKeys(
+      item,
+      seen,
+      omitLayout && key !== 'extension'
+    )
   }
   return cloned as T
 }
 
 export function getSlimCloneElementList(elementList: IElement[]) {
-  const clonedList = new Array<IElement>(elementList.length)
-  for (let i = 0; i < elementList.length; i++) {
-    clonedList[i] = cloneOmitRenderKeys(elementList[i])
-  }
-  return clonedList
+  return cloneOmitRenderKeys(elementList, new WeakMap())
 }
 
 export function getIsBlockElement(element?: IElement) {

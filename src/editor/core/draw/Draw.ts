@@ -1,6 +1,35 @@
+import { defaultPlaceholderOption } from '../../dataset/constant/Placeholder'
+import type {
+  FontCoverageLocation,
+  FontCoverageReport
+} from '../../interface/FontCoverage'
+import type { LayoutNode } from '../../interface/Layout'
+import type { LayoutRow } from '../../interface/LayoutRow'
+import type { IEditorFontFace } from '../../interface/TextEngine'
+import { mergeOption } from '../../utils/option'
+import { EditorLifecycle } from '../EditorLifecycle'
+import { DocumentFlow } from '../layout/DocumentFlow'
+import { getHostRowsHeight } from '../layout/hostRowGeometry'
+import { isFloatingImage } from '../layout/InlineObjectMeasure'
+import { textRangeRects } from '../layout/InteractionGeometry'
+import {
+  resolveListOffset,
+  resolveRowMargin
+} from '../layout/ParagraphStyleResolver'
+import { rowElementMetrics, rowSourceIndex } from '../layout/rowGeometry'
+import { snapshotRows } from '../layout/rowSnapshot'
+import { sliceTableFragment } from '../layout/TableFragment'
+import { translateLayout } from '../layout/translateLayout'
+import { groupAreaLayouts } from '../text-engine-host/AreaLayoutHost'
+import { layoutFlowParagraph } from '../text-engine-host/FlowParagraphHost'
+import { layoutHostObject } from '../text-engine-host/ObjectLayoutHost'
+import { layoutHostTable } from '../text-engine-host/TableLayoutHost'
+import { FontCoverageTracker } from '../text-engine/font/FontCoverageTracker'
+import { FontDownloadManager } from '../text-engine/font/FontDownloadManager'
+import { DirtyRangeTracker } from './DirtyRangeTracker'
+import { FontDiagnostics } from './FontDiagnostics'
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
-import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
   IComputeRowListPayload,
@@ -21,25 +50,15 @@ import {
 } from '../../interface/Editor'
 import {
   IElement,
-  IElementMetrics,
   IElementFillRect,
   IElementStyle,
-  ISpliceElementListOption,
-  IInsertElementListOption
+  IInsertElementListOption,
+  ISpliceElementListOption
 } from '../../interface/Element'
 import { IMarkElementListDeletedOption } from '../../interface/Trace'
-import { IRow, IRowComputeState, IRowElement } from '../../interface/Row'
 import { IColumnLayout, IColumnOption } from '../../interface/Column'
 import { ColumnManager } from './column/ColumnManager'
-import {
-  LayoutHostAdapter,
-  type ParagraphSpan
-} from '../text-engine-host'
-import { mergeVisualRects } from '../text-engine'
-import { containsShapingScript } from '../text-engine/utils/scriptFont'
-import type { VisualRect } from '../text-engine/types'
-import { IncrementalRowComputer } from './IncrementalRowComputer'
-import { IncrementalParagraphComputer } from './IncrementalParagraphComputer'
+import { LayoutHostAdapter, type ParagraphSpan } from '../text-engine-host'
 import { deepClone, nextTick } from '../../utils'
 import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
@@ -59,7 +78,6 @@ import { ElementType } from '../../dataset/enum/Element'
 import { TraceType } from '../../dataset/enum/Trace'
 import { ImageParticle } from './particle/ImageParticle'
 import { LaTexParticle } from './particle/latex/LaTexParticle'
-import { TextParticle } from './particle/TextParticle'
 import { PageNumber } from './frame/PageNumber'
 import { ScrollObserver } from '../observer/ScrollObserver'
 import { SelectionObserver } from '../observer/SelectionObserver'
@@ -77,35 +95,29 @@ import { SubscriptParticle } from './particle/SubscriptParticle'
 import { SeparatorParticle } from './particle/SeparatorParticle'
 import { PageBreakParticle } from './particle/PageBreakParticle'
 import { Watermark } from './frame/Watermark'
-import { WatermarkLayer } from '../../dataset/enum/Watermark'
+import { WatermarkLayer, WatermarkType } from '../../dataset/enum/Watermark'
 import { TextDirection } from '../../dataset/enum/TextDirection'
 import {
   EditorComponent,
   EditorMode,
   EditorZone,
   PageMode,
-  PaperDirection,
-  WordBreak
+  PaperDirection
 } from '../../dataset/enum/Editor'
 import { Control } from './control/Control'
 import { CascadeManager } from '../cascade/CascadeManager'
 import { Validate } from '../validate/Validate'
-import {
-  deleteSurroundElementList,
-  getIsBlockElement,
-  getSlimCloneElementList,
-  pickSurroundElementList,
-  zipElementList
-} from '../../utils/element'
 import { CheckboxParticle } from './particle/CheckboxParticle'
 import { RadioParticle } from './particle/RadioParticle'
 import { DeepRequired, IPadding } from '../../interface/Common'
+import { ControlComponent } from '../../dataset/enum/Control'
 import {
-  ControlComponent,
-  ControlIndentation
-} from '../../dataset/enum/Control'
-import { formatElementList } from '../../utils/element'
-import { shrinkColgroupToWidth } from '../../utils/table'
+  formatElementList,
+  getSlimCloneElementList,
+  isElementLayoutHidden,
+  pickSurroundElementList,
+  zipElementList
+} from '../../utils/element'
 import { WorkerManager } from '../worker/WorkerManager'
 import { Previewer } from './particle/previewer/Previewer'
 import { DateParticle } from './particle/date/DateParticle'
@@ -126,11 +138,8 @@ import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
-import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
-import {
-  PUNCTUATION_REG,
-  WHITE_SPACE_REG
-} from '../../dataset/constant/Regular'
+import { ImageDisplay } from '../../dataset/enum/Common'
+import { WHITE_SPACE_REG } from '../../dataset/constant/Regular'
 import { LineBreakParticle } from './particle/LineBreakParticle'
 import { WhiteSpaceParticle } from './particle/WhiteSpaceParticle'
 import { MouseObserver } from '../observer/MouseObserver'
@@ -182,7 +191,6 @@ export class Draw {
   private previewer: Previewer
   private imageParticle: ImageParticle
   private laTexParticle: LaTexParticle
-  private textParticle: TextParticle
   private tableParticle: TableParticle
   private tablePaging: TablePaging
   private tableTool: TableTool
@@ -220,15 +228,13 @@ export class Draw {
   private accessibility: Accessibility
 
   private LETTER_REG: RegExp
-  private WORD_LIKE_REG: RegExp
-  private rowList: IRow[]
+  private rowList: LayoutRow[]
   // 跨页表格拆分前的原始行列表：增量计算以其为基准（片段行不参与复用定位）
-  private rawRowList: IRow[]
-  private incrementalRowComputer: IncrementalRowComputer
-  private incrementalParagraphComputer: IncrementalParagraphComputer
+  private rawRowList: LayoutRow[]
+  private dirtyRangeTracker: DirtyRangeTracker
   // maxPageNo 截断发生过（elementList 被裁剪导致行/元素失配），禁用增量
   private isElementListTruncated: boolean
-  private pageRowList: IRow[][]
+  private pageRowList: LayoutRow[][]
   private pageDirectionList: PaperDirection[]
   private painterStyle: IElementStyle | null
   private painterOptions: IPainterOption | null
@@ -236,11 +242,37 @@ export class Draw {
   private intersectionPageNo: number
   private lazyRenderIntersectionObserver: IntersectionObserver | null
   private printModeData: Required<Omit<IEditorData, 'graffiti'>> | null
-  private controlMinWidthPlaceholderElementListSet: WeakSet<IElement[]>
   private columnManager: ColumnManager
   private ruler: Ruler
+  private lifecycle = new EditorLifecycle()
+  public readonly ready = this.lifecycle.ready
+  private readonly guardedEvents = [
+    'pointerdown',
+    'mousedown',
+    'mouseup',
+    'mousemove',
+    'click',
+    'dblclick',
+    'contextmenu',
+    'keydown',
+    'beforeinput',
+    'input',
+    'paste',
+    'cut',
+    'compositionstart',
+    'compositionend',
+    'dragover',
+    'drop',
+    'touchstart'
+  ]
+  private interactionGuard = (event: Event) => {
+    if (this.lifecycle.state === 'ready') return
+    event.preventDefault()
+    event.stopImmediatePropagation()
+  }
+
+  private renderedFontRevision = 0
   private layoutHostAdapter: LayoutHostAdapter
-  private legacyRtlWarned: boolean
 
   constructor(
     rootContainer: HTMLElement,
@@ -268,7 +300,24 @@ export class Draw {
     this.pageContainer = this._createPageContainer()
     this._createPage(0)
 
-    this.i18n = new I18n(options.locale)
+    this.i18n = new I18n(options.locale, () => {
+      this.fontDiagnostics?.refresh()
+      if (this.isReady())
+        this.render({
+          isCompute: false,
+          isSetCursor: false,
+          isSubmitHistory: false
+        })
+    })
+    this.fontDiagnostics = new FontDiagnostics(
+      this.container,
+      this.i18n,
+      () => ({
+        print: this.isPrintMode(),
+        rtl: this.options.direction === TextDirection.RTL
+      }),
+      location => this.locateFontCoverage(location)
+    )
     this.historyManager = new HistoryManager(this)
     this.position = new Position(this)
     this.zone = new Zone(this)
@@ -287,13 +336,13 @@ export class Draw {
     this.previewer = new Previewer(this)
     this.imageParticle = new ImageParticle(this)
     this.laTexParticle = new LaTexParticle(this)
-    this.textParticle = new TextParticle(this)
     this.tableParticle = new TableParticle(this)
     this.tablePaging = new TablePaging(this)
     this.rawRowList = []
     this.isElementListTruncated = false
-    this.incrementalRowComputer = new IncrementalRowComputer(this)
-    this.incrementalParagraphComputer = new IncrementalParagraphComputer()
+    this.dirtyRangeTracker = new DirtyRangeTracker(() =>
+      this.layoutHostAdapter?.clearParagraphCache()
+    )
     this.tableTool = new TableTool(this)
     this.tableOperate = new TableOperate(this)
     this.pageNumber = new PageNumber(this)
@@ -324,7 +373,6 @@ export class Draw {
     this.graffiti = new Graffiti(this, data.graffiti)
     this.columnManager = new ColumnManager(this)
     this.ruler = new Ruler(this)
-    this.legacyRtlWarned = false
     this.layoutHostAdapter = new LayoutHostAdapter(
       () => this.options,
       () => ({
@@ -333,12 +381,6 @@ export class Draw {
         isTraceHidden: (el: IElement) => this.traceParticle.isTraceHidden(el)
       })
     )
-    // HarfBuzz path: warm up fonts/WASM without blocking first paint
-    if (this.layoutHostAdapter.isHarfBuzzMode()) {
-      this.layoutHostAdapter.ensureReady().then(() => {
-        this.render({ isSetCursor: false, isSubmitHistory: false })
-      })
-    }
 
     this.scrollObserver = new ScrollObserver(this)
     this.selectionObserver = new SelectionObserver(this)
@@ -357,9 +399,6 @@ export class Draw {
 
     const { letterClass } = options
     this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
-    this.WORD_LIKE_REG = new RegExp(
-      `${letterClass.map(letter => `[^${letter}][${letter}]`).join('|')}`
-    )
     this.rowList = []
     this.pageRowList = []
     this.painterStyle = null
@@ -368,19 +407,373 @@ export class Draw {
     this.intersectionPageNo = 0
     this.lazyRenderIntersectionObserver = null
     this.printModeData = null
-    this.controlMinWidthPlaceholderElementListSet = new WeakSet()
 
     // 打印模式优先设置打印数据
     if (this.mode === EditorMode.PRINT) {
       this.setPrintData()
     }
-    this.render({
-      isInit: true,
-      isSetCursor: false,
-      isFirstRender: true
+    for (const event of this.guardedEvents) {
+      this.container.addEventListener(event, this.interactionGuard, true)
+    }
+    const agent = this.cursor.getAgentDom()
+    agent.readOnly = true
+    this.container.setAttribute('aria-busy', 'true')
+    this.lifecycle.start(this.layoutHostAdapter.ensureReady(), () => {
+      this.render({ isInit: true, isSetCursor: false, isFirstRender: true })
+      this.cascadeManager.executeAll()
+      if (this.lifecycle.state !== 'destroyed') agent.readOnly = false
     })
-    // 级联规则初始化全量执行
-    this.cascadeManager.executeAll()
+    void this.ready.then(
+      () => {
+        if (this.lifecycle.state !== 'destroyed') {
+          this.container.setAttribute('aria-busy', 'false')
+          this.updateFontCoverage()
+        }
+      },
+      () => {
+        if (this.lifecycle.state !== 'destroyed') {
+          this.container.setAttribute('aria-busy', 'false')
+        }
+      }
+    )
+  }
+
+  private fontDownloadManager = new FontDownloadManager({
+    register: async (faces, signal) => {
+      await this.ready
+      if (signal.aborted)
+        throw new DOMException('Font registration aborted', 'AbortError')
+      this.lifecycle.assertReady()
+      const manager = this.layoutHostAdapter.getFontManager()
+      const results = []
+      for (const face of faces)
+        results.push(await manager.registerFace(face, signal))
+      this.lifecycle.assertReady()
+      if (manager.getRevision() !== this.renderedFontRevision) {
+        this.dirtyRangeTracker.markFullDirty()
+        this.render({ isSetCursor: false, isSubmitHistory: false })
+      }
+      return results
+    },
+    change: () => {
+      if (this.isReady()) this.updateFontCoverage()
+    }
+  })
+  private coveragePublishedSignature = ''
+
+  public retryFontDownloads() {
+    this.lifecycle.assertReady()
+    this.fontDownloadManager.retry()
+  }
+
+  private fontDiagnostics: FontDiagnostics
+
+  private pendingFontCoverage: FontCoverageReport | null = null
+  private fontCoverageEmission = 0
+  private fontCoverageTracker = new FontCoverageTracker(report => {
+    this.pendingFontCoverage = report
+  })
+
+  private publishFontCoverage() {
+    if (this.lifecycle.state === 'initializing') return
+    if (!this.isReady() || !this.pendingFontCoverage) return
+    const report = this.getFontCoverageReport()
+    this.pendingFontCoverage = null
+    this.fontDiagnostics.update(report)
+    const signature = JSON.stringify(report)
+    if (signature === this.coveragePublishedSignature) return
+    this.coveragePublishedSignature = signature
+    const emission = ++this.fontCoverageEmission
+    this.listener.fontCoverageChange?.(structuredClone(report))
+    // A listener can synchronously edit or destroy the editor.
+    if (this.isReady() && emission === this.fontCoverageEmission)
+      this.eventBus.emit('fontCoverageChange', structuredClone(report))
+  }
+
+  /** Resolve stable source identity after edits; never navigate by stale offsets. */
+  private locateFontCoverage(location: FontCoverageLocation) {
+    const visit = (
+      elements: IElement[],
+      zone: EditorZone,
+      path: import('../../interface/Position').ITablePositionContext[] = []
+    ): boolean => {
+      for (const [index, element] of elements.entries()) {
+        if (this.layoutHostAdapter.matchesSource(element, location.nodeId)) {
+          this.zone.setZone(zone)
+          this.position.setPositionContext(
+            path.length
+              ? { isTable: true, ...path[path.length - 1], tablePath: path }
+              : { isTable: false }
+          )
+          this.range.replaceRange({
+            startIndex: Math.max(0, index - 1),
+            endIndex: index
+          })
+          this.render({
+            curIndex: index,
+            isCompute: false,
+            isSubmitHistory: false
+          })
+          return true
+        }
+        for (const [trIndex, tr] of (element.trList || []).entries()) {
+          for (const [tdIndex, td] of tr.tdList.entries()) {
+            if (
+              visit(td.value, zone, [
+                ...path,
+                {
+                  index,
+                  trIndex,
+                  tdIndex,
+                  tdId: td.id,
+                  trId: tr.id,
+                  tableId: element.id
+                }
+              ])
+            )
+              return true
+          }
+        }
+      }
+      return false
+    }
+    for (const [zone, elements] of [
+      [EditorZone.MAIN, this.getOriginalMainElementList()],
+      [EditorZone.HEADER, this.getHeaderElementList()],
+      [EditorZone.FOOTER, this.getFooterElementList()]
+    ] as const)
+      if (visit(elements, zone)) break
+  }
+
+  public getFontCoverageReport() {
+    this.lifecycle.assertReady(true)
+    return this.fontDownloadManager.decorate({
+      ...this.fontCoverageTracker.getReport(),
+      autoDownloadFonts: this.options.autoDownloadFonts
+    })
+  }
+
+  private auxiliaryCoverageSignature = ''
+
+  private getAuxiliaryCoverageSignature() {
+    const { watermark, pageNumber, lineNumber, placeholder, ruler } =
+      this.options
+    return JSON.stringify([
+      watermark,
+      pageNumber,
+      lineNumber,
+      placeholder,
+      ruler,
+      this.i18n.getLocale(),
+      this.i18n.t('pageBreak.displayName'),
+      this.mode
+    ])
+  }
+
+  private updateFontCoverage() {
+    if (!this.layoutHostAdapter.isReady()) return
+    const roots = [{ scope: 'main', elements: this.elementList }]
+    if (this.getIsPagingMode()) {
+      if (!this.options.header.disabled)
+        roots.push({ scope: 'header', elements: this.header.getElementList() })
+      if (!this.options.footer.disabled)
+        roots.push({ scope: 'footer', elements: this.footer.getElementList() })
+    }
+    const inputs = this.layoutHostAdapter.collectFontCoverage(
+      roots,
+      element => {
+        if (element.type === ElementType.IMAGE && element.imgCaption?.value) {
+          const caption = element.imgCaption
+          const defaults = this.options.imgCaption
+          return [
+            {
+              text: this.imageParticle.getCaptionText(element),
+              fontFamily: caption.font || defaults.font,
+              fontSize: caption.size || defaults.size,
+              color: caption.color || defaults.color
+            }
+          ]
+        }
+        const area = element.areaId
+          ? this.area.getAreaInfo().get(element.areaId)
+          : undefined
+        if (
+          area?.area?.placeholder &&
+          area.elementList[0] === element &&
+          area.positionList.length <= 1 &&
+          !this.isPrintMode() &&
+          !(area.area.hide && !this.isAreaHideDisabled())
+        ) {
+          const text = { ...defaultPlaceholderOption, ...area.area.placeholder }
+          return [
+            {
+              text: text.data,
+              fontFamily: text.font,
+              fontSize: text.size,
+              color: text.color
+            }
+          ]
+        }
+        if (
+          element.type === ElementType.PAGE_BREAK &&
+          this.getMode() !== EditorMode.PRINT
+        ) {
+          const { font, fontSize } = this.options.pageBreak
+          return [
+            {
+              text: this.i18n.t('pageBreak.displayName'),
+              fontFamily: font,
+              fontSize,
+              color: this.options.defaultColor
+            }
+          ]
+        }
+        return []
+      }
+    )
+    const add = (
+      kind: string,
+      text: string,
+      font: string,
+      size: number,
+      color: string
+    ) => {
+      inputs.push(
+        ...this.layoutHostAdapter.collectPlainTextCoverage(
+          {
+            text,
+            fontFamily: font,
+            fontSize: size,
+            color
+          },
+          { scope: `aux:${kind}`, nodeId: `aux:${kind}`, start: 0, end: 0 }
+        )
+      )
+    }
+    const { pageNumber, watermark, lineNumber, placeholder, ruler } =
+      this.options
+    for (let pageNo = 0; pageNo < this.getPageCount(); pageNo++) {
+      if (
+        this.getIsPagingMode() &&
+        !pageNumber.disabled &&
+        pageNo >= pageNumber.fromPageNo
+      )
+        add(
+          'pageNumber',
+          this.pageNumber.getText(pageNo),
+          pageNumber.font,
+          pageNumber.size,
+          pageNumber.color
+        )
+      if (
+        this.getIsPagingMode() &&
+        watermark.type !== WatermarkType.IMAGE &&
+        watermark.data
+      )
+        add(
+          'watermark',
+          this.waterMark.formatText(watermark.data, pageNo),
+          watermark.font,
+          watermark.size,
+          watermark.color
+        )
+      if (!lineNumber.disabled) {
+        for (const [index, row] of (this.pageRowList[pageNo] || []).entries())
+          add(
+            'lineNumber',
+            String(lineNumber.type === 'page' ? index + 1 : row.rowIndex + 1),
+            lineNumber.font,
+            lineNumber.size,
+            lineNumber.color
+          )
+      }
+    }
+    if (this.elementList.length <= 1 && !this.elementList[0]?.listId)
+      add(
+        'placeholder',
+        placeholder.data,
+        placeholder.font,
+        placeholder.size,
+        placeholder.color
+      )
+    if (!ruler.disabled && this.getIsPagingMode()) {
+      const { width, height } = this.getPageSize(0)
+      const count = Math.floor(
+        Math.max(width, height) / ((96 / 25.4) * this.options.scale) / 10
+      )
+      for (let i = 1; i <= count; i++)
+        add('ruler', String(i), this.options.defaultFont, 8, '#666666')
+    }
+    this.auxiliaryCoverageSignature = this.getAuxiliaryCoverageSignature()
+    const token = this.fontCoverageTracker.begin()
+    this.fontCoverageTracker.update(
+      token,
+      inputs,
+      this.layoutHostAdapter.getFontManager(),
+      this.options.autoDownloadFonts
+    )
+    const currentReport = this.fontCoverageTracker.getReport()
+    this.fontDownloadManager.sync(
+      currentReport,
+      id => this.fontCoverageTracker.getContexts(id),
+      this.isReady()
+    )
+    this.pendingFontCoverage = currentReport
+    const { documentRevision, fontRevision } =
+      this.fontCoverageTracker.getReport()
+    const syncRows = (rows: LayoutRow[]) => {
+      for (const row of rows) {
+        for (const box of row.nativeLine?.inlines || [])
+          if (box.kind === 'missingGlyph')
+            box.revision = { documentRevision, fontRevision }
+      }
+    }
+    syncRows(this.rowList)
+    syncRows(this.header.getLayoutRowList())
+    syncRows(this.footer.getLayoutRowList())
+    const syncCells = (elements: IElement[]) => {
+      for (const element of elements) {
+        for (const row of element.trList || []) {
+          for (const cell of row.tdList) {
+            syncRows(cell.rowList || [])
+            syncCells(cell.value)
+          }
+        }
+      }
+    }
+    for (const root of roots) syncCells(root.elements)
+    this.publishFontCoverage()
+  }
+
+  public async registerFonts(faces: IEditorFontFace[]) {
+    const snapshots = mergeOption({ fonts: faces }).fonts.map(face => ({
+      ...face,
+      data: face.data?.slice(0) ?? null,
+      scripts: [...face.scripts]
+    }))
+    await this.ready
+    this.lifecycle.assertReady()
+    const fontManager = this.layoutHostAdapter.getFontManager()
+    const results = await this.layoutHostAdapter.registerFonts(snapshots)
+    this.lifecycle.assertReady()
+    results.forEach((result, index) => {
+      if (result.status === 'registered')
+        this.options.fonts.push(snapshots[index])
+    })
+    if (fontManager.getRevision() !== this.renderedFontRevision) {
+      this.dirtyRangeTracker.markFullDirty()
+      this.render({ isSetCursor: false, isSubmitHistory: false })
+    }
+    this.updateFontCoverage()
+    return results
+  }
+
+  public getLifecycle(): EditorLifecycle {
+    return this.lifecycle
+  }
+
+  public isReady(): boolean {
+    return this.lifecycle.state === 'ready'
   }
 
   // 设置打印数据
@@ -435,6 +828,7 @@ export class Draw {
     this.range.clearRange()
     this.mode = payload
     this.options.mode = payload
+    this.fontDiagnostics.refresh()
     this.render({
       isSetCursor: false,
       isSubmitHistory: false
@@ -461,6 +855,7 @@ export class Draw {
   }
 
   public isDisabled() {
+    if (!this.isReady()) return true
     if (this.mode === EditorMode.DESIGN) return false
     const { startIndex, endIndex } = this.range.getRange()
     const elementList = this.getElementList()
@@ -522,6 +917,7 @@ export class Draw {
   public setRulerEnabled(enabled: boolean) {
     if (!this.options.ruler.disabled === enabled) return
     this.ruler.setEnabled(enabled)
+    this.updateFontCoverage()
   }
 
   // 删除元素：trace 启用时软删除（保留在原位仅打标），否则硬删除
@@ -533,7 +929,7 @@ export class Draw {
   ) {
     if (!this.options.trace.disabled) {
       // 留痕删除不移除元素但改变可见性，同样影响布局
-      this.incrementalRowComputer.markRangeDirty(elementList, index, count, 0)
+      this.dirtyRangeTracker.markRangeDirty(elementList, index, count, 0)
       return this.traceParticle.markElementListDeleted(
         elementList.slice(index, index + count),
         options
@@ -607,6 +1003,23 @@ export class Draw {
   public setColumnConfig(config: IColumnOption | null): void {
     if (this.options.pageMode === PageMode.CONTINUITY) return
     this.columnManager.setConfig(config)
+  }
+
+  private objectContainerWidths = new WeakMap<IElement, number>()
+
+  public getObjectContainerWidth(element: IElement): number {
+    return (
+      this.objectContainerWidths.get(element) ?? this.getOriginalInnerWidth()
+    )
+  }
+
+  private tableContainerWidths = new WeakMap<IElement, number>()
+
+  /** The actual parent cell/column width, recorded during table layout. */
+  public getTableContainerWidth(element: IElement): number {
+    return (
+      this.tableContainerWidths.get(element) ?? this.getOriginalInnerWidth()
+    )
   }
 
   public getOriginalInnerWidth(): number {
@@ -792,7 +1205,7 @@ export class Draw {
     return this.pageList.length
   }
 
-  public getTableRowList(sourceElementList: IElement[]): IRow[] {
+  public getTableRowList(sourceElementList: IElement[]): LayoutRow[] {
     const positionContext = this.position.getPositionContext()
     return this.position.getTableTdByContext(
       sourceElementList,
@@ -800,25 +1213,54 @@ export class Draw {
     )!.rowList!
   }
 
-  public getOriginalRowList() {
+  public getLayoutRows() {
     const zoneManager = this.getZone()
     if (zoneManager.isHeaderActive()) {
-      return this.header.getRowList()
+      return this.header.getLayoutRowList()
     }
     if (zoneManager.isFooterActive()) {
-      return this.footer.getRowList()
+      return this.footer.getLayoutRowList()
     }
     return this.rowList
   }
 
-  public getRowList(): IRow[] {
+  public getLayoutRowList(): LayoutRow[] {
     const positionContext = this.position.getPositionContext()
     return positionContext.isTable
       ? this.getTableRowList(this.getOriginalElementList())
-      : this.getOriginalRowList()
+      : this.getLayoutRows()
   }
 
-  public getPageRowList(): IRow[][] {
+  /** Compatibility snapshots for consumers; editor internals use native getters. */
+  public snapshotRows(rows: LayoutRow[]) {
+    return snapshotRows(
+      rows,
+      this.options.scale,
+      row =>
+        row.nativeLine
+          ? this.layoutHostAdapter.findLayoutByElementIndex(
+              row.startIndex,
+              row.nativeLine.source.scope
+            )?.layout
+          : undefined,
+      this.options
+    )
+  }
+
+  public getRowList() {
+    return this.snapshotRows(this.getLayoutRowList())
+  }
+  public getOriginalRowList() {
+    return this.snapshotRows(this.getLayoutRows())
+  }
+  public getRawRowList() {
+    return this.snapshotRows(this.rawRowList)
+  }
+  public getPageRowList() {
+    return this.pageRowList.map(rows => this.snapshotRows(rows))
+  }
+
+  public getLayoutPages(): LayoutRow[][] {
     return this.pageRowList
   }
 
@@ -882,10 +1324,6 @@ export class Draw {
     return this.lineBreakParticle
   }
 
-  public getTextParticle(): TextParticle {
-    return this.textParticle
-  }
-
   public getStrikeout(): Strikeout {
     return this.strikeout
   }
@@ -929,20 +1367,16 @@ export class Draw {
       : this.elementList
   }
 
-  public getRawRowList(): IRow[] {
+  public getRawLayoutRows(): LayoutRow[] {
     return this.rawRowList
   }
 
-  public getIncrementalRowComputer(): IncrementalRowComputer {
-    return this.incrementalRowComputer
+  public getDirtyRangeTracker(): DirtyRangeTracker {
+    return this.dirtyRangeTracker
   }
 
   public getIsElementListTruncated(): boolean {
     return this.isElementListTruncated
-  }
-
-  public getIsControlMinWidthPlaceholder(): boolean {
-    return this.controlMinWidthPlaceholderElementListSet.has(this.elementList)
   }
 
   public getOriginalElementList() {
@@ -1018,12 +1452,7 @@ export class Draw {
         (!preElement.type || preElement.type === ElementType.TEXT)
       ) {
         elementList.splice(startIndex, 1)
-        this.incrementalRowComputer.markRangeDirty(
-          elementList,
-          startIndex,
-          1,
-          0
-        )
+        this.dirtyRangeTracker.markRangeDirty(elementList, startIndex, 1, 0)
         curIndex -= 1
       }
     }
@@ -1050,7 +1479,7 @@ export class Draw {
     const { isPrepend, isSubmitHistory = true } = options
     if (isPrepend) {
       this.elementList.splice(1, 0, ...elementList)
-      this.incrementalRowComputer.markRangeDirty(
+      this.dirtyRangeTracker.markRangeDirty(
         this.elementList,
         1,
         0,
@@ -1060,7 +1489,7 @@ export class Draw {
     } else {
       const appendStart = this.elementList.length
       this.elementList.push(...elementList)
-      this.incrementalRowComputer.markRangeDirty(
+      this.dirtyRangeTracker.markRangeDirty(
         this.elementList,
         appendStart,
         0,
@@ -1088,7 +1517,7 @@ export class Draw {
         const value = properties[key]
         if (element[key] !== value) {
           element[key] = value as never
-          this.incrementalRowComputer.markFullDirty()
+          this.dirtyRangeTracker.markFullDirty()
         }
       }
     }
@@ -1104,7 +1533,7 @@ export class Draw {
       for (const key of keys) {
         if (key in element) {
           delete element[key]
-          this.incrementalRowComputer.markFullDirty()
+          this.dirtyRangeTracker.markFullDirty()
         }
       }
     }
@@ -1117,7 +1546,7 @@ export class Draw {
     items?: IElement[],
     options?: ISpliceElementListOption
   ) {
-    this.incrementalRowComputer.markRangeDirty(
+    this.dirtyRangeTracker.markRangeDirty(
       elementList,
       start,
       deleteCount,
@@ -1153,7 +1582,7 @@ export class Draw {
         // 列表信息清理改写了主删除区间之外的元素，扩展脏区间覆盖，
         // 防止增量续算复用到丢失列表缩进/序号的陈旧行
         if (startIndex > endIndex) {
-          this.incrementalRowComputer.markRangeDirty(
+          this.dirtyRangeTracker.markRangeDirty(
             elementList,
             endIndex,
             startIndex - endIndex,
@@ -1343,7 +1772,7 @@ export class Draw {
   }
 
   public getRowCount(): number {
-    return this.getRowList().length
+    return this.getLayoutRowList().length
   }
 
   public async getDataURL(payload: IGetImageOption = {}): Promise<string[]> {
@@ -1404,6 +1833,7 @@ export class Draw {
   public setDefaultRange() {
     if (!this.elementList.length) return
     setTimeout(() => {
+      if (!this.isReady()) return
       const curIndex = this.elementList.length - 1
       this.range.setRange(curIndex, curIndex)
       this.range.setRangeStyle()
@@ -1448,6 +1878,7 @@ export class Draw {
     }
     // 回调
     setTimeout(() => {
+      if (!this.isReady()) return
       if (this.listener.pageModeChange) {
         this.listener.pageModeChange(payload)
       }
@@ -1564,9 +1995,15 @@ export class Draw {
       pageNo! >= 0 &&
       pageNo! < this.pageRowList.length
     ) {
-      mainElementList = this.pageRowList[pageNo!].flatMap(
-        row => row.elementList
+      const indices = new Set(
+        this.pageRowList[pageNo!].flatMap(row =>
+          row.elementList.map((_, offset) => rowSourceIndex(row, offset))
+        )
       )
+      mainElementList = [...indices]
+        .sort((a, b) => a - b)
+        .map(index => this.elementList[index])
+        .filter(Boolean)
     }
     // 同步block的最新数据
     this.blockParticle.update()
@@ -1636,6 +2073,9 @@ export class Draw {
     })
     // 数据替换后级联规则全量重算
     this.cascadeManager.executeAll()
+    // API callers can edit a selection before focusing a collapsed caret.
+    // Preserve the replaced document as the baseline for that first undo.
+    if (this.historyManager.isStackEmpty()) this.submitHistory(curIndex)
   }
 
   public setEditorData(payload: Partial<Omit<IEditorData, 'graffiti'>>) {
@@ -1677,6 +2117,7 @@ export class Draw {
     // 标尺是壳层 chrome，切换方向后需立即按新方向镜像重绘
     // （构造期 _formatContainer 早于 ruler 初始化，用可选链跳过）
     this.ruler?.refresh()
+    this.fontDiagnostics?.refresh()
   }
 
   private _createPageContainer(): HTMLDivElement {
@@ -1764,94 +2205,18 @@ export class Draw {
   }
 
   public getElementRowMargin(el: IElement) {
-    const {
-      defaultSize,
-      defaultBasicRowMarginHeight,
-      defaultRowMargin,
-      scale
-    } = this.options
-    // 字体在12-30之间，行间距不变，小于12按比例缩小，大于30按比例放大
-    const fontSize = el.size || defaultSize
-    let ratio = 1
-    if (fontSize < 12) {
-      ratio = fontSize / 12
-    } else if (fontSize > 30) {
-      ratio = 1 + (fontSize - 30) / 30
-    }
-    return (
-      defaultBasicRowMarginHeight *
-      ratio *
-      (el.rowMargin ?? defaultRowMargin) *
-      scale
-    )
-  }
-
-  /**
-   * 块级/浮层嵌入：引擎段扫描会跳过，须单独走 legacy 插行。
-   * 默认 IMAGE/LATEX、已展开 CONTROL chrome 走段内 object/text，勿列入。
-   */
-  private _isEngineHostBlockedElement(el: IElement): boolean {
-    const type = el.type
-    if (
-      type === ElementType.TABLE ||
-      type === ElementType.BLOCK ||
-      type === ElementType.AREA
-    ) {
-      return true
-    }
-    if (type === ElementType.IMAGE || type === ElementType.LATEX) {
-      const d = el.imgDisplay
-      // INLINE 与默认一致走引擎内联（与周边文本同行，RTL 下不分离）；
-      // 仅浮层/环绕图强制 legacy 单独处理
-      return (
-        d === ImageDisplay.SURROUND ||
-        d === ImageDisplay.FLOAT_TOP ||
-        d === ImageDisplay.FLOAT_BOTTOM
-      )
-    }
-    return false
-  }
-
-  /** 清除引擎投影到 IElement 上的布局字段，避免回退 legacy 后误用 visualLeft / left */
-  private _clearStaleEngineLayout(elementList: IElement[]) {
-    for (let i = 0; i < elementList.length; i++) {
-      const el = elementList[i] as IElement & {
-        visualLeft?: number
-        visualIndex?: number
-        clusterStart?: number
-        clusterEnd?: number
-        left?: number
-      }
-      delete el.visualLeft
-      delete el.visualIndex
-      delete el.clusterStart
-      delete el.clusterEnd
-      // legacy minWidth 残留的 left 会让下划线 x-left 落到边距
-      delete el.left
-      if (el.type === ElementType.TABLE && el.trList) {
-        for (const tr of el.trList) {
-          for (const td of tr.tdList) {
-            if (td.value?.length) this._clearStaleEngineLayout(td.value)
-          }
-        }
-      }
-    }
-  }
-
-  /** text-engine rows always draw via GlyphRenderer (Arabic run fillText joining). */
-  private rowUsesGlyphRenderer(row: IRow): boolean {
-    return !!row.engineLine?.glyphs?.length
+    return resolveRowMargin(el, this.options)
   }
 
   private getRowElementPosition(
-    row: IRow,
+    row: LayoutRow,
     positionList: import('../../interface/Element').IElementPosition[],
-    element: IElement & { sourceIndex?: number },
+    _element: IElement,
     elementOffset: number
   ) {
     if (row.fragmentPosition) return row.fragmentPosition
-    const sourceIndex = element.sourceIndex
-    const fallbackIndex = row.startIndex + elementOffset
+    const sourceIndex = rowSourceIndex(row, elementOffset)
+    const fallbackIndex = sourceIndex
     return (
       (sourceIndex !== undefined ? positionList[sourceIndex] : undefined) ||
       positionList[fallbackIndex] ||
@@ -1877,9 +2242,7 @@ export class Draw {
       pageNo,
       bidiLevel
     } = position
-    const isRtl = direction
-      ? direction === 'rtl'
-      : ((bidiLevel ?? 0) & 1) === 1
+    const isRtl = direction ? direction === 'rtl' : ((bidiLevel ?? 0) & 1) === 1
     // 混合纸张方向：按页累计实际高度/宽度偏移（统一纸张时退化为 pageNo*(h+gap)）
     const currentPageNo = pageNo ?? this.getPageNo()
     const { x: pageLeft, y: preY } = this.getPageOffset(currentPageNo)
@@ -1893,28 +2256,18 @@ export class Draw {
   }
 
   private getEngineHighlightRect(
-    row: IRow,
-    element: IRowElement,
-    position: import('../../interface/Element').IElementPosition
+    row: LayoutRow,
+    _element: IElement,
+    position: import('../../interface/Element').IElementPosition,
+    positions = this.position.getPositionList(),
+    pageNo = position.pageNo
   ): { x: number; width: number } | undefined {
-    if (!row.engineLine || element.sourceIndex === undefined) return
-    const sourceIndex = element.sourceIndex
-    const glyphs = row.engineLine.glyphs.filter(g => {
-      if (g.logicalIndices?.length) {
-        return g.logicalIndices.includes(sourceIndex)
-      }
-      const from = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
-      const to = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
-      return sourceIndex >= from && sourceIndex <= to
-    })
-    if (!glyphs.length) return
-    const left = Math.min(...glyphs.map(g => g.left))
-    const right = Math.max(...glyphs.map(g => g.right))
-    const originX =
-      position.coordinate.leftTop[0] -
-      (element.visualLeft || 0) -
-      (element.left || 0)
-    return { x: originX + left, width: Math.max(0, right - left) }
+    const placed = this.position.getNativeRow(row, positions, pageNo)
+    if (!placed) return
+    const rects = textRangeRects(placed, position.index, position.index + 1)
+    if (!rects.length) return
+    const x = Math.min(...rects.map(rect => rect.x))
+    return { x, width: Math.max(...rects.map(rect => rect.x + rect.width)) - x }
   }
 
   /**
@@ -1925,21 +2278,23 @@ export class Draw {
   public getEngineHighlightRectByIndex(
     sourceIndex: number,
     position: import('../../interface/Element').IElementPosition,
-    rowList: IRow[] = this.getOriginalRowList()
+    rowList: LayoutRow[] = this.getLayoutRows(),
+    positions = this.position.getPositionList()
   ): { x: number; width: number } | undefined {
     for (const row of rowList) {
-      if (!row.engineLine) continue
-      const element = row.elementList.find(
-        item => item.sourceIndex === sourceIndex
+      if (!row.nativeLine || !row.sourceIndices?.includes(sourceIndex)) continue
+      return this.getEngineHighlightRect(
+        row,
+        row.elementList[0],
+        position,
+        positions
       )
-      if (!element) continue
-      return this.getEngineHighlightRect(row, element, position)
     }
     return
   }
 
   /**
-   * GlyphRenderer 按整行绘制：跳过留痕软删与 hide（与 TextParticle / #1447 一致）。
+   * GlyphRenderer 按整行绘制：跳过留痕软删与 hide（遵循 hide / 留痕规则）。
    * hide 须先在 ElementBridge 中零宽占位，再在此跳过绘制，避免只滤 paint 留下空白洞。
    */
   private isGlyphPaintSkipped(element: IElement | undefined): boolean {
@@ -1952,270 +2307,6 @@ export class Draw {
     )
   }
 
-  private filterEngineLineForPaint(
-    line: import('../text-engine/types').LayoutLine,
-    elementList: IElement[]
-  ): import('../text-engine/types').LayoutLine {
-    if (this.isDesignMode()) return line
-    const glyphs = line.glyphs.filter(g => {
-      const from = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
-      const to = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
-      for (let li = from; li <= to; li++) {
-        if (this.isGlyphPaintSkipped(elementList[li])) return false
-      }
-      return true
-    })
-    return glyphs.length === line.glyphs.length ? line : { ...line, glyphs }
-  }
-
-  /**
-   * text-engine 选区校正：按 engineLine 字形左右边界并集，
-   * 并对复杂文种用与绘制相同的 font 测整段墨迹宽，防止选区短于 fillText。
-   */
-  private _correctEngineSelectionRects(
-    ctx: CanvasRenderingContext2D,
-    curRow: IRow,
-    positionList: import('../../interface/Element').IElementPosition[],
-    rects: VisualRect[],
-    selStart: number,
-    selEnd: number
-  ): VisualRect[] {
-    if (!curRow.engineLine?.glyphs?.length || selStart === selEnd) {
-      return rects
-    }
-    const anchor = curRow.elementList.find(
-      el => el.visualLeft !== undefined && el.value !== ZERO
-    )
-    const anchorPos =
-      curRow.fragmentPosition ||
-      positionList[
-        anchor
-          ? anchor.sourceIndex ??
-            curRow.startIndex + curRow.elementList.indexOf(anchor)
-          : curRow.startIndex
-      ]
-    if (!anchor || !anchorPos) return rects
-    const originX =
-      anchorPos.coordinate.leftTop[0] -
-      (anchor.visualLeft || 0) -
-      (anchor.left || 0)
-    const y = anchorPos.coordinate.leftTop[1]
-    // Paragraph spacing participates in layout, not selection painting.
-    const height = curRow.height - (curRow.spacingAfter || 0)
-    // 编辑器约定：高亮 (selStart, selEnd]
-    const from = selStart + 1
-    const to = selEnd
-    if (from > to) return rects
-
-    const glyphRects: VisualRect[] = []
-    for (const g of curRow.engineLine.glyphs) {
-      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
-      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
-      if (gTo < from || gFrom > to) continue
-      const count = Math.max(1, gTo - gFrom + 1)
-      const boxW = Math.max(g.right - g.left, 0)
-      const odd = (g.bidiLevel & 1) === 1
-      for (let li = Math.max(gFrom, from); li <= Math.min(gTo, to); li++) {
-        const each = boxW > 0.01 ? boxW / count : 0
-        const offset = odd ? gTo - li : li - gFrom
-        const left = originX + g.left + offset * each
-        const right = left + (each > 0.01 ? each : Math.max(boxW, 0))
-        glyphRects.push({ left, right: Math.max(right, left), y, height })
-      }
-    }
-    const base = glyphRects.length ? glyphRects : rects
-
-    // 复杂文种：按选中逻辑子串测宽，把同行选区右缘扩到墨迹宽
-    const para = curRow.engineParagraphText
-    if (!para || !curRow.engineLine) return base
-    let minChar = Infinity
-    let maxChar = -1
-    let paintStyle = curRow.engineLine.glyphs[0]?.style
-    for (const g of curRow.engineLine.glyphs) {
-      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
-      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
-      if (gTo < from || gFrom > to) continue
-      minChar = Math.min(minChar, g.charStart)
-      maxChar = Math.max(maxChar, g.charEnd)
-      paintStyle = g.style
-    }
-    if (minChar === Infinity || maxChar <= minChar || !paintStyle) {
-      return base
-    }
-    const slice = para.slice(minChar, maxChar)
-    if (!slice || !containsShapingScript(slice)) return base
-    ctx.save()
-    ctx.font = `${paintStyle.italic ? 'italic ' : ''}${
-      paintStyle.bold ? 'bold ' : ''
-    }${paintStyle.fontSize}px ${paintStyle.fontFamily}`
-    const measured = ctx.measureText(slice)
-    const inkRight =
-      measured.actualBoundingBoxRight != null &&
-      measured.actualBoundingBoxLeft != null
-        ? Math.max(
-            measured.width,
-            measured.actualBoundingBoxRight - measured.actualBoundingBoxLeft
-          )
-        : measured.width
-    ctx.restore()
-    // 选区在复杂段内的视觉起点
-    let runLeft = Infinity
-    for (const g of curRow.engineLine.glyphs) {
-      const gFrom = Math.min(g.logicalIndexStart, g.logicalIndexEnd)
-      const gTo = Math.max(g.logicalIndexStart, g.logicalIndexEnd)
-      if (gTo < from || gFrom > to) continue
-      runLeft = Math.min(runLeft, originX + g.left)
-    }
-    if (runLeft === Infinity) return base
-    const needRight = runLeft + inkRight
-    return base.map(r =>
-      Math.abs(r.y - y) < 0.5 && r.right < needRight
-        ? { ...r, left: Math.min(r.left, runLeft), right: needRight }
-        : r
-    )
-  }
-
-  /**
-   * Paint-time overlay of live element styles onto engine glyphs.
-   * Does not mutate the cached LayoutLine (color 等 isCompute:false 依赖此路径).
-   */
-  private _syncEngineLineStyles(
-    line: import('../text-engine/types').LayoutLine,
-    elementList: IElement[]
-  ): import('../text-engine/types').LayoutLine {
-    const {
-      defaultFont,
-      defaultSize,
-      defaultColor,
-      defaultHyperlinkColor,
-      label: { defaultColor: defaultLabelColor },
-      scale
-    } = this.options
-    return {
-      ...line,
-      glyphs: line.glyphs.map(g => {
-        const el = elementList[g.logicalIndexStart]
-        if (!el) return g
-        if (el.type === ElementType.HYPERLINK) {
-          this.hyperlinkParticle.ensureDefaults(el)
-        }
-        if (el.type === ElementType.LABEL) {
-          this.labelParticle.ensureDefaults(el)
-        }
-        const isSuper = el.type === ElementType.SUPERSCRIPT
-        const isSub = el.type === ElementType.SUBSCRIPT
-        const baseSize = el.size || defaultSize
-        const paintSize =
-          (isSuper || isSub ? Math.ceil(baseSize * 0.6) : baseSize) * scale
-        const scriptShift = isSuper ? 'super' : isSub ? 'sub' : undefined
-        const baselineShift = isSuper
-          ? -paintSize / 2
-          : isSub
-            ? paintSize / 2
-            : 0
-        const fallbackColor =
-          el.type === ElementType.HYPERLINK
-            ? defaultHyperlinkColor
-            : el.type === ElementType.LABEL
-              ? defaultLabelColor
-              : defaultColor
-        return {
-          ...g,
-          baselineShift,
-          style: {
-            ...g.style,
-            // 保留整形时按 script 解析的字体，避免 sync 回落 defaultFont 打断阿语连写
-            fontFamily: el.font || g.style.fontFamily || defaultFont,
-            fontSize: paintSize,
-            bold: el.bold,
-            italic: el.italic,
-            color: el.color || fallbackColor,
-            letterSpacing: el.letterSpacing,
-            scriptShift
-          }
-        }
-      })
-    }
-  }
-
-  private _createSpecialEngineRow(
-    element: IElement,
-    index: number,
-    innerWidth: number,
-    rowIndex: number
-  ): IRow {
-    const { scale, defaultSize } = this.options
-    const rowMargin = this.getElementRowMargin(element)
-    if (element.type === ElementType.SEPARATOR) {
-      const {
-        separator: { lineWidth: defaultLineWidth }
-      } = this.options
-      const lineWidth = element.lineWidth || defaultLineWidth
-      element.width = innerWidth / scale
-      // 与 legacy computeRowList 保持同一套 metrics → height/ascent
-      const metrics = {
-        width: innerWidth,
-        height: lineWidth * scale,
-        boundingBoxAscent: -rowMargin,
-        boundingBoxDescent: -rowMargin + lineWidth * scale
-      }
-      const ascent = metrics.boundingBoxAscent + rowMargin
-      const height =
-        rowMargin +
-        metrics.boundingBoxAscent +
-        metrics.boundingBoxDescent +
-        rowMargin
-      return {
-        width: innerWidth,
-        height,
-        ascent,
-        startIndex: index,
-        rowIndex,
-        elementList: [
-          {
-            ...element,
-            metrics,
-            style: ''
-          }
-        ]
-      }
-    }
-    // PAGE_BREAK：legacy 仅设 metrics.height=defaultSize，bbox 为 0
-    element.width = innerWidth / scale
-    const size = element.size || defaultSize
-    const metrics = {
-      width: innerWidth,
-      height: size,
-      boundingBoxAscent: 0,
-      boundingBoxDescent: 0
-    }
-    const ascent = metrics.boundingBoxAscent + rowMargin
-    const height =
-      rowMargin +
-      metrics.boundingBoxAscent +
-      metrics.boundingBoxDescent +
-      rowMargin
-    return {
-      width: innerWidth,
-      height,
-      ascent,
-      startIndex: index,
-      rowIndex,
-      isPageBreak: true,
-      // 混排横竖版：分页符携带的 paperDirection 决定新节方向（与 legacy 一致）
-      ...(element.paperDirection
-        ? { paperDirection: element.paperDirection }
-        : {}),
-      elementList: [
-        {
-          ...element,
-          metrics,
-          style: ''
-        }
-      ]
-    }
-  }
-
   /** Paragraph list indent (marker width + nested level), same as legacy offsetX. */
   private _getEngineParagraphListOffset(
     paragraph: ParagraphSpan,
@@ -2223,15 +2314,16 @@ export class Draw {
     listStyleMap: Map<string, number>
   ): number {
     const { scale } = this.options
-    const anchor =
-      elementList[paragraph.startIndex]?.listId
-        ? elementList[paragraph.startIndex]
-        : elementList[paragraph.startIndex + 1]
+    const anchor = elementList[paragraph.startIndex]?.listId
+      ? elementList[paragraph.startIndex]
+      : elementList[paragraph.startIndex + 1]
     if (!anchor?.listId) return 0
-    const indent = anchor.listLevel
-      ? this.listParticle.LIST_INDENT_WIDTH * anchor.listLevel * scale
-      : 0
-    return (listStyleMap.get(anchor.listId) || 0) + indent
+    return resolveListOffset(
+      anchor,
+      listStyleMap.get(anchor.listId) || 0,
+      this.listParticle.LIST_INDENT_WIDTH,
+      scale
+    )
   }
 
   /**
@@ -2239,7 +2331,7 @@ export class Draw {
    * 否则工具栏 setList 虽写入 listId，却不缩进、不绘项目符号。
    */
   private _applyEngineListMetaToRows(
-    rows: IRow[],
+    rows: LayoutRow[],
     listStyleMap: Map<string, number>,
     listIndexMap: Map<string, number>
   ) {
@@ -2257,205 +2349,56 @@ export class Draw {
           listIndexMap.set(listId, 0)
         }
       }
-      const indent = listAnchor.listLevel
-        ? this.listParticle.LIST_INDENT_WIDTH * listAnchor.listLevel * scale
-        : 0
+      const listOffset = resolveListOffset(
+        listAnchor,
+        listStyleMap.get(listId) || 0,
+        this.listParticle.LIST_INDENT_WIDTH,
+        scale
+      )
       row.isList = true
       // RTL：左侧不再套 offsetX，gutter 留在内容区右侧（布局宽已减 listOffset）
       const isRtl =
         row.direction === 'rtl' || listAnchor.direction === TextDirection.RTL
-      row.offsetX = isRtl ? 0 : (listStyleMap.get(listId) || 0) + indent
+      row.offsetX = isRtl
+        ? 0
+        : row.flow?.indent != null
+          ? row.flow.indent * scale
+          : listOffset
       row.listIndex = listIndexMap.get(listId) ?? 0
     }
   }
 
-  /**
-   * text-engine 行补齐 ControlIndentation.VALUE_START：
-   * 控件值换行时，续行从「值起始侧」对齐（LTR 值左缘、RTL 值右缘），
-   * 与 legacy computeRowList 的 offsetX 语义一致。仅平移本行 visualLeft，
-   * 不写 offsetX，避免与引擎行右对齐 / 列表 offsetX 二次叠加。
-   */
-  private _applyEngineControlIndentation(rows: IRow[]) {
-    if (!rows.length) return
-    const valueStartByControl = new Map<string, number>()
-    const seenByControl = new Set<string>()
-    for (const row of rows) {
-      const isRtl = row.direction === 'rtl'
-      // 本行出现且带视觉坐标的 VALUE_START 控件值
-      const rowValueStart = new Map<string, number>()
-      for (const el of row.elementList) {
-        if (
-          !el.controlId ||
-          el.control?.indentation !== ControlIndentation.VALUE_START ||
-          el.visualLeft === undefined
-        ) {
-          continue
-        }
-        // 值起点 = 首个非 PREFIX 元素（PRE_TEXT / PLACEHOLDER / VALUE），与 legacy 一致
-        if (
-          el.controlComponent !== ControlComponent.PRE_TEXT &&
-          el.controlComponent !== ControlComponent.PLACEHOLDER &&
-          el.controlComponent !== ControlComponent.VALUE
-        ) {
-          continue
-        }
-        const right = (el.visualLeft || 0) + (el.metrics?.width || 0)
-        const cur = rowValueStart.get(el.controlId)
-        const next =
-          cur === undefined
-            ? (isRtl ? right : el.visualLeft || 0)
-            : isRtl
-              ? Math.max(cur, right)
-              : Math.min(cur, el.visualLeft || 0)
-        rowValueStart.set(el.controlId, next)
-      }
-      for (const [controlId, thisRowStart] of rowValueStart) {
-        if (!seenByControl.has(controlId)) {
-          seenByControl.add(controlId)
-          valueStartByControl.set(controlId, thisRowStart)
-          continue
-        }
-        const firstRowStart = valueStartByControl.get(controlId)!
-        const delta = firstRowStart - thisRowStart
-        if (Math.abs(delta) < 0.01) continue
-        this._shiftEngineRowVisual(row, delta)
-      }
-    }
-  }
-
-  /**
-   * 平移 text-engine 行内全部元素的 visualLeft 与 engineLine 字形（拷贝，避免污染
-   * LayoutCache），不改变行宽。与 LabelParticle.applyEngineRowsMetrics 一致。
-   */
-  private _shiftEngineRowVisual(row: IRow, delta: number) {
-    for (const el of row.elementList) {
-      if (el.visualLeft !== undefined) {
-        el.visualLeft += delta
-      }
-    }
-    if (row.engineLine?.glyphs?.length) {
-      row.engineLine = {
-        ...row.engineLine,
-        glyphs: row.engineLine.glyphs.map(g => ({
-          ...g,
-          left: g.left + delta,
-          right: g.right + delta
-        }))
-      }
-    }
-  }
-
   private _appendParagraphEngineRows(
-    rowList: IRow[],
+    rowList: LayoutRow[],
     paragraph: ParagraphSpan,
     elementList: IElement[],
     width: number,
     rowIndex: number,
     layoutScope: string,
-    defaultAlign?: 'left' | 'right'
+    defaultAlign?: 'left' | 'right',
+    nativeNodes?: LayoutNode[],
+    nativeY = 0,
+    nativeX = 0,
+    markerGutter?: number
   ): number {
-    const zeroEl =
-      elementList[paragraph.startIndex]?.value === ZERO
-        ? elementList[paragraph.startIndex]
-        : null
-    const rows = this.layoutHostAdapter.layoutParagraphToRows(
+    const rows = this.layoutHostAdapter.layoutParagraphRows(
       paragraph,
       elementList,
       width,
       rowIndex,
       layoutScope,
-      defaultAlign
+      defaultAlign,
+      nativeNodes
+        ? result =>
+            nativeNodes.push(...translateLayout(result.lines, nativeX, nativeY))
+        : undefined,
+      markerGutter
     )
-    if (!rows?.length) {
-      if (!zeroEl) return rowIndex
-      // 与正文引擎行一致：fontSize * defaultRowMargin * 1.5（勿用 size*margin 压成半行）
-      const { defaultSize, defaultFont, defaultRowMargin, scale } =
-        this.options
-      const fontSize = (zeroEl.size || defaultSize) * (scale || 1)
-      const lineHeightFactor = (defaultRowMargin || 1) * 1.5
-      const height = fontSize * lineHeightFactor
-      const ascent = height * 0.8
-      rowList.push({
-        width: 0,
-        height,
-        ascent,
-        direction: paragraph.direction,
-        rowFlex: paragraph.rowFlex,
-        startIndex: paragraph.startIndex,
-        elementList: [
-          Object.assign(zeroEl, {
-            metrics: {
-              width: 0,
-              height: fontSize,
-              boundingBoxAscent: ascent,
-              boundingBoxDescent: Math.max(0, height - ascent)
-            },
-            style: `${zeroEl.size || defaultSize}px ${
-              zeroEl.font || defaultFont
-            }`,
-            visualLeft: 0,
-            bidiLevel: paragraph.direction === 'rtl' ? 1 : 0
-          }) as IRowElement
-        ],
-        rowIndex: rowIndex++
-      })
-      return rowIndex
-    }
-    if (zeroEl) {
-      const first = rows[0]
-      const lefts = first.elementList.map(el => el.visualLeft ?? 0)
-      const rights = first.elementList.map(
-        el => (el.visualLeft ?? 0) + (el.metrics?.width ?? 0)
-      )
-      const visualLeft =
-        paragraph.direction === 'rtl'
-          ? Math.max(0, ...rights, first.width)
-          : Math.min(...lefts, 0)
-      first.elementList.unshift(
-        Object.assign(zeroEl, {
-          metrics: {
-            width: 0,
-            height: first.height,
-            boundingBoxAscent: first.ascent,
-            boundingBoxDescent: Math.max(0, first.height - first.ascent)
-          },
-          style: `${zeroEl.size || this.options.defaultSize}px ${
-            zeroEl.font || this.options.defaultFont
-          }`,
-          visualLeft,
-          left: 0,
-          bidiLevel: paragraph.direction === 'rtl' ? 1 : 0
-        }) as IRowElement
-      )
-      first.startIndex = paragraph.startIndex
-    }
-    this.control.applyEngineRowsMinWidth(rows, width)
-    this.labelParticle.applyEngineRowsMetrics(rows)
-    this._applyEngineControlIndentation(rows)
     for (const row of rows) {
-      this.collapseHiddenEngineRow(row)
       row.rowIndex = rowIndex++
       rowList.push(row)
     }
     return rowIndex
-  }
-
-  /** 与 legacy computeRowList 一致：行内非换行符元素全隐藏时折叠行高 (#1447) */
-  private collapseHiddenEngineRow(row: IRow) {
-    if (this.isDesignMode() || row.height <= 0) return
-    const visibleElements = row.elementList.filter(el => el.value !== ZERO)
-    const isAllHidden =
-      visibleElements.length > 0 &&
-      visibleElements.every(
-        el =>
-          el.hide ||
-          el.control?.hide ||
-          (el.area?.hide && !this.isAreaHideDisabled()) ||
-          this.traceParticle.isTraceHidden(el)
-      )
-    if (isAllHidden) {
-      row.height = 0
-    }
   }
 
   private _computeRowListByTextEngine(
@@ -2466,59 +2409,217 @@ export class Draw {
     defaultAlign?: 'left' | 'right',
     startIndex = 0,
     endIndex = elementList.length,
-    startRowIndex = 0
-  ): IRow[] | null {
+    startRowIndex = 0,
+    nativeNodes?: LayoutNode[],
+    inheritedAreaId?: string,
+    flow?: DocumentFlow
+  ): LayoutRow[] {
     const paragraphs = this.layoutHostAdapter.scanParagraphs(
       elementList,
       defaultDirection,
       startIndex,
       endIndex
     )
-    const paraByStart = new Map(
-      paragraphs.map(p => [p.startIndex, p] as const)
-    )
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
+    const paraByStart = new Map(paragraphs.map(p => [p.startIndex, p] as const))
+    const listStyleMap = this.listParticle.computeNativeListStyle(elementList)
     const listIndexMap: Map<string, number> = new Map()
-    const rowList: IRow[] = []
+    const rowList: LayoutRow[] = []
     let rowIndex = startRowIndex
+    const scopeNodes: LayoutNode[] = []
+    let nativeY = 0
+    const scale = this.options.scale
     let i = startIndex
     while (i < endIndex) {
       const el = elementList[i]
+      if (flow)
+        width = flow.page(flow.state.pageNo, flow.state.direction).width * scale
+      const startY = nativeY
+      const startRow = rowList.length
+      const hidden = isElementLayoutHidden(el, {
+        isDesignMode: this.isDesignMode(),
+        isAreaHideDisabled: this.isAreaHideDisabled(),
+        isTraceHidden: element => this.traceParticle.isTraceHidden(element)
+      })
+      const areaTop =
+        !hidden &&
+        el.areaId &&
+        el.areaId !== inheritedAreaId &&
+        el.areaId !== elementList[i - 1]?.areaId
+          ? Math.max(0, el.area?.top || 0) * scale
+          : 0
+      nativeY += areaTop / scale
+      const finish = () => {
+        if (!flow && rowList.length > startRow && areaTop)
+          rowList[startRow].offsetY = (rowList[startRow].offsetY || 0) + areaTop
+        nativeY = startY + getHostRowsHeight(rowList.slice(startRow)) / scale
+      }
       if (
         el.type === ElementType.SEPARATOR ||
-        el.type === ElementType.PAGE_BREAK
+        el.type === ElementType.PAGE_BREAK ||
+        el.type === ElementType.BLOCK ||
+        ((el.type === ElementType.IMAGE || el.type === ElementType.LATEX) &&
+          isFloatingImage(el.imgDisplay))
       ) {
-        rowList.push(
-          this._createSpecialEngineRow(el, i, width, rowIndex++)
-        )
+        this.objectContainerWidths.set(el, width / scale)
+        const object = layoutHostObject({
+          element: el,
+          source: {
+            scope: layoutScope,
+            nodeId: el.id || layoutScope + ':object:' + i,
+            start: i,
+            end: i + 1
+          },
+          revision: {
+            documentRevision: this.layoutHostAdapter.getRevision(),
+            fontRevision: this.layoutHostAdapter.getFontManager().getRevision()
+          },
+          options: this.options,
+          availableWidth: width,
+          margin: this.getElementRowMargin(el),
+          rowIndex: rowIndex++,
+          hidden
+        })
+        if (flow) {
+          const placement = flow.place(
+            object.row.height / scale,
+            (object.row.offsetY || 0) / scale + areaTop / scale,
+            0,
+            0,
+            false,
+            object.row.width / scale
+          )
+          object.row.flow = placement
+          object.row.columnIndex =
+            layoutScope === 'main' ? placement.columnIndex : undefined
+          object.row.offsetX = placement.x * scale
+          object.row.isSurround = placement.x !== 0
+          object.row.offsetY = (object.row.offsetY || 0) + areaTop
+          const page = flow.page(placement.pageNo, placement.direction)
+          const node = translateLayout(
+            [object.node],
+            page.left + page.columns[placement.columnIndex] + placement.x,
+            placement.y + (object.row.offsetY || 0) / scale
+          )[0]
+          node.placement = {
+            pageNo: placement.pageNo,
+            columnIndex: placement.columnIndex
+          }
+          scopeNodes.push(node)
+          if (object.row.isPageBreak && flow.paged && layoutScope === 'main')
+            flow.advance(
+              object.row.paperDirection || this.options.paperDirection
+            )
+        } else scopeNodes.push(...translateLayout([object.node], 0, nativeY))
+        rowList.push(object.row)
+        finish()
         i++
         continue
       }
-      // 表格/浮层图/Block 等：legacy 单元素插行（forceLegacy 避免递归进引擎）
-      if (this._isEngineHostBlockedElement(el)) {
-        this._clearStaleEngineLayout([el])
-        const subRows = this.computeRowList({
-          innerWidth: width,
-          elementList: [el],
-          forceLegacy: true,
-          layoutScope
-        })
-        for (const row of subRows) {
-          row.startIndex = i
-          row.rowIndex = rowIndex++
-          // 行内元素对齐到主列表引用，保留 legacy 算好的 metrics/style
-          if (row.elementList.length === 1) {
-            const computed = row.elementList[0]
-            row.elementList[0] = Object.assign(el, {
-              metrics: computed.metrics,
-              style: computed.style,
-              left: computed.left
-            }) as import('../../interface/Row').IRowElement
-          }
-          rowList.push(row)
+      if (el.type === ElementType.TABLE) {
+        if (flow) {
+          flow.clearExclusions()
+          width =
+            flow.page(flow.state.pageNo, flow.state.direction).width * scale
         }
+        this.tableContainerWidths.set(el, width / scale)
+        const table = layoutHostTable(
+          {
+            element: el,
+            source: {
+              scope: layoutScope,
+              nodeId: el.id || layoutScope + ':table:' + i,
+              start: i,
+              end: i + 1
+            },
+            revision: {
+              documentRevision: this.layoutHostAdapter.getRevision(),
+              fontRevision: this.layoutHostAdapter
+                .getFontManager()
+                .getRevision()
+            },
+            options: this.options,
+            availableWidth: width,
+            rowMargin: this.getElementRowMargin(el),
+            rowIndex: rowIndex++,
+            nextIsTable: elementList[i + 1]?.type === ElementType.TABLE,
+            hidden: isElementLayoutHidden(el, {
+              isDesignMode: this.isDesignMode(),
+              isAreaHideDisabled: this.isAreaHideDisabled(),
+              isTraceHidden: element =>
+                this.traceParticle.isTraceHidden(element)
+            })
+          },
+          (elements, innerWidth, scope, direction, align) => {
+            const nodes: LayoutNode[] = []
+            const rows = this.computeRowList({
+              elementList: elements,
+              innerWidth,
+              isFromTable: true,
+              layoutScope: scope,
+              defaultDirection: direction,
+              defaultAlign: align,
+              nativeNodes: nodes,
+              inheritedAreaId: el.areaId
+            })
+            return { rows, nodes }
+          }
+        )
+        this._applyEngineListMetaToRows([table.row], listStyleMap, listIndexMap)
+        if (flow) {
+          table.row.offsetY = (table.row.offsetY || 0) + areaTop
+          if (!flow.paged)
+            table.row.flow = flow.place(
+              table.row.height / scale,
+              (table.row.offsetY || 0) / scale
+            )
+          const fragments = flow.paged
+            ? this.tablePaging.splitTableRowAcrossPages([table.row], flow)
+            : [table.row]
+          for (const row of fragments) {
+            row.rowIndex = rowIndex - 1 + fragments.indexOf(row)
+            rowList.push(row)
+            const placement = row.flow!
+            const page = flow.page(placement.pageNo, placement.direction)
+            const fragment = row.tableFragment
+            const window = fragment
+              ? sliceTableFragment(table.fragment, {
+                  startRow: fragment.startTrIndex,
+                  endRow: fragment.endTrIndex,
+                  startOffset: fragment.startSplitTrOffset || 0,
+                  endOffset: fragment.endSplitTrHeight ?? null,
+                  repeatedRows: fragment.repeatTrIndexes || [],
+                  heights: el.trList!.map(row => row.height!),
+                  height: rowElementMetrics(row, 0, scale).height / scale
+                })
+              : table.fragment
+            row.node = window
+            const node = translateLayout(
+              [window],
+              page.left + page.columns[placement.columnIndex],
+              placement.y + (row.offsetY || 0) / scale
+            )[0] as typeof table.fragment
+            node.placement = {
+              pageNo: placement.pageNo,
+              columnIndex: placement.columnIndex
+            }
+            node.pageNo = placement.pageNo
+            if (fragment) {
+              node.id += ':fragment:' + fragments.indexOf(row)
+              node.startRow = fragment.startTrIndex
+              node.endRow = fragment.endTrIndex
+              node.startRowOffset = fragment.startSplitTrOffset || 0
+              node.endRowOffset = fragment.endSplitTrHeight ?? null
+              node.repeatedRows = fragment.repeatTrIndexes || []
+              node.rect.height = rowElementMetrics(row, 0, scale).height / scale
+            }
+            scopeNodes.push(node)
+          }
+          rowIndex += fragments.length - 1
+        } else {
+          rowList.push(table.row)
+          scopeNodes.push(...translateLayout([table.fragment], 0, nativeY))
+        }
+        finish()
         i++
         continue
       }
@@ -2530,170 +2631,74 @@ export class Draw {
           listStyleMap
         )
         const paraRowStart = rowList.length
-        rowIndex = this._appendParagraphEngineRows(
-          rowList,
-          paragraph,
-          elementList,
-          Math.max(1, width - listOffset),
-          rowIndex,
-          layoutScope,
-          defaultAlign
-        )
+        if (flow) {
+          const result = layoutFlowParagraph({
+            adapter: this.layoutHostAdapter,
+            flow,
+            paragraph,
+            elements: elementList,
+            scope: layoutScope,
+            scale,
+            rowIndex,
+            listOffset: listOffset / scale,
+            markerGutter:
+              (listStyleMap.get(
+                elementList[paragraph.startIndex]?.listId || ''
+              ) || 0) / scale,
+            areaTop: areaTop / scale,
+            defaultFont: this.options.defaultFont,
+            defaultSize: this.options.defaultSize,
+            defaultAlign
+          })
+          rowList.push(...result.rows)
+          scopeNodes.push(...result.nodes)
+          rowIndex += result.rows.length
+        } else {
+          rowIndex = this._appendParagraphEngineRows(
+            rowList,
+            paragraph,
+            elementList,
+            Math.max(1, width - listOffset),
+            rowIndex,
+            layoutScope,
+            defaultAlign,
+            scopeNodes,
+            nativeY,
+            paragraph.direction === 'ltr' ? listOffset / scale : 0,
+            (listStyleMap.get(
+              elementList[paragraph.startIndex]?.listId || ''
+            ) || 0) / scale
+          )
+        }
         const paragraphRows = rowList.slice(paraRowStart)
-        const firstRow = paragraphRows[0]
-        const lastRow = paragraphRows[paragraphRows.length - 1]
-        const firstElement = elementList[paragraph.startIndex]
-        const lastElement = elementList[paragraph.endIndex]
-        const scale = this.options.scale
-        if (firstRow && firstElement.value === ZERO && !firstElement.listWrap) {
-          firstRow.offsetY =
-            (firstRow.offsetY || 0) +
-            (firstElement.spacingBefore ||
-              elementList[paragraph.startIndex + 1]?.spacingBefore ||
-              0) * scale
-        }
-        // Match legacy: a following paragraph break closes this paragraph.
-        const nextElement = elementList[paragraph.endIndex + 1]
-        if (
-          lastRow &&
-          lastRow.height > 0 &&
-          nextElement?.value === ZERO &&
-          !nextElement.listWrap
-        ) {
-          lastRow.spacingAfter = (lastElement.spacingAfter || 0) * scale
-          lastRow.height += lastRow.spacingAfter
-        }
         this._applyEngineListMetaToRows(
           paragraphRows,
           listStyleMap,
           listIndexMap
         )
+        finish()
         i = paragraph.endIndex + 1
         continue
       }
       i++
     }
-    return rowList.length ? rowList : null
-  }
-
-  /**
-   * legacy 渲染器为逐字符 LTR，不做 Bidi/连字整形；声明 textEngine=legacy 时
-   * RTL 内容无法正确渲染。此处仅对「显式 legacy」模式给出一次性警告，
-   * harfbuzz 模式下的 forceLegacy（表格外壳/浮层图）不触发。
-   */
-  private _warnLegacyRtlIfNeeded(elementList: IElement[]) {
-    if (this.legacyRtlWarned) return
-    if (this.layoutHostAdapter.isHarfBuzzMode()) return
-    const hasRtl = elementList.some(el => {
-      if (el.direction === TextDirection.RTL) return true
-      const value = el.value
-      return !!value && /[\u0590-\u08FF\uFB1D-\uFDFF\uFE70-\uFEFF]/.test(value)
-    })
-    if (hasRtl) {
-      this.legacyRtlWarned = true
-      console.warn(
-        '[canvas-editor] textEngine 为 legacy，无法正确渲染 RTL 内容，' +
-          '请将 textEngine 改为 "harfbuzz"'
+    nativeNodes?.push(
+      ...groupAreaLayouts(
+        scopeNodes,
+        elementList,
+        width / scale,
+        inheritedAreaId
       )
-    }
-  }
-
-  /**
-   * 引擎行补齐分栏 columnIndex 与环绕图偏移。
-   * 引擎按整段以 innerWidth 排版，这里按行累计高度模拟 legacy 的分栏游标，
-   * 并对与环绕图纵向相交的行设置 offsetX，使正文从图片右侧开始而非重叠。
-   */
-  private _applyEngineRowGeometry(
-    rows: IRow[],
-    p: {
-      startX: number
-      startY: number
-      pageHeight: number
-      isPagingMode: boolean
-      innerWidth: number
-      surroundElementList: IElement[]
-    }
-  ) {
-    const {
-      startX,
-      startY,
-      pageHeight,
-      isPagingMode,
-      surroundElementList
-    } = p
-    const { scale } = this.options
-    const layout =
-      isPagingMode ? this.columnManager.getLayout() : null
-    const isColumnEnabled = !!layout && layout.count > 1
-    let y = startY
-    let pageNo = 0
-    let currentColumn = 0
-    for (const row of rows) {
-      const rowOffsetY = row.offsetY || 0
-      if (isPagingMode && pageHeight) {
-        const curMainOuterHeight = this.getMainOuterHeight(pageNo)
-        const isOverflow =
-          y - startY + curMainOuterHeight + row.height + rowOffsetY > pageHeight
-        if (isOverflow) {
-          if (
-            isColumnEnabled &&
-            layout &&
-            currentColumn < layout.count - 1
-          ) {
-            currentColumn += 1
-            y = startY
-          } else {
-            pageNo += 1
-            currentColumn = 0
-            y = startY
-          }
-        }
-      }
-      if (isColumnEnabled) {
-        row.columnIndex = currentColumn
-      }
-      // 环绕图：与行纵向相交时，正文从图片右侧开始
-      if (surroundElementList.length) {
-        const columnOffset = isColumnEnabled
-          ? (layout!.offsets[currentColumn] || 0)
-          : 0
-        const rowStartX = startX + columnOffset
-        for (const s of surroundElementList) {
-          const floatPosition = s.imgFloatPosition
-          if (
-            !floatPosition ||
-            floatPosition.pageNo !== pageNo ||
-            !s.width ||
-            !s.height
-          ) {
-            continue
-          }
-          const rect = {
-            x: floatPosition.x * scale,
-            y: floatPosition.y * scale,
-            width: s.width * scale,
-            height: s.height * scale
-          }
-          if (
-            y >= rect.y + rect.height ||
-            y + row.height <= rect.y ||
-            rect.x >= rowStartX + row.width
-          ) {
-            continue
-          }
-          // 图片在正文行起点左侧 → 平移整行到图片右侧
-          if (rect.x + rect.width > rowStartX + 0.01) {
-            const offset = rect.x + rect.width - rowStartX
-            row.offsetX = (row.offsetX || 0) + offset
-            row.isSurround = true
-          }
-        }
-      }
-      y += row.height + rowOffsetY
-    }
+    )
+    return rowList
   }
 
   public computeRowList(payload: IComputeRowListPayload) {
+    // Measurement during first layout is allowed only after the engine exists.
+    if (!this.layoutHostAdapter.isReady()) {
+      this.lifecycle.assertReady()
+      throw new Error('HarfBuzz layout is not ready')
+    }
     const {
       innerWidth,
       elementList,
@@ -2701,903 +2706,137 @@ export class Draw {
       isFromTable = false,
       startX = 0,
       startY = 0,
-      pageHeight = 0,
       surroundElementList = [],
-      forceLegacy = false,
       layoutScope = 'main',
       defaultDirection,
       defaultAlign
     } = payload
     const isMainLayout =
       !isFromTable && layoutScope === 'main' && elementList === this.elementList
-    if (isMainLayout && !this.layoutHostAdapter.isReady()) {
-      this.incrementalParagraphComputer.reset()
-    }
-    // text-engine：段落走引擎（含单元格）；TABLE/浮层图等在引擎循环内 forceLegacy
-    if (!forceLegacy && this.layoutHostAdapter.isReady()) {
-      // 分栏时按列宽排版，避免整段以整行宽换行后套栏偏移导致列间覆盖
-      const layout =
-        isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
-      const isColumnEnabled = !!layout && layout.count > 1
-      const engineWidth = isColumnEnabled ? layout!.width : innerWidth
-      const computeEngineRows = (
-        from = 0,
-        to = elementList.length,
-        rowIndex = 0
-      ) =>
-        this._computeRowListByTextEngine(
-          elementList,
-          engineWidth,
-          layoutScope,
-          defaultDirection,
-          defaultAlign,
-          from,
-          to,
-          rowIndex
-        )
-      const canReuseParagraphs =
-        isMainLayout &&
-        this.options.lab.incrementalCompute &&
-        !isColumnEnabled &&
-        !surroundElementList.length &&
-        !this.isElementListTruncated
-      let engineRows: IRow[] | null = null
-      if (canReuseParagraphs) {
-        engineRows = this.incrementalParagraphComputer.compute(
-          payload,
-          JSON.stringify([
-            this.options,
-            this.getMode(),
-            this.layoutHostAdapter.getRevision()
-          ]),
-          this.layoutHostAdapter,
-          computeEngineRows
-        )
-      } else if (isMainLayout) {
-        this.incrementalParagraphComputer.reset()
-      }
-      if (!engineRows) {
-        this.layoutHostAdapter.replaceParagraphLayouts(layoutScope, [])
-        engineRows = computeEngineRows()
-      }
-      if (engineRows) {
-        // 表格单元格/页眉页脚等子布局不做分栏与环绕处理
-        if (!isFromTable && layoutScope === 'main') {
-          this._applyEngineRowGeometry(engineRows, {
-            startX,
-            startY,
-            pageHeight,
-            isPagingMode,
-            innerWidth,
-            surroundElementList
-          })
-        }
-        return engineRows
-      }
-    }
-    this._warnLegacyRtlIfNeeded(elementList)
-    // legacy 前清掉引擎残留 visualLeft，防止表格/图片行定位错乱
-    // A resumed legacy layout reuses rows outside the dirty interval. Clearing
-    // their metrics offsets would mutate the rows we are about to reuse.
-    if (!payload.resume) this._clearStaleEngineLayout(elementList)
-    const {
-      defaultSize,
-      scale,
-      imgCaption,
-      table: { tdPadding, defaultColMinWidth, overflow },
-      defaultTabWidth
-    } = this.options
-    const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
-    const canvas = document.createElement('canvas')
-    const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
-    // 还原最小宽度控件占位
-    if (this.controlMinWidthPlaceholderElementListSet.has(elementList)) {
-      for (let i = elementList.length - 1; i >= 0; i--) {
-        if (elementList[i].isControlMinWidthPlaceholder) {
-          elementList.splice(i, 1)
-        }
-      }
-      this.controlMinWidthPlaceholderElementListSet.delete(elementList)
-    }
-    // 计算列表偏移宽度
-    const listStyleMap = this.listParticle.computeListStyle(ctx, elementList)
-    const rowList: IRow[] = []
-    let layout =
+    // Native text, tables, objects and breaks use explicit layout nodes.
+    // 分栏时按列宽排版，避免整段以整行宽换行后套栏偏移导致列间覆盖
+    const layout =
       isPagingMode && !isFromTable ? this.columnManager.getLayout() : null
-    let isColumnEnabled = !!layout && layout.count > 1
-    const resumeStartIndex = payload.resume?.startIndex ?? 0
-    // 断点续算：种子行从恢复点重新参与断行（行首换行符将独立成行，空种子行随后被丢弃）
-    if (elementList.length) {
-      rowList.push({
-        width: 0,
-        height: 0,
-        ascent: 0,
-        elementList: [],
-        startIndex: resumeStartIndex,
-        rowIndex: payload.resume?.state.rowIndex ?? 0,
-        rowFlex:
-          elementList[resumeStartIndex]?.rowFlex ||
-          elementList[resumeStartIndex + 1]?.rowFlex,
-        ...(isColumnEnabled ? { columnIndex: 0 } : {})
-      })
-    }
-    // 起始位置及页码计算
-    let x = startX
-    let y = startY
-    let pageNo = 0
-    // 混排横竖版：跟随分页符上的 paperDirection 切换当前节的排版方向
-    let currentDirection = this.options.paperDirection
-    let currentMargins = this.getMargins(currentDirection)
-    let currentInnerWidth = innerWidth
-    let currentStartX = startX
-    let currentPageHeight = pageHeight
-    // 分页模式下按页计算起始 Y（页眉/页脚禁用时该页起始位置上移）
-    let pageStartY = startY
-    if (isPagingMode && !isFromTable) {
-      pageStartY = currentMargins[0] + this.getHeader().getExtraHeight(0)
-      y = pageStartY
-    }
-    // 列表位置
-    // 不同 listId 独立计数，避免父列表与子列表序号互相影响
-    const listIndexMap: Map<string, number> = new Map()
-    // 控件最小宽度
-    let controlRealWidth = 0
-    // 分栏游标
-    let currentColumn = 0
-    // 断点续算：恢复快照时刻的跨行状态
-    if (payload.resume) {
-      const state = payload.resume.state
-      x = state.x
-      y = state.y
-      pageNo = state.pageNo
-      pageStartY = state.pageStartY
-      currentDirection = state.direction
-      currentMargins = state.margins
-      currentInnerWidth = state.innerWidth
-      currentStartX = state.startX
-      currentPageHeight = state.pageHeight
-      currentColumn = state.column
-      controlRealWidth = state.controlRealWidth
-      for (const [listId, count] of state.listIndexMap) {
-        listIndexMap.set(listId, count)
-      }
-      layout = this.columnManager.getLayout(currentDirection)
-      isColumnEnabled = !!layout && layout.count > 1
-    }
-    // 行快照：仅主文档且开启行级增量时记录（未开启时无额外开销）。
-    // 闭包捕获的是调用时刻的跨行状态，两个记录点（首行/换行诞生新行）共用
-    const isRecordRowSnapshot =
-      this.options.lab.incrementalCompute &&
+    const isColumnEnabled = !!layout && layout.count > 1
+    const engineWidth = isColumnEnabled ? layout!.width : innerWidth
+    const useFlow =
       !isFromTable &&
-      elementList === this.elementList
-    const buildRowComputeState = (
-      rowIndex: number,
-      x: number,
-      controlWidth: number
-    ): IRowComputeState => ({
-      rowIndex,
-      x,
-      y,
-      pageNo,
-      pageStartY,
-      direction: currentDirection,
-      margins: currentMargins,
-      innerWidth: currentInnerWidth,
-      startX: currentStartX,
-      pageHeight: currentPageHeight,
-      column: currentColumn,
-      controlRealWidth: controlWidth,
-      listIndexMap: new Map(listIndexMap)
-    })
-    if (isRecordRowSnapshot && rowList.length) {
-      this.incrementalRowComputer.recordSnapshot(
-        rowList[0],
-        buildRowComputeState(rowList[0].rowIndex, x, controlRealWidth)
-      )
-    }
-    for (let i = resumeStartIndex; i < elementList.length; i++) {
-      const curRow: IRow = rowList[rowList.length - 1]
-      const element = elementList[i]
-      // 断点续算：复杂结构元素不参与增量，由调用方退化为全量计算
-      if (payload.resume?.shouldAbort?.(element, i)) break
-      // 元素参与计算前的控件最小宽度累计（行快照需要描述行首元素消费前的状态）
-      const preControlRealWidth = controlRealWidth
-      const rowMargin = this.getElementRowMargin(element)
-      const metrics: IElementMetrics = {
-        width: 0,
-        height: 0,
-        boundingBoxAscent: 0,
-        boundingBoxDescent: 0
-      }
-      // 实际可用宽度
-      const offsetX =
-        curRow.offsetX ||
-        (element.listId &&
-          (listStyleMap.get(element.listId) || 0) +
-            (element.listLevel
-              ? this.listParticle.LIST_INDENT_WIDTH * element.listLevel * scale
-              : 0)) ||
-        0
-      const rowMaxWidth =
-        isColumnEnabled && layout ? layout.width : currentInnerWidth
-      const availableWidth = rowMaxWidth - offsetX
-      // 增加起始位置坐标偏移量
-      const isStartElement = curRow.elementList.length === 1
-      x += isStartElement ? offsetX : 0
-      y += isStartElement ? curRow.offsetY || 0 : 0
-      if (
-        (element.hide ||
-          element.control?.hide ||
-          (element.area?.hide && !this.isAreaHideDisabled()) ||
-          this.traceParticle.isTraceHidden(element)) &&
-        !this.isDesignMode()
-      ) {
-        // 断点续算：行首隐藏元素的高度继承自上一行末元素（续算点上一行由调用方传入）
-        const preElement =
-          curRow.elementList[curRow.elementList.length - 1] ||
-          (i === resumeStartIndex
-            ? payload.resume?.preRowLastElement
-            : undefined)
-        metrics.height =
-          preElement?.metrics.height || this.options.defaultSize * scale
-        metrics.boundingBoxAscent = preElement?.metrics.boundingBoxAscent || 0
-        metrics.boundingBoxDescent = preElement?.metrics.boundingBoxDescent || 0
-      } else if (
-        element.type === ElementType.IMAGE ||
-        element.type === ElementType.LATEX
-      ) {
-        // 浮动图片无需计算数据
-        if (
-          element.imgDisplay === ImageDisplay.SURROUND ||
-          element.imgDisplay === ImageDisplay.FLOAT_TOP ||
-          element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
-        ) {
-          metrics.width = 0
-          metrics.height = 0
-          metrics.boundingBoxDescent = 0
-        } else {
-          const elementWidth = element.width! * scale
-          const elementHeight = element.height! * scale
-          // 图片超出尺寸后自适应（图片大小大于可用宽度时）
-          if (elementWidth > availableWidth) {
-            const adaptiveHeight =
-              (elementHeight * availableWidth) / elementWidth
-            element.width = availableWidth / scale
-            element.height = adaptiveHeight / scale
-            metrics.width = availableWidth
-            metrics.height = adaptiveHeight
-            metrics.boundingBoxDescent = adaptiveHeight
-          } else {
-            metrics.width = elementWidth
-            metrics.height = elementHeight
-            metrics.boundingBoxDescent = elementHeight
-          }
-          // 增加题注高度
-          if (element.imgCaption?.value) {
-            const fontSize = element.imgCaption.size || imgCaption.size
-            const captionTop = element.imgCaption.top ?? imgCaption.top
-            const captionHeight = (fontSize + captionTop) * scale
-            metrics.boundingBoxAscent += captionHeight
-          }
-        }
-      } else if (element.type === ElementType.TABLE) {
-        const tdPaddingWidth = tdPadding[1] + tdPadding[3]
-        const tdPaddingHeight = tdPadding[0] + tdPadding[2]
-        // 表格跨页在渲染层拆分行（数据层保持单一表格）
-        const trList = element.trList!
-        // 重置tr高度：行高不可低于一个单元格最小高度
-        const tdMinHeight =
-          tdPaddingHeight + defaultSize + (rowMargin * 2) / scale
-        for (let t = 0; t < trList.length; t++) {
-          const tr = trList[t]
-          // 行高默认当前最小高度，后续根据内容自适应
-          tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
-          tr.minHeight = tr.height
-        }
-        // 表格不允许超出正文区域时：等比例压缩列宽至内容区内，并清除横向偏移
-        if (!overflow) {
-          shrinkColgroupToWidth(
-            element.colgroup!,
-            this.getOriginalInnerWidth(),
-            defaultColMinWidth
-          )
-          element.translateX = 0
-        }
-        // 计算表格行列
-        this.tableParticle.computeRowColInfo(element)
-        // 计算表格内元素信息
-        for (let t = 0; t < trList.length; t++) {
-          const tr = trList[t]
-          for (let d = 0; d < tr.tdList.length; d++) {
-            const td = tr.tdList[d]
-            const rowList = this.computeRowList({
-              innerWidth: (td.width! - tdPaddingWidth) * scale,
-              elementList: td.value,
-              isFromTable: true,
-              isPagingMode,
-              defaultDirection: element.direction || TextDirection.AUTO,
-              defaultAlign:
-                element.direction === TextDirection.RTL ? 'right' : 'left',
-              layoutScope: td.id ? `td:${td.id}` : `td:anon-${t}-${d}`
-            })
-            const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
-            td.rowList = rowList
-            // 移除缩放导致的行高变化-渲染时会进行缩放调整
-            const curTdHeight = rowHeight / scale + tdPaddingHeight
-            // 内容高度大于当前单元格高度需增加
-            if (td.height! < curTdHeight) {
-              const extraHeight = curTdHeight - td.height!
-              const changeTr = trList[t + td.rowspan - 1]
-              changeTr.height += extraHeight
-              changeTr.tdList.forEach(changeTd => {
-                changeTd.height! += extraHeight
-                if (!changeTd.realHeight) {
-                  changeTd.realHeight = changeTd.height!
-                } else {
-                  changeTd.realHeight! += extraHeight
+      ((layoutScope === 'main' && isPagingMode) ||
+        surroundElementList.length > 0)
+    const createFlow = () =>
+      useFlow
+        ? new DocumentFlow(
+            this.options.paperDirection,
+            (pageNo, direction) => {
+              if (layoutScope !== 'main')
+                return {
+                  top: startY / this.options.scale,
+                  bottom: Infinity,
+                  left: startX / this.options.scale,
+                  width: innerWidth / this.options.scale,
+                  columns: [0]
                 }
-              })
-            }
-            // 当前单元格最小高度及真实高度（包含跨列）
-            let curTdMinHeight = 0
-            let curTdRealHeight = 0
-            let i = 0
-            while (i < td.rowspan) {
-              const curTr = trList[i + t] || trList[t]
-              curTdMinHeight += curTr.minHeight!
-              curTdRealHeight += curTr.height!
-              i++
-            }
-            td.realMinHeight = curTdMinHeight
-            td.realHeight = curTdRealHeight
-            td.mainHeight = curTdHeight
-          }
-        }
-        // 单元格高度大于实际内容高度需减少
-        const reduceTrList = this.tableParticle.getTrListGroupByCol(trList)
-        for (let t = 0; t < reduceTrList.length; t++) {
-          const tr = reduceTrList[t]
-          let reduceHeight = -1
-          for (let d = 0; d < tr.tdList.length; d++) {
-            const td = tr.tdList[d]
-            const curTdRealHeight = td.realHeight!
-            const curTdHeight = td.mainHeight!
-            const curTdMinHeight = td.realMinHeight!
-            // 获取最大可减少高度
-            const curReduceHeight =
-              curTdHeight < curTdMinHeight
-                ? curTdRealHeight - curTdMinHeight
-                : curTdRealHeight - curTdHeight
-            if (!~reduceHeight || curReduceHeight < reduceHeight) {
-              reduceHeight = curReduceHeight
-            }
-          }
-          if (reduceHeight > 0) {
-            const changeTr = trList[t]
-            changeTr.height -= reduceHeight
-            changeTr.tdList.forEach(changeTd => {
-              changeTd.height! -= reduceHeight
-              changeTd.realHeight! -= reduceHeight
-            })
-          }
-        }
-        // 需要重新计算表格内值
-        this.tableParticle.computeRowColInfo(element)
-        // 计算出表格高度
-        const tableHeight = this.tableParticle.getTableHeight(element)
-        const tableWidth = this.tableParticle.getTableWidth(element)
-        element.width = tableWidth
-        element.height = tableHeight
-        const elementWidth = tableWidth * scale
-        const elementHeight = tableHeight * scale
-        metrics.width = elementWidth
-        metrics.height = elementHeight
-        metrics.boundingBoxDescent = elementHeight
-        metrics.boundingBoxAscent = -rowMargin
-        // 后一个元素也是表格则移除行间距
-        if (elementList[i + 1]?.type === ElementType.TABLE) {
-          metrics.boundingBoxAscent -= rowMargin
-        }
-      } else if (element.type === ElementType.SEPARATOR) {
-        const {
-          separator: { lineWidth: defaultLineWidth }
-        } = this.options
-        const lineWidth = element.lineWidth || defaultLineWidth
-        element.width = availableWidth / scale
-        metrics.width = availableWidth
-        metrics.height = lineWidth * scale
-        metrics.boundingBoxAscent = -rowMargin
-        metrics.boundingBoxDescent = -rowMargin + metrics.height
-      } else if (element.type === ElementType.PAGE_BREAK) {
-        element.width = availableWidth / scale
-        metrics.width = availableWidth
-        metrics.height = defaultSize
-      } else if (
-        element.type === ElementType.RADIO ||
-        element.controlComponent === ControlComponent.RADIO
-      ) {
-        const { width, height, gap } = this.options.radio
-        const elementWidth = width + gap * 2
-        element.width = elementWidth
-        metrics.width = elementWidth * scale
-        metrics.height = height * scale
-      } else if (
-        element.type === ElementType.CHECKBOX ||
-        element.controlComponent === ControlComponent.CHECKBOX
-      ) {
-        const { width, height, gap } = this.options.checkbox
-        const elementWidth = width + gap * 2
-        element.width = elementWidth
-        metrics.width = elementWidth * scale
-        metrics.height = height * scale
-      } else if (element.type === ElementType.TAB) {
-        metrics.width = defaultTabWidth * scale
-        metrics.height = defaultSize * scale
-        metrics.boundingBoxDescent = 0
-        metrics.boundingBoxAscent =
-          this.textParticle.getBasisWordBoundingBoxAscent(ctx, ctx.font)
-      } else if (element.isControlMinWidthPlaceholder) {
-        metrics.width = (element.width || 0) * scale
-        metrics.height = defaultSize * scale
-        ctx.font = this.getElementFont(element)
-        const basisMetrics = this.textParticle.measureBasisWord(
-          ctx,
-          element.font!
-        )
-        metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
-        metrics.boundingBoxDescent =
-          basisMetrics.actualBoundingBoxDescent * scale
-      } else if (element.type === ElementType.BLOCK) {
-        if (!element.width) {
-          metrics.width = availableWidth
-        } else {
-          const elementWidth = element.width * scale
-          metrics.width = Math.min(elementWidth, availableWidth)
-        }
-        metrics.height = element.height! * scale
-        metrics.boundingBoxDescent = metrics.height
-        metrics.boundingBoxAscent = 0
-      } else if (element.type === ElementType.LABEL) {
-        const {
-          defaultSize,
-          label: { defaultPadding }
-        } = this.options
-        ctx.font = this.getElementFont(element)
-        const fontMetrics = this.textParticle.measureText(ctx, element)
-        metrics.width =
-          (fontMetrics.width + defaultPadding[1] + defaultPadding[3]) * scale
-        metrics.height = (element.size || defaultSize) * scale
-        metrics.boundingBoxDescent = 0
-        metrics.boundingBoxAscent =
-          (defaultPadding[0] + fontMetrics.actualBoundingBoxAscent) * scale
-      } else {
-        // 设置上下标真实字体尺寸
-        const size = element.size || defaultSize
-        if (
-          element.type === ElementType.SUPERSCRIPT ||
-          element.type === ElementType.SUBSCRIPT
-        ) {
-          element.actualSize = Math.ceil(size * 0.6)
-        }
-        metrics.height = (element.actualSize || size) * scale
-        ctx.font = this.getElementFont(element)
-        const fontMetrics = this.textParticle.measureText(ctx, element)
-        metrics.width = fontMetrics.width * scale
-        if (element.letterSpacing) {
-          metrics.width += element.letterSpacing * scale
-        }
-        // 使用基于字体的基准度量以确保一致的行高，避免字符特定度量导致的布局跳动
-        const basisMetrics = this.textParticle.measureBasisWord(
-          ctx,
-          element.font!
-        )
-        metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
-        metrics.boundingBoxDescent =
-          basisMetrics.actualBoundingBoxDescent * scale
-        if (element.type === ElementType.SUPERSCRIPT) {
-          metrics.boundingBoxAscent += metrics.height / 2
-        } else if (element.type === ElementType.SUBSCRIPT) {
-          metrics.boundingBoxDescent += metrics.height / 2
-        }
-      }
-      const ascent =
-        !element.hide &&
-        !this.traceParticle.isTraceHidden(element) &&
-        ((element.imgDisplay !== ImageDisplay.INLINE &&
-          element.type === ElementType.IMAGE) ||
-          element.type === ElementType.LATEX)
-          ? metrics.height + rowMargin
-          : metrics.boundingBoxAscent + rowMargin
-      const height =
-        rowMargin +
-        metrics.boundingBoxAscent +
-        metrics.boundingBoxDescent +
-        rowMargin
-      const rowElement: IRowElement = Object.assign(element, {
-        metrics,
-        left: 0,
-        style: this.getElementFont(element, scale)
-      })
-      // 控件开始时统计宽度，结束时消费最小宽度并补充跨行占位
-      if (
-        rowElement.control?.minWidth &&
-        !rowElement.isControlMinWidthPlaceholder &&
-        !this.traceParticle.isTraceHidden(rowElement)
-      ) {
-        if (rowElement.controlComponent) {
-          controlRealWidth += metrics.width
-        }
-        if (rowElement.controlComponent === ControlComponent.POSTFIX) {
-          const controlMinWidth = rowElement.control.minWidth * scale
-          const extraWidth = controlMinWidth - controlRealWidth
-          const rowRemainingWidth = Math.max(
-            availableWidth - curRow.width - rowElement.metrics.width,
-            0
+              const margins = this.getMargins(direction)
+              const columns = isPagingMode
+                ? this.columnManager.getLayout(direction)
+                : null
+              return {
+                top:
+                  (margins[0] +
+                    (isPagingMode
+                      ? this.header.getExtraHeight(pageNo, direction)
+                      : 0)) /
+                  this.options.scale,
+                bottom: isPagingMode
+                  ? (this.getHeight(direction) -
+                      margins[2] -
+                      this.footer.getExtraHeight(pageNo, direction)) /
+                    this.options.scale
+                  : Infinity,
+                left: margins[3] / this.options.scale,
+                width:
+                  (columns?.width || this.getInnerWidth(direction)) /
+                  this.options.scale,
+                columns: columns?.offsets.map(x => x / this.options.scale) || [
+                  0
+                ]
+              }
+            },
+            surroundElementList
+              .filter(
+                el =>
+                  !isElementLayoutHidden(el, {
+                    isDesignMode: this.isDesignMode(),
+                    isAreaHideDisabled: this.isAreaHideDisabled(),
+                    isTraceHidden: el => this.traceParticle.isTraceHidden(el)
+                  })
+              )
+              .flatMap(el =>
+                el.imgFloatPosition && el.width && el.height
+                  ? [
+                      {
+                        pageNo: el.imgFloatPosition.pageNo || 0,
+                        x: el.imgFloatPosition.x,
+                        y: el.imgFloatPosition.y,
+                        width: el.width,
+                        height: el.height
+                      }
+                    ]
+                  : []
+              ),
+            isPagingMode
           )
-          // 设置最小宽度控件属性（字符偏移量）
-          this.control.setMinWidthControlInfo({
-            row: curRow,
-            rowElement,
-            availableWidth,
-            controlRealWidth
-          })
-          let placeholderWidth = extraWidth - rowRemainingWidth
-          const placeholderList: IElement[] = []
-          while (placeholderWidth > 0) {
-            const width = Math.min(placeholderWidth, availableWidth)
-            placeholderList.push({
-              ...rowElement,
-              value: '',
-              width: width / scale,
-              left: 0,
-              isControlMinWidthPlaceholder: true
-            } as IElement)
-            placeholderWidth -= width
-          }
-          if (placeholderList.length) {
-            elementList.splice(i + 1, 0, ...placeholderList)
-            this.controlMinWidthPlaceholderElementListSet.add(elementList)
-          }
-          controlRealWidth = 0
-        }
-      }
-      // 超过限定宽度
-      const preElement = elementList[i - 1]
-      let nextElement = elementList[i + 1]
-      // 累计行宽 + 当前元素宽度 + 排版宽度(英文单词整体宽度 + 后面标点符号宽度)
-      let curRowWidth = curRow.width + metrics.width
-      if (this.options.wordBreak === WordBreak.BREAK_WORD) {
-        if (
-          (!preElement?.type || preElement?.type === ElementType.TEXT) &&
-          (!element.type || element.type === ElementType.TEXT)
-        ) {
-          // 英文单词
-          const word = `${preElement?.value || ''}${element.value}`
-          if (this.WORD_LIKE_REG.test(word)) {
-            const { width, endElement } = this.textParticle.measureWord(
-              ctx,
-              elementList,
-              i
-            )
-            // 后面存在元素 && 单词宽度大于行可用宽度，无需折行
-            const wordWidth = width * scale
-            if (endElement && wordWidth <= availableWidth) {
-              curRowWidth += wordWidth
-              nextElement = endElement
-            }
-          }
-          // 标点符号
-          const punctuationWidth = this.textParticle.measurePunctuationWidth(
-            ctx,
-            nextElement
-          )
-          curRowWidth += punctuationWidth * scale
-        }
-      }
-      // 列表信息
-      if (element.listId && element.value === ZERO && !element.listWrap) {
-        if (listIndexMap.has(element.listId)) {
-          listIndexMap.set(
-            element.listId,
-            (listIndexMap.get(element.listId) ?? 0) + 1
-          )
-        } else {
-          listIndexMap.set(element.listId, 0)
-        }
-      }
-      // 计算四周环绕导致的元素偏移量
-      const surroundPosition = this.position.setSurroundPosition({
-        pageNo,
-        rowElement,
-        row: curRow,
-        rowElementRect: {
-          x,
-          y,
-          height,
-          width: metrics.width
-        },
-        availableWidth,
-        surroundElementList
-      })
-      x = surroundPosition.x
-      curRowWidth += surroundPosition.rowIncreaseWidth
-      x += metrics.width
-      // 是否强制换行
-      const isForceBreak =
-        element.type === ElementType.SEPARATOR ||
-        element.type === ElementType.TABLE ||
-        preElement?.type === ElementType.TABLE ||
-        preElement?.type === ElementType.BLOCK ||
-        element.type === ElementType.BLOCK ||
-        preElement?.type === ElementType.PAGE_BREAK ||
-        preElement?.imgDisplay === ImageDisplay.INLINE ||
-        element.imgDisplay === ImageDisplay.INLINE ||
-        preElement?.listId !== element.listId ||
-        (preElement?.areaId !== element.areaId &&
-          !(element.area?.hide && !this.isAreaHideDisabled())) ||
-        (element.control?.flexDirection === FlexDirection.COLUMN &&
-          (element.controlComponent === ControlComponent.CHECKBOX ||
-            element.controlComponent === ControlComponent.RADIO) &&
-          preElement?.controlComponent === ControlComponent.VALUE) ||
-        (i !== 0 &&
-          element.value === ZERO &&
-          !(element.area?.hide && !this.isAreaHideDisabled()))
-      // 是否宽度不足导致换行
-      const isWidthNotEnough = curRowWidth > availableWidth
-      const isWrap = isForceBreak || isWidthNotEnough
-      // 新行数据处理
-      if (isWrap) {
-        const row: IRow = {
-          width: metrics.width,
-          height,
-          startIndex: i,
-          elementList: [rowElement],
-          ascent,
-          rowIndex: curRow.rowIndex + 1,
-          rowFlex: elementList[i]?.rowFlex || elementList[i + 1]?.rowFlex,
-          isPageBreak: element.type === ElementType.PAGE_BREAK,
-          ...(isColumnEnabled ? { columnIndex: currentColumn } : {})
-        }
-        if (row.isPageBreak && element.paperDirection) {
-          row.paperDirection = element.paperDirection
-        }
-        // 控件缩进
-        if (
-          rowElement.controlComponent !== ControlComponent.PREFIX &&
-          rowElement.control?.indentation === ControlIndentation.VALUE_START
-        ) {
-          // 查找到非前缀的第一个元素位置
-          const preStartIndex = curRow.elementList.findIndex(
-            el =>
-              el.controlId === rowElement.controlId &&
-              el.controlComponent !== ControlComponent.PREFIX
-          )
-          if (~preStartIndex) {
-            const preRowPositionList = this.position.computeRowPosition({
-              row: curRow,
-              innerWidth: currentInnerWidth
-            })
-            const valueStartPosition = preRowPositionList[preStartIndex]
-            if (valueStartPosition) {
-              row.offsetX = valueStartPosition.coordinate.leftTop[0]
-            }
-          }
-        }
-        // 列表缩进
-        if (element.listId) {
-          row.isList = true
-          row.offsetX =
-            (listStyleMap.get(element.listId!) || 0) +
-            (element.listLevel
-              ? this.listParticle.LIST_INDENT_WIDTH * element.listLevel * scale
-              : 0)
-          row.listIndex = listIndexMap.get(element.listId!) ?? 0
-        }
-        // Y轴偏移量
-        row.offsetY =
-          !isFromTable &&
-          element.area?.top &&
-          element.areaId !== elementList[i - 1]?.areaId
-            ? element.area.top * scale
-            : 0
-        // 段前间距：换行符引领的行为新段落首行
-        // 换行符归属于新段落元素集合，优先从换行符自身读取
-        if (element.value === ZERO && !element.listWrap) {
-          row.offsetY +=
-            (element.spacingBefore || elementList[i + 1]?.spacingBefore || 0) *
-            scale
-        }
-        rowList.push(row)
-      } else {
-        // 断点续算：种子行吸收行首元素时补齐行出生属性（列表缩进/序号、区域偏移），
-        // 与换行分支诞生新行时的赋值保持一致（文档首行与全量计算一致不补齐）
-        if (payload.resume && curRow.elementList.length === 0 && i !== 0) {
-          if (element.listId) {
-            curRow.isList = true
-            curRow.offsetX =
-              (listStyleMap.get(element.listId) || 0) +
-              (element.listLevel
-                ? this.listParticle.LIST_INDENT_WIDTH *
-                  element.listLevel *
-                  scale
-                : 0)
-            curRow.listIndex = listIndexMap.get(element.listId) ?? 0
-          }
-          curRow.offsetY =
-            !isFromTable &&
-            element.area?.top &&
-            element.areaId !== elementList[i - 1]?.areaId
-              ? element.area.top * scale
-              : 0
-        }
-        curRow.width += metrics.width
-        // 减小块元素前第一行空行行高
-        if (
-          i === 0 &&
-          (getIsBlockElement(elementList[1]) || !!elementList[1]?.areaId)
-        ) {
-          curRow.height = defaultBasicRowMarginHeight
-          curRow.ascent = defaultBasicRowMarginHeight
-        } else if (curRow.height < height) {
-          curRow.height = height
-          curRow.ascent = ascent
-        }
-        curRow.elementList.push(rowElement)
-      }
-      // 行结束时逻辑
-      if (isWrap || i === elementList.length - 1) {
-        // 段后间距：段落末行增加高度
-        // 换行符归属于下一段落元素集合，需从当前段落末尾元素读取
-        if (isWrap && element.value === ZERO && !element.listWrap) {
-          const spacingAfter = (elementList[i - 1]?.spacingAfter || 0) * scale
-          if (spacingAfter) {
-            curRow.spacingAfter = spacingAfter
-            curRow.height += spacingAfter
-          }
-        }
-        // 行内全部为隐藏元素时 => 行高折叠（仅当行内不止换行符一个元素时）
-        if (!this.isDesignMode() && curRow.height > 0) {
-          const visibleElements = curRow.elementList.filter(
-            el => el.value !== ZERO
-          )
-          const isAllHidden =
-            visibleElements.length > 0 &&
-            visibleElements.every(
-              el =>
-                el.hide ||
-                el.control?.hide ||
-                (el.area?.hide && !this.isAreaHideDisabled()) ||
-                this.traceParticle.isTraceHidden(el)
-            )
-          if (isAllHidden) {
-            curRow.height = 0
-          }
-        }
-        // 换行原因：宽度不足
-        curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
-        // 两端对齐、分散对齐
-        if (
-          !curRow.isSurround &&
-          (preElement?.rowFlex === RowFlex.JUSTIFY ||
-            (preElement?.rowFlex === RowFlex.ALIGNMENT &&
-              curRow.isWidthNotEnough))
-        ) {
-          // 忽略换行符及尾部元素间隔设置
-          const rowElementList =
-            curRow.elementList[0]?.value === ZERO
-              ? curRow.elementList.slice(1)
-              : curRow.elementList
-          const gap =
-            (availableWidth - curRow.width) / (rowElementList.length - 1)
-          for (let e = 0; e < rowElementList.length - 1; e++) {
-            const el = rowElementList[e]
-            el.metrics.width += gap
-          }
-          curRow.width = availableWidth
-        }
-      }
-      // 重新计算坐标、页码、下一行首行元素环绕交叉
-      if (isWrap) {
-        const columnOffset = !layout ? 0 : layout.offsets[currentColumn] || 0
-        x = currentStartX + columnOffset
-        y += curRow.height
-        if (isPagingMode && !isFromTable && currentPageHeight) {
-          const isPageBreakElement = element.type === ElementType.PAGE_BREAK
-          const nextDirection =
-            element.paperDirection || this.options.paperDirection
-          if (isPageBreakElement && nextDirection !== currentDirection) {
-            // 分页符切换后续节方向，未指定时回到全局方向
-            currentDirection = nextDirection
-            currentMargins = this.getMargins(currentDirection)
-            currentInnerWidth =
-              this.getWidth(currentDirection) -
-              currentMargins[1] -
-              currentMargins[3]
-            currentStartX = currentMargins[3]
-            currentPageHeight = this.getHeight(currentDirection)
-            // 分栏布局随节方向切换
-            layout = this.columnManager.getLayout(currentDirection)
-            isColumnEnabled = !!layout && layout.count > 1
-          }
-          const curMainOuterHeight = this.getMainOuterHeight(
-            pageNo,
-            currentDirection
-          )
-          const isOverflow =
-            y - pageStartY + curMainOuterHeight + height > currentPageHeight
-          if (isOverflow || isPageBreakElement) {
-            if (
-              !isPageBreakElement &&
-              isColumnEnabled &&
-              layout &&
-              currentColumn < layout.count - 1
-            ) {
-              currentColumn += 1
-              y = pageStartY
-              x = currentStartX + (layout.offsets[currentColumn] || 0)
-            } else {
-              // 删除多余四周环绕型元素
-              deleteSurroundElementList(surroundElementList, pageNo)
-              pageNo += 1
-              currentColumn = 0
-              pageStartY =
-                currentMargins[0] + this.getHeader().getExtraHeight(pageNo)
-              y = pageStartY
-              x = currentStartX + (layout ? layout.offsets[0] || 0 : 0)
-            }
-          }
-        }
-        // 同步新行的栏索引（栏游标可能在翻栏/翻页逻辑中变化）
-        const nextRow = rowList[rowList.length - 1]
-        if (nextRow && isColumnEnabled && nextRow.columnIndex !== undefined) {
-          nextRow.columnIndex = currentColumn
-        }
-        // 计算下一行第一个元素是否存在环绕交叉
-        rowElement.left = 0
-        const surroundPosition = this.position.setSurroundPosition({
-          pageNo,
-          rowElement,
-          row: nextRow,
-          rowElementRect: {
-            x,
-            y,
-            height,
-            width: metrics.width
-          },
-          availableWidth,
-          surroundElementList
-        })
-        x = surroundPosition.x
-        x += metrics.width
-        // 行快照：每个新行的起始状态都是增量续算的恢复点。
-        // 快照描述行首元素参与计算前的状态（x 不含行首元素宽度）
-        if (isRecordRowSnapshot && nextRow) {
-          const snapshot = buildRowComputeState(
-            nextRow.rowIndex,
-            surroundPosition.x,
-            preControlRealWidth
-          )
-          this.incrementalRowComputer.recordSnapshot(
-            nextRow,
-            snapshot,
-            rowElement
-          )
-          // 断点续算：新行与旧行结构状态收敛即提前结束，其后旧行原样复用
-          if (payload.resume?.converge?.(snapshot, rowElement, i)) break
-        }
-      }
-    }
-    return rowList
+        : undefined
+    const computeEngineRows = (
+      from = 0,
+      to = elementList.length,
+      rowIndex = 0
+    ) =>
+      this._computeRowListByTextEngine(
+        elementList,
+        engineWidth,
+        layoutScope,
+        defaultDirection,
+        defaultAlign,
+        from,
+        to,
+        rowIndex,
+        payload.nativeNodes,
+        payload.inheritedAreaId,
+        createFlow()
+      )
+    // Reuse native paragraphs inside the adapter. Flow and row projection
+    // always run against current constraints, including pages and floats.
+    this.layoutHostAdapter.replaceParagraphLayouts(layoutScope, [])
+    if (!isMainLayout) this.dirtyRangeTracker.consumeDirtyRange(elementList)
+    const rows = computeEngineRows()
+    return rows
   }
 
-  private _computePageList(): IRow[][] {
-    const pageRowList: IRow[][] = [[]]
+  private truncateFlowRow(row: LayoutRow) {
+    const table = this.elementList[row.startIndex]
+    const keepTable =
+      row.tableFragment &&
+      table?.type === ElementType.TABLE &&
+      this.tablePaging.truncateTableByFragment(
+        table,
+        row.tableFragment,
+        this.elementList
+      )
+    this.elementList = this.elementList.slice(
+      0,
+      row.startIndex + (keepTable ? 1 : 0)
+    )
+    this.isElementListTruncated = true
+  }
+
+  private _computePageList(): LayoutRow[][] {
+    const pageRowList: LayoutRow[][] = [[]]
     const {
       pageMode,
       pageNumber: { maxPageNo }
     } = this.options
     const height = this.getHeight()
-    let pageNo = 0
     if (pageMode === PageMode.CONTINUITY) {
       this.pageDirectionList = [this.options.paperDirection]
       const marginHeight = this.getMainOuterHeight(0)
@@ -3608,6 +2847,15 @@ export class Draw {
         (pre, cur) => pre + cur.height + (cur.offsetY || 0),
         0
       )
+      for (const row of this.rowList)
+        if (row.flow)
+          pageHeight = Math.max(
+            pageHeight,
+            row.flow.y * this.options.scale +
+              row.height +
+              (row.offsetY || 0) +
+              this.getMargins()[2]
+          )
       const dpr = this.getPagePixelRatio()
       const pageDom = this.pageList[0]
       const pageDomHeight = Number(pageDom.style.height.replace('px', ''))
@@ -3620,70 +2868,29 @@ export class Draw {
         pageDom.height = reduceHeight * dpr
       }
       this._initPageContext(this.ctxList[0])
-    } else {
-      // 每页页眉/页脚禁用状态可能不同，按页计算外部占位高度
-      // 溢出页继承当前方向，分页符开启的新节默认使用全局方向
-      const pageDirectionList = [this.options.paperDirection]
-      let direction = this.options.paperDirection
-      let pageLimit = this.getHeight(direction)
-      let pageHeight = this.getMainOuterHeight(0, direction)
-      let prevColumnIndex: number | undefined = undefined
+    } else if (this.rowList.length && this.rowList.every(row => !!row.flow)) {
+      const directions = [this.options.paperDirection]
       for (let i = 0; i < this.rowList.length; i++) {
         const row = this.rowList[i]
-        const rowOffsetY = row.offsetY || 0
-        // 分栏内栏切换：重置当前页累计高度，留在本页
-        const columnChanged =
-          prevColumnIndex !== undefined &&
-          row.columnIndex !== undefined &&
-          row.columnIndex > 0 &&
-          row.columnIndex !== prevColumnIndex
-        if (columnChanged) {
-          pageHeight =
-            this.getMainOuterHeight(pageNo, direction) + row.height + rowOffsetY
-          pageRowList[pageNo].push(row)
-        } else if (
-          row.height + rowOffsetY + pageHeight > pageLimit ||
-          this.rowList[i - 1]?.isPageBreak
-        ) {
-          if (Number.isInteger(maxPageNo) && pageNo >= maxPageNo!) {
-            // 跨页表格片段共享元素索引：按片段边界裁剪表格，
-            // 保留已展示片段内容，不能直接按共享索引整体截断
-            const fragment = row.tableFragment
-            const tableElement = this.elementList[row.startIndex]
-            if (
-              fragment &&
-              tableElement?.type === ElementType.TABLE &&
-              this.tablePaging.truncateTableByFragment(
-                tableElement,
-                fragment,
-                this.elementList
-              )
-            ) {
-              this.elementList = this.elementList.slice(0, row.startIndex + 1)
-            } else {
-              this.elementList = this.elementList.slice(0, row.startIndex)
-            }
-            // elementList 被裁剪，行列表与元素失配，禁用后续增量计算
-            this.isElementListTruncated = true
-            break
-          }
-          pageNo++
-          const prevRow = this.rowList[i - 1]
-          if (prevRow?.isPageBreak) {
-            direction = prevRow.paperDirection || this.options.paperDirection
-            pageLimit = this.getHeight(direction)
-          }
-          pageDirectionList[pageNo] = direction
-          pageHeight =
-            this.getMainOuterHeight(pageNo, direction) + row.height + rowOffsetY
-          pageRowList.push([row])
-        } else {
-          pageHeight += row.height + rowOffsetY
-          pageRowList[pageNo].push(row)
+        const placement = row.flow!
+        if (Number.isInteger(maxPageNo) && placement.pageNo > maxPageNo!) {
+          this.truncateFlowRow(row)
+          this.rowList = this.rowList.slice(0, i)
+          this.rawRowList = this.rowList
+          break
         }
-        prevColumnIndex = row.columnIndex
+        while (pageRowList.length <= placement.pageNo) {
+          directions[pageRowList.length] = placement.direction
+          pageRowList.push([])
+        }
+        directions[placement.pageNo] = placement.direction
+        pageRowList[placement.pageNo].push(row)
       }
-      this.pageDirectionList = pageDirectionList
+      this.pageDirectionList = directions
+    } else {
+      if (this.rowList.length)
+        throw new Error('Paged layout requires native flow placements')
+      this.pageDirectionList = [this.options.paperDirection]
     }
     return pageRowList
   }
@@ -3703,12 +2910,12 @@ export class Draw {
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
         // 高亮配置：元素 > 控件配置
-          const highlight =
-            element.highlight ||
-            this.control.getControlHighlight(
-              elementList,
-              element.sourceIndex ?? curRow.startIndex + j
-            )
+        const highlight =
+          element.highlight ||
+          this.control.getControlHighlight(
+            elementList,
+            rowSourceIndex(curRow, j)
+          )
         if (highlight) {
           // 高亮元素相连需立即绘制，并记录下一元素坐标
           if (preHighlight && preHighlight !== highlight) {
@@ -3728,17 +2935,19 @@ export class Draw {
             }
           } = position
           // 元素向左偏移量
-          const offsetX = element.left || 0
+          const offsetX = position.left || 0
           const engineRect = this.getEngineHighlightRect(
             curRow,
             element,
-            position
+            position,
+            positionList,
+            payload.pageNo
           )
           this.highlight.recordFillInfo(
             ctx,
             engineRect?.x ?? x - offsetX,
             y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
-            engineRect?.width ?? element.metrics.width + offsetX,
+            engineRect?.width ?? position.metrics.width + offsetX,
             rowContentHeight - 2 * marginHeight + 2 * highlightMarginHeight,
             highlight
           )
@@ -3782,32 +2991,37 @@ export class Draw {
       const curRow = rowList[i]
       // 内容高度：不含段后间距
       const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
-      // 选区绘制记录（legacy：单矩形 width+=；text-engine：视觉矩形列表）
+      // Dedicated object rows use their object bounds for selection.
       const rangeRecord: IElementFillRect = {
         x: 0,
         y: 0,
         width: 0,
         height: 0
       }
-      const rangeVisualRects: VisualRect[] = []
-      const isTextEngineRow = !!curRow.engineLine
       let tableRangeElement: IElement | null = null
       for (let j = 0; j < curRow.elementList.length; j++) {
-        const element = curRow.elementList[j]
+        const model = curRow.elementList[j]
         // 表格跨页片段行：索引以行起始数据索引为基准，
         // 避免同页多片段时选区记录索引漂移
         if (curRow.tableFragment) {
           index = curRow.startIndex + j
         }
-        const metrics = element.metrics
         // 当前元素位置信息（表格跨页片段行优先使用片段位置）
         const position = this.getRowElementPosition(
           curRow,
           positionList,
-          element,
+          model,
           j
         )
         if (!position) continue
+        const metrics = position.metrics
+        // Compatibility is emitted only at the particle paint boundary.
+        const element = {
+          ...model,
+          metrics,
+          left: position.left,
+          style: this.getElementFont(model, scale)
+        }
         const {
           ascent: offsetY,
           coordinate: {
@@ -3824,9 +3038,7 @@ export class Draw {
           !this.isDesignMode()
         ) {
           // 控件隐藏时不绘制
-          this.textParticle.complete()
         } else if (element.type === ElementType.IMAGE) {
-          this.textParticle.complete()
           // 浮动图片单独绘制
           if (
             element.imgDisplay !== ImageDisplay.SURROUND &&
@@ -3836,8 +3048,8 @@ export class Draw {
             this.imageParticle.render(ctx, element, x, y + offsetY)
           }
         } else if (element.type === ElementType.LATEX) {
-          this.textParticle.complete()
-          this.laTexParticle.render(ctx, element, x, y + offsetY)
+          if (!isFloatingImage(element.imgDisplay))
+            this.laTexParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.TABLE) {
           if (isCrossRowCol) {
             rangeRecord.x = x
@@ -3846,55 +3058,10 @@ export class Draw {
           }
           this.tableParticle.render(ctx, element, x, y, curRow.tableFragment)
         } else if (element.type === ElementType.HYPERLINK) {
-          this.textParticle.complete()
-          // text-engine：与正文一致走 GlyphRenderer（RTL 连写/visualLeft）；Particle 仅 legacy
           this.hyperlinkParticle.ensureDefaults(element)
-          if (!this.rowUsesGlyphRenderer(curRow)) {
-            this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
-          }
         } else if (element.type === ElementType.LABEL) {
-          this.textParticle.complete()
-          // text-engine：文字走 GlyphRenderer；背景仍画，避免 RTL 双绘
           this.labelParticle.ensureDefaults(element)
-          if (this.rowUsesGlyphRenderer(curRow)) {
-            // positionList 已是绝对坐标；勿用行内 visualLeft 当 canvas x
-            this.labelParticle.renderBackground(
-              ctx,
-              element,
-              x,
-              y + offsetY
-            )
-          } else {
-            this.labelParticle.render(ctx, element, x, y + offsetY)
-          }
-        } else if (element.type === ElementType.DATE) {
-          // text-engine：与正文一致走 GlyphRenderer，避免 TextParticle 双绘
-          if (this.rowUsesGlyphRenderer(curRow)) {
-            this.textParticle.complete()
-          } else {
-            const nextElement = curRow.elementList[j + 1]
-            // 释放之前的
-            if (!preElement || preElement.dateId !== element.dateId) {
-              this.textParticle.complete()
-            }
-            this.textParticle.record(ctx, element, x, y + offsetY)
-            if (!nextElement || nextElement.dateId !== element.dateId) {
-              // 手动触发渲染
-              this.textParticle.complete()
-            }
-          }
-        } else if (element.type === ElementType.SUPERSCRIPT) {
-          this.textParticle.complete()
-          // text-engine：上下标由 GlyphRenderer（baselineShift）绘制，避免与 Particle 双绘
-          if (!this.rowUsesGlyphRenderer(curRow)) {
-            this.superscriptParticle.render(ctx, element, x, y + offsetY)
-          }
-        } else if (element.type === ElementType.SUBSCRIPT) {
-          this.underline.render(ctx)
-          this.textParticle.complete()
-          if (!this.rowUsesGlyphRenderer(curRow)) {
-            this.subscriptParticle.render(ctx, element, x, y + offsetY)
-          }
+          this.labelParticle.renderBackground(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
@@ -3905,7 +3072,6 @@ export class Draw {
           element.type === ElementType.CHECKBOX ||
           element.controlComponent === ControlComponent.CHECKBOX
         ) {
-          this.textParticle.complete()
           this.checkboxParticle.render({
             ctx,
             x,
@@ -3917,7 +3083,6 @@ export class Draw {
           element.type === ElementType.RADIO ||
           element.controlComponent === ControlComponent.RADIO
         ) {
-          this.textParticle.complete()
           this.radioParticle.render({
             ctx,
             x,
@@ -3925,36 +3090,8 @@ export class Draw {
             index: j,
             row: curRow
           })
-        } else if (element.type === ElementType.TAB) {
-          this.textParticle.complete()
-        } else if (
-          element.rowFlex === RowFlex.ALIGNMENT ||
-          element.rowFlex === RowFlex.JUSTIFY
-        ) {
-          // HarfBuzz path 行交给 GlyphRenderer；否则走 TextParticle
-          if (!this.rowUsesGlyphRenderer(curRow)) {
-            this.textParticle.record(ctx, element, x, y + offsetY)
-            this.textParticle.complete()
-          }
         } else if (element.type === ElementType.BLOCK) {
-          this.textParticle.complete()
-          this.blockParticle.render(ctx, pageNo, element, x, y + offsetY)
-        } else if (this.rowUsesGlyphRenderer(curRow)) {
-          // Skip TextParticle — drawn via GlyphRenderer below
-        } else {
-          // 如果当前元素设置左偏移，则上一元素立即绘制
-          if (element.left) {
-            this.textParticle.complete()
-          }
-          this.textParticle.record(ctx, element, x, y + offsetY)
-          // 如果设置字宽、字间距、标点符号（避免浏览器排版缩小间距）需单独绘制
-          if (
-            element.width ||
-            element.letterSpacing ||
-            PUNCTUATION_REG.test(element.value)
-          ) {
-            this.textParticle.complete()
-          }
+          this.blockParticle.render(ctx, pageNo, model, x, y + offsetY, metrics)
         }
         // 换行符绘制
         if (
@@ -4009,8 +3146,6 @@ export class Draw {
           ) {
             this.underline.render(ctx)
           }
-          // 行间距
-          const rowMargin = this.getElementRowMargin(element)
           // 优先用 position.left：text-engine 的 position.x 已含 left，
           // 若 element.left 在定位后被清掉，用 element.left 会使 x-offsetX 失效、底线右漂
           const posItem = this.getRowElementPosition(
@@ -4030,13 +3165,8 @@ export class Draw {
             ? this.options.underlineColor
             : element.color
           // text-engine：基线 + descent（Underline.render 会再 +2*lineWidth）
-          // legacy：贴行底
-          const underlineY = curRow.engineLine
-            ? y +
-              offsetY +
-              Math.max(0, metrics.boundingBoxDescent) +
-              subOffsetY
-            : y + rowContentHeight - rowMargin + subOffsetY
+          const underlineY =
+            y + offsetY + Math.max(0, metrics.boundingBoxDescent) + subOffsetY
           let underlineX = x - offsetX
           let underlineW = metrics.width + offsetX
           if (underlineW < 0) {
@@ -4045,7 +3175,7 @@ export class Draw {
           }
           // minWidth 后缀空隙：从控件内上一内容右缘接到 postfix 位，避免输入后底线断层右漂
           if (
-            curRow.engineLine &&
+            curRow.nativeLine &&
             element.controlComponent === ControlComponent.POSTFIX &&
             offsetX !== 0 &&
             element.control?.minWidth
@@ -4067,7 +3197,7 @@ export class Draw {
                 )
                 if (prevPos) {
                   gapStart =
-                    prevPos.coordinate.leftTop[0] + (prev.metrics?.width || 0)
+                    prevPos.coordinate.leftTop[0] + (prevPos.metrics.width || 0)
                 }
                 break
               }
@@ -4109,18 +3239,7 @@ export class Draw {
             ) {
               this.strikeout.render(ctx)
             }
-            // 基线文字测量信息
-            const standardMetrics = this.textParticle.measureBasisWord(
-              ctx,
-              this.getElementFont(element)
-            )
-            // text-engine：穿过字身中部（相对基线）；legacy：原公式
-            let adjustY = curRow.engineLine
-              ? y + offsetY - metrics.height * 0.3
-              : y +
-                offsetY +
-                standardMetrics.actualBoundingBoxDescent * scale -
-                metrics.height / 2
+            let adjustY = y + offsetY - metrics.height * 0.3
             // 上下标位置调整
             if (element.type === ElementType.SUBSCRIPT) {
               adjustY += this.subscriptParticle.getOffsetY(element)
@@ -4150,6 +3269,7 @@ export class Draw {
           endIndex
         } = this.range.getRange()
         if (
+          !curRow.nativeLine &&
           isDrawRange &&
           currentZone === zone &&
           startIndex !== endIndex &&
@@ -4162,35 +3282,7 @@ export class Draw {
             (!positionContext.isTable && !element.tdId) ||
             positionContext.tdId === element.tdId
           ) {
-            // text-engine：按 visualLeft 字盒收集（行末再用 engineLine 校正墨迹）
-            if (isTextEngineRow) {
-              if (startIndex === index) {
-                const nextElement = elementList[startIndex + 1]
-                if (nextElement && nextElement.value === ZERO) {
-                  const left = x + metrics.width
-                  rangeVisualRects.push({
-                    left,
-                    right: left + this.options.rangeMinWidth,
-                    y,
-                    height: rowContentHeight
-                  })
-                }
-              } else {
-                // 零宽组合符也要纳入，否则印地/泰文选区盖不住连写
-                const rangeWidth =
-                  metrics.width > 0
-                    ? metrics.width
-                    : curRow.elementList.length === 1
-                      ? this.options.rangeMinWidth
-                      : 0
-                rangeVisualRects.push({
-                  left: x,
-                  right: x + Math.max(rangeWidth, 0),
-                  y,
-                  height: rowContentHeight
-                })
-              }
-            } else if (startIndex === index) {
+            if (startIndex === index) {
               // 从行尾开始-绘制最小宽度
               const nextElement = elementList[startIndex + 1]
               if (nextElement && nextElement.value === ZERO) {
@@ -4217,11 +3309,17 @@ export class Draw {
         }
         // 组信息记录
         if (!group.disabled && element.groupIds) {
-          const engineRect = this.getEngineHighlightRect(curRow, element, {
-            coordinate: {
-              leftTop: [x, y]
-            }
-          } as import('../../interface/Element').IElementPosition)
+          const engineRect = this.getEngineHighlightRect(
+            curRow,
+            element,
+            {
+              index: rowSourceIndex(curRow, j),
+              coordinate: {
+                leftTop: [x, y]
+              }
+            } as import('../../interface/Element').IElementPosition,
+            positionList
+          )
           this.group.recordFillInfo(
             element,
             engineRect?.x ?? x,
@@ -4294,55 +3392,41 @@ export class Draw {
       }
       // 绘制列表样式
       if (curRow.isList && curRow.height > 0) {
-          this.listParticle.drawListStyle(
-            ctx,
-            curRow,
-            positionList[
-              curRow.elementList[0]?.sourceIndex ?? curRow.startIndex
-            ]
+        this.listParticle.drawListStyle(
+          ctx,
+          curRow,
+          positionList[rowSourceIndex(curRow, 0)]
         )
       }
       // 绘制文字、边框、下划线、删除线
-      this.textParticle.complete()
-      // 仅在 HarfBuzz 产出 path 时用 GlyphRenderer（连字）；否则 TextParticle 已按 visualLeft 画完
-      if (this.rowUsesGlyphRenderer(curRow) && curRow.engineLine) {
-        const anchor = curRow.elementList.find(
-          el =>
-            el.visualLeft !== undefined &&
-            el.value !== ZERO &&
-            !this.isGlyphPaintSkipped(el)
-        )
-          const anchorPos =
-            curRow.fragmentPosition ||
-            positionList[
-              anchor
-                ? anchor.sourceIndex ??
-                  curRow.startIndex + curRow.elementList.indexOf(anchor)
-                : curRow.startIndex
-            ]
-        if (anchor && anchorPos) {
-          // leftTop = rowOrigin + visualLeft + left；原点须回到 rowOrigin
-          const originX =
-            anchorPos.coordinate.leftTop[0] -
-            (anchor.visualLeft || 0) -
-            (anchor.left || 0)
-          const baselineY = anchorPos.coordinate.leftTop[1] + curRow.ascent
-          // isCompute:false（如改颜色）时同步 live 样式，避免画到缓存里的旧 style
-          const liveLine = this._syncEngineLineStyles(
-            curRow.engineLine as import('../text-engine/types').LayoutLine,
-            elementList
-          )
-          const paintLine = this.filterEngineLineForPaint(liveLine, elementList)
-          if (paintLine.glyphs.length) {
-            this.layoutHostAdapter.getGlyphRenderer().drawLine(
+      if (curRow.nativeLine) {
+        const placed = this.position.getNativeRow(curRow, positionList, pageNo)
+        if (placed)
+          this.layoutHostAdapter
+            .getGlyphRenderer()
+            .drawNativeLine(
               ctx,
-              paintLine,
-              originX,
-              baselineY,
-              curRow.engineParagraphText
+              curRow.nativeLine,
+              placed.x,
+              placed.y,
+              placed.scale,
+              indices => {
+                const element = elementList[indices[0]]
+                return {
+                  hidden: indices.some(index =>
+                    this.isGlyphPaintSkipped(elementList[index])
+                  ),
+                  color:
+                    element?.color ||
+                    (element?.type === ElementType.HYPERLINK
+                      ? this.options.defaultHyperlinkColor
+                      : element?.type === ElementType.LABEL
+                        ? element.label?.color ||
+                          this.options.label.defaultColor
+                        : this.options.defaultColor)
+                }
+              }
             )
-          }
-        }
       }
       this.control.drawBorder(ctx)
       this.underline.render(ctx)
@@ -4353,30 +3437,35 @@ export class Draw {
       this.group.render(ctx)
       // 绘制选区
       if (!isPrintMode && !isGraffitiMode) {
-        if (rangeVisualRects.length) {
-          // 复杂文种：用 engineLine 字形盒 + measureText 墨迹校正，避免选区短于连写
-          const {
-            startIndex: selStart,
-            endIndex: selEnd
-          } = this.range.getRange()
-          const corrected = this._correctEngineSelectionRects(
-            ctx,
-            curRow,
-            positionList,
-            rangeVisualRects,
-            selStart,
-            selEnd
-          )
-          const merged = mergeVisualRects(corrected)
-          for (const rect of merged) {
-            this.range.render(
-              ctx,
-              rect.left,
-              rect.y,
-              rect.right - rect.left,
-              rect.height
-            )
+        const { startIndex: selStart, endIndex: selEnd } = this.range.getRange()
+        const placed = this.position.getNativeRow(curRow, positionList, pageNo)
+        const context = this.position.getPositionContext()
+        const sameScope = !context.isTable
+          ? !curRow.elementList[0]?.tdId
+          : context.tdId === curRow.elementList[0]?.tdId
+        if (
+          placed &&
+          isDrawRange &&
+          this.zone.getZone() === zone &&
+          sameScope &&
+          selStart !== selEnd
+        ) {
+          const rects = textRangeRects(placed, selStart + 1, selEnd + 1)
+          if (
+            !rects.length &&
+            placed.line.empty &&
+            placed.line.source.start > selStart &&
+            placed.line.source.start <= selEnd
+          ) {
+            rects.push({
+              x: placed.x + placed.line.rect.x * scale,
+              y: placed.y + placed.line.rect.y * scale,
+              width: this.options.rangeMinWidth,
+              height: placed.line.contentHeight * scale
+            })
           }
+          for (const rect of rects)
+            this.range.render(ctx, rect.x, rect.y, rect.width, rect.height)
         } else if (rangeRecord.width && rangeRecord.height) {
           const { x, y, width, height } = rangeRecord
           this.range.render(ctx, x, y, width, height)
@@ -4426,10 +3515,13 @@ export class Draw {
           floatPosition.zone == EditorZone.FOOTER) &&
         element.imgDisplay &&
         imgDisplays.includes(element.imgDisplay) &&
-        element.type === ElementType.IMAGE
+        (element.type === ElementType.IMAGE ||
+          element.type === ElementType.LATEX)
       ) {
         const { x, y } = this.position.getFloatPositionCoordinate(floatPosition)
-        this.imageParticle.render(ctx, element, x, y)
+        if (element.type === ElementType.LATEX)
+          this.laTexParticle.render(ctx, element, x, y)
+        else this.imageParticle.render(ctx, element, x, y)
       }
     }
   }
@@ -4604,6 +3696,13 @@ export class Draw {
   }
 
   public render(payload?: IDrawOption) {
+    if (
+      this.lifecycle.state === 'destroyed' ||
+      this.lifecycle.state === 'failed'
+    ) {
+      return
+    }
+    if (!this.layoutHostAdapter.isReady()) return
     this.renderCount++
     const { header, footer } = this.options
     const {
@@ -4655,17 +3754,9 @@ export class Draw {
         surroundElementList,
         elementList: this.elementList,
         layoutScope: 'main',
-        dirtyRange: this.incrementalRowComputer.consumeDirtyRange()
+        dirtyRange: this.dirtyRangeTracker.consumeDirtyRange(this.elementList)
       }
-      // 行级增量行计算：消费本次编辑的脏区间，从受影响行续算至收敛；
-      // 无脏区间或门控不满足时退回全量，行为与未开启时一致
-      const incrementalResult = this.incrementalRowComputer.tryCompute(
-        rowComputePayload.dirtyRange,
-        rowComputePayload
-      )
-      this.rawRowList =
-        incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
-      this.incrementalRowComputer.observeLayout()
+      this.rawRowList = this.computeRowList(rowComputePayload)
       // 分页模式下跨页表格在渲染层拆分为按页片段行
       if (isPagingMode) {
         this.rowList = this.tablePaging.splitTableRowAcrossPages(
@@ -4677,13 +3768,8 @@ export class Draw {
       // 页面信息（maxPageNo 截断会重置该标志）
       this.isElementListTruncated = false
       this.pageRowList = this._computePageList()
-      // 位置信息（增量行计算成功时，首个变动行之前的页位置可复用缓存）
-      const fromPageNo = incrementalResult
-        ? this.incrementalRowComputer.findPageNoOfRow(
-            incrementalResult.firstChangedRow
-          )
-        : undefined
-      this.position.computePositionList({ fromPageNo })
+      // Rebuild native placements as pages/columns can move after any edit.
+      this.position.computePositionList({})
       // 区域信息
       this.area.compute()
       if (!this.isPrintMode()) {
@@ -4748,11 +3834,29 @@ export class Draw {
     ) {
       this.submitHistory(curIndex)
     }
+    if (isCompute) {
+      this.renderedFontRevision = this.layoutHostAdapter
+        .getFontManager()
+        .getRevision()
+    }
+    if (
+      isCompute ||
+      this.auxiliaryCoverageSignature !== this.getAuxiliaryCoverageSignature()
+    )
+      this.updateFontCoverage()
     if (isCompute && this.eventBus.isSubscribe('renderChange')) {
-      this.eventBus.emit('renderChange')
+      if (this.lifecycle.state === 'initializing') {
+        // Initial render callbacks may query geometry only after ready settles.
+        nextTick(() => {
+          if (this.isReady()) this.eventBus.emit('renderChange')
+        })
+      } else {
+        this.eventBus.emit('renderChange')
+      }
     }
     // 信息变动回调
     nextTick(() => {
+      if (!this.isReady()) return
       // 选区样式
       this.range.setRangeStyle()
       // 重新唤起弹窗类控件
@@ -4797,6 +3901,12 @@ export class Draw {
   }
 
   public setCursor(curIndex: number | undefined) {
+    if (curIndex !== undefined) {
+      const normalized = this.position.normalizeNativeIndex(curIndex)
+      if (normalized !== curIndex && this.range.getIsCollapsed())
+        this.range.setRange(normalized, normalized)
+      curIndex = normalized
+    }
     const positionContext = this.position.getPositionContext()
     const positionList = this.position.getPositionList()
     if (positionContext.isTable) {
@@ -4837,6 +3947,9 @@ export class Draw {
         this.previewer.updateResizer(element, position)
       }
     }
+    const caret =
+      curIndex !== undefined ? this.position.getNativeCaret(curIndex) : null
+    if (caret && this.zone.isMainActive()) this.setPageNo(caret.pageNo)
     this.cursor.drawCursor({
       isShow: isShowCursor
     })
@@ -4861,9 +3974,9 @@ export class Draw {
       this.zone.setZone(zone)
       this.setPageNo(pageNo)
       this.position.setPositionContext(deepClone(oldPositionContext))
-      this.header.setElementList(deepClone(oldHeaderElementList))
-      this.footer.setElementList(deepClone(oldFooterElementList))
-      this.elementList = deepClone(oldElementList)
+      this.header.setElementList(getSlimCloneElementList(oldHeaderElementList))
+      this.footer.setElementList(getSlimCloneElementList(oldFooterElementList))
+      this.elementList = getSlimCloneElementList(oldElementList)
       this.range.replaceRange(deepClone(oldRange))
       this.render({
         curIndex,
@@ -4874,6 +3987,17 @@ export class Draw {
   }
 
   public destroy() {
+    if (!this.lifecycle.destroy()) return
+    this.pendingFontCoverage = null
+    this.coveragePublishedSignature = ''
+    this.fontDiagnostics.destroy()
+    this.fontDownloadManager.destroy()
+    this.fontCoverageTracker.destroy()
+    this.layoutHostAdapter.destroy()
+    for (const event of this.guardedEvents) {
+      this.container.removeEventListener(event, this.interactionGuard, true)
+    }
+    this.cursor.recoveryCursor()
     this.container.remove()
     this.globalEvent.removeEvent()
     this.scrollObserver.removeEvent()

@@ -3,6 +3,7 @@ import Editor from '../../../src/editor'
 describe('菜单-分页符', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('.ce-page-container canvas')
       .first()

@@ -1,6 +1,6 @@
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
 import { FontManager } from '../../../src/editor/core/text-engine/font/FontManager'
 import { HarfBuzzTextShaper } from '../../../src/editor/core/text-engine/shape/HarfBuzzTextShaper'
@@ -14,6 +14,7 @@ describe('DEFER-011 Arabic kashida for justify', () => {
     const fm = new FontManager()
     return fm.init([{ family: 'Noto Naskh Arabic', data }]).then(() => {
       const shaper = new HarfBuzzTextShaper(fm)
+      vi.spyOn(shaper, 'shape')
       return new TextLayoutEngine(new BidiResolver(), shaper)
     })
   }
@@ -44,9 +45,13 @@ describe('DEFER-011 Arabic kashida for justify', () => {
       wordBreak: 'break-word'
     })
     expect(layout.lines.length).toBeGreaterThan(1)
-    // kashida strokes (TATWEEL) are part of the shaped text
-    const hasTatweel = layout.paragraphText.includes('\u0640')
-    expect(hasTatweel).toBe(true)
+    // Synthetic kashida belongs to glyph shaping; source offsets stay intact.
+    expect(layout.paragraphText).toBe(text)
+    expect(
+      vi
+        .mocked((engine as any).shaper.shape)
+        .mock.calls.some(([run]: any[]) => run.text.includes('\u0640'))
+    ).toBe(true)
     // every non-last line is justified to the available width
     for (const line of layout.lines.slice(0, -1)) {
       expect(line.width).toBeGreaterThanOrEqual(239)

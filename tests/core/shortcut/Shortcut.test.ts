@@ -2,11 +2,11 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 
 describe('Shortcut', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('registerShortcutList 注册自定义快捷键', () => {
-    ctx = createTestEditor()
+  it('registerShortcutList 注册自定义快捷键', async () => {
+    ctx = await createTestEditor()
     const callback = vi.fn()
     const shortcutList = [
       {

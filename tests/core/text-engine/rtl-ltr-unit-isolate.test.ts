@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { TextDirection } from '../../../src/editor/dataset/enum/TextDirection'
-import { buildArabicEmrElementList } from '../../../src/mock-ar-emr'
+import { buildArabicEmrElementList } from '../../fixtures/arabic-emr'
 import { ElementBridge } from '../../../src/editor/core/text-engine-host/ElementBridge'
 import { BidiResolver } from '../../../src/editor/core/text-engine/bidi/BidiResolver'
 import { mergeOption } from '../../../src/editor/utils/option'

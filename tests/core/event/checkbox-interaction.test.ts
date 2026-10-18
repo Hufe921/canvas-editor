@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -25,7 +26,7 @@ describe('checkbox interaction', () => {
     vi.restoreAllMocks()
   })
 
-  function setup() {
+  async function setup() {
     const main: any[] = [
       { value: '\u200B' },
       { value: '普通文本' },
@@ -43,7 +44,6 @@ describe('checkbox interaction', () => {
       { value: '\n' }
     ]
     const options = mergeOption({
-      textEngine: 'legacy' as any,
       margins: [20, 20, 20, 20],
       header: { disabled: true },
       footer: { disabled: true }
@@ -54,7 +54,7 @@ describe('checkbox interaction', () => {
     })
     container = document.createElement('div')
     document.body.appendChild(container)
-    draw = new Draw(
+    draw = await createTestDraw(
       container,
       options,
       { main, header: [{ value: '\n' }], footer: [{ value: '\n' }] },
@@ -79,8 +79,8 @@ describe('checkbox interaction', () => {
     }
   }
 
-  it('does not draw the caret when toggling a checkbox', () => {
-    setup()
+  it('does not draw the caret when toggling a checkbox', async () => {
+    await setup()
     const { x, y } = boxPosition()
     const canvas = draw!.getPageList()[0]
     canvas.dispatchEvent(
@@ -89,8 +89,8 @@ describe('checkbox interaction', () => {
     expect(draw!.getCursor().getCursorDom().style.display).toBe('none')
   })
 
-  it('shows pointer cursor when hovering the checkbox box', () => {
-    setup()
+  it('shows pointer cursor when hovering the checkbox box', async () => {
+    await setup()
     const { x, y } = boxPosition()
     const canvas = draw!.getPageList()[0]
     canvas.dispatchEvent(
@@ -99,8 +99,8 @@ describe('checkbox interaction', () => {
     expect(canvas.style.cursor).toBe('pointer')
   })
 
-  it('shows pointer cursor when hovering the checkbox label', () => {
-    setup()
+  it('shows pointer cursor when hovering the checkbox label', async () => {
+    await setup()
     const elList = draw!.getOriginalElementList()
     const posList = draw!.getPosition().getOriginalPositionList()
     const valueIndex = elList.findIndex(
@@ -116,8 +116,8 @@ describe('checkbox interaction', () => {
     expect(canvas.style.cursor).toBe('pointer')
   })
 
-  it('keeps text cursor over normal text', () => {
-    setup()
+  it('keeps text cursor over normal text', async () => {
+    await setup()
     const elList = draw!.getOriginalElementList()
     const posList = draw!.getPosition().getOriginalPositionList()
     const textIndex = elList.findIndex((el: any) => el.value === '普')
@@ -131,8 +131,8 @@ describe('checkbox interaction', () => {
     expect(canvas.style.cursor).toBe('text')
   })
 
-  it('does not draw the caret when clicking the checkbox label', () => {
-    setup()
+  it('does not draw the caret when clicking the checkbox label', async () => {
+    await setup()
     const elList = draw!.getOriginalElementList()
     const posList = draw!.getPosition().getOriginalPositionList()
     const valueIndex = elList.findIndex(

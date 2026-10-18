@@ -1,5 +1,5 @@
 import 'vitest-canvas-mock'
-import { afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
 
 // jsdom 缺失补齐
 class StubResizeObserver {
@@ -11,7 +11,9 @@ class StubIntersectionObserver {
   observe(): void {}
   unobserve(): void {}
   disconnect(): void {}
-  takeRecords(): unknown[] { return [] }
+  takeRecords(): unknown[] {
+    return []
+  }
   root: Element | null = null
   rootMargin = ''
   thresholds: ReadonlyArray<number> = []
@@ -20,7 +22,6 @@ class StubIntersectionObserver {
 ;(globalThis as any).IntersectionObserver ??= StubIntersectionObserver
 ;(Element.prototype as any).scrollIntoView ??= () => {}
 ;(Element.prototype as any).scroll ??= () => {}
-
 ;(window as any).matchMedia = (query: string) => ({
   matches: false,
   media: query,
@@ -40,11 +41,27 @@ class StubWorker {
   terminate(): void {}
   addEventListener(): void {}
   removeEventListener(): void {}
-  dispatchEvent(): boolean { return false }
+  dispatchEvent(): boolean {
+    return false
+  }
 }
 ;(globalThis as any).Worker ??= StubWorker
 
 // 防止 fakeTimers 泄漏
 afterEach(() => {
   vi.useRealTimers()
+})
+
+// A regression must fail if native layout silently reaches browser text APIs.
+beforeEach(() => {
+  // HTTP behavior belongs to explicit fetch mocks; unit tests stay offline.
+  vi.spyOn(globalThis, 'fetch').mockRejectedValue(
+    new Error('Unit-test network disabled: provide a local fixture/fetch mock')
+  )
+  for (const method of ['measureText', 'fillText', 'strokeText'] as const)
+    vi.spyOn(CanvasRenderingContext2D.prototype, method).mockImplementation(
+      () => {
+        throw new Error(`Browser text API reached: ${method}`)
+      }
+    )
 })

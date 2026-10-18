@@ -3,6 +3,7 @@ import Editor, { ControlType, ElementType } from '../../../src/editor'
 describe('控件-文本型', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })

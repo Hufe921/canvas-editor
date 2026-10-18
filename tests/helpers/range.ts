@@ -1,6 +1,10 @@
 import type Editor from '@/editor'
 
-export function setRange(editor: Editor, start: number, end: number = start): void {
+export function setRange(
+  editor: Editor,
+  start: number,
+  end: number = start
+): void {
   editor.command.executeSetRange(start, end)
 }
 

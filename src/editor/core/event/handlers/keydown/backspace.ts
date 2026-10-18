@@ -173,7 +173,11 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
       draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex)
     } else {
       const visualTarget = getVisualDeleteTarget(host, index, true)
-      draw.deleteElementList(elementList, visualTarget?.index ?? index, 1)
+      draw.deleteElementList(
+        elementList,
+        visualTarget?.index ?? index,
+        visualTarget?.count ?? 1
+      )
       if (visualTarget) curIndex = visualTarget.cursorIndex
     }
     if (curIndex === undefined) {

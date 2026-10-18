@@ -6,6 +6,8 @@ import type { IRow, IRowElement } from '../../../src/editor/interface/Row'
 import type { DeepRequired } from '../../../src/editor/interface/Common'
 import type { IEditorOption } from '../../../src/editor/interface/Editor'
 
+const drawLine = vi.fn()
+
 function mockDraw() {
   const options = {
     scale: 1,
@@ -17,6 +19,29 @@ function mockDraw() {
   } as unknown as DeepRequired<IEditorOption>
   return {
     getOptions: () => options,
+    getLayoutHostAdapter: () => ({
+      layoutListMarker: (
+        _elements: unknown,
+        _anchor: unknown,
+        _text: string,
+        direction: string
+      ) => ({
+        lines: [{ rect: { width: 12 } }],
+        shaped: {
+          lines: [
+            {
+              width: 12,
+              direction,
+              glyphs: [],
+              ascent: 12,
+              descent: 4,
+              height: 16
+            }
+          ]
+        }
+      }),
+      getGlyphRenderer: () => ({ drawLine })
+    }),
     getRange: () => ({}),
     getCheckboxParticle: () => ({ render: vi.fn() })
   } as any
@@ -64,21 +89,30 @@ function makeRow(direction: 'ltr' | 'rtl', listType: ListType): IRow {
 
 describe('ListParticle RTL style direction', () => {
   it('ordered marker uses rtl direction and right-aligns in right gutter', () => {
+    drawLine.mockClear()
     const particle = new ListParticle(mockDraw())
     const ctx = makeCtx()
 
-    // listStyleWidth = ceil((12 + LIST_GAP 10)) = 22
-    particle.drawListStyle(ctx, makeRow('rtl', ListType.OL), {
+    const row = makeRow('rtl', ListType.OL)
+    particle.computeNativeListStyle(row.elementList)
+    // Marker width 12 + gutter 10 = 22
+    particle.drawListStyle(ctx, row, {
       coordinate: { leftTop: [648, 100] }
     } as any)
 
-    expect(ctx.direction).toBe('rtl')
-    expect(ctx.textAlign).toBe('right')
+    expect(ctx.fillText).not.toHaveBeenCalled()
+    expect(ctx.measureText).not.toHaveBeenCalled()
     // 右对齐：标记右缘在内容右缘 + gutter 宽（22），间距落在标记左侧
-    expect(ctx.fillText).toHaveBeenCalledWith('1.', 648 + 22, 112)
+    expect(drawLine).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({ direction: 'rtl' }),
+      648 + 22 - 12,
+      112
+    )
   })
 
   it('ordered marker keeps ltr direction and left-aligns for ltr rows', () => {
+    drawLine.mockClear()
     const particle = new ListParticle(mockDraw())
     const ctx = makeCtx()
 
@@ -86,8 +120,13 @@ describe('ListParticle RTL style direction', () => {
       coordinate: { leftTop: [120, 100] }
     } as any)
 
-    expect(ctx.direction).toBe('ltr')
-    expect(ctx.textAlign).toBe('left')
-    expect(ctx.fillText).toHaveBeenCalledWith('1.', 120 - 24, 112)
+    expect(ctx.fillText).not.toHaveBeenCalled()
+    expect(ctx.measureText).not.toHaveBeenCalled()
+    expect(drawLine).toHaveBeenCalledWith(
+      ctx,
+      expect.objectContaining({ direction: 'ltr' }),
+      120 - 24,
+      112
+    )
   })
 })

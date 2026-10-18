@@ -5,7 +5,7 @@
 ```javascript
 import Editor from "@hufe921/canvas-editor"
 
-const instance = new Editor(container, <IElement[]>data, options)
+const instance = await Editor.create(container, data, options)
 const value = instance.command.commandName()
 ```
 
@@ -367,3 +367,5 @@ const {
   endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
 ```
+
+几何查询需等待 ready；不依赖布局的初始化前查询见[实例 API](./api-instance.md)。

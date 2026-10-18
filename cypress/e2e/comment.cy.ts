@@ -1,6 +1,7 @@
 describe('批注连接线', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().should('have.length', 1)
   })

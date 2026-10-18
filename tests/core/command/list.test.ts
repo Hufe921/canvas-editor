@@ -6,11 +6,11 @@ import { ElementType } from '../../../src/editor/dataset/enum/Element'
 import { createTestEditor } from '../../factories/editor'
 
 describe('列表与排版命令', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('executeList 设置无序列表', () => {
-    ctx = createTestEditor()
+  it('executeList 设置无序列表', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'item' }])
     ctx.editor.command.executeSelectAll()
@@ -19,8 +19,8 @@ describe('列表与排版命令', () => {
     expect(data?.some((e: any) => e.listType === 'ul')).toBe(true)
   })
 
-  it('executeList 设置有序列表', () => {
-    ctx = createTestEditor()
+  it('executeList 设置有序列表', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'item' }])
     ctx.editor.command.executeSelectAll()
@@ -29,8 +29,8 @@ describe('列表与排版命令', () => {
     expect(data?.some((e: any) => e.listType === 'ol')).toBe(true)
   })
 
-  it('executeTitle 设置标题级别', () => {
-    ctx = createTestEditor()
+  it('executeTitle 设置标题级别', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'title' }])
     ctx.editor.command.executeSelectAll()
@@ -39,8 +39,8 @@ describe('列表与排版命令', () => {
     expect(data?.some((e: any) => e.level === 'first')).toBe(true)
   })
 
-  it('executeRowFlex 设置对齐方式', () => {
-    ctx = createTestEditor()
+  it('executeRowFlex 设置对齐方式', async () => {
+    ctx = await createTestEditor()
     ctx.editor.command.executeFocus()
     ctx.editor.command.executeInsertElementList([{ value: 'text' }])
     ctx.editor.command.executeSelectAll()
@@ -49,9 +49,9 @@ describe('列表与排版命令', () => {
     expect(data?.some((e: any) => e.rowFlex === 'center')).toBe(true)
   })
 
-  it('executeRowFlex 按段落设置表格内自动换行内容', () => {
+  it('executeRowFlex 按段落设置表格内自动换行内容', async () => {
     const tableId = 'table'
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: [
         {
           id: tableId,
@@ -97,8 +97,8 @@ describe('列表与排版命令', () => {
     expect(value.every(element => element.rowMargin === 2)).toBe(true)
   })
 
-  it('executeRowFlex 不影响未选中的段落', () => {
-    ctx = createTestEditor({
+  it('executeRowFlex 不影响未选中的段落', async () => {
+    ctx = await createTestEditor({
       data: [{ value: 'first' }, { value: '\n' }, { value: 'second' }]
     })
     ctx.editor.command.executeSetRange(8, 8)
@@ -112,8 +112,8 @@ describe('列表与排版命令', () => {
     expect(second.rowFlex).toBe(RowFlex.RIGHT)
   })
 
-  it('executeSpacingBefore 设置段前间距', () => {
-    ctx = createTestEditor({
+  it('executeSpacingBefore 设置段前间距', async () => {
+    ctx = await createTestEditor({
       data: [{ value: 'first' }, { value: '\n' }, { value: 'second' }]
     })
     ctx.editor.command.executeSetRange(8, 8)
@@ -127,8 +127,8 @@ describe('列表与排版命令', () => {
     expect(second.spacingBefore).toBe(20)
   })
 
-  it('executeSpacingAfter 设置段后间距', () => {
-    ctx = createTestEditor({
+  it('executeSpacingAfter 设置段后间距', async () => {
+    ctx = await createTestEditor({
       data: [{ value: 'first' }, { value: '\n' }, { value: 'second' }]
     })
     ctx.editor.command.executeSetRange(2, 2)

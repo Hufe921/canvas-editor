@@ -8,8 +8,8 @@ function getPageCanvasList(container: HTMLElement): HTMLCanvasElement[] {
   return Array.from(container.querySelectorAll('canvas[data-index]'))
 }
 
-function createPageBreakEditor(paperDirection?: PaperDirection) {
-  return createTestEditor({
+async function createPageBreakEditor(paperDirection?: PaperDirection) {
+  return await createTestEditor({
     data: {
       header: [],
       main: [
@@ -29,11 +29,11 @@ function createPageBreakEditor(paperDirection?: PaperDirection) {
 }
 
 describe('指定页面横向（混排横竖版）', () => {
-  let ctx: ReturnType<typeof createTestEditor>
+  let ctx: Awaited<ReturnType<typeof createTestEditor>>
   afterEach(() => ctx?.destroy())
 
-  it('无方向标记时所有页尺寸一致（向后兼容）', () => {
-    ctx = createPageBreakEditor()
+  it('无方向标记时所有页尺寸一致（向后兼容）', async () => {
+    ctx = await createPageBreakEditor()
     const pageList = getPageCanvasList(ctx.container)
     expect(pageList.length).toBe(2)
     expect(pageList[0].style.width).toBe('794px')
@@ -42,8 +42,8 @@ describe('指定页面横向（混排横竖版）', () => {
     expect(pageList[1].style.height).toBe('1123px')
   })
 
-  it('分页符携带 paperDirection 时后续页宽高互换', () => {
-    ctx = createPageBreakEditor(PaperDirection.HORIZONTAL)
+  it('分页符携带 paperDirection 时后续页宽高互换', async () => {
+    ctx = await createPageBreakEditor(PaperDirection.HORIZONTAL)
     const pageList = getPageCanvasList(ctx.container)
     expect(pageList.length).toBe(2)
     // 首页保持纵向
@@ -54,8 +54,8 @@ describe('指定页面横向（混排横竖版）', () => {
     expect(pageList[1].style.height).toBe('794px')
   })
 
-  it('executePageDirection 设置并恢复当前节方向', () => {
-    ctx = createPageBreakEditor()
+  it('executePageDirection 设置并恢复当前节方向', async () => {
+    ctx = await createPageBreakEditor()
     // 光标移动到分页符之后（第二页），分页符前有一个起始占位符
     setRange(ctx.editor, 3, 3)
     ctx.editor.command.executePageDirection(PaperDirection.HORIZONTAL)
@@ -73,8 +73,8 @@ describe('指定页面横向（混排横竖版）', () => {
     expect(pageList[1].style.height).toBe('1123px')
   })
 
-  it('executePageDirection 可撤销', () => {
-    ctx = createPageBreakEditor()
+  it('executePageDirection 可撤销', async () => {
+    ctx = await createPageBreakEditor()
     setRange(ctx.editor, 3, 3)
     ctx.editor.command.executePageDirection(PaperDirection.HORIZONTAL)
     let pageList = getPageCanvasList(ctx.container)
@@ -84,8 +84,8 @@ describe('指定页面横向（混排横竖版）', () => {
     expect(pageList[1].style.width).toBe('794px')
   })
 
-  it('executePageDirection 只影响当前节', () => {
-    ctx = createTestEditor({
+  it('executePageDirection 只影响当前节', async () => {
+    ctx = await createTestEditor({
       data: {
         header: [],
         main: [
@@ -110,8 +110,8 @@ describe('指定页面横向（混排横竖版）', () => {
     expect(pageList[2].style.width).toBe('794px')
   })
 
-  it('executePageDirection 在首节修改全局方向', () => {
-    ctx = createTestEditor()
+  it('executePageDirection 在首节修改全局方向', async () => {
+    ctx = await createTestEditor()
     setRange(ctx.editor, 0, 0)
     ctx.editor.command.executePageDirection(PaperDirection.HORIZONTAL)
     expect(ctx.editor.command.getOptions().paperDirection).toBe(
@@ -122,9 +122,9 @@ describe('指定页面横向（混排横竖版）', () => {
     expect(pageList[0].style.height).toBe('794px')
   })
 
-  it('分页符不在行首且携带方向时后续内容仍分到新页', () => {
+  it('分页符不在行首且携带方向时后续内容仍分到新页', async () => {
     // 分页符紧跟文本（中间无换行），后续内容无尾随换行
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: {
         header: [],
         main: [
@@ -146,13 +146,13 @@ describe('指定页面横向（混排横竖版）', () => {
     expect(pageList[1].style.height).toBe('794px')
   })
 
-  it('内容增删导致页数变化后方向仍跟随分页符所在节', () => {
+  it('内容增删导致页数变化后方向仍跟随分页符所在节', async () => {
     // 构造第一节内容溢出为两页：横向页应顺延为第三页
     const firstSection = Array.from({ length: 120 }, () => [
       { value: '字' },
       { value: '\n' }
     ]).flat()
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: {
         header: [],
         main: [
@@ -179,8 +179,8 @@ describe('指定页面横向（混排横竖版）', () => {
     }
   })
 
-  it('中间横向节溢出时复用页面同步调整尺寸', () => {
-    ctx = createTestEditor({
+  it('中间横向节溢出时复用页面同步调整尺寸', async () => {
+    ctx = await createTestEditor({
       data: {
         header: [],
         main: [

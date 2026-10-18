@@ -12,7 +12,7 @@ describe('级联事件触发', () => {
 
   it('控件值变化后级联重算（选"有"→ 显示；改"无"→ 还原隐藏）', async () => {
     // 初始选"无"：目标隐藏
-    ctx = createTestEditor({
+    ctx = await createTestEditor({
       data: { header: [], main: buildData('0'), footer: [] }
     })
     let target = ctx.editor.command

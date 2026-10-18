@@ -62,7 +62,7 @@ const mockOptions = {
   marginIndicatorColor: '#000000',
   margins: [100, 120, 100, 120] as [number, number, number, number],
   pageMode: 'pagination',
-  renderMode: 'painter',
+
   defaultHyperlinkColor: '#0000ff',
   paperDirection: 'portrait',
   defaultType: 'text',

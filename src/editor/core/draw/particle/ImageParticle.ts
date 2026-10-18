@@ -1,3 +1,4 @@
+import { scaleShapedLine } from '../../text-engine-host/scaleShapedLine'
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
@@ -5,11 +6,7 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
-import {
-  drawPlainText,
-  measurePlainText,
-  truncatePlainText
-} from '../../text-engine-host/drawPlainText'
+import { truncatePlainText } from '../../text-engine-host/drawPlainText'
 import { Draw } from '../Draw'
 
 export class ImageParticle {
@@ -187,7 +184,19 @@ export class ImageParticle {
     }
   }
 
-  private _renderCaption(
+  public getCaptionText(element: IElement): string {
+    let captionText = element.imgCaption?.value || ''
+    // 替换特殊字符
+    if (captionText.includes('{imageNo}')) {
+      const elementList = this.draw.getOriginalMainElementList()
+      const imageNo =
+        Math.max(this._countImagesBeforeTarget(elementList, element), 0) + 1
+      captionText = captionText.replace(/\{imageNo\}/g, String(imageNo))
+    }
+    return captionText
+  }
+
+  protected _renderCaption(
     ctx: CanvasRenderingContext2D,
     element: IElement,
     x: number,
@@ -197,14 +206,7 @@ export class ImageParticle {
   ) {
     if (!element.imgCaption?.value) return
     const { scale, imgCaption } = this.options
-    let captionText = element.imgCaption.value
-    // 替换特殊字符
-    if (captionText.includes('{imageNo}')) {
-      const elementList = this.draw.getOriginalMainElementList()
-      const imageNo =
-        Math.max(this._countImagesBeforeTarget(elementList, element), 0) + 1
-      captionText = captionText.replace(/\{imageNo\}/g, String(imageNo))
-    }
+    const captionText = this.getCaptionText(element)
     const fontSize = (element.imgCaption.size || imgCaption.size) * scale
     const fontFamily = element.imgCaption.font || imgCaption.font
     const color = element.imgCaption.color || imgCaption.color
@@ -216,23 +218,18 @@ export class ImageParticle {
     }
     const adapter = this.draw.getLayoutHostAdapter()
     const displayText = truncatePlainText(adapter, ctx, style, width)
-    const drawStyle = { ...style, text: displayText }
     const captionTop = (element.imgCaption.top ?? imgCaption.top) * scale
     ctx.save()
-    const engineMetrics = measurePlainText(adapter, drawStyle)
-    if (engineMetrics) {
-      const captionY = y + height + captionTop + engineMetrics.ascent
-      const originX = x + (width - engineMetrics.width) / 2
-      drawPlainText(adapter, ctx, drawStyle, originX, captionY)
-    } else {
-      ctx.font = `${fontSize}px ${fontFamily}`
-      ctx.fillStyle = color
-      ctx.textAlign = 'center'
-      const textMetrics = ctx.measureText(displayText)
-      const captionY =
-        y + height + captionTop + textMetrics.actualBoundingBoxAscent
-      ctx.fillText(displayText, x + width / 2, captionY)
-    }
+    const layout = adapter.layoutCaption(element, displayText)
+    const line = scaleShapedLine(layout.lines[0], scale)
+    adapter
+      .getGlyphRenderer()
+      .drawLine(
+        ctx,
+        line,
+        x + (width - line.width) / 2,
+        y + height + captionTop + line.ascent
+      )
     ctx.restore()
   }
 

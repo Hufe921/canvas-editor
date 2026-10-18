@@ -1,8 +1,8 @@
+import type { LayoutRow } from '../../../interface/LayoutRow'
 import { IEditorOption, IElement } from '../../..'
 import { DeepRequired } from '../../../interface/Common'
 import { IElementPosition } from '../../../interface/Element'
 import { IPlaceholder } from '../../../interface/Placeholder'
-import { IRow } from '../../../interface/Row'
 import { formatElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
 import { Draw } from '../Draw'
@@ -11,6 +11,10 @@ import { LineBreakParticle } from '../particle/LineBreakParticle'
 export interface IPlaceholderRenderOption {
   placeholder: Required<IPlaceholder>
   startY?: number
+  startX?: number
+  innerWidth?: number
+  layoutScope?: string
+  pageNo?: number
 }
 
 export class Placeholder {
@@ -19,7 +23,7 @@ export class Placeholder {
   private options: DeepRequired<IEditorOption>
 
   private elementList: IElement[]
-  private rowList: IRow[]
+  private rowList: LayoutRow[]
   private positionList: IElementPosition[]
 
   constructor(draw: Draw) {
@@ -39,33 +43,38 @@ export class Placeholder {
   }
 
   public _compute(options?: IPlaceholderRenderOption) {
-    this._computeRowList()
+    this._computeRowList(options)
     this._computePositionList(options)
   }
 
-  private _computeRowList() {
-    const innerWidth = this.draw.getInnerWidth()
+  private _computeRowList(options?: IPlaceholderRenderOption) {
+    const innerWidth =
+      options?.innerWidth ??
+      this.draw.getInnerWidth(this.draw.getPageDirection(0))
     this.rowList = this.draw.computeRowList({
       innerWidth,
-      elementList: this.elementList
+      elementList: this.elementList,
+      layoutScope: options?.layoutScope || 'placeholder'
     })
   }
 
   private _computePositionList(options?: IPlaceholderRenderOption) {
     const { lineBreak, scale } = this.options
     const headerExtraHeight = this.draw.getHeader().getExtraHeight()
-    const innerWidth = this.draw.getInnerWidth()
-    const margins = this.draw.getMargins()
-    let startX = margins[3]
+    const innerWidth =
+      options?.innerWidth ??
+      this.draw.getInnerWidth(this.draw.getPageDirection(0))
+    const { margins } = this.draw.getPageSize(options?.pageNo ?? 0)
+    let startX = options?.startX ?? margins[3]
     // 换行符绘制开启时，移动起始位置
     if (!lineBreak.disabled) {
       startX += (LineBreakParticle.WIDTH + LineBreakParticle.GAP) * scale
     }
-    const startY = options?.startY || margins[0] + headerExtraHeight
+    const startY = options?.startY ?? margins[0] + headerExtraHeight
     this.position.computePageRowPosition({
       positionList: this.positionList,
       rowList: this.rowList,
-      pageNo: 0,
+      pageNo: options?.pageNo ?? 0,
       startRowIndex: 0,
       startIndex: 0,
       startX,
@@ -96,7 +105,9 @@ export class Placeholder {
     })
     // 计算
     this._compute(options)
-    const innerWidth = this.draw.getInnerWidth()
+    const innerWidth =
+      options?.innerWidth ??
+      this.draw.getInnerWidth(this.draw.getPageDirection(0))
     // 绘制
     ctx.save()
     ctx.globalAlpha = opacity
@@ -104,7 +115,7 @@ export class Placeholder {
       elementList: this.elementList,
       positionList: this.positionList,
       rowList: this.rowList,
-      pageNo: 0,
+      pageNo: options?.pageNo ?? 0,
       startIndex: 0,
       innerWidth,
       isDrawLineBreak: false

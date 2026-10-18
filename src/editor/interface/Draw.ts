@@ -1,8 +1,9 @@
+import type { LayoutNode, LayoutScopeId } from './Layout'
+import type { LayoutRow } from './LayoutRow'
 import { ImageDisplay } from '../dataset/enum/Common'
 import { EditorMode, EditorZone } from '../dataset/enum/Editor'
 import { TextDirection } from '../dataset/enum/TextDirection'
 import { IElement, IElementPosition } from './Element'
-import { IRow, IRowComputeState, IRowElement } from './Row'
 
 export interface IDrawOption {
   curIndex?: number
@@ -38,7 +39,7 @@ export interface IDrawImagePayload {
 export interface IDrawRowPayload {
   elementList: IElement[]
   positionList: IElementPosition[]
-  rowList: IRow[]
+  rowList: LayoutRow[]
   pageNo: number
   startIndex: number
   innerWidth: number
@@ -56,7 +57,7 @@ export interface IDrawFloatPayload {
 export interface IDrawPagePayload {
   elementList: IElement[]
   positionList: IElementPosition[]
-  rowList: IRow[]
+  rowList: LayoutRow[]
   pageNo: number
 }
 
@@ -85,6 +86,10 @@ export interface IGetImageOption {
 export interface IComputeRowListPayload {
   innerWidth: number
   elementList: IElement[]
+  /** Optional native output collector for recursive scope layout. */
+  nativeNodes?: LayoutNode[]
+  /** Area inherited from an enclosing table; its top gap belongs to the parent. */
+  inheritedAreaId?: string
   startX?: number
   startY?: number
   isFromTable?: boolean
@@ -95,42 +100,11 @@ export interface IComputeRowListPayload {
   defaultDirection?: TextDirection
   /** Alignment inherited by text inside a table cell. */
   defaultAlign?: 'left' | 'right'
-  /** Force legacy compute (used when embedding TABLE/IMAGE rows into text-engine) */
-  forceLegacy?: boolean
   /**
    * Isolate lastLayouts for main / header / footer / td:{id}.
    * Default `main`.
    */
-  layoutScope?: string
+  layoutScope?: LayoutScopeId
   /** Main-document dirty interval for paragraph-safe HarfBuzz reuse. */
   dirtyRange?: IComputeRange
-  /**
-   * 断点续算：从 state 对应的行首元素（startIndex）重新参与断行，
-   * 到与某个旧行状态收敛（converge 返回 true）或文档末尾即止，
-   * 收敛点之后的旧行对象可原样复用。
-   */
-  resume?: IComputeRowListResume
-}
-
-export interface IComputeRowListResume {
-  // 续算起始元素索引（须为行首元素，或 0）
-  startIndex: number
-  // 起始时刻的跨行状态快照
-  state: IRowComputeState
-  // 续算点上一行的末元素（行首隐藏元素的高度继承自它的度量）
-  preRowLastElement?: IRowElement
-  // 遇到复杂结构元素（表格/图片/控件等）时返回 true 中止续算，调用方退化全量
-  shouldAbort?: (element: IElement, index: number) => boolean
-  // 新行诞生回调：返回 true 表示与旧行状态收敛，续算提前结束
-  converge?: (
-    state: IRowComputeState,
-    firstElement: IElement,
-    startIndex: number
-  ) => boolean
-}
-
-// 行级增量计算结果：合并后的行列表 + 首个变动行
-export interface IIncrementalRowListResult {
-  rowList: IRow[]
-  firstChangedRow: IRow
 }

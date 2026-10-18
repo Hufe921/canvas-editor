@@ -8,6 +8,9 @@ export function getCanvasCalls(canvas: HTMLCanvasElement): MockCallEntry[] {
   return (ctx?.__getEvents?.() as MockCallEntry[]) ?? []
 }
 
-export function callsOf(canvas: HTMLCanvasElement, type: string): MockCallEntry[] {
+export function callsOf(
+  canvas: HTMLCanvasElement,
+  type: string
+): MockCallEntry[] {
   return getCanvasCalls(canvas).filter(e => e.type === type)
 }

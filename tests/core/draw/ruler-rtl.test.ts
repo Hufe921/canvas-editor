@@ -1,3 +1,4 @@
+import { createTestDraw } from '../../factories/draw'
 import { describe, expect, it, vi, afterEach } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -5,7 +6,7 @@ import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
-import { TextDirection, TextEngineMode } from '@/editor'
+import { TextDirection } from '@/editor'
 import { ZERO } from '@/editor/dataset/constant/Common'
 
 describe('RTL ruler mirroring', () => {
@@ -19,10 +20,9 @@ describe('RTL ruler mirroring', () => {
     vi.restoreAllMocks()
   })
 
-  function setup(direction: TextDirection.LTR | TextDirection.RTL) {
+  async function setup(direction: TextDirection.LTR | TextDirection.RTL) {
     const main: any[] = [{ value: ZERO }, { value: '正文' }, { value: '\n' }]
     const options = mergeOption({
-      textEngine: TextEngineMode.HARFBUZZ,
       defaultDirection: TextDirection.AUTO,
       direction,
       ruler: { disabled: false, height: 26 },
@@ -36,7 +36,7 @@ describe('RTL ruler mirroring', () => {
     })
     container = document.createElement('div')
     document.body.appendChild(container)
-    draw = new Draw(
+    draw = await createTestDraw(
       container,
       options,
       { main, header: [{ value: '\n' }], footer: [{ value: '\n' }] },
@@ -58,7 +58,7 @@ describe('RTL ruler mirroring', () => {
   }
 
   it('mirrors the horizontal ruler for RTL mode', async () => {
-    const d = setup(TextDirection.RTL)
+    const d = await setup(TextDirection.RTL)
     await d.getLayoutHostAdapter().ensureReady()
     const fillSpy = vi
       .spyOn(CanvasRenderingContext2D.prototype, 'fillRect')
@@ -75,7 +75,7 @@ describe('RTL ruler mirroring', () => {
   })
 
   it('keeps the horizontal ruler in LTR orientation', async () => {
-    const d = setup(TextDirection.LTR)
+    const d = await setup(TextDirection.LTR)
     await d.getLayoutHostAdapter().ensureReady()
     const fillSpy = vi
       .spyOn(CanvasRenderingContext2D.prototype, 'fillRect')
@@ -91,7 +91,7 @@ describe('RTL ruler mirroring', () => {
   })
 
   it('re-renders the ruler mirrored after toggling to RTL mode', async () => {
-    const d = setup(TextDirection.LTR)
+    const d = await setup(TextDirection.LTR)
     await d.getLayoutHostAdapter().ensureReady()
     // 先渲染一次（LTR），标尺 DOM 建立
     const fillSpy = vi

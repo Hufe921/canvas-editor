@@ -4,6 +4,7 @@ import { PaperDirection } from '../../../src/editor'
 describe('菜单-页面布局-指定页面横向', () => {
   beforeEach(() => {
     cy.visit('http://localhost:3000/canvas-editor/')
+    cy.window().its('editor.state').should('eq', 'ready')
 
     cy.get('canvas').first().as('canvas').should('have.length', 1)
   })

@@ -1,3 +1,7 @@
+import {
+  drawPlainText,
+  measurePlainText
+} from '../../text-engine-host/drawPlainText'
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
 import {
   EditorMode,
@@ -124,6 +128,7 @@ export class Ruler {
       }
       return
     }
+    if (!this.draw.getLayoutHostAdapter().isReady()) return
     if (!this.rulerContainer) {
       this._createDOM()
     }
@@ -142,7 +147,7 @@ export class Ruler {
     const canvasX = this.canvasX!
     const ctx = this.ctxX!
     const { height } = this.options.ruler
-    const width = this.draw.getWidth()
+    const { width } = this.draw.getPageSize(0)
     const dpr = this.draw.getPagePixelRatio()
     canvasX.style.width = `${width}px`
     canvasX.style.height = `${height}px`
@@ -154,7 +159,7 @@ export class Ruler {
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, width, height)
     // 页边距阴影区域（RTL 镜像：左页边距在右侧、右页边距在左侧）
-    const margins = this.draw.getMargins()
+    const { margins } = this.draw.getPageSize(0)
     const scale = this.options.scale
     const isRtl = this.options.direction === TextDirection.RTL
     ctx.fillStyle = '#f2f2f2'
@@ -168,8 +173,7 @@ export class Ruler {
     // 刻度（以毫米为单位，数字按厘米显示）；RTL 从右缘向内计数
     ctx.strokeStyle = '#999999'
     ctx.fillStyle = '#666666'
-    ctx.font = '8px sans-serif'
-    ctx.textAlign = 'center'
+    const labels: { text: string; position: number }[] = []
     ctx.beginPath()
     const mmPx = this.MM_PX * scale
     const tickCount = Math.floor(width / mmPx)
@@ -183,10 +187,12 @@ export class Ruler {
       ctx.lineTo(x, height - tickHeight)
       // 边缘处的刻度数字会被裁切，仅绘制完整可容纳的
       if (isCm && i > 0 && x >= 8 && x <= width - 8) {
-        ctx.fillText(String(i / 10), x, 9)
+        labels.push({ text: String(i / 10), position: x })
       }
     }
     ctx.stroke()
+    for (const label of labels)
+      this.drawLabel(ctx, label.text, label.position, 9)
     // 底部边框线
     ctx.beginPath()
     ctx.strokeStyle = '#e0e0e0'
@@ -209,7 +215,7 @@ export class Ruler {
     // 垂直标尺宽度与水平标尺高度一致
     const rulerSize = this.options.ruler.height
     // 仅对齐第一页
-    const pageHeight = this.draw.getHeight()
+    const { height: pageHeight } = this.draw.getPageSize(0)
     const dpr = this.draw.getPagePixelRatio()
     canvasY.style.width = `${rulerSize}px`
     canvasY.style.height = `${pageHeight}px`
@@ -221,7 +227,7 @@ export class Ruler {
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, rulerSize, pageHeight)
     // 上下页边距阴影区域
-    const margins = this.draw.getMargins()
+    const { margins } = this.draw.getPageSize(0)
     const scale = this.options.scale
     ctx.fillStyle = '#f2f2f2'
     ctx.fillRect(0, 0, rulerSize, margins[0])
@@ -229,8 +235,7 @@ export class Ruler {
     // 刻度（以毫米为单位，数字按厘米显示）
     ctx.strokeStyle = '#999999'
     ctx.fillStyle = '#666666'
-    ctx.font = '8px sans-serif'
-    ctx.textAlign = 'center'
+    const labels: { text: string; position: number }[] = []
     ctx.beginPath()
     const mmPx = this.MM_PX * scale
     const tickCount = Math.floor(pageHeight / mmPx)
@@ -242,14 +247,17 @@ export class Ruler {
       ctx.lineTo(rulerSize - tickWidth, y)
       // 边缘处的刻度数字会被裁切，仅绘制完整可容纳的
       if (isCm && i > 0 && y >= 8 && y <= pageHeight - 8) {
-        ctx.save()
-        ctx.translate(9, y)
-        ctx.rotate(-Math.PI / 2)
-        ctx.fillText(String(i / 10), 0, 0)
-        ctx.restore()
+        labels.push({ text: String(i / 10), position: y })
       }
     }
     ctx.stroke()
+    for (const label of labels) {
+      ctx.save()
+      ctx.translate(9, label.position)
+      ctx.rotate(-Math.PI / 2)
+      this.drawLabel(ctx, label.text, 0, 0)
+      ctx.restore()
+    }
     // 右侧边框线
     ctx.beginPath()
     ctx.strokeStyle = '#e0e0e0'
@@ -259,6 +267,23 @@ export class Ruler {
     // 上下边距手柄
     this._drawYHandle(ctx, margins[0], rulerSize)
     this._drawYHandle(ctx, pageHeight - margins[2], rulerSize)
+  }
+
+  private drawLabel(
+    ctx: CanvasRenderingContext2D,
+    text: string,
+    x: number,
+    y: number
+  ) {
+    const adapter = this.draw.getLayoutHostAdapter()
+    const style = {
+      text,
+      fontFamily: this.options.defaultFont,
+      fontSize: 8,
+      color: '#666666'
+    }
+    const metrics = measurePlainText(adapter, style)
+    if (metrics) drawPlainText(adapter, ctx, style, x - metrics.width / 2, y)
   }
 
   private _drawXHandle(
@@ -294,8 +319,8 @@ export class Ruler {
   }
 
   private _getHitMarginSideX(x: number): RulerMarginSide | null {
-    const width = this.draw.getWidth()
-    const margins = this.draw.getMargins()
+    const { width } = this.draw.getPageSize(0)
+    const { margins } = this.draw.getPageSize(0)
     const isRtl = this.options.direction === TextDirection.RTL
     const leftX = isRtl ? width - margins[3] : margins[3]
     const rightX = isRtl ? margins[1] : width - margins[1]
@@ -309,8 +334,8 @@ export class Ruler {
   }
 
   private _getHitMarginSideY(y: number): RulerMarginSide | null {
-    const pageHeight = this.draw.getHeight()
-    const margins = this.draw.getMargins()
+    const { height: pageHeight } = this.draw.getPageSize(0)
+    const { margins } = this.draw.getPageSize(0)
     if (Math.abs(y - margins[0]) <= this.HANDLE_HIT_TOLERANCE) {
       return RulerMarginSide.TOP
     }

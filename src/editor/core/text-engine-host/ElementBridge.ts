@@ -1,3 +1,4 @@
+import { resolveRowMargin } from '../layout/ParagraphStyleResolver'
 import { ZERO } from '../../dataset/constant/Common'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../../dataset/enum/Control'
@@ -111,12 +112,16 @@ export interface ScanParagraphOptions {
   defaultColor: string
   defaultHyperlinkColor?: string
   defaultLabelColor?: string
+  defaultLabelPadding?: number[]
   fonts?: IEditorFontFace[]
-  /** Match Draw measureText (size * scale) vs scaled innerWidth */
+  /** Scale font size and object geometry into the available-width coordinate space. */
   scale?: number
   checkboxWidth?: number
   checkboxGap?: number
   radioWidth?: number
+  defaultTabWidth?: number
+  defaultRowMargin?: number
+  defaultBasicRowMarginHeight?: number
   radioGap?: number
   /** 与 legacy 一致：隐藏元素零宽占位，供行高折叠 / 光标跳隐 */
   isDesignMode?: boolean
@@ -154,7 +159,11 @@ function isInlineImageOrLatex(el: IElement): boolean {
 }
 
 function isInlineObject(el: IElement): boolean {
-  return isInlineWidget(el) || isInlineImageOrLatex(el)
+  return (
+    el.type === ElementType.TAB ||
+    isInlineWidget(el) ||
+    isInlineImageOrLatex(el)
+  )
 }
 
 function isTextLike(el: IElement): boolean {
@@ -183,19 +192,29 @@ export class ElementBridge {
     let start = startIndex
     for (let i = startIndex; i <= endIndex; i++) {
       const el = elementList[i]
-      const isBreak =
-        i === endIndex ||
-        el.value === ZERO ||
-        el.type === ElementType.PAGE_BREAK ||
-        el.type === ElementType.SEPARATOR ||
-        el.type === ElementType.TABLE ||
-        el.type === ElementType.BLOCK ||
-        isParagraphBreakImage(el)
+      if (
+        i > start &&
+        i < endIndex &&
+        el.areaId !== elementList[i - 1]?.areaId
+      ) {
+        paragraphs.push(this.buildParagraph(elementList, start, i - 1, options))
+        start = i
+      }
+      const isObjectBreak =
+        i < endIndex &&
+        (el.type === ElementType.PAGE_BREAK ||
+          el.type === ElementType.SEPARATOR ||
+          el.type === ElementType.TABLE ||
+          el.type === ElementType.BLOCK ||
+          isParagraphBreakImage(el))
+      const isBreak = i === endIndex || el.value === ZERO || isObjectBreak
       if (!isBreak) continue
       if (i > start) {
         paragraphs.push(this.buildParagraph(elementList, start, i - 1, options))
       }
-      if (i < endIndex && el.value === ZERO) {
+      // A normal newline anchors the next paragraph. Dedicated object rows
+      // consume their own source slot, even when formatting gives them ZERO.
+      if (i < endIndex && el.value === ZERO && !isObjectBreak) {
         start = i
       } else {
         start = i + 1
@@ -228,7 +247,7 @@ export class ElementBridge {
       isTraceHidden
     } = options
     const hideCtx = { isDesignMode, isAreaHideDisabled, isTraceHidden }
-    // 先探测段方向（不含隔离符），LTR 不包 LRI/PDI，避免跨行控件 fillText 半截隔离错乱。
+    // 先探测段方向（不含隔离符），LTR 不包 LRI/PDI，保留控件与正文的自然方向边界。
     // 跳过段首 ZERO：标题后的 RTL 换行不应盖住后随 LTR 正文（如生命体征 T:/P:）。
     let declared = defaultDirection
     for (let i = startIndex; i <= endIndex; i++) {
@@ -258,8 +277,7 @@ export class ElementBridge {
     )
     // LTR 段若含 RTL 脚本文字，同样需要隔离控件括号，
     // 否则 BiDi 会把 {value} 重排成 }value{ 导致渲染错乱
-    const hasRtlContent =
-      direction === 'ltr' && textHasRtlDirection(probeText)
+    const hasRtlContent = direction === 'ltr' && textHasRtlDirection(probeText)
     const isolateBrackets = direction === 'rtl' || hasRtlContent
     const spans: TextSpan[] = []
     let text = ''
@@ -279,6 +297,7 @@ export class ElementBridge {
             fontFamily: defaultFont,
             fontSize,
             color: el.color || defaultColor,
+            hidden: true,
             objectWidth: 0,
             objectHeight: 0
           }
@@ -290,7 +309,9 @@ export class ElementBridge {
         const fontSize = (el.size || defaultSize) * scale
         let objectWidth: number
         let objectHeight: number | undefined
-        if (isInlineImageOrLatex(el)) {
+        if (el.type === ElementType.TAB) {
+          objectWidth = (options.defaultTabWidth ?? 32) * scale
+        } else if (isInlineImageOrLatex(el)) {
           objectWidth = Math.max(0, (el.width || 0) * scale)
           objectHeight = Math.max(0, (el.height || 0) * scale)
         } else {
@@ -309,6 +330,22 @@ export class ElementBridge {
             fontFamily: defaultFont,
             fontSize,
             color: el.color || defaultColor,
+            objectType:
+              el.type === ElementType.TAB
+                ? 'tab'
+                : isInlineImageOrLatex(el)
+                  ? (el.type as 'image' | 'latex')
+                  : el.type === ElementType.RADIO ||
+                      el.controlComponent === ControlComponent.RADIO
+                    ? 'radio'
+                    : 'checkbox',
+            rowMargin: resolveRowMargin(el, {
+              defaultSize,
+              defaultBasicRowMarginHeight:
+                options.defaultBasicRowMarginHeight ?? 8,
+              defaultRowMargin: options.defaultRowMargin ?? 1,
+              scale
+            }),
             objectWidth,
             ...(objectHeight != null ? { objectHeight } : {})
           }
@@ -326,32 +363,43 @@ export class ElementBridge {
       const isSub = el.type === ElementType.SUBSCRIPT
       const isLink = el.type === ElementType.HYPERLINK
       const isLabel = el.type === ElementType.LABEL
-      // 与 legacy computeRowList 一致：上下标绘制字号 = ceil(size * 0.6)
-      if (isSuper || isSub) {
-        el.actualSize = Math.ceil(baseSize * 0.6)
-      }
-      // 与 HyperlinkParticle 一致：默认链接触发色/下划线，保证引擎排版与绘制同源
-      if (isLink) {
-        if (!el.color) el.color = defaultHyperlinkColor
-        if (el.underline === undefined) el.underline = true
-      }
-      // 与 LabelParticle 一致：label.color → element.color，供 GlyphRenderer
-      if (isLabel && !el.color) {
-        el.color = el.label?.color || defaultLabelColor
-      }
-      const paintSize = (isSuper || isSub ? el.actualSize! : baseSize) * scale
+      const paintSize =
+        (isSuper || isSub ? Math.ceil(baseSize * 0.6) : baseSize) * scale
       const fallbackColor = isLink
         ? defaultHyperlinkColor
         : isLabel
-          ? defaultLabelColor
+          ? el.label?.color || defaultLabelColor
           : defaultColor
       const style: TextStyleProps = {
         fontFamily,
         fontSize: paintSize,
+        rowMargin: resolveRowMargin(el, {
+          defaultSize,
+          defaultBasicRowMarginHeight: options.defaultBasicRowMarginHeight ?? 8,
+          defaultRowMargin: options.defaultRowMargin ?? 1,
+          scale
+        }),
+        padding: isLabel
+          ? (
+              el.label?.padding ||
+              options.defaultLabelPadding || [0, 0, 0, 0]
+            ).map(v => v * scale)
+          : undefined,
+        control:
+          el.controlId && el.control
+            ? {
+                id: el.controlId,
+                minWidth: el.control.minWidth || 0,
+                flex: el.control.rowFlex,
+                component: el.controlComponent || '',
+                valueStart: el.control.indentation === 'valueStart'
+              }
+            : undefined,
+        explicitWidth: el.width == null ? undefined : el.width * scale,
         bold: el.bold,
         italic: el.italic,
         color: el.color || fallbackColor,
-        letterSpacing: el.letterSpacing,
+        letterSpacing: (el.letterSpacing || 0) * scale,
         scriptShift: isSuper ? 'super' : isSub ? 'sub' : undefined
       }
       // RTL 段：LTR 单位（cm/kg/BMI:）按字符拆分为独立的 LRI…PDI 岛，
@@ -396,14 +444,19 @@ export class ElementBridge {
           }
         }
       }
-      const chunk =
-        ltrPrefix + isolatePrefix + el.value + isolatePostfix
+      const chunk = ltrPrefix + isolatePrefix + el.value + isolatePostfix
       const styleKey = this.styleKey(style)
       const last = spans[spans.length - 1]
       // 元素内每个 UTF-16 单元都映射到该元素下标（含 isolate；grapheme 可能多码元）
       const charLogicalIndices = new Array(chunk.length).fill(i)
       // 相邻同样式合并；color 不同会拆 span，由 layout.mergeRunsForShaping 再拼回整形
-      if (last && this.styleKey(last.style) === styleKey) {
+      if (
+        last &&
+        !style.padding &&
+        style.explicitWidth == null &&
+        last.style.explicitWidth == null &&
+        this.styleKey(last.style) === styleKey
+      ) {
         last.text += chunk
         last.logicalIndices = (last.logicalIndices || []).concat(
           charLogicalIndices
@@ -423,6 +476,23 @@ export class ElementBridge {
       last.text += PDI
       last.logicalIndices = (last.logicalIndices || []).concat(endIndex)
       text += PDI
+    }
+    for (const span of spans) {
+      const el = elementList[span.logicalIndex]
+      if (
+        !span.style.hidden &&
+        !span.style.control &&
+        el.controlId &&
+        el.control
+      ) {
+        span.style.control = {
+          id: el.controlId,
+          minWidth: el.control.minWidth || 0,
+          flex: el.control.rowFlex,
+          component: el.controlComponent || '',
+          valueStart: el.control.indentation === 'valueStart'
+        }
+      }
     }
     return {
       startIndex,
@@ -450,6 +520,8 @@ export class ElementBridge {
 
   private styleKey(style: TextStyleProps): string {
     return [
+      JSON.stringify(style.padding),
+      JSON.stringify(style.control),
       style.fontFamily,
       style.fontSize,
       style.bold,
@@ -457,6 +529,8 @@ export class ElementBridge {
       style.color,
       style.letterSpacing,
       style.scriptShift || '',
+      style.rowMargin ?? '',
+      style.explicitWidth ?? '',
       style.objectWidth ?? '',
       style.objectHeight ?? ''
     ].join('|')

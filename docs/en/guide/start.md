@@ -49,7 +49,7 @@ npm i @hufe921/canvas-editor --save
 ```javascript
 import Editor from '@hufe921/canvas-editor'
 
-new Editor(
+const editor = await Editor.create(
   document.querySelector('.canvas-editor'),
   [
     {
@@ -63,9 +63,9 @@ new Editor(
 - Examples that contain body, header, footer content
 
 ```javascript
-import Editor from '@hufe921/canvas-editor'
+import Editor, { RowFlex } from '@hufe921/canvas-editor'
 
-new Editor(
+const editor = await Editor.create(
   document.querySelector('.canvas-editor'),
   {
     header: [
@@ -93,3 +93,24 @@ new Editor(
 ## Step. 4: Configuration Editor
 
 See the next section for details
+
+## Initialization, fonts and ESM migration
+
+All text uses HarfBuzz; no engine selection is required. `autoDownloadFonts`
+defaults to true and requests basic fonts from Bunny Fonts for uncovered text.
+Readiness waits for WASM, configured fonts and the first layout, not background
+downloads. Rare characters, emoji and special styles may need additional fonts.
+
+Pass `{ autoDownloadFonts: false }` to disable automatic downloads. Missing-font
+hints remain available; manually supply bytes using
+`await editor.register.fonts([{ family, data }])`. `Editor.create` rejects and
+cleans up on WASM/first-layout failure. With synchronous construction, await
+`editor.ready` before commands.
+
+Only root ESM imports are supported; UMD, require and internal deep imports are
+unsupported. `textEngine`, `renderMode` and their enums have been removed; passing
+the old keys throws a migration error. Use Vite `build.target: 'esnext'` and deploy
+all generated relative chunks together.
+
+See [Fonts and ESM migration](./font-and-esm-migration.md) for public APIs, coverage
+limits and offline integration. A runnable example is in `examples/esm-fonts`.

@@ -1,6 +1,15 @@
+/// <reference types="emscripten" preserve="true" />
+import type { EditorLifecycle } from './core/EditorLifecycle'
+import type { FontCoverageReport } from './interface/FontCoverage'
+import type { EditorRuntimeState } from './interface/Runtime'
 import './assets/css/index.css'
 import { version } from '../../package.json'
-import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
+import {
+  IEditorData,
+  IEditorOption,
+  IEditorResult,
+  IUpdateOption
+} from './interface/Editor'
 import { IElement } from './interface/Element'
 import { Draw } from './core/draw/Draw'
 import { Command } from './core/command/Command'
@@ -10,18 +19,10 @@ import { RowFlex } from './dataset/enum/Row'
 import {
   CaretMovement,
   DeleteMovement,
-  TextDirection,
-  TextEngineMode
+  TextDirection
 } from './dataset/enum/TextDirection'
 import { TextScript } from './dataset/enum/TextScript'
-import {
-  FlexDirection,
-  ImageDisplay,
-  LocationPosition,
-  SurroundPosition
-} from './dataset/enum/Common'
 import { ElementType } from './dataset/enum/Element'
-import { formatElementList } from './utils/element'
 import { Register } from './core/register/Register'
 import { ContextMenu } from './core/contextmenu/ContextMenu'
 import {
@@ -30,12 +31,11 @@ import {
 } from './interface/contextmenu/ContextMenu'
 import {
   EditorComponent,
-  EditorZone,
   EditorMode,
+  EditorZone,
   PageMode,
   PaperDirection,
-  WordBreak,
-  RenderMode
+  WordBreak
 } from './dataset/enum/Editor'
 import { EDITOR_CLIPBOARD, EDITOR_COMPONENT } from './dataset/constant/Editor'
 import { IWatermark } from './interface/Watermark'
@@ -54,7 +54,14 @@ import { IBlock } from './interface/Block'
 import { ILang } from './interface/i18n/I18n'
 import { VerticalAlign } from './dataset/enum/VerticalAlign'
 import { TableBorder, TdBorder, TdSlash } from './dataset/enum/table/Table'
-import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
+import {
+  FlexDirection,
+  ImageDisplay,
+  LocationPosition,
+  MaxHeightRatio,
+  NumberType,
+  SurroundPosition
+} from './dataset/enum/Common'
 import { TitleLevel } from './dataset/enum/Title'
 import { ListStyle, ListType } from './dataset/enum/List'
 import { ICatalog, ICatalogItem } from './interface/Catalog'
@@ -71,6 +78,7 @@ import { IRange, RangeRect } from './interface/Range'
 import { deepClone, splitText } from './utils'
 import {
   createDomFromElementList,
+  formatElementList,
   getElementListByHTML,
   getTextFromElementList,
   type IGetElementListByHTMLOption
@@ -86,6 +94,37 @@ import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
 import { IGraffitiData } from './interface/Graffiti'
 
 export default class Editor {
+  private readonly lifecycle: EditorLifecycle
+  /** Resolves after WASM, configured fonts and first layout; not background downloads. */
+  public readonly ready: Promise<void>
+
+  get state(): EditorRuntimeState {
+    return this.lifecycle.state
+  }
+
+  get initializationError() {
+    return this.lifecycle.error
+  }
+
+  /** Creates a ready instance; destroys the partial instance if initialization fails. */
+  static async create(
+    container: HTMLDivElement,
+    data: IEditorData | IElement[],
+    options: IEditorOption = {}
+  ): Promise<Editor> {
+    const editor = new Editor(container, data, options)
+    try {
+      await editor.ready
+      return editor
+    } catch (error) {
+      editor.destroy()
+      throw error
+    }
+  }
+  /** Retries current missing-font downloads after ready, respecting autoDownloadFonts. */
+  public retryFontDownloads: () => void
+  /** Detached current coverage snapshot; subscribe to fontCoverageChange for updates. */
+  public getFontCoverageReport: () => FontCoverageReport
   public command: Command
   public version: string
   public listener: Listener
@@ -151,21 +190,45 @@ export default class Editor {
       this.override
     )
     // 命令
-    this.command = new Command(new CommandAdapt(draw))
+    this.lifecycle = draw.getLifecycle()
+    this.ready = draw.ready
+    this.command = new Command(new CommandAdapt(draw), name => {
+      this.lifecycle.assertReady(
+        [
+          'getValue',
+          'getValueAsync',
+          'getLocale',
+          'getContainer',
+          'executeComputeElementListHeightAsync'
+        ].includes(name)
+      )
+    })
     // 宏
     this.macro = new MacroManager(this.command)
     // 菜单
     const contextMenu = new ContextMenu(draw, this.command)
     // 快捷键
     const shortcut = new Shortcut(draw, this.command)
+    this.retryFontDownloads = draw.retryFontDownloads.bind(draw)
+    this.getFontCoverageReport = draw.getFontCoverageReport.bind(draw)
     // 注册
     this.register = new Register({
       contextMenu,
       shortcut,
-      i18n: draw.getI18n()
+      i18n: draw.getI18n(),
+      fonts: draw.registerFonts.bind(draw),
+      getFontFaces: () => {
+        this.lifecycle.assertReady(true)
+        return draw.getLayoutHostAdapter().getFontManager().getFaces()
+      },
+      getFontRevision: () => {
+        this.lifecycle.assertReady(true)
+        return draw.getLayoutHostAdapter().getFontManager().getRevision()
+      }
     })
     // 注册销毁方法
     this.destroy = () => {
+      if (this.state === 'destroyed') return
       draw.destroy()
       shortcut.removeEvent()
       contextMenu.removeEvent()
@@ -179,85 +242,135 @@ export default class Editor {
 
 // 对外方法
 export {
-  splitText,
   createDomFromElementList,
   getElementListByHTML,
-  getTextFromElementList
+  getTextFromElementList,
+  splitText
 }
 
 // 对外常量
 export {
+  EDITOR_CLIPBOARD,
   EDITOR_COMPONENT,
-  LETTER_CLASS,
   INTERNAL_CONTEXT_MENU_KEY,
   INTERNAL_SHORTCUT_KEY,
-  EDITOR_CLIPBOARD
+  LETTER_CLASS
 }
 
 // 对外枚举
 export {
-  Editor,
-  RowFlex,
-  TextDirection,
-  TextEngineMode,
-  TextScript,
-  CaretMovement,
-  DeleteMovement,
-  VerticalAlign,
-  EditorZone,
-  EditorMode,
-  ElementType,
-  ControlType,
-  EditorComponent,
-  PageMode,
-  RenderMode,
-  ImageDisplay,
-  Command,
-  KeyMap,
+  AreaMode,
+  BackgroundRepeat,
+  BackgroundSize,
   BlockType,
+  CaretMovement,
+  Command,
+  ControlComponent,
+  ControlIndentation,
+  ControlState,
+  ControlType,
+  DeleteMovement,
+  Editor,
+  EditorComponent,
+  EditorMode,
+  EditorZone,
+  ElementType,
+  FlexDirection,
+  ImageDisplay,
+  KeyMap,
+  LineNumberType,
+  ListStyle,
+  ListType,
+  LocationPosition,
   MacroType,
+  MaxHeightRatio,
+  NumberType,
+  PageMode,
   PaperDirection,
+  RowFlex,
+  SurroundPosition,
   TableBorder,
   TdBorder,
   TdSlash,
-  MaxHeightRatio,
-  NumberType,
-  TitleLevel,
-  ListType,
-  ListStyle,
-  WordBreak,
-  ControlIndentation,
-  ControlComponent,
-  BackgroundRepeat,
-  BackgroundSize,
   TextDecorationStyle,
-  LineNumberType,
-  LocationPosition,
-  SurroundPosition,
-  AreaMode,
-  ControlState,
-  FlexDirection,
+  TextDirection,
+  TextScript,
+  TitleLevel,
+  VerticalAlign,
+  WatermarkLayer,
   WatermarkType,
-  WatermarkLayer
+  WordBreak
 }
 
 // 对外类型
 export type {
-  IElement,
+  IBadge,
+  IBlock,
+  ICatalog,
+  ICatalogItem,
+  IContextMenuContext,
   IEditorData,
   IEditorOption,
   IEditorResult,
-  IContextMenuContext,
-  IRegisterContextMenu,
-  IWatermark,
-  INavigateInfo,
-  IBlock,
+  IUpdateOption,
+  IElement,
+  IGetElementListByHTMLOption,
   ILang,
-  ICatalog,
-  ICatalogItem,
+  INavigateInfo,
   IRange,
   IRangeStyle,
-  RangeRect,
-  IBadge,
-  IGetElementListByHTMLOption
+  IRegisterContextMenu,
+  IWatermark,
+  RangeRect
 }
+
+export type {
+  FontCodePoint,
+  FontCoverageChange,
+  FontCoverageIssue,
+  FontCoverageIssueBase,
+  FontCoverageLocation,
+  FontCoverageReason,
+  FontCoverageReport,
+  FontDownloadAttempt,
+  FontDownloadStatus,
+  FontFailureStage
+} from './interface/FontCoverage'
+export type {
+  BlockBox,
+  BreakNode,
+  DocumentLayout,
+  InlineObject,
+  LayoutCaret,
+  LayoutCluster,
+  LayoutFontRef,
+  LayoutGlyph,
+  LayoutNode,
+  LayoutNodeBase,
+  LayoutPage,
+  LayoutRect,
+  LayoutRevision,
+  LayoutScope,
+  LayoutScopeId,
+  LayoutSource,
+  LayoutTextPosition,
+  MissingGlyphBox,
+  TableCellLayout,
+  TableFragment,
+  TextLine
+} from './interface/Layout'
+
+export { EditorRuntimeError } from './core/EditorLifecycle'
+export type {
+  EditorRuntimeErrorCode,
+  EditorRuntimeState
+} from './interface/Runtime'
+
+export type {
+  FontBinaryFormat,
+  FontPlaceholderMetrics,
+  FontRegistrationFailure,
+  FontRegistrationResult,
+  IEditorFontFace,
+  RegisteredFontFace
+} from './interface/TextEngine'

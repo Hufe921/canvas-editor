@@ -429,7 +429,7 @@ export class TableTool {
       colBorder.style.height = `${tdHeight * scale}px`
       colBorder.style.top = `${td.y! * scale + tdOffsetY}px`
       colBorder.style.left = `${
-        (td.x! + td.width!) * scale - this.BORDER_VALUE / 2
+        (mirrored ? td.x! : td.x! + td.width!) * scale - this.BORDER_VALUE / 2
       }px`
       // 列高度拖拽开始
       colBorder.onmousedown = evt => {
@@ -566,11 +566,15 @@ export class TableTool {
               }
               colgroup[index].width -= applyDx
               element.width! -= applyDx
-              element.translateX = (element.translateX || 0) + applyDx
+              if (!isTableMirrored(element, this.options)) {
+                element.translateX = (element.translateX || 0) + applyDx
+              }
               isChangeSize = true
             } else {
+              // Logical column ends are on the left in a mirrored table.
+              if (isTableMirrored(element, this.options)) moveDx = -moveDx
               // 宽度分配
-              const innerWidth = this.draw.getOriginalInnerWidth()
+              const innerWidth = this.draw.getTableContainerWidth(element)
               const curColWidth = colgroup[index].width
               // 最小移动距离计算-如果向左移动：使单元格小于最小宽度，则减少移动量
               if (moveDx < 0 && curColWidth + moveDx < this.MIN_TD_WIDTH) {

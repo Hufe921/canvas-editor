@@ -13,6 +13,7 @@
 @import './trace/trace.css';
 @import './hint/hint.css';
 @import './ruler/ruler.css';
+@import './font/fontDiagnostics.css';
 
 .ce-inputarea {
   width: 100px;

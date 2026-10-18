@@ -59,7 +59,10 @@ describe('Accessibility', () => {
       const liveDom = draw._container.querySelector('[aria-live="assertive"]')
       expect(liveDom).not.toBeNull()
       expect(liveDom?.getAttribute('aria-atomic')).toBe('true')
-      expect(draw._eventBus.on).toHaveBeenCalledWith('rangeChange', expect.any(Function))
+      expect(draw._eventBus.on).toHaveBeenCalledWith(
+        'rangeChange',
+        expect.any(Function)
+      )
       a11y.destroy()
     })
   })
@@ -70,7 +73,9 @@ describe('Accessibility', () => {
       const a11y = new Accessibility(draw)
       draw._rangeManager.toString.mockReturnValue('hello world')
       a11y.selection()
-      const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
       expect(liveDom.textContent).toBe('选中：hello world')
       a11y.destroy()
     })
@@ -108,7 +113,9 @@ describe('Accessibility', () => {
       const a11y = new Accessibility(draw)
       draw._rangeManager.toString.mockReturnValue('   ')
       a11y.selection()
-      const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
       expect(liveDom.textContent).toBe('')
       a11y.destroy()
     })
@@ -127,7 +134,9 @@ describe('Accessibility', () => {
       const draw = createMockDraw({ disabled: false })
       const a11y = new Accessibility(draw)
       a11y.input('abc')
-      const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
       expect(liveDom.textContent).toBe('输入：abc')
       a11y.destroy()
     })
@@ -136,7 +145,9 @@ describe('Accessibility', () => {
       const draw = createMockDraw({ disabled: false })
       const a11y = new Accessibility(draw)
       a11y.input('a​b\nc')
-      const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
       expect(liveDom.textContent).toBe('输入：abc')
       a11y.destroy()
     })
@@ -145,7 +156,9 @@ describe('Accessibility', () => {
       const draw = createMockDraw({ disabled: false })
       const a11y = new Accessibility(draw)
       a11y.input('   ')
-      const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
       expect(liveDom.textContent).toBe('')
       a11y.destroy()
     })
@@ -164,7 +177,9 @@ describe('Accessibility', () => {
       const draw = createMockDraw({ disabled: false })
       const a11y = new Accessibility(draw)
       a11y.assertive('测试消息')
-      const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
       expect(liveDom.textContent).toBe('测试消息')
       a11y.destroy()
     })
@@ -187,7 +202,9 @@ describe('Accessibility', () => {
         (call: any) => call[0] === 'rangeChange'
       )[1]
       handler({ startIndex: 0, endIndex: 5 })
-      const liveDom = draw._container.querySelector('[aria-live="assertive"]') as HTMLDivElement
+      const liveDom = draw._container.querySelector(
+        '[aria-live="assertive"]'
+      ) as HTMLDivElement
       expect(liveDom.textContent).toBe('选中：hello')
       a11y.destroy()
     })
@@ -212,7 +229,10 @@ describe('Accessibility', () => {
       expect(draw._container.querySelector('[aria-live]')).not.toBeNull()
       a11y.destroy()
       expect(draw._container.querySelector('[aria-live]')).toBeNull()
-      expect(draw._eventBus.off).toHaveBeenCalledWith('rangeChange', expect.any(Function))
+      expect(draw._eventBus.off).toHaveBeenCalledWith(
+        'rangeChange',
+        expect.any(Function)
+      )
     })
 
     it('disabled: true 时安全退出', () => {

@@ -24,13 +24,13 @@ describe('control bracket LRI isolate', () => {
         control,
         controlComponent: ControlComponent.PREFIX
       },
-      ...('干预建议'.split('').map(value => ({
+      ...'干预建议'.split('').map(value => ({
         value,
         type: ElementType.CONTROL,
         control,
         controlComponent: ControlComponent.PLACEHOLDER,
         color: '#ccc'
-      }))),
+      })),
       {
         value: '}',
         type: ElementType.CONTROL,
@@ -109,13 +109,13 @@ describe('control bracket LRI isolate', () => {
         control,
         controlComponent: ControlComponent.PREFIX
       },
-      ...('10-08-2022'.split('').map(value => ({
+      ...'10-08-2022'.split('').map(value => ({
         value,
         direction: TextDirection.RTL,
         type: ElementType.CONTROL,
         control,
         controlComponent: ControlComponent.VALUE
-      }))),
+      })),
       {
         value: '}',
         direction: TextDirection.RTL,

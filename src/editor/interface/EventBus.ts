@@ -1,3 +1,4 @@
+import type { FontCoverageChange } from './FontCoverage'
 import {
   IContentChange,
   IControlChange,
@@ -23,6 +24,8 @@ import {
 import type { ISpellcheckClick } from './Spellcheck'
 
 export interface EventBusMap {
+  /** Current document font coverage snapshot. */
+  fontCoverageChange: FontCoverageChange
   rangeStyleChange: IRangeStyleChange
   visiblePageNoListChange: IVisiblePageNoListChange
   intersectionPageNoChange: IIntersectionPageNoChange
