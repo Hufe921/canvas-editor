@@ -391,17 +391,25 @@ export class DatePicker {
       s: 0,
       S: 0
     }
+    // 12小时制（h）无 AM/PM 标记，按 24 小时制解析，12 视为中午
     const tokenAlias: Record<string, string> = { Y: 'y', D: 'd', h: 'H' }
     tokenList.forEach((token, index) => {
       dateOption[tokenAlias[token] || token] = Number(result[index + 1])
     })
     const { y, M, d, H, m, s, S } = dateOption
     const date = new Date(y, M - 1, d, H, m, s, S)
-    // 排除溢出日期（如：13月、2月30日）
+    // new Date 会将 0-99 年解释为 19xx，需显式校正
+    date.setFullYear(y)
+    // 排除溢出值（如：13月、2月30日、99分）
+    const hasToken = (token: string) => tokenList.includes(token)
     if (
       this.isInvalidDate(date) ||
       date.getMonth() !== M - 1 ||
-      date.getDate() !== d
+      date.getDate() !== d ||
+      ((hasToken('H') || hasToken('h')) && date.getHours() !== H) ||
+      (hasToken('m') && date.getMinutes() !== m) ||
+      (hasToken('s') && date.getSeconds() !== s) ||
+      (hasToken('S') && date.getMilliseconds() !== S)
     ) {
       return null
     }

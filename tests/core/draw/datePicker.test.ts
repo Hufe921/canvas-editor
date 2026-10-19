@@ -65,4 +65,17 @@ describe('DatePicker parseDate', () => {
     expect(datePicker.parseDate('2026-02-30', 'yyyy-MM-dd')).toBeNull()
     expect(datePicker.parseDate('2026-13-01', 'yyyy-MM-dd')).toBeNull()
   })
+
+  it('时分秒溢出返回 null', () => {
+    const format = 'yyyy-MM-dd HH:mm:ss'
+    expect(datePicker.parseDate('2026-10-19 25:03:08', format)).toBeNull()
+    expect(datePicker.parseDate('2026-10-19 15:99:08', format)).toBeNull()
+    expect(datePicker.parseDate('2026-10-19 15:03:99', format)).toBeNull()
+  })
+
+  it('两位数年份按实际值解析', () => {
+    expect(
+      datePicker.parseDate('0099-10-19', 'yyyy-MM-dd')?.getFullYear()
+    ).toBe(99)
+  })
 })
