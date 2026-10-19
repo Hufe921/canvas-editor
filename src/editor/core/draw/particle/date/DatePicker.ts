@@ -368,10 +368,53 @@ export class DatePicker {
     return value.toDateString() === 'Invalid Date'
   }
 
+  public parseDate(value: string, format: string): Date | null {
+    // 按格式生成匹配正则，记录占位符顺序
+    const tokenList: string[] = []
+    const pattern = format
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/y+|Y+|M+|d+|D+|h+|H+|m+|s+|S+/g, token => {
+        tokenList.push(token[0])
+        return token.length === 1 ? '(\\d+)' : `(\\d{${token.length},})`
+      })
+    const result = new RegExp(`^${pattern}$`).exec(value)
+    if (!result) return null
+    // 缺省值：包含年月日占位符时从1月1日起，仅时间时取当天
+    const now = new Date()
+    const hasDateToken = tokenList.some(token => /[yYMdD]/.test(token))
+    const dateOption: Record<string, number> = {
+      y: now.getFullYear(),
+      M: hasDateToken ? 1 : now.getMonth() + 1,
+      d: hasDateToken ? 1 : now.getDate(),
+      H: 0,
+      m: 0,
+      s: 0,
+      S: 0
+    }
+    const tokenAlias: Record<string, string> = { Y: 'y', D: 'd', h: 'H' }
+    tokenList.forEach((token, index) => {
+      dateOption[tokenAlias[token] || token] = Number(result[index + 1])
+    })
+    const { y, M, d, H, m, s, S } = dateOption
+    const date = new Date(y, M - 1, d, H, m, s, S)
+    // 排除溢出日期（如：13月、2月30日）
+    if (
+      this.isInvalidDate(date) ||
+      date.getMonth() !== M - 1 ||
+      date.getDate() !== d
+    ) {
+      return null
+    }
+    return date
+  }
+
   private _setValue() {
     const value = this.renderOptions?.value
     if (value) {
-      const setDate = new Date(value)
+      // 优先按 dateFormat 解析，兼容非标准格式（如：yyyy年MM月dd日）
+      const dateFormat = this.renderOptions?.dateFormat
+      const setDate =
+        (dateFormat && this.parseDate(value, dateFormat)) || new Date(value)
       this.now = this.isInvalidDate(setDate) ? new Date() : setDate
     } else {
       this.now = new Date()

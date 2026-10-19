@@ -85,7 +85,9 @@ Common properties, plus:
 
 | Property     | Type     | Description                               |
 | ------------ | -------- | ----------------------------------------- |
-| `dateFormat` | `string` | Date format. Default: yyyy-MM-dd hh:mm:ss |
+| `dateFormat` | `string` | Date format. Default: yyyy-MM-dd HH:mm:ss |
+
+`dateFormat` tokens: `yyyy`/`YYYY` year, `MM` month, `dd`/`DD` day, `HH` hour (24-hour), `hh` hour (12-hour), `mm` minute, `ss` second, `SSS` millisecond. Other characters are kept as-is, e.g. `yyyy年MM月dd日 HH时mm分ss秒`.
 
 ## NUMBER Control
 

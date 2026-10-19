@@ -85,7 +85,9 @@
 
 | 属性         | 类型     | 说明                                |
 | ------------ | -------- | ----------------------------------- |
-| `dateFormat` | `string` | 日期格式。默认：yyyy-MM-dd hh:mm:ss |
+| `dateFormat` | `string` | 日期格式。默认：yyyy-MM-dd HH:mm:ss |
+
+`dateFormat` 占位符：`yyyy`/`YYYY` 年、`MM` 月、`dd`/`DD` 日、`HH` 时（24 小时制）、`hh` 时（12 小时制）、`mm` 分、`ss` 秒、`SSS` 毫秒，其余字符原样保留，如 `yyyy年MM月dd日 HH时mm分ss秒`。
 
 ## NUMBER 数值控件
 
