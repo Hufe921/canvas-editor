@@ -68,6 +68,7 @@
 | `min`           | `number`                            | 最少选择数                    |
 | `max`           | `number`                            | 最多选择数                    |
 | `flexDirection` | `FlexDirection`                     | 排列方向                      |
+| `markType`      | `CheckboxMarkType`                  | 选中标记样式（对勾/叉）       |
 
 ## RADIO 单选框控件
 

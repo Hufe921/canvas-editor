@@ -68,6 +68,7 @@ Common properties, plus:
 | `min`           | `number`                            | Minimum selections               |
 | `max`           | `number`                            | Maximum selections               |
 | `flexDirection` | `FlexDirection`                     | Layout direction                 |
+| `markType`      | `CheckboxMarkType`                  | Check mark style (check/cross)   |
 
 ## RADIO Control
 

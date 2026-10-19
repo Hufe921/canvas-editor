@@ -9,6 +9,7 @@ import { Listener } from './core/listener/Listener'
 import { RowFlex } from './dataset/enum/Row'
 import {
   FlexDirection,
+  CheckboxMarkType,
   ImageDisplay,
   LocationPosition,
   SurroundPosition
@@ -225,6 +226,7 @@ export {
   AreaMode,
   ControlState,
   FlexDirection,
+  CheckboxMarkType,
   WatermarkType,
   WatermarkLayer
 }
