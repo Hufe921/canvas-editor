@@ -3,6 +3,7 @@ import './style.css'
 import prism from 'prismjs'
 import Editor, {
   BlockType,
+  CheckboxMarkType,
   Command,
   ControlState,
   ControlType,
@@ -852,12 +853,32 @@ window.onload = function () {
               required: true,
               height: 100,
               placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            },
+            {
+              type: 'select',
+              label: '样式',
+              name: 'markType',
+              value: CheckboxMarkType.CHECK,
+              required: true,
+              options: [
+                {
+                  label: '对勾',
+                  value: CheckboxMarkType.CHECK
+                },
+                {
+                  label: '叉',
+                  value: CheckboxMarkType.CROSS
+                }
+              ]
             }
           ],
           onConfirm: payload => {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
+            const markType = <CheckboxMarkType>(
+              payload.find(p => p.name === 'markType')?.value
+            )
             instance.command.executeInsertControl({
               type: ElementType.CONTROL,
               value: '',
@@ -865,7 +886,8 @@ window.onload = function () {
                 type,
                 code,
                 value: null,
-                valueSets: JSON.parse(valueSets)
+                valueSets: JSON.parse(valueSets),
+                markType
               }
             })
           }

@@ -108,6 +108,7 @@ interface IElement {
   // checkbox
   checkbox?: {
     value: boolean | null;
+    markType?: CheckboxMarkType;
   };
   // radio
   radio?: {

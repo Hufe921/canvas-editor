@@ -210,6 +210,7 @@ interface ICheckboxOption {
   checkFillStyle?: string // 选中时填充样式
   checkStrokeStyle?: string // 选中时边框颜色
   checkMarkColor?: string // 对勾颜色
+  markType?: CheckboxMarkType // 选中标记样式（对勾/叉）。默认：CHECK
   verticalAlign?: VerticalAlign // 垂直对齐方式。默认：MIDDLE
 }
 ```

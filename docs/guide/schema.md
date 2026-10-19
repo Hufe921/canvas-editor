@@ -108,6 +108,7 @@ interface IElement {
   // 复选框
   checkbox?: {
     value: boolean | null;
+    markType?: CheckboxMarkType;
   };
   // 单选框
   radio?: {

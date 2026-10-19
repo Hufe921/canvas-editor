@@ -1,4 +1,5 @@
 import { NBSP, ZERO } from '../../../dataset/constant/Common'
+import { CheckboxMarkType } from '../../../dataset/enum/Common'
 import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
@@ -50,11 +51,12 @@ export class CheckboxParticle {
         checkFillStyle,
         checkStrokeStyle,
         checkMarkColor,
+        markType,
         verticalAlign
       },
       scale
     } = this.options
-    const { metrics, checkbox } = row.elementList[index]
+    const { metrics, checkbox, control } = row.elementList[index]
     // 垂直布局设置
     if (
       verticalAlign === VerticalAlign.TOP ||
@@ -101,13 +103,24 @@ export class CheckboxParticle {
       ctx.strokeStyle = checkStrokeStyle
       ctx.rect(left, top, width, height)
       ctx.stroke()
-      // 勾选对号
+      // 勾选标记：元素 > 控件 > 全局配置
       ctx.beginPath()
       ctx.strokeStyle = checkMarkColor
       ctx.lineWidth = lineWidth * 2 * scale
-      ctx.moveTo(left + 2 * scale, top + height / 2)
-      ctx.lineTo(left + width / 2, top + height - 3 * scale)
-      ctx.lineTo(left + width - 2 * scale, top + 3 * scale)
+      const checkMarkType = checkbox.markType || control?.markType || markType
+      if (checkMarkType === CheckboxMarkType.CROSS) {
+        // 叉号
+        const padding = 3 * scale
+        ctx.moveTo(left + padding, top + padding)
+        ctx.lineTo(left + width - padding, top + height - padding)
+        ctx.moveTo(left + width - padding, top + padding)
+        ctx.lineTo(left + padding, top + height - padding)
+      } else {
+        // 对号
+        ctx.moveTo(left + 2 * scale, top + height / 2)
+        ctx.lineTo(left + width / 2, top + height - 3 * scale)
+        ctx.lineTo(left + width - 2 * scale, top + 3 * scale)
+      }
       ctx.stroke()
     } else {
       // 未选中时填充背景

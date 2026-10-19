@@ -1,4 +1,8 @@
-import { FlexDirection, LocationPosition } from '../dataset/enum/Common'
+import {
+  CheckboxMarkType,
+  FlexDirection,
+  LocationPosition
+} from '../dataset/enum/Common'
 import {
   ControlType,
   ControlIndentation,
@@ -34,6 +38,7 @@ export interface IControlCheckbox {
   max?: number
   flexDirection: FlexDirection
   valueSets: IValueSet[]
+  markType?: CheckboxMarkType
 }
 
 export interface IControlRadio {

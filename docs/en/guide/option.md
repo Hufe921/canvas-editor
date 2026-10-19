@@ -210,6 +210,7 @@ interface ICheckboxOption {
   checkFillStyle?: string // Fill style when checked
   checkStrokeStyle?: string // Border color when checked
   checkMarkColor?: string // Check mark color
+  markType?: CheckboxMarkType // Check mark style (check/cross). default: CHECK
   verticalAlign?: VerticalAlign // Vertical alignment. default: MIDDLE
 }
 ```
