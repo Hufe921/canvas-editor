@@ -950,16 +950,20 @@ window.onload = function () {
               type: 'select',
               label: '日期格式',
               name: 'dateFormat',
-              value: 'yyyy-MM-dd hh:mm:ss',
+              value: 'yyyy-MM-dd HH:mm:ss',
               required: true,
               options: [
                 {
-                  label: 'yyyy-MM-dd hh:mm:ss',
-                  value: 'yyyy-MM-dd hh:mm:ss'
+                  label: 'yyyy-MM-dd HH:mm:ss',
+                  value: 'yyyy-MM-dd HH:mm:ss'
                 },
                 {
                   label: 'yyyy-MM-dd',
                   value: 'yyyy-MM-dd'
+                },
+                {
+                  label: 'yyyy年MM月dd日 HH时mm分ss秒',
+                  value: 'yyyy年MM月dd日 HH时mm分ss秒'
                 }
               ]
             }

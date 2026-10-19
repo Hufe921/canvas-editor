@@ -368,10 +368,61 @@ export class DatePicker {
     return value.toDateString() === 'Invalid Date'
   }
 
+  public parseDate(value: string, format: string): Date | null {
+    // 按格式生成匹配正则，记录占位符顺序
+    const tokenList: string[] = []
+    const pattern = format
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/y+|Y+|M+|d+|D+|h+|H+|m+|s+|S+/g, token => {
+        tokenList.push(token[0])
+        return token.length === 1 ? '(\\d+)' : `(\\d{${token.length},})`
+      })
+    const result = new RegExp(`^${pattern}$`).exec(value)
+    if (!result) return null
+    // 缺省值：包含年月日占位符时从1月1日起，仅时间时取当天
+    const now = new Date()
+    const hasDateToken = tokenList.some(token => /[yYMdD]/.test(token))
+    const dateOption: Record<string, number> = {
+      y: now.getFullYear(),
+      M: hasDateToken ? 1 : now.getMonth() + 1,
+      d: hasDateToken ? 1 : now.getDate(),
+      H: 0,
+      m: 0,
+      s: 0,
+      S: 0
+    }
+    // 12小时制（h）无 AM/PM 标记，按 24 小时制解析，12 视为中午
+    const tokenAlias: Record<string, string> = { Y: 'y', D: 'd', h: 'H' }
+    tokenList.forEach((token, index) => {
+      dateOption[tokenAlias[token] || token] = Number(result[index + 1])
+    })
+    const { y, M, d, H, m, s, S } = dateOption
+    const date = new Date(y, M - 1, d, H, m, s, S)
+    // new Date 会将 0-99 年解释为 19xx，需显式校正
+    date.setFullYear(y)
+    // 排除溢出值（如：13月、2月30日、99分）
+    const hasToken = (token: string) => tokenList.includes(token)
+    if (
+      this.isInvalidDate(date) ||
+      date.getMonth() !== M - 1 ||
+      date.getDate() !== d ||
+      ((hasToken('H') || hasToken('h')) && date.getHours() !== H) ||
+      (hasToken('m') && date.getMinutes() !== m) ||
+      (hasToken('s') && date.getSeconds() !== s) ||
+      (hasToken('S') && date.getMilliseconds() !== S)
+    ) {
+      return null
+    }
+    return date
+  }
+
   private _setValue() {
     const value = this.renderOptions?.value
     if (value) {
-      const setDate = new Date(value)
+      // 优先按 dateFormat 解析，兼容非标准格式（如：yyyy年MM月dd日）
+      const dateFormat = this.renderOptions?.dateFormat
+      const setDate =
+        (dateFormat && this.parseDate(value, dateFormat)) || new Date(value)
       this.now = this.isInvalidDate(setDate) ? new Date() : setDate
     } else {
       this.now = new Date()
