@@ -25,6 +25,12 @@
         "surround": "四周型环绕",
         "floatTop": "浮于文字上方",
         "floatBottom": "衬于文字下方"
+      },
+      "verticalAlign": "对齐方式",
+      "verticalAlignType": {
+        "top": "顶端对齐",
+        "middle": "居中对齐",
+        "bottom": "底端对齐"
       }
     },
     "table": {

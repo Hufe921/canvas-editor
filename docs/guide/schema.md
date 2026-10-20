@@ -141,6 +141,11 @@ interface IElement {
     size?: number;  // 题注字号
     top?: number;   // 题注与图片的间距
   }
+  imgVerticalAlign?: {
+    TOP = 'top',
+    MIDDLE = 'middle',
+    BOTTOM = 'bottom' // 默认：图片底边对齐文字基线
+  } // 嵌入型图片、公式与同行文字的垂直对齐方式
   imgToolDisabled?: boolean;
   imgPreviewDisabled?: boolean;
   // 内容块

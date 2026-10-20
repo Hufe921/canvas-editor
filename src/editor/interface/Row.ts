@@ -13,6 +13,8 @@ export type IRowElement = IElement & {
   metrics: IElementMetrics
   style: string
   left?: number
+  // 图片、公式顶部到基线的距离（非底端对齐时存在）
+  imgAscent?: number
 }
 
 export interface IRow {

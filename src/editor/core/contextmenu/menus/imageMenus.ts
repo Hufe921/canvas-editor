@@ -1,6 +1,7 @@
 import { INTERNAL_CONTEXT_MENU_KEY } from '../../../dataset/constant/ContextMenu'
 import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
+import { VerticalAlign } from '../../../dataset/enum/VerticalAlign'
 import {
   IContextMenuContext,
   IRegisterContextMenu
@@ -15,7 +16,11 @@ const {
     TEXT_WRAP_UP_DOWN,
     TEXT_WRAP_SURROUND,
     TEXT_WRAP_FLOAT_TOP,
-    TEXT_WRAP_FLOAT_BOTTOM
+    TEXT_WRAP_FLOAT_BOTTOM,
+    VERTICAL_ALIGN,
+    VERTICAL_ALIGN_TOP,
+    VERTICAL_ALIGN_MIDDLE,
+    VERTICAL_ALIGN_BOTTOM
   }
 } = INTERNAL_CONTEXT_MENU_KEY
 
@@ -126,6 +131,58 @@ export const imageMenus: IRegisterContextMenu[] = [
           command.executeChangeImageDisplay(
             context.startElement!,
             ImageDisplay.FLOAT_BOTTOM
+          )
+        }
+      }
+    ]
+  },
+  {
+    key: VERTICAL_ALIGN,
+    i18nPath: 'contextmenu.image.verticalAlign',
+    when: payload => {
+      const startElement = payload.startElement
+      // 嵌入型图片或公式
+      const isEmbedImage =
+        startElement?.type === ElementType.IMAGE &&
+        (!startElement.imgDisplay ||
+          startElement.imgDisplay === ImageDisplay.BLOCK)
+      return (
+        !payload.isReadonly &&
+        !payload.editorHasSelection &&
+        (isEmbedImage || startElement?.type === ElementType.LATEX)
+      )
+    },
+    childMenus: [
+      {
+        key: VERTICAL_ALIGN_TOP,
+        i18nPath: 'contextmenu.image.verticalAlignType.top',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageVerticalAlign(
+            context.startElement!,
+            VerticalAlign.TOP
+          )
+        }
+      },
+      {
+        key: VERTICAL_ALIGN_MIDDLE,
+        i18nPath: 'contextmenu.image.verticalAlignType.middle',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageVerticalAlign(
+            context.startElement!,
+            VerticalAlign.MIDDLE
+          )
+        }
+      },
+      {
+        key: VERTICAL_ALIGN_BOTTOM,
+        i18nPath: 'contextmenu.image.verticalAlignType.bottom',
+        when: () => true,
+        callback: (command: Command, context: IContextMenuContext) => {
+          command.executeChangeImageVerticalAlign(
+            context.startElement!,
+            VerticalAlign.BOTTOM
           )
         }
       }

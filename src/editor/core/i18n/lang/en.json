@@ -25,6 +25,12 @@
         "surround": "Surround",
         "floatTop": "Float above text",
         "floatBottom": "Float below text"
+      },
+      "verticalAlign": "Vertical align",
+      "verticalAlignType": {
+        "top": "Top",
+        "middle": "Middle",
+        "bottom": "Bottom"
       }
     },
     "table": {

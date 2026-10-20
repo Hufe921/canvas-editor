@@ -441,7 +441,7 @@ export class Position {
           ((element.imgDisplay !== ImageDisplay.INLINE &&
             element.type === ElementType.IMAGE) ||
             element.type === ElementType.LATEX)
-            ? curRow.ascent - metrics.height
+            ? curRow.ascent - (element.imgAscent ?? metrics.height)
             : curRow.ascent
         // 偏移量（内部计算使用）
         if (element.left) {

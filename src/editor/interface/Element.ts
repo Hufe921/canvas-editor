@@ -7,6 +7,7 @@ import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
 import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
+import { VerticalAlign } from '../dataset/enum/VerticalAlign'
 import { IArea } from './Area'
 import { IBlock } from './Block'
 import { ICheckbox } from './Checkbox'
@@ -185,6 +186,8 @@ export interface IImageBasic {
   }
   imgCrop?: IImageCrop
   imgCaption?: IImageCaption
+  // 嵌入型图片、公式与同行文字的垂直对齐方式（默认底端对齐基线）
+  imgVerticalAlign?: VerticalAlign
 }
 
 export type IImageElement = IImageBasic & IImageRule
