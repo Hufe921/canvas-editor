@@ -19,6 +19,7 @@ export const EDITOR_ROW_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
   'spacingAfter'
 ]
 
@@ -30,6 +31,7 @@ export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
   'spacingAfter',
   'level',
   'title'
@@ -54,6 +56,7 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'groupIds',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
   'spacingAfter',
   'textDecoration'
 ]
@@ -71,6 +74,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
   'spacingAfter',
   'dashArray',
   'trList',

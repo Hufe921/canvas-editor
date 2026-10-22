@@ -129,7 +129,10 @@ export function formatElementList(
   // 非首字符零宽节点文本元素则补偿-列表元素内部会补偿此处忽略
   if (
     startElement?.type !== ElementType.LIST &&
-    (isForceCompensation ||
+    ((isForceCompensation &&
+      !(editorOptions.preserveLeadingParagraph &&
+        (!startElement?.type || startElement.type === ElementType.TEXT) &&
+        START_LINE_BREAK_REG.test(startElement?.value))) ||
       (isHandleFirstElement &&
         ((startElement?.type && startElement.type !== ElementType.TEXT) ||
           !START_LINE_BREAK_REG.test(startElement?.value))))
@@ -712,6 +715,13 @@ export function isSameElementExceptValue(
       }
       continue
     }
+    if (
+      key === 'lineHeight' &&
+      source.lineHeight?.rule === target.lineHeight?.rule &&
+      source.lineHeight?.value === target.lineHeight?.value
+    ) {
+      continue
+    }
     if (source[key] !== target[key]) {
       return false
     }
@@ -743,6 +753,7 @@ export function pickElementAttr(
 }
 
 interface IZipElementListOption {
+  preserveLeadingParagraph?: boolean
   extraPickAttrs?: Array<keyof IElement>
   isClassifyArea?: boolean
   isClone?: boolean
@@ -756,7 +767,8 @@ export function zipElementList(
     extraPickAttrs,
     isClassifyArea = false,
     isClone = true,
-    isListValue = false
+    isListValue = false,
+    preserveLeadingParagraph = false
   } = options
   const elementList = isClone ? deepClone(payload) : payload
   const zipElementListData: IElement[] = []
@@ -766,6 +778,7 @@ export function zipElementList(
     // 上下文首字符（占位符）-列表首字符要保留避免是复选框
     if (
       e === 0 &&
+      !preserveLeadingParagraph &&
       element.value === ZERO &&
       !element.listId &&
       (!element.type || element.type === ElementType.TEXT)

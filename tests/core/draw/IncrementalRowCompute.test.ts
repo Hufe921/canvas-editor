@@ -656,3 +656,12 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     }
   })
 })
+
+it('matches full pagination after edits with explicit paragraph line heights', () => {
+  const data: IElement[] = makeParagraphs(12, 40).map(element => ({
+    ...element,
+    lineHeight: { rule: 'exact', value: 24 },
+    spacingAfter: 5
+  }))
+  runDifferential(data, 20261022, 30, { expectIncrementalUsed: true })
+}, 30000)
