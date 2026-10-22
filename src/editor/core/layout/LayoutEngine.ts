@@ -1,3 +1,4 @@
+import { applyLineHeight } from '../../utils/lineHeight'
 import { ZERO } from '../../dataset/constant/Common'
 import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
 import {
@@ -157,6 +158,7 @@ export class LayoutEngine {
         ascent: 0,
         elementList: [],
         startIndex: resumeStartIndex,
+        offsetY: !payload.resume ? (elementList[0]?.spacingBefore ?? 0) * scale : 0,
         rowIndex: payload.resume?.state.rowIndex ?? 0,
         rowFlex:
           elementList[resumeStartIndex]?.rowFlex ||
@@ -211,6 +213,37 @@ export class LayoutEngine {
       }
       layout = draw.getColumnLayout(currentDirection)
       isColumnEnabled = !!layout && layout.count > 1
+    }
+    const finalizedRows = new WeakSet<IRow>()
+    const finalizeRow = (row: IRow, paragraphEnd: boolean) => {
+      if (finalizedRows.has(row)) return
+      applyLineHeight(row, scale, el => !!(
+        el.hide || el.control?.hide ||
+        (el.area?.hide && !draw.isAreaHideDisabled()) ||
+        draw.getTraceParticle().isTraceHidden(el)
+      ))
+      if (paragraphEnd) {
+        const after = row.elementList[row.elementList.length - 1]?.spacingAfter
+        if (after) {
+          row.spacingAfter = after * scale
+          row.height += row.spacingAfter
+        }
+      }
+      if (!draw.isDesignMode() && row.height > 0) {
+        const visibleElements = row.elementList.filter(el => el.value !== ZERO)
+        if (
+          visibleElements.length > 0 &&
+          visibleElements.every(el =>
+            el.hide ||
+            el.control?.hide ||
+            (el.area?.hide && !draw.isAreaHideDisabled()) ||
+            draw.getTraceParticle().isTraceHidden(el)
+          )
+        ) {
+          row.height = 0
+        }
+      }
+      finalizedRows.add(row)
     }
     // 行快照：仅主文档且开启行级增量时记录（未开启时无额外开销）。
     // 闭包捕获的是调用时刻的跨行状态，两个记录点（首行/换行诞生新行）共用
@@ -543,10 +576,22 @@ export class LayoutEngine {
           metrics.width += element.letterSpacing * scale
         }
         // 使用基于字体的基准度量以确保一致的行高，避免字符特定度量导致的布局跳动
-        const basisMetrics = textParticle.measureBasisWord(ctx, element.font!)
-        metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
-        metrics.boundingBoxDescent =
-          basisMetrics.actualBoundingBoxDescent * scale
+        // The sample glyph may select a fallback CJK face. Explicit line
+        // metrics must come from the actual text being measured instead.
+        const basisMetrics = element.lineHeight
+          ? fontMetrics
+          : textParticle.measureBasisWord(ctx, element.font ?? '')
+        const fontAscent = element.lineHeight
+          ? basisMetrics.fontBoundingBoxAscent
+          : basisMetrics.actualBoundingBoxAscent
+        const fontDescent = element.lineHeight
+          ? basisMetrics.fontBoundingBoxDescent
+          : basisMetrics.actualBoundingBoxDescent
+        if (!Number.isFinite(fontAscent) || !Number.isFinite(fontDescent)) {
+          throw new Error('Font line-box metrics are unavailable.')
+        }
+        metrics.boundingBoxAscent = fontAscent * scale
+        metrics.boundingBoxDescent = fontDescent * scale
         if (element.type === ElementType.SUPERSCRIPT) {
           metrics.boundingBoxAscent += metrics.height / 2
         } else if (element.type === ElementType.SUBSCRIPT) {
@@ -785,7 +830,7 @@ export class LayoutEngine {
         // 换行符归属于新段落元素集合，优先从换行符自身读取
         if (element.value === ZERO && !element.listWrap) {
           row.offsetY +=
-            (element.spacingBefore || elementList[i + 1]?.spacingBefore || 0) *
+            (element.spacingBefore ?? elementList[i + 1]?.spacingBefore ?? 0) *
             scale
         }
         rowList.push(row)
@@ -828,33 +873,10 @@ export class LayoutEngine {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
-        // 段后间距：段落末行增加高度
-        // 换行符归属于下一段落元素集合，需从当前段落末尾元素读取
-        if (isWrap && element.value === ZERO && !element.listWrap) {
-          const spacingAfter = (elementList[i - 1]?.spacingAfter || 0) * scale
-          if (spacingAfter) {
-            curRow.spacingAfter = spacingAfter
-            curRow.height += spacingAfter
-          }
-        }
-        // 行内全部为隐藏元素时 => 行高折叠（仅当行内不止换行符一个元素时）
-        if (!draw.isDesignMode() && curRow.height > 0) {
-          const visibleElements = curRow.elementList.filter(
-            el => el.value !== ZERO
-          )
-          const isAllHidden =
-            visibleElements.length > 0 &&
-            visibleElements.every(
-              el =>
-                el.hide ||
-                el.control?.hide ||
-                (el.area?.hide && !draw.isAreaHideDisabled()) ||
-                draw.getTraceParticle().isTraceHidden(el)
-            )
-          if (isAllHidden) {
-            curRow.height = 0
-          }
-        }
+        finalizeRow(
+          curRow,
+          isWrap ? element.value === ZERO && !element.listWrap : true
+        )
         // 换行原因：宽度不足
         curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
         // 两端对齐、分散对齐
@@ -966,6 +988,10 @@ export class LayoutEngine {
         }
       }
     }
+    const lastRow = rowList[rowList.length - 1]
+    // A final character that wraps creates a row after the normal finalization
+    // point. Seal it once; re-finalizing could resurrect a hidden review row.
+    if (lastRow?.elementList.length) finalizeRow(lastRow, true)
     // 区域最小高度：内容高度不足时向区域末行补充高度（内容超出时由行高自然撑开）
     draw.getArea().applyMinHeight(rowList)
     return rowList

@@ -599,9 +599,9 @@ export class Draw {
     this.columnManager.setConfig(config)
   }
 
-  public getOriginalInnerWidth(): number {
-    const width = this.getOriginalWidth()
-    const margins = this.getOriginalMargins()
+  public getOriginalInnerWidth(direction = this.options.paperDirection): number {
+    const width = this.getOriginalWidth(direction)
+    const margins = this.getOriginalMargins(direction)
     return width - margins[1] - margins[3]
   }
 
@@ -616,11 +616,12 @@ export class Draw {
       return td!.width! - tdPadding[1] - tdPadding[3]
     }
     // 分栏布局下按栏宽计算可用宽度（栏宽为缩放值，还原为未缩放单位）
-    const columnLayout = this.getColumnLayout()
+    const direction = this.getPageDirection(this.getPageNo())
+    const columnLayout = this.getColumnLayout(direction)
     if (columnLayout && columnLayout.count > 1) {
       return columnLayout.width / this.options.scale
     }
-    return this.getOriginalInnerWidth()
+    return this.getOriginalInnerWidth(direction)
   }
 
   public getMargins(direction = this.options.paperDirection): IMargin {
@@ -1640,13 +1641,16 @@ export class Draw {
     const { extraPickAttrs } = options
     const data: IEditorData = {
       header: zipElementList(originData.header, {
+        preserveLeadingParagraph: this.options.preserveLeadingParagraph,
         extraPickAttrs
       }),
       main: zipElementList(originData.main, {
+        preserveLeadingParagraph: this.options.preserveLeadingParagraph,
         extraPickAttrs,
         isClassifyArea: true
       }),
       footer: zipElementList(originData.footer, {
+        preserveLeadingParagraph: this.options.preserveLeadingParagraph,
         extraPickAttrs
       }),
       graffiti: originData.graffiti

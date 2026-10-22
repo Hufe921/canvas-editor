@@ -68,6 +68,8 @@ export interface IEditorOption {
   minSize?: number
   maxSize?: number
   defaultBasicRowMarginHeight?: number
+  /** Adopt an existing leading paragraph marker instead of inserting a blank paragraph. */
+  preserveLeadingParagraph?: boolean
   defaultRowMargin?: number
   defaultTabWidth?: number
   width?: number
