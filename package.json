@@ -53,7 +53,10 @@
     "pre-release": "node scripts/pre-release.js",
     "test:package": "node scripts/test-package.mjs",
     "test:migration:browser": "cypress run --config-file cypress.migration.config.ts",
-    "test:migration:engines": "node scripts/test-native-browsers.mjs"
+    "test:migration:engines": "node scripts/test-native-browsers.mjs",
+    "test:migration:performance": "node scripts/test-native-performance.mjs",
+    "test:migration:audit": "node scripts/audit-native-release.mjs",
+    "test:migration:baseline": "node scripts/serve-native-baseline.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

@@ -41,7 +41,9 @@ Sources: [upstream package](https://github.com/Hufe921/canvas-editor/blob/1d7cd1
 [upstream text painting](https://github.com/Hufe921/canvas-editor/blob/1d7cd1a7742f3e8af1f67536a5157d03b2945de7/src/editor/core/draw/particle/TextParticle.ts).
 Fork implementation: `core/text-engine`, `core/layout` and `core/text-engine-host`.
 Not every language/style is fully validated. Basic fonts do not guarantee rare
-characters or color emoji. No speedup is promised; T23/T24 remain deferred.
+characters or color emoji. T23/T24 acceptance is complete; measured costs and remaining performance work
+are documented in the [acceptance report](../../guide/native-release-acceptance.md).
+Incremental mode is not always faster.
 
 ## Canvas-only release
 

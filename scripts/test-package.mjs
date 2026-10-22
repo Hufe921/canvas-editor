@@ -77,6 +77,9 @@ try {
   assert.throws(() => require.resolve(pkg.name), {
     code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'
   })
+  assert.throws(() => require.resolve(`${pkg.name}/dist/canvas-editor.js`), {
+    code: 'ERR_PACKAGE_PATH_NOT_EXPORTED'
+  })
   writeFileSync(join(pkgDir, 'dist/stale.umd.cjs'), '')
   assert.throws(() =>
     execFileSync(process.execPath, [join(root, 'scripts/pre-release.js')], {
@@ -160,6 +163,10 @@ void oldRender
   const font = join(root, 'public/fonts/NotoNaskhArabic-Regular.ttf')
   mkdirSync(join(consumer, 'public/fonts'), { recursive: true })
   cpSync(font, join(consumer, 'public/fonts/NotoNaskhArabic-Regular.ttf'))
+  cpSync(
+    join(root, 'tests/fixtures/fonts/NotoSans-Latin-Regular.woff2'),
+    join(consumer, 'public/fonts/NotoSans-Latin-Regular.woff2')
+  )
   // Two independent outputs, both hosted under a non-root URL.
   const output = join(temp, 'site')
   await build({

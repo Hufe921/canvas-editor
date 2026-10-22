@@ -36,6 +36,10 @@ export default defineConfig({
         items: [
           { text: '入门', link: '/guide/start' },
           { text: '项目关系与差异', link: '/guide/fork-and-differences' },
+          {
+            text: '最终验收与性能边界',
+            link: '/guide/native-release-acceptance'
+          },
           { text: '配置', link: '/guide/option' },
           { text: '字体与 ESM 迁移', link: '/guide/font-and-esm-migration' },
           { text: '国际化', link: '/guide/i18n' },

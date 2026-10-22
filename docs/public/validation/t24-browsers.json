@@ -1,0 +1,249 @@
+{
+  "date": "2026-10-22",
+  "firefox": {
+    "browser": "firefox",
+    "version": "151.0",
+    "results": [
+      {
+        "sample": "paragraphs",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 121,
+        "pages": 1,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "emr-controls",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 17,
+        "pages": 1,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "nested-table",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 19,
+        "pages": 1,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "surround-columns",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 280,
+        "pages": 2,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "mixed-paper",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 17,
+        "pages": 3,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "print",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 216,
+        "pages": 3,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "native-flow",
+        "status": "passed"
+      },
+      {
+        "sample": "native-table",
+        "status": "passed"
+      },
+      {
+        "sample": "native-object",
+        "status": "passed"
+      },
+      {
+        "sample": "native-chrome",
+        "status": "passed"
+      },
+      {
+        "sample": "native-auxiliary",
+        "status": "passed"
+      },
+      {
+        "sample": "native-interaction",
+        "status": "passed"
+      },
+      {
+        "sample": "multilingual-controls-table-emoji-edit-print",
+        "status": "passed"
+      },
+      {
+        "sample": "missing-font-recovery-edit-print",
+        "status": "passed",
+        "requests": 0
+      }
+    ]
+  },
+  "webkit": {
+    "browser": "webkit",
+    "version": "26.5",
+    "results": [
+      {
+        "sample": "paragraphs",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 121,
+        "pages": 1,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "emr-controls",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 17,
+        "pages": 1,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "nested-table",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 19,
+        "pages": 1,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "surround-columns",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 280,
+        "pages": 2,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "mixed-paper",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 17,
+        "pages": 3,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "print",
+        "status": "passed",
+        "engine": "harfbuzz",
+        "wordCount": 216,
+        "pages": 3,
+        "fontBytes": 307592,
+        "format": "ttf",
+        "viewport": [
+          1366,
+          720
+        ],
+        "dpr": 1
+      },
+      {
+        "sample": "native-flow",
+        "status": "passed"
+      },
+      {
+        "sample": "native-table",
+        "status": "passed"
+      },
+      {
+        "sample": "native-object",
+        "status": "passed"
+      },
+      {
+        "sample": "native-chrome",
+        "status": "passed"
+      },
+      {
+        "sample": "native-auxiliary",
+        "status": "passed"
+      },
+      {
+        "sample": "native-interaction",
+        "status": "passed"
+      },
+      {
+        "sample": "multilingual-controls-table-emoji-edit-print",
+        "status": "passed"
+      },
+      {
+        "sample": "missing-font-recovery-edit-print",
+        "status": "passed",
+        "requests": 0
+      }
+    ]
+  }
+}

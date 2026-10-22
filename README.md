@@ -41,8 +41,10 @@ It does not assert that future upstream versions will lack these features.
 See [项目关系与差异（中文）](docs/guide/fork-and-differences.md) /
 [full comparison and migration notes](docs/en/guide/fork-and-differences.md).
 The font pipeline still has limits: basic downloads do not guarantee rare
-characters, every language/style or color emoji support. Final performance and
-removal audits T23/T24 remain deferred; no performance speedup is promised.
+characters, every language/style or color emoji support. T23/T24 acceptance is recorded in the
+[performance/resource and removal report](docs/guide/native-release-acceptance.md).
+Measured editing costs exceed T01 in these samples; incremental mode is not
+always faster. Further performance work remains open.
 
 ## Rendering support
 

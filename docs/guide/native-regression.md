@@ -4,6 +4,9 @@
 并把字体、编辑、打印及缺字恢复纳入真实浏览器矩阵。T23 性能和资源验收、
 T24 最终删除审计继续独立执行。
 
+> 2026-10-22 补充：Node24 与最终发行/资源/删除验收见
+> [T23/T24 报告](./native-release-acceptance.md)。下文保留 T22 当时的环境和结果。
+
 ## 测试基础
 
 - `tests/factories/editor.ts` 使用 `Editor.create`；`tests/factories/draw.ts`

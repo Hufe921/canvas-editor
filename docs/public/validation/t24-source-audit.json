@@ -1,0 +1,56 @@
+{
+  "files": 333,
+  "removed": [
+    "core/draw/IncrementalRowComputer.ts",
+    "core/text-engine/shape/BrowserTextShaper.ts",
+    "core/text-engine-host/mapToLegacyRow.ts",
+    "core/draw/particle/TextParticle.ts",
+    "core/layout/FlowConstraints.ts",
+    "core/layout/BlockMeasure.ts"
+  ],
+  "diagnostics": [],
+  "nativeMeasurements": [
+    {
+      "file": "core/text-engine/layout/TextLayoutService.ts",
+      "receiver": "this"
+    },
+    {
+      "file": "core/text-engine/layout/TextLayoutService.ts",
+      "receiver": "this"
+    },
+    {
+      "file": "core/text-engine-host/LayoutHostAdapter.ts",
+      "receiver": "this.getTextLayoutService()"
+    }
+  ],
+  "snapshotConsumers": [
+    {
+      "file": "core/draw/Draw.ts",
+      "method": "snapshotRows"
+    },
+    {
+      "file": "core/draw/Draw.ts",
+      "method": "snapshotRows"
+    },
+    {
+      "file": "core/draw/Draw.ts",
+      "method": "snapshotRows"
+    },
+    {
+      "file": "core/draw/Draw.ts",
+      "method": "snapshotRows"
+    },
+    {
+      "file": "core/draw/frame/Footer.ts",
+      "method": "snapshotRows"
+    },
+    {
+      "file": "core/draw/frame/Header.ts",
+      "method": "snapshotRows"
+    }
+  ],
+  "frozen": {
+    "tests/core/migration/__snapshots__/baseline.test.ts.snap": "148fcc33802b3574b5c624a34d5656cbf0d22876c9b3aff656a864e3876e6157",
+    "tests/fixtures/migration/t10-geometry.json": "52e9c24736033682b4cc28479f0d746c9f53a774413cf32ed270589c74f1c415"
+  }
+}

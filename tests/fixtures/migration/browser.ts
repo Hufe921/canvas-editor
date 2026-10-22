@@ -12,7 +12,10 @@ async function run() {
     migrationSamples().find(item => item.id === params.get('sample')) ||
     migrationSamples()[0]
 
+  const woff2 = params.get('format') === 'woff2'
+  if (woff2) sample.data = { main: [{ value: 'office café 123' }] }
   const fontUrl =
+    (woff2 ? './fonts/NotoSans-Latin-Regular.woff2' : '') ||
     document.querySelector<HTMLDivElement>('#editor')!.dataset.fontUrl ||
     './fonts/NotoNaskhArabic-Regular.ttf'
   const response = await fetch(new URL(fontUrl, document.baseURI))
@@ -30,6 +33,13 @@ async function run() {
     }
   )
   await editor.ready
+  if (
+    woff2 &&
+    (editor.getFontCoverageReport().issues.length ||
+      editor.register.getFontFaces()[0]?.format !== 'woff2')
+  ) {
+    throw new Error('Packed WOFF2 decoding or glyph coverage failed')
+  }
   // Exercise actual inline workers, including serialization of complex models.
   const [wordCount, saved] = await Promise.all([
     editor.command.getWordCount(),
@@ -59,6 +69,7 @@ async function run() {
     wordCount,
     pages: images.length,
     fontBytes: data.byteLength,
+    format: woff2 ? 'woff2' : 'ttf',
     viewport: [innerWidth, innerHeight],
     dpr: devicePixelRatio
   })

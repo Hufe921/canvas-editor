@@ -113,3 +113,26 @@ describePackage('T21 public ESM font example', () => {
     cy.get('#status').should('have.attr', 'data-state', 'ready')
   })
 })
+
+describePackage('T23 packed WOFF2 resources', () => {
+  for (const page of ['/native/', '/bundled/']) {
+    it(`decodes WOFF2 and exercises workers/print at ${page}`, () => {
+      cy.intercept('https://fonts.bunny.net/**', () => {
+        throw new Error('Offline packaged WOFF2 must not request Bunny')
+      })
+      cy.visit(`${page}?sample=paragraphs&format=woff2`)
+      cy.get('#status', { timeout: 30000 }).should(
+        'contain.text',
+        '"status":"passed"'
+      )
+      cy.get('#status')
+        .invoke('text')
+        .then(text => {
+          const report = JSON.parse(text)
+          expect(report.format).to.eq('woff2')
+          expect(report.pages).to.be.greaterThan(0)
+          expect(report.wordCount).to.be.greaterThan(0)
+        })
+    })
+  }
+})

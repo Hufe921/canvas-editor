@@ -4,7 +4,6 @@
 > and browser text fallback. Follow [Fonts and ESM migration](./font-and-esm-migration.md)
 > for current integration; old paths below are not current APIs.
 
-
 > Track work **not** in the current phase (main-body RTL + independent text-engine + HarfBuzz) so nothing is lost.  
 > Current scope: [RTL layout design](./rtl-layout-design.md). Baseline: [Architecture](./architecture.md).
 
@@ -19,6 +18,7 @@
 
 ```markdown
 ### DEFER-xxx Title
+
 - Status: pending | in-progress | done | cancelled
 - Priority: P1 | P2 | P3
 - Depends: ...
@@ -46,7 +46,8 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - [x] [DEFER-005](#defer-005) Badge `right` / `horizontalAnchor` (P5)
 - [x] [DEFER-006](#defer-006) Complex Control flex / ControlIndentation
 - [x] [DEFER-007](#defer-007) ControlSearch / nested control RTL
-- [ ] [DEFER-016](#defer-016) Remove legacy path and `mapToLegacyRow`
+- [x] [DEFER-016](#defer-016) Remove legacy path and `mapToLegacyRow`
+- [x] [DEFER-026](#defer-026) Default Bunny downloads and offline/failure recovery
 - [x] [DEFER-018](#defer-018) Accessibility and RTL reading order
 - [x] [DEFER-019](#defer-019) Full HTML/clipboard `dir` fidelity
 - [x] [DEFER-021](#defer-021) Mobile / `beforeinput` delete path
@@ -68,12 +69,12 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ## Roadmap mapping
 
-| Roadmap | Primary DEFERs |
-|---------|----------------|
-| P5 | 001, 002, 003, 004, 005, 008 |
-| P6 | 010 |
-| P7 | 009 |
-| Special tracks | 006, 007, 011–025 |
+| Roadmap        | Primary DEFERs               |
+| -------------- | ---------------------------- |
+| P5             | 001, 002, 003, 004, 005, 008 |
+| P6             | 010                          |
+| P7             | 009                          |
+| Special tracks | 006, 007, 011–025            |
 
 ---
 
@@ -159,6 +160,10 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - Area: performance
 - Notes: Glyph atlas, dirty-span LayoutCache, large-doc FPS/memory targets.
 
+- 2026-10-22: T23 measured cloning, native position rebuild and painting costs.
+  Incremental layout is not always faster; this item remains pending.
+  See [performance boundaries](../../guide/native-release-acceptance.md).
+
 ### DEFER-011
 
 - Status: done
@@ -201,11 +206,15 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 
 ### DEFER-016
 
-- Status: pending
+- Status: done
 - Priority: P2
-- Depends: Stable harfbuzz path and green regression
+- Depends: T01–T24 native pipeline and regression
 - Area: architecture
-- Notes: Remove `textEngine: legacy` and `mapToLegacyRow`. Interim main-body TABLE/IMAGE rows use `forceLegacy` inserts; keep mixed-layout regressions green before full removal.
+- Notes: Final audit completed 2026-10-22. Legacy loops, browser shaping/painting,
+  old row mapper and engine selectors are removed. Detached compatibility rows
+  are output-only. Implementation: [cec432b8](https://github.com/HerbertHe/canvas-editor/commit/cec432b8).
+  See [T23/T24 acceptance](../../guide/native-release-acceptance.md).
+  Measured performance costs remain documented; DEFER-010 stays open.
 
 ### DEFER-017
 
@@ -278,3 +287,16 @@ Main-body bidirectional layout, HarfBuzz shaping, independent `text-engine` + ho
 - Depends: Main-body IMAGE/TABLE `forceLegacy` insert already landed
 - Area: layout
 - Notes: Engine rows now get a running page/column cursor and surround offsets: main-body rows vertically intersecting a SURROUND image are shifted to start after the image (no overlap), and engine rows carry `columnIndex` so column switches place them at the correct column offset. Table-cell and header/footer sub-layouts are excluded. Float hit-testing keeps the existing path.
+
+### DEFER-026
+
+- Status: done
+- Priority: P2
+- Depends: Font diagnostics and runtime registration from DEFER-016
+- Area: font
+- Notes: Accepted 2026-10-22: default downloads, disabled zero requests,
+  CSS/binary/WOFF2, subset selection, shared/persistent caches, runtime toggle,
+  failure/retry/manual recovery. Live Bunny 2/2 and packed browser 18/18 passed.
+  Basic fonts do not guarantee every character/style.
+  Implementation: [cec432b8](https://github.com/HerbertHe/canvas-editor/commit/cec432b8).
+  Evidence: [T23/T24 acceptance](../../guide/native-release-acceptance.md).
