@@ -29,4 +29,6 @@ if (range) {
 }
 ```
 
+Search keeps working when `Intl.Segmenter` is unavailable. In that environment it uses conservative boundaries: ASCII-to-ASCII boundaries, document/control separators and complete container endpoints. It omits matches whose Unicode boundaries cannot be proven, rather than guessing from UTF-16 or the legacy emoji splitter. Full Unicode boundary coverage requires `Intl.Segmenter` (native or supplied by the host).
+
 Applications must still validate their canonical source text, formatting and container ownership before applying a proposal. Binding supports nested stable cell paths; these changes do not add mixed-section pagination or programmatic selection restoration into arbitrary nested cells. Clipboard identity defaults are unchanged.

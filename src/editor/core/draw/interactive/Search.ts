@@ -12,6 +12,7 @@ import {
   ISearchResultRestArgs
 } from '../../../interface/Search'
 import { getUUID, indexOf, isNumber, splitText } from '../../../utils'
+import { getSearchTextBoundaries } from '../../../utils/searchTextBoundaries'
 import { Position } from '../../position/Position'
 import { RangeManager } from '../../range/RangeManager'
 import { Draw } from '../Draw'
@@ -282,13 +283,7 @@ export class Search {
       if (text.length !== offset) return
       // A formatting boundary may divide one grapheme across runtime elements.
       // Validate the concatenated source as well as element boundaries.
-      const graphemeBoundaries = new Set(
-        Array.from(
-          new Intl.Segmenter('und', { granularity: 'grapheme' }).segment(text),
-          segment => segment.index
-        )
-      )
-      graphemeBoundaries.add(text.length)
+      const graphemeBoundaries = getSearchTextBoundaries(text)
       // 匹配的结果列表
       const matchList: { index: number; length: number }[] = []
       // 从索引0开始依次匹配

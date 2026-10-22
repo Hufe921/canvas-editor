@@ -2,7 +2,92 @@ import { describe, it, expect } from 'vitest'
 import { createTestEditor } from '../../factories/editor'
 import { ElementType } from '@/editor/dataset/enum/Element'
 
+function withoutSegmenter(check: () => void): void {
+  const descriptor = Object.getOwnPropertyDescriptor(Intl, 'Segmenter')
+  Object.defineProperty(Intl, 'Segmenter', {
+    configurable: true,
+    value: undefined
+  })
+  try {
+    check()
+  } finally {
+    if (descriptor) Object.defineProperty(Intl, 'Segmenter', descriptor)
+  }
+}
+
 describe('exact Unicode search and replacement', () => {
+  it('ASCII search and direct/tracked replacement work without Segmenter', () => {
+    withoutSegmenter(() => {
+      for (const disabled of [true, false]) {
+        const context = createTestEditor({
+          data: {
+            main: [{ value: 'target and target beside 🔔' }],
+            header: [],
+            footer: []
+          },
+          options: { trace: { disabled } }
+        })
+        try {
+          const command = context.editor.command
+          expect(command.getKeywordRangeList('target')).toHaveLength(2)
+          command.executeSearch('target')
+          command.executeReplace('clue 🔔')
+          expect(command.getKeywordRangeList('target')).toHaveLength(0)
+          const text = command.getValue().data.main
+            ?.map(element => element.value)
+            .join('')
+          expect(text).toContain('beside 🔔')
+          expect(command.getRuntimeElementList().some(
+            element => element.value === '🔔'
+          )).toBe(true)
+        } finally {
+          context.destroy()
+        }
+      }
+    })
+  })
+  it('fallback boundaries reject partial Unicode but allow a whole container', () => {
+    withoutSegmenter(() => {
+      for (const value of ['é', '👩‍🚀', '🇺🇸', 'क्‍ष', '가']) {
+        const context = createTestEditor({
+          data: { main: [{ value }], header: [], footer: [] }
+        })
+        try {
+          const command = context.editor.command
+          const before = command.getValue()
+          expect(command.getKeywordRangeList(value)).toHaveLength(1)
+          expect(command.getKeywordRangeList(value.slice(0, 1)))
+            .toHaveLength(0)
+          expect(command.getValue()).toEqual(before)
+        } finally {
+          context.destroy()
+        }
+      }
+    })
+  })
+  it('fallback cannot split combining text across formatting boundaries', () => {
+    withoutSegmenter(() => {
+      const context = createTestEditor({
+        data: {
+          main: [{ value: 'e' }, { value: '́', bold: true }],
+          header: [],
+          footer: []
+        }
+      })
+      try {
+        const command = context.editor.command
+        expect(command.getKeywordRangeList('e')).toHaveLength(0)
+        expect(command.getKeywordRangeList('́')).toHaveLength(0)
+        const range = command.getKeywordRangeList('é')[0]
+        expect(range).toBeDefined()
+        if (!range) throw new Error('Missing whole-container match')
+        command.executeReplaceRange(range)
+        expect(command.getRangeText()).toBe('é')
+      } finally {
+        context.destroy()
+      }
+    })
+  })
   it('formatting boundaries cannot authorize partial combined graphemes', () => {
     const context = createTestEditor({
       data: {
