@@ -18,6 +18,7 @@ import { ITitle } from './Title'
 import { IColgroup } from './table/Colgroup'
 import { ITd } from './table/Td'
 import { ITr } from './table/Tr'
+import type { ILineHeight } from './LineHeight'
 
 export interface IElementBasic {
   id?: string
@@ -43,6 +44,7 @@ export interface IElementStyle {
   rowMargin?: number
   spacingBefore?: number
   spacingAfter?: number
+  lineHeight?: ILineHeight
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number

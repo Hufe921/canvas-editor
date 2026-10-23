@@ -234,6 +234,7 @@ export function mergeOption(
     maxSize: 72,
     defaultRowMargin: 1,
     defaultBasicRowMarginHeight: 8,
+    preserveLeadingParagraph: false,
     defaultTabWidth: 32,
     width: 794,
     height: 1123,

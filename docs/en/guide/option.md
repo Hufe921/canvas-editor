@@ -24,6 +24,7 @@ interface IEditorOption {
   maxSize?: number // Max font size。default: 72
   defaultBasicRowMarginHeight?: number // Default line height。default: 8
   defaultRowMargin?: number // Default line spacing. default: 1
+  preserveLeadingParagraph?: boolean // Adopt a leading newline as the first paragraph marker. default: false
   defaultTabWidth?: number // Default tab width. default: 32
   width?: number // Paper width. default: 794
   height?: number // Paper height. default: 1123
@@ -501,3 +502,35 @@ interface ISpellcheckOption {
   color?: string // Misspelled word wavy line color. default: #FF0000
 }
 ```
+
+## Explicit paragraph line heights
+
+Text elements can opt into font line-box metrics with `lineHeight`:
+
+```typescript
+{
+  value: 'Paragraph text',
+  lineHeight: { rule: 'atLeast', value: 24 }
+}
+```
+
+`multiple` multiplies the natural line box (including fractional values below
+one); `exact` uses an absolute height in document pixels; `atLeast` uses the
+larger of the natural box and an absolute height. Absolute sizes scale with
+the document. Supply the paragraph setting consistently on its text elements
+and marker. Exact spacing can intentionally overlap glyphs. Elements without
+`lineHeight` retain the existing `rowMargin` behavior. Font line-box metrics
+require browser `TextMetrics.fontBoundingBoxAscent` and
+`fontBoundingBoxDescent`; unavailable metrics raise an error.
+
+The optional `preserveLeadingParagraph` setting adopts an existing leading
+newline marker in each story/cell instead of inserting another blank
+paragraph. Empty containers still receive a placeholder. Serialization retains
+the adopted marker (including an otherwise empty paragraph), so reopening
+with the returned options preserves its spacing and optional picked identity.
+The default remains `false`. This option is intended for applications that
+supply explicit paragraph markers.
+
+Clients can inspect `Editor.layoutCapabilities` for
+`paragraph-line-height-v1` and `leading-paragraph-v1` before supplying these
+properties. These features do not add section-specific columns or stories.

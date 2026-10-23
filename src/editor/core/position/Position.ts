@@ -385,7 +385,9 @@ export class Position {
     let y = startY
     let index = startIndex
     const traceParticle = this.draw.getTraceParticle()
-    const columnLayout = this.draw.getColumnLayout()
+    const columnLayout = this.draw.getColumnLayout(
+      this.draw.getPageDirection(pageNo)
+    )
     let prevColumnIndex: number | undefined = undefined
     for (let i = 0; i < rowList.length; i++) {
       const curRow = rowList[i]
@@ -801,10 +803,11 @@ export class Position {
   }
 
   // 根据 x 坐标推断点击位置所属的分栏索引；无分栏布局时返回 undefined
-  private _getColumnIndexByX(x: number): number | undefined {
-    const layout = this.draw.getColumnLayout()
+  private _getColumnIndexByX(x: number, pageNo: number): number | undefined {
+    const direction = this.draw.getPageDirection(pageNo)
+    const layout = this.draw.getColumnLayout(direction)
     if (!layout) return
-    const startX = this.draw.getMargins()[3]
+    const startX = this.draw.getMargins(direction)[3]
     const xRel = x - startX
     // 栏范围 [colStart, nextColStart)，gap 算入左侧栏，避免点击栏间空白时误判
     for (let i = 0; i < layout.count; i++) {
@@ -1126,7 +1129,7 @@ export class Position {
       ? positionList.filter(p => p.isLastLetter && p.pageNo === positionNo)
       : positionList.filter(p => p.isLastLetter)
     // 分栏场景下，只保留与点击栏一致的行，避免误命中同 y 的其他栏
-    const clickColumnIndex = this._getColumnIndexByX(x)
+    const clickColumnIndex = this._getColumnIndexByX(x, curPageNo)
     const lastLetterList =
       clickColumnIndex === undefined
         ? matchedLastLetterList
