@@ -535,3 +535,21 @@ supply explicit paragraph markers.
 Clients can inspect `Editor.layoutCapabilities` for
 `paragraph-line-height-v1` and `leading-paragraph-v1` before supplying these
 properties. These features do not add section-specific columns or stories.
+
+## Table cell padding and row keeps
+
+Each table cell can supply `padding: [top, right, bottom, left]` in document
+pixels. An omitted tuple uses `table.tdPadding`; an explicit zero tuple removes
+that cell's padding. Values must be finite and nonnegative, and the horizontal
+padding must leave positive content width. Geometry, vertical alignment,
+selection, repeated headers, split windows and serialization use this same
+padding. Nested tables resolve the padding of each owning cell separately.
+
+Table rows can set `keepTogether: true` to move a row to the next page or
+column when it fits there intact. The default is `false`. A row taller than
+an empty page/column still splits to ensure all its content can be displayed.
+Repeated-header height participates in this decision. This property does not
+keep an entire table or groups of adjacent rows together.
+
+Clients can negotiate `table-cell-padding-v1` and `table-row-keep-v1` through
+`Editor.layoutCapabilities` before supplying these properties.

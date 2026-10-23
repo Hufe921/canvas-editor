@@ -377,10 +377,7 @@ export class Position {
       zone,
       tablePosition
     } = payload
-    const {
-      scale,
-      table: { tdPadding }
-    } = this.options
+    const { scale } = this.options
     let x = startX
     let y = startY
     let index = startIndex
@@ -536,7 +533,6 @@ export class Position {
           !element.hide &&
           !traceParticle.isTraceHidden(element)
         ) {
-          const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           // 遍历片段范围行与进位合并单元格，按窗口计算位置（跨页按页累积）
           const fragmentTdList = tableFragment
             ? this.draw
@@ -544,6 +540,8 @@ export class Position {
                 .getFragmentTdList(element, tableFragment)
             : element.trList!.flatMap(tr => tr.tdList)
           for (const td of fragmentTdList) {
+            const tdPadding = this.draw.getOriginalTdPadding(td)
+            const tdPaddingWidth = tdPadding[1] + tdPadding[3]
             let isSplitWindow = false
             let isContinuation = false
             let windowStart = 0
@@ -613,6 +611,8 @@ export class Position {
               const tr = element.trList![trIndex]
               for (let d = 0; d < tr.tdList.length; d++) {
                 const td = tr.tdList[d]
+                const tdPadding = this.draw.getOriginalTdPadding(td)
+                const tdPaddingWidth = tdPadding[1] + tdPadding[3]
                 const positionList: IElementPosition[] = []
                 this.computePageRowPosition({
                   positionList,
@@ -661,12 +661,13 @@ export class Position {
     ) {
       return
     }
-    const {
-      scale,
-      table: { tdPadding }
-    } = this.options
+    const { scale } = this.options
+    const tdPadding = this.draw.getOriginalTdPadding(td)
     const tdPaddingHeight = tdPadding[0] + tdPadding[2]
-    const rowsHeight = td.rowList!.reduce((pre, cur) => pre + cur.height, 0)
+    const rowsHeight = td.rowList!.reduce(
+      (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+      0
+    )
     const blankHeight = (td.height! - tdPaddingHeight) * scale - rowsHeight
     const offsetHeight =
       td.verticalAlign === VerticalAlign.MIDDLE ? blankHeight / 2 : blankHeight

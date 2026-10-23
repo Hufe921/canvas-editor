@@ -138,6 +138,7 @@ export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
   'externalId',
   'verticalAlign',
   'backgroundColor',
+  'padding',
   'borderColor',
   'borderWidth',
   'borderTypes',

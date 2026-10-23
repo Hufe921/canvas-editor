@@ -126,8 +126,25 @@ export class TablePaging {
       }
       // 行内拆分条件：行内各单元格均有内容
       // （跨行合并单元格按窗口裁剪续排，不再限制切分位置）
-      const canSplitMidRow = (trIndex: number) =>
-        trList![trIndex].tdList.every(td => !!td.rowList?.length)
+      const canSplitMidRow = (
+        trIndex: number,
+        targetPage: number,
+        repeatHeight = 0
+      ) => {
+        const tr = trList?.[trIndex]
+        if (!tr) return false
+        const emptyHeight =
+          (curPageLimit -
+            this.draw.getMainOuterHeight(targetPage, curDirection) -
+            rowMarginHeight) /
+            scale -
+          repeatHeight
+        // Oversized rows must still progress, as in Word's cantSplit behavior.
+        return (
+          (!tr.keepTogether || tr.height > emptyHeight + 1e-8) &&
+          tr.tdList.every(td => !!td.rowList?.length)
+        )
+      }
       // 拆分相关单元格：本行单元格 + 覆盖本行的跨行合并单元格
       const getSplitRelevantTdList = (trIndex: number) => {
         const tdList = [...trList![trIndex].tdList]
@@ -139,11 +156,15 @@ export class TablePaging {
         return tdList
       }
       // 续留行盒最小高度（未缩放，避免产生空盒碎页）
-      const {
-        table: { tdPadding },
-        defaultSize
-      } = this.options
-      const minContinuationHeight = tdPadding[0] + tdPadding[2] + defaultSize
+      const minimumContinuation = (trIndex: number) =>
+        Math.max(
+          this.options.defaultSize,
+          ...(trList?.[trIndex]?.tdList ?? []).map(td => {
+            const padding = this.draw.getOriginalTdPadding(td)
+            return padding[0] + padding[2] + this.options.defaultSize
+          })
+        )
+      const minContinuationHeight = minimumContinuation(0)
       // 拆分适应度：窗口内可容纳内容行数、续页是否有剩余内容、内容实际消耗高度
       // 注意：窗口、行高、返回值均为未缩放单位（与 td.y/tr.height 一致）
       const getSplitFitInfo = (
@@ -156,6 +177,7 @@ export class TablePaging {
         let hasRemaining = false
         let consumedHeight = 0
         for (const td of getSplitRelevantTdList(trIndex)) {
+          const tdPadding = this.draw.getOriginalTdPadding(td)
           // 单元格在整表坐标系中的窗口（可视区与本单元格区域的交集）
           const tdWindowEnd = Math.min(td.height!, trY + windowHeight - td.y!)
           const tdWindowStart = Math.max(0, visibleTopFull - td.y!)
@@ -173,7 +195,7 @@ export class TablePaging {
           // 续排窗口需计入窗口之前已消耗的内容行高，否则续页消耗高度被低估
           const contentHeight = td
             .rowList!.slice(0, endLine)
-            .reduce((pre, cur) => pre + cur.height, 0)
+            .reduce((pre, cur) => pre + cur.height + (cur.offsetY || 0), 0)
           const contentBottom =
             td.y! + tdPadding[0] + tdPadding[2] + contentHeight / scale - trY
           consumedHeight = Math.max(consumedHeight, contentBottom)
@@ -184,18 +206,16 @@ export class TablePaging {
       let fragPageNo = pageNo
       let fragColumn = currentColumn
       let fragPageHeight = pageHeight
-      // 表格显式换栏（栏索引大于当前栏）：从下一栏顶部开始
-      if (
-        isColumnEnabled &&
-        row.columnIndex !== undefined &&
-        row.columnIndex > currentColumn
-      ) {
-        fragColumn = row.columnIndex
-        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo, curDirection)
-      }
+      // Row computation sees the whole table height and can predict an early
+      // column advance. Place table fragments using actual occupied space,
+      // so a fitting first row is not stranded out of the previous column.
       // 片段槽位推进：分栏时优先换栏，否则换页
-      const advanceFragSlot = () => {
-        if (isColumnEnabled && fragColumn < columnCount - 1) {
+      const advanceFragSlot = (forcePageBreak = false) => {
+        if (
+          !forcePageBreak &&
+          isColumnEnabled &&
+          fragColumn < columnCount - 1
+        ) {
           fragColumn++
         } else {
           fragPageNo++
@@ -208,13 +228,16 @@ export class TablePaging {
           curDirection = preBreakDirection
           curPageLimit = this.draw.getHeight(curDirection)
         }
-        advanceFragSlot()
+        advanceFragSlot(true)
       } else if (
         fragPageHeight + trList![0].height! * scale + rowMarginHeight >
         curPageLimit
       ) {
         const firstTrAvailable = curPageLimit - fragPageHeight - rowMarginHeight
-        const { fit, hasRemaining, consumedHeight } = canSplitMidRow(0)
+        const { fit, hasRemaining, consumedHeight } = canSplitMidRow(
+          0,
+          fragPageNo
+        )
           ? getSplitFitInfo(0, firstTrAvailable / scale, 0)
           : { fit: 0, hasRemaining: false, consumedHeight: 0 }
         // 第一行可行内拆分时留在当前页（规则同拆分循环）
@@ -261,6 +284,7 @@ export class TablePaging {
       let repeatHeight = 0
       let isSplitAborted = false
       while (start < trList!.length) {
+        const minContinuationHeight = minimumContinuation(start)
         const isFirstFragment = fragments.length === 0
         if (!isFirstFragment) {
           // 推进到下一个槽位并取其页高
@@ -365,7 +389,9 @@ export class TablePaging {
           }
           // 当前行放不下：优先尝试行内拆分（超高单元格内容行续排）
           const available = availableTotal - accHeight
-          if (canSplitMidRow(end)) {
+          if (
+            canSplitMidRow(end, slotPageNo, isFirstFragment ? 0 : repeatHeight)
+          ) {
             const { fit, hasRemaining, consumedHeight } = getSplitFitInfo(
               end,
               available / scale,
@@ -576,10 +602,8 @@ export class TablePaging {
   // 按可见窗口裁剪单元格内容与内容行（至少保留一个补偿节点，维持单元格非空约定）
   private _trimTdContentToWindow(td: ITd, windowEnd: number): boolean {
     const originalValueLength = td.value.length
-    const {
-      scale,
-      table: { tdPadding }
-    } = this.options
+    const { scale } = this.options
+    const tdPadding = this.draw.getOriginalTdPadding(td)
     let [, endLine] = this.tableParticle.getTdLineRangeBySplitWindow(
       td,
       0,
@@ -592,7 +616,8 @@ export class TablePaging {
     let accHeight = 0
     let fitLine = 0
     for (let i = 0; i < endLine; i++) {
-      const nextHeight = accHeight + rowList[i].height / scale
+      const nextHeight =
+        accHeight + (rowList[i].height + (rowList[i].offsetY || 0)) / scale
       if (tdPaddingHeight + nextHeight > windowEnd) break
       accHeight = nextHeight
       fitLine = i + 1

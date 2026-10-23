@@ -87,7 +87,7 @@ export class LayoutEngine {
       defaultSize,
       scale,
       imgCaption,
-      table: { tdPadding, defaultColMinWidth, overflow },
+      table: { defaultColMinWidth, overflow },
       defaultTabWidth
     } = options
     const defaultBasicRowMarginHeight = draw.getDefaultBasicRowMarginHeight()
@@ -382,15 +382,18 @@ export class LayoutEngine {
           }
         }
       } else if (element.type === ElementType.TABLE) {
-        const tdPaddingWidth = tdPadding[1] + tdPadding[3]
-        const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         // 表格跨页在渲染层拆分行（数据层保持单一表格）
         const trList = element.trList!
         // 重置tr高度：行高不可低于一个单元格最小高度
-        const tdMinHeight =
-          tdPaddingHeight + defaultSize + (rowMargin * 2) / scale
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
+          const tdMinHeight = tr.tdList.reduce((minimum, td) => {
+            const padding = draw.getOriginalTdPadding(td)
+            return Math.max(
+              minimum,
+              padding[0] + padding[2] + defaultSize + (rowMargin * 2) / scale
+            )
+          }, defaultSize)
           // 行高默认当前最小高度，后续根据内容自适应
           tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
           tr.minHeight = tr.height
@@ -411,13 +414,22 @@ export class LayoutEngine {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
+            const padding = draw.getOriginalTdPadding(td)
+            const tdPaddingWidth = padding[1] + padding[3]
+            const tdPaddingHeight = padding[0] + padding[2]
+            if (td.width === undefined || td.width <= tdPaddingWidth) {
+              throw new Error('Cell padding leaves no usable content width.')
+            }
             const rowList = this.computeRowList({
               innerWidth: (td.width! - tdPaddingWidth) * scale,
               elementList: td.value,
               isFromTable: true,
               isPagingMode
             })
-            const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
+            const rowHeight = rowList.reduce(
+              (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+              0
+            )
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
             const curTdHeight = rowHeight / scale + tdPaddingHeight

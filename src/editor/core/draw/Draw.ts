@@ -612,10 +612,10 @@ export class Draw {
     if (positionContext.isTable) {
       const elementList = this.getOriginalElementList()
       const td = this.position.getTableTdByContext(elementList, positionContext)
-      const {
-        table: { tdPadding }
-      } = this.options
-      return td!.width! - tdPadding[1] - tdPadding[3]
+      if (!td || td.width === undefined)
+        throw new Error('Missing table cell geometry.')
+      const padding = this.getOriginalTdPadding(td)
+      return td.width - padding[1] - padding[3]
     }
     // 分栏布局下按栏宽计算可用宽度（栏宽为缩放值，还原为未缩放单位）
     const direction = this.getPageDirection(this.getPageNo())
@@ -717,12 +717,30 @@ export class Draw {
     return this.options.highlightMarginHeight * this.options.scale
   }
 
-  public getTdPadding(): IPadding {
-    const {
-      table: { tdPadding },
-      scale
-    } = this.options
-    return <IPadding>tdPadding.map(m => m * scale)
+  public getOriginalTdPadding(td?: ITd): IPadding {
+    const padding = td?.padding ?? this.options.table.tdPadding
+    if (
+      !Array.isArray(padding) ||
+      padding.length !== 4 ||
+      padding.some(value => !Number.isFinite(value) || value < 0) ||
+      !Number.isFinite(padding.reduce((sum, value) => sum + value, 0))
+    ) {
+      throw new Error(
+        'Cell padding must contain four finite nonnegative lengths.'
+      )
+    }
+    return [padding[0], padding[1], padding[2], padding[3]]
+  }
+
+  public getTdPadding(td?: ITd): IPadding {
+    const padding = this.getOriginalTdPadding(td)
+    const { scale } = this.options
+    return [
+      padding[0] * scale,
+      padding[1] * scale,
+      padding[2] * scale,
+      padding[3] * scale
+    ]
   }
 
   public getContainer(): HTMLDivElement {
@@ -2309,6 +2327,8 @@ export class Draw {
             ? this.tableParticle.getFragmentTdList(element, fragment)
             : element.trList!.flatMap(tr => tr.tdList)
           for (const td of fragmentTdList) {
+            const padding = this.getOriginalTdPadding(td)
+            const tdPaddingWidth = padding[1] + padding[3]
             let rowList = td.rowList!
             let startIndex = 0
             if (fragment) {

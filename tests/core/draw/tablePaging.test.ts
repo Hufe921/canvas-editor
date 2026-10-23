@@ -556,8 +556,9 @@ describe('表格跨页渲染层拆分', () => {
   })
 
   it('分栏布局下跨页表格片段落位正确', () => {
-    // 两栏布局：超高表格从第 1 页第 2 栏续到第 2 页第 1 栏，后续列表顺序跟随
-    const table = buildTable(14, 100)
+    // Fill the available first column before continuing through the second
+    // column and the next page. The whole-table height must not skip a column.
+    const table = buildTable(24, 100)
     ;(table.colgroup as { width: number }[]).splice(
       0,
       2,
@@ -574,9 +575,8 @@ describe('表格跨页渲染层拆分', () => {
     const draw = renderMain(main, { column: { count: 2, gap: 40 } })
     const fragmentRows = draw.getRowList().filter(row => row.tableFragment)
     expect(fragmentRows.length).toBeGreaterThan(1)
-    // 首片段占满第 1 页第 2 栏，续页片段从第 2 页第 1 栏开始
-    expect(fragmentRows[0].columnIndex).toBe(1)
-    expect(fragmentRows[1].columnIndex).toBe(0)
+    expect(fragmentRows).toHaveLength(3)
+    expect(fragmentRows.map(row => row.columnIndex)).toEqual([0, 1, 0])
     const pageRowList = draw.getPageRowList()
     expect(
       pageRowList[0].some(row => row.tableFragment && row.columnIndex === 1)
@@ -586,12 +586,13 @@ describe('表格跨页渲染层拆分', () => {
     ).toBe(true)
     // 后续文本行与续页片段同栏且位于其下方
     const positionList = draw.getPosition().getOriginalMainPositionList()
-    const fragBottom =
-      fragmentRows[1].fragmentPosition!.coordinate.leftBottom[1]
+    const continuation = fragmentRows[2]?.fragmentPosition
+    if (!continuation) throw new Error('Missing continuation fragment')
+    const fragBottom = continuation.coordinate.leftBottom[1]
     const lastRow = pageRowList[1][pageRowList[1].length - 1]
     const lastPos = positionList[lastRow.startIndex]
     expect(lastPos.coordinate.leftTop[0]).toBeCloseTo(
-      fragmentRows[1].fragmentPosition!.coordinate.leftTop[0],
+      continuation.coordinate.leftTop[0],
       0
     )
     expect(lastPos.coordinate.leftTop[1]).toBeGreaterThanOrEqual(fragBottom - 1)
