@@ -1028,8 +1028,7 @@ export class TableOperate {
     const originalElementList = this.draw.getOriginalElementList()
     const element = originalElementList[index!]
     if (element?.type !== ElementType.TABLE) return
-    const { defaultColMinWidth, tdPadding, overflow } = this.options.table
-    const tdPaddingWidth = tdPadding[1] + tdPadding[3]
+    const { defaultColMinWidth, overflow } = this.options.table
     const colgroup = element.colgroup!
     // 每列内容最大宽度（跨列单元格跳过：简单策略，不参与列宽计算）
     const contentWidthList: number[] = colgroup.map(() => 0)
@@ -1037,6 +1036,8 @@ export class TableOperate {
       const tdList = element.trList![t].tdList
       for (let d = 0; d < tdList.length; d++) {
         const td = tdList[d]
+        const padding = this.draw.getOriginalTdPadding(td)
+        const tdPaddingWidth = padding[1] + padding[3]
         if (td.colspan > 1) continue
         const colIndex = td.colIndex!
         const contentWidth = this._measureTdContentWidth(td) + tdPaddingWidth

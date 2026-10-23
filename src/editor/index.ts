@@ -84,7 +84,9 @@ export default class Editor {
   /** Feature negotiation for clients supplying opt-in layout properties. */
   public static readonly layoutCapabilities = [
     'paragraph-line-height-v1',
-    'leading-paragraph-v1'
+    'leading-paragraph-v1',
+    'table-cell-padding-v1',
+    'table-row-keep-v1'
   ] as const
   public command: Command
   public version: string

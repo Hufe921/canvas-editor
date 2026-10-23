@@ -598,10 +598,10 @@ export class Draw {
     if (positionContext.isTable) {
       const elementList = this.getOriginalElementList()
       const td = this.position.getTableTdByContext(elementList, positionContext)
-      const {
-        table: { tdPadding }
-      } = this.options
-      return td!.width! - tdPadding[1] - tdPadding[3]
+      if (!td || td.width === undefined)
+        throw new Error('Missing table cell geometry.')
+      const padding = this.getOriginalTdPadding(td)
+      return td.width - padding[1] - padding[3]
     }
     // 分栏布局下按栏宽计算可用宽度（栏宽为缩放值，还原为未缩放单位）
     const direction = this.getPageDirection(this.getPageNo())
@@ -703,12 +703,30 @@ export class Draw {
     return this.options.highlightMarginHeight * this.options.scale
   }
 
-  public getTdPadding(): IPadding {
-    const {
-      table: { tdPadding },
-      scale
-    } = this.options
-    return <IPadding>tdPadding.map(m => m * scale)
+  public getOriginalTdPadding(td?: ITd): IPadding {
+    const padding = td?.padding ?? this.options.table.tdPadding
+    if (
+      !Array.isArray(padding) ||
+      padding.length !== 4 ||
+      padding.some(value => !Number.isFinite(value) || value < 0) ||
+      !Number.isFinite(padding.reduce((sum, value) => sum + value, 0))
+    ) {
+      throw new Error(
+        'Cell padding must contain four finite nonnegative lengths.'
+      )
+    }
+    return [padding[0], padding[1], padding[2], padding[3]]
+  }
+
+  public getTdPadding(td?: ITd): IPadding {
+    const padding = this.getOriginalTdPadding(td)
+    const { scale } = this.options
+    return [
+      padding[0] * scale,
+      padding[1] * scale,
+      padding[2] * scale,
+      padding[3] * scale
+    ]
   }
 
   public getContainer(): HTMLDivElement {
@@ -1770,7 +1788,7 @@ export class Draw {
       defaultSize,
       scale,
       imgCaption,
-      table: { tdPadding, defaultColMinWidth, overflow },
+      table: { defaultColMinWidth, overflow },
       defaultTabWidth
     } = this.options
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
@@ -2006,15 +2024,18 @@ export class Draw {
           }
         }
       } else if (element.type === ElementType.TABLE) {
-        const tdPaddingWidth = tdPadding[1] + tdPadding[3]
-        const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         // 表格跨页在渲染层拆分行（数据层保持单一表格）
         const trList = element.trList!
         // 重置tr高度：行高不可低于一个单元格最小高度
-        const tdMinHeight =
-          tdPaddingHeight + defaultSize + (rowMargin * 2) / scale
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
+          const tdMinHeight = tr.tdList.reduce((minimum, td) => {
+            const padding = this.getOriginalTdPadding(td)
+            return Math.max(
+              minimum,
+              padding[0] + padding[2] + defaultSize + (rowMargin * 2) / scale
+            )
+          }, defaultSize)
           // 行高默认当前最小高度，后续根据内容自适应
           tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
           tr.minHeight = tr.height
@@ -2035,13 +2056,22 @@ export class Draw {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
+            const padding = this.getOriginalTdPadding(td)
+            const tdPaddingWidth = padding[1] + padding[3]
+            const tdPaddingHeight = padding[0] + padding[2]
+            if (td.width === undefined || td.width <= tdPaddingWidth) {
+              throw new Error('Cell padding leaves no usable content width.')
+            }
             const rowList = this.computeRowList({
               innerWidth: (td.width! - tdPaddingWidth) * scale,
               elementList: td.value,
               isFromTable: true,
               isPagingMode
             })
-            const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
+            const rowHeight = rowList.reduce(
+              (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+              0
+            )
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
             const curTdHeight = rowHeight / scale + tdPaddingHeight
@@ -2805,13 +2835,7 @@ export class Draw {
     // 优先绘制高亮元素
     this._drawHighlight(ctx, payload)
     // 绘制元素、下划线、删除线、选区
-    const {
-      scale,
-      table: { tdPadding },
-      group,
-      lineBreak,
-      whiteSpace
-    } = this.options
+    const { scale, group, lineBreak, whiteSpace } = this.options
     const {
       rowList,
       pageNo,
@@ -3157,7 +3181,6 @@ export class Draw {
           !element.hide &&
           !this.traceParticle.isTraceHidden(element)
         ) {
-          const tdPaddingWidth = tdPadding[1] + tdPadding[3]
           const fragment = curRow.tableFragment
           // 续页回显表头内容（使用一次性位置列表，不绘制选区）
           if (curRow.repeatTdPositionList?.length) {
@@ -3165,6 +3188,8 @@ export class Draw {
               td,
               positionList: repeatPositionList
             } of curRow.repeatTdPositionList) {
+              const padding = this.getOriginalTdPadding(td)
+              const tdPaddingWidth = padding[1] + padding[3]
               this.drawRow(ctx, {
                 elementList: td.value,
                 positionList: repeatPositionList,
@@ -3183,6 +3208,8 @@ export class Draw {
             ? this.tableParticle.getFragmentTdList(element, fragment)
             : element.trList!.flatMap(tr => tr.tdList)
           for (const td of fragmentTdList) {
+            const padding = this.getOriginalTdPadding(td)
+            const tdPaddingWidth = padding[1] + padding[3]
             let rowList = td.rowList!
             let startIndex = 0
             if (fragment) {
