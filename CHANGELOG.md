@@ -1,3 +1,32 @@
+## [1.0.6](https://github.com/Hufe921/canvas-editor/compare/v1.0.5...v1.0.6) (2026-10-23)
+
+
+### Bug Fixes
+
+* exclude paragraph spacingAfter from row decorations #1498 ([1d7cd1a](https://github.com/Hufe921/canvas-editor/commit/1d7cd1a7742f3e8af1f67536a5157d03b2945de7)), closes [#1498](https://github.com/Hufe921/canvas-editor/issues/1498)
+* honor extraPickAttrs for table row and cell identities #1492 ([71aa099](https://github.com/Hufe921/canvas-editor/commit/71aa0996c2d4c827ec5d86d9acee80eb0a3f98a4)), closes [#1492](https://github.com/Hufe921/canvas-editor/issues/1492)
+* use 24-hour format for date control and parse value by dateFormat #1503 ([b598ce9](https://github.com/Hufe921/canvas-editor/commit/b598ce927572ed453b420e742a2f9f5bd38aa45b)), closes [#1503](https://github.com/Hufe921/canvas-editor/issues/1503)
+
+
+### Chores
+
+* add prepublishOnly script for release preparation ([ced4746](https://github.com/Hufe921/canvas-editor/commit/ced4746ba13c7f2d3bbad0644fdff5e842eba049))
+
+
+### Features
+
+* add area minimum height with resize handle #1051 ([75b4c14](https://github.com/Hufe921/canvas-editor/commit/75b4c14e7da589b46912abf4b14597e3d99026bb)), closes [#1051](https://github.com/Hufe921/canvas-editor/issues/1051)
+* add checkbox cross mark style #1501 ([a3b2a93](https://github.com/Hufe921/canvas-editor/commit/a3b2a93d321802e202cfba4ccbdd955a98d91761)), closes [#1501](https://github.com/Hufe921/canvas-editor/issues/1501)
+* add paragraph spacing #499 ([124bbcc](https://github.com/Hufe921/canvas-editor/commit/124bbcc5176ee91935cfef5ec2374aff5284cb3a)), closes [#499](https://github.com/Hufe921/canvas-editor/issues/499)
+* add table cell border color/width setting #1053 ([4a2bf92](https://github.com/Hufe921/canvas-editor/commit/4a2bf92cf676de9decc7713b63b0c6f20fb8aaac)), closes [#1053](https://github.com/Hufe921/canvas-editor/issues/1053)
+
+
+### Tests
+
+* trim multi-page diff test load for CI timeout ([e8d0be8](https://github.com/Hufe921/canvas-editor/commit/e8d0be8f4c7d23ef1056a35b0891a3bc1083db82))
+
+
+
 ## [1.0.5](https://github.com/Hufe921/canvas-editor/compare/v1.0.4...v1.0.5) (2026-10-11)
 
 
