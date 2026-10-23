@@ -130,9 +130,11 @@ export function formatElementList(
   if (
     startElement?.type !== ElementType.LIST &&
     ((isForceCompensation &&
-      !(editorOptions.preserveLeadingParagraph &&
+      !(
+        editorOptions.preserveLeadingParagraph &&
         (!startElement?.type || startElement.type === ElementType.TEXT) &&
-        START_LINE_BREAK_REG.test(startElement?.value))) ||
+        START_LINE_BREAK_REG.test(startElement?.value)
+      )) ||
       (isHandleFirstElement &&
         ((startElement?.type && startElement.type !== ElementType.TEXT) ||
           !START_LINE_BREAK_REG.test(startElement?.value))))

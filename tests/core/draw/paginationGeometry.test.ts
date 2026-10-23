@@ -1,3 +1,4 @@
+import { LayoutEngine } from '@/editor/core/layout/LayoutEngine'
 import { describe, expect, it } from 'vitest'
 import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
@@ -6,11 +7,12 @@ import { Override } from '@/editor/core/override/Override'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
 import { ElementType } from '@/editor/dataset/enum/Element'
-import { PaperDirection } from '@/editor/dataset/enum/Editor'
+import { BackendType, PageMode, PaperDirection } from '@/editor/dataset/enum/Editor'
 import type { IElement } from '@/editor/interface/Element'
 
-function layout(): Draw {
+function layout(backend: BackendType): Draw {
   const options = mergeOption({
+    backend,
     width: 794,
     height: 1123,
     margins: [100, 120, 100, 120],
@@ -52,9 +54,10 @@ function layout(): Draw {
   draw.render()
   return draw
 }
-describe('column page-break geometry', () => {
+describe.each([BackendType.CANVAS, BackendType.SVG])(
+  '%s column page-break geometry', backend => {
   it('starts the table after an explicit page break in the first column of the new page', () => {
-    const draw = layout()
+    const draw = layout(backend)
     const fragments = draw.getRowList().filter(row => row.tableFragment)
     expect(fragments[0]?.columnIndex).toBe(0)
     expect(draw.getPageRowList()[0].some(row => row.tableFragment)).toBe(false)
@@ -63,8 +66,26 @@ describe('column page-break geometry', () => {
         ?.startTrIndex
     ).toBe(0)
   })
+  it('opens the next page when a break also changes the column', () => {
+    const draw = layout(backend)
+    try {
+      const source = draw.getRowList()[0]
+      const result = new LayoutEngine(draw).computePageList({
+        rowList: [
+          { ...source, isPageBreak: true, columnIndex: 0 },
+          { ...source, isPageBreak: false, columnIndex: 1 }
+        ],
+        elementList: [],
+        pageMode: PageMode.PAGING,
+        paperDirection: PaperDirection.VERTICAL
+      })
+      expect(result.pageRowList.map(rows => rows.length)).toEqual([1, 1])
+    } finally {
+      draw.destroy()
+    }
+  })
   it('places the second landscape column using that page geometry', () => {
-    const draw = layout()
+    const draw = layout(backend)
     const page = draw.getPageRowList()[1]
     expect(page.some(row => row.columnIndex === 1)).toBe(true)
     const right = draw

@@ -158,7 +158,9 @@ export class LayoutEngine {
         ascent: 0,
         elementList: [],
         startIndex: resumeStartIndex,
-        offsetY: !payload.resume ? (elementList[0]?.spacingBefore ?? 0) * scale : 0,
+        offsetY: !payload.resume
+          ? (elementList[0]?.spacingBefore ?? 0) * scale
+          : 0,
         rowIndex: payload.resume?.state.rowIndex ?? 0,
         rowFlex:
           elementList[resumeStartIndex]?.rowFlex ||
@@ -215,13 +217,17 @@ export class LayoutEngine {
       isColumnEnabled = !!layout && layout.count > 1
     }
     const finalizedRows = new WeakSet<IRow>()
-    const finalizeRow = (row: IRow, paragraphEnd: boolean) => {
-      if (finalizedRows.has(row)) return
-      applyLineHeight(row, scale, el => !!(
-        el.hide || el.control?.hide ||
+    const isHidden = (el: IRowElement) =>
+      !draw.isDesignMode() &&
+      !!(
+        el.hide ||
+        el.control?.hide ||
         (el.area?.hide && !draw.isAreaHideDisabled()) ||
         draw.getTraceParticle().isTraceHidden(el)
-      ))
+      )
+    const finalizeRow = (row: IRow, paragraphEnd: boolean) => {
+      if (finalizedRows.has(row)) return
+      applyLineHeight(row, scale, isHidden)
       if (paragraphEnd) {
         const after = row.elementList[row.elementList.length - 1]?.spacingAfter
         if (after) {
@@ -233,11 +239,12 @@ export class LayoutEngine {
         const visibleElements = row.elementList.filter(el => el.value !== ZERO)
         if (
           visibleElements.length > 0 &&
-          visibleElements.every(el =>
-            el.hide ||
-            el.control?.hide ||
-            (el.area?.hide && !draw.isAreaHideDisabled()) ||
-            draw.getTraceParticle().isTraceHidden(el)
+          visibleElements.every(
+            el =>
+              el.hide ||
+              el.control?.hide ||
+              (el.area?.hide && !draw.isAreaHideDisabled()) ||
+              draw.getTraceParticle().isTraceHidden(el)
           )
         ) {
           row.height = 0
@@ -902,9 +909,15 @@ export class LayoutEngine {
       }
       // 重新计算坐标、页码、下一行首行元素环绕交叉
       if (isWrap) {
+        const nextRow = rowList[rowList.length - 1]
+        // Predict column overflow with the authored line box rather than the
+        // first glyph's ink/font height. Finalize again after the row is full.
+        applyLineHeight(nextRow, scale, isHidden)
         const columnOffset = !layout ? 0 : layout.offsets[currentColumn] || 0
         x = currentStartX + columnOffset
-        y += curRow.height
+        // A page-break marker belongs to the previous page. Its height must
+        // not consume the first column of the page already opened below.
+        if (!curRow.isPageBreak) y += curRow.height
         if (isPagingMode && !isFromTable && currentPageHeight) {
           const isPageBreakElement = element.type === ElementType.PAGE_BREAK
           const nextDirection = element.paperDirection || options.paperDirection
@@ -927,7 +940,8 @@ export class LayoutEngine {
             currentDirection
           )
           const isOverflow =
-            y - pageStartY + curMainOuterHeight + height > currentPageHeight
+            y - pageStartY + curMainOuterHeight + nextRow.height >
+            currentPageHeight
           if (isOverflow || isPageBreakElement) {
             if (
               !isPageBreakElement &&
@@ -951,7 +965,6 @@ export class LayoutEngine {
           }
         }
         // 同步新行的栏索引（栏游标可能在翻栏/翻页逻辑中变化）
-        const nextRow = rowList[rowList.length - 1]
         if (nextRow && isColumnEnabled && nextRow.columnIndex !== undefined) {
           nextRow.columnIndex = currentColumn
         }
@@ -1023,6 +1036,7 @@ export class LayoutEngine {
       const row = rowList[i]
       const rowOffsetY = row.offsetY || 0
       const columnChanged =
+        !rowList[i - 1]?.isPageBreak &&
         prevColumnIndex !== undefined &&
         row.columnIndex !== undefined &&
         row.columnIndex > 0 &&

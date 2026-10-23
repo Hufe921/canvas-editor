@@ -83,7 +83,10 @@ import { IGraffitiData } from './interface/Graffiti'
 
 export default class Editor {
   /** Feature negotiation for clients supplying opt-in layout properties. */
-  public static readonly layoutCapabilities = ['paragraph-line-height-v1', 'leading-paragraph-v1'] as const
+  public static readonly layoutCapabilities = [
+    'paragraph-line-height-v1',
+    'leading-paragraph-v1'
+  ] as const
   public command: Command
   public version: string
   public listener: Listener

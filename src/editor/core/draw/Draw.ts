@@ -599,7 +599,9 @@ export class Draw {
     this.columnManager.setConfig(config)
   }
 
-  public getOriginalInnerWidth(direction = this.options.paperDirection): number {
+  public getOriginalInnerWidth(
+    direction = this.options.paperDirection
+  ): number {
     const width = this.getOriginalWidth(direction)
     const margins = this.getOriginalMargins(direction)
     return width - margins[1] - margins[3]
