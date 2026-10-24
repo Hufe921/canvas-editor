@@ -140,7 +140,7 @@ export class TableTool {
       position.metrics.height
     }:${fragmentStartTrIndex}:${fragmentEndTrIndex}:${
       fragment?.startSplitTrOffset ?? 0
-    }:${fragment?.endSplitTrHeight ?? 0}`
+    }:${fragment?.endSplitTrHeight ?? 0}:${fragment?.leadingHeight ?? 0}:${fragment?.trailingHeight ?? 0}`
     for (let r = fragmentStartTrIndex; r < fragmentEndTrIndex; r++) {
       layoutKey += `:${trList![r].height}`
     }
@@ -377,13 +377,15 @@ export class TableTool {
       let tdHeight = td.height!
       let tdOffsetY = 0
       if (fragment) {
-        const [windowStart, windowEnd] = this.draw
+        const [windowStart] = this.draw
           .getTableParticle()
           .getTdWindowInFragment(td, element, fragment)
-        tdHeight = windowEnd - windowStart
+        tdHeight = this.draw
+          .getTableParticle()
+          .getTdFragmentHeight(td, element, fragment)
         tdOffsetY = this.draw
           .getTableParticle()
-          .getTdWindowOffsetY(windowStart, fragment)
+          .getTdWindowOffsetY(windowStart, fragment, td)
       }
       const rowBorder = document.createElement('div')
       rowBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__row`)
@@ -512,96 +514,122 @@ export class TableTool {
     document.addEventListener(
       'mouseup',
       () => {
-        let isChangeSize = false
-        // dx/dy为屏幕像素，tr/colgroup等表格度量均为未缩放单位，统一换算后计算
-        let moveDx = dx / scale
-        let moveDy = dy / scale
-        // 改变尺寸
-        if (order === TableOrder.ROW) {
-          const trList = element.trList!
-          const tr = trList[index] || trList[index - 1]
-          // 最大移动高度-向上移动超出最小高度限定，则减少移动量
-          const { defaultTrMinHeight } = this.options.table
-          if (moveDy < 0 && tr.height + moveDy < defaultTrMinHeight) {
-            moveDy = defaultTrMinHeight - tr.height
-          }
-          if (moveDy) {
-            tr.height += moveDy
-            tr.minHeight = tr.height
-            isChangeSize = true
-          }
-        } else {
-          const { colgroup } = element
-          if (colgroup && moveDx) {
-            // 第一列特殊处理：更改表格宽度并移动位置
-            if (overflow && isLeftStartBorder) {
-              // 列减少宽度不能小于最小宽度
-              if (colgroup[index].width - moveDx <= this.MIN_TD_WIDTH) {
-                moveDx = colgroup[index].width - this.MIN_TD_WIDTH
-              }
-              colgroup[index].width -= moveDx
-              element.width! -= moveDx
-              element.translateX = (element.translateX || 0) + moveDx
+        const oldWidths = element.colgroup?.map(col => col.width)
+        const oldWidth = element.width
+        const oldTranslateX = element.translateX
+        const oldRows = element.trList?.map(tr => ({
+          height: tr.height,
+          minHeight: tr.minHeight
+        }))
+        try {
+          let isChangeSize = false
+          // dx/dy为屏幕像素，tr/colgroup等表格度量均为未缩放单位，统一换算后计算
+          let moveDx = dx / scale
+          let moveDy = dy / scale
+          // 改变尺寸
+          if (order === TableOrder.ROW) {
+            const trList = element.trList!
+            const tr = trList[index] || trList[index - 1]
+            // 最大移动高度-向上移动超出最小高度限定，则减少移动量
+            const { defaultTrMinHeight } = this.options.table
+            if (moveDy < 0 && tr.height + moveDy < defaultTrMinHeight) {
+              moveDy = defaultTrMinHeight - tr.height
+            }
+            if (moveDy) {
+              tr.height += moveDy
+              tr.minHeight = tr.height
               isChangeSize = true
-            } else {
-              // 宽度分配
-              const innerWidth = this.draw.getOriginalInnerWidth()
-              const curColWidth = colgroup[index].width
-              // 最小移动距离计算-如果向左移动：使单元格小于最小宽度，则减少移动量
-              if (moveDx < 0 && curColWidth + moveDx < this.MIN_TD_WIDTH) {
-                moveDx = this.MIN_TD_WIDTH - curColWidth
-              }
-              // 最大移动距离计算-如果向右移动：使后面一个单元格小于最小宽度，则减少移动量
-              const nextColWidth = colgroup[index + 1]?.width
-              if (
-                moveDx > 0 &&
-                nextColWidth &&
-                nextColWidth - moveDx < this.MIN_TD_WIDTH
-              ) {
-                moveDx = nextColWidth - this.MIN_TD_WIDTH
-              }
-              const moveColWidth = curColWidth + moveDx
-              // 开始移动，只有表格的最后一列线才会改变表格的宽度，其他场景不用计算表格超出
-              if (!overflow && index === colgroup.length - 1) {
-                let moveTableWidth = 0
-                for (let c = 0; c < colgroup.length; c++) {
-                  const group = colgroup[c]
-                  // 下一列减去偏移量
-                  if (c === index + 1) {
-                    moveTableWidth -= moveDx
-                  }
-                  // 当前列加上偏移量
-                  if (c === index) {
-                    moveTableWidth += moveColWidth
-                  }
-                  if (c !== index) {
-                    moveTableWidth += group.width
-                  }
-                }
-                if (moveTableWidth > innerWidth) {
-                  const tableWidth = element.width!
-                  moveDx = innerWidth - tableWidth
-                }
-              }
-              if (moveDx) {
-                // 当前列增加，后列减少
-                if (colgroup.length - 1 !== index) {
-                  colgroup[index + 1].width -= moveDx
-                }
-                colgroup[index].width += moveDx
+            }
+          } else {
+            const { colgroup } = element
+            if (colgroup && moveDx) {
+              // 第一列特殊处理：更改表格宽度并移动位置
+              if (overflow && isLeftStartBorder) {
+                moveDx = this.draw
+                  .getTableParticle()
+                  .constrainColResize(
+                    element,
+                    index,
+                    moveDx,
+                    true,
+                    this.MIN_TD_WIDTH
+                  )
+                colgroup[index].width -= moveDx
+                element.width! -= moveDx
+                element.translateX = (element.translateX || 0) + moveDx
                 isChangeSize = true
+              } else {
+                // 宽度分配
+                const innerWidth = this.draw.getOriginalInnerWidth()
+                const curColWidth = colgroup[index].width
+                const moveColWidth = curColWidth + moveDx
+                // 开始移动，只有表格的最后一列线才会改变表格的宽度，其他场景不用计算表格超出
+                if (!overflow && index === colgroup.length - 1) {
+                  let moveTableWidth = 0
+                  for (let c = 0; c < colgroup.length; c++) {
+                    const group = colgroup[c]
+                    // 下一列减去偏移量
+                    if (c === index + 1) {
+                      moveTableWidth -= moveDx
+                    }
+                    // 当前列加上偏移量
+                    if (c === index) {
+                      moveTableWidth += moveColWidth
+                    }
+                    if (c !== index) {
+                      moveTableWidth += group.width
+                    }
+                  }
+                  if (moveTableWidth > innerWidth) {
+                    const tableWidth = element.width!
+                    moveDx = innerWidth - tableWidth
+                  }
+                }
+                moveDx = this.draw
+                  .getTableParticle()
+                  .constrainColResize(
+                    element,
+                    index,
+                    moveDx,
+                    false,
+                    this.MIN_TD_WIDTH
+                  )
+                if (moveDx) {
+                  // 当前列增加，后列减少
+                  if (colgroup.length - 1 !== index) {
+                    colgroup[index + 1].width -= moveDx
+                  }
+                  colgroup[index].width += moveDx
+                  isChangeSize = true
+                }
               }
             }
           }
+          if (isChangeSize) {
+            this.draw.render({ isSetCursor: false })
+          }
+        } catch (error: unknown) {
+          element.colgroup?.forEach((col, c) => {
+            col.width = oldWidths?.[c] ?? col.width
+          })
+          element.width = oldWidth
+          element.translateX = oldTranslateX
+          element.trList?.forEach((tr, r) => {
+            const oldRow = oldRows?.[r]
+            if (oldRow) {
+              tr.height = oldRow.height
+              tr.minHeight = oldRow.minHeight
+            }
+          })
+          throw error
+        } finally {
+          // 还原副作用
+          anchorLine.remove()
+          document.removeEventListener('mousemove', mousemoveFn)
+          document.body.style.cursor = ''
+          this.canvas.style.cursor = 'text'
+          this.anchorLine = null
         }
-        if (isChangeSize) {
-          this.draw.render({ isSetCursor: false })
-        }
-        // 还原副作用
-        anchorLine.remove()
-        document.removeEventListener('mousemove', mousemoveFn)
-        document.body.style.cursor = ''
-        this.canvas.style.cursor = 'text'
       },
       {
         once: true

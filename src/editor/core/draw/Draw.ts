@@ -722,7 +722,9 @@ export class Draw {
     if (
       !Array.isArray(padding) ||
       padding.length !== 4 ||
-      padding.some(value => !Number.isFinite(value) || value < 0) ||
+      [0, 1, 2, 3].some(
+        index => !Number.isFinite(padding[index]) || padding[index] < 0
+      ) ||
       !Number.isFinite(padding.reduce((sum, value) => sum + value, 0))
     ) {
       throw new Error(

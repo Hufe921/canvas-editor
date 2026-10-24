@@ -1,3 +1,4 @@
+import { BackendType } from '../../src/editor/dataset/enum/Editor'
 import { Draw } from '../../src/editor/core/draw/Draw'
 import { EventBus } from '../../src/editor/core/event/eventbus/EventBus'
 import { Listener } from '../../src/editor/core/listener/Listener'
@@ -8,7 +9,9 @@ import { formatElementList } from '../../src/editor/utils/element'
 import { mergeOption } from '../../src/editor/utils/option'
 
 /** Run with unmocked Canvas metrics through Vite, as paragraphLayout.ts does. */
-export function reviewTableLayoutInBrowser() {
+export function reviewTableLayoutInBrowser(
+  backend = BackendType.CANVAS
+) {
   const results: Array<{ scale: number; pages: number; fragments: number }> = []
   const check = (condition: boolean, message: string) => {
     if (!condition) throw new Error(message)
@@ -20,6 +23,7 @@ export function reviewTableLayoutInBrowser() {
     }))
   for (const scale of [0.5, 1, 2]) {
     const options = mergeOption({
+        backend,
       width: 600,
       height: 200,
       margins: [20, 20, 20, 20],
