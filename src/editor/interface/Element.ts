@@ -18,6 +18,7 @@ import { ITitle } from './Title'
 import { IColgroup } from './table/Colgroup'
 import { ITd } from './table/Td'
 import { ITr } from './table/Tr'
+import type { ILineHeight } from './LineHeight'
 
 export interface IElementBasic {
   id?: string
@@ -43,6 +44,11 @@ export interface IElementStyle {
   rowMargin?: number
   spacingBefore?: number
   spacingAfter?: number
+  lineHeight?: ILineHeight
+  keepTogether?: boolean
+  keepWithNext?: boolean
+  widowControl?: boolean
+  pageBreakBefore?: boolean
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number
@@ -277,6 +283,10 @@ export interface ITableRowFragment {
   startSplitTrOffset?: number
   // 结束行在本页被拆分：该行截止到本页末累计消耗的高度（未缩放）
   endSplitTrHeight?: number
+  // Transient continuation geometry; source windows still own content ranges.
+  leadingHeight?: number
+  trailingHeight?: number
+  layoutHeight?: number
   // 从之前行带入片段的跨行合并单元格（渲染层缓存，避免逐片段全表扫描）
   carriedTds?: ITd[]
 }

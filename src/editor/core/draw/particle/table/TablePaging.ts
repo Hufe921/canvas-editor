@@ -8,6 +8,7 @@ import { IRow } from '../../../../interface/Row'
 import { ITd } from '../../../../interface/table/Td'
 import { Draw } from '../../Draw'
 import { TableParticle } from './TableParticle'
+import { ParagraphPaging } from '../../ParagraphPaging'
 
 // 表格分页：跨页表格在渲染层的行拆分（分页/分栏片段计算）
 // 与 maxPageNo 截断裁剪。数据层始终保持单一表格
@@ -26,6 +27,15 @@ export class TablePaging {
   // 仅将跨页表格的行记录拆分为按页片段（超高单元格按内容行行内拆分）
   public splitTableRowAcrossPages(rowList: IRow[]): IRow[] {
     const { scale } = this.options
+    const isHidden = (element: IElement) =>
+      !this.draw.isDesignMode() &&
+      Boolean(
+        element.hide ||
+        element.control?.hide ||
+        (element.area?.hide && !this.draw.isAreaHideDisabled()) ||
+        this.draw.getTraceParticle().isTraceHidden(element)
+      )
+    const paragraphs = new ParagraphPaging(rowList, isHidden)
     // 分栏布局：行落位以（页码, 栏索引）槽位推进，与 _computePageList 规则一致
     const columnLayout = this.draw.getColumnLayout(this.options.paperDirection)
     const columnCount = columnLayout?.count || 1
@@ -40,8 +50,15 @@ export class TablePaging {
     const newRowList: IRow[] = []
     // 是否已发生表格拆分（之后行的栏索引需按实际填充重新推导）
     let hasSplitTable = false
+    let hasFlowRepacked = false
+    // Mirror area padding that the final page pass will carry, without
+    // mutating raw rows (that pass installs the actual offset exactly once).
+    let pendingAreaCarry = 0
     for (let i = 0; i < rowList.length; i++) {
       const row = rowList[i]
+      const carriedOffsetY = pendingAreaCarry
+      pendingAreaCarry = 0
+      const rowOffsetY = (row.offsetY || 0) + carriedOffsetY
       const element = row.elementList[0]
       const trList = element?.trList
       // 上一行是分页符则当前行另起新页
@@ -51,8 +68,12 @@ export class TablePaging {
         ? rowList[i - 1].paperDirection || this.options.paperDirection
         : null
       // 推进到下一个槽位：分栏时优先换栏，否则换页
-      const advanceSlot = () => {
-        if (isColumnEnabled && currentColumn < columnCount - 1) {
+      const advanceSlot = (forcePageBreak = false) => {
+        if (
+          !forcePageBreak &&
+          isColumnEnabled &&
+          currentColumn < columnCount - 1
+        ) {
           currentColumn++
         } else {
           pageNo++
@@ -64,35 +85,83 @@ export class TablePaging {
       const passThrough = () => {
         if (
           isColumnEnabled &&
+          !isPrePageBreak &&
           row.columnIndex !== undefined &&
           row.columnIndex > currentColumn &&
-          !hasSplitTable
+          !hasSplitTable &&
+          !hasFlowRepacked
         ) {
           currentColumn = row.columnIndex
           pageHeight = this.draw.getMainOuterHeight(pageNo, curDirection)
         }
+        const slotTop = this.draw.getMainOuterHeight(pageNo, curDirection)
+        const occupied = pageHeight > slotTop + 1e-8
+        const nextPage =
+          isColumnEnabled && currentColumn < columnCount - 1
+            ? pageNo
+            : pageNo + 1
+        const nextEmpty =
+          curPageLimit - this.draw.getMainOuterHeight(nextPage, curDirection)
+        const emptyHeight = Math.max(curPageLimit - slotTop, nextEmpty)
+        const reservation = paragraphs.required(i, emptyHeight)
+        reservation.height += carriedOffsetY
+        const grouped =
+          reservation.fresh ||
+          reservation.height > row.height + rowOffsetY + 1e-8
         if (
-          row.height + (row.offsetY || 0) + pageHeight > curPageLimit ||
-          isPrePageBreak
+          carriedOffsetY > 0 &&
+          grouped &&
+          reservation.height > emptyHeight + 1e-8
+        ) {
+          throw new Error(
+            'Paragraph flow cannot fit alongside carried area padding.'
+          )
+        }
+        const explicit = paragraphs.before(i) && (occupied || currentColumn > 0)
+        const keep =
+          occupied &&
+          (reservation.fresh ||
+            (grouped && pageHeight + reservation.height > curPageLimit + 1e-8))
+        const overflow = row.height + rowOffsetY + pageHeight > curPageLimit
+        if (
+          hasFlowRepacked &&
+          overflow &&
+          row.areaPadding &&
+          !isPrePageBreak &&
+          !explicit &&
+          !keep &&
+          row.height - row.areaPadding.height + rowOffsetY + pageHeight <=
+            curPageLimit
+        ) {
+          pendingAreaCarry = row.height + rowOffsetY + pageHeight - curPageLimit
+          if (isColumnEnabled) row.columnIndex = currentColumn
+          pageHeight = curPageLimit
+          newRowList.push(row)
+          return
+        }
+        if (
+          (overflow && (!paragraphs.active || occupied)) ||
+          isPrePageBreak ||
+          explicit ||
+          keep
         ) {
           if (preBreakDirection) {
             curDirection = preBreakDirection
             curPageLimit = this.draw.getHeight(curDirection)
           }
-          advanceSlot()
+          const oldPage = pageNo
+          if (keep || explicit) hasFlowRepacked = true
+          advanceSlot(isPrePageBreak || explicit)
+          if (paragraphs.active && pageNo !== oldPage && (keep || explicit))
+            row.paginationBreakBefore = true
         }
         // 拆分后行的栏索引按实际填充重新推导
         if (isColumnEnabled) row.columnIndex = currentColumn
-        pageHeight += row.height + (row.offsetY || 0)
+        pageHeight += row.height + rowOffsetY
         newRowList.push(row)
       }
       const isHiddenTable =
-        element?.type === ElementType.TABLE &&
-        (element.hide ||
-          element.control?.hide ||
-          (element.area?.hide && !this.draw.isAreaHideDisabled()) ||
-          this.draw.getTraceParticle().isTraceHidden(element)) &&
-        !this.draw.isDesignMode()
+        element?.type === ElementType.TABLE && isHidden(element)
       const isTableRow =
         row.elementList.length === 1 &&
         element?.type === ElementType.TABLE &&
@@ -121,8 +190,25 @@ export class TablePaging {
       }
       // 行内拆分条件：行内各单元格均有内容
       // （跨行合并单元格按窗口裁剪续排，不再限制切分位置）
-      const canSplitMidRow = (trIndex: number) =>
-        trList![trIndex].tdList.every(td => !!td.rowList?.length)
+      const canSplitMidRow = (
+        trIndex: number,
+        targetPage: number,
+        repeatHeight = 0
+      ) => {
+        const tr = trList?.[trIndex]
+        if (!tr) return false
+        const emptyHeight =
+          (curPageLimit -
+            this.draw.getMainOuterHeight(targetPage, curDirection) -
+            rowMarginHeight) /
+            scale -
+          repeatHeight
+        // Oversized rows must still progress, as in Word's cantSplit behavior.
+        return (
+          (!tr.keepTogether || tr.height > emptyHeight + 1e-8) &&
+          tr.tdList.every(td => !!td.rowList?.length)
+        )
+      }
       // 拆分相关单元格：本行单元格 + 覆盖本行的跨行合并单元格
       const getSplitRelevantTdList = (trIndex: number) => {
         const tdList = [...trList![trIndex].tdList]
@@ -134,25 +220,82 @@ export class TablePaging {
         return tdList
       }
       // 续留行盒最小高度（未缩放，避免产生空盒碎页）
-      const {
-        table: { tdPadding },
-        defaultSize
-      } = this.options
-      const minContinuationHeight = tdPadding[0] + tdPadding[2] + defaultSize
+      const minimumContinuation = (trIndex: number) =>
+        Math.max(
+          this.options.defaultSize,
+          ...(trList?.[trIndex]?.tdList ?? []).map(td => {
+            const padding = this.draw.getOriginalTdPadding(td)
+            return padding[0] + padding[2] + this.options.defaultSize
+          })
+        )
+      const minContinuationHeight = minimumContinuation(0)
+      let fragmentStartTrIndex = 0
+      let leadingExtra = 0
+      const getWindowLayoutHeight = (
+        trIndex: number,
+        end: number,
+        top: number
+      ) => {
+        const bottom = trHeightPrefix[trIndex] + end
+        let height = bottom - top
+        for (const td of getSplitRelevantTdList(trIndex)) {
+          const start = Math.max(0, top - (td.y || 0))
+          const finish = Math.min(td.height || 0, bottom - (td.y || 0))
+          if (finish <= start) continue
+          const offset =
+            Math.max(0, (td.y || 0) - top) +
+            ((td.rowIndex ?? 0) > fragmentStartTrIndex ? leadingExtra : 0)
+          height = Math.max(
+            height,
+            offset +
+              this.tableParticle.getTdWindowLayoutHeight(td, start, finish)
+          )
+        }
+        return height
+      }
       // 拆分适应度：窗口内可容纳内容行数、续页是否有剩余内容、内容实际消耗高度
       // 注意：窗口、行高、返回值均为未缩放单位（与 td.y/tr.height 一致）
       const getSplitFitInfo = (
         trIndex: number,
         windowHeight: number,
-        visibleTopFull: number
+        visibleTopFull: number,
+        availableHeight: number
       ) => {
         const trY = trHeightPrefix[trIndex]
+        // A source cut may lie inside another cell's line. Bound the complete
+        // rows at their rebased padded origin, preserving contiguous ownership.
+        let fittedHeight = windowHeight
+        while (true) {
+          let next = fittedHeight
+          for (const td of getSplitRelevantTdList(trIndex)) {
+            const start = Math.max(0, visibleTopFull - (td.y || 0))
+            const end = Math.min(
+              td.height || 0,
+              trY + fittedHeight - (td.y || 0)
+            )
+            if (end <= start) continue
+            const offset =
+              Math.max(0, (td.y || 0) - visibleTopFull) +
+              ((td.rowIndex ?? 0) > fragmentStartTrIndex ? leadingExtra : 0)
+            const safeEnd = this.tableParticle.fitTdWindowEnd(
+              td,
+              start,
+              end,
+              availableHeight - offset
+            )
+            if (safeEnd < end)
+              next = Math.min(next, (td.y || 0) + safeEnd - trY)
+          }
+          if (next >= fittedHeight) break
+          fittedHeight = Math.max(0, next)
+        }
         let fit = 0
         let hasRemaining = false
         let consumedHeight = 0
         for (const td of getSplitRelevantTdList(trIndex)) {
+          const tdPadding = this.draw.getOriginalTdPadding(td)
           // 单元格在整表坐标系中的窗口（可视区与本单元格区域的交集）
-          const tdWindowEnd = Math.min(td.height!, trY + windowHeight - td.y!)
+          const tdWindowEnd = Math.min(td.height!, trY + fittedHeight - td.y!)
           const tdWindowStart = Math.max(0, visibleTopFull - td.y!)
           if (tdWindowEnd <= tdWindowStart) continue
           const [startLine, endLine] =
@@ -168,55 +311,66 @@ export class TablePaging {
           // 续排窗口需计入窗口之前已消耗的内容行高，否则续页消耗高度被低估
           const contentHeight = td
             .rowList!.slice(0, endLine)
-            .reduce((pre, cur) => pre + cur.height, 0)
+            .reduce((pre, cur) => pre + cur.height + (cur.offsetY || 0), 0)
           const contentBottom =
             td.y! + tdPadding[0] + tdPadding[2] + contentHeight / scale - trY
           consumedHeight = Math.max(consumedHeight, contentBottom)
         }
-        return { fit, hasRemaining, consumedHeight }
+        return { fit, hasRemaining, consumedHeight, fittedHeight }
       }
       // 表格起始槽位：分页符或当前页容不下第一行时移至下一槽位（可行内拆分则留在当前页）
       let fragPageNo = pageNo
       let fragColumn = currentColumn
-      let fragPageHeight = pageHeight
-      // 表格显式换栏（栏索引大于当前栏）：从下一栏顶部开始
-      if (
-        isColumnEnabled &&
-        row.columnIndex !== undefined &&
-        row.columnIndex > currentColumn
-      ) {
-        fragColumn = row.columnIndex
-        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo, curDirection)
-      }
+      let fragPageHeight = pageHeight + carriedOffsetY
+      // Row computation sees the whole table height and can predict an early
+      // column advance. Place table fragments using actual occupied space,
+      // so a fitting first row is not stranded out of the previous column.
       // 片段槽位推进：分栏时优先换栏，否则换页
-      const advanceFragSlot = () => {
-        if (isColumnEnabled && fragColumn < columnCount - 1) {
+      const advanceFragSlot = (forcePageBreak = false) => {
+        if (
+          !forcePageBreak &&
+          isColumnEnabled &&
+          fragColumn < columnCount - 1
+        ) {
           fragColumn++
         } else {
           fragPageNo++
           fragColumn = 0
         }
-        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo, curDirection)
+        fragPageHeight =
+          this.draw.getMainOuterHeight(fragPageNo, curDirection) +
+          carriedOffsetY
       }
       if (isPrePageBreak) {
         if (preBreakDirection) {
           curDirection = preBreakDirection
           curPageLimit = this.draw.getHeight(curDirection)
         }
-        advanceFragSlot()
+        advanceFragSlot(true)
       } else if (
         fragPageHeight + trList![0].height! * scale + rowMarginHeight >
         curPageLimit
       ) {
         const firstTrAvailable = curPageLimit - fragPageHeight - rowMarginHeight
-        const { fit, hasRemaining, consumedHeight } = canSplitMidRow(0)
-          ? getSplitFitInfo(0, firstTrAvailable / scale, 0)
-          : { fit: 0, hasRemaining: false, consumedHeight: 0 }
+        const { fit, hasRemaining, consumedHeight, fittedHeight } =
+          canSplitMidRow(0, fragPageNo)
+            ? getSplitFitInfo(
+                0,
+                firstTrAvailable / scale,
+                0,
+                firstTrAvailable / scale
+              )
+            : {
+                fit: 0,
+                hasRemaining: false,
+                consumedHeight: 0,
+                fittedHeight: 0
+              }
         // 第一行可行内拆分时留在当前页（规则同拆分循环）
         let endSplitHeight = -1
         if (fit >= 1) {
           if (hasRemaining) {
-            endSplitHeight = Math.min(consumedHeight, firstTrAvailable / scale)
+            endSplitHeight = Math.min(consumedHeight, fittedHeight)
             if (trList![0].height! - endSplitHeight < minContinuationHeight) {
               endSplitHeight = trList![0].height! - minContinuationHeight
             }
@@ -224,7 +378,7 @@ export class TablePaging {
             trList![0].height! - firstTrAvailable / scale >=
             minContinuationHeight
           ) {
-            endSplitHeight = firstTrAvailable / scale
+            endSplitHeight = fittedHeight
           }
         }
         if (endSplitHeight <= 0) {
@@ -256,6 +410,7 @@ export class TablePaging {
       let repeatHeight = 0
       let isSplitAborted = false
       while (start < trList!.length) {
+        const minContinuationHeight = minimumContinuation(start)
         const isFirstFragment = fragments.length === 0
         if (!isFirstFragment) {
           // 推进到下一个槽位并取其页高
@@ -297,24 +452,49 @@ export class TablePaging {
         // 可用高度不足一行内容（极端页高/页边距）：
         // 放弃拆分，整表按原行透出，避免续排行拆分循环无法推进
         if (availableTotal < minContinuationHeight * scale) {
+          if (carriedOffsetY > 0 && isFirstFragment) {
+            throw new Error(
+              'Table flow cannot fit alongside carried area padding.'
+            )
+          }
           isSplitAborted = true
           break
         }
         // 当前片段可视区顶部（整表坐标）
         const visibleTopFull = trHeightPrefix[start] + pendingOffset
+        fragmentStartTrIndex = start
+        leadingExtra = 0
+        const remainingHeight = getWindowLayoutHeight(
+          start,
+          trList![start].height,
+          visibleTopFull
+        )
+        leadingExtra = Math.max(
+          0,
+          remainingHeight - (trList![start].height - pendingOffset)
+        )
         // 续排行仍然超页：按内容行继续行内拆分
         if (pendingOffset > 0) {
-          const remainScaled = (trList![start].height! - pendingOffset) * scale
+          if (remainingHeight < minContinuationHeight) {
+            isSplitAborted = true
+            break
+          }
+          const remainScaled = remainingHeight * scale
           if (remainScaled > availableTotal) {
-            const windowHeight = pendingOffset + availableTotal / scale
-            const { fit, hasRemaining, consumedHeight } = getSplitFitInfo(
-              start,
-              windowHeight,
-              visibleTopFull
+            const windowHeight = Math.min(
+              trList![start].height,
+              pendingOffset + availableTotal / scale
             )
-            let endOffset = windowHeight
+            const { fit, hasRemaining, consumedHeight, fittedHeight } =
+              getSplitFitInfo(
+                start,
+                windowHeight,
+                visibleTopFull,
+                availableTotal / scale
+              )
+            let endOffset = fittedHeight
             if (fit >= 1 && hasRemaining) {
-              endOffset = Math.min(consumedHeight, windowHeight)
+              endOffset = Math.min(consumedHeight, fittedHeight)
               // 给续留行盒留足最小高度（保底不少于已消耗高度，防止无法推进）
               if (trList![start].height! - endOffset < minContinuationHeight) {
                 endOffset = Math.max(
@@ -325,7 +505,16 @@ export class TablePaging {
             }
             // 推进保障：每轮拆分必须消耗新的高度，不允许原地踏步
             if (endOffset <= pendingOffset) {
-              endOffset = pendingOffset + 1
+              // An indivisible object taller than an empty slot cannot be
+              // split. Retain the existing overflow fallback, never resize it
+              // or discard already prepared fragments (including maxPageNo).
+              fragments.push({
+                startTrIndex: start,
+                endTrIndex: trList!.length,
+                startSplitTrOffset: pendingOffset,
+                columnIndex: slotColumn
+              })
+              break
             }
             fragments.push({
               startTrIndex: start,
@@ -339,10 +528,7 @@ export class TablePaging {
           }
         }
         // 起始行（可能为续排行）之后的行逐行填充
-        let accHeight =
-          pendingOffset > 0
-            ? (trList![start].height! - pendingOffset) * scale
-            : 0
+        let accHeight = pendingOffset > 0 ? remainingHeight * scale : 0
         let end = pendingOffset > 0 ? start + 1 : start
         let endSplitTrHeight: number | undefined
         let isAbort = false
@@ -353,24 +539,33 @@ export class TablePaging {
             break
           }
           const trHeight = trList![end].height! * scale
-          if (accHeight + trHeight <= availableTotal) {
-            accHeight += trHeight
+          const layoutHeight = Math.max(
+            accHeight + trHeight,
+            getWindowLayoutHeight(end, trList![end].height, visibleTopFull) *
+              scale
+          )
+          if (layoutHeight <= availableTotal + 1e-8) {
+            accHeight = layoutHeight
             end++
             continue
           }
           // 当前行放不下：优先尝试行内拆分（超高单元格内容行续排）
           const available = availableTotal - accHeight
-          if (canSplitMidRow(end)) {
-            const { fit, hasRemaining, consumedHeight } = getSplitFitInfo(
-              end,
-              available / scale,
-              visibleTopFull
-            )
+          if (
+            canSplitMidRow(end, slotPageNo, isFirstFragment ? 0 : repeatHeight)
+          ) {
+            const { fit, hasRemaining, consumedHeight, fittedHeight } =
+              getSplitFitInfo(
+                end,
+                available / scale,
+                visibleTopFull,
+                availableTotal / scale
+              )
             let candidate = -1
             if (fit >= 1) {
               if (hasRemaining) {
                 // 续页还有内容：拆分点取实际消耗高度，并给续留行盒留足最小高度
-                candidate = Math.min(consumedHeight, available / scale)
+                candidate = Math.min(consumedHeight, fittedHeight)
                 if (trList![end].height! - candidate < minContinuationHeight) {
                   candidate = trList![end].height! - minContinuationHeight
                 }
@@ -379,7 +574,7 @@ export class TablePaging {
                 minContinuationHeight
               ) {
                 // 内容全部放下且续留行盒非碎页：按可用高度拆分填满页面
-                candidate = available / scale
+                candidate = fittedHeight
               }
             }
             if (candidate > 0) {
@@ -432,9 +627,23 @@ export class TablePaging {
             : undefined
         const fragRepeatHeight = fragRepeatTrIndexes ? repeatHeight : 0
         // 片段内容高度：行内拆分行按可见高度计算（与绘制/位置层同一口径）
-        const contentHeight = this.tableParticle.getFragmentContentHeight(
+        const tableFragment: ITableRowFragment = {
+          startTrIndex: fragment.startTrIndex,
+          endTrIndex: fragment.endTrIndex,
+          skipHeight,
+          repeatHeight: fragRepeatHeight,
+          repeatTrIndexes: fragRepeatTrIndexes,
+          startSplitTrOffset: fragment.startSplitTrOffset,
+          endSplitTrHeight: fragment.endSplitTrHeight,
+          carriedTds: rowspanTdList.filter(
+            td =>
+              (td.rowIndex ?? 0) < fragment.startTrIndex &&
+              (td.rowIndex ?? 0) + td.rowspan > fragment.startTrIndex
+          )
+        }
+        const contentHeight = this.tableParticle.computeFragmentLayoutHeight(
           element,
-          fragment
+          tableFragment
         )
         const fragHeight = (contentHeight + fragRepeatHeight) * scale
         newRowList.push({
@@ -456,23 +665,7 @@ export class TablePaging {
               }
             }
           ],
-          tableFragment: {
-            startTrIndex: fragment.startTrIndex,
-            endTrIndex: fragment.endTrIndex,
-            skipHeight,
-            repeatHeight: fragRepeatHeight,
-            repeatTrIndexes: fragRepeatTrIndexes,
-            startSplitTrOffset: fragment.startSplitTrOffset,
-            endSplitTrHeight: fragment.endSplitTrHeight,
-            // 带入片段的跨行合并单元格（覆盖片段起始行）
-            carriedTds: rowspanTdList.length
-              ? rowspanTdList.filter(
-                  td =>
-                    td.rowIndex! < fragment.startTrIndex &&
-                    td.rowIndex! + td.rowspan > fragment.startTrIndex
-                )
-              : undefined
-          }
+          tableFragment
         })
         // skipHeight 累计下一片段起始行之前的完整行高
         const nextStart = fragments[f + 1]?.startTrIndex ?? 0
@@ -488,7 +681,8 @@ export class TablePaging {
       pageHeight =
         this.draw.getMainOuterHeight(pageNo, curDirection) +
         lastFragRow.height +
-        (lastFragRow.offsetY || 0)
+        (lastFragRow.offsetY || 0) +
+        (fragments.length === 1 ? carriedOffsetY : 0)
     }
     // 重排行号
     for (let r = 0; r < newRowList.length; r++) {
@@ -571,10 +765,8 @@ export class TablePaging {
   // 按可见窗口裁剪单元格内容与内容行（至少保留一个补偿节点，维持单元格非空约定）
   private _trimTdContentToWindow(td: ITd, windowEnd: number): boolean {
     const originalValueLength = td.value.length
-    const {
-      scale,
-      table: { tdPadding }
-    } = this.options
+    const { scale } = this.options
+    const tdPadding = this.draw.getOriginalTdPadding(td)
     let [, endLine] = this.tableParticle.getTdLineRangeBySplitWindow(
       td,
       0,
@@ -587,7 +779,8 @@ export class TablePaging {
     let accHeight = 0
     let fitLine = 0
     for (let i = 0; i < endLine; i++) {
-      const nextHeight = accHeight + rowList[i].height / scale
+      const nextHeight =
+        accHeight + (rowList[i].height + (rowList[i].offsetY || 0)) / scale
       if (tdPaddingHeight + nextHeight > windowEnd) break
       accHeight = nextHeight
       fitLine = i + 1

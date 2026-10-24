@@ -19,6 +19,11 @@ export const EDITOR_ROW_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
+  'keepTogether',
+  'keepWithNext',
+  'widowControl',
+  'pageBreakBefore',
   'spacingAfter'
 ]
 
@@ -30,6 +35,11 @@ export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
+  'keepTogether',
+  'keepWithNext',
+  'widowControl',
+  'pageBreakBefore',
   'spacingAfter',
   'level',
   'title'
@@ -54,6 +64,11 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'groupIds',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
+  'keepTogether',
+  'keepWithNext',
+  'widowControl',
+  'pageBreakBefore',
   'spacingAfter',
   'textDecoration'
 ]
@@ -71,6 +86,11 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'spacingBefore',
+  'lineHeight',
+  'keepTogether',
+  'keepWithNext',
+  'widowControl',
+  'pageBreakBefore',
   'spacingAfter',
   'dashArray',
   'trList',
@@ -122,6 +142,7 @@ export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [
   'externalId',
   'verticalAlign',
   'backgroundColor',
+  'padding',
   'borderColor',
   'borderWidth',
   'borderTypes',
