@@ -24,6 +24,7 @@ interface IEditorOption {
   maxSize?: number // Max font size。default: 72
   defaultBasicRowMarginHeight?: number // Default line height。default: 8
   defaultRowMargin?: number // Default line spacing. default: 1
+  preserveLeadingParagraph?: boolean // Adopt a leading newline as the first paragraph marker. default: false
   defaultTabWidth?: number // Default tab width. default: 32
   width?: number // Paper width. default: 794
   height?: number // Paper height. default: 1123
@@ -501,3 +502,58 @@ interface ISpellcheckOption {
   color?: string // Misspelled word wavy line color. default: #FF0000
 }
 ```
+
+## Explicit paragraph line heights
+
+Text elements can opt into font line-box metrics with `lineHeight`:
+
+```typescript
+{
+  value: 'Paragraph text',
+  lineHeight: { rule: 'atLeast', value: 24 }
+}
+```
+
+`multiple` multiplies the natural line box (including fractional values below
+one); `exact` uses an absolute height in document pixels; `atLeast` uses the
+larger of the natural box and an absolute height. Absolute sizes scale with
+the document. Supply the paragraph setting consistently on its text elements
+and marker. Exact spacing can intentionally overlap glyphs. Elements without
+`lineHeight` retain the existing `rowMargin` behavior. Font line-box metrics
+require browser `TextMetrics.fontBoundingBoxAscent` and
+`fontBoundingBoxDescent`; unavailable metrics raise an error.
+
+The optional `preserveLeadingParagraph` setting adopts an existing leading
+newline marker in each story/cell instead of inserting another blank
+paragraph. Empty containers still receive a placeholder. Serialization retains
+the adopted marker (including an otherwise empty paragraph), so reopening
+with the returned options preserves its spacing and optional picked identity.
+The default remains `false`. This option is intended for applications that
+supply explicit paragraph markers.
+
+Clients can inspect `Editor.layoutCapabilities` for
+`paragraph-line-height-v1` and `leading-paragraph-v1` before supplying these
+properties. These features do not add section-specific columns or stories.
+
+## Table cell padding and row keeps
+
+Each table cell can supply `padding: [top, right, bottom, left]` in document
+pixels. An omitted tuple uses `table.tdPadding`; an explicit zero tuple removes
+that cell's padding. Values must be finite and nonnegative, and the horizontal
+padding must leave positive content width. Geometry, vertical alignment,
+selection, repeated headers, split windows and serialization use this same
+padding. Nested tables resolve the padding of each owning cell separately.
+Sparse tuples are rejected. Padding-derived row minima are recalculated on
+layout without replacing authored `minHeight` values. Column boundary drags
+respect the padding of affected cells, including cells spanning columns.
+
+Table rows can set `keepTogether: true` to move a row to the next page or
+column when it fits there intact. The default is `false`. A row taller than
+an empty page/column still splits to ensure all its content can be displayed.
+Repeated-header height participates in this decision. This property does not
+keep an entire table or groups of adjacent rows together.
+A single indivisible line or object taller than the available slot retains
+the existing overflow fallback; the editor does not resize it to fit.
+
+Clients can negotiate `table-cell-padding-v1` and `table-row-keep-v1` through
+`Editor.layoutCapabilities` before supplying these properties.
