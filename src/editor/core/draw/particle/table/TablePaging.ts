@@ -27,7 +27,15 @@ export class TablePaging {
   // 仅将跨页表格的行记录拆分为按页片段（超高单元格按内容行行内拆分）
   public splitTableRowAcrossPages(rowList: IRow[]): IRow[] {
     const { scale } = this.options
-    const paragraphs = new ParagraphPaging(rowList)
+    const isHidden = (element: IElement) =>
+      !this.draw.isDesignMode() &&
+      Boolean(
+        element.hide ||
+        element.control?.hide ||
+        (element.area?.hide && !this.draw.isAreaHideDisabled()) ||
+        this.draw.getTraceParticle().isTraceHidden(element)
+      )
+    const paragraphs = new ParagraphPaging(rowList, isHidden)
     // 分栏布局：行落位以（页码, 栏索引）槽位推进，与 _computePageList 规则一致
     const columnLayout = this.draw.getColumnLayout(this.options.paperDirection)
     const columnCount = columnLayout?.count || 1
@@ -42,8 +50,15 @@ export class TablePaging {
     const newRowList: IRow[] = []
     // 是否已发生表格拆分（之后行的栏索引需按实际填充重新推导）
     let hasSplitTable = false
+    let hasFlowRepacked = false
+    // Mirror area padding that the final page pass will carry, without
+    // mutating raw rows (that pass installs the actual offset exactly once).
+    let pendingAreaCarry = 0
     for (let i = 0; i < rowList.length; i++) {
       const row = rowList[i]
+      const carriedOffsetY = pendingAreaCarry
+      pendingAreaCarry = 0
+      const rowOffsetY = (row.offsetY || 0) + carriedOffsetY
       const element = row.elementList[0]
       const trList = element?.trList
       // 上一行是分页符则当前行另起新页
@@ -74,7 +89,7 @@ export class TablePaging {
           row.columnIndex !== undefined &&
           row.columnIndex > currentColumn &&
           !hasSplitTable &&
-          !paragraphs.active
+          !hasFlowRepacked
         ) {
           currentColumn = row.columnIndex
           pageHeight = this.draw.getMainOuterHeight(pageNo, curDirection)
@@ -87,17 +102,43 @@ export class TablePaging {
             : pageNo + 1
         const nextEmpty =
           curPageLimit - this.draw.getMainOuterHeight(nextPage, curDirection)
-        const reservation = paragraphs.required(
-          i,
-          Math.max(curPageLimit - slotTop, nextEmpty)
-        )
+        const emptyHeight = Math.max(curPageLimit - slotTop, nextEmpty)
+        const reservation = paragraphs.required(i, emptyHeight)
+        reservation.height += carriedOffsetY
+        const grouped =
+          reservation.fresh ||
+          reservation.height > row.height + rowOffsetY + 1e-8
+        if (
+          carriedOffsetY > 0 &&
+          grouped &&
+          reservation.height > emptyHeight + 1e-8
+        ) {
+          throw new Error(
+            'Paragraph flow cannot fit alongside carried area padding.'
+          )
+        }
         const explicit = paragraphs.before(i) && (occupied || currentColumn > 0)
         const keep =
           occupied &&
           (reservation.fresh ||
-            pageHeight + reservation.height > curPageLimit + 1e-8)
-        const overflow =
-          row.height + (row.offsetY || 0) + pageHeight > curPageLimit
+            (grouped && pageHeight + reservation.height > curPageLimit + 1e-8))
+        const overflow = row.height + rowOffsetY + pageHeight > curPageLimit
+        if (
+          hasFlowRepacked &&
+          overflow &&
+          row.areaPadding &&
+          !isPrePageBreak &&
+          !explicit &&
+          !keep &&
+          row.height - row.areaPadding.height + rowOffsetY + pageHeight <=
+            curPageLimit
+        ) {
+          pendingAreaCarry = row.height + rowOffsetY + pageHeight - curPageLimit
+          if (isColumnEnabled) row.columnIndex = currentColumn
+          pageHeight = curPageLimit
+          newRowList.push(row)
+          return
+        }
         if (
           (overflow && (!paragraphs.active || occupied)) ||
           isPrePageBreak ||
@@ -109,22 +150,18 @@ export class TablePaging {
             curPageLimit = this.draw.getHeight(curDirection)
           }
           const oldPage = pageNo
+          if (keep || explicit) hasFlowRepacked = true
           advanceSlot(isPrePageBreak || explicit)
-          if (paragraphs.active && pageNo !== oldPage)
+          if (paragraphs.active && pageNo !== oldPage && (keep || explicit))
             row.paginationBreakBefore = true
         }
         // 拆分后行的栏索引按实际填充重新推导
         if (isColumnEnabled) row.columnIndex = currentColumn
-        pageHeight += row.height + (row.offsetY || 0)
+        pageHeight += row.height + rowOffsetY
         newRowList.push(row)
       }
       const isHiddenTable =
-        element?.type === ElementType.TABLE &&
-        (element.hide ||
-          element.control?.hide ||
-          (element.area?.hide && !this.draw.isAreaHideDisabled()) ||
-          this.draw.getTraceParticle().isTraceHidden(element)) &&
-        !this.draw.isDesignMode()
+        element?.type === ElementType.TABLE && isHidden(element)
       const isTableRow =
         row.elementList.length === 1 &&
         element?.type === ElementType.TABLE &&
@@ -284,7 +321,7 @@ export class TablePaging {
       // 表格起始槽位：分页符或当前页容不下第一行时移至下一槽位（可行内拆分则留在当前页）
       let fragPageNo = pageNo
       let fragColumn = currentColumn
-      let fragPageHeight = pageHeight
+      let fragPageHeight = pageHeight + carriedOffsetY
       // Row computation sees the whole table height and can predict an early
       // column advance. Place table fragments using actual occupied space,
       // so a fitting first row is not stranded out of the previous column.
@@ -300,7 +337,9 @@ export class TablePaging {
           fragPageNo++
           fragColumn = 0
         }
-        fragPageHeight = this.draw.getMainOuterHeight(fragPageNo, curDirection)
+        fragPageHeight =
+          this.draw.getMainOuterHeight(fragPageNo, curDirection) +
+          carriedOffsetY
       }
       if (isPrePageBreak) {
         if (preBreakDirection) {
@@ -413,6 +452,11 @@ export class TablePaging {
         // 可用高度不足一行内容（极端页高/页边距）：
         // 放弃拆分，整表按原行透出，避免续排行拆分循环无法推进
         if (availableTotal < minContinuationHeight * scale) {
+          if (carriedOffsetY > 0 && isFirstFragment) {
+            throw new Error(
+              'Table flow cannot fit alongside carried area padding.'
+            )
+          }
           isSplitAborted = true
           break
         }
@@ -637,7 +681,8 @@ export class TablePaging {
       pageHeight =
         this.draw.getMainOuterHeight(pageNo, curDirection) +
         lastFragRow.height +
-        (lastFragRow.offsetY || 0)
+        (lastFragRow.offsetY || 0) +
+        (fragments.length === 1 ? carriedOffsetY : 0)
     }
     // 重排行号
     for (let r = 0; r < newRowList.length; r++) {

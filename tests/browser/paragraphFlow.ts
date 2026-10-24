@@ -1,3 +1,4 @@
+import { BackendType } from '../../src/editor/dataset/enum/Editor'
 import { Draw } from '../../src/editor/core/draw/Draw'
 import { EventBus } from '../../src/editor/core/event/eventbus/EventBus'
 import { Listener } from '../../src/editor/core/listener/Listener'
@@ -7,7 +8,7 @@ import { formatElementList } from '../../src/editor/utils/element'
 import { mergeOption } from '../../src/editor/utils/option'
 
 /** Unmocked browser measurements determine the fixture's line count. */
-export function reviewParagraphFlowInBrowser() {
+export function reviewParagraphFlowInBrowser(backend = BackendType.CANVAS) {
   const probe = document.createElement('canvas').getContext('2d')
   if (!probe) throw new Error('Canvas metrics unavailable')
   probe.font = '16px monospace'
@@ -53,6 +54,7 @@ export function reviewParagraphFlowInBrowser() {
                 )
               ]
       const options = mergeOption({
+      backend,
         width: name === 'columns' || name === 'break' ? 240 : 120,
         height: 200,
         margins: [20, 20, 20, 20],
