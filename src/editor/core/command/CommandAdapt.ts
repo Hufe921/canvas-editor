@@ -1,3 +1,5 @@
+import { bindExternalElements } from '../../utils/externalBindings'
+import { IExternalElementBinding } from '../../interface/ExternalBinding'
 import { NBSP, WRAP, ZERO } from '../../dataset/constant/Common'
 import {
   AREA_CONTEXT_ATTR,
@@ -1884,6 +1886,23 @@ export class CommandAdapt {
           isClone: false
         })
       : null
+  }
+
+  /** Cloned expanded elements in the active body or nested table-cell container. */
+  public getRuntimeElementList(): IElement[] {
+    return deepClone(this.draw.getElementList())
+  }
+
+  /** Atomically attach application-neutral metadata without submitting history. */
+  public setExternalElementBindings(bindings: IExternalElementBinding[]): void {
+    bindExternalElements(
+      {
+        [EditorZone.MAIN]: this.draw.getOriginalMainElementList(),
+        [EditorZone.HEADER]: this.draw.getHeaderElementList(),
+        [EditorZone.FOOTER]: this.draw.getFooterElementList()
+      },
+      bindings
+    )
   }
 
   public getSurroundElementList(
