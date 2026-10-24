@@ -575,3 +575,21 @@ an existing page break or adding an empty page at the document start.
 This capability is for paged main-story text. Table-cell/header/footer flow,
 floating objects, and keeping text with a following non-text object are rejected.
 Incremental row reuse falls back to full layout while flow properties are active.
+
+Wrapped text-like runs, including hyperlinks, retain their paragraph ownership
+for keeps and widow control. Fully hidden paragraphs do not contribute keep
+targets or groups; visible keeps still reject a following visible non-text
+object even if hidden paragraphs intervene. Visibility follows the active editor
+mode, including deleted trace content and design mode.
+
+Only a genuine keep reservation or paragraph page break forces a pagination
+boundary. Ordinary overflow retains minimum-height area-padding carry behavior;
+existing column hints remain in use until flow actually changes row placement.
+If a later kept group or first table fragment cannot fit alongside carried area
+padding, layout rejects that combination rather than splitting the group,
+overflowing the table or dropping the padding.
+
+An indivisible text row taller than the available page retains the existing
+overflow fallback, which can leave an empty page and overflow the next page.
+The oversized-paragraph guarantee concerns paragraphs whose individual rows fit
+an empty page; this capability does not certify arbitrary overheight rows.

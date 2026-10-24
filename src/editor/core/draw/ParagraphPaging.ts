@@ -1,5 +1,5 @@
 import { ZERO } from '../../dataset/constant/Common'
-import { ElementType } from '../../dataset/enum/Element'
+import { isTextLikeElement } from '../../utils/element'
 import type { IElement } from '../../interface/Element'
 import type { IRow } from '../../interface/Row'
 
@@ -29,25 +29,27 @@ export class ParagraphPaging {
   private readonly groups: Group[][] = []
   private readonly breaks = new Set<number>()
 
-  constructor(private readonly rows: IRow[]) {
+  constructor(
+    private readonly rows: IRow[],
+    isHidden: (element: IElement) => boolean
+  ) {
     const paragraphs: Paragraph[] = []
-    let current: Paragraph | undefined
-    this.active = rows.some(row =>
-      row.elementList.some(element =>
-        PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
-      )
+    const owners: Array<Paragraph | undefined> = []
+    const displayed: number[] = [0]
+    const nextVisible = Array.from(
+      { length: rows.length + 1 },
+      () => rows.length
     )
+    let current: Paragraph | undefined
     for (const [i, row] of rows.entries()) {
       delete row.paginationBreakBefore
       this.prefix.push(this.prefix[i] + row.height + (row.offsetY || 0))
       this.groups.push([])
+      const isDisplayed =
+        row.height > 0 && row.elementList.some(el => !isHidden(el))
+      displayed.push(displayed[i] + Number(isDisplayed))
       const first = row.elementList[0]
-      const text =
-        first &&
-        (!first.type ||
-          first.type === ElementType.TEXT ||
-          first.type === ElementType.SUPERSCRIPT ||
-          first.type === ElementType.SUBSCRIPT)
+      const text = first && isTextLikeElement(first)
       if (!text) {
         current = undefined
         continue
@@ -56,8 +58,25 @@ export class ParagraphPaging {
         current = { start: i, end: i + 1, style: first }
         paragraphs.push(current)
       } else current.end = i + 1
+      owners[i] = current
     }
+    this.active = rows.some(
+      (row, i) =>
+        displayed[i + 1] > displayed[i] &&
+        row.elementList.some(element =>
+          PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
+        )
+    )
     if (!this.active) return
+    for (let i = rows.length - 1; i >= 0; i--) {
+      nextVisible[i] =
+        displayed[i + 1] > displayed[i] || rows[i].isPageBreak
+          ? i
+          : nextVisible[i + 1]
+    }
+    const effective = paragraphs.filter(
+      p => displayed[p.end] > displayed[p.start]
+    )
     const add = (start: number, end: number, fresh: boolean) => {
       const group = {
         start,
@@ -67,14 +86,13 @@ export class ParagraphPaging {
       }
       for (let i = start; i < end; i++) this.groups[i].push(group)
     }
-    for (const p of paragraphs) {
-      if (this.prefix[p.end] <= this.prefix[p.start]) continue
+    for (const p of effective) {
       if (p.style.pageBreakBefore) this.breaks.add(p.start)
       if (p.style.keepTogether) add(p.start, p.end, true)
       if (p.style.widowControl) {
         const visible: number[] = []
         for (let i = p.start; i < p.end; i++) {
-          if (this.rows[i].height > 0) visible.push(i)
+          if (displayed[i + 1] > displayed[i]) visible.push(i)
         }
         if (visible.length > 1 && visible.length <= 3)
           add(p.start, p.end, false)
@@ -84,32 +102,33 @@ export class ParagraphPaging {
         }
       }
     }
-    for (let i = 0; i < paragraphs.length; i++) {
-      const paragraph = paragraphs[i]
+    for (let i = 0; i < effective.length; i++) {
+      const paragraph = effective[i]
       if (!paragraph.style.keepWithNext) continue
-      const following = rows[paragraph.end]
+      const followingIndex = nextVisible[paragraph.end]
+      const following = rows[followingIndex]
       if (
         following &&
         !following.isPageBreak &&
-        paragraphs[i + 1]?.start !== paragraph.end
+        (!effective[i + 1] || owners[followingIndex] !== effective[i + 1])
       ) {
         throw new Error(
           'Keeping text with a following object is not supported.'
         )
       }
     }
-    for (let i = 0; i < paragraphs.length; i++) {
-      const first = paragraphs[i]
+    for (let i = 0; i < effective.length; i++) {
+      const first = effective[i]
       if (!first.style.keepWithNext) continue
       let last = i
       while (
-        paragraphs[last]?.style.keepWithNext &&
-        paragraphs[last + 1] &&
-        paragraphs[last].end === paragraphs[last + 1].start &&
-        !paragraphs[last + 1].style.pageBreakBefore
+        effective[last]?.style.keepWithNext &&
+        effective[last + 1] &&
+        owners[nextVisible[effective[last].end]] === effective[last + 1] &&
+        !effective[last + 1].style.pageBreakBefore
       )
         last++
-      if (last > i) add(first.start, paragraphs[last].end, true)
+      if (last > i) add(first.start, effective[last].end, true)
       i = last
     }
   }
