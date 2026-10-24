@@ -1,3 +1,4 @@
+import { PARAGRAPH_FLOW_ATTR } from './ParagraphPaging'
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
@@ -2684,10 +2685,13 @@ export class Draw {
       }
       // 行级增量行计算：消费本次编辑的脏区间，从受影响行续算至收敛；
       // 无脏区间或门控不满足时退回全量，行为与未开启时一致
-      const incrementalResult = this.incrementalRowComputer.tryCompute(
-        this.incrementalRowComputer.consumeDirtyRange(),
-        rowComputePayload
+      const dirtyRange = this.incrementalRowComputer.consumeDirtyRange()
+      const flowLayout = this.elementList.some(element =>
+        PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
       )
+      const incrementalResult = flowLayout
+        ? null
+        : this.incrementalRowComputer.tryCompute(dirtyRange, rowComputePayload)
       this.rawRowList =
         incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
       this.incrementalRowComputer.observeLayout()

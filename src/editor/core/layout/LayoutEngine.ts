@@ -1,3 +1,4 @@
+import { PARAGRAPH_FLOW_ATTR } from '../draw/ParagraphPaging'
 import { applyLineHeight } from '../../utils/lineHeight'
 import { ZERO } from '../../dataset/constant/Common'
 import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
@@ -90,6 +91,27 @@ export class LayoutEngine {
       table: { defaultColMinWidth, overflow },
       defaultTabWidth
     } = options
+    if (
+      surroundElementList.length &&
+      elementList.some(element =>
+        PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
+      )
+    ) {
+      throw new Error('Paragraph flow with floating objects is not supported.')
+    }
+    for (const element of elementList) {
+      for (const key of PARAGRAPH_FLOW_ATTR) {
+        if (element[key] !== undefined && typeof element[key] !== 'boolean')
+          throw new Error('Paragraph flow properties must be boolean.')
+        if (
+          element[key] === true &&
+          (!isPagingMode || isFromTable || elementList !== draw.getMainElementList())
+        )
+          throw new Error(
+            'Paragraph flow requires the paged main story outside table cells.'
+          )
+      }
+    }
     const defaultBasicRowMarginHeight = draw.getDefaultBasicRowMarginHeight()
     const ctx = document
       .createElement('canvas')
@@ -1050,6 +1072,7 @@ export class LayoutEngine {
       const row = rowList[i]
       const rowOffsetY = row.offsetY || 0
       const columnChanged =
+        !row.paginationBreakBefore &&
         !rowList[i - 1]?.isPageBreak &&
         prevColumnIndex !== undefined &&
         row.columnIndex !== undefined &&
@@ -1063,10 +1086,15 @@ export class LayoutEngine {
         pageRowList[pageNo].push(row)
       } else if (
         row.height + rowOffsetY + pageHeight > pageLimit ||
-        rowList[i - 1]?.isPageBreak
+        rowList[i - 1]?.isPageBreak ||
+        row.paginationBreakBefore
       ) {
         const areaPadding = row.areaPadding
-        if (areaPadding && !rowList[i - 1]?.isPageBreak) {
+        if (
+          areaPadding &&
+          !rowList[i - 1]?.isPageBreak &&
+          !row.paginationBreakBefore
+        ) {
           const contentHeight = row.height - areaPadding.height
           const remainHeight = pageLimit - pageHeight - rowOffsetY
           if (contentHeight <= remainHeight) {
