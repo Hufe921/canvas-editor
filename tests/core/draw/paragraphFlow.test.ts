@@ -216,10 +216,10 @@ describe('opt-in main-story paragraph flow', () => {
       count(render(saved.data.main, saved.options), 'keepTogether')
     ).toEqual(count(draw, 'keepTogether'))
   })
-  it('rejects keeping text with a following table explicitly', () => {
+  it.each([1, 3])('rejects a %i-paragraph kept chain before a table', length => {
     expect(() =>
       render([
-        paragraph(1, { keepWithNext: true }),
+        ...Array.from({ length }, () => paragraph(1, { keepWithNext: true })),
         {
           type: ElementType.TABLE,
           value: '',

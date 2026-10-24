@@ -85,18 +85,22 @@ export class ParagraphPaging {
       }
     }
     for (let i = 0; i < paragraphs.length; i++) {
-      const first = paragraphs[i]
-      if (!first.style.keepWithNext) continue
-      const following = rows[first.end]
+      const paragraph = paragraphs[i]
+      if (!paragraph.style.keepWithNext) continue
+      const following = rows[paragraph.end]
       if (
         following &&
         !following.isPageBreak &&
-        paragraphs[i + 1]?.start !== first.end
+        paragraphs[i + 1]?.start !== paragraph.end
       ) {
         throw new Error(
           'Keeping text with a following object is not supported.'
         )
       }
+    }
+    for (let i = 0; i < paragraphs.length; i++) {
+      const first = paragraphs[i]
+      if (!first.style.keepWithNext) continue
       let last = i
       while (
         paragraphs[last]?.style.keepWithNext &&
