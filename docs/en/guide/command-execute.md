@@ -844,6 +844,16 @@ Usage:
 instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
 ```
 
+## executeChangeImageVerticalAlign
+
+Feature: Change the vertical alignment of an embedded image or formula relative to the text in its row (top, middle or bottom; defaults to bottom on the baseline)
+
+Usage:
+
+```javascript
+instance.command.executeChangeImageVerticalAlign(element: IElement, verticalAlign: VerticalAlign)
+```
+
 ## executeSetImageCrop
 
 Feature: Set image crop information

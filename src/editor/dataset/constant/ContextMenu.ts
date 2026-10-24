@@ -26,7 +26,11 @@ export const INTERNAL_CONTEXT_MENU_KEY = {
     TEXT_WRAP_UP_DOWN: 'imageTextWrapUpDown',
     TEXT_WRAP_SURROUND: 'imageTextWrapSurround',
     TEXT_WRAP_FLOAT_TOP: 'imageTextWrapFloatTop',
-    TEXT_WRAP_FLOAT_BOTTOM: 'imageTextWrapFloatBottom'
+    TEXT_WRAP_FLOAT_BOTTOM: 'imageTextWrapFloatBottom',
+    VERTICAL_ALIGN: 'imageVerticalAlign',
+    VERTICAL_ALIGN_TOP: 'imageVerticalAlignTop',
+    VERTICAL_ALIGN_MIDDLE: 'imageVerticalAlignMiddle',
+    VERTICAL_ALIGN_BOTTOM: 'imageVerticalAlignBottom'
   },
   TABLE: {
     BORDER: 'border',

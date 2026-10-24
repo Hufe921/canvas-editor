@@ -59,6 +59,12 @@ export interface IContextmenuLang {
       floatTop: string
       floatBottom: string
     }
+    verticalAlign: string
+    verticalAlignType: {
+      top: string
+      middle: string
+      bottom: string
+    }
   }
   table: {
     insertRowCol: string

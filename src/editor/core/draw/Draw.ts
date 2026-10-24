@@ -118,6 +118,7 @@ import { EventBusMap } from '../../interface/EventBus'
 import { Group } from './interactive/Group'
 import { Override } from '../override/Override'
 import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
+import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import {
   PUNCTUATION_REG,
   WHITE_SPACE_REG
@@ -1748,6 +1749,44 @@ export class Draw {
     )
   }
 
+  // 嵌入型图片、公式顶端/居中对齐时顶部到基线的距离，底端对齐返回undefined
+  private _getImageAscent(
+    ctx: CanvasRenderingContext2D,
+    elementList: IElement[],
+    index: number,
+    metrics: IElementMetrics
+  ): number | undefined {
+    const element = elementList[index]
+    const { imgVerticalAlign } = element
+    if (
+      !IMAGE_ELEMENT_TYPE.includes(element.type!) ||
+      (element.imgDisplay && element.imgDisplay !== ImageDisplay.BLOCK) ||
+      (imgVerticalAlign !== VerticalAlign.TOP &&
+        imgVerticalAlign !== VerticalAlign.MIDDLE)
+    ) {
+      return undefined
+    }
+    // 以相邻文字为基准，无相邻文字时使用图片自身字体
+    const isText = (el?: IElement) =>
+      !!el &&
+      el.value !== ZERO &&
+      (!el.type || TEXTLIKE_ELEMENT_TYPE.includes(el.type))
+    const basisElement =
+      [elementList[index - 1], elementList[index + 1]].find(isText) || element
+    const { scale } = this.options
+    const basisMetrics = this.textParticle.measureBasisWord(
+      ctx,
+      this.getElementFont(basisElement)
+    )
+    const textAscent = basisMetrics.actualBoundingBoxAscent * scale
+    if (imgVerticalAlign === VerticalAlign.TOP) {
+      return textAscent
+    }
+    // 图片中线对齐文字中线
+    const textDescent = basisMetrics.actualBoundingBoxDescent * scale
+    return metrics.height / 2 + (textAscent - textDescent) / 2
+  }
+
   public computeRowList(payload: IComputeRowListPayload) {
     const {
       innerWidth,
@@ -1888,6 +1927,8 @@ export class Draw {
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
+      // 嵌入型图片、公式顶端/居中对齐时顶部到基线的距离
+      let imgAscent: number | undefined
       // 实际可用宽度
       const offsetX =
         curRow.offsetX ||
@@ -1958,6 +1999,7 @@ export class Draw {
             const captionHeight = (fontSize + captionTop) * scale
             metrics.boundingBoxAscent += captionHeight
           }
+          imgAscent = this._getImageAscent(ctx, elementList, i, metrics)
         }
       } else if (element.type === ElementType.TABLE) {
         const tdPaddingWidth = tdPadding[1] + tdPadding[3]
@@ -2181,17 +2223,19 @@ export class Draw {
         ((element.imgDisplay !== ImageDisplay.INLINE &&
           element.type === ElementType.IMAGE) ||
           element.type === ElementType.LATEX)
-          ? metrics.height + rowMargin
+          ? (imgAscent ?? metrics.height) + rowMargin
           : metrics.boundingBoxAscent + rowMargin
+      // 图片、公式顶端/居中对齐时基线以上部分可能超出其高度
       const height =
         rowMargin +
         metrics.boundingBoxAscent +
-        metrics.boundingBoxDescent +
+        Math.max(metrics.boundingBoxDescent, imgAscent ?? 0) +
         rowMargin
       const rowElement: IRowElement = Object.assign(element, {
         metrics,
         left: 0,
-        style: this.getElementFont(element, scale)
+        style: this.getElementFont(element, scale),
+        imgAscent
       })
       // 控件开始时统计宽度，结束时消费最小宽度并补充跨行占位
       if (

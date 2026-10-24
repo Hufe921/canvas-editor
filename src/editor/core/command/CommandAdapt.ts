@@ -1555,6 +1555,24 @@ export class CommandAdapt {
     })
   }
 
+  public changeImageVerticalAlign(
+    element: IElement,
+    verticalAlign: VerticalAlign
+  ) {
+    if ((element.imgVerticalAlign || VerticalAlign.BOTTOM) === verticalAlign) {
+      return
+    }
+    if (verticalAlign === VerticalAlign.BOTTOM) {
+      delete element.imgVerticalAlign
+    } else {
+      element.imgVerticalAlign = verticalAlign
+    }
+    this.draw.getPreviewer().clearResizer()
+    this.draw.render({
+      isSetCursor: false
+    })
+  }
+
   public changeImageDisplay(element: IElement, display: ImageDisplay) {
     if (element.imgDisplay === display) return
     element.imgDisplay = display

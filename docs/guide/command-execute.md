@@ -838,6 +838,16 @@ instance.command.executeSaveAsImageElement()
 instance.command.executeChangeImageDisplay(element: IElement, display: ImageDisplay)
 ```
 
+## executeChangeImageVerticalAlign
+
+功能：改变嵌入型图片或公式与同行文字的垂直对齐方式（顶端、居中、底端，默认底端对齐基线）
+
+用法：
+
+```javascript
+instance.command.executeChangeImageVerticalAlign(element: IElement, verticalAlign: VerticalAlign)
+```
+
 ## executeSetImageCrop
 
 功能：设置图片裁剪信息

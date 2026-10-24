@@ -80,6 +80,7 @@ export class Command {
   public executeSetImageCrop: CommandAdapt['setImageCrop']
   public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
+  public executeChangeImageVerticalAlign: CommandAdapt['changeImageVerticalAlign']
   public executePageMode: CommandAdapt['pageMode']
   public executeSetColumns: CommandAdapt['setColumns']
   public executePageScale: CommandAdapt['pageScale']
@@ -429,6 +430,10 @@ export class Command {
     this.executeChangeImageDisplay = this.wrap(
       'executeChangeImageDisplay',
       adapt.changeImageDisplay.bind(adapt)
+    )
+    this.executeChangeImageVerticalAlign = this.wrap(
+      'executeChangeImageVerticalAlign',
+      adapt.changeImageVerticalAlign.bind(adapt)
     )
     // 页面模式、页面缩放、纸张大小、纸张方向、页边距
     this.executePageMode = this.wrap(

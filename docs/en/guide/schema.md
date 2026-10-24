@@ -141,6 +141,11 @@ interface IElement {
     size?: number;  // Caption font size
     top?: number;   // Spacing between caption and image
   }
+  imgVerticalAlign?: {
+    TOP = 'top',
+    MIDDLE = 'middle',
+    BOTTOM = 'bottom' // default: image bottom on the text baseline
+  } // vertical alignment of an embedded image or formula relative to the text in its row
   imgToolDisabled?: boolean;
   imgPreviewDisabled?: boolean;
   // block
