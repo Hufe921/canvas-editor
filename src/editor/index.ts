@@ -61,7 +61,7 @@ import { IRangeStyle } from './interface/Listener'
 import { Override } from './core/override/Override'
 import { LETTER_CLASS } from './dataset/constant/Common'
 import { INTERNAL_CONTEXT_MENU_KEY } from './dataset/constant/ContextMenu'
-import { IRange, RangeRect } from './interface/Range'
+import { IRange, RangeRect, ILocatedRange, ILocatedElementRect } from './interface/Range'
 import { deepClone, splitText } from './utils'
 import {
   createDomFromElementList,
@@ -246,6 +246,8 @@ export type {
   ICatalog,
   ICatalogItem,
   IRange,
+  ILocatedRange,
+  ILocatedElementRect,
   IRangeStyle,
   RangeRect,
   IBadge,
