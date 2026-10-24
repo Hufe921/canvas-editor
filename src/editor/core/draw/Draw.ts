@@ -708,7 +708,9 @@ export class Draw {
     if (
       !Array.isArray(padding) ||
       padding.length !== 4 ||
-      padding.some(value => !Number.isFinite(value) || value < 0) ||
+      [0, 1, 2, 3].some(
+        index => !Number.isFinite(padding[index]) || padding[index] < 0
+      ) ||
       !Number.isFinite(padding.reduce((sum, value) => sum + value, 0))
     ) {
       throw new Error(
@@ -2026,6 +2028,8 @@ export class Draw {
       } else if (element.type === ElementType.TABLE) {
         // 表格跨页在渲染层拆分行（数据层保持单一表格）
         const trList = element.trList!
+        // Keep authored minima separate from the current padding floor.
+        const trMinHeights: number[] = []
         // 重置tr高度：行高不可低于一个单元格最小高度
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
@@ -2038,7 +2042,7 @@ export class Draw {
           }, defaultSize)
           // 行高默认当前最小高度，后续根据内容自适应
           tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
-          tr.minHeight = tr.height
+          trMinHeights.push(tr.height)
         }
         // 表格不允许超出正文区域时：等比例压缩列宽至内容区内，并清除横向偏移
         if (!overflow) {
@@ -2095,7 +2099,7 @@ export class Draw {
             let i = 0
             while (i < td.rowspan) {
               const curTr = trList[i + t] || trList[t]
-              curTdMinHeight += curTr.minHeight!
+              curTdMinHeight += trMinHeights[i + t] ?? trMinHeights[t]
               curTdRealHeight += curTr.height!
               i++
             }

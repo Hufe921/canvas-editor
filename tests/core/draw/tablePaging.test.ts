@@ -503,8 +503,16 @@ describe('表格跨页渲染层拆分', () => {
     // 续排行之后的行（索引 6）内容应紧贴续排行可见区底部，
     // 而不是按整行高度偏移（回归：少减续排行已消耗高度导致的整体下移）
     const nextTd = tableElement.trList![6].tdList[0]
+    const continuationBottom = Math.max(
+      ...(splitTd.positionList ?? [])
+        .filter(p => p.pageNo === 1)
+        .map(p => p.coordinate.leftBottom[1])
+    )
     const expectedNextY =
-      fragmentY + (splitTrHeight - secondFragment.startSplitTrOffset!)
+      continuationBottom + draw.getOptions().table.tdPadding[2]
+    expect(expectedNextY).toBeGreaterThanOrEqual(
+      fragmentY + splitTrHeight - (secondFragment.startSplitTrOffset ?? 0)
+    )
     expect(nextTd.positionList![0].coordinate.leftTop[1]).toBeCloseTo(
       expectedNextY,
       0

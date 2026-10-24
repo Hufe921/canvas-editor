@@ -575,7 +575,7 @@ export class Position {
             const drawnOffsetY = tableFragment
               ? this.draw
                   .getTableParticle()
-                  .getTdWindowOffsetY(windowStart, tableFragment)
+                  .getTdWindowOffsetY(windowStart, tableFragment, td)
               : 0
             const drawRowResult = this.computePageRowPosition({
               positionList: tdPositionList,
@@ -852,8 +852,15 @@ export class Position {
         const tdTop =
           tablePosition.coordinate.leftTop[1] +
           td.y! * scale +
-          this.draw.getTableParticle().getTdWindowOffsetY(windowStart, fragment)
-        const tdBottom = tdTop + (windowEnd - windowStart) * scale
+          this.draw
+            .getTableParticle()
+            .getTdWindowOffsetY(windowStart, fragment, td)
+        const tdBottom =
+          tdTop +
+          this.draw
+            .getTableParticle()
+            .getTdFragmentHeight(td, element, fragment) *
+            scale
         if (y < tdTop || y > tdBottom) continue
       }
       const childPosition = this.getPositionByXY({
