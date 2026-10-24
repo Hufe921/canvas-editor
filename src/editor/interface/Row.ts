@@ -22,6 +22,7 @@ export interface IRow {
   rowFlex?: RowFlex
   startIndex: number
   isPageBreak?: boolean
+  paginationBreakBefore?: boolean
   // 分页符行携带的后续页纸张方向（排版期从分页符元素拷贝）
   paperDirection?: PaperDirection
   isList?: boolean

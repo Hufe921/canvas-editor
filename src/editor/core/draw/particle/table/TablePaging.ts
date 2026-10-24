@@ -8,6 +8,7 @@ import { IRow } from '../../../../interface/Row'
 import { ITd } from '../../../../interface/table/Td'
 import { Draw } from '../../Draw'
 import { TableParticle } from './TableParticle'
+import { ParagraphPaging } from '../../ParagraphPaging'
 
 // 表格分页：跨页表格在渲染层的行拆分（分页/分栏片段计算）
 // 与 maxPageNo 截断裁剪。数据层始终保持单一表格
@@ -26,6 +27,7 @@ export class TablePaging {
   // 仅将跨页表格的行记录拆分为按页片段（超高单元格按内容行行内拆分）
   public splitTableRowAcrossPages(rowList: IRow[]): IRow[] {
     const { scale } = this.options
+    const paragraphs = new ParagraphPaging(rowList)
     // 分栏布局：行落位以（页码, 栏索引）槽位推进，与 _computePageList 规则一致
     const columnLayout = this.draw.getColumnLayout(this.options.paperDirection)
     const columnCount = columnLayout?.count || 1
@@ -71,20 +73,45 @@ export class TablePaging {
           !isPrePageBreak &&
           row.columnIndex !== undefined &&
           row.columnIndex > currentColumn &&
-          !hasSplitTable
+          !hasSplitTable &&
+          !paragraphs.active
         ) {
           currentColumn = row.columnIndex
           pageHeight = this.draw.getMainOuterHeight(pageNo, curDirection)
         }
+        const slotTop = this.draw.getMainOuterHeight(pageNo, curDirection)
+        const occupied = pageHeight > slotTop + 1e-8
+        const nextPage =
+          isColumnEnabled && currentColumn < columnCount - 1
+            ? pageNo
+            : pageNo + 1
+        const nextEmpty =
+          curPageLimit - this.draw.getMainOuterHeight(nextPage, curDirection)
+        const reservation = paragraphs.required(
+          i,
+          Math.max(curPageLimit - slotTop, nextEmpty)
+        )
+        const explicit = paragraphs.before(i) && (occupied || currentColumn > 0)
+        const keep =
+          occupied &&
+          (reservation.fresh ||
+            pageHeight + reservation.height > curPageLimit + 1e-8)
+        const overflow =
+          row.height + (row.offsetY || 0) + pageHeight > curPageLimit
         if (
-          row.height + (row.offsetY || 0) + pageHeight > curPageLimit ||
-          isPrePageBreak
+          (overflow && (!paragraphs.active || occupied)) ||
+          isPrePageBreak ||
+          explicit ||
+          keep
         ) {
           if (preBreakDirection) {
             curDirection = preBreakDirection
             curPageLimit = this.draw.getHeight(curDirection)
           }
-          advanceSlot(isPrePageBreak)
+          const oldPage = pageNo
+          advanceSlot(isPrePageBreak || explicit)
+          if (paragraphs.active && pageNo !== oldPage)
+            row.paginationBreakBefore = true
         }
         // 拆分后行的栏索引按实际填充重新推导
         if (isColumnEnabled) row.columnIndex = currentColumn

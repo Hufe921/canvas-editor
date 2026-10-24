@@ -86,7 +86,8 @@ export default class Editor {
     'paragraph-line-height-v1',
     'leading-paragraph-v1',
     'table-cell-padding-v1',
-    'table-row-keep-v1'
+    'table-row-keep-v1',
+    'paragraph-flow-v1'
   ] as const
   public command: Command
   public version: string

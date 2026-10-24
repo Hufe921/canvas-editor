@@ -1,3 +1,4 @@
+import { PARAGRAPH_FLOW_ATTR } from './ParagraphPaging'
 import { applyLineHeight } from '../../utils/lineHeight'
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
@@ -1793,6 +1794,27 @@ export class Draw {
       table: { defaultColMinWidth, overflow },
       defaultTabWidth
     } = this.options
+    if (
+      surroundElementList.length &&
+      elementList.some(element =>
+        PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
+      )
+    ) {
+      throw new Error('Paragraph flow with floating objects is not supported.')
+    }
+    for (const element of elementList) {
+      for (const key of PARAGRAPH_FLOW_ATTR) {
+        if (element[key] !== undefined && typeof element[key] !== 'boolean')
+          throw new Error('Paragraph flow properties must be boolean.')
+        if (
+          element[key] === true &&
+          (!isPagingMode || isFromTable || elementList !== this.elementList)
+        )
+          throw new Error(
+            'Paragraph flow requires the paged main story outside table cells.'
+          )
+      }
+    }
     const defaultBasicRowMarginHeight = this.getDefaultBasicRowMarginHeight()
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D
@@ -2686,6 +2708,7 @@ export class Draw {
         const rowOffsetY = row.offsetY || 0
         // 分栏内栏切换：重置当前页累计高度，留在本页
         const columnChanged =
+          !row.paginationBreakBefore &&
           !this.rowList[i - 1]?.isPageBreak &&
           prevColumnIndex !== undefined &&
           row.columnIndex !== undefined &&
@@ -2697,12 +2720,17 @@ export class Draw {
           pageRowList[pageNo].push(row)
         } else if (
           row.height + rowOffsetY + pageHeight > pageLimit ||
-          this.rowList[i - 1]?.isPageBreak
+          this.rowList[i - 1]?.isPageBreak ||
+          row.paginationBreakBefore
         ) {
           // 区域补高跨页顺延：内容能留在当前页时，本页补高截断至页底
           // （避免末行被推入下一页），剩余补高顺延至下一页
           const areaPadding = row.areaPadding
-          if (areaPadding && !this.rowList[i - 1]?.isPageBreak) {
+          if (
+            areaPadding &&
+            !this.rowList[i - 1]?.isPageBreak &&
+            !row.paginationBreakBefore
+          ) {
             const contentHeight = row.height - areaPadding.height
             const remainHeight = pageLimit - pageHeight - rowOffsetY
             if (contentHeight <= remainHeight) {
@@ -3535,10 +3563,13 @@ export class Draw {
       }
       // 行级增量行计算：消费本次编辑的脏区间，从受影响行续算至收敛；
       // 无脏区间或门控不满足时退回全量，行为与未开启时一致
-      const incrementalResult = this.incrementalRowComputer.tryCompute(
-        this.incrementalRowComputer.consumeDirtyRange(),
-        rowComputePayload
+      const dirtyRange = this.incrementalRowComputer.consumeDirtyRange()
+      const flowLayout = this.elementList.some(element =>
+        PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
       )
+      const incrementalResult = flowLayout
+        ? null
+        : this.incrementalRowComputer.tryCompute(dirtyRange, rowComputePayload)
       this.rawRowList =
         incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
       this.incrementalRowComputer.observeLayout()

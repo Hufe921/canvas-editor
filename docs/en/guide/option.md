@@ -557,3 +557,21 @@ the existing overflow fallback; the editor does not resize it to fit.
 
 Clients can negotiate `table-cell-padding-v1` and `table-row-keep-v1` through
 `Editor.layoutCapabilities` before supplying these properties.
+
+## Main-story paragraph flow
+
+`paragraph-flow-v1` adds optional paragraph booleans `keepTogether`,
+`keepWithNext`, `widowControl` and `pageBreakBefore`. Omitted properties preserve
+the existing editor behavior; callers importing Word should resolve inherited
+and default paragraph properties explicitly. False values override prior styles.
+Properties belong to paragraph markers and are retained in saved values.
+
+Feasible kept paragraphs and keep chains move intact to an available page or
+column. Oversized kept groups start a fresh slot and then flow to make progress.
+Widow control avoids isolated first/final lines when a feasible grouping fits.
+`pageBreakBefore` advances to a page, including in columns, without duplicating
+an existing page break or adding an empty page at the document start.
+
+This capability is for paged main-story text. Table-cell/header/footer flow,
+floating objects, and keeping text with a following non-text object are rejected.
+Incremental row reuse falls back to full layout while flow properties are active.

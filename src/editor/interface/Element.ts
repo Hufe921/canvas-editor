@@ -45,6 +45,10 @@ export interface IElementStyle {
   spacingBefore?: number
   spacingAfter?: number
   lineHeight?: ILineHeight
+  keepTogether?: boolean
+  keepWithNext?: boolean
+  widowControl?: boolean
+  pageBreakBefore?: boolean
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number
