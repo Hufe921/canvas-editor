@@ -1,8 +1,8 @@
 describe('批注连接线', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().should('have.length', 1)
+    cy.getEditorPage().should('have.length', 1)
   })
 
   it('连接线默认关闭，打开开关后绘制', () => {

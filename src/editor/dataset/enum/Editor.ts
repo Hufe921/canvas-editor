@@ -50,3 +50,8 @@ export enum RenderMode {
   SPEED = 'speed',
   COMPATIBILITY = 'compatibility'
 }
+
+export enum BackendType {
+  CANVAS = 'canvas',
+  SVG = 'svg'
+}

@@ -14,6 +14,7 @@ import {
 import { getUUID, indexOf, isNumber } from '../../../utils'
 import { Position } from '../../position/Position'
 import { RangeManager } from '../../range/RangeManager'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export interface INavigateInfo {
@@ -342,7 +343,7 @@ export class Search {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public render(ctx: IRenderContext, pageIndex: number) {
     if (
       !this.searchMatchList ||
       !this.searchMatchList.length ||

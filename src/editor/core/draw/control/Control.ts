@@ -54,6 +54,7 @@ import {
 import { EventBus } from '../../event/eventbus/EventBus'
 import { Listener } from '../../listener/Listener'
 import { RangeManager } from '../../range/RangeManager'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 import { CheckboxControl } from './checkbox/CheckboxControl'
 import { RadioControl } from './radio/RadioControl'
@@ -113,13 +114,10 @@ export class Control {
   }
 
   public computeHighlightList() {
-    const highlightList = this.controlSearch.getHighlightList()
-    if (highlightList.length) {
-      this.controlSearch.computeHighlightList()
-    }
+    this.controlSearch.computeHighlightList()
   }
 
-  public renderHighlightList(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public renderHighlightList(ctx: IRenderContext, pageNo: number) {
     const highlightMatchResult = this.controlSearch.getHighlightMatchResult()
     if (highlightMatchResult.length) {
       this.controlSearch.renderHighlightList(ctx, pageNo)
@@ -1724,7 +1722,7 @@ export class Control {
     this.controlBorder.recordBorderInfo(x, y, width, height)
   }
 
-  public drawBorder(ctx: CanvasRenderingContext2D) {
+  public drawBorder(ctx: IRenderContext) {
     this.controlBorder.render(ctx)
   }
 

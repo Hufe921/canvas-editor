@@ -1,6 +1,8 @@
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IGraffitiData, IGraffitiStroke } from '../../../interface/Graffiti'
+import { getPagePointer } from '../../event/pagePointer'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class Graffiti {
@@ -28,13 +30,15 @@ export class Graffiti {
 
   private start(evt: MouseEvent) {
     if (!this.draw.isGraffitiMode()) return
+    const pointer = getPagePointer(evt, this.pageContainer)
+    if (!pointer) return
     this.isDrawing = true
     // 缓存起始数据
     const { scale } = this.options
     this.startStroke = {
       lineColor: this.options.graffiti.defaultLineColor,
       lineWidth: this.options.graffiti.defaultLineWidth,
-      points: [evt.offsetX / scale, evt.offsetY / scale]
+      points: [pointer.x / scale, pointer.y / scale]
     }
   }
 
@@ -44,18 +48,20 @@ export class Graffiti {
 
   private drawing(evt: MouseEvent) {
     if (!this.isDrawing || !this.draw.isGraffitiMode()) return
+    const pointer = getPagePointer(evt, this.pageContainer)
+    if (!pointer) return
     // 移动超过至少2个像素后开始绘制
-    const { offsetX, offsetY } = evt
+    const { x, y } = pointer
     const DISTANCE = 2
     if (
       this.startStroke &&
-      Math.abs(this.startStroke.points[0] - offsetX) < DISTANCE &&
-      Math.abs(this.startStroke.points[1] - offsetY) < DISTANCE
+      Math.abs(this.startStroke.points[0] - x) < DISTANCE &&
+      Math.abs(this.startStroke.points[1] - y) < DISTANCE
     ) {
       return
     }
     // 修改数据
-    const pageNo = this.draw.getPageNo()
+    const pageNo = pointer.pageNo
     let currentValue = this.data.find(item => item.pageNo === pageNo)
     if (this.startStroke) {
       if (!currentValue) {
@@ -73,7 +79,7 @@ export class Graffiti {
     const { scale } = this.options
     const lastPoints =
       currentValue.strokes[currentValue.strokes.length - 1].points
-    lastPoints.push(offsetX / scale, offsetY / scale)
+    lastPoints.push(x / scale, y / scale)
     // 重新渲染
     this.draw.render({
       isCompute: false,
@@ -101,7 +107,7 @@ export class Graffiti {
     this.data = []
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: IRenderContext, pageNo: number) {
     const strokes = this.data.find(item => item.pageNo === pageNo)?.strokes
     if (!strokes?.length) return
     const {

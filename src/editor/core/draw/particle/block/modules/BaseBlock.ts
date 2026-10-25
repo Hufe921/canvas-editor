@@ -2,6 +2,7 @@ import { EDITOR_PREFIX } from '../../../../../dataset/constant/Editor'
 import { BlockType } from '../../../../../dataset/enum/Block'
 import { IEditorOption } from '../../../../../interface/Editor'
 import { IRowElement } from '../../../../../interface/Row'
+import type { IRenderContext } from '../../../../render/model/RenderContext'
 import { Draw } from '../../../Draw'
 import { BlockParticle } from '../BlockParticle'
 import { IFrameBlock } from './IFrameBlock'
@@ -245,12 +246,7 @@ export class BaseBlock {
     evt.preventDefault()
   }
 
-  public snapshot(
-    ctx: CanvasRenderingContext2D,
-    pageNo: number,
-    x: number,
-    y: number
-  ) {
+  public snapshot(ctx: IRenderContext, pageNo: number, x: number, y: number) {
     const block = this.element.block!
     if (block.type === BlockType.VIDEO) {
       this.blockItem.style.display = 'none'
@@ -260,6 +256,13 @@ export class BaseBlock {
       } else {
         this.block = new VideoBlock(this.element)
         const promise = this.block.snapshot(ctx, x, y)
+        promise.then(() => {
+          this.draw.render({
+            isCompute: false,
+            isSetCursor: false,
+            isSubmitHistory: false
+          })
+        })
         this.draw.getImageObserver().add(promise)
         this.blockCache.set(this.element.id!, this.block)
       }

@@ -1,5 +1,6 @@
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 import { Footer } from './Footer'
 import { Header } from './Header'
@@ -17,7 +18,7 @@ export class PageBorder {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: IRenderContext, pageNo: number) {
     const {
       scale,
       pageBorder: { color, lineWidth, padding }

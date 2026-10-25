@@ -1,4 +1,5 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
+import * as EditorEntry from '@/editor'
 import { createTestEditor } from '../factories/editor'
 
 describe('Editor 入口', () => {
@@ -12,6 +13,13 @@ describe('Editor 入口', () => {
     expect(ctx.editor.eventBus).toBeTruthy()
     expect(ctx.editor.register).toBeTruthy()
     expect(ctx.editor.version).toBeTruthy()
+  })
+
+  it('公开 BackendType 渲染后端枚举', () => {
+    expect(EditorEntry.BackendType).toEqual({
+      CANVAS: 'canvas',
+      SVG: 'svg'
+    })
   })
 
   it('use(plugin) 调用插件', () => {

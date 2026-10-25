@@ -12,6 +12,7 @@ import {
   ISearchResult,
   ISearchResultRestArgs
 } from '../../../../interface/Search'
+import type { IRenderContext } from '../../../render/model/RenderContext'
 import { Draw } from '../../Draw'
 import { Control } from '../Control'
 
@@ -188,7 +189,7 @@ export class ControlSearch {
     computeHighlight(this.draw.getOriginalMainElementList())
   }
 
-  public renderHighlightList(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public renderHighlightList(ctx: IRenderContext, pageIndex: number) {
     if (!this.highlightMatchResult?.length) return
     const { searchMatchAlpha, searchMatchColor } = this.options
     const positionList = this.draw.getPosition().getOriginalPositionList()

@@ -2,6 +2,7 @@ import { IColumnLayout, IColumnOption } from '../../../interface/Column'
 import { DeepRequired } from '../../../interface/Common'
 import { PaperDirection } from '../../../dataset/enum/Editor'
 import { IEditorOption } from '../../../interface/Editor'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 // 分栏管理器：负责分栏布局计算、栏状态维护以及分隔线绘制
@@ -88,7 +89,7 @@ export class ColumnManager {
   }
 
   // 绘制栏间分隔线；仅在 separator 开启且 count>=2 时实际绘制
-  public drawSeparator(ctx: CanvasRenderingContext2D, pageNo: number): void {
+  public drawSeparator(ctx: IRenderContext, pageNo: number): void {
     const direction = this.draw.getPageDirection(pageNo)
     const layout = this.getLayout(direction)
     if (!layout || !layout.separator || layout.count < 2) return

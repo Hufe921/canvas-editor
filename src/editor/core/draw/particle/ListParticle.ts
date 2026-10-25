@@ -9,6 +9,7 @@ import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow, IRowElement } from '../../../interface/Row'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class ListParticle {
@@ -382,13 +383,13 @@ export class ListParticle {
     const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length - 1 || 1)}${
       KeyMap.PERIOD
     }`
-    const textMetrics = ctx.measureText(text)
+    const textMetrics = this.draw.getTextMeasurer().measureText(text, ctx.font)
     ctx.restore()
     return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
   }
 
   public drawListStyle(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     row: IRow,
     position: IElementPosition
   ) {

@@ -3,9 +3,9 @@ import { PaperDirection } from '../../../src/editor'
 
 describe('菜单-页面布局-指定页面横向', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('设置指定页面横向并恢复', () => {
@@ -23,7 +23,9 @@ describe('菜单-页面布局-指定页面横向', () => {
       const getPageList = () =>
         editor.command
           .getContainer()
-          .querySelectorAll<HTMLCanvasElement>('canvas[data-index]')
+          .querySelectorAll<HTMLCanvasElement | SVGSVGElement>(
+            '.ce-page-container > [data-index]'
+          )
 
       expect(getPageList().length).to.be.greaterThan(1)
       // 首页保持纵向
@@ -63,7 +65,9 @@ describe('菜单-页面布局-指定页面横向', () => {
     cy.getEditor().then((editor: Editor) => {
       const pageList = editor.command
         .getContainer()
-        .querySelectorAll<HTMLCanvasElement>('canvas[data-index]')
+        .querySelectorAll<HTMLCanvasElement | SVGSVGElement>(
+            '.ce-page-container > [data-index]'
+          )
       expect(pageList.length).to.be.greaterThan(1)
       expect(pageList[1].style.width).to.eq('1123px')
       expect(pageList[1].style.height).to.eq('794px')
@@ -76,7 +80,9 @@ describe('菜单-页面布局-指定页面横向', () => {
     cy.getEditor().then((editor: Editor) => {
       const pageList = editor.command
         .getContainer()
-        .querySelectorAll<HTMLCanvasElement>('canvas[data-index]')
+        .querySelectorAll<HTMLCanvasElement | SVGSVGElement>(
+            '.ce-page-container > [data-index]'
+          )
       expect(pageList[1].style.width).to.eq('794px')
       expect(pageList[1].style.height).to.eq('1123px')
     })

@@ -8,10 +8,11 @@ import { ITd } from '../../../../interface/table/Td'
 import { ITr } from '../../../../interface/table/Tr'
 import { deepClone } from '../../../../utils'
 import { RangeManager } from '../../../range/RangeManager'
+import { IRenderContext } from '../../../render/model/RenderContext'
 import { Draw } from '../../Draw'
 
 interface IDrawTableBorderOption {
-  ctx: CanvasRenderingContext2D
+  ctx: IRenderContext
   startX: number
   startY: number
   width: number
@@ -241,7 +242,7 @@ export class TableParticle {
   }
 
   private _drawSlash(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     drawTd: IFragmentDrawTd,
     startX: number,
     startY: number
@@ -268,7 +269,7 @@ export class TableParticle {
   }
 
   private _drawBorder(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IElement,
     startX: number,
     startY: number,
@@ -464,7 +465,7 @@ export class TableParticle {
   }
 
   private _drawBackgroundColor(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     startX: number,
     startY: number,
     drawTdList: IFragmentDrawTd[]
@@ -781,7 +782,7 @@ export class TableParticle {
   }
 
   public drawRange(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IElement,
     startX: number,
     startY: number,
@@ -835,7 +836,7 @@ export class TableParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IElement,
     startX: number,
     startY: number,

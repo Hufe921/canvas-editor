@@ -1,5 +1,6 @@
 import { AbstractRichText } from './AbstractRichText'
 import { IEditorOption } from '../../../interface/Editor'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class Strikeout extends AbstractRichText {
@@ -10,7 +11,7 @@ export class Strikeout extends AbstractRichText {
     this.options = draw.getOptions()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: IRenderContext) {
     if (!this.fillRect.width) return
     const { scale, strikeoutColor } = this.options
     const { x, y, width } = this.fillRect

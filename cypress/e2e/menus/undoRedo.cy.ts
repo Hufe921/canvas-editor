@@ -2,9 +2,9 @@ import Editor from '../../../src/editor'
 
 describe('菜单-撤销&重做', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'
@@ -15,7 +15,7 @@ describe('菜单-撤销&重做', () => {
 
       editor.command.executeBackspace()
 
-      cy.get('@canvas').type(`${text}1`)
+      cy.get('.ce-inputarea').type(`${text}1`)
 
       cy.get('.menu-item__undo')
         .click()
@@ -33,7 +33,7 @@ describe('菜单-撤销&重做', () => {
 
       editor.command.executeBackspace()
 
-      cy.get('@canvas').type(`${text}1`)
+      cy.get('.ce-inputarea').type(`${text}1`)
 
       cy.get('.menu-item__undo').click()
 
@@ -50,9 +50,9 @@ describe('菜单-撤销&重做', () => {
 
 describe('菜单-撤销重做-高级', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('多次撤销', () => {

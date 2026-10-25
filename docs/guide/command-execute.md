@@ -1100,6 +1100,16 @@ instance.command.executeSetZone(zone: EditorZone)
 
 控件相关命令已迁移至[控件-方法](./control/command.md)，校验命令已迁移至[控件-验证](./control/validate.md)。
 
+## executeSetBackend
+
+功能：切换渲染后端，保留当前文档与 Editor 实例
+
+用法：
+
+```javascript
+instance.command.executeSetBackend(BackendType.SVG)
+```
+
 ## executeUpdateOptions
 
 功能：修改配置

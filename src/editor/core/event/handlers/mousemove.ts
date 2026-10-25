@@ -2,6 +2,7 @@ import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ControlComponent } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { CanvasEvent } from '../CanvasEvent'
+import { getPagePointer } from '../pagePointer'
 
 export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
@@ -9,11 +10,12 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   draw.getTraceParticle().handleMouseMove(evt)
   // 悬浮提示：hover 到配置了 hint 的元素时显示提示浮窗
   draw.getHintParticle().handleMouseMove(evt)
+  const pointer = getPagePointer(evt, draw.getPageContainer())
+  if (!pointer) return
   // 是否是拖拽文字
   if (host.isAllowDrag) {
     // 是否允许拖拽到选区
-    const x = evt.offsetX
-    const y = evt.offsetY
+    const { x, y } = pointer
     const { startIndex, endIndex } = host.cacheRange!
     const positionList = host.cachePositionList!
     for (let p = startIndex + 1; p <= endIndex; p++) {
@@ -48,17 +50,13 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     return
   }
   if (!host.isAllowSelection || !host.mouseDownStartPosition) return
-  const target = evt.target as HTMLDivElement
-  const pageIndex = target.dataset.index
-  // 设置pageNo
-  if (pageIndex) {
-    draw.setPageNo(Number(pageIndex))
-  }
+  draw.setPageNo(pointer.pageNo)
   // 结束位置
   const position = draw.getPosition()
   const positionResult = position.getPositionByXY({
-    x: evt.offsetX,
-    y: evt.offsetY
+    x: pointer.x,
+    y: pointer.y,
+    pageNo: pointer.pageNo
   })
   if (!~positionResult.index) return
   const {

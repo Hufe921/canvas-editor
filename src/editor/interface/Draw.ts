@@ -42,6 +42,10 @@ export interface IDrawRowPayload {
   startIndex: number
   innerWidth: number
   zone?: EditorZone
+  keyContext?: {
+    containerKey?: string
+    tablePath?: string[]
+  }
   isDrawLineBreak?: boolean
   isDrawWhiteSpace?: boolean
   isDrawRange?: boolean

@@ -2,9 +2,9 @@ import Editor, { ElementType } from '../../../src/editor'
 
 describe('菜单-搜索', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const searchText = 'canvas-editor'
@@ -113,9 +113,9 @@ describe('菜单-搜索', () => {
 
 describe('菜单-搜索-高级', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const searchText = 'test'

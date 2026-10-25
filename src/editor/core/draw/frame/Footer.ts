@@ -5,6 +5,7 @@ import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow } from '../../../interface/Row'
 import { Position } from '../../position/Position'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Zone } from '../../zone/Zone'
 import { Draw } from '../Draw'
 
@@ -169,7 +170,7 @@ export class Footer {
     return false
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: IRenderContext, pageNo: number) {
     if (this.options.footer.disabledPages.includes(pageNo)) return
     ctx.save()
     ctx.globalAlpha = this.zone.isFooterActive()

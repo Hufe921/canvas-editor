@@ -3,9 +3,9 @@ import { MoveDirection } from '../../../src/editor/dataset/enum/Observer'
 
 describe('控件嵌套 - 基础', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const elementType: ElementType = <ElementType>'control'
@@ -46,7 +46,7 @@ describe('控件嵌套 - 基础', () => {
         }
       ])
 
-      cy.get('@canvas').type(`{leftArrow}`)
+      cy.get('.ce-inputarea').type(`{leftArrow}`)
 
       cy.get('.ce-inputarea')
         .type('X')
@@ -91,7 +91,7 @@ describe('控件嵌套 - 基础', () => {
         }
       ])
       // 验证插入 + 渲染没有抛错，文档结构完整且内层被保留
-      cy.get('@canvas')
+      cy.get('.ce-inputarea')
         .type(`{leftArrow}`)
         .then(() => {
           const data = editor.command.getValue().data.main
@@ -133,7 +133,7 @@ describe('控件嵌套 - 基础', () => {
         }
       ])
       // 用方向键多次移动光标，验证不卡死、不抛错
-      cy.get('@canvas').type(
+      cy.get('.ce-inputarea').type(
         '{rightArrow}{rightArrow}{rightArrow}{leftArrow}{leftArrow}'
       )
       const data = editor.command.getValue().data.main
@@ -194,8 +194,8 @@ describe('控件嵌套 - 基础', () => {
 // ===== Task 15: 6 种内层类型 =====
 describe('控件嵌套 - 6 种内层类型', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.visitEditor()
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const innerControlMap: Record<string, any> = {
@@ -260,8 +260,8 @@ describe('控件嵌套 - 6 种内层类型', () => {
 // ===== Task 16 & 17: 删除决策 =====
 describe('控件嵌套 - 删除决策', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.visitEditor()
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   // 决策 #1：外层含 deletable:false 子控件时删除被阻止
@@ -358,8 +358,8 @@ describe('控件嵌套 - 删除决策', () => {
 // ===== Task 18: 覆盖决策 =====
 describe('控件嵌套 - 覆盖决策', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.visitEditor()
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   // 决策 #2：外层 setValue 覆盖到内层段时连带替换
@@ -413,8 +413,8 @@ describe('控件嵌套 - 覆盖决策', () => {
 // ===== Task 19: 持久化 + 三层递归 =====
 describe('控件嵌套 - 持久化与递归', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.visitEditor()
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('保存后重载嵌套结构保留', () => {

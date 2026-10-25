@@ -17,6 +17,7 @@ import {
 } from '../../interface/Range'
 import { getAnchorElement, isElementTraceDeleted } from '../../utils/element'
 import { Draw } from '../draw/Draw'
+import type { IRenderContext } from '../render/model/RenderContext'
 import { EventBus } from '../event/eventbus/EventBus'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
@@ -712,7 +713,7 @@ export class RangeManager {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     x: number,
     y: number,
     width: number,

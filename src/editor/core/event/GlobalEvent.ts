@@ -15,6 +15,7 @@ import { CanvasEvent } from './CanvasEvent'
 import { ImageParticle } from '../draw/particle/ImageParticle'
 import { INTERNAL_SHORTCUT_KEY } from '../../dataset/constant/Shortcut'
 import { Magnifier } from '../draw/interactive/Magnifier'
+import type { RenderPage } from '../render/RenderBackend'
 
 export class GlobalEvent {
   private draw: Draw
@@ -86,7 +87,7 @@ export class GlobalEvent {
     const pageList = this.draw.getPageList()
     const innerEditorDom = findParent(
       target,
-      (node: HTMLCanvasElement) => pageList.includes(node),
+      (node: RenderPage) => pageList.includes(node),
       true
     )
     if (innerEditorDom) return

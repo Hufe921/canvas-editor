@@ -10,6 +10,7 @@ import { isMod } from '../../../utils/hotkey'
 import { CheckboxControl } from '../../draw/control/checkbox/CheckboxControl'
 import { RadioControl } from '../../draw/control/radio/RadioControl'
 import { CanvasEvent } from '../CanvasEvent'
+import { getPagePointer } from '../pagePointer'
 import { IElement } from '../../../interface/Element'
 import { Draw } from '../../draw/Draw'
 
@@ -65,6 +66,8 @@ export function hitRadio(element: IElement, draw: Draw) {
 
 export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
+  const pointer = getPagePointer(evt, draw.getPageContainer())
+  if (!pointer) return
   let isReadonly = draw.isReadonly()
   const rangeManager = draw.getRange()
   const position = draw.getPosition()
@@ -80,8 +83,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   if (!host.isAllowDrag) {
     if (!isReadonly && range.startIndex !== range.endIndex) {
       const isPointInRange = rangeManager.getIsPointInRange(
-        evt.offsetX,
-        evt.offsetY
+        pointer.x,
+        pointer.y
       )
       if (isPointInRange) {
         setRangeCache(host)
@@ -89,18 +92,13 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       }
     }
   }
-  const target = evt.target as HTMLDivElement
-  const pageIndex = target.dataset.index
-  // 设置pageNo
-  if (pageIndex) {
-    draw.setPageNo(Number(pageIndex))
-  }
+  draw.setPageNo(pointer.pageNo)
   host.isAllowSelection = true
   // 缓存旧上下文信息
   const oldPositionContext = deepClone(position.getPositionContext())
   const positionResult = position.adjustPositionContext({
-    x: evt.offsetX,
-    y: evt.offsetY
+    x: pointer.x,
+    y: pointer.y
   })
   if (!positionResult) return
   const {
@@ -122,8 +120,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   host.mouseDownStartPosition = {
     ...positionResult,
     index: isTable ? tdValueIndex! : index,
-    x: evt.offsetX,
-    y: evt.offsetY
+    x: pointer.x,
+    y: pointer.y
   }
   const elementList = draw.getElementList()
   const positionList = position.getPositionList()

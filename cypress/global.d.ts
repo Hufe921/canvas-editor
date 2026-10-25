@@ -9,5 +9,10 @@ declare namespace Editor {
 declare namespace Cypress {
   interface Chainable {
     getEditor(): Chainable<Editor>
+    visitEditor(): Chainable<AUTWindow>
+    getEditorPages(): Chainable<JQuery<HTMLElement | SVGSVGElement>>
+    getEditorPage(
+      index?: number
+    ): Chainable<JQuery<HTMLElement | SVGSVGElement>>
   }
 }

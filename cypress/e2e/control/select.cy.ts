@@ -2,9 +2,9 @@ import Editor, { ControlType, ElementType } from '../../../src/editor'
 
 describe('控件-列举型', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = `有`
@@ -39,7 +39,7 @@ describe('控件-列举型', () => {
         }
       ])
 
-      cy.get('@canvas').type(`{leftArrow}`)
+      cy.get('.ce-inputarea').type(`{leftArrow}`)
 
       cy.get('.ce-select-control-popup li')
         .eq(0)

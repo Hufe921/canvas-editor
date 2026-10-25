@@ -2,6 +2,7 @@ import { IEditorOption } from '../../..'
 import { FORMAT_PLACEHOLDER } from '../../../dataset/constant/PageNumber'
 import { WatermarkType } from '../../../dataset/enum/Watermark'
 import { DeepRequired } from '../../../interface/Common'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 import { PageNumber } from './PageNumber'
 
@@ -16,16 +17,17 @@ export class Watermark {
     this.imageCache = new Map()
   }
 
-  public renderText(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public renderText(ctx: IRenderContext, pageNo: number) {
     const {
       watermark: { data, opacity, font, size, color, repeat, gap, numberType },
       scale
     } = this.options
     const { width, height } = this.draw.getPageSize(pageNo)
     // 开始绘制
+    const fontStyle = `${size * scale}px ${font}`
     ctx.save()
     ctx.globalAlpha = opacity
-    ctx.font = `${size * scale}px ${font}`
+    ctx.font = fontStyle
     // 格式化文本
     let text = data
     const pageNoReg = new RegExp(FORMAT_PLACEHOLDER.PAGE_NO)
@@ -47,9 +49,8 @@ export class Watermark {
       )
     }
     // 测量长度并绘制
-    const measureText = ctx.measureText(text)
+    const measureText = this.draw.getTextMeasurer().measureText(text, fontStyle)
     if (repeat) {
-      const dpr = this.draw.getPagePixelRatio()
       const temporaryCanvas = document.createElement('canvas')
       const temporaryCtx = temporaryCanvas.getContext('2d')!
       // 勾股定理计算旋转后的宽高对角线尺寸 a^2 + b^2 = c^2
@@ -66,8 +67,6 @@ export class Watermark {
       // 宽高设置
       temporaryCanvas.width = patternWidth
       temporaryCanvas.height = patternHeight
-      temporaryCanvas.style.width = `${patternWidth * dpr}px`
-      temporaryCanvas.style.height = `${patternHeight * dpr}px`
       // 旋转45度
       temporaryCtx.translate(patternWidth / 2, patternHeight / 2)
       temporaryCtx.rotate((-45 * Math.PI) / 180)
@@ -81,7 +80,10 @@ export class Watermark {
         (patternHeight - textHeight) / 2 + measureText.actualBoundingBoxAscent
       )
       // 创建平铺模式
-      const pattern = ctx.createPattern(temporaryCanvas, 'repeat')
+      const pattern = ctx.createPattern(temporaryCanvas, 'repeat', {
+        key: 'watermark-text',
+        revision: `${text}|${fontStyle}|${color}`
+      })
       if (pattern) {
         ctx.fillStyle = pattern
         ctx.fillRect(0, 0, width, height)
@@ -101,7 +103,7 @@ export class Watermark {
     ctx.restore()
   }
 
-  public renderImage(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public renderImage(ctx: IRenderContext, pageNo: number) {
     const {
       watermark: { width, height, data, opacity, repeat, gap },
       scale
@@ -127,7 +129,6 @@ export class Watermark {
     ctx.save()
     ctx.globalAlpha = opacity
     if (repeat) {
-      const dpr = this.draw.getPagePixelRatio()
       const temporaryCanvas = document.createElement('canvas')
       const temporaryCtx = temporaryCanvas.getContext('2d')!
       // 勾股定理计算旋转后的宽高对角线尺寸 a^2 + b^2 = c^2
@@ -140,8 +141,6 @@ export class Watermark {
       // 宽高设置
       temporaryCanvas.width = patternWidth
       temporaryCanvas.height = patternHeight
-      temporaryCanvas.style.width = `${patternWidth * dpr}px`
-      temporaryCanvas.style.height = `${patternHeight * dpr}px`
       // 旋转45度
       temporaryCtx.translate(patternWidth / 2, patternHeight / 2)
       temporaryCtx.rotate((-45 * Math.PI) / 180)
@@ -155,7 +154,9 @@ export class Watermark {
         imageHeight
       )
       // 创建平铺模式
-      const pattern = ctx.createPattern(temporaryCanvas, 'repeat')
+      const pattern = ctx.createPattern(temporaryCanvas, 'repeat', {
+        key: `watermark-image:${data}`
+      })
       if (pattern) {
         ctx.fillStyle = pattern
         ctx.fillRect(0, 0, docWidth, docHeight)
@@ -176,7 +177,7 @@ export class Watermark {
     ctx.restore()
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: IRenderContext, pageNo: number) {
     if (this.options.watermark.type === WatermarkType.IMAGE) {
       this.renderImage(ctx, pageNo)
     } else {

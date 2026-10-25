@@ -12,6 +12,7 @@ import type {
 } from '../../../interface/Spellcheck'
 import { isNumber } from '../../../utils'
 import type { Position } from '../../position/Position'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import type { Draw } from '../Draw'
 
 export class Spellcheck {
@@ -217,7 +218,7 @@ export class Spellcheck {
 
   // 波浪线
   private _drawWave(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     startX: number,
     startY: number,
     width: number
@@ -246,7 +247,7 @@ export class Spellcheck {
     ctx.stroke()
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public render(ctx: IRenderContext, pageIndex: number) {
     if (this.options.spellcheck.disabled || !this.spellcheckRangeList.length) {
       return
     }

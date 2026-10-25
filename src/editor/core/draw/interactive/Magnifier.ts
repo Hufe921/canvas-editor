@@ -1,4 +1,5 @@
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
+import { BackendType } from '../../../dataset/enum/Editor'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
@@ -66,13 +67,23 @@ export class Magnifier {
   }
 
   public show() {
-    if (this.options.magnifier.disabled) return
+    if (
+      this.options.magnifier.disabled ||
+      this.options.backend === BackendType.SVG
+    ) {
+      return
+    }
     this.isActive = true
     this.canvas.style.display = 'block'
   }
 
   public hide() {
-    if (this.options.magnifier.disabled) return
+    if (
+      this.options.magnifier.disabled ||
+      this.options.backend === BackendType.SVG
+    ) {
+      return
+    }
     this.isActive = false
     this.canvas.style.display = 'none'
   }
@@ -104,6 +115,7 @@ export class Magnifier {
         evt.clientY >= rect.top &&
         evt.clientY <= rect.bottom
       ) {
+        if (!(page instanceof HTMLCanvasElement)) continue
         sourceCanvas = page
         const dpr = sourceCanvas.width / rect.width
         sx = (evt.clientX - rect.left) * dpr - sourceRadius / 2

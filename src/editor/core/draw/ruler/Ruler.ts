@@ -7,6 +7,7 @@ import {
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IMargin } from '../../../interface/Margin'
+import { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 // 拖拽边距的方向
@@ -142,7 +143,6 @@ export class Ruler {
     canvasX.width = width * dpr
     canvasX.height = height * dpr
     ctx.scale(dpr, dpr)
-    ctx.clearRect(0, 0, width, height)
     // 背景
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, width, height)
@@ -196,7 +196,6 @@ export class Ruler {
     canvasY.width = rulerSize * dpr
     canvasY.height = pageHeight * dpr
     ctx.scale(dpr, dpr)
-    ctx.clearRect(0, 0, rulerSize, pageHeight)
     // 背景
     ctx.fillStyle = '#ffffff'
     ctx.fillRect(0, 0, rulerSize, pageHeight)
@@ -241,11 +240,7 @@ export class Ruler {
     this._drawYHandle(ctx, pageHeight - margins[2], rulerSize)
   }
 
-  private _drawXHandle(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    height: number
-  ) {
+  private _drawXHandle(ctx: IRenderContext, x: number, height: number) {
     const halfWidth = 5
     const handleHeight = 7
     ctx.beginPath()
@@ -257,11 +252,7 @@ export class Ruler {
     ctx.fill()
   }
 
-  private _drawYHandle(
-    ctx: CanvasRenderingContext2D,
-    y: number,
-    width: number
-  ) {
+  private _drawYHandle(ctx: IRenderContext, y: number, width: number) {
     const halfHeight = 5
     const handleWidth = 7
     ctx.beginPath()

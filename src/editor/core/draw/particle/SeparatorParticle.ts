@@ -1,6 +1,7 @@
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
+import { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class SeparatorParticle {
@@ -11,7 +12,7 @@ export class SeparatorParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IRowElement,
     x: number,
     y: number

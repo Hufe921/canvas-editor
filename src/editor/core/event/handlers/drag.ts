@@ -1,7 +1,7 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
-import { findParent } from '../../../utils'
 import { CanvasEvent } from '../CanvasEvent'
+import { getPagePointer } from '../pagePointer'
 
 function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
@@ -9,23 +9,13 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   if (isReadonly) return
   evt.preventDefault()
   // 非编辑器区禁止拖放
-  const pageContainer = draw.getPageContainer()
-  const editorRegion = findParent(
-    evt.target as Element,
-    (node: Element) => node === pageContainer,
-    true
-  )
-  if (!editorRegion) return
-  const target = evt.target as HTMLDivElement
-  const pageIndex = target.dataset.index
-  // 设置pageNo
-  if (pageIndex) {
-    draw.setPageNo(Number(pageIndex))
-  }
+  const pointer = getPagePointer(evt, draw.getPageContainer())
+  if (!pointer) return
+  draw.setPageNo(pointer.pageNo)
   const position = draw.getPosition()
   const positionContext = position.adjustPositionContext({
-    x: evt.offsetX,
-    y: evt.offsetY
+    x: pointer.x,
+    y: pointer.y
   })
   if (!positionContext) return
   const { isTable, tdValueIndex, index } = positionContext

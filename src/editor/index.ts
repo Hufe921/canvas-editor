@@ -23,6 +23,7 @@ import {
   IRegisterContextMenu
 } from './interface/contextmenu/ContextMenu'
 import {
+  BackendType,
   EditorComponent,
   EditorZone,
   EditorMode,
@@ -200,6 +201,7 @@ export {
   EditorComponent,
   PageMode,
   RenderMode,
+  BackendType,
   ImageDisplay,
   Command,
   KeyMap,

@@ -5,6 +5,7 @@ import { IPlaceholder } from '../../../interface/Placeholder'
 import { IRow } from '../../../interface/Row'
 import { formatElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 import { LineBreakParticle } from '../particle/LineBreakParticle'
 
@@ -74,10 +75,7 @@ export class Placeholder {
     })
   }
 
-  public render(
-    ctx: CanvasRenderingContext2D,
-    options?: IPlaceholderRenderOption
-  ) {
+  public render(ctx: IRenderContext, options?: IPlaceholderRenderOption) {
     const { placeholder = this.options.placeholder } = options || {}
     const { data, font, size, color, opacity } = placeholder
     this._recovery()
@@ -107,7 +105,8 @@ export class Placeholder {
       pageNo: 0,
       startIndex: 0,
       innerWidth,
-      isDrawLineBreak: false
+      isDrawLineBreak: false,
+      isDrawRange: false
     })
     ctx.restore()
   }

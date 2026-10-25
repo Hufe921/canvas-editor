@@ -2,6 +2,7 @@ import { EDITOR_PREFIX } from '../../dataset/constant/Editor'
 import { EditorZone } from '../../dataset/enum/Editor'
 import { throttle } from '../../utils'
 import { Draw } from '../draw/Draw'
+import { getPagePointer } from '../event/pagePointer'
 import { I18n } from '../i18n/I18n'
 import { Zone } from './Zone'
 
@@ -48,31 +49,25 @@ export class ZoneTip {
       'mousemove',
       throttle((evt: MouseEvent) => {
         if (this.isDisableMouseMove || !this.draw.getIsPagingMode()) return
-        if (!evt.offsetY) return
-        if (evt.target instanceof HTMLCanvasElement) {
-          const pageNo = Number(
-            (evt.target as HTMLCanvasElement).getAttribute('data-index')
-          )
-          const mousemoveZone = this.zone.getZoneByY(
-            evt.offsetY,
-            Number.isNaN(pageNo) ? undefined : pageNo
-          )
-          if (!watchZones.includes(mousemoveZone)) {
-            this._updateZoneTip(false)
-            return
-          }
-          this.currentMoveZone = mousemoveZone
-          // 激活区域是正文，移动区域是页眉、页脚时绘制
-          this._updateZoneTip(
-            this.zone.getZone() === EditorZone.MAIN &&
-              (mousemoveZone === EditorZone.HEADER ||
-                mousemoveZone === EditorZone.FOOTER),
-            evt.x,
-            evt.y
-          )
-        } else {
+        const pointer = getPagePointer(evt, this.pageContainer)
+        if (!pointer?.y) {
           this._updateZoneTip(false)
+          return
         }
+        const mousemoveZone = this.zone.getZoneByY(pointer.y, pointer.pageNo)
+        if (!watchZones.includes(mousemoveZone)) {
+          this._updateZoneTip(false)
+          return
+        }
+        this.currentMoveZone = mousemoveZone
+        // 激活区域是正文，移动区域是页眉、页脚时绘制
+        this._updateZoneTip(
+          this.zone.getZone() === EditorZone.MAIN &&
+            (mousemoveZone === EditorZone.HEADER ||
+              mousemoveZone === EditorZone.FOOTER),
+          evt.x,
+          evt.y
+        )
       }, 250)
     )
     // mouseenter后mousemove有效，避免因节流导致的mouseleave后继续执行逻辑

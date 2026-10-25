@@ -47,6 +47,7 @@ interface IEditorOption {
   margins?: IMargin // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode // 纸张模式：连页、分页。默认：分页
   renderMode?: RenderMode // 渲染模式：极速（多个字组合渲染）、兼容（逐字渲染：避免浏览器字体等环境差异）。默认：极速
+  backend?: BackendType // 渲染后端：CANVAS、SVG。默认：CANVAS
   defaultHyperlinkColor?: string // 默认超链接颜色。默认：#0000FF
   table?: ITableOption // 表格配置
   header?: IHeader // 页眉配置
@@ -55,7 +56,7 @@ interface IEditorOption {
   paperDirection?: PaperDirection // 纸张方向：纵向、横向
   inactiveAlpha?: number // 正文内容失焦时透明度。默认值：0.6
   historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次；0 禁用历史快照分配
-  printPixelRatio?: number // 打印像素比率（值越大越清晰，但尺寸越大）。默认：3
+  printPixelRatio?: number // Canvas 位图打印的像素比率（值越大越清晰，但尺寸越大）。默认：3
   maskMargin?: IMargin // 编辑器上的遮盖边距（如悬浮到编辑器上的菜单栏、底部工具栏）。默认：[0, 0, 0, 0]
   letterClass?: string[] // 排版支持的字母类。默认：a-zA-Z。内置可选择的字母表类：LETTER_CLASS
   contextMenuDisableKeys?: string[] // 禁用的右键菜单。默认：[]

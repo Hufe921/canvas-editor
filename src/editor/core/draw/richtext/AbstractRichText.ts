@@ -1,5 +1,6 @@
 import { TextDecorationStyle } from '../../../dataset/enum/Text'
 import { IElementFillRect } from '../../../interface/Element'
+import type { IRenderContext } from '../../render/model/RenderContext'
 
 export abstract class AbstractRichText {
   protected fillRect: IElementFillRect
@@ -23,7 +24,7 @@ export abstract class AbstractRichText {
   }
 
   public recordFillInfo(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     x: number,
     y: number,
     width: number,
@@ -55,5 +56,5 @@ export abstract class AbstractRichText {
     this.fillDecorationStyle = decorationStyle
   }
 
-  public abstract render(ctx: CanvasRenderingContext2D): void
+  public abstract render(ctx: IRenderContext): void
 }

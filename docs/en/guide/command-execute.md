@@ -1106,6 +1106,16 @@ instance.command.executeSetZone(zone: EditorZone)
 
 Control-related commands have moved to [Control-Commands](./control/command.md); validation commands to [Control-Validation](./control/validate.md).
 
+## executeSetBackend
+
+Feature: Switch the rendering backend while preserving the current document and Editor instance
+
+Usage:
+
+```javascript
+instance.command.executeSetBackend(BackendType.SVG)
+```
+
 ## executeUpdateOptions
 
 Feature: Update options

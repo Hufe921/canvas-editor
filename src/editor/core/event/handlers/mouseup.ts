@@ -14,6 +14,7 @@ import {
   visitElementTree
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
+import { getPagePointer, IPagePointer } from '../pagePointer'
 
 type IDragElement = IElement & { dragId: string }
 
@@ -30,7 +31,7 @@ function getElementIndexByDragId(dragId: string, elementList: IElement[]) {
 // 移动悬浮图片位置
 function moveImgPosition(
   element: IElement,
-  evt: MouseEvent,
+  pointer: IPagePointer,
   host: CanvasEvent,
   cachePositionContext: IPositionContext | null | undefined,
   positionContext: IPositionContext
@@ -42,14 +43,14 @@ function moveImgPosition(
     element.imgDisplay === ImageDisplay.FLOAT_TOP ||
     element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
   ) {
-    const moveX = evt.offsetX - host.mouseDownStartPosition!.x!
-    const moveY = evt.offsetY - host.mouseDownStartPosition!.y!
+    const moveX = pointer.x - host.mouseDownStartPosition!.x!
+    const moveY = pointer.y - host.mouseDownStartPosition!.y!
     const imgFloatPosition = element.imgFloatPosition!
     const wasInTable = cachePositionContext?.isTable
     const isNowInTable = positionContext.isTable
     let x = imgFloatPosition.x + moveX
     let y = imgFloatPosition.y + moveY
-    const pageNo = draw.getPageNo()
+    const pageNo = pointer.pageNo
     if (wasInTable && !isNowInTable) {
       // 从表格内移动到表格外：相对坐标转为绝对坐标
       const cacheIndex = cachePositionContext?.index
@@ -89,6 +90,8 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
   // 判断是否允许拖放
   if (host.isAllowDrop) {
     const draw = host.getDraw()
+    const pointer = getPagePointer(evt, draw.getPageContainer())
+    if (!pointer) return
     if (draw.isReadonly() || draw.isDisabled()) {
       host.mousedown(evt)
       return
@@ -129,7 +132,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
         ) {
           moveImgPosition(
             dragElement,
-            evt,
+            pointer,
             host,
             host.cachePositionContext,
             positionContext
@@ -350,7 +353,7 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
       ) {
         moveImgPosition(
           dragElement,
-          evt,
+          pointer,
           host,
           host.cachePositionContext,
           positionContext

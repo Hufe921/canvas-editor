@@ -5,10 +5,11 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { IRow, IRowElement } from '../../../interface/Row'
+import { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 interface ICheckboxRenderOption {
-  ctx: CanvasRenderingContext2D
+  ctx: IRenderContext
   x: number
   y: number
   row: IRow

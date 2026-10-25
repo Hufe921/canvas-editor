@@ -1,16 +1,17 @@
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
-import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class ImageParticle {
   private draw: Draw
   protected options: DeepRequired<IEditorOption>
   protected imageCache: Map<string, HTMLImageElement>
+  private pendingImageMap: Map<string, { renderCount: number }>
   private container: HTMLDivElement
   private floatImageContainer: HTMLDivElement | null
   private floatImage: HTMLImageElement | null
@@ -20,6 +21,7 @@ export class ImageParticle {
     this.options = draw.getOptions()
     this.container = draw.getContainer()
     this.imageCache = new Map()
+    this.pendingImageMap = new Map()
     this.floatImageContainer = null
     this.floatImage = null
   }
@@ -151,7 +153,7 @@ export class ImageParticle {
   }
 
   private _drawImageWithCrop(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     img: HTMLImageElement,
     element: IElement,
     x: number,
@@ -183,7 +185,7 @@ export class ImageParticle {
   }
 
   private _renderCaption(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IElement,
     x: number,
     y: number,
@@ -203,20 +205,26 @@ export class ImageParticle {
     const fontSize = (element.imgCaption.size || imgCaption.size) * scale
     const fontFamily = element.imgCaption.font || imgCaption.font
     const color = element.imgCaption.color || imgCaption.color
+    const font = `${fontSize}px ${fontFamily}`
     ctx.save()
-    ctx.font = `${fontSize}px ${fontFamily}`
+    ctx.font = font
     ctx.fillStyle = color
     ctx.textAlign = 'center'
     // 超出图片宽度后省略
     let displayText = captionText
-    const textMetrics = ctx.measureText(captionText)
+    const textMetrics = this.draw
+      .getTextMeasurer()
+      .measureText(captionText, font)
     if (textMetrics.width > width) {
       let left = 0
       let right = captionText.length
       while (left < right) {
         const mid = Math.ceil((left + right) / 2)
         const truncated = captionText.substring(0, mid)
-        if (ctx.measureText(truncated + '...').width <= width) {
+        if (
+          this.draw.getTextMeasurer().measureText(truncated + '...', font)
+            .width <= width
+        ) {
           left = mid
         } else {
           right = mid - 1
@@ -232,12 +240,7 @@ export class ImageParticle {
     ctx.restore()
   }
 
-  public render(
-    ctx: CanvasRenderingContext2D,
-    element: IElement,
-    x: number,
-    y: number
-  ) {
+  public render(ctx: IRenderContext, element: IElement, x: number, y: number) {
     const { scale } = this.options
     const width = element.width! * scale
     const height = element.height! * scale
@@ -246,43 +249,36 @@ export class ImageParticle {
       this._drawImageWithCrop(ctx, img, element, x, y, width, height)
       this._renderCaption(ctx, element, x, y, width, height)
     } else {
-      const cacheRenderCount = this.draw.getRenderCount()
+      const renderCount = this.draw.getRenderCount()
+      const pending = this.pendingImageMap.get(element.value)
+      if (pending) {
+        pending.renderCount = renderCount
+        return
+      }
+      const request = { renderCount }
+      this.pendingImageMap.set(element.value, request)
+      const renderLoadedImage = (img: HTMLImageElement) => {
+        this.imageCache.set(element.value, img)
+        this.pendingImageMap.delete(element.value)
+        // 因图片加载异步，图片加载后可能属于上一次渲染方法
+        if (request.renderCount !== this.draw.getRenderCount()) return
+        this.draw.render({
+          isCompute: false,
+          isSetCursor: false,
+          isSubmitHistory: false
+        })
+      }
       const imageLoadPromise = new Promise((resolve, reject) => {
         const img = new Image()
         img.setAttribute('crossOrigin', 'Anonymous')
         img.src = element.value
         img.onload = () => {
-          this.imageCache.set(element.value, img)
+          renderLoadedImage(img)
           resolve(element)
-          // 因图片加载异步，图片加载后可能属于上一次渲染方法
-          if (cacheRenderCount !== this.draw.getRenderCount()) return
-          // 衬于文字下方图片需要重新首先绘制
-          if (element.imgDisplay === ImageDisplay.FLOAT_BOTTOM) {
-            this.draw.render({
-              isCompute: false,
-              isSetCursor: false,
-              isSubmitHistory: false
-            })
-          } else {
-            this._drawImageWithCrop(ctx, img, element, x, y, width, height)
-            this._renderCaption(ctx, element, x, y, width, height)
-          }
         }
         img.onerror = error => {
           const fallbackImage = this.getFallbackImage(width, height)
-          fallbackImage.onload = () => {
-            this._drawImageWithCrop(
-              ctx,
-              fallbackImage,
-              element,
-              x,
-              y,
-              width,
-              height
-            )
-            this.imageCache.set(element.value, fallbackImage)
-            this._renderCaption(ctx, element, x, y, width, height)
-          }
+          fallbackImage.onload = () => renderLoadedImage(fallbackImage)
           reject(error)
         }
       })

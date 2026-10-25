@@ -3,6 +3,7 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
 import { ITd } from '../../../interface/table/Td'
+import { getPagePointer } from '../../event/pagePointer'
 import { Draw } from '../Draw'
 
 // 单次 hover 命中解析结果
@@ -124,15 +125,17 @@ export class HintParticle {
   public handleMouseMove(evt: MouseEvent) {
     // 总开关：禁用时不展示提示
     if (this.options.hint.disabled) return
-    const target = evt.target as HTMLDivElement
-    const pageIndex = target.dataset.index
-    if (pageIndex) {
-      this.draw.setPageNo(Number(pageIndex))
+    const pointer = getPagePointer(evt, this.draw.getPageContainer())
+    if (!pointer) {
+      this.clearHintPopup()
+      return
     }
+    this.draw.setPageNo(pointer.pageNo)
     const position = this.draw.getPosition()
     const positionResult = position.getPositionByXY({
-      x: evt.offsetX,
-      y: evt.offsetY
+      x: pointer.x,
+      y: pointer.y,
+      pageNo: pointer.pageNo
     })
     if (!~positionResult.index) {
       this.clearHintPopup()
@@ -167,10 +170,7 @@ export class HintParticle {
       return
     }
     if (this.lastHoverKey === hoverKey) return
-    this.drawHintPopup(
-      { hint, position: elementPosition, td },
-      this.draw.getPageNo()
-    )
+    this.drawHintPopup({ hint, position: elementPosition, td }, pointer.pageNo)
     this.lastHoverKey = hoverKey
   }
 }

@@ -11,7 +11,9 @@ class StubIntersectionObserver {
   observe(): void {}
   unobserve(): void {}
   disconnect(): void {}
-  takeRecords(): unknown[] { return [] }
+  takeRecords(): unknown[] {
+    return []
+  }
   root: Element | null = null
   rootMargin = ''
   thresholds: ReadonlyArray<number> = []
@@ -20,7 +22,12 @@ class StubIntersectionObserver {
 ;(globalThis as any).IntersectionObserver ??= StubIntersectionObserver
 ;(Element.prototype as any).scrollIntoView ??= () => {}
 ;(Element.prototype as any).scroll ??= () => {}
-
+;(SVGElement.prototype as any).getBBox ??= () => ({
+  x: 0,
+  y: 0,
+  width: 0,
+  height: 0
+})
 ;(window as any).matchMedia = (query: string) => ({
   matches: false,
   media: query,
@@ -40,7 +47,9 @@ class StubWorker {
   terminate(): void {}
   addEventListener(): void {}
   removeEventListener(): void {}
-  dispatchEvent(): boolean { return false }
+  dispatchEvent(): boolean {
+    return false
+  }
 }
 ;(globalThis as any).Worker ??= StubWorker
 

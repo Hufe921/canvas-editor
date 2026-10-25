@@ -6,6 +6,7 @@ import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow } from '../../../interface/Row'
 import { pickSurroundElementList } from '../../../utils/element'
 import { Position } from '../../position/Position'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Zone } from '../../zone/Zone'
 import { Draw } from '../Draw'
 
@@ -168,7 +169,7 @@ export class Header {
     return false
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: IRenderContext, pageNo: number) {
     if (this.options.header.disabledPages.includes(pageNo)) return
     ctx.save()
     ctx.globalAlpha = this.zone.isHeaderActive()

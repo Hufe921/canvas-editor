@@ -17,6 +17,7 @@ import { LocationPosition } from '../../../dataset/enum/Common'
 import { RangeManager } from '../../range/RangeManager'
 import { Zone } from '../../zone/Zone'
 import { Position } from '../../position/Position'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import {
   formatElementList,
   getNonDeletedElementList,
@@ -119,7 +120,7 @@ export class Area {
     return areaId
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: IRenderContext, pageNo: number) {
     if (!this.areaInfoMap.size) return
     ctx.save()
     const margins = this.draw.getMargins()

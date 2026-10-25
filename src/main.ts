@@ -2,6 +2,7 @@ import { commentList, data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
 import Editor, {
+  BackendType,
   BlockType,
   CheckboxMarkType,
   Command,
@@ -34,6 +35,7 @@ window.onload = function () {
 
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
+  const backend = new URLSearchParams(window.location.search).get('backend')
   const instance = new Editor(
     container,
     {
@@ -61,7 +63,12 @@ window.onload = function () {
         }
       ]
     },
-    options
+    {
+      ...options,
+      ...(backend === BackendType.SVG || backend === BackendType.CANVAS
+        ? { backend }
+        : {})
+    }
   )
   console.log('实例: ', instance)
   // cypress使用
@@ -343,16 +350,14 @@ window.onload = function () {
     '.menu-item__spacing'
   )!
   const spacingIconDom = spacingDom.querySelector<HTMLElement>('i')!
-  const spacingOptionDom =
-    spacingDom.querySelector<HTMLDivElement>('.options')!
+  const spacingOptionDom = spacingDom.querySelector<HTMLDivElement>('.options')!
   const spacingBeforeInputDom =
     spacingOptionDom.querySelector<HTMLInputElement>(
       '[data-spacingbefore-input]'
     )!
-  const spacingAfterInputDom =
-    spacingOptionDom.querySelector<HTMLInputElement>(
-      '[data-spacingafter-input]'
-    )!
+  const spacingAfterInputDom = spacingOptionDom.querySelector<HTMLInputElement>(
+    '[data-spacingafter-input]'
+  )!
   spacingIconDom.onclick = function () {
     console.log('spacing')
     spacingOptionDom.classList.toggle('visible')
@@ -372,10 +377,12 @@ window.onload = function () {
   }
   spacingOptionDom.querySelector<HTMLButtonElement>(
     '[data-spacingbefore-decrease]'
-  )!.onclick = () => changeSpacingBefore(Number(spacingBeforeInputDom.value) - 6)
+  )!.onclick = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value) - 6)
   spacingOptionDom.querySelector<HTMLButtonElement>(
     '[data-spacingbefore-increase]'
-  )!.onclick = () => changeSpacingBefore(Number(spacingBeforeInputDom.value) + 6)
+  )!.onclick = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value) + 6)
   spacingOptionDom.querySelector<HTMLButtonElement>(
     '[data-spacingafter-decrease]'
   )!.onclick = () => changeSpacingAfter(Number(spacingAfterInputDom.value) - 6)
@@ -1617,6 +1624,31 @@ window.onload = function () {
   rulerToggleDom.onclick = function () {
     instance.command.executeToggleRuler()
   }
+
+  // 渲染后端切换
+  const backendSwitchDom =
+    document.querySelector<HTMLDivElement>('.backend-switch')!
+  const backendOptionDom = backendSwitchDom.querySelector('.options')!
+  const backendOptionList =
+    backendSwitchDom.querySelectorAll<HTMLLIElement>('[data-backend]')
+  const updateBackendOption = () => {
+    const backend = instance.command.getOptions().backend
+    backendSwitchDom.title = `渲染后端：${backend === BackendType.SVG ? 'SVG' : 'Canvas'}`
+    backendOptionList.forEach(option => {
+      option.classList.toggle('active', option.dataset.backend === backend)
+    })
+  }
+  updateBackendOption()
+  backendSwitchDom.querySelector('i')!.onclick = () => {
+    backendOptionDom.classList.toggle('visible')
+  }
+  backendOptionList.forEach(option => {
+    option.onclick = () => {
+      instance.command.executeSetBackend(option.dataset.backend as BackendType)
+      updateBackendOption()
+      backendOptionDom.classList.remove('visible')
+    }
+  })
 
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!

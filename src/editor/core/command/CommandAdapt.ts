@@ -19,6 +19,7 @@ import {
 } from '../../dataset/enum/Common'
 import { ControlComponent, ControlType } from '../../dataset/enum/Control'
 import {
+  BackendType,
   EditorMode,
   EditorZone,
   PageMode,
@@ -130,7 +131,7 @@ import {
   pickSurroundElementList
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
-import { print } from '../../utils/print'
+import { print, printSvg } from '../../utils/print'
 import { compareElementList } from '../../utils/diff'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -138,6 +139,7 @@ import { INavigateInfo, Search } from '../draw/interactive/Search'
 import { TableOperate } from '../draw/particle/table/TableOperate'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { pasteByApi } from '../event/handlers/paste'
+import { getPagePointer } from '../event/pagePointer'
 import { HistoryManager } from '../history/HistoryManager'
 import { I18n } from '../i18n/I18n'
 import { Position } from '../position/Position'
@@ -1494,22 +1496,31 @@ export class CommandAdapt {
     }
     const { scale, printPixelRatio, paperDirection, width, height } =
       this.options
-    if (scale !== 1) {
-      this.draw.setPageScale(1)
-    }
-    const base64List = await this.draw.getDataURL({
-      pixelRatio: printPixelRatio,
-      mode: EditorMode.PRINT
-    })
-    await print(base64List, {
-      width,
-      height,
-      direction: paperDirection,
-      pageDirections: this.draw.getPageDirectionList(),
-      iframeInfoList: this.draw.getBlockParticle().pickIframeInfo()
-    })
-    if (scale !== 1) {
-      this.draw.setPageScale(scale)
+    try {
+      if (scale !== 1) {
+        this.draw.setPageScale(1)
+      }
+      const printOptions = {
+        width,
+        height,
+        direction: paperDirection,
+        pageDirections: this.draw.getPageDirectionList(),
+        iframeInfoList: this.draw.getBlockParticle().pickIframeInfo()
+      }
+      if (this.options.backend === BackendType.SVG) {
+        const pageList = await this.draw.getSvgPageList(EditorMode.PRINT)
+        await printSvg(pageList, printOptions)
+      } else {
+        const base64List = await this.draw.getDataURL({
+          pixelRatio: printPixelRatio,
+          mode: EditorMode.PRINT
+        })
+        await print(base64List, printOptions)
+      }
+    } finally {
+      if (scale !== 1) {
+        this.draw.setPageScale(scale)
+      }
     }
   }
 
@@ -2612,6 +2623,10 @@ export class CommandAdapt {
     })
   }
 
+  public setBackend(payload: BackendType): void {
+    this.draw.setBackend(payload)
+  }
+
   public updateOptions(payload: IUpdateOption) {
     const newOption = mergeOption(payload)
     Object.entries(newOption).forEach(([key, value]) => {
@@ -2850,14 +2865,13 @@ export class CommandAdapt {
     evt: MouseEvent,
     options: IPositionContextByEventOption = {}
   ): IPositionContextByEventResult | null {
-    const pageIndex = (<HTMLElement>evt.target)?.dataset.index
-    if (!pageIndex) return null
+    const pointer = getPagePointer(evt, this.draw.getPageContainer())
+    if (!pointer) return null
     const { isMustDirectHit = true } = options
-    const pageNo = Number(pageIndex)
     const positionContext = this.position.getPositionByXY({
-      x: evt.offsetX,
-      y: evt.offsetY,
-      pageNo
+      x: pointer.x,
+      y: pointer.y,
+      pageNo: pointer.pageNo
     })
     const {
       isDirectHit,
@@ -2911,7 +2925,7 @@ export class CommandAdapt {
       }
     }
     return {
-      pageNo,
+      pageNo: pointer.pageNo,
       element,
       rangeRect,
       tableInfo

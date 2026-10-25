@@ -2,9 +2,9 @@ import Editor, { ElementType, TitleLevel } from '../../src/editor'
 
 describe('基础功能', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'
@@ -15,7 +15,7 @@ describe('基础功能', () => {
 
       editor.command.executeBackspace()
 
-      cy.get('@canvas')
+      cy.get('.ce-inputarea')
         .type(text)
         .then(() => {
           const data = editor.command.getValue().data.main
@@ -196,9 +196,9 @@ describe('基础功能', () => {
 
 describe('元素操作', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'
@@ -349,9 +349,9 @@ describe('元素操作', () => {
 
 describe('值操作', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'

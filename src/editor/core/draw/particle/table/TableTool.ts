@@ -6,6 +6,7 @@ import { IEditorOption } from '../../../../interface/Editor'
 import { Position } from '../../../position/Position'
 import { RangeManager } from '../../../range/RangeManager'
 import { Draw } from '../../Draw'
+import type { RenderPage } from '../../../render/RenderBackend'
 
 interface IAnchorMouseDown {
   evt: MouseEvent
@@ -33,7 +34,7 @@ export class TableTool {
   private readonly TABLE_SELECT_OFFSET = 20
 
   private draw: Draw
-  private canvas: HTMLCanvasElement
+  private canvas: RenderPage
   private options: DeepRequired<IEditorOption>
   private position: Position
   private range: RangeManager

@@ -4,6 +4,7 @@ import { IAreaInfo } from '../../../interface/Area'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { Draw } from '../Draw'
+import type { RenderPage } from '../../render/RenderBackend'
 
 export class AreaTool {
   // 拖拽手柄高度
@@ -12,7 +13,7 @@ export class AreaTool {
   private readonly MIN_AREA_HEIGHT = 20
 
   private draw: Draw
-  private canvas: HTMLCanvasElement
+  private canvas: RenderPage
   private options: DeepRequired<IEditorOption>
   private container: HTMLDivElement
   private toolBorder: HTMLDivElement | null

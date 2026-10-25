@@ -10,10 +10,11 @@ import {
 import { downloadFile } from '../../../../utils'
 import { EventBus } from '../../../event/eventbus/EventBus'
 import { Draw } from '../../Draw'
+import type { RenderPage } from '../../../render/RenderBackend'
 
 export class Previewer {
   private container: HTMLDivElement
-  private canvas: HTMLCanvasElement
+  private canvas: RenderPage
   private draw: Draw
   private options: Required<IEditorOption>
   private curElement: IElement | null

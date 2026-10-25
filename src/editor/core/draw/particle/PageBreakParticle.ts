@@ -2,6 +2,7 @@ import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
 import { I18n } from '../../i18n/I18n'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class PageBreakParticle {
@@ -16,7 +17,7 @@ export class PageBreakParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IRowElement,
     x: number,
     y: number
@@ -30,9 +31,12 @@ export class PageBreakParticle {
     const elementWidth = element.width! * scale
     const offsetY =
       this.draw.getDefaultBasicRowMarginHeight() * defaultRowMargin
+    const fontStyle = `${size}px ${font}`
     ctx.save()
-    ctx.font = `${size}px ${font}`
-    const textMeasure = ctx.measureText(displayName)
+    ctx.font = fontStyle
+    const textMeasure = this.draw
+      .getTextMeasurer()
+      .measureText(displayName, fontStyle)
     const halfX = (elementWidth - textMeasure.width) / 2
     // 线段
     ctx.setLineDash(lineDash)

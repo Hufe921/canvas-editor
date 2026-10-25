@@ -387,7 +387,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 ### 打印与导出
 
 <div class="feat">
-  <div class="it"><b>打印</b><span>基于 canvas 转图片打印、可配置像素比</span></div>
+  <div class="it"><b>打印</b><span>Canvas 位图打印（可配置像素比）、SVG 矢量打印</span></div>
   <div class="it"><b>图片导出</b><span>页面图片 base64</span></div>
   <div class="it"><b>HTML 导入导出</b><span>HTML 导入 / 导出</span></div>
   <div class="it"><b>纯文本导出</b><span>纯文本与数据序列化</span></div>

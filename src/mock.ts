@@ -1,4 +1,5 @@
 import {
+  BackendType,
   ControlType,
   ElementType,
   IEditorOption,
@@ -696,6 +697,7 @@ export const options: IEditorOption = {
   lab: {
     incrementalCompute: true
   },
+  backend: BackendType.CANVAS,
   trace: {
     author: '游客1'
   },

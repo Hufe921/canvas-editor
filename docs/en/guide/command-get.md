@@ -39,7 +39,7 @@ const {
 
 ## getImage
 
-Feature: Gets the base64 string of the current page image
+Feature: Gets the base64 string of the current page image. The Canvas backend returns `data:image/png;base64`, while the SVG backend returns `data:image/svg+xml;base64`. `pixelRatio` only applies to Canvas. Snapshots produced by `snapDomFunction` are embedded as `image` nodes in SVG output.
 
 Usage:
 

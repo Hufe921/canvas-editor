@@ -47,6 +47,7 @@ interface IEditorOption {
   margins?: IMargin // Page margins. default: [100, 120, 100, 120]
   pageMode?: PageMode // Paper mode: Linkage, Pagination. default: Pagination
   renderMode?: RenderMode // Render mode: speed(multi words combination rendering), compatibility(word by word rendering:avoid environmental differences such as browse,fonts...). default: speed
+  backend?: BackendType // Rendering backend: CANVAS or SVG. default: CANVAS
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF
   table?: ITableOption // Table configuration
   header?: IHeader // Header configuration
@@ -55,7 +56,7 @@ interface IEditorOption {
   paperDirection?: PaperDirection // Paper orientation: portrait, landscape
   inactiveAlpha?: number // When the body content is out of focus, transparency. default: 0.6
   historyMaxRecordCount?: number // History (undo redo) maximum number of records. default: 100; 0 disables snapshot allocation
-  printPixelRatio?: number // Print the pixel ratio (larger values are clearer, but larger sizes). default: 3
+  printPixelRatio?: number // Pixel ratio for Canvas bitmap printing (larger values are clearer, but larger sizes). default: 3
   maskMargin?: IMargin // Masking margins above the editor（for example: menu bar, bottom toolbar）。default: [0, 0, 0, 0]
   letterClass?: string[] // Alphabet class supported by typesetting. default: a-zA-Z. Built-in alternative alphabet class: LETTER_CLASS
   contextMenuDisableKeys?: string[] // Disable context menu keys. default: []

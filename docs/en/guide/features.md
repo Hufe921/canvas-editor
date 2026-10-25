@@ -387,7 +387,7 @@ Developer integration, extension mechanisms, and runtime capabilities.
 ### Print & Export
 
 <div class="feat">
-  <div class="it"><b>Print</b><span>Canvas-to-image printing, configurable pixel ratio</span></div>
+  <div class="it"><b>Print</b><span>Canvas bitmap printing with configurable pixel ratio, SVG vector printing</span></div>
   <div class="it"><b>Image export</b><span>Page image base64</span></div>
   <div class="it"><b>HTML import/export</b><span>HTML import / export</span></div>
   <div class="it"><b>Plain text export</b><span>Plain text and data serialization</span></div>

@@ -40,7 +40,11 @@ interface IPrintOption {
   iframeInfoList?: IIframeInfo[][]
 }
 
-export async function print(base64List: string[], options: IPrintOption) {
+async function printPages(
+  pageCount: number,
+  options: IPrintOption,
+  appendPageContent: (pageWrapper: HTMLDivElement, pageIndex: number) => void
+) {
   const {
     width,
     height,
@@ -66,11 +70,11 @@ export async function print(base64List: string[], options: IPrintOption) {
   const getPageDirection = (pageIndex: number) =>
     pageDirections?.[pageIndex] || direction
   const firstPageDirection = getPageDirection(0)
-  const lastPageDirection = getPageDirection(base64List.length - 1)
-  const isMixedDirection = base64List.some(
+  const lastPageDirection = getPageDirection(pageCount - 1)
+  const isMixedDirection = Array.from({ length: pageCount }).some(
     (_, pageIndex) => getPageDirection(pageIndex) !== firstPageDirection
   )
-  base64List.forEach((base64, pageIndex) => {
+  Array.from({ length: pageCount }).forEach((_, pageIndex) => {
     const pageDirection = getPageDirection(pageIndex)
     const pageWrapper = document.createElement('div')
     pageWrapper.style.position = 'relative'
@@ -84,7 +88,7 @@ export async function print(base64List: string[], options: IPrintOption) {
         : paperSize.height
     // 混排时为前 N-1 页指定命名页；最后一页沿用匿名 @page，避免命名页与匿名页
     // 在文档末尾发生 name 切换而触发额外的 forced break（多出一页空白页）
-    if (isMixedDirection && pageIndex < base64List.length - 1) {
+    if (isMixedDirection && pageIndex < pageCount - 1) {
       pageWrapper.style.setProperty(
         'page',
         pageDirection === PaperDirection.HORIZONTAL
@@ -92,15 +96,7 @@ export async function print(base64List: string[], options: IPrintOption) {
           : 'canvas-editor-portrait'
       )
     }
-    // 背景图片
-    const image = document.createElement('img')
-    image.style.width = '100%'
-    image.style.height = '100%'
-    image.style.position = 'absolute'
-    image.style.left = '0'
-    image.style.top = '0'
-    image.src = base64
-    pageWrapper.append(image)
+    appendPageContent(pageWrapper, pageIndex)
     // 叠加 iframe
     const pageIframes = iframeInfoList[pageIndex] || []
     pageIframes.forEach(iframeInfo => {
@@ -164,12 +160,19 @@ export async function print(base64List: string[], options: IPrintOption) {
     padding: 0;
   }${pageRule}`
   style.append(document.createTextNode(stylesheet))
-  doc.write(`${style.outerHTML}${container.innerHTML}`)
+  const documentStyles = Array.from(
+    document.querySelectorAll('style, link[rel="stylesheet"]')
+  )
+    .map(element => element.outerHTML)
+    .join('')
+  doc.write(`${documentStyles}${style.outerHTML}${container.innerHTML}`)
 
+  const resourcePromise = waitForPrintResources(doc)
   // 等待iframe加载完成
   if (iframeInfoList.length) {
     await waitIframeLoad(doc)
   }
+  await resourcePromise
 
   setTimeout(async () => {
     contentWindow.print()
@@ -185,6 +188,64 @@ export async function print(base64List: string[], options: IPrintOption) {
       }
     )
   })
+}
+
+export async function print(base64List: string[], options: IPrintOption) {
+  return printPages(base64List.length, options, (pageWrapper, pageIndex) => {
+    const image = document.createElement('img')
+    image.style.width = '100%'
+    image.style.height = '100%'
+    image.style.position = 'absolute'
+    image.style.left = '0'
+    image.style.top = '0'
+    image.src = base64List[pageIndex]
+    pageWrapper.append(image)
+  })
+}
+
+export async function printSvg(
+  pageList: SVGSVGElement[],
+  options: IPrintOption
+) {
+  return printPages(pageList.length, options, (pageWrapper, pageIndex) => {
+    const svg = pageList[pageIndex]
+    svg.style.width = '100%'
+    svg.style.height = '100%'
+    svg.style.position = 'absolute'
+    svg.style.left = '0'
+    svg.style.top = '0'
+    svg.style.margin = '0'
+    svg.style.cursor = 'auto'
+    svg.style.userSelect = 'text'
+    pageWrapper.append(svg)
+  })
+}
+
+const PRINT_RESOURCE_TIMEOUT = 10000
+
+function waitForPrintResource(element: Element): Promise<void> {
+  return new Promise(resolve => {
+    const done = () => {
+      clearTimeout(timer)
+      resolve()
+    }
+    element.addEventListener('load', done, { once: true })
+    element.addEventListener('error', done, { once: true })
+    const timer = setTimeout(done, PRINT_RESOURCE_TIMEOUT)
+  })
+}
+
+async function waitForPrintResources(doc: Document): Promise<void> {
+  const resources = Array.from(
+    doc.querySelectorAll('image, link[rel="stylesheet"]')
+  ).filter(element => {
+    if (element.tagName.toLowerCase() === 'link') {
+      return element.hasAttribute('href')
+    }
+    return element.hasAttribute('href') || element.hasAttribute('xlink:href')
+  })
+  await Promise.all(resources.map(waitForPrintResource))
+  await doc.fonts?.ready
 }
 
 async function waitIframeLoad(doc: Document) {
