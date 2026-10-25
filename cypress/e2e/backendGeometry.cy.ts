@@ -93,70 +93,82 @@ describe('双后端页面与几何一致性', () => {
   })
 
   it('页眉分隔线的路径和线宽与 Canvas 一致', () => {
-    let canvasLine:
-      | { x: number; y: number; endX: number; endY: number; width: number }
-      | undefined
+    const canvasLines: {
+      x: number
+      y: number
+      endX: number
+      endY: number
+      width: number
+    }[] = []
     cy.visit('http://localhost:3000/canvas-editor/?backend=canvas')
-    cy.getEditor().then(async (editor: any) => {
-      const win = editor.command.getContainer().ownerDocument.defaultView!
-      const moveTo = win.CanvasRenderingContext2D.prototype.moveTo
-      const lineTo = win.CanvasRenderingContext2D.prototype.lineTo
-      win.CanvasRenderingContext2D.prototype.moveTo = function (
-        this: CanvasRenderingContext2D,
-        x: number,
-        y: number
-      ) {
-        if (
-          this.canvas.getAttribute('data-index') === '0' &&
-          !canvasLine &&
-          x === 120 &&
-          y >= 90 &&
-          y <= 150
+    cy.getEditor()
+      .then((editor: any) => {
+        const win = editor.command.getContainer().ownerDocument.defaultView!
+        const moveTo = win.CanvasRenderingContext2D.prototype.moveTo
+        const lineTo = win.CanvasRenderingContext2D.prototype.lineTo
+        const startPoints = new WeakMap<
+          CanvasRenderingContext2D,
+          { x: number; y: number }
+        >()
+        win.CanvasRenderingContext2D.prototype.moveTo = function (
+          this: CanvasRenderingContext2D,
+          x: number,
+          y: number
         ) {
-          canvasLine = {
-            x,
-            y,
-            endX: x,
-            endY: y,
-            width: this.lineWidth
+          startPoints.set(this, { x, y })
+          return moveTo.call(this, x, y)
+        }
+        win.CanvasRenderingContext2D.prototype.lineTo = function (
+          this: CanvasRenderingContext2D,
+          x: number,
+          y: number
+        ) {
+          const start = startPoints.get(this)
+          if (this.canvas.getAttribute('data-index') === '0' && start) {
+            canvasLines.push({
+              x: start.x,
+              y: start.y,
+              endX: x,
+              endY: y,
+              width: this.lineWidth
+            })
           }
+          startPoints.set(this, { x, y })
+          return lineTo.call(this, x, y)
         }
-        return moveTo.call(this, x, y)
-      }
-      win.CanvasRenderingContext2D.prototype.lineTo = function (
-        this: CanvasRenderingContext2D,
-        x: number,
-        y: number
-      ) {
-        if (canvasLine && canvasLine.endX === canvasLine.x) {
-          canvasLine.endX = x
-          canvasLine.endY = y
-        }
-        return lineTo.call(this, x, y)
-      }
-      await editor.command.getImage()
-    })
-    cy.wrap(null).then(() => {
-      expect(canvasLine).not.to.eq(undefined)
-      cy.visit('http://localhost:3000/canvas-editor/?backend=svg')
-      cy.get('.ce-page-container > svg[data-index="0"]').should(page => {
-        expect(page[0].querySelectorAll('path').length).to.be.greaterThan(0)
+        const image = editor.command.getImage()
+        const exportLines = canvasLines.slice()
+        const { width, margins } = editor.command.getOptions()
+        const canvasLine = exportLines.find(
+          line =>
+            line.x === margins[3] &&
+            line.endX === width - margins[1] &&
+            line.endY === line.y
+        )
+        return image.then(() => ({ canvasLine, exportLines }))
       })
-      cy.get('.ce-page-container > svg[data-index="0"]').then(page => {
-        const line = canvasLine!
-        const expectedPath = `M ${line.x} ${line.y} L ${line.endX} ${line.endY}`
-        const path = Array.from(page[0].querySelectorAll('path')).find(
-          item => item.getAttribute('d') === expectedPath
-        )
-        const actualPaths = Array.from(page[0].querySelectorAll('path')).map(
-          item => item.getAttribute('d')
-        )
-        expect(path, `${expectedPath}: ${JSON.stringify(actualPaths)}`).not.to.eq(
-          undefined
-        )
-        expect(Number(path!.getAttribute('stroke-width'))).to.eq(line.width)
+      .then(({ canvasLine, exportLines }) => {
+        expect(canvasLine, JSON.stringify(exportLines)).not.to.eq(undefined)
+        cy.visit('http://localhost:3000/canvas-editor/?backend=svg')
+        cy.get('.ce-page-container > svg[data-index="0"]').should(page => {
+          expect(page[0].querySelectorAll('path').length).to.be.greaterThan(0)
+        })
+        cy.get('.ce-page-container > svg[data-index="0"]').then(page => {
+          const line = canvasLine!
+          const expectedPath = `M ${line.x} ${line.y} L ${line.endX} ${line.endY}`
+          const path = Array.from(page[0].querySelectorAll('path')).find(
+            item => item.getAttribute('d') === expectedPath
+          )
+          const actualPaths = Array.from(page[0].querySelectorAll('path')).map(
+            item => item.getAttribute('d')
+          )
+          expect(
+            path,
+            `${expectedPath}: ${JSON.stringify(actualPaths)}`
+          ).not.to.eq(undefined)
+          expect(Number(path!.getAttribute('stroke-width'))).to.eq(line.width)
+        })
       })
-    })
   })
 
 })
