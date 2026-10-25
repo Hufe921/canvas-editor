@@ -1,3 +1,4 @@
+import { TraceType } from '../../../dataset/enum/Trace'
 import { ICatalog, ICatalogItem } from '../../../interface/Catalog'
 import { IElement, IElementPosition } from '../../../interface/Element'
 
@@ -66,6 +67,12 @@ function isTextLikeElement(element: IElement): boolean {
   return !element.type || TEXTLIKE_ELEMENT_TYPE.includes(element.type)
 }
 
+// 被删除的留痕元素不进目录（与 utils/element.ts isElementTraceDeleted 同口径）
+function isTraceDeleted(element: IElement): boolean {
+  const records = element.trace
+  return records?.[records.length - 1]?.type === TraceType.DELETED
+}
+
 function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
   const { elementList, positionList } = payload
   // 筛选标题
@@ -88,26 +95,39 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
         pageNo: positionList[t].pageNo
       }
       const valueList: IElement[] = []
+      // 段内首个未删除元素下标：段边界仍按 titleId 划分，已删除元素照样收进段内
+      let aliveIndex = -1
       while (position < elementList.length) {
         const titleE = elementList[position]
         if (titleId !== titleE.titleId) {
           position--
           break
         }
+        if (aliveIndex < 0 && !isTraceDeleted(titleE)) {
+          aliveIndex = position
+        }
         valueList.push(titleE)
         position++
       }
       titleElement.value = valueList
-        .filter(el => isTextLikeElement(el))
+        .filter(el => !isTraceDeleted(el) && isTextLikeElement(el))
         .map(el => el.value)
         .join('')
         .replace(new RegExp(ZERO, 'g'), '')
-      return { position, titleElement }
+      return { position, titleElement, aliveIndex }
     }
     if (element.titleId) {
-      const { position, titleElement } = getElementInfo(element, elementList, t)
+      const { position, titleElement, aliveIndex } = getElementInfo(
+        element,
+        elementList,
+        t
+      )
       t = position
-      titleElementList.push(titleElement)
+      // 整段已删除的标题不进目录；页码取首个未删除元素所在页
+      if (~aliveIndex) {
+        titleElement.pageNo = positionList[aliveIndex].pageNo
+        titleElementList.push(titleElement)
+      }
     }
     if (element.type === ElementType.TABLE) {
       const trList = element.trList!
@@ -120,12 +140,14 @@ function getCatalog(payload: IGetCatalogPayload): ICatalog | null {
             let index = 1
             while (index < value.length) {
               if (value[index]?.titleId) {
-                const { titleElement, position } = getElementInfo(
+                const { titleElement, position, aliveIndex } = getElementInfo(
                   value[index],
                   value,
                   index
                 )
-                titleElementList.push(titleElement)
+                if (~aliveIndex) {
+                  titleElementList.push(titleElement)
+                }
                 index = position
               }
               index++
