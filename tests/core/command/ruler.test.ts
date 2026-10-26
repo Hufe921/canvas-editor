@@ -1,6 +1,25 @@
 import { describe, it, expect, afterEach } from 'vitest'
 import { PageMode } from '../../../src/editor/dataset/enum/Editor'
+import { ElementType } from '../../../src/editor/dataset/enum/Element'
+import { IElement } from '../../../src/editor/interface/Element'
 import { createTestEditor, waitMacroTask } from '../../factories/editor'
+
+// 行高 100 的表格，超出单页正文高度后自动分页
+function buildTable(rowCount: number): IElement {
+  return <IElement>{
+    type: ElementType.TABLE,
+    value: '',
+    colgroup: [{ width: 200 }, { width: 200 }],
+    trList: Array.from({ length: rowCount }, () => ({
+      height: 100,
+      minHeight: 100,
+      tdList: [
+        { colspan: 1, rowspan: 1, value: [{ value: '\n' }] },
+        { colspan: 1, rowspan: 1, value: [{ value: '\n' }] }
+      ]
+    }))
+  }
+}
 
 describe('标尺命令', () => {
   let ctx: ReturnType<typeof createTestEditor>
@@ -43,6 +62,49 @@ describe('标尺命令', () => {
     ctx.editor.command.executePageMode(PageMode.PAGING)
     await waitMacroTask()
     expect(rulerDom.style.display).toBe('block')
+  })
+
+  it('每一页均渲染垂直标尺并按页偏移对齐', async () => {
+    ctx = createTestEditor({
+      data: { header: [], main: [buildTable(20)], footer: [] },
+      options: {
+        ruler: { disabled: false },
+        header: { disabled: true },
+        footer: { disabled: true }
+      }
+    })
+    await waitMacroTask()
+    const pageCount = ctx.container.querySelectorAll('.ce-page-container canvas')
+      .length
+    expect(pageCount).toBeGreaterThan(1)
+    const rulerYList =
+      ctx.container.querySelectorAll<HTMLCanvasElement>('.ce-ruler-y')
+    expect(rulerYList.length).toBe(pageCount)
+    // 页高 1123，默认页间距 20
+    rulerYList.forEach((canvasY, index) => {
+      expect(canvasY.style.top).toBe(`${index * (1123 + 20)}px`)
+      expect(canvasY.style.height).toBe('1123px')
+    })
+  })
+
+  it('页数减少时移除多余的垂直标尺', async () => {
+    ctx = createTestEditor({
+      data: { header: [], main: [buildTable(20)], footer: [] },
+      options: {
+        ruler: { disabled: false },
+        header: { disabled: true },
+        footer: { disabled: true }
+      }
+    })
+    await waitMacroTask()
+    const initialCount =
+      ctx.container.querySelectorAll('.ce-ruler-y').length
+    expect(initialCount).toBeGreaterThan(1)
+    ctx.editor.command.executeSetValue({ main: [{ value: '\n' }] })
+    await waitMacroTask()
+    expect(ctx.container.querySelectorAll('.ce-page-container canvas').length)
+      .toBe(1)
+    expect(ctx.container.querySelectorAll('.ce-ruler-y').length).toBe(1)
   })
 
   it('拖动左边距手柄修改页边距', async () => {

@@ -17,9 +17,9 @@
   box-shadow: 0 1px 3px rgb(0 0 0 / 10%);
 }
 
+/* 每页一个垂直标尺，top由脚本按页偏移设置 */
 .ce-ruler-y {
   position: absolute;
-  top: 0;
   left: 0;
   pointer-events: auto;
   box-shadow: 1px 0 3px rgb(0 0 0 / 10%);
