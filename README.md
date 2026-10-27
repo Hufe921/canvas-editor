@@ -112,7 +112,7 @@ For complete API documentation, see the [official docs](https://hufe.club/canvas
 | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)                    | Official plugins: Word/Excel import-export, formula, comment, spellcheck & 20+ more                   |
 | [SVG render layer](https://github.com/Hufe921/canvas-editor/tree/main/src/editor/core/render/svg) | Built-in SVG rendering backend — enable via the `backend: 'svg'` editor option (supersedes the old `feature/svg` branch) |
-| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)                   | PDF export feature                                                                                    |
+| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)                   | PDF export — [live demo](https://hufe.club/canvas-editor-pdf)                                         |
 | [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)                     | AI-powered text processing demo                                                                       |
 | [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)                 | CRDT-based collaboration (experimental)                                                               |
 

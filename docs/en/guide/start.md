@@ -2,7 +2,7 @@
 
 > WYSIWYG rich text editor.
 
-Benefit from the complete self-implementation of cursor and text layout. Canvas and SVG rendering backends are built in and can be selected with the [`backend`](./option.md) option. PDF rendering is also possible with pdfjs; see the [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf) branch.
+Benefit from the complete self-implementation of cursor and text layout. Canvas and SVG rendering backends are built in and can be selected with the [`backend`](./option.md) option.
 
 ::: warning
 The official only provides the editor core layer npm package, the menu bar or other external tools can refer to the document extension, or directly refer the implementation of [official](https://github.com/Hufe921/canvas-editor), See details [demo](https://hufe.club/canvas-editor/).
@@ -13,7 +13,7 @@ The official only provides the editor core layer npm package, the menu bar or ot
 - Rich text operations: Undo, Redo, Painter, Clear Format, Font, Size, Bold, Italic, Underline, Strikeout, Superscript/Subscript, Text Color, Highlight, Alignment, Line Height, Row Margin, Title, List, First-line Indent
 - Insert elements: Table, Image, Hyperlink, Separator, Page Break, LaTeX Formula, Date Picker, Tab, Block, Label, Area
 - Table: Insert/Delete Rows and Columns, Merge/Split Cells, Border Style, Background Color, Vertical Alignment, Rowspan/Colspan, Cross-page Pagination
-- Print: Canvas bitmap printing, SVG vector printing, PDF drawing
+- Print: Canvas bitmap printing, SVG vector printing, PDF export ([live demo](https://hufe.club/canvas-editor-pdf), see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf))
 - Controls: Text, Number, Select, Radio Group, Checkbox Group, Date, supporting Placeholder, Prefix/Postfix, Default Value, Disabled, Indent Alignment Rules and Control Nesting
 - Cascade Expression: Automatically toggles visibility, required, editable and deletable states of other controls or titles when control values change, with computed expression support
 - Track Changes: Records and visually marks inserted and deleted revisions
