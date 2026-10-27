@@ -47,6 +47,7 @@ import { BlockType } from './dataset/enum/Block'
 import { MacroType } from './dataset/enum/Macro'
 import { IBlock } from './interface/Block'
 import { ILang } from './interface/i18n/I18n'
+import { IExportPdfOption, IPdfExportFont } from './interface/ExportPdf'
 import { VerticalAlign } from './dataset/enum/VerticalAlign'
 import { TableBorder, TdBorder, TdSlash } from './dataset/enum/table/Table'
 import { MaxHeightRatio, NumberType } from './dataset/enum/Common'
@@ -251,5 +252,7 @@ export type {
   IRangeStyle,
   RangeRect,
   IBadge,
-  IGetElementListByHTMLOption
+  IGetElementListByHTMLOption,
+  IExportPdfOption,
+  IPdfExportFont
 }

@@ -56,7 +56,7 @@ Unlike traditional `contenteditable`-based editors, Canvas Editor takes full con
 - **Pagination** — Native pagination with headers, footers, and page numbers
 - **Page Layout** — Configurable page margins, watermarks, backgrounds
 - **Document Structure** — Catalog (TOC) generation, comments, group annotations
-- **Print & Export** — Print-ready output via canvas-to-image / PDF rendering
+- **Print & Export** — Print-ready output via canvas-to-image / PDF rendering; programmatic PDF export on the [`feature/pdf`](https://github.com/Hufe921/canvas-editor/tree/feature/pdf) branch
 - **Interaction** — Custom context menus, customizable shortcut keys, drag-and-drop for text, elements, and controls
 - **Extensibility** — Plugin system (`instance.use`); official plugins cover Word/Excel import-export, formulas, code blocks, comments, spell checking, and more
 - **Performance** — Web Workers for word counting, catalog generation, and async value retrieval
@@ -112,9 +112,33 @@ For complete API documentation, see the [official docs](https://hufe.club/canvas
 | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)                    | Official plugins: Word/Excel import-export, formula, comment, spellcheck & 20+ more                   |
 | [SVG render layer](https://github.com/Hufe921/canvas-editor/tree/main/src/editor/core/render/svg) | Built-in SVG rendering backend — enable via the `backend: 'svg'` editor option (supersedes the old `feature/svg` branch) |
-| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)                   | PDF export feature                                                                                    |
+| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)                   | PDF export — `command.executeExportPdf()` replays the print-mode render instruction stream into a PDF with embedded, auto-subsetted CJK fonts (WYSIWYG by construction; see [source](https://github.com/Hufe921/canvas-editor/tree/feature/pdf/src/editor/core/export)) |
 | [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)                     | AI-powered text processing demo                                                                       |
 | [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)                 | CRDT-based collaboration (experimental)                                                               |
+
+### PDF export
+
+The [`feature/pdf`](https://github.com/Hufe921/canvas-editor/tree/feature/pdf) branch adds programmatic PDF export. It records the same render instruction stream (DisplayList) that the canvas/SVG backends consume and replays it into a PDF, so the output matches the on-screen document by construction — layout, pagination, tables, images, and watermark included.
+
+**Live demo: [hufe.club/canvas-editor-pdf](https://hufe.club/canvas-editor-pdf)**
+
+```javascript
+await instance.command.executeExportPdf({
+  filename: 'document.pdf',
+  // CJK text requires embedding the fonts used by the document
+  fonts: [
+    { family: 'Microsoft YaHei', src: '/font/msyh.ttf' },
+    { family: 'Microsoft YaHei', style: 'bold', src: '/font/msyh-bold.ttf' }
+  ],
+  documentProperties: { title: 'Document' }
+})
+```
+
+Notes:
+
+- `family` must exactly match the font names used in the document; text set in unregistered fonts falls back to the default and is reported via `console.warn`
+- For consistent text metrics, load the same font files in the editor (e.g. via the `FontFace` API) and pass them to `fonts`
+- `data` / `options` / `offscreen` export arbitrary content without touching the live editor; `download: false` returns the `ArrayBuffer` instead of triggering a download
 
 ## Development
 

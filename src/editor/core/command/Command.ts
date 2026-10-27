@@ -75,6 +75,7 @@ export class Command {
   public executeSearchNavigateNext: CommandAdapt['searchNavigateNext']
   public executeReplace: CommandAdapt['replace']
   public executePrint: CommandAdapt['print']
+  public executeExportPdf: CommandAdapt['exportPdf']
   public executeReplaceImageElement: CommandAdapt['replaceImageElement']
   public executeSaveAsImageElement: CommandAdapt['saveAsImageElement']
   public executeSetImageCrop: CommandAdapt['setImageCrop']
@@ -411,6 +412,10 @@ export class Command {
     )
     this.executeReplace = this.wrap('executeReplace', adapt.replace.bind(adapt))
     this.executePrint = this.wrap('executePrint', adapt.print.bind(adapt))
+    this.executeExportPdf = this.wrap(
+      'executeExportPdf',
+      adapt.exportPdf.bind(adapt)
+    )
     this.executeReplaceImageElement = this.wrap(
       'executeReplaceImageElement',
       adapt.replaceImageElement.bind(adapt)

@@ -802,6 +802,10 @@ ul {
   background-image: url('./assets/images/print.svg');
 }
 
+.menu-item__pdf-export i {
+  background-image: url('./assets/images/export-pdf.svg');
+}
+
 .catalog {
   width: 250px;
   position: fixed;

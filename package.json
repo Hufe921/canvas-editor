@@ -80,10 +80,12 @@
   "dependencies": {
     "@cspell/dict-en_us": "^4.4.37",
     "cspell-trie-lib": "^10.1.1",
+    "jspdf": "^4.2.1",
     "prismjs": "^1.27.0"
   },
   "simple-git-hooks": {
     "pre-commit": "npm run lint && npm run type:check",
     "commit-msg": "node scripts/verifyCommit.js"
-  }
+  },
+  "packageManager": "pnpm@10.29.1+sha512.48dae233635a645768a3028d19545cacc1688639eeb1f3734e42d6d6b971afbf22aa1ac9af52a173d9c3a20c15857cfa400f19994d79a2f626fcc73fccda9bbc"
 }

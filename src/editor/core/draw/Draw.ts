@@ -34,6 +34,7 @@ import { IncrementalRowComputer } from './IncrementalRowComputer'
 import { LayoutEngine } from '../layout/LayoutEngine'
 import { TextMeasurer } from '../layout/TextMeasurer'
 import { createBackend } from '../render/BackendFactory'
+import { CaptureBackend } from '../render/CaptureBackend'
 import type { IRenderBackend, RenderPage } from '../render/RenderBackend'
 import { DisplayList } from '../render/model/DisplayList'
 import { IRenderContext } from '../render/model/RenderContext'
@@ -1416,6 +1417,37 @@ export class Draw {
         .getPageList()
         .map(page => page.cloneNode(true) as SVGSVGElement)
     } finally {
+      if (isSwitchMode) {
+        this.setMode(currentMode)
+      }
+    }
+  }
+
+  // 渲染指定模式的全部分页并录制每页 DisplayList（用于 PDF 导出等指令流消费方）
+  public async getDisplayListPageList(mode: EditorMode): Promise<DisplayList[]> {
+    const realBackend = this.backend
+    const captureBackend = new CaptureBackend(realBackend)
+    this.backend = captureBackend
+    const currentMode = this.mode
+    const isSwitchMode = currentMode !== mode
+    try {
+      if (isSwitchMode) {
+        this.setMode(mode)
+      }
+      // 图片等异步资源首轮渲染后才加载完成（懒渲染下冷缓存页面首现），
+      // 需渲染→等加载→补渲染两轮，确保指令流包含全部图像绘制
+      for (let pass = 0; pass < 2; pass++) {
+        this.render({
+          isLazy: false,
+          isCompute: false,
+          isSetCursor: false,
+          isSubmitHistory: false
+        })
+        await this.imageObserver.allSettled()
+      }
+      return captureBackend.getDisplayListList()
+    } finally {
+      this.backend = realBackend
       if (isSwitchMode) {
         this.setMode(currentMode)
       }

@@ -132,6 +132,7 @@ import {
 } from '../../utils/element'
 import { mergeOption } from '../../utils/option'
 import { print, printSvg } from '../../utils/print'
+import { PdfExport } from '../export/PdfExport'
 import { compareElementList } from '../../utils/diff'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
@@ -159,6 +160,10 @@ import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
 import { WatermarkType } from '../../dataset/enum/Watermark'
 import { IPrintOption } from '@/editor/interface/Print'
+import {
+  IExportPdfOption,
+  IPdfExportFont
+} from '@/editor/interface/ExportPdf'
 
 export class CommandAdapt {
   private draw: Draw
@@ -1520,6 +1525,98 @@ export class CommandAdapt {
     } finally {
       if (scale !== 1) {
         this.draw.setPageScale(scale)
+      }
+    }
+  }
+
+  // 导出 PDF：录制打印模式 DisplayList 并生成 PDF
+  public async exportPdf(option?: IExportPdfOption): Promise<ArrayBuffer> {
+    // 离屏渲染支持自定义data和option
+    if (option?.offscreen) {
+      const data = option.data ?? this.draw.getValue().data
+      const options = option.options ?? this.draw.getOptions()
+      const container = document.createElement('div')
+      container.style.position = 'absolute'
+      container.style.left = '-9999px'
+      container.style.top = '0'
+      container.style.visibility = 'hidden'
+      document.body.append(container)
+      const { default: Editor } = await import('../../index')
+      let tempEditor: InstanceType<typeof Editor> | null = null
+      try {
+        tempEditor = new Editor(container, data, options)
+        return await tempEditor.command.executeExportPdf({
+          ...option,
+          offscreen: false,
+          data: undefined,
+          options: undefined
+        })
+      } finally {
+        tempEditor?.destroy()
+        container.remove()
+      }
+    }
+    const { scale, width, height } = this.options
+    try {
+      if (scale !== 1) {
+        this.draw.setPageScale(1)
+      }
+      this._warnUnregisteredPdfFonts(option?.fonts)
+      const displayLists = await this.draw.getDisplayListPageList(
+        EditorMode.PRINT
+      )
+      const pdfData = await new PdfExport({
+        displayLists,
+        width,
+        height,
+        pageDirections: this.draw.getPageDirectionList(),
+        fonts: option?.fonts,
+        documentProperties: option?.documentProperties
+      }).export()
+      if (option?.download !== false) {
+        const blob = new Blob([pdfData], { type: 'application/pdf' })
+        const url = URL.createObjectURL(blob)
+        downloadFile(url, option?.filename ?? `${Date.now()}.pdf`)
+        // 延迟回收，避免与浏览器下载行为竞态
+        setTimeout(() => URL.revokeObjectURL(url), 10000)
+      }
+      return pdfData
+    } finally {
+      if (scale !== 1) {
+        this.draw.setPageScale(scale)
+      }
+    }
+  }
+
+  // 收集正文（含表格嵌套与页眉页脚）实际使用的字体族，
+  // 未在导出字体中注册时提示，避免 PDF 静默乱码
+  private _warnUnregisteredPdfFonts(fonts?: IPdfExportFont[]) {
+    const registered = new Set((fonts ?? []).map(font => font.family))
+    registered.add(this.options.defaultFont)
+    const families = new Set<string>()
+    const collect = (elementList: IElement[]) => {
+      for (const element of elementList) {
+        if (element.font) {
+          families.add(element.font)
+        }
+        if (element.trList) {
+          for (const tr of element.trList) {
+            for (const td of tr.tdList) {
+              collect(td.value)
+            }
+          }
+        }
+      }
+    }
+    const { header, main, footer } = this.draw.getValue().data
+    collect(header ?? [])
+    collect(main)
+    collect(footer ?? [])
+    for (const family of families) {
+      if (!registered.has(family)) {
+        console.warn(
+          `PDF 导出：字体「${family}」未注册嵌入，相关文本将回退默认字体（中文会乱码），请在 fonts 选项中提供该字体文件`
+        )
       }
     }
   }

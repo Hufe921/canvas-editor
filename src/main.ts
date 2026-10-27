@@ -1340,6 +1340,29 @@ window.onload = function () {
     instance.command.executePrint()
   }
 
+  const pdfExportDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__pdf-export'
+  )!
+  pdfExportDom.title = '导出PDF'
+  pdfExportDom.onclick = function () {
+    console.log('pdf export')
+    instance.command.executeExportPdf({
+      filename: `${Date.now()}.pdf`,
+      // 演示中文字体嵌入：需与编辑器 defaultFont 同名（生产环境建议按需加载/子集化）
+      fonts: [
+        {
+          family: 'Microsoft YaHei',
+          src: `${import.meta.env.BASE_URL}font/msyh.ttf`
+        },
+        {
+          family: 'Microsoft YaHei',
+          style: 'bold',
+          src: `${import.meta.env.BASE_URL}font/msyh-bold.ttf`
+        }
+      ]
+    })
+  }
+
   // 6. 目录显隐 | 页面模式 | 纸张缩放 | 纸张大小 | 纸张方向 | 页边距 | 全屏 | 设置
   const editorOptionDom =
     document.querySelector<HTMLDivElement>('.editor-option')!
@@ -1741,7 +1764,7 @@ window.onload = function () {
     })
     // 设置菜单栏权限视觉反馈
     const isReadonly = mode === EditorMode.READONLY || mode === EditorMode.TRACE
-    const enableMenuList = ['search', 'print']
+    const enableMenuList = ['search', 'print', 'pdf-export']
     document.querySelectorAll<HTMLDivElement>('.menu-item>div').forEach(dom => {
       const menu = dom.dataset.menu
       isReadonly && (!menu || !enableMenuList.includes(menu))
