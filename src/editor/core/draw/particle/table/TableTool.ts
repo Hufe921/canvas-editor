@@ -1,5 +1,6 @@
 import { IElement } from '../../../..'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
+import { EditorMode } from '../../../../dataset/enum/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
@@ -107,6 +108,11 @@ export class TableTool {
     )
     if (!element || !position) {
       // 元素或位置失效时清理旧工具
+      this.dispose()
+      return
+    }
+    // 表单模式仅控件内可编辑、只读模式文档不可编辑：表格工具（含拖拽调宽、增删行列入口）不可用
+    if (this.draw.isReadonly() || this.draw.getMode() === EditorMode.FORM) {
       this.dispose()
       return
     }
