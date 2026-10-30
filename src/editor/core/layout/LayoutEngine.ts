@@ -17,6 +17,17 @@ import {
 import { shrinkColgroupToWidth } from '../../utils/table'
 import type { Draw } from '../draw/Draw'
 
+// 段首换行符可能携带上一段落属性（尾随\n风格数据/格式克隆），
+// 段落首行缩进属性优先读段内第一个内容元素，空段落退回换行符自身
+function getFirstLineIndentElement(
+  elementList: IElement[],
+  zeroIndex: number
+): IElement | undefined {
+  const next = elementList[zeroIndex + 1]
+  if (next && next.value !== ZERO && !next.listWrap) return next
+  return elementList[zeroIndex]
+}
+
 export interface IComputePageListPayload {
   rowList: IRow[]
   elementList: IElement[]
@@ -88,13 +99,59 @@ export class LayoutEngine {
     this.consumeControlMinWidthPlaceholders(elementList)
     // 计算列表偏移宽度
     const listStyleMap = listParticle.computeListStyle(ctx, elementList)
+    const resumeStartIndex = payload.resume?.startIndex ?? 0
+    // 段首tab悬挂宽度：段首连续tab元素宽度决定续行悬挂偏移（换行后续行对齐tab列）
+    const tabWidth = defaultTabWidth * scale
+    // 种子为段内续行时，从段头正向累计段首连续tab宽度（首个内容元素截止）
+    const seedElement = elementList[resumeStartIndex]
+    let paragraphLeadingTabWidth = 0
+    let isLeadingTabRunOpen = true
+    // 全量计算时首行即段落首行；续算时行首换行符为段落首行
+    const isSeedParagraphFirst = payload.resume
+      ? seedElement?.value === ZERO && !seedElement?.listWrap
+      : true
+    if (!isSeedParagraphFirst) {
+      // 种子为段内续行：回扫段头后正向累计段首连续tab宽度（首个内容元素截止）
+      let paragraphStartIndex = 0
+      for (let i = resumeStartIndex - 1; i >= 0; i--) {
+        const el = elementList[i]
+        if (el.value === ZERO && !el.listWrap) {
+          paragraphStartIndex = i
+          break
+        }
+      }
+      const contentScanStart =
+        elementList[paragraphStartIndex]?.value === ZERO &&
+        !elementList[paragraphStartIndex].listWrap
+          ? paragraphStartIndex + 1
+          : paragraphStartIndex
+      for (let i = contentScanStart; i < resumeStartIndex; i++) {
+        const el = elementList[i]
+        if (el.type === ElementType.TAB) {
+          paragraphLeadingTabWidth += tabWidth
+        } else if (el.value !== ZERO) {
+          break
+        }
+      }
+    }
+    // 种子行段落缩进兜底：换行诞生的新行在出生时写入offsetX，种子行无出生时机需在此计算
+    const seedFirstLineElement = getFirstLineIndentElement(
+      elementList,
+      resumeStartIndex
+    )
+    const seedIndentLeft = isSeedParagraphFirst
+      ? (seedFirstLineElement?.indentLeft ?? 0) +
+        (seedFirstLineElement?.indentFirstLine ?? 0)
+      : (seedElement?.indentLeft ?? 0)
+    const seedIndentOffsetX =
+      Math.max(seedIndentLeft, 0) * scale +
+      (isSeedParagraphFirst ? 0 : paragraphLeadingTabWidth)
     const rowList: IRow[] = []
     let layout = isPagingMode && !isFromTable ? draw.getColumnLayout() : null
     let isColumnEnabled = !!layout && layout.count > 1
-    const resumeStartIndex = payload.resume?.startIndex ?? 0
     // 断点续算：种子行从恢复点重新参与断行（行首换行符将独立成行，空种子行随后被丢弃）
     if (elementList.length) {
-      rowList.push({
+      const seedRow: IRow = {
         width: 0,
         height: 0,
         ascent: 0,
@@ -105,7 +162,12 @@ export class LayoutEngine {
           elementList[resumeStartIndex]?.rowFlex ||
           elementList[resumeStartIndex + 1]?.rowFlex,
         ...(isColumnEnabled ? { columnIndex: 0 } : {})
-      })
+      }
+      // 种子行无行出生时机，段落缩进直接写入（渲染与可用宽度均消费offsetX）
+      if (seedIndentOffsetX > 0) {
+        seedRow.offsetX = seedIndentOffsetX
+      }
+      rowList.push(seedRow)
     }
     // 起始位置及页码计算
     let x = startX
@@ -188,6 +250,14 @@ export class LayoutEngine {
       const element = elementList[i]
       // 断点续算：复杂结构元素不参与增量，由调用方退化为全量计算
       if (payload.resume?.shouldAbort?.(element, i)) break
+      // 段首tab悬挂累计：换行符开启新段落累计窗口，首个内容元素后关闭
+      if (isLeadingTabRunOpen) {
+        if (element.type === ElementType.TAB) {
+          paragraphLeadingTabWidth += tabWidth
+        } else if (element.value !== ZERO) {
+          isLeadingTabRunOpen = false
+        }
+      }
       // 元素参与计算前的控件最小宽度累计（行快照需要描述行首元素消费前的状态）
       const preControlRealWidth = controlRealWidth
       const rowMargin = draw.getElementRowMargin(element)
@@ -197,7 +267,7 @@ export class LayoutEngine {
         boundingBoxAscent: 0,
         boundingBoxDescent: 0
       }
-      // 实际可用宽度
+      // 实际可用宽度（列表/控件/段落缩进偏移在行出生或种子行创建时写入offsetX）
       const offsetX =
         curRow.offsetX ||
         (element.listId &&
@@ -210,7 +280,9 @@ export class LayoutEngine {
         0
       const rowMaxWidth =
         isColumnEnabled && layout ? layout.width : currentInnerWidth
-      const availableWidth = rowMaxWidth - offsetX
+      // 右缩进仅收窄可用宽度，不影响行起始位置
+      const availableWidth =
+        rowMaxWidth - offsetX - (element.indentRight || 0) * scale
       // 增加起始位置坐标偏移量
       const isStartElement = curRow.elementList.length === 1
       x += isStartElement ? offsetX : 0
@@ -643,6 +715,7 @@ export class LayoutEngine {
           row.paperDirection = element.paperDirection
         }
         // 控件缩进
+        let isControlIndentation = false
         if (
           rowElement.controlComponent !== ControlComponent.PREFIX &&
           rowElement.control?.indentation === ControlIndentation.VALUE_START
@@ -661,13 +734,15 @@ export class LayoutEngine {
             const valueStartPosition = preRowPositionList[preStartIndex]
             if (valueStartPosition) {
               row.offsetX = valueStartPosition.coordinate.leftTop[0]
+              isControlIndentation = true
             }
           }
         }
-        // 列表缩进
+        // 列表缩进（与段落缩进叠加）
         if (element.listId) {
           row.isList = true
           row.offsetX =
+            (row.offsetX || 0) +
             (listStyleMap.get(element.listId!) || 0) +
             (element.listLevel
               ? draw.getListParticle().LIST_INDENT_WIDTH *
@@ -675,6 +750,29 @@ export class LayoutEngine {
                 scale
               : 0)
           row.listIndex = listIndexMap.get(element.listId!) ?? 0
+        }
+        // 段落缩进：首行 = 左缩进 + 首行缩进；续行 = 左缩进 + 段首tab悬挂宽度
+        const isNewParagraph = element.value === ZERO && !element.listWrap
+        if (isNewParagraph) {
+          paragraphLeadingTabWidth = 0
+          isLeadingTabRunOpen = true
+        }
+        // 控件缩进为绝对坐标，不与段落缩进叠加
+        if (!isControlIndentation) {
+          const firstLineElement = getFirstLineIndentElement(elementList, i)
+          const indentLeft = isNewParagraph
+            ? firstLineElement?.indentLeft
+            : element.indentLeft
+          const firstLineIndent = isNewParagraph
+            ? firstLineElement?.indentFirstLine
+            : 0
+          const hangingTabWidth = isNewParagraph ? 0 : paragraphLeadingTabWidth
+          const indentOffsetX =
+            Math.max((indentLeft || 0) + (firstLineIndent || 0), 0) * scale +
+            hangingTabWidth
+          if (indentOffsetX > 0) {
+            row.offsetX = (row.offsetX || 0) + indentOffsetX
+          }
         }
         // Y轴偏移量
         row.offsetY =
@@ -706,6 +804,7 @@ export class LayoutEngine {
                 : 0)
             curRow.listIndex = listIndexMap.get(element.listId) ?? 0
           }
+          // 段落缩进已在种子行创建时写入offsetX，此处不重复叠加
           curRow.offsetY =
             !isFromTable &&
             element.area?.top &&

@@ -48,6 +48,12 @@ interface IElement {
   rowMargin?: number;
   spacingBefore?: number;
   spacingAfter?: number;
+  // 左缩进
+  indentLeft?: number;
+  // 右缩进
+  indentRight?: number;
+  // 首行缩进（负数为悬挂缩进）
+  indentFirstLine?: number;
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;

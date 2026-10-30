@@ -43,6 +43,10 @@ export interface IElementStyle {
   rowMargin?: number
   spacingBefore?: number
   spacingAfter?: number
+  indentLeft?: number
+  indentRight?: number
+  // 首行相对左缩进的额外偏移，负数为悬挂缩进
+  indentFirstLine?: number
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number

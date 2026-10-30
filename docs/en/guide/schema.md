@@ -48,6 +48,12 @@ interface IElement {
   rowMargin?: number;
   spacingBefore?: number;
   spacingAfter?: number;
+  // left indent
+  indentLeft?: number;
+  // right indent
+  indentRight?: number;
+  // first-line indent (negative for hanging indent)
+  indentFirstLine?: number;
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;

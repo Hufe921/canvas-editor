@@ -410,6 +410,36 @@ Usage:
 instance.command.executeSpacingAfter(spacingAfter: number)
 ```
 
+## executeIndentLeft
+
+Feature: Paragraph left indent
+
+Usage:
+
+```javascript
+instance.command.executeIndentLeft(indentLeft: number)
+```
+
+## executeIndentRight
+
+Feature: Paragraph right indent
+
+Usage:
+
+```javascript
+instance.command.executeIndentRight(indentRight: number)
+```
+
+## executeIndentFirstLine
+
+Feature: Paragraph first-line indent (negative for hanging indent)
+
+Usage:
+
+```javascript
+instance.command.executeIndentFirstLine(indentFirstLine: number)
+```
+
 ## executeInsertTable
 
 Feature: Insert table

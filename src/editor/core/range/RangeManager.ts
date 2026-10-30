@@ -531,6 +531,9 @@ export class RangeManager {
     const rowMargin = curElement.rowMargin ?? this.options.defaultRowMargin
     const spacingBefore = curElement.spacingBefore ?? 0
     const spacingAfter = curElement.spacingAfter ?? 0
+    const indentLeft = curElement.indentLeft ?? 0
+    const indentRight = curElement.indentRight ?? 0
+    const indentFirstLine = curElement.indentFirstLine ?? 0
     const dashArray = curElement.dashArray || []
     const level = curElement.level || null
     const listType = curElement.listType || null
@@ -561,6 +564,9 @@ export class RangeManager {
       rowMargin,
       spacingBefore,
       spacingAfter,
+      indentLeft,
+      indentRight,
+      indentFirstLine,
       dashArray,
       level,
       listType,
@@ -605,6 +611,9 @@ export class RangeManager {
       rowMargin,
       spacingBefore: 0,
       spacingAfter: 0,
+      indentLeft: 0,
+      indentRight: 0,
+      indentFirstLine: 0,
       dashArray: [],
       level: null,
       listType: null,

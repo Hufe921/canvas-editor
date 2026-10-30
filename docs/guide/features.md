@@ -88,7 +88,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>对齐</b><span>左、中、右、两端、分散</span></div>
   <div class="it"><b>行间距</b><span>段落行间距(rowMargin)</span></div>
   <div class="it"><b>段落间距</b><span>段前距(spacingBefore)、段后距(spacingAfter)</span></div>
-  <div class="it"><b>缩进</b><span>首行缩进、Tab 缩进</span></div>
+  <div class="it"><b>缩进</b><span>左缩进、右缩进、首行/悬挂缩进、段首 Tab 逐级缩进（首行→整段）、Tab 悬挂对齐</span></div>
   <div class="it"><b>换行规则</b><span>break-all / break-word</span></div>
   <div class="it"><b>标题</b><span>H1 – H6、per-level 字号</span></div>
   <div class="it"><b>标题规则</b><span>deletable、disabled、conceptId 关联</span></div>

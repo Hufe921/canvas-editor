@@ -88,7 +88,7 @@ Character-level and inline text capabilities.
   <div class="it"><b>Alignment</b><span>Left, center, right, justified, distributed</span></div>
   <div class="it"><b>Line spacing</b><span>Paragraph line spacing (rowMargin)</span></div>
   <div class="it"><b>Paragraph spacing</b><span>Spacing before (spacingBefore), spacing after (spacingAfter)</span></div>
-  <div class="it"><b>Indent</b><span>First-line indent, Tab indent</span></div>
+  <div class="it"><b>Indent</b><span>Left indent, right indent, first-line/hanging indent, Tab-at-paragraph-start indent (first line, then whole paragraph), tab hanging alignment</span></div>
   <div class="it"><b>Word break</b><span>break-all / break-word</span></div>
   <div class="it"><b>Heading</b><span>H1 – H6, per-level size</span></div>
   <div class="it"><b>Heading rules</b><span>deletable, disabled, conceptId linking</span></div>

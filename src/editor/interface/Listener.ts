@@ -27,6 +27,9 @@ export interface IRangeStyle {
   rowMargin: number
   spacingBefore: number
   spacingAfter: number
+  indentLeft: number
+  indentRight: number
+  indentFirstLine: number
   dashArray: number[]
   level: TitleLevel | null
   listType: ListType | null

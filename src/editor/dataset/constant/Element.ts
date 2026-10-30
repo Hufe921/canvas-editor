@@ -19,7 +19,10 @@ export const EDITOR_ROW_ATTR: Array<keyof IElement> = [
   'rowFlex',
   'rowMargin',
   'spacingBefore',
-  'spacingAfter'
+  'spacingAfter',
+  'indentLeft',
+  'indentRight',
+  'indentFirstLine'
 ]
 
 export const EDITOR_TRACE_ATTR: Array<keyof IElement> = ['trace']
@@ -31,6 +34,9 @@ export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
   'rowMargin',
   'spacingBefore',
   'spacingAfter',
+  'indentLeft',
+  'indentRight',
+  'indentFirstLine',
   'level',
   'title'
 ]
@@ -55,6 +61,9 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'rowMargin',
   'spacingBefore',
   'spacingAfter',
+  'indentLeft',
+  'indentRight',
+  'indentFirstLine',
   'textDecoration'
 ]
 
@@ -72,6 +81,9 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'rowMargin',
   'spacingBefore',
   'spacingAfter',
+  'indentLeft',
+  'indentRight',
+  'indentFirstLine',
   'dashArray',
   'trList',
   'tableToolDisabled',

@@ -394,6 +394,44 @@ window.onload = function () {
   spacingAfterInputDom.onchange = () =>
     changeSpacingAfter(Number(spacingAfterInputDom.value))
 
+  // 段落缩进（与段落间距同弹窗维护）
+  const indentInputMap: Record<string, HTMLInputElement> = {}
+  const indentConfig = [
+    {
+      key: 'indentleft',
+      execute: (value: number) => instance.command.executeIndentLeft(value),
+      clampMin: 0
+    },
+    {
+      key: 'indentright',
+      execute: (value: number) => instance.command.executeIndentRight(value),
+      clampMin: 0
+    },
+    {
+      key: 'indentfirstline',
+      execute: (value: number) => instance.command.executeIndentFirstLine(value)
+    }
+  ]
+  indentConfig.forEach(({ key, execute, clampMin }) => {
+    const input = spacingOptionDom.querySelector<HTMLInputElement>(
+      `[data-${key}-input]`
+    )!
+    indentInputMap[key] = input
+    const change = (value: number) => {
+      let indent = Math.round(value) || 0
+      if (clampMin !== undefined) indent = Math.max(clampMin, indent)
+      input.value = `${indent}`
+      execute(indent)
+    }
+    spacingOptionDom.querySelector<HTMLButtonElement>(
+      `[data-${key}-decrease]`
+    )!.onclick = () => change(Number(input.value) - 16)
+    spacingOptionDom.querySelector<HTMLButtonElement>(
+      `[data-${key}-increase]`
+    )!.onclick = () => change(Number(input.value) + 16)
+    input.onchange = () => change(Number(input.value))
+  })
+
   const listDom = document.querySelector<HTMLDivElement>('.menu-item__list')!
   listDom.title = `列表(${isApple ? '⌘' : 'Ctrl'}+Shift+U)`
   const listOptionDom = listDom.querySelector<HTMLDivElement>('.options')!
@@ -2065,6 +2103,17 @@ window.onload = function () {
     if (document.activeElement !== spacingAfterInputDom) {
       spacingAfterInputDom.value = `${payload.spacingAfter ?? 0}`
     }
+
+    // 段落缩进
+    const reflectIndent = (key: string, value: number) => {
+      const input = indentInputMap[key]
+      if (input && document.activeElement !== input) {
+        input.value = `${value}`
+      }
+    }
+    reflectIndent('indentleft', payload.indentLeft ?? 0)
+    reflectIndent('indentright', payload.indentRight ?? 0)
+    reflectIndent('indentfirstline', payload.indentFirstLine ?? 0)
 
     // 功能
     payload.undo

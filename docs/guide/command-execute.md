@@ -410,6 +410,36 @@ instance.command.executeSpacingBefore(spacingBefore: number)
 instance.command.executeSpacingAfter(spacingAfter: number)
 ```
 
+## executeIndentLeft
+
+功能：段落左缩进
+
+用法：
+
+```javascript
+instance.command.executeIndentLeft(indentLeft: number)
+```
+
+## executeIndentRight
+
+功能：段落右缩进
+
+用法：
+
+```javascript
+instance.command.executeIndentRight(indentRight: number)
+```
+
+## executeIndentFirstLine
+
+功能：段落首行缩进（负数为悬挂缩进）
+
+用法：
+
+```javascript
+instance.command.executeIndentFirstLine(indentFirstLine: number)
+```
+
 ## executeInsertTable
 
 功能：插入表格
