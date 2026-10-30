@@ -10,6 +10,8 @@ export class Command {
   public executeBackspace: CommandAdapt['backspace']
   public executeSetRange: CommandAdapt['setRange']
   public executeReplaceRange: CommandAdapt['replaceRange']
+  public executeRestoreRange: CommandAdapt['restoreRange']
+  public getLocatedElementRects: CommandAdapt['getLocatedElementRects']
   public executeSetPositionContext: CommandAdapt['setPositionContext']
   public executeForceUpdate: CommandAdapt['forceUpdate']
   public executeBlur: CommandAdapt['blur']
@@ -204,6 +206,10 @@ export class Command {
       'executeReplaceRange',
       adapt.replaceRange.bind(adapt)
     )
+    this.executeRestoreRange = this.wrap(
+      'executeRestoreRange', adapt.restoreRange.bind(adapt)
+    )
+    this.getLocatedElementRects = adapt.getLocatedElementRects.bind(adapt)
     this.executeSetPositionContext = this.wrap(
       'executeSetPositionContext',
       adapt.setPositionContext.bind(adapt)

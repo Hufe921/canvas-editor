@@ -1217,3 +1217,61 @@ instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOpti
 ```js
 instance.command.executeClearGraffiti()
 ```
+
+## executeRestoreRange
+
+Restore a range in the main story (including nested cells), or a root
+header/footer range, without changing document content or adding a selection
+history entry.
+The first successful restoration also retains the initial undo baseline when
+selection occurs before the first caret focus.
+
+```typescript
+instance.command.executeRestoreRange({
+  zone: EditorZone.MAIN,
+  tablePath: [
+    { tableId: 'outer', rowId: 'outer-row', cellId: 'outer-cell' },
+    { tableId: 'inner', rowId: 'inner-row', cellId: 'inner-cell' }
+  ],
+  startIndex: 0,
+  endIndex: 1,
+  sourceText: '\u200bExact container text'
+})
+```
+
+`tablePath` contains every owning table/row/cell, outermost first, to a maximum
+of eight levels in the main story. Header/footer table paths are rejected because
+the engine shares cell geometry across cached page directions. Use an empty path
+for a root story. Identities must be unique
+within each owning container. `sourceText` is the **entire current runtime
+container's element values joined together**, including zero-width paragraph
+markers. It is bounded to 4,194,304 UTF-16 code units.
+
+For headers/footers, optional `pageNo` selects an existing enabled page; its
+omission uses the current page. Main-story ranges reject `pageNo` and derive
+the active page from their end position. A successful restoration updates the
+active page as well as the owning context.
+
+Indices follow the existing `executeSetRange` element-index convention; they
+are transient runtime positions, not persisted document offsets. Equal indices
+restore a caret. Boundaries must be complete Unicode graphemes, including those
+split across formatting elements. Resolve persisted selections against current
+application bindings before calling this command. This API requires
+`Intl.Segmenter`; it throws a descriptive validation error if unavailable.
+Existing commands and their Unicode fallback remain unchanged.
+
+Invalid zones/paths/indices, disabled or noneditable header/footer zones,
+ambiguous ownership, stale source text, missing/inconsistent geometry and split
+graphemes throw before changing content, selection, zone, focus or history. The command never falls back to a
+neighboring cell containing the same quote. Restoration emits the range event
+even when a different container has the same range indices, including controls.
+Restoring an unchanged location preserves pending caret formatting and does not
+emit another range event. Existing default control event behavior is preserved
+for other range commands.
+
+Selections containing floating/surrounding objects are rejected: their flow
+positions alias neighboring text boxes and require the engine's separate object
+selection/geometry APIs. Paragraph markers can have zero-width layout boxes.
+This command validates selection location; it does not authorize editing or
+replace application protection/formatting checks. Normal interceptor and event
+listener behavior still applies; callback exceptions are not transactions.
