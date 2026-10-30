@@ -116,6 +116,9 @@ export class Position {
   public getTablePositionList(
     sourceElementList: IElement[]
   ): IElementPosition[] {
+    // Another visible page may have laid out the shared story in a different
+    // direction. Restore its active-page geometry before reading a nested td.
+    if (!this.draw.getZone().isMainActive()) this.getOriginalPositionList()
     return (
       this.getTableTdByContext(sourceElementList, this.positionContext)
         ?.positionList || []
