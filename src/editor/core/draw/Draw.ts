@@ -1,4 +1,5 @@
 import { version } from '../../../../package.json'
+import { bindExternalElements } from '../../utils/externalBindings'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
@@ -1670,6 +1671,16 @@ export class Draw {
         isForceCompensation: true
       })
     })
+    if (options?.externalBindings) {
+      bindExternalElements(
+        {
+          [EditorZone.HEADER]: header || [],
+          [EditorZone.MAIN]: main || [],
+          [EditorZone.FOOTER]: footer || []
+        },
+        options.externalBindings
+      )
+    }
     this.setEditorData({
       header,
       main,

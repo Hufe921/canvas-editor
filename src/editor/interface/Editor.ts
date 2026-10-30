@@ -169,6 +169,8 @@ export type IUpdateOption = Omit<
 >
 
 export interface ISetValueOption {
+  /** Validated against formatted replacement data before content/history changes. */
+  externalBindings?: import('./ExternalBinding').IExternalElementBinding[]
   isSetCursor?: boolean
 }
 
