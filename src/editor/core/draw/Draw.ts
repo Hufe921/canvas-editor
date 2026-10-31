@@ -2773,9 +2773,7 @@ export class Draw {
         this.zone.drawZoneIndicator()
       }
       // 标尺重新渲染
-      if (isCompute) {
-        this.ruler.render()
-      }
+      this.ruler.render()
       // 页数改变
       if (oldPageSize !== this.pageRowList.length) {
         if (this.listener.pageSizeChange) {

@@ -55,8 +55,12 @@ export function tab(evt: KeyboardEvent, host: CanvasEvent) {
     const { defaultTabWidth } = draw.getOptions()
     const paragraphElementList = rangeManager.getRangeParagraphElementList()
     if (paragraphElementList) {
-      const curIndentLeft = paragraphElementList[0]?.indentLeft || 0
-      const curFirstLine = paragraphElementList[0]?.indentFirstLine || 0
+      // 缩进属性读段内第一个内容元素（换行符可能携带上一段落属性）
+      const anchorElement =
+        paragraphElementList.find(el => el.value !== ZERO) ??
+        paragraphElementList[0]
+      const curIndentLeft = anchorElement?.indentLeft || 0
+      const curFirstLine = anchorElement?.indentFirstLine || 0
       // 制表位网格步进（回退下限为0；前进上限不超过版心内格数）
       const maxIndentStep = Math.max(
         Math.floor(draw.getInnerWidth() / defaultTabWidth) - 2,

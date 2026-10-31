@@ -26,7 +26,10 @@ import { ImageDisplay } from '../../dataset/enum/Common'
 import { DeepRequired } from '../../interface/Common'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
-import { getIsBlockElement } from '../../utils/element'
+import {
+  getFirstLineIndentElement,
+  getIsBlockElement
+} from '../../utils/element'
 
 // 单页新增位置信息的缓存切片
 interface IPagePositionCache {
@@ -414,7 +417,14 @@ export class Position {
       // 行存在环绕的可能性均不设置行布局
       if (!curRow.isSurround) {
         // 计算行偏移量（行居中、居右）
-        const curRowWidth = curRow.width + (curRow.offsetX || 0)
+        // 右缩进与换行扣减取同一值（行首元素的段落右缩进），对齐时计入行占位宽度
+        const indentRightElement = getFirstLineIndentElement(
+          curRow.elementList,
+          0
+        )
+        const offsetRight =
+          (indentRightElement?.indentRight || 0) * this.options.scale
+        const curRowWidth = curRow.width + (curRow.offsetX || 0) + offsetRight
         if (curRow.rowFlex === RowFlex.CENTER) {
           x += (effectiveInnerWidth - curRowWidth) / 2
         } else if (curRow.rowFlex === RowFlex.RIGHT) {

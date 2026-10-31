@@ -2,7 +2,13 @@ import { describe, expect, it, vi } from 'vitest'
 import { createTestEditor, TestEditorContext } from '../../factories/editor'
 import { Draw } from '@/editor/core/draw/Draw'
 import { ZERO } from '@/editor/dataset/constant/Common'
+import { RowFlex } from '@/editor/dataset/enum/Row'
 import { ElementType } from '@/editor/dataset/enum/Element'
+import { EventBus } from '@/editor/core/event/eventbus/EventBus'
+import { Listener } from '@/editor/core/listener/Listener'
+import { Override } from '@/editor/core/override/Override'
+import { mergeOption } from '@/editor/utils/option'
+import { formatElementList } from '@/editor/utils/element'
 import type { IElement } from '@/editor/interface/Element'
 import type { IRow } from '@/editor/interface/Row'
 
@@ -223,5 +229,75 @@ describe('段落缩进排版', () => {
     const main = getValue()
     expect(main.some(el => el.type === 'tab')).toBe(true)
     expect(main.length).toBeGreaterThanOrEqual(before)
+  })
+})
+
+/**
+ * 右缩进 × 对齐：右缩进计入居中/右对齐的行占位宽度，
+ * 右缘停在右边距-右缩进处（与 Word 一致）
+ */
+describe('右缩进对齐', () => {
+  const PAGE_OPTION = {
+    width: 794,
+    height: 1123,
+    margins: [100, 120, 100, 120] as [number, number, number, number],
+    header: { disabled: true },
+    footer: { disabled: true }
+  }
+
+  function renderMain(main: IElement[]): Draw {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const options = mergeOption({ ...PAGE_OPTION })
+    formatElementList(main, {
+      editorOptions: options,
+      isForceCompensation: true
+    })
+    const draw = new Draw(
+      container,
+      options,
+      { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
+      new Listener(),
+      new EventBus(),
+      new Override()
+    )
+    draw.render()
+    return draw
+  }
+
+  function getContentEdges(draw: Draw) {
+    const positionList = draw.getPosition().getPositionList()
+    const contents = positionList.filter(p => p.value && p.value !== ZERO)
+    return {
+      left: contents[0].coordinate.leftTop[0],
+      right: contents[contents.length - 1].coordinate.rightTop[0]
+    }
+  }
+
+  it('右对齐 + 右缩进：文字右缘停在右边距缩进位置', () => {
+    const draw = renderMain([
+      { value: 'aaa', rowFlex: RowFlex.RIGHT, indentRight: 64 }
+    ])
+    const { right } = getContentEdges(draw)
+    // 右边距 794-120=674，右缩进 64 → 右缘 610
+    expect(right).toBeCloseTo(610)
+  })
+
+  it('居中 + 右缩进：在左边距与右缩进之间的盒子内居中', () => {
+    const draw = renderMain([
+      { value: 'aaa', rowFlex: RowFlex.CENTER, indentRight: 64 }
+    ])
+    const { left, right } = getContentEdges(draw)
+    // 盒子 [120, 610]，内容中线 365（字符度量存在亚像素取整，容差1px）
+    expect(Math.abs((left + right) / 2 - 365)).toBeLessThan(1)
+  })
+
+  it('左对齐 + 右缩进：不影响左缘，仅收窄换行宽度', () => {
+    const base = renderMain([{ value: 'aaa' }])
+    const indented = renderMain([{ value: 'aaa', indentRight: 64 }])
+    expect(getContentEdges(indented).left).toBeCloseTo(
+      getContentEdges(base).left,
+      0
+    )
   })
 })

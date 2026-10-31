@@ -12,21 +12,11 @@ import { IElement, IElementMetrics } from '../../interface/Element'
 import { IRow, IRowComputeState, IRowElement } from '../../interface/Row'
 import {
   deleteSurroundElementList,
+  getFirstLineIndentElement,
   getIsBlockElement
 } from '../../utils/element'
 import { shrinkColgroupToWidth } from '../../utils/table'
 import type { Draw } from '../draw/Draw'
-
-// 段首换行符可能携带上一段落属性（尾随\n风格数据/格式克隆），
-// 段落首行缩进属性优先读段内第一个内容元素，空段落退回换行符自身
-function getFirstLineIndentElement(
-  elementList: IElement[],
-  zeroIndex: number
-): IElement | undefined {
-  const next = elementList[zeroIndex + 1]
-  if (next && next.value !== ZERO && !next.listWrap) return next
-  return elementList[zeroIndex]
-}
 
 export interface IComputePageListPayload {
   rowList: IRow[]
@@ -759,10 +749,10 @@ export class LayoutEngine {
         }
         // 控件缩进为绝对坐标，不与段落缩进叠加
         if (!isControlIndentation) {
-          const firstLineElement = getFirstLineIndentElement(elementList, i)
-          const indentLeft = isNewParagraph
-            ? firstLineElement?.indentLeft
-            : element.indentLeft
+          const firstLineElement = isNewParagraph
+            ? getFirstLineIndentElement(elementList, i)
+            : element
+          const indentLeft = firstLineElement?.indentLeft
           const firstLineIndent = isNewParagraph
             ? firstLineElement?.indentFirstLine
             : 0

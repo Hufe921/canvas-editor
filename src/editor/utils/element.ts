@@ -2204,3 +2204,14 @@ export function visitElementTree(
     }
   }
 }
+
+// 段首换行符可能携带上一段落属性（尾随\n风格数据/格式克隆），
+// 段落首行缩进属性优先读段内第一个内容元素，空段落退回换行符自身
+export function getFirstLineIndentElement(
+  elementList: IElement[],
+  zeroIndex: number
+): IElement | undefined {
+  const next = elementList[zeroIndex + 1]
+  if (next && next.value !== ZERO && !next.listWrap) return next
+  return elementList[zeroIndex]
+}
