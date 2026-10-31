@@ -1,3 +1,4 @@
+import type { ILineHeight } from './interface/LineHeight'
 import './assets/css/index.css'
 import { version } from '../../package.json'
 import { IEditorData, IEditorOption, IEditorResult } from './interface/Editor'
@@ -81,6 +82,11 @@ import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
 import { IGraffitiData } from './interface/Graffiti'
 
 export default class Editor {
+  /** Feature negotiation for clients supplying opt-in layout properties. */
+  public static readonly layoutCapabilities = [
+    'paragraph-line-height-v1',
+    'leading-paragraph-v1'
+  ] as const
   public command: Command
   public version: string
   public listener: Listener
@@ -235,6 +241,7 @@ export {
 
 // 对外类型
 export type {
+  ILineHeight,
   IElement,
   IEditorData,
   IEditorOption,

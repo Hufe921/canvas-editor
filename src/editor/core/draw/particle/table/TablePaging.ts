@@ -51,8 +51,12 @@ export class TablePaging {
         ? rowList[i - 1].paperDirection || this.options.paperDirection
         : null
       // 推进到下一个槽位：分栏时优先换栏，否则换页
-      const advanceSlot = () => {
-        if (isColumnEnabled && currentColumn < columnCount - 1) {
+      const advanceSlot = (forcePageBreak = false) => {
+        if (
+          !forcePageBreak &&
+          isColumnEnabled &&
+          currentColumn < columnCount - 1
+        ) {
           currentColumn++
         } else {
           pageNo++
@@ -64,6 +68,7 @@ export class TablePaging {
       const passThrough = () => {
         if (
           isColumnEnabled &&
+          !isPrePageBreak &&
           row.columnIndex !== undefined &&
           row.columnIndex > currentColumn &&
           !hasSplitTable
@@ -79,7 +84,7 @@ export class TablePaging {
             curDirection = preBreakDirection
             curPageLimit = this.draw.getHeight(curDirection)
           }
-          advanceSlot()
+          advanceSlot(isPrePageBreak)
         }
         // 拆分后行的栏索引按实际填充重新推导
         if (isColumnEnabled) row.columnIndex = currentColumn

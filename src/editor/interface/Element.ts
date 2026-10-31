@@ -18,6 +18,7 @@ import { ITitle } from './Title'
 import { IColgroup } from './table/Colgroup'
 import { ITd } from './table/Td'
 import { ITr } from './table/Tr'
+import type { ILineHeight } from './LineHeight'
 
 export interface IElementBasic {
   id?: string
@@ -47,6 +48,7 @@ export interface IElementStyle {
   indentRight?: number
   // 首行相对左缩进的额外偏移，负数为悬挂缩进
   indentFirstLine?: number
+  lineHeight?: ILineHeight
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number
