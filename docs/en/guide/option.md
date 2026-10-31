@@ -24,6 +24,7 @@ interface IEditorOption {
   maxSize?: number // Max font size。default: 72
   defaultBasicRowMarginHeight?: number // Default line height。default: 8
   defaultRowMargin?: number // Default line spacing. default: 1
+  preserveLeadingParagraph?: boolean // Adopt a leading newline as the first paragraph marker. default: false
   defaultTabWidth?: number // Default tab width. default: 32
   width?: number // Paper width. default: 794
   height?: number // Paper height. default: 1123
@@ -502,3 +503,94 @@ interface ISpellcheckOption {
   color?: string // Misspelled word wavy line color. default: #FF0000
 }
 ```
+
+## Explicit paragraph line heights
+
+Text elements can opt into font line-box metrics with `lineHeight`:
+
+```typescript
+{
+  value: 'Paragraph text',
+  lineHeight: { rule: 'atLeast', value: 24 }
+}
+```
+
+`multiple` multiplies the natural line box (including fractional values below
+one); `exact` uses an absolute height in document pixels; `atLeast` uses the
+larger of the natural box and an absolute height. Absolute sizes scale with
+the document. Supply the paragraph setting consistently on its text elements
+and marker. Exact spacing can intentionally overlap glyphs. Elements without
+`lineHeight` retain the existing `rowMargin` behavior. Font line-box metrics
+require browser `TextMetrics.fontBoundingBoxAscent` and
+`fontBoundingBoxDescent`; unavailable metrics raise an error.
+
+The optional `preserveLeadingParagraph` setting adopts an existing leading
+newline marker in each story/cell instead of inserting another blank
+paragraph. Empty containers still receive a placeholder. Serialization retains
+the adopted marker (including an otherwise empty paragraph), so reopening
+with the returned options preserves its spacing and optional picked identity.
+The default remains `false`. This option is intended for applications that
+supply explicit paragraph markers.
+
+Clients can inspect `Editor.layoutCapabilities` for
+`paragraph-line-height-v1` and `leading-paragraph-v1` before supplying these
+properties. These features do not add section-specific columns or stories.
+
+## Table cell padding and row keeps
+
+Each table cell can supply `padding: [top, right, bottom, left]` in document
+pixels. An omitted tuple uses `table.tdPadding`; an explicit zero tuple removes
+that cell's padding. Values must be finite and nonnegative, and the horizontal
+padding must leave positive content width. Geometry, vertical alignment,
+selection, repeated headers, split windows and serialization use this same
+padding. Nested tables resolve the padding of each owning cell separately.
+Sparse tuples are rejected. Padding-derived row minima are recalculated on
+layout without replacing authored `minHeight` values. Column boundary drags
+respect the padding of affected cells, including cells spanning columns.
+
+Table rows can set `keepTogether: true` to move a row to the next page or
+column when it fits there intact. The default is `false`. A row taller than
+an empty page/column still splits to ensure all its content can be displayed.
+Repeated-header height participates in this decision. This property does not
+keep an entire table or groups of adjacent rows together.
+A single indivisible line or object taller than the available slot retains
+the existing overflow fallback; the editor does not resize it to fit.
+
+Clients can negotiate `table-cell-padding-v1` and `table-row-keep-v1` through
+`Editor.layoutCapabilities` before supplying these properties.
+
+## Main-story paragraph flow
+
+`paragraph-flow-v1` adds optional paragraph booleans `keepTogether`,
+`keepWithNext`, `widowControl` and `pageBreakBefore`. Omitted properties preserve
+the existing editor behavior; callers importing Word should resolve inherited
+and default paragraph properties explicitly. False values override prior styles.
+Properties belong to paragraph markers and are retained in saved values.
+
+Feasible kept paragraphs and keep chains move intact to an available page or
+column. Oversized kept groups start a fresh slot and then flow to make progress.
+Widow control avoids isolated first/final lines when a feasible grouping fits.
+`pageBreakBefore` advances to a page, including in columns, without duplicating
+an existing page break or adding an empty page at the document start.
+
+This capability is for paged main-story text. Table-cell/header/footer flow,
+floating objects, and keeping text with a following non-text object are rejected.
+Incremental row reuse falls back to full layout while flow properties are active.
+
+Wrapped text-like runs, including hyperlinks, retain their paragraph ownership
+for keeps and widow control. Fully hidden paragraphs do not contribute keep
+targets or groups; visible keeps still reject a following visible non-text
+object even if hidden paragraphs intervene. Visibility follows the active editor
+mode, including deleted trace content and design mode.
+
+Only a genuine keep reservation or paragraph page break forces a pagination
+boundary. Ordinary overflow retains minimum-height area-padding carry behavior;
+existing column hints remain in use until flow actually changes row placement.
+If a later kept group or first table fragment cannot fit alongside carried area
+padding, layout rejects that combination rather than splitting the group,
+overflowing the table or dropping the padding.
+
+An indivisible text row taller than the available page retains the existing
+overflow fallback, which can leave an empty page and overflow the next page.
+The oversized-paragraph guarantee concerns paragraphs whose individual rows fit
+an empty page; this capability does not certify arbitrary overheight rows.

@@ -1,3 +1,4 @@
+import { PARAGRAPH_FLOW_ATTR } from './ParagraphPaging'
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
@@ -599,9 +600,11 @@ export class Draw {
     this.columnManager.setConfig(config)
   }
 
-  public getOriginalInnerWidth(): number {
-    const width = this.getOriginalWidth()
-    const margins = this.getOriginalMargins()
+  public getOriginalInnerWidth(
+    direction = this.options.paperDirection
+  ): number {
+    const width = this.getOriginalWidth(direction)
+    const margins = this.getOriginalMargins(direction)
     return width - margins[1] - margins[3]
   }
 
@@ -610,17 +613,18 @@ export class Draw {
     if (positionContext.isTable) {
       const elementList = this.getOriginalElementList()
       const td = this.position.getTableTdByContext(elementList, positionContext)
-      const {
-        table: { tdPadding }
-      } = this.options
-      return td!.width! - tdPadding[1] - tdPadding[3]
+      if (!td || td.width === undefined)
+        throw new Error('Missing table cell geometry.')
+      const padding = this.getOriginalTdPadding(td)
+      return td.width - padding[1] - padding[3]
     }
     // 分栏布局下按栏宽计算可用宽度（栏宽为缩放值，还原为未缩放单位）
-    const columnLayout = this.getColumnLayout()
+    const direction = this.getPageDirection(this.getPageNo())
+    const columnLayout = this.getColumnLayout(direction)
     if (columnLayout && columnLayout.count > 1) {
       return columnLayout.width / this.options.scale
     }
-    return this.getOriginalInnerWidth()
+    return this.getOriginalInnerWidth(direction)
   }
 
   public getMargins(direction = this.options.paperDirection): IMargin {
@@ -714,12 +718,32 @@ export class Draw {
     return this.options.highlightMarginHeight * this.options.scale
   }
 
-  public getTdPadding(): IPadding {
-    const {
-      table: { tdPadding },
-      scale
-    } = this.options
-    return <IPadding>tdPadding.map(m => m * scale)
+  public getOriginalTdPadding(td?: ITd): IPadding {
+    const padding = td?.padding ?? this.options.table.tdPadding
+    if (
+      !Array.isArray(padding) ||
+      padding.length !== 4 ||
+      [0, 1, 2, 3].some(
+        index => !Number.isFinite(padding[index]) || padding[index] < 0
+      ) ||
+      !Number.isFinite(padding.reduce((sum, value) => sum + value, 0))
+    ) {
+      throw new Error(
+        'Cell padding must contain four finite nonnegative lengths.'
+      )
+    }
+    return [padding[0], padding[1], padding[2], padding[3]]
+  }
+
+  public getTdPadding(td?: ITd): IPadding {
+    const padding = this.getOriginalTdPadding(td)
+    const { scale } = this.options
+    return [
+      padding[0] * scale,
+      padding[1] * scale,
+      padding[2] * scale,
+      padding[3] * scale
+    ]
   }
 
   public getContainer(): HTMLDivElement {
@@ -1640,13 +1664,16 @@ export class Draw {
     const { extraPickAttrs } = options
     const data: IEditorData = {
       header: zipElementList(originData.header, {
+        preserveLeadingParagraph: this.options.preserveLeadingParagraph,
         extraPickAttrs
       }),
       main: zipElementList(originData.main, {
+        preserveLeadingParagraph: this.options.preserveLeadingParagraph,
         extraPickAttrs,
         isClassifyArea: true
       }),
       footer: zipElementList(originData.footer, {
+        preserveLeadingParagraph: this.options.preserveLeadingParagraph,
         extraPickAttrs
       }),
       graffiti: originData.graffiti
@@ -2303,6 +2330,8 @@ export class Draw {
             ? this.tableParticle.getFragmentTdList(element, fragment)
             : element.trList!.flatMap(tr => tr.tdList)
           for (const td of fragmentTdList) {
+            const padding = this.getOriginalTdPadding(td)
+            const tdPaddingWidth = padding[1] + padding[3]
             let rowList = td.rowList!
             let startIndex = 0
             if (fragment) {
@@ -2656,10 +2685,13 @@ export class Draw {
       }
       // 行级增量行计算：消费本次编辑的脏区间，从受影响行续算至收敛；
       // 无脏区间或门控不满足时退回全量，行为与未开启时一致
-      const incrementalResult = this.incrementalRowComputer.tryCompute(
-        this.incrementalRowComputer.consumeDirtyRange(),
-        rowComputePayload
+      const dirtyRange = this.incrementalRowComputer.consumeDirtyRange()
+      const flowLayout = this.elementList.some(element =>
+        PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
       )
+      const incrementalResult = flowLayout
+        ? null
+        : this.incrementalRowComputer.tryCompute(dirtyRange, rowComputePayload)
       this.rawRowList =
         incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
       this.incrementalRowComputer.observeLayout()

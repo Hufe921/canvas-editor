@@ -1,3 +1,5 @@
+import { PARAGRAPH_FLOW_ATTR } from '../draw/ParagraphPaging'
+import { applyLineHeight } from '../../utils/lineHeight'
 import { ZERO } from '../../dataset/constant/Common'
 import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
 import {
@@ -86,9 +88,30 @@ export class LayoutEngine {
       defaultSize,
       scale,
       imgCaption,
-      table: { tdPadding, defaultColMinWidth, overflow },
+      table: { defaultColMinWidth, overflow },
       defaultTabWidth
     } = options
+    if (
+      surroundElementList.length &&
+      elementList.some(element =>
+        PARAGRAPH_FLOW_ATTR.some(key => element[key] === true)
+      )
+    ) {
+      throw new Error('Paragraph flow with floating objects is not supported.')
+    }
+    for (const element of elementList) {
+      for (const key of PARAGRAPH_FLOW_ATTR) {
+        if (element[key] !== undefined && typeof element[key] !== 'boolean')
+          throw new Error('Paragraph flow properties must be boolean.')
+        if (
+          element[key] === true &&
+          (!isPagingMode || isFromTable || elementList !== draw.getMainElementList())
+        )
+          throw new Error(
+            'Paragraph flow requires the paged main story outside table cells.'
+          )
+      }
+    }
     const defaultBasicRowMarginHeight = draw.getDefaultBasicRowMarginHeight()
     const ctx = document
       .createElement('canvas')
@@ -157,6 +180,9 @@ export class LayoutEngine {
         ascent: 0,
         elementList: [],
         startIndex: resumeStartIndex,
+        offsetY: !payload.resume
+          ? (elementList[0]?.spacingBefore ?? 0) * scale
+          : 0,
         rowIndex: payload.resume?.state.rowIndex ?? 0,
         rowFlex:
           elementList[resumeStartIndex]?.rowFlex ||
@@ -211,6 +237,42 @@ export class LayoutEngine {
       }
       layout = draw.getColumnLayout(currentDirection)
       isColumnEnabled = !!layout && layout.count > 1
+    }
+    const finalizedRows = new WeakSet<IRow>()
+    const isHidden = (el: IRowElement) =>
+      !draw.isDesignMode() &&
+      !!(
+        el.hide ||
+        el.control?.hide ||
+        (el.area?.hide && !draw.isAreaHideDisabled()) ||
+        draw.getTraceParticle().isTraceHidden(el)
+      )
+    const finalizeRow = (row: IRow, paragraphEnd: boolean) => {
+      if (finalizedRows.has(row)) return
+      applyLineHeight(row, scale, isHidden)
+      if (paragraphEnd) {
+        const after = row.elementList[row.elementList.length - 1]?.spacingAfter
+        if (after) {
+          row.spacingAfter = after * scale
+          row.height += row.spacingAfter
+        }
+      }
+      if (!draw.isDesignMode() && row.height > 0) {
+        const visibleElements = row.elementList.filter(el => el.value !== ZERO)
+        if (
+          visibleElements.length > 0 &&
+          visibleElements.every(
+            el =>
+              el.hide ||
+              el.control?.hide ||
+              (el.area?.hide && !draw.isAreaHideDisabled()) ||
+              draw.getTraceParticle().isTraceHidden(el)
+          )
+        ) {
+          row.height = 0
+        }
+      }
+      finalizedRows.add(row)
     }
     // 行快照：仅主文档且开启行级增量时记录（未开启时无额外开销）。
     // 闭包捕获的是调用时刻的跨行状态，两个记录点（首行/换行诞生新行）共用
@@ -342,18 +404,23 @@ export class LayoutEngine {
           }
         }
       } else if (element.type === ElementType.TABLE) {
-        const tdPaddingWidth = tdPadding[1] + tdPadding[3]
-        const tdPaddingHeight = tdPadding[0] + tdPadding[2]
         // 表格跨页在渲染层拆分行（数据层保持单一表格）
         const trList = element.trList!
+        // Keep authored minima separate from the current padding floor.
+        const trMinHeights: number[] = []
         // 重置tr高度：行高不可低于一个单元格最小高度
-        const tdMinHeight =
-          tdPaddingHeight + defaultSize + (rowMargin * 2) / scale
         for (let t = 0; t < trList.length; t++) {
           const tr = trList[t]
+          const tdMinHeight = tr.tdList.reduce((minimum, td) => {
+            const padding = draw.getOriginalTdPadding(td)
+            return Math.max(
+              minimum,
+              padding[0] + padding[2] + defaultSize + (rowMargin * 2) / scale
+            )
+          }, defaultSize)
           // 行高默认当前最小高度，后续根据内容自适应
           tr.height = Math.max(tdMinHeight, tr.minHeight || 0)
-          tr.minHeight = tr.height
+          trMinHeights.push(tr.height)
         }
         // 表格不允许超出正文区域时：等比例压缩列宽至内容区内，并清除横向偏移
         if (!overflow) {
@@ -371,13 +438,22 @@ export class LayoutEngine {
           const tr = trList[t]
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
+            const padding = draw.getOriginalTdPadding(td)
+            const tdPaddingWidth = padding[1] + padding[3]
+            const tdPaddingHeight = padding[0] + padding[2]
+            if (td.width === undefined || td.width <= tdPaddingWidth) {
+              throw new Error('Cell padding leaves no usable content width.')
+            }
             const rowList = this.computeRowList({
               innerWidth: (td.width! - tdPaddingWidth) * scale,
               elementList: td.value,
               isFromTable: true,
               isPagingMode
             })
-            const rowHeight = rowList.reduce((pre, cur) => pre + cur.height, 0)
+            const rowHeight = rowList.reduce(
+              (pre, cur) => pre + cur.height + (cur.offsetY || 0),
+              0
+            )
             td.rowList = rowList
             // 移除缩放导致的行高变化-渲染时会进行缩放调整
             const curTdHeight = rowHeight / scale + tdPaddingHeight
@@ -401,7 +477,7 @@ export class LayoutEngine {
             let i = 0
             while (i < td.rowspan) {
               const curTr = trList[i + t] || trList[t]
-              curTdMinHeight += curTr.minHeight!
+              curTdMinHeight += trMinHeights[i + t] ?? trMinHeights[t]
               curTdRealHeight += curTr.height!
               i++
             }
@@ -543,10 +619,22 @@ export class LayoutEngine {
           metrics.width += element.letterSpacing * scale
         }
         // 使用基于字体的基准度量以确保一致的行高，避免字符特定度量导致的布局跳动
-        const basisMetrics = textParticle.measureBasisWord(ctx, element.font!)
-        metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
-        metrics.boundingBoxDescent =
-          basisMetrics.actualBoundingBoxDescent * scale
+        // The sample glyph may select a fallback CJK face. Explicit line
+        // metrics must come from the actual text being measured instead.
+        const basisMetrics = element.lineHeight
+          ? fontMetrics
+          : textParticle.measureBasisWord(ctx, element.font ?? '')
+        const fontAscent = element.lineHeight
+          ? basisMetrics.fontBoundingBoxAscent
+          : basisMetrics.actualBoundingBoxAscent
+        const fontDescent = element.lineHeight
+          ? basisMetrics.fontBoundingBoxDescent
+          : basisMetrics.actualBoundingBoxDescent
+        if (!Number.isFinite(fontAscent) || !Number.isFinite(fontDescent)) {
+          throw new Error('Font line-box metrics are unavailable.')
+        }
+        metrics.boundingBoxAscent = fontAscent * scale
+        metrics.boundingBoxDescent = fontDescent * scale
         if (element.type === ElementType.SUPERSCRIPT) {
           metrics.boundingBoxAscent += metrics.height / 2
         } else if (element.type === ElementType.SUBSCRIPT) {
@@ -785,7 +873,7 @@ export class LayoutEngine {
         // 换行符归属于新段落元素集合，优先从换行符自身读取
         if (element.value === ZERO && !element.listWrap) {
           row.offsetY +=
-            (element.spacingBefore || elementList[i + 1]?.spacingBefore || 0) *
+            (element.spacingBefore ?? elementList[i + 1]?.spacingBefore ?? 0) *
             scale
         }
         rowList.push(row)
@@ -828,33 +916,10 @@ export class LayoutEngine {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
-        // 段后间距：段落末行增加高度
-        // 换行符归属于下一段落元素集合，需从当前段落末尾元素读取
-        if (isWrap && element.value === ZERO && !element.listWrap) {
-          const spacingAfter = (elementList[i - 1]?.spacingAfter || 0) * scale
-          if (spacingAfter) {
-            curRow.spacingAfter = spacingAfter
-            curRow.height += spacingAfter
-          }
-        }
-        // 行内全部为隐藏元素时 => 行高折叠（仅当行内不止换行符一个元素时）
-        if (!draw.isDesignMode() && curRow.height > 0) {
-          const visibleElements = curRow.elementList.filter(
-            el => el.value !== ZERO
-          )
-          const isAllHidden =
-            visibleElements.length > 0 &&
-            visibleElements.every(
-              el =>
-                el.hide ||
-                el.control?.hide ||
-                (el.area?.hide && !draw.isAreaHideDisabled()) ||
-                draw.getTraceParticle().isTraceHidden(el)
-            )
-          if (isAllHidden) {
-            curRow.height = 0
-          }
-        }
+        finalizeRow(
+          curRow,
+          isWrap ? element.value === ZERO && !element.listWrap : true
+        )
         // 换行原因：宽度不足
         curRow.isWidthNotEnough = isWidthNotEnough && !isForceBreak
         // 两端对齐、分散对齐
@@ -880,9 +945,15 @@ export class LayoutEngine {
       }
       // 重新计算坐标、页码、下一行首行元素环绕交叉
       if (isWrap) {
+        const nextRow = rowList[rowList.length - 1]
+        // Predict column overflow with the authored line box rather than the
+        // first glyph's ink/font height. Finalize again after the row is full.
+        applyLineHeight(nextRow, scale, isHidden)
         const columnOffset = !layout ? 0 : layout.offsets[currentColumn] || 0
         x = currentStartX + columnOffset
-        y += curRow.height
+        // A page-break marker belongs to the previous page. Its height must
+        // not consume the first column of the page already opened below.
+        if (!curRow.isPageBreak) y += curRow.height
         if (isPagingMode && !isFromTable && currentPageHeight) {
           const isPageBreakElement = element.type === ElementType.PAGE_BREAK
           const nextDirection = element.paperDirection || options.paperDirection
@@ -905,7 +976,8 @@ export class LayoutEngine {
             currentDirection
           )
           const isOverflow =
-            y - pageStartY + curMainOuterHeight + height > currentPageHeight
+            y - pageStartY + curMainOuterHeight + nextRow.height >
+            currentPageHeight
           if (isOverflow || isPageBreakElement) {
             if (
               !isPageBreakElement &&
@@ -929,7 +1001,6 @@ export class LayoutEngine {
           }
         }
         // 同步新行的栏索引（栏游标可能在翻栏/翻页逻辑中变化）
-        const nextRow = rowList[rowList.length - 1]
         if (nextRow && isColumnEnabled && nextRow.columnIndex !== undefined) {
           nextRow.columnIndex = currentColumn
         }
@@ -966,6 +1037,10 @@ export class LayoutEngine {
         }
       }
     }
+    const lastRow = rowList[rowList.length - 1]
+    // A final character that wraps creates a row after the normal finalization
+    // point. Seal it once; re-finalizing could resurrect a hidden review row.
+    if (lastRow?.elementList.length) finalizeRow(lastRow, true)
     // 区域最小高度：内容高度不足时向区域末行补充高度（内容超出时由行高自然撑开）
     draw.getArea().applyMinHeight(rowList)
     return rowList
@@ -997,6 +1072,8 @@ export class LayoutEngine {
       const row = rowList[i]
       const rowOffsetY = row.offsetY || 0
       const columnChanged =
+        !row.paginationBreakBefore &&
+        !rowList[i - 1]?.isPageBreak &&
         prevColumnIndex !== undefined &&
         row.columnIndex !== undefined &&
         row.columnIndex > 0 &&
@@ -1009,10 +1086,15 @@ export class LayoutEngine {
         pageRowList[pageNo].push(row)
       } else if (
         row.height + rowOffsetY + pageHeight > pageLimit ||
-        rowList[i - 1]?.isPageBreak
+        rowList[i - 1]?.isPageBreak ||
+        row.paginationBreakBefore
       ) {
         const areaPadding = row.areaPadding
-        if (areaPadding && !rowList[i - 1]?.isPageBreak) {
+        if (
+          areaPadding &&
+          !rowList[i - 1]?.isPageBreak &&
+          !row.paginationBreakBefore
+        ) {
           const contentHeight = row.height - areaPadding.height
           const remainHeight = pageLimit - pageHeight - rowOffsetY
           if (contentHeight <= remainHeight) {
