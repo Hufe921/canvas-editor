@@ -2,6 +2,7 @@ import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
 import { TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { IElement, IElementPosition } from '../Element'
 import { IRow } from '../Row'
+import type { IPadding } from '../Common'
 
 export interface ITd {
   conceptId?: string
@@ -26,6 +27,8 @@ export interface ITd {
   positionList?: IElementPosition[]
   verticalAlign?: VerticalAlign
   backgroundColor?: string
+  /** Document pixels: top, right, bottom, left. Falls back to table.tdPadding. */
+  padding?: IPadding
   borderColor?: string
   borderWidth?: number
   borderTypes?: TdBorder[]

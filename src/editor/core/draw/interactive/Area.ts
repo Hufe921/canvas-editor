@@ -141,7 +141,7 @@ export class Area {
       if (!pagePositionList.length && !pageSegmentList.length) continue
       ctx.translate(0.5, 0.5)
       const isTableArea = !!tableCell
-      const tdPadding = this.draw.getTdPadding()
+      const tdPadding = this.draw.getTdPadding(tableCell?.td)
       // 起始位置
       const x = isTableArea
         ? tableCell.tablePosition.coordinate.leftTop[0] +
