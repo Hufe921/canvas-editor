@@ -288,6 +288,7 @@ export class IncrementalRowComputer {
       defaultSize: options.defaultSize,
       defaultTabWidth: options.defaultTabWidth,
       wordBreak: options.wordBreak,
+      hangPunctuation: options.hangPunctuation,
       pageMode: options.pageMode,
       paperDirection: options.paperDirection,
       margins: options.margins,

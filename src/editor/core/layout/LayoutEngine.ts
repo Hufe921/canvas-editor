@@ -1,4 +1,4 @@
-import { ZERO } from '../../dataset/constant/Common'
+import { HANG_PUNCTUATION_LIST, ZERO } from '../../dataset/constant/Common'
 import { FlexDirection, ImageDisplay } from '../../dataset/enum/Common'
 import {
   ControlComponent,
@@ -79,7 +79,8 @@ export class LayoutEngine {
       scale,
       imgCaption,
       table: { tdPadding, defaultColMinWidth, overflow },
-      defaultTabWidth
+      defaultTabWidth,
+      hangPunctuation
     } = options
     const defaultBasicRowMarginHeight = draw.getDefaultBasicRowMarginHeight()
     const ctx = document
@@ -182,6 +183,8 @@ export class LayoutEngine {
     const listIndexMap: Map<string, number> = new Map()
     // 控件最小宽度
     let controlRealWidth = 0
+    // 悬挂标点累计宽度（不计入行宽）
+    let curRowHangWidth = 0
     // 分栏游标
     let currentColumn = 0
     // 断点续算：恢复快照时刻的跨行状态
@@ -586,7 +589,8 @@ export class LayoutEngine {
       const rowElement: IRowElement = Object.assign(element, {
         metrics,
         left: 0,
-        style: draw.getElementFont(element, scale)
+        style: draw.getElementFont(element, scale),
+        hang: false
       })
       // 控件开始时统计宽度，结束时消费最小宽度并补充跨行占位
       if (
@@ -635,7 +639,7 @@ export class LayoutEngine {
       const preElement = elementList[i - 1]
       let nextElement = elementList[i + 1]
       // 累计行宽 + 当前元素宽度 + 排版宽度(英文单词整体宽度 + 后面标点符号宽度)
-      let curRowWidth = curRow.width + metrics.width
+      let curRowWidth = curRow.width + metrics.width + curRowHangWidth
       if (options.wordBreak === WordBreak.BREAK_WORD) {
         if (
           (!preElement?.type || preElement?.type === ElementType.TEXT) &&
@@ -656,11 +660,11 @@ export class LayoutEngine {
               nextElement = endElement
             }
           }
-          // 标点符号
-          const punctuationWidth = textParticle.measurePunctuationWidth(
-            ctx,
-            nextElement
-          )
+          // 标点符号（开启悬挂时避头标点不预占宽度）
+          const punctuationWidth =
+            hangPunctuation && this._isHangPunctuation(nextElement)
+              ? 0
+              : textParticle.measurePunctuationWidth(ctx, nextElement)
           curRowWidth += punctuationWidth * scale
         }
       }
@@ -715,8 +719,24 @@ export class LayoutEngine {
       // 是否宽度不足导致换行
       const isWidthNotEnough = curRowWidth > availableWidth
       const isWrap = isForceBreak || isWidthNotEnough
+      // 避头标点悬挂行尾，不占行宽
+      const isHang =
+        hangPunctuation &&
+        isWidthNotEnough &&
+        !isForceBreak &&
+        curRow.width > 0 &&
+        this._isHangPunctuation(element)
       // 新行数据处理
-      if (isWrap) {
+      if (isHang) {
+        curRow.elementList.push(rowElement)
+        rowElement.hang = true
+        curRowHangWidth += metrics.width
+        if (curRow.height < height) {
+          curRow.height = height
+          curRow.ascent = ascent
+        }
+      } else if (isWrap) {
+        curRowHangWidth = 0
         const row: IRow = {
           width: metrics.width,
           height,
@@ -882,10 +902,11 @@ export class LayoutEngine {
               curRow.isWidthNotEnough))
         ) {
           // 忽略换行符及尾部元素间隔设置
-          const rowElementList =
+          const rowElementList = (
             curRow.elementList[0]?.value === ZERO
               ? curRow.elementList.slice(1)
               : curRow.elementList
+          ).filter(el => !el.hang)
           const gap =
             (availableWidth - curRow.width) / (rowElementList.length - 1)
           for (let e = 0; e < rowElementList.length - 1; e++) {
@@ -1131,6 +1152,17 @@ export class LayoutEngine {
       }
     }
     return hit
+  }
+
+  // 避头标点：仅正文文本类元素参与悬挂
+  private _isHangPunctuation(element?: IElement): boolean {
+    return (
+      !!element &&
+      HANG_PUNCTUATION_LIST.includes(element.value) &&
+      (!element.type || element.type === ElementType.TEXT) &&
+      !element.controlId &&
+      !element.controlComponent
+    )
   }
 
   // TAB 对齐 run 测量：TAB 之后到下一个 TAB/段落边界前的连续文本宽度，

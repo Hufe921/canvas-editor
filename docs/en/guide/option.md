@@ -64,6 +64,7 @@ interface IEditorOption {
   scrollContainerSelector?: string // scroll container selector. default: document
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
+  hangPunctuation?: boolean // Punctuation hanging: line-end punctuation that does not fit the line width hangs at the line end without occupying the width. default: false
   lab?: ILabOption // Experimental features configuration
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration

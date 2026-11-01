@@ -16,6 +16,8 @@ export type IRowElement = IElement & {
   left?: number
   // 制表位前导符（布局期命中位点时写入，渲染 leader 填充消费）
   tabLeader?: TabStopLeader
+  // 避头悬挂标点（不计入行宽）
+  hang?: boolean
 }
 
 export interface IRow {

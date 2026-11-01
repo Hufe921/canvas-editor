@@ -105,6 +105,7 @@ export interface IEditorOption {
   scrollContainerSelector?: string
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
+  hangPunctuation?: boolean
   // 实验性功能（逐项默认关闭，未来可能调整或移除）
   lab?: ILabOption
   table?: ITableOption
