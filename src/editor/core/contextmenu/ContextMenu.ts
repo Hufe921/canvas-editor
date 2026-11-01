@@ -299,21 +299,59 @@ export class ContextMenu {
     }
     contextMenuContainer.append(contextMenuContent)
     contextMenuContainer.style.display = 'block'
-    // 右侧空间不足时，以菜单右上角作为起始点
-    const innerWidth = window.innerWidth
-    const contextmenuRect = contextMenuContainer.getBoundingClientRect()
-    const contextMenuWidth = contextmenuRect.width
-    const adjustLeft =
-      left + contextMenuWidth > innerWidth ? left - contextMenuWidth : left
-    contextMenuContainer.style.left = `${adjustLeft}px`
-    // 下侧空间不足时，以菜单底部作为起始点
-    const innerHeight = window.innerHeight
-    const contextMenuHeight = contextmenuRect.height
-    const adjustTop =
-      top + contextMenuHeight > innerHeight ? top - contextMenuHeight : top
-    contextMenuContainer.style.top = `${adjustTop}px`
+    this._placeContextMenu(contextMenuContainer, left, top)
     this.contextMenuContainerList.push(contextMenuContainer)
     return contextMenuContainer
+  }
+
+  /**
+   * 按点击位置摆放菜单（left/top 为视口坐标）：
+   * 纵向优先往下展开；下方放不下而上方放得下则往上展开；
+   * 两侧都放不下时取空间大的一侧，并把菜单限高为该侧可用空间（容器自带纵向滚动）。
+   * 横向同理，右侧放不下往左，仍放不下贴视口边。
+   */
+  private _placeContextMenu(
+    contextMenuContainer: HTMLDivElement,
+    left: number,
+    top: number
+  ) {
+    const style = contextMenuContainer.style
+    // 宿主可能在祖先上挂 CSS zoom：style 的 px 会被放大，而事件坐标与视口尺寸不会。
+    // 实测一次 100px 的偏移落到视口里是多少，得到换算比例
+    style.left = '100px'
+    style.top = '0px'
+    const scale = contextMenuContainer.getBoundingClientRect().left / 100 || 1
+    const gap = 4
+    const innerWidth = window.innerWidth
+    const innerHeight = window.innerHeight
+    const rect = contextMenuContainer.getBoundingClientRect()
+    // 纵向
+    const spaceBelow = innerHeight - top - gap
+    const spaceAbove = top - gap
+    let adjustTop: number
+    // 限高时把内边距与边框算进去，免得超出可用空间
+    style.boxSizing = 'border-box'
+    if (rect.height <= spaceBelow) {
+      adjustTop = top
+    } else if (rect.height <= spaceAbove) {
+      adjustTop = top - rect.height
+    } else if (spaceBelow >= spaceAbove) {
+      adjustTop = top
+      style.maxHeight = `${spaceBelow / scale}px`
+    } else {
+      adjustTop = gap
+      style.maxHeight = `${spaceAbove / scale}px`
+    }
+    // 横向
+    let adjustLeft = left
+    if (left + rect.width > innerWidth) {
+      adjustLeft = left - rect.width
+      if (adjustLeft < 0) {
+        adjustLeft = Math.max(innerWidth - rect.width - gap, 0)
+      }
+    }
+    style.left = `${adjustLeft / scale}px`
+    style.top = `${adjustTop / scale}px`
   }
 
   private _removeSubMenu(payload: HTMLDivElement) {
