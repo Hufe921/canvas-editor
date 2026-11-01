@@ -2047,6 +2047,8 @@ export class Draw {
           })
         } else if (element.type === ElementType.TAB) {
           this.textParticle.complete()
+          // 制表位命中位点时的前导符填充
+          this.textParticle.renderTabLeader(ctx, element, x, y + offsetY)
         } else if (
           element.rowFlex === RowFlex.ALIGNMENT ||
           element.rowFlex === RowFlex.JUSTIFY

@@ -5,7 +5,7 @@ import { RowFlex } from '../dataset/enum/Row'
 import { TitleLevel } from '../dataset/enum/Title'
 import { IControlChangeResult, IControlContentChangeResult } from './Control'
 import { IEditorResult } from './Editor'
-import { IElement } from './Element'
+import { IElement, ITabStop } from './Element'
 import { IPositionContext } from './Position'
 import { IRange } from './Range'
 import { ITextDecoration } from './Text'
@@ -30,6 +30,7 @@ export interface IRangeStyle {
   indentLeft: number
   indentRight: number
   indentFirstLine: number
+  tabStops: ITabStop[] | null
   dashArray: number[]
   level: TitleLevel | null
   listType: ListType | null

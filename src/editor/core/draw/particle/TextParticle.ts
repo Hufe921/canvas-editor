@@ -1,5 +1,6 @@
 import { ElementType, IEditorOption, IElement, RenderMode } from '../../..'
 import { PUNCTUATION_LIST } from '../../../dataset/constant/Common'
+import { TabStopLeader } from '../../../dataset/enum/TabStop'
 import { DeepRequired } from '../../../interface/Common'
 import { IRowElement } from '../../../interface/Row'
 import { ITextMetrics } from '../../../interface/Text'
@@ -102,6 +103,47 @@ export class TextParticle {
   public complete() {
     this._render()
     this.text = ''
+  }
+
+  // 制表位前导符：TAB 推进空隙的点线/连字符/下划线填充
+  public renderTabLeader(
+    ctx: IRenderContext,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
+    const leader = element.tabLeader
+    const width = element.metrics.width
+    if (!width || !leader || leader === TabStopLeader.NONE) return
+    const { scale, defaultColor, underlineColor } = this.options
+    ctx.save()
+    if (leader === TabStopLeader.UNDERLINE) {
+      // 与文本下划线同位同粗
+      ctx.strokeStyle = element.color || underlineColor
+      ctx.lineWidth = scale
+      const adjustY = Math.floor(y + 2 * ctx.lineWidth) + 0.5
+      ctx.beginPath()
+      ctx.moveTo(x, adjustY)
+      ctx.lineTo(x + width, adjustY)
+      ctx.stroke()
+    } else {
+      const char = leader === TabStopLeader.DOT ? '.' : '-'
+      ctx.font = element.style
+      ctx.fillStyle = element.color || defaultColor
+      const charWidth =
+        this.textMeasurer.measureText(char, ctx.font).width * scale
+      if (charWidth > 0) {
+        // 整串一次绘制，避免逐字符 fillText 的绘制开销
+        const count = Math.floor(width / charWidth)
+        if (count > 0) {
+          const text = char.repeat(count)
+          const textWidth =
+            this.textMeasurer.measureText(text, ctx.font).width * scale
+          ctx.fillText(text, x + (width - textWidth) / 2, y)
+        }
+      }
+    }
+    ctx.restore()
   }
 
   public record(

@@ -440,6 +440,16 @@ Usage:
 instance.command.executeIndentFirstLine(indentFirstLine: number)
 ```
 
+## executeSetTabStops
+
+Feature: Set tab stops of the current paragraph (pass an empty array to clear)
+
+Usage:
+
+```javascript
+instance.command.executeSetTabStops(payload: ITabStop[])
+```
+
 ## executeInsertTable
 
 Feature: Insert table

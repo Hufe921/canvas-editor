@@ -14,12 +14,15 @@ import Editor, {
   IBlock,
   ICatalogItem,
   IElement,
+  ITabStop,
   KeyMap,
   ListStyle,
   ListType,
   PageMode,
   PaperDirection,
   RowFlex,
+  TabStopLeader,
+  TabStopType,
   TextDecorationStyle,
   TitleLevel,
   splitText
@@ -360,7 +363,8 @@ window.onload = function () {
   )!
   spacingIconDom.onclick = function () {
     console.log('spacing')
-    spacingOptionDom.classList.toggle('visible')
+    const isVisible = spacingOptionDom.classList.toggle('visible')
+    if (isVisible) renderTabStopRows(latestTabStops)
   }
   spacingOptionDom.onclick = function (evt) {
     evt.stopPropagation()
@@ -431,6 +435,111 @@ window.onload = function () {
     )!.onclick = () => change(Number(input.value) + 16)
     input.onchange = () => change(Number(input.value))
   })
+
+  // 制表位（结构化行编辑：位置 + 前导符；右上清除、底部添加）
+  const tabStopRowsDom = spacingOptionDom.querySelector<HTMLDivElement>(
+    '[data-tabstops-rows]'
+  )!
+  let latestTabStops: ITabStop[] = []
+  const TABSTOP_TYPE_OPTIONS = [
+    { value: TabStopType.LEFT, label: '左对齐' },
+    { value: TabStopType.CENTER, label: '居中对齐' },
+    { value: TabStopType.RIGHT, label: '右对齐' }
+  ]
+  const TABSTOP_LEADER_OPTIONS = [
+    { value: '', label: '无' },
+    { value: 'dot', label: '点线' },
+    { value: 'hyphen', label: '横线' },
+    { value: 'underline', label: '下划线' }
+  ]
+  const TABSTOP_DELETE_ICON =
+    '<svg viewBox="0 0 1024 1024" width="12" height="12"><path fill="currentColor" d="M820.1 68.3H649V42.5c0-23.6-19.1-42.7-42.7-42.7H417.7c-23.6 0-42.7 19.1-42.7 42.7v25.8H203.9c-23.6 0-42.7 19.1-42.7 42.7v68.3c0 23.6 19.1 42.7 42.7 42.7h616.2c23.6 0 42.7-19.1 42.7-42.7V111c0-23.6-19.1-42.7-42.7-42.7zM853.9 264.7H170.1c-28.3 0-51.2 22.9-51.2 51.2v34.1c0 28.3 22.9 51.2 51.2 51.2h17.1v563.2c0 32.5 26.3 59.7 59.7 59.7h529.1c32.5 0 59.7-26.3 59.7-59.7V401.1h17.1c28.3 0 51.2-22.9 51.2-51.2v-34.1c0-28.3-22.9-51.2-51.2-51.2z"/></svg>'
+  function renderTabStopRows(stops: ITabStop[]) {
+    tabStopRowsDom.innerHTML = ''
+    stops.forEach(stop => {
+      const row = document.createElement('div')
+      row.className = 'tabstop-row'
+      const positionInput = document.createElement('input')
+      positionInput.type = 'number'
+      positionInput.min = '1'
+      positionInput.placeholder = '位置'
+      positionInput.className = 'tabstop-row__position'
+      positionInput.value = `${stop.position}`
+      const typeSelect = document.createElement('select')
+      typeSelect.className = 'tabstop-row__type'
+      TABSTOP_TYPE_OPTIONS.forEach(({ value, label }) => {
+        const option = document.createElement('option')
+        option.value = value
+        option.text = label
+        if ((stop.type || TabStopType.LEFT) === value) option.selected = true
+        typeSelect.appendChild(option)
+      })
+      const leaderSelect = document.createElement('select')
+      leaderSelect.className = 'tabstop-row__leader'
+      TABSTOP_LEADER_OPTIONS.forEach(({ value, label }) => {
+        const option = document.createElement('option')
+        option.value = value
+        option.text = label
+        if ((stop.leader || '') === value) option.selected = true
+        leaderSelect.appendChild(option)
+      })
+      const deleteButton = document.createElement('button')
+      deleteButton.type = 'button'
+      deleteButton.className = 'tabstop-row__delete'
+      deleteButton.title = '删除'
+      deleteButton.innerHTML = TABSTOP_DELETE_ICON
+      row.append(positionInput, typeSelect, leaderSelect, deleteButton)
+      tabStopRowsDom.appendChild(row)
+    })
+  }
+  const collectTabStops = (): ITabStop[] => {
+    const stops: ITabStop[] = []
+    tabStopRowsDom.querySelectorAll('.tabstop-row').forEach(row => {
+      const position = Number(
+        row.querySelector<HTMLInputElement>('.tabstop-row__position')!.value
+      )
+      if (!(position > 0)) return
+      const type = (<HTMLSelectElement>row.querySelector('.tabstop-row__type')!)
+        .value as TabStopType
+      const leader = (<HTMLSelectElement>(
+        row.querySelector('.tabstop-row__leader')!
+      )).value as TabStopLeader
+      stops.push({
+        position: Math.round(position),
+        type,
+        ...(leader ? { leader } : {})
+      })
+    })
+    return stops.sort((a, b) => a.position - b.position)
+  }
+  const applyTabStops = () => {
+    instance.command.executeSetTabStops(collectTabStops())
+  }
+  tabStopRowsDom.addEventListener('change', applyTabStops)
+  tabStopRowsDom.addEventListener('click', evt => {
+    const deleteButton = (evt.target as HTMLElement).closest(
+      '.tabstop-row__delete'
+    )
+    if (!deleteButton) return
+    deleteButton.closest('.tabstop-row')!.remove()
+    applyTabStops()
+  })
+  spacingOptionDom
+    .querySelector<HTMLButtonElement>('[data-tabstops-clear]')!
+    .addEventListener('click', () => {
+      renderTabStopRows([])
+      instance.command.executeSetTabStops([])
+    })
+  spacingOptionDom
+    .querySelector<HTMLButtonElement>('[data-tabstops-add]')!
+    .addEventListener('click', () => {
+      const stops = collectTabStops()
+      const lastPosition = stops.length ? stops[stops.length - 1].position : 0
+      renderTabStopRows([
+        ...stops,
+        { position: lastPosition + 64, type: TabStopType.LEFT }
+      ])
+    })
 
   const listDom = document.querySelector<HTMLDivElement>('.menu-item__list')!
   listDom.title = `列表(${isApple ? '⌘' : 'Ctrl'}+Shift+U)`
@@ -2114,6 +2223,15 @@ window.onload = function () {
     reflectIndent('indentleft', payload.indentLeft ?? 0)
     reflectIndent('indentright', payload.indentRight ?? 0)
     reflectIndent('indentfirstline', payload.indentFirstLine ?? 0)
+
+    // 制表位（弹窗打开且未在编辑行时刷新行，避免编辑中被回显打断）
+    latestTabStops = payload.tabStops || []
+    if (
+      spacingOptionDom.classList.contains('visible') &&
+      !tabStopRowsDom.contains(document.activeElement)
+    ) {
+      renderTabStopRows(latestTabStops)
+    }
 
     // 功能
     payload.undo

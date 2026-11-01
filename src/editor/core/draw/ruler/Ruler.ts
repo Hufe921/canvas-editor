@@ -5,10 +5,11 @@ import {
   PageMode,
   PaperDirection
 } from '../../../dataset/enum/Editor'
+import { TabStopType } from '../../../dataset/enum/TabStop'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IMargin } from '../../../interface/Margin'
-import type { IElement } from '../../../interface/Element'
+import type { IElement, ITabStop } from '../../../interface/Element'
 import { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
@@ -55,6 +56,12 @@ export class Ruler {
     right: number
   } | null
   private isIndentApplied: boolean
+  private dragTabStopIndex: number | null
+  private dragOriginTabStops: ITabStop[] | null
+  private dragOriginTabStopX: number
+  private isTabStopApplied: boolean
+  // 拖出标尺进入删除态（标记隐藏，抬起时删除位点）
+  private isTabStopDragOutside: boolean
   private guideline: HTMLDivElement | null
   // 缩进标记位置缓存（随标尺重绘刷新，命中检测直接消费，避免悬浮时反复解析段落）
   private indentMarkerPositionCache: {
@@ -62,6 +69,8 @@ export class Ruler {
     leftX: number
     rightX: number
   } | null
+  // 制表位标记位置缓存（当前段落位点的标尺x与对齐方式，随标尺重绘刷新）
+  private tabStopPositionCache: { x: number; type: TabStopType }[]
   private mousemoveHandler: (evt: MouseEvent) => void
   private mouseupHandler: () => void
 
@@ -80,8 +89,14 @@ export class Ruler {
     this.dragIndentTarget = null
     this.dragOriginIndents = null
     this.isIndentApplied = false
+    this.dragTabStopIndex = null
+    this.dragOriginTabStops = null
+    this.dragOriginTabStopX = 0
+    this.isTabStopApplied = false
+    this.isTabStopDragOutside = false
     this.guideline = null
     this.indentMarkerPositionCache = null
+    this.tabStopPositionCache = []
     this.mousemoveHandler = this._dragMargin.bind(this)
     this.mouseupHandler = this._stopDrag.bind(this)
   }
@@ -136,6 +151,7 @@ export class Ruler {
     this._stopDrag()
     this._removeGuideline()
     this.indentMarkerPositionCache = null
+    this.tabStopPositionCache = []
     this.rulerContainer?.remove()
     this.rulerContainer = null
     this.canvasX = null
@@ -227,6 +243,16 @@ export class Ruler {
     } else {
       this.indentMarkerPositionCache = null
     }
+    // 制表位标记（当前段落位点，画在缩进标记上层）
+    const tabStops = this._getParagraphTabStops()
+    this.tabStopPositionCache = tabStops.map(stop => ({
+      x: margins[3] + stop.position * scale,
+      type: stop.type
+    }))
+    this.tabStopPositionCache.forEach((marker, index) => {
+      if (this.isTabStopDragOutside && index === this.dragTabStopIndex) return
+      this._drawTabStopMark(ctx, marker)
+    })
   }
 
   private _renderY() {
@@ -332,6 +358,15 @@ export class Ruler {
     )
   }
 
+  // 当前段落制表位（换行符可能携带上一段落属性，取段内第一个内容元素读值；
+  // 无光标时退回第一段，与缩进标记一致）
+  private _getParagraphTabStops(): ITabStop[] {
+    const paragraphElementList =
+      this._getParagraphElementList() ?? this._getFirstParagraphElementList()
+    const anchor = this._getIndentAnchor(paragraphElementList)
+    return anchor?.tabStops ?? []
+  }
+
   // 缩进标记在标尺上的显示位置（显示像素）
   private _getIndentMarkerPositions(indents: {
     left: number
@@ -375,6 +410,34 @@ export class Ruler {
     ctx.stroke()
   }
 
+  // 制表位标记：白底衬底遮住密集刻度，深灰描边保证可辨识；
+  // 形状按对齐方式区分——居左 ⌐（顶横+右竖）、居中 ⊥（顶横+中竖）、居右 镜像⌐（顶横+左竖）
+  private _drawTabStopMark(
+    ctx: IRenderContext,
+    marker: { x: number; type: TabStopType }
+  ) {
+    const { x, type } = marker
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(x - 5, 17, 10, 8)
+    ctx.beginPath()
+    if (type === TabStopType.CENTER) {
+      ctx.moveTo(x - 3.5, 18)
+      ctx.lineTo(x + 3.5, 18)
+      ctx.moveTo(x, 18)
+      ctx.lineTo(x, 24.5)
+    } else if (type === TabStopType.RIGHT) {
+      ctx.moveTo(x - 3.5, 18)
+      ctx.lineTo(x + 3.5, 18)
+      ctx.lineTo(x - 3.5, 24.5)
+    } else {
+      ctx.moveTo(x - 3.5, 18)
+      ctx.lineTo(x + 3.5, 18)
+      ctx.lineTo(x + 3.5, 24.5)
+    }
+    ctx.strokeStyle = '#666666'
+    ctx.stroke()
+  }
+
   // 缩进标记命中检测（上部盾形为首行缩进，下部屋形为左/右缩进，
   // 中部数字行留给边距拖拽；位置取自标尺重绘时的缓存）
   private _getHitIndentTarget(x: number, y: number): RulerIndentTarget | null {
@@ -397,7 +460,46 @@ export class Ruler {
     return null
   }
 
-  // 拖动缩进时在页面上显示落点虚线引导线
+  // 制表位标记命中检测（底部带，优先于缩进标记；位置取自标尺重绘时的缓存）
+  private _getHitTabStopIndex(x: number, y: number): number {
+    if (y < 16) return -1
+    const positions = this.tabStopPositionCache
+    for (let i = 0; i < positions.length; i++) {
+      if (Math.abs(x - positions[i].x) <= this.HANDLE_HIT_TOLERANCE) return i
+    }
+    return -1
+  }
+
+  // 点击底部刻度带空白：添加左对齐制表位（版心内且不与既有位点重复）
+  private _addTabStop(x: number) {
+    const paragraphElementList = this._getParagraphElementList()
+    if (!paragraphElementList) return
+    const anchor = this._getIndentAnchor(paragraphElementList)
+    if (!anchor) return
+    const scale = this.options.scale
+    const margins = this.draw.getMargins()
+    const width = this.draw.getWidth()
+    const position = Math.round((x - margins[3]) / scale)
+    const maxPosition = Math.round((width - margins[1] - margins[3]) / scale)
+    if (position <= 0 || position > maxPosition) return
+    if (
+      (anchor.tabStops || []).some(
+        stop => Math.abs(stop.position - position) < 2
+      )
+    ) {
+      return
+    }
+    const nextStops = [
+      ...(anchor.tabStops || []),
+      { position, type: TabStopType.LEFT }
+    ].sort((a, b) => a.position - b.position)
+    paragraphElementList.forEach(element => {
+      element.tabStops = nextStops.map(stop => ({ ...stop }))
+    })
+    this.draw.render({ isSetCursor: false })
+  }
+
+  // 拖动缩进/制表位时在页面上显示落点虚线引导线
   private _showGuideline(x: number) {
     if (!this.guideline) {
       const guideline = document.createElement('div')
@@ -498,19 +600,46 @@ export class Ruler {
     document.addEventListener('mouseup', this.mouseupHandler)
   }
 
+  private _startTabStopDrag(index: number, clientX: number) {
+    const paragraphElementList = this._getParagraphElementList()
+    if (!paragraphElementList) return
+    const anchor = this._getIndentAnchor(paragraphElementList)
+    if (!anchor) return
+    this.dragTabStopIndex = index
+    this.dragStartPosition = clientX
+    this.dragOriginTabStops = (anchor.tabStops || []).map(stop => ({
+      ...stop
+    }))
+    // 保持抓取偏移：以标记按下时位置为基准随位移增量移动
+    this.dragOriginTabStopX = this.tabStopPositionCache[index]?.x ?? 0
+    this.isTabStopApplied = false
+    this.isTabStopDragOutside = false
+    document.addEventListener('mousemove', this.mousemoveHandler)
+    document.addEventListener('mouseup', this.mouseupHandler)
+  }
+
   private _mousedownX(evt: MouseEvent) {
     if (this._isMarginDragDisabled()) return
     const x = this._getRelativeX(evt)
     const y = this._getRelativeYOnCanvasX(evt)
-    // 缩进标记优先命中，其余落在边距交界线命中区的交给边距拖拽
+    // 制表位/缩进标记优先命中，其余落在边距交界线命中区的交给边距拖拽
+    const tabIndex = this._getHitTabStopIndex(x, y)
+    if (tabIndex >= 0) {
+      this._startTabStopDrag(tabIndex, evt.clientX)
+      return
+    }
     const indentTarget = this._getHitIndentTarget(x, y)
     if (indentTarget) {
       this._startIndentDrag(indentTarget, evt.clientX)
       return
     }
     const side = this._getHitMarginSideX(x)
-    if (!side) return
-    this._startDrag(side, evt.clientX)
+    if (side) {
+      this._startDrag(side, evt.clientX)
+      return
+    }
+    // 点击底部刻度带空白：添加制表位
+    if (y >= 16) this._addTabStop(x)
   }
 
   private _mousedownY(evt: MouseEvent) {
@@ -520,18 +649,21 @@ export class Ruler {
     this._startDrag(side, evt.clientY)
   }
 
-  // 悬浮光标提示：缩进标记为pointer，边距交界处为col-resize
+  // 悬浮光标提示：制表位/缩进标记为pointer，边距交界处为col-resize
   private _updateCursorX(evt: MouseEvent) {
     if (!this.canvasX) return
     const x = this._getRelativeX(evt)
     const y = this._getRelativeYOnCanvasX(evt)
-    const indentTarget = this._getHitIndentTarget(x, y)
-    const marginSide = indentTarget ? null : this._getHitMarginSideX(x)
-    this.canvasX.style.cursor = indentTarget
-      ? 'pointer'
-      : marginSide
-        ? 'col-resize'
-        : 'default'
+    const tabIndex = this._getHitTabStopIndex(x, y)
+    const indentTarget = tabIndex >= 0 ? null : this._getHitIndentTarget(x, y)
+    const marginSide =
+      tabIndex >= 0 || indentTarget ? null : this._getHitMarginSideX(x)
+    this.canvasX.style.cursor =
+      tabIndex >= 0 || indentTarget
+        ? 'pointer'
+        : marginSide
+          ? 'col-resize'
+          : 'default'
   }
 
   private _updateCursorY(evt: MouseEvent) {
@@ -603,7 +735,48 @@ export class Ruler {
     }
   }
 
+  // 拖动制表位标记：保持抓取偏移连续跟随，拖出标尺进入删除态（标记隐藏）
+  private _dragTabStop(evt: MouseEvent) {
+    const index = this.dragTabStopIndex
+    const originStops = this.dragOriginTabStops
+    if (index === null || !originStops || !this.rulerContainer) return
+    const paragraphElementList = this._getParagraphElementList()
+    if (!paragraphElementList) return
+    const rulerRect = this.rulerContainer.getBoundingClientRect()
+    this.isTabStopDragOutside =
+      evt.clientY < rulerRect.top - 4 || evt.clientY > rulerRect.bottom + 4
+    if (this.isTabStopDragOutside) {
+      this._removeGuideline()
+      this._renderX()
+      return
+    }
+    const scale = this.options.scale
+    const margins = this.draw.getMargins()
+    const width = this.draw.getWidth()
+    const innerWidth = width - margins[1] - margins[3]
+    const delta = evt.clientX - this.dragStartPosition
+    const position = Math.round(
+      Math.min(
+        Math.max((this.dragOriginTabStopX + delta - margins[3]) / scale, 0),
+        innerWidth / scale
+      )
+    )
+    const nextStops = originStops.map((stop, i) =>
+      i === index ? { ...stop, position } : { ...stop }
+    )
+    paragraphElementList.forEach(element => {
+      element.tabStops = nextStops.map(stop => ({ ...stop }))
+    })
+    this.isTabStopApplied = true
+    this.draw.render({ isSubmitHistory: false, isSetCursor: false })
+    this._showGuideline(margins[3] + position * scale)
+  }
+
   private _dragMargin(evt: MouseEvent) {
+    if (this.dragTabStopIndex !== null) {
+      this._dragTabStop(evt)
+      return
+    }
     if (this.dragIndentTarget) {
       this._dragIndent(evt)
       return
@@ -651,6 +824,35 @@ export class Ruler {
   }
 
   private _stopDrag() {
+    const isTabStopDrag = this.dragTabStopIndex !== null
+    if (isTabStopDrag) {
+      const index = this.dragTabStopIndex!
+      const originStops = this.dragOriginTabStops!
+      const paragraphElementList = this._getParagraphElementList()
+      const anchor = paragraphElementList
+        ? this._getIndentAnchor(paragraphElementList)
+        : undefined
+      if (originStops && anchor && paragraphElementList) {
+        if (this.isTabStopDragOutside) {
+          // 拖出标尺删除位点（清空时移除属性）
+          const nextStops = originStops.filter((_, i) => i !== index)
+          paragraphElementList.forEach(element => {
+            element.tabStops = nextStops.length
+              ? nextStops.map(stop => ({ ...stop }))
+              : undefined
+          })
+          this.draw.render({ isSetCursor: false })
+        } else if (this.isTabStopApplied) {
+          // 一次拖动提交一步撤销历史
+          this.draw.render({ isSetCursor: false })
+        }
+      }
+      this.dragTabStopIndex = null
+      this.dragOriginTabStops = null
+      this.isTabStopApplied = false
+      this.isTabStopDragOutside = false
+      this._removeGuideline()
+    }
     const isIndentDrag = !!this.dragIndentTarget
     this.dragIndentTarget = null
     this.dragOriginIndents = null

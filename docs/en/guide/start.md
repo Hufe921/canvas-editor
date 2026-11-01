@@ -10,7 +10,7 @@ The official only provides the editor core layer npm package, the menu bar or ot
 
 ## Features
 
-- Rich text operations: Undo, Redo, Painter, Clear Format, Font, Size, Bold, Italic, Underline, Strikeout, Superscript/Subscript, Text Color, Highlight, Alignment, Line Height, Row Margin, Title, List, First-line Indent
+- Rich text operations: Undo, Redo, Painter, Clear Format, Font, Size, Bold, Italic, Underline, Strikeout, Superscript/Subscript, Text Color, Highlight, Alignment, Line Height, Row Margin, Title, List, First-line Indent, Tab Stops
 - Insert elements: Table, Image, Hyperlink, Separator, Page Break, LaTeX Formula, Date Picker, Tab, Block, Label, Area
 - Table: Insert/Delete Rows and Columns, Merge/Split Cells, Border Style, Background Color, Vertical Alignment, Rowspan/Colspan, Cross-page Pagination
 - Print: Canvas bitmap printing, SVG vector printing, PDF export ([live demo](https://hufe.club/canvas-editor-pdf), see [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf))

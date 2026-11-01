@@ -440,6 +440,16 @@ instance.command.executeIndentRight(indentRight: number)
 instance.command.executeIndentFirstLine(indentFirstLine: number)
 ```
 
+## executeSetTabStops
+
+功能：设置光标所在段落制表位（传入空数组清除）
+
+用法：
+
+```javascript
+instance.command.executeSetTabStops(payload: ITabStop[])
+```
+
 ## executeInsertTable
 
 功能：插入表格

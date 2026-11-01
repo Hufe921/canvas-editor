@@ -534,6 +534,7 @@ export class RangeManager {
     const indentLeft = curElement.indentLeft ?? 0
     const indentRight = curElement.indentRight ?? 0
     const indentFirstLine = curElement.indentFirstLine ?? 0
+    const tabStops = curElement.tabStops || null
     const dashArray = curElement.dashArray || []
     const level = curElement.level || null
     const listType = curElement.listType || null
@@ -567,6 +568,7 @@ export class RangeManager {
       indentLeft,
       indentRight,
       indentFirstLine,
+      tabStops,
       dashArray,
       level,
       listType,
@@ -614,6 +616,7 @@ export class RangeManager {
       indentLeft: 0,
       indentRight: 0,
       indentFirstLine: 0,
+      tabStops: null,
       dashArray: [],
       level: null,
       listType: null,

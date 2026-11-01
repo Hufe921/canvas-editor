@@ -54,6 +54,13 @@ interface IElement {
   indentRight?: number;
   // 首行缩进（负数为悬挂缩进）
   indentFirstLine?: number;
+  // 段落制表位（距版心左缘）
+  tabStops?: {
+    position: number;
+    type: TabStopType;
+    // 前导符：none | dot | hyphen | underline
+    leader?: TabStopLeader;
+  }[];
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;

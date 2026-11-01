@@ -7,8 +7,9 @@ import {
 import { ElementType } from '../../dataset/enum/Element'
 import { PageMode, PaperDirection, WordBreak } from '../../dataset/enum/Editor'
 import { RowFlex } from '../../dataset/enum/Row'
+import { TabStopType } from '../../dataset/enum/TabStop'
 import { IComputeRowListPayload } from '../../interface/Draw'
-import { IElement, IElementMetrics } from '../../interface/Element'
+import { IElement, IElementMetrics, ITabStop } from '../../interface/Element'
 import { IRow, IRowComputeState, IRowElement } from '../../interface/Row'
 import {
   deleteSurroundElementList,
@@ -17,6 +18,7 @@ import {
 } from '../../utils/element'
 import { shrinkColgroupToWidth } from '../../utils/table'
 import type { Draw } from '../draw/Draw'
+import type { TextParticle } from '../draw/particle/TextParticle'
 
 export interface IComputePageListPayload {
   rowList: IRow[]
@@ -478,7 +480,32 @@ export class LayoutEngine {
         metrics.width = elementWidth * scale
         metrics.height = height * scale
       } else if (element.type === ElementType.TAB) {
-        metrics.width = defaultTabWidth * scale
+        // 制表位步进：跳至段落位点上当前行内x右侧最近者，无则自版心左缘按默认网格步进
+        const columnOffset =
+          isColumnEnabled && layout ? layout.offsets[currentColumn] || 0 : 0
+        const textX = x - currentStartX - columnOffset
+        const hitTabStop = this._getHitTabStop(elementList, i, textX, scale)
+        ;(element as IRowElement).tabLeader = hitTabStop?.leader
+        if (hitTabStop && hitTabStop.type !== TabStopType.LEFT) {
+          // 居中/居右位点：后续文本run的中点/右缘压位点，需提前量run宽度反推推进量
+          const runWidth = this._getTabRunWidth(
+            elementList,
+            i + 1,
+            ctx,
+            textParticle,
+            scale
+          )
+          const offset =
+            hitTabStop.type === TabStopType.CENTER ? runWidth / 2 : runWidth
+          metrics.width = Math.max(
+            hitTabStop.position * scale - textX - offset,
+            0
+          )
+        } else {
+          metrics.width = hitTabStop
+            ? hitTabStop.position * scale - textX
+            : tabWidth - (textX % tabWidth)
+        }
         metrics.height = defaultSize * scale
         metrics.boundingBoxDescent = 0
         metrics.boundingBoxAscent = textParticle.getBasisWordBoundingBoxAscent(
@@ -1076,5 +1103,63 @@ export class LayoutEngine {
       elementList,
       isElementListTruncated
     }
+  }
+
+  // 段落制表位命中：TAB 元素可能未携带段落属性（插入路径仅拷样式），向段首回扫最近携带者；
+  // 返回位点 x 在当前行内 x 右侧最近者（无则走默认网格）
+  private _getHitTabStop(
+    elementList: IElement[],
+    i: number,
+    textX: number,
+    scale: number
+  ): ITabStop | undefined {
+    let tabStops: ITabStop[] | undefined
+    for (let p = i; p >= 0; p--) {
+      const el = elementList[p]
+      if (el.tabStops) {
+        tabStops = el.tabStops
+        break
+      }
+      if (p !== i && el.value === ZERO && !el.listWrap) break
+    }
+    if (!tabStops?.length) return undefined
+    let hit: ITabStop | undefined
+    for (const stop of tabStops) {
+      const stopX = stop.position * scale
+      if (stopX > textX + 0.5 && (!hit || stop.position < hit.position)) {
+        hit = stop
+      }
+    }
+    return hit
+  }
+
+  // TAB 对齐 run 测量：TAB 之后到下一个 TAB/段落边界前的连续文本宽度，
+  // 供居中/居右位点反推推进量（隐藏元素宽度记 0，与行布局口径一致）
+  private _getTabRunWidth(
+    elementList: IElement[],
+    from: number,
+    ctx: CanvasRenderingContext2D,
+    textParticle: TextParticle,
+    scale: number
+  ): number {
+    let width = 0
+    for (let p = from; p < elementList.length; p++) {
+      const el = elementList[p]
+      const isHidden = !!el.hide || !!el.control?.hide
+      if (
+        el.value === ZERO ||
+        el.type === ElementType.TAB ||
+        (el.type && el.type !== ElementType.TEXT) ||
+        el.control ||
+        el.controlComponent
+      ) {
+        break
+      }
+      if (isHidden) continue
+      const fontMetrics = textParticle.measureText(ctx, el)
+      width += fontMetrics.width * scale
+      if (el.letterSpacing) width += el.letterSpacing * scale
+    }
+    return width
   }
 }

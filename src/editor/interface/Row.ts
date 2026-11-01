@@ -1,5 +1,6 @@
 import { PaperDirection } from '../dataset/enum/Editor'
 import { RowFlex } from '../dataset/enum/Row'
+import { TabStopLeader } from '../dataset/enum/TabStop'
 import {
   IElement,
   IElementMetrics,
@@ -13,6 +14,8 @@ export type IRowElement = IElement & {
   metrics: IElementMetrics
   style: string
   left?: number
+  // 制表位前导符（布局期命中位点时写入，渲染 leader 填充消费）
+  tabLeader?: TabStopLeader
 }
 
 export interface IRow {

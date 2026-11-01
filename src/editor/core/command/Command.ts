@@ -40,6 +40,7 @@ export class Command {
   public executeIndentLeft: CommandAdapt['indentLeft']
   public executeIndentRight: CommandAdapt['indentRight']
   public executeIndentFirstLine: CommandAdapt['indentFirstLine']
+  public executeSetTabStops: CommandAdapt['setTabStops']
   public executeInsertTable: CommandAdapt['insertTable']
   public executeInsertTableTopRow: CommandAdapt['insertTableTopRow']
   public executeInsertTableBottomRow: CommandAdapt['insertTableBottomRow']
@@ -284,6 +285,10 @@ export class Command {
     this.executeIndentFirstLine = this.wrap(
       'executeIndentFirstLine',
       adapt.indentFirstLine.bind(adapt)
+    )
+    this.executeSetTabStops = this.wrap(
+      'executeSetTabStops',
+      adapt.setTabStops.bind(adapt)
     )
     // 表格、图片上传、超链接、搜索、打印、图片操作
     this.executeInsertTable = this.wrap(

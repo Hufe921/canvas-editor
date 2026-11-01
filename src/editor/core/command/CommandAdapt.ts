@@ -77,6 +77,7 @@ import {
   IImageCaption,
   IImageCrop,
   IInsertElementListOption,
+  ITabStop,
   IUpdateElementByIdOption
 } from '../../interface/Element'
 import {
@@ -1060,6 +1061,26 @@ export class CommandAdapt {
     if (!paragraphElementList) return
     paragraphElementList.forEach(element => {
       element.indentFirstLine = payload
+    })
+    // 光标定位
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public setTabStops(payload: ITabStop[]) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList) return
+    // 位点按位置有序；空数组清除属性。各元素独立拷贝，避免段间共享引用
+    const stops = [...payload].sort((a, b) => a.position - b.position)
+    paragraphElementList.forEach(element => {
+      element.tabStops = stops.length
+        ? stops.map(stop => ({ ...stop }))
+        : undefined
     })
     // 光标定位
     const isSetCursor = startIndex === endIndex

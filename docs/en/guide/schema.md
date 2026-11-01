@@ -54,6 +54,13 @@ interface IElement {
   indentRight?: number;
   // first-line indent (negative for hanging indent)
   indentFirstLine?: number;
+  // paragraph tab stops (relative to the left margin)
+  tabStops?: {
+    position: number;
+    type: TabStopType;
+    // leader: none | dot | hyphen | underline
+    leader?: TabStopLeader;
+  }[];
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;
