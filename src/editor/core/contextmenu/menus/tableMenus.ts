@@ -10,6 +10,8 @@ import { IRegisterContextMenu } from '../../../interface/contextmenu/ContextMenu
 import { Command } from '../../command/Command'
 const {
   TABLE: {
+    INSERT_PARAGRAPH_BEFORE,
+    INSERT_PARAGRAPH_AFTER,
     BORDER,
     BORDER_ALL,
     BORDER_EMPTY,
@@ -46,6 +48,34 @@ const {
 export const tableMenus: IRegisterContextMenu[] = [
   {
     isDivider: true
+  },
+  {
+    key: INSERT_PARAGRAPH_BEFORE,
+    i18nPath: 'contextmenu.table.insertParagraphBefore',
+    when: payload => {
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
+    },
+    callback: (command: Command) => {
+      command.executeInsertTableParagraph('before')
+    }
+  },
+  {
+    key: INSERT_PARAGRAPH_AFTER,
+    i18nPath: 'contextmenu.table.insertParagraphAfter',
+    when: payload => {
+      return (
+        !payload.isReadonly &&
+        payload.isInTable &&
+        payload.options.mode !== EditorMode.FORM
+      )
+    },
+    callback: (command: Command) => {
+      command.executeInsertTableParagraph('after')
+    }
   },
   {
     key: BORDER,
