@@ -28,6 +28,8 @@
       }
     },
     "table": {
+      "insertParagraphBefore": "Insert paragraph above",
+      "insertParagraphAfter": "Insert paragraph below",
       "insertRowCol": "Insert row col",
       "insertTopRow": "Insert top 1 row",
       "insertBottomRow": "Insert bottom 1 row",
