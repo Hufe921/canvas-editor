@@ -46,6 +46,8 @@ export const INTERNAL_CONTEXT_MENU_KEY = {
     VERTICAL_ALIGN_TOP: 'tableVerticalAlignTop',
     VERTICAL_ALIGN_MIDDLE: 'tableVerticalAlignMiddle',
     VERTICAL_ALIGN_BOTTOM: 'tableVerticalAlignBottom',
+    INSERT_PARAGRAPH_BEFORE: 'tableInsertParagraphBefore',
+    INSERT_PARAGRAPH_AFTER: 'tableInsertParagraphAfter',
     INSERT_ROW_COL: 'tableInsertRowCol',
     INSERT_TOP_ROW: 'tableInsertTopRow',
     INSERT_BOTTOM_ROW: 'tableInsertBottomRow',
