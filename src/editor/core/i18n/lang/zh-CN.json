@@ -28,6 +28,8 @@
       }
     },
     "table": {
+      "insertParagraphBefore": "在上方插入段落",
+      "insertParagraphAfter": "在下方插入段落",
       "insertRowCol": "插入行列",
       "insertTopRow": "上方插入1行",
       "insertBottomRow": "下方插入1行",
