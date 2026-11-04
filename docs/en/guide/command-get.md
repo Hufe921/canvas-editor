@@ -149,6 +149,8 @@ Usage:
 const rangeList = instance.command.getKeywordRangeList()
 ```
 
+Keyword ranges address complete runtime graphemes, using the cursor-before-selection convention. See [application bindings and exact selection](./application-bindings.md) for stable metadata, atomic replacement and cell selection.
+
 ## getKeywordContext
 
 Feature: Get context list by keyword
