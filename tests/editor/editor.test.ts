@@ -30,6 +30,27 @@ describe('Editor 入口', () => {
     expect(plugin).toHaveBeenCalledWith(ctx.editor, undefined)
   })
 
+  it('displayOnly 仅移除写入交互并保留 DSL 展示配置', () => {
+    ctx = createTestEditor({
+      options: {
+        displayOnly: true,
+        mode: 'readonly' as any,
+        ruler: { disabled: false }
+      }
+    })
+    expect(ctx.container.querySelector('.ce-inputarea')).toBeNull()
+    expect(ctx.container.querySelector('.ce-cursor')).toBeNull()
+    expect(ctx.editor.command.getOptions().ruler.disabled).toBe(false)
+  })
+
+  it('readonly 不注册编辑菜单和快捷键', () => {
+    ctx = createTestEditor({ options: { mode: 'readonly' as any } })
+    const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true })
+    ctx.container.querySelector('.ce-page-container')?.dispatchEvent(event)
+    expect(event.defaultPrevented).toBe(false)
+    expect(ctx.container.querySelector('.ce-contextmenu-container')).toBeNull()
+  })
+
   it('destroy 不抛错', () => {
     ctx = createTestEditor()
     expect(() => ctx.editor.destroy()).not.toThrow()

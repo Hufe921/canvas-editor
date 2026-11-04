@@ -329,9 +329,14 @@ export class Draw {
 
     this.canvasEvent = new CanvasEvent(this)
     this.cursor = new Cursor(this, this.canvasEvent)
-    this.canvasEvent.register()
     this.globalEvent = new GlobalEvent(this, this.canvasEvent)
-    this.globalEvent.register()
+    if (!options.displayOnly) {
+      // 纯只读浏览（displayOnly）：画布交互与全局事件一并断电——
+      // dragover/drop（文件拖放写入通道）、click/dblclick/mouse 系
+      // （光标定位/划选 machinery）均不再注册
+      this.canvasEvent.register()
+      this.globalEvent.register()
+    }
 
     this.workerManager = new WorkerManager(this)
     new Actuator(this)
