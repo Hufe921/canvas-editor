@@ -152,7 +152,7 @@ export class IncrementalRowComputer {
     // 全局门控
     if (
       !range ||
-      !this.draw.getOptions().lab.incrementalCompute ||
+      !this.draw.getOptions().incrementalCompute ||
       positionContext?.isTable ||
       zone.isHeaderActive() ||
       zone.isFooterActive() ||

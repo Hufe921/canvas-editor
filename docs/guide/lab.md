@@ -2,6 +2,14 @@
 
 实验特性统一放在 `lab` 配置项下，**逐项默认关闭**。这些特性可能随版本调整或移除；未配置 `lab` 时编辑器行为与历史版本完全一致，且没有任何额外开销。
 
+## incrementalCompute 行级增量行计算（已废弃）
+
+::: warning 废弃与迁移说明
+`lab.incrementalCompute` 自 1.1.0 起废弃且**不再生效**，该声明暂时保留以减少旧项目的类型错误，将在后续版本移除。`lab` 配置仍用于承载其他实验特性。
+
+行级增量计算已转为正式功能并默认开启，默认无需配置；如需回退全量计算，请改用顶层 `incrementalCompute: false`。新旧配置同时存在时，只读取顶层配置。
+:::
+
 ```typescript
 new Editor(container, data, {
   lab: {
@@ -9,8 +17,6 @@ new Editor(container, data, {
   }
 })
 ```
-
-## incrementalCompute 行级增量行计算
 
 ### 解决什么问题
 

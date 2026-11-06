@@ -60,10 +60,13 @@ function createEditors(data: IElement[]): {
 } {
   vi.restoreAllMocks()
   const computeSpy = vi.spyOn(Draw.prototype, 'computeRowList')
-  const full = createTestEditor({ data })
+  const full = createTestEditor({
+    data,
+    options: { incrementalCompute: false }
+  })
   const incremental = createTestEditor({
     data,
-    options: { lab: { incrementalCompute: true } }
+    options: { incrementalCompute: true }
   })
   const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
   return { full, incremental, fullDraw, incrementalDraw, computeSpy }
@@ -133,12 +136,18 @@ describe('段落缩进排版', () => {
     vi.restoreAllMocks()
     const computeSpy = vi.spyOn(Draw.prototype, 'computeRowList')
     const data = makeIndentDoc()
-    const full = createTestEditor({ data })
-    const incremental = createTestEditor({ data })
+    const full = createTestEditor({
+      data,
+      options: { incrementalCompute: false }
+    })
+    const incremental = createTestEditor({
+      data,
+      options: { incrementalCompute: false }
+    })
     const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
     expect(snapshotRowList(incrementalDraw)).toEqual(snapshotRowList(fullDraw))
     incremental.editor.command.executeUpdateOptions({
-      lab: { incrementalCompute: true }
+      incrementalCompute: true
     })
     const edits: Array<(ctx: TestEditorContext) => void> = [
       ctx => {

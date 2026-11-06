@@ -177,10 +177,13 @@ describe('制表位排版', () => {
       { value: `${LOREM.repeat(10)}\n`, tabStops },
       { value: LOREM.repeat(20), tabStops }
     ]
-    const full = createTestEditor({ data })
+    const full = createTestEditor({
+      data,
+      options: { incrementalCompute: false }
+    })
     const incremental = createTestEditor({
       data,
-      options: { lab: { incrementalCompute: true } }
+      options: { incrementalCompute: true }
     })
     activeCtx = incremental
     const [fullDraw, incrementalDraw] = [

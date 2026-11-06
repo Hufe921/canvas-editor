@@ -65,6 +65,7 @@ interface IEditorOption {
   pageOuterSelectionDisable?: boolean // Disable selection when the mouse moves out of the page. default: false
   wordBreak?: WordBreak // Word and punctuation breaks: No punctuation in the first line of the BREAK_WORD &The word is not split, and the line is folded after BREAK_ALL full according to the width of the character. default: BREAK_WORD
   hangPunctuation?: boolean // Punctuation hanging: line-end punctuation that does not fit the line width hangs at the line end without occupying the width. default: false
+  incrementalCompute?: boolean // Row-level incremental layout. default: true; false uses full computation
   lab?: ILabOption // Experimental features configuration
   watermark?: IWatermark // Watermark configuration
   control?: IControlOption // Control configuration
@@ -103,7 +104,9 @@ See the [Lab](./lab.md) chapter for experimental features (`lab`).
 
 ```typescript
 interface ILabOption {
-  incrementalCompute?: boolean // Row-level incremental layout. default: false
+  // Row-level incremental layout. Original default: false
+  // @deprecated No effect as of 1.1.0; use top-level incrementalCompute
+  incrementalCompute?: boolean
 }
 ```
 

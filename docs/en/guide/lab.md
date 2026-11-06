@@ -2,6 +2,14 @@
 
 Experimental features live under the `lab` option and are **disabled by default**. They may change or be removed in future releases. Without any `lab` configuration, the editor behaves exactly as before, with zero additional overhead.
 
+## incrementalCompute: Row-Level Incremental Layout (Deprecated)
+
+::: warning Deprecation and migration
+`lab.incrementalCompute` is deprecated and **no longer has any effect** as of 1.1.0. This declaration is temporarily retained to avoid immediate TypeScript errors in existing projects and will be removed in a future release. The `lab` option remains available for other experimental features.
+
+Row-level incremental layout is now a stable feature enabled by default, so no configuration is required. To use full computation, set top-level `incrementalCompute: false` instead. When both options are present, only the top-level option is read.
+:::
+
 ```typescript
 new Editor(container, data, {
   lab: {
@@ -9,8 +17,6 @@ new Editor(container, data, {
   }
 })
 ```
-
-## incrementalCompute: Row-Level Incremental Layout
 
 ### What it solves
 

@@ -264,6 +264,7 @@ export function mergeOption(
     historyMaxRecordCount: 100,
     wordBreak: WordBreak.BREAK_WORD,
     hangPunctuation: false,
+    incrementalCompute: true,
     printPixelRatio: 3,
     maskMargin: [0, 0, 0, 0],
     letterClass: [LETTER_CLASS.ENGLISH],

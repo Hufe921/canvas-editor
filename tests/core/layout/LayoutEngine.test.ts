@@ -189,7 +189,7 @@ describe('LayoutEngine', () => {
         },
         defaultTabWidth: 16,
         paperDirection: PaperDirection.VERTICAL,
-        lab: { incrementalCompute: false },
+        incrementalCompute: false,
         wordBreak: 0
       }),
       getElementFont: () => '16px sans-serif',

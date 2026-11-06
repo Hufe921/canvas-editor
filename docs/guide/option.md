@@ -65,6 +65,7 @@ interface IEditorOption {
   pageOuterSelectionDisable?: boolean // 鼠标移出页面时选区禁用。默认：false
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
   hangPunctuation?: boolean // 标点悬挂：行尾放不下的避头标点悬挂在行尾，不占行宽。默认：false
+  incrementalCompute?: boolean // 行级增量计算。默认：true；false 使用全量计算
   lab?: ILabOption // 实验性功能配置
   watermark?: IWatermark // 水印配置
   control?: IControlOption // 控件配置
@@ -103,7 +104,9 @@ interface IEditorOption {
 
 ```typescript
 interface ILabOption {
-  incrementalCompute?: boolean // 行级增量行计算。默认：false
+  // 行级增量行计算。原默认：false
+  // @deprecated 自 1.1.0 起不再生效，请使用顶层 incrementalCompute
+  incrementalCompute?: boolean
 }
 ```
 

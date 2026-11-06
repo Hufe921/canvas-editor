@@ -47,6 +47,8 @@ export interface ILabOption {
    * 行级增量行计算：编辑时仅从受影响行断点续算，区间外行复用。
    * 复杂结构（表格/控件/浮动图/分栏/minWidth 控件占位等）自动退化全量。
    * 默认：false
+   * @deprecated 自 1.1.0 起不再生效，请使用
+   * IEditorOption.incrementalCompute，后续版本移除。
    */
   incrementalCompute?: boolean
 }
@@ -106,6 +108,8 @@ export interface IEditorOption {
   pageOuterSelectionDisable?: boolean
   wordBreak?: WordBreak
   hangPunctuation?: boolean
+  // 行级增量行计算。默认：true；false 使用全量计算
+  incrementalCompute?: boolean
   // 实验性功能（逐项默认关闭，未来可能调整或移除）
   lab?: ILabOption
   table?: ITableOption

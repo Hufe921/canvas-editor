@@ -274,8 +274,14 @@ function runDifferential(
   let fullCtx: TestEditorContext | undefined
   let incrementalCtx: TestEditorContext | undefined
   try {
-    fullCtx = createTestEditor({ data })
-    incrementalCtx = createTestEditor({ data, options: { lab: { incrementalCompute: true } } })
+    fullCtx = createTestEditor({
+      data,
+      options: { incrementalCompute: false }
+    })
+    incrementalCtx = createTestEditor({
+      data,
+      options: { incrementalCompute: true }
+    })
     const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
     expect(fullDraw).toBeTruthy()
     expect(incrementalDraw).toBeTruthy()
@@ -355,7 +361,7 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     try {
       ctx = createTestEditor({
         data: makeGiantParagraph(6000),
-        options: { lab: { incrementalCompute: true } }
+        options: { incrementalCompute: true }
       })
       computeSpy.mockClear()
       const elementCount = ctx.editor.command.getValue().data.main.length
@@ -396,10 +402,13 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
         { value: '列表B第二项\n', listId: 'list-b', listType: ListType.OL },
         { value: '末尾段落' }
       ]
-      fullCtx = createTestEditor({ data: makeDoc() })
+      fullCtx = createTestEditor({
+        data: makeDoc(),
+        options: { incrementalCompute: false }
+      })
       incrementalCtx = createTestEditor({
         data: makeDoc(),
-        options: { lab: { incrementalCompute: true } }
+        options: { incrementalCompute: true }
       })
       const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
       // 光标置于列表B首项第一个字符前，退格删除前一个字符（跨列表接缝）
@@ -432,10 +441,13 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     let incrementalCtx: TestEditorContext | undefined
     try {
       const data = makeParagraphs(8, 40)
-      fullCtx = createTestEditor({ data })
+      fullCtx = createTestEditor({
+        data,
+        options: { incrementalCompute: false }
+      })
       incrementalCtx = createTestEditor({
         data,
-        options: { lab: { incrementalCompute: true } }
+        options: { incrementalCompute: true }
       })
       const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
       // 第一段末尾换行符的元素索引（跳过文档起始换行符；光标置于换行符前 = 段落末尾）
@@ -516,30 +528,74 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     30000
   )
 
-  it('默认关闭（incrementalCompute: false）时行为与全量一致', () => {
+  it('默认开启行级增量计算', () => {
     vi.restoreAllMocks()
     const tryComputeSpy = vi.spyOn(
       IncrementalRowComputer.prototype,
       'tryCompute'
     )
     let ctx: TestEditorContext | undefined
-    let ctx2: TestEditorContext | undefined
     try {
-      const data = makeParagraphs(6, 30)
-      ctx = createTestEditor({ data })
-      ctx2 = createTestEditor({ data })
+      ctx = createTestEditor({ data: makeParagraphs(6, 30) })
       ctx.editor.command.executeSetRange(10, 10)
       ctx.editor.command.executeInsertElementList([{ value: '测试' }])
-      ctx2.editor.command.executeSetRange(10, 10)
-      ctx2.editor.command.executeInsertElementList([{ value: '测试' }])
-      // 关闭时 tryCompute 不产生成功结果
+      const success = tryComputeSpy.mock.results.some(
+        result => result.type === 'return' && result.value !== null
+      )
+      expect(success).toBe(true)
+    } finally {
+      ctx?.destroy()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it('旧 lab.incrementalCompute: false 不再关闭增量计算', () => {
+    vi.restoreAllMocks()
+    const tryComputeSpy = vi.spyOn(
+      IncrementalRowComputer.prototype,
+      'tryCompute'
+    )
+    let ctx: TestEditorContext | undefined
+    try {
+      ctx = createTestEditor({
+        data: makeParagraphs(6, 30),
+        options: { lab: { incrementalCompute: false } }
+      })
+      ctx.editor.command.executeSetRange(10, 10)
+      ctx.editor.command.executeInsertElementList([{ value: '测试' }])
+      const success = tryComputeSpy.mock.results.some(
+        result => result.type === 'return' && result.value !== null
+      )
+      expect(success).toBe(true)
+    } finally {
+      ctx?.destroy()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it('顶层 incrementalCompute: false 优先于旧 lab 配置并关闭增量计算', () => {
+    vi.restoreAllMocks()
+    const tryComputeSpy = vi.spyOn(
+      IncrementalRowComputer.prototype,
+      'tryCompute'
+    )
+    let ctx: TestEditorContext | undefined
+    try {
+      ctx = createTestEditor({
+        data: makeParagraphs(6, 30),
+        options: {
+          incrementalCompute: false,
+          lab: { incrementalCompute: true }
+        }
+      })
+      ctx.editor.command.executeSetRange(10, 10)
+      ctx.editor.command.executeInsertElementList([{ value: '测试' }])
       const success = tryComputeSpy.mock.results.some(
         result => result.type === 'return' && result.value !== null
       )
       expect(success).toBe(false)
     } finally {
       ctx?.destroy()
-      ctx2?.destroy()
       vi.restoreAllMocks()
     }
   })
@@ -551,10 +607,13 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     let incrementalCtx: TestEditorContext | undefined
     try {
       const data = makeParagraphs(8, 40)
-      fullCtx = createTestEditor({ data })
+      fullCtx = createTestEditor({
+        data,
+        options: { incrementalCompute: false }
+      })
       incrementalCtx = createTestEditor({
         data,
-        options: { lab: { incrementalCompute: true } }
+        options: { incrementalCompute: true }
       })
       const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
       const fullTextarea = fullCtx.container.querySelector('textarea')!
@@ -624,10 +683,13 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     let incrementalCtx: TestEditorContext | undefined
     try {
       const data = makeParagraphs(8, 40)
-      fullCtx = createTestEditor({ data })
+      fullCtx = createTestEditor({
+        data,
+        options: { incrementalCompute: false }
+      })
       incrementalCtx = createTestEditor({
         data,
-        options: { lab: { incrementalCompute: true } }
+        options: { incrementalCompute: true }
       })
       const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
       const command = incrementalCtx.editor.command

@@ -210,7 +210,7 @@ export class LayoutEngine {
     // 行快照：仅主文档且开启行级增量时记录（未开启时无额外开销）。
     // 闭包捕获的是调用时刻的跨行状态，两个记录点（首行/换行诞生新行）共用
     const isRecordRowSnapshot =
-      options.lab.incrementalCompute &&
+      options.incrementalCompute &&
       !isFromTable &&
       draw.isMainElementList(elementList)
     const buildRowComputeState = (
