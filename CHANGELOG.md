@@ -1,3 +1,35 @@
+# [1.1.0](https://github.com/Hufe921/canvas-editor/compare/v1.0.6...v1.1.0) (2026-11-06)
+
+
+### Bug Fixes
+
+* exclude trace-deleted titles from catalog #1510 ([84389f2](https://github.com/Hufe921/canvas-editor/commit/84389f2a1dc23360da17d5428727d3e72adc619f)), closes [#1510](https://github.com/Hufe921/canvas-editor/issues/1510)
+* hide table tool in form mode #1511 ([8b94772](https://github.com/Hufe921/canvas-editor/commit/8b9477218871353553d07ca2d4ee4a1f40f8f465)), closes [#1511](https://github.com/Hufe921/canvas-editor/issues/1511)
+* place contextmenu by available viewport space #1514 ([73ad2fa](https://github.com/Hufe921/canvas-editor/commit/73ad2fa86e3d64a888ae467ada29d80265174d72)), closes [#1514](https://github.com/Hufe921/canvas-editor/issues/1514)
+
+
+### Documentation
+
+* add pdf export notes ([09bdb1f](https://github.com/Hufe921/canvas-editor/commit/09bdb1f3e80a1bee28ff6a6717c17b052860e54b))
+* update README SVG render layer entry to built-in backend ([7cfb52e](https://github.com/Hufe921/canvas-editor/commit/7cfb52ed5ea87faa4a6e7a336e0c46caff142fa3))
+
+
+### Features
+
+* add line-end punctuation hanging option #692 ([68f1a41](https://github.com/Hufe921/canvas-editor/commit/68f1a41753a6ce093e59f1d6f0ad11733960154d)), closes [#692](https://github.com/Hufe921/canvas-editor/issues/692)
+* add paragraph indent and ruler indent markers #725 #1190 #1459 ([4be9e29](https://github.com/Hufe921/canvas-editor/commit/4be9e29228d980c41e57811c629d4965e54d1e62)), closes [#725](https://github.com/Hufe921/canvas-editor/issues/725) [#1190](https://github.com/Hufe921/canvas-editor/issues/1190) [#1459](https://github.com/Hufe921/canvas-editor/issues/1459)
+* add paragraph indent and tab hanging indent #725 #1190 ([948e6ac](https://github.com/Hufe921/canvas-editor/commit/948e6ac583f63efc48403e2a63a32456ee9c274c)), closes [#725](https://github.com/Hufe921/canvas-editor/issues/725) [#1190](https://github.com/Hufe921/canvas-editor/issues/1190)
+* add paragraph tab stops with leader and ruler marks #256 ([1865c9b](https://github.com/Hufe921/canvas-editor/commit/1865c9b063def06a36ba27151a781d4893fca076)), closes [#256](https://github.com/Hufe921/canvas-editor/issues/256)
+* add SVG rendering backend #374 ([cf51314](https://github.com/Hufe921/canvas-editor/commit/cf51314a5179a709b9ef9d13cea8041257d02cfb)), closes [#374](https://github.com/Hufe921/canvas-editor/issues/374)
+* promote incremental layout to stable and enable by default ([516f1a4](https://github.com/Hufe921/canvas-editor/commit/516f1a437f7fa6fcbb7a0f41d8f552ac0087a3a4))
+
+
+### Tests
+
+* stabilize canvas rendering regression tests ([9a1c3d8](https://github.com/Hufe921/canvas-editor/commit/9a1c3d807cdf4817329b8682d3b3d546b9956147))
+
+
+
 ## [1.0.6](https://github.com/Hufe921/canvas-editor/compare/v1.0.5...v1.0.6) (2026-10-23)
 
 
