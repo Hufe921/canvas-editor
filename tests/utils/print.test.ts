@@ -47,4 +47,43 @@ describe('print', () => {
     expect(printWindow.print).toHaveBeenCalledOnce()
     style.remove()
   })
+
+  it('浏览器扩展注入字体时不阻塞打印', async () => {
+    const extensionStyle = document.createElement('style')
+    extensionStyle.textContent = `
+      @font-face {
+        font-family: 'D-DINExp';
+        src: url('chrome-extension://extension-id/fonts/D-DINExp.woff2');
+      }
+    `
+    document.head.append(extensionStyle)
+
+    const printPromise = print([EXPORTED_IMAGE], { width: 794, height: 1123 })
+    const iframe = document.body.querySelector('iframe')!
+    const printWindow = iframe.contentWindow!
+    printWindow.print = vi.fn()
+    Object.defineProperty(printWindow.document, 'fonts', {
+      configurable: true,
+      value: { ready: new Promise(() => {}) }
+    })
+    const sidebar = document.createElement('chatgpt-sidebar')
+    const shadowRoot = sidebar.attachShadow({ mode: 'open' })
+    shadowRoot.innerHTML = `
+      <style>
+        @font-face {
+          font-family: 'Poppins';
+          src: url('chrome-extension://extension-id/fonts/Poppins.woff2');
+        }
+      </style>
+    `
+    printWindow.document.body.append(sidebar)
+
+    await printPromise
+    await new Promise(resolve => setTimeout(resolve))
+    expect(printWindow.print).toHaveBeenCalledOnce()
+    expect(printWindow.document.documentElement.innerHTML).not.toContain(
+      'D-DINExp'
+    )
+    extensionStyle.remove()
+  })
 })

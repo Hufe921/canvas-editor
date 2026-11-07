@@ -1,6 +1,17 @@
 import { PaperDirection } from '../dataset/enum/Editor'
 import { IIframeInfo } from '../interface/Block'
 
+const BROWSER_EXTENSION_URL_REGEXP =
+  /(?:chrome|moz|safari-web|ms-browser)-extension:\/\//
+
+function isBrowserExtensionElement(element: Element) {
+  const shadowHTML = element.shadowRoot?.innerHTML || ''
+  return (
+    BROWSER_EXTENSION_URL_REGEXP.test(element.outerHTML) ||
+    BROWSER_EXTENSION_URL_REGEXP.test(shadowHTML)
+  )
+}
+
 function convertPxToPaperSize(width: number, height: number) {
   if (width === 1125 && height === 1593) {
     return {
@@ -163,6 +174,7 @@ async function printPages(
   const documentStyles = Array.from(
     document.querySelectorAll('style, link[rel="stylesheet"]')
   )
+    .filter(element => !isBrowserExtensionElement(element))
     .map(element => element.outerHTML)
     .join('')
   doc.write(`${documentStyles}${style.outerHTML}${container.innerHTML}`)
@@ -239,12 +251,18 @@ async function waitForPrintResources(doc: Document): Promise<void> {
   const resources = Array.from(
     doc.querySelectorAll('image, link[rel="stylesheet"]')
   ).filter(element => {
+    if (isBrowserExtensionElement(element)) return false
     if (element.tagName.toLowerCase() === 'link') {
       return element.hasAttribute('href')
     }
     return element.hasAttribute('href') || element.hasAttribute('xlink:href')
   })
   await Promise.all(resources.map(waitForPrintResource))
+  const hasBrowserExtension = Array.from(doc.querySelectorAll('*')).some(
+    isBrowserExtensionElement
+  )
+  // 只等待打印内容自身资源，不等待浏览器扩展注入的字体
+  if (hasBrowserExtension) return
   await doc.fonts?.ready
 }
 
