@@ -40,6 +40,7 @@ import { ITraceOption } from './Trace'
 import { IRulerOption } from './Ruler'
 import { IHintOption } from './Hint'
 import type { ISpellcheckOption } from './Spellcheck'
+import { IParagraphDragOption } from './ParagraphDrag'
 import { BackendType } from '../dataset/enum/Editor'
 
 export interface ILabOption {
@@ -144,6 +145,7 @@ export interface IEditorOption {
   trace?: ITraceOption
   ruler?: IRulerOption
   hint?: IHintOption
+  paragraphDrag?: IParagraphDragOption
 }
 
 export interface IEditorResult {

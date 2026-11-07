@@ -95,6 +95,7 @@ interface IEditorOption {
   trace?: ITraceOption // 留痕配置。默认：禁用
   ruler?: IRulerOption // 标尺配置。默认：禁用
   hint?: IHintOption // 悬浮提示配置。默认：禁用
+  paragraphDrag?: IParagraphDragOption // 段落拖拽配置。默认：禁用
 }
 ```
 
@@ -353,6 +354,15 @@ interface ILineNumberOption {
   disabled?: boolean // 是否禁用。默认：true
   right?: number // 距离正文距离。默认：20
   type?: LineNumberType // 编号类型（每页重新编号、连续编号）。默认：连续编号
+}
+```
+
+## 段落拖拽配置
+
+```typescript
+interface IParagraphDragOption {
+  disabled?: boolean // 是否禁用。默认：true
+  color?: string // 拖拽手柄颜色。默认：#BABABA
 }
 ```
 

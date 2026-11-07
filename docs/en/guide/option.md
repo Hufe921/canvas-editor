@@ -95,6 +95,7 @@ interface IEditorOption {
   trace?: ITraceOption // Trace configuration. default: disabled
   ruler?: IRulerOption // Ruler configuration. default: disabled
   hint?: IHintOption // Hover hint configuration. default: disabled
+  paragraphDrag?: IParagraphDragOption // Paragraph drag configuration. default: disabled
 }
 ```
 
@@ -353,6 +354,15 @@ interface ILineNumberOption {
   disabled?: boolean // Whether to disable. default: false
   right?: number // Distance from the main text. default: 20
   type?: LineNumberType // Number type (renumber each page, consecutive numbering). default: continuity
+}
+```
+
+## Paragraph Drag Configuration
+
+```typescript
+interface IParagraphDragOption {
+  disabled?: boolean // Whether to disable. default: true
+  color?: string // Drag handle color. default: #BABABA
 }
 ```
 

@@ -15,6 +15,7 @@ import {
 } from '../../../utils/element'
 import { CanvasEvent } from '../CanvasEvent'
 import { getPagePointer, IPagePointer } from '../pagePointer'
+import { moveParagraphBlock } from '../../draw/particle/ParagraphDragParticle'
 
 type IDragElement = IElement & { dragId: string }
 
@@ -94,6 +95,49 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     if (!pointer) return
     if (draw.isReadonly() || draw.isDisabled()) {
       host.mousedown(evt)
+      return
+    }
+    if (host.paragraphDrag) {
+      const paragraphDrag = host.paragraphDrag
+      const paragraphDragParticle = draw.getParagraphDragParticle()
+      const targetIndex = paragraphDragParticle.getDropIndex(
+        pointer.y,
+        pointer.pageNo
+      )
+      if (targetIndex === null) return
+      paragraphDragParticle.clearHover()
+      const elementList = draw.getOriginalMainElementList()
+      const insertIndex = moveParagraphBlock(
+        elementList,
+        paragraphDrag,
+        targetIndex
+      )
+      const rangeManager = draw.getRange()
+      if (insertIndex === null) {
+        if (host.cacheRange) {
+          rangeManager.replaceRange(host.cacheRange)
+        }
+        draw.render({
+          isCompute: false,
+          isSubmitHistory: false,
+          isSetCursor: false
+        })
+        return
+      }
+      draw.getIncrementalRowComputer().markFullDirty()
+      const blockLength = paragraphDrag.endIndex - paragraphDrag.startIndex
+      rangeManager.setRange(
+        insertIndex,
+        Math.min(insertIndex + blockLength, elementList.length - 1)
+      )
+      draw.getPosition().setPositionContext({
+        isTable: false,
+        index: insertIndex
+      })
+      draw.clearSideEffect()
+      draw.render({
+        isSetCursor: false
+      })
       return
     }
     const position = draw.getPosition()

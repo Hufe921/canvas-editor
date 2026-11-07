@@ -1,5 +1,5 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
-import { EditorMode } from '../../../dataset/enum/Editor'
+import { EditorMode, EditorZone } from '../../../dataset/enum/Editor'
 import { ElementType } from '../../../dataset/enum/Element'
 import { MouseEventButton } from '../../../dataset/enum/Event'
 import { ControlComponent } from '../../../dataset/enum/Control'
@@ -71,6 +71,37 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
   let isReadonly = draw.isReadonly()
   const rangeManager = draw.getRange()
   const position = draw.getPosition()
+  if (evt.button === MouseEventButton.LEFT && !isReadonly) {
+    const block = draw
+      .getParagraphDragParticle()
+      .getHitParagraph(pointer.x, pointer.y, pointer.pageNo)
+    if (block) {
+      pointer.page.style.cursor = 'grabbing'
+      draw.setPageNo(pointer.pageNo)
+      draw.getZone().setZone(EditorZone.MAIN)
+      const elementList = draw.getOriginalMainElementList()
+      const endIndex = Math.min(block.endIndex, elementList.length - 1)
+      rangeManager.setRange(block.startIndex, endIndex)
+      position.setPositionContext({
+        isTable: false,
+        index: block.startIndex
+      })
+      position.setCursorPosition(
+        position.getOriginalMainPositionList()[block.startIndex]
+      )
+      host.isAllowSelection = false
+      if (!draw.isDisabled()) {
+        setRangeCache(host)
+        host.paragraphDrag = block
+      }
+      draw.render({
+        isCompute: false,
+        isSubmitHistory: false,
+        isSetCursor: false
+      })
+      return
+    }
+  }
   // 存在选区时忽略右键点击
   const range = rangeManager.getRange()
   if (

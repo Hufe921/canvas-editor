@@ -143,6 +143,7 @@ import { Badge } from './frame/Badge'
 import { Graffiti } from './graffiti/Graffiti'
 import { Magnifier } from './interactive/Magnifier'
 import { Accessibility } from '../accessibility/Accessibility'
+import { ParagraphDragParticle } from './particle/ParagraphDragParticle'
 
 export class Draw {
   private container: HTMLDivElement
@@ -218,6 +219,7 @@ export class Draw {
   private imageObserver: ImageObserver
   private graffiti: Graffiti
   private accessibility: Accessibility
+  private paragraphDragParticle: ParagraphDragParticle
 
   private LETTER_REG: RegExp
   private WORD_LIKE_REG: RegExp
@@ -336,6 +338,7 @@ export class Draw {
     this.workerManager = new WorkerManager(this)
     new Actuator(this)
     this.accessibility = new Accessibility(this)
+    this.paragraphDragParticle = new ParagraphDragParticle(this)
 
     const { letterClass } = options
     this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
@@ -1302,6 +1305,10 @@ export class Draw {
 
   public getListParticle(): ListParticle {
     return this.listParticle
+  }
+
+  public getParagraphDragParticle(): ParagraphDragParticle {
+    return this.paragraphDragParticle
   }
 
   public getCheckboxParticle(): CheckboxParticle {
@@ -2547,6 +2554,8 @@ export class Draw {
     if (!lineNumber.disabled) {
       this.lineNumber.render(ctx, pageNo)
     }
+    // 段落拖拽手柄
+    this.paragraphDragParticle.render(ctx, pageNo)
     // 绘制页面边框
     if (!pageBorder.disabled) {
       this.pageBorder.render(ctx, pageNo)

@@ -71,4 +71,13 @@ describe('mergeOption', () => {
     expect(options.spellcheck.disabled).toBe(false)
     expect(options.spellcheck.color).toBe('#00FF00')
   })
+
+  it('paragraphDrag 默认关闭且可覆盖配置', () => {
+    expect(mergeOption().paragraphDrag.disabled).toBe(true)
+    const options = mergeOption({
+      paragraphDrag: { disabled: false, color: '#00FF00' }
+    })
+    expect(options.paragraphDrag.disabled).toBe(false)
+    expect(options.paragraphDrag.color).toBe('#00FF00')
+  })
 })

@@ -14,6 +14,9 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   if (!pointer) return
   // 是否是拖拽文字
   if (host.isAllowDrag) {
+    if (host.paragraphDrag) {
+      pointer.page.style.cursor = 'grabbing'
+    }
     // 是否允许拖拽到选区
     const { x, y } = pointer
     const { startIndex, endIndex } = host.cacheRange!
@@ -48,6 +51,28 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     host.dragover(evt)
     host.isAllowDrop = true
     return
+  }
+  if (!host.isAllowSelection) {
+    const paragraphDragParticle = draw.getParagraphDragParticle()
+    if (paragraphDragParticle.isEnabled()) {
+      const hover = paragraphDragParticle.updateHover(
+        pointer.x,
+        pointer.y,
+        pointer.pageNo
+      )
+      pointer.page.style.cursor = hover.isHit
+        ? 'grab'
+        : draw.getPainterStyle()
+          ? 'copy'
+          : 'text'
+      if (hover.isChanged) {
+        draw.render({
+          isCompute: false,
+          isSubmitHistory: false,
+          isSetCursor: false
+        })
+      }
+    }
   }
   if (!host.isAllowSelection || !host.mouseDownStartPosition) return
   draw.setPageNo(pointer.pageNo)

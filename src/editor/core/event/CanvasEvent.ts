@@ -22,6 +22,7 @@ import drag from './handlers/drag'
 import { isIOS } from '../../utils/ua'
 import { ICopyOption } from '../../interface/Event'
 import type { RenderPage } from '../render/RenderBackend'
+import type { IParagraphDragBlock } from '../draw/particle/ParagraphDragParticle'
 
 export interface ICompositionInfo {
   elementList: IElement[]
@@ -38,6 +39,7 @@ export class CanvasEvent {
 
   public isAllowDrag: boolean
   public isAllowDrop: boolean
+  public paragraphDrag: IParagraphDragBlock | null
   public cacheRange: IRange | null
   public cacheElementList: IElement[] | null
   public cachePositionList: IElementPosition[] | null
@@ -62,6 +64,7 @@ export class CanvasEvent {
     this.compositionInfo = null
     this.isAllowDrag = false
     this.isAllowDrop = false
+    this.paragraphDrag = null
     this.cacheRange = null
     this.cacheElementList = null
     this.cachePositionList = null
@@ -98,6 +101,9 @@ export class CanvasEvent {
   public setIsAllowDrag(payload: boolean) {
     this.isAllowDrag = payload
     this.isAllowDrop = payload
+    if (!payload) {
+      this.paragraphDrag = null
+    }
   }
 
   public clearPainterStyle() {

@@ -73,6 +73,8 @@ import { defaultTraceOption } from '../dataset/constant/Trace'
 import { defaultRulerOption } from '../dataset/constant/Ruler'
 import { defaultSpellcheckOption } from '../dataset/constant/Spellcheck'
 import type { ISpellcheckOption } from '../interface/Spellcheck'
+import type { IParagraphDragOption } from '../interface/ParagraphDrag'
+import { defaultParagraphDragOption } from '../dataset/constant/ParagraphDrag'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -209,6 +211,10 @@ export function mergeOption(
     ...defaultSpellcheckOption,
     ...options.spellcheck
   }
+  const paragraphDragOptions: Required<IParagraphDragOption> = {
+    ...defaultParagraphDragOption,
+    ...options.paragraphDrag
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -306,6 +312,7 @@ export function mergeOption(
     trace: traceOptions,
     ruler: rulerOptions,
     hint: hintOptions,
-    spellcheck: spellcheckOptions
+    spellcheck: spellcheckOptions,
+    paragraphDrag: paragraphDragOptions
   }
 }

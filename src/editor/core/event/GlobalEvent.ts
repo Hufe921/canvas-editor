@@ -116,6 +116,12 @@ export class GlobalEvent {
   }
 
   public setCanvasEventAbility = () => {
+    if (this.canvasEvent.paragraphDrag) {
+      const cursor = this.draw.getPainterStyle() ? 'copy' : 'text'
+      this.draw.getPageList().forEach(page => {
+        page.style.cursor = cursor
+      })
+    }
     this.canvasEvent.setIsAllowDrag(false)
     this.canvasEvent.setIsAllowSelection(false)
   }

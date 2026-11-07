@@ -13,19 +13,32 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   if (!pointer) return
   draw.setPageNo(pointer.pageNo)
   const position = draw.getPosition()
-  const positionContext = position.adjustPositionContext({
-    x: pointer.x,
-    y: pointer.y
-  })
-  if (!positionContext) return
-  const { isTable, tdValueIndex, index } = positionContext
-  // 设置选区及光标位置
   const positionList = position.getPositionList()
-  const curIndex = isTable ? tdValueIndex! : index
-  if (~index) {
-    const rangeManager = draw.getRange()
+  const rangeManager = draw.getRange()
+  if (host.paragraphDrag) {
+    const dropIndex = draw
+      .getParagraphDragParticle()
+      .getDropIndex(pointer.y, pointer.pageNo)
+    if (dropIndex === null) return
+    const curIndex = Math.min(dropIndex, positionList.length - 1)
+    position.setPositionContext({
+      isTable: false,
+      index: curIndex
+    })
     rangeManager.setRange(curIndex, curIndex)
     position.setCursorPosition(positionList[curIndex])
+  } else {
+    const positionContext = position.adjustPositionContext({
+      x: pointer.x,
+      y: pointer.y
+    })
+    if (!positionContext) return
+    const { isTable, tdValueIndex, index } = positionContext
+    const curIndex = isTable ? tdValueIndex! : index
+    if (~index) {
+      rangeManager.setRange(curIndex, curIndex)
+      position.setCursorPosition(positionList[curIndex])
+    }
   }
   const cursor = draw.getCursor()
   const {
