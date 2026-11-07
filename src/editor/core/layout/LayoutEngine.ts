@@ -640,6 +640,7 @@ export class LayoutEngine {
       let nextElement = elementList[i + 1]
       // 累计行宽 + 当前元素宽度 + 排版宽度(英文单词整体宽度 + 后面标点符号宽度)
       let curRowWidth = curRow.width + metrics.width + curRowHangWidth
+      let curWordWidth = 0
       if (options.wordBreak === WordBreak.BREAK_WORD) {
         if (
           (!preElement?.type || preElement?.type === ElementType.TEXT) &&
@@ -656,6 +657,7 @@ export class LayoutEngine {
             // 后面存在元素 && 单词宽度大于行可用宽度，无需折行
             const wordWidth = width * scale
             if (endElement && wordWidth <= availableWidth) {
+              curWordWidth = wordWidth
               curRowWidth += wordWidth
               nextElement = endElement
             }
@@ -688,7 +690,7 @@ export class LayoutEngine {
           x,
           y,
           height,
-          width: metrics.width
+          width: curWordWidth || metrics.width
         },
         availableWidth,
         surroundElementList
@@ -981,7 +983,7 @@ export class LayoutEngine {
             x,
             y,
             height,
-            width: metrics.width
+            width: curWordWidth || metrics.width
           },
           availableWidth,
           surroundElementList

@@ -1458,7 +1458,7 @@ export class Position {
           // 下个元素起始位置：浮动元素右坐标 - 元素宽度
           x = surroundRect.x + surroundRect.width
           // 检测宽度是否足够，不够则移动到下一行，并还原状态
-          if (row.width + rowElement.metrics.width > availableWidth) {
+          if (row.width + rowElementRect.width > availableWidth) {
             rowElement.left = 0
             row.width -= rowIncreaseWidth
             break
