@@ -129,7 +129,8 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'lineWidth',
   'trace',
   'paperDirection',
-  'hint'
+  'hint',
+  'footnoteId'
 ]
 
 export const TABLE_TD_ZIP_ATTR: Array<keyof ITd> = [

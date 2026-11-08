@@ -273,6 +273,23 @@ export function formatElementList(
         }
       }
       i--
+    } else if (el.type === ElementType.FOOTNOTE) {
+      el.footnoteId = el.footnoteId || getUUID()
+      const valueList = el.valueList || []
+      formatElementList(valueList, {
+        ...options,
+        isHandleFirstElement: true,
+        isForceCompensation: true
+      })
+      for (const value of valueList) {
+        if (
+          (!value.type || TEXTLIKE_ELEMENT_TYPE.includes(value.type)) &&
+          value.size === undefined
+        ) {
+          value.size = editorOptions.footnote.size
+        }
+      }
+      el.valueList = valueList
     } else if (el.type === ElementType.TABLE) {
       const tableId = el.id || getUUID()
       el.id = tableId
@@ -864,6 +881,8 @@ export function zipElementList(
         })
         element = listElement
       }
+    } else if (element.type === ElementType.FOOTNOTE) {
+      element.valueList = zipElementList(element.valueList || [], options)
     } else if (element.type === ElementType.TABLE) {
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
@@ -1391,8 +1410,7 @@ export function createDomFromElementList(
                   }`
                 : borderStyle
             if (!element.borderType || element.borderType === TableBorder.ALL) {
-              tdDom.style.borderBottom = tdDom.style.borderRight =
-                tdBorderStyle
+              tdDom.style.borderBottom = tdDom.style.borderRight = tdBorderStyle
             }
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan

@@ -371,3 +371,16 @@ const {
   endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
 ```
+
+## getFootnoteValue
+
+Feature: Get footnote content by footnote ID.
+
+Usage:
+
+```javascript
+const {
+  id: string
+  value: IElement[]
+} | null = instance.command.getFootnoteValue(options: IGetFootnoteValueOption)
+```

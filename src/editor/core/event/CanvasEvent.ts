@@ -20,6 +20,9 @@ import click, { getWordRangeBySegmenter } from './handlers/click'
 import composition from './handlers/composition'
 import drag from './handlers/drag'
 import { isIOS } from '../../utils/ua'
+import { isMod } from '../../utils/hotkey'
+import { LocationPosition } from '../../dataset/enum/Common'
+import { getPagePointer } from './pagePointer'
 import { ICopyOption } from '../../interface/Event'
 import type { RenderPage } from '../render/RenderBackend'
 import type { IParagraphDragBlock } from '../draw/particle/ParagraphDragParticle'
@@ -195,10 +198,29 @@ export class CanvasEvent {
     mousedown(evt, this)
   }
 
-  public click() {
+  public click(evt: MouseEvent) {
     // IOS系统限制非用户主动触发事件的键盘弹出
     if (isIOS && !this.draw.isReadonly()) {
       this.draw.getCursor().getAgentDom().focus()
+    }
+    if (!isMod(evt)) return
+    const pointer = getPagePointer(evt, this.pageContainer)
+    if (!pointer) return
+    const positionResult = this.position.getPositionByXY({
+      x: pointer.x,
+      y: pointer.y,
+      pageNo: pointer.pageNo
+    })
+    if (!positionResult.isDirectHit) return
+    const footnote = this.draw.getFootnote()
+    if (positionResult.isFootnote && positionResult.footnoteId) {
+      footnote.locationFootnote(positionResult.footnoteId, {
+        position: LocationPosition.BEFORE
+      })
+      return
+    }
+    if (positionResult.footnoteId) {
+      footnote.locationFootnote(positionResult.footnoteId)
     }
   }
 

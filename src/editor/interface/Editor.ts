@@ -41,6 +41,7 @@ import { IRulerOption } from './Ruler'
 import { IHintOption } from './Hint'
 import type { ISpellcheckOption } from './Spellcheck'
 import { IParagraphDragOption } from './ParagraphDrag'
+import { IFootnoteOption } from './Footnote'
 import { BackendType } from '../dataset/enum/Editor'
 
 export interface ILabOption {
@@ -146,6 +147,7 @@ export interface IEditorOption {
   ruler?: IRulerOption
   hint?: IHintOption
   paragraphDrag?: IParagraphDragOption
+  footnote?: IFootnoteOption
 }
 
 export interface IEditorResult {

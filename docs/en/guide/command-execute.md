@@ -1236,6 +1236,45 @@ Usage:
 instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
 ```
 
+## executeInsertFootnote
+
+Feature: Insert a footnote at the current caret in the main body. Returns the footnote ID, or `null` when insertion is unavailable.
+
+Usage:
+
+```javascript
+const footnoteId = instance.command.executeInsertFootnote({
+  id?: string,
+  value: IElement[]
+})
+```
+
+## executeSetFootnoteValue
+
+Feature: Update footnote content by footnote ID.
+
+Usage:
+
+```javascript
+instance.command.executeSetFootnoteValue({
+  id: string,
+  value: IElement[]
+})
+```
+
+## executeLocationFootnote
+
+Feature: Locate the end of the footnote content. Use `position: LocationPosition.BEFORE` to locate its reference in the main body. Ctrl/Cmd-clicking either side also navigates between them.
+
+Usage:
+
+```javascript
+instance.command.executeLocationFootnote(
+  footnoteId: string,
+  options?: ILocationFootnoteOption
+)
+```
+
 ## executeClearGraffiti
 
 Feature: clear graffiti data

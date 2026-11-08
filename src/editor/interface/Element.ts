@@ -230,6 +230,10 @@ export interface IPageBreakElement {
   paperDirection?: PaperDirection
 }
 
+export interface IFootnoteElement {
+  footnoteId?: string
+}
+
 export type IElement = IElementBasic &
   IElementStyle &
   IElementRule &
@@ -250,7 +254,8 @@ export type IElement = IElementBasic &
   IListElement &
   IAreaElement &
   ILabelElement &
-  IPageBreakElement
+  IPageBreakElement &
+  IFootnoteElement
 
 export interface IElementMetrics {
   width: number

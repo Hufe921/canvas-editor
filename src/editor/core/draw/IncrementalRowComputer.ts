@@ -154,6 +154,7 @@ export class IncrementalRowComputer {
       !range ||
       !this.draw.getOptions().incrementalCompute ||
       positionContext?.isTable ||
+      this.draw.getFootnote().isReferenceExist() ||
       zone.isHeaderActive() ||
       zone.isFooterActive() ||
       !Number.isInteger(range.startIndex) ||
@@ -304,7 +305,10 @@ export class IncrementalRowComputer {
   }
 
   // 二分定位元素索引所在的行（最后一个 startIndex <= elementIndex 的行）
-  private _findRowIndexOfElement(rowList: IRow[], elementIndex: number): number {
+  private _findRowIndexOfElement(
+    rowList: IRow[],
+    elementIndex: number
+  ): number {
     let left = 0
     let right = rowList.length - 1
     let result = -1
@@ -324,6 +328,7 @@ export class IncrementalRowComputer {
   private _isComplexElement(element: IElement): boolean {
     return (
       element.type === ElementType.TABLE ||
+      element.type === ElementType.FOOTNOTE ||
       element.type === ElementType.PAGE_BREAK ||
       element.type === ElementType.BLOCK ||
       element.type === ElementType.SEPARATOR ||

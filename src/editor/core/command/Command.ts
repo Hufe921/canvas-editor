@@ -98,6 +98,10 @@ export class Command {
   public executeSetAreaBadge: CommandAdapt['setAreaBadge']
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeInsertArea: CommandAdapt['insertArea']
+  public executeInsertFootnote: CommandAdapt['insertFootnote']
+  public executeSetFootnoteValue: CommandAdapt['setFootnoteValue']
+  public executeLocationFootnote: CommandAdapt['locationFootnote']
+  public getFootnoteValue: CommandAdapt['getFootnoteValue']
   public executeSetAreaValue: CommandAdapt['setAreaValue']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
   public executeDeleteArea: CommandAdapt['deleteArea']
@@ -506,6 +510,20 @@ export class Command {
     this.executeInsertArea = this.wrap(
       'executeInsertArea',
       adapt.insertArea.bind(adapt)
+    )
+    // 脚注
+    this.executeInsertFootnote = this.wrap(
+      'executeInsertFootnote',
+      adapt.insertFootnote.bind(adapt)
+    )
+    this.executeSetFootnoteValue = this.wrap(
+      'executeSetFootnoteValue',
+      adapt.setFootnoteValue.bind(adapt)
+    )
+    this.getFootnoteValue = adapt.getFootnoteValue.bind(adapt)
+    this.executeLocationFootnote = this.wrap(
+      'executeLocationFootnote',
+      adapt.locationFootnote.bind(adapt)
     )
     this.executeSetAreaValue = this.wrap(
       'executeSetAreaValue',

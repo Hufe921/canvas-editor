@@ -15,6 +15,9 @@ export interface ICurrentPosition {
   isImage?: boolean
   isLabel?: boolean
   isTable?: boolean
+  isFootnote?: boolean
+  footnoteId?: string
+  footnoteValueIndex?: number
   isDirectHit?: boolean
   trIndex?: number
   tdIndex?: number
@@ -50,6 +53,8 @@ export interface IPositionContext {
   isImage?: boolean
   isLabel?: boolean
   isDirectHit?: boolean
+  isFootnote?: boolean
+  footnoteId?: string
   index?: number
   trIndex?: number
   tdIndex?: number

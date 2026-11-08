@@ -50,6 +50,7 @@ interface IEditorOption {
   backend?: BackendType // 渲染后端：CANVAS、SVG。默认：CANVAS
   defaultHyperlinkColor?: string // 默认超链接颜色。默认：#0000FF
   table?: ITableOption // 表格配置
+  footnote?: IFootnoteOption // 脚注配置
   header?: IHeader // 页眉配置
   footer?: IFooter // 页脚配置
   pageNumber?: IPageNumber // 页码配置
@@ -119,6 +120,18 @@ interface ITableOption {
   defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
   defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
   overflow?: boolean // 是否允许表格超出正文区域。为 false 时表格总宽在布局阶段会被等比例压缩至页面内容区内（列宽不低于 defaultColMinWidth）。默认：false
+}
+```
+
+## 脚注配置
+
+```typescript
+interface IFootnoteOption {
+  size?: number // 脚注默认字号。默认：10
+  color?: string // 脚注编号颜色。默认：#000000
+  lineColor?: string // 分隔线颜色。默认：#000000
+  lineWidth?: number // 分隔线宽度。默认：1
+  gap?: number // 分隔线与正文间距。默认：6
 }
 ```
 

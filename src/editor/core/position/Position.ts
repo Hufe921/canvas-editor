@@ -268,12 +268,22 @@ export class Position {
   }
 
   public getPositionList(): IElementPosition[] {
+    if (this.positionContext.isFootnote) {
+      return this.draw
+        .getFootnote()
+        .getPositionListByContext(this.positionContext)
+    }
     return this.positionContext.isTable
       ? this.getTablePositionList(this.draw.getOriginalElementList())
       : this.getOriginalPositionList()
   }
 
   public getMainPositionList(): IElementPosition[] {
+    if (this.positionContext.isFootnote) {
+      return this.draw
+        .getFootnote()
+        .getPositionListByContext(this.positionContext)
+    }
     return this.positionContext.isTable
       ? this.getTablePositionList(this.draw.getOriginalMainElementList())
       : this.positionList
@@ -923,6 +933,97 @@ export class Position {
     return null
   }
 
+  // 脚注正文有独立的数据下标，但位置上下文始终锚定正文引用元素
+  private _getFootnotePositionByXY(
+    x: number,
+    y: number,
+    pageNo: number
+  ): ICurrentPosition | null {
+    const layoutList = this.draw.getFootnote().getPageLayoutList(pageNo)
+    if (!layoutList.length) return null
+    const { margins, innerWidth } = this.draw.getPageSize(pageNo)
+    for (const layout of layoutList) {
+      const positionList = layout.positionList
+      if (!positionList.length) continue
+      const firstPosition = positionList[0]
+      const lastPosition = positionList[positionList.length - 1]
+      const firstOffsetY = layout.rowList[firstPosition.rowIndex]?.offsetY || 0
+      if (
+        x < margins[3] ||
+        x > margins[3] + innerWidth ||
+        y < firstPosition.coordinate.leftTop[1] - firstOffsetY ||
+        y > lastPosition.coordinate.leftBottom[1]
+      ) {
+        continue
+      }
+      const createPosition = (
+        footnoteValueIndex: number,
+        hitLineStartIndex?: number
+      ): ICurrentPosition => ({
+        index: layout.referenceIndex,
+        isFootnote: true,
+        footnoteId: layout.id,
+        footnoteValueIndex,
+        isDirectHit: true,
+        hitLineStartIndex
+      })
+      for (const position of positionList) {
+        const {
+          index,
+          left,
+          isFirstLetter,
+          coordinate: { leftTop, rightTop, leftBottom }
+        } = position
+        if (
+          leftTop[0] - left <= x &&
+          rightTop[0] >= x &&
+          leftTop[1] <= y &&
+          leftBottom[1] >= y
+        ) {
+          const element = layout.element.valueList?.[index]
+          if (!element) continue
+          let footnoteValueIndex = index
+          let hitLineStartIndex: number | undefined
+          if (element.value !== ZERO) {
+            const valueWidth = rightTop[0] - leftTop[0]
+            if (x < leftTop[0] + valueWidth / 2) {
+              footnoteValueIndex = Math.max(index - 1, 0)
+              if (isFirstLetter && index > 0) {
+                hitLineStartIndex = index
+              }
+            }
+          }
+          return createPosition(footnoteValueIndex, hitLineStartIndex)
+        }
+      }
+      // 点击行尾或行首空白时，命中当前可见行而不是正文最后一行
+      const lastLetterList = positionList.filter(
+        position => position.isLastLetter
+      )
+      for (const lastLetter of lastLetterList) {
+        const { index, rowIndex, coordinate } = lastLetter
+        const rowOffsetY = layout.rowList[rowIndex]?.offsetY || 0
+        if (
+          y <= coordinate.leftTop[1] - rowOffsetY ||
+          y > coordinate.leftBottom[1]
+        ) {
+          continue
+        }
+        const headPosition = positionList.find(
+          position => position.rowIndex === rowIndex
+        )!
+        if (x < headPosition.coordinate.leftTop[0]) {
+          return createPosition(
+            Math.max(headPosition.index - 1, 0),
+            headPosition.index > 0 ? headPosition.index : undefined
+          )
+        }
+        return createPosition(index)
+      }
+    }
+    return null
+  }
+
   public getPositionByXY(payload: IGetPositionByXYPayload): ICurrentPosition {
     const { x, y, isTable } = payload
     let { elementList, positionList } = payload
@@ -936,6 +1037,10 @@ export class Position {
     const curPageNo = payload.pageNo ?? this.draw.getPageNo()
     const isMainActive = zoneManager.isMainActive()
     const positionNo = curPageNo
+    if (!isTable && isMainActive && !payload.elementList) {
+      const footnotePosition = this._getFootnotePositionByXY(x, y, curPageNo)
+      if (footnotePosition) return footnotePosition
+    }
     // 验证浮于文字上方元素
     if (!isTable) {
       const floatTopPosition = this.getFloatPositionByXY({
@@ -1055,7 +1160,11 @@ export class Position {
           isDirectHit: true,
           hitLineStartIndex,
           index: curPositionIndex,
-          isControl: !!element.controlId
+          isControl: !!element.controlId,
+          footnoteId:
+            element.type === ElementType.FOOTNOTE
+              ? element.footnoteId
+              : undefined
         }
       }
     }
@@ -1365,6 +1474,7 @@ export class Position {
     // 移动控件内光标
     if (
       positionResult.isControl &&
+      !positionResult.isFootnote &&
       this.draw.getMode() !== EditorMode.READONLY
     ) {
       const { index, isTable, trIndex, tdIndex, tdValueIndex } = positionResult
@@ -1391,6 +1501,8 @@ export class Position {
       isLabel,
       isDirectHit,
       isTable,
+      isFootnote,
+      footnoteId,
       trIndex,
       tdIndex,
       tdId,
@@ -1401,6 +1513,8 @@ export class Position {
     // 设置位置上下文
     this.setPositionContext({
       isTable: isTable || false,
+      isFootnote: isFootnote || false,
+      footnoteId,
       isCheckbox: isCheckbox || false,
       isRadio: isRadio || false,
       isControl: isControl || false,

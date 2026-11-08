@@ -144,6 +144,24 @@ export function mouseup(evt: MouseEvent, host: CanvasEvent) {
     const positionList = position.getPositionList()
     const positionContext = position.getPositionContext()
     const rangeManager = draw.getRange()
+    const cacheContext = host.cachePositionContext
+    if (
+      !!cacheContext?.isFootnote !== !!positionContext.isFootnote ||
+      (positionContext.isFootnote &&
+        cacheContext?.footnoteId !== positionContext.footnoteId)
+    ) {
+      if (cacheContext) {
+        position.setPositionContext(cacheContext)
+      }
+      if (host.cacheRange) {
+        rangeManager.replaceRange(host.cacheRange)
+      }
+      draw.render({
+        isCompute: false,
+        isSubmitHistory: false
+      })
+      return
+    }
     const cacheRange = host.cacheRange!
     const cacheElementList = host.cacheElementList!
     const cachePositionList = host.cachePositionList!

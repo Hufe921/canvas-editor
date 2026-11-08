@@ -122,6 +122,13 @@ export function del(evt: KeyboardEvent, host: CanvasEvent) {
     const { index } = cursorPosition
     // 命中图片直接删除
     const positionContext = position.getPositionContext()
+    if (
+      isCollapsed &&
+      positionContext.isFootnote &&
+      index >= position.getPositionList().length - 1
+    ) {
+      return
+    }
     if (positionContext.isDirectHit && positionContext.isImage) {
       draw.deleteElementList(elementList, index, 1)
       curIndex = index - 1

@@ -50,6 +50,7 @@ interface IEditorOption {
   backend?: BackendType // Rendering backend: CANVAS or SVG. default: CANVAS
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF
   table?: ITableOption // Table configuration
+  footnote?: IFootnoteOption // Footnote configuration
   header?: IHeader // Header configuration
   footer?: IFooter // Footer configuration
   pageNumber?: IPageNumber // Page number configuration
@@ -119,6 +120,18 @@ interface ITableOption {
   defaultTrMinHeight?: number // Default table row minimum height. default: 42
   defaultColMinWidth?: number // Default minimum width for table columns (applied if the overall width is sufficient, otherwise
   overflow?: boolean // Is it allowed for the table to exceed the main body. When false, the total table width is proportionally shrunk to fit the page content area during layout (column width is not less than defaultColMinWidth). Default: false
+}
+```
+
+## Footnote Configuration
+
+```typescript
+interface IFootnoteOption {
+  size?: number // Default footnote font size. default: 10
+  color?: string // Footnote number color. default: #000000
+  lineColor?: string // Separator color. default: #000000
+  lineWidth?: number // Separator width. default: 1
+  gap?: number // Gap between the separator and content. default: 6
 }
 ```
 

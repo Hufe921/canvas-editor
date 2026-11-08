@@ -2394,6 +2394,39 @@ window.onload = function () {
   }
   instance.register.contextMenuList([
     {
+      name: '添加脚注',
+      when: payload => {
+        return (
+          !payload.isReadonly &&
+          payload.editorTextFocus &&
+          payload.zone === EditorZone.MAIN &&
+          !payload.isInTable
+        )
+      },
+      callback: (command: Command) => {
+        new Dialog({
+          title: '添加脚注',
+          data: [
+            {
+              type: 'textarea',
+              label: '内容',
+              name: 'value',
+              height: 100,
+              required: true,
+              placeholder: '请输入脚注内容'
+            }
+          ],
+          onConfirm: payload => {
+            const value = payload.find(p => p.name === 'value')?.value
+            if (!value) return
+            command.executeInsertFootnote({
+              value: splitText(value).map(n => ({ value: n }))
+            })
+          }
+        })
+      }
+    },
+    {
       name: '批注',
       when: payload => {
         return (

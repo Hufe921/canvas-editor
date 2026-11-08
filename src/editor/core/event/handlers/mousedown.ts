@@ -140,6 +140,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     isImage,
     isLabel,
     isTable,
+    isFootnote,
+    footnoteValueIndex,
     tableId,
     trIndex,
     tdIndex,
@@ -147,16 +149,20 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     tdValueIndex,
     hitLineStartIndex
   } = positionResult
+  const curIndex = isFootnote
+    ? footnoteValueIndex!
+    : isTable
+      ? tdValueIndex!
+      : index
   // 记录选区开始位置
   host.mouseDownStartPosition = {
     ...positionResult,
-    index: isTable ? tdValueIndex! : index,
+    index: curIndex,
     x: pointer.x,
     y: pointer.y
   }
   const elementList = draw.getElementList()
   const positionList = position.getPositionList()
-  const curIndex = isTable ? tdValueIndex! : index
   const curElement = elementList[curIndex]
   // 绘制
   const isDirectHitImage = !!(isDirectHit && isImage)
@@ -174,7 +180,13 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
         rangeManager.getRange()
       if (~oldStartIndex) {
         const newPositionContext = position.getPositionContext()
-        if (newPositionContext.tdId === oldPositionContext.tdId) {
+        const isFootnoteContext =
+          newPositionContext.isFootnote || oldPositionContext.isFootnote
+        const isSameContext = isFootnoteContext
+          ? newPositionContext.footnoteId === oldPositionContext.footnoteId &&
+            !!newPositionContext.isFootnote === !!oldPositionContext.isFootnote
+          : newPositionContext.tdId === oldPositionContext.tdId
+        if (isSameContext) {
           // 沿用原选区锚点：光标在选区结束位置时锚点为结束位置
           const oldCursorIndex = position.getCursorPosition()?.index
           const oldAnchorIndex =

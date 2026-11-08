@@ -75,6 +75,8 @@ import { defaultSpellcheckOption } from '../dataset/constant/Spellcheck'
 import type { ISpellcheckOption } from '../interface/Spellcheck'
 import type { IParagraphDragOption } from '../interface/ParagraphDrag'
 import { defaultParagraphDragOption } from '../dataset/constant/ParagraphDrag'
+import { IFootnoteOption } from '../interface/Footnote'
+import { defaultFootnoteOption } from '../dataset/constant/Footnote'
 
 export function mergeOption(
   options: IEditorOption = {}
@@ -215,6 +217,10 @@ export function mergeOption(
     ...defaultParagraphDragOption,
     ...options.paragraphDrag
   }
+  const footnoteOptions: Required<IFootnoteOption> = {
+    ...defaultFootnoteOption,
+    ...options.footnote
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -313,6 +319,7 @@ export function mergeOption(
     ruler: rulerOptions,
     hint: hintOptions,
     spellcheck: spellcheckOptions,
-    paragraphDrag: paragraphDragOptions
+    paragraphDrag: paragraphDragOptions,
+    footnote: footnoteOptions
   }
 }

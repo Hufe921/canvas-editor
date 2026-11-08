@@ -17,5 +17,6 @@ export enum ElementType {
   BLOCK = 'block',
   TITLE = 'title',
   LIST = 'list',
-  LABEL = 'label'
+  LABEL = 'label',
+  FOOTNOTE = 'footnote'
 }

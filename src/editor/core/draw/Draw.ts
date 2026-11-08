@@ -144,6 +144,7 @@ import { Graffiti } from './graffiti/Graffiti'
 import { Magnifier } from './interactive/Magnifier'
 import { Accessibility } from '../accessibility/Accessibility'
 import { ParagraphDragParticle } from './particle/ParagraphDragParticle'
+import { Footnote } from './interactive/Footnote'
 
 export class Draw {
   private container: HTMLDivElement
@@ -220,6 +221,7 @@ export class Draw {
   private graffiti: Graffiti
   private accessibility: Accessibility
   private paragraphDragParticle: ParagraphDragParticle
+  private footnote: Footnote
 
   private LETTER_REG: RegExp
   private WORD_LIKE_REG: RegExp
@@ -339,6 +341,7 @@ export class Draw {
     new Actuator(this)
     this.accessibility = new Accessibility(this)
     this.paragraphDragParticle = new ParagraphDragParticle(this)
+    this.footnote = new Footnote(this)
 
     const { letterClass } = options
     this.LETTER_REG = new RegExp(`[${letterClass.join('')}]`)
@@ -806,6 +809,9 @@ export class Draw {
 
   public getRowList(): IRow[] {
     const positionContext = this.position.getPositionContext()
+    if (positionContext.isFootnote) {
+      return this.footnote.getVisibleRowListByContext(positionContext)
+    }
     return positionContext.isTable
       ? this.getTableRowList(this.getOriginalElementList())
       : this.getOriginalRowList()
@@ -833,6 +839,10 @@ export class Draw {
 
   public getArea(): Area {
     return this.area
+  }
+
+  public getFootnote(): Footnote {
+    return this.footnote
   }
 
   public getAreaTool(): AreaTool {
@@ -910,6 +920,9 @@ export class Draw {
   public getElementList(): IElement[] {
     const positionContext = this.position.getPositionContext()
     const elementList = this.getOriginalElementList()
+    if (positionContext.isFootnote) {
+      return this.footnote.getValueListByContext(elementList, positionContext)
+    }
     return positionContext.isTable
       ? this.getTableElementList(elementList)
       : elementList
@@ -917,6 +930,12 @@ export class Draw {
 
   public getMainElementList(): IElement[] {
     const positionContext = this.position.getPositionContext()
+    if (positionContext.isFootnote) {
+      return this.footnote.getValueListByContext(
+        this.elementList,
+        positionContext
+      )
+    }
     return positionContext.isTable
       ? this.getTableElementList(this.elementList)
       : this.elementList
@@ -2015,7 +2034,10 @@ export class Draw {
             // 手动触发渲染
             this.textParticle.complete()
           }
-        } else if (element.type === ElementType.SUPERSCRIPT) {
+        } else if (
+          element.type === ElementType.SUPERSCRIPT ||
+          element.type === ElementType.FOOTNOTE
+        ) {
           this.textParticle.complete()
           this.superscriptParticle.render(ctx, element, x, y + offsetY)
         } else if (element.type === ElementType.SUBSCRIPT) {
@@ -2514,6 +2536,7 @@ export class Draw {
       zone: EditorZone.MAIN
     })
     if (this.getIsPagingMode()) {
+      this.footnote.render(ctx, pageNo)
       // 绘制页眉
       if (!header.disabled) {
         this.header.render(ctx, pageNo)
@@ -2671,20 +2694,31 @@ export class Draw {
         this.incrementalRowComputer.consumeDirtyRange(),
         rowComputePayload
       )
-      this.rawRowList =
-        incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
-      this.incrementalRowComputer.observeLayout()
-      // 分页模式下跨页表格在渲染层拆分为按页片段行
-      if (isPagingMode) {
-        this.rowList = this.tablePaging.splitTableRowAcrossPages(
-          this.rawRowList
-        )
-      } else {
-        this.rowList = this.rawRowList
+      if (!incrementalResult) {
+        this.footnote.recovery()
       }
-      // 页面信息（maxPageNo 截断会重置该标志）
-      this.isElementListTruncated = false
-      this.pageRowList = this._computePageList()
+      const computeMainLayout = () => {
+        this.rawRowList =
+          incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
+        // 分页模式下跨页表格在渲染层拆分为按页片段行
+        if (isPagingMode) {
+          this.rowList = this.tablePaging.splitTableRowAcrossPages(
+            this.rawRowList
+          )
+        } else {
+          this.rowList = this.rawRowList
+        }
+        // 页面信息（maxPageNo 截断会重置该标志）
+        this.isElementListTruncated = false
+        this.pageRowList = this._computePageList()
+        this.footnote.compute()
+      }
+      computeMainLayout()
+      // 脚注高度会反向影响正文分页，含脚注时再进行一次高度回流
+      if (isPagingMode && this.footnote.isReferenceExist()) {
+        computeMainLayout()
+      }
+      this.incrementalRowComputer.observeLayout()
       // 位置信息（增量行计算成功时，首个变动行之前的页位置可复用缓存）
       const fromPageNo = incrementalResult
         ? this.incrementalRowComputer.findPageNoOfRow(

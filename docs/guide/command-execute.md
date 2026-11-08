@@ -1220,6 +1220,39 @@ instance.command.executeDeleteArea(payload?: IDeleteAreaOption)
 instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
 ```
 
+## executeInsertFootnote
+
+功能：在当前正文光标处插入脚注，返回脚注 ID；插入失败时返回 `null`。
+
+```js
+const footnoteId = instance.command.executeInsertFootnote({
+  id?: string,
+  value: IElement[]
+})
+```
+
+## executeSetFootnoteValue
+
+功能：根据脚注 ID 更新脚注正文。
+
+```js
+instance.command.executeSetFootnoteValue({
+  id: string,
+  value: IElement[]
+})
+```
+
+## executeLocationFootnote
+
+功能：定位到脚注正文末尾；设置 `position: LocationPosition.BEFORE` 时定位到正文引用处。Ctrl/Cmd 点击引用或脚注正文也可双向跳转。
+
+```js
+instance.command.executeLocationFootnote(
+  footnoteId: string,
+  options?: ILocationFootnoteOption
+)
+```
+
 ## executeClearGraffiti
 
 功能：清空涂鸦信息

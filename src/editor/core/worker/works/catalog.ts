@@ -30,7 +30,8 @@ enum ElementType {
   TITLE = 'title',
   AREA = 'area',
   LIST = 'list',
-  LABEL = 'label'
+  LABEL = 'label',
+  FOOTNOTE = 'footnote'
 }
 
 enum TitleLevel {

@@ -207,12 +207,13 @@ export class LayoutEngine {
       layout = draw.getColumnLayout(currentDirection)
       isColumnEnabled = !!layout && layout.count > 1
     }
+    const isMainElementList = draw.isMainElementList(elementList)
+    const isFootnoteExist =
+      isMainElementList && draw.getFootnote().isReferenceExist()
     // 行快照：仅主文档且开启行级增量时记录（未开启时无额外开销）。
     // 闭包捕获的是调用时刻的跨行状态，两个记录点（首行/换行诞生新行）共用
     const isRecordRowSnapshot =
-      options.incrementalCompute &&
-      !isFromTable &&
-      draw.isMainElementList(elementList)
+      options.incrementalCompute && !isFromTable && isMainElementList
     const buildRowComputeState = (
       rowIndex: number,
       x: number,
@@ -245,6 +246,9 @@ export class LayoutEngine {
       const element = elementList[i]
       // 断点续算：复杂结构元素不参与增量，由调用方退化为全量计算
       if (payload.resume?.shouldAbort?.(element, i)) break
+      if (isMainElementList && element.type === ElementType.FOOTNOTE) {
+        draw.getFootnote().computeReference(element, i)
+      }
       // 段首tab悬挂累计：换行符开启新段落累计窗口，首个内容元素后关闭
       if (isLeadingTabRunOpen) {
         if (element.type === ElementType.TAB) {
@@ -551,7 +555,8 @@ export class LayoutEngine {
         const size = element.size || defaultSize
         if (
           element.type === ElementType.SUPERSCRIPT ||
-          element.type === ElementType.SUBSCRIPT
+          element.type === ElementType.SUBSCRIPT ||
+          element.type === ElementType.FOOTNOTE
         ) {
           element.actualSize = Math.ceil(size * 0.6)
         }
@@ -567,7 +572,10 @@ export class LayoutEngine {
         metrics.boundingBoxAscent = basisMetrics.actualBoundingBoxAscent * scale
         metrics.boundingBoxDescent =
           basisMetrics.actualBoundingBoxDescent * scale
-        if (element.type === ElementType.SUPERSCRIPT) {
+        if (
+          element.type === ElementType.SUPERSCRIPT ||
+          element.type === ElementType.FOOTNOTE
+        ) {
           metrics.boundingBoxAscent += metrics.height / 2
         } else if (element.type === ElementType.SUBSCRIPT) {
           metrics.boundingBoxDescent += metrics.height / 2
@@ -944,8 +952,12 @@ export class LayoutEngine {
             pageNo,
             currentDirection
           )
+          const footnoteHeight = isFootnoteExist
+            ? draw.getFootnote().getReservedHeight(pageNo, currentDirection)
+            : 0
           const isOverflow =
-            y - pageStartY + curMainOuterHeight + height > currentPageHeight
+            y - pageStartY + curMainOuterHeight + height + footnoteHeight >
+            currentPageHeight
           if (isOverflow || isPageBreakElement) {
             if (
               !isPageBreakElement &&
@@ -1032,29 +1044,49 @@ export class LayoutEngine {
     let direction = paperDirection
     let pageLimit = this.draw.getHeight(direction)
     let pageHeight = this.draw.getMainOuterHeight(0, direction)
+    let pageFootnoteHeight = 0
     let prevColumnIndex: number | undefined = undefined
+    const footnote = this.draw.getFootnote()
+    const isFootnoteExist = footnote.isReferenceExist()
     for (let i = 0; i < rowList.length; i++) {
       const row = rowList[i]
       const rowOffsetY = row.offsetY || 0
+      const rowFootnoteHeight = isFootnoteExist
+        ? footnote.getRowHeight(row, direction)
+        : 0
+      const separatorHeight = rowFootnoteHeight
+        ? footnote.getSeparatorHeight()
+        : 0
+      const nextPageFootnoteHeight = Math.min(
+        pageFootnoteHeight +
+          rowFootnoteHeight +
+          (pageFootnoteHeight ? 0 : separatorHeight),
+        isFootnoteExist ? footnote.getMaxPageHeight(direction) : 0
+      )
+      const addedFootnoteHeight = nextPageFootnoteHeight - pageFootnoteHeight
       const columnChanged =
         prevColumnIndex !== undefined &&
         row.columnIndex !== undefined &&
         row.columnIndex > 0 &&
         row.columnIndex !== prevColumnIndex
       if (columnChanged) {
+        pageFootnoteHeight = nextPageFootnoteHeight
         pageHeight =
           this.draw.getMainOuterHeight(pageNo, direction) +
           row.height +
-          rowOffsetY
+          rowOffsetY +
+          pageFootnoteHeight
         pageRowList[pageNo].push(row)
       } else if (
-        row.height + rowOffsetY + pageHeight > pageLimit ||
+        row.height + rowOffsetY + pageHeight + addedFootnoteHeight >
+          pageLimit ||
         rowList[i - 1]?.isPageBreak
       ) {
         const areaPadding = row.areaPadding
         if (areaPadding && !rowList[i - 1]?.isPageBreak) {
           const contentHeight = row.height - areaPadding.height
-          const remainHeight = pageLimit - pageHeight - rowOffsetY
+          const remainHeight =
+            pageLimit - pageHeight - rowOffsetY - addedFootnoteHeight
           if (contentHeight <= remainHeight) {
             const carryHeight = row.height - remainHeight
             const nextRow = rowList[i + 1]
@@ -1080,6 +1112,7 @@ export class LayoutEngine {
               ? { areaId: areaPadding.areaId, height: inPagePadding }
               : undefined
             pageHeight = pageLimit
+            pageFootnoteHeight = nextPageFootnoteHeight
             pageRowList[pageNo].push(row)
             prevColumnIndex = row.columnIndex
             continue
@@ -1109,13 +1142,23 @@ export class LayoutEngine {
           pageLimit = this.draw.getHeight(direction)
         }
         pageDirectionList[pageNo] = direction
+        const nextRowFootnoteHeight = isFootnoteExist
+          ? footnote.getRowHeight(row, direction)
+          : 0
+        pageFootnoteHeight = Math.min(
+          nextRowFootnoteHeight +
+            (nextRowFootnoteHeight ? footnote.getSeparatorHeight() : 0),
+          isFootnoteExist ? footnote.getMaxPageHeight(direction) : 0
+        )
         pageHeight =
           this.draw.getMainOuterHeight(pageNo, direction) +
           row.height +
-          rowOffsetY
+          rowOffsetY +
+          pageFootnoteHeight
         pageRowList.push([row])
       } else {
-        pageHeight += row.height + rowOffsetY
+        pageHeight += row.height + rowOffsetY + addedFootnoteHeight
+        pageFootnoteHeight = nextPageFootnoteHeight
         pageRowList[pageNo].push(row)
       }
       prevColumnIndex = row.columnIndex

@@ -367,3 +367,14 @@ const {
   endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
 ```
+
+## getFootnoteValue
+
+功能：根据脚注 ID 获取脚注正文数据。
+
+```js
+const {
+  id: string
+  value: IElement[]
+} | null = instance.command.getFootnoteValue(options: IGetFootnoteValueOption)
+```

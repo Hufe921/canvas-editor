@@ -87,6 +87,9 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const {
     index,
     isTable,
+    isFootnote,
+    footnoteId,
+    footnoteValueIndex,
     tdValueIndex,
     tdIndex,
     trIndex,
@@ -98,11 +101,24 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const {
     index: startIndex,
     isTable: startIsTable,
+    isFootnote: startIsFootnote,
+    footnoteId: startFootnoteId,
     tdIndex: startTdIndex,
     trIndex: startTrIndex,
     tableId: startTableId
   } = host.mouseDownStartPosition
-  const endIndex = isTable ? tdValueIndex! : index
+  // 正文、脚注及不同脚注之间的数据下标不共享，禁止跨上下文选区
+  if (
+    !!startIsFootnote !== !!isFootnote ||
+    (isFootnote && startFootnoteId !== footnoteId)
+  ) {
+    return
+  }
+  const endIndex = isFootnote
+    ? footnoteValueIndex!
+    : isTable
+      ? tdValueIndex!
+      : index
   // 判断是否是表格跨行/列
   const rangeManager = draw.getRange()
   if (

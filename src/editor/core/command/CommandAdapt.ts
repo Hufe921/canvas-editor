@@ -160,6 +160,12 @@ import { IAreaBadge, IBadge } from '../../interface/Badge'
 import { IRichtextOption } from '../../interface/Command'
 import { WatermarkType } from '../../dataset/enum/Watermark'
 import { IPrintOption } from '@/editor/interface/Print'
+import {
+  IGetFootnoteValueOption,
+  IInsertFootnoteOption,
+  ILocationFootnoteOption,
+  ISetFootnoteValueOption
+} from '../../interface/Footnote'
 
 export class CommandAdapt {
   private draw: Draw
@@ -3068,6 +3074,22 @@ export class CommandAdapt {
 
   public insertArea(payload: IInsertAreaOption) {
     return this.draw.getArea().insertArea(payload)
+  }
+
+  public insertFootnote(payload: IInsertFootnoteOption) {
+    return this.draw.getFootnote().insertFootnote(payload)
+  }
+
+  public setFootnoteValue(payload: ISetFootnoteValueOption) {
+    return this.draw.getFootnote().setFootnoteValue(payload)
+  }
+
+  public getFootnoteValue(payload: IGetFootnoteValueOption) {
+    return this.draw.getFootnote().getFootnoteValue(payload)
+  }
+
+  public locationFootnote(id: string, options?: ILocationFootnoteOption) {
+    return this.draw.getFootnote().locationFootnote(id, options)
   }
 
   public setAreaValue(payload: ISetAreaValueOption) {

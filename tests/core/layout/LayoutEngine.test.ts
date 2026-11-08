@@ -27,6 +27,14 @@ function createDraw(overrides: Record<string, unknown> = {}): Draw {
   return {
     getHeight: () => 150,
     getMainOuterHeight: () => 10,
+    isMainElementList: () => false,
+    getFootnote: () => ({
+      isReferenceExist: () => false,
+      getReservedHeight: () => 0,
+      getRowHeight: () => 0,
+      getSeparatorHeight: () => 0,
+      getMaxPageHeight: () => 0
+    }),
     getTablePaging: () => ({ truncateTableByFragment: () => false }),
     ...overrides
   } as unknown as Draw

@@ -33,11 +33,25 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
       y: pointer.y
     })
     if (!positionContext) return
-    const { isTable, tdValueIndex, index } = positionContext
-    const curIndex = isTable ? tdValueIndex! : index
+    const cacheContext = host.cachePositionContext
+    if (
+      !!cacheContext?.isFootnote !== !!positionContext.isFootnote ||
+      (positionContext.isFootnote &&
+        cacheContext?.footnoteId !== positionContext.footnoteId)
+    ) {
+      return
+    }
+    const { isTable, isFootnote, footnoteValueIndex, tdValueIndex, index } =
+      positionContext
+    const curIndex = isFootnote
+      ? footnoteValueIndex!
+      : isTable
+        ? tdValueIndex!
+        : index
     if (~index) {
+      const currentPositionList = position.getPositionList()
       rangeManager.setRange(curIndex, curIndex)
-      position.setCursorPosition(positionList[curIndex])
+      position.setCursorPosition(currentPositionList[curIndex])
     }
   }
   const cursor = draw.getCursor()
