@@ -1,3 +1,5 @@
+import type { IPageResizeOption } from '../RenderBackend'
+
 export class CanvasSurface {
   private pageContainer: HTMLElement
   private visibilityObserver: IntersectionObserver | null
@@ -45,7 +47,7 @@ export class CanvasSurface {
     width: number,
     height: number,
     dpr: number,
-    options: { gap?: number; updateCssHeight?: boolean } = {}
+    options: IPageResizeOption = {}
   ): void {
     const { gap, updateCssHeight = true } = options
     page.style.width = `${width}px`
@@ -58,6 +60,7 @@ export class CanvasSurface {
     const canvasHeight = updateCssHeight
       ? height
       : Number.parseFloat(page.style.height) || height
+    if (options.deferPixelResize) return
     const pixelWidth = Math.floor(width * dpr)
     const pixelHeight = Math.floor(canvasHeight * dpr)
     if (page.width === pixelWidth && page.height === pixelHeight) return

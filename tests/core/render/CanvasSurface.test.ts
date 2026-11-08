@@ -94,6 +94,29 @@ describe('CanvasSurface', () => {
     expect(ctx.direction).toBe('ltr')
   })
 
+  it('延迟 resize 仅更新 CSS，绘制前补建目标位图', () => {
+    const { surface } = createSurface()
+    const { page, ctx } = surface.create(0, 100, 200, 10, 2)
+    const scale = vi.spyOn(ctx, 'scale')
+    scale.mockClear()
+
+    surface.resize(page, ctx, 120, 240, 2, {
+      deferPixelResize: true
+    })
+
+    expect(page.style.width).toBe('120px')
+    expect(page.style.height).toBe('240px')
+    expect(page.width).toBe(200)
+    expect(page.height).toBe(400)
+    expect(scale).not.toHaveBeenCalled()
+
+    surface.resize(page, ctx, 120, 240, 2)
+
+    expect(page.width).toBe(240)
+    expect(page.height).toBe(480)
+    expect(scale).toHaveBeenCalledOnce()
+  })
+
   it('连续页 resize 保留 CSS 高度并更新页间距', () => {
     const { surface } = createSurface()
     const { page, ctx } = surface.create(0, 100, 200, 10, 2)

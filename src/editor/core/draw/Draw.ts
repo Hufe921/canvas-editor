@@ -3,6 +3,7 @@ import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
 import {
   IAppendElementListOption,
+  IComputeRange,
   IComputeRowListPayload,
   IDrawFloatPayload,
   IDrawOption,
@@ -31,6 +32,7 @@ import { IRow } from '../../interface/Row'
 import { IColumnLayout, IColumnOption } from '../../interface/Column'
 import { ColumnManager } from './column/ColumnManager'
 import { IncrementalRowComputer } from './IncrementalRowComputer'
+import { ScaledRowComputer } from './ScaledRowComputer'
 import { LayoutEngine } from '../layout/LayoutEngine'
 import { TextMeasurer } from '../layout/TextMeasurer'
 import { createBackend } from '../render/BackendFactory'
@@ -50,6 +52,11 @@ import { Cursor } from '../cursor/Cursor'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { GlobalEvent } from '../event/GlobalEvent'
 import { HistoryManager } from '../history/HistoryManager'
+import {
+  ElementListSnapshot,
+  HistoryDirection,
+  restoreHistoryElementList
+} from '../history/ElementListSnapshot'
 import { Listener } from '../listener/Listener'
 import { Position } from '../position/Position'
 import { RangeManager } from '../range/RangeManager'
@@ -180,6 +187,9 @@ export class Draw {
   private strikeout: Strikeout
   private highlight: Highlight
   private historyManager: HistoryManager
+  private mainHistorySnapshot: ElementListSnapshot
+  // 当前状态相对上一历史状态的正向脏区间，撤销时据此构造反向区间
+  private activeHistoryRange: IComputeRange | undefined
   private previewer: Previewer
   private imageParticle: ImageParticle
   private laTexParticle: LaTexParticle
@@ -229,6 +239,7 @@ export class Draw {
   // 跨页表格拆分前的原始行列表：增量计算以其为基准（片段行不参与复用定位）
   private rawRowList: IRow[]
   private incrementalRowComputer: IncrementalRowComputer
+  private scaledRowComputer: ScaledRowComputer
   private layoutEngine: LayoutEngine
   // maxPageNo 截断发生过（elementList 被裁剪导致行/元素失配），禁用增量
   private isElementListTruncated: boolean
@@ -238,6 +249,7 @@ export class Draw {
   private painterOptions: IPainterOption | null
   private visiblePageNoList: number[]
   private intersectionPageNo: number
+  private deferredPageResizeSet: Set<number>
   private printModeData: Required<Omit<IEditorData, 'graffiti'>> | null
   private columnManager: ColumnManager
   private ruler: Ruler
@@ -269,6 +281,7 @@ export class Draw {
 
     this.i18n = new I18n(options.locale)
     this.historyManager = new HistoryManager(this)
+    this.mainHistorySnapshot = new ElementListSnapshot()
     this.position = new Position(this)
     this.zone = new Zone(this)
     this.range = new RangeManager(this)
@@ -294,6 +307,7 @@ export class Draw {
     this.rawRowList = []
     this.isElementListTruncated = false
     this.incrementalRowComputer = new IncrementalRowComputer(this)
+    this.scaledRowComputer = new ScaledRowComputer(this)
     this.tableTool = new TableTool(this)
     this.tableOperate = new TableOperate(this)
     this.pageNumber = new PageNumber(this)
@@ -354,6 +368,7 @@ export class Draw {
     this.painterOptions = null
     this.visiblePageNoList = []
     this.intersectionPageNo = 0
+    this.deferredPageResizeSet = new Set()
     this.printModeData = null
 
     // 打印模式优先设置打印数据
@@ -577,21 +592,31 @@ export class Draw {
   public getCanvasWidth(pageNo = -1): number {
     const pageNoIndex = ~pageNo ? pageNo : this.pageNo
     const canvasPage = this.backend.canvas?.getPage(pageNoIndex)
-    if (canvasPage) return canvasPage.width
+    if (canvasPage && !this.deferredPageResizeSet.has(pageNoIndex)) {
+      return canvasPage.width
+    }
     const page = this.backend.getPage(pageNoIndex)
-    return Number.parseFloat(page.style.width) * this.getPagePixelRatio()
+    return Math.floor(
+      Number.parseFloat(page.style.width) * this.getPagePixelRatio()
+    )
   }
 
   public getCanvasHeight(pageNo = -1): number {
     const pageNoIndex = ~pageNo ? pageNo : this.pageNo
     const canvasPage = this.backend.canvas?.getPage(pageNoIndex)
-    if (canvasPage) return canvasPage.height
+    if (canvasPage && !this.deferredPageResizeSet.has(pageNoIndex)) {
+      return canvasPage.height
+    }
     const page = this.backend.getPage(pageNoIndex)
-    return Number.parseFloat(page.style.height) * this.getPagePixelRatio()
+    return Math.floor(
+      Number.parseFloat(page.style.height) * this.getPagePixelRatio()
+    )
   }
 
   public getInnerWidth(direction = this.options.paperDirection): number {
-    const width = this.getWidth(direction)
+    // Canvas 像素尺寸需要取整，断行版心必须保留连续宽度。
+    // 否则缩放复用与完整重排在恰好贴齐行尾时可能得到不同行数。
+    const width = this.getOriginalWidth(direction) * this.options.scale
     const margins = this.getMargins(direction)
     return width - margins[1] - margins[3]
   }
@@ -658,7 +683,7 @@ export class Draw {
       width,
       height: this.getHeight(direction),
       margins,
-      innerWidth: width - margins[1] - margins[3]
+      innerWidth: this.getInnerWidth(direction)
     }
   }
 
@@ -1540,13 +1565,15 @@ export class Draw {
   }
 
   public setPageScale(payload: number) {
+    const scaleFrom = this.options.scale
     this.options.scale = payload
-    this._updatePageSizes()
+    this._updatePageSizes(true)
     const cursorPosition = this.position.getCursorPosition()
     this.render({
       isSubmitHistory: false,
       isSetCursor: !!cursorPosition,
-      curIndex: cursorPosition?.index
+      curIndex: cursorPosition?.index,
+      scaleFrom
     })
     if (this.listener.pageScaleChange) {
       this.listener.pageScaleChange(payload)
@@ -1703,6 +1730,8 @@ export class Draw {
     })
     // 渲染&计算&清空历史记录
     this.historyManager.recovery()
+    this.mainHistorySnapshot.reset()
+    this.activeHistoryRange = undefined
     const curIndex = isSetCursor
       ? main?.length
         ? main.length - 1
@@ -1765,16 +1794,30 @@ export class Draw {
   }
 
   // 按各页实际尺寸（方向/缩放/DPR）校正页面 canvas 与容器宽度
-  private _updatePageSizes() {
+  private _updatePageSizes(deferOffscreen = false) {
     const dpr = this.getPagePixelRatio()
     const isPagingMode = this.getIsPagingMode()
+    const immediatePageNoSet = new Set([
+      ...this.visiblePageNoList,
+      this.intersectionPageNo - 1,
+      this.intersectionPageNo,
+      this.intersectionPageNo + 1
+    ])
     this.container.style.width = `${this._getPageMaxWidth()}px`
     this.backend.getPageList().forEach((_page, i) => {
       const { width, height } = this.getPageSize(i)
+      const isDeferred =
+        deferOffscreen && !!this.backend.canvas && !immediatePageNoSet.has(i)
       this.backend.resize(i, width, height, dpr, {
         gap: this.getPageGap(),
-        updateCssHeight: isPagingMode
+        updateCssHeight: isPagingMode,
+        deferPixelResize: isDeferred
       })
+      if (isDeferred) {
+        this.deferredPageResizeSet.add(i)
+      } else {
+        this.deferredPageResizeSet.delete(i)
+      }
     })
   }
 
@@ -2468,6 +2511,13 @@ export class Draw {
 
   private _drawPage(payload: IDrawPagePayload) {
     const { elementList, positionList, rowList, pageNo } = payload
+    if (this.deferredPageResizeSet.delete(pageNo)) {
+      const { width, height } = this.getPageSize(pageNo)
+      this.backend.resize(pageNo, width, height, this.getPagePixelRatio(), {
+        gap: this.getPageGap(),
+        updateCssHeight: this.getIsPagingMode()
+      })
+    }
     const {
       inactiveAlpha,
       pageMode,
@@ -2613,14 +2663,30 @@ export class Draw {
   private _lazyRender() {
     const positionList = this.position.getOriginalMainPositionList()
     const elementList = this.getOriginalMainElementList()
-    this.backend.observeVisibility(pageNo => {
+    const renderedPageNoSet = new Set<number>()
+    const drawPage = (pageNo: number) => {
+      if (renderedPageNoSet.has(pageNo) || !this.pageRowList[pageNo]) return
+      renderedPageNoSet.add(pageNo)
       this._drawPage({
         elementList,
         positionList,
         rowList: this.pageRowList[pageNo],
         pageNo
       })
+    }
+    // 可见性回调是异步的，输入时先绘制光标页和已知可见页，
+    // 避免逐字重建观察器让字符反馈延迟到后续帧
+    const immediatePageNoSet = new Set([
+      ...this.visiblePageNoList,
+      this.intersectionPageNo,
+      this.pageNo,
+      this.position.getCursorPosition()?.pageNo
+    ])
+    immediatePageNoSet.forEach(pageNo => {
+      if (pageNo !== undefined) drawPage(pageNo)
     })
+    // 滚动进入新页面时再补绘；同一批次已同步绘制的页面不重复绘制
+    this.backend.observeVisibility(drawPage)
   }
 
   private _immediateRender() {
@@ -2646,9 +2712,16 @@ export class Draw {
       isLazy = true,
       isInit = false,
       isSourceHistory = false,
-      isFirstRender = false
+      isFirstRender = false,
+      scaleFrom
     } = payload || {}
     let { curIndex } = payload || {}
+    let historyDirtyRange: IComputeRange | undefined
+    // 非历史回写（如级联计算）可能修改最后快照之外的元素，撤销时不得
+    // 再使用该快照的局部区间；下次用户编辑会重新建立有效区间
+    if (isCompute && !isSubmitHistory && !isSourceHistory) {
+      this.activeHistoryRange = undefined
+    }
     const innerWidth = this.getInnerWidth()
     const isPagingMode = this.getIsPagingMode()
     // 缓存当前页数信息
@@ -2688,18 +2761,25 @@ export class Draw {
         surroundElementList,
         elementList: this.elementList
       }
-      // 行级增量行计算：消费本次编辑的脏区间，从受影响行续算至收敛；
-      // 无脏区间或门控不满足时退回全量，行为与未开启时一致
-      const incrementalResult = this.incrementalRowComputer.tryCompute(
-        this.incrementalRowComputer.consumeDirtyRange(),
-        rowComputePayload
-      )
+      const dirtyRange = this.incrementalRowComputer.consumeDirtyRange()
+      const scaledRowList =
+        scaleFrom === undefined
+          ? null
+          : this.scaledRowComputer.tryScale(scaleFrom, rowComputePayload)
+      // 缩放只复用断行；普通编辑仍从受影响行续算至收敛
+      const incrementalResult = scaledRowList
+        ? null
+        : this.incrementalRowComputer.tryCompute(dirtyRange, rowComputePayload)
+      // 只有增量排版成功，脏区间才足以证明区间外数据未被修改
+      historyDirtyRange = incrementalResult ? dirtyRange : undefined
       if (!incrementalResult) {
         this.footnote.recovery()
       }
       const computeMainLayout = () => {
         this.rawRowList =
-          incrementalResult?.rowList ?? this.computeRowList(rowComputePayload)
+          scaledRowList ??
+          incrementalResult?.rowList ??
+          this.computeRowList(rowComputePayload)
         // 分页模式下跨页表格在渲染层拆分为按页片段行
         if (isPagingMode) {
           this.rowList = this.tablePaging.splitTableRowAcrossPages(
@@ -2725,7 +2805,10 @@ export class Draw {
             incrementalResult.firstChangedRow
           )
         : undefined
-      this.position.computePositionList({ fromPageNo })
+      this.position.computePositionList({
+        fromPageNo,
+        isReuseUnchangedPages: !!incrementalResult
+      })
       // 区域信息
       this.area.compute()
       if (!this.isPrintMode()) {
@@ -2756,6 +2839,9 @@ export class Draw {
     const prePageCount = this.backend.getPageList().length
     if (prePageCount > curPageCount) {
       const deleteCount = prePageCount - curPageCount
+      for (let i = curPageCount; i < prePageCount; i++) {
+        this.deferredPageResizeSet.delete(i)
+      }
       this.backend
         .getPageList()
         .splice(curPageCount, deleteCount)
@@ -2788,7 +2874,7 @@ export class Draw {
       (isSubmitHistory && !isFirstRender) ||
       (curIndex !== undefined && this.historyManager.isStackEmpty())
     ) {
-      this.submitHistory(curIndex)
+      this.submitHistory(curIndex, historyDirtyRange)
     }
     if (isCompute && this.eventBus.isSubscribe('renderChange')) {
       this.eventBus.emit('renderChange')
@@ -2889,10 +2975,19 @@ export class Draw {
     return curIndex
   }
 
-  public submitHistory(curIndex: number | undefined) {
+  public submitHistory(
+    curIndex: number | undefined,
+    dirtyRange?: IComputeRange
+  ) {
     if (this.options.historyMaxRecordCount === 0) return
     const positionContext = this.position.getPositionContext()
-    const oldElementList = getSlimCloneElementList(this.elementList)
+    // 只有连续的正向编辑才允许共享上一份快照；缩放、级联回写等
+    // 非历史渲染会使该衔接失效，下一次记录必须重新捕获全文
+    const snapshotRange = this.activeHistoryRange ? dirtyRange : undefined
+    const oldElementList = this.mainHistorySnapshot.capture(
+      this.elementList,
+      snapshotRange
+    )
     const oldHeaderElementList = getSlimCloneElementList(
       this.header.getElementList()
     )
@@ -2903,13 +2998,40 @@ export class Draw {
     const pageNo = this.pageNo
     const oldPositionContext = deepClone(positionContext)
     const zone = this.zone.getZone()
-    this.historyManager.execute(() => {
+    this.activeHistoryRange = dirtyRange
+    this.historyManager.execute((direction: HistoryDirection) => {
+      // 撤销/重做后当前快照可能来自另一个历史分支，后续分支编辑
+      // 必须重新建立全文快照，不能沿用被废弃分支的局部副本
+      this.mainHistorySnapshot.reset()
+      // 撤销使用当前较新状态的正向区间，重做使用目标状态自身保存的区间
+      const forwardRange =
+        direction === 'undo' ? this.activeHistoryRange : dirtyRange
+      const restored = restoreHistoryElementList(
+        this.elementList,
+        oldElementList,
+        forwardRange,
+        direction
+      )
       this.zone.setZone(zone)
       this.setPageNo(pageNo)
       this.position.setPositionContext(deepClone(oldPositionContext))
       this.header.setElementList(deepClone(oldHeaderElementList))
       this.footer.setElementList(deepClone(oldFooterElementList))
-      this.elementList = deepClone(oldElementList)
+      this.elementList = restored.elementList
+      if (
+        restored.deleteCount !== undefined &&
+        restored.insertCount !== undefined
+      ) {
+        this.incrementalRowComputer.markRangeDirty(
+          this.elementList,
+          forwardRange!.startIndex,
+          restored.deleteCount,
+          restored.insertCount
+        )
+      } else {
+        this.incrementalRowComputer.markFullDirty()
+      }
+      this.activeHistoryRange = dirtyRange
       this.range.replaceRange(deepClone(oldRange))
       this.render({
         curIndex,

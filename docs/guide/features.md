@@ -398,6 +398,9 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 ### 性能
 
 <div class="feat">
+  <div class="it"><b>超大文档</b><span>支持超大文档的渲染和编辑，面向百页级复杂文档优化输入、撤销重做与缩放体验</span></div>
+  <div class="it"><b>增量排版与缓存复用</b><span>按编辑区域续算断行，复用未变化的行、页面位置与历史快照</span></div>
+  <div class="it"><b>按需渲染与缩放优化</b><span>可见页即时绘制、离屏页按需补绘，缩放复用断行并延迟离屏位图重建</span></div>
   <div class="it"><b>Web Worker</b><span>字数统计、目录生成、成组提取、异步取值 共 4 个</span></div>
   <div class="it"><b>渲染模式</b><span>极速模式(多字组合)、兼容模式(逐字渲染)</span></div>
 </div>

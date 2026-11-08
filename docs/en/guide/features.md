@@ -398,6 +398,9 @@ Developer integration, extension mechanisms, and runtime capabilities.
 ### Performance
 
 <div class="feat">
+  <div class="it"><b>Large documents</b><span>Render and edit very large documents, with responsive typing, undo/redo, and zooming optimized for complex documents spanning hundreds of pages</span></div>
+  <div class="it"><b>Incremental layout & cache reuse</b><span>Resume layout from edited regions and reuse unchanged rows, page positions, and history snapshots</span></div>
+  <div class="it"><b>On-demand rendering & zooming</b><span>Draw visible pages immediately, fill offscreen pages on demand, reuse line breaking during zoom, and defer offscreen bitmap resizing</span></div>
   <div class="it"><b>Web Worker</b><span>Word count, catalog generation, group extraction, async value — 4 in total</span></div>
   <div class="it"><b>Render modes</b><span>Fast mode (multi-char group), compatible mode (per-char render)</span></div>
 </div>

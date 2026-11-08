@@ -59,6 +59,7 @@ Unlike traditional `contenteditable`-based editors, Canvas Editor takes full con
 - **Print & Export** — Print-ready output via canvas-to-image / PDF rendering
 - **Interaction** — Custom context menus, customizable shortcut keys, drag-and-drop for text, elements, and controls
 - **Extensibility** — Plugin system (`instance.use`); official plugins cover Word/Excel import-export, formulas, code blocks, comments, spell checking, and more
+- **Large Documents** — Responsive rendering and editing of very large documents through incremental layout, position and history reuse, visible-page rendering, and optimized zooming
 - **Performance** — Web Workers for word counting, catalog generation, and async value retrieval
 
 ## Why Canvas Editor?
@@ -108,13 +109,13 @@ For complete API documentation, see the [official docs](https://hufe.club/canvas
 
 ## Ecosystem
 
-| Project                                                                                    | Description                                                                                           |
-| ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)                    | Official plugins: Word/Excel import-export, formula, comment, spellcheck & 20+ more                   |
+| Project                                                                                           | Description                                                                                                              |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)                           | Official plugins: Word/Excel import-export, formula, comment, spellcheck & 20+ more                                      |
 | [SVG render layer](https://github.com/Hufe921/canvas-editor/tree/main/src/editor/core/render/svg) | Built-in SVG rendering backend — enable via the `backend: 'svg'` editor option (supersedes the old `feature/svg` branch) |
-| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)                   | PDF export — [live demo](https://hufe.club/canvas-editor-pdf)                                         |
-| [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)                     | AI-powered text processing demo                                                                       |
-| [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)                 | CRDT-based collaboration (experimental)                                                               |
+| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)                          | PDF export — [live demo](https://hufe.club/canvas-editor-pdf)                                                            |
+| [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)                            | AI-powered text processing demo                                                                                          |
+| [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT)                        | CRDT-based collaboration (experimental)                                                                                  |
 
 ## Development
 

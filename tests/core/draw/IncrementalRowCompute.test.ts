@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from 'node:util'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createTestEditor, TestEditorContext } from '../../factories/editor'
 import { Draw } from '@/editor/core/draw/Draw'
@@ -7,6 +8,7 @@ import { ElementType } from '@/editor/dataset/enum/Element'
 import { ListType } from '@/editor/dataset/enum/List'
 import type { IElement } from '@/editor/interface/Element'
 import type { IRow } from '@/editor/interface/Row'
+import { data as mockData } from '../../../src/mock'
 
 /**
  * 段落级增量行计算：差分测试。
@@ -78,11 +80,7 @@ function makeTableDoc() {
       }
     ]
   } as unknown as IElement
-  return [
-    ...makeParagraphs(3, 30),
-    tableElement,
-    ...makeParagraphs(3, 30)
-  ]
+  return [...makeParagraphs(3, 30), tableElement, ...makeParagraphs(3, 30)]
 }
 
 function makeControlDoc() {
@@ -100,6 +98,15 @@ function makeControlDoc() {
     }
   } as unknown as IElement
   return [...makeParagraphs(3, 20), control, ...makeParagraphs(3, 20)]
+}
+
+function makeMockDoc() {
+  const main: IElement[] = []
+  for (let i = 0; i < 3; i++) {
+    if (i) main.push({ type: ElementType.PAGE_BREAK, value: '' })
+    main.push(...(JSON.parse(JSON.stringify(mockData)) as IElement[]))
+  }
+  return main
 }
 
 // ---------- 随机编辑序列（固定种子，两个编辑器执行完全一致） ----------
@@ -205,14 +212,15 @@ interface ComputeSnapshot {
   elementValue: string
 }
 
-// 表格结构 id（tdId/trId/tableId）及元素 id 在两个编辑器实例中各自随机生成，
+// 表格/标题结构 id 及元素 id 在两个编辑器实例中各自随机生成，
 // 与布局无关，比对前归一化
-const TABLE_ID_KEY_REG = /^(tdId|trId|tableId)$/
-const UUID_REG = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
+const TABLE_ID_KEY_REG = /^(tdId|trId|tableId|titleId)$/
+const UUID_REG =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/
 function normalizeStringify(value: unknown): string {
   return JSON.stringify(value, (key, val) =>
     TABLE_ID_KEY_REG.test(key) ||
-    (key === 'id' && typeof val === 'string' && UUID_REG.test(val))
+    (typeof val === 'string' && UUID_REG.test(val))
       ? 'ID'
       : val
   )
@@ -240,7 +248,12 @@ function firstDiffKey(
 ): keyof ComputeSnapshot | '' {
   const keys = Object.keys(a) as Array<keyof ComputeSnapshot>
   for (const key of keys) {
-    if (a[key] !== b[key]) return key
+    if (a[key] === b[key]) continue
+    // 历史复用与全量重算可能以不同顺序写入对象属性；仅在字符串不同
+    // 时进行语义深比较，避免为每次差分都复制整篇文档对象
+    if (!isDeepStrictEqual(JSON.parse(a[key]), JSON.parse(b[key]))) {
+      return key
+    }
   }
   return ''
 }
@@ -251,11 +264,10 @@ function firstDiffKey(
 // 注意：mock.contexts 按调用次数记录 this，同一编辑器的 Draw 会连续出现多次，
 // 必须去重后按创建顺序取值——直接取 contexts[0]/contexts[1] 会拿到同一个
 // Draw，导致差分比对退化为自身与自身比较而永远通过
-function getTwoDraws(
-  computeSpy: ReturnType<typeof vi.spyOn>
-): [Draw, Draw] {
+function getTwoDraws(computeSpy: ReturnType<typeof vi.spyOn>): [Draw, Draw] {
   const unique = [...new Set(computeSpy.mock.contexts)] as Draw[]
   expect(unique.length).toBeGreaterThanOrEqual(2)
+  computeSpy.mockRestore()
   return [unique[0], unique[1]]
 }
 
@@ -267,26 +279,26 @@ function runDifferential(
 ) {
   vi.restoreAllMocks()
   const computeSpy = vi.spyOn(Draw.prototype, 'computeRowList')
-  const tryComputeSpy = vi.spyOn(
-    IncrementalRowComputer.prototype,
-    'tryCompute'
-  )
+  const tryComputeSpy = vi.spyOn(IncrementalRowComputer.prototype, 'tryCompute')
   let fullCtx: TestEditorContext | undefined
   let incrementalCtx: TestEditorContext | undefined
   try {
     fullCtx = createTestEditor({
       data,
-      options: { incrementalCompute: false }
+      options: { incrementalCompute: false, historyMaxRecordCount: 2 }
     })
     incrementalCtx = createTestEditor({
       data,
-      options: { incrementalCompute: true }
+      options: { incrementalCompute: true, historyMaxRecordCount: 2 }
     })
     const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
+    let successCount = 0
     expect(fullDraw).toBeTruthy()
     expect(incrementalDraw).toBeTruthy()
     // 初始状态一致
-    expect(snapshotCompute(incrementalDraw!)).toEqual(snapshotCompute(fullDraw!))
+    expect(snapshotCompute(incrementalDraw!)).toEqual(
+      snapshotCompute(fullDraw!)
+    )
     const ops = buildOps(seed, data.length, opCount)
     ops.forEach((op, step) => {
       applyOp(fullCtx!, op, fullDraw!)
@@ -295,17 +307,28 @@ function runDifferential(
       const incrementalSnapshot = snapshotCompute(incrementalDraw!)
       const diffKey = firstDiffKey(fullSnapshot, incrementalSnapshot)
       if (diffKey) {
+        const fullValue = fullSnapshot[diffKey]
+        const incrementalValue = incrementalSnapshot[diffKey]
+        let diffOffset = 0
+        while (
+          diffOffset < fullValue.length &&
+          fullValue[diffOffset] === incrementalValue[diffOffset]
+        ) {
+          diffOffset++
+        }
+        const start = Math.max(diffOffset - 200, 0)
         throw new Error(
-          `第 ${step} 步操作 ${op.kind} 后 ${diffKey} 不一致：\n` +
-            `全量: ${fullSnapshot[diffKey].slice(0, 600)}\n` +
-            `增量: ${incrementalSnapshot[diffKey].slice(0, 600)}`
+          `第 ${step} 步操作 ${JSON.stringify(op)} 后 ${diffKey} 不一致，偏移 ${diffOffset}：\n` +
+            `全量: ${fullValue.slice(start, start + 800)}\n` +
+            `增量: ${incrementalValue.slice(start, start + 800)}`
         )
       }
-    })
-    if (options.expectIncrementalUsed) {
-      const successCount = tryComputeSpy.mock.results.filter(
+      successCount += tryComputeSpy.mock.results.filter(
         result => result.type === 'return' && result.value !== null
       ).length
+      tryComputeSpy.mockClear()
+    })
+    if (options.expectIncrementalUsed) {
       expect(successCount).toBeGreaterThan(0)
     }
   } finally {
@@ -322,37 +345,63 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     vi.restoreAllMocks()
   })
 
-  it(
-    '纯文本文档：随机编辑序列下与全量计算完全一致',
-    () => {
-      runDifferential(makeParagraphs(12, 40), 20260924, 80, {
-        expectIncrementalUsed: true
-      })
-    },
-    30000
-  )
+  it('纯文本文档：随机编辑序列下与全量计算完全一致', () => {
+    runDifferential(makeParagraphs(12, 40), 20260924, 80, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
 
-  it(
-    '巨型单段落文档：段内编辑经行级收敛与全量一致',
-    () => {
-      // 6000 字符的单段落：行级增量下段内编辑只重算少数行
-      runDifferential(makeGiantParagraph(6000), 20260930, 40, {
-        expectIncrementalUsed: true
-      })
-    },
-    30000
-  )
+  it('巨型单段落文档：段内编辑经行级收敛与全量一致', () => {
+    // 6000 字符的单段落：行级增量下段内编辑只重算少数行
+    runDifferential(makeGiantParagraph(6000), 20260930, 40, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
 
-  it(
-    '多页文档：跨页编辑位置缓存复用与全量一致',
-    () => {
-      // 负载控制在 CI 机器（约比本地慢 4~5 倍）可稳定跑进的预算内
-      runDifferential(makeParagraphs(80, 60), 20261001, 25, {
-        expectIncrementalUsed: true
+  it('多页文档：跨页编辑位置缓存复用与全量一致', () => {
+    // 负载控制在 CI 机器（约比本地慢 4~5 倍）可稳定跑进的预算内
+    runDifferential(makeParagraphs(80, 60), 20261001, 25, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
+
+  it('后续未变化页面复用位置对象并正确平移元素索引', () => {
+    vi.restoreAllMocks()
+    const computeSpy = vi.spyOn(Draw.prototype, 'computeRowList')
+    const tryComputeSpy = vi.spyOn(
+      IncrementalRowComputer.prototype,
+      'tryCompute'
+    )
+    let ctx: TestEditorContext | undefined
+    try {
+      ctx = createTestEditor({
+        data: makeParagraphs(80, 60),
+        options: { incrementalCompute: true }
       })
-    },
-    30000
-  )
+      const draw = computeSpy.mock.contexts[0] as Draw
+      const positionList = draw.getPosition().getPositionList()
+      const oldElementCount = draw.getElementList().length
+      const target = positionList[Math.floor(positionList.length * 0.8)]
+      const oldTargetIndex = target.index
+      expect(target.pageNo).toBeGreaterThan(0)
+
+      ctx.editor.command.executeSetRange(20, 20)
+      ctx.editor.command.executeInsertElementList([{ value: '测试' }])
+
+      const insertedCount = draw.getElementList().length - oldElementCount
+      expect(insertedCount).toBeGreaterThan(0)
+      expect(draw.getPosition().getPositionList()[target.index]).toBe(target)
+      expect(target.index).toBe(oldTargetIndex + insertedCount)
+      const lastResult = tryComputeSpy.mock.results.at(-1)
+      expect(lastResult?.type).toBe('return')
+      expect(lastResult?.type === 'return' ? lastResult.value : null).not.toBe(
+        null
+      )
+    } finally {
+      ctx?.destroy()
+      vi.restoreAllMocks()
+    }
+  })
 
   it('巨型单段落：行级续算的恢复点在编辑所在行（不回退到段首）', () => {
     vi.restoreAllMocks()
@@ -373,9 +422,7 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
         .find(payload => payload?.resume)
       expect(resumePayload?.resume).toBeTruthy()
       // 恢复点在编辑位置附近（行级），而非段落起点（索引 0 附近）
-      expect(
-        resumePayload!.resume!.startIndex
-      ).toBeGreaterThan(editIndex - 200)
+      expect(resumePayload!.resume!.startIndex).toBeGreaterThan(editIndex - 200)
     } finally {
       ctx?.destroy()
       vi.restoreAllMocks()
@@ -414,9 +461,7 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
       // 光标置于列表B首项第一个字符前，退格删除前一个字符（跨列表接缝）
       const bStart = fullDraw
         .getElementList()
-        .findIndex(
-          (element, index) => index > 0 && element.listId === 'list-b'
-        )
+        .findIndex((element, index) => index > 0 && element.listId === 'list-b')
       expect(bStart).toBeGreaterThan(0)
       for (const ctx of [fullCtx, incrementalCtx]) {
         ctx.editor.command.executeSetRange(bStart - 1, bStart - 1)
@@ -476,9 +521,8 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
       )
       expect(diffKey).toBe('')
       // 确认走的是增量路径而非退化全量
-      const rawRowList = (
-        incrementalDraw as unknown as { rawRowList: IRow[] }
-      ).rawRowList
+      const rawRowList = (incrementalDraw as unknown as { rawRowList: IRow[] })
+        .rawRowList
       const typedRow = rawRowList.find(row =>
         row.elementList.some(element => element.value === '尾')
       )
@@ -490,43 +534,79 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     }
   })
 
-  it(
-    '长文本插入导致换行级联：与全量计算完全一致',
-    () => {
-      runDifferential(makeParagraphs(10, 60), 9527, 60, {
-        expectIncrementalUsed: true
-      })
-    },
-    30000
-  )
+  it('长文本插入导致换行级联：与全量计算完全一致', () => {
+    runDifferential(makeParagraphs(10, 60), 9527, 60, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
 
-  it(
-    '列表文档：序号级联场景与全量计算完全一致',
-    () => {
-      runDifferential(makeListDoc(), 314159, 60, {
-        expectIncrementalUsed: true
-      })
-    },
-    30000
-  )
+  it('列表文档：序号级联场景与全量计算完全一致', () => {
+    runDifferential(makeListDoc(), 314159, 60, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
 
-  it(
-    '表格文档：表格邻近编辑（含门控退化）与全量计算完全一致',
-    () => {
-      runDifferential(makeTableDoc(), 271828, 60, {
-        expectIncrementalUsed: true
-      })
-    },
-    30000
-  )
+  it('表格文档：表格邻近编辑与全量计算完全一致', () => {
+    runDifferential(makeTableDoc(), 271828, 60, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
 
-  it(
-    '控件文档：门控退化场景与全量计算完全一致',
-    () => {
-      runDifferential(makeControlDoc(), 161803, 60)
-    },
-    30000
-  )
+  it('控件文档：控件前后续算与全量计算完全一致', () => {
+    runDifferential(makeControlDoc(), 161803, 60, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
+
+  it('段内编辑必须跨过控件时仍使用增量且与全量一致', () => {
+    vi.restoreAllMocks()
+    const computeSpy = vi.spyOn(Draw.prototype, 'computeRowList')
+    const tryComputeSpy = vi.spyOn(
+      IncrementalRowComputer.prototype,
+      'tryCompute'
+    )
+    const control = makeControlDoc().find(element => element.control)!
+    const data = [
+      { value: '前'.repeat(200) },
+      control,
+      { value: '后'.repeat(200) }
+    ]
+    let fullCtx: TestEditorContext | undefined
+    let incrementalCtx: TestEditorContext | undefined
+    try {
+      fullCtx = createTestEditor({
+        data,
+        options: { incrementalCompute: false }
+      })
+      incrementalCtx = createTestEditor({
+        data,
+        options: { incrementalCompute: true }
+      })
+      const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
+      for (const ctx of [fullCtx, incrementalCtx]) {
+        ctx.editor.command.executeSetRange(20, 20)
+        ctx.editor.command.executeInsertElementList([{ value: '测试' }])
+      }
+      expect(snapshotCompute(incrementalDraw)).toEqual(
+        snapshotCompute(fullDraw)
+      )
+      const lastResult = tryComputeSpy.mock.results.at(-1)
+      expect(lastResult?.type).toBe('return')
+      expect(lastResult?.type === 'return' ? lastResult.value : null).not.toBe(
+        null
+      )
+    } finally {
+      fullCtx?.destroy()
+      incrementalCtx?.destroy()
+      vi.restoreAllMocks()
+    }
+  })
+
+  it('真实 mock 复杂文档：随机编辑序列下与全量计算完全一致', () => {
+    runDifferential(makeMockDoc(), 20261108, 40, {
+      expectIncrementalUsed: true
+    })
+  }, 30000)
 
   it('默认开启行级增量计算', () => {
     vi.restoreAllMocks()
@@ -617,9 +697,8 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
       })
       const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
       const fullTextarea = fullCtx.container.querySelector('textarea')!
-      const incrementalTextarea = incrementalCtx.container.querySelector(
-        'textarea'
-      )!
+      const incrementalTextarea =
+        incrementalCtx.container.querySelector('textarea')!
       expect(fullTextarea).toBeTruthy()
       expect(incrementalTextarea).toBeTruthy()
       const focusIndex = (index: number) => {
@@ -664,7 +743,9 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
       step('Input')
       // Delete 前向删除
       focusIndex(32)
-      fullTextarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Delete' }))
+      fullTextarea.dispatchEvent(
+        new KeyboardEvent('keydown', { key: 'Delete' })
+      )
       incrementalTextarea.dispatchEvent(
         new KeyboardEvent('keydown', { key: 'Delete' })
       )
@@ -717,4 +798,65 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
       vi.restoreAllMocks()
     }
   })
+
+  it('随机交错撤销、重做和分支编辑与全量路径一致', () => {
+    vi.restoreAllMocks()
+    const computeSpy = vi.spyOn(Draw.prototype, 'computeRowList')
+    const tryComputeSpy = vi.spyOn(
+      IncrementalRowComputer.prototype,
+      'tryCompute'
+    )
+    let fullCtx: TestEditorContext | undefined
+    let incrementalCtx: TestEditorContext | undefined
+    try {
+      const data = makeParagraphs(20, 60)
+      fullCtx = createTestEditor({
+        data,
+        options: { incrementalCompute: false }
+      })
+      incrementalCtx = createTestEditor({
+        data,
+        options: { incrementalCompute: true }
+      })
+      const [fullDraw, incrementalDraw] = getTwoDraws(computeSpy)
+      const rand = mulberry32(20261109)
+      let successCount = 0
+      for (let step = 0; step < 60; step++) {
+        const dice = rand()
+        const index = Math.floor(rand() * fullDraw.getElementList().length)
+        const commands = [fullCtx.editor.command, incrementalCtx.editor.command]
+        if (dice < 0.35) {
+          for (const command of commands) {
+            command.executeSetRange(index, index)
+            command.executeInsertElementList([{ value: `插入${step}` }])
+          }
+        } else if (dice < 0.5) {
+          for (const command of commands) {
+            command.executeSetRange(index, index)
+            command.executeBackspace()
+          }
+        } else if (dice < 0.75) {
+          for (const command of commands) command.executeUndo()
+        } else {
+          for (const command of commands) command.executeRedo()
+        }
+        const diffKey = firstDiffKey(
+          snapshotCompute(incrementalDraw),
+          snapshotCompute(fullDraw)
+        )
+        if (diffKey) {
+          throw new Error(`随机历史第 ${step} 步后 ${diffKey} 不一致`)
+        }
+        successCount += tryComputeSpy.mock.results.filter(
+          result => result.type === 'return' && result.value !== null
+        ).length
+        tryComputeSpy.mockClear()
+      }
+      expect(successCount).toBeGreaterThan(20)
+    } finally {
+      fullCtx?.destroy()
+      incrementalCtx?.destroy()
+      vi.restoreAllMocks()
+    }
+  }, 30000)
 })

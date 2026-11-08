@@ -221,7 +221,13 @@ export class IncrementalRowComputer {
         },
         converge: (state, firstElement, startIndex) => {
           // 收敛行必须完整位于编辑区间之外：行首元素未变不代表行内容未变
-          if (startIndex < range.endIndex) return false
+          // 独立行元素的尺寸还依赖当前可用宽度，必须实际重算，不能直接复用旧行
+          if (
+            startIndex < range.endIndex ||
+            this._isAtomicElement(firstElement)
+          ) {
+            return false
+          }
           const oldRowIdx = firstElementRowMap.get(firstElement)
           if (oldRowIdx == null) return false
           const oldSnapshot = this.snapshotMap.get(rawRowList[oldRowIdx])
@@ -280,6 +286,21 @@ export class IncrementalRowComputer {
     this.lastLayoutSignature = this.getLayoutSignature()
   }
 
+  // 缩放复用原行对象时同步更新恢复快照，避免下一次编辑退回旧比例
+  public scaleSnapshot(row: IRow, ratio: number): void {
+    const snapshot = this.snapshotMap.get(row)
+    if (!snapshot) return
+    snapshot.x *= ratio
+    snapshot.y *= ratio
+    snapshot.pageStartY *= ratio
+    snapshot.controlRealWidth *= ratio
+    // 纸张尺寸有像素取整，版心尺寸应读取目标比例的真实值，而非累乘
+    snapshot.margins = this.draw.getMargins(snapshot.direction)
+    snapshot.innerWidth = this.draw.getInnerWidth(snapshot.direction)
+    snapshot.startX = snapshot.margins[3]
+    snapshot.pageHeight = this.draw.getHeight(snapshot.direction)
+  }
+
   private getLayoutSignature(): string {
     const options = this.draw.getOptions()
     const header = this.draw.getHeader()
@@ -324,20 +345,24 @@ export class IncrementalRowComputer {
     return result
   }
 
-  // 复杂结构元素：独行或递归结构、浮动元素及控件不参与增量续算
+  // 区域补高、动态占位与分页方向切换依赖局部续算范围外的状态，仍强制全量；
+  // 表格、图片与控件由完整行状态恢复，可安全参与局部续算
   private _isComplexElement(element: IElement): boolean {
     return (
-      element.type === ElementType.TABLE ||
       element.type === ElementType.FOOTNOTE ||
       element.type === ElementType.PAGE_BREAK ||
+      !!element.areaId ||
+      !!element.isControlMinWidthPlaceholder
+    )
+  }
+
+  private _isAtomicElement(element: IElement): boolean {
+    return (
+      element.type === ElementType.TABLE ||
       element.type === ElementType.BLOCK ||
       element.type === ElementType.SEPARATOR ||
       element.type === ElementType.IMAGE ||
-      element.type === ElementType.LATEX ||
-      !!element.control ||
-      !!element.controlComponent ||
-      !!element.areaId ||
-      !!element.isControlMinWidthPlaceholder
+      element.type === ElementType.LATEX
     )
   }
 

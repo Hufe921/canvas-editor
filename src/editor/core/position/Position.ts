@@ -12,6 +12,7 @@ import {
 } from '../../interface/Position'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement, IElementPosition } from '../../interface/Element'
+import { IRow } from '../../interface/Row'
 import { ITd } from '../../interface/table/Td'
 import {
   ICurrentPosition,
@@ -36,6 +37,13 @@ interface IPagePositionCache {
   positionList: IElementPosition[]
   floatPositionList: IFloatPosition[]
   tablePagingPositionList: IElementPosition[]
+  // 行对象会被增量排版原地修正索引，必须额外保存上一轮数值
+  rowList: IRow[]
+  rowStartIndexList: number[]
+  startRowIndex: number
+  startX: number
+  startY: number
+  innerWidth: number
 }
 
 export class Position {
@@ -705,7 +713,6 @@ export class Position {
     // 按每页行计算（混排横竖版时每页宽度/边距可能不同，按页取值）
     const pageRowList = this.draw.getPageRowList()
     const fromPageNo = payload?.fromPageNo ?? 0
-    // 增量复用：首个变动页之前的页位置/浮动/跨页表格片段信息完全未变
     const cache = this.pagePositionCacheList
     const isResume =
       fromPageNo > 0 &&
@@ -729,57 +736,132 @@ export class Position {
       }
       this.pagePositionCacheList = keptCache
     } else {
-      // 置空原位置信息
       this.positionList = []
       this.tablePagingPositionList = []
       this.tablePagingPositionMap.clear()
       this.pagePositionCacheList = []
     }
     const startPageNo = isResume ? fromPageNo : 0
-    // 起始位置受页眉影响
     const header = this.draw.getHeader()
     let startRowIndex = 0
     for (let i = 0; i < startPageNo; i++) {
       startRowIndex += pageRowList[i]?.length || 0
     }
     for (let i = startPageNo; i < pageRowList.length; i++) {
-      const rowList = pageRowList[i]
-      if (!rowList?.length) {
-        // 空白页（区域补高跨页延续页）同样占位，保持页位置缓存与页码对齐
-        this.pagePositionCacheList.push({
-          positionList: [],
-          floatPositionList: [],
-          tablePagingPositionList: []
-        })
-        continue
-      }
-      const startIndex = rowList[0].startIndex
+      const rowList = pageRowList[i] || []
+      const previousCache = cache[i]
       const { margins, innerWidth } = this.draw.getPageSize(i)
       const startX = margins[3]
-      // 每页页眉禁用状态不同，startY 需按页计算
       const startY = margins[0] + header.getExtraHeight(i)
+      if (
+        payload?.isReuseUnchangedPages &&
+        previousCache &&
+        this._isPagePositionReusable(
+          previousCache,
+          rowList,
+          startX,
+          startY,
+          innerWidth
+        )
+      ) {
+        this._reusePagePosition(previousCache, rowList, startRowIndex, i)
+        this.pagePositionCacheList.push({
+          positionList: previousCache.positionList,
+          floatPositionList: previousCache.floatPositionList,
+          tablePagingPositionList: previousCache.tablePagingPositionList,
+          rowList: rowList.slice(),
+          rowStartIndexList: rowList.map(row => row.startIndex),
+          startRowIndex,
+          startX,
+          startY,
+          innerWidth
+        })
+        startRowIndex += rowList.length
+        continue
+      }
       const markPosition = this.positionList.length
       const markFloat = this.floatPositionList.length
       const markTablePaging = this.tablePagingPositionList.length
-      this.computePageRowPosition({
-        positionList: this.positionList,
-        rowList,
-        pageNo: i,
+      if (rowList.length) {
+        this.computePageRowPosition({
+          positionList: this.positionList,
+          rowList,
+          pageNo: i,
+          startRowIndex,
+          startIndex: rowList[0].startIndex,
+          startX,
+          startY,
+          innerWidth
+        })
+      }
+      this.pagePositionCacheList.push({
+        positionList: this.positionList.slice(markPosition),
+        floatPositionList: this.floatPositionList.slice(markFloat),
+        tablePagingPositionList:
+          this.tablePagingPositionList.slice(markTablePaging),
+        rowList: rowList.slice(),
+        rowStartIndexList: rowList.map(row => row.startIndex),
         startRowIndex,
-        startIndex,
         startX,
         startY,
         innerWidth
       })
       startRowIndex += rowList.length
-      // 记录本页新增的位置信息，供增量复用
-      this.pagePositionCacheList.push({
-        positionList: this.positionList.slice(markPosition),
-        floatPositionList: this.floatPositionList.slice(markFloat),
-        tablePagingPositionList:
-          this.tablePagingPositionList.slice(markTablePaging)
-      })
     }
+  }
+
+  private _isPagePositionReusable(
+    cache: IPagePositionCache,
+    rowList: IRow[],
+    startX: number,
+    startY: number,
+    innerWidth: number
+  ): boolean {
+    if (
+      cache.rowList.length !== rowList.length ||
+      cache.startX !== startX ||
+      cache.startY !== startY ||
+      cache.innerWidth !== innerWidth
+    ) {
+      return false
+    }
+    let elementCount = 0
+    for (let i = 0; i < rowList.length; i++) {
+      const row = rowList[i]
+      // 跨页表格的片段位置依赖前页续排状态，不参与单页独立复用
+      if (cache.rowList[i] !== row || row.tableFragment) return false
+      elementCount += row.elementList.length
+    }
+    return cache.positionList.length === elementCount
+  }
+
+  private _reusePagePosition(
+    cache: IPagePositionCache,
+    rowList: IRow[],
+    startRowIndex: number,
+    pageNo: number
+  ): void {
+    const rowIndexDelta = startRowIndex - cache.startRowIndex
+    let positionIndex = 0
+    for (let r = 0; r < rowList.length; r++) {
+      const row = rowList[r]
+      const elementIndexDelta = row.startIndex - cache.rowStartIndexList[r]
+      for (let e = 0; e < row.elementList.length; e++) {
+        const position = cache.positionList[positionIndex++]
+        position.index += elementIndexDelta
+        position.rowIndex += rowIndexDelta
+      }
+    }
+    for (const position of cache.positionList) {
+      this.positionList.push(position)
+    }
+    for (const floatPosition of cache.floatPositionList) {
+      this.floatPositionList.push(floatPosition)
+    }
+    for (const position of cache.tablePagingPositionList) {
+      this.tablePagingPositionList.push(position)
+    }
+    this.tablePagingPositionMap.set(pageNo, cache.tablePagingPositionList)
   }
 
   public computeRowPosition(

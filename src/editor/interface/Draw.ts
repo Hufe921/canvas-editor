@@ -12,6 +12,8 @@ export interface IDrawOption {
   isInit?: boolean
   isSourceHistory?: boolean
   isFirstRender?: boolean
+  // 本次仅为页面缩放时携带旧比例，用于复用既有断行结构
+  scaleFrom?: number
 }
 
 // 编辑影响区间（元素索引，左闭右开）：增量续算的起点与收敛防线
@@ -109,7 +111,7 @@ export interface IComputeRowListResume {
   state: IRowComputeState
   // 续算点上一行的末元素（行首隐藏元素的高度继承自它的度量）
   preRowLastElement?: IRowElement
-  // 遇到复杂结构元素（表格/图片/控件等）时返回 true 中止续算，调用方退化全量
+  // 遇到非局部状态可恢复的元素或级联超限时中止续算，调用方退化全量
   shouldAbort?: (element: IElement, index: number) => boolean
   // 新行诞生回调：返回 true 表示与旧行状态收敛，续算提前结束
   converge?: (

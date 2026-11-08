@@ -1,8 +1,9 @@
 import { Draw } from '../draw/Draw'
+import type { HistoryDirection } from './ElementListSnapshot'
 
 export class HistoryManager {
-  private undoStack: Array<Function> = []
-  private redoStack: Array<Function> = []
+  private undoStack: Array<(direction: HistoryDirection) => void> = []
+  private redoStack: Array<(direction: HistoryDirection) => void> = []
   private maxRecordCount: number
 
   constructor(draw: Draw) {
@@ -15,7 +16,7 @@ export class HistoryManager {
       const pop = this.undoStack.pop()!
       this.redoStack.push(pop)
       if (this.undoStack.length) {
-        this.undoStack[this.undoStack.length - 1]()
+        this.undoStack[this.undoStack.length - 1]('undo')
       }
     }
   }
@@ -24,11 +25,11 @@ export class HistoryManager {
     if (this.redoStack.length) {
       const pop = this.redoStack.pop()!
       this.undoStack.push(pop)
-      pop()
+      pop('redo')
     }
   }
 
-  public execute(fn: Function) {
+  public execute(fn: (direction: HistoryDirection) => void) {
     this.undoStack.push(fn)
     if (this.redoStack.length) {
       this.redoStack = []

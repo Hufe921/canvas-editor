@@ -20,6 +20,9 @@ import { shrinkColgroupToWidth } from '../../utils/table'
 import type { Draw } from '../draw/Draw'
 import type { TextParticle } from '../draw/particle/TextParticle'
 
+// 多次文本测量与宽度累加存在浮点误差，不能据此拆出额外一行
+const WIDTH_EPSILON = 1e-8
+
 export interface IComputePageListPayload {
   rowList: IRow[]
   elementList: IElement[]
@@ -727,7 +730,7 @@ export class LayoutEngine {
           element.value === ZERO &&
           !(element.area?.hide && !draw.isAreaHideDisabled()))
       // 是否宽度不足导致换行
-      const isWidthNotEnough = curRowWidth > availableWidth
+      const isWidthNotEnough = curRowWidth - availableWidth > WIDTH_EPSILON
       const isWrap = isForceBreak || isWidthNotEnough
       // 避头标点悬挂行尾，不占行宽
       const isHang =
@@ -938,10 +941,7 @@ export class LayoutEngine {
             // 分页符切换后续节方向，未指定时回到全局方向
             currentDirection = nextDirection
             currentMargins = draw.getMargins(currentDirection)
-            currentInnerWidth =
-              draw.getWidth(currentDirection) -
-              currentMargins[1] -
-              currentMargins[3]
+            currentInnerWidth = draw.getInnerWidth(currentDirection)
             currentStartX = currentMargins[3]
             currentPageHeight = draw.getHeight(currentDirection)
             // 分栏布局随节方向切换

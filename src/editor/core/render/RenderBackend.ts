@@ -5,6 +5,8 @@ export type RenderPage = HTMLElement | SVGSVGElement
 export interface IPageResizeOption {
   gap?: number
   updateCssHeight?: boolean
+  // 屏幕外页面先更新 CSS 尺寸，实际绘制前再重建像素缓冲区
+  deferPixelResize?: boolean
 }
 
 export interface ICanvasCapability {

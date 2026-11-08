@@ -82,7 +82,8 @@ describe('高亮背景绘制', () => {
       new EventBus(),
       new Override()
     )
-    // 测试环境 IntersectionObserver 为桩，需强制立即渲染
+    // 初始化已同步绘制当前页，仅统计本次强制立即渲染的结果
+    rects.length = 0
     draw.render({ isLazy: false, isSubmitHistory: false })
     return { draw, rects }
   }
@@ -129,8 +130,7 @@ describe('高亮背景绘制', () => {
         isSubmitHistory: false
       }
     ])
-    // 强制立即渲染（绕过测试环境懒渲染桩）
-    draw.render({ isLazy: false, isSubmitHistory: false })
+    // 当前页应在属性更新时同步重绘，无需等待可见性回调
     expect(rects.length).toBe(2)
     expect(rects[0].color).toBe('#00ff00')
     expect(rects[1].color).toBe('#eaf3fd')

@@ -300,7 +300,8 @@ export class ListParticle {
 
   public computeListStyle(
     ctx: CanvasRenderingContext2D,
-    elementList: IElement[]
+    elementList: IElement[],
+    scale = this.options.scale
   ): Map<string, number> {
     const listStyleMap = new Map<string, number>()
     let start = 0
@@ -315,7 +316,7 @@ export class ListParticle {
         if (curElement.listId && curElement.listId !== curListId) {
           // 列表结束
           if (curElementList.length) {
-            const width = this.getListStyleWidth(ctx, curElementList)
+            const width = this.getListStyleWidth(ctx, curElementList, scale)
             listStyleMap.set(curListId!, width)
           }
           curListId = curElement.listId
@@ -325,7 +326,7 @@ export class ListParticle {
       start++
     }
     if (curElementList.length) {
-      const width = this.getListStyleWidth(ctx, curElementList)
+      const width = this.getListStyleWidth(ctx, curElementList, scale)
       listStyleMap.set(curListId!, width)
     }
     return listStyleMap
@@ -355,9 +356,10 @@ export class ListParticle {
 
   public getListStyleWidth(
     ctx: CanvasRenderingContext2D,
-    listElementList: IElement[]
+    listElementList: IElement[],
+    scale = this.options.scale
   ): number {
-    const { scale, checkbox } = this.options
+    const { checkbox } = this.options
     const startElement = listElementList[0]
     // 非递增样式返回固定值
     if (
