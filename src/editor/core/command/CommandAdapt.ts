@@ -22,6 +22,7 @@ import {
   BackendType,
   EditorMode,
   EditorZone,
+  PageLayout,
   PageMode,
   PaperDirection
 } from '../../dataset/enum/Editor'
@@ -2032,6 +2033,10 @@ export class CommandAdapt {
 
   public pageMode(payload: PageMode) {
     this.draw.setPageMode(payload)
+  }
+
+  public pageLayout(payload: PageLayout) {
+    this.draw.setPageLayout(payload)
   }
 
   public setColumns(config: IColumnOption | null) {

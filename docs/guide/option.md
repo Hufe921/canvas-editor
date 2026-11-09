@@ -46,6 +46,7 @@ interface IEditorOption {
   marginIndicatorColor?: string // 页边距指示器颜色。默认：#BABABA
   margins?: IMargin // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode // 纸张模式：连页、分页。默认：分页
+  pageLayout?: PageLayout // 页面布局：单页、多页（分页模式下按容器宽度同屏排列）。默认：单页
   renderMode?: RenderMode // 渲染模式：极速（多个字组合渲染）、兼容（逐字渲染：避免浏览器字体等环境差异）。默认：极速
   backend?: BackendType // 渲染后端：CANVAS、SVG。默认：CANVAS
   defaultHyperlinkColor?: string // 默认超链接颜色。默认：#0000FF

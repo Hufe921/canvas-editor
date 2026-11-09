@@ -34,6 +34,7 @@ import { ColumnManager } from './column/ColumnManager'
 import { IncrementalRowComputer } from './IncrementalRowComputer'
 import { ScaledRowComputer } from './ScaledRowComputer'
 import { LayoutEngine } from '../layout/LayoutEngine'
+import { PageLayoutManager } from '../layout/PageLayout'
 import { TextMeasurer } from '../layout/TextMeasurer'
 import { createBackend } from '../render/BackendFactory'
 import type { IRenderBackend, RenderPage } from '../render/RenderBackend'
@@ -95,6 +96,7 @@ import {
   EditorComponent,
   EditorMode,
   EditorZone,
+  PageLayout,
   PageMode,
   PaperDirection
 } from '../../dataset/enum/Editor'
@@ -245,6 +247,7 @@ export class Draw {
   private isElementListTruncated: boolean
   private pageRowList: IRow[][]
   private pageDirectionList: PaperDirection[]
+  private pageLayout: PageLayoutManager
   private painterStyle: IElementStyle | null
   private painterOptions: IPainterOption | null
   private visiblePageNoList: number[]
@@ -277,6 +280,7 @@ export class Draw {
     this._formatContainer()
     this.pageContainer = this._createPageContainer()
     this.backend = createBackend(options.backend, this.pageContainer)
+    this.pageLayout = new PageLayoutManager(this)
     this._createPage(0)
 
     this.i18n = new I18n(options.locale)
@@ -687,8 +691,18 @@ export class Draw {
     }
   }
 
-  // 获取页面容器中的偏移
+  // 多页视图读取预计算偏移；单页保持原有的按需计算，避免全页遍历
   public getPageOffset(pageNo: number, isOriginal = false) {
+    const offset = this.pageLayout.getOffset(pageNo)
+    if (offset) {
+      if (isOriginal && this.options.scale !== 1) {
+        return {
+          x: offset.x / this.options.scale,
+          y: offset.y / this.options.scale
+        }
+      }
+      return offset
+    }
     const getWidth = (direction: PaperDirection) =>
       isOriginal ? this.getOriginalWidth(direction) : this.getWidth(direction)
     const getHeight = (direction: PaperDirection) =>
@@ -705,6 +719,10 @@ export class Draw {
       x: (this._getPageMaxWidth(isOriginal) - width) / 2,
       y
     }
+  }
+
+  public isMultiPageLayout(): boolean {
+    return this.pageLayout.isMultiPage()
   }
 
   private _getPageMaxWidth(isOriginal = false) {
@@ -1560,6 +1578,29 @@ export class Draw {
       }
       if (this.eventBus.isSubscribe('pageModeChange')) {
         this.eventBus.emit('pageModeChange', payload)
+      }
+    })
+  }
+
+  public setPageLayout(payload: PageLayout) {
+    if (this.options.pageLayout === payload) return
+    this.options.pageLayout = payload
+    const { startIndex } = this.range.getRange()
+    const isCollapsed = this.range.getIsCollapsed()
+    this.render({
+      isSetCursor: true,
+      curIndex: startIndex,
+      isSubmitHistory: false
+    })
+    if (!isCollapsed) {
+      this.cursor.drawCursor({ isShow: false })
+    }
+    setTimeout(() => {
+      if (this.listener.pageLayoutChange) {
+        this.listener.pageLayoutChange(payload)
+      }
+      if (this.eventBus.isSubscribe('pageLayoutChange')) {
+        this.eventBus.emit('pageLayoutChange', payload)
       }
     })
   }
@@ -2855,6 +2896,19 @@ export class Draw {
     if (isPageDirectionChanged) {
       this._updatePageSizes()
     }
+    const isMultiplePageLayout =
+      isPagingMode && this.options.pageLayout === PageLayout.MULTIPLE
+    if (isMultiplePageLayout || this.pageLayout.isActive()) {
+      this.pageLayout.update({
+        pageList: this.backend.getPageList(),
+        pageWidth: this.getWidth(),
+        pageHeight: this.getHeight(),
+        pageGap: this.getPageGap(),
+        minPageWidth: this._getPageMaxWidth(),
+        isMultiple: isMultiplePageLayout,
+        isPageDirectionChanged
+      })
+    }
     // 绘制元素
     // 连续页因为有高度的变化会导致canvas渲染空白，需立即渲染，否则会出现闪动
     if (isLazy && isPagingMode) {
@@ -3042,6 +3096,7 @@ export class Draw {
   }
 
   public destroy() {
+    this.pageLayout.destroy()
     this.container.remove()
     this.globalEvent.removeEvent()
     this.scrollObserver.removeEvent()

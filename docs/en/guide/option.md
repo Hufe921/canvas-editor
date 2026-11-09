@@ -46,6 +46,7 @@ interface IEditorOption {
   marginIndicatorColor?: string // The margin indicator color. default: #BABABA
   margins?: IMargin // Page margins. default: [100, 120, 100, 120]
   pageMode?: PageMode // Paper mode: Linkage, Pagination. default: Pagination
+  pageLayout?: PageLayout // Page layout: single page or multiple pages (arranged to fit the container in pagination mode). default: Single
   renderMode?: RenderMode // Render mode: speed(multi words combination rendering), compatibility(word by word rendering:avoid environmental differences such as browse,fonts...). default: speed
   backend?: BackendType // Rendering backend: CANVAS or SVG. default: CANVAS
   defaultHyperlinkColor?: string // Default hyperlink color. default: #0000FF

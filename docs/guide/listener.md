@@ -105,6 +105,16 @@ instance.listener.controlContentChange = (
 instance.listener.pageModeChange = (payload: PageMode) => {}
 ```
 
+## pageLayoutChange
+
+功能：页面布局发生改变
+
+用法：
+
+```javascript
+instance.listener.pageLayoutChange = (payload: PageLayout) => {}
+```
+
 ## saved
 
 功能：文档执行保存

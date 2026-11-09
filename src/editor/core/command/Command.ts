@@ -85,6 +85,7 @@ export class Command {
   public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
+  public executePageLayout: CommandAdapt['pageLayout']
   public executeSetColumns: CommandAdapt['setColumns']
   public executePageScale: CommandAdapt['pageScale']
   public executePageScaleRecovery: CommandAdapt['pageScaleRecovery']
@@ -459,6 +460,10 @@ export class Command {
     this.executePageMode = this.wrap(
       'executePageMode',
       adapt.pageMode.bind(adapt)
+    )
+    this.executePageLayout = this.wrap(
+      'executePageLayout',
+      adapt.pageLayout.bind(adapt)
     )
     this.executeSetColumns = this.wrap(
       'executeSetColumns',

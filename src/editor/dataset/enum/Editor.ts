@@ -36,6 +36,11 @@ export enum PageMode {
   CONTINUITY = 'continuity'
 }
 
+export enum PageLayout {
+  SINGLE = 'single',
+  MULTIPLE = 'multiple'
+}
+
 export enum PaperDirection {
   VERTICAL = 'vertical',
   HORIZONTAL = 'horizontal'

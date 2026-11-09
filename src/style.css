@@ -1222,6 +1222,81 @@ ul {
   background-color: #e2e6ed;
 }
 
+.footer .page-view-options {
+  width: 248px;
+  padding: 0 8px 8px;
+  color: #1f2329;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgb(31 35 41 / 16%);
+}
+
+.footer .page-view-options__header {
+  padding: 12px 10px 9px;
+  font-weight: 600;
+}
+
+.footer .page-view-group {
+  padding: 7px 0 5px;
+}
+
+.footer .page-view-group + .page-view-group {
+  margin-top: 4px;
+  border-top: 1px solid #e2e6ed;
+}
+
+.footer .page-view-group__title {
+  padding: 0 10px;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.footer .page-view-group__description {
+  padding: 0 10px 5px;
+  color: #8a8f99;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.footer .page-view-options li {
+  position: relative;
+  margin: 2px 0;
+  padding: 7px 30px 7px 10px;
+  border-radius: 4px;
+  text-align: left;
+  line-height: 20px;
+  transition: background-color 0.15s;
+}
+
+.footer .page-view-options li span {
+  font-size: 13px;
+}
+
+.footer .page-view-options li small {
+  display: block;
+  color: #8a8f99;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.footer .page-view-options li.active {
+  color: #245bdb;
+  background-color: #eaf2ff;
+}
+
+.footer .page-view-options li.active small {
+  color: #6482b4;
+}
+
+.footer .page-view-options li.active::after {
+  content: '✓';
+  position: absolute;
+  top: 8px;
+  right: 11px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
 .footer > div:first-child > span {
   display: flex;
   align-items: center;

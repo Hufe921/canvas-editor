@@ -120,6 +120,16 @@ Usage:
 instance.eventBus.on('pageModeChange', (payload: PageMode) => void)
 ```
 
+## pageLayoutChange
+
+Feature: The page layout changes
+
+Usage:
+
+```javascript
+instance.eventBus.on('pageLayoutChange', (payload: PageLayout) => void)
+```
+
 ## saved
 
 Feature: Document saved

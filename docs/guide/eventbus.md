@@ -120,6 +120,16 @@ instance.eventBus.on('controlContentChange', (payload: IControlContentChangeResu
 instance.eventBus.on('pageModeChange', (payload: PageMode) => void)
 ```
 
+## pageLayoutChange
+
+功能：页面布局发生改变
+
+用法：
+
+```javascript
+instance.eventBus.on('pageLayoutChange', (payload: PageLayout) => void)
+```
+
 ## saved
 
 功能：文档执行保存

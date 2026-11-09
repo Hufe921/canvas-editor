@@ -281,7 +281,7 @@ Professional scenarios such as forms, automation, and collaboration.
   <div class="it"><b>Locate & value</b><span>Click to locate, get heading value</span></div>
 </div>
 
-## Page Setup <Badge type="info" text="19" />
+## Page Setup <Badge type="info" text="20" />
 
 Page-level configuration and document appearance.
 
@@ -296,6 +296,7 @@ Page-level configuration and document appearance.
 
 <div class="feat">
   <div class="it"><b>Paginate / continuous</b><span>paging / continuity page modes</span></div>
+  <div class="it"><b>Single / multiple pages</b><span>Arrange pages to fit the container width; single page by default</span></div>
   <div class="it"><b>Page zoom</b><span>Zoom in, out, reset</span></div>
   <div class="it"><b>Page border</b><span>Border color, line width, padding</span></div>
   <div class="it"><b>Paper size</b><span>Custom width / height</span></div>

@@ -3,6 +3,7 @@ import {
   IControlChange,
   IControlContentChange,
   IIntersectionPageNoChange,
+  IPageLayoutChange,
   IPageModeChange,
   IPageScaleChange,
   IPageSizeChange,
@@ -23,6 +24,7 @@ export class Listener {
   public controlChange: IControlChange | null
   public controlContentChange: IControlContentChange | null
   public pageModeChange: IPageModeChange | null
+  public pageLayoutChange: IPageLayoutChange | null
   public zoneChange: IZoneChange | null
 
   constructor() {
@@ -36,6 +38,7 @@ export class Listener {
     this.controlChange = null
     this.controlContentChange = null
     this.pageModeChange = null
+    this.pageLayoutChange = null
     this.zoneChange = null
   }
 }

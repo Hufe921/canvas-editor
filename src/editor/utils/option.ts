@@ -57,6 +57,7 @@ import { defaultPageBorderOption } from '../dataset/constant/PageBorder'
 import {
   BackendType,
   EditorMode,
+  PageLayout,
   PageMode,
   PaperDirection,
   RenderMode,
@@ -268,6 +269,7 @@ export function mergeOption(
     marginIndicatorColor: '#BABABA',
     margins: [100, 120, 100, 120],
     pageMode: PageMode.PAGING,
+    pageLayout: PageLayout.SINGLE,
     renderMode: RenderMode.SPEED,
     backend: BackendType.CANVAS,
     defaultHyperlinkColor: '#0000FF',

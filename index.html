@@ -426,12 +426,37 @@
           <i></i>
         </div>
         <div class="page-mode">
-          <i title="页面模式(分页、连页)"></i>
-          <div class="options">
-            <ul>
-              <li data-page-mode="paging" class="active">分页</li>
-              <li data-page-mode="continuity">连页</li>
-            </ul>
+          <i title="页面视图设置"></i>
+          <div class="options page-view-options">
+            <div class="page-view-options__header">页面视图</div>
+            <section class="page-view-group">
+              <div class="page-view-group__title">纸张模式</div>
+              <div class="page-view-group__description">控制文档是否按纸张分页</div>
+              <ul>
+                <li data-page-mode="paging" class="active">
+                  <span>分页</span>
+                  <small>按纸张逐页显示</small>
+                </li>
+                <li data-page-mode="continuity">
+                  <span>连页</span>
+                  <small>连续显示文档内容</small>
+                </li>
+              </ul>
+            </section>
+            <section class="page-view-group">
+              <div class="page-view-group__title">页面布局</div>
+              <div class="page-view-group__description">仅分页模式生效，不影响分页结果</div>
+              <ul>
+                <li data-page-layout="single" class="active">
+                  <span>单页</span>
+                  <small>每行只显示一页</small>
+                </li>
+                <li data-page-layout="multiple">
+                  <span>多页</span>
+                  <small>按可用宽度同屏排列</small>
+                </li>
+              </ul>
+            </section>
           </div>
         </div>
         <div class="page-mode backend-switch" title="渲染后端">

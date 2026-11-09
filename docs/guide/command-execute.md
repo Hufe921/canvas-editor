@@ -898,6 +898,16 @@ instance.command.executeSetImageCrop(crop: IImageCrop)
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageLayout
+
+功能：设置单页或多页布局，默认单页。多页布局仅在分页模式下生效，根据容器宽度自动同屏排列，不改变文档分页结果。
+
+用法：
+
+```javascript
+instance.command.executePageLayout(pageLayout: PageLayout)
+```
+
 ## executePageScale
 
 功能：设置缩放比例

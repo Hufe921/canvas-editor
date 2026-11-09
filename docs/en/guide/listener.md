@@ -105,6 +105,16 @@ Usage:
 instance.listener.pageModeChange = (payload: PageMode) => {}
 ```
 
+## pageLayoutChange
+
+Feature: The page layout changes
+
+Usage:
+
+```javascript
+instance.listener.pageLayoutChange = (payload: PageLayout) => {}
+```
+
 ## saved
 
 Feature: Document saved

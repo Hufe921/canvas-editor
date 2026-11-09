@@ -18,6 +18,7 @@ import Editor, {
   KeyMap,
   ListStyle,
   ListType,
+  PageLayout,
   PageMode,
   PaperDirection,
   RowFlex,
@@ -1575,8 +1576,13 @@ window.onload = function () {
     pageModeOptionsDom.classList.toggle('visible')
   }
   pageModeOptionsDom.onclick = function (evt) {
-    const li = evt.target as HTMLLIElement
-    instance.command.executePageMode(<PageMode>li.dataset.pageMode!)
+    const li = (evt.target as HTMLElement).closest<HTMLLIElement>('li')
+    if (!li) return
+    if (li.dataset.pageMode) {
+      instance.command.executePageMode(<PageMode>li.dataset.pageMode)
+    } else if (li.dataset.pageLayout) {
+      instance.command.executePageLayout(<PageLayout>li.dataset.pageLayout)
+    }
   }
 
   document.querySelector<HTMLDivElement>('.page-scale-percentage')!.onclick =
@@ -2351,14 +2357,16 @@ window.onload = function () {
     })
   }
 
-  instance.listener.pageModeChange = function (payload) {
-    const activeMode = pageModeOptionsDom.querySelector<HTMLLIElement>(
-      `[data-page-mode='${payload}']`
-    )!
-    pageModeOptionsDom
-      .querySelectorAll('li')
-      .forEach(li => li.classList.remove('active'))
-    activeMode.classList.add('active')
+  const updatePageViewOption = (attribute: string, payload: string) => {
+    pageModeOptionsDom.querySelectorAll(`[${attribute}]`).forEach(li => {
+      li.classList.toggle('active', li.getAttribute(attribute) === payload)
+    })
+  }
+  instance.listener.pageModeChange = payload => {
+    updatePageViewOption('data-page-mode', payload)
+  }
+  instance.listener.pageLayoutChange = payload => {
+    updatePageViewOption('data-page-layout', payload)
   }
 
   const handleContentChange = async function () {

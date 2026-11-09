@@ -171,8 +171,11 @@ export class Ruler {
       this._createDOM()
     }
     const rulerContainer = this.rulerContainer!
-    // 连页模式下无页面边距概念，隐藏标尺
-    if (this.options.pageMode !== PageMode.PAGING) {
+    // 连页模式下无页面边距概念；多页同屏时单条标尺无法对应当前页
+    if (
+      this.options.pageMode !== PageMode.PAGING ||
+      this.draw.isMultiPageLayout()
+    ) {
       rulerContainer.style.display = 'none'
       return
     }

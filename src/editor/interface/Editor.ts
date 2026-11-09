@@ -1,5 +1,6 @@
 import {
   EditorMode,
+  PageLayout,
   PageMode,
   PaperDirection,
   RenderMode,
@@ -95,6 +96,8 @@ export interface IEditorOption {
   marginIndicatorColor?: string
   margins?: IMargin
   pageMode?: PageMode
+  // 页面视图布局：单页或按可用宽度自动排列多页。默认：单页
+  pageLayout?: PageLayout
   renderMode?: RenderMode
   backend?: BackendType
   defaultHyperlinkColor?: string
@@ -172,6 +175,7 @@ export type IUpdateOption = Omit<
   | 'scale'
   | 'pageGap'
   | 'pageMode'
+  | 'pageLayout'
   | 'paperDirection'
   | 'historyMaxRecordCount'
   | 'scrollContainerSelector'

@@ -904,6 +904,16 @@ Usage:
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageLayout
+
+Feature: Set single-page or multiple-page layout. The default is single page. Multiple-page layout only applies in pagination mode, arranges pages to fit the container width, and does not change document pagination.
+
+Usage:
+
+```javascript
+instance.command.executePageLayout(pageLayout: PageLayout)
+```
+
 ## executePageScale
 
 Feature: Set page scale

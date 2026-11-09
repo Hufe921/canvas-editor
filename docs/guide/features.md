@@ -281,7 +281,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>定位与取值</b><span>点击定位跳转、获取标题值</span></div>
 </div>
 
-## 页面设置 <Badge type="info" text="19" />
+## 页面设置 <Badge type="info" text="20" />
 
 页面级配置与文档外观。
 
@@ -296,6 +296,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 
 <div class="feat">
   <div class="it"><b>分页 / 连页</b><span>paging / continuity 两种页面模式</span></div>
+  <div class="it"><b>单页 / 多页</b><span>按容器宽度同屏排列多页，默认单页</span></div>
   <div class="it"><b>页面缩放</b><span>放大、缩小、恢复原始比例</span></div>
   <div class="it"><b>页面边框</b><span>边框颜色、线宽、内边距</span></div>
   <div class="it"><b>纸张大小</b><span>自定义宽高</span></div>

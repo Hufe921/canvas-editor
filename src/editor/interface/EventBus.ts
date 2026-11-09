@@ -9,6 +9,7 @@ import {
   IIntersectionPageNoChange,
   ILabelMousedown,
   IMouseEventChange,
+  IPageLayoutChange,
   IPageModeChange,
   IPageScaleChange,
   IPageSizeChange,
@@ -33,6 +34,7 @@ export interface EventBusMap {
   controlChange: IControlChange
   controlContentChange: IControlContentChange
   pageModeChange: IPageModeChange
+  pageLayoutChange: IPageLayoutChange
   zoneChange: IZoneChange
   mousemove: IMouseEventChange
   mouseleave: IMouseEventChange
