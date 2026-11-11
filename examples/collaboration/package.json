@@ -1,0 +1,11 @@
+{
+  "name": "canvas-editor-collaboration-example",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server/index.js",
+    "build": "vite build --config vite.config.ts",
+    "start": "NODE_ENV=production node server/index.js",
+    "test": "node --test server/*.test.js"
+  }
+}

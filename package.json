@@ -48,6 +48,12 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
+    "collab:dev": "node examples/collaboration/server/index.js",
+    "collab:build": "vite build --config examples/collaboration/vite.config.ts",
+    "collab:start": "NODE_ENV=production node examples/collaboration/server/index.js",
+    "collab:test": "node --test examples/collaboration/server/*.test.js",
+    "collab:test:browser": "npm run collab:build && node examples/collaboration/e2e/browser.mjs",
+    "collab:test:browser:insecure": "npm run collab:build && COLLAB_BROWSER_HOST=0.0.0.0 node examples/collaboration/e2e/browser.mjs",
     "postinstall": "simple-git-hooks",
     "pre-release": "node scripts/pre-release.js",
     "prepublishOnly": "npm run lib && npm run pre-release"
@@ -80,7 +86,11 @@
   "dependencies": {
     "@cspell/dict-en_us": "^4.4.37",
     "cspell-trie-lib": "^10.1.1",
-    "prismjs": "^1.27.0"
+    "lib0": "^0.2.120",
+    "prismjs": "^1.27.0",
+    "ws": "^8.22.2",
+    "y-protocols": "^1.0.7",
+    "yjs": "^13.6.33"
   },
   "simple-git-hooks": {
     "pre-commit": "npm run lint && npm run type:check",

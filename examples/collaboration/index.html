@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232b6de5'/%3E%3Cpath d='M18 7h-7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V12Zm0 0v5h5M13 17h6M13 21h6' fill='none' stroke='white' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E"
+    />
+    <meta
+      name="description"
+      content="Canvas Editor + Yjs + Node.js 多人实时协同编辑示例"
+    />
+    <title>协同编辑演示文档 · Canvas Editor</title>
+  </head>
+  <body>
+    <svg class="svg-sprite" aria-hidden="true">
+      <symbol id="icon-document" viewBox="0 0 24 24">
+        <path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9Z" />
+        <path d="M14 3v6h6M8 13h8M8 17h5" />
+      </symbol>
+      <symbol id="icon-cloud-check" viewBox="0 0 24 24">
+        <path d="M7 18a5 5 0 1 1 1.7-9.7A6 6 0 0 1 20 11a3.5 3.5 0 0 1-.5 7" />
+        <path d="m9 15 2 2 4-4" />
+      </symbol>
+      <symbol id="icon-share" viewBox="0 0 24 24">
+        <circle cx="18" cy="5" r="2.5" />
+        <circle cx="6" cy="12" r="2.5" />
+        <circle cx="18" cy="19" r="2.5" />
+        <path d="m8.2 10.8 7.6-4.5M8.2 13.2l7.6 4.5" />
+      </symbol>
+      <symbol id="icon-users" viewBox="0 0 24 24">
+        <path d="M16 20v-1.5a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4V20" />
+        <circle cx="9" cy="7" r="4" />
+        <path d="M17 4.2a4 4 0 0 1 0 7.6M22 20v-1.5a4 4 0 0 0-3-3.8" />
+      </symbol>
+      <symbol id="icon-undo" viewBox="0 0 24 24">
+        <path d="m9 7-5 5 5 5M4 12h9a6 6 0 0 1 6 6v1" />
+      </symbol>
+      <symbol id="icon-redo" viewBox="0 0 24 24">
+        <path d="m15 7 5 5-5 5M20 12h-9a6 6 0 0 0-6 6v1" />
+      </symbol>
+      <symbol id="icon-align-left" viewBox="0 0 24 24">
+        <path d="M4 6h16M4 10h11M4 14h16M4 18h11" />
+      </symbol>
+      <symbol id="icon-align-center" viewBox="0 0 24 24">
+        <path d="M4 6h16M7 10h10M4 14h16M7 18h10" />
+      </symbol>
+      <symbol id="icon-align-right" viewBox="0 0 24 24">
+        <path d="M4 6h16M9 10h11M4 14h16M9 18h11" />
+      </symbol>
+      <symbol id="icon-image" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <circle cx="8.5" cy="9" r="1.5" />
+        <path d="m21 15-5-5L5 20" />
+      </symbol>
+      <symbol id="icon-table" viewBox="0 0 24 24">
+        <rect x="3" y="4" width="18" height="16" rx="2" />
+        <path d="M3 10h18M9 4v16M15 4v16M3 15h18" />
+      </symbol>
+      <symbol id="icon-chevron" viewBox="0 0 24 24">
+        <path d="m9 6 6 6-6 6" />
+      </symbol>
+      <symbol id="icon-lock" viewBox="0 0 24 24">
+        <rect x="5" y="10" width="14" height="11" rx="2" />
+        <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3" />
+      </symbol>
+    </svg>
+
+    <div id="app">
+      <header class="app-header">
+        <div class="brand">
+          <span class="brand__mark">
+            <svg><use href="#icon-document"></use></svg>
+          </span>
+          <span class="brand__name">Canvas Editor</span>
+          <span class="brand__divider"></span>
+          <span class="brand__product">协同文档</span>
+        </div>
+        <div class="header-context">
+          <svg><use href="#icon-lock"></use></svg>
+          <span>本地协同空间</span>
+        </div>
+        <div class="header-actions">
+          <div
+            id="connection-status"
+            class="connection-status"
+            data-status="connecting"
+          >
+            <span class="connection-status__dot"></span>
+            <span id="connection-text">正在连接</span>
+          </div>
+          <span class="header-actions__divider"></span>
+          <div class="current-user" title="当前协作者">
+            <span id="current-user-avatar" class="current-user__avatar"></span>
+            <span id="current-user-name" class="current-user__name"></span>
+          </div>
+        </div>
+      </header>
+
+      <section class="document-bar">
+        <div class="document-identity">
+          <div class="document-identity__icon">
+            <svg><use href="#icon-document"></use></svg>
+          </div>
+          <div>
+            <div class="document-title-row">
+              <h1>协同编辑演示文档</h1>
+              <span class="document-badge">
+                <svg><use href="#icon-cloud-check"></use></svg>
+                自动保存
+              </span>
+            </div>
+            <p>多人实时协作，所有修改自动同步</p>
+          </div>
+        </div>
+        <div class="document-actions">
+          <div class="presence-summary">
+            <div id="member-avatars" class="presence-avatars"></div>
+            <span id="header-member-count">0 人在线</span>
+          </div>
+          <button
+            id="share-button"
+            type="button"
+            class="button button--primary"
+            title="复制当前房间的邀请链接"
+          >
+            <svg><use href="#icon-share"></use></svg>
+            分享协作
+          </button>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="sidebar">
+          <section class="side-section room-section">
+            <div class="side-heading">
+              <h2>协作空间</h2>
+              <span class="environment-badge">演示环境</span>
+            </div>
+            <p class="side-description">输入相同房间名即可共同编辑</p>
+            <label class="room-control">
+              <span>房间</span>
+              <input
+                id="room-input"
+                maxlength="64"
+                aria-label="协同房间名称"
+              />
+            </label>
+            <button
+              id="join-button"
+              type="button"
+              class="button button--secondary button--block"
+            >
+              切换房间
+            </button>
+          </section>
+
+          <section class="side-section member-section">
+            <div class="side-heading">
+              <h2>
+                <svg><use href="#icon-users"></use></svg>
+                在线成员
+              </h2>
+              <span class="member-total"><span id="member-count">0</span> 人</span>
+            </div>
+            <div id="member-list" class="member-list"></div>
+          </section>
+
+          <section class="side-section guide-section">
+            <details open>
+              <summary>
+                快速体验协同
+                <svg><use href="#icon-chevron"></use></svg>
+              </summary>
+              <ol>
+                <li>点击「分享协作」，在另一个窗口打开邀请链接。</li>
+                <li>同时输入或修改格式，实时查看双方改动。</li>
+                <li>插入图片、表格，体验复杂内容协同。</li>
+                <li>断网后继续编辑，恢复连接时自动合并。</li>
+              </ol>
+            </details>
+          </section>
+
+          <div class="tech-note">
+            <div class="tech-note__title">
+              <span></span>
+              开放技术驱动
+            </div>
+            <div class="tech-note__tags">
+              <span>Yjs CRDT</span>
+              <span>WebSocket</span>
+              <span>Node.js</span>
+            </div>
+            <p>文档数据由本地 Node.js 服务持久化保存</p>
+          </div>
+        </aside>
+
+        <main class="editor-workspace">
+          <div class="toolbar-shell">
+            <div class="toolbar" role="toolbar" aria-label="富文本工具栏">
+              <div class="toolbar__group">
+                <button
+                  id="undo-button"
+                  type="button"
+                  class="tool-button tool-button--icon"
+                  title="撤销 (Ctrl/⌘+Z)"
+                  aria-label="撤销"
+                  disabled
+                >
+                  <svg><use href="#icon-undo"></use></svg>
+                </button>
+                <button
+                  id="redo-button"
+                  type="button"
+                  class="tool-button tool-button--icon"
+                  title="重做 (Ctrl/⌘+Shift+Z)"
+                  aria-label="重做"
+                  disabled
+                >
+                  <svg><use href="#icon-redo"></use></svg>
+                </button>
+              </div>
+              <span class="toolbar__divider"></span>
+              <div class="toolbar__group">
+                <label class="size-tool" title="字号">
+                  <select id="size-select" aria-label="字号">
+                    <option value="14">14</option>
+                    <option value="16" selected>16</option>
+                    <option value="18">18</option>
+                    <option value="20">20</option>
+                    <option value="24">24</option>
+                    <option value="28">28</option>
+                  </select>
+                  <span>px</span>
+                </label>
+              </div>
+              <span class="toolbar__divider"></span>
+              <div class="toolbar__group">
+                <button
+                  id="bold-button"
+                  type="button"
+                  class="tool-button tool-button--icon tool-button--font"
+                  title="粗体 (Ctrl/⌘+B)"
+                  aria-label="粗体"
+                ><strong>B</strong></button>
+                <button
+                  id="italic-button"
+                  type="button"
+                  class="tool-button tool-button--icon tool-button--font"
+                  title="斜体 (Ctrl/⌘+I)"
+                  aria-label="斜体"
+                ><em>I</em></button>
+                <button
+                  id="underline-button"
+                  type="button"
+                  class="tool-button tool-button--icon tool-button--font"
+                  title="下划线 (Ctrl/⌘+U)"
+                  aria-label="下划线"
+                ><u>U</u></button>
+                <label class="color-tool" title="文字颜色">
+                  <span class="color-tool__letter">A</span>
+                  <input
+                    id="color-input"
+                    type="color"
+                    value="#24292f"
+                    aria-label="文字颜色"
+                  />
+                </label>
+              </div>
+              <span class="toolbar__divider"></span>
+              <div class="toolbar__group">
+                <button
+                  type="button"
+                  class="tool-button tool-button--icon align-button"
+                  data-align="left"
+                  title="左对齐"
+                  aria-label="左对齐"
+                ><svg><use href="#icon-align-left"></use></svg></button>
+                <button
+                  type="button"
+                  class="tool-button tool-button--icon align-button"
+                  data-align="center"
+                  title="居中对齐"
+                  aria-label="居中对齐"
+                ><svg><use href="#icon-align-center"></use></svg></button>
+                <button
+                  type="button"
+                  class="tool-button tool-button--icon align-button"
+                  data-align="right"
+                  title="右对齐"
+                  aria-label="右对齐"
+                ><svg><use href="#icon-align-right"></use></svg></button>
+              </div>
+              <span class="toolbar__divider"></span>
+              <div class="toolbar__group">
+                <button
+                  id="image-button"
+                  type="button"
+                  class="tool-button tool-button--labeled"
+                  title="插入本地图片"
+                >
+                  <svg><use href="#icon-image"></use></svg>
+                  图片
+                </button>
+                <input id="image-input" type="file" accept="image/*" hidden />
+                <button
+                  id="table-button"
+                  type="button"
+                  class="tool-button tool-button--labeled"
+                  title="插入 2 × 2 表格"
+                >
+                  <svg><use href="#icon-table"></use></svg>
+                  表格
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="editor-scroll" class="editor-scroll">
+            <div id="editor" class="editor"></div>
+          </div>
+          <footer class="statusbar">
+            <div class="statusbar__save">
+              <span></span>
+              <span id="save-status">等待同步</span>
+            </div>
+            <div class="statusbar__meta">
+              <span>连续页</span>
+              <i></i>
+              <span id="word-count">0 字</span>
+              <i></i>
+              <span>100%</span>
+            </div>
+          </footer>
+        </main>
+      </section>
+      <div id="toast" class="toast" role="status"></div>
+    </div>
+    <script type="module" src="/client/main.ts"></script>
+  </body>
+</html>
