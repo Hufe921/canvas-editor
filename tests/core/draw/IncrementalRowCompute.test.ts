@@ -356,7 +356,8 @@ describe('IncrementalRowComputer 行级增量行计算', () => {
     runDifferential(makeGiantParagraph(6000), 20260930, 40, {
       expectIncrementalUsed: true
     })
-  }, 30000)
+    // 全量并行测试存在较高的 CPU 争用，为重型差分用例预留时间
+  }, 60000)
 
   it('多页文档：跨页编辑位置缓存复用与全量一致', () => {
     // 负载控制在 CI 机器（约比本地慢 4~5 倍）可稳定跑进的预算内

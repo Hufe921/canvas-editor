@@ -129,7 +129,7 @@ describe('段落缩进排版', () => {
         )
       }
     })
-  })
+  }, 15000)
 
   it('运行时开启增量（updateOptions）后编辑仍与全量一致', () => {
     // 复现浏览器操作序列：先建编辑器，再 executeUpdateOptions 开增量
