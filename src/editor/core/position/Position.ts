@@ -13,6 +13,7 @@ import {
 import { IEditorOption } from '../../interface/Editor'
 import { IElement, IElementPosition } from '../../interface/Element'
 import { IRow } from '../../interface/Row'
+import { IRange } from '../../interface/Range'
 import { ITd } from '../../interface/table/Td'
 import {
   ICurrentPosition,
@@ -310,6 +311,88 @@ export class Position {
       return footer.getPositionList(direction)
     }
     return this.positionList
+  }
+
+  public getPositionListByRange(range: IRange): IElementPosition[] {
+    const zone = range.zone || EditorZone.MAIN
+    const direction = this.draw.getPageDirection(this.draw.getPageNo())
+    let sourceElementList = this.draw.getOriginalMainElementList()
+    let positionList = this.positionList
+    if (zone === EditorZone.HEADER) {
+      const header = this.draw.getHeader()
+      sourceElementList = header.getElementList()
+      positionList = header.getPositionList(direction)
+    } else if (zone === EditorZone.FOOTER) {
+      const footer = this.draw.getFooter()
+      sourceElementList = footer.getElementList()
+      positionList = footer.getPositionList(direction)
+    }
+    if (!range.tableId) return positionList
+    // 跨行跨列是单元格选区，不是单元格内文本选区
+    if (
+      range.startTrIndex !== range.endTrIndex ||
+      range.startTdIndex !== range.endTdIndex
+    ) {
+      return []
+    }
+    const tablePath = this._findTablePathByRange(sourceElementList, range)
+    if (!tablePath) return []
+    return (
+      this.getTableTdByContext(sourceElementList, {
+        isTable: true,
+        ...tablePath[tablePath.length - 1],
+        tablePath
+      })?.positionList || []
+    )
+  }
+
+  private _findTablePathByRange(
+    elementList: IElement[],
+    range: IRange,
+    parentPath: ITablePositionContext[] = []
+  ): ITablePositionContext[] | null {
+    for (let index = 0; index < elementList.length; index++) {
+      const element = elementList[index]
+      if (element.type !== ElementType.TABLE || !element.trList) continue
+      if (element.id === range.tableId) {
+        const trIndex = range.startTrIndex
+        const tdIndex = range.startTdIndex
+        if (trIndex === undefined || tdIndex === undefined) return null
+        const tr = element.trList[trIndex]
+        const td = tr?.tdList[tdIndex]
+        if (!tr || !td) return null
+        return [
+          ...parentPath,
+          {
+            index,
+            trIndex,
+            tdIndex,
+            tdId: td.id,
+            trId: tr.id,
+            tableId: element.id
+          }
+        ]
+      }
+      for (let trIndex = 0; trIndex < element.trList.length; trIndex++) {
+        const tr = element.trList[trIndex]
+        for (let tdIndex = 0; tdIndex < tr.tdList.length; tdIndex++) {
+          const td = tr.tdList[tdIndex]
+          const tablePath = this._findTablePathByRange(td.value, range, [
+            ...parentPath,
+            {
+              index,
+              trIndex,
+              tdIndex,
+              tdId: td.id,
+              trId: tr.id,
+              tableId: element.id
+            }
+          ])
+          if (tablePath) return tablePath
+        }
+      }
+    }
+    return null
   }
 
   public getOriginalMainPositionList(): IElementPosition[] {

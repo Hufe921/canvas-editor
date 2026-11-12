@@ -119,6 +119,16 @@ const range = instance.command.getRange()
 const rangeText = instance.command.getRangeText()
 ```
 
+## getRangeRects
+
+功能：获取指定选区的渲染矩形。
+
+用法：
+
+```javascript
+const rangeRects = instance.command.getRangeRects(range: IRange)
+```
+
 ## getRangeContext
 
 功能：获取选区上下文

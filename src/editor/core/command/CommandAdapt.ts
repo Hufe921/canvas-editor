@@ -1790,6 +1790,70 @@ export class CommandAdapt {
     return this.range.toString()
   }
 
+  // 查询指定选区的渲染矩形，不改变当前光标与选区
+  public getRangeRects(range: IRange): RangeRect[] {
+    const { startIndex, endIndex } = range
+    const positionList = this.position.getPositionListByRange(range)
+    if (
+      !positionList.length ||
+      startIndex < -1 ||
+      endIndex < startIndex ||
+      endIndex >= positionList.length
+    ) {
+      return []
+    }
+    const rangeRects: RangeRect[] = []
+    if (startIndex === endIndex) {
+      const position = positionList[endIndex] || positionList[0]
+      const {
+        coordinate: { leftTop, rightTop },
+        pageNo,
+        lineHeight
+      } = position
+      const pageOffset = this.draw.getPageOffset(pageNo, true)
+      const point = endIndex < 0 ? leftTop : rightTop
+      rangeRects.push({
+        x: point[0] + pageOffset.x,
+        y: point[1] + pageOffset.y,
+        width: 0,
+        height: lineHeight
+      })
+      return rangeRects
+    }
+    const selectionPositionList = positionList.slice(
+      startIndex + 1,
+      endIndex + 1
+    )
+    let currentRowKey: string | null = null
+    let currentX = 0
+    let rangeRect: RangeRect | null = null
+    for (const position of selectionPositionList) {
+      const {
+        rowNo,
+        pageNo,
+        coordinate: { leftTop, rightTop },
+        lineHeight
+      } = position
+      const rowKey = `${pageNo}:${rowNo}`
+      const pageOffset = this.draw.getPageOffset(pageNo, true)
+      if (currentRowKey !== rowKey) {
+        if (rangeRect) rangeRects.push(rangeRect)
+        rangeRect = {
+          x: leftTop[0] + pageOffset.x,
+          y: leftTop[1] + pageOffset.y,
+          width: rightTop[0] - leftTop[0],
+          height: lineHeight
+        }
+        currentRowKey = rowKey
+        currentX = leftTop[0]
+      } else {
+        rangeRect!.width = rightTop[0] - currentX
+      }
+    }
+    if (rangeRect) rangeRects.push(rangeRect)
+    return deepClone(rangeRects)
+  }
+
   public getRangeContext(): RangeContext | null {
     const range = this.range.getRange()
     const { startIndex, endIndex } = range

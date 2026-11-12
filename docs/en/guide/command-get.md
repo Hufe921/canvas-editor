@@ -119,6 +119,16 @@ Usage:
 const rangeText = instance.command.getRangeText()
 ```
 
+## getRangeRects
+
+Feature: Get rendered rectangles for a specific range.
+
+Usage:
+
+```javascript
+const rangeRects = instance.command.getRangeRects(range: IRange)
+```
+
 ## getRangeContext
 
 Feature: Get range context
