@@ -48,6 +48,57 @@ describe('搜索替换命令', () => {
     }).not.toThrow()
   })
 
+  it.each([
+    ['\\S+', 'alpha 123 beta', 3, '_ _ _'],
+    ['\\D+', 'ab12cd34', 2, '_12_34'],
+    ['b\\W+', 'ab!12?cd', 1, 'a_12?cd']
+  ] as const)('忽略大小写保留正则 %s 的含义', (pattern, text, count, expected) => {
+    ctx = createTestEditor({ data: [{ value: text }] })
+
+    ctx.editor.command.executeSearch(pattern, { isRegEnable: true })
+
+    expect(ctx.editor.command.getSearchNavigateInfo()).toEqual({
+      index: 0,
+      count
+    })
+
+    ctx.editor.command.executeReplace('_')
+
+    expect(ctx.editor.command.getText().main).toBe(expected)
+  })
+
+  it.each([
+    [true, true, 3, '_ _ _'],
+    [true, false, 1, '_ alpha ALPHA'],
+    [false, true, 3, '_ _ _'],
+    [false, false, 1, '_ alpha ALPHA']
+  ] as const)(
+    '搜索大小写选项生效（正则 %s，忽略大小写 %s）',
+    (isRegEnable, isIgnoreCase, count, expected) => {
+      ctx = createTestEditor({ data: [{ value: 'Alpha alpha ALPHA' }] })
+
+      ctx.editor.command.executeSearch('Alpha', { isRegEnable, isIgnoreCase })
+
+      expect(ctx.editor.command.getSearchNavigateInfo()).toEqual({
+        index: 0,
+        count
+      })
+
+      ctx.editor.command.executeReplace('_')
+
+      expect(ctx.editor.command.getText().main).toBe(expected)
+    }
+  )
+
+  it('正则忽略大小写时保留原文的匹配位置', () => {
+    ctx = createTestEditor({ data: [{ value: 'İabc' }] })
+
+    ctx.editor.command.executeSearch('ABC', { isRegEnable: true })
+    ctx.editor.command.executeReplace('_')
+
+    expect(ctx.editor.command.getText().main).toBe('İ_')
+  })
+
   it('留痕开启时替换为空字符串不产生非法光标', () => {
     ctx = createTestEditor({
       data: {
