@@ -5,6 +5,8 @@ export const WRAP = '\n'
 export const HORIZON_TAB = '\t'
 export const NBSP = '\u0020'
 export const NON_BREAKING_SPACE = '&nbsp;'
+// 误差
+export const EPSILON = 1e-12;
 export const PUNCTUATION_LIST = [
   '·',
   '、',
