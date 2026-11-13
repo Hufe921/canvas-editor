@@ -19,6 +19,9 @@ import { formatElementList, zipElementList } from '../../../utils/element'
 import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
+// 行高为小数时，逐页剩余高度的累减存在浮点误差，恰好放得下的脚注行不能因此被隐藏
+const HEIGHT_EPSILON = 1e-8
+
 export interface IFootnoteLayout {
   id: string
   referenceIndex: number
@@ -237,7 +240,9 @@ export class Footnote {
         let visibleHeight = 0
         for (const row of layout.rowList) {
           const rowHeight = row.height + (row.offsetY || 0)
-          if (visibleHeight + rowHeight > remainingHeight) break
+          if (visibleHeight + rowHeight - remainingHeight > HEIGHT_EPSILON) {
+            break
+          }
           layout.visibleRowList.push(row)
           visibleHeight += rowHeight
         }

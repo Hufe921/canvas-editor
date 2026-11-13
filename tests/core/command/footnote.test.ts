@@ -10,6 +10,7 @@ import { LocationPosition } from '@/editor/dataset/enum/Common'
 import { ElementType } from '@/editor/dataset/enum/Element'
 import { IEditorOption } from '@/editor/interface/Editor'
 import { IElement } from '@/editor/interface/Element'
+import { IRow } from '@/editor/interface/Row'
 import { formatElementList, zipElementList } from '@/editor/utils/element'
 import { mergeOption } from '@/editor/utils/option'
 
@@ -290,6 +291,49 @@ describe('脚注', () => {
     )
     expect(draw.getPosition().getPositionContext().isFootnote).toBe(false)
     expect(draw.getRange().getRange().startIndex).toBe(layout.referenceIndex)
+  })
+
+  it('行高为小数时恰好放得下的脚注不会被浮点误差隐藏', () => {
+    draw = createDraw([
+      { value: 'Alpha' },
+      {
+        type: ElementType.FOOTNOTE,
+        value: '',
+        footnoteId: 'note-1',
+        valueList: [{ value: 'first' }]
+      },
+      { value: ' beta' },
+      {
+        type: ElementType.FOOTNOTE,
+        value: '',
+        footnoteId: 'note-2',
+        valueList: [{ value: 'second' }]
+      }
+    ]).draw
+    const footnote = draw.getFootnote()
+    const [first, second] = footnote.getPageLayoutList(0)
+    expect(first.id).toBe('note-1')
+    expect(second.id).toBe('note-2')
+    // 模拟 22.333px 行高: 第一条占两行高度、第二条占一行高度，
+    // 67 - 44.66666666666667 = 22.33333333333333 < 22.333333333333336
+    const forceRowHeight = (rowList: IRow[], height: number) => {
+      rowList.forEach(row => {
+        row.height = height / rowList.length
+        row.offsetY = 0
+      })
+    }
+    forceRowHeight(first.rowList, 44.66666666666667)
+    first.height = 44.66666666666667
+    forceRowHeight(second.rowList, 22.333333333333336)
+    second.height = 22.333333333333336
+    footnote.compute()
+
+    const layoutList = footnote.getPageLayoutList(0)
+    expect(layoutList.map(layout => layout.visibleRowList.length)).toEqual([
+      first.rowList.length,
+      second.rowList.length
+    ])
+    expect(layoutList[1].positionList.length).toBeGreaterThan(0)
   })
 
   it('长脚注截断显示且不会无限分页', () => {
