@@ -6,6 +6,8 @@ import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IRowElement } from '../../../../interface/Row'
 import { loadImage } from '../../../../utils'
+import type { IRenderContext } from '../../../render/model/RenderContext'
+import { SVG_NAMESPACE } from '../../../render/svg/scene/SvgNodeFactory'
 import { Draw } from '../../Draw'
 import { BaseBlock } from './modules/BaseBlock'
 
@@ -40,7 +42,7 @@ export class BlockParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     pageNo: number,
     element: IRowElement,
     x: number,
@@ -119,6 +121,37 @@ export class BlockParticle {
         snapDomFunction(iframe)
           .then(base64 => loadImage(base64))
           .then(img => ctx.drawImage(img, x, y, width, height))
+      )
+    })
+    await Promise.allSettled(tasks)
+  }
+
+  public async drawIframeToSvgPage(
+    pageList: SVGSVGElement[],
+    snapDomFunction: (iframe: HTMLIFrameElement) => Promise<string>
+  ): Promise<void> {
+    const tasks: Promise<void>[] = []
+    this.blockMap.forEach(cacheBlock => {
+      if (cacheBlock.getBlockElement().block?.type !== BlockType.IFRAME) return
+      const positionInfo = cacheBlock.getPositionInfo()
+      if (!positionInfo) return
+      const iframe = cacheBlock.getIFrameBlock()?.getIframe()
+      if (!iframe) return
+      const { pageNo, x, y } = positionInfo
+      const page = pageList[pageNo]
+      if (!page) return
+      const { width, height } = cacheBlock.getBlockElement().metrics
+      tasks.push(
+        snapDomFunction(iframe).then(base64 => {
+          const image = document.createElementNS(SVG_NAMESPACE, 'image')
+          image.setAttribute('x', String(x))
+          image.setAttribute('y', String(y))
+          image.setAttribute('width', String(width))
+          image.setAttribute('height', String(height))
+          image.setAttribute('preserveAspectRatio', 'none')
+          image.setAttribute('href', base64)
+          page.append(image)
+        })
       )
     })
     await Promise.allSettled(tasks)

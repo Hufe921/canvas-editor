@@ -36,6 +36,10 @@ contains(getValue('allergy'), '1') && count(getValue('allergy')) >= 2
 getValue('operationDate') > 'today'
 getValue('dischargeDate') < getValue('admissionDate')
 round(getValue('weight') / (getValue('height') * getValue('height')), 1)
+getValue('endTime') < now()
+datediff(getValue('end'), getValue('start')) > 7
+round(datediff('today', getValue('birthdate')) / 365)
+if(getValue('bmi') < 18.5, 'underweight', if(getValue('bmi') < 28, 'normal', 'obese'))
 ```
 
 ### The getValue Function
@@ -45,7 +49,7 @@ Control values are always fetched via `getValue()` (bare identifiers are not all
 - `getValue('conceptId or controlId')`: fetches the real-time value by id — exact `controlId` match first, then `conceptId` (first one with a value wins)
 - `getValue(@self)`: fetches the value of the control hosting the rule (`@self` is only allowed as a `getValue` argument)
 
-Normalization: SELECT/RADIO → selected item's `code`; CHECKBOX → array of `code`s; TEXT/NUMBER/DATE → real-time plain text (NUMBER auto-converts to number; DATE compares with `'YYYY-MM-DD'` or `'today'`).
+Normalization: SELECT/RADIO → selected item's `code`; CHECKBOX → array of `code`s; TEXT/NUMBER/DATE → real-time plain text (NUMBER auto-converts to number; DATE compares with `'YYYY-MM-DD'`, `'today'`, or `now()`). Use `datediff` for date differences — don't do arithmetic on date values directly (`now() - getValue('birthdate')` fails since date strings can't convert to numbers).
 
 ### Operators & Literals
 
@@ -60,13 +64,21 @@ Precedence: `!` > `* / %` > `+ -` > comparison > `&&` > `||`; override with `()`
 
 ### Built-in Functions
 
-| Function                   | Description                                                 |
-| -------------------------- | ----------------------------------------------------------- |
-| `empty(x)` / `notEmpty(x)` | Emptiness check                                             |
-| `len(x)`                   | Text length in characters                                   |
-| `count(x)`                 | Number of checked checkbox items                            |
-| `contains(x, v)`           | Checkbox codes contain a code; or text contains a substring |
-| `round(x, digits?)`        | Rounding; `digits` defaults to 0                            |
+| Function                            | Description                                                                                    |
+| ----------------------------------- | ---------------------------------------------------------------------------------------------- |
+| `empty(x)` / `notEmpty(x)`          | Emptiness check                                                                                |
+| `len(x)`                            | Text length in characters                                                                      |
+| `count(x)`                          | Number of checked checkbox items                                                               |
+| `contains(x, v)`                    | Checkbox codes contain a code; or text contains a substring                                    |
+| `round(x, digits?)`                 | Rounding; `digits` defaults to 0                                                               |
+| `floor(x)` / `ceil(x)`              | Floor / ceiling                                                                                |
+| `abs(x)`                            | Absolute value                                                                                 |
+| `min(a, b, ...)` / `max(a, b, ...)` | Minimum / maximum; returns `null` if no numeric args                                           |
+| `power(x, n)`                       | Exponentiation `xⁿ`                                                                            |
+| `sqrt(x)`                           | Square root; negative returns `null`                                                           |
+| `if(cond, a, b)`                    | Conditional: `cond` truthy → `a`, else `b`; only the taken branch is evaluated (short-circuit) |
+| `now()`                             | Current time in ms (with time-of-day); comparable to dates                                     |
+| `datediff(end, start, unit?)`       | Date difference (`end - start`); `unit`: `d`(default)/`h`/`m`/`s`; returns `null` if invalid   |
 
 Parse/evaluation failures are treated as `false` with a `console.warn` — editing is never interrupted.
 

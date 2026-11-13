@@ -194,6 +194,7 @@ export class Signature {
   private _clearUndoFn() {
     const clearFn = () => {
       this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
+      this.linePoints = []
     }
     this.undoStack = [clearFn]
   }
@@ -201,6 +202,7 @@ export class Signature {
   private _clearCanvas() {
     this._clearUndoFn()
     this.ctx.clearRect(0, 0, this.canvasWidth, this.canvasHeight)
+    this.linePoints = []
   }
 
   private _startDraw(evt: MouseEvent) {
@@ -246,10 +248,13 @@ export class Signature {
         this.canvasWidth,
         this.canvasHeight
       )
+      // 快照副本：后续绘制会继续push原数组
+      const linePoints = this.linePoints.slice()
       const self = this
       this._saveUndoFn(function () {
         self.ctx.clearRect(0, 0, self.canvasWidth, self.canvasHeight)
         self.ctx.putImageData(imageData, 0, 0)
+        self.linePoints = linePoints
       })
       this.isDrawn = false
     }

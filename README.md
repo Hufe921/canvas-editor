@@ -44,7 +44,7 @@
 
 ## Overview
 
-**Canvas Editor** is a feature-rich, WYSIWYG document editor built on top of the HTML `<canvas>` API. It is designed for use cases that demand pixel-perfect rendering, advanced typography, complex layouts, and Word-like document experiences in the browser — including EMR (Electronic Medical Records), legal contracts, reports, and other document-centric applications.
+**Canvas Editor** is a feature-rich, WYSIWYG document editor rendered with HTML `<canvas>` (with an optional SVG backend). It is designed for use cases that demand pixel-perfect rendering, advanced typography, complex layouts, and Word-like document experiences in the browser — including EMR (Electronic Medical Records), legal contracts, reports, and other document-centric applications.
 
 Unlike traditional `contenteditable`-based editors, Canvas Editor takes full control of the rendering pipeline, providing consistent typography across browsers, precise pagination, and a uniform export experience.
 
@@ -58,7 +58,8 @@ Unlike traditional `contenteditable`-based editors, Canvas Editor takes full con
 - **Document Structure** — Catalog (TOC) generation, comments, group annotations
 - **Print & Export** — Print-ready output via canvas-to-image / PDF rendering
 - **Interaction** — Custom context menus, customizable shortcut keys, drag-and-drop for text, elements, and controls
-- **Extensibility** — Plugin system for adding custom functionality
+- **Extensibility** — Plugin system (`instance.use`); official plugins cover Word/Excel import-export, formulas, code blocks, comments, spell checking, and more
+- **Large Documents** — Responsive rendering and editing of very large documents through incremental layout, position and history reuse, visible-page rendering, and optimized zooming
 - **Performance** — Web Workers for word counting, catalog generation, and async value retrieval
 
 ## Why Canvas Editor?
@@ -108,13 +109,13 @@ For complete API documentation, see the [official docs](https://hufe.club/canvas
 
 ## Ecosystem
 
-| Project                                                                    | Description                             |
-| -------------------------------------------------------------------------- | --------------------------------------- |
-| [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)    | Official plugin collection              |
-| [feature/svg](https://github.com/Hufe921/canvas-editor/tree/feature/svg)   | SVG render layer (in development)       |
-| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)   | PDF export feature                      |
-| [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)     | AI-powered text processing demo         |
-| [feature/CRDT](https://github.com/Hufe921/canvas-editor/tree/feature/CRDT) | CRDT-based collaboration (experimental) |
+| Project                                                                                           | Description                                                                                                              |
+| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [canvas-editor-plugin](https://github.com/Hufe921/canvas-editor-plugin)                           | Official plugins: Word/Excel import-export, formula, comment, spellcheck & 20+ more                                      |
+| [SVG render layer](https://github.com/Hufe921/canvas-editor/tree/main/src/editor/core/render/svg) | Built-in SVG rendering backend — enable via the `backend: 'svg'` editor option (supersedes the old `feature/svg` branch) |
+| [feature/pdf](https://github.com/Hufe921/canvas-editor/tree/feature/pdf)                          | PDF export — [live demo](https://hufe.club/canvas-editor-pdf)                                                            |
+| [feature/ai](https://github.com/Hufe921/canvas-editor/tree/feature/ai)                            | AI-powered text processing demo                                                                                          |
+| [feature/collaboration](https://github.com/Hufe921/canvas-editor/tree/feature/collaboration)      | Real-time collaborative editing example                                                                                  |
 
 ## Development
 
@@ -173,6 +174,7 @@ npm run docs:build      # Build the documentation site
 src/editor/
 ├── core/
 │   ├── draw/           # Rendering engine (canvas drawing)
+│   ├── render/         # Pluggable render backends (canvas / SVG)
 │   │   ├── particle/   # Element renderers (text, image, table, latex, ...)
 │   │   ├── control/    # Form control rendering
 │   │   ├── frame/      # Frame elements (margin, background, borders)

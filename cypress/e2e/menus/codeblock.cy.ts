@@ -2,9 +2,9 @@ import Editor from '../../../src/editor'
 
 describe('菜单-代码块', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = `console.log('canvas-editor')`

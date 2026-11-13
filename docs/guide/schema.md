@@ -26,6 +26,7 @@ interface IElement {
   extension?: unknown;
   externalId?: string;
   hide?: boolean;
+  hint?: string; // 悬浮提示文案：（需在配置中开启 hint 总开关）
   // 样式
   font?: string;
   size?: number;
@@ -45,6 +46,21 @@ interface IElement {
     JUSTIFY = 'justify'
   };
   rowMargin?: number;
+  spacingBefore?: number;
+  spacingAfter?: number;
+  // 左缩进
+  indentLeft?: number;
+  // 右缩进
+  indentRight?: number;
+  // 首行缩进（负数为悬挂缩进）
+  indentFirstLine?: number;
+  // 段落制表位（距版心左缘）
+  tabStops?: {
+    position: number;
+    type: TabStopType;
+    // 前导符：none | dot | hyphen | underline
+    leader?: TabStopLeader;
+  }[];
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;
@@ -67,6 +83,8 @@ interface IElement {
       conceptId?: string;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
+      borderColor?: string;
+      borderWidth?: number;
       borderTypes?: TdBorder[];
       slashTypes?: TdSlash[];
       value: IElement[];
@@ -74,6 +92,7 @@ interface IElement {
       externalId?: string;
       disabled?: boolean;
       deletable?: boolean;
+      hint?: string; // 单元格悬浮提示文案：鼠标移入单元格内任意元素时展示
     }[];
   }[];
   borderType?: TableBorder;
@@ -88,6 +107,7 @@ interface IElement {
   // 分割线
   dashArray?: number[]; // 分割线的虚线样式数组
   lineWidth?: number; // 分割线的线宽
+  paperDirection?: PaperDirection; // 分页符之后页面的纸张方向
   // 控件
   control?: IControl; // 控件数据结构详见：控件-配置
   controlComponent?: {
@@ -101,6 +121,7 @@ interface IElement {
   // 复选框
   checkbox?: {
     value: boolean | null;
+    markType?: CheckboxMarkType;
   };
   // 单选框
   radio?: {
@@ -168,11 +189,13 @@ interface IElement {
   area?: {
     extension?: unknown;
     top?: number;
+    minHeight?: number;
     hide?: boolean;
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;
     deletable?: boolean;
+    resizable?: boolean;
     placeholder?: IPlaceholder;
   };
   // 标签

@@ -22,6 +22,9 @@ features:
   - icon: ⚡️
     title: Lightweight Data Structure
     details: A piece of JSON can render complex styles
+  - icon: 🚀
+    title: Large Documents
+    details: Render and edit very large documents with incremental layout and on-demand rendering for smoother interaction across hundreds of pages
   - icon: 🛠️
     title: Rich Features
     details: Supports familiar rich text operations, tables, watermarks, controls, formulas, etc

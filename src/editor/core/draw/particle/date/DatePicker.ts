@@ -357,12 +357,10 @@ export class DatePicker {
         pageNo
       }
     } = this.renderOptions
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     const currentPageNo = pageNo ?? this.draw.getPageNo()
-    const preY = currentPageNo * (height + pageGap)
+    const { x: pageLeft, y: preY } = this.draw.getPageOffset(currentPageNo)
     // 位置
-    this.dom.container.style.left = `${left}px`
+    this.dom.container.style.left = `${left + pageLeft}px`
     this.dom.container.style.top = `${top + preY + lineHeight}px`
   }
 
@@ -370,10 +368,61 @@ export class DatePicker {
     return value.toDateString() === 'Invalid Date'
   }
 
+  public parseDate(value: string, format: string): Date | null {
+    // 按格式生成匹配正则，记录占位符顺序
+    const tokenList: string[] = []
+    const pattern = format
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/y+|Y+|M+|d+|D+|h+|H+|m+|s+|S+/g, token => {
+        tokenList.push(token[0])
+        return token.length === 1 ? '(\\d+)' : `(\\d{${token.length},})`
+      })
+    const result = new RegExp(`^${pattern}$`).exec(value)
+    if (!result) return null
+    // 缺省值：包含年月日占位符时从1月1日起，仅时间时取当天
+    const now = new Date()
+    const hasDateToken = tokenList.some(token => /[yYMdD]/.test(token))
+    const dateOption: Record<string, number> = {
+      y: now.getFullYear(),
+      M: hasDateToken ? 1 : now.getMonth() + 1,
+      d: hasDateToken ? 1 : now.getDate(),
+      H: 0,
+      m: 0,
+      s: 0,
+      S: 0
+    }
+    // 12小时制（h）无 AM/PM 标记，按 24 小时制解析，12 视为中午
+    const tokenAlias: Record<string, string> = { Y: 'y', D: 'd', h: 'H' }
+    tokenList.forEach((token, index) => {
+      dateOption[tokenAlias[token] || token] = Number(result[index + 1])
+    })
+    const { y, M, d, H, m, s, S } = dateOption
+    const date = new Date(y, M - 1, d, H, m, s, S)
+    // new Date 会将 0-99 年解释为 19xx，需显式校正
+    date.setFullYear(y)
+    // 排除溢出值（如：13月、2月30日、99分）
+    const hasToken = (token: string) => tokenList.includes(token)
+    if (
+      this.isInvalidDate(date) ||
+      date.getMonth() !== M - 1 ||
+      date.getDate() !== d ||
+      ((hasToken('H') || hasToken('h')) && date.getHours() !== H) ||
+      (hasToken('m') && date.getMinutes() !== m) ||
+      (hasToken('s') && date.getSeconds() !== s) ||
+      (hasToken('S') && date.getMilliseconds() !== S)
+    ) {
+      return null
+    }
+    return date
+  }
+
   private _setValue() {
     const value = this.renderOptions?.value
     if (value) {
-      const setDate = new Date(value)
+      // 优先按 dateFormat 解析，兼容非标准格式（如：yyyy年MM月dd日）
+      const dateFormat = this.renderOptions?.dateFormat
+      const setDate =
+        (dateFormat && this.parseDate(value, dateFormat)) || new Date(value)
       this.now = this.isInvalidDate(setDate) ? new Date() : setDate
     } else {
       this.now = new Date()
@@ -522,10 +571,8 @@ export class DatePicker {
     // 日期补差
     const curDate = new Date(year, month, 0) // 当月日期
     const curDay = curDate.getDate() // 当月总天数
-    let curWeek = new Date(year, month - 1, 1).getDay() // 当月第一天星期几
-    if (curWeek === 0) {
-      curWeek = 7
-    }
+    // 表头周日开头，getDay()直接即前置补位数（周日为0格）
+    const curWeek = new Date(year, month - 1, 1).getDay() // 当月第一天星期几
     const preDay = new Date(year, month - 1, 0).getDate() // 上个月天数
     this.dom.day.innerHTML = ''
     // 渲染上个月日期
@@ -602,9 +649,19 @@ export class DatePicker {
         yearDom.classList.add('select')
       }
       yearDom.onclick = () => {
-        this.now.setFullYear(i)
+        this.now = this._createDate(
+          i,
+          this.now.getMonth(),
+          this.now.getDate(),
+          this.now
+        )
         if (this.pickDate) {
-          this.pickDate.setFullYear(i)
+          this.pickDate = this._createDate(
+            i,
+            this.pickDate.getMonth(),
+            this.pickDate.getDate(),
+            this.pickDate
+          )
         }
         if (this.datePickerType === DatePickerMode.YEAR) {
           // 年份选择器直接提交
@@ -643,8 +700,8 @@ export class DatePicker {
     const localDate = new Date()
     const localYear = localDate.getFullYear()
     const localMonth = localDate.getMonth()
-    const pickYear = this.pickDate?.getFullYear() || null
-    const pickMonth = this.pickDate?.getMonth() || null
+    const pickYear = this.pickDate?.getFullYear() ?? null
+    const pickMonth = this.pickDate?.getMonth() ?? null
     for (let i = 0; i < 12; i++) {
       const monthDom = document.createElement('div')
       monthDom.innerText = monthNames[i]
@@ -655,9 +712,19 @@ export class DatePicker {
         monthDom.classList.add('select')
       }
       monthDom.onclick = () => {
-        this.now.setMonth(i)
+        this.now = this._createDate(
+          this.now.getFullYear(),
+          i,
+          this.now.getDate(),
+          this.now
+        )
         if (this.pickDate) {
-          this.pickDate.setMonth(i)
+          this.pickDate = this._createDate(
+            this.pickDate.getFullYear(),
+            i,
+            this.pickDate.getDate(),
+            this.pickDate
+          )
         }
         if (this.datePickerType === DatePickerMode.MONTH) {
           // 月份选择器直接提交
@@ -717,11 +784,29 @@ export class DatePicker {
     }
   }
 
+  private _createDate(
+    year: number,
+    month: number,
+    day: number,
+    timeDate?: Date
+  ): Date {
+    // 夹取到目标月最大天数，避免setMonth在31号等场景滚动到下月
+    const maxDay = new Date(year, month + 1, 0).getDate()
+    return new Date(
+      year,
+      month,
+      Math.min(day, maxDay),
+      timeDate?.getHours() || 0,
+      timeDate?.getMinutes() || 0,
+      timeDate?.getSeconds() || 0
+    )
+  }
+
   private _setDatePick(year: number, month: number, day: number) {
     this.now = new Date(year, month, day)
-    this.pickDate?.setFullYear(year)
-    this.pickDate?.setMonth(month)
-    this.pickDate?.setDate(day)
+    if (this.pickDate) {
+      this.pickDate = this._createDate(year, month, day, this.pickDate)
+    }
     this._update()
   }
 
@@ -756,22 +841,42 @@ export class DatePicker {
   }
 
   private _preMonth() {
-    this.now.setMonth(this.now.getMonth() - 1)
+    this.now = this._createDate(
+      this.now.getFullYear(),
+      this.now.getMonth() - 1,
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 
   private _nextMonth() {
-    this.now.setMonth(this.now.getMonth() + 1)
+    this.now = this._createDate(
+      this.now.getFullYear(),
+      this.now.getMonth() + 1,
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 
   private _preYear() {
-    this.now.setFullYear(this.now.getFullYear() - 1)
+    this.now = this._createDate(
+      this.now.getFullYear() - 1,
+      this.now.getMonth(),
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 
   private _nextYear() {
-    this.now.setFullYear(this.now.getFullYear() + 1)
+    this.now = this._createDate(
+      this.now.getFullYear() + 1,
+      this.now.getMonth(),
+      this.now.getDate(),
+      this.now
+    )
     this._update()
   }
 

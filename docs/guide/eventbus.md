@@ -120,6 +120,16 @@ instance.eventBus.on('controlContentChange', (payload: IControlContentChangeResu
 instance.eventBus.on('pageModeChange', (payload: PageMode) => void)
 ```
 
+## pageLayoutChange
+
+功能：页面布局发生改变
+
+用法：
+
+```javascript
+instance.eventBus.on('pageLayoutChange', (payload: PageLayout) => void)
+```
+
 ## saved
 
 功能：文档执行保存
@@ -266,5 +276,28 @@ instance.eventBus.on('imageDblclick', (payload: {
 instance.eventBus.on('labelMousedown', (payload: {
   evt: MouseEvent
   element: IElement
+}) => void)
+```
+
+## renderChange
+
+功能：编辑器重渲染后立即触发
+
+用法：
+
+```javascript
+instance.eventBus.on('renderChange', () => void)
+```
+
+## spellcheckClick
+
+功能：拼写检查错词点击事件
+
+用法：
+
+```javascript
+instance.eventBus.on('spellcheckClick', (payload: {
+  evt: MouseEvent
+  range: ISpellcheckRange
 }) => void)
 ```

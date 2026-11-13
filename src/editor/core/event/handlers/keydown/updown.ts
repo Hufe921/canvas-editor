@@ -64,6 +64,8 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   const isReadonly = draw.isReadonly()
   if (isReadonly) return
+  // 阻止光标代理默认行为（浏览器会将代理元素滚动到可视范围内）
+  evt.preventDefault()
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return
@@ -217,9 +219,16 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
       cursorX: curRightX
     })
     if (nextIndex < 0) return
+    const elementList = draw.getElementList()
+    const nextElement = elementList[nextIndex]
+    // shift跨越表格时表格整体作为一行：向上移动到表格前，向下移动到表格后
+    const moveIndex =
+      evt.shiftKey && isUp && nextElement.type === ElementType.TABLE
+        ? Math.max(nextIndex - 1, 0)
+        : nextIndex
     // shift则缩放选区
-    anchorStartIndex = nextIndex
-    anchorEndIndex = nextIndex
+    anchorStartIndex = moveIndex
+    anchorEndIndex = moveIndex
     if (evt.shiftKey) {
       if (startIndex !== endIndex) {
         if (startIndex === cursorPosition.index) {
@@ -235,10 +244,8 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
         }
       }
     }
-    // 如果下一行是表格则进入单元格内
-    const elementList = draw.getElementList()
-    const nextElement = elementList[nextIndex]
-    if (nextElement.type === ElementType.TABLE) {
+    // 如果下一行是表格则进入单元格内（shift扩展选区时不进入）
+    if (nextElement.type === ElementType.TABLE && !evt.shiftKey) {
       const { scale } = draw.getOptions()
       const margins = draw.getMargins()
       const trList = nextElement.trList!
@@ -333,8 +340,13 @@ export function updown(evt: KeyboardEvent, host: CanvasEvent) {
   })
   // 非光标闭合：将光标移动到可视范围内，闭合光标统一处理
   if (!isCollapsed) {
+    // 以选区活动端（非锚点端）为准，避免缩小选区时滚动到锚点
+    const focusIndex =
+      anchorStartIndex === cursorPosition.index
+        ? anchorEndIndex
+        : anchorStartIndex
     draw.getCursor().moveCursorToVisible({
-      cursorPosition: positionList[isUp ? anchorStartIndex : anchorEndIndex],
+      cursorPosition: positionList[focusIndex],
       direction: isUp ? MoveDirection.UP : MoveDirection.DOWN
     })
   }

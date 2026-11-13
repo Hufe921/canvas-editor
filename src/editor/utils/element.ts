@@ -1,7 +1,6 @@
 import {
   cloneProperty,
   deepClone,
-  deepCloneOmitKeys,
   deleteProperty,
   getUUID,
   isArrayEqual,
@@ -20,6 +19,7 @@ import {
   EDITOR_ELEMENT_ZIP_ATTR,
   EDITOR_ROW_ATTR,
   EDITOR_TRACE_ATTR,
+  EDITOR_HINT_ATTR,
   INLINE_NODE_NAME,
   TABLE_CONTEXT_ATTR,
   TABLE_TD_ZIP_ATTR,
@@ -51,7 +51,6 @@ import { DeepRequired } from '../interface/Common'
 import { IControlSelect } from '../interface/Control'
 import { IEditorOption } from '../interface/Editor'
 import { IElement, ITraceRecord } from '../interface/Element'
-import { IRowElement } from '../interface/Row'
 import { ITd } from '../interface/table/Td'
 import { ITr } from '../interface/table/Tr'
 import { mergeOption } from './option'
@@ -160,6 +159,10 @@ export function formatElementList(
         for (let v = 0; v < valueList.length; v++) {
           const value = valueList[v]
           value.title = el.title
+          // 标题容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           if (el.level) {
             value.titleId = titleId
             value.level = el.level
@@ -208,6 +211,10 @@ export function formatElementList(
           value.listType = value.listType || el.listType
           value.listStyle = value.listStyle || el.listStyle
           value.listLevel = listLevel
+          // 列表容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -242,6 +249,10 @@ export function formatElementList(
           value.areaId = el.areaId || areaId
           value.area = el.area
           value.areaIndex = v
+          // 区域容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           if (value.type === ElementType.TABLE) {
             const trList = value.trList!
             for (let r = 0; r < trList.length; r++) {
@@ -262,6 +273,23 @@ export function formatElementList(
         }
       }
       i--
+    } else if (el.type === ElementType.FOOTNOTE) {
+      el.footnoteId = el.footnoteId || getUUID()
+      const valueList = el.valueList || []
+      formatElementList(valueList, {
+        ...options,
+        isHandleFirstElement: true,
+        isForceCompensation: true
+      })
+      for (const value of valueList) {
+        if (
+          (!value.type || TEXTLIKE_ELEMENT_TYPE.includes(value.type)) &&
+          value.size === undefined
+        ) {
+          value.size = editorOptions.footnote.size
+        }
+      }
+      el.valueList = valueList
     } else if (el.type === ElementType.TABLE) {
       const tableId = el.id || getUUID()
       el.id = tableId
@@ -332,6 +360,10 @@ export function formatElementList(
           value.type = el.type
           value.url = el.url
           value.hyperlinkId = hyperlinkId
+          // 超链接容器配置的 hint 向下继承到子元素（子元素自身 hint 优先）
+          if (el.hint && !value.hint) {
+            value.hint = el.hint
+          }
           elementList.splice(i, 0, value)
           i++
         }
@@ -386,7 +418,8 @@ export function formatElementList(
       const controlContext = pickObject(el, [
         ...EDITOR_ELEMENT_CONTEXT_ATTR,
         ...EDITOR_ROW_ATTR,
-        ...EDITOR_TRACE_ATTR
+        ...EDITOR_TRACE_ATTR,
+        ...EDITOR_HINT_ATTR
       ])
       // 控件设置的默认样式（以前缀为基准）
       const controlDefaultStyle = pickObject(
@@ -848,11 +881,13 @@ export function zipElementList(
         })
         element = listElement
       }
+    } else if (element.type === ElementType.FOOTNOTE) {
+      element.valueList = zipElementList(element.valueList || [], options)
     } else if (element.type === ElementType.TABLE) {
       if (element.trList) {
         for (let t = 0; t < element.trList.length; t++) {
           const tr = element.trList[t]
-          delete tr.id
+          if (!extraPickAttrs?.includes('id')) delete tr.id
           for (let d = 0; d < tr.tdList.length; d++) {
             const td = tr.tdList[d]
             const zipTd: ITd = {
@@ -868,6 +903,14 @@ export function zipElementList(
               const value = td[attr] as never
               if (value !== undefined) {
                 zipTd[attr] = value
+              }
+            })
+            // 按需保留单元格额外属性，value 为递归压缩内容不可覆盖
+            extraPickAttrs?.forEach(attr => {
+              if (attr === 'value') return
+              const value = td[attr as keyof ITd] as never
+              if (value !== undefined) {
+                zipTd[attr as keyof ITd] = value
               }
             })
             tr.tdList[d] = zipTd
@@ -1328,7 +1371,9 @@ export function createDomFromElementList(
         tableDom.setAttribute('cellSpacing', '0')
         tableDom.setAttribute('cellpadding', '0')
         tableDom.setAttribute('border', '0')
-        const borderStyle = '1px solid #000000'
+        const borderStyle = `${element.borderWidth ?? 1}px solid ${
+          element.borderColor || editorOptions.table.defaultBorderColor
+        }`
         // 表格边框
         if (!element.borderType || element.borderType === TableBorder.ALL) {
           tableDom.style.borderTop = borderStyle
@@ -1354,25 +1399,34 @@ export function createDomFromElementList(
           trDom.style.height = `${tr.height}px`
           for (let d = 0; d < tr.tdList.length; d++) {
             const tdDom = document.createElement('td')
-            if (!element.borderType || element.borderType === TableBorder.ALL) {
-              tdDom.style.borderBottom = tdDom.style.borderRight = '1px solid'
-            }
             const td = tr.tdList[d]
+            // 单元格单独设置边框颜色/宽度时优先使用
+            const tdBorderStyle =
+              td.borderColor || td.borderWidth
+                ? `${td.borderWidth ?? element.borderWidth ?? 1}px solid ${
+                    td.borderColor ||
+                    element.borderColor ||
+                    editorOptions.table.defaultBorderColor
+                  }`
+                : borderStyle
+            if (!element.borderType || element.borderType === TableBorder.ALL) {
+              tdDom.style.borderBottom = tdDom.style.borderRight = tdBorderStyle
+            }
             tdDom.colSpan = td.colspan
             tdDom.rowSpan = td.rowspan
             tdDom.style.verticalAlign = td.verticalAlign || 'top'
             // 单元格边框
             if (td.borderTypes?.includes(TdBorder.TOP)) {
-              tdDom.style.borderTop = borderStyle
+              tdDom.style.borderTop = tdBorderStyle
             }
             if (td.borderTypes?.includes(TdBorder.RIGHT)) {
-              tdDom.style.borderRight = borderStyle
+              tdDom.style.borderRight = tdBorderStyle
             }
             if (td.borderTypes?.includes(TdBorder.BOTTOM)) {
-              tdDom.style.borderBottom = borderStyle
+              tdDom.style.borderBottom = tdBorderStyle
             }
             if (td.borderTypes?.includes(TdBorder.LEFT)) {
-              tdDom.style.borderLeft = borderStyle
+              tdDom.style.borderLeft = tdBorderStyle
             }
             const childDom = createDomFromElementList(td.value!, options)
             tdDom.innerHTML = childDom.innerHTML
@@ -1971,11 +2025,36 @@ export function getTextFromElementList(
   )
 }
 
+// 历史快照专用克隆：与 deepCloneOmitKeys(obj, ['metrics', 'style']) 语义一致，
+// 但标量字段直接赋值不再递归，仅深拷贝实际存在的嵌套可变结构
+function cloneOmitRenderKeys<T>(value: T): T {
+  if (!value || typeof value !== 'object') {
+    return value
+  }
+  if (Array.isArray(value)) {
+    const list = value as unknown[]
+    const clonedArray: unknown[] = new Array(list.length)
+    for (let i = 0; i < list.length; i++) {
+      clonedArray[i] = cloneOmitRenderKeys(list[i])
+    }
+    return clonedArray as T
+  }
+  const cloned: Record<string, unknown> = {}
+  for (const key in value) {
+    if (key === 'metrics' || key === 'style') continue
+    const item = (value as Record<string, unknown>)[key]
+    cloned[key] =
+      item && typeof item === 'object' ? cloneOmitRenderKeys(item) : item
+  }
+  return cloned as T
+}
+
 export function getSlimCloneElementList(elementList: IElement[]) {
-  return deepCloneOmitKeys<IElement[], IRowElement>(elementList, [
-    'metrics',
-    'style'
-  ])
+  const clonedList = new Array<IElement>(elementList.length)
+  for (let i = 0; i < elementList.length; i++) {
+    clonedList[i] = cloneOmitRenderKeys(elementList[i])
+  }
+  return clonedList
 }
 
 export function getIsBlockElement(element?: IElement) {
@@ -2142,4 +2221,15 @@ export function visitElementTree(
       visitElementTree(el.valueList, visitor)
     }
   }
+}
+
+// 段首换行符可能携带上一段落属性（尾随\n风格数据/格式克隆），
+// 段落首行缩进属性优先读段内第一个内容元素，空段落退回换行符自身
+export function getFirstLineIndentElement(
+  elementList: IElement[],
+  zeroIndex: number
+): IElement | undefined {
+  const next = elementList[zeroIndex + 1]
+  if (next && next.value !== ZERO && !next.listWrap) return next
+  return elementList[zeroIndex]
 }

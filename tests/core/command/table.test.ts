@@ -264,4 +264,82 @@ describe('表格与分隔命令', () => {
     draw.destroy()
     container.remove()
   })
+
+  it('单元格边框颜色与宽度可单独设置与恢复', () => {
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const options = mergeOption({ width: 794, height: 1123 })
+    const main = [
+      {
+        type: 'table' as any,
+        value: '',
+        colgroup: [{ width: 200 }, { width: 200 }],
+        trList: [
+          {
+            height: 60,
+            tdList: [
+              {
+                colspan: 1,
+                rowspan: 1,
+                value: [{ value: '\n' }, { value: 'A' }]
+              },
+              {
+                colspan: 1,
+                rowspan: 1,
+                value: [{ value: '\n' }, { value: 'B' }]
+              }
+            ]
+          }
+        ]
+      },
+      { value: '\n' }
+    ]
+    formatElementList(main, {
+      editorOptions: options,
+      isForceCompensation: true
+    })
+    const draw = new Draw(
+      container,
+      options,
+      { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
+      new Listener(),
+      new EventBus(),
+      new Override()
+    )
+    draw.render()
+
+    const originalElementList = draw.getOriginalElementList()
+    const tableIndex = originalElementList.findIndex(
+      (element: any) => element.type === 'table'
+    )
+    const table = originalElementList[tableIndex]
+    const td = table.trList![0].tdList[0]
+    draw.getPosition().setPositionContext({
+      isTable: true,
+      index: tableIndex,
+      trIndex: 0,
+      tdIndex: 0,
+      tdId: td.id,
+      trId: table.trList![0].id,
+      tableId: table.id
+    })
+    const tableOperate = draw.getTableOperate()
+
+    tableOperate.tableTdBorderColor('#ff0000')
+    expect(td.borderColor).toBe('#ff0000')
+    tableOperate.tableTdBorderWidth(2)
+    expect(td.borderWidth).toBe(2)
+    // 不影响同行其他单元格
+    expect(table.trList![0].tdList[1].borderColor).toBeUndefined()
+    expect(table.trList![0].tdList[1].borderWidth).toBeUndefined()
+
+    // 传空值恢复表格边框样式
+    tableOperate.tableTdBorderColor('')
+    expect(td.borderColor).toBeUndefined()
+    tableOperate.tableTdBorderWidth(0)
+    expect(td.borderWidth).toBeUndefined()
+
+    draw.destroy()
+    container.remove()
+  })
 })

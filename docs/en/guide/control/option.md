@@ -29,6 +29,10 @@ The control's properties in document data (`IElement.control`), organized by con
 | `cascade`       | `IControlCascadeRule[]`                                             | Cascade rules, see: Control-Cascade                                |
 | `validation`    | `IControlValidation`                                                | Validation rules, see: Control-Validation                          |
 | `compute`       | `string`                                                            | Compute expression, see: Control-Cascade                           |
+| `activeBackgroundColor` | `string`                                                      | Background color when active (overrides the global option)         |
+| `disabledBackgroundColor` | `string`                                                    | Background color when disabled (overrides the global option)       |
+| `existValueBackgroundColor` | `string`                                                  | Background color when has value (overrides the global option)      |
+| `noValueBackgroundColor` | `string`                                                      | Background color when no value (overrides the global option)       |
 | `font`          | `string`                                                            | Value font                                                         |
 | `size`          | `number`                                                            | Value size                                                         |
 | `bold`          | `boolean`                                                           | Value bold                                                         |
@@ -64,6 +68,7 @@ Common properties, plus:
 | `min`           | `number`                            | Minimum selections               |
 | `max`           | `number`                            | Maximum selections               |
 | `flexDirection` | `FlexDirection`                     | Layout direction                 |
+| `markType`      | `CheckboxMarkType`                  | Check mark style (check/cross)   |
 
 ## RADIO Control
 
@@ -81,7 +86,9 @@ Common properties, plus:
 
 | Property     | Type     | Description                               |
 | ------------ | -------- | ----------------------------------------- |
-| `dateFormat` | `string` | Date format. Default: yyyy-MM-dd hh:mm:ss |
+| `dateFormat` | `string` | Date format. Default: yyyy-MM-dd HH:mm:ss |
+
+`dateFormat` tokens: `yyyy`/`YYYY` year, `MM` month, `dd`/`DD` day, `HH` hour (24-hour), `hh` hour (12-hour), `mm` minute, `ss` second, `SSS` millisecond. Other characters are kept as-is, e.g. `yyyy年MM月dd日 HH时mm分ss秒`. Note: `hh` has no AM/PM marker, so values are parsed as 24-hour (12 is treated as noon).
 
 ## NUMBER Control
 

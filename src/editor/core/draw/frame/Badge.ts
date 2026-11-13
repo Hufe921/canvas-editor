@@ -1,12 +1,14 @@
 import { IAreaBadge, IBadge } from '../../../interface/Badge'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class Badge {
   private draw: Draw
   private options: DeepRequired<IEditorOption>
   private imageCache: Map<string, HTMLImageElement>
+  private pendingImageMap: Map<string, { renderCount: number }>
   private mainBadge: IBadge | null
   private areaBadgeMap: Map<string, IBadge>
 
@@ -14,6 +16,7 @@ export class Badge {
     this.draw = draw
     this.options = draw.getOptions()
     this.imageCache = new Map()
+    this.pendingImageMap = new Map()
     this.mainBadge = null
     this.areaBadgeMap = new Map()
   }
@@ -30,7 +33,7 @@ export class Badge {
   }
 
   private _drawImage(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     x: number,
     y: number,
     width: number,
@@ -41,17 +44,31 @@ export class Badge {
       const img = this.imageCache.get(value)!
       ctx.drawImage(img, x, y, width, height)
     } else {
+      const renderCount = this.draw.getRenderCount()
+      const pending = this.pendingImageMap.get(value)
+      if (pending) {
+        pending.renderCount = renderCount
+        return
+      }
+      const request = { renderCount }
+      this.pendingImageMap.set(value, request)
       const img = new Image()
       img.setAttribute('crossOrigin', 'Anonymous')
       img.src = value
       img.onload = () => {
         this.imageCache.set(value, img)
-        ctx.drawImage(img, x, y, width, height)
+        this.pendingImageMap.delete(value)
+        if (request.renderCount !== this.draw.getRenderCount()) return
+        this.draw.render({
+          isCompute: false,
+          isSetCursor: false,
+          isSubmitHistory: false
+        })
       }
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageNo: number) {
+  public render(ctx: IRenderContext, pageNo: number) {
     // 文档签章
     if (pageNo === 0 && this.mainBadge) {
       const { scale, badge } = this.options

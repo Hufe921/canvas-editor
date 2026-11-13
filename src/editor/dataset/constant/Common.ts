@@ -22,6 +22,29 @@ export const PUNCTUATION_LIST = [
   '！'
 ]
 
+// 避头标点：行尾放不下时悬挂，不占行宽
+export const HANG_PUNCTUATION_LIST = [
+  '·',
+  '、',
+  '，',
+  '。',
+  '；',
+  '：',
+  '？',
+  '！',
+  '…',
+  '—',
+  '～',
+  '）',
+  '】',
+  '》',
+  '〉',
+  '」',
+  '』',
+  '”',
+  '’'
+]
+
 export const maxHeightRadioMapping: Record<MaxHeightRatio, number> = {
   [MaxHeightRatio.HALF]: 1 / 2,
   [MaxHeightRatio.ONE_THIRD]: 1 / 3,

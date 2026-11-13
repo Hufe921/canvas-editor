@@ -1,5 +1,6 @@
 import { AbstractRichText } from './AbstractRichText'
 import { IEditorOption } from '../../../interface/Editor'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 import { DashType, TextDecorationStyle } from '../../../dataset/enum/Text'
 
@@ -13,7 +14,7 @@ export class Underline extends AbstractRichText {
 
   // 下划线
   private _drawLine(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     startX: number,
     startY: number,
     width: number,
@@ -38,7 +39,7 @@ export class Underline extends AbstractRichText {
 
   // 双实线
   private _drawDouble(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     startX: number,
     startY: number,
     width: number
@@ -58,7 +59,7 @@ export class Underline extends AbstractRichText {
 
   // 波浪线
   private _drawWave(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     startX: number,
     startY: number,
     width: number
@@ -75,7 +76,7 @@ export class Underline extends AbstractRichText {
     ctx.stroke()
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: IRenderContext) {
     if (!this.fillRect.width) return
     const { underlineColor, scale } = this.options
     const { x, y, width } = this.fillRect

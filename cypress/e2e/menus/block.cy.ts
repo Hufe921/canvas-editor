@@ -4,9 +4,9 @@ describe('菜单-内容块', () => {
   const url = 'http://localhost:3000/canvas-editor/'
 
   beforeEach(() => {
-    cy.visit(url)
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('内容块', () => {

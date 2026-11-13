@@ -26,6 +26,7 @@ interface IElement {
   extension?: unknown;
   externalId?: string;
   hide?: boolean;
+  hint?: string; // Hover hint text (requires the hint option to be enabled)
   // style
   font?: string;
   size?: number;
@@ -45,6 +46,21 @@ interface IElement {
     JUSTIFY = 'justify'
   };
   rowMargin?: number;
+  spacingBefore?: number;
+  spacingAfter?: number;
+  // left indent
+  indentLeft?: number;
+  // right indent
+  indentRight?: number;
+  // first-line indent (negative for hanging indent)
+  indentFirstLine?: number;
+  // paragraph tab stops (relative to the left margin)
+  tabStops?: {
+    position: number;
+    type: TabStopType;
+    // leader: none | dot | hyphen | underline
+    leader?: TabStopLeader;
+  }[];
   letterSpacing?: number;
   textDecoration?: {
     style?: TextDecorationStyle;
@@ -67,6 +83,8 @@ interface IElement {
       conceptId?: string;
       verticalAlign?: VerticalAlign;
       backgroundColor?: string;
+      borderColor?: string;
+      borderWidth?: number;
       borderTypes?: TdBorder[];
       slashTypes?: TdSlash[];
       value: IElement[];
@@ -74,6 +92,7 @@ interface IElement {
       externalId?: string;
       disabled?: boolean;
       deletable?: boolean;
+      hint?: string; // Cell hover hint text: shown when the cursor enters any element in the cell
     }[];
   }[];
   borderType?: TableBorder;
@@ -88,6 +107,7 @@ interface IElement {
   // Dividing line
   dashArray?: number[]; // Array for dashed line style
   lineWidth?: number; // Line width of the separator
+  paperDirection?: PaperDirection; // Orientation after a page break
   // control
   control?: IControl; // Control data structure, see: Control-Options
   controlComponent?: {
@@ -101,6 +121,7 @@ interface IElement {
   // checkbox
   checkbox?: {
     value: boolean | null;
+    markType?: CheckboxMarkType;
   };
   // radio
   radio?: {
@@ -168,11 +189,13 @@ interface IElement {
   area?: {
     extension?: unknown;
     top?: number;
+    minHeight?: number;
     hide?: boolean;
     borderColor?: string;
     backgroundColor?: string;
     mode?: AreaMode;
     deletable?: boolean;
+    resizable?: boolean;
     placeholder?: IPlaceholder;
   };
   // label

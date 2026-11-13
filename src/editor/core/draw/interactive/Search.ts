@@ -14,6 +14,7 @@ import {
 import { getUUID, indexOf, isNumber } from '../../../utils'
 import { Position } from '../../position/Position'
 import { RangeManager } from '../../range/RangeManager'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export interface INavigateInfo {
@@ -127,9 +128,7 @@ export class Search {
       coordinate: { leftTop, leftBottom, rightTop },
       pageNo
     } = position
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = pageNo * (height + pageGap)
+    const { x: pageLeft, y: preY } = this.draw.getPageOffset(pageNo)
     // 创建定位锚点
     const anchor = document.createElement('div')
     anchor.style.position = 'absolute'
@@ -139,7 +138,7 @@ export class Search {
     anchor.style.height = `${
       leftBottom[1] - leftTop[1] + ANCHOR_OVERFLOW_SIZE
     }px`
-    anchor.style.left = `${leftTop[0]}px`
+    anchor.style.left = `${leftTop[0] + pageLeft}px`
     anchor.style.top = `${leftTop[1] + preY}px`
     this.draw.getContainer().append(anchor)
     // 移动到可视范围
@@ -344,7 +343,7 @@ export class Search {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public render(ctx: IRenderContext, pageIndex: number) {
     if (
       !this.searchMatchList ||
       !this.searchMatchList.length ||
@@ -447,9 +446,11 @@ export class Search {
         const tableElement = tableElementList[curIndex]
         // 非设计模式下设置元素不可删除 || 控件结构元素 => 禁止替换
         if (
-          !isDesignMode &&
-          (tableElement?.control?.deletable === false ||
-            tableElement?.title?.deletable === false)
+          (!isDesignMode &&
+            (tableElement?.control?.deletable === false ||
+              tableElement?.title?.deletable === false)) ||
+          (tableElement.type === ElementType.CONTROL &&
+            tableElement.controlComponent !== ControlComponent.VALUE)
         ) {
           continue
         }

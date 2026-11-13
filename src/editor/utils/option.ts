@@ -30,9 +30,11 @@ import { ICheckboxOption } from '../interface/Checkbox'
 import { DeepRequired } from '../interface/Common'
 import { IControlOption } from '../interface/Control'
 import { ICursorOption } from '../interface/Cursor'
-import { IEditorOption, IModeRule } from '../interface/Editor'
+import { IEditorOption, ILabOption, IModeRule } from '../interface/Editor'
 import { ITraceOption } from '../interface/Trace'
 import { IRulerOption } from '../interface/Ruler'
+import { IHintOption } from '../interface/Hint'
+import { defaultHintOption } from '../dataset/constant/Hint'
 import { IMagnifierOption } from '../interface/Magnifier'
 import { IFooter } from '../interface/Footer'
 import { IGroup } from '../interface/Group'
@@ -53,7 +55,9 @@ import { ILineNumberOption } from '../interface/LineNumber'
 import { IPageBorderOption } from '../interface/PageBorder'
 import { defaultPageBorderOption } from '../dataset/constant/PageBorder'
 import {
+  BackendType,
   EditorMode,
+  PageLayout,
   PageMode,
   PaperDirection,
   RenderMode,
@@ -68,10 +72,20 @@ import { IWhiteSpaceOption } from '../interface/WhiteSpace'
 import { defaultWhiteSpaceOption } from '../dataset/constant/WhiteSpace'
 import { defaultTraceOption } from '../dataset/constant/Trace'
 import { defaultRulerOption } from '../dataset/constant/Ruler'
+import { defaultSpellcheckOption } from '../dataset/constant/Spellcheck'
+import type { ISpellcheckOption } from '../interface/Spellcheck'
+import type { IParagraphDragOption } from '../interface/ParagraphDrag'
+import { defaultParagraphDragOption } from '../dataset/constant/ParagraphDrag'
+import { IFootnoteOption } from '../interface/Footnote'
+import { defaultFootnoteOption } from '../dataset/constant/Footnote'
 
 export function mergeOption(
   options: IEditorOption = {}
 ): DeepRequired<IEditorOption> {
+  const labOptions: Required<ILabOption> = {
+    incrementalCompute: false,
+    ...options.lab
+  }
   const tableOptions: Required<ITableOption> = {
     ...defaultTableOption,
     ...options.table
@@ -192,6 +206,22 @@ export function mergeOption(
     ...defaultRulerOption,
     ...options.ruler
   }
+  const hintOptions: Required<IHintOption> = {
+    ...defaultHintOption,
+    ...options.hint
+  }
+  const spellcheckOptions: Required<ISpellcheckOption> = {
+    ...defaultSpellcheckOption,
+    ...options.spellcheck
+  }
+  const paragraphDragOptions: Required<IParagraphDragOption> = {
+    ...defaultParagraphDragOption,
+    ...options.paragraphDrag
+  }
+  const footnoteOptions: Required<IFootnoteOption> = {
+    ...defaultFootnoteOption,
+    ...options.footnote
+  }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -239,12 +269,16 @@ export function mergeOption(
     marginIndicatorColor: '#BABABA',
     margins: [100, 120, 100, 120],
     pageMode: PageMode.PAGING,
+    pageLayout: PageLayout.SINGLE,
     renderMode: RenderMode.SPEED,
+    backend: BackendType.CANVAS,
     defaultHyperlinkColor: '#0000FF',
     paperDirection: PaperDirection.VERTICAL,
     inactiveAlpha: 0.6,
     historyMaxRecordCount: 100,
     wordBreak: WordBreak.BREAK_WORD,
+    hangPunctuation: false,
+    incrementalCompute: true,
     printPixelRatio: 3,
     maskMargin: [0, 0, 0, 0],
     letterClass: [LETTER_CLASS.ENGLISH],
@@ -253,6 +287,7 @@ export function mergeOption(
     scrollContainerSelector: '',
     pageOuterSelectionDisable: false,
     ...options,
+    lab: labOptions,
     table: tableOptions,
     header: headerOptions,
     footer: footerOptions,
@@ -283,6 +318,10 @@ export function mergeOption(
     accessibility: accessibilityOptions,
     column: columnOptions,
     trace: traceOptions,
-    ruler: rulerOptions
+    ruler: rulerOptions,
+    hint: hintOptions,
+    spellcheck: spellcheckOptions,
+    paragraphDrag: paragraphDragOptions,
+    footnote: footnoteOptions
   }
 }

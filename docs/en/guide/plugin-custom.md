@@ -1,7 +1,7 @@
 # Custom Plugin
 
 ::: tip
-Official plugin: https://github.com/Hufe921/canvas-editor-plugin
+Official plugin documentation: https://hufe.club/canvas-editor-plugin
 :::
 
 ## Write a Plugin

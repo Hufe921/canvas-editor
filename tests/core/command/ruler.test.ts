@@ -49,12 +49,16 @@ describe('标尺命令', () => {
     ctx = createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
-    // 默认左边距 120，命中手柄后开始拖动
-    const down = new MouseEvent('mousedown', { bubbles: true, clientX: 120 })
+    // 默认左边距 120，命中数字行处的边距手柄后开始拖动
+    const down = new MouseEvent('mousedown', {
+      bubbles: true,
+      clientX: 120,
+      clientY: 13
+    })
     rulerDom.dispatchEvent(down)
     // 在标尺上移动（事件需能冒泡至document的拖动监听）
     rulerDom.dispatchEvent(
-      new MouseEvent('mousemove', { bubbles: true, clientX: 200 })
+      new MouseEvent('mousemove', { bubbles: true, clientX: 200, clientY: 13 })
     )
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
     expect(ctx.editor.command.getOptions().margins[3]).toBe(200)
@@ -64,10 +68,14 @@ describe('标尺命令', () => {
     ctx = createTestEditor({ options: { ruler: { disabled: false } } })
     await waitMacroTask()
     const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
-    const down = new MouseEvent('mousedown', { bubbles: true, clientX: 120 })
+    const down = new MouseEvent('mousedown', {
+      bubbles: true,
+      clientX: 120,
+      clientY: 13
+    })
     rulerDom.dispatchEvent(down)
     rulerDom.dispatchEvent(
-      new MouseEvent('mousemove', { bubbles: true, clientX: 99999 })
+      new MouseEvent('mousemove', { bubbles: true, clientX: 99999, clientY: 13 })
     )
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
     // 页面宽 794，右边距 120，正文最小宽度 100
@@ -79,10 +87,14 @@ describe('标尺命令', () => {
     await waitMacroTask()
     const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
     // 在手柄中心右侧 3px 处按下（命中容差内）
-    const down = new MouseEvent('mousedown', { bubbles: true, clientX: 123 })
+    const down = new MouseEvent('mousedown', {
+      bubbles: true,
+      clientX: 123,
+      clientY: 13
+    })
     rulerDom.dispatchEvent(down)
     rulerDom.dispatchEvent(
-      new MouseEvent('mousemove', { bubbles: true, clientX: 203 })
+      new MouseEvent('mousemove', { bubbles: true, clientX: 203, clientY: 13 })
     )
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
     // 边距 = 120 + (203 - 123)，而非跳变为 203
@@ -102,6 +114,28 @@ describe('标尺命令', () => {
     )
     document.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }))
     expect(ctx.editor.command.getOptions().margins[0]).toBe(180)
+  })
+
+  it('悬浮光标：缩进标记pointer、边距交界col-resize，移开恢复默认', async () => {
+    ctx = createTestEditor({ options: { ruler: { disabled: false } } })
+    await waitMacroTask()
+    const rulerDom = ctx.container.querySelector<HTMLDivElement>('.ce-ruler')!
+    const rulerX = ctx.container.querySelector<HTMLCanvasElement>('.ce-ruler-x')!
+    // 左边距 120 处：上部盾形为首行缩进标记
+    rulerDom.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientX: 120, clientY: 6 })
+    )
+    expect(rulerX.style.cursor).toBe('pointer')
+    // 中部数字行（边距手柄区）
+    rulerDom.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientX: 120, clientY: 13 })
+    )
+    expect(rulerX.style.cursor).toBe('col-resize')
+    // 移开
+    rulerDom.dispatchEvent(
+      new MouseEvent('mousemove', { bubbles: true, clientX: 300, clientY: 13 })
+    )
+    expect(rulerX.style.cursor).toBe('default')
   })
 
   it('拖动垂直标尺底边距受正文最小尺寸约束', async () => {

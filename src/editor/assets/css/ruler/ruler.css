@@ -24,3 +24,17 @@
   pointer-events: auto;
   box-shadow: 1px 0 3px rgb(0 0 0 / 10%);
 }
+
+/* 缩进标记拖动时的落点虚线引导线 */
+.ce-page-container {
+  position: relative;
+}
+
+.ce-ruler-guideline {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px dashed #595959;
+  pointer-events: none;
+}

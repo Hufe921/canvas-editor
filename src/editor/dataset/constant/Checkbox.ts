@@ -1,4 +1,5 @@
 import { ICheckboxOption } from '../../interface/Checkbox'
+import { CheckboxMarkType } from '../enum/Common'
 import { VerticalAlign } from '../enum/VerticalAlign'
 
 export const defaultCheckboxOption: Readonly<Required<ICheckboxOption>> = {
@@ -11,5 +12,6 @@ export const defaultCheckboxOption: Readonly<Required<ICheckboxOption>> = {
   checkFillStyle: '#5175f4', // 选中时填充色
   checkStrokeStyle: '#5175f4', // 选中时边框色
   checkMarkColor: '#ffffff', // 选中时对勾颜色
+  markType: CheckboxMarkType.CHECK, // 选中标记样式
   verticalAlign: VerticalAlign.BOTTOM
 }

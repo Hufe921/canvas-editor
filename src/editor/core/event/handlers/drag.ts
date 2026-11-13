@@ -1,7 +1,7 @@
 import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
-import { findParent } from '../../../utils'
 import { CanvasEvent } from '../CanvasEvent'
+import { getPagePointer } from '../pagePointer'
 
 function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
@@ -9,33 +9,50 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   if (isReadonly) return
   evt.preventDefault()
   // 非编辑器区禁止拖放
-  const pageContainer = draw.getPageContainer()
-  const editorRegion = findParent(
-    evt.target as Element,
-    (node: Element) => node === pageContainer,
-    true
-  )
-  if (!editorRegion) return
-  const target = evt.target as HTMLDivElement
-  const pageIndex = target.dataset.index
-  // 设置pageNo
-  if (pageIndex) {
-    draw.setPageNo(Number(pageIndex))
-  }
+  const pointer = getPagePointer(evt, draw.getPageContainer())
+  if (!pointer) return
+  draw.setPageNo(pointer.pageNo)
   const position = draw.getPosition()
-  const positionContext = position.adjustPositionContext({
-    x: evt.offsetX,
-    y: evt.offsetY
-  })
-  if (!positionContext) return
-  const { isTable, tdValueIndex, index } = positionContext
-  // 设置选区及光标位置
   const positionList = position.getPositionList()
-  const curIndex = isTable ? tdValueIndex! : index
-  if (~index) {
-    const rangeManager = draw.getRange()
+  const rangeManager = draw.getRange()
+  if (host.paragraphDrag) {
+    const dropIndex = draw
+      .getParagraphDragParticle()
+      .getDropIndex(pointer.y, pointer.pageNo)
+    if (dropIndex === null) return
+    const curIndex = Math.min(dropIndex, positionList.length - 1)
+    position.setPositionContext({
+      isTable: false,
+      index: curIndex
+    })
     rangeManager.setRange(curIndex, curIndex)
     position.setCursorPosition(positionList[curIndex])
+  } else {
+    const positionContext = position.adjustPositionContext({
+      x: pointer.x,
+      y: pointer.y
+    })
+    if (!positionContext) return
+    const cacheContext = host.cachePositionContext
+    if (
+      !!cacheContext?.isFootnote !== !!positionContext.isFootnote ||
+      (positionContext.isFootnote &&
+        cacheContext?.footnoteId !== positionContext.footnoteId)
+    ) {
+      return
+    }
+    const { isTable, isFootnote, footnoteValueIndex, tdValueIndex, index } =
+      positionContext
+    const curIndex = isFootnote
+      ? footnoteValueIndex!
+      : isTable
+        ? tdValueIndex!
+        : index
+    if (~index) {
+      const currentPositionList = position.getPositionList()
+      rangeManager.setRange(curIndex, curIndex)
+      position.setCursorPosition(currentPositionList[curIndex])
+    }
   }
   const cursor = draw.getCursor()
   const {
@@ -43,7 +60,8 @@ function dragover(evt: DragEvent | MouseEvent, host: CanvasEvent) {
   } = draw.getOptions()
   // 拖拽图片是否定位光标
   if (dragFloatImageDisabled) {
-    const dragElement = host.cacheElementList?.[host.cacheRange!.startIndex]
+    const dragElement =
+      host.cacheRange && host.cacheElementList?.[host.cacheRange.startIndex]
     if (
       dragElement?.type === ElementType.IMAGE &&
       (dragElement.imgDisplay === ImageDisplay.FLOAT_TOP ||

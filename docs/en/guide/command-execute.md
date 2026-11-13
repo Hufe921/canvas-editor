@@ -372,7 +372,7 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 
 ## executeRowFlex
 
-Feature: Line alignment
+Feature: Paragraph alignment
 
 Usage:
 
@@ -382,12 +382,72 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 
 ## executeRowMargin
 
-Feature: Line spacing
+Feature: Paragraph line spacing
 
 Usage:
 
 ```javascript
 instance.command.executeRowMargin(rowMargin: number)
+```
+
+## executeSpacingBefore
+
+Feature: Paragraph spacing before
+
+Usage:
+
+```javascript
+instance.command.executeSpacingBefore(spacingBefore: number)
+```
+
+## executeSpacingAfter
+
+Feature: Paragraph spacing after
+
+Usage:
+
+```javascript
+instance.command.executeSpacingAfter(spacingAfter: number)
+```
+
+## executeIndentLeft
+
+Feature: Paragraph left indent
+
+Usage:
+
+```javascript
+instance.command.executeIndentLeft(indentLeft: number)
+```
+
+## executeIndentRight
+
+Feature: Paragraph right indent
+
+Usage:
+
+```javascript
+instance.command.executeIndentRight(indentRight: number)
+```
+
+## executeIndentFirstLine
+
+Feature: Paragraph first-line indent (negative for hanging indent)
+
+Usage:
+
+```javascript
+instance.command.executeIndentFirstLine(indentFirstLine: number)
+```
+
+## executeSetTabStops
+
+Feature: Set tab stops of the current paragraph (pass an empty array to clear)
+
+Usage:
+
+```javascript
+instance.command.executeSetTabStops(payload: ITabStop[])
 ```
 
 ## executeInsertTable
@@ -548,6 +608,26 @@ Usage:
 
 ```javascript
 instance.command.executeTableTdBorderType(payload: TdBorder)
+```
+
+## executeTableTdBorderColor
+
+Feature: Table td border color (pass an empty string to restore the table border color)
+
+Usage:
+
+```javascript
+instance.command.executeTableTdBorderColor(payload: string)
+```
+
+## executeTableTdBorderWidth
+
+Feature: Table td border width (pass 0 to restore the table border width)
+
+Usage:
+
+```javascript
+instance.command.executeTableTdBorderWidth(payload: number)
 ```
 
 ## executeTableTdSlashType
@@ -718,6 +798,22 @@ Usage:
 instance.command.executeSearch(keyword: string, options?: ISearchOption)
 ```
 
+## executeSetSpellcheckRangeList
+
+Feature: Set spell check misspelled word ranges, rendering a wavy line under the ranges (overlay rendering, does not modify document data). Pass `null` to clear
+
+Usage:
+
+```javascript
+instance.command.executeSetSpellcheckRangeList([
+  {
+    startIndex: 5,
+    endIndex: 8,
+    data: { word: 'Helo' }
+  }
+])
+```
+
 ## executeSearchNavigatePre
 
 Feature: Search Navigation - Previous
@@ -808,6 +904,16 @@ Usage:
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageLayout
+
+Feature: Set single-page or multiple-page layout. The default is single page. Multiple-page layout only applies in pagination mode, arranges pages to fit the container width, and does not change document pagination.
+
+Usage:
+
+```javascript
+instance.command.executePageLayout(pageLayout: PageLayout)
+```
+
 ## executePageScale
 
 Feature: Set page scale
@@ -866,6 +972,16 @@ Usage:
 
 ```javascript
 instance.command.executePaperDirection(paperDirection: PaperDirection)
+```
+
+## executePageDirection
+
+Feature: Set the paper orientation of the current section. Page breaks delimit sections; the first section changes the global orientation, and `null` restores the global orientation.
+
+Usage:
+
+```javascript
+instance.command.executePageDirection(paperDirection: PaperDirection | null)
 ```
 
 ## executeSetPaperMargin
@@ -1040,6 +1156,16 @@ instance.command.executeSetZone(zone: EditorZone)
 
 Control-related commands have moved to [Control-Commands](./control/command.md); validation commands to [Control-Validation](./control/validate.md).
 
+## executeSetBackend
+
+Feature: Switch the rendering backend while preserving the current document and Editor instance
+
+Usage:
+
+```javascript
+instance.command.executeSetBackend(BackendType.SVG)
+```
+
 ## executeUpdateOptions
 
 Feature: Update options
@@ -1118,6 +1244,45 @@ Usage:
 
 ```javascript
 instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
+```
+
+## executeInsertFootnote
+
+Feature: Insert a footnote at the current caret in the main body. Returns the footnote ID, or `null` when insertion is unavailable.
+
+Usage:
+
+```javascript
+const footnoteId = instance.command.executeInsertFootnote({
+  id?: string,
+  value: IElement[]
+})
+```
+
+## executeSetFootnoteValue
+
+Feature: Update footnote content by footnote ID.
+
+Usage:
+
+```javascript
+instance.command.executeSetFootnoteValue({
+  id: string,
+  value: IElement[]
+})
+```
+
+## executeLocationFootnote
+
+Feature: Locate the end of the footnote content. Use `position: LocationPosition.BEFORE` to locate its reference in the main body. Ctrl/Cmd-clicking either side also navigates between them.
+
+Usage:
+
+```javascript
+instance.command.executeLocationFootnote(
+  footnoteId: string,
+  options?: ILocationFootnoteOption
+)
 ```
 
 ## executeClearGraffiti

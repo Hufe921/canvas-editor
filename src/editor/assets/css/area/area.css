@@ -1,0 +1,16 @@
+.ce-area-tool__border {
+  position: absolute;
+  z-index: 1;
+  cursor: row-resize;
+  background: transparent;
+}
+
+.ce-area-tool__border:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.ce-area-anchor__line {
+  z-index: 9;
+  position: absolute;
+  border: 1px dotted #000000;
+}

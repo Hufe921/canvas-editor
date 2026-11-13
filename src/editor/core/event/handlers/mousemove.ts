@@ -2,16 +2,23 @@ import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ControlComponent } from '../../../dataset/enum/Control'
 import { ElementType } from '../../../dataset/enum/Element'
 import { CanvasEvent } from '../CanvasEvent'
+import { getPagePointer } from '../pagePointer'
 
 export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const draw = host.getDraw()
   // 留痕模式：hover 到带 trace 标记的元素时显示作者/时间浮窗
   draw.getTraceParticle().handleMouseMove(evt)
+  // 悬浮提示：hover 到配置了 hint 的元素时显示提示浮窗
+  draw.getHintParticle().handleMouseMove(evt)
+  const pointer = getPagePointer(evt, draw.getPageContainer())
+  if (!pointer) return
   // 是否是拖拽文字
   if (host.isAllowDrag) {
+    if (host.paragraphDrag) {
+      pointer.page.style.cursor = 'grabbing'
+    }
     // 是否允许拖拽到选区
-    const x = evt.offsetX
-    const y = evt.offsetY
+    const { x, y } = pointer
     const { startIndex, endIndex } = host.cacheRange!
     const positionList = host.cachePositionList!
     for (let p = startIndex + 1; p <= endIndex; p++) {
@@ -45,23 +52,44 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     host.isAllowDrop = true
     return
   }
-  if (!host.isAllowSelection || !host.mouseDownStartPosition) return
-  const target = evt.target as HTMLDivElement
-  const pageIndex = target.dataset.index
-  // 设置pageNo
-  if (pageIndex) {
-    draw.setPageNo(Number(pageIndex))
+  if (!host.isAllowSelection) {
+    const paragraphDragParticle = draw.getParagraphDragParticle()
+    if (paragraphDragParticle.isEnabled()) {
+      const hover = paragraphDragParticle.updateHover(
+        pointer.x,
+        pointer.y,
+        pointer.pageNo
+      )
+      pointer.page.style.cursor = hover.isHit
+        ? 'grab'
+        : draw.getPainterStyle()
+          ? 'copy'
+          : 'text'
+      if (hover.isChanged) {
+        draw.render({
+          isCompute: false,
+          isSubmitHistory: false,
+          isSetCursor: false
+        })
+      }
+    }
   }
+  if (!host.isAllowSelection || !host.mouseDownStartPosition) return
+  draw.setPageNo(pointer.pageNo)
   // 结束位置
   const position = draw.getPosition()
   const positionResult = position.getPositionByXY({
-    x: evt.offsetX,
-    y: evt.offsetY
+    x: pointer.x,
+    y: pointer.y,
+    pageNo: pointer.pageNo
   })
   if (!~positionResult.index) return
   const {
     index,
     isTable,
+    isFootnote,
+    footnoteId,
+    footnoteValueIndex,
     tdValueIndex,
     tdIndex,
     trIndex,
@@ -73,11 +101,24 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
   const {
     index: startIndex,
     isTable: startIsTable,
+    isFootnote: startIsFootnote,
+    footnoteId: startFootnoteId,
     tdIndex: startTdIndex,
     trIndex: startTrIndex,
     tableId: startTableId
   } = host.mouseDownStartPosition
-  const endIndex = isTable ? tdValueIndex! : index
+  // 正文、脚注及不同脚注之间的数据下标不共享，禁止跨上下文选区
+  if (
+    !!startIsFootnote !== !!isFootnote ||
+    (isFootnote && startFootnoteId !== footnoteId)
+  ) {
+    return
+  }
+  const endIndex = isFootnote
+    ? footnoteValueIndex!
+    : isTable
+      ? tdValueIndex!
+      : index
   // 判断是否是表格跨行/列
   const rangeManager = draw.getRange()
   if (

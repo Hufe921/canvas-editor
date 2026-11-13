@@ -2,9 +2,9 @@ import Editor, { ControlType, ElementType } from '../../../src/editor'
 
 describe('控件-文本型', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = `canvas-editor`
@@ -29,7 +29,7 @@ describe('控件-文本型', () => {
         }
       ])
 
-      cy.get('@canvas').type(`{leftArrow}`)
+      cy.get('.ce-inputarea').type(`{leftArrow}`)
 
       cy.get('.ce-inputarea')
         .type(text)

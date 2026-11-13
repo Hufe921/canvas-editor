@@ -37,6 +37,7 @@ interface IEditorOption {
   searchMatchColor?: string // 搜索高亮颜色。默认：#FFFF00
   searchNavigateMatchColor?: string // 搜索导航高亮颜色。默认：#AAD280
   searchMatchAlpha?: number // 搜索高亮透明度。默认：0.6
+  spellcheck?: ISpellcheckOption // 拼写检查配置
   highlightAlpha?: number // 高亮元素透明度。默认：0.6
   highlightMarginHeight?: number // 高亮元素边距高度。默认：8
   resizerColor?: string // 图片尺寸器颜色。默认：#4182D9
@@ -45,16 +46,19 @@ interface IEditorOption {
   marginIndicatorColor?: string // 页边距指示器颜色。默认：#BABABA
   margins?: IMargin // 页面边距。默认：[100, 120, 100, 120]
   pageMode?: PageMode // 纸张模式：连页、分页。默认：分页
+  pageLayout?: PageLayout // 页面布局：单页、多页（分页模式下按容器宽度同屏排列）。默认：单页
   renderMode?: RenderMode // 渲染模式：极速（多个字组合渲染）、兼容（逐字渲染：避免浏览器字体等环境差异）。默认：极速
+  backend?: BackendType // 渲染后端：CANVAS、SVG。默认：CANVAS
   defaultHyperlinkColor?: string // 默认超链接颜色。默认：#0000FF
   table?: ITableOption // 表格配置
+  footnote?: IFootnoteOption // 脚注配置
   header?: IHeader // 页眉配置
   footer?: IFooter // 页脚配置
   pageNumber?: IPageNumber // 页码配置
   paperDirection?: PaperDirection // 纸张方向：纵向、横向
   inactiveAlpha?: number // 正文内容失焦时透明度。默认值：0.6
-  historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次
-  printPixelRatio?: number // 打印像素比率（值越大越清晰，但尺寸越大）。默认：3
+  historyMaxRecordCount?: number // 历史（撤销重做）最大记录次数。默认：100次；0 禁用历史快照分配
+  printPixelRatio?: number // Canvas 位图打印的像素比率（值越大越清晰，但尺寸越大）。默认：3
   maskMargin?: IMargin // 编辑器上的遮盖边距（如悬浮到编辑器上的菜单栏、底部工具栏）。默认：[0, 0, 0, 0]
   letterClass?: string[] // 排版支持的字母类。默认：a-zA-Z。内置可选择的字母表类：LETTER_CLASS
   contextMenuDisableKeys?: string[] // 禁用的右键菜单。默认：[]
@@ -62,6 +66,9 @@ interface IEditorOption {
   scrollContainerSelector?: string // 滚动区域选择器。默认：document
   pageOuterSelectionDisable?: boolean // 鼠标移出页面时选区禁用。默认：false
   wordBreak?: WordBreak // 单词与标点断行：BREAK_WORD首行不出现标点&单词不拆分、BREAK_ALL按字符宽度撑满后折行。默认：BREAK_WORD
+  hangPunctuation?: boolean // 标点悬挂：行尾放不下的避头标点悬挂在行尾，不占行宽。默认：false
+  incrementalCompute?: boolean // 行级增量计算。默认：true；false 使用全量计算
+  lab?: ILabOption // 实验性功能配置
   watermark?: IWatermark // 水印配置
   control?: IControlOption // 控件配置
   checkbox?: ICheckboxOption // 复选框配置
@@ -89,6 +96,20 @@ interface IEditorOption {
   column?: IColumnOption // 分栏配置。默认：关闭
   trace?: ITraceOption // 留痕配置。默认：禁用
   ruler?: IRulerOption // 标尺配置。默认：禁用
+  hint?: IHintOption // 悬浮提示配置。默认：禁用
+  paragraphDrag?: IParagraphDragOption // 段落拖拽配置。默认：禁用
+}
+```
+
+## 实验性功能配置
+
+实验特性（`lab`）详见 [实验特性](./lab.md) 章节。
+
+```typescript
+interface ILabOption {
+  // 行级增量行计算。原默认：false
+  // @deprecated 自 1.1.0 起不再生效，请使用顶层 incrementalCompute
+  incrementalCompute?: boolean
 }
 ```
 
@@ -100,6 +121,18 @@ interface ITableOption {
   defaultTrMinHeight?: number // 默认表格行最小高度。默认：42
   defaultColMinWidth?: number // 默认表格列最小宽度（整体宽度足够时应用，否则会按比例缩小）。默认：40
   overflow?: boolean // 是否允许表格超出正文区域。为 false 时表格总宽在布局阶段会被等比例压缩至页面内容区内（列宽不低于 defaultColMinWidth）。默认：false
+}
+```
+
+## 脚注配置
+
+```typescript
+interface IFootnoteOption {
+  size?: number // 脚注默认字号。默认：10
+  color?: string // 脚注编号颜色。默认：#000000
+  lineColor?: string // 分隔线颜色。默认：#000000
+  lineWidth?: number // 分隔线宽度。默认：1
+  gap?: number // 分隔线与正文间距。默认：6
 }
 ```
 
@@ -197,6 +230,7 @@ interface ICheckboxOption {
   checkFillStyle?: string // 选中时填充样式
   checkStrokeStyle?: string // 选中时边框颜色
   checkMarkColor?: string // 对勾颜色
+  markType?: CheckboxMarkType // 选中标记样式（对勾/叉）。默认：CHECK
   verticalAlign?: VerticalAlign // 垂直对齐方式。默认：MIDDLE
 }
 ```
@@ -337,6 +371,15 @@ interface ILineNumberOption {
 }
 ```
 
+## 段落拖拽配置
+
+```typescript
+interface IParagraphDragOption {
+  disabled?: boolean // 是否禁用。默认：true
+  color?: string // 拖拽手柄颜色。默认：#BABABA
+}
+```
+
 ## 页面边框配置
 
 ```typescript
@@ -464,5 +507,26 @@ interface ITraceOption {
 interface IRulerOption {
   disabled?: boolean // 初始是否禁用标尺。默认：true
   height?: number // 标尺高度。默认：26
+}
+```
+
+## 悬浮提示配置
+
+```typescript
+interface IHintOption {
+  disabled?: boolean // 总开关。默认：true（默认关闭，设为 false 开启）
+  backgroundColor?: string // 浮窗背景色。默认：#fff
+  color?: string // 浮窗文字颜色。默认：#000000
+  fontSize?: number // 浮窗字号。默认：12
+  maxWidth?: number // 浮窗最大宽度，超出自动换行。默认：280
+}
+```
+
+## 拼写检查配置
+
+```typescript
+interface ISpellcheckOption {
+  disabled?: boolean // 是否禁用。默认：true
+  color?: string // 错词波浪线颜色。默认：#FF0000
 }
 ```

@@ -7,6 +7,7 @@ import { IPositionContext } from '../../../interface/Position'
 import { IRange } from '../../../interface/Range'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class Group {
@@ -167,7 +168,7 @@ export class Group {
     }
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: IRenderContext) {
     if (!this.fillRectMap.size) return
     // 当前激活组信息
     const range = this.range.getRange()

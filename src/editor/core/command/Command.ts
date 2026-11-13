@@ -35,6 +35,12 @@ export class Command {
   public executeList: CommandAdapt['list']
   public executeRowFlex: CommandAdapt['rowFlex']
   public executeRowMargin: CommandAdapt['rowMargin']
+  public executeSpacingBefore: CommandAdapt['spacingBefore']
+  public executeSpacingAfter: CommandAdapt['spacingAfter']
+  public executeIndentLeft: CommandAdapt['indentLeft']
+  public executeIndentRight: CommandAdapt['indentRight']
+  public executeIndentFirstLine: CommandAdapt['indentFirstLine']
+  public executeSetTabStops: CommandAdapt['setTabStops']
   public executeInsertTable: CommandAdapt['insertTable']
   public executeInsertTableTopRow: CommandAdapt['insertTableTopRow']
   public executeInsertTableBottomRow: CommandAdapt['insertTableBottomRow']
@@ -51,6 +57,8 @@ export class Command {
   public executeTableBorderType: CommandAdapt['tableBorderType']
   public executeTableBorderColor: CommandAdapt['tableBorderColor']
   public executeTableTdBorderType: CommandAdapt['tableTdBorderType']
+  public executeTableTdBorderColor: CommandAdapt['tableTdBorderColor']
+  public executeTableTdBorderWidth: CommandAdapt['tableTdBorderWidth']
   public executeTableTdSlashType: CommandAdapt['tableTdSlashType']
   public executeTableTdBackgroundColor: CommandAdapt['tableTdBackgroundColor']
   public executeTableAutoFitToContent: CommandAdapt['tableAutoFitToContent']
@@ -66,6 +74,7 @@ export class Command {
   public executeAddWatermark: CommandAdapt['addWatermark']
   public executeDeleteWatermark: CommandAdapt['deleteWatermark']
   public executeSearch: CommandAdapt['search']
+  public executeSetSpellcheckRangeList: CommandAdapt['setSpellcheckRangeList']
   public executeSearchNavigatePre: CommandAdapt['searchNavigatePre']
   public executeSearchNavigateNext: CommandAdapt['searchNavigateNext']
   public executeReplace: CommandAdapt['replace']
@@ -76,6 +85,7 @@ export class Command {
   public executeSetImageCaption: CommandAdapt['setImageCaption']
   public executeChangeImageDisplay: CommandAdapt['changeImageDisplay']
   public executePageMode: CommandAdapt['pageMode']
+  public executePageLayout: CommandAdapt['pageLayout']
   public executeSetColumns: CommandAdapt['setColumns']
   public executePageScale: CommandAdapt['pageScale']
   public executePageScaleRecovery: CommandAdapt['pageScaleRecovery']
@@ -83,11 +93,16 @@ export class Command {
   public executePageScaleAdd: CommandAdapt['pageScaleAdd']
   public executePaperSize: CommandAdapt['paperSize']
   public executePaperDirection: CommandAdapt['paperDirection']
+  public executePageDirection: CommandAdapt['pageDirection']
   public executeSetPaperMargin: CommandAdapt['setPaperMargin']
   public executeSetMainBadge: CommandAdapt['setMainBadge']
   public executeSetAreaBadge: CommandAdapt['setAreaBadge']
   public executeInsertElementList: CommandAdapt['insertElementList']
   public executeInsertArea: CommandAdapt['insertArea']
+  public executeInsertFootnote: CommandAdapt['insertFootnote']
+  public executeSetFootnoteValue: CommandAdapt['setFootnoteValue']
+  public executeLocationFootnote: CommandAdapt['locationFootnote']
+  public getFootnoteValue: CommandAdapt['getFootnoteValue']
   public executeSetAreaValue: CommandAdapt['setAreaValue']
   public executeSetAreaProperties: CommandAdapt['setAreaProperties']
   public executeDeleteArea: CommandAdapt['deleteArea']
@@ -123,6 +138,7 @@ export class Command {
   public executeInsertControl: CommandAdapt['insertControl']
   public executeJumpControl: CommandAdapt['jumpControl']
   public executeUpdateOptions: CommandAdapt['updateOptions']
+  public executeSetBackend: CommandAdapt['setBackend']
   public executeInsertTitle: CommandAdapt['insertTitle']
   public executeFocus: CommandAdapt['focus']
   public executeComputeElementListHeight: CommandAdapt['computeElementListHeight']
@@ -134,14 +150,17 @@ export class Command {
   public getAreaValue: CommandAdapt['getAreaValue']
   public getHTML: CommandAdapt['getHTML']
   public getText: CommandAdapt['getText']
+  public getSpellcheckWordList: CommandAdapt['getSpellcheckWordList']
   public getWordCount: CommandAdapt['getWordCount']
   public getCursorPosition: CommandAdapt['getCursorPosition']
   public getRemainingContentHeight: CommandAdapt['getRemainingContentHeight']
   public getRange: CommandAdapt['getRange']
   public getRangeText: CommandAdapt['getRangeText']
+  public getRangeRects: CommandAdapt['getRangeRects']
   public getRangeContext: CommandAdapt['getRangeContext']
   public getRangeRow: CommandAdapt['getRangeRow']
   public getRangeParagraph: CommandAdapt['getRangeParagraph']
+  public getSurroundElementList: CommandAdapt['getSurroundElementList']
   public getKeywordRangeList: CommandAdapt['getKeywordRangeList']
   public getKeywordContext: CommandAdapt['getKeywordContext']
   public getPaperMargin: CommandAdapt['getPaperMargin']
@@ -149,6 +168,7 @@ export class Command {
   public getSearchNavigateInfo: CommandAdapt['getSearchNavigateInfo']
   public getLocale: CommandAdapt['getLocale']
   public getGroupIds: CommandAdapt['getGroupIds']
+  public getGroupRectList: CommandAdapt['getGroupRectList']
   public getControlValue: CommandAdapt['getControlValue']
   public getControlList: CommandAdapt['getControlList']
   public getContainer: CommandAdapt['getContainer']
@@ -252,6 +272,30 @@ export class Command {
       'executeRowMargin',
       adapt.rowMargin.bind(adapt)
     )
+    this.executeSpacingBefore = this.wrap(
+      'executeSpacingBefore',
+      adapt.spacingBefore.bind(adapt)
+    )
+    this.executeSpacingAfter = this.wrap(
+      'executeSpacingAfter',
+      adapt.spacingAfter.bind(adapt)
+    )
+    this.executeIndentLeft = this.wrap(
+      'executeIndentLeft',
+      adapt.indentLeft.bind(adapt)
+    )
+    this.executeIndentRight = this.wrap(
+      'executeIndentRight',
+      adapt.indentRight.bind(adapt)
+    )
+    this.executeIndentFirstLine = this.wrap(
+      'executeIndentFirstLine',
+      adapt.indentFirstLine.bind(adapt)
+    )
+    this.executeSetTabStops = this.wrap(
+      'executeSetTabStops',
+      adapt.setTabStops.bind(adapt)
+    )
     // 表格、图片上传、超链接、搜索、打印、图片操作
     this.executeInsertTable = this.wrap(
       'executeInsertTable',
@@ -317,6 +361,14 @@ export class Command {
       'executeTableTdBorderType',
       adapt.tableTdBorderType.bind(adapt)
     )
+    this.executeTableTdBorderColor = this.wrap(
+      'executeTableTdBorderColor',
+      adapt.tableTdBorderColor.bind(adapt)
+    )
+    this.executeTableTdBorderWidth = this.wrap(
+      'executeTableTdBorderWidth',
+      adapt.tableTdBorderWidth.bind(adapt)
+    )
     this.executeTableTdSlashType = this.wrap(
       'executeTableTdSlashType',
       adapt.tableTdSlashType.bind(adapt)
@@ -371,6 +423,10 @@ export class Command {
       adapt.deleteWatermark.bind(adapt)
     )
     this.executeSearch = this.wrap('executeSearch', adapt.search.bind(adapt))
+    this.executeSetSpellcheckRangeList = this.wrap(
+      'executeSetSpellcheckRangeList',
+      adapt.setSpellcheckRangeList.bind(adapt)
+    )
     this.executeSearchNavigatePre = this.wrap(
       'executeSearchNavigatePre',
       adapt.searchNavigatePre.bind(adapt)
@@ -406,6 +462,10 @@ export class Command {
       'executePageMode',
       adapt.pageMode.bind(adapt)
     )
+    this.executePageLayout = this.wrap(
+      'executePageLayout',
+      adapt.pageLayout.bind(adapt)
+    )
     this.executeSetColumns = this.wrap(
       'executeSetColumns',
       adapt.setColumns.bind(adapt)
@@ -434,6 +494,10 @@ export class Command {
       'executePaperDirection',
       adapt.paperDirection.bind(adapt)
     )
+    this.executePageDirection = this.wrap(
+      'executePageDirection',
+      adapt.pageDirection.bind(adapt)
+    )
     this.executeSetPaperMargin = this.wrap(
       'executeSetPaperMargin',
       adapt.setPaperMargin.bind(adapt)
@@ -452,6 +516,20 @@ export class Command {
     this.executeInsertArea = this.wrap(
       'executeInsertArea',
       adapt.insertArea.bind(adapt)
+    )
+    // 脚注
+    this.executeInsertFootnote = this.wrap(
+      'executeInsertFootnote',
+      adapt.insertFootnote.bind(adapt)
+    )
+    this.executeSetFootnoteValue = this.wrap(
+      'executeSetFootnoteValue',
+      adapt.setFootnoteValue.bind(adapt)
+    )
+    this.getFootnoteValue = adapt.getFootnoteValue.bind(adapt)
+    this.executeLocationFootnote = this.wrap(
+      'executeLocationFootnote',
+      adapt.locationFootnote.bind(adapt)
     )
     this.executeSetAreaValue = this.wrap(
       'executeSetAreaValue',
@@ -545,6 +623,10 @@ export class Command {
       'executeUpdateOptions',
       adapt.updateOptions.bind(adapt)
     )
+    this.executeSetBackend = this.wrap(
+      'executeSetBackend',
+      adapt.setBackend.bind(adapt)
+    )
     this.executeInsertTitle = this.wrap(
       'executeInsertTitle',
       adapt.insertTitle.bind(adapt)
@@ -561,14 +643,17 @@ export class Command {
     this.getValueAsync = adapt.getValueAsync.bind(adapt)
     this.getHTML = adapt.getHTML.bind(adapt)
     this.getText = adapt.getText.bind(adapt)
+    this.getSpellcheckWordList = adapt.getSpellcheckWordList.bind(adapt)
     this.getWordCount = adapt.getWordCount.bind(adapt)
     this.getCursorPosition = adapt.getCursorPosition.bind(adapt)
     this.getRemainingContentHeight = adapt.getRemainingContentHeight.bind(adapt)
     this.getRange = adapt.getRange.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
+    this.getRangeRects = adapt.getRangeRects.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)
     this.getRangeRow = adapt.getRangeRow.bind(adapt)
     this.getRangeParagraph = adapt.getRangeParagraph.bind(adapt)
+    this.getSurroundElementList = adapt.getSurroundElementList.bind(adapt)
     this.getKeywordRangeList = adapt.getKeywordRangeList.bind(adapt)
     this.getKeywordContext = adapt.getKeywordContext.bind(adapt)
     this.getCatalog = adapt.getCatalog.bind(adapt)
@@ -577,6 +662,7 @@ export class Command {
     this.getSearchNavigateInfo = adapt.getSearchNavigateInfo.bind(adapt)
     this.getLocale = adapt.getLocale.bind(adapt)
     this.getGroupIds = adapt.getGroupIds.bind(adapt)
+    this.getGroupRectList = adapt.getGroupRectList.bind(adapt)
     this.getContainer = adapt.getContainer.bind(adapt)
     this.getTitleValue = adapt.getTitleValue.bind(adapt)
     this.getPositionContextByEvent = adapt.getPositionContextByEvent.bind(adapt)

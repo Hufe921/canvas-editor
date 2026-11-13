@@ -9,16 +9,19 @@ import {
   IIntersectionPageNoChange,
   ILabelMousedown,
   IMouseEventChange,
+  IPageLayoutChange,
   IPageModeChange,
   IPageScaleChange,
   IPageSizeChange,
   IPositionContextChange,
   IRangeChange,
+  IRenderChange,
   IRangeStyleChange,
   ISaved,
   IVisiblePageNoListChange,
   IZoneChange
 } from './Listener'
+import type { ISpellcheckClick } from './Spellcheck'
 
 export interface EventBusMap {
   rangeStyleChange: IRangeStyleChange
@@ -31,6 +34,7 @@ export interface EventBusMap {
   controlChange: IControlChange
   controlContentChange: IControlContentChange
   pageModeChange: IPageModeChange
+  pageLayoutChange: IPageLayoutChange
   zoneChange: IZoneChange
   mousemove: IMouseEventChange
   mouseleave: IMouseEventChange
@@ -45,4 +49,6 @@ export interface EventBusMap {
   imageDblclick: IImageDblclick
   labelMousedown: ILabelMousedown
   rangeChange: IRangeChange
+  renderChange: IRenderChange
+  spellcheckClick: ISpellcheckClick
 }

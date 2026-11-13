@@ -2,7 +2,9 @@ import { commentList, data, options } from './mock'
 import './style.css'
 import prism from 'prismjs'
 import Editor, {
+  BackendType,
   BlockType,
+  CheckboxMarkType,
   Command,
   ControlState,
   ControlType,
@@ -12,12 +14,16 @@ import Editor, {
   IBlock,
   ICatalogItem,
   IElement,
+  ITabStop,
   KeyMap,
   ListStyle,
   ListType,
+  PageLayout,
   PageMode,
   PaperDirection,
   RowFlex,
+  TabStopLeader,
+  TabStopType,
   TextDecorationStyle,
   TitleLevel,
   splitText
@@ -33,6 +39,7 @@ window.onload = function () {
 
   // 1. 初始化编辑器
   const container = document.querySelector<HTMLDivElement>('.editor')!
+  const backend = new URLSearchParams(window.location.search).get('backend')
   const instance = new Editor(
     container,
     {
@@ -60,7 +67,12 @@ window.onload = function () {
         }
       ]
     },
-    options
+    {
+      ...options,
+      ...(backend === BackendType.SVG || backend === BackendType.CANVAS
+        ? { backend }
+        : {})
+    }
   )
   console.log('实例: ', instance)
   // cypress使用
@@ -337,6 +349,198 @@ window.onload = function () {
     const li = evt.target as HTMLLIElement
     instance.command.executeRowMargin(Number(li.dataset.rowmargin!))
   }
+
+  const spacingDom = document.querySelector<HTMLDivElement>(
+    '.menu-item__spacing'
+  )!
+  const spacingIconDom = spacingDom.querySelector<HTMLElement>('i')!
+  const spacingOptionDom = spacingDom.querySelector<HTMLDivElement>('.options')!
+  const spacingBeforeInputDom =
+    spacingOptionDom.querySelector<HTMLInputElement>(
+      '[data-spacingbefore-input]'
+    )!
+  const spacingAfterInputDom = spacingOptionDom.querySelector<HTMLInputElement>(
+    '[data-spacingafter-input]'
+  )!
+  spacingIconDom.onclick = function () {
+    console.log('spacing')
+    const isVisible = spacingOptionDom.classList.toggle('visible')
+    if (isVisible) renderTabStopRows(latestTabStops)
+  }
+  spacingOptionDom.onclick = function (evt) {
+    evt.stopPropagation()
+  }
+  const changeSpacingBefore = (value: number) => {
+    const spacing = Math.max(0, Math.round(value) || 0)
+    spacingBeforeInputDom.value = `${spacing}`
+    instance.command.executeSpacingBefore(spacing)
+  }
+  const changeSpacingAfter = (value: number) => {
+    const spacing = Math.max(0, Math.round(value) || 0)
+    spacingAfterInputDom.value = `${spacing}`
+    instance.command.executeSpacingAfter(spacing)
+  }
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingbefore-decrease]'
+  )!.onclick = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value) - 6)
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingbefore-increase]'
+  )!.onclick = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value) + 6)
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingafter-decrease]'
+  )!.onclick = () => changeSpacingAfter(Number(spacingAfterInputDom.value) - 6)
+  spacingOptionDom.querySelector<HTMLButtonElement>(
+    '[data-spacingafter-increase]'
+  )!.onclick = () => changeSpacingAfter(Number(spacingAfterInputDom.value) + 6)
+  spacingBeforeInputDom.onchange = () =>
+    changeSpacingBefore(Number(spacingBeforeInputDom.value))
+  spacingAfterInputDom.onchange = () =>
+    changeSpacingAfter(Number(spacingAfterInputDom.value))
+
+  // 段落缩进（与段落间距同弹窗维护）
+  const indentInputMap: Record<string, HTMLInputElement> = {}
+  const indentConfig = [
+    {
+      key: 'indentleft',
+      execute: (value: number) => instance.command.executeIndentLeft(value),
+      clampMin: 0
+    },
+    {
+      key: 'indentright',
+      execute: (value: number) => instance.command.executeIndentRight(value),
+      clampMin: 0
+    },
+    {
+      key: 'indentfirstline',
+      execute: (value: number) => instance.command.executeIndentFirstLine(value)
+    }
+  ]
+  indentConfig.forEach(({ key, execute, clampMin }) => {
+    const input = spacingOptionDom.querySelector<HTMLInputElement>(
+      `[data-${key}-input]`
+    )!
+    indentInputMap[key] = input
+    const change = (value: number) => {
+      let indent = Math.round(value) || 0
+      if (clampMin !== undefined) indent = Math.max(clampMin, indent)
+      input.value = `${indent}`
+      execute(indent)
+    }
+    spacingOptionDom.querySelector<HTMLButtonElement>(
+      `[data-${key}-decrease]`
+    )!.onclick = () => change(Number(input.value) - 16)
+    spacingOptionDom.querySelector<HTMLButtonElement>(
+      `[data-${key}-increase]`
+    )!.onclick = () => change(Number(input.value) + 16)
+    input.onchange = () => change(Number(input.value))
+  })
+
+  // 制表位（结构化行编辑：位置 + 前导符；右上清除、底部添加）
+  const tabStopRowsDom = spacingOptionDom.querySelector<HTMLDivElement>(
+    '[data-tabstops-rows]'
+  )!
+  let latestTabStops: ITabStop[] = []
+  const TABSTOP_TYPE_OPTIONS = [
+    { value: TabStopType.LEFT, label: '左对齐' },
+    { value: TabStopType.CENTER, label: '居中对齐' },
+    { value: TabStopType.RIGHT, label: '右对齐' }
+  ]
+  const TABSTOP_LEADER_OPTIONS = [
+    { value: '', label: '无' },
+    { value: 'dot', label: '点线' },
+    { value: 'hyphen', label: '横线' },
+    { value: 'underline', label: '下划线' }
+  ]
+  const TABSTOP_DELETE_ICON =
+    '<svg viewBox="0 0 1024 1024" width="12" height="12"><path fill="currentColor" d="M820.1 68.3H649V42.5c0-23.6-19.1-42.7-42.7-42.7H417.7c-23.6 0-42.7 19.1-42.7 42.7v25.8H203.9c-23.6 0-42.7 19.1-42.7 42.7v68.3c0 23.6 19.1 42.7 42.7 42.7h616.2c23.6 0 42.7-19.1 42.7-42.7V111c0-23.6-19.1-42.7-42.7-42.7zM853.9 264.7H170.1c-28.3 0-51.2 22.9-51.2 51.2v34.1c0 28.3 22.9 51.2 51.2 51.2h17.1v563.2c0 32.5 26.3 59.7 59.7 59.7h529.1c32.5 0 59.7-26.3 59.7-59.7V401.1h17.1c28.3 0 51.2-22.9 51.2-51.2v-34.1c0-28.3-22.9-51.2-51.2-51.2z"/></svg>'
+  function renderTabStopRows(stops: ITabStop[]) {
+    tabStopRowsDom.innerHTML = ''
+    stops.forEach(stop => {
+      const row = document.createElement('div')
+      row.className = 'tabstop-row'
+      const positionInput = document.createElement('input')
+      positionInput.type = 'number'
+      positionInput.min = '1'
+      positionInput.placeholder = '位置'
+      positionInput.className = 'tabstop-row__position'
+      positionInput.value = `${stop.position}`
+      const typeSelect = document.createElement('select')
+      typeSelect.className = 'tabstop-row__type'
+      TABSTOP_TYPE_OPTIONS.forEach(({ value, label }) => {
+        const option = document.createElement('option')
+        option.value = value
+        option.text = label
+        if ((stop.type || TabStopType.LEFT) === value) option.selected = true
+        typeSelect.appendChild(option)
+      })
+      const leaderSelect = document.createElement('select')
+      leaderSelect.className = 'tabstop-row__leader'
+      TABSTOP_LEADER_OPTIONS.forEach(({ value, label }) => {
+        const option = document.createElement('option')
+        option.value = value
+        option.text = label
+        if ((stop.leader || '') === value) option.selected = true
+        leaderSelect.appendChild(option)
+      })
+      const deleteButton = document.createElement('button')
+      deleteButton.type = 'button'
+      deleteButton.className = 'tabstop-row__delete'
+      deleteButton.title = '删除'
+      deleteButton.innerHTML = TABSTOP_DELETE_ICON
+      row.append(positionInput, typeSelect, leaderSelect, deleteButton)
+      tabStopRowsDom.appendChild(row)
+    })
+  }
+  const collectTabStops = (): ITabStop[] => {
+    const stops: ITabStop[] = []
+    tabStopRowsDom.querySelectorAll('.tabstop-row').forEach(row => {
+      const position = Number(
+        row.querySelector<HTMLInputElement>('.tabstop-row__position')!.value
+      )
+      if (!(position > 0)) return
+      const type = (<HTMLSelectElement>row.querySelector('.tabstop-row__type')!)
+        .value as TabStopType
+      const leader = (<HTMLSelectElement>(
+        row.querySelector('.tabstop-row__leader')!
+      )).value as TabStopLeader
+      stops.push({
+        position: Math.round(position),
+        type,
+        ...(leader ? { leader } : {})
+      })
+    })
+    return stops.sort((a, b) => a.position - b.position)
+  }
+  const applyTabStops = () => {
+    instance.command.executeSetTabStops(collectTabStops())
+  }
+  tabStopRowsDom.addEventListener('change', applyTabStops)
+  tabStopRowsDom.addEventListener('click', evt => {
+    const deleteButton = (evt.target as HTMLElement).closest(
+      '.tabstop-row__delete'
+    )
+    if (!deleteButton) return
+    deleteButton.closest('.tabstop-row')!.remove()
+    applyTabStops()
+  })
+  spacingOptionDom
+    .querySelector<HTMLButtonElement>('[data-tabstops-clear]')!
+    .addEventListener('click', () => {
+      renderTabStopRows([])
+      instance.command.executeSetTabStops([])
+    })
+  spacingOptionDom
+    .querySelector<HTMLButtonElement>('[data-tabstops-add]')!
+    .addEventListener('click', () => {
+      const stops = collectTabStops()
+      const lastPosition = stops.length ? stops[stops.length - 1].position : 0
+      renderTabStopRows([
+        ...stops,
+        { position: lastPosition + 64, type: TabStopType.LEFT }
+      ])
+    })
 
   const listDom = document.querySelector<HTMLDivElement>('.menu-item__list')!
   listDom.title = `列表(${isApple ? '⌘' : 'Ctrl'}+Shift+U)`
@@ -804,12 +1008,32 @@ window.onload = function () {
               required: true,
               height: 100,
               placeholder: `请输入值集JSON，例：\n[{\n"value":"有",\n"code":"98175"\n}]`
+            },
+            {
+              type: 'select',
+              label: '样式',
+              name: 'markType',
+              value: CheckboxMarkType.CHECK,
+              required: true,
+              options: [
+                {
+                  label: '对勾',
+                  value: CheckboxMarkType.CHECK
+                },
+                {
+                  label: '叉',
+                  value: CheckboxMarkType.CROSS
+                }
+              ]
             }
           ],
           onConfirm: payload => {
             const valueSets = payload.find(p => p.name === 'valueSets')?.value
             if (!valueSets) return
             const code = payload.find(p => p.name === 'code')?.value
+            const markType = <CheckboxMarkType>(
+              payload.find(p => p.name === 'markType')?.value
+            )
             instance.command.executeInsertControl({
               type: ElementType.CONTROL,
               value: '',
@@ -817,7 +1041,8 @@ window.onload = function () {
                 type,
                 code,
                 value: null,
-                valueSets: JSON.parse(valueSets)
+                valueSets: JSON.parse(valueSets),
+                markType
               }
             })
           }
@@ -880,16 +1105,20 @@ window.onload = function () {
               type: 'select',
               label: '日期格式',
               name: 'dateFormat',
-              value: 'yyyy-MM-dd hh:mm:ss',
+              value: 'yyyy-MM-dd HH:mm:ss',
               required: true,
               options: [
                 {
-                  label: 'yyyy-MM-dd hh:mm:ss',
-                  value: 'yyyy-MM-dd hh:mm:ss'
+                  label: 'yyyy-MM-dd HH:mm:ss',
+                  value: 'yyyy-MM-dd HH:mm:ss'
                 },
                 {
                   label: 'yyyy-MM-dd',
                   value: 'yyyy-MM-dd'
+                },
+                {
+                  label: 'yyyy年MM月dd日 HH时mm分ss秒',
+                  value: 'yyyy年MM月dd日 HH时mm分ss秒'
                 }
               ]
             }
@@ -1347,8 +1576,13 @@ window.onload = function () {
     pageModeOptionsDom.classList.toggle('visible')
   }
   pageModeOptionsDom.onclick = function (evt) {
-    const li = evt.target as HTMLLIElement
-    instance.command.executePageMode(<PageMode>li.dataset.pageMode!)
+    const li = (evt.target as HTMLElement).closest<HTMLLIElement>('li')
+    if (!li) return
+    if (li.dataset.pageMode) {
+      instance.command.executePageMode(<PageMode>li.dataset.pageMode)
+    } else if (li.dataset.pageLayout) {
+      instance.command.executePageLayout(<PageLayout>li.dataset.pageLayout)
+    }
   }
 
   document.querySelector<HTMLDivElement>('.page-scale-percentage')!.onclick =
@@ -1398,8 +1632,16 @@ window.onload = function () {
   }
   paperDirectionDomOptionsDom.onclick = function (evt) {
     const li = evt.target as HTMLLIElement
-    const paperDirection = li.dataset.paperDirection!
-    instance.command.executePaperDirection(<PaperDirection>paperDirection)
+    if (li.tagName !== 'LI' || li.classList.contains('option-caption')) return
+    const { paperDirection, sectionDirection } = li.dataset
+    if (sectionDirection) {
+      // 指定页面方向（本节）
+      instance.command.executePageDirection(
+        sectionDirection === 'inherit' ? null : <PaperDirection>sectionDirection
+      )
+    } else if (paperDirection) {
+      instance.command.executePaperDirection(<PaperDirection>paperDirection)
+    }
     // 纸张方向状态回显
     paperDirectionDomOptionsDom
       .querySelectorAll('li')
@@ -1536,6 +1778,31 @@ window.onload = function () {
     instance.command.executeToggleRuler()
   }
 
+  // 渲染后端切换
+  const backendSwitchDom =
+    document.querySelector<HTMLDivElement>('.backend-switch')!
+  const backendOptionDom = backendSwitchDom.querySelector('.options')!
+  const backendOptionList =
+    backendSwitchDom.querySelectorAll<HTMLLIElement>('[data-backend]')
+  const updateBackendOption = () => {
+    const backend = instance.command.getOptions().backend
+    backendSwitchDom.title = `渲染后端：${backend === BackendType.SVG ? 'SVG' : 'Canvas'}`
+    backendOptionList.forEach(option => {
+      option.classList.toggle('active', option.dataset.backend === backend)
+    })
+  }
+  updateBackendOption()
+  backendSwitchDom.querySelector('i')!.onclick = () => {
+    backendOptionDom.classList.toggle('visible')
+  }
+  backendOptionList.forEach(option => {
+    option.onclick = () => {
+      instance.command.executeSetBackend(option.dataset.backend as BackendType)
+      updateBackendOption()
+      backendOptionDom.classList.remove('visible')
+    }
+  })
+
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen
@@ -1653,6 +1920,52 @@ window.onload = function () {
     modeOptionsElement.classList.remove('visible')
   }
 
+  const spellcheckDom = document.querySelector<HTMLDivElement>('.spellcheck')!
+  const spellcheckOptionsDom =
+    spellcheckDom.querySelector<HTMLDivElement>('.options')!
+  const spellcheckToggleDom = spellcheckDom.querySelector<HTMLInputElement>(
+    '.spellcheck-toggle__input'
+  )!
+  spellcheckToggleDom.checked =
+    !instance.command.getOptions().spellcheck.disabled
+  spellcheckDom.onclick = function (evt) {
+    const target = evt.target as HTMLElement
+    if (target.closest('.spellcheck-toggle')) return
+    spellcheckOptionsDom.classList.toggle('visible')
+  }
+  let spellcheckPluginPromise: Promise<void> | null = null
+  const loadSpellcheckPlugin = () => {
+    if (!spellcheckPluginPromise) {
+      spellcheckPluginPromise = import('./plugins/spellcheck')
+        .then(({ spellcheckPlugin }) => {
+          instance.use(spellcheckPlugin)
+        })
+        .catch(error => {
+          spellcheckPluginPromise = null
+          throw error
+        })
+    }
+    return spellcheckPluginPromise
+  }
+  spellcheckToggleDom.onchange = async function () {
+    if (spellcheckToggleDom.checked) {
+      try {
+        await loadSpellcheckPlugin()
+      } catch {
+        spellcheckToggleDom.checked = false
+      }
+    }
+    const currentOptions = instance.command.getOptions()
+    instance.command.executeUpdateOptions({
+      ...currentOptions,
+      spellcheck: {
+        ...currentOptions.spellcheck,
+        disabled: !spellcheckToggleDom.checked
+      }
+    })
+    spellcheckOptionsDom.classList.remove('visible')
+  }
+
   // 模拟批注
   const commentDom = document.querySelector<HTMLDivElement>('.comment')!
   async function updateComment() {
@@ -1707,7 +2020,90 @@ window.onload = function () {
         activeCommentDom?.remove()
       }
     }
+    // 按批注文字在文档中的位置排序批注卡片，避免连接线交叉
+    const orderedCommentItemList = commentList
+      .map(comment => {
+        const commentItemDom = commentDom.querySelector<HTMLDivElement>(
+          `.comment-item[data-id='${comment.id}']`
+        )
+        const rectList = instance.command.getGroupRectList(comment.id)
+        return commentItemDom && rectList?.length
+          ? { commentItemDom, anchor: rectList[0] }
+          : null
+      })
+      .filter(item => !!item)
+      .sort((a, b) => a.anchor.y - b.anchor.y || a.anchor.x - b.anchor.x)
+    orderedCommentItemList.forEach(item =>
+      commentDom.append(item.commentItemDom)
+    )
+    drawCommentLines()
   }
+  // 批注连接线（在编辑器外绘制：通过 getGroupRectList 获取成组坐标）
+  const commentLineSvg = document.createElementNS(
+    'http://www.w3.org/2000/svg',
+    'svg'
+  )
+  commentLineSvg.classList.add('comment-line')
+  document.body.append(commentLineSvg)
+  // 连接线开关（默认关闭）
+  let isCommentLineVisible = false
+  const commentLineSwitch = document.querySelector<HTMLInputElement>(
+    '#comment-line-switch'
+  )!
+  commentLineSwitch.onchange = () => {
+    isCommentLineVisible = commentLineSwitch.checked
+    drawCommentLines()
+  }
+  function drawCommentLines() {
+    // 清空已有连线
+    while (commentLineSvg.firstChild) {
+      commentLineSvg.firstChild.remove()
+    }
+    if (!isCommentLineVisible) return
+    const pageContainer =
+      container.querySelector<HTMLDivElement>('.ce-page-container')
+    if (!pageContainer) return
+    const pageRect = pageContainer.getBoundingClientRect()
+    for (const comment of commentList) {
+      const commentItemDom = commentDom.querySelector<HTMLDivElement>(
+        `.comment-item[data-id='${comment.id}']`
+      )
+      if (!commentItemDom) continue
+      // 成组元素矩形信息（相对编辑器书写区，已包含缩放）
+      const rectList = instance.command.getGroupRectList(comment.id)
+      if (!rectList?.length) continue
+      const firstRect = rectList[0]
+      // 起点：批注文字首行右端中点；终点：批注卡片左端中点
+      const startX = pageRect.left + firstRect.x + firstRect.width
+      const startY = pageRect.top + firstRect.y + firstRect.height / 2
+      const itemRect = commentItemDom.getBoundingClientRect()
+      const endX = itemRect.left
+      const endY = itemRect.top + itemRect.height / 2
+      const controlOffset = Math.max((endX - startX) / 2, 0)
+      const path = document.createElementNS(
+        'http://www.w3.org/2000/svg',
+        'path'
+      )
+      path.setAttribute(
+        'd',
+        `M ${startX} ${startY} C ${startX + controlOffset} ${startY}, ${
+          endX - controlOffset
+        } ${endY}, ${endX} ${endY}`
+      )
+      if (commentItemDom.classList.contains('active')) {
+        path.classList.add('active')
+      }
+      commentLineSvg.append(path)
+    }
+  }
+  // 滚动/缩放时实时重绘（requestAnimationFrame 节流）
+  let commentLineRafId = 0
+  function requestDrawCommentLines() {
+    cancelAnimationFrame(commentLineRafId)
+    commentLineRafId = requestAnimationFrame(drawCommentLines)
+  }
+  window.addEventListener('scroll', requestDrawCommentLines, true)
+  window.addEventListener('resize', requestDrawCommentLines)
   // 8. 内部事件监听
   instance.listener.rangeStyleChange = function (payload) {
     // 控件类型
@@ -1815,6 +2211,34 @@ window.onload = function () {
     )!
     curRowMarginDom.classList.add('active')
 
+    // 段落间距
+    if (document.activeElement !== spacingBeforeInputDom) {
+      spacingBeforeInputDom.value = `${payload.spacingBefore ?? 0}`
+    }
+    if (document.activeElement !== spacingAfterInputDom) {
+      spacingAfterInputDom.value = `${payload.spacingAfter ?? 0}`
+    }
+
+    // 段落缩进
+    const reflectIndent = (key: string, value: number) => {
+      const input = indentInputMap[key]
+      if (input && document.activeElement !== input) {
+        input.value = `${value}`
+      }
+    }
+    reflectIndent('indentleft', payload.indentLeft ?? 0)
+    reflectIndent('indentright', payload.indentRight ?? 0)
+    reflectIndent('indentfirstline', payload.indentFirstLine ?? 0)
+
+    // 制表位（弹窗打开且未在编辑行时刷新行，避免编辑中被回显打断）
+    latestTabStops = payload.tabStops || []
+    if (
+      spacingOptionDom.classList.contains('visible') &&
+      !tabStopRowsDom.contains(document.activeElement)
+    ) {
+      renderTabStopRows(latestTabStops)
+    }
+
     // 功能
     payload.undo
       ? undoDom.classList.remove('no-allow')
@@ -1876,6 +2300,8 @@ window.onload = function () {
         scrollIntoView(commentDom, activeCommentDom)
       }
     }
+    // 批注激活状态变化时重绘连接线
+    requestDrawCommentLines()
 
     // 行列信息
     const rangeContext = instance.command.getRangeContext()
@@ -1909,6 +2335,7 @@ window.onload = function () {
     document.querySelector<HTMLSpanElement>(
       '.page-scale-percentage'
     )!.innerText = `${Math.floor(payload * 10 * 10)}%`
+    requestDrawCommentLines()
   }
 
   instance.listener.controlChange = function (payload) {
@@ -1930,14 +2357,16 @@ window.onload = function () {
     })
   }
 
-  instance.listener.pageModeChange = function (payload) {
-    const activeMode = pageModeOptionsDom.querySelector<HTMLLIElement>(
-      `[data-page-mode='${payload}']`
-    )!
-    pageModeOptionsDom
-      .querySelectorAll('li')
-      .forEach(li => li.classList.remove('active'))
-    activeMode.classList.add('active')
+  const updatePageViewOption = (attribute: string, payload: string) => {
+    pageModeOptionsDom.querySelectorAll(`[${attribute}]`).forEach(li => {
+      li.classList.toggle('active', li.getAttribute(attribute) === payload)
+    })
+  }
+  instance.listener.pageModeChange = payload => {
+    updatePageViewOption('data-page-mode', payload)
+  }
+  instance.listener.pageLayoutChange = payload => {
+    updatePageViewOption('data-page-layout', payload)
   }
 
   const handleContentChange = async function () {
@@ -1972,6 +2401,39 @@ window.onload = function () {
     instance.macro.importMacros(saved)
   }
   instance.register.contextMenuList([
+    {
+      name: '添加脚注',
+      when: payload => {
+        return (
+          !payload.isReadonly &&
+          payload.editorTextFocus &&
+          payload.zone === EditorZone.MAIN &&
+          !payload.isInTable
+        )
+      },
+      callback: (command: Command) => {
+        new Dialog({
+          title: '添加脚注',
+          data: [
+            {
+              type: 'textarea',
+              label: '内容',
+              name: 'value',
+              height: 100,
+              required: true,
+              placeholder: '请输入脚注内容'
+            }
+          ],
+          onConfirm: payload => {
+            const value = payload.find(p => p.name === 'value')?.value
+            if (!value) return
+            command.executeInsertFootnote({
+              value: splitText(value).map(n => ({ value: n }))
+            })
+          }
+        })
+      }
+    },
     {
       name: '批注',
       when: payload => {

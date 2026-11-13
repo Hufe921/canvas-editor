@@ -2,9 +2,9 @@ import Editor, { ElementType } from '../../../src/editor'
 
 describe('菜单-表格', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('表格', () => {
@@ -26,9 +26,9 @@ describe('菜单-表格', () => {
 
 describe('菜单-表格操作', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('插入表格-不同行列数', () => {

@@ -4,6 +4,7 @@ import { ControlComponent } from '../../dataset/enum/Control'
 import {
   IComputePageRowPositionPayload,
   IComputePageRowPositionResult,
+  IComputePositionListPayload,
   IComputeRowPositionPayload,
   IFloatPosition,
   IGetFloatPositionByXYPayload,
@@ -11,6 +12,8 @@ import {
 } from '../../interface/Position'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement, IElementPosition } from '../../interface/Element'
+import { IRow } from '../../interface/Row'
+import { IRange } from '../../interface/Range'
 import { ITd } from '../../interface/table/Td'
 import {
   ICurrentPosition,
@@ -25,7 +28,24 @@ import { ImageDisplay } from '../../dataset/enum/Common'
 import { DeepRequired } from '../../interface/Common'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
-import { getIsBlockElement } from '../../utils/element'
+import {
+  getFirstLineIndentElement,
+  getIsBlockElement
+} from '../../utils/element'
+
+// 单页新增位置信息的缓存切片
+interface IPagePositionCache {
+  positionList: IElementPosition[]
+  floatPositionList: IFloatPosition[]
+  tablePagingPositionList: IElementPosition[]
+  // 行对象会被增量排版原地修正索引，必须额外保存上一轮数值
+  rowList: IRow[]
+  rowStartIndexList: number[]
+  startRowIndex: number
+  startX: number
+  startY: number
+  innerWidth: number
+}
 
 export class Position {
   private cursorPosition: IElementPosition | null
@@ -36,6 +56,8 @@ export class Position {
   // 片段位置按页索引（命中与片段查找只扫当前页，避免全表线性扫描）
   private tablePagingPositionMap: Map<number, IElementPosition[]>
   private floatPositionList: IFloatPosition[]
+  // 每页新增位置信息的缓存：行级增量计算后首个变动页之前的页可直接复用
+  private pagePositionCacheList: IPagePositionCache[]
 
   private draw: Draw
   private eventBus: EventBus<EventBusMap>
@@ -46,6 +68,7 @@ export class Position {
     this.tablePagingPositionList = []
     this.tablePagingPositionMap = new Map()
     this.floatPositionList = []
+    this.pagePositionCacheList = []
     this.cursorPosition = null
     this.positionContext = {
       isTable: false,
@@ -254,12 +277,22 @@ export class Position {
   }
 
   public getPositionList(): IElementPosition[] {
+    if (this.positionContext.isFootnote) {
+      return this.draw
+        .getFootnote()
+        .getPositionListByContext(this.positionContext)
+    }
     return this.positionContext.isTable
       ? this.getTablePositionList(this.draw.getOriginalElementList())
       : this.getOriginalPositionList()
   }
 
   public getMainPositionList(): IElementPosition[] {
+    if (this.positionContext.isFootnote) {
+      return this.draw
+        .getFootnote()
+        .getPositionListByContext(this.positionContext)
+    }
     return this.positionContext.isTable
       ? this.getTablePositionList(this.draw.getOriginalMainElementList())
       : this.positionList
@@ -267,15 +300,99 @@ export class Position {
 
   public getOriginalPositionList(): IElementPosition[] {
     const zoneManager = this.draw.getZone()
+    // 混排横竖版：页眉/页脚按当前页方向取布局
+    const direction = this.draw.getPageDirection(this.draw.getPageNo())
     if (zoneManager.isHeaderActive()) {
       const header = this.draw.getHeader()
-      return header.getPositionList()
+      return header.getPositionList(direction)
     }
     if (zoneManager.isFooterActive()) {
       const footer = this.draw.getFooter()
-      return footer.getPositionList()
+      return footer.getPositionList(direction)
     }
     return this.positionList
+  }
+
+  public getPositionListByRange(range: IRange): IElementPosition[] {
+    const zone = range.zone || EditorZone.MAIN
+    const direction = this.draw.getPageDirection(this.draw.getPageNo())
+    let sourceElementList = this.draw.getOriginalMainElementList()
+    let positionList = this.positionList
+    if (zone === EditorZone.HEADER) {
+      const header = this.draw.getHeader()
+      sourceElementList = header.getElementList()
+      positionList = header.getPositionList(direction)
+    } else if (zone === EditorZone.FOOTER) {
+      const footer = this.draw.getFooter()
+      sourceElementList = footer.getElementList()
+      positionList = footer.getPositionList(direction)
+    }
+    if (!range.tableId) return positionList
+    // 跨行跨列是单元格选区，不是单元格内文本选区
+    if (
+      range.startTrIndex !== range.endTrIndex ||
+      range.startTdIndex !== range.endTdIndex
+    ) {
+      return []
+    }
+    const tablePath = this._findTablePathByRange(sourceElementList, range)
+    if (!tablePath) return []
+    return (
+      this.getTableTdByContext(sourceElementList, {
+        isTable: true,
+        ...tablePath[tablePath.length - 1],
+        tablePath
+      })?.positionList || []
+    )
+  }
+
+  private _findTablePathByRange(
+    elementList: IElement[],
+    range: IRange,
+    parentPath: ITablePositionContext[] = []
+  ): ITablePositionContext[] | null {
+    for (let index = 0; index < elementList.length; index++) {
+      const element = elementList[index]
+      if (element.type !== ElementType.TABLE || !element.trList) continue
+      if (element.id === range.tableId) {
+        const trIndex = range.startTrIndex
+        const tdIndex = range.startTdIndex
+        if (trIndex === undefined || tdIndex === undefined) return null
+        const tr = element.trList[trIndex]
+        const td = tr?.tdList[tdIndex]
+        if (!tr || !td) return null
+        return [
+          ...parentPath,
+          {
+            index,
+            trIndex,
+            tdIndex,
+            tdId: td.id,
+            trId: tr.id,
+            tableId: element.id
+          }
+        ]
+      }
+      for (let trIndex = 0; trIndex < element.trList.length; trIndex++) {
+        const tr = element.trList[trIndex]
+        for (let tdIndex = 0; tdIndex < tr.tdList.length; tdIndex++) {
+          const td = tr.tdList[tdIndex]
+          const tablePath = this._findTablePathByRange(td.value, range, [
+            ...parentPath,
+            {
+              index,
+              trIndex,
+              tdIndex,
+              tdId: td.id,
+              trId: tr.id,
+              tableId: element.id
+            }
+          ])
+          if (tablePath) return tablePath
+        }
+      }
+    }
+    return null
   }
 
   public getOriginalMainPositionList(): IElementPosition[] {
@@ -316,10 +433,13 @@ export class Position {
     const { index, isTable, zone } = floatPosition
     if (isTable && index !== undefined) {
       let positionList: IElementPosition[]
+      const zoneDirection = this.draw.getPageDirection(
+        floatPosition.pageNo ?? this.draw.getPageNo()
+      )
       if (zone === EditorZone.HEADER) {
-        positionList = this.draw.getHeader().getPositionList()
+        positionList = this.draw.getHeader().getPositionList(zoneDirection)
       } else if (zone === EditorZone.FOOTER) {
-        positionList = this.draw.getFooter().getPositionList()
+        positionList = this.draw.getFooter().getPositionList(zoneDirection)
       } else {
         positionList = this.positionList
       }
@@ -398,7 +518,14 @@ export class Position {
       // 行存在环绕的可能性均不设置行布局
       if (!curRow.isSurround) {
         // 计算行偏移量（行居中、居右）
-        const curRowWidth = curRow.width + (curRow.offsetX || 0)
+        // 右缩进与换行扣减取同一值（行首元素的段落右缩进），对齐时计入行占位宽度
+        const indentRightElement = getFirstLineIndentElement(
+          curRow.elementList,
+          0
+        )
+        const offsetRight =
+          (indentRightElement?.indentRight || 0) * this.options.scale
+        const curRowWidth = curRow.width + (curRow.offsetX || 0) + offsetRight
         if (curRow.rowFlex === RowFlex.CENTER) {
           x += (effectiveInnerWidth - curRowWidth) / 2
         } else if (curRow.rowFlex === RowFlex.RIGHT) {
@@ -665,37 +792,159 @@ export class Position {
     }
   }
 
-  public computePositionList() {
-    // 置空原位置信息
-    this.positionList = []
-    this.tablePagingPositionList = []
-    this.tablePagingPositionMap.clear()
-    // 按每页行计算
-    const innerWidth = this.draw.getInnerWidth()
+  public computePositionList(payload?: IComputePositionListPayload) {
+    // 按每页行计算（混排横竖版时每页宽度/边距可能不同，按页取值）
     const pageRowList = this.draw.getPageRowList()
-    const margins = this.draw.getMargins()
-    const startX = margins[3]
-    // 起始位置受页眉影响
+    const fromPageNo = payload?.fromPageNo ?? 0
+    const cache = this.pagePositionCacheList
+    const isResume =
+      fromPageNo > 0 &&
+      cache.length >= fromPageNo &&
+      pageRowList.length > fromPageNo
+    if (isResume) {
+      const keptCache = cache.slice(0, fromPageNo)
+      this.positionList = keptCache.flatMap(c => c.positionList)
+      // 页眉页脚浮动信息已在本次渲染重新追加（当前列表前部），正文按页恢复
+      this.floatPositionList = [
+        ...this.floatPositionList,
+        ...keptCache.flatMap(c => c.floatPositionList)
+      ]
+      this.tablePagingPositionList = keptCache.flatMap(
+        c => c.tablePagingPositionList
+      )
+      for (const key of [...this.tablePagingPositionMap.keys()]) {
+        if (key >= fromPageNo) {
+          this.tablePagingPositionMap.delete(key)
+        }
+      }
+      this.pagePositionCacheList = keptCache
+    } else {
+      this.positionList = []
+      this.tablePagingPositionList = []
+      this.tablePagingPositionMap.clear()
+      this.pagePositionCacheList = []
+    }
+    const startPageNo = isResume ? fromPageNo : 0
     const header = this.draw.getHeader()
     let startRowIndex = 0
-    for (let i = 0; i < pageRowList.length; i++) {
-      const rowList = pageRowList[i]
-      if (!rowList?.length) continue
-      const startIndex = rowList[0].startIndex
-      // 每页页眉禁用状态不同，startY 需按页计算
+    for (let i = 0; i < startPageNo; i++) {
+      startRowIndex += pageRowList[i]?.length || 0
+    }
+    for (let i = startPageNo; i < pageRowList.length; i++) {
+      const rowList = pageRowList[i] || []
+      const previousCache = cache[i]
+      const { margins, innerWidth } = this.draw.getPageSize(i)
+      const startX = margins[3]
       const startY = margins[0] + header.getExtraHeight(i)
-      this.computePageRowPosition({
-        positionList: this.positionList,
-        rowList,
-        pageNo: i,
+      if (
+        payload?.isReuseUnchangedPages &&
+        previousCache &&
+        this._isPagePositionReusable(
+          previousCache,
+          rowList,
+          startX,
+          startY,
+          innerWidth
+        )
+      ) {
+        this._reusePagePosition(previousCache, rowList, startRowIndex, i)
+        this.pagePositionCacheList.push({
+          positionList: previousCache.positionList,
+          floatPositionList: previousCache.floatPositionList,
+          tablePagingPositionList: previousCache.tablePagingPositionList,
+          rowList: rowList.slice(),
+          rowStartIndexList: rowList.map(row => row.startIndex),
+          startRowIndex,
+          startX,
+          startY,
+          innerWidth
+        })
+        startRowIndex += rowList.length
+        continue
+      }
+      const markPosition = this.positionList.length
+      const markFloat = this.floatPositionList.length
+      const markTablePaging = this.tablePagingPositionList.length
+      if (rowList.length) {
+        this.computePageRowPosition({
+          positionList: this.positionList,
+          rowList,
+          pageNo: i,
+          startRowIndex,
+          startIndex: rowList[0].startIndex,
+          startX,
+          startY,
+          innerWidth
+        })
+      }
+      this.pagePositionCacheList.push({
+        positionList: this.positionList.slice(markPosition),
+        floatPositionList: this.floatPositionList.slice(markFloat),
+        tablePagingPositionList:
+          this.tablePagingPositionList.slice(markTablePaging),
+        rowList: rowList.slice(),
+        rowStartIndexList: rowList.map(row => row.startIndex),
         startRowIndex,
-        startIndex,
         startX,
         startY,
         innerWidth
       })
       startRowIndex += rowList.length
     }
+  }
+
+  private _isPagePositionReusable(
+    cache: IPagePositionCache,
+    rowList: IRow[],
+    startX: number,
+    startY: number,
+    innerWidth: number
+  ): boolean {
+    if (
+      cache.rowList.length !== rowList.length ||
+      cache.startX !== startX ||
+      cache.startY !== startY ||
+      cache.innerWidth !== innerWidth
+    ) {
+      return false
+    }
+    let elementCount = 0
+    for (let i = 0; i < rowList.length; i++) {
+      const row = rowList[i]
+      // 跨页表格的片段位置依赖前页续排状态，不参与单页独立复用
+      if (cache.rowList[i] !== row || row.tableFragment) return false
+      elementCount += row.elementList.length
+    }
+    return cache.positionList.length === elementCount
+  }
+
+  private _reusePagePosition(
+    cache: IPagePositionCache,
+    rowList: IRow[],
+    startRowIndex: number,
+    pageNo: number
+  ): void {
+    const rowIndexDelta = startRowIndex - cache.startRowIndex
+    let positionIndex = 0
+    for (let r = 0; r < rowList.length; r++) {
+      const row = rowList[r]
+      const elementIndexDelta = row.startIndex - cache.rowStartIndexList[r]
+      for (let e = 0; e < row.elementList.length; e++) {
+        const position = cache.positionList[positionIndex++]
+        position.index += elementIndexDelta
+        position.rowIndex += rowIndexDelta
+      }
+    }
+    for (const position of cache.positionList) {
+      this.positionList.push(position)
+    }
+    for (const floatPosition of cache.floatPositionList) {
+      this.floatPositionList.push(floatPosition)
+    }
+    for (const position of cache.tablePagingPositionList) {
+      this.tablePagingPositionList.push(position)
+    }
+    this.tablePagingPositionMap.set(pageNo, cache.tablePagingPositionList)
   }
 
   public computeRowPosition(
@@ -849,6 +1098,97 @@ export class Position {
     return null
   }
 
+  // 脚注正文有独立的数据下标，但位置上下文始终锚定正文引用元素
+  private _getFootnotePositionByXY(
+    x: number,
+    y: number,
+    pageNo: number
+  ): ICurrentPosition | null {
+    const layoutList = this.draw.getFootnote().getPageLayoutList(pageNo)
+    if (!layoutList.length) return null
+    const { margins, innerWidth } = this.draw.getPageSize(pageNo)
+    for (const layout of layoutList) {
+      const positionList = layout.positionList
+      if (!positionList.length) continue
+      const firstPosition = positionList[0]
+      const lastPosition = positionList[positionList.length - 1]
+      const firstOffsetY = layout.rowList[firstPosition.rowIndex]?.offsetY || 0
+      if (
+        x < margins[3] ||
+        x > margins[3] + innerWidth ||
+        y < firstPosition.coordinate.leftTop[1] - firstOffsetY ||
+        y > lastPosition.coordinate.leftBottom[1]
+      ) {
+        continue
+      }
+      const createPosition = (
+        footnoteValueIndex: number,
+        hitLineStartIndex?: number
+      ): ICurrentPosition => ({
+        index: layout.referenceIndex,
+        isFootnote: true,
+        footnoteId: layout.id,
+        footnoteValueIndex,
+        isDirectHit: true,
+        hitLineStartIndex
+      })
+      for (const position of positionList) {
+        const {
+          index,
+          left,
+          isFirstLetter,
+          coordinate: { leftTop, rightTop, leftBottom }
+        } = position
+        if (
+          leftTop[0] - left <= x &&
+          rightTop[0] >= x &&
+          leftTop[1] <= y &&
+          leftBottom[1] >= y
+        ) {
+          const element = layout.element.valueList?.[index]
+          if (!element) continue
+          let footnoteValueIndex = index
+          let hitLineStartIndex: number | undefined
+          if (element.value !== ZERO) {
+            const valueWidth = rightTop[0] - leftTop[0]
+            if (x < leftTop[0] + valueWidth / 2) {
+              footnoteValueIndex = Math.max(index - 1, 0)
+              if (isFirstLetter && index > 0) {
+                hitLineStartIndex = index
+              }
+            }
+          }
+          return createPosition(footnoteValueIndex, hitLineStartIndex)
+        }
+      }
+      // 点击行尾或行首空白时，命中当前可见行而不是正文最后一行
+      const lastLetterList = positionList.filter(
+        position => position.isLastLetter
+      )
+      for (const lastLetter of lastLetterList) {
+        const { index, rowIndex, coordinate } = lastLetter
+        const rowOffsetY = layout.rowList[rowIndex]?.offsetY || 0
+        if (
+          y <= coordinate.leftTop[1] - rowOffsetY ||
+          y > coordinate.leftBottom[1]
+        ) {
+          continue
+        }
+        const headPosition = positionList.find(
+          position => position.rowIndex === rowIndex
+        )!
+        if (x < headPosition.coordinate.leftTop[0]) {
+          return createPosition(
+            Math.max(headPosition.index - 1, 0),
+            headPosition.index > 0 ? headPosition.index : undefined
+          )
+        }
+        return createPosition(index)
+      }
+    }
+    return null
+  }
+
   public getPositionByXY(payload: IGetPositionByXYPayload): ICurrentPosition {
     const { x, y, isTable } = payload
     let { elementList, positionList } = payload
@@ -862,6 +1202,10 @@ export class Position {
     const curPageNo = payload.pageNo ?? this.draw.getPageNo()
     const isMainActive = zoneManager.isMainActive()
     const positionNo = curPageNo
+    if (!isTable && isMainActive && !payload.elementList) {
+      const footnotePosition = this._getFootnotePositionByXY(x, y, curPageNo)
+      if (footnotePosition) return footnotePosition
+    }
     // 验证浮于文字上方元素
     if (!isTable) {
       const floatTopPosition = this.getFloatPositionByXY({
@@ -981,7 +1325,11 @@ export class Position {
           isDirectHit: true,
           hitLineStartIndex,
           index: curPositionIndex,
-          isControl: !!element.controlId
+          isControl: !!element.controlId,
+          footnoteId:
+            element.type === ElementType.FOOTNOTE
+              ? element.footnoteId
+              : undefined
         }
       }
     }
@@ -1070,13 +1418,17 @@ export class Position {
             p =>
               p.columnIndex === undefined || clickColumnIndex === p.columnIndex
           )
+    const zoneRowList = this.draw.getOriginalRowList()
     for (let j = 0; j < lastLetterList.length; j++) {
       const {
         index,
         rowNo,
+        rowIndex,
         coordinate: { leftTop, leftBottom }
       } = lastLetterList[j]
-      if (y > leftTop[1] && y <= leftBottom[1]) {
+      // 段前间距等行偏移区域（行内容上方offsetY空白）归属当前行
+      const rowOffsetY = zoneRowList[rowIndex]?.offsetY || 0
+      if (y > leftTop[1] - rowOffsetY && y <= leftBottom[1]) {
         const headIndex = isMainActive
           ? positionList.findIndex(
               p => p.pageNo === positionNo && p.rowNo === rowNo
@@ -1084,12 +1436,13 @@ export class Position {
           : positionList.findIndex(p => p.rowNo === rowNo)
         const headElement = elementList[headIndex]
         const headPosition = positionList[headIndex]
-        // 是否在头部
+        // 是否在头部（点击行内容上方空白视为点击行首）
+        const isHitOffsetArea = y <= leftTop[1]
         const headStartX =
           headElement.listStyle === ListStyle.CHECKBOX
             ? this.draw.getMargins()[3]
             : headPosition.coordinate.leftTop[0]
-        if (x < headStartX) {
+        if (isHitOffsetArea || x < headStartX) {
           // 头部元素为空元素时无需选中
           if (~headIndex) {
             if (headPosition.value === ZERO) {
@@ -1128,7 +1481,7 @@ export class Position {
         // 页脚上部距离页面顶部距离
         const footer = this.draw.getFooter()
         const footerDisabled = footer.isDisabled(curPageNo)
-        const pageHeight = this.draw.getHeight()
+        const { height: pageHeight } = this.draw.getPageSize(curPageNo)
         const footerTopY = footerDisabled
           ? pageHeight
           : pageHeight -
@@ -1286,6 +1639,7 @@ export class Position {
     // 移动控件内光标
     if (
       positionResult.isControl &&
+      !positionResult.isFootnote &&
       this.draw.getMode() !== EditorMode.READONLY
     ) {
       const { index, isTable, trIndex, tdIndex, tdValueIndex } = positionResult
@@ -1312,6 +1666,8 @@ export class Position {
       isLabel,
       isDirectHit,
       isTable,
+      isFootnote,
+      footnoteId,
       trIndex,
       tdIndex,
       tdId,
@@ -1322,6 +1678,8 @@ export class Position {
     // 设置位置上下文
     this.setPositionContext({
       isTable: isTable || false,
+      isFootnote: isFootnote || false,
+      footnoteId,
       isCheckbox: isCheckbox || false,
       isRadio: isRadio || false,
       isControl: isControl || false,
@@ -1379,7 +1737,7 @@ export class Position {
           // 下个元素起始位置：浮动元素右坐标 - 元素宽度
           x = surroundRect.x + surroundRect.width
           // 检测宽度是否足够，不够则移动到下一行，并还原状态
-          if (row.width + rowElement.metrics.width > availableWidth) {
+          if (row.width + rowElementRect.width > availableWidth) {
             rowElement.left = 0
             row.width -= rowIncreaseWidth
             break

@@ -131,14 +131,15 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
         return
       }
     }
-    //  替换当前行对齐方式
+    // 替换当前段落布局方式
     const startElement = elementList[startIndex]
-    if (isCollapsed && startElement.rowFlex && startElement.value === ZERO) {
-      const rowFlexElementList = rangeManager.getRangeRowElementList()
-      if (rowFlexElementList) {
+    if (isCollapsed && startElement.value === ZERO && !startElement.listWrap) {
+      const paragraphElementList = rangeManager.getRangeParagraphElementList()
+      if (paragraphElementList) {
         const preElement = elementList[startIndex - 1]
-        rowFlexElementList.forEach(element => {
-          element.rowFlex = preElement?.rowFlex
+        draw.setElementProperty(paragraphElementList, {
+          rowFlex: preElement?.rowFlex,
+          rowMargin: preElement?.rowMargin
         })
       }
     }
@@ -154,15 +155,18 @@ export function backspace(evt: KeyboardEvent, host: CanvasEvent) {
     ) {
       const preTitleId = preElement.titleId
       const nextTitleId = nextElement.titleId
-      // 循环处理后面的元素修改为前面标题的titleId
+      // 循环处理换行符后面的标题元素
       let nextIndex = endIndex + 1
+      const start = nextIndex
       while (
         nextIndex < elementList.length &&
         elementList[nextIndex]?.titleId === nextTitleId
       ) {
-        elementList[nextIndex].titleId = preTitleId
         nextIndex++
       }
+      draw.setElementProperty(elementList.slice(start, nextIndex), {
+        titleId: preTitleId
+      })
     }
     if (!isCollapsed) {
       draw.deleteElementList(elementList, startIndex + 1, endIndex - startIndex)

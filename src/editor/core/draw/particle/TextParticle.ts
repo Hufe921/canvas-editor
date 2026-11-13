@@ -1,11 +1,13 @@
 import { ElementType, IEditorOption, IElement, RenderMode } from '../../..'
-import {
-  PUNCTUATION_LIST,
-  METRICS_BASIS_TEXT
-} from '../../../dataset/constant/Common'
+import { PUNCTUATION_LIST } from '../../../dataset/constant/Common'
+import { TabStopLeader } from '../../../dataset/enum/TabStop'
 import { DeepRequired } from '../../../interface/Common'
 import { IRowElement } from '../../../interface/Row'
 import { ITextMetrics } from '../../../interface/Text'
+import { TextMeasurer } from '../../layout/TextMeasurer'
+import type { IRenderContext } from '../../render/model/RenderContext'
+import { DisplayList } from '../../render/model/DisplayList'
+import { buildSourceTextKey } from '../../render/svg/scene/SceneKey'
 import { Draw } from '../Draw'
 
 export interface IMeasureWordResult {
@@ -17,36 +19,35 @@ export class TextParticle {
   private draw: Draw
   private options: DeepRequired<IEditorOption>
 
-  private ctx: CanvasRenderingContext2D
+  private ctx: IRenderContext
   private curX: number
   private curY: number
   private text: string
   private curStyle: string
   private curColor?: string
-  public cacheMeasureText: Map<string, TextMetrics>
+  private curSourceElement?: IElement
+  private sourceKeys: WeakMap<IElement, string>
+  private sourceKeyId: number
+  private textMeasurer: TextMeasurer
 
   constructor(draw: Draw) {
     this.draw = draw
     this.options = draw.getOptions()
-    this.ctx = draw.getCtx()
+    this.ctx = new DisplayList()
     this.curX = -1
     this.curY = -1
     this.text = ''
     this.curStyle = ''
-    this.cacheMeasureText = new Map()
+    this.sourceKeys = new WeakMap()
+    this.sourceKeyId = 0
+    this.textMeasurer = draw.getTextMeasurer()
   }
 
   public measureBasisWord(
     ctx: CanvasRenderingContext2D,
     font: string
   ): ITextMetrics {
-    ctx.save()
-    ctx.font = font
-    const textMetrics = this.measureText(ctx, {
-      value: METRICS_BASIS_TEXT
-    })
-    ctx.restore()
-    return textMetrics
+    return this.textMeasurer.measureBasis(font, ctx)
   }
 
   public measureWord(
@@ -89,28 +90,7 @@ export class TextParticle {
     ctx: CanvasRenderingContext2D,
     element: IElement
   ): ITextMetrics {
-    // 优先使用自定义字宽设置
-    if (element.width) {
-      const textMetrics = ctx.measureText(element.value)
-      // TextMetrics是类无法解构
-      return {
-        width: element.width,
-        actualBoundingBoxAscent: textMetrics.actualBoundingBoxAscent,
-        actualBoundingBoxDescent: textMetrics.actualBoundingBoxDescent,
-        actualBoundingBoxLeft: textMetrics.actualBoundingBoxLeft,
-        actualBoundingBoxRight: textMetrics.actualBoundingBoxRight,
-        fontBoundingBoxAscent: textMetrics.fontBoundingBoxAscent,
-        fontBoundingBoxDescent: textMetrics.fontBoundingBoxDescent
-      }
-    }
-    const id = `${element.value}${ctx.font}`
-    const cacheTextMetrics = this.cacheMeasureText.get(id)
-    if (cacheTextMetrics) {
-      return cacheTextMetrics
-    }
-    const textMetrics = ctx.measureText(element.value)
-    this.cacheMeasureText.set(id, textMetrics)
-    return textMetrics
+    return this.textMeasurer.measure(element, ctx.font, ctx)
   }
 
   public getBasisWordBoundingBoxAscent(
@@ -125,8 +105,49 @@ export class TextParticle {
     this.text = ''
   }
 
+  // 制表位前导符：TAB 推进空隙的点线/连字符/下划线填充
+  public renderTabLeader(
+    ctx: IRenderContext,
+    element: IRowElement,
+    x: number,
+    y: number
+  ) {
+    const leader = element.tabLeader
+    const width = element.metrics.width
+    if (!width || !leader || leader === TabStopLeader.NONE) return
+    const { scale, defaultColor, underlineColor } = this.options
+    ctx.save()
+    if (leader === TabStopLeader.UNDERLINE) {
+      // 与文本下划线同位同粗
+      ctx.strokeStyle = element.color || underlineColor
+      ctx.lineWidth = scale
+      const adjustY = Math.floor(y + 2 * ctx.lineWidth) + 0.5
+      ctx.beginPath()
+      ctx.moveTo(x, adjustY)
+      ctx.lineTo(x + width, adjustY)
+      ctx.stroke()
+    } else {
+      const char = leader === TabStopLeader.DOT ? '.' : '-'
+      ctx.font = element.style
+      ctx.fillStyle = element.color || defaultColor
+      const charWidth =
+        this.textMeasurer.measureText(char, ctx.font).width * scale
+      if (charWidth > 0) {
+        // 整串一次绘制，避免逐字符 fillText 的绘制开销
+        const count = Math.floor(width / charWidth)
+        if (count > 0) {
+          const text = char.repeat(count)
+          const textWidth =
+            this.textMeasurer.measureText(text, ctx.font).width * scale
+          ctx.fillText(text, x + (width - textWidth) / 2, y)
+        }
+      }
+    }
+    ctx.restore()
+  }
+
   public record(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IRowElement,
     x: number,
     y: number
@@ -138,12 +159,14 @@ export class TextParticle {
       this.text = element.value
       this.curStyle = element.style
       this.curColor = element.color
+      this.curSourceElement = element
       this.complete()
       return
     }
     // 主动完成的重设起始点
     if (!this.text) {
       this._setCurXY(x, y)
+      this.curSourceElement = element
     }
     // 样式发生改变
     if (
@@ -152,6 +175,7 @@ export class TextParticle {
     ) {
       this.complete()
       this._setCurXY(x, y)
+      this.curSourceElement = element
     }
     this.text += element.value
     this.curStyle = element.style
@@ -163,12 +187,27 @@ export class TextParticle {
     this.curY = y
   }
 
+  private _getSourceKey(element: IElement): string {
+    let key = this.sourceKeys.get(element)
+    if (!key) {
+      key = buildSourceTextKey(++this.sourceKeyId)
+      this.sourceKeys.set(element, key)
+    }
+    return key
+  }
+
   private _render() {
     if (!this.text || !~this.curX || !~this.curY) return
     this.ctx.save()
     this.ctx.font = this.curStyle
     this.ctx.fillStyle = this.curColor || this.options.defaultColor
-    this.ctx.fillText(this.text, this.curX, this.curY)
+    if (this.curSourceElement && this.ctx.fillTextWithSource) {
+      this.ctx.fillTextWithSource(this.text, this.curX, this.curY, {
+        key: this._getSourceKey(this.curSourceElement)
+      })
+    } else {
+      this.ctx.fillText(this.text, this.curX, this.curY)
+    }
     this.ctx.restore()
   }
 }

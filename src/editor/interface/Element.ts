@@ -1,9 +1,11 @@
 import { ImageDisplay } from '../dataset/enum/Common'
 import { ControlComponent } from '../dataset/enum/Control'
+import { PaperDirection } from '../dataset/enum/Editor'
 import { ElementType } from '../dataset/enum/Element'
 import { TraceType } from '../dataset/enum/Trace'
 import { ListStyle, ListType } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
+import { TabStopLeader, TabStopType } from '../dataset/enum/TabStop'
 import { TitleLevel } from '../dataset/enum/Title'
 import { TableBorder } from '../dataset/enum/table/Table'
 import { IArea } from './Area'
@@ -24,6 +26,7 @@ export interface IElementBasic {
   value: string
   extension?: unknown
   externalId?: string
+  hint?: string // 悬浮提示文案
 }
 
 export interface IElementStyle {
@@ -39,10 +42,26 @@ export interface IElementStyle {
   strikeout?: boolean
   rowFlex?: RowFlex
   rowMargin?: number
+  spacingBefore?: number
+  spacingAfter?: number
+  indentLeft?: number
+  indentRight?: number
+  // 首行相对左缩进的额外偏移，负数为悬挂缩进
+  indentFirstLine?: number
+  // 段落制表位（距版心左缘，随段内元素存储）
+  tabStops?: ITabStop[]
   level?: TitleLevel
   title?: ITitle
   letterSpacing?: number
   textDecoration?: ITextDecoration
+}
+
+export interface ITabStop {
+  // 距版心左缘的距离
+  position: number
+  type: TabStopType
+  // TAB 推进空隙的填充样式
+  leader?: TabStopLeader
 }
 
 export interface IElementRule {
@@ -206,6 +225,15 @@ export interface ILabelElement {
   }
 }
 
+export interface IPageBreakElement {
+  // 分页符之后页面的纸张方向
+  paperDirection?: PaperDirection
+}
+
+export interface IFootnoteElement {
+  footnoteId?: string
+}
+
 export type IElement = IElementBasic &
   IElementStyle &
   IElementRule &
@@ -225,7 +253,9 @@ export type IElement = IElementBasic &
   ITitleElement &
   IListElement &
   IAreaElement &
-  ILabelElement
+  ILabelElement &
+  IPageBreakElement &
+  IFootnoteElement
 
 export interface IElementMetrics {
   width: number

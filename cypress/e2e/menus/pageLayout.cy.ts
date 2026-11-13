@@ -2,9 +2,9 @@ import Editor, { PaperDirection, PageMode } from '../../../src/editor'
 
 describe('菜单-页面布局', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('设置纸张方向-横向', () => {

@@ -120,6 +120,16 @@ Usage:
 instance.eventBus.on('pageModeChange', (payload: PageMode) => void)
 ```
 
+## pageLayoutChange
+
+Feature: The page layout changes
+
+Usage:
+
+```javascript
+instance.eventBus.on('pageLayoutChange', (payload: PageLayout) => void)
+```
+
 ## saved
 
 Feature: Document saved
@@ -266,5 +276,29 @@ Usage:
 instance.eventBus.on('labelMousedown', (payload: {
   evt: MouseEvent
   element: IElement
+}) => void)
+```
+
+## renderChange
+
+Feature: Fires after editor computation and rendering are complete, allowing
+plugins that depend on the latest content to refresh
+
+Usage:
+
+```javascript
+instance.eventBus.on('renderChange', () => void)
+```
+
+## spellcheckClick
+
+Feature: The spell check misspelled word click event
+
+Usage:
+
+```javascript
+instance.eventBus.on('spellcheckClick', (payload: {
+  evt: MouseEvent
+  range: ISpellcheckRange
 }) => void)
 ```

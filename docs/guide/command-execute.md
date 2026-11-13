@@ -372,7 +372,7 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 
 ## executeRowFlex
 
-功能：行对齐
+功能：段落对齐
 
 用法：
 
@@ -382,12 +382,72 @@ instance.command.executeRowFlex(rowFlex: RowFlex)
 
 ## executeRowMargin
 
-功能：行间距
+功能：段落行间距
 
 用法：
 
 ```javascript
 instance.command.executeRowMargin(rowMargin: number)
+```
+
+## executeSpacingBefore
+
+功能：段落段前间距
+
+用法：
+
+```javascript
+instance.command.executeSpacingBefore(spacingBefore: number)
+```
+
+## executeSpacingAfter
+
+功能：段落段后间距
+
+用法：
+
+```javascript
+instance.command.executeSpacingAfter(spacingAfter: number)
+```
+
+## executeIndentLeft
+
+功能：段落左缩进
+
+用法：
+
+```javascript
+instance.command.executeIndentLeft(indentLeft: number)
+```
+
+## executeIndentRight
+
+功能：段落右缩进
+
+用法：
+
+```javascript
+instance.command.executeIndentRight(indentRight: number)
+```
+
+## executeIndentFirstLine
+
+功能：段落首行缩进（负数为悬挂缩进）
+
+用法：
+
+```javascript
+instance.command.executeIndentFirstLine(indentFirstLine: number)
+```
+
+## executeSetTabStops
+
+功能：设置光标所在段落制表位（传入空数组清除）
+
+用法：
+
+```javascript
+instance.command.executeSetTabStops(payload: ITabStop[])
 ```
 
 ## executeInsertTable
@@ -548,6 +608,26 @@ instance.command.executeTableBorderColor(payload: string)
 
 ```javascript
 instance.command.executeTableTdBorderType(payload: TdBorder)
+```
+
+## executeTableTdBorderColor
+
+功能：表格单元格边框颜色（传空字符串恢复表格边框颜色）
+
+用法：
+
+```javascript
+instance.command.executeTableTdBorderColor(payload: string)
+```
+
+## executeTableTdBorderWidth
+
+功能：表格单元格边框宽度（传 0 恢复表格边框宽度）
+
+用法：
+
+```javascript
+instance.command.executeTableTdBorderWidth(payload: number)
 ```
 
 ## executeTableTdSlashType
@@ -718,6 +798,16 @@ instance.command.executeDeleteWatermark()
 instance.command.executeSearch(keyword: string, options?: ISearchOption)
 ```
 
+## executeSetSpellcheckRangeList
+
+功能：设置拼写检查错词区间，在区间下方渲染波浪线（叠加层渲染，不修改文档数据）。传`null`清空
+
+用法：
+
+```javascript
+instance.command.executeSetSpellcheckRangeList(payload: ISpellcheckRange[] | null)
+```
+
 ## executeSearchNavigatePre
 
 功能：搜索导航-上一个
@@ -808,6 +898,16 @@ instance.command.executeSetImageCrop(crop: IImageCrop)
 instance.command.executePageMode(pageMode: PageMode)
 ```
 
+## executePageLayout
+
+功能：设置单页或多页布局，默认单页。多页布局仅在分页模式下生效，根据容器宽度自动同屏排列，不改变文档分页结果。
+
+用法：
+
+```javascript
+instance.command.executePageLayout(pageLayout: PageLayout)
+```
+
 ## executePageScale
 
 功能：设置缩放比例
@@ -866,6 +966,16 @@ instance.command.executePaperSize(width: number, height: number)
 
 ```javascript
 instance.command.executePaperDirection(paperDirection: PaperDirection)
+```
+
+## executePageDirection
+
+功能：设置光标所在节的纸张方向。分页符作为分节边界；首节修改全局方向，传 `null` 恢复全局方向。
+
+用法：
+
+```javascript
+instance.command.executePageDirection(paperDirection: PaperDirection | null)
 ```
 
 ## executeSetPaperMargin
@@ -1040,6 +1150,16 @@ instance.command.executeSetZone(zone: EditorZone)
 
 控件相关命令已迁移至[控件-方法](./control/command.md)，校验命令已迁移至[控件-验证](./control/validate.md)。
 
+## executeSetBackend
+
+功能：切换渲染后端，保留当前文档与 Editor 实例
+
+用法：
+
+```javascript
+instance.command.executeSetBackend(BackendType.SVG)
+```
+
 ## executeUpdateOptions
 
 功能：修改配置
@@ -1108,6 +1228,39 @@ instance.command.executeDeleteArea(payload?: IDeleteAreaOption)
 
 ```js
 instance.command.executeLocationArea(areaId: string, options?: ILocationAreaOption)
+```
+
+## executeInsertFootnote
+
+功能：在当前正文光标处插入脚注，返回脚注 ID；插入失败时返回 `null`。
+
+```js
+const footnoteId = instance.command.executeInsertFootnote({
+  id?: string,
+  value: IElement[]
+})
+```
+
+## executeSetFootnoteValue
+
+功能：根据脚注 ID 更新脚注正文。
+
+```js
+instance.command.executeSetFootnoteValue({
+  id: string,
+  value: IElement[]
+})
+```
+
+## executeLocationFootnote
+
+功能：定位到脚注正文末尾；设置 `position: LocationPosition.BEFORE` 时定位到正文引用处。Ctrl/Cmd 点击引用或脚注正文也可双向跳转。
+
+```js
+instance.command.executeLocationFootnote(
+  footnoteId: string,
+  options?: ILocationFootnoteOption
+)
 ```
 
 ## executeClearGraffiti

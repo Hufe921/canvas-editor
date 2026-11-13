@@ -7,12 +7,15 @@ function createMockDraw(optionOverrides: Partial<IEditorOption> = {}) {
   const options = mergeOption(optionOverrides)
   const drawRow = vi.fn()
   return {
-    getPosition: vi.fn(() => ({})),
+    getPosition: vi.fn(() => ({ computePageRowPosition: vi.fn() })),
     getZone: vi.fn(() => ({ isHeaderActive: () => true })),
     getOptions: vi.fn(() => options),
     getInnerWidth: vi.fn(() => 554),
     getHeight: vi.fn(() => 1123),
     getMargins: vi.fn(() => [100, 120, 100, 120]),
+    computeRowList: vi.fn(() => []),
+    getPageDirection: vi.fn(() => options.paperDirection),
+    getWidth: vi.fn(() => 794),
     drawRow,
     options
   } as any

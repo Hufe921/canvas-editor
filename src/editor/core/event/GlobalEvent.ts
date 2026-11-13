@@ -5,14 +5,17 @@ import { Cursor } from '../cursor/Cursor'
 import { Control } from '../draw/control/Control'
 import { Draw } from '../draw/Draw'
 import { HyperlinkParticle } from '../draw/particle/HyperlinkParticle'
+import { HintParticle } from '../draw/particle/HintParticle'
 import { DateParticle } from '../draw/particle/date/DateParticle'
 import { Previewer } from '../draw/particle/previewer/Previewer'
 import { TableTool } from '../draw/particle/table/TableTool'
+import { AreaTool } from '../draw/interactive/AreaTool'
 import { RangeManager } from '../range/RangeManager'
 import { CanvasEvent } from './CanvasEvent'
 import { ImageParticle } from '../draw/particle/ImageParticle'
 import { INTERNAL_SHORTCUT_KEY } from '../../dataset/constant/Shortcut'
 import { Magnifier } from '../draw/interactive/Magnifier'
+import type { RenderPage } from '../render/RenderBackend'
 
 export class GlobalEvent {
   private draw: Draw
@@ -22,7 +25,9 @@ export class GlobalEvent {
   private range: RangeManager
   private previewer: Previewer
   private tableTool: TableTool
+  private areaTool: AreaTool
   private hyperlinkParticle: HyperlinkParticle
+  private hintParticle: HintParticle
   private control: Control
   private magnifier: Magnifier
   private dateParticle: DateParticle
@@ -37,7 +42,9 @@ export class GlobalEvent {
     this.range = draw.getRange()
     this.previewer = draw.getPreviewer()
     this.tableTool = draw.getTableTool()
+    this.areaTool = draw.getAreaTool()
     this.hyperlinkParticle = draw.getHyperlinkParticle()
+    this.hintParticle = draw.getHintParticle()
     this.dateParticle = draw.getDateParticle()
     this.imageParticle = draw.getImageParticle()
     this.control = draw.getControl()
@@ -80,7 +87,7 @@ export class GlobalEvent {
     const pageList = this.draw.getPageList()
     const innerEditorDom = findParent(
       target,
-      (node: HTMLCanvasElement) => pageList.includes(node),
+      (node: RenderPage) => pageList.includes(node),
       true
     )
     if (innerEditorDom) return
@@ -99,7 +106,9 @@ export class GlobalEvent {
     this.range.recoveryRangeStyle()
     this.previewer.clearResizer()
     this.tableTool.dispose()
+    this.areaTool.dispose()
     this.hyperlinkParticle.clearHyperlinkPopup()
+    this.hintParticle.clearHintPopup()
     this.control.destroyControl()
     this.dateParticle.clearDatePicker()
     this.imageParticle.destroyFloatImage()
@@ -107,6 +116,12 @@ export class GlobalEvent {
   }
 
   public setCanvasEventAbility = () => {
+    if (this.canvasEvent.paragraphDrag) {
+      const cursor = this.draw.getPainterStyle() ? 'copy' : 'text'
+      this.draw.getPageList().forEach(page => {
+        page.style.cursor = cursor
+      })
+    }
     this.canvasEvent.setIsAllowDrag(false)
     this.canvasEvent.setIsAllowSelection(false)
   }

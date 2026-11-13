@@ -102,7 +102,8 @@ export class Cursor {
     const agentCursorDom = this.cursorAgent.getAgentCursorDom()
     // 光标不聚焦时重新定位
     if (document.activeElement !== agentCursorDom) {
-      agentCursorDom.focus()
+      // 阻止浏览器滚动：光标代理可能位于可视范围外（如选区锚点），滚动统一由moveCursorToVisible处理
+      agentCursorDom.focus({ preventScroll: true })
       agentCursorDom.setSelectionRange(0, 0)
     }
   }
@@ -120,8 +121,6 @@ export class Cursor {
       hitLineStartIndex
     } = { ...cursor, ...payload }
     // 设置光标代理
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
     // 光标位置
     this.hitLineStartIndex = hitLineStartIndex
     if (hitLineStartIndex) {
@@ -138,7 +137,7 @@ export class Cursor {
     const curPageNo = zoneManager.isMainActive()
       ? pageNo
       : this.draw.getPageNo()
-    const preY = curPageNo * (height + pageGap)
+    const { x: preX, y: preY } = this.draw.getPageOffset(curPageNo)
     // 默认偏移高度
     const defaultOffsetHeight = CURSOR_AGENT_OFFSET_HEIGHT * scale
     // 增加1/4字体大小（最小为defaultOffsetHeight即默认偏移高度）
@@ -155,7 +154,7 @@ export class Cursor {
       metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop =
       leftTop[1] + ascent + descent - (cursorHeight - increaseHeight) + preY
-    const cursorLeft = hitLineStartIndex ? leftTop[0] : rightTop[0]
+    const cursorLeft = (hitLineStartIndex ? leftTop[0] : rightTop[0]) + preX
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${
       cursorTop + cursorHeight - defaultOffsetHeight
@@ -229,26 +228,38 @@ export class Cursor {
       rect.top = top
       rect.bottom = bottom
     }
-    // 当前页面距离滚动容器顶部距离
-    const prePageY =
-      pageNo * (this.draw.getHeight() + this.draw.getPageGap()) +
-      this.container.getBoundingClientRect().top
+    // 页面在容器中的实际行列偏移，多页同屏时还需校正横向坐标
+    const pageOffset = this.draw.getPageOffset(pageNo)
+    const containerRect = this.container.getBoundingClientRect()
+    const prePageY = pageOffset.y + containerRect.top
     // 向上移动时：以顶部距离为准，向下移动时：以底部位置为准
     const isUp = direction === MoveDirection.UP
-    const x = leftBottom[0] + (isDocumentScroll ? 0 : rect.left)
+    const x = leftBottom[0] + pageOffset.x + containerRect.left
     const y = isUp ? leftTop[1] + prePageY : leftBottom[1] + prePageY
     // 可视范围根据参数调整
     const { maskMargin } = this.options
     rect.top += maskMargin[0]
+    rect.right -= maskMargin[1]
     rect.bottom -= maskMargin[2]
-    // 不在可视范围时，移动滚动条到合适位置
+    rect.left += maskMargin[3]
+    // 不在可视范围时，分别校正横向和纵向滚动位置
+    let nextScrollLeft = scrollContainer.scrollLeft
+    let nextScrollTop = scrollContainer.scrollTop
+    if (x < rect.left) {
+      nextScrollLeft -= rect.left - x
+    } else if (x > rect.right) {
+      nextScrollLeft += x - rect.right
+    }
+    if (y < rect.top || y > rect.bottom) {
+      nextScrollTop = isUp
+        ? nextScrollTop - (rect.top - y)
+        : nextScrollTop + y - rect.bottom
+    }
     if (
-      !(x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom)
+      nextScrollLeft !== scrollContainer.scrollLeft ||
+      nextScrollTop !== scrollContainer.scrollTop
     ) {
-      const { scrollLeft, scrollTop } = scrollContainer
-      isUp
-        ? scrollContainer.scroll(scrollLeft, scrollTop - (rect.top - y))
-        : scrollContainer.scroll(scrollLeft, scrollTop + y - rect.bottom)
+      scrollContainer.scroll(nextScrollLeft, nextScrollTop)
     }
   }
 }

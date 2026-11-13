@@ -12,6 +12,7 @@ import {
   ISearchResult,
   ISearchResultRestArgs
 } from '../../../../interface/Search'
+import type { IRenderContext } from '../../../render/model/RenderContext'
 import { Draw } from '../../Draw'
 import { Control } from '../Control'
 
@@ -37,13 +38,23 @@ export class ControlSearch {
   public getControlHighlight(elementList: IElement[], index: number) {
     const {
       control: {
-        activeBackgroundColor,
-        disabledBackgroundColor,
-        existValueBackgroundColor,
-        noValueBackgroundColor
+        activeBackgroundColor: globalActiveBackgroundColor,
+        disabledBackgroundColor: globalDisabledBackgroundColor,
+        existValueBackgroundColor: globalExistValueBackgroundColor,
+        noValueBackgroundColor: globalNoValueBackgroundColor
       }
     } = this.options
     const element = elementList[index]
+    // 颜色配置：控件自身 > 全局配置
+    const activeBackgroundColor =
+      element.control?.activeBackgroundColor || globalActiveBackgroundColor
+    const disabledBackgroundColor =
+      element.control?.disabledBackgroundColor || globalDisabledBackgroundColor
+    const existValueBackgroundColor =
+      element.control?.existValueBackgroundColor ||
+      globalExistValueBackgroundColor
+    const noValueBackgroundColor =
+      element.control?.noValueBackgroundColor || globalNoValueBackgroundColor
     const isPrintMode = this.draw.isPrintMode()
     const activeControlElement = this.control.getActiveControl()?.getElement()
     // 颜色配置：元素 > 控件激活 > 控件禁用 > 控件存在值 > 控件不存在值
@@ -178,7 +189,7 @@ export class ControlSearch {
     computeHighlight(this.draw.getOriginalMainElementList())
   }
 
-  public renderHighlightList(ctx: CanvasRenderingContext2D, pageIndex: number) {
+  public renderHighlightList(ctx: IRenderContext, pageIndex: number) {
     if (!this.highlightMatchResult?.length) return
     const { searchMatchAlpha, searchMatchColor } = this.options
     const positionList = this.draw.getPosition().getOriginalPositionList()

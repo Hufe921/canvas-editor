@@ -1,4 +1,5 @@
 import { IRowElement } from '../../../interface/Row'
+import { IRenderContext } from '../../render/model/RenderContext'
 
 export class SubscriptParticle {
   // 向下偏移字高的一半
@@ -7,7 +8,7 @@ export class SubscriptParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IRowElement,
     x: number,
     y: number

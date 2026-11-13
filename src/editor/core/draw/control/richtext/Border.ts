@@ -1,6 +1,7 @@
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { IElementFillRect } from '../../../../interface/Element'
+import type { IRenderContext } from '../../../render/model/RenderContext'
 import { Draw } from '../../Draw'
 
 export class ControlBorder {
@@ -32,7 +33,7 @@ export class ControlBorder {
     this.borderRect.width += width
   }
 
-  public render(ctx: CanvasRenderingContext2D) {
+  public render(ctx: IRenderContext) {
     if (!this.borderRect.width) return
     const {
       scale,

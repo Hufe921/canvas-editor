@@ -2,9 +2,9 @@ import Editor, { ElementType } from '../../../src/editor'
 
 describe('菜单-超链接', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'
@@ -40,9 +40,9 @@ describe('菜单-超链接', () => {
 
 describe('菜单-超链接操作', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'

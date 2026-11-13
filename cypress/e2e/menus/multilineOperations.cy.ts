@@ -2,9 +2,9 @@ import Editor, { ElementType, RowFlex } from '../../../src/editor'
 
 describe('菜单-多段落操作', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   it('多段落文本输入', () => {

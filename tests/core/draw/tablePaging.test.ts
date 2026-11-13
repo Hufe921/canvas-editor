@@ -3,6 +3,7 @@ import { Draw } from '@/editor/core/draw/Draw'
 import { EventBus } from '@/editor/core/event/eventbus/EventBus'
 import { Listener } from '@/editor/core/listener/Listener'
 import { Override } from '@/editor/core/override/Override'
+import { CanvasRenderer } from '@/editor/core/render/canvas/CanvasRenderer'
 import { mergeOption } from '@/editor/utils/option'
 import { formatElementList } from '@/editor/utils/element'
 import { ElementType } from '@/editor/dataset/enum/Element'
@@ -158,6 +159,37 @@ describe('表格跨页渲染层拆分', () => {
       .getOriginalElementList()
       .find(element => element.type === ElementType.TABLE)!
     expect(tableElement.trList!.length).toBe(20)
+  })
+
+  it('表格片段和续页表头使用稳定且无冲突的结构 key', () => {
+    const table = buildTable(20)
+    table.trList![0].pagingRepeat = true
+    const draw = renderMain([table])
+    const render = vi.spyOn(CanvasRenderer.prototype, 'render')
+    const getGroupKeys = () => {
+      draw.render({ isLazy: false, isSubmitHistory: false })
+      return render.mock.calls.flatMap(([, displayList]) =>
+        displayList.getOperations().flatMap(operation =>
+          operation.type === 'beginGroup' &&
+          (operation.kind === 'table-fragment' ||
+            operation.kind === 'repeat-header')
+            ? [`${operation.kind}:${operation.key}`]
+          : []
+        )
+      )
+    }
+
+    const firstKeys = getGroupKeys()
+    const fragmentKeys = firstKeys.filter(key =>
+      key.startsWith('table-fragment:')
+    )
+    const repeatKeys = firstKeys.filter(key => key.startsWith('repeat-header:'))
+
+    expect(fragmentKeys).toHaveLength(3)
+    expect(repeatKeys).toHaveLength(4)
+    expect(new Set(firstKeys).size).toBe(firstKeys.length)
+    render.mockClear()
+    expect(getGroupKeys()).toEqual(firstKeys)
   })
 
   it('跨行合并单元格覆盖切分点时按窗口续排', () => {

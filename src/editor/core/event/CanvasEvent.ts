@@ -20,7 +20,12 @@ import click, { getWordRangeBySegmenter } from './handlers/click'
 import composition from './handlers/composition'
 import drag from './handlers/drag'
 import { isIOS } from '../../utils/ua'
+import { isMod } from '../../utils/hotkey'
+import { LocationPosition } from '../../dataset/enum/Common'
+import { getPagePointer } from './pagePointer'
 import { ICopyOption } from '../../interface/Event'
+import type { RenderPage } from '../render/RenderBackend'
+import type { IParagraphDragBlock } from '../draw/particle/ParagraphDragParticle'
 
 export interface ICompositionInfo {
   elementList: IElement[]
@@ -37,6 +42,7 @@ export class CanvasEvent {
 
   public isAllowDrag: boolean
   public isAllowDrop: boolean
+  public paragraphDrag: IParagraphDragBlock | null
   public cacheRange: IRange | null
   public cacheElementList: IElement[] | null
   public cachePositionList: IElementPosition[] | null
@@ -45,7 +51,7 @@ export class CanvasEvent {
 
   private draw: Draw
   private pageContainer: HTMLDivElement
-  private pageList: HTMLCanvasElement[]
+  private pageList: RenderPage[]
   private range: RangeManager
   private position: Position
 
@@ -61,6 +67,7 @@ export class CanvasEvent {
     this.compositionInfo = null
     this.isAllowDrag = false
     this.isAllowDrop = false
+    this.paragraphDrag = null
     this.cacheRange = null
     this.cacheElementList = null
     this.cachePositionList = null
@@ -97,6 +104,9 @@ export class CanvasEvent {
   public setIsAllowDrag(payload: boolean) {
     this.isAllowDrag = payload
     this.isAllowDrop = payload
+    if (!payload) {
+      this.paragraphDrag = null
+    }
   }
 
   public clearPainterStyle() {
@@ -139,19 +149,22 @@ export class CanvasEvent {
       rangeParagraphElementList.every(element => selection.includes(element))
     if (isFullParagraphSelection) {
       const titleId = painterStyle.level ? getUUID() : null
-      for (let e = 0; e < rangeParagraphElementList.length; e++) {
-        const element = rangeParagraphElementList[e]
-        element.rowFlex = painterStyle.rowFlex
-        element.rowMargin = painterStyle.rowMargin
-        if (painterStyle.level && titleId) {
-          element.level = painterStyle.level
-          element.title = painterStyle.title
-          element.titleId = titleId
-        } else {
-          delete element.level
-          delete element.title
-          delete element.titleId
-        }
+      this.draw.setElementProperty(rangeParagraphElementList, {
+        rowFlex: painterStyle.rowFlex,
+        rowMargin: painterStyle.rowMargin
+      })
+      if (painterStyle.level && titleId) {
+        this.draw.setElementProperty(rangeParagraphElementList, {
+          level: painterStyle.level,
+          title: painterStyle.title,
+          titleId
+        })
+      } else {
+        this.draw.deleteElementProperty(rangeParagraphElementList, [
+          'level',
+          'title',
+          'titleId'
+        ])
       }
     }
     this.draw.render({ isSetCursor: false })
@@ -185,10 +198,29 @@ export class CanvasEvent {
     mousedown(evt, this)
   }
 
-  public click() {
+  public click(evt: MouseEvent) {
     // IOS系统限制非用户主动触发事件的键盘弹出
     if (isIOS && !this.draw.isReadonly()) {
       this.draw.getCursor().getAgentDom().focus()
+    }
+    if (!isMod(evt)) return
+    const pointer = getPagePointer(evt, this.pageContainer)
+    if (!pointer) return
+    const positionResult = this.position.getPositionByXY({
+      x: pointer.x,
+      y: pointer.y,
+      pageNo: pointer.pageNo
+    })
+    if (!positionResult.isDirectHit) return
+    const footnote = this.draw.getFootnote()
+    if (positionResult.isFootnote && positionResult.footnoteId) {
+      footnote.locationFootnote(positionResult.footnoteId, {
+        position: LocationPosition.BEFORE
+      })
+      return
+    }
+    if (positionResult.footnoteId) {
+      footnote.locationFootnote(positionResult.footnoteId)
     }
   }
 

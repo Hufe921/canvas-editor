@@ -39,7 +39,7 @@ const {
 
 ## getImage
 
-Feature: Gets the base64 string of the current page image
+Feature: Gets the base64 string of the current page image. The Canvas backend returns `data:image/png;base64`, while the SVG backend returns `data:image/svg+xml;base64`. `pixelRatio` only applies to Canvas. Snapshots produced by `snapDomFunction` are embedded as `image` nodes in SVG output.
 
 Usage:
 
@@ -119,6 +119,16 @@ Usage:
 const rangeText = instance.command.getRangeText()
 ```
 
+## getRangeRects
+
+Feature: Get rendered rectangles for a specific range.
+
+Usage:
+
+```javascript
+const rangeRects = instance.command.getRangeRects(range: IRange)
+```
+
 ## getRangeContext
 
 Feature: Get range context
@@ -159,6 +169,18 @@ Usage:
 const keywordContextList = instance.command.getKeywordContext(payload: string)
 ```
 
+## getSpellcheckWordList
+
+Feature: Get words and element indexes from the main document and table
+cells for external spellcheck plugins such as Typo.js or nspell. The editor
+only provides tokenization and index mapping; it does not bundle a dictionary.
+
+Usage:
+
+```javascript
+const wordList = instance.command.getSpellcheckWordList()
+```
+
 ## getRangeParagraph
 
 Feature: Get range paragraph element list
@@ -167,6 +189,16 @@ Usage:
 
 ```javascript
 const paragraphElementList = instance.command.getRangeParagraph()
+```
+
+## getSurroundElementList
+
+Feature: Get a specified number of elements before or after the cursor (returned in document order, useful for text input prediction). `direction` is `SurroundPosition.BEFORE` (default) or `SurroundPosition.AFTER`, and `length` is the number of elements (default `1`). `null` is returned when the cursor is inactive.
+
+Usage:
+
+```javascript
+const beforeElementList = instance.command.getSurroundElementList(option: IGetSurroundElementListOption)
 ```
 
 ## getPaperMargin
@@ -261,6 +293,16 @@ Usage:
 const groupIds = await instance.command.getGroupIds()
 ```
 
+## getGroupRectList
+
+Feature: Get the rect list of grouped elements (split into multiple rects across rows or pages), which can be used to draw annotation connection lines, etc.
+
+Usage:
+
+```javascript
+const rectList = instance.command.getGroupRectList(groupId)
+```
+
 Control-related commands have moved to [Control-Commands](./control/command.md).
 
 ## getContainer
@@ -338,4 +380,17 @@ const {
   startPageNo: number
   endPageNo: number
 } = instance.command.getAreaValue(options: IGetAreaValueOption)
+```
+
+## getFootnoteValue
+
+Feature: Get footnote content by footnote ID.
+
+Usage:
+
+```javascript
+const {
+  id: string
+  value: IElement[]
+} | null = instance.command.getFootnoteValue(options: IGetFootnoteValueOption)
 ```

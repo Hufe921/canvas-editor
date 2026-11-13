@@ -22,12 +22,12 @@ features:
   - icon: ⚡️
     title: 轻量的数据结构
     details: 一段JSON即可呈现复杂样式
+  - icon: 🚀
+    title: 超大文档
+    details: 支持超大文档的渲染和编辑
   - icon: 🛠️
     title: 丰富的功能
     details: 支持常见富文本操作、表格、水印、控件、公式等
-  - icon: 📦
-    title: 使用方便
-    details: 官方发布核心npm包，菜单栏、工具栏可自行维护
   - icon: 🔩
     title: 灵活的开发机制
     details: 通过接口可获取生命周期、事件回调、自定义右键菜单、快捷键等

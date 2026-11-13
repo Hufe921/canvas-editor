@@ -1,4 +1,5 @@
 import {
+  BackendType,
   ControlType,
   ElementType,
   IEditorOption,
@@ -608,7 +609,6 @@ elementList.push(
         type: ControlType.NUMBER,
         value: null,
         placeholder: '自动计算',
-        disabled: true,
         prefix: '{',
         postfix: '}',
         compute:
@@ -693,6 +693,7 @@ export const commentList: IComment[] = [
 
 export const options: IEditorOption = {
   margins: [100, 120, 100, 120],
+  backend: BackendType.CANVAS,
   trace: {
     author: '游客1'
   },

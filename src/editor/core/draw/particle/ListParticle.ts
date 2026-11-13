@@ -9,6 +9,7 @@ import { IElement, IElementPosition } from '../../../interface/Element'
 import { IRow, IRowElement } from '../../../interface/Row'
 import { getUUID } from '../../../utils'
 import { RangeManager } from '../../range/RangeManager'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class ListParticle {
@@ -47,11 +48,11 @@ export class ListParticle {
     }
     // 设置值
     const listId = getUUID()
-    changeElementList.forEach(el => {
-      el.listId = listId
-      el.listType = listType
-      el.listStyle = listStyle
-      el.listLevel = 0
+    this.draw.setElementProperty(changeElementList, {
+      listId,
+      listType,
+      listStyle,
+      listLevel: 0
     })
     // 光标定位
     const isSetCursor = startIndex === endIndex
@@ -89,13 +90,13 @@ export class ListParticle {
       }
     }
     // 取消设置
-    changeElementList.forEach(el => {
-      delete el.listId
-      delete el.listType
-      delete el.listStyle
-      delete el.listWrap
-      delete el.listLevel
-    })
+    this.draw.deleteElementProperty(changeElementList, [
+      'listId',
+      'listType',
+      'listStyle',
+      'listWrap',
+      'listLevel'
+    ])
     // 光标定位
     const isSetCursor = startIndex === endIndex
     const curIndex = isSetCursor ? endIndex : startIndex
@@ -177,16 +178,13 @@ export class ListParticle {
     // 同级列表复用前一个 listId，跨父项的子列表重新生成 listId
     const listId =
       this.findPreviousListId(firstEl, targetLevel, elementList) || getUUID()
-    segment.forEach(el => {
-      el.listId = listId
-      el.listLevel = targetLevel
-      if (firstEl.listType) {
-        el.listType = firstEl.listType
-      }
-      if (firstEl.listStyle) {
-        el.listStyle = firstEl.listStyle
-      }
-    })
+    this.draw.setElementProperty(segment, { listId, listLevel: targetLevel })
+    if (firstEl.listType) {
+      this.draw.setElementProperty(segment, { listType: firstEl.listType })
+    }
+    if (firstEl.listStyle) {
+      this.draw.setElementProperty(segment, { listStyle: firstEl.listStyle })
+    }
   }
 
   // 查找同一父项内最近的同级 listId，用于保持同一子列表连续编号
@@ -227,11 +225,13 @@ export class ListParticle {
   // 清理元素上的列表属性，保留其它文本样式
   private clearListInfo(element: IElement) {
     if (!element.listId) return
-    delete element.listId
-    delete element.listType
-    delete element.listStyle
-    delete element.listWrap
-    delete element.listLevel
+    this.draw.deleteElementProperty(element, [
+      'listId',
+      'listType',
+      'listStyle',
+      'listWrap',
+      'listLevel'
+    ])
   }
 
   // 退出列表时清理同 listId 下连续的前置空列表项
@@ -300,7 +300,8 @@ export class ListParticle {
 
   public computeListStyle(
     ctx: CanvasRenderingContext2D,
-    elementList: IElement[]
+    elementList: IElement[],
+    scale = this.options.scale
   ): Map<string, number> {
     const listStyleMap = new Map<string, number>()
     let start = 0
@@ -315,7 +316,7 @@ export class ListParticle {
         if (curElement.listId && curElement.listId !== curListId) {
           // 列表结束
           if (curElementList.length) {
-            const width = this.getListStyleWidth(ctx, curElementList)
+            const width = this.getListStyleWidth(ctx, curElementList, scale)
             listStyleMap.set(curListId!, width)
           }
           curListId = curElement.listId
@@ -325,7 +326,7 @@ export class ListParticle {
       start++
     }
     if (curElementList.length) {
-      const width = this.getListStyleWidth(ctx, curElementList)
+      const width = this.getListStyleWidth(ctx, curElementList, scale)
       listStyleMap.set(curListId!, width)
     }
     return listStyleMap
@@ -355,9 +356,10 @@ export class ListParticle {
 
   public getListStyleWidth(
     ctx: CanvasRenderingContext2D,
-    listElementList: IElement[]
+    listElementList: IElement[],
+    scale = this.options.scale
   ): number {
-    const { scale, checkbox } = this.options
+    const { checkbox } = this.options
     const startElement = listElementList[0]
     // 非递增样式返回固定值
     if (
@@ -383,13 +385,13 @@ export class ListParticle {
     const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length - 1 || 1)}${
       KeyMap.PERIOD
     }`
-    const textMetrics = ctx.measureText(text)
+    const textMetrics = this.draw.getTextMeasurer().measureText(text, ctx.font)
     ctx.restore()
     return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
   }
 
   public drawListStyle(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     row: IRow,
     position: IElementPosition
   ) {
@@ -421,7 +423,8 @@ export class ListParticle {
       const checkboxRowElement: IRowElement = {
         ...startElement,
         checkbox: {
-          value: !!startElement.checkbox?.value
+          value: !!startElement.checkbox?.value,
+          markType: startElement.checkbox?.markType
         },
         metrics: {
           ...startElement.metrics,

@@ -3,3 +3,6 @@ contact_links:
   - name: docs
     url: https://hufe.club/canvas-editor-docs/
     about: Official documents
+  - name: official plugins
+    url: https://github.com/Hufe921/canvas-editor-plugin
+    about: Word/Excel import-export, formula, comment, spellcheck and 20+ more official plugins

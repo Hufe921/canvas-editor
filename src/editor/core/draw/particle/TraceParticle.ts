@@ -12,10 +12,12 @@ import {
 import { IRow, IRowElement } from '../../../interface/Row'
 import { IMarkElementListDeletedOption } from '../../../interface/Trace'
 import { visitElementTree } from '../../../utils/element'
+import { getPagePointer } from '../../event/pagePointer'
+import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 interface ITraceRenderContext {
-  ctx: CanvasRenderingContext2D
+  ctx: IRenderContext
   element: IRowElement
   x: number
   y: number
@@ -76,12 +78,10 @@ export class TraceParticle {
       },
       lineHeight
     } = position
-    const height = this.draw.getHeight()
-    const pageGap = this.draw.getPageGap()
-    const preY = pageNo * (height + pageGap)
+    const { x: pageLeft, y: preY } = this.draw.getPageOffset(pageNo)
     // 位置
     this.tracePopupContainer.style.display = 'block'
-    this.tracePopupContainer.style.left = `${left}px`
+    this.tracePopupContainer.style.left = `${left + pageLeft}px`
     this.tracePopupContainer.style.top = `${top + preY + lineHeight}px`
     // 时间线：按时间顺序自上而下逐条渲染（先插入后删除会显示两条）
     const { insertColor, deleteColor } = this.options.trace
@@ -130,15 +130,17 @@ export class TraceParticle {
   // 留痕模式下根据鼠标位置显示/隐藏痕迹浮窗
   public handleMouseMove(evt: MouseEvent) {
     if (!this.draw.isTraceMode()) return
-    const target = evt.target as HTMLDivElement
-    const pageIndex = target.dataset.index
-    if (pageIndex) {
-      this.draw.setPageNo(Number(pageIndex))
+    const pointer = getPagePointer(evt, this.draw.getPageContainer())
+    if (!pointer) {
+      this.clearTracePopup()
+      return
     }
+    this.draw.setPageNo(pointer.pageNo)
     const position = this.draw.getPosition()
     const positionResult = position.getPositionByXY({
-      x: evt.offsetX,
-      y: evt.offsetY
+      x: pointer.x,
+      y: pointer.y,
+      pageNo: pointer.pageNo
     })
     if (!~positionResult.index) {
       this.clearTracePopup()
@@ -165,7 +167,7 @@ export class TraceParticle {
       return
     }
     if (this.lastHoverKey === hoverKey) return
-    this.drawTracePopup(element, elementPosition, this.draw.getPageNo())
+    this.drawTracePopup(element, elementPosition, pointer.pageNo)
     this.lastHoverKey = hoverKey
   }
 
@@ -193,8 +195,8 @@ export class TraceParticle {
     // 删除痕迹：累积中划线段
     if (hasDelete) {
       const standardMetrics = this.draw
-        .getTextParticle()
-        .measureBasisWord(ctx, this.draw.getElementFont(element))
+        .getTextMeasurer()
+        .measureBasis(this.draw.getElementFont(element))
       let traceAdjustY =
         y +
         offsetY +
@@ -226,10 +228,12 @@ export class TraceParticle {
         traceUY = this.draw.getSubscriptParticle().getOffsetY(element)
       }
       const startX = x - traceOffsetX
-      // 与标准下划线一致：curRow.height - rowMargin 为文本内容底部，再加 2 * scale 腾出与文字的间距
+      // 与标准下划线一致：内容高度（不含段后间距）- rowMargin 为文本内容底部，再加 2 * scale 腾出与文字的间距
+      const rowContentHeight = curRow.height - (curRow.spacingAfter || 0)
       const startY =
-        Math.floor(y + curRow.height - traceRowMargin + traceUY + 2 * scale) +
-        0.5
+        Math.floor(
+          y + rowContentHeight - traceRowMargin + traceUY + 2 * scale
+        ) + 0.5
       if (!this.underlineState) {
         this.underlineState = {
           x: startX,
@@ -245,14 +249,14 @@ export class TraceParticle {
   }
 
   // 主动冲刷所有累积（页面渲染结束、表格嵌套切换等场景调用）
-  public flush(ctx: CanvasRenderingContext2D) {
+  public flush(ctx: IRenderContext) {
     const scale = this.options.scale
     this._flushStrikeout(ctx, scale)
     this._flushUnderline(ctx, scale)
     this.currentRow = null
   }
 
-  private _flushStrikeout(ctx: CanvasRenderingContext2D, scale: number) {
+  private _flushStrikeout(ctx: IRenderContext, scale: number) {
     if (!this.strikeoutState) return
     ctx.save()
     ctx.lineWidth = this.options.trace.lineWidth * scale
@@ -269,7 +273,7 @@ export class TraceParticle {
     this.strikeoutState = null
   }
 
-  private _flushUnderline(ctx: CanvasRenderingContext2D, scale: number) {
+  private _flushUnderline(ctx: IRenderContext, scale: number) {
     if (!this.underlineState) return
     ctx.save()
     ctx.lineWidth = this.options.trace.lineWidth * scale

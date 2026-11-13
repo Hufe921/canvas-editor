@@ -198,6 +198,7 @@ export class TextControl implements IControlInstance {
     ) {
       return -1
     }
+    const { isAddPlaceholder = true } = options
     const elementList = context.elementList || this.control.getElementList()
     const range =
       context.range || this.control.getValueRange() || this.control.getRange()
@@ -217,7 +218,7 @@ export class TextControl implements IControlInstance {
       range,
       elementList
     })
-    if (!value.length) {
+    if (!value.length && isAddPlaceholder) {
       this.control.addPlaceholder(startIndex, context)
     }
     return startIndex

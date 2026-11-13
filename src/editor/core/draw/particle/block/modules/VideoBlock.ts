@@ -1,4 +1,5 @@
 import { IRowElement } from '../../../../../interface/Row'
+import type { IRenderContext } from '../../../../render/model/RenderContext'
 
 export class VideoBlock {
   private element: IRowElement
@@ -9,7 +10,7 @@ export class VideoBlock {
     this.videoCache = new Map()
   }
 
-  public snapshot(ctx: CanvasRenderingContext2D, x: number, y: number) {
+  public snapshot(ctx: IRenderContext, x: number, y: number) {
     return new Promise((resolve, reject) => {
       const src = this.element.block?.videoBlock?.src || ''
       if (this.videoCache.has(src)) {
@@ -28,13 +29,6 @@ export class VideoBlock {
         video.muted = true
         video.crossOrigin = 'anonymous'
         video.onloadeddata = () => {
-          ctx.drawImage(
-            video,
-            x,
-            y,
-            this.element.metrics.width,
-            this.element.metrics.height
-          )
           this.videoCache.set(src, video)
           resolve(this.element)
         }

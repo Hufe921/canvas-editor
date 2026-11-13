@@ -1,6 +1,7 @@
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IRowElement } from '../../../interface/Row'
+import { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
 export class LabelParticle {
@@ -11,7 +12,7 @@ export class LabelParticle {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     element: IRowElement,
     x: number,
     y: number
@@ -45,7 +46,7 @@ export class LabelParticle {
       x,
       y - boundingBoxAscent,
       width,
-      height + (padding[0] + padding[3]) * scale,
+      height + (padding[0] + padding[2]) * scale,
       borderRadius * scale
     )
     ctx.fill()
@@ -57,7 +58,7 @@ export class LabelParticle {
   }
 
   private _drawRoundedRect(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     x: number,
     y: number,
     width: number,

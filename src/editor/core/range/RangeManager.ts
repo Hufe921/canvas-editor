@@ -17,6 +17,7 @@ import {
 } from '../../interface/Range'
 import { getAnchorElement, isElementTraceDeleted } from '../../utils/element'
 import { Draw } from '../draw/Draw'
+import type { IRenderContext } from '../render/model/RenderContext'
 import { EventBus } from '../event/eventbus/EventBus'
 import { HistoryManager } from '../history/HistoryManager'
 import { Listener } from '../listener/Listener'
@@ -310,6 +311,9 @@ export class RangeManager {
 
   // 获取选区段落元素列表
   public getRangeParagraphElementList(): IElement[] | null {
+    if (this.range.isCrossRowCol) {
+      return this.getSelectionElementList()
+    }
     return this.getRangeParagraphInfo()?.elementList || null
   }
 
@@ -525,6 +529,12 @@ export class RangeManager {
     const highlight = curElement.highlight || null
     const rowFlex = curElement.rowFlex || null
     const rowMargin = curElement.rowMargin ?? this.options.defaultRowMargin
+    const spacingBefore = curElement.spacingBefore ?? 0
+    const spacingAfter = curElement.spacingAfter ?? 0
+    const indentLeft = curElement.indentLeft ?? 0
+    const indentRight = curElement.indentRight ?? 0
+    const indentFirstLine = curElement.indentFirstLine ?? 0
+    const tabStops = curElement.tabStops || null
     const dashArray = curElement.dashArray || []
     const level = curElement.level || null
     const listType = curElement.listType || null
@@ -553,6 +563,12 @@ export class RangeManager {
       highlight,
       rowFlex,
       rowMargin,
+      spacingBefore,
+      spacingAfter,
+      indentLeft,
+      indentRight,
+      indentFirstLine,
+      tabStops,
       dashArray,
       level,
       listType,
@@ -595,6 +611,12 @@ export class RangeManager {
       highlight: null,
       rowFlex: null,
       rowMargin,
+      spacingBefore: 0,
+      spacingAfter: 0,
+      indentLeft: 0,
+      indentRight: 0,
+      indentFirstLine: 0,
+      tabStops: null,
       dashArray: [],
       level: null,
       listType: null,
@@ -703,7 +725,7 @@ export class RangeManager {
   }
 
   public render(
-    ctx: CanvasRenderingContext2D,
+    ctx: IRenderContext,
     x: number,
     y: number,
     width: number,

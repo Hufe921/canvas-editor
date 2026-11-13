@@ -1,12 +1,10 @@
 import Editor, { ElementType, TitleLevel } from '../../../src/editor'
 
 describe('菜单-标题', () => {
-  const url = 'http://localhost:3000/canvas-editor/'
-
   beforeEach(() => {
-    cy.visit(url)
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'
@@ -44,9 +42,9 @@ describe('菜单-标题', () => {
 
 describe('菜单-标题级别', () => {
   beforeEach(() => {
-    cy.visit('http://localhost:3000/canvas-editor/')
+    cy.visitEditor()
 
-    cy.get('canvas').first().as('canvas').should('have.length', 1)
+    cy.getEditorPage().as('canvas').should('have.length', 1)
   })
 
   const text = 'canvas-editor'

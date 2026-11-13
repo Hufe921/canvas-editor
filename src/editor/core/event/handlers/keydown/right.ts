@@ -21,7 +21,12 @@ export function right(evt: KeyboardEvent, host: CanvasEvent) {
   const { index } = cursorPosition
   const positionList = position.getPositionList()
   const positionContext = position.getPositionContext()
-  if (index > positionList.length - 1 && !positionContext.isTable) return
+  if (
+    (index > positionList.length - 1 && !positionContext.isTable) ||
+    (positionContext.isFootnote && index >= positionList.length - 1)
+  ) {
+    return
+  }
   const rangeManager = draw.getRange()
   const { startIndex, endIndex } = rangeManager.getRange()
   const isCollapsed = rangeManager.getIsCollapsed()

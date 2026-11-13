@@ -26,6 +26,8 @@ export interface ITd {
   positionList?: IElementPosition[]
   verticalAlign?: VerticalAlign
   backgroundColor?: string
+  borderColor?: string
+  borderWidth?: number
   borderTypes?: TdBorder[]
   slashTypes?: TdSlash[]
   mainHeight?: number // 内容 + 内边距高度
@@ -33,4 +35,5 @@ export interface ITd {
   realMinHeight?: number // 真实最小高度（包含跨列）
   disabled?: boolean // 内容不可编辑
   deletable?: boolean // 内容不可删除
+  hint?: string // 单元格悬浮提示文案：鼠标移入单元格内任意元素时展示
 }
