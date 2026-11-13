@@ -1,3 +1,36 @@
+# [1.2.0](https://github.com/Hufe921/canvas-editor/compare/v1.1.0...v1.2.0) (2026-11-13)
+
+
+### Bug Fixes
+
+* prevent browser extensions from blocking print ([7cfc3f4](https://github.com/Hufe921/canvas-editor/commit/7cfc3f4e36c85a5f236af08ac1a53895d1df448b))
+
+
+### Documentation
+
+* update collaboration branch link ([38ace63](https://github.com/Hufe921/canvas-editor/commit/38ace63810fb80f2525f6cc33b1b6c242b5b75b0))
+
+
+### Features
+
+* add footnote support #747 ([6042a14](https://github.com/Hufe921/canvas-editor/commit/6042a1411e14abb9de56ed6a263afaca2470443b)), closes [#747](https://github.com/Hufe921/canvas-editor/issues/747)
+* add getRangeRects command ([bda7144](https://github.com/Hufe921/canvas-editor/commit/bda7144d21f2f50cff2a03a1c0d1b9394e1bba66))
+* add optional multi-page layout #1270 ([bcb0ecc](https://github.com/Hufe921/canvas-editor/commit/bcb0ecc3ce2c075f6893752b99fa24c33acaad4c)), closes [#1270](https://github.com/Hufe921/canvas-editor/issues/1270)
+* add paragraph drag #621 ([8c3ac29](https://github.com/Hufe921/canvas-editor/commit/8c3ac2912793e1faa989ad2af64adc64f9d40389)), closes [#621](https://github.com/Hufe921/canvas-editor/issues/621)
+* prevent word splitting around surround images #1200 ([7c4e8e6](https://github.com/Hufe921/canvas-editor/commit/7c4e8e66323f08e40b697f50ef25b8476a39a267)), closes [#1200](https://github.com/Hufe921/canvas-editor/issues/1200)
+
+
+### Refactor
+
+* optimize large document rendering and editing ([1724daa](https://github.com/Hufe921/canvas-editor/commit/1724daad5c079d577e719bd1799f1f18651a0644))
+
+
+### Tests
+
+* chore: fix lint and test timeouts ([d2aaf57](https://github.com/Hufe921/canvas-editor/commit/d2aaf574528b58649ab084c51a9ac9c05dce54cc))
+
+
+
 # [1.1.0](https://github.com/Hufe921/canvas-editor/compare/v1.0.6...v1.1.0) (2026-11-06)
 
 
