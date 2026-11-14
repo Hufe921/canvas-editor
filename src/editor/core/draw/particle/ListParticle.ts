@@ -19,7 +19,6 @@ export class ListParticle {
 
   // 非递增样式直接返回默认值
   private readonly UN_COUNT_STYLE_WIDTH = 20
-  private readonly MEASURE_BASE_TEXT = '0'
   private readonly LIST_GAP = 10
   public readonly LIST_INDENT_WIDTH = 30
   private readonly MAX_LEVEL = 8
@@ -354,6 +353,95 @@ export class ListParticle {
     }
   }
 
+  // 数字转中文数字
+  public numberToChinese(num: number): string {
+    const chineseNums = ['零', '一', '二', '三', '四', '五', '六', '七', '八', '九']
+    if (num <= 9) {
+      return chineseNums[num]
+    } else if (num === 10) {
+      return '十'
+    } else if (num < 20) {
+      return '十' + chineseNums[num % 10]
+    } else if (num < 100) {
+      return (
+        chineseNums[Math.floor(num / 10)] +
+        '十' +
+        (num % 10 === 0 ? '' : chineseNums[num % 10])
+      )
+    }
+    return String(num)
+  }
+
+  // 数字转大写字母
+  public numberToUpperAlpha(num: number): string {
+    const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    if (num <= 26) {
+      return alpha[num - 1]
+    }
+    return String(num)
+  }
+
+  // 数字转小写字母
+  public numberToLowerAlpha(num: number): string {
+    const alpha = 'abcdefghijklmnopqrstuvwxyz'
+    if (num <= 26) {
+      return alpha[num - 1]
+    }
+    return String(num)
+  }
+
+  // 数字转带圈数字
+  public numberToCircled(num: number): string {
+    const circled = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱', '⑲', '⑳']
+    if (num <= 20) {
+      return circled[num - 1]
+    }
+    return String(num)
+  }
+
+  // 判断是否为按序递增的列表样式（需要根据序号测量宽度）
+  private isIncrementalListStyle(style?: ListStyle, type?: ListType): boolean {
+    // 如果没有显式样式但为有序列表，默认按 decimal 处理
+    if (!style && type === ListType.OL) return true
+    const incremental = new Set<ListStyle>([
+      ListStyle.DECIMAL,
+      ListStyle.DECIMAL_PARENTHESES,
+      ListStyle.DECIMAL_RIGHT_PAREN,
+      ListStyle.UPPER_ALPHA,
+      ListStyle.LOWER_ALPHA,
+      ListStyle.CIRCLED_DECIMAL,
+      ListStyle.CHINESE,
+      ListStyle.CHINESE_PARENTHESES
+    ])
+    return !!(style && incremental.has(style))
+  }
+
+  // 根据样式格式化序号文本
+  private formatListLabel(num: number, style?: ListStyle): string {
+    const s = style || ListStyle.DECIMAL
+    switch (s) {
+      case ListStyle.DECIMAL:
+        return `${num}${KeyMap.PERIOD}`
+      case ListStyle.DECIMAL_PARENTHESES:
+        return `(${num})`
+      case ListStyle.DECIMAL_RIGHT_PAREN:
+        return `${num})`
+      case ListStyle.UPPER_ALPHA:
+        return `${this.numberToUpperAlpha(num)}${KeyMap.PERIOD}`
+      case ListStyle.LOWER_ALPHA:
+        return `${this.numberToLowerAlpha(num)}${KeyMap.PERIOD}`
+      case ListStyle.CIRCLED_DECIMAL:
+        return this.numberToCircled(num)
+      case ListStyle.CHINESE:
+        return `${this.numberToChinese(num)}、`
+      case ListStyle.CHINESE_PARENTHESES:
+        // 使用中文全角括号
+        return `（${this.numberToChinese(num)}）`
+      default:
+        return `${num}${KeyMap.PERIOD}`
+    }
+  }
+
   public getListStyleWidth(
     ctx: CanvasRenderingContext2D,
     listElementList: IElement[],
@@ -361,11 +449,8 @@ export class ListParticle {
   ): number {
     const { checkbox } = this.options
     const startElement = listElementList[0]
-    // 非递增样式返回固定值
-    if (
-      startElement.listStyle &&
-      startElement.listStyle !== ListStyle.DECIMAL
-    ) {
+    // 非递增样式返回固定值（复选框特殊处理）
+    if (!this.isIncrementalListStyle(startElement.listStyle, startElement.listType)) {
       if (startElement.listStyle === ListStyle.CHECKBOX) {
         return (checkbox.width + this.LIST_GAP) * scale
       }
@@ -381,11 +466,9 @@ export class ListParticle {
     if (!count) return 0
     ctx.save()
     ctx.font = this.getListFontStyle(listElementList, scale)
-    // 以递增样式最大宽度为准
-    const text = `${this.MEASURE_BASE_TEXT.repeat(String(count).length - 1 || 1)}${
-      KeyMap.PERIOD
-    }`
-    const textMetrics = this.draw.getTextMeasurer().measureText(text, ctx.font)
+    // 以最大序号为准测量文本宽度
+    const text = this.formatListLabel(count, startElement.listStyle)
+    const textMetrics = ctx.measureText(text)
     ctx.restore()
     return Math.ceil((textMetrics.width + this.LIST_GAP) * scale)
   }
@@ -454,7 +537,8 @@ export class ListParticle {
             : rotated
         text = ulStyleMapping[fallbackStyle] || ulStyleMapping[UlStyle.DISC]
       } else {
-        text = `${listIndex! + 1}${KeyMap.PERIOD}`
+        const idx = (listIndex ?? 0) + 1
+        text = this.formatListLabel(idx, startElement.listStyle)
       }
       if (!text) return
       ctx.save()

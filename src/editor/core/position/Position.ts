@@ -1,5 +1,5 @@
 import { ElementType, ListStyle, RowFlex, VerticalAlign } from '../..'
-import { ZERO } from '../../dataset/constant/Common'
+import { EPSILON, ZERO } from '../../dataset/constant/Common'
 import { ControlComponent } from '../../dataset/enum/Control'
 import {
   IComputePageRowPositionPayload,
@@ -662,8 +662,8 @@ export class Position {
                 .getTableParticle()
                 .getTdWindowInFragment(td, element, tableFragment)
               if (windowEnd <= windowStart) continue
-              isSplitWindow = windowStart > 0 || windowEnd < td.height!
-              isContinuation = windowStart > 0
+              isSplitWindow = windowStart > EPSILON || windowEnd < td.height!
+              isContinuation = windowStart > EPSILON
             }
             // 拆分窗口：本片段仅计算窗口内的内容行位置
             let rowList = td.rowList!
@@ -779,7 +779,7 @@ export class Position {
     const blankHeight = (td.height! - tdPaddingHeight) * scale - rowsHeight
     const offsetHeight =
       td.verticalAlign === VerticalAlign.MIDDLE ? blankHeight / 2 : blankHeight
-    if (Math.floor(offsetHeight) > 0) {
+    if (Math.floor(offsetHeight) > EPSILON) {
       positionList.forEach(tdPosition => {
         const {
           coordinate: { leftTop, leftBottom, rightBottom, rightTop }
