@@ -23,11 +23,16 @@ describe('菜单-代码块', () => {
         .eq(1)
         .click()
         .then(() => {
-          const data = editor.command.getValue().data.main[2]
+          const area = editor.command
+            .getValue()
+            .data.main.find(element => element.areaId)
+          const data = area?.valueList?.[2]
 
-          expect(data.value).to.eq('log')
+          expect(area?.area?.backgroundColor).to.eq('#f5f5f5')
 
-          expect(data.color).to.eq('#b9a40a')
+          expect(data?.value).to.eq('log')
+
+          expect(data?.color).to.eq('#b9a40a')
         })
     })
   })

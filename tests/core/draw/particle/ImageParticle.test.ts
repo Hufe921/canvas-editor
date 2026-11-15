@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { Draw } from '@/editor/core/draw/Draw'
+import type { Draw } from '@/editor/core/draw/Draw'
 import { ImageParticle } from '@/editor/core/draw/particle/ImageParticle'
 import { DisplayList } from '@/editor/core/render/model/DisplayList'
 import { ElementType } from '@/editor/dataset/enum/Element'
-import { IElement } from '@/editor/interface/Element'
+import type { IElement } from '@/editor/interface/Element'
 
 class MockImage {
   public onload: ((event: Event) => void) | null = null
@@ -76,5 +76,37 @@ describe('ImageParticle', () => {
 
     expect(mockImages).toHaveLength(1)
     expect(render).toHaveBeenCalledOnce()
+  })
+
+  it('按元素角度围绕图片中心绘制旋转图片', () => {
+    vi.stubGlobal('Image', MockImage)
+    const { particle } = createParticle()
+    const displayList = new DisplayList()
+    const element: IElement = {
+      type: ElementType.IMAGE,
+      value: 'https://example.com/rotated.png',
+      width: 100,
+      height: 50,
+      imgRotation: 45
+    }
+
+    particle.render(displayList, element, 10, 20)
+    mockImages[0].onload!(new Event('load'))
+    particle.render(displayList, element, 10, 20)
+    const layoutSize = 150 * Math.SQRT1_2
+
+    expect(displayList.getOperations()).toEqual([
+      { type: 'save', args: [] },
+      {
+        type: 'translate',
+        args: [10 + layoutSize / 2, 20 + layoutSize / 2]
+      },
+      { type: 'rotate', args: [Math.PI / 4] },
+      {
+        type: 'drawImage',
+        args: [mockImages[0], -50, -25, 100, 50]
+      },
+      { type: 'restore', args: [] }
+    ])
   })
 })

@@ -199,6 +199,8 @@ export interface IImageBasic {
     pageNo?: number
   }
   imgCrop?: IImageCrop
+  // 顺时针旋转角度（度）
+  imgRotation?: number
   imgCaption?: IImageCaption
 }
 

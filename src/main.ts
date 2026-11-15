@@ -842,12 +842,12 @@ window.onload = function () {
     '.menu-item__codeblock'
   )!
   codeblockDom.onclick = function () {
-    console.log('codeblock')
     new Dialog({
       title: '代码块',
       data: [
         {
           type: 'textarea',
+          label: '代码',
           name: 'codeblock',
           placeholder: '请输入代码',
           width: 500,
@@ -880,10 +880,14 @@ window.onload = function () {
             elementList.push(element)
           }
         }
-        elementList.unshift({
-          value: '\n'
+        // 保留原有语法高亮渲染，外层通过区域添加背景
+        instance.command.executeInsertArea({
+          area: {
+            backgroundColor: '#f5f5f5'
+          },
+          value: elementList,
+          range: instance.command.getRange()
         })
-        instance.command.executeInsertElementList(elementList)
       }
     })
   }

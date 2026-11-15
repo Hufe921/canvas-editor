@@ -1,9 +1,11 @@
 import { EDITOR_PREFIX } from '../../../dataset/constant/Editor'
+import { ImageDisplay } from '../../../dataset/enum/Common'
 import { ElementType } from '../../../dataset/enum/Element'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement } from '../../../interface/Element'
 import { convertStringToBase64 } from '../../../utils'
+import { getRotatedRectSize, normalizeRotation } from '../../../utils/image'
 import type { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
@@ -107,6 +109,10 @@ export class ImageParticle {
     const { x, y } = position.getFloatPositionCoordinate(floatPosition)
     floatImageContainer.style.left = `${x + preX}px`
     floatImageContainer.style.top = `${preY + y}px`
+    floatImageContainer.style.width = `${element.width! * scale}px`
+    floatImageContainer.style.height = `${element.height! * scale}px`
+    floatImageContainer.style.transformOrigin = 'center center'
+    floatImageContainer.style.transform = `rotate(${element.imgRotation || 0}deg)`
     floatImage.src = element.value
   }
 
@@ -244,10 +250,35 @@ export class ImageParticle {
     const { scale } = this.options
     const width = element.width! * scale
     const height = element.height! * scale
+    const rotation = normalizeRotation(element.imgRotation || 0)
+    const isFloat =
+      element.imgDisplay === ImageDisplay.SURROUND ||
+      element.imgDisplay === ImageDisplay.FLOAT_TOP ||
+      element.imgDisplay === ImageDisplay.FLOAT_BOTTOM
+    // 行内图片以旋转外接框为排版占位，原图在外接框内居中绘制
+    const { width: layoutWidth, height: layoutHeight } = isFloat
+      ? { width, height }
+      : getRotatedRectSize(width, height, rotation)
     if (this.imageCache.has(element.value)) {
       const img = this.imageCache.get(element.value)!
-      this._drawImageWithCrop(ctx, img, element, x, y, width, height)
-      this._renderCaption(ctx, element, x, y, width, height)
+      if (rotation) {
+        ctx.save()
+        ctx.translate(x + layoutWidth / 2, y + layoutHeight / 2)
+        ctx.rotate((rotation * Math.PI) / 180)
+        this._drawImageWithCrop(
+          ctx,
+          img,
+          element,
+          -width / 2,
+          -height / 2,
+          width,
+          height
+        )
+        ctx.restore()
+      } else {
+        this._drawImageWithCrop(ctx, img, element, x, y, width, height)
+      }
+      this._renderCaption(ctx, element, x, y, layoutWidth, layoutHeight)
     } else {
       const renderCount = this.draw.getRenderCount()
       const pending = this.pendingImageMap.get(element.value)

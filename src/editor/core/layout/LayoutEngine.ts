@@ -16,6 +16,7 @@ import {
   getFirstLineIndentElement,
   getIsBlockElement
 } from '../../utils/element'
+import { getRotatedRectSize } from '../../utils/image'
 import { shrinkColgroupToWidth } from '../../utils/table'
 import type { Draw } from '../draw/Draw'
 import type { TextParticle } from '../draw/particle/TextParticle'
@@ -319,22 +320,24 @@ export class LayoutEngine {
           metrics.height = 0
           metrics.boundingBoxDescent = 0
         } else {
-          const elementWidth = element.width! * scale
-          const elementHeight = element.height! * scale
-          // 图片超出尺寸后自适应（图片大小大于可用宽度时）
+          const originalWidth = element.width! * scale
+          const originalHeight = element.height! * scale
+          const rotation =
+            element.type === ElementType.IMAGE ? element.imgRotation || 0 : 0
+          const { width: elementWidth, height: elementHeight } =
+            getRotatedRectSize(originalWidth, originalHeight, rotation)
+          // 旋转图片按外接框占位，超出可用宽度时等比缩小原图
           if (elementWidth > availableWidth) {
-            const adaptiveHeight =
-              (elementHeight * availableWidth) / elementWidth
-            element.width = availableWidth / scale
-            element.height = adaptiveHeight / scale
+            const adaptiveScale = availableWidth / elementWidth
+            element.width = (originalWidth * adaptiveScale) / scale
+            element.height = (originalHeight * adaptiveScale) / scale
             metrics.width = availableWidth
-            metrics.height = adaptiveHeight
-            metrics.boundingBoxDescent = adaptiveHeight
+            metrics.height = elementHeight * adaptiveScale
           } else {
             metrics.width = elementWidth
             metrics.height = elementHeight
-            metrics.boundingBoxDescent = elementHeight
           }
+          metrics.boundingBoxDescent = metrics.height
           // 增加题注高度
           if (element.imgCaption?.value) {
             const fontSize = element.imgCaption.size || imgCaption.size

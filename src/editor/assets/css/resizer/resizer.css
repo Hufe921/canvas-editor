@@ -48,6 +48,34 @@
   cursor: w-resize;
 }
 
+.ce-resizer-selection .resizer-rotate-handle {
+  position: absolute;
+  z-index: 9;
+  width: 20px;
+  height: 20px;
+  cursor: grab;
+  pointer-events: initial;
+  background: #ffffff url(../../images/rotate.svg) center / 16px 16px no-repeat;
+  border: 1px solid #d9d9d9;
+  border-radius: 50%;
+  box-shadow: 0 1px 4px 0 rgb(0 0 0 / 30%);
+  box-sizing: border-box;
+}
+
+.ce-resizer-selection .resizer-rotate-handle:active {
+  cursor: grabbing;
+}
+
+.ce-resizer-selection .resizer-rotate-handle::after {
+  content: '';
+  position: absolute;
+  top: 19px;
+  left: 9px;
+  width: 1px;
+  height: 12px;
+  background: #d9d9d9;
+}
+
 .ce-resizer-size-view {
   display: flex;
   align-items: center;
@@ -55,9 +83,9 @@
   white-space: nowrap;
   position: absolute;
   z-index: 9;
-  top: -30px;
+  top: calc(100% + 10px);
   left: 0;
-  opacity: .9;
+  opacity: 0.9;
   background-color: #000000;
   padding: 0 5px;
   border-radius: 4px;
