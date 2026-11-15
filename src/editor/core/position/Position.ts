@@ -24,6 +24,7 @@ import {
 import { Draw } from '../draw/Draw'
 import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
 import { deepClone, isRectIntersect } from '../../utils'
+import { getRotatedRectSize } from '../../utils/image'
 import { ImageDisplay } from '../../dataset/enum/Common'
 import { DeepRequired } from '../../interface/Common'
 import { EventBus } from '../event/eventbus/EventBus'
@@ -32,6 +33,25 @@ import {
   getFirstLineIndentElement,
   getIsBlockElement
 } from '../../utils/element'
+
+function isPointInRotatedRect(
+  x: number,
+  y: number,
+  left: number,
+  top: number,
+  width: number,
+  height: number,
+  rotation: number
+): boolean {
+  const radian = (rotation * Math.PI) / 180
+  const cos = Math.cos(radian)
+  const sin = Math.sin(radian)
+  const offsetX = x - left - width / 2
+  const offsetY = y - top - height / 2
+  const localX = offsetX * cos + offsetY * sin
+  const localY = -offsetX * sin + offsetY * cos
+  return Math.abs(localX) <= width / 2 && Math.abs(localY) <= height / 2
+}
 
 // 单页新增位置信息的缓存切片
 interface IPagePositionCache {
@@ -1220,6 +1240,7 @@ export class Position {
         index,
         pageNo,
         left,
+        ascent,
         isFirstLetter,
         coordinate: { leftTop, rightTop, leftBottom }
       } = positionList[j]
@@ -1228,15 +1249,34 @@ export class Position {
         if (positionNo !== pageNo) continue
         if (pageNo > positionNo) break
       }
-      // 命中元素
-      if (
+      const element = elementList[j]
+      let isHit =
         leftTop[0] - left <= x &&
         rightTop[0] >= x &&
         leftTop[1] <= y &&
         leftBottom[1] >= y
-      ) {
+      if (element.type === ElementType.IMAGE && element.imgRotation) {
+        const { scale } = this.options
+        const width = element.width! * scale
+        const height = element.height! * scale
+        const rotatedSize = getRotatedRectSize(
+          width,
+          height,
+          element.imgRotation
+        )
+        isHit = isPointInRotatedRect(
+          x,
+          y,
+          leftTop[0] - left + (rotatedSize.width - width) / 2,
+          leftTop[1] + ascent + (rotatedSize.height - height) / 2,
+          width,
+          height,
+          element.imgRotation
+        )
+      }
+      // 命中元素
+      if (isHit) {
         let curPositionIndex = j
-        const element = elementList[j]
         // 表格被命中
         if (element.type === ElementType.TABLE) {
           const tableChildPosition = this._getTableChildPositionByXY({
@@ -1602,10 +1642,15 @@ export class Position {
         const elementWidth = element.width! * scale
         const elementHeight = element.height! * scale
         if (
-          x >= imgFloatPositionX &&
-          x <= imgFloatPositionX + elementWidth &&
-          y >= imgFloatPositionY &&
-          y <= imgFloatPositionY + elementHeight
+          isPointInRotatedRect(
+            x,
+            y,
+            imgFloatPositionX,
+            imgFloatPositionY,
+            elementWidth,
+            elementHeight,
+            element.imgRotation || 0
+          )
         ) {
           if (isTable) {
             return {
@@ -1718,12 +1763,19 @@ export class Position {
         const surroundElement = surroundElementList[s]
         const floatPosition = surroundElement.imgFloatPosition!
         if (floatPosition.pageNo !== pageNo) continue
+        const width = surroundElement.width! * scale
+        const height = surroundElement.height! * scale
+        const rotatedSize = getRotatedRectSize(
+          width,
+          height,
+          surroundElement.imgRotation || 0
+        )
         const surroundRect = {
           ...floatPosition,
-          x: floatPosition.x * scale,
-          y: floatPosition.y * scale,
-          width: surroundElement.width! * scale,
-          height: surroundElement.height! * scale
+          x: floatPosition.x * scale + (rotatedSize.width - width) / 2,
+          y: floatPosition.y * scale + (rotatedSize.height - height) / 2,
+          width: rotatedSize.width,
+          height: rotatedSize.height
         }
         if (isRectIntersect(rowElementRect, surroundRect)) {
           row.isSurround = true

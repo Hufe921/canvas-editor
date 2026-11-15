@@ -147,6 +147,7 @@ interface IElement {
     width: number;  // Crop width
     height: number; // Crop height
   }
+  imgRotation?: number; // Clockwise rotation in degrees; inline images occupy their rotated bounding box
   imgCaption?: {
     value: string;  // Caption content, supports {imageNo} placeholder
     color?: string; // Caption font color

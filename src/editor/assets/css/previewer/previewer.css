@@ -10,7 +10,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: previewerAnimation .3s;
+  animation: previewerAnimation 0.3s;
 }
 
 @keyframes previewerAnimation {
@@ -34,7 +34,7 @@
   cursor: pointer;
   background: url(../../images/close.svg) no-repeat;
   background-size: 100% 100%;
-  transition: all .3s;
+  transition: all 0.3s;
   border-radius: 50%;
 }
 
@@ -69,7 +69,7 @@
   display: inline-block;
   background-repeat: no-repeat;
   background-size: 100% 100%;
-  transition: all .3s;
+  transition: all 0.3s;
   border-radius: 50%;
 }
 
@@ -119,4 +119,135 @@
 .ce-image-previewer .ce-image-menu i.disabled {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+.ce-image-previewer .ce-image-menu i.image-crop {
+  background-image: url(../../images/crop.svg);
+}
+
+.ce-image-previewer .ce-image-menu i.crop-confirm {
+  background-image: url(../../images/check.svg);
+}
+
+.ce-image-previewer .ce-image-menu i.crop-cancel {
+  background-image: url(../../images/close.svg);
+}
+
+.ce-image-previewer .ce-image-container img {
+  display: block;
+}
+
+.ce-image-previewer .ce-image-container.cropping img {
+  max-width: calc(100vw - 80px);
+  max-height: calc(100vh - 180px);
+}
+
+.ce-image-cropper {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  overflow: hidden;
+  touch-action: none;
+}
+
+.ce-image-cropper-selection {
+  position: absolute;
+  box-sizing: border-box;
+  border: 1px solid #ffffff;
+  box-shadow: 0 0 0 9999px rgb(0 0 0 / 55%);
+  cursor: move;
+}
+
+.ce-image-cropper-selection::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(
+      to right,
+      transparent 33.33%,
+      rgb(255 255 255 / 60%) 33.33%,
+      rgb(255 255 255 / 60%) 33.66%,
+      transparent 33.66%,
+      transparent 66.33%,
+      rgb(255 255 255 / 60%) 66.33%,
+      rgb(255 255 255 / 60%) 66.66%,
+      transparent 66.66%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 33.33%,
+      rgb(255 255 255 / 60%) 33.33%,
+      rgb(255 255 255 / 60%) 33.66%,
+      transparent 33.66%,
+      transparent 66.33%,
+      rgb(255 255 255 / 60%) 66.33%,
+      rgb(255 255 255 / 60%) 66.66%,
+      transparent 66.66%
+    );
+}
+
+.ce-image-cropper-handle {
+  position: absolute;
+  z-index: 1;
+  width: 10px;
+  height: 10px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border: 1px solid #3d4757;
+}
+
+.ce-image-cropper-handle.handle-0,
+.ce-image-cropper-handle.handle-1,
+.ce-image-cropper-handle.handle-2 {
+  top: -5px;
+}
+
+.ce-image-cropper-handle.handle-3,
+.ce-image-cropper-handle.handle-7 {
+  top: calc(50% - 5px);
+}
+
+.ce-image-cropper-handle.handle-4,
+.ce-image-cropper-handle.handle-5,
+.ce-image-cropper-handle.handle-6 {
+  bottom: -5px;
+}
+
+.ce-image-cropper-handle.handle-0,
+.ce-image-cropper-handle.handle-6,
+.ce-image-cropper-handle.handle-7 {
+  left: -5px;
+}
+
+.ce-image-cropper-handle.handle-1,
+.ce-image-cropper-handle.handle-5 {
+  left: calc(50% - 5px);
+}
+
+.ce-image-cropper-handle.handle-2,
+.ce-image-cropper-handle.handle-3,
+.ce-image-cropper-handle.handle-4 {
+  right: -5px;
+}
+
+.ce-image-cropper-handle.handle-0,
+.ce-image-cropper-handle.handle-4 {
+  cursor: nwse-resize;
+}
+
+.ce-image-cropper-handle.handle-2,
+.ce-image-cropper-handle.handle-6 {
+  cursor: nesw-resize;
+}
+
+.ce-image-cropper-handle.handle-1,
+.ce-image-cropper-handle.handle-5 {
+  cursor: ns-resize;
+}
+
+.ce-image-cropper-handle.handle-3,
+.ce-image-cropper-handle.handle-7 {
+  cursor: ew-resize;
 }

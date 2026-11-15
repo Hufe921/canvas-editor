@@ -3,6 +3,7 @@ import { IElement } from './Element'
 export interface IPreviewerCreateResult {
   resizerSelection: HTMLDivElement
   resizerHandleList: HTMLDivElement[]
+  resizerRotateHandle: HTMLDivElement
   resizerImageContainer: HTMLDivElement
   resizerImage: HTMLImageElement
   resizerSize: HTMLSpanElement

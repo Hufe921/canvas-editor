@@ -1,10 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { LayoutEngine } from '@/editor/core/layout/LayoutEngine'
-import {
-  PageMode,
-  PaperDirection
-} from '@/editor/dataset/enum/Editor'
-import { IRow } from '@/editor/interface/Row'
+import { ElementType } from '@/editor/dataset/enum/Element'
+import { PageMode, PaperDirection } from '@/editor/dataset/enum/Editor'
+import type { IRow } from '@/editor/interface/Row'
 import type { Draw } from '@/editor/core/draw/Draw'
 
 function createRow(
@@ -38,6 +36,59 @@ function createDraw(overrides: Record<string, unknown> = {}): Draw {
     getTablePaging: () => ({ truncateTableByFragment: () => false }),
     ...overrides
   } as unknown as Draw
+}
+
+function createRowLayoutDraw(): Draw {
+  const textMetrics = {
+    width: 10,
+    actualBoundingBoxAscent: 8,
+    actualBoundingBoxDescent: 2,
+    actualBoundingBoxLeft: 0,
+    actualBoundingBoxRight: 10,
+    fontBoundingBoxAscent: 8,
+    fontBoundingBoxDescent: 2
+  }
+  return createDraw({
+    getListParticle: () => ({
+      computeListStyle: () => new Map<string, number>()
+    }),
+    getTextParticle: () => ({
+      measureText: () => textMetrics,
+      measureBasisWord: () => textMetrics,
+      getBasisWordBoundingBoxAscent: () => 8,
+      measureWord: () => ({ width: 0, endElement: null }),
+      measurePunctuationWidth: () => 0
+    }),
+    getOptions: () => ({
+      defaultSize: 16,
+      scale: 1,
+      imgCaption: { size: 12, top: 0 },
+      table: {
+        tdPadding: [0, 0, 0, 0],
+        defaultColMinWidth: 40,
+        overflow: false
+      },
+      defaultTabWidth: 16,
+      paperDirection: PaperDirection.VERTICAL,
+      incrementalCompute: false,
+      wordBreak: 0
+    }),
+    getElementFont: () => '16px sans-serif',
+    getElementRowMargin: () => 0,
+    getDefaultBasicRowMarginHeight: () => 0,
+    getMargins: () => [0, 0, 0, 0],
+    isDesignMode: () => false,
+    isAreaHideDisabled: () => false,
+    isWordLike: () => false,
+    getTraceParticle: () => ({ isTraceHidden: () => false }),
+    getPosition: () => ({
+      setSurroundPosition: (payload: { rowElementRect: { x: number } }) => ({
+        x: payload.rowElementRect.x,
+        rowIncreaseWidth: 0
+      })
+    }),
+    getArea: () => ({ applyMinHeight: () => undefined })
+  })
 }
 
 describe('LayoutEngine', () => {
@@ -137,17 +188,11 @@ describe('LayoutEngine', () => {
       areaId: 'area-1',
       height: 20
     })
-    expect(result.pageRowList).toEqual([
-      [rowList[0], rowList[1]],
-      [rowList[2]]
-    ])
+    expect(result.pageRowList).toEqual([[rowList[0], rowList[1]], [rowList[2]]])
   })
 
   it('分页符后的页面应用新纸张方向', () => {
-    const rowList = [
-      createRow(20, 0, { isPageBreak: true }),
-      createRow(20, 1)
-    ]
+    const rowList = [createRow(20, 0, { isPageBreak: true }), createRow(20, 1)]
     rowList[0].paperDirection = PaperDirection.HORIZONTAL
     const engine = new LayoutEngine(createDraw())
 
@@ -166,56 +211,7 @@ describe('LayoutEngine', () => {
   })
 
   it('按可用宽度对简单文本断行', () => {
-    const textMetrics = {
-      width: 10,
-      actualBoundingBoxAscent: 8,
-      actualBoundingBoxDescent: 2,
-      actualBoundingBoxLeft: 0,
-      actualBoundingBoxRight: 10,
-      fontBoundingBoxAscent: 8,
-      fontBoundingBoxDescent: 2
-    }
-    const draw = createDraw({
-      getListParticle: () => ({
-        computeListStyle: () => new Map<string, number>()
-      }),
-      getTextParticle: () => ({
-        measureText: () => textMetrics,
-        measureBasisWord: () => textMetrics,
-        getBasisWordBoundingBoxAscent: () => 8,
-        measureWord: () => ({ width: 0, endElement: null }),
-        measurePunctuationWidth: () => 0
-      }),
-      getOptions: () => ({
-        defaultSize: 16,
-        scale: 1,
-        imgCaption: { size: 12, top: 0 },
-        table: {
-          tdPadding: [0, 0, 0, 0],
-          defaultColMinWidth: 40,
-          overflow: false
-        },
-        defaultTabWidth: 16,
-        paperDirection: PaperDirection.VERTICAL,
-        incrementalCompute: false,
-        wordBreak: 0
-      }),
-      getElementFont: () => '16px sans-serif',
-      getElementRowMargin: () => 0,
-      getDefaultBasicRowMarginHeight: () => 0,
-      getMargins: () => [0, 0, 0, 0],
-      isDesignMode: () => false,
-      isAreaHideDisabled: () => false,
-      isWordLike: () => false,
-      getTraceParticle: () => ({ isTraceHidden: () => false }),
-      getPosition: () => ({
-        setSurroundPosition: (payload: {
-          rowElementRect: { x: number }
-        }) => ({ x: payload.rowElementRect.x, rowIncreaseWidth: 0 })
-      }),
-      getArea: () => ({ applyMinHeight: () => undefined })
-    })
-    const engine = new LayoutEngine(draw)
+    const engine = new LayoutEngine(createRowLayoutDraw())
 
     const rowList = engine.computeRowList({
       innerWidth: 20,
@@ -227,5 +223,29 @@ describe('LayoutEngine', () => {
     expect(
       rowList.map(row => row.elementList.map(element => element.value).join(''))
     ).toEqual(['ab', 'c'])
+  })
+
+  it('旋转图片按外接框尺寸参与文档排版', () => {
+    const element = {
+      type: ElementType.IMAGE,
+      value: 'data:image/png;base64,',
+      width: 89,
+      height: 32,
+      imgRotation: 90
+    }
+    const engine = new LayoutEngine(createRowLayoutDraw())
+
+    const rowList = engine.computeRowList({
+      innerWidth: 500,
+      elementList: [element]
+    })
+
+    expect(rowList).toHaveLength(1)
+    expect(rowList[0].width).toBeCloseTo(32)
+    expect(rowList[0].height).toBeCloseTo(89)
+    expect(rowList[0].elementList[0].metrics.width).toBeCloseTo(32)
+    expect(rowList[0].elementList[0].metrics.height).toBeCloseTo(89)
+    expect(element.width).toBe(89)
+    expect(element.height).toBe(32)
   })
 })

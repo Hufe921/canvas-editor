@@ -147,6 +147,7 @@ interface IElement {
     width: number;  // 裁剪宽度
     height: number; // 裁剪高度
   }
+  imgRotation?: number; // 顺时针旋转角度（度），行内图片按旋转外接框占位
   imgCaption?: {
     value: string;  // 题注内容，支持{imageNo}占位符
     color?: string; // 题注字体颜色
