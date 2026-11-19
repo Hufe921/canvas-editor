@@ -380,6 +380,22 @@ instance.command.executeList(listType: ListType | null, listStyle?: ListStyle)
 instance.command.executeRowFlex(rowFlex: RowFlex)
 ```
 
+## executeDirection
+
+功能：设置选区所在段落的文字方向。支持 `LTR`（从左到右）、`RTL`（从右到左）和 `AUTO`（按首个强方向字符自动判断）。双向文本混排时，会自动处理数字、标点、括号、上下标、视觉光标与选区。
+
+用法：
+
+```javascript
+instance.command.executeDirection(direction: TextDirection)
+```
+
+示例：
+
+```javascript
+instance.command.executeDirection(TextDirection.RTL)
+```
+
 ## executeRowMargin
 
 功能：段落行间距

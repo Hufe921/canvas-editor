@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { LayoutEngine } from '@/editor/core/layout/LayoutEngine'
 import { ElementType } from '@/editor/dataset/enum/Element'
 import { PageMode, PaperDirection } from '@/editor/dataset/enum/Editor'
+import { TextDirection } from '@/editor/dataset/enum/TextDirection'
 import type { IRow } from '@/editor/interface/Row'
 import type { Draw } from '@/editor/core/draw/Draw'
 
@@ -57,7 +58,8 @@ function createRowLayoutDraw(): Draw {
       measureBasisWord: () => textMetrics,
       getBasisWordBoundingBoxAscent: () => 8,
       measureWord: () => ({ width: 0, endElement: null }),
-      measurePunctuationWidth: () => 0
+      measurePunctuationWidth: () => 0,
+      clearNativeTextShaperCache: () => undefined
     }),
     getOptions: () => ({
       defaultSize: 16,
@@ -223,6 +225,74 @@ describe('LayoutEngine', () => {
     expect(
       rowList.map(row => row.elementList.map(element => element.value).join(''))
     ).toEqual(['ab', 'c'])
+  })
+
+  it('默认 LTR 仅使用原测量路径', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    const measureText = vi.fn(particle.measureText)
+    const measureTextInContext = vi.fn()
+    draw.getTextParticle = () =>
+      Object.assign(particle, {
+        measureText,
+        measureTextInContext
+      })
+    const engine = new LayoutEngine(draw)
+
+    engine.computeRowList({
+      innerWidth: 100,
+      elementList: [{ value: 'a' }, { value: 'b' }, { value: 'c' }]
+    })
+
+    expect(measureText).toHaveBeenCalledTimes(3)
+    expect(measureTextInContext).not.toHaveBeenCalled()
+  })
+
+  it('RTL 文本使用上下文测量并标记行方向', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    const measureText = vi.fn(particle.measureText)
+    const measureTextInContext = vi.fn(() => 12)
+    draw.getTextParticle = () =>
+      Object.assign(particle, {
+        measureText,
+        measureTextInContext
+      })
+    const engine = new LayoutEngine(draw)
+
+    const rowList = engine.computeRowList({
+      innerWidth: 100,
+      elementList: [
+        { value: 'ا', direction: TextDirection.RTL },
+        { value: 'ب', direction: TextDirection.RTL }
+      ]
+    })
+
+    expect(rowList).toHaveLength(1)
+    expect(rowList[0].width).toBe(24)
+    expect(rowList[0].direction).toBe(TextDirection.RTL)
+    expect(measureTextInContext).toHaveBeenCalledTimes(2)
+    expect(measureText).not.toHaveBeenCalled()
+  })
+
+  it('auto 的 LTR 段落保留方向以支持后续 RTL 混排', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    const measureTextInContext = vi.fn(() => 10)
+    draw.getTextParticle = () =>
+      Object.assign(particle, { measureTextInContext })
+    const engine = new LayoutEngine(draw)
+
+    const rowList = engine.computeRowList({
+      innerWidth: 100,
+      elementList: [
+        { value: 'a', direction: TextDirection.AUTO },
+        { value: 'ب', direction: TextDirection.AUTO }
+      ]
+    })
+
+    expect(rowList[0].direction).toBe(TextDirection.LTR)
+    expect(measureTextInContext).toHaveBeenCalledTimes(2)
   })
 
   it('旋转图片按外接框尺寸参与文档排版', () => {

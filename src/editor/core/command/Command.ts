@@ -34,6 +34,8 @@ export class Command {
   public executeTitle: CommandAdapt['title']
   public executeList: CommandAdapt['list']
   public executeRowFlex: CommandAdapt['rowFlex']
+  public executeDirection: CommandAdapt['direction']
+  public setDirection: CommandAdapt['direction']
   public executeRowMargin: CommandAdapt['rowMargin']
   public executeSpacingBefore: CommandAdapt['spacingBefore']
   public executeSpacingAfter: CommandAdapt['spacingAfter']
@@ -155,6 +157,7 @@ export class Command {
   public getCursorPosition: CommandAdapt['getCursorPosition']
   public getRemainingContentHeight: CommandAdapt['getRemainingContentHeight']
   public getRange: CommandAdapt['getRange']
+  public getDirection: CommandAdapt['getDirection']
   public getRangeText: CommandAdapt['getRangeText']
   public getRangeRects: CommandAdapt['getRangeRects']
   public getRangeContext: CommandAdapt['getRangeContext']
@@ -268,6 +271,11 @@ export class Command {
     this.executeTitle = this.wrap('executeTitle', adapt.title.bind(adapt))
     this.executeList = this.wrap('executeList', adapt.list.bind(adapt))
     this.executeRowFlex = this.wrap('executeRowFlex', adapt.rowFlex.bind(adapt))
+    this.executeDirection = this.wrap(
+      'executeDirection',
+      adapt.direction.bind(adapt)
+    )
+    this.setDirection = this.wrap('setDirection', adapt.direction.bind(adapt))
     this.executeRowMargin = this.wrap(
       'executeRowMargin',
       adapt.rowMargin.bind(adapt)
@@ -648,6 +656,7 @@ export class Command {
     this.getCursorPosition = adapt.getCursorPosition.bind(adapt)
     this.getRemainingContentHeight = adapt.getRemainingContentHeight.bind(adapt)
     this.getRange = adapt.getRange.bind(adapt)
+    this.getDirection = adapt.getDirection.bind(adapt)
     this.getRangeText = adapt.getRangeText.bind(adapt)
     this.getRangeRects = adapt.getRangeRects.bind(adapt)
     this.getRangeContext = adapt.getRangeContext.bind(adapt)

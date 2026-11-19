@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest'
 import { ElementType } from '@/editor/dataset/enum/Element'
+import { TextDirection } from '@/editor/dataset/enum/TextDirection'
 import { BackendType, PageMode } from '@/editor/dataset/enum/Editor'
 import { ListStyle, ListType } from '@/editor/dataset/enum/List'
 import { DisplayList } from '@/editor/core/render/model/DisplayList'
@@ -53,6 +54,24 @@ describe('SvgRenderer 文本语义', () => {
     expect(text.getAttribute('dominant-baseline')).toBe('middle')
     expect(text.getAttribute('text-anchor')).toBe('middle')
     expect(text.getAttribute('xml:space')).toBe('preserve')
+  })
+
+  it('RTL 下保持 Canvas 物理左右锚点语义', () => {
+    const leftList = new DisplayList()
+    leftList.direction = 'rtl'
+    leftList.textAlign = 'left'
+    leftList.fillText('left', 130, 40)
+    const rightList = new DisplayList()
+    rightList.direction = 'rtl'
+    rightList.textAlign = 'right'
+    rightList.fillText('right', 130, 40)
+
+    expect(
+      render(leftList).querySelector('text')!.getAttribute('text-anchor')
+    ).toBe('end')
+    expect(
+      render(rightList).querySelector('text')!.getAttribute('text-anchor')
+    ).toBe('start')
   })
 
   it('保留 Canvas 与 SVG 共用的 alphabetic 基线坐标', () => {
@@ -156,5 +175,65 @@ describe('SvgRenderer 文本语义', () => {
       )
     ).toBe(true)
     expect(svg.querySelectorAll('path[stroke]').length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('RTL 行内 LTR run 使用自身方向避免重排边缘标点', () => {
+    const svg = createSvgEditor(
+      Array.from('T：39.5℃，P：80bpm；').map(value => ({
+        value,
+        direction: TextDirection.RTL
+      }))
+    )
+
+    const text = Array.from(svg.querySelectorAll('text')).find(
+      node => node.textContent?.startsWith('T：39.5℃')
+    )
+    expect(text?.getAttribute('direction')).toBe('ltr')
+    expect(text?.getAttribute('text-anchor')).toBe('start')
+  })
+
+  it('RTL 行内上下标按自身层级设置锚点', () => {
+    const svg = createSvgEditor([
+      { value: 'x', direction: TextDirection.RTL },
+      {
+        type: ElementType.SUPERSCRIPT,
+        value: '2',
+        actualSize: 10,
+        direction: TextDirection.RTL
+      },
+      {
+        type: ElementType.SUBSCRIPT,
+        value: 'n',
+        actualSize: 10,
+        direction: TextDirection.RTL
+      },
+      { value: '\n', direction: TextDirection.RTL }
+    ])
+
+    const texts = Array.from(svg.querySelectorAll('text'))
+    for (const value of ['2', 'n']) {
+      const text = texts.find(node => node.textContent === value)
+      expect(text?.getAttribute('direction')).toBe('ltr')
+      expect(text?.getAttribute('text-anchor')).toBe('start')
+    }
+  })
+
+  it('方向文本拆成多个绘制 run 时来源 key 不冲突', () => {
+    const svg = createSvgEditor([
+      { value: 'English ', direction: TextDirection.RTL },
+      {
+        value: 'العربية',
+        direction: TextDirection.RTL,
+        bold: true
+      },
+      { value: '\n', direction: TextDirection.RTL }
+    ])
+
+    const texts = Array.from(svg.querySelectorAll('text')).map(
+      text => text.textContent
+    )
+    expect(texts.length).toBeGreaterThan(1)
+    expect(texts).toContain('English')
+    expect(texts).toContain('العربية')
   })
 })

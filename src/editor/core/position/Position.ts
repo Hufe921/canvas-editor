@@ -13,7 +13,7 @@ import {
 import { IEditorOption } from '../../interface/Editor'
 import { IElement, IElementPosition } from '../../interface/Element'
 import { IRow } from '../../interface/Row'
-import { IRange } from '../../interface/Range'
+import { BidiCaretAffinity, IRange } from '../../interface/Range'
 import { ITd } from '../../interface/table/Td'
 import {
   ICurrentPosition,
@@ -23,6 +23,9 @@ import {
 } from '../../interface/Position'
 import { Draw } from '../draw/Draw'
 import { EditorMode, EditorZone } from '../../dataset/enum/Editor'
+import { TextDirection } from '../../dataset/enum/TextDirection'
+import { BidiResolver } from '../bidi/resolver/BidiResolver'
+import { getNearestBidiCaret } from '../bidi/resolver/BidiCaret'
 import { deepClone, isRectIntersect } from '../../utils'
 import { getRotatedRectSize } from '../../utils/image'
 import { ImageDisplay } from '../../dataset/enum/Common'
@@ -82,6 +85,7 @@ export class Position {
   private draw: Draw
   private eventBus: EventBus<EventBusMap>
   private options: DeepRequired<IEditorOption>
+  private bidiResolver: BidiResolver | null = null
 
   constructor(draw: Draw) {
     this.positionList = []
@@ -535,6 +539,7 @@ export class Position {
       const effectiveInnerWidth =
         inColumn && columnLayout ? columnLayout.width : innerWidth
       x += columnOffset
+      let rowOffsetX = curRow.offsetX || 0
       // 行存在环绕的可能性均不设置行布局
       if (!curRow.isSurround) {
         // 计算行偏移量（行居中、居右）
@@ -546,15 +551,45 @@ export class Position {
         const offsetRight =
           (indentRightElement?.indentRight || 0) * this.options.scale
         const curRowWidth = curRow.width + (curRow.offsetX || 0) + offsetRight
+        const isRightAlign =
+          curRow.rowFlex === RowFlex.RIGHT ||
+          (curRow.rowFlex === RowFlex.START &&
+            curRow.direction === TextDirection.RTL) ||
+          (curRow.rowFlex === RowFlex.END &&
+            curRow.direction !== TextDirection.RTL) ||
+          (!curRow.rowFlex && curRow.direction === TextDirection.RTL)
         if (curRow.rowFlex === RowFlex.CENTER) {
           x += (effectiveInnerWidth - curRowWidth) / 2
-        } else if (curRow.rowFlex === RowFlex.RIGHT) {
+        } else if (isRightAlign) {
           x += effectiveInnerWidth - curRowWidth
+          // RTL 右对齐已在可用宽度中预留列表/缩进空间
+          if (curRow.direction === TextDirection.RTL) rowOffsetX = 0
         }
       }
       // 当前行X/Y轴偏移量
-      x += curRow.offsetX || 0
+      x += rowOffsetX
       y += curRow.offsetY || 0
+      // 默认 LTR 行不创建 BiDi 结果；方向行仅派生视觉坐标，逻辑下标不变
+      const bidiResult = curRow.direction
+        ? (this.bidiResolver ??= new BidiResolver()).resolve(
+            curRow.elementList,
+            curRow.direction
+          )
+        : null
+      const visualXList = bidiResult
+        ? new Array<number>(curRow.elementList.length)
+        : null
+      if (bidiResult && visualXList) {
+        let visualX = x
+        for (const visualIndex of bidiResult.visualIndexes) {
+          const visualElement = curRow.elementList[visualIndex]
+          visualXList[visualIndex] = visualX
+          visualX +=
+            (visualElement.left || 0) +
+            (visualElement.translateX || 0) * scale +
+            visualElement.metrics.width
+        }
+      }
       // 当前td所在位置
       const tablePreX = x
       const tablePreY = y
@@ -574,6 +609,7 @@ export class Position {
             element.type === ElementType.LATEX)
             ? curRow.ascent - metrics.height
             : curRow.ascent
+        if (visualXList) x = visualXList[j]
         // 偏移量（内部计算使用）
         if (element.left) {
           x += element.left
@@ -596,6 +632,7 @@ export class Position {
           lineHeight: curRow.height,
           isFirstLetter: j === 0,
           isLastLetter: j === curRow.elementList.length - 1,
+          ...(bidiResult ? { bidiLevel: bidiResult.levels[j] } : {}),
           columnIndex: curRow.columnIndex,
           coordinate: {
             leftTop: [x, y],
@@ -1111,7 +1148,8 @@ export class Position {
           trId: tr.id,
           tableId: element.id,
           tablePath: [tablePathItem],
-          hitLineStartIndex
+          hitLineStartIndex,
+          bidiAffinity: childPosition.bidiAffinity
         }
       }
     }
@@ -1143,20 +1181,23 @@ export class Position {
       }
       const createPosition = (
         footnoteValueIndex: number,
-        hitLineStartIndex?: number
+        hitLineStartIndex?: number,
+        bidiAffinity?: BidiCaretAffinity
       ): ICurrentPosition => ({
         index: layout.referenceIndex,
         isFootnote: true,
         footnoteId: layout.id,
         footnoteValueIndex,
         isDirectHit: true,
-        hitLineStartIndex
+        hitLineStartIndex,
+        bidiAffinity
       })
       for (const position of positionList) {
         const {
           index,
           left,
           isFirstLetter,
+          bidiLevel,
           coordinate: { leftTop, rightTop, leftBottom }
         } = position
         if (
@@ -1169,16 +1210,28 @@ export class Position {
           if (!element) continue
           let footnoteValueIndex = index
           let hitLineStartIndex: number | undefined
+          let bidiAffinity: BidiCaretAffinity | undefined
           if (element.value !== ZERO) {
             const valueWidth = rightTop[0] - leftTop[0]
-            if (x < leftTop[0] + valueWidth / 2) {
+            const isRtl = bidiLevel !== undefined && bidiLevel % 2 === 1
+            const isBefore = isRtl
+              ? x > leftTop[0] + valueWidth / 2
+              : x < leftTop[0] + valueWidth / 2
+            if (bidiLevel !== undefined) {
+              bidiAffinity = isBefore ? 'before' : 'after'
+            }
+            if (isBefore) {
               footnoteValueIndex = Math.max(index - 1, 0)
               if (isFirstLetter && index > 0) {
                 hitLineStartIndex = index
               }
             }
           }
-          return createPosition(footnoteValueIndex, hitLineStartIndex)
+          return createPosition(
+            footnoteValueIndex,
+            hitLineStartIndex,
+            bidiAffinity
+          )
         }
       }
       // 点击行尾或行首空白时，命中当前可见行而不是正文最后一行
@@ -1197,6 +1250,19 @@ export class Position {
         const headPosition = positionList.find(
           position => position.rowIndex === rowIndex
         )!
+        if (headPosition.bidiLevel !== undefined) {
+          const rowPositionList = positionList.filter(
+            position => position.rowIndex === rowIndex
+          )
+          const caret = getNearestBidiCaret(rowPositionList, x)
+          if (caret) {
+            return createPosition(
+              Math.max(caret.index, 0),
+              caret.hitLineStartIndex,
+              caret.affinity
+            )
+          }
+        }
         if (x < headPosition.coordinate.leftTop[0]) {
           return createPosition(
             Math.max(headPosition.index - 1, 0),
@@ -1351,10 +1417,19 @@ export class Position {
           }
         }
         let hitLineStartIndex: number | undefined
+        let bidiAffinity: BidiCaretAffinity | undefined
         // 判断是否在文字中间前后
         if (elementList[index].value !== ZERO) {
           const valueWidth = rightTop[0] - leftTop[0]
-          if (x < leftTop[0] + valueWidth / 2) {
+          const bidiLevel = positionList[j].bidiLevel
+          const isRtl = bidiLevel !== undefined && bidiLevel % 2 === 1
+          const isBefore = isRtl
+            ? x > leftTop[0] + valueWidth / 2
+            : x < leftTop[0] + valueWidth / 2
+          if (bidiLevel !== undefined) {
+            bidiAffinity = isBefore ? 'before' : 'after'
+          }
+          if (isBefore) {
             curPositionIndex = j - 1
             if (isFirstLetter) {
               hitLineStartIndex = j
@@ -1364,6 +1439,7 @@ export class Position {
         return {
           isDirectHit: true,
           hitLineStartIndex,
+          bidiAffinity,
           index: curPositionIndex,
           isControl: !!element.controlId,
           footnoteId:
@@ -1416,6 +1492,7 @@ export class Position {
     let isLastArea = false
     let curPositionIndex = -1
     let hitLineStartIndex: number | undefined
+    let bidiAffinity: BidiCaretAffinity | undefined
     // 判断是否在表格内
     if (isTable) {
       const { scale } = this.options
@@ -1482,7 +1559,22 @@ export class Position {
           headElement.listStyle === ListStyle.CHECKBOX
             ? this.draw.getMargins()[3]
             : headPosition.coordinate.leftTop[0]
-        if (isHitOffsetArea || x < headStartX) {
+        const nearestCaret =
+          headPosition.bidiLevel !== undefined
+            ? getNearestBidiCaret(
+                positionList.filter(
+                  position =>
+                    position.pageNo === headPosition.pageNo &&
+                    position.rowNo === rowNo
+                ),
+                x
+              )
+            : null
+        if (nearestCaret) {
+          curPositionIndex = nearestCaret.index
+          hitLineStartIndex = nearestCaret.hitLineStartIndex
+          bidiAffinity = nearestCaret.affinity
+        } else if (isHitOffsetArea || x < headStartX) {
           // 头部元素为空元素时无需选中
           if (~headIndex) {
             if (headPosition.value === ZERO) {
@@ -1606,6 +1698,7 @@ export class Position {
     }
     return {
       hitLineStartIndex,
+      bidiAffinity,
       index: curPositionIndex,
       isControl: !!elementList[curPositionIndex]?.controlId
     }

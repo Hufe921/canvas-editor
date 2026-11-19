@@ -77,6 +77,16 @@ const wordCount = await instance.command.getWordCount()
 const range = instance.command.getCursorPosition()
 ```
 
+## getDirection
+
+功能：获取当前光标锚点元素的文字方向。光标未激活或元素未单独设置方向时，返回 `defaultDirection`。
+
+用法：
+
+```javascript
+const direction: TextDirection = instance.command.getDirection()
+```
+
 ## getRemainingContentHeight
 
 功能：获取最后一页剩余可用内容高度

@@ -20,6 +20,7 @@ interface IEditorOption {
   defaultColor?: string // 默认字体颜色。默认：#000000
   defaultFont?: string // 默认字体。默认：Microsoft YaHei
   defaultSize?: number // 默认字号。默认：16
+  defaultDirection?: TextDirection // 默认文字方向：LTR、RTL、AUTO。默认：LTR
   minSize?: number // 最小字号。默认：5
   maxSize?: number // 最大字号。默认：72
   defaultBasicRowMarginHeight?: number // 默认行高。默认：8

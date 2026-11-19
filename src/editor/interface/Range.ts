@@ -2,9 +2,12 @@ import { EditorZone } from '../dataset/enum/Editor'
 import { SurroundPosition } from '../dataset/enum/Common'
 import { IElement, IElementFillRect, IElementStyle } from './Element'
 
+export type BidiCaretAffinity = 'before' | 'after'
+
 export interface IRange {
   startIndex: number
   endIndex: number
+  bidiAffinity?: BidiCaretAffinity
   isCrossRowCol?: boolean
   tableId?: string
   startTdIndex?: number

@@ -20,6 +20,8 @@ import { getRotatedRectSize } from '../../utils/image'
 import { shrinkColgroupToWidth } from '../../utils/table'
 import type { Draw } from '../draw/Draw'
 import type { TextParticle } from '../draw/particle/TextParticle'
+import { TextDirection } from '../../dataset/enum/TextDirection'
+import { BidiResolver } from '../bidi/resolver/BidiResolver'
 
 // 多次文本测量与宽度累加存在浮点误差，不能据此拆出额外一行
 const WIDTH_EPSILON = 1e-8
@@ -41,6 +43,7 @@ export interface IComputePageListResult {
 
 export class LayoutEngine {
   private draw: Draw
+  private bidiResolver: BidiResolver | null = null
   private controlMinWidthPlaceholderElementListSet = new WeakSet<IElement[]>()
 
   constructor(draw: Draw) {
@@ -91,6 +94,7 @@ export class LayoutEngine {
       .createElement('canvas')
       .getContext('2d') as CanvasRenderingContext2D
     const textParticle = draw.getTextParticle()
+    textParticle.clearNativeTextShaperCache()
     const listParticle = draw.getListParticle()
     // 还原最小宽度控件占位
     this.consumeControlMinWidthPlaceholders(elementList)
@@ -568,7 +572,19 @@ export class LayoutEngine {
         }
         metrics.height = (element.actualSize || size) * scale
         ctx.font = draw.getElementFont(element)
-        const fontMetrics = textParticle.measureText(ctx, element)
+        const direction =
+          element.direction ?? options.defaultDirection ?? TextDirection.LTR
+        const fontMetrics =
+          direction === TextDirection.LTR
+            ? textParticle.measureText(ctx, element)
+            : {
+                width: textParticle.measureTextInContext(
+                  ctx,
+                  elementList,
+                  i,
+                  direction
+                )
+              }
         metrics.width = fontMetrics.width * scale
         if (element.letterSpacing) {
           metrics.width += element.letterSpacing * scale
@@ -881,6 +897,7 @@ export class LayoutEngine {
       }
       // 行结束时逻辑
       if (isWrap || i === elementList.length - 1) {
+        this._setRowDirection(curRow, options.defaultDirection)
         // 段后间距：段落末行增加高度
         // 换行符归属于下一段落元素集合，需从当前段落末尾元素读取
         if (isWrap && element.value === ZERO && !element.listWrap) {
@@ -1211,6 +1228,23 @@ export class LayoutEngine {
       !element.controlId &&
       !element.controlComponent
     )
+  }
+
+  private _setRowDirection(row: IRow, defaultDirection: TextDirection): void {
+    const firstElement = row.elementList[0]
+    const directionElement =
+      firstElement?.value === ZERO ? row.elementList[1] : firstElement
+    const direction =
+      directionElement?.direction ?? defaultDirection ?? TextDirection.LTR
+    if (direction === TextDirection.LTR) return
+    const resolvedDirection =
+      direction === TextDirection.RTL
+        ? TextDirection.RTL
+        : (this.bidiResolver ??= new BidiResolver()).resolveDirection(
+            row.elementList.map(element => element.value).join(''),
+            direction
+          )
+    row.direction = resolvedDirection
   }
 
   // TAB 对齐 run 测量：TAB 之后到下一个 TAB/段落边界前的连续文本宽度，

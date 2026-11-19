@@ -44,6 +44,7 @@ import type { ISpellcheckOption } from './Spellcheck'
 import { IParagraphDragOption } from './ParagraphDrag'
 import { IFootnoteOption } from './Footnote'
 import { BackendType } from '../dataset/enum/Editor'
+import { TextDirection } from '../dataset/enum/TextDirection'
 
 export interface ILabOption {
   /**
@@ -75,6 +76,8 @@ export interface IEditorOption {
   defaultBasicRowMarginHeight?: number
   defaultRowMargin?: number
   defaultTabWidth?: number
+  // 默认正文方向。未显式设置 rtl/auto 时沿用原有 LTR 排版快路径
+  defaultDirection?: TextDirection
   width?: number
   height?: number
   scale?: number

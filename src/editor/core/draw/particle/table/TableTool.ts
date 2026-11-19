@@ -2,6 +2,7 @@ import { IElement } from '../../../..'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { EditorMode } from '../../../../dataset/enum/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
+import { TextDirection } from '../../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { Position } from '../../../position/Position'
@@ -134,9 +135,20 @@ export class TableTool {
     const fragment = position.tableFragment
     const fragmentStartTrIndex = fragment?.startTrIndex ?? 0
     const fragmentEndTrIndex = fragment?.endTrIndex ?? trList!.length
+    const cursorPosition = this.position.getCursorPosition()
+    const { trIndex, tdIndex } = positionContext
+    const activeTd =
+      trIndex !== undefined && tdIndex !== undefined
+        ? trList?.[trIndex]?.tdList[tdIndex]
+        : null
+    // 仅查询当前单元格的行，避免表格工具每次渲染扫描整份文档
+    const cursorRow = activeTd?.rowList?.find(
+      row => row.rowIndex === cursorPosition?.rowNo
+    )
+    const isRtl = cursorRow?.direction === TextDirection.RTL
     // 锚点未变化且布局未重排时不重复重建：
-    // 键包含缩放、坐标、片段边界与行列尺寸，任一变化都会使缓存失效
-    let layoutKey = `${scale}:${leftTop[0]}:${leftTop[1]}:${
+    // 键包含方向、缩放、坐标、片段边界与行列尺寸
+    let layoutKey = `${isRtl}:${scale}:${leftTop[0]}:${leftTop[1]}:${
       position.metrics.height
     }:${fragmentStartTrIndex}:${fragmentEndTrIndex}:${
       fragment?.startSplitTrOffset ?? 0
@@ -165,13 +177,15 @@ export class TableTool {
     // 片段（或整表）像素高度（metrics 已含缩放，勿再乘 scale）
     const tableHeight = position.metrics.height
     const tableWidth = element.width! * scale
+    const sideX = tableX + (isRtl ? tableWidth : 0)
+    const sideSign = isRtl ? 1 : -1
     // 表格选择工具（尺寸由 CSS 类固定，无需设置高度）
     const tableSelectBtn = document.createElement('div')
     tableSelectBtn.classList.add(`${EDITOR_PREFIX}-table-tool__select`)
-    tableSelectBtn.style.left = `${tableX}px`
+    tableSelectBtn.style.left = `${sideX}px`
     tableSelectBtn.style.top = `${tableY}px`
-    tableSelectBtn.style.transform = `translate(-${
-      this.TABLE_SELECT_OFFSET * scale
+    tableSelectBtn.style.transform = `translate(${
+      sideSign * this.TABLE_SELECT_OFFSET * scale
     }px, ${-this.TABLE_SELECT_OFFSET * scale}px)`
     // 快捷全选
     tableSelectBtn.onclick = () => {
@@ -182,8 +196,8 @@ export class TableTool {
     // 渲染行工具（跨页片段仅渲染当前片段的行）
     const rowContainer = document.createElement('div')
     rowContainer.classList.add(`${EDITOR_PREFIX}-table-tool__row`)
-    rowContainer.style.transform = `translateX(-${
-      this.ROW_COL_OFFSET * scale
+    rowContainer.style.transform = `translateX(${
+      sideSign * this.ROW_COL_OFFSET * scale
     }px)`
     for (let r = fragmentStartTrIndex; r < fragmentEndTrIndex; r++) {
       const rowHeight =
@@ -241,7 +255,7 @@ export class TableTool {
       rowItem.style.height = `${rowHeight}px`
       rowContainer.append(rowItem)
     }
-    rowContainer.style.left = `${tableX}px`
+    rowContainer.style.left = `${sideX}px`
     // 续页回显表头占据片段顶部，正文行工具起点需下移回显高度
     rowContainer.style.top = `${
       tableY + (fragment?.repeatHeight || 0) * scale
@@ -251,10 +265,10 @@ export class TableTool {
     // 添加行按钮（尺寸由 CSS 类固定，无需设置高度）
     const rowAddBtn = document.createElement('div')
     rowAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
-    rowAddBtn.style.left = `${tableX}px`
+    rowAddBtn.style.left = `${sideX}px`
     rowAddBtn.style.top = `${tableY + tableHeight}px`
-    rowAddBtn.style.transform = `translate(-${
-      this.ROW_COL_QUICK_POSITION * scale
+    rowAddBtn.style.transform = `translate(${
+      sideSign * this.ROW_COL_QUICK_POSITION * scale
     }px, ${this.ROW_COL_QUICK_OFFSET * scale}px)`
     // 快捷添加行
     rowAddBtn.onclick = () => {

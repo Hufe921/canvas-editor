@@ -20,6 +20,7 @@ export interface IRenderContext {
   font: string
   globalAlpha: number
   textAlign: 'center' | 'end' | 'left' | 'right' | 'start'
+  direction: CanvasDirection
   textBaseline: CanvasTextBaseline
   lineWidth: number
   lineCap: 'butt' | 'round' | 'square'

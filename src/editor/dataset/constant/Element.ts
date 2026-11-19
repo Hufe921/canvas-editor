@@ -17,6 +17,7 @@ export const EDITOR_ELEMENT_STYLE_ATTR: Array<keyof IElement> = [
 
 export const EDITOR_ROW_ATTR: Array<keyof IElement> = [
   'rowFlex',
+  'direction',
   'rowMargin',
   'spacingBefore',
   'spacingAfter',
@@ -32,6 +33,7 @@ export const EDITOR_HINT_ATTR: Array<keyof IElement> = ['hint']
 
 export const EDITOR_ELEMENT_PARAGRAPH_STYLE_ATTR: Array<keyof IElement> = [
   'rowFlex',
+  'direction',
   'rowMargin',
   'spacingBefore',
   'spacingAfter',
@@ -54,6 +56,7 @@ export const EDITOR_ELEMENT_COPY_ATTR: Array<keyof IElement> = [
   'underline',
   'strikeout',
   'rowFlex',
+  'direction',
   'url',
   'areaId',
   'hyperlinkId',
@@ -81,6 +84,7 @@ export const EDITOR_ELEMENT_ZIP_ATTR: Array<keyof IElement> = [
   'underline',
   'strikeout',
   'rowFlex',
+  'direction',
   'rowMargin',
   'spacingBefore',
   'spacingAfter',

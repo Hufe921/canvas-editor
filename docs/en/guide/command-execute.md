@@ -380,6 +380,22 @@ Usage:
 instance.command.executeRowFlex(rowFlex: RowFlex)
 ```
 
+## executeDirection
+
+Feature: Set the text direction for paragraphs in the current selection. Supports `LTR` (left-to-right), `RTL` (right-to-left), and `AUTO` (resolved from the first strong directional character). Bidirectional layout handles numbers, punctuation, brackets, superscripts/subscripts, visual carets, and selections.
+
+Usage:
+
+```javascript
+instance.command.executeDirection(direction: TextDirection)
+```
+
+Example:
+
+```javascript
+instance.command.executeDirection(TextDirection.RTL)
+```
+
 ## executeRowMargin
 
 Feature: Paragraph line spacing

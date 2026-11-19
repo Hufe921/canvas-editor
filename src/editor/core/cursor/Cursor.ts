@@ -11,6 +11,7 @@ import { Draw } from '../draw/Draw'
 import { CanvasEvent } from '../event/CanvasEvent'
 import { Position } from '../position/Position'
 import { CursorAgent } from './CursorAgent'
+import { getBidiCaretX } from '../bidi/resolver/BidiCaret'
 
 export type IDrawCursorOption = ICursorOption & {
   isShow?: boolean
@@ -123,9 +124,26 @@ export class Cursor {
     // 设置光标代理
     // 光标位置
     this.hitLineStartIndex = hitLineStartIndex
-    if (hitLineStartIndex) {
+    const isDefaultCaret =
+      cursorPosition.bidiLevel === undefined && hitLineStartIndex === undefined
+    let affinity: 'before' | 'after' = 'after'
+    let nextPosition: IElementPosition | undefined
+    if (!isDefaultCaret) {
       const positionList = this.position.getPositionList()
-      cursorPosition = positionList[hitLineStartIndex]
+      affinity = this.draw.getRange().getRange().bidiAffinity || 'after'
+      if (hitLineStartIndex !== undefined) {
+        cursorPosition = positionList[hitLineStartIndex]
+        affinity = 'before'
+        nextPosition = cursorPosition
+      } else if (affinity === 'before') {
+        const candidate = positionList[cursorPosition.index + 1]
+        if (
+          candidate?.pageNo === cursorPosition.pageNo &&
+          candidate.rowNo === cursorPosition.rowNo
+        ) {
+          nextPosition = candidate
+        }
+      }
     }
     const {
       metrics,
@@ -154,7 +172,11 @@ export class Cursor {
       metrics.boundingBoxDescent < 0 ? 0 : metrics.boundingBoxDescent
     const cursorTop =
       leftTop[1] + ascent + descent - (cursorHeight - increaseHeight) + preY
-    const cursorLeft = (hitLineStartIndex ? leftTop[0] : rightTop[0]) + preX
+    // 普通 LTR 直接沿用右缘快路径，仅方向行计算视觉亲和性
+    const cursorLeft =
+      (isDefaultCaret
+        ? rightTop[0]
+        : getBidiCaretX(cursorPosition, affinity, nextPosition)) + preX
     agentCursorDom.style.left = `${cursorLeft}px`
     agentCursorDom.style.top = `${
       cursorTop + cursorHeight - defaultOffsetHeight
@@ -234,7 +256,29 @@ export class Cursor {
     const prePageY = pageOffset.y + containerRect.top
     // 向上移动时：以顶部距离为准，向下移动时：以底部位置为准
     const isUp = direction === MoveDirection.UP
-    const x = leftBottom[0] + pageOffset.x + containerRect.left
+    let caretX = leftBottom[0]
+    if (cursorPosition.bidiLevel !== undefined) {
+      const positionList = this.position.getPositionList()
+      const hitLineStartIndex = this.hitLineStartIndex
+      let caretPosition = cursorPosition
+      let affinity = this.draw.getRange().getRange().bidiAffinity || 'after'
+      let nextPosition: IElementPosition | undefined
+      if (hitLineStartIndex !== undefined) {
+        caretPosition = positionList[hitLineStartIndex]
+        affinity = 'before'
+        nextPosition = caretPosition
+      } else if (affinity === 'before') {
+        const candidate = positionList[caretPosition.index + 1]
+        if (
+          candidate?.pageNo === caretPosition.pageNo &&
+          candidate.rowNo === caretPosition.rowNo
+        ) {
+          nextPosition = candidate
+        }
+      }
+      caretX = getBidiCaretX(caretPosition, affinity, nextPosition)
+    }
+    const x = caretX + pageOffset.x + containerRect.left
     const y = isUp ? leftTop[1] + prePageY : leftBottom[1] + prePageY
     // 可视范围根据参数调整
     const { maskMargin } = this.options

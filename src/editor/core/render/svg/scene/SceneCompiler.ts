@@ -16,6 +16,7 @@ interface IPaintState {
   font: string
   globalAlpha: number
   textAlign: CanvasTextAlign
+  direction: CanvasDirection
   textBaseline: CanvasTextBaseline
   lineWidth: number
   lineCap: CanvasLineCap
@@ -31,6 +32,18 @@ const TEXT_ANCHOR: Record<CanvasTextAlign, string> = {
   center: 'middle',
   right: 'end',
   end: 'end'
+}
+
+function getTextAnchor(
+  textAlign: CanvasTextAlign,
+  direction: CanvasDirection
+): string {
+  // Canvas 的 left/right 是物理边缘；SVG 的 start/end 会随 direction 反转
+  if (direction === 'rtl') {
+    if (textAlign === 'left') return 'end'
+    if (textAlign === 'right') return 'start'
+  }
+  return TEXT_ANCHOR[textAlign]
 }
 
 export class SceneCompiler {
@@ -343,7 +356,9 @@ export class SceneCompiler {
             opacity: state.globalAlpha,
             font: state.font,
             'dominant-baseline': state.textBaseline,
-            'text-anchor': TEXT_ANCHOR[state.textAlign],
+            'text-anchor': getTextAnchor(state.textAlign, state.direction),
+            direction: state.direction,
+            'unicode-bidi': 'normal',
             'xml:space': 'preserve'
           },
           source
@@ -433,6 +448,7 @@ export class SceneCompiler {
       font: '10px sans-serif',
       globalAlpha: 1,
       textAlign: 'start',
+      direction: 'ltr',
       textBaseline: 'alphabetic',
       lineWidth: 1,
       lineCap: 'butt',

@@ -38,10 +38,18 @@ interface IElement {
   italic?: boolean;
   underline?: boolean;
   strikeout?: boolean;
+  // 文字方向：从左到右、从右到左、自动（按首个强方向字符）
+  direction?: {
+    LTR = 'ltr',
+    RTL = 'rtl',
+    AUTO = 'auto'
+  };
   rowFlex?: {
     LEFT = 'left',
     CENTER = 'center',
     RIGHT = 'right',
+    START = 'start',
+    END = 'end',
     ALIGNMENT = 'alignment',
     JUSTIFY = 'justify'
   };

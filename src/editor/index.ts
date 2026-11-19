@@ -81,6 +81,7 @@ import { IBadge } from './interface/Badge'
 import { WatermarkType, WatermarkLayer } from './dataset/enum/Watermark'
 import { INTERNAL_SHORTCUT_KEY } from './dataset/constant/Shortcut'
 import { IGraffitiData } from './interface/Graffiti'
+import { TextDirection } from './dataset/enum/TextDirection'
 
 export default class Editor {
   public command: Command
@@ -235,7 +236,8 @@ export {
   FlexDirection,
   CheckboxMarkType,
   WatermarkType,
-  WatermarkLayer
+  WatermarkLayer,
+  TextDirection
 }
 
 // 对外类型

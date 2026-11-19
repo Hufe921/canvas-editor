@@ -11,10 +11,12 @@ export class SubscriptParticle {
     ctx: IRenderContext,
     element: IRowElement,
     x: number,
-    y: number
+    y: number,
+    direction?: CanvasDirection
   ) {
     ctx.save()
     ctx.font = element.style
+    if (direction) ctx.direction = direction
     if (element.color) {
       ctx.fillStyle = element.color
     }
