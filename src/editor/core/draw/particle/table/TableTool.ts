@@ -2,7 +2,6 @@ import { IElement } from '../../../..'
 import { EDITOR_PREFIX } from '../../../../dataset/constant/Editor'
 import { EditorMode } from '../../../../dataset/enum/Editor'
 import { TableOrder } from '../../../../dataset/enum/table/TableTool'
-import { TextDirection } from '../../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../../interface/Common'
 import { IEditorOption } from '../../../../interface/Editor'
 import { Position } from '../../../position/Position'
@@ -135,17 +134,7 @@ export class TableTool {
     const fragment = position.tableFragment
     const fragmentStartTrIndex = fragment?.startTrIndex ?? 0
     const fragmentEndTrIndex = fragment?.endTrIndex ?? trList!.length
-    const cursorPosition = this.position.getCursorPosition()
-    const { trIndex, tdIndex } = positionContext
-    const activeTd =
-      trIndex !== undefined && tdIndex !== undefined
-        ? trList?.[trIndex]?.tdList[tdIndex]
-        : null
-    // 仅查询当前单元格的行，避免表格工具每次渲染扫描整份文档
-    const cursorRow = activeTd?.rowList?.find(
-      row => row.rowIndex === cursorPosition?.rowNo
-    )
-    const isRtl = cursorRow?.direction === TextDirection.RTL
+    const isRtl = this.draw.getTableParticle().isRtl(element)
     // 锚点未变化且布局未重排时不重复重建：
     // 键包含方向、缩放、坐标、片段边界与行列尺寸
     let layoutKey = `${isRtl}:${scale}:${leftTop[0]}:${leftTop[1]}:${
@@ -296,7 +285,12 @@ export class TableTool {
     colContainer.style.transform = `translateY(-${
       this.ROW_COL_OFFSET * scale
     }px)`
-    for (let c = 0; c < colWidthList.length; c++) {
+    for (
+      let visualIndex = 0;
+      visualIndex < colWidthList.length;
+      visualIndex++
+    ) {
+      const c = isRtl ? colWidthList.length - visualIndex - 1 : visualIndex
       const colWidth = colWidthList[c] * scale
       const colItem = document.createElement('div')
       colItem.classList.add(`${EDITOR_PREFIX}-table-tool__col__item`)
@@ -332,7 +326,7 @@ export class TableTool {
           isCompute: false,
           isSubmitHistory: false
         })
-        this._setAnchorActive(colContainer, c)
+        this._setAnchorActive(colContainer, visualIndex)
       }
       const colItemAnchor = document.createElement('div')
       colItemAnchor.classList.add(`${EDITOR_PREFIX}-table-tool__anchor`)
@@ -356,10 +350,10 @@ export class TableTool {
     // 添加列按钮（尺寸由 CSS 类固定，无需设置高度）
     const colAddBtn = document.createElement('div')
     colAddBtn.classList.add(`${EDITOR_PREFIX}-table-tool__quick__add`)
-    colAddBtn.style.left = `${tableX + tableWidth}px`
+    colAddBtn.style.left = `${tableX + (isRtl ? 0 : tableWidth)}px`
     colAddBtn.style.top = `${tableY}px`
     colAddBtn.style.transform = `translate(${
-      this.ROW_COL_QUICK_OFFSET * scale
+      (isRtl ? -1 : 1) * this.ROW_COL_QUICK_OFFSET * scale
     }px, -${this.ROW_COL_QUICK_POSITION * scale}px)`
     // 快捷添加列
     colAddBtn.onclick = () => {
@@ -423,26 +417,28 @@ export class TableTool {
       colBorder.style.height = `${tdHeight * scale}px`
       colBorder.style.top = `${td.y! * scale + tdOffsetY}px`
       colBorder.style.left = `${
-        (td.x! + td.width!) * scale - this.BORDER_VALUE / 2
+        (isRtl ? td.x! : td.x! + td.width!) * scale - this.BORDER_VALUE / 2
       }px`
-      // 列高度拖拽开始
+      // RTL 下逻辑列的结束边位于单元格物理左边
       colBorder.onmousedown = evt => {
         this._mousedown({
           evt,
           element,
-          index: td.colIndex! + td.colspan - 1,
+          index: isRtl ? td.colIndex! : td.colIndex! + td.colspan - 1,
           order: TableOrder.COL
         })
       }
       borderContainer.appendChild(colBorder)
-      // 首列开头拖拽（配置表格可以超出正文区域宽度时）
+      // 首列起始边拖拽：LTR 在物理左侧，RTL 在物理右侧
       if (overflow && td.colIndex === 0) {
         const colBorder = document.createElement('div')
         colBorder.classList.add(`${EDITOR_PREFIX}-table-tool__border__col`)
         colBorder.style.width = `${this.BORDER_VALUE}px`
         colBorder.style.height = `${tdHeight * scale}px`
         colBorder.style.top = `${td.y! * scale + tdOffsetY}px`
-        colBorder.style.left = `${td.x! * scale - this.BORDER_VALUE / 2}px`
+        colBorder.style.left = `${
+          (isRtl ? td.x! + td.width! : td.x!) * scale - this.BORDER_VALUE / 2
+        }px`
         // 首列拖拽
         colBorder.onmousedown = evt => {
           this._mousedown({
@@ -528,7 +524,8 @@ export class TableTool {
       () => {
         let isChangeSize = false
         // dx/dy为屏幕像素，tr/colgroup等表格度量均为未缩放单位，统一换算后计算
-        let moveDx = dx / scale
+        const isRtl = this.draw.getTableParticle().isRtl(element)
+        let moveDx = (isRtl ? -dx : dx) / scale
         let moveDy = dy / scale
         // 改变尺寸
         if (order === TableOrder.ROW) {

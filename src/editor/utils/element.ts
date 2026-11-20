@@ -44,6 +44,7 @@ import { EditorMode } from '../dataset/enum/Editor'
 import { ElementType } from '../dataset/enum/Element'
 import { ListStyle, ListType, UlStyle } from '../dataset/enum/List'
 import { RowFlex } from '../dataset/enum/Row'
+import { TextDirection } from '../dataset/enum/TextDirection'
 import { TraceType } from '../dataset/enum/Trace'
 import { TableBorder, TdBorder } from '../dataset/enum/table/Table'
 import { VerticalAlign } from '../dataset/enum/VerticalAlign'
@@ -1242,6 +1243,9 @@ export function convertElementToDom(
     tagName = 'sub'
   }
   const dom = document.createElement(tagName)
+  if (element.direction && element.direction !== TextDirection.LTR) {
+    dom.dir = element.direction
+  }
   dom.style.fontFamily = element.font || options.defaultFont
   if (element.rowFlex) {
     dom.style.textAlign = convertRowFlexToTextAlign(element.rowFlex)
@@ -1274,7 +1278,7 @@ export function convertElementToDom(
       element.rowMargin ?? options.defaultRowMargin
     ).toString()
   }
-  dom.innerText = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+  dom.textContent = element.value.replace(new RegExp(`${ZERO}`, 'g'), '\n')
   return dom
 }
 
@@ -1365,6 +1369,7 @@ export function createDomFromElementList(
     const clipboardDom = document.createElement('div')
     for (let e = 0; e < payload.length; e++) {
       const element = payload[e]
+      const childCount = clipboardDom.childElementCount
       // 构造表格
       if (element.type === ElementType.TABLE) {
         const tableDom: HTMLTableElement = document.createElement('table')
@@ -1560,8 +1565,17 @@ export function createDomFromElementList(
         if (payload[e - 1]?.type === ElementType.TITLE) {
           text = text.replace(/^\n/, '')
         }
-        dom.innerText = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
+        dom.textContent = text.replace(new RegExp(`${ZERO}`, 'g'), '\n')
         clipboardDom.append(dom)
+      }
+      const lastChild = clipboardDom.lastElementChild as HTMLElement | null
+      if (
+        clipboardDom.childElementCount > childCount &&
+        lastChild &&
+        element.direction &&
+        element.direction !== TextDirection.LTR
+      ) {
+        lastChild.dir = element.direction
       }
     }
     return clipboardDom
@@ -1577,8 +1591,15 @@ export function createDomFromElementList(
       elementGroupRowFlex.rowFlex === RowFlex.LEFT
     // 块元素使用flex否则使用text-align
     const rowFlexDom = document.createElement('div')
+    const firstElement = elementGroupRowFlex.data[0]
+    const direction = firstElement?.direction
+    const isUniformDirection = elementGroupRowFlex.data.every(
+      element => element.direction === direction
+    )
+    const hasDirectionWrapper =
+      isUniformDirection && direction && direction !== TextDirection.LTR
+    if (hasDirectionWrapper) rowFlexDom.dir = direction
     if (!isDefaultRowFlex) {
-      const firstElement = elementGroupRowFlex.data[0]
       if (getIsBlockElement(firstElement)) {
         rowFlexDom.style.display = 'flex'
         rowFlexDom.style.justifyContent = convertRowFlexToJustifyContent(
@@ -1595,8 +1616,8 @@ export function createDomFromElementList(
     }
     // 布局内容
     rowFlexDom.innerHTML = buildDom(elementGroupRowFlex.data).innerHTML
-    // 未设置行布局时无需行布局容器
-    if (!isDefaultRowFlex) {
+    // 默认 LTR 且无对齐设置时保持原有扁平 HTML 结构
+    if (!isDefaultRowFlex || hasDirectionWrapper) {
       clipboardDom.append(rowFlexDom)
     } else {
       rowFlexDom.childNodes.forEach(child => {
@@ -1605,6 +1626,20 @@ export function createDomFromElementList(
     }
   }
   return clipboardDom
+}
+
+function getDirectionByHTMLElement(
+  element: HTMLElement | null
+): TextDirection | undefined {
+  let current = element
+  while (current) {
+    const direction = current.getAttribute('dir') || current.style.direction
+    if (Object.values(TextDirection).includes(direction as TextDirection)) {
+      return direction as TextDirection
+    }
+    current = current.parentElement
+  }
+  return undefined
 }
 
 export function convertTextNodeToElement(
@@ -1633,10 +1668,12 @@ export function convertTextNodeToElement(
   } else if (anchorNode.nodeName === 'SUP' || style.verticalAlign === 'super') {
     element.type = ElementType.SUPERSCRIPT
   }
-  // 行对齐
+  // 行对齐与文字方向均按最近显式 HTML 祖先继承
   if (rowFlex !== RowFlex.LEFT) {
     element.rowFlex = rowFlex
   }
+  const direction = getDirectionByHTMLElement(anchorNode)
+  if (direction) element.direction = direction
   // 高亮色
   if (style.backgroundColor !== 'rgba(0, 0, 0, 0)') {
     element.highlight = style.backgroundColor
@@ -1674,18 +1711,22 @@ export function getElementListByHTML(
         // br元素与display:block元素需换行
         if (node.nodeName === 'BR') {
           elementList.push({
-            value: '\n'
+            value: '\n',
+            direction: getDirectionByHTMLElement(node as HTMLElement)
           })
         } else if (node.nodeName === 'A') {
           const aElement = node as HTMLLinkElement
-          const value = aElement.innerText
+          const value = aElement.textContent
+          const direction = getDirectionByHTMLElement(aElement)
           if (value) {
             elementList.push({
               type: ElementType.HYPERLINK,
               value: '',
+              direction,
               valueList: [
                 {
-                  value
+                  value,
+                  direction
                 }
               ],
               url: aElement.href
@@ -1833,6 +1874,7 @@ export function getElementListByHTML(
           const element: IElement = {
             type: ElementType.TABLE,
             value: '\n',
+            direction: getDirectionByHTMLElement(tableElement),
             colgroup: [],
             trList: []
           }
@@ -1916,7 +1958,8 @@ export function getElementListByHTML(
               !/(\n|\r\n)$/.test(nodeElement.textContent!)
             ) {
               elementList.push({
-                value: '\n'
+                value: '\n',
+                direction: getDirectionByHTMLElement(nodeElement as HTMLElement)
               })
             }
           }

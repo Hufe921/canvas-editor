@@ -281,4 +281,32 @@ describe('directional font runs', () => {
       fillText && 'args' in fillText ? fillText.args.slice(0, 3) : []
     ).toEqual(['أوافق', 75, 20])
   })
+
+  it('Kashida 两端对齐仍按完整连写 run 绘制', () => {
+    const { particle, element } = createParticle(TextDirection.RTL)
+    const displayList = new DisplayList()
+    const values = ['مـ', 'ر', 'حـ', 'بـ', 'ا']
+
+    values.forEach((value, index) => {
+      particle.record(
+        displayList,
+        {
+          ...element,
+          value: Array.from('مرحبا')[index],
+          justifyValue: value.includes('ـ') ? value : undefined,
+          bidiLevel: 1
+        },
+        100 - index * 20,
+        20
+      )
+    })
+    particle.complete()
+
+    const fillText = displayList
+      .getOperations()
+      .find(operation => operation.type === 'fillText')
+    expect(
+      fillText && 'args' in fillText ? fillText.args.slice(0, 3) : []
+    ).toEqual(['مـرحـبـا', 20, 20])
+  })
 })

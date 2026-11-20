@@ -22,6 +22,7 @@ import type { Draw } from '../draw/Draw'
 import type { TextParticle } from '../draw/particle/TextParticle'
 import { TextDirection } from '../../dataset/enum/TextDirection'
 import { BidiResolver } from '../bidi/resolver/BidiResolver'
+import { justifyDirectionalText } from '../bidi/shape/ArabicJustify'
 
 // 多次文本测量与宽度累加存在浮点误差，不能据此拆出额外一行
 const WIDTH_EPSILON = 1e-8
@@ -940,13 +941,33 @@ export class LayoutEngine {
               ? curRow.elementList.slice(1)
               : curRow.elementList
           ).filter(el => !el.hang)
-          const gap =
-            (availableWidth - curRow.width) / (rowElementList.length - 1)
-          for (let e = 0; e < rowElementList.length - 1; e++) {
-            const el = rowElementList[e]
-            el.metrics.width += gap
+          const extraWidth = availableWidth - curRow.width
+          if (curRow.direction) {
+            const firstTextElement = rowElementList.find(
+              element => element.value !== ZERO
+            )
+            let kashidaWidth = 0
+            if (firstTextElement) {
+              ctx.font = draw.getElementFont(firstTextElement)
+              kashidaWidth =
+                textParticle.measureText(ctx, {
+                  ...firstTextElement,
+                  value: '\u0640'
+                }).width * scale
+            }
+            curRow.width += justifyDirectionalText(
+              rowElementList,
+              extraWidth,
+              kashidaWidth
+            )
+          } else {
+            const gap = extraWidth / (rowElementList.length - 1)
+            for (let e = 0; e < rowElementList.length - 1; e++) {
+              const el = rowElementList[e]
+              el.metrics.width += gap
+            }
+            curRow.width = availableWidth
           }
-          curRow.width = availableWidth
         }
       }
       // 重新计算坐标、页码、下一行首行元素环绕交叉
@@ -1237,6 +1258,8 @@ export class LayoutEngine {
     const direction =
       directionElement?.direction ?? defaultDirection ?? TextDirection.LTR
     if (direction === TextDirection.LTR) return
+    // 重排时清除上一轮的显示用 Kashida，避免切回非两端对齐后残留
+    for (const element of row.elementList) element.justifyValue = undefined
     const resolvedDirection =
       direction === TextDirection.RTL
         ? TextDirection.RTL

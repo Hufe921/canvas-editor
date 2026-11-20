@@ -500,8 +500,13 @@ export class TableOperate {
     const curTrList = element.trList!
     let startTd = curTrList[startTrIndex!].tdList[startTdIndex!]
     let endTd = curTrList[endTrIndex!].tdList[endTdIndex!]
-    // 交换起始位置
-    if (startTd.x! > endTd.x! || startTd.y! > endTd.y!) {
+    // 合并范围使用逻辑列序，避免 RTL 物理坐标反转后得到空选区
+    const isAfter =
+      startTd.y! > endTd.y! ||
+      (this.tableParticle.isRtl(element)
+        ? startTd.colIndex! > endTd.colIndex!
+        : startTd.x! > endTd.x!)
+    if (isAfter) {
       ;[startTd, endTd] = [endTd, startTd]
     }
     const startColIndex = startTd.colIndex!
@@ -535,9 +540,12 @@ export class TableOperate {
     const lastRow = rowCol[rowCol.length - 1]
     const leftTop = rowCol[0][0]
     const rightBottom = lastRow[lastRow.length - 1]
-    const startX = leftTop.x!
+    const isRtl = this.tableParticle.isRtl(element)
+    const startX = isRtl ? rightBottom.x! : leftTop.x!
     const startY = leftTop.y!
-    const endX = rightBottom.x! + rightBottom.width!
+    const endX = isRtl
+      ? leftTop.x! + leftTop.width!
+      : rightBottom.x! + rightBottom.width!
     const endY = rightBottom.y! + rightBottom.height!
     for (let t = 0; t < rowCol.length; t++) {
       const tr = rowCol[t]

@@ -341,7 +341,7 @@ export class TextParticle {
       let hasMultipleColors = false
       for (let i = start; i < end; i++) {
         const record = records[i]
-        text += record.element.value
+        text += record.element.justifyValue ?? record.element.value
         minX = Math.min(minX, record.x)
         const color = record.element.color || this.options.defaultColor
         if (color !== firstColor) hasMultipleColors = true

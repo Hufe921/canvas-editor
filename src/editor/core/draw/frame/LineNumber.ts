@@ -1,4 +1,5 @@
 import { LineNumberType } from '../../../dataset/enum/LineNumber'
+import { TextDirection } from '../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import type { IRenderContext } from '../../render/model/RenderContext'
@@ -18,11 +19,12 @@ export class LineNumber {
       scale,
       lineNumber: { color, size, font, right, type }
     } = this.options
-    const { margins } = this.draw.getPageSize(pageNo)
+    const { width, margins } = this.draw.getPageSize(pageNo)
     const positionList = this.draw.getPosition().getOriginalMainPositionList()
     const pageRowList = this.draw.getPageRowList()
     const rowList = pageRowList[pageNo]
     const fontStyle = `${size * scale}px ${font}`
+    const isRtl = this.options.defaultDirection === TextDirection.RTL
     ctx.save()
     ctx.fillStyle = color
     ctx.font = fontStyle
@@ -35,7 +37,10 @@ export class LineNumber {
       const textMetrics = this.draw
         .getTextMeasurer()
         .measure({ value: `${seq}` }, fontStyle)
-      const x = margins[3] - textMetrics.width - right * scale
+      // RTL 页面将行号放到正文右侧，文字仍按正常数字顺序绘制
+      const x = isRtl
+        ? width - margins[1] + right * scale
+        : margins[3] - textMetrics.width - right * scale
       const y = leftBottom[1] - textMetrics.actualBoundingBoxAscent
       ctx.fillText(`${seq}`, x, y)
     }

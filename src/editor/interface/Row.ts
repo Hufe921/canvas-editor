@@ -21,6 +21,8 @@ export type IRowElement = IElement & {
   hang?: boolean
   // 方向行排版阶段计算的双向嵌入层级，绘制分段与光标共用
   bidiLevel?: number
+  // 阿语两端对齐的显示文本（含 Kashida），不改变原始文档值
+  justifyValue?: string
 }
 
 export interface IRow {

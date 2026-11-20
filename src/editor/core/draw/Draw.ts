@@ -2213,8 +2213,9 @@ export class Draw {
           // 制表位命中位点时的前导符填充
           this.textParticle.renderTabLeader(ctx, element, x, y + offsetY)
         } else if (
-          element.rowFlex === RowFlex.ALIGNMENT ||
-          element.rowFlex === RowFlex.JUSTIFY
+          !curRow.direction &&
+          (element.rowFlex === RowFlex.ALIGNMENT ||
+            element.rowFlex === RowFlex.JUSTIFY)
         ) {
           // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本
           this.textParticle.record(ctx, element, x, y + offsetY)
@@ -2407,8 +2408,7 @@ export class Draw {
             } else if (rangePositionList) {
               if (metrics.width || curRow.elementList.length > 1) {
                 rangePositionList.push(
-                  curRow.fragmentPosition ||
-                    positionList[curRow.startIndex + j]
+                  curRow.fragmentPosition || positionList[curRow.startIndex + j]
                 )
               } else {
                 rangeRecord.x =
@@ -2558,8 +2558,7 @@ export class Draw {
         !isPrintMode &&
         !isGraffitiMode &&
         (Boolean(
-          visualRangeRects?.length ||
-            (rangeRecord.width && rangeRecord.height)
+          visualRangeRects?.length || (rangeRecord.width && rangeRecord.height)
         ) ||
           (isDrawRange &&
             isCrossRowCol &&

@@ -27,6 +27,7 @@ import {
 import { ElementType } from '@/editor/dataset/enum/Element'
 import { TraceType } from '@/editor/dataset/enum/Trace'
 import { RowFlex } from '@/editor/dataset/enum/Row'
+import { TextDirection } from '@/editor/dataset/enum/TextDirection'
 import { ControlType, ControlComponent } from '@/editor/dataset/enum/Control'
 import { ListType, ListStyle } from '@/editor/dataset/enum/List'
 import { TitleLevel } from '@/editor/dataset/enum/Title'
@@ -551,6 +552,33 @@ describe('createDomFromElementList', () => {
     expect(dom).toBeTruthy()
     expect(dom.tagName).toBe('DIV')
   })
+
+  it('默认 LTR 不增加方向容器', () => {
+    const dom = createDomFromElementList([{ value: 'hello' }])
+    expect(dom.innerHTML).not.toContain('dir=')
+  })
+
+  it('导出段落方向并支持复制后的 HTML 回读', () => {
+    const source: IElement[] = [
+      { value: 'مرحبا', direction: TextDirection.RTL },
+      { value: '\n', direction: TextDirection.RTL },
+      { value: 'abc', direction: TextDirection.LTR },
+      { value: '123', direction: TextDirection.AUTO }
+    ]
+    const dom = createDomFromElementList(source)
+    expect(dom.querySelector('[dir="rtl"]')).not.toBeNull()
+    expect(dom.querySelector('[dir="auto"]')).not.toBeNull()
+    const result = getElementListByHTML(dom.innerHTML, { innerWidth: 500 })
+    expect(result.find(item => item.value.includes('مرحبا'))?.direction).toBe(
+      TextDirection.RTL
+    )
+    expect(
+      result.find(item => item.value === 'abc')?.direction ?? TextDirection.LTR
+    ).toBe(TextDirection.LTR)
+    expect(result.find(item => item.value === '123')?.direction).toBe(
+      TextDirection.AUTO
+    )
+  })
 })
 
 describe('getElementListByHTML', () => {
@@ -559,6 +587,34 @@ describe('getElementListByHTML', () => {
     const result = getElementListByHTML(html, { innerWidth: 500 })
     expect(Array.isArray(result)).toBe(true)
     expect(result.length).toBeGreaterThan(0)
+  })
+
+  it('继承 dir、读取内联 direction 并保留 auto', () => {
+    const result = getElementListByHTML(
+      '<div dir="rtl">مرحبا<span dir="ltr">abc</span></div><p dir="auto">123</p>',
+      { innerWidth: 500 }
+    )
+    expect(result.find(item => item.value === 'مرحبا')?.direction).toBe(
+      TextDirection.RTL
+    )
+    expect(result.find(item => item.value === 'abc')?.direction).toBe(
+      TextDirection.LTR
+    )
+    expect(result.find(item => item.value === '123')?.direction).toBe(
+      TextDirection.AUTO
+    )
+  })
+
+  it('导入超链接和表格方向', () => {
+    const result = getElementListByHTML(
+      '<a dir="rtl" href="https://example.com">مرحبا</a><table dir="rtl"><tr><td>abc</td></tr></table>',
+      { innerWidth: 500 }
+    )
+    const link = result.find(item => item.type === ElementType.HYPERLINK)
+    const table = result.find(item => item.type === ElementType.TABLE)
+    expect(link?.direction).toBe(TextDirection.RTL)
+    expect(link?.valueList?.[0].direction).toBe(TextDirection.RTL)
+    expect(table?.direction).toBe(TextDirection.RTL)
   })
 })
 

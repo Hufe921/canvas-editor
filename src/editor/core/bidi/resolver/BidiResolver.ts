@@ -154,30 +154,42 @@ export class BidiResolver {
   ): IBidiResult {
     const text = items.map(item => item.value).join('')
     const resolvedDirection = this.resolveDirection(text, direction)
-    const types = items.map(item => this.getBidiClass(item.value))
+    const originalTypes = items.map(item => this.getBidiClass(item.value))
+    const types = [...originalTypes]
     const levels = this.applyExplicitRules(types, text, resolvedDirection)
     const processingTypes = types.map(type => {
       if (this.isEmbeddingControl(type)) return 'BN'
       if (this.isIsolateControl(type)) return 'ON'
       return type
     })
-    const runs = this.getLevelRuns(levels)
-    for (const run of runs) {
+    const runs = this.getLevelRuns(levels, originalTypes)
+    const runSequences = this.getIsolatingRunSequences(types, runs)
+    for (const sequence of runSequences) {
+      const indexes = sequence
+        .flatMap(run =>
+          Array.from({ length: run.end - run.start }, (_, i) => run.start + i)
+        )
+        .filter(index => {
+          const type = originalTypes[index]
+          return type !== 'BN' && !this.isEmbeddingControl(type)
+        })
+      const firstRun = sequence[0]
+      const lastRun = sequence[sequence.length - 1]
       const sos = this.getBoundaryDirection(
-        run.level,
-        levels[run.start - 1],
+        firstRun.level,
+        levels[firstRun.start - 1],
         resolvedDirection
       )
       const eos = this.getBoundaryDirection(
-        run.level,
-        levels[run.end],
+        lastRun.level,
+        levels[lastRun.end],
         resolvedDirection
       )
-      this.applyWeakRules(processingTypes, run, sos)
-      this.applyBracketRules(items, processingTypes, run, run.level)
-      this.applyNeutralRules(processingTypes, run, run.level, sos, eos)
+      this.applyWeakRules(processingTypes, indexes, sos)
+      this.applyBracketRules(items, processingTypes, indexes, firstRun.level)
+      this.applyNeutralRules(processingTypes, indexes, firstRun.level, sos, eos)
     }
-    this.applyImplicitRules(processingTypes, levels)
+    this.applyImplicitRules(processingTypes, originalTypes, levels)
     this.applyLineResetRules(types, levels, resolvedDirection)
     return {
       direction: resolvedDirection,
@@ -270,26 +282,24 @@ export class BidiResolver {
       const type = types[i]
       const state = stack[stack.length - 1]
       if (this.isIsolateInitiator(type)) {
-        levels[i] = state.level
+        // 隔离控制符属于所在隔离区外层，忽略同层普通 embedding 状态
+        const outerState = stack.findLast(item => item.isolate) || stack[0]
+        levels[i] = outerState.level
         const isolateDirection =
           type === 'LRI'
             ? TextDirection.LTR
             : type === 'RLI'
               ? TextDirection.RTL
               : this.getFirstStrongDirection(
-                  this.getIsolateText(text, i + 1)
-                ) === 'R'
+                    this.getIsolateText(text, i + 1)
+                  ) === 'R'
                 ? TextDirection.RTL
                 : TextDirection.LTR
         const nextLevel = this.getNextIsolateLevel(
-          state.level,
+          outerState.level,
           isolateDirection
         )
-        if (
-          overflowIsolateCount ||
-          overflowEmbeddingCount ||
-          nextLevel > 125
-        ) {
+        if (overflowIsolateCount || overflowEmbeddingCount || nextLevel > 125) {
           overflowIsolateCount++
         } else {
           validIsolateCount++
@@ -299,6 +309,7 @@ export class BidiResolver {
         continue
       }
       if (type === 'PDI') {
+        let isMatched = false
         if (overflowIsolateCount) {
           overflowIsolateCount--
         } else if (validIsolateCount) {
@@ -306,8 +317,10 @@ export class BidiResolver {
           while (!stack[stack.length - 1].isolate) stack.pop()
           stack.pop()
           validIsolateCount--
+          isMatched = true
         }
-        levels[i] = stack[stack.length - 1].level
+        const outerState = stack.findLast(item => item.isolate) || stack[0]
+        levels[i] = isMatched ? stack[stack.length - 1].level : outerState.level
         continue
       }
       if (type === 'PDF') {
@@ -327,24 +340,26 @@ export class BidiResolver {
         const nextLevel = isRtl
           ? this.getLeastGreaterOdd(state.level)
           : this.getLeastGreaterEven(state.level)
-        if (
-          overflowIsolateCount ||
-          overflowEmbeddingCount ||
-          nextLevel > 125
-        ) {
+        if (overflowIsolateCount || overflowEmbeddingCount || nextLevel > 125) {
           overflowEmbeddingCount++
         } else {
           stack.push({
             level: nextLevel,
-            override:
-              type === 'LRO' ? 'L' : type === 'RLO' ? 'R' : null,
+            override: type === 'LRO' ? 'L' : type === 'RLO' ? 'R' : null,
             isolate: false
           })
         }
         continue
       }
       levels[i] = state.level
-      if (!overflowIsolateCount && !overflowEmbeddingCount && state.override) {
+      if (
+        !overflowIsolateCount &&
+        !overflowEmbeddingCount &&
+        state.override &&
+        type !== 'B' &&
+        type !== 'S' &&
+        type !== 'WS'
+      ) {
         types[i] = state.override
       }
     }
@@ -353,59 +368,56 @@ export class BidiResolver {
 
   private applyWeakRules(
     types: BidiClass[],
-    run: ILevelRun,
+    indexes: number[],
     sos: StrongDirection
   ): void {
-    // W4：非间距标记继承前一个字符类型，run 开头使用 sos
-    for (let i = run.start; i < run.end; i++) {
+    // W4：非间距标记继承前一个字符类型，序列开头使用 sos
+    for (let p = 0; p < indexes.length; p++) {
+      const i = indexes[p]
       if (types[i] === 'NSM') {
-        types[i] = i === run.start ? sos : types[i - 1]
+        types[i] = p === 0 ? sos : types[indexes[p - 1]]
       }
     }
     let previousStrong: BidiClass = sos
-    for (let i = run.start; i < run.end; i++) {
+    for (const i of indexes) {
       const type = types[i]
       if (type === 'EN' && previousStrong === 'AL') types[i] = 'AN'
       if (type === 'L' || type === 'R' || type === 'AL') previousStrong = type
     }
-    for (let i = run.start; i < run.end; i++) {
+    for (let p = 0; p < indexes.length; p++) {
+      const i = indexes[p]
+      const previous = types[indexes[p - 1]]
+      const next = types[indexes[p + 1]]
       if (types[i] === 'AL') types[i] = 'R'
-      if (
-        types[i] === 'ES' &&
-        types[i - 1] === 'EN' &&
-        i - 1 >= run.start &&
-        types[i + 1] === 'EN' &&
-        i + 1 < run.end
-      ) {
+      if (types[i] === 'ES' && previous === 'EN' && next === 'EN') {
         types[i] = 'EN'
       } else if (
         types[i] === 'CS' &&
-        i - 1 >= run.start &&
-        i + 1 < run.end &&
-        types[i - 1] === types[i + 1] &&
-        (types[i - 1] === 'EN' || types[i - 1] === 'AN')
+        previous === next &&
+        (previous === 'EN' || previous === 'AN')
       ) {
-        types[i] = types[i - 1]
+        types[i] = previous
       }
     }
-    for (let i = run.start; i < run.end; i++) {
+    for (let p = 0; p < indexes.length; p++) {
+      const i = indexes[p]
       if (types[i] !== 'ET') continue
-      if (types[i - 1] === 'EN' && i - 1 >= run.start) {
+      if (p > 0 && types[indexes[p - 1]] === 'EN') {
         types[i] = 'EN'
       } else {
-        let end = i
-        while (end < run.end && types[end] === 'ET') end++
-        if (end < run.end && types[end] === 'EN') {
-          for (let j = i; j < end; j++) types[j] = 'EN'
+        let end = p
+        while (end < indexes.length && types[indexes[end]] === 'ET') end++
+        if (end < indexes.length && types[indexes[end]] === 'EN') {
+          for (let j = p; j < end; j++) types[indexes[j]] = 'EN'
         }
-        i = end - 1
+        p = end - 1
       }
     }
-    for (let i = run.start; i < run.end; i++) {
+    for (const i of indexes) {
       if (types[i] === 'ES' || types[i] === 'CS') types[i] = 'ON'
     }
     previousStrong = sos
-    for (let i = run.start; i < run.end; i++) {
+    for (const i of indexes) {
       const type = types[i]
       if (type === 'EN' && previousStrong === 'L') types[i] = 'L'
       if (type === 'L' || type === 'R') previousStrong = type
@@ -415,18 +427,21 @@ export class BidiResolver {
   private applyBracketRules(
     items: IBidiTextItem[],
     types: BidiClass[],
-    run: ILevelRun,
+    indexes: number[],
     level: number
   ): void {
     const stack: number[] = []
     const pairs: Array<[number, number]> = []
-    for (let i = run.start; i < run.end; i++) {
+    const positions = new Map<number, number>()
+    indexes.forEach((index, position) => positions.set(index, position))
+    for (const i of indexes) {
       if (types[i] !== 'ON') continue
       const char = items[i].value.charAt(0)
       const codePoint = char.codePointAt(0)!
       const closing = BRACKET_PAIR_MAP.get(codePoint)
       if (closing !== undefined) {
-        stack.push(i)
+        // N0 算法最多跟踪 63 层嵌套，避免恶意深括号造成无界栈
+        if (stack.length < 63) stack.push(i)
         continue
       }
       if (!CLOSING_BRACKET_SET.has(codePoint)) continue
@@ -441,56 +456,81 @@ export class BidiResolver {
       }
     }
     const embeddingDirection: StrongDirection = level % 2 === 0 ? 'L' : 'R'
-    const oppositeDirection: StrongDirection = embeddingDirection === 'L' ? 'R' : 'L'
-    for (const [open, close] of pairs) {
+    const oppositeDirection: StrongDirection =
+      embeddingDirection === 'L' ? 'R' : 'L'
+    const getStrongDirection = (type: BidiClass): StrongDirection | null => {
+      if (type === 'EN' || type === 'AN') return 'R'
+      return type === 'L' || type === 'R' ? type : null
+    }
+    pairs.sort((a, b) => a[0] - b[0])
+    for (const [open, close] of pairs.slice(0, 63)) {
+      const openPosition = positions.get(open)!
+      const closePosition = positions.get(close)!
       let direction: StrongDirection | null = null
-      for (let i = open + 1; i < close; i++) {
-        const type = types[i]
-        if (type === embeddingDirection) {
+      let hasOpposite = false
+      for (let p = openPosition + 1; p < closePosition; p++) {
+        const strongDirection = getStrongDirection(types[indexes[p]])
+        if (strongDirection === embeddingDirection) {
           direction = embeddingDirection
           break
         }
-        if (type === 'EN' || type === 'AN') {
-          if (embeddingDirection === 'R') {
-            direction = 'R'
-            break
-          }
-        } else if (type === oppositeDirection) {
+        if (strongDirection === oppositeDirection) hasOpposite = true
+      }
+      // N0：反向内容还需满足括号前或后的最近非中性字符同为反向
+      if (!direction && hasOpposite) {
+        let before: StrongDirection | null = null
+        for (let p = openPosition - 1; p >= 0; p--) {
+          before = getStrongDirection(types[indexes[p]])
+          if (before) break
+        }
+        let after: StrongDirection | null = null
+        for (let p = closePosition + 1; p < indexes.length; p++) {
+          after = getStrongDirection(types[indexes[p]])
+          if (after) break
+        }
+        if (before === oppositeDirection || after === oppositeDirection) {
           direction = oppositeDirection
         }
       }
       if (!direction) continue
       types[open] = direction
       types[close] = direction
-      for (let i = open + 1; i < close && types[i] === 'NSM'; i++) {
+      // W4 已把 NSM 改成相邻类型，这里需依据原字符补回 N0 的传播规则
+      for (let p = openPosition + 1; p < closePosition; p++) {
+        const i = indexes[p]
+        if (this.getBidiClass(items[i].value) !== 'NSM') break
         types[i] = direction
       }
-      for (let i = close + 1; i < run.end && types[i] === 'NSM'; i++) {
+      for (let p = closePosition + 1; p < indexes.length; p++) {
+        const i = indexes[p]
+        if (this.getBidiClass(items[i].value) !== 'NSM') break
         types[i] = direction
       }
     }
-    for (let i = run.start; i < run.end; i++) {
+    for (let p = 0; p < indexes.length; p++) {
+      const i = indexes[p]
       if (types[i] === 'NSM') {
-        types[i] = i > run.start ? types[i - 1] : level % 2 === 0 ? 'L' : 'R'
+        types[i] = p > 0 ? types[indexes[p - 1]] : embeddingDirection
       }
     }
   }
 
   private applyNeutralRules(
     types: BidiClass[],
-    run: ILevelRun,
+    indexes: number[],
     level: number,
     sos: StrongDirection,
     eos: StrongDirection
   ): void {
     const paragraphType: StrongDirection = level % 2 === 0 ? 'L' : 'R'
-    for (let i = run.start; i < run.end; i++) {
+    for (let p = 0; p < indexes.length; p++) {
+      const i = indexes[p]
       if (!this.isNeutral(types[i])) continue
-      let end = i
-      while (end < run.end && this.isNeutral(types[end])) end++
+      let end = p
+      while (end < indexes.length && this.isNeutral(types[indexes[end]])) end++
       let before = sos
-      for (let j = i - 1; j >= run.start; j--) {
-        const type = types[j]
+      for (let j = p - 1; j >= 0; j--) {
+        const type = types[indexes[j]]
         if (type === 'L' || type === 'R') {
           before = type
           break
@@ -501,8 +541,8 @@ export class BidiResolver {
         }
       }
       let after = eos
-      for (let j = end; j < run.end; j++) {
-        const type = types[j]
+      for (let j = end; j < indexes.length; j++) {
+        const type = types[indexes[j]]
         if (type === 'L' || type === 'R') {
           after = type
           break
@@ -512,13 +552,25 @@ export class BidiResolver {
           break
         }
       }
-      types.fill(before === after ? before : paragraphType, i, end)
-      i = end - 1
+      const direction = before === after ? before : paragraphType
+      for (let j = p; j < end; j++) types[indexes[j]] = direction
+      p = end - 1
     }
   }
 
-  private applyImplicitRules(types: BidiClass[], levels: number[]): void {
+  private applyImplicitRules(
+    types: BidiClass[],
+    originalTypes: BidiClass[],
+    levels: number[]
+  ): void {
     for (let i = 0; i < types.length; i++) {
+      // 显式控制符的级别已由 X 规则确定，不能再参与隐式级别提升
+      if (
+        this.isEmbeddingControl(originalTypes[i]) ||
+        this.isIsolateControl(originalTypes[i])
+      ) {
+        continue
+      }
       const type = types[i]
       if (levels[i] % 2 === 0) {
         if (type === 'R') levels[i]++
@@ -537,15 +589,18 @@ export class BidiResolver {
     const baseLevel = direction === TextDirection.RTL ? 1 : 0
     for (let i = 0; i < types.length; i++) {
       const type = types[i]
-      if (type === 'B' || type === 'S' || this.isIsolateControl(type)) {
+      if (type === 'B' || type === 'S') {
         levels[i] = baseLevel
         for (let j = i - 1; j >= 0 && types[j] === 'WS'; j--) {
           levels[j] = baseLevel
         }
-        if (this.isIsolateControl(type)) {
-          for (let j = i + 1; j < types.length && types[j] === 'WS'; j++) {
-            levels[j] = baseLevel
-          }
+      } else if (this.isIsolateControl(type)) {
+        // L1 只重置隔离控制符相邻的空白，不修改控制符自身级别
+        for (let j = i - 1; j >= 0 && types[j] === 'WS'; j--) {
+          levels[j] = baseLevel
+        }
+        for (let j = i + 1; j < types.length && types[j] === 'WS'; j++) {
+          levels[j] = baseLevel
         }
       }
     }
@@ -554,17 +609,80 @@ export class BidiResolver {
     }
   }
 
-  private getLevelRuns(levels: number[]): ILevelRun[] {
+  private getLevelRuns(
+    levels: number[],
+    originalTypes: BidiClass[]
+  ): ILevelRun[] {
     const runs: ILevelRun[] = []
+    const isRemoved = (index: number) => {
+      const type = originalTypes[index]
+      return type === 'BN' || this.isEmbeddingControl(type)
+    }
     let start = 0
     while (start < levels.length) {
+      while (start < levels.length && isRemoved(start)) start++
+      if (start >= levels.length) break
       const level = levels[start]
       let end = start + 1
-      while (end < levels.length && levels[end] === level) end++
+      // X9 字符不再参与后续规则，也不能把相邻的同级别 run 截断
+      while (end < levels.length && (isRemoved(end) || levels[end] === level)) {
+        end++
+      }
       runs.push({ start, end, level })
       start = end
     }
     return runs
+  }
+
+  // BD13：隔离区前的 run 与匹配 PDI 后的 run 属于同一序列，弱类型和
+  // 中性字符规则必须跨这两个非连续区间处理，不能在隔离控制符处截断
+  private getIsolatingRunSequences(
+    types: BidiClass[],
+    runs: ILevelRun[]
+  ): ILevelRun[][] {
+    const links = new Map<number, number>()
+    const linkedRuns = new Set<number>()
+    for (let r = 0; r < runs.length; r++) {
+      const run = runs[r]
+      const isolateIndex = run.end - 1
+      if (!this.isIsolateInitiator(types[isolateIndex])) continue
+      let depth = 0
+      for (let i = isolateIndex + 1; i < types.length; i++) {
+        if (this.isIsolateInitiator(types[i])) {
+          depth++
+        } else if (types[i] === 'PDI') {
+          if (depth) {
+            depth--
+            continue
+          }
+          const pdiRunIndex = runs.findIndex(
+            candidate => candidate.start <= i && candidate.end > i
+          )
+          const nextRunIndex = pdiRunIndex + 1
+          if (
+            pdiRunIndex >= 0 &&
+            nextRunIndex < runs.length &&
+            runs[nextRunIndex].level === run.level
+          ) {
+            links.set(r, nextRunIndex)
+            linkedRuns.add(nextRunIndex)
+          }
+          break
+        }
+      }
+    }
+    const sequences: ILevelRun[][] = []
+    for (let r = 0; r < runs.length; r++) {
+      if (linkedRuns.has(r)) continue
+      const sequence = [runs[r]]
+      let next = links.get(r)
+      while (next !== undefined) {
+        sequence.push(runs[next])
+        next = links.get(next)
+      }
+      sequences.push(sequence)
+    }
+    return sequences
   }
 
   private getBoundaryDirection(

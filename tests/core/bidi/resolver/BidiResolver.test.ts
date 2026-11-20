@@ -73,13 +73,31 @@ describe('BidiResolver', () => {
     expect(visibleIndexes).toEqual([5, 2, 3, 0])
   })
 
-  it('根据括号内部强方向计算配对括号层级', () => {
+  it('括号内只有反向内容且前后均为嵌入方向时保持中性', () => {
     const result = resolver.resolve(
       ['ا', '(', 'a', ')'].map(value => ({ value })),
       TextDirection.RTL
     )
 
-    expect(result.levels).toEqual([1, 2, 2, 2])
+    expect(result.levels).toEqual([1, 1, 2, 1])
+  })
+
+  it('括号前为反向强字符时按 N0 将括号解析为反向', () => {
+    const result = resolver.resolve(
+      ['ا', 'a', '(', 'b', ')'].map(value => ({ value })),
+      TextDirection.RTL
+    )
+
+    expect(result.levels).toEqual([1, 2, 2, 2, 2])
+  })
+
+  it('括号后为反向强字符时按 N0 将括号解析为反向', () => {
+    const result = resolver.resolve(
+      ['ا', '(', 'b', ')', 'a'].map(value => ({ value })),
+      TextDirection.RTL
+    )
+
+    expect(result.levels).toEqual([1, 2, 2, 2, 2])
   })
 
   it('FSI 不读取匹配 PDI 之后的强方向字符', () => {
@@ -126,5 +144,28 @@ describe('BidiResolver Unicode 分类', () => {
     expect(resolver.resolveDirection('،a', TextDirection.AUTO)).toBe(
       TextDirection.LTR
     )
+  })
+})
+
+describe('Unicode 15 官方数据关键样例', () => {
+  const resolver = new BidiResolver()
+
+  it('X9 删除字符不截断数字终结符序列', () => {
+    const result = resolver.resolve(
+      ['1', '\u0000', '+', '2'].map(value => ({ value })),
+      TextDirection.RTL
+    )
+    // BidiTest: EN BN ET EN / rtl，显式删除字符在诊断中记为 x
+    expect(result.levels).toEqual([2, 1, 2, 2])
+  })
+
+  it('连续 isolate initiator 保留 Unicode 规定的层级', () => {
+    const result = resolver.resolve(
+      ['\u2066', '\u2066'].map(value => ({ value })),
+      TextDirection.AUTO
+    )
+    // BidiTest: LRI LRI / auto，levels 0 2，reorder 0 1
+    expect(result.levels).toEqual([0, 2])
+    expect(result.visualIndexes).toEqual([0, 1])
   })
 })
