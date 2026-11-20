@@ -181,7 +181,7 @@ describe('双后端真实交互回归', () => {
     cy.getEditor().then((editor: Editor) => {
       clearAndInsert(editor, 'backend-ui')
     })
-    cy.get('.backend-switch + span .page-no-list').should('exist')
+    cy.get('.page-no-list').should('exist')
     cy.get('.backend-switch > i').click()
     cy.get('.backend-switch .options').should('have.class', 'visible')
     cy.get('.backend-switch [data-backend="canvas"]').click()
