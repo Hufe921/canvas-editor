@@ -3,6 +3,7 @@ import { ulStyleMapping } from '../../../dataset/constant/List'
 import { ElementType } from '../../../dataset/enum/Element'
 import { KeyMap } from '../../../dataset/enum/KeyMap'
 import { ListStyle, ListType, UlStyle } from '../../../dataset/enum/List'
+import { TextDirection } from '../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IElement, IElementPosition } from '../../../interface/Element'
@@ -415,7 +416,10 @@ export class ListParticle {
     const indentWidth = startElement.listLevel
       ? this.LIST_INDENT_WIDTH * startElement.listLevel * scale
       : 0
-    const x = startX - offsetX! + indentWidth + tabWidth
+    const isRtl = row.direction === TextDirection.RTL
+    const x = isRtl
+      ? startX + offsetX! - indentWidth - tabWidth
+      : startX - offsetX! + indentWidth + tabWidth
     const y = startY + ascent
     // 复选框样式特殊处理
     if (startElement.listStyle === ListStyle.CHECKBOX) {
@@ -434,7 +438,7 @@ export class ListParticle {
       }
       this.draw.getCheckboxParticle().render({
         ctx,
-        x: x - gap * scale,
+        x: isRtl ? x + gap * scale : x - gap * scale,
         y,
         index: 0,
         row: {
@@ -459,6 +463,7 @@ export class ListParticle {
       if (!text) return
       ctx.save()
       ctx.font = this.getListFontStyle(elementList, scale)
+      if (row.direction) ctx.direction = row.direction
       ctx.fillText(text, x, y)
       ctx.restore()
     }

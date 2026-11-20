@@ -1,4 +1,5 @@
 import { PaperDirection } from '../dataset/enum/Editor'
+import { TextDirection } from '../dataset/enum/TextDirection'
 import { RowFlex } from '../dataset/enum/Row'
 import { TabStopLeader } from '../dataset/enum/TabStop'
 import {
@@ -18,6 +19,10 @@ export type IRowElement = IElement & {
   tabLeader?: TabStopLeader
   // 避头悬挂标点（不计入行宽）
   hang?: boolean
+  // 方向行排版阶段计算的双向嵌入层级，绘制分段与光标共用
+  bidiLevel?: number
+  // 阿语两端对齐的显示文本（含 Kashida），不改变原始文档值
+  justifyValue?: string
 }
 
 export interface IRow {
@@ -25,6 +30,7 @@ export interface IRow {
   height: number
   ascent: number
   rowFlex?: RowFlex
+  direction?: TextDirection.LTR | TextDirection.RTL
   startIndex: number
   isPageBreak?: boolean
   // 分页符行携带的后续页纸张方向（排版期从分页符元素拷贝）

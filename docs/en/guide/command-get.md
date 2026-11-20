@@ -77,6 +77,16 @@ Usage:
 const range = instance.command.getCursorPosition()
 ```
 
+## getDirection
+
+Feature: Get the text direction of the current range anchor element. Returns `defaultDirection` when the cursor is inactive or the element has no explicit direction.
+
+Usage:
+
+```javascript
+const direction: TextDirection = instance.command.getDirection()
+```
+
 ## getRemainingContentHeight
 
 Feature: Get remaining available content height on last page

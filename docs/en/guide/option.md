@@ -20,6 +20,7 @@ interface IEditorOption {
   defaultColor?: string // Default color. default: #000000
   defaultFont?: string // Default font. default: Microsoft YaHei
   defaultSize?: number // Default font size. default: 16
+  defaultDirection?: TextDirection // Default text direction: LTR, RTL, or AUTO. default: LTR
   minSize?: number // Min font size。default: 5
   maxSize?: number // Max font size。default: 72
   defaultBasicRowMarginHeight?: number // Default line height。default: 8

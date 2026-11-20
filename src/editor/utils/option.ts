@@ -1,4 +1,5 @@
 import { defaultBackground } from '../dataset/constant/Background'
+import { TextDirection } from '../dataset/enum/TextDirection'
 import { defaultCheckboxOption } from '../dataset/constant/Checkbox'
 import { LETTER_CLASS } from '../dataset/constant/Common'
 import { defaultControlOption } from '../dataset/constant/Control'
@@ -249,6 +250,7 @@ export function mergeOption(
     defaultRowMargin: 1,
     defaultBasicRowMarginHeight: 8,
     defaultTabWidth: 32,
+    defaultDirection: TextDirection.LTR,
     width: 794,
     height: 1123,
     scale: 1,

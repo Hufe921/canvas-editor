@@ -30,19 +30,25 @@ export abstract class AbstractRichText {
     width: number,
     height?: number,
     color?: string,
-    decorationStyle?: TextDecorationStyle
+    decorationStyle?: TextDecorationStyle,
+    isVisual = false
   ) {
-    const isFirstRecord = !this.fillRect.width
-    // 颜色不同时立即绘制
-    if (
-      !isFirstRecord &&
-      (this.fillColor !== color || this.fillDecorationStyle !== decorationStyle)
-    ) {
-      this.render(ctx)
-      this.clearFillInfo()
-      // 重新记录
-      this.recordFillInfo(ctx, x, y, width, height, color, decorationStyle)
-      return
+    let isFirstRecord = !this.fillRect.width
+    if (!isFirstRecord) {
+      const isStyleChanged =
+        this.fillColor !== color ||
+        this.fillDecorationStyle !== decorationStyle
+      // 方向文本按逻辑顺序记录，坐标可能倒退；视觉不相交时分段绘制
+      const isDisjoint =
+        isVisual &&
+        (Math.abs(this.fillRect.y - y) >= 1 ||
+          x > this.fillRect.x + this.fillRect.width + 0.5 ||
+          x + width < this.fillRect.x - 0.5)
+      if (isStyleChanged || isDisjoint) {
+        this.render(ctx)
+        this.clearFillInfo()
+        isFirstRecord = true
+      }
     }
     if (isFirstRecord) {
       this.fillRect.x = x
@@ -51,7 +57,16 @@ export abstract class AbstractRichText {
     if (height && this.fillRect.height < height) {
       this.fillRect.height = height
     }
-    this.fillRect.width += width
+    if (isVisual) {
+      const right = Math.max(
+        this.fillRect.x + this.fillRect.width,
+        x + width
+      )
+      this.fillRect.x = Math.min(this.fillRect.x, x)
+      this.fillRect.width = right - this.fillRect.x
+    } else {
+      this.fillRect.width += width
+    }
     this.fillColor = color
     this.fillDecorationStyle = decorationStyle
   }

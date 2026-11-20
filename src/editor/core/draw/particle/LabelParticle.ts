@@ -15,7 +15,8 @@ export class LabelParticle {
     ctx: IRenderContext,
     element: IRowElement,
     x: number,
-    y: number
+    y: number,
+    direction?: CanvasDirection
   ) {
     const {
       scale,
@@ -37,6 +38,10 @@ export class LabelParticle {
     // 设置字体大小
     ctx.save()
     ctx.font = element.style
+    if (direction) {
+      ctx.direction = direction
+      ctx.textAlign = 'left'
+    }
     const { width, height, boundingBoxAscent } = element.metrics
 
     // 绘制圆角矩形背景

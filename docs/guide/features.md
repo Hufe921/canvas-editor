@@ -70,7 +70,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
 }
 </style>
 
-## 文本编辑 <Badge type="info" text="31" />
+## 文本编辑 <Badge type="info" text="32" />
 
 字符级、行内的文本与编辑能力。
 
@@ -86,6 +86,7 @@ canvas-editor 提供完整的「类 Word」文档编辑能力,按使用场景分
   <div class="it"><b>上标 / 下标</b><span>上标、下标</span></div>
   <div class="it"><b>装饰样式</b><span>下划线 / 删除线样式(实线、双线、虚线、点线、波浪线)</span></div>
   <div class="it"><b>对齐</b><span>左、中、右、两端、分散</span></div>
+  <div class="it"><b>文字方向 / BiDi</b><span>LTR / RTL / AUTO、双向混排、视觉光标与选区</span></div>
   <div class="it"><b>行间距</b><span>段落行间距(rowMargin)</span></div>
   <div class="it"><b>段落间距</b><span>段前距(spacingBefore)、段后距(spacingAfter)</span></div>
   <div class="it"><b>缩进</b><span>左缩进、右缩进、首行/悬挂缩进、段首 Tab 逐级缩进（首行→整段）、Tab 悬挂对齐</span></div>

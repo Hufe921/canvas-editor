@@ -70,7 +70,7 @@ canvas-editor provides a complete Word-like document editing experience, organiz
 }
 </style>
 
-## Text Editing <Badge type="info" text="31" />
+## Text Editing <Badge type="info" text="32" />
 
 Character-level and inline text capabilities.
 
@@ -86,6 +86,7 @@ Character-level and inline text capabilities.
   <div class="it"><b>Superscript / Subscript</b><span>Superscript, subscript</span></div>
   <div class="it"><b>Decoration style</b><span>Underline / strikethrough styles (solid, double, dashed, dotted, wavy)</span></div>
   <div class="it"><b>Alignment</b><span>Left, center, right, justified, distributed</span></div>
+  <div class="it"><b>Text direction / BiDi</b><span>LTR / RTL / AUTO, mixed bidirectional text, visual carets and selections</span></div>
   <div class="it"><b>Line spacing</b><span>Paragraph line spacing (rowMargin)</span></div>
   <div class="it"><b>Paragraph spacing</b><span>Spacing before (spacingBefore), spacing after (spacingAfter)</span></div>
   <div class="it"><b>Indent</b><span>Left indent, right indent, first-line/hanging indent, Tab-at-paragraph-start indent (first line, then whole paragraph), tab hanging alignment</span></div>

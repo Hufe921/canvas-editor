@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { LayoutEngine } from '@/editor/core/layout/LayoutEngine'
 import { ElementType } from '@/editor/dataset/enum/Element'
 import { PageMode, PaperDirection } from '@/editor/dataset/enum/Editor'
+import { TextDirection } from '@/editor/dataset/enum/TextDirection'
+import { RowFlex } from '@/editor/dataset/enum/Row'
 import type { IRow } from '@/editor/interface/Row'
 import type { Draw } from '@/editor/core/draw/Draw'
 
@@ -57,7 +59,8 @@ function createRowLayoutDraw(): Draw {
       measureBasisWord: () => textMetrics,
       getBasisWordBoundingBoxAscent: () => 8,
       measureWord: () => ({ width: 0, endElement: null }),
-      measurePunctuationWidth: () => 0
+      measurePunctuationWidth: () => 0,
+      clearNativeTextShaperCache: () => undefined
     }),
     getOptions: () => ({
       defaultSize: 16,
@@ -225,6 +228,74 @@ describe('LayoutEngine', () => {
     ).toEqual(['ab', 'c'])
   })
 
+  it('默认 LTR 仅使用原测量路径', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    const measureText = vi.fn(particle.measureText)
+    const measureTextInContext = vi.fn()
+    draw.getTextParticle = () =>
+      Object.assign(particle, {
+        measureText,
+        measureTextInContext
+      })
+    const engine = new LayoutEngine(draw)
+
+    engine.computeRowList({
+      innerWidth: 100,
+      elementList: [{ value: 'a' }, { value: 'b' }, { value: 'c' }]
+    })
+
+    expect(measureText).toHaveBeenCalledTimes(3)
+    expect(measureTextInContext).not.toHaveBeenCalled()
+  })
+
+  it('RTL 文本使用上下文测量并标记行方向', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    const measureText = vi.fn(particle.measureText)
+    const measureTextInContext = vi.fn(() => 12)
+    draw.getTextParticle = () =>
+      Object.assign(particle, {
+        measureText,
+        measureTextInContext
+      })
+    const engine = new LayoutEngine(draw)
+
+    const rowList = engine.computeRowList({
+      innerWidth: 100,
+      elementList: [
+        { value: 'ا', direction: TextDirection.RTL },
+        { value: 'ب', direction: TextDirection.RTL }
+      ]
+    })
+
+    expect(rowList).toHaveLength(1)
+    expect(rowList[0].width).toBe(24)
+    expect(rowList[0].direction).toBe(TextDirection.RTL)
+    expect(measureTextInContext).toHaveBeenCalledTimes(2)
+    expect(measureText).not.toHaveBeenCalled()
+  })
+
+  it('auto 的 LTR 段落保留方向以支持后续 RTL 混排', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    const measureTextInContext = vi.fn(() => 10)
+    draw.getTextParticle = () =>
+      Object.assign(particle, { measureTextInContext })
+    const engine = new LayoutEngine(draw)
+
+    const rowList = engine.computeRowList({
+      innerWidth: 100,
+      elementList: [
+        { value: 'a', direction: TextDirection.AUTO },
+        { value: 'ب', direction: TextDirection.AUTO }
+      ]
+    })
+
+    expect(rowList[0].direction).toBe(TextDirection.LTR)
+    expect(measureTextInContext).toHaveBeenCalledTimes(2)
+  })
+
   it('旋转图片按外接框尺寸参与文档排版', () => {
     const element = {
       type: ElementType.IMAGE,
@@ -247,5 +318,57 @@ describe('LayoutEngine', () => {
     expect(rowList[0].elementList[0].metrics.height).toBeCloseTo(89)
     expect(element.width).toBe(89)
     expect(element.height).toBe(32)
+  })
+
+  it('RTL 两端对齐优先拉伸词间空格且不改变字母宽度', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    draw.getTextParticle = () =>
+      Object.assign(particle, { measureTextInContext: () => 10 })
+    const engine = new LayoutEngine(draw)
+    const elementList = Array.from('مرحبا بكم').map(value => ({
+      value,
+      direction: TextDirection.RTL,
+      rowFlex: RowFlex.JUSTIFY
+    }))
+
+    const rowList = engine.computeRowList({ innerWidth: 100, elementList })
+    const rowElements = rowList[0].elementList
+
+    expect(rowList[0].width).toBe(100)
+    expect(rowElements.find(element => element.value === ' ')?.metrics.width).toBe(
+      20
+    )
+    expect(
+      rowElements
+        .filter(element => element.value !== ' ')
+        .every(element => element.metrics.width === 10)
+    ).toBe(true)
+  })
+
+  it('无空格阿语使用显示用 Kashida 且保留原始文本', () => {
+    const draw = createRowLayoutDraw()
+    const particle = draw.getTextParticle()
+    draw.getTextParticle = () =>
+      Object.assign(particle, { measureTextInContext: () => 10 })
+    const engine = new LayoutEngine(draw)
+    const elementList = Array.from('مرحبا').map(value => ({
+      value,
+      direction: TextDirection.RTL,
+      rowFlex: RowFlex.JUSTIFY
+    }))
+
+    const rowList = engine.computeRowList({ innerWidth: 100, elementList })
+    const rowElements = rowList[0].elementList
+
+    expect(rowList[0].width).toBe(80)
+    expect(rowElements.map(element => element.justifyValue)).toEqual([
+      'مـ',
+      undefined,
+      'حـ',
+      'بـ',
+      undefined
+    ])
+    expect(rowElements.map(element => element.value).join('')).toBe('مرحبا')
   })
 })

@@ -31,6 +31,9 @@ import { ElementStyleKey } from '../../dataset/enum/ElementStyle'
 import { ListStyle, ListType } from '../../dataset/enum/List'
 import { MoveDirection } from '../../dataset/enum/Observer'
 import { RowFlex } from '../../dataset/enum/Row'
+import { TextDirection } from '../../dataset/enum/TextDirection'
+import { getVisualRangeRects } from '../bidi/resolver/BidiGeometry'
+import { getBidiCaretX } from '../bidi/resolver/BidiCaret'
 import { TableBorder, TdBorder, TdSlash } from '../../dataset/enum/table/Table'
 import { TitleLevel } from '../../dataset/enum/Title'
 import { VerticalAlign } from '../../dataset/enum/VerticalAlign'
@@ -981,6 +984,23 @@ export class CommandAdapt {
     this.draw.render({ curIndex, isSetCursor })
   }
 
+  public direction(payload: TextDirection) {
+    const isReadonly = this.draw.isReadonly()
+    if (isReadonly) return
+    const { startIndex, endIndex } = this.range.getRange()
+    if (!~startIndex && !~endIndex) return
+    const paragraphElementList = this.range.getRangeParagraphElementList()
+    if (!paragraphElementList) return
+    this.draw.setElementProperty(paragraphElementList, { direction: payload })
+    const isSetCursor = startIndex === endIndex
+    const curIndex = isSetCursor ? endIndex : startIndex
+    this.draw.render({ curIndex, isSetCursor })
+  }
+
+  public getDirection(): TextDirection {
+    return this.range.getDirection()
+  }
+
   public rowMargin(payload: number) {
     const isReadonly = this.draw.isReadonly()
     if (isReadonly) return
@@ -1802,7 +1822,6 @@ export class CommandAdapt {
     ) {
       return []
     }
-    const rangeRects: RangeRect[] = []
     if (startIndex === endIndex) {
       const position = positionList[endIndex] || positionList[0]
       const {
@@ -1811,47 +1830,39 @@ export class CommandAdapt {
         lineHeight
       } = position
       const pageOffset = this.draw.getPageOffset(pageNo, true)
-      const point = endIndex < 0 ? leftTop : rightTop
-      rangeRects.push({
-        x: point[0] + pageOffset.x,
-        y: point[1] + pageOffset.y,
-        width: 0,
-        height: lineHeight
-      })
-      return rangeRects
+      const x =
+        endIndex < 0
+          ? leftTop[0]
+          : position.bidiLevel === undefined
+            ? rightTop[0]
+            : getBidiCaretX(
+                position,
+                range.bidiAffinity,
+                positionList[endIndex + 1]
+              )
+      return [
+        {
+          x: x + pageOffset.x,
+          y: leftTop[1] + pageOffset.y,
+          width: 0,
+          height: lineHeight
+        }
+      ]
     }
     const selectionPositionList = positionList.slice(
       startIndex + 1,
       endIndex + 1
     )
-    let currentRowKey: string | null = null
-    let currentX = 0
-    let rangeRect: RangeRect | null = null
-    for (const position of selectionPositionList) {
-      const {
-        rowNo,
-        pageNo,
-        coordinate: { leftTop, rightTop },
-        lineHeight
-      } = position
-      const rowKey = `${pageNo}:${rowNo}`
+    return getVisualRangeRects(selectionPositionList).map(rect => {
+      const { x, y, width, height, pageNo } = rect
       const pageOffset = this.draw.getPageOffset(pageNo, true)
-      if (currentRowKey !== rowKey) {
-        if (rangeRect) rangeRects.push(rangeRect)
-        rangeRect = {
-          x: leftTop[0] + pageOffset.x,
-          y: leftTop[1] + pageOffset.y,
-          width: rightTop[0] - leftTop[0],
-          height: lineHeight
-        }
-        currentRowKey = rowKey
-        currentX = leftTop[0]
-      } else {
-        rangeRect!.width = rightTop[0] - currentX
+      return {
+        x: x + pageOffset.x,
+        y: y + pageOffset.y,
+        width,
+        height
       }
-    }
-    if (rangeRect) rangeRects.push(rangeRect)
-    return deepClone(rangeRects)
+    })
   }
 
   public getRangeContext(): RangeContext | null {
@@ -1908,59 +1919,8 @@ export class CommandAdapt {
           : endPosition.index! - endRow.startIndex + 1
     }
 
-    // 坐标信息（相对编辑器书写区）
-    const rangeRects: RangeRect[] = []
-    const selectionPositionList = this.position.getSelectionPositionList()
-    if (selectionPositionList) {
-      // 起始信息及x坐标
-      let currentRowNo: number | null = null
-      let currentX = 0
-      let rangeRect: RangeRect | null = null
-      for (let p = 0; p < selectionPositionList.length; p++) {
-        const {
-          rowNo,
-          pageNo,
-          coordinate: { leftTop, rightTop },
-          lineHeight
-        } = selectionPositionList[p]
-        const pageOffset = this.draw.getPageOffset(pageNo, true)
-        // 起始行变化追加选区信息
-        if (currentRowNo === null || currentRowNo !== rowNo) {
-          if (rangeRect) {
-            rangeRects.push(rangeRect)
-          }
-          rangeRect = {
-            x: leftTop[0] + pageOffset.x,
-            y: leftTop[1] + pageOffset.y,
-            width: rightTop[0] - leftTop[0],
-            height: lineHeight
-          }
-          currentRowNo = rowNo
-          currentX = leftTop[0]
-        } else {
-          rangeRect!.width = rightTop[0] - currentX
-        }
-        // 最后一个元素结束追加选区信息
-        if (p === selectionPositionList.length - 1 && rangeRect) {
-          rangeRects.push(rangeRect)
-        }
-      }
-    } else {
-      const positionList = this.position.getPositionList()
-      const position = positionList[endIndex]
-      const {
-        coordinate: { rightTop },
-        pageNo,
-        lineHeight
-      } = position
-      const pageOffset = this.draw.getPageOffset(pageNo, true)
-      rangeRects.push({
-        x: rightTop[0] + pageOffset.x,
-        y: rightTop[1] + pageOffset.y,
-        width: 0,
-        height: lineHeight
-      })
-    }
+    // 坐标信息（相对编辑器书写区），与公共查询共用视觉选区算法
+    const rangeRects: RangeRect[] = this.getRangeRects(range)
     // 区域信息
     const zone = this.draw.getZone().getZone()
     // 表格信息

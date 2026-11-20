@@ -1,6 +1,7 @@
 import { FORMAT_PLACEHOLDER } from '../../../dataset/constant/PageNumber'
 import { NumberType } from '../../../dataset/enum/Common'
 import { RowFlex } from '../../../dataset/enum/Row'
+import { TextDirection } from '../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { convertNumberToChinese } from '../../../utils'
@@ -77,12 +78,14 @@ export class PageNumber {
     const { width: textWidth } = this.draw
       .getTextMeasurer()
       .measureText(text, fontStyle)
+    const isRtl = this.options.defaultDirection === TextDirection.RTL
     if (rowFlex === RowFlex.CENTER) {
       x = (width - textWidth) / 2
     } else if (rowFlex === RowFlex.RIGHT) {
-      x = width - textWidth - margins[1]
+      // 左右对齐在 RTL 页面中交换物理位置，居中不受影响
+      x = isRtl ? margins[3] : width - textWidth - margins[1]
     } else {
-      x = margins[3]
+      x = isRtl ? width - textWidth - margins[1] : margins[3]
     }
     ctx.fillText(text, x, y)
     ctx.restore()

@@ -100,6 +100,10 @@ export class DisplayList implements IRenderContext {
     this.set('textAlign', value)
   }
 
+  public set direction(value: CanvasDirection) {
+    this.set('direction', value)
+  }
+
   public set textBaseline(value: CanvasTextBaseline) {
     this.set('textBaseline', value)
   }

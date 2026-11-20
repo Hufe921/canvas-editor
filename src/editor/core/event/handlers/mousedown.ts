@@ -147,7 +147,8 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
     tdIndex,
     tablePath,
     tdValueIndex,
-    hitLineStartIndex
+    hitLineStartIndex,
+    bidiAffinity
   } = positionResult
   const curIndex = isFootnote
     ? footnoteValueIndex!
@@ -205,6 +206,7 @@ export function mousedown(evt: MouseEvent, host: CanvasEvent) {
       }
     }
     rangeManager.setRange(startIndex, endIndex)
+    rangeManager.setBidiAffinity(bidiAffinity)
     const isShiftSelection = startIndex !== endIndex
     position.setCursorPosition(positionList[anchorIndex])
     // 更新只读状态

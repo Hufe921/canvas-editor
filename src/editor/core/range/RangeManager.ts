@@ -3,6 +3,7 @@ import { ZERO } from '../../dataset/constant/Common'
 import { TEXTLIKE_ELEMENT_TYPE } from '../../dataset/constant/Element'
 import { ControlComponent } from '../../dataset/enum/Control'
 import { EditorContext } from '../../dataset/enum/Editor'
+import { TextDirection } from '../../dataset/enum/TextDirection'
 import { IControlContext } from '../../interface/Control'
 import { IEditorOption } from '../../interface/Editor'
 import { IElement } from '../../interface/Element'
@@ -49,6 +50,15 @@ export class RangeManager {
 
   public getRange(): IRange {
     return this.range
+  }
+
+  public getDirection(): TextDirection {
+    const { endIndex } = this.range
+    if (!~endIndex) return this.options.defaultDirection
+    const elementList = this.draw.getElementList()
+    const anchorElement = getAnchorElement(elementList, endIndex)
+    if (!anchorElement) return this.options.defaultDirection
+    return anchorElement.direction ?? this.options.defaultDirection
   }
 
   public clearRange() {
@@ -426,6 +436,7 @@ export class RangeManager {
     startTrIndex?: number,
     endTrIndex?: number
   ) {
+    this.range.bidiAffinity = undefined
     // 判断光标是否改变
     const isChange = this.getIsRangeChange(
       startIndex,
@@ -470,6 +481,10 @@ export class RangeManager {
     }
   }
 
+  public setBidiAffinity(affinity: IRange['bidiAffinity']): void {
+    this.range.bidiAffinity = affinity
+  }
+
   public replaceRange(range: IRange) {
     this.setRange(
       range.startIndex,
@@ -480,6 +495,7 @@ export class RangeManager {
       range.startTrIndex,
       range.endTrIndex
     )
+    this.setBidiAffinity(range.bidiAffinity)
   }
 
   public shrinkRange() {
@@ -562,6 +578,7 @@ export class RangeManager {
       color,
       highlight,
       rowFlex,
+      direction: this.getDirection(),
       rowMargin,
       spacingBefore,
       spacingAfter,
@@ -610,6 +627,7 @@ export class RangeManager {
       color: null,
       highlight: null,
       rowFlex: null,
+      direction: this.options.defaultDirection,
       rowMargin,
       spacingBefore: 0,
       spacingAfter: 0,

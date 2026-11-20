@@ -38,10 +38,18 @@ interface IElement {
   italic?: boolean;
   underline?: boolean;
   strikeout?: boolean;
+  // Text direction: left-to-right, right-to-left, or auto (first strong character)
+  direction?: {
+    LTR = 'ltr',
+    RTL = 'rtl',
+    AUTO = 'auto'
+  };
   rowFlex?: {
     LEFT = 'left',
     CENTER = 'center',
     RIGHT = 'right',
+    START = 'start',
+    END = 'end',
     ALIGNMENT = 'alignment',
     JUSTIFY = 'justify'
   };

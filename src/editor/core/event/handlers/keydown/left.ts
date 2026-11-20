@@ -10,6 +10,7 @@ import {
 } from '../../../../utils/element'
 import { isApple } from '../../../../utils/ua'
 import { CanvasEvent } from '../../CanvasEvent'
+import { moveVisualCaret } from './visual'
 
 export function left(evt: KeyboardEvent, host: CanvasEvent) {
   const draw = host.getDraw()
@@ -18,6 +19,9 @@ export function left(evt: KeyboardEvent, host: CanvasEvent) {
   const position = draw.getPosition()
   const cursorPosition = position.getCursorPosition()
   if (!cursorPosition) return
+  if (cursorPosition.bidiLevel !== undefined && moveVisualCaret(evt, host, -1)) {
+    return
+  }
   const positionContext = position.getPositionContext()
   const { index } = cursorPosition
   if (index <= 0 && !positionContext.isTable) return

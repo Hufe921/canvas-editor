@@ -25,6 +25,7 @@ import Editor, {
   TabStopLeader,
   TabStopType,
   TextDecorationStyle,
+  TextDirection,
   TitleLevel,
   splitText
 } from './editor'
@@ -1807,6 +1808,40 @@ window.onload = function () {
     }
   })
 
+  // 文字方向
+  const textDirectionDom =
+    document.querySelector<HTMLDivElement>('.text-direction')!
+  const textDirectionOptionDom =
+    textDirectionDom.querySelector<HTMLDivElement>('.options')!
+  const textDirectionOptionList =
+    textDirectionDom.querySelectorAll<HTMLLIElement>('[data-text-direction]')
+  let previousTextDirection: TextDirection | null = null
+  const updateTextDirectionOption = (direction: TextDirection) => {
+    // 光标在同方向文本内移动时不重复写 DOM
+    if (previousTextDirection === direction) return
+    previousTextDirection = direction
+    textDirectionDom.dataset.direction =
+      direction === TextDirection.RTL ? TextDirection.RTL : TextDirection.LTR
+    textDirectionOptionList.forEach(option => {
+      option.classList.toggle(
+        'active',
+        option.dataset.textDirection === direction
+      )
+    })
+  }
+  updateTextDirectionOption(instance.command.getDirection())
+  textDirectionDom.querySelector('i')!.onclick = () => {
+    textDirectionOptionDom.classList.toggle('visible')
+  }
+  textDirectionOptionList.forEach(option => {
+    option.onclick = () => {
+      const direction = option.dataset.textDirection as TextDirection
+      instance.command.executeDirection(direction)
+      updateTextDirectionOption(direction)
+      textDirectionOptionDom.classList.remove('visible')
+    }
+  })
+
   // 全屏
   const fullscreenDom = document.querySelector<HTMLDivElement>('.fullscreen')!
   fullscreenDom.onclick = toggleFullscreen
@@ -2205,6 +2240,9 @@ window.onload = function () {
     } else {
       leftDom.classList.add('active')
     }
+
+    // 文字方向
+    updateTextDirectionOption(payload.direction)
 
     // 行间距
     rowOptionDom

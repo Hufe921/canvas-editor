@@ -96,7 +96,8 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
     tableId,
     trId,
     tdId,
-    tablePath
+    tablePath,
+    bidiAffinity
   } = positionResult
   const {
     index: startIndex,
@@ -168,6 +169,7 @@ export function mousemove(evt: MouseEvent, host: CanvasEvent) {
       return
     }
     rangeManager.setRange(start, end)
+    rangeManager.setBidiAffinity(bidiAffinity)
   }
   // 绘制
   draw.render({

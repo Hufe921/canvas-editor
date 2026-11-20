@@ -1,6 +1,11 @@
 import { version } from '../../../../package.json'
 import { ZERO } from '../../dataset/constant/Common'
 import { RowFlex } from '../../dataset/enum/Row'
+import { TextDirection } from '../../dataset/enum/TextDirection'
+import {
+  getBidiRunDirection,
+  getVisualRangeRects
+} from '../bidi/resolver/BidiGeometry'
 import {
   IAppendElementListOption,
   IComputeRange,
@@ -23,6 +28,7 @@ import {
 import {
   IElement,
   IElementFillRect,
+  IElementPosition,
   IElementStyle,
   ISpliceElementListOption,
   IInsertElementListOption
@@ -1977,7 +1983,9 @@ export class Draw {
             y + marginHeight - highlightMarginHeight, // 先减去行margin，再加上高亮margin
             element.metrics.width + offsetX,
             rowContentHeight - 2 * marginHeight + 2 * highlightMarginHeight,
-            highlight
+            highlight,
+            undefined,
+            !!curRow.direction
           )
         } else if (preHighlight) {
           // 之前是高亮元素，当前不是需立即绘制
@@ -2054,6 +2062,9 @@ export class Draw {
         width: 0,
         height: 0
       }
+      const rangePositionList: IElementPosition[] | null = curRow.direction
+        ? []
+        : null
       let tableRangeElement: IElement | null = null
       for (let j = 0; j < curRow.elementList.length; j++) {
         const element = curRow.elementList[j]
@@ -2066,10 +2077,12 @@ export class Draw {
         // 当前元素位置信息（表格跨页片段行优先使用片段位置）
         const {
           ascent: offsetY,
+          bidiLevel,
           coordinate: {
             leftTop: [x, y]
           }
         } = curRow.fragmentPosition || positionList[curRow.startIndex + j]
+        if (curRow.direction) element.bidiLevel = bidiLevel
         const preElement = curRow.elementList[j - 1]
         // 元素绘制
         if (
@@ -2102,20 +2115,41 @@ export class Draw {
           }
           this.tableParticle.render(ctx, element, x, y, curRow.tableFragment)
         } else if (element.type === ElementType.HYPERLINK) {
-          this.textParticle.complete()
-          this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+          if (curRow.direction) {
+            // 方向行共享整形和 BiDi run，避免逐元素绘制破坏连写
+            if (!element.color) {
+              element.color = this.options.defaultHyperlinkColor
+            }
+            if (element.underline === undefined) element.underline = true
+            this.textParticle.record(ctx, element, x, y + offsetY)
+          } else {
+            // 普通 LTR 保留原超链接绘制路径
+            this.textParticle.complete()
+            this.hyperlinkParticle.render(ctx, element, x, y + offsetY)
+          }
         } else if (element.type === ElementType.LABEL) {
           this.textParticle.complete()
-          this.labelParticle.render(ctx, element, x, y + offsetY)
+          this.labelParticle.render(
+            ctx,
+            element,
+            x,
+            y + offsetY,
+            curRow.direction
+          )
         } else if (element.type === ElementType.DATE) {
           const nextElement = curRow.elementList[j + 1]
-          // 释放之前的
-          if (!preElement || preElement.dateId !== element.dateId) {
+          // LTR 保持原日期分段；方向行与相邻文本共享完整整形 run
+          if (
+            !curRow.direction &&
+            (!preElement || preElement.dateId !== element.dateId)
+          ) {
             this.textParticle.complete()
           }
           this.textParticle.record(ctx, element, x, y + offsetY)
-          if (!nextElement || nextElement.dateId !== element.dateId) {
-            // 手动触发渲染
+          if (
+            !curRow.direction &&
+            (!nextElement || nextElement.dateId !== element.dateId)
+          ) {
             this.textParticle.complete()
           }
         } else if (
@@ -2123,11 +2157,27 @@ export class Draw {
           element.type === ElementType.FOOTNOTE
         ) {
           this.textParticle.complete()
-          this.superscriptParticle.render(ctx, element, x, y + offsetY)
+          this.superscriptParticle.render(
+            ctx,
+            element,
+            x,
+            y + offsetY,
+            curRow.direction
+              ? getBidiRunDirection(bidiLevel, curRow.direction)
+              : undefined
+          )
         } else if (element.type === ElementType.SUBSCRIPT) {
           this.underline.render(ctx)
           this.textParticle.complete()
-          this.subscriptParticle.render(ctx, element, x, y + offsetY)
+          this.subscriptParticle.render(
+            ctx,
+            element,
+            x,
+            y + offsetY,
+            curRow.direction
+              ? getBidiRunDirection(bidiLevel, curRow.direction)
+              : undefined
+          )
         } else if (element.type === ElementType.SEPARATOR) {
           this.separatorParticle.render(ctx, element, x, y)
         } else if (element.type === ElementType.PAGE_BREAK) {
@@ -2163,8 +2213,9 @@ export class Draw {
           // 制表位命中位点时的前导符填充
           this.textParticle.renderTabLeader(ctx, element, x, y + offsetY)
         } else if (
-          element.rowFlex === RowFlex.ALIGNMENT ||
-          element.rowFlex === RowFlex.JUSTIFY
+          !curRow.direction &&
+          (element.rowFlex === RowFlex.ALIGNMENT ||
+            element.rowFlex === RowFlex.JUSTIFY)
         ) {
           // 如果是两端对齐，因canvas目前不支持letterSpacing需单独绘制文本
           this.textParticle.record(ctx, element, x, y + offsetY)
@@ -2182,7 +2233,7 @@ export class Draw {
           if (
             element.width ||
             element.letterSpacing ||
-            PUNCTUATION_REG.test(element.value)
+            (!curRow.direction && PUNCTUATION_REG.test(element.value))
           ) {
             this.textParticle.complete()
           }
@@ -2260,7 +2311,8 @@ export class Draw {
             metrics.width + offsetX,
             0,
             color,
-            element.textDecoration?.style
+            element.textDecoration?.style,
+            !!curRow.direction
           )
         } else if (preElement?.underline || preElement?.control?.underline) {
           this.underline.render(ctx)
@@ -2297,7 +2349,16 @@ export class Draw {
             } else if (element.type === ElementType.SUPERSCRIPT) {
               adjustY += this.superscriptParticle.getOffsetY(element)
             }
-            this.strikeout.recordFillInfo(ctx, x, adjustY, metrics.width)
+            this.strikeout.recordFillInfo(
+              ctx,
+              x,
+              adjustY,
+              metrics.width,
+              undefined,
+              undefined,
+              undefined,
+              !!curRow.direction
+            )
           }
         } else if (preElement?.strikeout) {
           this.strikeout.render(ctx)
@@ -2336,10 +2397,27 @@ export class Draw {
             if (startIndex === index) {
               const nextElement = elementList[startIndex + 1]
               if (nextElement && nextElement.value === ZERO) {
-                rangeRecord.x = x + metrics.width
+                rangeRecord.x =
+                  curRow.direction === TextDirection.RTL
+                    ? x - this.options.rangeMinWidth
+                    : x + metrics.width
                 rangeRecord.y = y
                 rangeRecord.height = rowContentHeight
                 rangeRecord.width += this.options.rangeMinWidth
+              }
+            } else if (rangePositionList) {
+              if (metrics.width || curRow.elementList.length > 1) {
+                rangePositionList.push(
+                  curRow.fragmentPosition || positionList[curRow.startIndex + j]
+                )
+              } else {
+                rangeRecord.x =
+                  curRow.direction === TextDirection.RTL
+                    ? x - this.options.rangeMinWidth
+                    : x
+                rangeRecord.y = y
+                rangeRecord.height = rowContentHeight
+                rangeRecord.width = this.options.rangeMinWidth
               }
             } else {
               let rangeWidth = metrics.width
@@ -2472,11 +2550,16 @@ export class Draw {
       this.traceParticle.flush(ctx)
       // 绘制批注样式
       this.group.render(ctx)
-      // 绘制选区
+      // LTR 不创建视觉选区结果；方向行仅在存在选区位置时计算矩形
+      const visualRangeRects = rangePositionList?.length
+        ? getVisualRangeRects(rangePositionList, rowContentHeight)
+        : null
       const hasRange =
         !isPrintMode &&
         !isGraffitiMode &&
-        (Boolean(rangeRecord.width && rangeRecord.height) ||
+        (Boolean(
+          visualRangeRects?.length || (rangeRecord.width && rangeRecord.height)
+        ) ||
           (isDrawRange &&
             isCrossRowCol &&
             tableRangeElement &&
@@ -2484,6 +2567,11 @@ export class Draw {
       ctx.beginGroup?.(buildLayerKey(pageNo, 'selection'), 'layer')
       if (hasRange) {
         ctx.beginGroup?.(`${rowKey}:selection`, 'group')
+        if (visualRangeRects) {
+          for (const rect of visualRangeRects) {
+            this.range.render(ctx, rect.x, rect.y, rect.width, rect.height)
+          }
+        }
         if (rangeRecord.width && rangeRecord.height) {
           const { x, y, width, height } = rangeRecord
           this.range.render(ctx, x, y, width, height)

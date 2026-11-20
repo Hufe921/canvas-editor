@@ -1,6 +1,7 @@
 import { ImageDisplay } from '../dataset/enum/Common'
 import { ControlComponent } from '../dataset/enum/Control'
 import { PaperDirection } from '../dataset/enum/Editor'
+import { TextDirection } from '../dataset/enum/TextDirection'
 import { ElementType } from '../dataset/enum/Element'
 import { TraceType } from '../dataset/enum/Trace'
 import { ListStyle, ListType } from '../dataset/enum/List'
@@ -40,6 +41,7 @@ export interface IElementStyle {
   italic?: boolean
   underline?: boolean
   strikeout?: boolean
+  direction?: TextDirection
   rowFlex?: RowFlex
   rowMargin?: number
   spacingBefore?: number
@@ -278,6 +280,7 @@ export interface IElementPosition {
   metrics: IElementMetrics
   isFirstLetter: boolean
   isLastLetter: boolean
+  bidiLevel?: number
   columnIndex?: number
   tableFragment?: ITableRowFragment // 表格跨页渲染片段信息
   coordinate: {

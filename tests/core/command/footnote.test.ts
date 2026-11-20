@@ -8,6 +8,7 @@ import { Override } from '@/editor/core/override/Override'
 import { ZERO } from '@/editor/dataset/constant/Common'
 import { LocationPosition } from '@/editor/dataset/enum/Common'
 import { ElementType } from '@/editor/dataset/enum/Element'
+import { TextDirection } from '@/editor/dataset/enum/TextDirection'
 import { IEditorOption } from '@/editor/interface/Editor'
 import { IElement } from '@/editor/interface/Element'
 import { IRow } from '@/editor/interface/Row'
@@ -354,5 +355,39 @@ describe('脚注', () => {
     expect(layout.visibleRowList.length).toBeGreaterThan(0)
     expect(layout.visibleRowList.length).toBeLessThan(layout.rowList.length)
     expect(draw.getPageRowList().length).toBeLessThan(10)
+  })
+})
+
+describe('脚注 RTL 命中', () => {
+  let draw: Draw | null = null
+  afterEach(() => {
+    draw?.destroy()
+    draw = null
+    document.body.innerHTML = ''
+  })
+
+  it('按 RTL 字符左右半区返回视觉亲和性', () => {
+    draw = createDraw([
+      { value: 'body' },
+      {
+        type: ElementType.FOOTNOTE,
+        value: '',
+        footnoteId: 'note-rtl',
+        valueList: [{ value: 'בג', direction: TextDirection.RTL }]
+      }
+    ]).draw
+    const layout = draw.getFootnote().getPageLayoutById('note-rtl')!
+    const target = layout.positionList.find(position => position.value === 'ב')!
+    const { leftTop, rightTop, leftBottom } = target.coordinate
+
+    const result = draw.getPosition().adjustPositionContext({
+      x: leftTop[0] + (rightTop[0] - leftTop[0]) * 0.75,
+      y: (leftTop[1] + leftBottom[1]) / 2,
+      pageNo: layout.pageNo
+    })!
+
+    expect(result.isFootnote).toBe(true)
+    expect(result.bidiAffinity).toBe('before')
+    expect(result.footnoteValueIndex).toBe(target.index - 1)
   })
 })

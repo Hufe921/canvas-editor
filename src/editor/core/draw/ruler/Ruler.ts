@@ -6,10 +6,12 @@ import {
   PaperDirection
 } from '../../../dataset/enum/Editor'
 import { TabStopType } from '../../../dataset/enum/TabStop'
+import { TextDirection } from '../../../dataset/enum/TextDirection'
 import { DeepRequired } from '../../../interface/Common'
 import { IEditorOption } from '../../../interface/Editor'
 import { IMargin } from '../../../interface/Margin'
 import type { IElement, ITabStop } from '../../../interface/Element'
+import { BidiResolver } from '../../bidi/resolver/BidiResolver'
 import { IRenderContext } from '../../render/model/RenderContext'
 import { Draw } from '../Draw'
 
@@ -212,8 +214,11 @@ export class Ruler {
     ctx.beginPath()
     const mmPx = this.MM_PX * scale
     const tickCount = Math.floor(width / mmPx)
+    const isRtl = this._isRtl()
     for (let i = 0; i <= tickCount; i++) {
-      const x = Math.round(i * mmPx) + 0.5
+      // RTL 仅镜像刻度原点；缩进和制表位仍使用真实物理坐标
+      const offset = Math.round(i * mmPx)
+      const x = isRtl ? width - offset - 0.5 : offset + 0.5
       const isCm = i % 10 === 0
       const tickHeight = isCm ? 8 : i % 5 === 0 ? 5 : 3
       ctx.moveTo(x, height)
@@ -310,6 +315,20 @@ export class Ruler {
     ctx.moveTo(rulerSize - 0.5, 0)
     ctx.lineTo(rulerSize - 0.5, pageHeight)
     ctx.stroke()
+  }
+
+  // 普通 LTR 仅读取一次方向；只有 AUTO 才扫描当前段落的强方向字符
+  private _isRtl(): boolean {
+    const direction = this.draw.getRange().getDirection()
+    if (direction !== TextDirection.AUTO) {
+      return direction === TextDirection.RTL
+    }
+    const paragraphElementList =
+      this._getParagraphElementList() ?? this._getFirstParagraphElementList()
+    const text = paragraphElementList.map(element => element.value).join('')
+    return (
+      new BidiResolver().resolveDirection(text, direction) === TextDirection.RTL
+    )
   }
 
   // 光标/选区所在段落元素列表（无选区时返回null，缩进标记随之隐藏）
