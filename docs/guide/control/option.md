@@ -8,7 +8,7 @@
 | --------------------------- | ------------------------------------------------------------------- | -------------------------------------- |
 | `type`                      | `'text' \| 'select' \| 'checkbox' \| 'radio' \| 'date' \| 'number'` | 控件类型                               |
 | `value`                     | `IElement[] \| null`                                                | 控件值                                 |
-| `placeholder`               | `string`                                                            | 占位符                                 |
+| `placeholder`               | `string \| IElement[]`                                              | 占位内容，支持文本、图片及图文混合     |
 | `conceptId`                 | `string`                                                            | 概念 id（可多个控件共享，级联/取值用） |
 | `groupId`                   | `string`                                                            | 成组 id                                |
 | `prefix`                    | `string`                                                            | 前缀字符                               |

@@ -1355,15 +1355,18 @@ export class Position {
           })
           if (tableChildPosition) return tableChildPosition
         }
-        // 图片区域均为命中
+        // 图片区域均为命中（控件占位图片按文本占位处理，不进入图片交互）
         if (
           element.type === ElementType.IMAGE ||
           element.type === ElementType.LATEX
         ) {
+          const isControlPlaceholder =
+            element.controlComponent === ControlComponent.PLACEHOLDER
           return {
             index: curPositionIndex,
             isDirectHit: true,
-            isImage: true
+            isControl: isControlPlaceholder,
+            isImage: !isControlPlaceholder
           }
         }
         if (
@@ -1745,11 +1748,14 @@ export class Position {
             element.imgRotation || 0
           )
         ) {
+          const isControlPlaceholder =
+            element.controlComponent === ControlComponent.PLACEHOLDER
           if (isTable) {
             return {
               index: index!,
               isDirectHit: true,
-              isImage: true,
+              isControl: isControlPlaceholder,
+              isImage: !isControlPlaceholder,
               isTable,
               trIndex,
               tdIndex,
@@ -1762,7 +1768,8 @@ export class Position {
           return {
             index: position.index,
             isDirectHit: true,
-            isImage: true
+            isControl: isControlPlaceholder,
+            isImage: !isControlPlaceholder
           }
         }
       }

@@ -111,6 +111,31 @@ export function unzipElementList(elementList: IElement[]): IElement[] {
   return result
 }
 
+export function getControlPlaceholderElementList(
+  placeholder: string | IElement[]
+): IElement[] {
+  const placeholderList =
+    typeof placeholder === 'string' ? [{ value: placeholder }] : placeholder
+  const result: IElement[] = []
+  for (const placeholderElement of placeholderList) {
+    if (
+      placeholderElement.type &&
+      !TEXTLIKE_ELEMENT_TYPE.includes(placeholderElement.type)
+    ) {
+      result.push({ ...placeholderElement })
+      continue
+    }
+    const textList = splitText(placeholderElement.value)
+    for (const value of textList) {
+      result.push({
+        ...placeholderElement,
+        value: value === '\n' ? ZERO : value
+      })
+    }
+  }
+  return result
+}
+
 interface IFormatElementListOption {
   isHandleFirstElement?: boolean // 根据上下文确定首字符处理逻辑（处理首字符补偿）
   isForceCompensation?: boolean // 强制补偿字符
@@ -616,15 +641,14 @@ export function formatElementList(
           ...controlDefaultStyle,
           color: editorOptions.control.placeholderColor
         }
-        const placeholderStrList = splitText(placeholder)
-        for (let p = 0; p < placeholderStrList.length; p++) {
-          const value = placeholderStrList[p]
+        const placeholderList = getControlPlaceholderElementList(placeholder)
+        for (const placeholderElement of placeholderList) {
           elementList.splice(i, 0, {
             ...controlContext,
             ...thePlaceholderArgs,
+            ...placeholderElement,
             controlId,
-            value: value === '\n' ? ZERO : value,
-            type: el.type,
+            type: placeholderElement.type || el.type,
             control: el.control,
             controlComponent: ControlComponent.PLACEHOLDER
           })

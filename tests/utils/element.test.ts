@@ -287,6 +287,52 @@ describe('formatElementList', () => {
     })
     expect(list[0].value).not.toBe('\u200B')
   })
+
+  it('控件占位支持图片和图文元素且不修改原始配置', () => {
+    const placeholder: IElement[] = [
+      {
+        type: ElementType.IMAGE,
+        value: 'data:image/png;base64,placeholder',
+        width: 120,
+        height: 80
+      },
+      { value: '请选择' }
+    ]
+    const list: IElement[] = [
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          type: ControlType.TEXT,
+          value: null,
+          placeholder
+        }
+      }
+    ]
+
+    formatElementList(list, {
+      isHandleFirstElement: false,
+      editorOptions: mockOptions
+    })
+
+    const placeholderList = list.filter(
+      element => element.controlComponent === ControlComponent.PLACEHOLDER
+    )
+    expect(placeholderList).toHaveLength(4)
+    expect(placeholderList[0]).toMatchObject({
+      type: ElementType.IMAGE,
+      value: 'data:image/png;base64,placeholder',
+      width: 120,
+      height: 80
+    })
+    expect(placeholderList.slice(1).map(element => element.value)).toEqual([
+      '请',
+      '选',
+      '择'
+    ])
+    expect(placeholderList[0]).not.toBe(placeholder[0])
+    expect(placeholder[0].controlId).toBeUndefined()
+  })
 })
 
 describe('unzipElementList', () => {

@@ -80,7 +80,7 @@ export interface IControlRule {
 export interface IControlBasic {
   type: ControlType
   value: IElement[] | null
-  placeholder?: string
+  placeholder?: string | IElement[]
   conceptId?: string
   groupId?: string
   prefix?: string

@@ -279,4 +279,68 @@ describe('控件命令', () => {
 
     container.parentNode?.removeChild(container)
   })
+
+  it('图片 placeholder 在设值时移除且清空后恢复', () => {
+    const conceptId = 'ImagePlaceholder'
+    const placeholder: IElement[] = [
+      {
+        type: ElementType.IMAGE,
+        value: 'data:image/png;base64,placeholder',
+        width: 120,
+        height: 80
+      }
+    ]
+    const container = document.createElement('div')
+    document.body.appendChild(container)
+    const options = mergeOption({ width: 794, height: 1123 })
+    const main: IElement[] = [
+      {
+        type: ElementType.CONTROL,
+        value: '',
+        control: {
+          conceptId,
+          type: ControlType.TEXT,
+          value: null,
+          placeholder
+        }
+      }
+    ]
+    formatElementList(main, {
+      editorOptions: options,
+      isForceCompensation: true
+    })
+    const draw = new Draw(
+      container,
+      options,
+      { header: [{ value: '\n' }], main, footer: [{ value: '\n' }] },
+      new Listener(),
+      new EventBus(),
+      new Override()
+    )
+    draw.render()
+    const getPlaceholderList = () =>
+      draw
+        .getOriginalElementList()
+        .filter(
+          element => element.controlComponent === ControlComponent.PLACEHOLDER
+        )
+
+    expect(getPlaceholderList()).toHaveLength(1)
+    expect(draw.getValue().data.main[0].control?.value).toEqual([])
+
+    draw.getControl().setValueListById([{ conceptId, value: '已填写' }])
+    expect(getPlaceholderList()).toHaveLength(0)
+
+    draw.getControl().setValueListById([{ conceptId, value: '' }])
+    expect(getPlaceholderList()).toHaveLength(1)
+    expect(getPlaceholderList()[0]).toMatchObject({
+      type: ElementType.IMAGE,
+      value: placeholder[0].value,
+      width: 120,
+      height: 80
+    })
+    expect(draw.getValue().data.main[0].control?.value).toEqual([])
+
+    container.parentNode?.removeChild(container)
+  })
 })

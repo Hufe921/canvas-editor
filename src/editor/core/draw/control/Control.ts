@@ -38,12 +38,12 @@ import {
   isArray,
   isString,
   omitObject,
-  pickObject,
-  splitText
+  pickObject
 } from '../../../utils'
 import {
   formatElementContext,
   formatElementList,
+  getControlPlaceholderElementList,
   getNonHideElementIndex,
   isElementTraceDeleted,
   getOutermostOwner,
@@ -73,7 +73,6 @@ import {
 } from '../../../dataset/constant/Element'
 import { IRowElement } from '../../../interface/Row'
 import { RowFlex } from '../../../dataset/enum/Row'
-import { ZERO } from '../../../dataset/constant/Common'
 
 interface IMoveCursorResult {
   newIndex: number
@@ -1088,19 +1087,21 @@ export class Control {
     const startElement = elementList[startIndex]
     const control = startElement.control!
     if (!control.placeholder) return
-    const placeholderStrList = splitText(control.placeholder)
+    const placeholderList = getControlPlaceholderElementList(
+      control.placeholder
+    )
     // 优先使用默认控件样式
     const anchorElementStyleAttr = pickObject(startElement, CONTROL_STYLE_ATTR)
-    for (let p = 0; p < placeholderStrList.length; p++) {
-      const value = placeholderStrList[p]
+    for (let p = 0; p < placeholderList.length; p++) {
+      const placeholderElement = placeholderList[p]
       const newElement: IElement = {
         ...anchorElementStyleAttr,
-        value: value === '\n' ? ZERO : value,
+        color: this.controlOptions.placeholderColor,
+        ...placeholderElement,
         controlId: startElement.controlId,
-        type: ElementType.CONTROL,
+        type: placeholderElement.type || ElementType.CONTROL,
         control: startElement.control,
-        controlComponent: ControlComponent.PLACEHOLDER,
-        color: this.controlOptions.placeholderColor
+        controlComponent: ControlComponent.PLACEHOLDER
       }
       formatElementContext(elementList, [newElement], startIndex, {
         editorOptions: this.options
