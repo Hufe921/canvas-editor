@@ -10,7 +10,7 @@ import { IColumnOption } from './Column'
 import { IBackgroundOption } from './Background'
 import { ICheckboxOption } from './Checkbox'
 import { IRadioOption } from './Radio'
-import { IControlOption } from './Control'
+import { IControlOption, RuleContext } from './Control'
 import { ICursorOption } from './Cursor'
 import { IFooter } from './Footer'
 import { IGroup } from './Group'
@@ -126,6 +126,8 @@ export interface IEditorOption {
   pageNumber?: IPageNumber
   watermark?: IWatermark
   control?: IControlOption
+  // 控件自身规则上下文：初始化时注入，后续由 executeUpdateRuleContext 更新
+  ruleContext?: RuleContext
   checkbox?: ICheckboxOption
   radio?: IRadioOption
   cursor?: ICursorOption

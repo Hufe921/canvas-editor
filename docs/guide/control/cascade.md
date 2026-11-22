@@ -117,6 +117,44 @@ if(getValue('bmi') < 18.5, '偏瘦', if(getValue('bmi') < 28, '正常', '肥胖'
 - `executeValidate` 校验前会同步冲刷一次，保证读到最新的显隐/必填状态
 - 级联效果只写属性不改值：不递归触发新级联，也不污染撤销历史
 
+## 控件规则
+
+`control.rules` 根据外部上下文控制当前控件。上下文键由业务自定义，规则通过 `getContext('key')` 读取，支持 `hide`、`required`、`disabled`、`deletable` 效果。
+
+```ts
+const instance = new Editor(container, data, {
+  ruleContext: {
+    gender: 'male',
+    age: 32
+  }
+})
+```
+
+```json
+{
+  "conceptId": "menstrualHistory",
+  "type": "text",
+  "value": null,
+  "rules": [
+    {
+      "expression": "getContext('gender') == 'male' || getContext('age') < 10",
+      "effects": { "hide": true, "required": false },
+      "elseEffects": { "hide": false, "required": true }
+    }
+  ]
+}
+```
+
+使用 `executeUpdateRuleContext` 局部更新上下文并重新计算规则：
+
+```ts
+instance.command.executeUpdateRuleContext({ gender: 'female' })
+```
+
+- 条件成立时应用 `effects`，否则应用 `elseEffects`；未配置 `elseEffects` 时恢复原始属性
+- 隐藏的控件不参与必填校验
+- `rules` 随文档保存，`ruleContext` 不写入文档数据
+
 ## 完整示例
 
 选"有高血压"才显示并必填"高血压分级"：

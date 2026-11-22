@@ -2,7 +2,11 @@ import { IElement } from '../../interface/Element'
 import { ElementType } from '../../dataset/enum/Element'
 import { ControlType } from '../../dataset/enum/Control'
 import { titleOrderNumberMapping } from '../../dataset/constant/Title'
-import { ICascadeAction, IControlCascadeRule } from '../../interface/Control'
+import {
+  ICascadeAction,
+  IControlCascadeRule,
+  RuleContext
+} from '../../interface/Control'
 import { EventBus } from '../event/eventbus/EventBus'
 import { EventBusMap } from '../../interface/EventBus'
 import { Draw } from '../draw/Draw'
@@ -46,7 +50,8 @@ const EFFECT_PROPS = ['hide', 'required', 'disabled', 'deletable'] as const
 type EffectProp = (typeof EFFECT_PROPS)[number]
 
 // 级联引擎：控件值变化时按 control.cascade 规则自动控制其他控件/标题的
-// 显隐、必填、可编辑、可删除，并按 control.compute 表达式回写计算字段
+// 显隐、必填、可编辑、可删除，并按 control.compute 表达式回写计算字段；
+// control.rules 则将规则效果直接应用于当前控件
 //
 // 触发模型：
 // - contentChange（输入/粘贴/undo/redo 后的渲染批次）→ 下一宏任务执行一次
@@ -88,12 +93,30 @@ export class CascadeManager {
     })
   }
 
+  public updateRuleContext(payload: RuleContext) {
+    Object.assign(this.draw.getOptions().ruleContext, payload)
+    this.executeAll()
+  }
+
   private getZoneElementLists(): IElement[][] {
     return [
       this.draw.getHeaderElementList(),
       this.draw.getOriginalMainElementList(),
       this.draw.getFooterElementList()
     ]
+  }
+
+  private compileRule(
+    rule: IControlCascadeRule,
+    hostControlId?: string
+  ): ICompiledRule {
+    let ast: IAstNode | null = null
+    try {
+      ast = parse(tokenize(rule.expression))
+    } catch (e) {
+      console.warn(`[cascade] 表达式解析失败: ${rule.expression}`, e)
+    }
+    return { rule, ast, hostControlId }
   }
 
   // 一次全文扫描同时完成三件事：收集 cascade 规则、收集 compute 表达式、
@@ -140,15 +163,31 @@ export class CascadeManager {
         // 规则与计算表达式（每个逻辑控件只收集一次）
         if (seen.has(control)) continue
         seen.add(control)
-        if (control.cascade?.length) {
-          for (const rule of control.cascade) {
-            let ast: IAstNode | null = null
-            try {
-              ast = parse(tokenize(rule.expression))
-            } catch (e) {
-              console.warn(`[cascade] 表达式解析失败: ${rule.expression}`, e)
+        for (const rule of control.cascade || []) {
+          rules.push(this.compileRule(rule, element.controlId))
+        }
+        // 控件自身规则复用级联执行与基线还原，目标固定为当前控件
+        if (element.controlId) {
+          for (const conditionRule of control.rules || []) {
+            const controlId = element.controlId
+            const rule: IControlCascadeRule = {
+              expression: conditionRule.expression,
+              actions: [
+                {
+                  controlId,
+                  effects: conditionRule.effects
+                }
+              ],
+              elseActions: conditionRule.elseEffects
+                ? [
+                    {
+                      controlId,
+                      effects: conditionRule.elseEffects
+                    }
+                  ]
+                : undefined
             }
-            rules.push({ rule, ast, hostControlId: element.controlId })
+            rules.push(this.compileRule(rule, controlId))
           }
         }
         if (control.compute && element.controlId) {
@@ -177,6 +216,10 @@ export class CascadeManager {
     const value = this.resolveIdentifierUncached(name)
     this.valueCache.set(name, value)
     return value
+  }
+
+  private resolveRuleContext = (key: string): unknown => {
+    return this.draw.getOptions().ruleContext[key]
   }
 
   private resolveIdentifierUncached(name: string): IResolvedValue | undefined {
@@ -480,6 +523,7 @@ export class CascadeManager {
         try {
           matched = evaluate(ast, {
             resolve: this.resolveIdentifier,
+            resolveContext: this.resolveRuleContext,
             resolveSelf: () => this.resolveByControlId(hostControlId)
           })
         } catch (e) {

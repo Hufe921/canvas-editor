@@ -99,6 +99,21 @@ instance.command.executeSetControlProperties(payload: ISetControlProperties)
 instance.command.executeSetControlPropertiesList(payload: ISetControlProperties[])
 ```
 
+### executeUpdateRuleContext
+
+功能：局部更新控件规则上下文（浅合并），并立即重新计算所有 `control.rules`。上下文键及含义由业务侧定义。
+
+用法：
+
+```javascript
+instance.command.executeUpdateRuleContext(payload: RuleContext)
+
+instance.command.executeUpdateRuleContext({
+  gender: 'female',
+  age: 32
+})
+```
+
 ### executeSetControlHighlight
 
 功能：设置控件高亮（根据关键词）

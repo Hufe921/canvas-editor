@@ -19,6 +19,8 @@ export interface IEvalContext {
   resolve: ResolveIdentifier
   // getValue(@self)：规则/计算所在控件自身的值
   resolveSelf?: () => IResolvedValue | undefined
+  // getContext('key')：编辑器外部注入的规则上下文
+  resolveContext?: (key: string) => unknown
 }
 
 // 求值中间值：resolved 保留归一化结构（供 empty/contains 等函数区分类型），
@@ -319,6 +321,11 @@ function evalNode(node: IAstNode, context: IEvalContext): IEvalValue {
           : context.resolve(node.target.value)
       return { kind: 'resolved', value: value ?? { text: null } }
     }
+    case 'getContext':
+      return {
+        kind: 'plain',
+        value: context.resolveContext?.(node.key) ?? null
+      }
     case 'logical': {
       if (node.op === '&&') {
         return {

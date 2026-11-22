@@ -46,6 +46,7 @@ import {
   IGetControlValueResult,
   ILocationControlOption,
   IRemoveControlOption,
+  RuleContext,
   ISetControlExtensionOption,
   ISetControlHighlightOption,
   ISetControlProperties,
@@ -2710,6 +2711,10 @@ export class CommandAdapt {
 
   public setControlPropertiesList(payload: ISetControlProperties[]) {
     this.draw.getControl().setPropertiesListById(payload)
+  }
+
+  public updateRuleContext(payload: RuleContext) {
+    this.draw.getCascadeManager().updateRuleContext(payload)
   }
 
   public validate(payload?: IValidateOption): IControlValidateResult[] {

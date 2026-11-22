@@ -133,6 +133,7 @@ export class Command {
   public executeSetControlExtensionList: CommandAdapt['setControlExtensionList']
   public executeSetControlProperties: CommandAdapt['setControlProperties']
   public executeSetControlPropertiesList: CommandAdapt['setControlPropertiesList']
+  public executeUpdateRuleContext: CommandAdapt['updateRuleContext']
   public executeSetControlHighlight: CommandAdapt['setControlHighlight']
   public executeValidate: CommandAdapt['validate']
   public executeClearValidate: CommandAdapt['clearValidate']
@@ -700,6 +701,10 @@ export class Command {
     this.executeSetControlPropertiesList = this.wrap(
       'executeSetControlPropertiesList',
       adapt.setControlPropertiesList.bind(adapt)
+    )
+    this.executeUpdateRuleContext = this.wrap(
+      'executeUpdateRuleContext',
+      adapt.updateRuleContext.bind(adapt)
     )
     this.executeSetControlHighlight = this.wrap(
       'executeSetControlHighlight',

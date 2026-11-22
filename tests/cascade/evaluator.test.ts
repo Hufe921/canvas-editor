@@ -302,4 +302,26 @@ describe('表达式 evaluator', () => {
       '空'
     )
   })
+
+  it('getContext 读取字符串、数值及缺失上下文', () => {
+    const node = parse(
+      tokenize("getContext('gender') == 'male' && getContext('age') >= 18")
+    )
+    const resolve = () => undefined
+    expect(
+      evaluate(node, {
+        resolve,
+        resolveContext: key => ({ gender: 'male', age: 18 })[key]
+      })
+    ).toBe(true)
+    expect(
+      evaluate(node, {
+        resolve,
+        resolveContext: key => ({ gender: 'female', age: 18 })[key]
+      })
+    ).toBe(false)
+    expect(
+      evaluate(parse(tokenize("empty(getContext('age'))")), { resolve })
+    ).toBe(true)
+  })
 })

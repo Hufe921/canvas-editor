@@ -117,6 +117,44 @@ With `control.compute` set, the expression is re-evaluated on any value change a
 - `executeValidate` flushes cascades synchronously first, so validation sees the latest visibility/required state
 - Effects only write properties, never values — no recursion, no undo pollution
 
+## Control Rules
+
+`control.rules` controls the current control using external context. Context keys are application-defined and read with `getContext('key')`. Supported effects are `hide`, `required`, `disabled`, and `deletable`.
+
+```ts
+const instance = new Editor(container, data, {
+  ruleContext: {
+    gender: 'male',
+    age: 32
+  }
+})
+```
+
+```json
+{
+  "conceptId": "menstrualHistory",
+  "type": "text",
+  "value": null,
+  "rules": [
+    {
+      "expression": "getContext('gender') == 'male' || getContext('age') < 10",
+      "effects": { "hide": true, "required": false },
+      "elseEffects": { "hide": false, "required": true }
+    }
+  ]
+}
+```
+
+Use `executeUpdateRuleContext` to partially update the context and recalculate rules:
+
+```ts
+instance.command.executeUpdateRuleContext({ gender: 'female' })
+```
+
+- `effects` applies when matched; otherwise `elseEffects` applies, or original properties are restored
+- Hidden controls are excluded from required validation
+- `rules` persist with the document; `ruleContext` is not saved in document data
+
 ## Complete Example
 
 Only selecting "has hypertension" shows and requires "hypertension level":

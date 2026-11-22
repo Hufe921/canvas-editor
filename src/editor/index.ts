@@ -240,6 +240,13 @@ export {
   TextDirection
 }
 
+export type {
+  IControlConditionRule,
+  IControlEffect,
+  RuleContext,
+  RuleContextValue
+} from './interface/Control'
+
 // 对外类型
 export type {
   IElement,

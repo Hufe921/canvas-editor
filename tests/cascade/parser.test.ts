@@ -126,6 +126,17 @@ describe('表达式 parser', () => {
     })
   })
 
+  it('getContext 外部上下文表达式', () => {
+    expect(ast("getContext('gender') == 'male'")).toEqual({
+      type: 'compare',
+      op: '==',
+      left: { type: 'getContext', key: 'gender' },
+      right: { type: 'literal', value: 'male' }
+    })
+    expect(() => ast('getContext()')).toThrow(/getContext/)
+    expect(() => ast('getContext(123)')).toThrow(/getContext/)
+  })
+
   it('语法错误抛错', () => {
     expect(() => ast("getValue('a') ==")).toThrow()
     expect(() => ast("(getValue('a') == '1'")).toThrow()

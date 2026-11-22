@@ -99,6 +99,21 @@ Usage:
 instance.command.executeSetControlPropertiesList(payload: ISetControlProperties[])
 ```
 
+### executeUpdateRuleContext
+
+Feature: Partially update control-rule context (shallow merge) and immediately recalculate all `control.rules`. Context keys and their meanings are defined by the application.
+
+Usage:
+
+```javascript
+instance.command.executeUpdateRuleContext(payload: RuleContext)
+
+instance.command.executeUpdateRuleContext({
+  gender: 'female',
+  age: 32
+})
+```
+
 ### executeSetControlHighlight
 
 Feature: Set control highlight (by keyword)

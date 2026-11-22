@@ -17,6 +17,10 @@ import { IPositionContext } from './Position'
 import { IRange } from './Range'
 import { IRow, IRowElement } from './Row'
 
+export type RuleContextValue = string | number | boolean | null
+
+export type RuleContext = Record<string, RuleContextValue>
+
 export interface IValueSet {
   value: string
   code: string
@@ -77,6 +81,19 @@ export interface IControlRule {
   required?: boolean // 必填（校验时使用，可被级联动态控制）
 }
 
+export interface IControlEffect {
+  hide?: boolean
+  required?: boolean
+  disabled?: boolean
+  deletable?: boolean
+}
+
+export interface IControlConditionRule {
+  expression: string
+  effects: IControlEffect
+  elseEffects?: IControlEffect
+}
+
 export interface IControlBasic {
   type: ControlType
   value: IElement[] | null
@@ -94,6 +111,7 @@ export interface IControlBasic {
   preText?: string
   postText?: string
   cascade?: IControlCascadeRule[]
+  rules?: IControlConditionRule[]
   validation?: IControlValidation
   compute?: string // 计算表达式：结果自动回写本控件值（如 BMI）
   // 控件级背景色（优先级高于全局 control 配置同名属性）
@@ -272,12 +290,7 @@ export interface ICascadeAction {
   conceptId?: string // 目标控件/标题 conceptId（可多个，批量控制）
   // 与 controlId 可同时配置，合并命中全部应用
   targetType?: CascadeTargetType // conceptId 消歧用，缺省自动探测：先控件后标题
-  effects: {
-    hide?: boolean
-    required?: boolean
-    disabled?: boolean
-    deletable?: boolean
-  }
+  effects: IControlEffect
 }
 
 export interface IControlCascadeRule {

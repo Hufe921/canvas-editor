@@ -223,6 +223,7 @@ export function mergeOption(
     ...defaultFootnoteOption,
     ...options.footnote
   }
+  const ruleContext = { ...options.ruleContext }
   const modeRuleOption: DeepRequired<IModeRule> = {
     print: {
       ...defaultModeRuleOption.print,
@@ -289,6 +290,7 @@ export function mergeOption(
     scrollContainerSelector: '',
     pageOuterSelectionDisable: false,
     ...options,
+    ruleContext,
     lab: labOptions,
     table: tableOptions,
     header: headerOptions,

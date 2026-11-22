@@ -22,6 +22,7 @@ export type IAstNode =
       type: 'getValue'
       target: { kind: 'id'; value: string } | { kind: 'self' }
     }
+  | { type: 'getContext'; key: string }
   | { type: 'call'; name: string; args: IAstNode[] }
 
 const COMPARE_OPS = ['==', '!=', '>', '>=', '<', '<=']
@@ -163,6 +164,16 @@ export function parse(tokens: IToken[]): IAstNode {
           }
           expect(TokenType.RPAREN)
           return { type: 'getValue', target }
+        }
+        // getContext 特殊形式：参数为外部上下文字段名字符串
+        if (token.value === 'getContext') {
+          const arg = consume()
+          if (!arg) throw new Error('getContext 缺少参数')
+          if (arg.type !== TokenType.STRING) {
+            throw new Error('getContext 参数必须是上下文字段名字符串')
+          }
+          expect(TokenType.RPAREN)
+          return { type: 'getContext', key: arg.value }
         }
         const args: IAstNode[] = []
         if (peek()?.type !== TokenType.RPAREN) {
