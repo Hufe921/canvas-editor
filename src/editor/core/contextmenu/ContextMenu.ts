@@ -68,6 +68,7 @@ export class ContextMenu {
   }
 
   private _addEvent() {
+    if (this.options.displayOnly || this.draw.isReadonly()) return
     // 菜单权限
     this.container.addEventListener('contextmenu', this._proxyContextMenuEvent)
     // 副作用处理

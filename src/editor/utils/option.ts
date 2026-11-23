@@ -289,6 +289,7 @@ export function mergeOption(
     shortcutDisableKeys: [],
     scrollContainerSelector: '',
     pageOuterSelectionDisable: false,
+    displayOnly: false,
     ...options,
     ruleContext,
     lab: labOptions,
