@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest'
-import { ListType } from '../../../src/editor/dataset/enum/List'
+import { ListStyle, ListType } from '../../../src/editor/dataset/enum/List'
 import { TitleLevel } from '../../../src/editor/dataset/enum/Title'
 import { RowFlex } from '../../../src/editor/dataset/enum/Row'
 import { ElementType } from '../../../src/editor/dataset/enum/Element'
@@ -27,6 +27,52 @@ describe('列表与排版命令', () => {
     ctx.editor.command.executeList(ListType.OL)
     const data = ctx.editor.command.getValue().data.main
     expect(data?.some((e: any) => e.listType === 'ol')).toBe(true)
+  })
+
+  it('executeList 设置新增无序列表样式', () => {
+    const newUlStyles = [
+      ListStyle.DIAMOND,
+      ListStyle.ARROW,
+      ListStyle.DIAMOND_FLORAL,
+      ListStyle.HALF_ARROW,
+      ListStyle.CHECKMARK,
+      ListStyle.DIAMOND_HOLLOW
+    ]
+    for (const listStyle of newUlStyles) {
+      ctx = createTestEditor()
+      ctx.editor.command.executeFocus()
+      ctx.editor.command.executeInsertElementList([{ value: 'item' }])
+      ctx.editor.command.executeSelectAll()
+      ctx.editor.command.executeList(ListType.UL, listStyle)
+      const data = ctx.editor.command.getValue().data.main
+      expect(
+        data?.some((e: any) => e.listType === 'ul' && e.listStyle === listStyle)
+      ).toBe(true)
+      ctx.destroy()
+    }
+  })
+
+  it('executeList 设置新增有序列表样式', () => {
+    const newOlStyles = [
+      ListStyle.DECIMAL_RIGHT_PAREN,
+      ListStyle.UPPER_ALPHA,
+      ListStyle.LOWER_ALPHA,
+      ListStyle.CIRCLED_DECIMAL,
+      ListStyle.CHINESE,
+      ListStyle.CHINESE_PARENTHESES
+    ]
+    for (const listStyle of newOlStyles) {
+      ctx = createTestEditor()
+      ctx.editor.command.executeFocus()
+      ctx.editor.command.executeInsertElementList([{ value: 'item' }])
+      ctx.editor.command.executeSelectAll()
+      ctx.editor.command.executeList(ListType.OL, listStyle)
+      const data = ctx.editor.command.getValue().data.main
+      expect(
+        data?.some((e: any) => e.listType === 'ol' && e.listStyle === listStyle)
+      ).toBe(true)
+      ctx.destroy()
+    }
   })
 
   it('executeTitle 设置标题级别', () => {
